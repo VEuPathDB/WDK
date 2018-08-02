@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -32,6 +34,11 @@ public class FilterOptionList implements Iterable<FilterOption>, Validateable {
       for (FilterOption filter : filters) {
         _options.add(FilterOption.builder().fromFilterOption(filter));
       }
+      return this;
+    }
+
+    public FilterOptionListBuilder removeAll(Predicate<FilterOptionBuilder> predicate) {
+      _options = _options.stream().filter(predicate.negate()).collect(Collectors.toList());
       return this;
     }
 
@@ -100,5 +107,9 @@ public class FilterOptionList implements Iterable<FilterOption>, Validateable {
   @Override
   public ValidationBundle getValidationBundle() {
     return _validationBundle;
+  }
+
+  public boolean isEmpty() {
+    return getSize() == 0;
   }
 }

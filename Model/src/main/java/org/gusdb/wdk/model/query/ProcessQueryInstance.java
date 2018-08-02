@@ -14,6 +14,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.ServiceResolver;
@@ -50,17 +51,13 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   /**
    * @param user user to execute query as
    * @param query query to create instance for
-   * @param contextParamStableValues stable values of all params in the query's context
-   * @param validate whether to validate param values
+   * @param paramValues stable values of all params in the query's context
    * @param assignedWeight weight of the query
-   * @param context additional information to be passed to ProcessQueries (unused by SqlQueries)
    * @throws WdkModelException
-   * @throws WdkUserException
    */
-  public ProcessQueryInstance(User user, ProcessQuery query, Map<String, String> contextParamStableValues, boolean validate,
-      int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
-    super(user, query, contextParamStableValues, validate, assignedWeight, context);
-    _query = query;
+  ProcessQueryInstance(User user, ProcessQuery query, ReadOnlyMap<String, String> paramValues,
+      int assignedWeight) throws WdkModelException {
+    super(user, query, paramValues, assignedWeight);
   }
 
   @Override
@@ -69,7 +66,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   }
 
   @Override
-  public void insertToCache(String tableName, long instanceId) throws WdkModelException, WdkUserException {
+  public void insertToCache(String tableName, long instanceId) throws WdkModelException {
     LOG.debug("inserting process query result to cache...");
     List<Column> columns = Arrays.asList(_query.getColumns());
     Set<String> columnNames = _query.getColumnMap().keySet();
@@ -105,7 +102,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     executePostCacheUpdateSql(tableName, instanceId);
   }
 
-  private void invokeWsf(WsfResponseListener listener) throws WdkModelException, WdkUserException {
+  private void invokeWsf(WsfResponseListener listener) throws WdkModelException {
     long start = System.currentTimeMillis();
 
     // prepare request.
@@ -153,7 +150,10 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
       _signal = client.invoke(request);
     }
     catch (ClientUserException ex) {
-      throw new WdkUserException(ex);
+      // FIXME: We need to figure out what kind of exception to throw here- does parameter validation for
+      //        WSF plugins (i.e. process queries) happen in WDK or on the plugin side?  For now, assume
+      //        validation happens correctly in WDK and throw model exception here
+      throw new WdkModelException(ex);
     }
     catch (ClientModelException | URISyntaxException ex) {
       throw new WdkModelException(ex);
@@ -199,12 +199,12 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   }
 
   @Override
-  protected ResultList getUncachedResults() throws WdkModelException, WdkUserException {
+  protected ResultList getUncachedResults() throws WdkModelException {
     throw new UnsupportedOperationException("Process queries are always cacheable, so ProcessQueryInstance.getUncachedResults() should never be called");
   }
 
   @Override
-  public String getSql() throws WdkModelException, WdkUserException {
+  public String getSql() throws WdkModelException {
     // always get sql that queries on the cached result
     return getCachedSql(true);
   }
@@ -216,7 +216,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   }
 
   @Override
-  public void createCache(String tableName, long instanceId) throws WdkModelException, WdkUserException {
+  public void createCache(String tableName, long instanceId) throws WdkModelException {
     LOG.debug("creating process query cache...");
     DBPlatform platform = _query.getWdkModel().getAppDb().getPlatform();
     Column[] columns = _query.getColumns();
@@ -278,7 +278,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   }
 
   @Override
-  public int getResultSize() throws WdkModelException, WdkUserException {
+  public int getResultSize() throws WdkModelException {
     if (!getIsCacheable()) {
       int count = 0;
       try (ResultList resultList = getResults()) {
@@ -288,8 +288,9 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
         return count;
       }
     }
-    else
+    else {
       return super.getResultSize();
+    }
   }
 
 }

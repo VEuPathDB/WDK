@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -33,17 +34,13 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
   /**
    * @param user user to execute query as
    * @param query query to create instance for
-   * @param contextParamStableValues stable values of all params in the query's context
-   * @param validate whether to validate param values
+   * @param paramValues stable values of all params in the query's context
    * @param assignedWeight weight of the query
-   * @param context additional information to be passed to ProcessQueries (unused by SqlQueries)
    * @throws WdkModelException
-   * @throws WdkUserException
    */
-  protected SqlQueryInstance(User user, SqlQuery query, Map<String, String> contextParamStableValues, boolean validate,
-      int assignedWeight, Map<String, String> context) throws WdkModelException, WdkUserException {
-    super(user, query, contextParamStableValues, validate, assignedWeight, context);
-    _query = query;
+  SqlQueryInstance(User user, SqlQuery query, ReadOnlyMap<String, String> paramValues,
+      int assignedWeight) throws WdkModelException {
+    super(user, query, paramValues, assignedWeight);
   }
 
   @Override
@@ -52,7 +49,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
   }
 
   @Override
-  protected ResultList getUncachedResults() throws WdkModelException, WdkUserException {
+  protected ResultList getUncachedResults() throws WdkModelException {
     try {
       String sql = getUncachedSql();
       DatabaseInstance platform = _query.getWdkModel().getAppDb();
@@ -111,7 +108,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     executePostCacheUpdateSql(tableName, instanceId);
   }
 
-  public String getUncachedSql() throws WdkModelException, WdkUserException {
+  public String getUncachedSql() throws WdkModelException {
     Map<String, String> internalValues = getParamInternalValues();
     Map<String, Param> params = _query.getParamMap();
     String sql = _query.getSql();
@@ -155,21 +152,21 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
   }
 
   @Override
-  public String getSql() throws WdkModelException, WdkUserException {
+  public String getSql() throws WdkModelException {
     return getSql(true);
   }
 
   @Override
-  public String getSqlUnsorted() throws WdkModelException, WdkUserException {
+  public String getSqlUnsorted() throws WdkModelException {
     return getSql(false);
   }
 
-  private String getSql(boolean performSorting) throws WdkModelException, WdkUserException {
+  private String getSql(boolean performSorting) throws WdkModelException {
     return getIsCacheable() ? getCachedSql(performSorting) : getUncachedSql();
   }
 
   @Override
-  public void createCache(String tableName, long instanceId) throws WdkModelException, WdkUserException {
+  public void createCache(String tableName, long instanceId) throws WdkModelException {
     LOG.debug("creating cache table for query " + _query.getFullName());
     // get the sql with param values applied.
     String sql = getUncachedSql();

@@ -17,7 +17,7 @@ import org.apache.commons.cli.ParseException;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;

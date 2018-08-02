@@ -7,7 +7,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.ParamValue;
 import org.gusdb.wdk.model.user.User;
@@ -29,10 +29,10 @@ public class AnswerValueFactory {
       //   would much rather see 0-based start and have end index be exclusive
       //   (i.e. need to fix on AnswerValue)
       AnswerValue answerValue = request.getQuestion().makeAnswerValue(_user,
-          request.getParamValues().toMap(), 1, -1,
-          null, request.getLegacyFilter(), true, request.getWeight());
-      answerValue.setFilterOptions(request.getFilterValues());
-      answerValue.setViewFilterOptions(request.getViewFilterValues());
+          request.getQueryInstanceSpec().toMap(), 1, -1,
+          null, request.getLegacyFilter(), true, request.getAssignedWeight());
+      answerValue.setFilterOptions(request.getFilterOptions());
+      answerValue.setViewFilterOptions(request.getViewFilterOptions());
       return answerValue;
     }
     catch (WdkUserException e) {

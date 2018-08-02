@@ -54,7 +54,7 @@ public class InvokeAttributePluginAction extends Action {
         AttributePlugin plugin = reference.getPlugin();
 
         logger.debug("Processing attribute plugin: " + pluginName);
-        Map<String, Object> results = plugin.process(step.getStep());
+        Map<String, Object> results = plugin.process(step.getStep().getViewAnswerValue());
         for (String key : results.keySet()) {
             request.setAttribute(key, results.get(key));
         }

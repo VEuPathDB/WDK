@@ -4,7 +4,7 @@ import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
-import org.gusdb.wdk.model.answer.spec.ParamValueSet.ParamValueSetBuilder;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec.QueryInstanceSpecBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,13 +23,13 @@ public class ParamFiltersClobFormat {
 
   public static JSONObject formatParamFilters(AnswerSpec answerSpec) {
     JSONObject jsContent = new JSONObject();
-    jsContent.put(KEY_PARAMS, formatParams(answerSpec.getParamValues()));
-    jsContent.put(KEY_FILTERS, formatFilters(answerSpec.getFilterValues()));
-    jsContent.put(KEY_VIEW_FILTERS, formatFilters(answerSpec.getViewFilterValues()));
+    jsContent.put(KEY_PARAMS, formatParams(answerSpec.getQueryInstanceSpec()));
+    jsContent.put(KEY_FILTERS, formatFilters(answerSpec.getFilterOptions()));
+    jsContent.put(KEY_VIEW_FILTERS, formatFilters(answerSpec.getViewFilterOptions()));
     return jsContent;
   }
 
-  public static JSONObject formatParams(ParamValueSet paramValues) {
+  public static JSONObject formatParams(QueryInstanceSpec paramValues) {
     // convert params
     JSONObject jsParams = new JSONObject();
     for (String paramName : paramValues.keySet()) {
@@ -53,8 +53,8 @@ public class ParamFiltersClobFormat {
     return jsOptions;
   }
 
-  public static ParamValueSetBuilder parseParamsJson(JSONObject paramFiltersJson) throws JSONException {
-    ParamValueSetBuilder builder = ParamValueSet.builder();
+  public static QueryInstanceSpecBuilder parseParamsJson(JSONObject paramFiltersJson) throws JSONException {
+    QueryInstanceSpecBuilder builder = QueryInstanceSpec.builder();
     if (paramFiltersJson == null) {
       return builder;
     }

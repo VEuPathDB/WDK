@@ -1,11 +1,12 @@
 package org.gusdb.wdk.model.answer.spec;
 
 import static org.gusdb.fgputil.functional.Functions.filter;
-import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
+import static org.gusdb.fgputil.functional.Functions.nSwallow;
 
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
@@ -13,7 +14,7 @@ import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
-import org.gusdb.wdk.model.answer.spec.ParamValueSet.ParamValueSetBuilder;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec.QueryInstanceSpecBuilder;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.question.Question;
 import org.json.JSONObject;
@@ -26,6 +27,10 @@ public class AnswerSpec implements Validateable {
 
   public static AnswerSpecBuilder builder(AnswerSpec answerSpec) {
     return new AnswerSpecBuilder(answerSpec);
+  }
+
+  public static AnswerSpecBuilder builder(SemanticallyValid<AnswerSpec> validAnswerSpec) {
+    return new AnswerSpecBuilder(validAnswerSpec);
   }
 
   private final WdkModel _wdkModel;
@@ -42,7 +47,7 @@ public class AnswerSpec implements Validateable {
   // FlatVocabParam: (inherited)
   // FilterParam: JSON string representing all filters applied (see FilterParam)
   // AnswerParam: Step ID
-  private final ParamValueSet _params;
+  private final QueryInstanceSpec _queryInstanceSpec;
 
   // LEGACY!!  Any filtering code mods should be applied to the parameterized
   //     filter framework.  TODO: remove this code and migrade the DB
@@ -59,43 +64,38 @@ public class AnswerSpec implements Validateable {
   // view filters applied to this step
   private final FilterOptionList _viewFilters;
 
-  // only applied to leaf steps, user-defined
-  // during booleans, weights of records are modified (per boolean-specific logic, see BooleanQuery)
-  private final int _assignedWeight;
-
   // validation-related values
   private final ValidationBundle _validationBundle;
 
-  public AnswerSpec(WdkModel wdkModel, String questionName, ParamValueSetBuilder paramValues,
+  public AnswerSpec(WdkModel wdkModel, String questionName, QueryInstanceSpecBuilder queryInstanceSpec,
       String legacyFilterName, FilterOptionListBuilder filters, FilterOptionListBuilder viewFilters,
-      int assignedWeight, ValidationLevel validationLevel) {
+      ValidationLevel validationLevel) {
     _wdkModel = wdkModel;
     _questionName = questionName;
     _legacyFilterName = legacyFilterName;
-    _assignedWeight = assignedWeight;
     ValidationBundleBuilder validation = ValidationBundle.builder(validationLevel);
     if (!wdkModel.hasQuestion(questionName)) {
       // invalid question name; cannot validate other data
       validation.addError("Question '" + questionName + "' is not supported.");
       _question = null;
       _legacyFilter = null;
-      _params = paramValues.buildInvalid();
+      _queryInstanceSpec = queryInstanceSpec.buildInvalid();
       _filters = filters.buildInvalid();
       _viewFilters = viewFilters.buildInvalid();
     }
     else {
-      _question = swallowAndGet(() -> wdkModel.getQuestion(questionName));
+      _question = nSwallow(() -> wdkModel.getQuestion(questionName)).apply();
       _legacyFilter = getAssignedLegacyFilter(validation);
-      _params = paramValues.buildValidated(_question.getQuery(), validationLevel);
-      if (_params.isValid()) {
+      _queryInstanceSpec = queryInstanceSpec.buildValidated(_question.getQuery(), validationLevel);
+      if (_queryInstanceSpec.isValid()) {
         // replace passed filter lists with new ones that have always-on filters applied
-        SimpleAnswerSpec simpleSpec = new SimpleAnswerSpec(_question, _params);
+        SimpleAnswerSpec simpleSpec = new SimpleAnswerSpec(_question, _queryInstanceSpec);
         filters = applyAlwaysOnFilters(filters, _question.getFilters(), simpleSpec);
         viewFilters = applyAlwaysOnFilters(viewFilters, _question.getViewFilters(), simpleSpec);
       }
       _filters = filters.buildValidated(_question, Filter.FilterType.STANDARD, validationLevel);
       _viewFilters = viewFilters.buildValidated(_question, Filter.FilterType.VIEW_ONLY, validationLevel);
-      validation.aggregateStatus(_params, _filters, _viewFilters);
+      validation.aggregateStatus(_queryInstanceSpec, _filters, _viewFilters);
     }
     _validationBundle = validation.build();
   }
@@ -125,8 +125,8 @@ public class AnswerSpec implements Validateable {
     return _question != null;
   }
 
-  public ParamValueSet getParamValues() {
-    return _params;
+  public QueryInstanceSpec getQueryInstanceSpec() {
+    return _queryInstanceSpec;
   }
 
   public int getAnswerParamCount() {
@@ -141,16 +141,12 @@ public class AnswerSpec implements Validateable {
     return _legacyFilter;
   }
 
-  public FilterOptionList getFilterValues() {
+  public FilterOptionList getFilterOptions() {
     return _filters;
   }
 
-  public FilterOptionList getViewFilterValues() {
+  public FilterOptionList getViewFilterOptions() {
     return _viewFilters;
-  }
-
-  public int getWeight() {
-    return _assignedWeight;
   }
 
   @Override
@@ -184,7 +180,7 @@ public class AnswerSpec implements Validateable {
   }
 
   public SimpleAnswerSpec toSimpleAnswerSpec() {
-    return new SimpleAnswerSpec(_question, _params);
+    return new SimpleAnswerSpec(_question, _queryInstanceSpec);
   }
 
 }

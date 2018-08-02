@@ -8,12 +8,17 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.validation.ValidObjectFactory;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.SummaryView;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -263,21 +268,6 @@ public class QuestionBean {
   }
 
   /**
-   * make an answer bean with default page size.
-   * 
-   * @param paramErrors
-   * @return
-   * @throws WdkUserException 
-   * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map)
-   */
-  public AnswerValueBean makeAnswerValue(UserBean user,
-      Map<String, String> paramValues, boolean validate, int assignedWeight)
-      throws WdkModelException, WdkUserException {
-    return new AnswerValueBean(_question.makeAnswerValue(user.getUser(),
-        paramValues, validate, assignedWeight));
-  }
-
-  /**
    * @param propertyListName
    * @return
    * @see org.gusdb.wdk.model.Question#getPropertyList(java.lang.String)
@@ -348,14 +338,20 @@ public class QuestionBean {
         throw new WdkUserException("User is not set. Please set user to "
             + "the questionBean before calling to create answerValue.");
 
-      AnswerValue answerValue = _question.makeAnswerValue(_user.getUser(),
-          _params, false, _weight);
+      AnswerValue answerValue = AnswerValueFactory.makeAnswer(_user.getUser(),
+          ValidObjectFactory.getSemanticallyValid(
+              AnswerSpec.builder(_question.getWdkModel())
+              .setQuestionName(_question.getFullName())
+              .setQueryInstanceSpec(QueryInstanceSpec.builder()
+                  .putAll(_params).setAssignedWeight(_weight))
+              .build(ValidationLevel.SEMANTIC)));
 
       // reset the params
       _params.clear();
 
       return new AnswerValueBean(answerValue);
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       LOG.error("Exception thrown in getAnswerValue(): " + ex);
       for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
         LOG.error("  " + elem.toString());

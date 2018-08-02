@@ -3,10 +3,10 @@ package org.gusdb.wdk.model.query;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.User;
@@ -30,25 +30,19 @@ public class BooleanQueryInstance extends SqlQueryInstance {
   private BooleanQuery booleanQuery;
 
   /**
-   * @param query
-   * @param values
-   * @throws WdkUserException
+   * @param user user to execute query as
+   * @param query query to create instance for
+   * @param paramValues stable values of all params in the query's context
+   * @param assignedWeight weight of the query
+   * @throws WdkModelException
    */
-  protected BooleanQueryInstance(User user, BooleanQuery query,
-      Map<String, String> values, boolean validate, int assignedWeight,
-      Map<String, String> context) throws WdkModelException, WdkUserException {
-    // boolean query doesn't use assigned weight
-    super(user, query, values, validate, assignedWeight, context);
-    this.booleanQuery = query;
+  BooleanQueryInstance(User user, SqlQuery query, ReadOnlyMap<String, String> paramValues,
+      int assignedWeight) throws WdkModelException {
+    super(user, query, paramValues, assignedWeight);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.SqlQueryInstance#getUncachedSql()
-   */
   @Override
-  public String getUncachedSql() throws WdkModelException, WdkUserException {
+  public String getUncachedSql() throws WdkModelException {
 
     Map<String, String> internalValues = getParamInternalValues();
 
@@ -227,14 +221,14 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 	  return rc.getPrimaryKeyDefinition().getColumnRefs();
   }
   
-    protected String getLeftSql ()  throws WdkModelException, WdkUserException {
+    protected String getLeftSql()  throws WdkModelException {
 	Map<String, String> internalValues = getParamInternalValues();
         AnswerParam leftParam = booleanQuery.getLeftOperandParam();
 	String leftSubSql = internalValues.get(leftParam.getName());
 	return constructOperandSql(leftSubSql);
     }
 
-    protected String getRightSql ()  throws WdkModelException, WdkUserException {
+    protected String getRightSql()  throws WdkModelException {
 	Map<String, String> internalValues = getParamInternalValues();
 	AnswerParam rightParam = booleanQuery.getRightOperandParam();
 	String rightSubSql = internalValues.get(rightParam.getName());

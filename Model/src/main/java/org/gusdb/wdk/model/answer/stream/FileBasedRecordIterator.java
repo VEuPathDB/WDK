@@ -26,7 +26,7 @@ import org.gusdb.fgputil.iterator.ReadOnlyIterator;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.question.Question;
@@ -124,7 +124,7 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
 
       // Obtain the result list of primary keys from the raw paged id SQL.  This same paged id SQL was used in
       // the attribute SQL.  So the primary keys should correspond 1:1 with the rows in the attribute CSV files.
-      DataSource dataSource = _answerValue.getQuestion().getWdkModel().getAppDb().getDataSource();
+      DataSource dataSource = _answerValue.getWdkModel().getAppDb().getDataSource();
       _idResultList = new SqlResultList(SqlUtils.executeQuery(dataSource, _answerValue.getPagedIdSql(), "id__attr-full"));
     }
     catch(IOException | SQLException e) {
@@ -138,7 +138,7 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
     for (Entry<Path,List<QueryColumnAttributeField>> entry : attributeFileMap.entrySet()) {
 
       // Generate full list of columns to fetch, including both PK columns and requested columns
-      List<String> columnNames = new ListBuilder<String>(answerValue.getQuestion()
+      List<String> columnNames = new ListBuilder<String>(answerValue.getAnswerSpec().getQuestion()
           .getRecordClass().getPrimaryKeyDefinition().getColumnRefs())
           .addAll(Functions.mapToList(entry.getValue(), Named.TO_NAME))
           .toList();
@@ -214,7 +214,7 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
       }
 
       // Construct the primary key values for this record
-      Question question = _answerValue.getQuestion();
+      Question question = _answerValue.getAnswerSpec().getQuestion();
       PrimaryKeyDefinition pkDef = question.getRecordClass().getPrimaryKeyDefinition();
       Map<String, Object> pkValues = pkDef.getPrimaryKeyFromResultList(_idResultList).getRawValues();
 

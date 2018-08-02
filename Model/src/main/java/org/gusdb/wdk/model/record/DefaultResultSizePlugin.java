@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 
 public class DefaultResultSizePlugin implements ResultSize {
 

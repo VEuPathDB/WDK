@@ -10,8 +10,7 @@ import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.question.Question;
@@ -23,8 +22,8 @@ public class FilterOption implements Validateable {
 
   public static class FilterOptionBuilder {
 
-    private String _filterName;
-    private JSONObject _value;
+    private String _filterName = "";
+    private JSONObject _value = new JSONObject();
     private boolean _isDisabled = false;
 
     private FilterOptionBuilder() {}
@@ -136,7 +135,7 @@ public class FilterOption implements Validateable {
   }
 
   @Deprecated
-  public String getDisplayValue(AnswerValue answerValue) throws WdkModelException, WdkUserException {
+  public String getDisplayValue(AnswerValue answerValue) throws WdkModelException {
     return _filter == null ? "" : _filter.getDisplayValue(answerValue, _value);
   }
 
@@ -153,7 +152,7 @@ public class FilterOption implements Validateable {
           try {
             return getDisplayValue(((AnswerValueBean)answerValue).getAnswerValue());
           }
-          catch (WdkModelException | WdkUserException e) {
+          catch (WdkModelException e) {
             throw new WdkRuntimeException(e);
           }
         }

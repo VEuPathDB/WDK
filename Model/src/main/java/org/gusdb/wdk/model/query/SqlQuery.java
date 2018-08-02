@@ -12,11 +12,11 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Timer;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.wdk.model.AttributeMetaQueryHandler;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
@@ -86,6 +86,12 @@ public class SqlQuery extends Query {
       this.dependentTableList = new ArrayList<>(query.dependentTableList);
   }
 
+  @Override
+  protected SqlQueryInstance makeInstance(User user, ReadOnlyMap<String,String> paramValues,
+      int assignedWeight) throws WdkModelException {
+    return new SqlQueryInstance(user, this, paramValues, assignedWeight);
+  }
+
   public void addSql(WdkModelText sql) {
     this.sqlList.add(sql);
   }
@@ -130,24 +136,6 @@ public class SqlQuery extends Query {
     this._sql = sql + "\n";
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#makeInstance()
-   */
-  @Override
-  public SqlQueryInstance makeInstance(User user, Map<String, String> values,
-      boolean validate, int assignedWeight, Map<String, String> context)
-      throws WdkModelException, WdkUserException {
-    return new SqlQueryInstance(user, this, values, validate, assignedWeight,
-        context);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsQuery, boolean extra)
       throws JSONException {
@@ -168,11 +156,6 @@ public class SqlQuery extends Query {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);

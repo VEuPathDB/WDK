@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -66,7 +67,7 @@ import org.json.JSONObject;
  * 
  * 
  */
-public abstract class Param extends WdkModelBase implements Cloneable, Comparable<Param> {
+public abstract class Param extends WdkModelBase implements Cloneable, Comparable<Param>, NamedObject {
 
   public static final String RAW_VALUE_SUFFIX = "_raw";
   public static final String INVALID_VALUE_SUFFIX = "_invalid";
@@ -216,6 +217,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _name = name;
   }
 
+  @Override
   public String getName() {
     return _name;
   }
@@ -602,7 +604,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkModelException
    */
   public String getInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     if (stableValue == null || stableValue.length() == 0)
       if (isAllowEmpty())
         stableValue = getEmptyValue();
@@ -620,7 +622,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkUserException
    */
   public String getSignature(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     if (stableValue == null) return "";
     return _handler.toSignature(user, stableValue, contextParamValues);
   }

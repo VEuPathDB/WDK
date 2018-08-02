@@ -13,10 +13,15 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
+import org.gusdb.fgputil.validation.ValidObjectFactory;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.question.Question;
@@ -71,7 +76,7 @@ public class ResultSizeFactory {
   }
 
   public int getDisplayResultSize() throws WdkModelException {
-    ResultSize plugin = _answerValue.getQuestion().getRecordClass().getResultSizePlugin();
+    ResultSize plugin = _answerValue.getAnswerSpec().getQuestion().getRecordClass().getResultSizePlugin();
     LOG.debug("getting Display result size.");
     return plugin.getResultSize(_answerValue);
   }
@@ -79,9 +84,9 @@ public class ResultSizeFactory {
   public Map<String, Integer> getResultSizesByProject() throws WdkModelException, WdkUserException {
     if (_resultSizesByProject == null) {
       _resultSizesByProject = new LinkedHashMap<String, Integer>();
-      Question question = _answerValue.getQuestion();
+      Question question = _answerValue.getAnswerSpec().getQuestion();
       QueryInstance<?> queryInstance = _answerValue.getIdsQueryInstance();
-      AnswerFilterInstance filter = _answerValue.getFilter();
+      AnswerFilterInstance filter = _answerValue.getAnswerSpec().getLegacyFilter();
 
       // make sure the project_id is defined in the record
       PrimaryKeyDefinition primaryKey = question.getRecordClass().getPrimaryKeyDefinition();
@@ -136,12 +141,12 @@ public class ResultSizeFactory {
 
 
   public int getFilterDisplaySize(String filterName)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     return getFilterSize(filterName, true);
   }
 
   public int getFilterSize(String filterName)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     return getFilterSize(filterName, false);
   }
 
@@ -162,7 +167,7 @@ public class ResultSizeFactory {
   }
 
   private Map<String, Integer> getFilterSizes(Collection<String> filterNames, boolean useDisplay) {
-    Question question = _answerValue.getQuestion();
+    Question question = _answerValue.getAnswerSpec().getQuestion();
     Map<String, AnswerFilterInstance> allFilters = question.getRecordClass().getFilterMap();
     if (filterNames == null) {
       // sizes requested for all filters
@@ -203,7 +208,7 @@ public class ResultSizeFactory {
   }
 
   private int getFilterSize(String filterName, boolean useDisplay)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     FilterSizeType sizeType = useDisplay ? FilterSizeType.DISPLAY : FilterSizeType.STANDARD;
     Integer size = _resultSizesByFilter.get(sizeType).get(filterName);
     if (size != null && _answerValue.getIdsQueryInstance().getIsCacheable()) {
@@ -211,13 +216,17 @@ public class ResultSizeFactory {
     }
 
     // create a copy of this AnswerValue, overriding current AnswerFilter with one passed in
-    AnswerValue modifiedAnswer = _answerValue.cloneWithNewPaging(_answerValue.getStartIndex(), _answerValue.getEndIndex());
-    modifiedAnswer.setFilterInstance(filterName);
+    AnswerSpec modifiedSpec = AnswerSpec
+        .builder(_answerValue.getAnswerSpec())
+        .setLegacyFilterName(filterName)
+        .build(ValidationLevel.SEMANTIC);
+    AnswerValue modifiedAnswer = AnswerValueFactory.makeAnswer(_answerValue,
+        ValidObjectFactory.getSemanticallyValid(modifiedSpec));
     String idSql = modifiedAnswer.getIdSql();
 
     // if display count requested, use custom plugin; else use default
     ResultSize countPlugin = (useDisplay ?
-        _answerValue.getQuestion().getRecordClass().getResultSizePlugin() :
+        _answerValue.getAnswerSpec().getQuestion().getRecordClass().getResultSizePlugin() :
         new DefaultResultSizePlugin());
 
     // get size, cache, and return

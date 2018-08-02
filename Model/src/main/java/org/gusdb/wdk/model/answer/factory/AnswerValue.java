@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.answer;
+package org.gusdb.wdk.model.answer.factory;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.FormatUtil.join;
@@ -16,16 +16,26 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.validation.ValidObjectFactory;
+import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerFilterInstance;
+import org.gusdb.wdk.model.answer.AnswerValueAttributes;
+import org.gusdb.wdk.model.answer.ResultSizeFactory;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.FilterOption;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList;
+import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.answer.stream.PagedAnswerRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.dbms.ResultList;
@@ -116,69 +126,67 @@ public class AnswerValue {
   // Instance variables
   // ------------------------------------------------------------------
 
-  // basic information about this answer (i.e. the answer spec) and values derived from them
-  protected User _user;
-  private Question _question;
-  private AnswerFilterInstance _filter;
-  private FilterOptionList _filterOptions;
-  private FilterOptionList _viewFilterOptions;
-  private QueryInstance<?> _idsQueryInstance;
-  private String _checksum;
+  // basic information about this answer
+  protected final User _user;
+  private final SemanticallyValid<AnswerSpec> _validAnswerSpec;
+  protected final AnswerSpec _answerSpec;
 
-  // sorting and paging for this particular answer
-  private Map<String, Boolean> _sortingMap;
+  // values derived from basic info
+  private final WdkModel _wdkModel;
+  private final QueryInstance<?> _idsQueryInstance;
+  private final AnswerValueAttributes _attributes;
+  protected ResultSizeFactory _resultSizeFactory; // may be reassigned by subclasses
+
+  // sorting and paging for this answer- may be modified externally
   private int _startIndex;
   private int _endIndex;
+  private Map<String, Boolean> _sortingMap;
 
   // values generated and cached from the above
   private String _sortedIdSql;
-  protected ResultSizeFactory _resultSizeFactory;
-  private AnswerValueAttributes _attributes;
+  private String _checksum;
 
   // ------------------------------------------------------------------
   // Constructors
   // ------------------------------------------------------------------
 
   /**
-   * @param question
-   *          The <code>Question</code> to which this is the <code>Answer</code> .
-   * @param idsQueryInstance
-   *          The <co de>QueryInstance</code> that provides a handle on the ResultList containing all primary
-   *          keys that are the result for the question (not just one page worth).
    * @param startIndex
    *          The index of the first <code>RecordInstance</code> in the page. (>=1)
    * @param endIndex
    *          The index of the last <code>RecordInstance</code> in the page, inclusive.
+   * @throws WdkModelException 
    */
-  public AnswerValue(User user, Question question, QueryInstance<?> idsQueryInstance, int startIndex,
-      int endIndex, Map<String, Boolean> sortingMap, AnswerFilterInstance filter) {
-    LOG.debug("AnswerValue being created for question: " + question.getDisplayName());
+  protected AnswerValue(User user, SemanticallyValid<AnswerSpec> validAnswerSpec, int startIndex,
+      int endIndex, Map<String, Boolean> sortingMap) throws WdkModelException {
     _user = user;
-    _question = question;
-    _attributes = new AnswerValueAttributes(_user, _question);
+    _validAnswerSpec = validAnswerSpec;
+    _answerSpec = validAnswerSpec.getObject();
+    _wdkModel = _answerSpec.getWdkModel();
+    _idsQueryInstance = Query.makeQueryInstance(_user, ValidObjectFactory.getSemanticallyValid(_answerSpec.getQueryInstanceSpec()));
+    Question question = _answerSpec.getQuestion();
+    _attributes = new AnswerValueAttributes(_user, question);
     _resultSizeFactory = new ResultSizeFactory(this);
-    _idsQueryInstance = idsQueryInstance;
+
     _startIndex = startIndex;
     _endIndex = endIndex;
 
     // get sorting columns
-    if (sortingMap == null)
+    if (sortingMap == null) {
       sortingMap = question.getSortingAttributeMap();
+    }
     _sortingMap = sortingMap;
-
-    // get the (old) filter instance
-    _filter = filter;
 
     LOG.debug("AnswerValue created for question: " + question.getDisplayName());
   }
 
-  /**
-   * Copy constructor
-   * 
-   * @param answerValue the answer value to be copied
-   */
-  public AnswerValue(AnswerValue answerValue) {
-    this(answerValue, answerValue._startIndex, answerValue._endIndex);
+  @Override
+  public AnswerValue clone() {
+    return new AnswerValue(this, this._startIndex, this._endIndex);
+  }
+
+  public AnswerValue cloneWithNewPaging(int startIndex, int endIndex) {
+    return new AnswerValue(this, startIndex, endIndex);
   }
 
   /**
@@ -188,43 +196,38 @@ public class AnswerValue {
    * @param startIndex 1-based start index (inclusive)
    * @param endIndex end index (inclusive), or a negative value for all records
    */
+  // NOTE: DO NOT make this constructor public; continue to use clone methods since
+  //       they are overridden in SingleRecordAnswerValue and must be honored
   private AnswerValue(AnswerValue answerValue, int startIndex, int endIndex) {
-    _startIndex = startIndex;
-    _endIndex = endIndex;
-
     _user = answerValue._user;
+    _validAnswerSpec = answerValue._validAnswerSpec;
+    _answerSpec = answerValue._answerSpec;
+    _wdkModel = answerValue._wdkModel;
     _idsQueryInstance = answerValue._idsQueryInstance;
-    _question = answerValue._question;
-    _attributes = new AnswerValueAttributes(_user, _question);
-
+    _attributes = new AnswerValueAttributes(_user, _answerSpec.getQuestion());
     // Note: do not copy result size data (i.e. _resultSizesByFilter and
     //   _resultSizesByProject); they are essentially caches and should be
     //   rebuilt by each new AnswerValue
     _resultSizeFactory = new ResultSizeFactory(this);
-
+    _startIndex = startIndex;
+    _endIndex = endIndex;
     _sortingMap = new LinkedHashMap<String, Boolean>(answerValue._sortingMap);
-    _filter = answerValue._filter;
-    if (answerValue._filterOptions != null) _filterOptions = new FilterOptionList(answerValue._filterOptions);
-    if (answerValue._viewFilterOptions != null) _viewFilterOptions = new FilterOptionList(answerValue._viewFilterOptions);
-
-    LOG.debug("AnswerValue created by copying another AnswerValue");
-  }
-
-  /**
-   * @param startIndex 1-based start index (inclusive)
-   * @param endIndex end index (inclusive), or a negative value for all records
-   * @return copy of this answer value with new paging
-   */
-  public AnswerValue cloneWithNewPaging(int startIndex, int endIndex) {
-    return new AnswerValue(this, startIndex, endIndex);
   }
 
   public User getUser() {
     return _user;
   }
 
-  public Question getQuestion() {
-    return _question;
+  public SemanticallyValid<AnswerSpec> getValidAnswerSpec() {
+    return _validAnswerSpec;
+  }
+
+  public AnswerSpec getAnswerSpec() {
+    return _answerSpec;
+  }
+
+  public WdkModel getWdkModel() {
+    return _wdkModel;
   }
 
   public QueryInstance<?> getIdsQueryInstance() {
@@ -244,8 +247,8 @@ public class AnswerValue {
    */
   public Map<String, String> getParamDisplays() {
     Map<String, String> displayParamsMap = new LinkedHashMap<String, String>();
-    Map<String, String> paramsMap = _idsQueryInstance.getParamStableValues();
-    Param[] params = _question.getParams();
+    ReadOnlyMap<String, String> paramsMap = _idsQueryInstance.getParamStableValues();
+    Param[] params = _answerSpec.getQuestion().getParams();
     for (int i = 0; i < params.length; i++) {
       Param param = params[i];
       displayParamsMap.put(param.getPrompt(), paramsMap.get(param.getName()));
@@ -264,14 +267,14 @@ public class AnswerValue {
       JSONObject jsContent = new JSONObject();
       jsContent.put("query-checksum", _idsQueryInstance.getChecksum());
 
-      // add the old filter into the content; the old filter will be deprecated in the future releases, and
-      // this line will be removed.
-      if (_filter != null)
-        jsContent.put("old-filter", _filter.getName());
+      // add the legacy filter into the content
+      if (_answerSpec.getLegacyFilter() != null) {
+        jsContent.put("legacy-filter", _answerSpec.getLegacyFilter().getName());
+      }
 
-      // new filters have been applied, get the content for it
-      if (_filterOptions != null)
-        jsContent.put("filters", _filterOptions.getJSON());
+      // if filters have been applied, get the content for it
+      jsContent.put("filters", ParamFiltersClobFormat.formatFilters(_answerSpec.getFilterOptions()));
+      // FIXME: decide whether view filters should also be added to checksum here
 
       // encrypt the content to make step-independent checksum
       _checksum = EncryptionUtil.encrypt(JsonUtil.serialize(jsContent));
@@ -321,7 +324,7 @@ public class AnswerValue {
         ") aq WHERE ");
 
     boolean firstColumn = true;
-    for (String column : _question.getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
+    for (String column : _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
       if (firstColumn)
         firstColumn = false;
       else
@@ -335,8 +338,8 @@ public class AnswerValue {
     return sql.toString();
   }
 
-  public ResultList getTableFieldResultList(TableField tableField) throws WdkModelException, WdkUserException {
-    WdkModel wdkModel = _question.getWdkModel();
+  public ResultList getTableFieldResultList(TableField tableField) throws WdkModelException {
+    WdkModel wdkModel = _answerSpec.getQuestion().getWdkModel();
     // has to get a clean copy of the attribute query, without pk params appended
     Query tableQuery = tableField.getUnwrappedQuery();
 
@@ -362,27 +365,27 @@ public class AnswerValue {
     return new SqlResultList(resultSet);
   }
 
-  String getPagedTableSql(Query tableQuery) throws WdkModelException, WdkUserException {
+  String getPagedTableSql(Query tableQuery) throws WdkModelException {
     // get the paged SQL of id query
     String idSql = getPagedIdSql();
 
-    // combine the id query with attribute query
-    // make an instance from the original attribute query, and attribute
-    // query has only one param, user_id. Note that the original
-    // attribute query is different from the attribute query held by the
-    // recordClass.
-    Map<String, String> params = new LinkedHashMap<String, String>();
-    QueryInstance<?> queryInstance = tableQuery.makeInstance(_user, params, true, 0,
-        new LinkedHashMap<String, String>());
+    // Combine the id query with table query.  Make an instance from the
+    // original table query; a table query has only one param, user_id. Note
+    // that the original table query is different from the table query held by
+    // the recordClass.  The user_id param will be added by the query instance.
+    QueryInstanceSpec tableQuerySpec = QueryInstanceSpec
+        .builder().buildValidated(tableQuery, ValidationLevel.SEMANTIC);
+    QueryInstance<?> queryInstance = Query
+        .makeQueryInstance(_user, ValidObjectFactory.getSemanticallyValid(tableQuerySpec));
     String tableSql = queryInstance.getSql();
-    DBPlatform platform = _question.getWdkModel().getAppDb().getPlatform();
+    DBPlatform platform = _answerSpec.getQuestion().getWdkModel().getAppDb().getPlatform();
     String tableSqlWithRowIndex = "(SELECT tq.*, " + platform.getRowNumberColumn() + " as row_index FROM (" + tableSql + ") tq ";
     StringBuffer sql = new StringBuffer("SELECT tqi.* FROM (");
     sql.append(idSql);
     sql.append(") pidq, ").append(tableSqlWithRowIndex).append(") tqi WHERE ");
 
     boolean firstColumn = true;
-    for (String column : _question.getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
+    for (String column : _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
       if (firstColumn)
         firstColumn = false;
       else
@@ -396,9 +399,9 @@ public class AnswerValue {
     return sqlWithIdSql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, "(" + getNoFiltersIdSql() + ")");
   }
 
-  public String getAttributeSql(Query attributeQuery) throws WdkModelException, WdkUserException {
+  public String getAttributeSql(Query attributeQuery) throws WdkModelException {
     String queryName = attributeQuery.getFullName();
-    Query dynaQuery = _question.getDynamicAttributeQuery();
+    Query dynaQuery = _answerSpec.getQuestion().getDynamicAttributeQuery();
     String sql;
     if (dynaQuery != null && queryName.equals(dynaQuery.getFullName())) {
       // the dynamic query doesn't have sql defined, the sql will be
@@ -406,19 +409,15 @@ public class AnswerValue {
       sql = getBaseIdSql();
     }
     else {
-      // make an instance from the original attribute query, and attribute
+      // Make an instance from the original attribute query; an attribute
       // query has only one param, user_id. Note that the original
       // attribute query is different from the attribute query held by the
-      // recordClass.
-      Map<String, String> params = new LinkedHashMap<String, String>();
-      QueryInstance<?> attributeQueryInstance;
-      try {
-        attributeQueryInstance = attributeQuery.makeInstance(_user, params, true, 0,
-            new LinkedHashMap<String, String>());
-      }
-      catch (WdkUserException ex) {
-        throw new WdkModelException(ex);
-      }
+      // recordClass.  The user_id param will be added by the query instance.
+      // TODO: decide if construction of this validated spec should be moved elsewhere?
+      QueryInstanceSpec attrQuerySpec = QueryInstanceSpec
+          .builder().buildValidated(attributeQuery, ValidationLevel.SEMANTIC);
+      QueryInstance<?> attributeQueryInstance = Query
+          .makeQueryInstance(_user, ValidObjectFactory.getSemanticallyValid(attrQuerySpec));
       sql = attributeQueryInstance.getSql();
 
       // replace the id sql macro.  the injected sql must include filters (but not view filters)
@@ -429,18 +428,18 @@ public class AnswerValue {
     return sql;
   }
 
-  protected String getNoFiltersIdSql() throws WdkModelException, WdkUserException {
+  protected String getNoFiltersIdSql() throws WdkModelException {
     return _idsQueryInstance.getSql();
   }
 
-  public String getSortedIdSql() throws WdkModelException, WdkUserException {
+  public String getSortedIdSql() throws WdkModelException {
       if (_sortedIdSql == null) _sortedIdSql = getSortedIdSql(false);
       return _sortedIdSql;
   }
 
-  private String getSortedIdSql(boolean excludeViewFilters) throws WdkModelException, WdkUserException {
+  private String getSortedIdSql(boolean excludeViewFilters) throws WdkModelException {
 
-    String[] pkColumns = _question.getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
+    String[] pkColumns = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
 
     // get id sql
     String idSql = getIdSql(null, excludeViewFilters);
@@ -506,13 +505,13 @@ public class AnswerValue {
     return outputSql;
   }
 
-  public String getPagedIdSql() throws WdkModelException, WdkUserException {
+  public String getPagedIdSql() throws WdkModelException {
       return getPagedIdSql(false, false);
   }
 
-  private String getPagedIdSql(boolean excludeViewFilters, boolean includeRowIndex) throws WdkModelException, WdkUserException {
+  private String getPagedIdSql(boolean excludeViewFilters, boolean includeRowIndex) throws WdkModelException {
     String sortedIdSql = getSortedIdSql(excludeViewFilters);
-    DatabaseInstance platform = _question.getWdkModel().getAppDb();
+    DatabaseInstance platform = _answerSpec.getQuestion().getWdkModel().getAppDb();
     String sql = platform.getPlatform().getPagedSql(sortedIdSql, _startIndex, _endIndex, includeRowIndex);
 
     // add comments to the sql
@@ -523,44 +522,43 @@ public class AnswerValue {
     return sql;
   }
 
-  public String getIdSql() throws WdkModelException, WdkUserException {
+  public String getIdSql() throws WdkModelException {
       return getIdSql(null, false);
   }
 
-  private String getBaseIdSql() throws WdkModelException, WdkUserException {
+  private String getBaseIdSql() throws WdkModelException {
 
     // get base ID sql from query instance
     String innerSql = _idsQueryInstance.getSql();
     innerSql = " /* the ID query */" + innerSql;
 
     // add answer param columns
-    innerSql = applyAnswerParams(innerSql, _question.getParamMap(), _idsQueryInstance.getParamStableValues());
+    innerSql = applyAnswerParams(innerSql, _answerSpec.getQuestion().getParamMap(), _idsQueryInstance.getParamStableValues());
     innerSql = " /* answer param value cols applied on id query */ " + innerSql;
 
     return innerSql;
   }
 
-  protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException, WdkUserException {
+  protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException {
 
     // get base ID sql from query instance and answer params
     String innerSql = getBaseIdSql();
 
     // apply old-style answer filter
-    if (_filter != null) {
-      innerSql = _filter.applyFilter(_user, innerSql, _idsQueryInstance.getAssignedWeight());
+    if (_answerSpec.getLegacyFilter() != null) {
+      innerSql = _answerSpec.getLegacyFilter().applyFilter(_user, innerSql, _idsQueryInstance.getAssignedWeight());
       innerSql = " /* old filter applied on id query */ " + innerSql;
     }
 
     // apply "new" filters
-    if (_filterOptions != null) {
-      innerSql = applyFilters(innerSql, _filterOptions, excludeFilter);
+    if (!_answerSpec.getFilterOptions().isEmpty()) {
+      innerSql = applyFilters(innerSql, _answerSpec.getFilterOptions(), excludeFilter);
       innerSql = " /* new filter applied on id query */ " + innerSql;
     }
 
     // apply view filters if requested
-    boolean viewFiltersApplied = (_viewFilterOptions != null && _viewFilterOptions.getSize() > 0);
-    if (viewFiltersApplied && !excludeViewFilters) {
-      innerSql = applyFilters(innerSql, _viewFilterOptions, excludeFilter);
+    if (!_answerSpec.getViewFilterOptions().isEmpty() && !excludeViewFilters) {
+      innerSql = applyFilters(innerSql, _answerSpec.getViewFilterOptions(), excludeFilter);
       innerSql = " /* new view filter applied on id query */ " + innerSql;
     }
 
@@ -571,7 +569,7 @@ public class AnswerValue {
 
   }
 
-  private static String applyAnswerParams(String innerSql, Map<String, Param> paramMap, Map<String, String> paramStableValues) {
+  private static String applyAnswerParams(String innerSql, Map<String, Param> paramMap, ReadOnlyMap<String, String> paramValues) {
 
     // gather list of answer params for this question
     List<AnswerParam> answerParams = AnswerParam.getExposedParams(paramMap.values());
@@ -581,21 +579,21 @@ public class AnswerValue {
 
     // build list of columns to add, then join into string
     String extraCols = join(mapToList(answerParams, param ->
-      ", " + paramStableValues.get(param.getName()) + " as " + param.getName()), "");
+      ", " + paramValues.get(param.getName()) + " as " + param.getName()), "");
 
     // return wrapped innerSql including new columns
     return " select papidsql.*" + extraCols + " from ( " + innerSql + " ) papidsql ";
   }
 
   private String applyFilters(String innerSql, FilterOptionList filterOptions, String excludeFilter)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
 
     if (filterOptions != null) {
       for (FilterOption filterOption : filterOptions) {
         //logger.debug("applying FilterOption:" + filterOption.getJSON().toString(2));
         if (excludeFilter == null || !filterOption.getKey().equals(excludeFilter)) {
           if (!filterOption.isDisabled()) {
-            Filter filter = _question.getFilter(filterOption.getKey());
+            Filter filter = _answerSpec.getQuestion().getFilter(filterOption.getKey());
             innerSql = filter.getSql(this, innerSql, filterOption.getValue());
           }
         }
@@ -605,12 +603,12 @@ public class AnswerValue {
   }
 
   private void prepareSortingSqls(Map<String, String> sqls, Collection<String> orders)
-      throws WdkModelException, WdkUserException {
-    Map<String, AttributeField> fields = _question.getAttributeFieldMap();
+      throws WdkModelException {
+    Map<String, AttributeField> fields = _answerSpec.getQuestion().getAttributeFieldMap();
     Map<String, String> querySqls = new LinkedHashMap<String, String>();
     Map<String, String> queryNames = new LinkedHashMap<String, String>();
     Map<String, String> orderClauses = new LinkedHashMap<String, String>();
-    WdkModel wdkModel = _question.getWdkModel();
+    WdkModel wdkModel = _answerSpec.getQuestion().getWdkModel();
     LOG.debug("sorting map: " + _sortingMap);
     final String idQueryNameStub = "answer_id_query";
     queryNames.put(idQueryNameStub, "idq");
@@ -709,11 +707,11 @@ public class AnswerValue {
    */
   public void setSortingMap(Map<String, Boolean> sortingMap) throws WdkModelException {
     if (sortingMap == null) {
-      sortingMap = _question.getSortingAttributeMap();
+      sortingMap = _answerSpec.getQuestion().getSortingAttributeMap();
     }
     // make sure all sorting columns exist
     StringBuilder buffer = new StringBuilder("set sorting: ");
-    Map<String, AttributeField> attributes = _question.getAttributeFieldMap();
+    Map<String, AttributeField> attributes = _answerSpec.getQuestion().getAttributeFieldMap();
     Map<String, Boolean> validMap = new LinkedHashMap<String, Boolean>();
     for (String attributeName : sortingMap.keySet()) {
       buffer.append(attributeName + "=" + sortingMap.get(attributeName) + ", ");
@@ -725,7 +723,7 @@ public class AnswerValue {
         // + attributeName + "] doesn't exist in the answer of "
         // + "question " + question.getFullName());
         LOG.debug("Invalid sorting attribute: User #" + _user.getUserId() + ", question: '" +
-            _question.getFullName() + "', attribute: '" + attributeName + "'");
+            _answerSpec.getQuestion().getFullName() + "', attribute: '" + attributeName + "'");
       }
       else {
         validMap.put(attributeName, sortingMap.get(attributeName));
@@ -744,10 +742,11 @@ public class AnswerValue {
    * @throws WdkUserException
    */
   public Object[][] getPrimaryKeyValues() throws WdkModelException, WdkUserException {
-    String[] columns = _question.getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
+    String[] columns = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
     List<Object[]> buffer = new ArrayList<Object[]>();
 
-    try (ResultList resultList = (_filter == null ? _idsQueryInstance.getResults() : _filter.getResults(this))) {
+    try (ResultList resultList = (_answerSpec.getLegacyFilter() == null ?
+        _idsQueryInstance.getResults() : _answerSpec.getLegacyFilter().getResults(this))) {
       while (resultList.next()) {
         Object[] pkValues = new String[columns.length];
         for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {
@@ -759,24 +758,6 @@ public class AnswerValue {
       buffer.toArray(ids);
       return ids;
     }
-  }
-
-  public AnswerFilterInstance getFilter() {
-    return _filter;
-  }
-
-  public void setFilterInstance(String filterName) {
-    if (filterName != null) {
-      RecordClass recordClass = _question.getRecordClass();
-      setFilterInstance(recordClass.getFilterInstance(filterName));
-    }
-    else
-      _filter = null;
-  }
-
-  public void setFilterInstance(AnswerFilterInstance filter) {
-    _filter = filter;
-    reset();
   }
 
   private void reset() {
@@ -796,9 +777,9 @@ public class AnswerValue {
    */
   public List<String[]> getAllIds() throws WdkModelException, WdkUserException {
     String idSql = getSortedIdSql();
-    String[] pkColumns = _question.getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
+    String[] pkColumns = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
     List<String[]> pkValues = new ArrayList<String[]>();
-    WdkModel wdkModel = _question.getWdkModel();
+    WdkModel wdkModel = _answerSpec.getQuestion().getWdkModel();
     DataSource dataSource = wdkModel.getAppDb().getDataSource();
     ResultSet resultSet = null;
     try {
@@ -833,37 +814,28 @@ public class AnswerValue {
     reset();
   }
 
-  public void setFilterOptions(FilterOptionList filterOptions) {
-    _filterOptions = filterOptions;
-    reset();
-  }
-
-  public void setViewFilterOptions(FilterOptionList viewFilterOptions) {
-    LOG.info("setting options: " + this + " " + viewFilterOptions);
-    _viewFilterOptions = viewFilterOptions;
-    reset();
-  }
-
-  public FilterOptionList getFilterOptions() {
-    return _filterOptions;
-  }
-
-  public FilterOptionList getViewFilterOptions() {
-    return _viewFilterOptions;
-  }
-
-  public FilterSummary getFilterSummary(String filterName) throws WdkModelException, WdkUserException {
+  public FilterSummary getFilterSummary(String filterName) throws WdkModelException {
     // need to exclude the given filter from the idSql, so that the selection of the current filter won't
     // affect the background;
     String idSql = getIdSql(filterName, false);
-    Filter filter = _question.getFilter(filterName);
+    Filter filter = _answerSpec.getQuestion().getFilter(filterName);
     return filter.getSummary(this, idSql);
   }
   
-  public JSONObject getFilterSummaryJson(String filterName) throws WdkModelException, WdkUserException {
+  public JSONObject getFilterSummaryJson(String filterName) throws WdkModelException {
     String idSql = getIdSql(filterName, false);
-    Filter filter = _question.getFilter(filterName);
+    Filter filter = _answerSpec.getQuestion().getFilter(filterName);
     return filter.getSummaryJson(this, idSql);
+  }
+
+  @Deprecated
+  public AnswerFilterInstance getFilter() {
+    return _answerSpec.getLegacyFilter();
+  }
+
+  @Deprecated // should be removed once JSPs are purged
+  public Question getQuestion() {
+    return _answerSpec.getQuestion();
   }
 
 }

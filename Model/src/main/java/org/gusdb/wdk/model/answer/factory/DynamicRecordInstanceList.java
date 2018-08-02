@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.answer;
+package org.gusdb.wdk.model.answer.factory;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
@@ -52,7 +52,7 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
    */
   private void initPageRecordInstances() throws WdkModelException, WdkUserException {
     try {
-      Question question = _answerValue.getQuestion();
+      Question question = _answerValue.getAnswerSpec().getQuestion();
       String sql = _answerValue.getPagedIdSql();
       WdkModel wdkModel = question.getWdkModel();
       DatabaseInstance platform = wdkModel.getAppDb();
@@ -113,7 +113,7 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
   public void integrateAttributesQuery(Query attributeQuery) throws WdkModelException, WdkUserException {
     LOG.debug("Integrating attributes query " + attributeQuery.getFullName());
 
-    Question question = _answerValue.getQuestion();
+    Question question = _answerValue.getAnswerSpec().getQuestion();
     WdkModel wdkModel = question.getWdkModel();
 
     // has to get a clean copy of the attribute query, without pk params appended
@@ -190,7 +190,7 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
           "Start: " + _answerValue.getStartIndex() + ", End: " + _answerValue.getEndIndex() + NL +
           "Expected (page size): " + size() + ", Actual (returned from attribute query): " + count + NL + NL +
           "Paged attribute SQL:" + NL + sql + NL +
-          "Question: " + _answerValue.getQuestion().getFullName() + NL + NL + uncachedIdSql;
+          "Question: " + _answerValue.getAnswerSpec().getQuestion().getFullName() + NL + NL + uncachedIdSql;
           
       throw new WdkModelException(message);
     }
@@ -208,7 +208,7 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
     }
 
     // make table values
-    PrimaryKeyDefinition pkDef = _answerValue.getQuestion().getRecordClass().getPrimaryKeyDefinition();
+    PrimaryKeyDefinition pkDef = _answerValue.getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition();
     Query tableQuery = tableField.getWrappedQuery();
 
     while (resultList.next()) {

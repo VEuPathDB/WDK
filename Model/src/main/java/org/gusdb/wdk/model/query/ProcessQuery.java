@@ -1,13 +1,8 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query;
 
-import java.util.Map;
-
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -50,6 +45,12 @@ public class ProcessQuery extends Query {
     this.webServiceUrl = query.webServiceUrl;
     this.cacheInsertBatchSize = query.cacheInsertBatchSize;
     this.local = query.local;
+  }
+
+  @Override
+  protected ProcessQueryInstance makeInstance(User user, ReadOnlyMap<String,String> paramValues,
+      int assignedWeight) throws WdkModelException {
+    return new ProcessQueryInstance(user, this, paramValues, assignedWeight);
   }
 
   /**
@@ -95,12 +96,6 @@ public class ProcessQuery extends Query {
     return this.local;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#resolveReferences(org.gusdb.wdk.model
-   * .WdkModel)
-   */
   @Override
   public void resolveQueryReferences(WdkModel wdkModel)
       throws WdkModelException {
@@ -128,24 +123,6 @@ public class ProcessQuery extends Query {
     local = webServiceUrl.equals(ModelConfig.WSF_LOCAL);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#makeInstance()
-   */
-  @Override
-  public ProcessQueryInstance makeInstance(User user, Map<String, String> values,
-      boolean validate, int assignedWeight, Map<String, String> context)
-      throws WdkModelException, WdkUserException {
-    return new ProcessQueryInstance(user, this, values, validate,
-        assignedWeight, context);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsQuery, boolean extra)
       throws JSONException {
@@ -155,11 +132,6 @@ public class ProcessQuery extends Query {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#clone()
-   */
   @Override
   public Query clone() {
     return new ProcessQuery(this);

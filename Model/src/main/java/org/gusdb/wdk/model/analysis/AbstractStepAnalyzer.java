@@ -10,10 +10,11 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 
@@ -118,7 +119,7 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   public ValidationBundle validateFormParams(Map<String, String[]> formParams)
       throws WdkModelException, WdkUserException {
     // no validation
-    return ValidationBundle.builder().build();
+    return ValidationBundle.builder(ValidationLevel.NONE).build();
   }
 
   /**

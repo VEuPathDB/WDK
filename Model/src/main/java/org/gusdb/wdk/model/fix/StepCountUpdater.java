@@ -243,7 +243,7 @@ public class StepCountUpdater extends BaseCLI {
           }
           catch (Exception ex) {
             // don't need to update DB here since updating in finally
-            step.setValidFlag(false);
+            //step.setValidFlag(false); // RRD 7/23/18, all validity is runtime checked now...
           }
           finally {
             step.update(false);

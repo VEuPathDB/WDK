@@ -1,10 +1,8 @@
 package org.gusdb.wdk.model.query;
 
-import java.util.Map;
-
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.RecordClassReference;
@@ -202,11 +200,9 @@ public class BooleanQuery extends SqlQuery {
   }
 
   @Override
-  public BooleanQueryInstance makeInstance(User user, Map<String, String> values,
-      boolean validate, int assignedWeight, Map<String, String> context)
-      throws WdkModelException, WdkUserException {
-    return new BooleanQueryInstance(user, this, values, validate,
-        assignedWeight, context);
+  protected BooleanQueryInstance makeInstance(User user, ReadOnlyMap<String,String> paramValues,
+      int assignedWeight) throws WdkModelException {
+    return new BooleanQueryInstance(user, this, paramValues, assignedWeight);
   }
 
   @Override

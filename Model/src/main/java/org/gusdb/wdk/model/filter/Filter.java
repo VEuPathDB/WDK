@@ -4,7 +4,7 @@ import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.json.JSONObject;
@@ -94,7 +94,7 @@ public interface Filter {
    */
   JSONObject getDefaultValue(SimpleAnswerSpec simpleSpec);
   
-  String getDisplayValue(AnswerValue answer, JSONObject jsValue) throws WdkModelException, WdkUserException;
+  String getDisplayValue(AnswerValue answer, JSONObject jsValue) throws WdkModelException;
 
   /**
    * Get the summary model for the filter display. The summary model contains information that will be
@@ -108,7 +108,7 @@ public interface Filter {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  FilterSummary getSummary(AnswerValue answer, String idSql) throws WdkModelException, WdkUserException;
+  FilterSummary getSummary(AnswerValue answer, String idSql) throws WdkModelException;
 
   /**
    * Get a JSON formatted version of the summary model for the filter display.
@@ -118,7 +118,7 @@ public interface Filter {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  JSONObject getSummaryJson(AnswerValue answer, String idSql) throws WdkModelException, WdkUserException;
+  JSONObject getSummaryJson(AnswerValue answer, String idSql) throws WdkModelException;
   
   /**
    * Get the wrapped ID SQL from the filter, with the filter value applied to the SQL as where clauses.
@@ -131,10 +131,8 @@ public interface Filter {
    *          the actual filter value.
    * @return
    * @throws WdkModelException
-   * @throws WdkUserException
    */
-  String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException,
-      WdkUserException;
+  String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException;
   
   /**
    * return true if supplied value equals default value for the given step.  return false if no default value.

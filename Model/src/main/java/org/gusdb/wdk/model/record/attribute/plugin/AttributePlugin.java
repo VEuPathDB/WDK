@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.record.attribute.plugin;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.user.Step;
 
@@ -34,6 +35,6 @@ public interface AttributePlugin {
 
   void setAttributeField(AttributeField attribute);
 
-  Map<String, Object> process(Step step) throws WdkModelException;
+  Map<String, Object> process(AnswerValue answerValue) throws WdkModelException;
 
 }

@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.answer.single;
 
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
+import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,11 +13,12 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.ResultSizeFactory;
-import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -36,11 +38,12 @@ public class SingleRecordAnswerValue extends AnswerValue {
   private RecordClass _recordClass;
   private Map<String, Object> _pkMap;
 
-  public SingleRecordAnswerValue(User user, RecordClass recordClass,
-      Question question, Map<String, Object> pkMap) {
-    super(user, question, null, 1, 1, Collections.EMPTY_MAP, null);
-    _recordClass = recordClass;
-    _pkMap = pkMap;
+  public SingleRecordAnswerValue(User user, SemanticallyValid<AnswerSpec> validSpec) throws WdkModelException {
+    super(user, validSpec, 1, 1, Collections.EMPTY_MAP);
+    SingleRecordQuestion question = (SingleRecordQuestion)validSpec.getObject().getQuestion();
+    SingleRecordQuestionParam param = question.getParam();
+    _recordClass = question.getRecordClass();
+    _pkMap = swallowAndGet(() -> param.parseParamValue(validSpec.getObject().getQueryInstanceSpec().get(param.getName())));
     _resultSizeFactory = new SingleRecordResultSizeFactory(this);
   }
 
@@ -54,13 +57,19 @@ public class SingleRecordAnswerValue extends AnswerValue {
   }
 
   @Override
-  public AnswerValue cloneWithNewPaging(int startIndex, int endIndex) {
-    // paging is irrelevant since there's only one record
+  public AnswerValue clone() {
+    // paging/sorting is irrelevant since there's only one record
     return this;
   }
 
   @Override
-  protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException, WdkUserException {
+  public AnswerValue cloneWithNewPaging(int startIndex, int endIndex) {
+    // paging/sorting is irrelevant since there's only one record
+    return this;
+  }
+
+  @Override
+  protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException {
     DBPlatform platform = _recordClass.getWdkModel().getAppDb().getPlatform();
     return new StringBuilder("( select ")
       .append(join(mapToList(_pkMap.entrySet(), pkColumnValue -> {
@@ -75,7 +84,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
   }
 
   @Override
-  protected String getNoFiltersIdSql() throws WdkModelException, WdkUserException {
+  protected String getNoFiltersIdSql() throws WdkModelException {
     // no filters can be applied to single-record questions/answers
     return getIdSql();
   }
@@ -102,7 +111,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
   @Override
   public Map<String, String> getParamDisplays() {
     return new MapBuilder<String,String>(
-        SingleRecordQuestion.PRIMARY_KEY_PARAM_NAME,
+        SingleRecordQuestionParam.PRIMARY_KEY_PARAM_NAME,
         join(_pkMap.values().toArray(), ",")
     ).toMap();
   }

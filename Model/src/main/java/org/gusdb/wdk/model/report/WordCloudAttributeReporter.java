@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.attribute.plugin.WordCloudAttributePlugin;
 import org.gusdb.wdk.model.record.attribute.plugin.WordTag;

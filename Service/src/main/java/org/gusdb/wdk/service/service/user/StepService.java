@@ -158,18 +158,18 @@ public class StepService extends UserService {
 
     // check for param or filter changes
     AnswerSpec answerSpec = stepRequest.getAnswerSpec();
-    Map<String,ParamValue> newParamValues = answerSpec.getParamValues();
-    Map<String,String> oldParamValues = step.getParamValues();
+    Map<String,ParamValue> newParamValues = answerSpec.getQueryInstanceSpec();
+    Map<String,String> oldParamValues = step.getQueryInstanceSpec();
     for (String paramName : newParamValues.keySet()) {
       if (nullSafeEquals(oldParamValues.get(paramName), newParamValues.get(paramName).getObjectValue())) paramFiltersChanged = true;
       step.setParamValue(paramName, (String)newParamValues.get(paramName).getObjectValue());
     }
     if (nullSafeEquals(step.getFilter(), answerSpec.getLegacyFilter())) paramFiltersChanged = true;
     step.setFilterName(answerSpec.getLegacyFilter() == null ? null : answerSpec.getLegacyFilter().getName());
-    if (nullSafeEquals(step.getFilterOptions(), answerSpec.getFilterValues())) paramFiltersChanged = true;
-    step.setFilterOptions(answerSpec.getFilterValues());
-    if (nullSafeEquals(step.getViewFilterOptions(), answerSpec.getViewFilterValues())) paramFiltersChanged = true;
-    step.setViewFilterOptions(answerSpec.getViewFilterValues());
+    if (nullSafeEquals(step.getFilterOptions(), answerSpec.getFilterOptions())) paramFiltersChanged = true;
+    step.setFilterOptions(answerSpec.getFilterOptions());
+    if (nullSafeEquals(step.getViewFilterOptions(), answerSpec.getViewFilterOptions())) paramFiltersChanged = true;
+    step.setViewFilterOptions(answerSpec.getViewFilterOptions());
 
     // check for metadata changes and assign new values
     if (nullSafeEquals(step.getCustomName(), stepRequest.getCustomName())) metadataChanged = true;
@@ -222,10 +222,10 @@ public class StepService extends UserService {
     // new step must be created from raw spec
     AnswerSpec answerSpec = stepRequest.getAnswerSpec();
     Step step = stepFactory.createStep(user, answerSpec.getQuestion(),
-        AnswerValueFactory.convertParams(answerSpec.getParamValues()),
-        answerSpec.getLegacyFilter(), answerSpec.getFilterValues(), answerSpec.getWeight(), false,
+        AnswerValueFactory.convertParams(answerSpec.getQueryInstanceSpec()),
+        answerSpec.getLegacyFilter(), answerSpec.getFilterOptions(), answerSpec.getAssignedWeight(), false,
         stepRequest.getCustomName(), stepRequest.isCollapsible(), stepRequest.getCollapsedName(), null);
-    step.setViewFilterOptions(answerSpec.getViewFilterValues());
+    step.setViewFilterOptions(answerSpec.getViewFilterOptions());
     step.saveParamFilters();
     return step;
   }

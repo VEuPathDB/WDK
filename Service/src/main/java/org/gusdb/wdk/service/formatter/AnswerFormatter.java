@@ -14,7 +14,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonWriter;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStreamFactory;
 import org.gusdb.wdk.model.record.RecordInstance;
