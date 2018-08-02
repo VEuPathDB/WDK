@@ -8,9 +8,12 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.WdkModelBase;
+import org.gusdb.wdk.model.RngAnnotations.RngRequired;
+import org.gusdb.wdk.model.RngAnnotations.RngOptional;
+import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.record.ScopedField;
 
 /**
@@ -52,6 +55,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
    * @param implementation
    *          the implementation to set
    */
+  @RngOptional
   public void setImplementation(String implementation) {
     this.implementation = implementation;
   }
@@ -67,6 +71,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
    * @param name
    *          the name to set
    */
+  @RngOptional
   public void setName(String name) {
     this.name = name;
   }
@@ -89,6 +94,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
    * @param displayName
    *          the displayName to set
    */
+  @RngOptional
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
   }
@@ -111,6 +117,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
    * @param inReportMaker
    *          the inReportMaker to set
    */
+  @RngOptional
   public void setInReportMaker(boolean inReportMaker) {
     this.inReportMaker = inReportMaker;
   }
@@ -127,13 +134,15 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
   }
   
   /**
-   * @param scope
+   * @param scopes
    *          comma-separated list of scopes that reporter is visible
    */
+  @RngOptional
   public void setScopes(String scopes) {
     this.scopes = scopes;
   }
 
+  @RngOptional
   public void setDescription(WdkModelText description) {
     this.description = description.getText();
   }
@@ -169,6 +178,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
     propertyList = null;
   }
 
+  @RngUndefined
   public void setResources(WdkModel wdkModel) {
     this._wdkModel = wdkModel;
   }
