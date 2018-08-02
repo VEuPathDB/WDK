@@ -26,6 +26,7 @@ import {
   QuestionWithParameters,
   RecordClass,
   RecordInstance,
+  Reporter,
   TreeBoxVocabNode,
   UserDataset,
   UserDatasetMeta,
@@ -279,10 +280,22 @@ const paramGroupDecoder: Decode.Decoder<ParameterGroup> =
     Decode.field('parameters', Decode.arrayOf(Decode.string))
   )
 
+const reporterDecoder: Decode.Decoder<Reporter> =
+  Decode.combine(
+    Decode.field('name', Decode.string),
+    Decode.field('type', Decode.string),
+    Decode.field('displayName', Decode.string),
+    Decode.field('description', Decode.string),
+    Decode.field('isInReport', Decode.boolean),
+    // TODO Replace with list of known scopes
+    Decode.field('scopes', Decode.arrayOf(Decode.string)),
+  )
+
 const attributeFieldDecoder: Decode.Decoder<AttributeField> =
   Decode.combine(
     Decode.field('name', Decode.string),
     Decode.field('displayName', Decode.string),
+    Decode.field('formats', Decode.arrayOf(reporterDecoder)),
     Decode.field('properties', Decode.optional(Decode.objectOf(Decode.arrayOf(Decode.string)))),
     Decode.field('help', Decode.optional(Decode.string)),
     Decode.field('align', Decode.optional(Decode.string)),

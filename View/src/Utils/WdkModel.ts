@@ -214,6 +214,7 @@ export interface AttributeField extends ModelEntity {
   isRemovable: boolean;
   type?: string;
   truncateTo: number;
+  formats: Reporter[];
 }
 
 export interface TableField extends ModelEntity {
