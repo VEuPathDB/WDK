@@ -3,13 +3,14 @@ import { Observable } from 'rxjs';
 import { Action, EpicServices, makeActionCreator } from 'Utils/ActionCreatorUtils';
 import { Reporter } from 'Utils/WdkModel';
 import { ServiceError } from 'Utils/WdkService';
+import { PluginContext } from 'Utils/ClientPlugin';
 
 // Actions
 // -------
 
 // Scoped analysis action
 export const ScopedAnalysisAction =
-  makeActionCreator<{ action: Action, reporter: Reporter, stepId: number }, 'attribute-reporter/scoped-action'>('attribute-reporter/scoped-action');
+  makeActionCreator<{ action: Action, reporter: Reporter, stepId: number, context: PluginContext }, 'attribute-reporter/scoped-action'>('attribute-reporter/scoped-action');
 
 // Report requested
 export const AttributeReportRequested =
@@ -28,6 +29,12 @@ export const AttributeReportFailed =
 // Report cancelled
 export const AttributeReportCancelled =
   makeActionCreator('attribute-reporter/cancelled')
+
+export const TablePaged =
+  makeActionCreator<number, 'attribute-reporter/table-paged'>('attribute-reporter/table-paged');
+
+export const TableRowsPerPageChanged =
+  makeActionCreator<number, 'attribute-reporter/table-rows-per-page-changed'>('attribute-reporter/table-rows-per-page-changed');
 
 export const TableSorted =
   makeActionCreator<{ key: string, direction: 'asc' | 'desc' }, 'attribute-reporter/table-sorted'>('attribute-reporter/table-sorted');

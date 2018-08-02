@@ -1,23 +1,24 @@
 /* global __DEV__ */
-import {identity, isString, mapValues, values} from 'lodash';
-import {createElement} from 'react';
+import { createBrowserHistory } from 'history';
+import stringify from 'json-stable-stringify';
+import { identity, isString, mapValues, memoize, values } from 'lodash';
+import { createElement } from 'react';
 import * as ReactDOM from 'react-dom';
-import {createBrowserHistory} from 'history';
-
-import Dispatcher from 'Core/State/Dispatcher';
-import WdkService from 'Utils/WdkService';
-import { getTransitioner } from 'Utils/PageTransitioner';
-import { createMockHistory } from 'Utils/MockHistory';
-import { getDispatchActionMaker } from 'Utils/DispatchAction';
-import Root from 'Core/Root';
-import { loadAllStaticData } from 'Core/ActionCreators/StaticDataActionCreators';
-import { updateLocation } from 'Core/ActionCreators/RouterActionCreators';
-import WdkStore from 'Core/State/Stores/WdkStore';
 
 import * as Components from 'Components';
-import * as Stores from 'Core/State/Stores';
+import { updateLocation } from 'Core/ActionCreators/RouterActionCreators';
+import { loadAllStaticData } from 'Core/ActionCreators/StaticDataActionCreators';
 import * as Controllers from 'Core/Controllers';
+import Root from 'Core/Root';
 import wdkRoutes from 'Core/routes';
+import Dispatcher from 'Core/State/Dispatcher';
+import * as Stores from 'Core/State/Stores';
+import WdkStore from 'Core/State/Stores/WdkStore';
+import { ClientPluginRegistryEntry, mergePluginsByType, PluginContext } from 'Utils/ClientPlugin'; // eslint-disable-line no-unused-vars
+import { getDispatchActionMaker } from 'Utils/DispatchAction';
+import { createMockHistory } from 'Utils/MockHistory';
+import { getTransitioner } from 'Utils/PageTransitioner';
+import WdkService from 'Utils/WdkService';
 
 /**
  * Initialize the application.
@@ -38,9 +39,10 @@ import wdkRoutes from 'Core/routes';
  * @param {Function} options.onLocationChange Callback function called whenever
  *   the location of the page changes. The function is called with a Location
  *   object.
+ * @param {ClientPluginRegistryEntry[]} options.pluginConfig
  */
 export function initialize(options) {
-  let { rootUrl, rootElement, endpoint, wrapRoutes = identity, storeWrappers, onLocationChange } = options;
+  let { rootUrl, rootElement, endpoint, wrapRoutes = identity, storeWrappers, onLocationChange, pluginConfig = [] } = options;
 
   if (!isString(rootUrl)) throw new Error(`Expected rootUrl to be a string, but got ${typeof rootUrl}.`);
   if (!isString(endpoint)) throw new Error(`Expected endpoint to be a string, but got ${typeof endpoint}.`);
@@ -56,7 +58,8 @@ export function initialize(options) {
   let services = { wdkService, transitioner };
   let dispatcher = new Dispatcher();
   let makeDispatchAction = getDispatchActionMaker(dispatcher, services);
-  let stores = configureStores(dispatcher, storeWrappers, services);
+  let locatePlugin = makeLocatePlugin(pluginConfig);
+  let stores = configureStores(dispatcher, storeWrappers, services, locatePlugin);
 
   // load static WDK data into service cache and view stores that need it
   let dispatchAction = makeDispatchAction('global');
@@ -83,7 +86,8 @@ export function initialize(options) {
             stores,
             history,
             routes: wrapRoutes(wdkRoutes),
-            onLocationChange: handleLocationChange
+            onLocationChange: handleLocationChange,
+            locatePlugin
           });
         ReactDOM.render(applicationElement, container);
       }
@@ -97,7 +101,23 @@ export function initialize(options) {
   }
 
   // return WDK application components
-  return { wdkService, dispatchAction, stores, makeDispatchAction, history };
+  return { wdkService, dispatchAction, stores, makeDispatchAction, history, locatePlugin };
+}
+
+/**
+ * 
+ * @param {ClientPluginRegistryEntry[]} pluginConfig
+ */
+function makeLocatePlugin(pluginConfig) {
+  return memoize(locatePlugin, stringify);
+
+  /**
+   * 
+   * @param {string} type 
+   */
+  function locatePlugin(type) {
+    return mergePluginsByType(pluginConfig, type);
+  }
 }
 
 /**
@@ -106,14 +126,14 @@ export function initialize(options) {
  * @param {Dispatcher} dispatcher
  * @param {Object} storeWrappers Named functions that return store override classes
  */
-function configureStores(dispatcher, storeWrappers, services) {
+function configureStores(dispatcher, storeWrappers, services, locatePlugin) {
   const storeProviderTupleByKey = wrapStores(storeWrappers);
   const GlobalDataStore = storeProviderTupleByKey.GlobalDataStore[1];
   const globalDataStore = new GlobalDataStore(dispatcher);
   return new Map(Object.entries(storeProviderTupleByKey)
     .filter(([key]) => key !== 'GlobalDataStore')
     .map(([key, [Store, Provider]]) =>
-      [Store, new Provider(dispatcher, key, globalDataStore, services)]))
+      [Store, new Provider(dispatcher, key, globalDataStore, services, locatePlugin)]))
 }
 
 /**

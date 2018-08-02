@@ -64,7 +64,7 @@ var primaryConfig = {
       'whatwg-fetch',
       './webapp/wdk/css/wdk.css',
       './src/Core/Style/index.scss',
-      './src/Core/index.js'
+      './src/Core/index.ts'
     ],
     'wdk': [
       './webapp/wdk/css/wdk.css',
