@@ -4,6 +4,8 @@ import static org.gusdb.wdk.model.report.ReporterRef.WDK_SERVICE_JSON_REPORTER_R
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -26,6 +28,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 import org.gusdb.wdk.model.report.ReporterFactory;
@@ -182,7 +185,7 @@ public class AnswerService extends WdkService {
     }
 
     // check to make sure format name is valid for this recordclass
-    if (!answerValue.getQuestion().getRecordClass().getReporterMap().keySet().contains(format)) {
+    if (!answerValue.getQuestion().getReporterMap().keySet().contains(format)) {
       throw new DataValidationException("Request for an invalid answer format: " + format);
     }
 

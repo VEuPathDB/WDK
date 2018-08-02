@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.report;
 
+import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
@@ -38,6 +39,7 @@ public class AttributeReporterRef extends ReporterRef {
     }
   }
 
+  @RngUndefined
   public void setAttributeField(AttributeField attributeField) {
     _attributeField = attributeField;
   }

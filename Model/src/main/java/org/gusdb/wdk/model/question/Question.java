@@ -41,6 +41,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
+import org.gusdb.wdk.model.report.ReporterRef;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferences;
 
@@ -458,6 +459,17 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   public String getRecordClassName() {
     return _recordClassRef;
   }
+
+  public Map<String, ReporterRef> getReporterMap() {
+    Map<String, ReporterRef> reporterMap = new LinkedHashMap<>();
+    // Add record class reporters first, reporters from questions second. This way question reporters
+    // will override record class reporters.
+    reporterMap.putAll(_recordClass.getReporterMap());
+    for (AttributeField dynAttr : _dynamicAttributeSet.getAttributeFieldMap().values()) {
+      reporterMap.putAll(dynAttr.getReporters());
+    }
+    return reporterMap;
+}
 
   public Query getQuery() {
     return _query;

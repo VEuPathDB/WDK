@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.record;
 import static org.gusdb.wdk.model.AttributeMetaQueryHandler.getDynamicallyDefinedAttributes;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +21,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.plugin.DynamicAttributePluginReference;
+import org.gusdb.wdk.model.report.DynamicAttributeReporterReference;
 
 /**
  * <p>
@@ -71,7 +71,7 @@ public class AttributeQueryReference extends Reference {
 
   /**
    * Sets an optional reference to a dynamic columns query
-   * @param dynamic columns query ref of the form "set.element"
+   * @param attributeMetaQueryRef dynamic columns query ref of the form "set.element"
    */
   public void setAttributeMetaQueryRef(String attributeMetaQueryRef) {
     _attributeMetaQueryRef = attributeMetaQueryRef;
@@ -110,18 +110,16 @@ public class AttributeQueryReference extends Reference {
         AttributeMetaQueryHandler.populate(attributeField, row);
 
         // Populate the attribute plugin if present
-        DynamicAttributePluginReference plugin = AttributeMetaQueryHandler.populate(new DynamicAttributePluginReference(), row);
-        if (plugin.getName() != null) {
+        DynamicAttributeReporterReference reporter = AttributeMetaQueryHandler.populate(new DynamicAttributeReporterReference(), row);
+        if (reporter.getReferenceName() != null) {
+          reporter.setAttributeField(attributeField);
+          reporter.setScopes("");
           // plugin specified for this attribute
-          if (!plugin.hasAllDynamicFields()) {
-            throw new WdkModelException("Dynamic attribute plugin '" + plugin.getName() +
-                "' is missing at least one plugin field.  Configured values: " + plugin.getDynamicFieldsAsString());
+          if (!reporter.hasAllDynamicFields()) {
+            throw new WdkModelException("Dynamic attribute plugin '" + reporter.getName() +
+                "' is missing at least one plugin field.  Configured values: " + reporter.getDynamicFieldsAsString());
           }
-          // properties are allowed to be null, but if they are, we need to assign an empty map
-          if (!plugin.hasBeenAssignedProperties()) {
-            plugin.setProperties(Collections.EMPTY_MAP);
-          }
-          attributeField.addAttributePluginReference(plugin);
+          attributeField.addReporterReference(reporter);
         }
 
         attributeFieldMap.put(attributeField.getName(), attributeField);

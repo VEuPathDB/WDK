@@ -26,7 +26,7 @@ import org.gusdb.wdk.model.ontology.OntologyAttribute;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
-import org.gusdb.wdk.model.record.attribute.plugin.DynamicAttributePluginReference;
+import org.gusdb.wdk.model.report.DynamicAttributeReporterReference;
 
 /**
  * This class contains a method to populate the column and attribute field objects associated with a database
@@ -41,7 +41,7 @@ public class AttributeMetaQueryHandler {
   public static final boolean CACHE_META_QUERY_RESULTS = true;
 
   private static final List<Class<?>> CLIENT_CLASSES = Arrays.asList(new Class<?>[] {
-      Column.class, QueryColumnAttributeField.class, DynamicAttributePluginReference.class, OntologyAttribute.class
+      Column.class, QueryColumnAttributeField.class, DynamicAttributeReporterReference.class, OntologyAttribute.class
   });
 
   private AttributeMetaQueryHandler() {}
