@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.json.JSONObject;
 
@@ -36,7 +36,7 @@ public abstract class SqlColumnFilter extends ColumnFilter {
 	 * @throws WdkUserException
 	 */
 	public abstract String getFilterSql(String inputSql, JSONObject jsValue)
-			throws WdkModelException, WdkUserException;
+			throws WdkModelException;
 	
 	/**
 	 * 
@@ -46,15 +46,13 @@ public abstract class SqlColumnFilter extends ColumnFilter {
 	 * @throws WdkUserException
 	 */
 	public abstract String getSummarySql (String inputSql)
-			throws WdkModelException, WdkUserException;
+			throws WdkModelException;
 	
 	@Override
-	public abstract String getDisplayValue(AnswerValue answer, JSONObject jsValue)
-			throws WdkModelException, WdkUserException;
+	public abstract String getDisplayValue(AnswerValue answer, JSONObject jsValue) throws WdkModelException;
 
 	@Override
-	public FilterSummary getSummary(AnswerValue answer, String idSql)
-			throws WdkModelException, WdkUserException {
+	public FilterSummary getSummary(AnswerValue answer, String idSql) throws WdkModelException {
 	    String attributeSql = getAttributeSql(answer, idSql);
 
 	    Map<String, Integer> counts = new LinkedHashMap<>();
@@ -63,7 +61,7 @@ public abstract class SqlColumnFilter extends ColumnFilter {
 	    String sql = getSummarySql(attributeSql);
 	    
 	    ResultSet resultSet = null;
-	    DataSource dataSource = answer.getQuestion().getWdkModel().getAppDb().getDataSource();
+	    DataSource dataSource = answer.getAnswerSpec().getQuestion().getWdkModel().getAppDb().getDataSource();
 	    try {
 	      resultSet = SqlUtils.executeQuery(dataSource, sql, getKey() + "-summary");
 	      while (resultSet.next()) {
@@ -85,7 +83,7 @@ public abstract class SqlColumnFilter extends ColumnFilter {
 
 	@Override
 	public String getSql(AnswerValue answer, String idSql, JSONObject jsValue)
-			throws WdkModelException, WdkUserException {
+			throws WdkModelException {
 		
 		String attributeSql = getAttributeSql(answer, idSql);
 		String columnName = _attribute.getName();
@@ -94,7 +92,7 @@ public abstract class SqlColumnFilter extends ColumnFilter {
 		StringBuilder sql = new StringBuilder("SELECT idq.*, aq. " + columnName);
 
 		// need to join with idsql here to get extra (dynamic) columns from idq
-		String[] pkColumns = answer.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
+		String[] pkColumns = answer.getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
 		sql.append(" FROM (" + idSql + ") idq, (" + attributeSql + ") aq ");
 		for (int i = 0; i < pkColumns.length; i++) {
 			sql.append((i == 0) ? " WHERE " : " AND ");

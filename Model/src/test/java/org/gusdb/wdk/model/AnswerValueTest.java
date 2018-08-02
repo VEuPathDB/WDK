@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;

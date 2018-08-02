@@ -28,7 +28,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.query.Query;
@@ -128,7 +128,7 @@ public class FileBasedRecordStream implements RecordStream {
    */
   private static Path createTemporaryDirectory(AnswerValue answerValue) throws WdkModelException {
     try {
-      String wdkTempDir = answerValue.getQuestion().getWdkModel().getModelConfig().getWdkTempDir();
+      String wdkTempDir = answerValue.getWdkModel().getModelConfig().getWdkTempDir();
       return IoUtil.createOpenPermsTempDir(Paths.get(wdkTempDir), DIRECTORY_PREFIX);
     }
     catch (IOException ioe) {
@@ -287,11 +287,11 @@ public class FileBasedRecordStream implements RecordStream {
       String sql = answerValue.getPagedAttributeSql(query, true);
 
       // Get the result list for the current attribute query
-      DataSource dataSource = answerValue.getQuestion().getWdkModel().getAppDb().getDataSource();
+      DataSource dataSource = answerValue.getWdkModel().getAppDb().getDataSource();
       resultList = new SqlResultList(SqlUtils.executeQuery(dataSource, sql, query.getFullName() + "__attr-full"));
 
       // Generate full list of columns to fetch, including both PK columns and requested columns
-      List<String> columnsToTransfer = new ListBuilder<String>(answerValue.getQuestion()
+      List<String> columnsToTransfer = new ListBuilder<String>(answerValue.getAnswerSpec().getQuestion()
           .getRecordClass().getPrimaryKeyDefinition().getColumnRefs())
           .addAll(Functions.mapToList(attributeFields, Named.TO_NAME))
           .toList();
@@ -376,9 +376,6 @@ public class FileBasedRecordStream implements RecordStream {
       filePath.toFile().setWritable(true, false);
       return new TwoTuple<Path,List<String>>(filePath, columnNames);
     }
-    catch (WdkUserException e) {
-      throw new WdkModelException("Unable to transfer attribute query result to CSV file", e);
-    }
     finally {
       // Close the result list for the table query if one exists.
       if (resultList != null) {
@@ -394,7 +391,7 @@ public class FileBasedRecordStream implements RecordStream {
    * @return list of column names for primary key
    */
   private static List<String> getPkColumnNames(AnswerValue answerValue) {
-    return Arrays.asList(answerValue.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs());
+    return Arrays.asList(answerValue.getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs());
   }
 
   /**

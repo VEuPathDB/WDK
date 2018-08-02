@@ -132,7 +132,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
    */
   public StepBean createStep(Long strategyId, QuestionBean question, Map<String, String> params,
-      String filterName, boolean deleted, int assignedWeight) throws WdkModelException {
+      String filterName, boolean deleted, int assignedWeight) throws WdkModelException, WdkUserException {
     Step step = StepUtilities.createStep(_user, strategyId, question._question, params, filterName, deleted,
         assignedWeight);
     return new StepBean(this, step);
@@ -441,12 +441,13 @@ public class UserBean {
    * @param useBooleanFilter
    * @param filter
    * @return
+   * @throws WdkUserException 
    * @see org.gusdb.wdk.model.user.User#createBooleanStep(org.gusdb.wdk.model.user.Step,
    *      org.gusdb.wdk.model.user.Step, org.gusdb.wdk.model.BooleanOperator, boolean,
    *      org.gusdb.wdk.model.AnswerFilterInstance)
    */
   public StepBean createBooleanStep(int strategyId, StepBean previousStep, StepBean childStep,
-      String operator, String filterName) throws WdkModelException {
+      String operator, String filterName) throws WdkModelException, WdkUserException {
     Step step = StepUtilities.createBooleanStep(_user, strategyId, previousStep.step, childStep.step, operator, filterName);
     return new StepBean(this, step);
   }

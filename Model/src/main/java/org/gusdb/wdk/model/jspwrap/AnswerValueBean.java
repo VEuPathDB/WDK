@@ -9,13 +9,15 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.AnswerValueAttributes;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList;
+import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
 import org.gusdb.wdk.model.filter.FilterSummary;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -103,7 +105,7 @@ public class AnswerValueBean {
     }
 
     public Map<String, String> getInternalParams() {
-        return answerValue.getIdsQueryInstance().getParamStableValues();
+        return answerValue.getIdsQueryInstance().getParamStableValues().toWriteableMap();
     }
 
     public String getChecksum() throws WdkModelException, WdkUserException {
@@ -111,14 +113,14 @@ public class AnswerValueBean {
     }
 
     /**
-     * @return opertation for boolean answer
+     * @return operation for boolean answer
      */
     public String getBooleanOperation() {
         if (!getIsBoolean()) {
             throw new RuntimeException("getBooleanOperation can not be called"
                     + " on simple AnswerBean");
         }
-        Map<String, String> params = answerValue.getIdsQueryInstance().getParamStableValues();
+        ReadOnlyMap<String, String> params = answerValue.getIdsQueryInstance().getParamStableValues();
         return params.get(BooleanQuery.OPERATOR_PARAM);
     }
 
@@ -134,7 +136,7 @@ public class AnswerValueBean {
                     + " on simple AnswerBean");
         }
         AnswerParam param = null;
-        Map<String, String> params = answerValue.getIdsQueryInstance().getParamStableValues();
+        ReadOnlyMap<String, String> params = answerValue.getIdsQueryInstance().getParamStableValues();
         if (getIsBoolean()) {
             BooleanQuery query = (BooleanQuery) answerValue.getIdsQueryInstance().getQuery();
             param = query.getLeftOperandParam();
@@ -168,7 +170,7 @@ public class AnswerValueBean {
                     + " on simple AnswerBean");
         }
         BooleanQuery query = (BooleanQuery) answerValue.getIdsQueryInstance().getQuery();
-        Map<String, String> params = answerValue.getIdsQueryInstance().getParamStableValues();
+        ReadOnlyMap<String, String> params = answerValue.getIdsQueryInstance().getParamStableValues();
         AnswerParam param = query.getRightOperandParam();
         String stableValue = params.get(param.getName());
         User user = answerValue.getUser();
@@ -188,7 +190,7 @@ public class AnswerValueBean {
         return answerValue.getResultSizeFactory().getResultSize();
     }
 
-    public int getDisplayResultSize() throws WdkModelException, WdkUserException {
+    public int getDisplayResultSize() throws WdkModelException {
         return answerValue.getResultSizeFactory().getDisplayResultSize();
     }
 
@@ -210,11 +212,11 @@ public class AnswerValueBean {
     }
 
     public RecordClassBean getRecordClass() {
-        return new RecordClassBean(answerValue.getQuestion().getRecordClass());
+        return new RecordClassBean(answerValue.getAnswerSpec().getQuestion().getRecordClass());
     }
 
     public QuestionBean getQuestion() throws WdkModelException {
-        return new QuestionBean(answerValue.getQuestion());
+        return new QuestionBean(answerValue.getAnswerSpec().getQuestion());
     }
 
     /**
@@ -279,7 +281,7 @@ public class AnswerValueBean {
     }
 
     public AttributeFieldBean[] getAllReportMakerAttributes() {
-        Question question = answerValue.getQuestion();
+        Question question = answerValue.getAnswerSpec().getQuestion();
         Map<String, AttributeField> attribs = question.getAttributeFieldMap(FieldScope.REPORT_MAKER);
         Iterator<String> ai = attribs.keySet().iterator();
         Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
@@ -295,7 +297,7 @@ public class AnswerValueBean {
 
 	  // adding "yes" will hint RecordClass to use table display names 
     public TableFieldBean[] getAllReportMakerTables() {
-        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+        RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
         Map<String, TableField> tables = recordClass.getTableFieldMap(FieldScope.REPORT_MAKER, true);
         // sorting alphabetically by internal table name
         Map<String, TableField> treeMapTables = new TreeMap<String, TableField>(tables);
@@ -332,7 +334,7 @@ public class AnswerValueBean {
     }
 
     public boolean getIsDynamic() {
-        return answerValue.getQuestion().isDynamic();
+        return answerValue.getAnswerSpec().getQuestion().isDynamic();
     }
 
     /*
@@ -348,7 +350,7 @@ public class AnswerValueBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerValue#getSortingAttributeNames()
+     * @see org.gusdb.wdk.model.answer.factory.AnswerValue#getSortingAttributeNames()
      */
     public String[] getSortingAttributeNames() {
         Map<String, Boolean> sortingFields = answerValue.getSortingMap();
@@ -359,7 +361,7 @@ public class AnswerValueBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerValue#getSortingAttributeOrders()
+     * @see org.gusdb.wdk.model.answer.factory.AnswerValue#getSortingAttributeOrders()
      */
     public boolean[] getSortingAttributeOrders() {
         Map<String, Boolean> sortingFields = answerValue.getSortingMap();
@@ -390,10 +392,6 @@ public class AnswerValueBean {
     	return answerValue.getAttributes().getReportMakerAttributeTree();
     }
 
-    public void setFilter(String filterName) {
-        answerValue.setFilterInstance(filterName);
-    }
-
     public int getFilterSize(String filterName)
             throws WdkModelException, WdkUserException {
         return answerValue.getResultSizeFactory().getFilterSize(filterName);
@@ -413,7 +411,7 @@ public class AnswerValueBean {
     }
 
     public AnswerFilterInstanceBean getFilter() {
-        AnswerFilterInstance filter = answerValue.getFilter();
+        AnswerFilterInstance filter = answerValue.getAnswerSpec().getLegacyFilter();
         if (filter == null) return null;
         return new AnswerFilterInstanceBean(filter);
     }
@@ -425,7 +423,7 @@ public class AnswerValueBean {
     /**
      * @return
      * @throws WdkUserException 
-     * @see org.gusdb.wdk.model.AnswerValue#getAllPkValues()
+     * @see org.gusdb.wdk.model.answer.factory.AnswerValue#getAllPkValues()
      */
     public String getAllIdList() throws WdkModelException, WdkUserException {
         List<String[]> pkValues = answerValue.getAllIds();
@@ -446,7 +444,7 @@ public class AnswerValueBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerValue#getEndIndex()
+     * @see org.gusdb.wdk.model.answer.factory.AnswerValue#getEndIndex()
      */
     public int getEndIndex() {
         return answerValue.getEndIndex();
@@ -454,7 +452,7 @@ public class AnswerValueBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerValue#getStartIndex()
+     * @see org.gusdb.wdk.model.answer.factory.AnswerValue#getStartIndex()
      */
     public int getStartIndex() {
         return answerValue.getStartIndex();
@@ -463,7 +461,7 @@ public class AnswerValueBean {
     /**
      * @param startIndex
      * @param endIndex
-     * @see org.gusdb.wdk.model.AnswerValue#setPageIndex(int, int)
+     * @see org.gusdb.wdk.model.answer.factory.AnswerValue#setPageIndex(int, int)
      */
     public void setPageIndex(int startIndex, int endIndex) {
         answerValue.setPageIndex(startIndex, endIndex);
@@ -499,7 +497,7 @@ public class AnswerValueBean {
       // defer creation of map until properties are requested
       if (resultProperties == null) {
         resultProperties = new HashMap<String, Integer>();
-        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+        RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
         ResultPropertyQueryReference ref = recordClass.getResultPropertyQueryRef();
 
         if (ref != null) {
@@ -516,14 +514,14 @@ public class AnswerValueBean {
 
     public String getSpecJson() throws JSONException, WdkModelException {
       AnswerFilterInstanceBean answerFilter = getFilter();
-      FilterOptionList filters = getAnswerValue().getFilterOptions();
-      FilterOptionList viewFilters = getAnswerValue().getViewFilterOptions();
+      FilterOptionList filters = getAnswerValue().getAnswerSpec().getFilterOptions();
+      FilterOptionList viewFilters = getAnswerValue().getAnswerSpec().getViewFilterOptions();
       JSONObject spec = new JSONObject();
       spec.put("questionName", getQuestion().getFullName());
       spec.put("answerFilter", answerFilter == null ? JSONObject.NULL : answerFilter.getName());
       spec.put("params", FormatUtil.prettyPrint(getParams()));
-      spec.put("filters", filters == null ? JSONObject.NULL : filters.getJSON());
-      spec.put("viewFilters", viewFilters == null ? JSONObject.NULL : viewFilters.getJSON());
+      spec.put("filters", filters == null ? JSONObject.NULL : ParamFiltersClobFormat.formatFilters(filters));
+      spec.put("viewFilters", viewFilters == null ? JSONObject.NULL : ParamFiltersClobFormat.formatFilters(viewFilters));
       return spec.toString(2);
     }
 }

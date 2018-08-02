@@ -8,7 +8,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
@@ -65,14 +65,13 @@ public class AnswerParamHandler extends AbstractParamHandler {
    * step_id
    * 
    * @throws WdkModelException
-   * @throws WdkUserException 
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toInternalValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
   @Override
   public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     int stepId = Integer.parseInt(stableValue.split(":", 2)[0]);
 
     if (_param.isNoTranslation())

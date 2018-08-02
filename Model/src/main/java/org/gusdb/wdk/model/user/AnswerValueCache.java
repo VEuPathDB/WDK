@@ -5,7 +5,8 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.question.Question;
 
 /**
@@ -56,7 +57,7 @@ public class AnswerValueCache {
 
   public AnswerValue getViewAnswerValue(boolean validate)
       throws WdkModelException {
-    if (_step.getViewFilterOptions().getSize() == 0) {
+    if (_step.getAnswerSpec().getViewFilterOptions().getSize() == 0) {
       return getAnswerValue(validate);
     }
     _viewAnswerValues = getAnswerValuePair(_viewAnswerValues, validate, true);
@@ -86,7 +87,7 @@ public class AnswerValueCache {
     return new TwoTuple<>(validated, unvalidated);
   }
 
-  private int[] getRange() throws WdkModelException {
+  private int[] getRange() {
     if (_range == null) {
       // expandStep script generates step in memory with step_id 0 and user_id 0
       _range = _step.getStepId() == 0 ? new int[]{1, 20} : getDefaultPageRange(_step.getUser());
@@ -100,15 +101,17 @@ public class AnswerValueCache {
   
   private static AnswerValue makeAnswerValue(Step step, int[] range, boolean validate, boolean applyViewFilters)
       throws WdkModelException {
-    Question question = step.getQuestion();
+    Question question = step.getAnswerSpec().getQuestion();
     User user = step.getUser();
     Map<String, Boolean> sortingMap = user.getPreferences().getSortingAttributes(
         question.getFullName(), UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
-    AnswerValue answerValue = question.makeAnswerValue(user, step.getParamValues(), range[0],
-        range[1], sortingMap, step.getFilter(), validate, step.getAssignedWeight());
-    answerValue.setFilterOptions(step.getFilterOptions());
+    AnswerSpec answerSpec = step.getAnswerSpec();
+    // TODO convert to validated answer spec
+    AnswerValue answerValue = question.makeAnswerValue(user, answerSpec.getQueryInstanceSpec(), range[0],
+        range[1], sortingMap, answerSpec.getLegacyFilter(), validate, answerSpec.getAssignedWeight());
+    answerValue.setFilterOptions(answerSpec.getFilterOptions());
     if (applyViewFilters) {
-      answerValue.setViewFilterOptions(step.getViewFilterOptions());
+      answerValue.setViewFilterOptions(answerSpec.getViewFilterOptions());
     }
     try {
       int displayResultSize = answerValue.getResultSizeFactory().getDisplayResultSize();

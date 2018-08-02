@@ -22,11 +22,14 @@ import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.cache.SqlCountCache;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
+import org.gusdb.fgputil.validation.ValidObjectFactory;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -723,20 +726,8 @@ public class FilterParamNew extends AbstractDependentParam {
     List<String> ontologyValuesCols = new ArrayList<String>(OntologyItemType.getTypedValueColumnNames());
     ontologyValuesCols.add(COLUMN_ONTOLOGY_ID);
 
-    String bgdQuerySql;
-    String ontologyQuerySql;
-    try {
-      QueryInstance<?> instance = _backgroundQuery.makeInstance(user, contextParamValues, true, 0,
-          new HashMap<String, String>());
-      bgdQuerySql = instance.getSql();
-      instance = _ontologyQuery.makeInstance(user, contextParamValues, true, 0,
-          new HashMap<String, String>());
-      ontologyQuerySql = instance.getSql();
-    }
-    catch (WdkUserException e) {
-      throw new WdkModelException(e);
-    }
-
+    String bgdQuerySql = makeQueryInstanceFromPreValidatedParams(user, _backgroundQuery, contextParamValues).getSql();
+    String ontologyQuerySql = makeQueryInstanceFromPreValidatedParams(user, _ontologyQuery, contextParamValues).getSql();
     String ontologyTermsWhereClause = "";
 
     if (ontologyTerms != null) {
@@ -758,10 +749,10 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // We want to use the WDK cache for this sql, so have to force the sql into
     // a new SqlQuery object.
-    SqlQuery sqlQuery = createValuesMapQuery(_wdkModel, filterSelectSql, ontologyValuesCols, _backgroundQuery.getParams(), _ontologyQuery.getParams());
+    SqlQuery sqlQuery = createValuesMapQuery(_wdkModel, filterSelectSql, ontologyValuesCols,
+        _backgroundQuery.getParams(), _ontologyQuery.getParams());
     try {
-      QueryInstance<?> instance = sqlQuery.makeInstance(user, contextParamValues, true, 0,
-          new HashMap<String, String>());
+      QueryInstance<?> instance = makeQueryInstanceFromPreValidatedParams(user, sqlQuery, contextParamValues);
       ResultList resultList = instance.getResults();
       while (resultList.next()) {
         String field = (String)resultList.get(FilterParamNew.COLUMN_ONTOLOGY_ID);
@@ -828,9 +819,8 @@ public class FilterParamNew extends AbstractDependentParam {
      try {
        
        // get sql that selects the full set of distinct internals from the metadata query
-       String metadataSql;
-       QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
-       metadataSql = instance.getSql();
+       QueryInstance<?> instance = makeQueryInstanceFromPreValidatedParams(user, metadataQuery, contextParamValues);
+       String metadataSql = instance.getSql();
        String metadataTableName = "md";
        String filterSelectSql = "SELECT distinct md." + idColumn + " FROM (" + metadataSql + ") md";
        
@@ -861,6 +851,14 @@ public class FilterParamNew extends AbstractDependentParam {
      }
    }
    
+
+  private static QueryInstance<?> makeQueryInstanceFromPreValidatedParams(User user, Query internalQuery,
+      Map<String, String> paramStableValues) throws WdkModelException {
+    return Query.makeQueryInstance(user,
+        ValidObjectFactory.getSemanticallyValid(QueryInstanceSpec.builder()
+            .putAll(paramStableValues)
+            .buildValidated(internalQuery, ValidationLevel.SEMANTIC)));
+  }
 
   public JSONObject getJsonValues(User user, Map<String, String> contextParamValues)
       throws WdkModelException {
@@ -931,9 +929,11 @@ public class FilterParamNew extends AbstractDependentParam {
 
     super.setContextQuestion(question);
 
-    // also set context question in the metadata & ontology queries
+    // also set context question and param in the metadata & ontology queries
     _metadataQuery.setContextQuestion(question);
+    _metadataQuery.setContextParam(this);
     _ontologyQuery.setContextQuestion(question);
+    _ontologyQuery.setContextParam(this);
   }
 
   /**

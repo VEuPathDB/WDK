@@ -95,6 +95,7 @@ public class FlatVocabParam extends AbstractEnumParam {
   public void setContextQuestion(Question question)  throws WdkModelException {
     super.setContextQuestion(question);
     vocabQuery.setContextQuestion(question);
+    vocabQuery.setContextParam(this);
   }
 
   /**

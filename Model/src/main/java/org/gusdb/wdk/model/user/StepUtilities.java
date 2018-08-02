@@ -25,7 +25,7 @@ public class StepUtilities {
   private static Logger logger = Logger.getLogger(StepUtilities.class);
 
   public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
-      String filterName, boolean deleted, int assignedWeight) throws WdkModelException {
+      String filterName, boolean deleted, int assignedWeight) throws WdkModelException, WdkUserException {
     RecordClass recordClass = question.getRecordClass();
     AnswerFilterInstance filter = filterName != null ?
         recordClass.getFilterInstance(filterName) :
@@ -35,13 +35,13 @@ public class StepUtilities {
 
   public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
       AnswerFilterInstance filter, boolean deleted, int assignedWeight)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     return createStep(user, strategyId, question, paramValues, filter, deleted, assignedWeight, null);
   }
 
   public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
       AnswerFilterInstance filter, boolean deleted,
-      int assignedWeight, FilterOptionList filterOptions) throws WdkModelException {
+      int assignedWeight, FilterOptionList filterOptions) throws WdkModelException, WdkUserException {
     return user.getWdkModel().getStepFactory().createStep(user, question, paramValues,
         filter, filterOptions, assignedWeight, deleted, null, false, null, strategyId);
   }
@@ -314,12 +314,12 @@ public class StepUtilities {
   }
 
   public static Step createBooleanStep(User user, long strategyId, Step leftStep, Step rightStep, String booleanOperator,
-      String filterName) throws WdkModelException {
+      String filterName) throws WdkModelException, WdkUserException {
     BooleanOperator operator = BooleanOperator.parse(booleanOperator);
-    Question question = leftStep.getQuestion();
+    Question question = leftStep.getAnswerSpec().getQuestion();
     if (question == null) {
       // in case the left step has an invalid question, try the right
-      question = rightStep.getQuestion();
+      question = rightStep.getAnswerSpec().getQuestion();
     }
     AnswerFilterInstance filter = null;
     RecordClass recordClass = question.getRecordClass();
@@ -332,7 +332,7 @@ public class StepUtilities {
   }
 
   public static Step createBooleanStep(User user, long strategyId, Step leftStep, Step rightStep, BooleanOperator operator,
-      AnswerFilterInstance filter) throws WdkModelException {
+      AnswerFilterInstance filter) throws WdkModelException, WdkUserException {
     // make sure the left & right step belongs to the user
     if (leftStep.getUser().getUserId() != user.getUserId())
       throw new WdkModelException("The Left Step [" + leftStep.getStepId() +
@@ -342,8 +342,8 @@ public class StepUtilities {
           "] doesn't belong to the user #" + user.getUserId());
 
     // verify the record type of the operands
-    RecordClass leftRecordClass = leftStep.getQuestion().getRecordClass();
-    RecordClass rightRecordClass = rightStep.getQuestion().getRecordClass();
+    RecordClass leftRecordClass = leftStep.getAnswerSpec().getQuestion().getRecordClass();
+    RecordClass rightRecordClass = rightStep.getAnswerSpec().getQuestion().getRecordClass();
     if (!leftRecordClass.getFullName().equals(rightRecordClass.getFullName()))
       throw new WdkModelException("Boolean operation cannot be applied " +
           "to results of different record types. Left operand is " + "of type " +

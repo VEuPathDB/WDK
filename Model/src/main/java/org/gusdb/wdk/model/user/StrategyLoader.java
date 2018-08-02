@@ -50,6 +50,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -62,7 +63,6 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.json.JSONObject;
@@ -168,7 +168,7 @@ public class StrategyLoader {
 
   private SearchResult doSearch(String sql, Object[] paramValues, Integer[] paramTypes) throws WdkModelException {
     Map<Long,Strategy> strategies = new LinkedHashMap<>();
-    Map<Long,Step> steps = new LinkedHashMap<>();
+    Map<Long,Step> orphanSteps = new LinkedHashMap<>();
     try {
       new SQLRunner(_userDbDs, sql, "search-steps-strategies").executeQuery(paramValues, paramTypes, rs -> {
         Strategy currentStrategy = null;
@@ -184,7 +184,7 @@ public class StrategyLoader {
             }
             // read orphan step and save off
             Step orphanStep = readStep(rs);
-            steps.put(orphanStep.getStepId(), orphanStep);
+            orphanSteps.put(orphanStep.getStepId(), orphanStep);
           }
           else {
             // this step row has a strategy ID
@@ -221,10 +221,10 @@ public class StrategyLoader {
       strategy.finish(userCache);
     }
     // only validate orphan steps; attached steps will be finished by their strategy
-    for (Step step : filter(steps.values(), st -> st.getStrategyId() == null)) {
+    for (Step step : filter(orphanSteps.values(), st -> st.getStrategyId() == null)) {
       step.finish(userCache, null);
     }
-    return new SearchResult(strategies, steps);
+    return new SearchResult(strategies, orphanSteps);
   }
 
   private Strategy readStrategy(ResultSet rs) throws SQLException {
@@ -283,17 +283,14 @@ public class StrategyLoader {
     return step;
   }
 
-  Step getStepById(long stepId) throws WdkModelException {
+  Optional<Step> getStepById(long stepId) throws WdkModelException {
     String sql = prepareSql(FIND_STEPS_SQL
         .replace(SEARCH_CONDITIONS_MACRO, "and st." + COLUMN_STEP_ID + " = " + stepId));
-    Step step = doSearch(sql).findFirstStep(st -> st.getStepId() == stepId);
-    if (step == null) {
-      throw new WdkModelException("No step with ID " + stepId + " exists.");
-    }
-    return step;
+    return doSearch(sql).findFirstStep(st -> st.getStepId() == stepId);
+
   }
 
-  Strategy getStrategyById(long strategyId) throws WdkModelException, WdkUserException {
+  Optional<Strategy> getStrategyById(long strategyId) throws WdkModelException {
     String sql = prepareSql(FIND_STRATEGIES_SQL
         .replace(SEARCH_CONDITIONS_MACRO, "and sr." + toStratCol(COLUMN_STRATEGY_ID) + " = " + strategyId));
     return doSearch(sql).getOnlyStrategy("with strategy ID = " + strategyId);
@@ -344,7 +341,7 @@ public class StrategyLoader {
     return toStrategyMap(strategies);
   }
 
-  Strategy getStrategyBySignature(String strategySignature) throws WdkModelException, WdkUserException {
+  Optional<Strategy> getStrategyBySignature(String strategySignature) throws WdkModelException {
     String sql = prepareSql(FIND_STRATEGIES_SQL
         .replace(SEARCH_CONDITIONS_MACRO, "and sr." + toStratCol(COLUMN_SIGNATURE) + " = ?"));
     return doSearch(sql, new Object[]{ strategySignature }, new Integer[]{ Types.VARCHAR })
@@ -394,9 +391,9 @@ public class StrategyLoader {
       return _steps.values().stream().filter(pred).collect(toList());
     }
 
-    public Step findFirstStep(Predicate<Step> pred) {
+    public Optional<Step> findFirstStep(Predicate<Step> pred) {
       List<Step> found = findSteps(pred);
-      return found.isEmpty() ? null : found.get(0);
+      return found.isEmpty() ? Optional.empty() : Optional.of(found.get(0));
     }
 
     public List<Strategy> getStrategies() {
@@ -407,10 +404,10 @@ public class StrategyLoader {
       return _strategies.values().stream().filter(pred).collect(toList());
     }
 
-    public Strategy getOnlyStrategy(String conditionMessage) throws WdkUserException, WdkModelException {
+    public Optional<Strategy> getOnlyStrategy(String conditionMessage) throws WdkModelException {
       switch (_strategies.size()) {
-        case 0: throw new WdkUserException("Could not find any strategy " + conditionMessage);
-        case 1: return _strategies.get(0);
+        case 0: return Optional.empty();
+        case 1: return Optional.of(_strategies.get(0));
         default: throw new WdkModelException("Found >1 strategy " + conditionMessage);
       }
     }

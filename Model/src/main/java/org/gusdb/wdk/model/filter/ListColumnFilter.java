@@ -5,13 +5,11 @@ import java.util.List;
 
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.fgputil.validation.ValidationStatus;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
-import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -38,8 +36,7 @@ public class ListColumnFilter extends SqlColumnFilter {
   }
 
   @Override
-  public String getSummarySql(String inputSql) throws WdkModelException,
-      WdkUserException {
+  public String getSummarySql(String inputSql) throws WdkModelException {
     String columnName = _attribute.getName();
 
     // group by the query and get a count
@@ -50,8 +47,7 @@ public class ListColumnFilter extends SqlColumnFilter {
   }
 
   @Override
-  public String getFilterSql(String inputSql, JSONObject jsValue) throws WdkModelException,
-      WdkUserException {
+  public String getFilterSql(String inputSql, JSONObject jsValue) throws WdkModelException {
     String columnName = _attribute.getName();
 
     StringBuilder sql = new StringBuilder("select * from (" + inputSql + ") where " + columnName + " in (");
@@ -113,17 +109,17 @@ public class ListColumnFilter extends SqlColumnFilter {
     throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
   }
 
-  @Override
   /**
    * Not fully implemented yet.
    */
-  public boolean defaultValueEquals(Step step, JSONObject value)  throws WdkModelException {
+  @Override
+  public boolean defaultValueEquals(SimpleAnswerSpec answerSpec, JSONObject value) {
     return false;
   }
 
   @Override
   public ValidationBundle validate(Question question, JSONObject value, ValidationLevel validationLevel) {
     // TODO: determine if validation is warranted here
-    return ValidationBundle.builder().setStatus(ValidationStatus.SEMANTICALLY_VALID)
+    return ValidationBundle.builder(ValidationLevel.SEMANTIC).build();
   }
 }

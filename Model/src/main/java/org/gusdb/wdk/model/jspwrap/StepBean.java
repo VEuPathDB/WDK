@@ -242,7 +242,7 @@ public class StepBean {
     }
 
     public Map<String, String> getParams() {
-        return step.getParamValues();
+        return step.getQueryInstanceSpec();
     }
 
     public Map<String, String> getParamNames() {
@@ -348,7 +348,7 @@ public class StepBean {
 
     public String getSummaryUrlParams() {
         StringBuffer sb = new StringBuffer();
-        Map<String, String> paramValues = step.getParamValues();
+        Map<String, String> paramValues = step.getQueryInstanceSpec();
         Map<String, Param> params = step.getQuestion().getParamMap();
         for (String paramName : paramValues.keySet()) {
             Object value = paramValues.get(paramName);
@@ -373,7 +373,7 @@ public class StepBean {
         Question question = step.getQuestion();
         if (question == null) return "";
         StringBuffer sb = new StringBuffer();
-        Map<String, String> paramValues = step.getParamValues();
+        Map<String, String> paramValues = step.getQueryInstanceSpec();
         Map<String, Param> params = question.getParamMap();
         for (String paramName : paramValues.keySet()) {
             String paramValue = paramValues.get(paramName).toString();
@@ -492,7 +492,7 @@ public class StepBean {
   }
 
   public void setParamValues(Map<String, String> paramValues) {
-    step.setParamValues(paramValues);
+    step.setQueryInstanceSpec(paramValues);
   }
 
   public void setParamValue(String paramName, String paramValue) {

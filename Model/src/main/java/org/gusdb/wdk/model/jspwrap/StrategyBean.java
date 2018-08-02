@@ -105,7 +105,7 @@ public class StrategyBean {
     return strategy.getStrategyId();
   }
 
-  public StepBean getStep(int index) throws WdkModelException {
+  public StepBean getStep(int index) {
     return new StepBean(user, strategy.getStep(index));
   }
 

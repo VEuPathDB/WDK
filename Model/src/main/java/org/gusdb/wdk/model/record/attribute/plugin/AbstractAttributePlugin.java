@@ -12,7 +12,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
@@ -122,8 +122,8 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
    * @throws WdkModelException if unable to create answer value
    * @throws WdkUserException if unable to create answer value using params provided
    */
-  protected AnswerValue getAnswerValue(Step step, User user) throws WdkModelException, WdkUserException {
-    return step.getViewAnswerValue();
+  protected AnswerValue getAnswerValue(AnswerValue answerValue) throws WdkModelException, WdkUserException {
+    return answerValue;
   }
 
   /**
@@ -134,7 +134,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
    *         AbstractAttributePlugin.ATTRIBUTE_COLUMN.
    * @throws WdkUserException 
    */
-  protected String getAttributeSql(Step step) throws WdkModelException, WdkUserException {
+  protected String getAttributeSql(AnswerValue answerValue) throws WdkModelException, WdkUserException {
     WdkModel wdkModel = step.getRecordClass().getWdkModel();
 
     // format the display of the attribute in sql

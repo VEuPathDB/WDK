@@ -6,10 +6,10 @@ import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
@@ -39,33 +39,32 @@ public class StrategyFilter extends StepFilter {
 
   /**
    * @throws WdkModelException 
-   * @see org.gusdb.wdk.model.filter.Filter#getSummary(org.gusdb.wdk.model.answer.AnswerValue)
+   * @see org.gusdb.wdk.model.filter.Filter#getSummary(org.gusdb.wdk.model.answer.factory.AnswerValue)
    */
   @Override
   public FilterSummary getSummary(AnswerValue answer, String idSql) throws WdkModelException {
     User user = answer.getUser();
-    String rcName = answer.getQuestion().getRecordClass().getFullName();
+    String rcName = answer.getAnswerSpec().getQuestion().getRecordClass().getFullName();
     Collection<Strategy> strategies = StepUtilities.getStrategiesMap(user, rcName).values();
     return new StrategyFilterSummary(strategies);
   }
 
   /**
    * the options contains the id of the strategy chosen as the filter.
-   * @throws WdkUserException 
    * @throws WdkModelException 
    * 
-   * @see org.gusdb.wdk.model.filter.Filter#getSql(org.gusdb.wdk.model.answer.AnswerValue, java.lang.String, java.lang.String)
+   * @see org.gusdb.wdk.model.filter.Filter#getSql(org.gusdb.wdk.model.answer.factory.AnswerValue, java.lang.String, java.lang.String)
    */
   @Override
-  public String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException, WdkUserException {
+  public String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException {
     Strategy strategy = getStrategy(answer, jsValue);
     AnswerValue rootAnswer = strategy.getLatestStep().getAnswerValue();
 
     // make sure both answers are of the same type.
-    RecordClass recordClass = answer.getQuestion().getRecordClass();
-    String rootName = rootAnswer.getQuestion().getRecordClass().getFullName();
+    RecordClass recordClass = answer.getAnswerSpec().getQuestion().getRecordClass();
+    String rootName = rootAnswer.getAnswerSpec().getQuestion().getRecordClass().getFullName();
     if (!recordClass.getFullName().equals(rootName))
-      throw new WdkUserException("You cannot filter the result with a strategy of a different type.");
+      throw new WdkModelException("You cannot filter the result with a strategy of a different type.");
     
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     String filterSql = rootAnswer.getIdSql();
@@ -79,32 +78,32 @@ public class StrategyFilter extends StepFilter {
   }
 
   @Override
-  public String getDisplayValue(AnswerValue answerValue, JSONObject jsValue) throws WdkModelException, WdkUserException {
+  public String getDisplayValue(AnswerValue answerValue, JSONObject jsValue) throws WdkModelException {
     Strategy strategy = getStrategy(answerValue, jsValue);
     return strategy.getName();
   }
 
-  private Strategy getStrategy(AnswerValue answer, JSONObject jsValue) throws WdkModelException, WdkUserException {
+  private Strategy getStrategy(AnswerValue answer, JSONObject jsValue) throws WdkModelException {
     int strategyId = jsValue.getInt(KEY_STRATEGY);
-    return answer.getQuestion().getWdkModel().getStepFactory().getStrategyById(strategyId);
+    return answer.getWdkModel().getStepFactory().getStrategyById(strategyId);
   }
   
   @Override
   public void setDefaultValue(JSONObject defaultValue) {
-	  throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
+    throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
   }
-  
-  @Override
+
   /**
    * Not fully implemented yet.
    */
-  public boolean defaultValueEquals(Step step, JSONObject value)  throws WdkModelException {
-	  return false;
+  @Override
+  public boolean defaultValueEquals(SimpleAnswerSpec answerSpec, JSONObject value)  throws WdkModelException {
+    return false;
   }
 
   @Override
   public ValidationBundle validate(Question question, JSONObject value, ValidationLevel validationLevel) {
-    TODO Auto-generated method stub
-    return null;
+    // TODO: determine if validation is warranted here
+    return ValidationBundle.builder(ValidationLevel.SEMANTIC).build();
   }
 }

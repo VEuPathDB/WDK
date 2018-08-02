@@ -18,7 +18,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.user.Step;
 
 /**
@@ -65,13 +65,13 @@ public class FilterSizeCache {
     public FilterSizeGroup getUpdatedValue(Long id, FilterSizeGroup previousVersion)
         throws ValueProductionException {
       try {
-        Step step = _wdkModel.getStepFactory().getStepById(id);
+        Step step = _wdkModel.getStepFactory().getStepByValidId(id);
         AnswerValue answerValue = step.getAnswerValue(false);
         int size = answerValue.getResultSizeFactory().getFilterDisplaySize(_filterToFetch);
         previousVersion.sizeMap.put(_filterToFetch, size);
         return previousVersion;
       }
-      catch (WdkUserException | WdkModelException e) {
+      catch (WdkModelException e) {
         throw new ValueProductionException(e);
       }
     }
@@ -101,7 +101,7 @@ public class FilterSizeCache {
     public FilterSizeGroup getUpdatedValue(Long id, FilterSizeGroup previousVersion)
         throws ValueProductionException {
       try {
-        Step step = _wdkModel.getStepFactory().getStepById(id);
+        Step step = _wdkModel.getStepFactory().getStepByValidId(id);
         AnswerValue answer = step.getAnswerValue(false);
         Map<String, Integer> sizes = answer.getResultSizeFactory().getFilterDisplaySizes();
         previousVersion.sizeMap = sizes;

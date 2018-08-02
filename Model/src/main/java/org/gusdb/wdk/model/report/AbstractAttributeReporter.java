@@ -14,7 +14,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
@@ -71,14 +71,14 @@ public abstract class AbstractAttributeReporter extends AbstractReporter  {
     return _attributeField;
   }
 
-  protected String getAttributeSql(AnswerValue answerValue) throws WdkModelException, WdkUserException {
-    WdkModel wdkModel = answerValue.getQuestion().getRecordClass().getWdkModel();
+  protected String getAttributeSql(AnswerValue answerValue) throws WdkModelException {
+    WdkModel wdkModel = answerValue.getAnswerSpec().getQuestion().getRecordClass().getWdkModel();
 
     // format the display of the attribute in sql
     Map<String, String> queries = new LinkedHashMap<String, String>();
     String column = formatColumn(answerValue, _attributeField, queries);
 
-    RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+    RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     String idSql = answerValue.getIdSql();
 

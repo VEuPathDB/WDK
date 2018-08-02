@@ -25,7 +25,7 @@ import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.TableField;
@@ -137,7 +137,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
 
     // if hasHeader and display value map requested, dump
     if (hasHeader && determineBooleanProperty(DUMP_HEADER_DISPLAY_MAP_PROP_KEY, DUMP_HEADER_DISPLAY_MAP_BY_DEFAULT)) {
-      dumpHeaderDisplayMap(answerValue.getQuestion().getRecordClass(), storageDir);
+      dumpHeaderDisplayMap(answerValue.getAnswerSpec().getQuestion().getRecordClass(), storageDir);
     }
 
     // configure tabular reporter if attributes requested in config

@@ -10,13 +10,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.param.AbstractDependentParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
@@ -100,6 +103,13 @@ import org.json.JSONObject;
  */
 public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
+  public static QueryInstance<?> makeQueryInstance(User user,
+      SemanticallyValid<QueryInstanceSpec> validSpec) throws WdkModelException {
+    // unwrap the spec and use to create an instance of the proper type
+    QueryInstanceSpec spec = validSpec.getObject();
+    return spec.getQuery().makeInstance(user, spec, spec.getAssignedWeight());
+  }
+
   private String name;
   protected boolean isCacheable = false;
 
@@ -127,6 +137,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   private boolean hasWeight;
 
   private Question contextQuestion;
+  private Param contextParam;
 
   private Map<String, Boolean> sortingMap;
 
@@ -140,8 +151,8 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
   protected abstract void appendChecksumJSON(JSONObject jsQuery, boolean extra) throws JSONException;
 
-  public abstract QueryInstance<? extends Query> makeInstance(User user, Map<String, String> values, boolean validate,
-      int assignedWeight, Map<String, String> context) throws WdkModelException;
+  protected abstract QueryInstance<? extends Query> makeInstance(User user,
+      ReadOnlyMap<String,String> paramValues, int assignedWeight) throws WdkModelException;
 
   @Override
   public abstract Query clone();
@@ -184,6 +195,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     this.paramValuesSets = new ArrayList<ParamValuesSet>(query.paramValuesSets);
     this.hasWeight = query.hasWeight;
     this.contextQuestion = query.getContextQuestion();
+    this.contextParam = query.getContextParam();
     this.sortingMap = new LinkedHashMap<>(query.sortingMap);
     this.postCacheUpdateSqls = query.postCacheUpdateSqls == null ? null : new ArrayList <PostCacheUpdateSql> (query.postCacheUpdateSqls);
 
@@ -219,6 +231,14 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   public void setIsCacheable(boolean isCacheable) {
     this.isCacheable = isCacheable;
     setCache = true;
+  }
+
+  public Param getContextParam() {
+    return contextParam;
+  }
+
+  public void setContextParam(Param contextParam) {
+    this.contextParam = contextParam;
   }
 
   public Question getContextQuestion() {
@@ -292,8 +312,9 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   }
 
   public Param[] getParams() {
-    Param[] array = new Param[paramMap.size()];
-    paramMap.values().toArray(array);
+    Map<String,Param> tmpParamMap = getParamMap();
+    Param[] array = new Param[tmpParamMap.size()];
+    tmpParamMap.values().toArray(array);
     return array;
   }
 
@@ -633,7 +654,7 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   }
 
   public Map<String, String> getSignatures(User user, Map<String, String> stableValues)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     Map<String, String> signatures = new LinkedHashMap<String, String>();
     for (String paramName : stableValues.keySet()) {
       Param param = paramMap.get(paramName);

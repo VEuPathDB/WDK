@@ -10,6 +10,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.Named;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -20,14 +22,11 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml.StepAnalysisContainer;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ColumnType;
 import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -41,7 +40,6 @@ import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferences;
 
 /**
@@ -333,67 +331,16 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   // /////////////////////////////////////////////////////////////////////
 
-  /**
-   * make an answer with default page size and sorting and no filters applied
-   * 
-   * @param paramErrors
-   * @return
-   * @throws WdkUserException 
-   */
-  public AnswerValue makeAnswerValue(User user,
-      Map<String, String> dependentValues, boolean validate, int assignedWeight)
-      throws WdkModelException, WdkUserException {
-    LOG.debug("makeAnswerValue() with NO FILTERS applied:  FIRST page, (will also query.makeInstance() first)");
-    int pageStart = 1;
-    int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
-    Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>(
-        _defaultSortingMap);
-    AnswerFilterInstance filter = _recordClass.getDefaultFilter();
-    AnswerValue answerValue = makeAnswerValue(user, dependentValues, pageStart,
-        pageEnd, sortingMap, filter, validate, assignedWeight);
-    if (_fullAnswer) {
-      int resultSize = answerValue.getResultSizeFactory().getResultSize();
-      if (resultSize > pageEnd)
-        answerValue.setPageIndex(pageStart, resultSize);
-    }
-    return answerValue;
-  }
-
-  /**
-   * make an answer by given page range, sorted by the given attribute list.
-   * 
-   * @param paramErrors
-   * @param i
-   * @param j
-   * @param sortingAttributes
-   * @return
-   * @throws WdkUserException 
-   */
-  public AnswerValue makeAnswerValue(User user,
-      Map<String, String> dependentValues, int pageStart, int pageEnd,
-      Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter,
-      boolean validate, int assignedWeight) throws WdkModelException {
-    LOG.debug("makeAnswerValue() any page, (will also query.makeInstance() first)");
-    Map<String, String> context = new LinkedHashMap<String, String>();
-    context.put(Utilities.QUERY_CTX_QUESTION, getFullName());
-
-    QueryInstance<?> qi = _query.makeInstance(user, dependentValues, validate, assignedWeight, context);
-    AnswerValue answerValue = new AnswerValue(user, this, qi, pageStart,
-        pageEnd, sortingAttributes, filter);
-
-    return answerValue;
-  }
-
   public Param[] getParams() {
     return _query.getParams();
   }
 
   public Map<String, Param> getParamMap() {
-    return _query.getParamMap();
+    return Functions.getMapFromValues(Arrays.asList(getParams()), Named.TO_NAME);
   }
 
   public Map<Group, Map<String, Param>> getParamMapByGroups() {
-    Param[] params = _query.getParams();
+    Param[] params = getParams();
     Map<Group, Map<String, Param>> paramGroups = new LinkedHashMap<Group, Map<String, Param>>();
     for (Param param : params) {
       Group group = param.getGroup();
@@ -410,7 +357,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   }
 
   public Map<Group, Map<String, Param>> getParamMapByGroups(String displayType) {
-    Param[] params = _query.getParams();
+    Param[] params = getParams();
     Map<Group, Map<String, Param>> paramGroups = new LinkedHashMap<Group, Map<String, Param>>();
     for (Param param : params) {
       Group group = param.getGroup();
@@ -793,8 +740,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   /**
    * This method is use to clone the question, excluding dynamic attributes
-   * 
-   * @return
    */
   @Override
   public Map<String, Boolean> getSortingAttributeMap() {
@@ -1227,7 +1172,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   private Map<String, Filter> getExclusiveFilterMap(boolean viewOnly) {
     Map<String, Filter> map = new LinkedHashMap<>(_recordClass.getFilters());
     for (Entry<String, Filter> filter : _filters.entrySet()) {
-      if (viewOnly == filter.getValue().getIsViewOnly()) {
+      if (viewOnly == filter.getValue().getFilterType().isViewOnly()) {
         LOG.debug("question: adding one more filter:  name: " + filter.getKey());
         map.put(filter.getKey(), filter.getValue());
       }
@@ -1242,6 +1187,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   }
   
   public Filter getFilterOrNull(String filterName) {
+    if (filterName == null) return null;
     Filter filter = _filters.get(filterName);
     if (filter == null) filter = _recordClass.getFilter(filterName); 
     return filter;
@@ -1265,4 +1211,5 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   public boolean isBoolean() {
     return getQuery().isBoolean();
   }
+
 }

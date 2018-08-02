@@ -13,7 +13,7 @@ import org.gusdb.fgputil.iterator.ReadOnlyIterator;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
@@ -34,12 +34,7 @@ public class SingleTableRecordStream implements RecordStream {
   private boolean _iteratorCalled;
 
   public SingleTableRecordStream(AnswerValue answerValue, TableField tableField) throws WdkModelException {
-    try {
-      init(answerValue, tableField, answerValue.getTableFieldResultList(tableField));
-    }
-    catch (WdkUserException e) {
-      throw new WdkModelException("Could not initialize single-table record stream", e);
-    }
+    init(answerValue, tableField, answerValue.getTableFieldResultList(tableField));
   }
 
   public SingleTableRecordStream(AnswerValue answerValue, TableField tableField, ResultList resultList) {
@@ -49,7 +44,7 @@ public class SingleTableRecordStream implements RecordStream {
   private void init(AnswerValue answerValue, TableField tableField, ResultList resultList) {
     _answerValue = answerValue;
     _tableField = tableField;
-    _pkDef = _answerValue.getQuestion().getRecordClass().getPrimaryKeyDefinition();
+    _pkDef = _answerValue.getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition();
     _lastPkValues = new Wrapper<>();
     _resultList = resultList;
     _iteratorCalled = false;
@@ -81,7 +76,7 @@ public class SingleTableRecordStream implements RecordStream {
           try {
             // start new record instance
             Map<String, Object> currentRecordPkValues = _lastPkValues.get();
-            Question question = _answerValue.getQuestion();
+            Question question = _answerValue.getAnswerSpec().getQuestion();
             StaticRecordInstance record = new StaticRecordInstance(_answerValue.getUser(),
                 question.getRecordClass(), question, currentRecordPkValues, false);
             TableValue tableValue = new TableValue(_tableField);

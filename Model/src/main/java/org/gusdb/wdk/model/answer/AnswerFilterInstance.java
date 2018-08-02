@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.query.Query;
@@ -270,7 +271,7 @@ public class AnswerFilterInstance extends WdkModelBase {
     _resolved = true;
   }
 
-  public ResultList getResults(AnswerValue answerValue) throws WdkModelException, WdkUserException {
+  public ResultList getResults(AnswerValue answerValue) throws WdkModelException {
     // use only the id query sql as input
     QueryInstance<?> idInstance = answerValue.getIdsQueryInstance();
     String sql = idInstance.getSql();
@@ -287,7 +288,7 @@ public class AnswerFilterInstance extends WdkModelBase {
   }
 
   public String applyFilter(User user, String sql, int assignedWeight)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     Map<String, Param> params = _filterQuery.getParamMap();
 
     String filterSql = _filterQuery.getSql();

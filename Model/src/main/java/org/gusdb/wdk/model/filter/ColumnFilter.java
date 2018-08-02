@@ -2,11 +2,10 @@ package org.gusdb.wdk.model.filter;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
-import org.gusdb.wdk.model.user.Step;
 import org.json.JSONObject;
 
 public abstract class ColumnFilter extends AbstractFilter {
@@ -32,12 +31,12 @@ public abstract class ColumnFilter extends AbstractFilter {
     return display;
   }
 
-  protected String getAttributeSql(AnswerValue answer, String idSql) throws WdkModelException, WdkUserException {
+  protected String getAttributeSql(AnswerValue answer, String idSql) throws WdkModelException {
     String queryName = _attribute.getColumn().getQuery().getFullName();
     WdkModel wdkModel = _attribute.getWdkModel();
     Query query = (Query) wdkModel.resolveReference(queryName);
     String attributeSql = answer.getAttributeSql(query);
-    String[] pkColumns = answer.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
+    String[] pkColumns = answer.getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
     StringBuilder sql = new StringBuilder("SELECT aq.* ");
     sql.append(" FROM (" + idSql + ") idq, (" + attributeSql + ") aq ");
     for (int i = 0; i < pkColumns.length; i++) {
@@ -56,7 +55,7 @@ public abstract class ColumnFilter extends AbstractFilter {
    * Not fully implemented yet.
    */
   @Override
-  public boolean defaultValueEquals(Step step, JSONObject value)  throws WdkModelException {
+  public boolean defaultValueEquals(SimpleAnswerSpec answerSpec, JSONObject value) {
     return false;
   }
 }

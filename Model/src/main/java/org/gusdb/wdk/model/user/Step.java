@@ -29,7 +29,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
 import org.gusdb.wdk.model.answer.spec.ParamValue;
@@ -272,7 +272,7 @@ public class Step implements StrategyElement {
     }
     BooleanQuery query = (BooleanQuery) _answerSpec.getQuestion().getQuery();
     StringParam operator = query.getOperatorParam();
-    return _answerSpec.getParamValues().get(operator.getName());
+    return _answerSpec.getQueryInstanceSpec().get(operator.getName());
   }
 
   @Deprecated
@@ -321,7 +321,9 @@ public class Step implements StrategyElement {
   }
 
   private void updateAnswerParamValue(String paramName, long stepId) {
-    _answerSpec = AnswerSpec.builder(_answerSpec).setParamValue(paramName, Long.toString(stepId)).build();
+    _answerSpec = AnswerSpec.builder(_answerSpec)
+        .setParamValue(paramName, Long.toString(stepId))
+        .build(_answerSpec.getValidationBundle().getLevel());
   }
 
   public boolean isFirstStep() {
@@ -741,7 +743,7 @@ public class Step implements StrategyElement {
   public Step createStep(AnswerFilterInstance filter, int assignedWeight) throws WdkModelException {
     // make sure caller is asking for something new; if not, return this Step
     AnswerFilterInstance oldFilter = _answerSpec.getLegacyFilter();
-    if (_answerSpec.getWeight() == assignedWeight &&
+    if (_answerSpec.getAssignedWeight() == assignedWeight &&
         ((filter == null && oldFilter == null) ||
          (filter != null && oldFilter != null && filter.getName().equals(oldFilter.getName())))) {
       return this;
@@ -749,9 +751,9 @@ public class Step implements StrategyElement {
 
     // create new steps
     Question question = _answerSpec.getQuestion();
-    Map<String, String> params = _answerSpec.getParamValues().toMap();
+    Map<String, String> params = _answerSpec.getQueryInstanceSpec().toMap();
     Step step = StepUtilities.createStep(_user, _strategyId, question, params, filter, _isDeleted,
-        assignedWeight, _answerSpec.getFilterValues());
+        assignedWeight, _answerSpec.getFilterOptions());
     step._collapsedName = _collapsedName;
     step._customName = _customName;
     step._collapsible = _collapsible;
@@ -769,16 +771,16 @@ public class Step implements StrategyElement {
   public Step deepClone(Long strategyId, Map<Long, Long> stepIdMap) throws WdkModelException {
     Step step;
     if (!isCombined()) {
-      step = StepUtilities.createStep(_user, strategyId, _answerSpec.getQuestion(), _answerSpec.getParamValues().toMap(),
-          _answerSpec.getLegacyFilter(), _isDeleted, _answerSpec.getWeight(), _answerSpec.getFilterValues());
+      step = StepUtilities.createStep(_user, strategyId, _answerSpec.getQuestion(), _answerSpec.getQueryInstanceSpec().toMap(),
+          _answerSpec.getLegacyFilter(), _isDeleted, _answerSpec.getAssignedWeight(), _answerSpec.getFilterOptions());
     }
     else {
       Question question = _answerSpec.getQuestion();
       Map<String, String> paramValues = new LinkedHashMap<String, String>();
       Map<String, Param> params = question.getParamMap();
-      for (String paramName : _answerSpec.getParamValues().keySet()) {
+      for (String paramName : _answerSpec.getQueryInstanceSpec().keySet()) {
         Param param = params.get(paramName);
-        String paramValue = _answerSpec.getParamValues().get(paramName);
+        String paramValue = _answerSpec.getQueryInstanceSpec().get(paramName);
         if (param instanceof AnswerParam) {
           Step child = StepUtilities.getStep(getUser(), Long.parseLong(paramValue));
           child = child.deepClone(strategyId, stepIdMap);
@@ -787,7 +789,7 @@ public class Step implements StrategyElement {
         paramValues.put(paramName, paramValue);
       }
       step = StepUtilities.createStep(getUser(), strategyId, question, paramValues,
-          _answerSpec.getLegacyFilter(), _isDeleted, _answerSpec.getWeight(), _answerSpec.getFilterValues());
+          _answerSpec.getLegacyFilter(), _isDeleted, _answerSpec.getAssignedWeight(), _answerSpec.getFilterOptions());
     }
 
     stepIdMap.put(getStepId(), step.getStepId());
@@ -805,7 +807,7 @@ public class Step implements StrategyElement {
 
   public boolean isFiltered() throws WdkModelException {
     // first check if new filter has been applied
-    if (_answerSpec.getFilterValues() != null && _answerSpec.getFilterValues().isFiltered(_answerSpec.toSimpleAnswerSpec()))
+    if (_answerSpec.getFilterOptions() != null && _answerSpec.getFilterOptions().isFiltered(_answerSpec.toSimpleAnswerSpec()))
       return true;
 
     AnswerFilterInstance filter = _answerSpec.getLegacyFilter();
@@ -847,8 +849,8 @@ public class Step implements StrategyElement {
       jsStep.put("collapsed", this.isCollapsible());
       jsStep.put("collapsedName", this.getCollapsedName());
       jsStep.put("deleted", _isDeleted);
-      jsStep.put(ParamFiltersClobFormat.KEY_PARAMS, ParamFiltersClobFormat.formatParams(_answerSpec.getParamValues()));
-      jsStep.put(ParamFiltersClobFormat.KEY_FILTERS, ParamFiltersClobFormat.formatFilters(_answerSpec.getFilterValues()));
+      jsStep.put(ParamFiltersClobFormat.KEY_PARAMS, ParamFiltersClobFormat.formatParams(_answerSpec.getQueryInstanceSpec()));
+      jsStep.put(ParamFiltersClobFormat.KEY_FILTERS, ParamFiltersClobFormat.formatFilters(_answerSpec.getFilterOptions()));
 
       Step childStep = getChildStep();
       if (childStep != null) {
@@ -1140,15 +1142,6 @@ public class Step implements StrategyElement {
     return getStepId();
   }
 
-  private static Map<String, ParamValue> toParamValueMap(Question question, Map<String, String> paramValues) {
-    Map<String, Param> questionParams = question.getParamMap();
-    Map<String, ParamValue> paramValueMap = new HashMap<>();
-    for (String key : paramValues.keySet()) {
-      paramValueMap.put(key, new ParamValue(questionParams.get(key), paramValues.get(key)));
-    }
-    return paramValueMap;
-  }
-
   public void setAnswerSpec(AnswerSpec answerSpec) {
     _answerSpec = answerSpec;
   }
@@ -1219,5 +1212,9 @@ public class Step implements StrategyElement {
       }
     }
     saveParamFilters();
+  }
+
+  public boolean isRunnable() {
+    if (_answerSpec)
   }
 }

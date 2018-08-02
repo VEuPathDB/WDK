@@ -12,10 +12,15 @@ import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec.QueryInstanceSpecBuilder;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * @author jerric
@@ -67,14 +72,16 @@ public class Migrator_b18_b19 implements Migrator {
 
         // update params
         String paramContent = platform.getClobData(rsSteps, "display_params");
-        Step step = new Step(null, 0, 0);
-        step.setParamFilterJSONString(paramContent);
-        step.setQuestionName(questionName);
-        step.validate();
-        Map<String, String> params = step.getParamValues();
-        updateParams(stepId, params, leftChildId, rightChildId);
-        step.setParamValues(params);
-        paramContent = step.getParamFilterJSON().toString();
+        
+        QueryInstanceSpecBuilder params = ParamFiltersClobFormat.parseParamsJson(new JSONObject(paramContent));
+        Map<String,String> newParams = updateParams(stepId, params.toMap(), leftChildId, rightChildId);
+        AnswerSpec answerSpec = AnswerSpec.builder(wdkModel)
+          .setQuestionName(questionName)
+          .setDbParamFiltersJson(new JSONObject(paramContent))
+          .setQueryInstanceSpec(QueryInstanceSpec.builder().putAll(newParams))
+          .build(ValidationLevel.SEMANTIC);
+
+        paramContent = ParamFiltersClobFormat.formatParamFilters(answerSpec).toString();
 
         // save changes
         platform.setClobData(psUpdate, 1, paramContent, false);
@@ -100,7 +107,7 @@ public class Migrator_b18_b19 implements Migrator {
     }
   }
 
-  private void updateParams(int stepId, Map<String, String> params, int leftChildId, int rightChildId) {
+  private Map<String,String> updateParams(int stepId, Map<String, String> params, int leftChildId, int rightChildId) {
     String[] names = params.keySet().toArray(new String[0]);
     boolean leftFound = false, rightFound = false;
     for (String name : names) {
@@ -138,5 +145,6 @@ public class Migrator_b18_b19 implements Migrator {
     if (!leftFound && !rightFound) {
       System.err.println("Couldn't find step param to update in step: #" + stepId);
     }
+    return params;
   }
 }
