@@ -18,6 +18,7 @@
     <c:set var="reporter" value="${item.value}" />
     <c:set var="props">
       {
+        "attributeName": "${attribute.name}",
         "stepId": ${step.stepId},
         "recordClassName": "${step.recordClass.fullName}",
         "reporterName": "${reporter.name}"

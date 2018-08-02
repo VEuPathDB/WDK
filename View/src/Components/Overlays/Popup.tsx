@@ -79,8 +79,18 @@ export default class Popup extends React.Component<Props> {
   containerNode: HTMLElement;
 
   componentDidMount() {
+    // Create container node and attatch it to the parent node.
     this.containerNode = document.createElement('div');
-    this._callJqueryWithProps();
+    this.containerNode.className = this.props.className || '';
+    const parent = this.props.parentSelector == null ? document.body : this.props.parentSelector();
+    if (parent !== this.containerNode.parentNode) {
+      parent.appendChild(this.containerNode);
+    }
+
+    // Force this component to update, since the containerNode did not exist on
+    // the first render and we want to render the Portal now. This will also
+    // cause `componentDidUpdate` to be called.
+    this.forceUpdate();
   }
 
   componentDidUpdate() {
@@ -89,15 +99,10 @@ export default class Popup extends React.Component<Props> {
 
   componentWillUnmount() {
     $(this.containerNode).draggable('destroy');
-    ReactDOM.unmountComponentAtNode(this.containerNode);
     this.containerNode.remove();
   }
 
   _callJqueryWithProps() {
-    this.containerNode.className = this.props.className || '';
-    const parent = this.props.parentSelector == null ? document.body : this.props.parentSelector();
-    if (parent !== this.containerNode.parentNode) parent.appendChild(this.containerNode);
-    ReactDOM.unstable_renderSubtreeIntoContainer(this, this.props.children, this.containerNode);
     const $node = $(this.containerNode)
       .draggable({
         addClasses: false,
@@ -119,7 +124,7 @@ export default class Popup extends React.Component<Props> {
   }
 
   render() {
-    return null;
+    return this.containerNode ? ReactDOM.createPortal(this.props.children, this.containerNode) : null;
   }
 
 }

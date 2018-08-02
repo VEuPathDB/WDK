@@ -97,9 +97,9 @@ public class EuPathCategoriesFactory {
       { "Observations", "DS_f6c59e88c1ObservationRecordClasses.DS_f6c59e88c1ObservationRecordClass" },
       //GEMs 
       { "Participants", "DS_841a9f5259ParticipantRecordClasses.DS_841a9f5259ParticipantRecordClass" },
-      //Maled DCC phase1
-      { "Participants", "DS_121f2c2f02ParticipantRecordClasses.DS_121f2c2f02ParticipantRecordClass" },
-      { "Observations", "DS_121f2c2f02ObservationRecordClasses.DS_121f2c2f02ObservationRecordClass" },
+      //Maled DCC phase2
+      { "Participants", "DS_3dbf92dc05ParticipantRecordClasses.DS_3dbf92dc05ParticipantRecordClass" },
+      { "Observations", "DS_3dbf92dc05ObservationRecordClasses.DS_3dbf92dc05ObservationRecordClass" },
   };
 
   // record classes whose individuals all have both scope website and menu

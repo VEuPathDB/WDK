@@ -1,33 +1,28 @@
-import { DispatchAction } from '../../Core/CommonTypes';
-import { memoize } from 'lodash';
 import React from 'react';
 
 import AbstractViewController from 'Core/Controllers/AbstractViewController';
+import { GlobalData } from 'Core/State/Stores/GlobalDataStore';
 import { Action } from 'Utils/ActionCreatorUtils';
 import { wrappable } from 'Utils/ComponentUtils';
 import { Seq } from 'Utils/IterableUtils';
-import { RecordClass, Reporter } from 'Utils/WdkModel';
+import { Reporter } from 'Utils/WdkModel';
 
 import AttributeAnalysisButton from './AttributeAnalysisButton';
 import { AttributeAnalysisStore, State } from './AttributeAnalysisStore';
-import { AttributeReportCancelled, AttributeReportRequested, ScopedAnalysisAction } from './BaseAttributeAnalysis/BaseAttributeAnalysisActions';
-import HistogramAnalysis from './HistogramAnalysis/HistogramAnalysis';
-import WordCloudAnalysis from './WordCloudAnalysis/WordCloudAnalysis';
+import { ScopedAnalysisAction } from './BaseAttributeAnalysis/BaseAttributeAnalysisActions';
 
-type ViewState = {
-  reporter?: Reporter;
-  analysis?: State['analyses'][string]
+type ViewProps = {
+  attributeName: string;
+  recordClassName: string;
+  reporterName: string;
+  stepId: number;
 }
 
 class AttributeAnalysisButtonController extends AbstractViewController<
-  ViewState,
+  State,
   AttributeAnalysisStore,
   {},
-  {
-    recordClassName: string;
-    reporterName: string;
-    stepId: number
-  }
+  ViewProps
 > {
 
   getStoreClass() {
@@ -35,43 +30,43 @@ class AttributeAnalysisButtonController extends AbstractViewController<
   }
 
   getStateFromStore() {
-    const { globalData, analyses } = this.store.getState();
+    return this.store.getState();
+  }
+
+  plugin = this.props.locatePlugin('attributeAnalysis');
+
+  renderView() {
+    const { recordClassName, reporterName, stepId } = this.props;
+    const { globalData, analyses } = this.state;
     const reporter = Seq.from(globalData.recordClasses)
       .filter(recordClass => recordClass.name === this.props.recordClassName)
       .flatMap(recordClass => recordClass.formats)
       .find(format => format.name === this.props.reporterName);
     const key = `${this.props.stepId}__${this.props.reporterName}`;
     const analysis = analyses && analyses[key];
-    return { reporter, analysis
-    }
-  }
-
-  getReporterComponent(reporter: Reporter): React.ReactType | undefined {
-    // TODO Replace with configuration lookup
-    switch(reporter.type) {
-      case 'wordCloud': return WordCloudAnalysis;
-      case 'histogram': return HistogramAnalysis;
-      default: return undefined;
-    }
-  }
-
-  renderView() {
-    const { reporter, analysis } = this.state;
 
     if (reporter == null) return null;
 
-    const ReporterComponent = this.getReporterComponent(reporter);
+    const context = {
+      type: 'attributeAnalysis',
+      name: reporter.type,
+      recordClassName: this.props.recordClassName
+    }
 
-    if (ReporterComponent == null) return null;
+    const dispatch = (action: Action) => {
+      const { stepId } = this.props;
+      this.dispatchAction(ScopedAnalysisAction.create({ action, context, reporter, stepId }));
+    }
 
     return (
       <AttributeAnalysisButton
+        recordClassName={this.props.recordClassName}
         stepId={this.props.stepId}
         reporter={reporter}
-        state={analysis}
-        dispatch={this.dispatchAction}
-        ReporterComponent={ReporterComponent}
-      />
+        analysis={analysis}
+        dispatch={dispatch}>
+        {this.plugin.render(context, analysis, dispatch)}
+      </AttributeAnalysisButton>
     );
   }
 

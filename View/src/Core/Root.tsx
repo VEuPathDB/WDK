@@ -3,7 +3,7 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import { Router, Switch, Route, RouteComponentProps } from 'react-router';
 import { History, Location } from 'history';
-import { MakeDispatchAction, Container, ViewControllerProps, RouteSpec } from "Core/CommonTypes";
+import { MakeDispatchAction, Container, ViewControllerProps, RouteSpec, LocatePlugin } from "Core/CommonTypes";
 import WdkStore from "Core/State/Stores/WdkStore";
 import ErrorBoundary from 'Core/Controllers/ErrorBoundary';
 import LoginFormController from 'Views/User/LoginForm/LoginFormController';
@@ -15,6 +15,7 @@ type Props = {
   routes: RouteSpec[],
   onLocationChange: (location: Location) => void;
   history: History;
+  locatePlugin: LocatePlugin;
 };
 
 
@@ -53,9 +54,14 @@ export default class Root extends React.Component<Props> {
   renderRoute(RouteComponent: React.ComponentType<ViewControllerProps<WdkStore>>) {
     // Used to inject wdk content as props of Route Component
     return (routerProps: RouteComponentProps<any>) => {
-      let { makeDispatchAction, stores } = this.props;
+      let { locatePlugin, makeDispatchAction, stores } = this.props;
       return (
-        <RouteComponent {...routerProps} makeDispatchAction={makeDispatchAction} stores={stores}/>
+        <RouteComponent
+          {...routerProps}
+          locatePlugin={locatePlugin}
+          makeDispatchAction={makeDispatchAction}
+          stores={stores}
+        />
       );
     };
   }
@@ -92,7 +98,11 @@ export default class Root extends React.Component<Props> {
                 <Route key={route.path} exact path={route.path} render={this.renderRoute(route.component)}/>
               ))}
             </Switch>
-            <LoginFormController makeDispatchAction={this.props.makeDispatchAction} stores={this.props.stores}/>
+            <LoginFormController
+              locatePlugin={this.props.locatePlugin}
+              makeDispatchAction={this.props.makeDispatchAction}
+              stores={this.props.stores}
+            />
           </React.Fragment>
         </Router>
       </ErrorBoundary>

@@ -81,6 +81,7 @@ interface EmptyTypedActionCreator<T extends string> {
   create(): TypedAction<T, undefined>;
 }
 
+// TODO Remove type argument `T`. We can probably infer this now.
 /**
  * Returns a module that can be used to create Actions. This provides many useful
  * properties to reduce boilerplate while retaining maximum type safety.

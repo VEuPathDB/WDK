@@ -5,7 +5,17 @@ import Error from 'Components/PageStatus/Error';
 import { DispatchAction } from 'Core/CommonTypes';
 import { emptyAction } from 'Utils/ActionCreatorUtils';
 
-export default class ErrorBoundary extends React.Component {
+type Props = {
+  renderError?: () => React.ReactNode;
+  children?: React.ReactNode;
+  dispatchAction?: DispatchAction;
+}
+
+type State = {
+  hasError: boolean;
+}
+
+export default class ErrorBoundary extends React.Component<Props, State> {
 
   static contextTypes = {
     dispatchAction: PropTypes.func
@@ -17,12 +27,6 @@ export default class ErrorBoundary extends React.Component {
 
   state = {
     hasError: false
-  }
-
-  props: {
-    renderError?: () => React.ReactNode;
-    children: React.ReactNode;
-    dispatchAction?: DispatchAction;
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {

@@ -6,23 +6,18 @@ import React from 'react';
 
 import { DispatchAction } from 'Core/CommonTypes';
 import { lazy, makeClassNameHelper } from 'Utils/ComponentUtils';
+import { AttributeField, RecordClass, Reporter } from 'Utils/WdkModel';
 
 import { AttributeAnalysis } from '../BaseAttributeAnalysis/BaseAttributeAnalysis';
+import { DisplayType, SetBinSize, SetDisplayType } from './HistogramActions';
 import { State } from './HistogramState';
-import { SetBinSize, DisplayType, SetDisplayType } from './HistogramActions';
 
-type ModuleState = State;
+export type ModuleState = State;
 
 type ModuleProps = {
   state: ModuleState;
   dispatch: DispatchAction;
 }
-
-// FIXME Display should be derived from recordClass and attribute names
-const columns = [
-  { key: 'attrValue', display: '# of Exons' },
-  { key: 'recordCount', display: '# of Genes' }
-]
 
 export default class HistogramAnalysis extends React.PureComponent<ModuleProps> {
 
@@ -42,6 +37,11 @@ export default class HistogramAnalysis extends React.PureComponent<ModuleProps> 
     if (this.props.state.data.status !== 'success') return null;
 
     const { data: { report }, visualization } = this.props.state;
+    
+    const columns = [
+      { key: 'attrValue', display: report.attrLabel },
+      { key: 'recordCount', display: report.recordCountLabel }
+    ];
 
     return (
       <AttributeAnalysis
@@ -52,7 +52,12 @@ export default class HistogramAnalysis extends React.PureComponent<ModuleProps> 
         }}
         visualizationConfig={{
           display: 'Histogram',
-          content: <Histogram {...report} {...visualization} onBinSizeChange={this.setBinSize} onDisplayTypeChange={this.setDisplayType}/>
+          content: <Histogram
+            {...report}
+            {...visualization}
+            onBinSizeChange={this.setBinSize}
+            onDisplayTypeChange={this.setDisplayType}
+          />
         }}
       />
     )
@@ -60,6 +65,8 @@ export default class HistogramAnalysis extends React.PureComponent<ModuleProps> 
 }
 
 type HistogramProps = {
+  attrLabel: string;
+  recordCountLabel: string;
   avg: number;
   binCount: number;
   binSize: number;
@@ -95,14 +102,14 @@ const Histogram = lazy(render => require([
   drawPlot() {
     if (this.plotNode == null) return;
 
-    const { binSize, displayType } = this.props;
+    const { binSize, displayType, attrLabel, recordCountLabel } = this.props;
     const logarithm = displayType === 'logarithm';
 
     // get data and labels
     const [ data, labels ] = convertData(this.props);
 
-    const binLabel = 'TODO: binLabel';
-    const sizeLabel = 'TODO: sizeLabel';
+    const binLabel = attrLabel;
+    const sizeLabel = recordCountLabel;
     const options: any = getOptions(binLabel, sizeLabel, labels);
 
     // draw plot
@@ -131,11 +138,13 @@ const Histogram = lazy(render => require([
   }
 
   render() {
-    const { avg, min, max, binSize, type, displayType, onBinSizeChange, onDisplayTypeChange } = this.props;
+    const { avg, min, max, binSize, type, displayType, attrLabel, recordCountLabel, onBinSizeChange, onDisplayTypeChange } = this.props;
 
     return (
       <div className={cx()}>
         <div className={cx('Graph')} ref={node => this.plotNode = node}></div>
+        <div className={cx('AttrLabel')}>{attrLabel}</div>
+        <div className={cx('RecordCountLabel')}>{recordCountLabel}</div>
         <div className={cx('Summary')}>
           <dl>
             <dt>Mean</dt>

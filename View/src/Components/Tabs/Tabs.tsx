@@ -24,9 +24,9 @@ export default function Tabs(props: Props) {
     <div className={cx('sContainer')}>
       <div className={cx('s')}>
         {props.tabs.map(tab => (
-          <a key={tab.key} onClick={() => props.onTabSelected(tab.key)} className={cx('', activeTab === tab ? 'active' : '')}>
+          <button type="button" key={tab.key} onClick={() => props.onTabSelected(tab.key)} className={cx('', activeTab === tab ? 'active' : '')}>
             {tab.display}
-          </a>
+          </button>
         ))}
       </div>
       <div className={cx('Content')}>
