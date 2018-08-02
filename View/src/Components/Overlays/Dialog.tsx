@@ -4,10 +4,30 @@ import Resizable from 'Components/Display/Resizable';
 import Icon from 'Components/Icon/Icon';
 import Popup from 'Components/Overlays/Popup';
 import { makeClassNameHelper, wrappable } from 'Utils/ComponentUtils';
-import { TabbableContainer } from '..';
 
 let c = makeClassNameHelper('wdk-Dialog');
 let c2 = makeClassNameHelper(' ');
+
+class BodyScrollManager {
+  private refs = new Map<object, boolean>();
+
+  blockScroll(instance: object) {
+    this.refs.set(instance, true);
+    this.updateBodyClass();
+  }
+
+  unblockScroll(instance: object) {
+    this.refs.set(instance, false);
+    this.updateBodyClass();
+  }
+
+  private updateBodyClass() {
+    const classes = document.body.classList;
+    const add = [...this.refs.values()].some(n => n);
+    if (add) classes.add('wdk-ModalOpen');
+    else classes.remove('wdk-ModalOpen');
+  }
+}
 
 type Props = {
   open: boolean;
@@ -24,13 +44,9 @@ type Props = {
 
 class Dialog extends Component<Props> {
 
-  headerNode: Element | null;
+  private static bodyScrollManager = new BodyScrollManager();
 
-  constructor(props: Props) {
-    super(props);
-    this.setHeaderNodeRef = this.setHeaderNodeRef.bind(this);
-    this.handleKeyDown =  this.handleKeyDown.bind(this);
-  }
+  headerNode: Element | null;
 
   makeClassName(suffix = '', ...modifiers: any[]) {
     let { className } = this.props;
@@ -39,17 +55,22 @@ class Dialog extends Component<Props> {
     );
   }
 
-  setHeaderNodeRef(node: Element | null) {
+  setHeaderNodeRef = (node: Element | null) => {
     this.headerNode = node;
   }
 
-  blockScrollingIfModalOpen() {
-    let classes = document.body.classList;
-    if (this.props.modal && this.props.open) classes.add('wdk-ModalOpen');
-    else classes.remove('wdk-ModalOpen');
+  blockScrollingIfModalOpen(prevProps?: Props) {
+    if (
+      prevProps == null ||
+      this.props.modal !== prevProps.modal ||
+      this.props.open !== prevProps.open
+    ) {
+      if (this.props.modal && this.props.open) Dialog.bodyScrollManager.blockScroll(this);
+      else Dialog.bodyScrollManager.unblockScroll(this);
+    }
   }
 
-  handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+  handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if ((event.key === 'Escape' || event.key === 'Esc') && this.props.onClose) {
       this.props.onClose();
     }
@@ -59,8 +80,8 @@ class Dialog extends Component<Props> {
     this.blockScrollingIfModalOpen();
   }
 
-  componentDidUpdate() {
-    this.blockScrollingIfModalOpen();
+  componentDidUpdate(prevProps: Props) {
+    this.blockScrollingIfModalOpen(prevProps);
   }
 
   componentWillUnmount() {
@@ -80,7 +101,7 @@ class Dialog extends Component<Props> {
     } = this.props;
 
     let content = (
-      <div className={this.makeClassName('', this.props.modal && 'modal')} >
+      <div onKeyDown={this.handleKeyDown} className={this.makeClassName('', this.props.modal && 'modal')} >
         <div ref={this.setHeaderNodeRef} className={this.makeClassName('Header')} >
           <div className={this.makeClassName('Title')}>{this.props.title}</div>
           {buttons}
@@ -105,9 +126,7 @@ class Dialog extends Component<Props> {
         open={this.props.open}
         dragHandleSelector={() => this.headerNode as Element}
       >
-        <TabbableContainer autoFocus onKeyDown={this.handleKeyDown}>
-          {content}
-        </TabbableContainer>
+        {content}
       </Popup>
     );
   }
