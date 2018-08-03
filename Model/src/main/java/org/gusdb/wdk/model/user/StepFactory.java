@@ -2,7 +2,10 @@ package org.gusdb.wdk.model.user;
 
 import static org.gusdb.fgputil.db.SqlUtils.setNullableLong;
 import static org.gusdb.fgputil.db.SqlUtils.setNullableString;
+import static org.gusdb.fgputil.functional.Functions.bSwallow;
+import static org.gusdb.fgputil.functional.Functions.fSwallow;
 import static org.gusdb.fgputil.functional.Functions.filter;
+import static org.gusdb.fgputil.functional.Functions.getMapFromList;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ANSWER_FILTER;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ASSIGNED_WEIGHT;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_COLLAPSED_NAME;
@@ -48,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,6 +71,7 @@ import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunctionWithException;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -692,41 +697,33 @@ public class StepFactory {
     // Is this answer a boolean? Import depended steps first.
     Question question = oldStep.getAnswerSpec().getQuestion();
     AnswerFilterInstance filter = oldStep.getAnswerSpec().getLegacyFilter();
-
     Map<String, Param> params = question.getParamMap();
-<<<<<<< .working
-    Map<String, String> paramValues = Functions.getMapFromList(
-        oldStep.getAnswerSpec().getQueryInstanceSpec().toMap().entrySet(), entry -> {
-          String s = entry.toString();
-          return new TwoTuple<String,String>(s,s);
-        });/*
-      Param param = params.get(entry.getKey());
-=======
 
-    Map<String, String> paramValues = oldStep.getParamValues();
-    for (String paramName : paramValues.keySet()) {
-      Param param = params.get(paramName);
-      String paramValue = paramValues.get(paramName);
-
->>>>>>> .merge-right.r22761
+    // define a function to map source stable values to imported stable values
+    BinaryFunctionWithException<Param, String, String> getMappedStableValueForImport = (param, oldValue) -> {
       if (param instanceof AnswerParam) {
-        Optional<Step> oldChildStepOpt = getStepById(Long.parseLong(entry.getValue()));
+        Optional<Step> oldChildStepOpt = getStepById(Long.parseLong(oldValue));
         Step oldChildStep = oldChildStepOpt.orElseThrow(() ->
-          new WdkModelException("Old child step with ID " + entry.getValue() + " could not be found."));
+            new WdkModelException("Old child step with ID " + oldValue + " could not be found."));
         Step newChildStep = importStep(newUser, newStrategyId, oldChildStep, stepIdsMap);
-        return new TwoTuple<String,String>(entry.getKey(), Long.toString(newChildStep.getStepId()));
+        return Long.toString(newChildStep.getStepId());
       }
       else if (param instanceof DatasetParam) {
         DatasetFactory datasetFactory = _wdkModel.getDatasetFactory();
-        long oldUserDatasetId = Long.parseLong(paramValue);
+        long oldUserDatasetId = Long.parseLong(oldValue);
         Dataset oldDataset = datasetFactory.getDataset(oldUser, oldUserDatasetId);
         Dataset newDataset = datasetFactory.cloneDataset(oldDataset, newUser);
-        return new TwoTuple<String,String>(entry.getKey(), Long.toString(newDataset.getDatasetId()));
+        return Long.toString(newDataset.getDatasetId());
       }
       else {
-        return new TwoTuple<String,String>(entry.getKey(), oldParamValue);
+        return oldValue;
       }
-    );*/
+    };
+
+    Map<String, String> paramValues = getMapFromList(
+        oldStep.getAnswerSpec().getQueryInstanceSpec().toMap().entrySet(), entry ->
+          new TwoTuple<String,String>(entry.getKey(),
+              bSwallow(getMappedStableValueForImport).apply(params.get(entry.getKey()), entry.getValue())));
 
     boolean deleted = oldStep.isDeleted();
     int assignedWeight = oldStep.getAnswerSpec().getQueryInstanceSpec().getAssignedWeight();
