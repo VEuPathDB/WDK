@@ -7,7 +7,8 @@ type RKeyboardEvent = React.KeyboardEvent<HTMLDivElement>;
 
 type Props = {
   autoFocus: boolean;
-  onKeyDown: (event: RKeyboardEvent) => void;
+  className?: string;
+  onKeyDown?: (event: RKeyboardEvent) => void;
 }
 
 /**

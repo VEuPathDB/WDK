@@ -4,6 +4,8 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import $ from 'jquery';
 
+import TabbableContainer from 'Components/Display/TabbableContainer';
+
 type Props = {
   /** Should the popup be visible or not? */
   open: boolean;
@@ -78,10 +80,11 @@ export default class Popup extends React.Component<Props> {
 
   containerNode: HTMLElement;
 
+  popupNode: Element | null;
+
   componentDidMount() {
     // Create container node and attatch it to the parent node.
     this.containerNode = document.createElement('div');
-    this.containerNode.className = this.props.className || '';
     const parent = this.props.parentSelector == null ? document.body : this.props.parentSelector();
     if (parent !== this.containerNode.parentNode) {
       parent.appendChild(this.containerNode);
@@ -98,12 +101,13 @@ export default class Popup extends React.Component<Props> {
   }
 
   componentWillUnmount() {
-    $(this.containerNode).draggable('destroy');
+    if (this.popupNode) $(this.popupNode).draggable('destroy');
     this.containerNode.remove();
   }
 
   _callJqueryWithProps() {
-    const $node = $(this.containerNode)
+    if (this.popupNode == null) return;
+    const $node = $(this.popupNode)
       .draggable({
         addClasses: false,
         containment: this.props.containerSelector == null ? false : this.props.containerSelector(),
@@ -124,7 +128,16 @@ export default class Popup extends React.Component<Props> {
   }
 
   render() {
-    return this.containerNode ? ReactDOM.createPortal(this.props.children, this.containerNode) : null;
+    const content = (
+      <TabbableContainer
+        autoFocus
+        className={this.props.className || ''}
+        ref={c => this.popupNode = c && ReactDOM.findDOMNode(c)}
+      >
+        {this.props.children}
+      </TabbableContainer>
+    );
+    return this.containerNode ? ReactDOM.createPortal(content, this.containerNode) : null;
   }
 
 }

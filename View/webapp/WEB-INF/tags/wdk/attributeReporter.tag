@@ -20,6 +20,7 @@
       {
         "attributeName": "${attribute.name}",
         "stepId": ${step.stepId},
+        "questionName": "${step.question.fullName}",
         "recordClassName": "${step.recordClass.fullName}",
         "reporterName": "${reporter.name}"
       }

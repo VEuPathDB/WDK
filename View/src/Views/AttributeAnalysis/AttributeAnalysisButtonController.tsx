@@ -13,6 +13,7 @@ import { ScopedAnalysisAction } from './BaseAttributeAnalysis/BaseAttributeAnaly
 
 type ViewProps = {
   attributeName: string;
+  questionName: string;
   recordClassName: string;
   reporterName: string;
   stepId: number;
@@ -38,10 +39,19 @@ class AttributeAnalysisButtonController extends AbstractViewController<
   renderView() {
     const { recordClassName, reporterName, stepId } = this.props;
     const { globalData, analyses } = this.state;
-    const reporter = Seq.from(globalData.recordClasses)
+
+    const questionAttributes = Seq.from(globalData.questions)
+      .filter(question => question.name === this.props.questionName)
+      .flatMap(question => question.dynamicAttributes)
+
+    const recordClassAttributes = Seq.from(globalData.recordClasses)
       .filter(recordClass => recordClass.name === this.props.recordClassName)
-      .flatMap(recordClass => recordClass.formats)
+      .flatMap(recordClass => recordClass.attributes);
+
+    const reporter = questionAttributes.concat(recordClassAttributes)
+      .flatMap(attribute => attribute.formats)
       .find(format => format.name === this.props.reporterName);
+
     const key = `${this.props.stepId}__${this.props.reporterName}`;
     const analysis = analyses && analyses[key];
 

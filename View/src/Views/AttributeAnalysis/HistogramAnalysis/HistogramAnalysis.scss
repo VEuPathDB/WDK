@@ -1,8 +1,23 @@
 .HistogramAnalysis {
 
+  $graph-height: 400px;
+  $graph-width: 700px;
+
+  &AttrLabel, &RecordCountLabel {
+    display: flex;
+    justify-content: center;
+    font-weight: bold;
+  }
+
+  &AttrLabel {
+    transform: rotate(270deg) translateY(2em);
+    transform-origin: bottom left;
+    width: $graph-height;
+  }
+
   &Graph {
-    width: 700px;
-    height: 400px;
+    width: $graph-width;
+    height: $graph-height;
     margin: auto;
   }
 
