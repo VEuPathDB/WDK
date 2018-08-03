@@ -2,8 +2,7 @@ package org.gusdb.wdk.model.user;
 
 import static org.gusdb.fgputil.db.SqlUtils.setNullableLong;
 import static org.gusdb.fgputil.db.SqlUtils.setNullableString;
-import static org.gusdb.fgputil.functional.Functions.bSwallow;
-import static org.gusdb.fgputil.functional.Functions.fSwallow;
+import static org.gusdb.fgputil.functional.Functions.f2Swallow;
 import static org.gusdb.fgputil.functional.Functions.filter;
 import static org.gusdb.fgputil.functional.Functions.getMapFromList;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ANSWER_FILTER;
@@ -51,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -72,7 +70,6 @@ import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunctionWithException;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.StepImportedEvent;
@@ -84,14 +81,13 @@ import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList;
+import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
 import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -100,8 +96,6 @@ import org.gusdb.wdk.model.user.StepFactoryHelpers.NameCheckInfo;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import net.sf.saxon.instruct.ApplyImports;
 
 /**
  * Provides interface to the database to find, read, and write Step and Strategy objects to DB
@@ -723,7 +717,7 @@ public class StepFactory {
     Map<String, String> paramValues = getMapFromList(
         oldStep.getAnswerSpec().getQueryInstanceSpec().toMap().entrySet(), entry ->
           new TwoTuple<String,String>(entry.getKey(),
-              bSwallow(getMappedStableValueForImport).apply(params.get(entry.getKey()), entry.getValue())));
+              f2Swallow(getMappedStableValueForImport).apply(params.get(entry.getKey()), entry.getValue())));
 
     boolean deleted = oldStep.isDeleted();
     int assignedWeight = oldStep.getAnswerSpec().getQueryInstanceSpec().getAssignedWeight();

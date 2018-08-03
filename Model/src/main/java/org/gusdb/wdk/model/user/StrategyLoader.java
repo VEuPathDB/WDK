@@ -45,6 +45,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -167,8 +168,8 @@ public class StrategyLoader {
   }
 
   private SearchResult doSearch(String sql, Object[] paramValues, Integer[] paramTypes) throws WdkModelException {
-    Map<Long,Strategy> strategies = new LinkedHashMap<>();
-    Map<Long,Step> orphanSteps = new LinkedHashMap<>();
+    List<StrategyBuilder> strategies = new ArrayList<>();
+    List<StepBuilder> orphanSteps = new ArrayList<>();
     try {
       new SQLRunner(_userDbDs, sql, "search-steps-strategies").executeQuery(paramValues, paramTypes, rs -> {
         Strategy currentStrategy = null;
