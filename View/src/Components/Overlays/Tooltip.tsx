@@ -7,7 +7,6 @@
 import $ from 'jquery';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ReactDOMServer from 'react-dom/server';
 import { wrappable } from 'Utils/ComponentUtils';
 
 let defaultOptions = {
@@ -110,7 +109,7 @@ class Tooltip extends React.PureComponent<Props> {
         'Since `open` was provided, `showEvent` and `hideEvent` will be ignored.');
     }
 
-    this.api = $(ReactDOM.findDOMNode(this)).qtip({
+    this.api = $(ReactDOM.findDOMNode(this) as HTMLElement).qtip({
       content: { text: $(this.contentContainer) },
       style: { classes, tip: { corner: showTip } },
       show: { ...defaultOptions.show, solo, event: open == null ? showEvent : false, delay: showDelay },
@@ -130,7 +129,7 @@ class Tooltip extends React.PureComponent<Props> {
   }
 
   _destroyTooltip() {
-    $(ReactDOM.findDOMNode(this)).qtip('destroy');
+    $(ReactDOM.findDOMNode(this) as HTMLElement).qtip('destroy');
   }
 
   render() {

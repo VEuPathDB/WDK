@@ -4,17 +4,19 @@ import { ParamInitAction } from 'Core/ActionCreators/QuestionActionCreators';
 import * as List from 'Params/EnumParam/ListEnumParam';
 import * as TreeBox from 'Params/EnumParam/TreeBoxEnumParam';
 import { isPropsType, Props } from 'Params/Utils';
-import { Action } from 'Utils/ActionCreatorUtils';
+import { Action, isOneOf } from 'Utils/ActionCreatorUtils';
 import { EnumParam, Parameter } from 'Utils/WdkModel';
 
 type State = TreeBox.State;
 
+const isEnumParamAction = isOneOf(
+  ParamInitAction,
+  TreeBox.ExpandedListSet,
+  TreeBox.SearchTermSet
+);
+
 export function reduce(state: State, action: Action): State {
-  if (!(
-    ParamInitAction.test(action) ||
-    TreeBox.ExpandedListSet.test(action) ||
-    TreeBox.SearchTermSet.test(action)
-  )) return state;
+  if (!isEnumParamAction(action)) return state;
   const { parameter } = action.payload;
   if (parameter == null || !isType(parameter)) return state;
   if (TreeBox.isType(parameter)) {

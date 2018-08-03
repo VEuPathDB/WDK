@@ -109,8 +109,10 @@ export default class LegacyParamController extends AbstractViewController<
       this.props.paramValues != null
     ) {
       const node = ReactDOM.findDOMNode(this);
-      const event = new Event(UNRECOVERABLE_PARAM_ERROR_EVENT, { bubbles: true, cancelable: false });
-      node.dispatchEvent(event);
+      if (node) {
+        const event = new Event(UNRECOVERABLE_PARAM_ERROR_EVENT, { bubbles: true, cancelable: false });
+        node.dispatchEvent(event);
+      }
     }
   }
 
