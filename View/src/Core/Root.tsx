@@ -19,9 +19,9 @@ type Props = {
 };
 
 
-let REACT_ROUTER_LINK_CLASSNAME = 'wdk-ReactRouterLink';
-let GLOBAL_CLICK_HANDLER_SELECTOR = `a:not(.${REACT_ROUTER_LINK_CLASSNAME})`;
-let RELATIVE_LINK_REGEXP = new RegExp('^((' + location.protocol + ')?//)?' + location.host);
+const REACT_ROUTER_LINK_CLASSNAME = 'wdk-ReactRouterLink';
+const GLOBAL_CLICK_HANDLER_SELECTOR = `a:not(.${REACT_ROUTER_LINK_CLASSNAME})`;
+const RELATIVE_LINK_REGEXP = new RegExp('^((' + location.protocol + ')?//)?' + location.host);
 
 /** WDK Application Root */
 export default class Root extends React.Component<Props> {
@@ -66,9 +66,9 @@ export default class Root extends React.Component<Props> {
     };
   }
 
-  handleGlobalClick(event: JQuery.Event<HTMLAnchorElement>) {
-    const target = event.currentTarget;
-    if (!target.href) return;
+  handleGlobalClick(event: MouseEvent) {
+    const target = event.target;
+    if (!target || !(target instanceof HTMLAnchorElement)) return;
 
     let hasModifiers = event.metaKey || event.altKey || event.shiftKey || event.ctrlKey || event.button !== 0;
     let href = (target.getAttribute('href') || '').replace(RELATIVE_LINK_REGEXP, '');
@@ -80,11 +80,11 @@ export default class Root extends React.Component<Props> {
 
   componentDidMount() {
     /** install global click handler */
-    $(document).on('click', GLOBAL_CLICK_HANDLER_SELECTOR, this.handleGlobalClick);
+    document.addEventListener('click', this.handleGlobalClick)
   }
 
   componentWillUnmount() {
-    $(document).off('click', GLOBAL_CLICK_HANDLER_SELECTOR, this.handleGlobalClick);
+    document.removeEventListener('click', this.handleGlobalClick)
     this.removeHistoryListener();
   }
 

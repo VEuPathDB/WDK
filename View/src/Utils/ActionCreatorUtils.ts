@@ -49,15 +49,18 @@ export interface ActionCreator<T extends Action> {
 
 export type ActionCreatorRecord<T extends Action> = Record<string, ActionCreator<T>>
 
+type Type = string | symbol;
+type Payload = Action['payload']
+
 /**
  * An Action that carries the type of its `type` and `payload` properties
  */
-export interface TypedAction<T extends string, S> {
+export interface TypedAction<T extends Type, S extends Payload> {
   type: T;
   payload: S;
 }
 
-export interface TypedActionCreator<T extends string, S> {
+export interface TypedActionCreator<T extends Type, S extends Payload> {
 
   /** String used to identify action type. */
   type: T;
@@ -69,7 +72,7 @@ export interface TypedActionCreator<T extends string, S> {
   create(payload: S): TypedAction<T, S>;
 }
 
-interface EmptyTypedActionCreator<T extends string> {
+interface EmptyTypedActionCreator<T extends Type> {
 
   /** String used to identify action type. */
   type: T;
@@ -86,9 +89,9 @@ interface EmptyTypedActionCreator<T extends string> {
  * Returns a module that can be used to create Actions. This provides many useful
  * properties to reduce boilerplate while retaining maximum type safety.
  */
-export function makeActionCreator<T extends string>(type: T): EmptyTypedActionCreator<T>
-export function makeActionCreator<S, T extends string>(type: T): TypedActionCreator<T, S>
-export function makeActionCreator(type: string) {
+export function makeActionCreator<T extends Type>(type: T): EmptyTypedActionCreator<T>
+export function makeActionCreator<S extends Payload, T extends Type>(type: T): TypedActionCreator<T, S>
+export function makeActionCreator(type: Type) {
   return { type, create, test };
 
   function create(payload?: any) {
@@ -100,7 +103,7 @@ export function makeActionCreator(type: string) {
   }
 }
 
-export function isOneOf<T extends string, S>(...actionCreators: TypedActionCreator<T, S>[]) {
+export function isOneOf<T extends Type, S extends Payload>(...actionCreators: TypedActionCreator<T, S>[]) {
   return function isType(action: Action): action is TypedAction<T, S> {
     return actionCreators.some(ac => ac.test(action));
   }

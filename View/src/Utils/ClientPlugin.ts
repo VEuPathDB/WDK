@@ -101,7 +101,7 @@ const findPlugin = (registry: ClientPluginRegistryEntry[]) => memoize((context: 
 }, JSON.stringify)
 
 function mergeReduce(locate: LocatePlugin) {
-  return function reduce<T>(context: PluginContext, state: T, action: Action) {
+  return function reduce<T extends object | undefined>(context: PluginContext, state: T, action: Action) {
     const plugin = locate(context);
     return plugin ? plugin.reduce(state, action) : defaultReduce(state, action);
   }
