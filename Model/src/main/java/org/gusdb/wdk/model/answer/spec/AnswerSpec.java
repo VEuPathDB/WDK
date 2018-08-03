@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model.answer.spec;
 
 import static org.gusdb.fgputil.functional.Functions.filter;
-import static org.gusdb.fgputil.functional.Functions.nSwallow;
+import static org.gusdb.fgputil.functional.Functions.f0Swallow;
 
 import java.util.List;
 import java.util.Map;
@@ -84,7 +84,7 @@ public class AnswerSpec implements Validateable {
       _viewFilters = viewFilters.buildInvalid();
     }
     else {
-      _question = nSwallow(() -> wdkModel.getQuestion(questionName)).apply();
+      _question = f0Swallow(() -> wdkModel.getQuestion(questionName)).apply();
       _legacyFilter = getAssignedLegacyFilter(validation);
       _queryInstanceSpec = queryInstanceSpec.buildValidated(_question.getQuery(), validationLevel);
       if (_queryInstanceSpec.isValid()) {

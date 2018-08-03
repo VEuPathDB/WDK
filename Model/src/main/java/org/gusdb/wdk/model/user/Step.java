@@ -64,6 +64,62 @@ public class Step implements StrategyElement {
 
   public static final int RESET_SIZE_FLAG = -1;
 
+  public static class StepBuilder {
+
+    private final WdkModel _wdkModel;
+    private long _userId;
+    private long _stepId;
+    private Long _strategyId;
+    private Date _createdTime;
+    private Date _lastRunTime;
+    private String _customName;
+    private boolean _isDeleted = false;
+    private boolean _isValidFlag = true;
+    private int _estimateSize = -1;
+    private boolean _collapsible = false;
+    private String _collapsedName = null;
+    private String _projectId;
+    private String _projectVersion;
+    private long _previousStepId = 0;
+    private long _childStepId = 0;
+    private AnswerSpec _answerSpec;
+
+    // set during finish() from IDs in DB
+    private User _user;
+    private Strategy _strategy;
+
+    private StepBuilder(WdkModel wdkModel) {
+      
+    }
+
+    /**
+     * Constructor that takes an existing step
+     * 
+     * @param step step to make a shallow copy of
+     */
+    private StepBuilder(Step step) {
+      _wdkModel = step._wdkModel;
+      _user = step._user;
+      _userId = step._userId;
+      _stepId = step._stepId;
+      _createdTime = step._createdTime;
+      _lastRunTime = step._lastRunTime;
+      _customName = step._customName;
+      _isDeleted = step._isDeleted;
+      _collapsible = step._collapsible;
+      _collapsedName = step._collapsedName;
+      _projectId = step._projectId;
+      _projectVersion = step._projectVersion;
+      _isValidFlag = step._isValidFlag;
+      _estimateSize = step._estimateSize;
+      _previousStepId = step._previousStepId;
+      _childStepId = step._childStepId;
+      _strategyId = step._strategyId;
+      _inMemoryOnly = step._inMemoryOnly;
+      }
+    }
+  }
+
   // set during Step object creation
   private final WdkModel _wdkModel;
   private final StepFactory _stepFactory;
@@ -107,12 +163,12 @@ public class Step implements StrategyElement {
 
   // Steps within the "main branch" strategy flow
   // Next Step must be combined step (e.g. transform or boolean/span-logic (two-answer function))
-  //private Step _nextStep = null;
+  // private Step _nextStep = null;
   // Previous step could be first step (=leaf), or combined step
-  //private Step _previousStep = null;
+  // private Step _previousStep = null;
 
   // Child can be a "normal" leaf, or collapsible version of leaf, boolean, or transform
-  //private Step _childStep = null;
+  // private Step _childStep = null;
 
   /**
    * First set when step was created and answer generated, size stored in DB. So can use this to show step
@@ -131,7 +187,7 @@ public class Step implements StrategyElement {
   // This allows the UI to show a "broken" step but not hose the whole strategy
   private Exception _exception;
 
-  // Set this if this step should not be written to /read from db.  A hack in support of
+  // Set this if this step should not be written to /read from db. A hack in support of
   // summary views, until they are refactored using service.
   private boolean _inMemoryOnly = false;
 
@@ -145,7 +201,7 @@ public class Step implements StrategyElement {
    *          id of the owner of this step
    * @param stepId
    *          id of the step
-   * @throws WdkModelException 
+   * @throws WdkModelException
    */
   public Step(WdkModel wdkModel, long userId, long stepId) {
     _wdkModel = wdkModel;
@@ -155,41 +211,6 @@ public class Step implements StrategyElement {
     _stepId = stepId;
     _answerValueCache = new AnswerValueCache(this);
     _isDeleted = false;
-  }
-
-  /**
-   * Constructor that takes an existing step and makes a shallow copy of the
-   * existing private fields.
-   * 
-   * @param step Step to make a shallow copy of
-   * @throws WdkModelException 
-   */
-  public Step(Step step) throws WdkModelException {
-    _wdkModel = step._wdkModel;
-    _stepFactory = step._stepFactory;
-    _user = step._user;
-    _userId = step._userId;
-    _stepId = step._stepId;
-    _createdTime = step._createdTime;
-    _lastRunTime = step._lastRunTime;
-    _customName = step._customName;
-    _isDeleted = step._isDeleted;
-    _collapsible = step._collapsible;
-    _collapsedName = step._collapsedName;
-    _projectId = step._projectId;
-    _projectVersion = step._projectVersion;
-    _isValidFlag = step._isValidFlag;
-    _estimateSize = step._estimateSize;
-    _estimateSizeRefreshed = step._estimateSizeRefreshed;
-    _previousStepId = step._previousStepId;
-    _childStepId = step._childStepId;
-    _exception = step._exception;
-    _strategyId = step._strategyId;
-    _inMemoryOnly = step._inMemoryOnly;
-
-    // answer value cache copy is NOT shallow- if caller wants a new step, they are
-    // probably going to modify it to get a different answer value
-    _answerValueCache = new AnswerValueCache(this);
   }
 
   public Step getPreviousStep() {
@@ -214,8 +235,8 @@ public class Step implements StrategyElement {
   }
 
   /**
-   * Basic getter than just returns the current value for this field without checks,
-   * lazy loading, or side effects (e.g., database updates)
+   * Basic getter than just returns the current value for this field without checks, lazy loading, or side
+   * effects (e.g., database updates)
    * 
    * @return "current" estimate size as shown in DB
    */
@@ -249,13 +270,11 @@ public class Step implements StrategyElement {
     _estimateSize = estimateSize;
   }
 
-  /** 
-   * Get the real result size from the answerValue.  AnswerValue is responsible for caching, if any
+  /**
+   * Get the real result size from the answerValue. AnswerValue is responsible for caching, if any
    */
   public int getResultSize() throws WdkModelException {
-    return _estimateSizeRefreshed ? _estimateSize :
-           !_answerSpec.isValid() ? 0 :
-           recalculateResultSize();
+    return _estimateSizeRefreshed ? _estimateSize : !_answerSpec.isValid() ? 0 : recalculateResultSize();
   }
 
   private int recalculateResultSize() throws WdkModelException {
@@ -278,7 +297,8 @@ public class Step implements StrategyElement {
   @Deprecated
   public void setParentStep(Step parentStep) throws WdkModelException {
     // check if this is a no-op
-    if (parentStep.getStepId() == _parentStepId) return;
+    if (parentStep.getStepId() == _parentStepId)
+      return;
     verifySameOwnerAndProject(this, parentStep);
     _strategy.appendStep(parentStep);
     _parentStepId = parentStep.getStepId();
@@ -321,9 +341,8 @@ public class Step implements StrategyElement {
   }
 
   private void updateAnswerParamValue(String paramName, long stepId) {
-    _answerSpec = AnswerSpec.builder(_answerSpec)
-        .setParamValue(paramName, Long.toString(stepId))
-        .build(_answerSpec.getValidationBundle().getLevel());
+    _answerSpec = AnswerSpec.builder(_answerSpec).setParamValue(paramName, Long.toString(stepId)).build(
+        _answerSpec.getValidationBundle().getLevel());
   }
 
   public boolean isFirstStep() {
@@ -389,9 +408,8 @@ public class Step implements StrategyElement {
 
   public String getDisplayName() {
     Question question = _answerSpec.getQuestion();
-    return question == null ?
-        (_customName != null ? _customName : _answerSpec.getQuestionName()) :
-        question.getDisplayName();
+    return question == null ? (_customName != null ? _customName : _answerSpec.getQuestionName())
+        : question.getDisplayName();
   }
 
   /**
@@ -450,14 +468,15 @@ public class Step implements StrategyElement {
   // FIXME: is this really how we should define this method; maybe should be dependent on # of AnswerParam
   public boolean isTransform() {
     Question question = _answerSpec.getQuestion();
-    return question == null ? false : question .isTransform();
+    return question == null ? false : question.isTransform();
   }
 
   // saves attributes of the step that do NOT impact results or parent steps
   public void update(boolean updateTime) throws WdkModelException {
     // HACK: don't update if this is an in-memory only Step
     // remove this once we refactor the world of summary views, so they don't need such Steps
-    if (_inMemoryOnly) return;
+    if (_inMemoryOnly)
+      return;
     _stepFactory.updateStep(getUser(), this, updateTime);
   }
 
@@ -480,19 +499,20 @@ public class Step implements StrategyElement {
     // get list of steps dependent on this one; all their results are now invalid
     List<Long> stepIds = _stepFactory.getStepAndParents(getStepId());
     Functions.filterInPlace(stepIds, new Predicate<Long>() {
-      @Override public boolean test(Long candidateStepId) {
+      @Override
+      public boolean test(Long candidateStepId) {
         // keep unless id is for this step
         return (getStepId() != candidateStepId.longValue());
       }
     });
 
     // alert listeners that this step has been revised and await results
-    Events.triggerAndWait(new StepRevisedEvent(this, unmodifiedVersion), new WdkModelException(
-        "Unable to process all StepRevised events for revised step " + getStepId()));
+    Events.triggerAndWait(new StepRevisedEvent(this, unmodifiedVersion),
+        new WdkModelException("Unable to process all StepRevised events for revised step " + getStepId()));
 
     // alert listeners that the step results have changed for these steps and wait for completion
-    Events.triggerAndWait(new StepResultsModifiedEvent(stepIds), new WdkModelException(
-        "Unable to process all StepResultsModified events for step IDs: " +
+    Events.triggerAndWait(new StepResultsModifiedEvent(stepIds),
+        new WdkModelException("Unable to process all StepResultsModified events for step IDs: " +
             FormatUtil.arrayToString(stepIds.toArray())));
 
     // refresh in-memory step here in case listeners also modified it
@@ -500,12 +520,12 @@ public class Step implements StrategyElement {
   }
 
   /**
-   * Refreshes some key fields of this step with the current values in the DB.  This
-   * is to support outside modification of the step by event listeners.  If a listener
-   * modifies the step in response to a change we made, we will want to reflect these
-   * secondary changes in this current execution flow.
+   * Refreshes some key fields of this step with the current values in the DB. This is to support outside
+   * modification of the step by event listeners. If a listener modifies the step in response to a change we
+   * made, we will want to reflect these secondary changes in this current execution flow.
    * 
-   * @throws WdkModelException if unable to load updated step
+   * @throws WdkModelException
+   *           if unable to load updated step
    */
   private void refreshAnswerSpec() throws WdkModelException {
     Step step = _stepFactory.getStepById(getStepId());
@@ -567,9 +587,8 @@ public class Step implements StrategyElement {
   }
 
   public Map<String, String> getParamNames() {
-    return _answerSpec.getQuestion() == null ?
-        new LinkedHashMap<String, String>() :
-        getMapFromList(_answerSpec.getQuestion().getQuery().getParamMap().values(),
+    return _answerSpec.getQuestion() == null ? new LinkedHashMap<String, String>()
+        : getMapFromList(_answerSpec.getQuestion().getQuery().getParamMap().values(),
             param -> new TwoTuple<>(param.getName(), param.getPrompt()));
   }
 
@@ -743,9 +762,8 @@ public class Step implements StrategyElement {
   public Step createStep(AnswerFilterInstance filter, int assignedWeight) throws WdkModelException {
     // make sure caller is asking for something new; if not, return this Step
     AnswerFilterInstance oldFilter = _answerSpec.getLegacyFilter();
-    if (_answerSpec.getAssignedWeight() == assignedWeight &&
-        ((filter == null && oldFilter == null) ||
-         (filter != null && oldFilter != null && filter.getName().equals(oldFilter.getName())))) {
+    if (_answerSpec.getAssignedWeight() == assignedWeight && ((filter == null && oldFilter == null) ||
+        (filter != null && oldFilter != null && filter.getName().equals(oldFilter.getName())))) {
       return this;
     }
 
@@ -771,8 +789,9 @@ public class Step implements StrategyElement {
   public Step deepClone(Long strategyId, Map<Long, Long> stepIdMap) throws WdkModelException {
     Step step;
     if (!isCombined()) {
-      step = StepUtilities.createStep(_user, strategyId, _answerSpec.getQuestion(), _answerSpec.getQueryInstanceSpec().toMap(),
-          _answerSpec.getLegacyFilter(), _isDeleted, _answerSpec.getAssignedWeight(), _answerSpec.getFilterOptions());
+      step = StepUtilities.createStep(_user, strategyId, _answerSpec.getQuestion(),
+          _answerSpec.getQueryInstanceSpec().toMap(), _answerSpec.getLegacyFilter(), _isDeleted,
+          _answerSpec.getAssignedWeight(), _answerSpec.getFilterOptions());
     }
     else {
       Question question = _answerSpec.getQuestion();
@@ -789,7 +808,8 @@ public class Step implements StrategyElement {
         paramValues.put(paramName, paramValue);
       }
       step = StepUtilities.createStep(getUser(), strategyId, question, paramValues,
-          _answerSpec.getLegacyFilter(), _isDeleted, _answerSpec.getAssignedWeight(), _answerSpec.getFilterOptions());
+          _answerSpec.getLegacyFilter(), _isDeleted, _answerSpec.getAssignedWeight(),
+          _answerSpec.getFilterOptions());
     }
 
     stepIdMap.put(getStepId(), step.getStepId());
@@ -799,15 +819,16 @@ public class Step implements StrategyElement {
     step._collapsible = _collapsible;
     step.update(false);
 
-    Events.triggerAndWait(new StepCopiedEvent(this, step), new WdkModelException(
-        "Unable to execute all operations subsequent to step copy."));
+    Events.triggerAndWait(new StepCopiedEvent(this, step),
+        new WdkModelException("Unable to execute all operations subsequent to step copy."));
 
     return step;
   }
 
   public boolean isFiltered() throws WdkModelException {
     // first check if new filter has been applied
-    if (_answerSpec.getFilterOptions() != null && _answerSpec.getFilterOptions().isFiltered(_answerSpec.toSimpleAnswerSpec()))
+    if (_answerSpec.getFilterOptions() != null &&
+        _answerSpec.getFilterOptions().isFiltered(_answerSpec.toSimpleAnswerSpec()))
       return true;
 
     AnswerFilterInstance filter = _answerSpec.getLegacyFilter();
@@ -849,8 +870,10 @@ public class Step implements StrategyElement {
       jsStep.put("collapsed", this.isCollapsible());
       jsStep.put("collapsedName", this.getCollapsedName());
       jsStep.put("deleted", _isDeleted);
-      jsStep.put(ParamFiltersClobFormat.KEY_PARAMS, ParamFiltersClobFormat.formatParams(_answerSpec.getQueryInstanceSpec()));
-      jsStep.put(ParamFiltersClobFormat.KEY_FILTERS, ParamFiltersClobFormat.formatFilters(_answerSpec.getFilterOptions()));
+      jsStep.put(ParamFiltersClobFormat.KEY_PARAMS,
+          ParamFiltersClobFormat.formatParams(_answerSpec.getQueryInstanceSpec()));
+      jsStep.put(ParamFiltersClobFormat.KEY_FILTERS,
+          ParamFiltersClobFormat.formatFilters(_answerSpec.getFilterOptions()));
 
       Step childStep = getChildStep();
       if (childStep != null) {
@@ -865,7 +888,7 @@ public class Step implements StrategyElement {
       if (!forChecksum) {
         jsStep.put("size", _estimateSize);
       }
-     
+
       if (this.isCollapsible()) { // a sub-strategy, needs to get order number
         String subStratId = strategyId + "_" + _stepId;
         int order = getUser().getSession().getStrategyOrder(subStratId);
@@ -941,7 +964,8 @@ public class Step implements StrategyElement {
    * @return an AnswerParam
    */
   public AnswerParam getPreviousStepParam() {
-    if (!hasValidQuestion()) return null;
+    if (!hasValidQuestion())
+      return null;
     Param[] params = _answerSpec.getQuestion().getParams();
     for (Param param : params) {
       if (param instanceof AnswerParam) {
@@ -964,7 +988,8 @@ public class Step implements StrategyElement {
   }
 
   public AnswerParam getChildStepParam() {
-    if (!hasValidQuestion()) return null;
+    if (!hasValidQuestion())
+      return null;
     Param[] params = _answerSpec.getQuestion().getParams();
     int index = 0;
     for (Param param : params) {
@@ -1029,7 +1054,6 @@ public class Step implements StrategyElement {
     return _wdkModel.getStepAnalysisFactory().hasCompleteAnalyses(this);
   }
 
-
   public String getType() {
     RecordClass recordClass = getRecordClass();
     return recordClass == null ? null : getRecordClass().getFullName();
@@ -1088,21 +1112,23 @@ public class Step implements StrategyElement {
 
   public void setAnswerValuePaging(int start, int end) {
     _answerValueCache.setPaging(start, end);
-    
+
   }
 
   public void setInMemoryOnly(boolean inMemoryOnly) {
     _inMemoryOnly = inMemoryOnly;
   }
-  
+
   public boolean hasAnswerParams() {
-    if (!hasValidQuestion()) return false;
-    for(Param param : _answerSpec.getQuestion().getParams()) {
-      if(param instanceof AnswerParam) return true;
+    if (!hasValidQuestion())
+      return false;
+    for (Param param : _answerSpec.getQuestion().getParams()) {
+      if (param instanceof AnswerParam)
+        return true;
     }
     return false;
   }
-  
+
   public boolean isAnswerSpecComplete() {
     return hasAnswerParams() ? _strategyId != null : true;
   }
@@ -1115,8 +1141,7 @@ public class Step implements StrategyElement {
 
       // 2. Confirm left and right child null if strategyId = null
       if (_strategyId == null &&
-          (_childStepId != 0 || _childStep != null ||
-           _previousStepId != 0 || _previousStep != null)) {
+          (_childStepId != 0 || _childStep != null || _previousStepId != 0 || _previousStep != null)) {
         return setInvalid(InvalidReason.CHILD_STEPS_OUTSIDE_STRATEGY);
       }
 
