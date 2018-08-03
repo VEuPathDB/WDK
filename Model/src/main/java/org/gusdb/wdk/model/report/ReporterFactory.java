@@ -2,11 +2,17 @@ package org.gusdb.wdk.model.report;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.json.JSONObject;
 
@@ -35,12 +41,14 @@ public class ReporterFactory {
 
   private static Reporter createReporterInstance(AnswerValue answerValue, String reporterName) throws WdkModelException {
 
-    RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-    Map<String, ReporterRef> rptMap = recordClass.getReporterMap();
+    Question question = answerValue.getQuestion();
+    RecordClass recordClass = question.getRecordClass();
+    Map<String, ReporterRef> rptMap = question.getReporterMap();
 
     ReporterRef reporterRef = rptMap.get(reporterName);
     if (reporterRef == null) {
-      throw new WdkModelException("The reporter " + reporterName + " is not registered for " + recordClass.getFullName());
+      throw new WdkModelException("The reporter " + reporterName + " is not registered for " +
+          "question " + question.getFullName() + " or record class " + recordClass.getFullName());
     }
 
     String implClassName = reporterRef.getImplementation();

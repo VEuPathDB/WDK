@@ -694,12 +694,21 @@ public class StepFactory {
     AnswerFilterInstance filter = oldStep.getAnswerSpec().getLegacyFilter();
 
     Map<String, Param> params = question.getParamMap();
+<<<<<<< .working
     Map<String, String> paramValues = Functions.getMapFromList(
         oldStep.getAnswerSpec().getQueryInstanceSpec().toMap().entrySet(), entry -> {
           String s = entry.toString();
           return new TwoTuple<String,String>(s,s);
         });/*
       Param param = params.get(entry.getKey());
+=======
+
+    Map<String, String> paramValues = oldStep.getParamValues();
+    for (String paramName : paramValues.keySet()) {
+      Param param = params.get(paramName);
+      String paramValue = paramValues.get(paramName);
+
+>>>>>>> .merge-right.r22761
       if (param instanceof AnswerParam) {
         Optional<Step> oldChildStepOpt = getStepById(Long.parseLong(entry.getValue()));
         Step oldChildStep = oldChildStepOpt.orElseThrow(() ->

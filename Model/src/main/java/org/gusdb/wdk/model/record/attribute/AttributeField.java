@@ -191,7 +191,7 @@ public abstract class AttributeField extends Field implements Cloneable {
           throw new WdkModelException("The reporter '" + name
               + "' is duplicated in attribute " + _name);
         reporter.excludeResources(projectId);
-        _reporterMap.put(getName() + "/" + name, reporter);  // prepend this attribute's name to the reporter for uniqueness
+        _reporterMap.put(name, reporter);
       }
     }
     _reporterList = null;

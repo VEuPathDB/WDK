@@ -107,6 +107,8 @@ const Histogram = lazy(render => require([
 
     // get data and labels
     const [ data, labels ] = convertData(this.props);
+    // apply log10 to data for plotting
+    const plotData = logarithm ? data.map(entry => [ entry[0], Math.log10(entry[1]) ]) : data;
 
     const binLabel = attrLabel;
     const sizeLabel = recordCountLabel;
@@ -115,7 +117,7 @@ const Histogram = lazy(render => require([
     // draw plot
     const plotCanvas = $(this.plotNode);
     let previousPoint: any = null;
-    $.plot(plotCanvas, [ data ], options);
+    $.plot(plotCanvas, [ plotData ], options);
     plotCanvas
       .off("plothover")
       .on("plothover", (event, pos, item) => {
@@ -123,10 +125,11 @@ const Histogram = lazy(render => require([
           if (previousPoint != item.dataIndex) {
             previousPoint = item.dataIndex;
             $("#flot-tooltip").remove();
-            const data = item.series.data[item.dataIndex];
-            const typeValue = (logarithm ? 'log('+data[1]+')' : data[1]);
+            const entry = data[item.dataIndex];
+            const typeValue = entry[1];
             const content = sizeLabel + " = " + typeValue + ", in " + binLabel + " = " + labels[item.dataIndex][1];
-            showTooltip(item.pageX, item.pageY, content);
+            const logNote = logarithm ? `<br/><br/><em>log10(${typeValue}) = ${plotData[item.dataIndex][1].toFixed(2)}</em>` : '';
+            showTooltip(item.pageX, item.pageY, content + logNote);
           }
         } else {
           $("#flot-tooltip").remove();
@@ -143,23 +146,25 @@ const Histogram = lazy(render => require([
     return (
       <div className={cx()}>
         <div className={cx('Graph')} ref={node => this.plotNode = node}></div>
-        <div className={cx('AttrLabel')}>{attrLabel}</div>
+        <div className={cx('AttrLabel')}>{displayType === 'logarithm' ? `log10(${attrLabel})` : attrLabel}</div>
         <div className={cx('RecordCountLabel')}>{recordCountLabel}</div>
-        <div className={cx('Summary')}>
-          <dl>
-            <dt>Mean</dt>
-            <dd>{avg}</dd>
-            <dt>Min</dt>
-            <dd>{min}</dd>
-            <dt>Max</dt>
-            <dd>{max}</dd>
-          </dl>
-        </div>
         {type === 'category' ? null : (
-          <div className={cx('Controls')}>
-            <label>Size of bins: <input type="number" min={min} max={max} value={binSize} onChange={e => onBinSizeChange(Number(e.target.value))} /></label>
-            <input className={cx('Slider')} type="range" min={min} max={max} onChange={e => onBinSizeChange(Number(e.target.value))} value={binSize}/>
-          </div>
+          <>
+            <div className={cx('Summary')}>
+              <dl>
+                <dt>Mean</dt>
+                <dd>{avg}</dd>
+                <dt>Min</dt>
+                <dd>{min}</dd>
+                <dt>Max</dt>
+                <dd>{max}</dd>
+              </dl>
+            </div>
+            <div className={cx('Controls')}>
+              <label>Size of bins: <input type="number" min={min} max={max} value={binSize} onChange={e => onBinSizeChange(Number(e.target.value))} /></label>
+              <input className={cx('Slider')} type="range" min={min} max={max} onChange={e => onBinSizeChange(Number(e.target.value))} value={binSize}/>
+            </div>
+          </>
         )}
         <div className={cx('Controls')}>
           <div>Choose column display:</div>
@@ -217,7 +222,7 @@ function convertCategoryData(props: HistogramProps): SeriesData {
     }
 
     // add data into bins
-    if (displayType === 'logarithm') count = Math.log(count);
+    // if (displayType === 'logarithm') count = Math.log10(count);
     bins.push([ i, count ]);
     labels.push([ i, label ]);
   }
@@ -262,7 +267,7 @@ function convertNumericData(props: HistogramProps): SeriesData {
       const upper = (type == "int") ? numberFormat.format((tmpBin[1] - 1)) + "]" : bin[1] + ")";
       label = "[" + bin[0] + ", " + upper;
     }
-    if (displayType === 'logarithm') count = Math.log(count);
+    // if (displayType === 'logarithm') count = Math.log10(count);
     let j = counter++;
     bins.push([ j, count ]);
     labels.push([ j, label ]);
