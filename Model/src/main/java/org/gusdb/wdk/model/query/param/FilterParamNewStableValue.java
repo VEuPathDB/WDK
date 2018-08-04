@@ -15,6 +15,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.CompleteValidStableValues;
+import org.gusdb.wdk.model.query.param.values.ValidStableValuesFactory.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -83,7 +84,7 @@ public class FilterParamNewStableValue {
    * 
    * @return err message if any. null if valid
    */
-   String validateSyntaxAndSemantics(User user, CompleteValidStableValues contextParamValues, DataSource dataSource) throws WdkModelException {
+   String validateSyntaxAndSemantics(User user, PartiallyValidatedStableValues contextParamValues, DataSource dataSource) throws WdkModelException {
 
     // validate syntax
     String errmsg = validateSyntax();

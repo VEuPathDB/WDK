@@ -1,17 +1,14 @@
 package org.gusdb.wdk.service.request.answer;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.gusdb.wdk.beans.ParamValue;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.filter.FilterOptionList;
+import org.gusdb.wdk.model.query.param.values.StableValues;
 import org.gusdb.wdk.model.question.Question;
 
 public class AnswerSpec {
 
   private final Question _question;
-  private Map<String, ParamValue> _params = new HashMap<>();
+  private StableValues _params;
   private AnswerFilterInstance _legacyFilter;
   private FilterOptionList _filters;
   private FilterOptionList _viewFilters;
@@ -25,10 +22,10 @@ public class AnswerSpec {
     return _question;
   }
 
-  public Map<String, ParamValue> getParamValues() {
+  public StableValues getParamValues() {
     return _params;
   }
-  void setParamValues(Map<String, ParamValue> params) {
+  void setParamValues(StableValues params) {
     _params = params;
   }
 

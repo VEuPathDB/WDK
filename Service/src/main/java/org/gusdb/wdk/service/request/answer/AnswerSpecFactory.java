@@ -15,8 +15,11 @@ import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.FilterOption;
 import org.gusdb.wdk.model.filter.FilterOptionList;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.values.StableValues;
+import org.gusdb.wdk.model.query.param.values.WriteableStableValues;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
@@ -38,21 +41,12 @@ public class AnswerSpecFactory {
   public static AnswerSpec createFromStep(Step step) throws WdkModelException {
     Question question = step.getQuestion();
     AnswerSpec answerSpec = new AnswerSpec(question);
-    answerSpec.setParamValues(toParamValueMap(question, step.getParamValues()));
+    answerSpec.setParamValues(step.getParamValues());
     answerSpec.setLegacyFilter(step.getFilter());
     answerSpec.setFilterValues(step.getFilterOptions());
     answerSpec.setViewFilterValues(step.getViewFilterOptions());
     answerSpec.setWeight(step.getAssignedWeight());
     return answerSpec;
-  }
-
-  private static Map<String, ParamValue> toParamValueMap(Question question, Map<String, String> paramValues) {
-    Map<String, Param> questionParams = question.getParamMap();
-    Map<String, ParamValue> paramValueMap = new HashMap<>();
-    for (String key : paramValues.keySet()) {
-      paramValueMap.put(key, new ParamValue(questionParams.get(key), paramValues.get(key)));
-    }
-    return paramValueMap;
   }
 
   /**
@@ -146,11 +140,11 @@ public class AnswerSpecFactory {
     return filterList;
   }
 
-  private static Map<String, ParamValue> parseParamValues(JSONObject paramsJson,
+  private static StableValues parseParamValues(JSONObject paramsJson,
       Question question, User user, boolean expectIncompleteSpec) throws WdkUserException, WdkModelException {
     // parse param values and validate
     Map<String, Param> expectedParams = question.getParamMap();
-    Map<String, String> contextValues = getContextValues(paramsJson);
+    StableValues contextValues = parseStableValues(paramsJson, question.getQuery());
 
     // loop through expected params and build valid list of values from request
     Map<String, ParamValue> paramValues = new HashMap<>();
@@ -184,11 +178,18 @@ public class AnswerSpecFactory {
     return paramValues;
   }
 
-  // TODO: Would like to return Map<String,JsonValue> here but need to upgrade to javax.json.
-  //       For now, return Map<String,String> where value might be null if incoming value is JSONObject.NULL
-  private static Map<String, String> getContextValues(
-      JSONObject contextObject) throws JSONException, WdkUserException {
-    Map<String, String> contextValues = new HashMap<>();
+  /**
+   * Returns map of stable values. Value might be null if incoming value is JSONObject.NULL
+   * 
+   * @param contextObject
+   * @param query
+   * @return
+   * @throws JSONException
+   * @throws WdkUserException
+   */
+  private static StableValues parseStableValues(
+      JSONObject contextObject, Query query) throws JSONException, WdkUserException {
+    WriteableStableValues contextValues = new WriteableStableValues(query);
     for (String name : JsonUtil.getKeys(contextObject)) {
       Object value = contextObject.get(name);
       if (JSONObject.NULL.equals(value)) {
@@ -219,4 +220,11 @@ public class AnswerSpecFactory {
     return contextValues;
   }
 
+  private static StableValues convertParams(Query query, Map<String, ParamValue> params) {
+    WriteableStableValues conversion = new WriteableStableValues(query);
+    for (ParamValue param : params.values()) {
+      conversion.put(param.getName(), param.getObjectValue() == null ? null : param.getObjectValue().toString());
+    }
+    return conversion;
+  }
 }

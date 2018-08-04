@@ -941,13 +941,13 @@ public class FilterParamNew extends AbstractDependentParam {
    */
   @Override
   protected ParamValidity validateValue(User user, PartiallyValidatedStableValues contextParamValues)
-      throws WdkUserException, WdkModelException {
+      throws WdkModelException {
 
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(contextParamValues.get(getName()), this);
 
     String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());
 
-    if (err != null) throw new WdkUserException(err);
+    return err != null ? contextParamValues.setInvalid(getName(), err) : contextParamValues.setValid(getName());
   }
 
   @Override
@@ -991,7 +991,7 @@ public class FilterParamNew extends AbstractDependentParam {
     return stale;
   }
 
-  protected String getValidStableValue(User user, String stableValueString, Map<String, String> contextParamValues) throws WdkModelException {
+  protected String getValidStableValue(User user, String stableValueString, ValidStableValues contextParamValues) throws WdkModelException {
     if (stableValueString == null) return getDefault();
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);
     String err = stableValue.validateSyntaxAndSemantics(user, contextParamValues, _wdkModel.getAppDb().getDataSource());

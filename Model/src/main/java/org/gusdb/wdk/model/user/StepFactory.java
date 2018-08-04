@@ -276,7 +276,7 @@ public class StepFactory {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Step createStep(User user, Question question, StableValues dependentValues,
+  public Step createStep(User user, Question question, CompleteValidStableValues dependentValues,
       AnswerFilterInstance filter, int pageStart, int pageEnd, boolean deleted, boolean validate,
       int assignedWeight, FilterOptionList filterOptions, String customName, boolean isCollapsible,
       String collapsedName) throws WdkModelException, WdkUserException {
@@ -1262,7 +1262,7 @@ public class StepFactory {
 
     Map<String, Param> params = question.getParamMap();
 
-    Map<String, String> paramValues = oldStep.getParamValues();
+    CompleteValidStableValues paramValues = oldStep.getParamValues();
     for (String paramName : paramValues.keySet()) {
       Param param = params.get(paramName);
       String paramValue = paramValues.get(paramName);

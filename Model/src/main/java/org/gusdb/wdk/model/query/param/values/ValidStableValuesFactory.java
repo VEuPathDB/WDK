@@ -147,6 +147,10 @@ public class ValidStableValuesFactory {
    */
   public static CompleteValidStableValues createFromCompleteValues(User user, StableValues unvalidatedValues)
       throws WdkUserException, WdkModelException {
+    if (unvalidatedValues instanceof CompleteValidStableValues) {
+      // safe to return here since CompleteValidStableValues is immutable
+      return (CompleteValidStableValues)unvalidatedValues;
+    }
     return createFromFullValues(user, unvalidatedValues, true);
   }
 
