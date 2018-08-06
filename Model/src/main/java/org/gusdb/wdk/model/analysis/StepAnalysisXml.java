@@ -149,7 +149,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   }
 
   @Override
-  public int getExpirationMinutes() {
+  public int getExecutionTimeoutThresholdInMinutes() {
     return _expirationMinutes;
   }
   public void setExpirationMinutes(int expirationMinutes) {

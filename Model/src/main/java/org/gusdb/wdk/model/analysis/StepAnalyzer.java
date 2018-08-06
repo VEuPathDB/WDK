@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
+import org.json.JSONObject;
 
 /**
  * Interface to be implemented by Step Analysis Plugins.
@@ -36,6 +37,13 @@ public interface StepAnalyzer {
   public Object getFormViewModel() throws WdkModelException, WdkUserException;
   
   /**
+   * Get JSON containing the information needed to render a result of this StepAnalyzer
+   * @return
+   * @throws WdkModelException
+   */
+  public JSONObject getResultViewModelJson() throws WdkModelException;
+  
+  /**
    * A MVC model object to be made available to the JSP rendering the results for
    * this plugin.  It we be available to your JSP page as requestScope.viewModel.
    * 
@@ -43,6 +51,14 @@ public interface StepAnalyzer {
    * @throws WdkModelException 
    */
   public Object getResultViewModel() throws WdkModelException;
+  
+  /**
+   * Get JSON containing the information needed to render a parameter input form for this StepAnalyzer
+   * @return
+   * @throws WdkModelException
+   */
+  public JSONObject getFormViewModelJson() throws WdkModelException;
+
 
   /**
    * Sets a property as passed in from the WDK Model

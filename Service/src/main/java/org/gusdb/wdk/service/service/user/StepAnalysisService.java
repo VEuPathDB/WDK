@@ -1,6 +1,7 @@
 package org.gusdb.wdk.service.service.user;
 
 import java.io.InputStream;
+import java.util.Map;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -38,6 +39,23 @@ public class StepAnalysisService extends UserService {
     super(uid);
   }
   
+  @GET
+  @Path("/steps/{stepId}/analysis-types")
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response getStepAnalysisTypes(
+      @PathParam("stepId") String stepIdStr,
+      @QueryParam("accessToken") String accessToken) throws WdkModelException, DataValidationException {
+
+    long stepId = parseIdOrNotFound("step", stepIdStr);
+    User user = getUserBundle(Access.PRIVATE).getSessionUser();
+    Step step = getStepByIdAndCheckItsUser(user, stepId);     
+
+    Map<String, StepAnalysis> stepAnalyses = step.getQuestion().getStepAnalyses();
+    return Response.ok(StepAnalysisFormatter.getStepAnalysisTypesJson(stepAnalyses).toString()).build();
+  }
+
+
+  
   /**
    * Create a new step analysis
    * @param stepIdStr
@@ -53,11 +71,12 @@ public class StepAnalysisService extends UserService {
   public Response createStepAnalysis(@PathParam("stepId") String stepIdStr,
       String body) throws WdkModelException, DataValidationException {
     try {
-      JSONObject json = new JSONObject(body);
       long stepId = parseIdOrNotFound("step", stepIdStr);
-      String analysisName = json.getString(ANALYSIS_NAME_KEY);
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       Step step = getStepByIdAndCheckItsUser(user, stepId);     
+
+      JSONObject json = new JSONObject(body);      
+      String analysisName = json.getString(ANALYSIS_NAME_KEY);
       String answerValueChecksum = getAnswerValueChecksum(step);
       StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.getQuestion(), analysisName);
       StepAnalysisInstance stepAnalysisInstance = getStepAnalysisInstance(step, stepAnalysis, answerValueChecksum);

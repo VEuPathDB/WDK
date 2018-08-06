@@ -528,7 +528,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   public static boolean isRunExpired(StepAnalysis analysis, long currentTime, Date startTime) {
-    long expirationDuration = (long)analysis.getExpirationMinutes() * 60 * 1000;
+    long expirationDuration = (long)analysis.getExecutionTimeoutThresholdInMinutes() * 60 * 1000;
     long currentDuration = currentTime - startTime.getTime();
     return (currentDuration > expirationDuration);
   }

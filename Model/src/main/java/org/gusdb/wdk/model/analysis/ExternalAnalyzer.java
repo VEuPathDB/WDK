@@ -38,6 +38,7 @@ import org.gusdb.wdk.model.report.TableTabularReporter;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * This analyzer dumps a pre-configured set of result attributes to a tab-
@@ -94,6 +95,15 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     public String getDownloadPath() { return ATTRIBUTES_FILE_NAME; }
     public int getIframeWidth() { return _iframeWidth; }
     public int getIframeHeight() { return _iframeHeight; }
+    
+    public JSONObject toJson() {
+      JSONObject json = new JSONObject();
+      json.put("iframeBaseUrl", _iframeBaseUrl);
+      json.put("iframeWidth", _iframeWidth);
+      json.put("iframeHeight", _iframeHeight);
+
+      return json;
+    }
   }
 
   @Override
@@ -107,10 +117,29 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
 
   @Override
   public Object getResultViewModel() throws WdkModelException {
+    return createResultViewModel();
+  }
+  
+  @Override
+  public JSONObject getResultViewModelJson() throws WdkModelException {
+    return createResultViewModel().toJson();
+  }
+  
+  private ViewModel createResultViewModel() {
     return new ViewModel(
         getProperty(EXTERNAL_APP_URL_PROP_KEY),
         chooseSize(IFRAME_WIDTH_PROP_KEY, DEFAULT_IFRAME_WIDTH_PX),
         chooseSize(IFRAME_LENGTH_PROP_KEY, DEFAULT_IFRAME_HEIGHT_PX));
+  }
+  
+  @Override
+  public Object getFormViewModel() throws WdkModelException, WdkUserException {
+    return null;
+  }
+   
+  @Override
+  public JSONObject getFormViewModelJson() throws WdkModelException {
+    return null;
   }
 
   protected int chooseSize(String propName, int defaultValue) {
@@ -162,7 +191,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   private List<String> getConfiguredFields(String propName) {
     String propValue = getProperty(propName);
     return (propValue == null ?
-      Collections.EMPTY_LIST :
+      Collections.emptyList() :
       mapToList(asList(propValue.split(",")), name -> name.trim()));
   }
 
