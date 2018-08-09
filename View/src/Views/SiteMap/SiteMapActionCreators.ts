@@ -4,6 +4,8 @@ import {
   OntologyNode
 } from 'Utils/OntologyUtils';
 
+export type SiteMapOntology = OntologyNode<{}>;
+
 import { ActionThunk } from 'Utils/ActionCreatorUtils';
 
 export type LoadingAction = {
@@ -12,7 +14,7 @@ export type LoadingAction = {
 export type InitializeAction = {
   type: 'sitemap/initialize',
   payload: {
-    tree: OntologyNode
+    tree: SiteMapOntology
   }
 }
 export type ExpansionAction = {
@@ -38,7 +40,7 @@ export function loadCurrentSiteMap(): ActionThunk<LoadingAction | ErrorAction | 
   return function run({ wdkService }) {
     let ontologyPromise = wdkService.getOntology('SiteMap');
 
-    let isQualifying = (node: OntologyNode) => {
+    let isQualifying = (node: SiteMapOntology) => {
       return (
         nodeHasProperty('scope', 'record', node) ||
         nodeHasProperty('scope', 'menu', node) ||

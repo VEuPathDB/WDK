@@ -16,8 +16,7 @@ body.wdk-ModalOpen {
 }
 
 .wdk-Dialog__modal {
-  max-height: calc(100vh - 220px);
-  max-height: 100vh;
+  max-height: calc(100vh - 2em);
 }
 
 .wdk-Dialog__modal:before {

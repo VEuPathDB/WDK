@@ -21,9 +21,10 @@ export default class ErrorBoundary extends React.Component<Props, State> {
     dispatchAction: PropTypes.func
   }
 
-  context: {
-    dispatchAction?: DispatchAction
-  }
+  // FIXME Use new context API https://reactjs.org/docs/context.html
+  // context: {
+  //   dispatchAction?: DispatchAction
+  // }
 
   state = {
     hasError: false
@@ -32,7 +33,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     this.setState({ hasError: true });
 
-    const dispatch = this.props.dispatchAction || this.context.dispatchAction;
+    const dispatch: DispatchAction | undefined = this.props.dispatchAction || this.context.dispatchAction;
     if (dispatch == null) {
       console.warn('`dispatchAction` function not found. Unable to log render error to server.');
     }

@@ -67,7 +67,7 @@ export default class RealTimeSearchBox extends Component<Props, State> {
 
   emitSearchTermChange = debounce((searchTerm: string) => this.props.onSearchTermChange!(searchTerm));
 
-  input: HTMLInputElement | null;
+  input: HTMLInputElement | null = null;
 
   constructor(props: Props) {
     super(props);

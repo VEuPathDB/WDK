@@ -33,12 +33,12 @@ interface CategoryNodeProperties {
   hasExactSynonym?: string[];
 }
 
-export interface CategoryNode extends OntologyNode {
+export type CategoryNode = OntologyNode<{
   children: CategoryTreeNode[];
   properties: CategoryNodeProperties & { [key: string]: string[]; };
-}
+}>
 
-export interface IndividualNode extends OntologyNode {
+export type IndividualNode = OntologyNode<{
   children: CategoryTreeNode[]; // note, this is always empty for an individual
   properties: CategoryNodeProperties & { [key: string]: string[]; };
   wdkReference: {
@@ -47,7 +47,7 @@ export interface IndividualNode extends OntologyNode {
     help?: string;
     summary?: string;
   };
-}
+}>
 
 export type CategoryTreeNode = CategoryNode | IndividualNode;
 export type CategoryOntology = Ontology<CategoryTreeNode>
@@ -260,7 +260,7 @@ export function pruneUnknownPaths(
 }
 
 export function isIndividualKnownWith(recordClasses: Dict<RecordClass>, questions: Dict<Question>) {
-  return function isIndividualKnown(node: OntologyNode) {
+  return function isIndividualKnown(node: OntologyNode<{}>) {
     return getModelEntity(recordClasses, questions, node) !== undefined;
   }
 }
@@ -353,7 +353,7 @@ function makeCompareBySortName(recordClasses: Dict<RecordClass>, questions: Dict
 function getModelEntity(
   recordClasses: Dict<RecordClass>,
   questions: Dict<Question>,
-  node: OntologyNode
+  node: OntologyNode<{}>
 ) {
   const recordClass = recordClasses[getPropertyValue('recordClassName', node)];
   if (recordClass !== undefined) {

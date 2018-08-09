@@ -10,6 +10,8 @@ type Props = {
   /** Should the popup be visible or not? */
   open: boolean;
 
+  resizable?: boolean;
+
   className?: string;
 
   /**
@@ -78,9 +80,9 @@ export default class Popup extends React.Component<Props> {
     draggable: false,
   };
 
-  containerNode: HTMLElement;
+  containerNode?: HTMLElement;
 
-  popupNode: Element | null;
+  popupNode: Element | null = null;
 
   componentDidMount() {
     // Create container node and attatch it to the parent node.
@@ -102,7 +104,7 @@ export default class Popup extends React.Component<Props> {
 
   componentWillUnmount() {
     if (this.popupNode) $(this.popupNode).draggable('destroy');
-    this.containerNode.remove();
+    if (this.containerNode) this.containerNode.remove();
   }
 
   _callJqueryWithProps() {
@@ -115,24 +117,22 @@ export default class Popup extends React.Component<Props> {
       })
       .toggle(this.props.open);
 
-    // if (this.props.open) this._updatePosition();
+      if (this.props.resizable) {
+        $node.resizable({
+          handles: 'all',
+          minWidth: 100,
+          minHeight: 100
+        });
+      }
   }
 
-  _updatePosition() {
-    if (!this.containerNode.style.top && !this.containerNode.style.left) {
-      let { firstElementChild } = this.containerNode;
-      this.containerNode.style.top = '200px';
-      this.containerNode.style.left = 'calc(50vw - ' +
-        (firstElementChild ? firstElementChild.clientWidth / 2 : 0) + 'px';
-    }
-  }
 
   render() {
     const content = (
       <TabbableContainer
         autoFocus
         className={this.props.className || ''}
-        ref={c => this.popupNode = c && ReactDOM.findDOMNode(c)}
+        ref={c => this.popupNode = c && ReactDOM.findDOMNode(c) as HTMLElement}
       >
         {this.props.children}
       </TabbableContainer>

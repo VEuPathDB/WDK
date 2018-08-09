@@ -56,8 +56,6 @@ interface State {
 }
 
 class UserDatasetList extends React.Component <Props, State> {
-  state: State;
-  props: Props;
 
   constructor (props: Props) {
     super(props);

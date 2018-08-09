@@ -5,7 +5,8 @@ import {
   InitializeAction,
   ErrorAction,
   ExpansionAction,
-  SearchAction
+  SearchAction,
+  SiteMapOntology
 } from 'Views/SiteMap/SiteMapActionCreators';
 
 // define action type to be any our supported actions
@@ -16,7 +17,7 @@ type Action = LoadingAction
             | SearchAction;
 
 export type State = BaseState & {
-  tree?: OntologyNode,
+  tree?: SiteMapOntology,
   isLoading: boolean,
   expandedList: string[],
   searchText: string

@@ -146,8 +146,10 @@ const Histogram = lazy(render => require([
     return (
       <div className={cx()}>
         <div className={cx('Graph')} ref={node => this.plotNode = node}></div>
-        <div className={cx('AttrLabel')}>{displayType === 'logarithm' ? `log10(${attrLabel})` : attrLabel}</div>
-        <div className={cx('RecordCountLabel')}>{recordCountLabel}</div>
+        <div className={cx('RecordCountLabel')}>
+          {displayType === 'logarithm' ? `log10(${recordCountLabel})` : recordCountLabel}
+        </div>
+        <div className={cx('AttrLabel')}>{attrLabel}</div>
         {type === 'category' ? null : (
           <>
             <div className={cx('Summary')}>

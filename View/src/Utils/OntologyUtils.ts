@@ -1,12 +1,12 @@
 import {pruneDescendantNodes, Node} from 'Utils/TreeUtils';
 
-export interface OntologyNode extends Node {
+export type OntologyNode<T> = Node<T & {
   properties: {[key: string]: Array<string>}
-}
+}>
 
-export interface Ontology<Node extends OntologyNode> {
+export interface Ontology<T> {
   name: string;
-  tree: Node;
+  tree: OntologyNode<T>;
 }
 
 /**
@@ -16,7 +16,7 @@ export interface Ontology<Node extends OntologyNode> {
  * @param {Ontology} ontology
  * @param {Function} leafPredicate
  */
-export function getTree<T extends OntologyNode>(ontology: Ontology<T>, leafPredicate: (node: T) => boolean) {
+export function getTree<T>(ontology: Ontology<T>, leafPredicate: (node: T) => boolean) {
   return pruneDescendantNodes(node => nodeHasChildren(node) || leafPredicate(node), ontology.tree);
 }
 
@@ -25,20 +25,20 @@ export function getTree<T extends OntologyNode>(ontology: Ontology<T>, leafPredi
  * @param node - given node
  * @returns {Array}  child nodes
  */
-export let getNodeChildren = (node: OntologyNode) =>
+export let getNodeChildren = <T>(node: OntologyNode<T>) =>
   node.children;
 
-export let nodeHasChildren = (node: OntologyNode) =>
+export let nodeHasChildren = <T>(node: OntologyNode<T>) =>
   getNodeChildren(node).length > 0;
 
 let includes = <T>(array: Array<T>, value: T) =>
   Boolean(array != null && array.indexOf(value) > -1);
 
-export let nodeHasProperty = (name: string, value: string, node: OntologyNode) =>
+export let nodeHasProperty = <T>(name: string, value: string, node: OntologyNode<T>) =>
   includes(node.properties[name], value);
 
-export let getPropertyValues = (name: string, node: OntologyNode) =>
+export let getPropertyValues = <T>(name: string, node: OntologyNode<T>) =>
   (node.properties && node.properties[name]) || [];
 
-export let getPropertyValue = (name: string, node: OntologyNode) =>
+export let getPropertyValue = <T>(name: string, node: OntologyNode<T>) =>
   node.properties && node.properties[name] && node.properties[name][0];

@@ -9,7 +9,7 @@ interface Predicate<T> {
   (x: T): boolean;
 }
 interface Reducer<T, U> {
-  (acc: U | T, x: T): U;
+  (acc: U, x: T): U;
 }
 interface Collector<T, U> {
   from: (i: Iterable<T>) => U;
@@ -51,6 +51,8 @@ export class Seq<T> {
 
   private static readonly EMPTY = new Seq([]);
 
+  // constructors
+
   static empty<T>() {
     return Seq.EMPTY as Seq<T>;
   }
@@ -61,6 +63,10 @@ export class Seq<T> {
 
   static from<T>(iterable: Iterable<T>) {
     return new Seq(iterable);
+  }
+
+  static concat<T>(...iterables: Iterable<T>[]) {
+    return Seq.from(concat(...iterables));
   }
 
   private _iterator?: Iterator<T>;

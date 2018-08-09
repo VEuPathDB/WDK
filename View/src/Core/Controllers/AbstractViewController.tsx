@@ -35,7 +35,7 @@ export default abstract class AbstractViewController<
 
   store: Store;
 
-  storeSubscription: {
+  storeSubscription?: {
     remove(): void;
   }
 

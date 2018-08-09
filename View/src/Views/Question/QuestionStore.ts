@@ -9,14 +9,14 @@ import {
   ParamStateUpdatedAction,
   ParamsUpdatedAction,
   ParamValueUpdatedAction,
-  questionEpic,
+  observeQuestion,
   QuestionErrorAction,
   QuestionLoadedAction,
   QuestionNotFoundAction,
   UnloadQuestionAction,
 } from 'Core/ActionCreators/QuestionActionCreators';
 import WdkStore, { BaseState } from 'Core/State/Stores/WdkStore';
-import { paramEpic, reduce as paramReducer } from 'Params';
+import { observeParam, reduce as paramReducer } from 'Params';
 import { ExpandedListSet, SearchTermSet } from 'Params/EnumParam/TreeBoxEnumParam';
 import {
   ActiveFieldSetAction,
@@ -25,8 +25,9 @@ import {
   OntologyTermsInvalidated,
   SummaryCountsLoadedAction,
 } from 'Params/FilterParamNew/ActionCreators';
-import { Action, Epic, isOneOf } from 'Utils/ActionCreatorUtils';
+import { Action, ActionObserver, isOneOf, ObserveServices, combineObserve } from 'Utils/ActionCreatorUtils';
 import { Parameter, ParameterGroup, QuestionWithParameters, RecordClass } from 'Utils/WdkModel';
+import { Observable, merge } from 'rxjs';
 
 interface GroupState {
   isVisible: boolean;
@@ -95,8 +96,8 @@ export default class QuestionStore extends WdkStore<State> {
     return state;
   }
 
-  getEpics(): Epic[] {
-    return [ questionEpic, paramEpic ];
+  observeActions(action$: Observable<Action>, services: ObserveServices<this>): Observable<Action> {
+    return combineObserve(observeQuestion, observeParam)(action$, services);
   }
 
 }
