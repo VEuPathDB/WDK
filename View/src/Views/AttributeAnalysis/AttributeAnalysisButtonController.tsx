@@ -37,22 +37,22 @@ class AttributeAnalysisButtonController extends AbstractViewController<
   plugin = this.props.locatePlugin('attributeAnalysis');
 
   renderView() {
-    const { recordClassName, reporterName, stepId } = this.props;
+    const { questionName, recordClassName, reporterName, stepId } = this.props;
     const { globalData, analyses } = this.state;
 
     const questionAttributes = Seq.from(globalData.questions)
-      .filter(question => question.name === this.props.questionName)
+      .filter(question => question.name === questionName)
       .flatMap(question => question.dynamicAttributes)
 
     const recordClassAttributes = Seq.from(globalData.recordClasses)
-      .filter(recordClass => recordClass.name === this.props.recordClassName)
+      .filter(recordClass => recordClass.name === recordClassName)
       .flatMap(recordClass => recordClass.attributes);
 
     const reporter = questionAttributes.concat(recordClassAttributes)
       .flatMap(attribute => attribute.formats)
-      .find(format => format.name === this.props.reporterName);
+      .find(format => format.name === reporterName);
 
-    const key = `${this.props.stepId}__${this.props.reporterName}`;
+    const key = `${stepId}__${reporterName}`;
     const analysis = analyses && analyses[key];
 
     if (reporter == null) return null;
@@ -60,18 +60,17 @@ class AttributeAnalysisButtonController extends AbstractViewController<
     const context = {
       type: 'attributeAnalysis',
       name: reporter.type,
-      recordClassName: this.props.recordClassName
+      recordClassName: recordClassName
     }
 
-    const dispatch = (action: Action) => {
-      const { stepId } = this.props;
+    const dispatch = (action: Action): any => {
       this.dispatchAction(ScopedAnalysisAction.create({ action, context, reporter, stepId }));
     }
 
     return (
       <AttributeAnalysisButton
-        recordClassName={this.props.recordClassName}
-        stepId={this.props.stepId}
+        recordClassName={recordClassName}
+        stepId={stepId}
         reporter={reporter}
         analysis={analysis}
         dispatch={dispatch}>

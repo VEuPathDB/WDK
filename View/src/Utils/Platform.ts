@@ -62,8 +62,8 @@ export function dialog(title: string, message: string, buttons: ButtonDescriptor
         open() {
           $node.parent().find('[autofocus]').focus();
         },
-        close(event: KeyboardEvent) {
-          if (event.key === 'Escape') {
+        close(event: Event) {
+          if (event instanceof KeyboardEvent && event.key === 'Escape') {
             resolve(escapeValue);
           }
           $node.dialog('destroy').remove();

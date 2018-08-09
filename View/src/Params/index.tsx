@@ -1,23 +1,23 @@
 import * as React from 'react';
 
-import * as EnumParam from 'Params/EnumParam';
-import * as FilterParamNew from 'Params/FilterParamNew';
-import * as NumberParam from 'Params/NumberParam';
-import * as NumberRangeParam from 'Params/NumberRangeParam';
-import { combineEpics, Epic } from 'Utils/ActionCreatorUtils';
+import * as EnumParamModule from 'Params/EnumParam';
+import * as FilterParamNewModule from 'Params/FilterParamNew';
+import * as NumberParamModule from 'Params/NumberParam';
+import * as NumberRangeParamModule from 'Params/NumberRangeParam';
+import { combineObserve, ActionObserver } from 'Utils/ActionCreatorUtils';
 import { Parameter } from 'Utils/WdkModel';
 
 import { isPropsType, ParamModule, Props } from './Utils';
-
+import { QuestionStore } from 'Core/State/Stores';
 
 // Param modules
 // -------------
-const paramModules: ParamModule<Parameter, any>[] = [
-  EnumParam,
-  FilterParamNew,
-  NumberParam,
-  NumberRangeParam
-];
+const paramModules = [
+  EnumParamModule,
+  FilterParamNewModule,
+  NumberParamModule,
+  NumberRangeParamModule
+] as ParamModule<Parameter, any>[];
 
 
 // API used by Question{ActionCreators,Controller,Store}
@@ -52,7 +52,7 @@ export function reduce<T extends Parameter>(parameter: T, state: any, action: an
   return state;
 }
 
-export const paramEpic = combineEpics(
+export const observeParam = combineObserve(
   ...(paramModules
-    .map(m => m.paramEpic)
-    .filter(e => e != null) as Epic[]))
+    .map(m => m.observeParam)
+    .filter(e => e != null) as ActionObserver[]))

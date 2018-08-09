@@ -1,6 +1,7 @@
-import { Observable } from 'rxjs/Rx';
+import { debounceTime, filter, mergeMap, takeUntil } from 'rxjs/operators';
+import { from, Observable } from 'rxjs';
 
-import { Action, combineEpics, EpicServices, makeActionCreator } from 'Utils/ActionCreatorUtils';
+import { Action, combineObserve, ObserveServices, makeActionCreator, ActionObserver } from 'Utils/ActionCreatorUtils';
 import { Parameter, ParameterValue, ParameterValues, QuestionWithParameters, RecordClass } from 'Utils/WdkModel';
 import WdkService from 'Utils/WdkService';
 import QuestionStore from 'Views/Question/QuestionStore';
@@ -70,31 +71,32 @@ export const GroupStateUpdatedAction = makeActionCreator<BasePayload & {
 }, 'question/group-state-update'>('question/group-state-update');
 
 
-// Epics
-// -----
+// Observers
+// ---------
 
-export const questionEpic = combineEpics(loadQuestionEpic, updateDependentParamsEpic);
+export const observeQuestion: ActionObserver<QuestionStore> = combineObserve(observeLoadQuestion, observeUpdateDependentParams);
 
-function loadQuestionEpic(action$: Observable<Action>, { wdkService, store }: EpicServices<QuestionStore>): Observable<Action> {
-  return action$
-    .filter(ActiveQuestionUpdatedAction.test)
-    .mergeMap(action =>
-      Observable.from(loadQuestion(wdkService, action.payload.questionName, action.payload.paramValues))
-      .takeUntil(action$.filter(killAction => (
+function observeLoadQuestion(action$: Observable<Action>, { wdkService }: ObserveServices<QuestionStore>): Observable<Action> {
+  return action$.pipe(
+    filter(ActiveQuestionUpdatedAction.test),
+    mergeMap(action =>
+      from(loadQuestion(wdkService, action.payload.questionName, action.payload.paramValues)).pipe(
+      takeUntil(action$.pipe(filter(killAction => (
         UnloadQuestionAction.test(killAction) &&
         killAction.payload.questionName === action.payload.questionName
-      )))
+      )))))
     )
+  )
 }
 
-function updateDependentParamsEpic(action$: Observable<Action>, {wdkService}: EpicServices): Observable<Action> {
-  return action$
-    .filter(ParamValueUpdatedAction.test)
-    .filter(action => action.payload.parameter.dependentParams.length > 0)
-    .debounceTime(1000)
-    .mergeMap(action => {
+function observeUpdateDependentParams(action$: Observable<Action>, {wdkService}: ObserveServices<QuestionStore>): Observable<Action> {
+  return action$.pipe(
+    filter(ParamValueUpdatedAction.test),
+    filter(action => action.payload.parameter.dependentParams.length > 0),
+    debounceTime(1000),
+    mergeMap(action => {
       const { questionName, parameter, paramValues, paramValue } = action.payload;
-      return Observable.from(wdkService.getQuestionParamValues(
+      return from(wdkService.getQuestionParamValues(
         questionName,
         parameter.name,
         paramValue,
@@ -102,13 +104,15 @@ function updateDependentParamsEpic(action$: Observable<Action>, {wdkService}: Ep
       ).then(
         parameters => ParamsUpdatedAction.create({questionName, parameters}),
         error => ParamErrorAction.create({ questionName, error: error.message, paramName: parameter.name })
-      ))
-      .takeUntil(action$.filter(ParamValueUpdatedAction.test))
-      .takeUntil(action$.filter(killAction => (
-        UnloadQuestionAction.test(killAction) &&
-        killAction.payload.questionName === action.payload.questionName
-      )))
-    });
+      )).pipe(
+        takeUntil(action$.pipe(filter(ParamValueUpdatedAction.test))),
+        takeUntil(action$.pipe(filter(killAction => (
+          UnloadQuestionAction.test(killAction) &&
+          killAction.payload.questionName === action.payload.questionName
+        ))))
+      )
+    })
+  );
 }
 
 

@@ -1,23 +1,24 @@
+import { memoize } from 'lodash';
 import React from 'react';
-import { Observable, Subject, ReplaySubject } from 'rxjs';
+import { empty, merge, Observable } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 
 import { DispatchAction } from 'Core/CommonTypes';
 import WdkService from 'Utils/WdkService';
 
-import { Action, EpicServices } from './ActionCreatorUtils';
-import { partial, memoize } from 'lodash';
+import { Action, ObserveServices } from './ActionCreatorUtils';
 
 export interface ClientPlugin<T = object> {
   reduce(state: T | undefined, action: Action): T;
   render(state: T, dispatch: DispatchAction): React.ReactNode;
-  // FIXME Replace EpicServices with ObserverServices
-  observe(action$: Observable<Action>, services: EpicServices): Observable<Action>;
+  // FIXME Replace ObserveServices with ObserverServices
+  observe(action$: Observable<Action>, services: ObserveServices): Observable<Action>;
 }
 
 export interface CompositeClientPlugin {
   reduce: <T>(context: PluginContext, state: T, action: Action) => T;
-  render: <T>(context: PluginContext, state: T, dispatch: DispatchAction) => React.ReactNode;
-  observe: (contextActionPair$: Observable<[PluginContext, Action]>, service: EpicServices) => Observable<Action>;
+  render: <T>(context: PluginContext, state: T, dispatch: (action: Action) => void) => React.ReactNode;
+  observe: (contextActionPair$: Observable<[PluginContext, Action]>, service: ObserveServices) => Observable<Action>;
 }
 
 export interface PluginContext {
@@ -115,7 +116,7 @@ function mergeRender(locate: LocatePlugin) {
 }
 
 function mergeObserve(entries: ClientPluginRegistryEntry[]) {
-  return function observe(actionContextPair$: Observable<[PluginContext, Action]>, services: EpicServices): Observable<Action> {
+  return function observe(actionContextPair$: Observable<[PluginContext, Action]>, services: ObserveServices): Observable<Action> {
     // Fold entries into in$ and out$ Observables by incrementally filtering out
     // actions that match a plugin entry.
     //
@@ -132,14 +133,14 @@ function mergeObserve(entries: ClientPluginRegistryEntry[]) {
     // This also makes it possible to only call observe (e.g., construct the
     // plugin Observable) once.
     const reduced = entries.reduce(({ in$, out$ }, entry) => {
-      const [ entryIn$, restIn$ ] = in$
-        .partition(([context, action]) => isMatchingEntry(entry, context));
-      const action$ = entryIn$.map(entryIn => entryIn[1]);
+      const entryIn$ = in$.pipe(filter(([context]) => isMatchingEntry(entry, context)));
+      const restIn$ = in$.pipe(filter(([context]) => !isMatchingEntry(entry, context)));
+      const action$ = entryIn$.pipe(map(entryIn => entryIn[1]));
       return {
         in$: restIn$,
-        out$: out$.merge(entry.plugin.observe(action$, services))
+        out$: merge(out$, entry.plugin.observe(action$, services))
       };
-    }, { in$: actionContextPair$, out$: Observable.empty() as Observable<Action>});
+    }, { in$: actionContextPair$, out$: empty() as Observable<Action>});
     return reduced.out$;
   }
 }
@@ -163,5 +164,5 @@ function defaultReduce(state: any, action: Action) {
 }
 
 function defaultObserve(action$: Observable<Action>, services: any) {
-  return Observable.empty() as Observable<Action>;
+  return empty() as Observable<Action>;
 }
