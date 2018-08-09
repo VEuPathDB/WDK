@@ -463,7 +463,7 @@ class DataTable extends PureComponent<Props> {
 
 }
 
-const withLibs = lazy(function(render) {
+const withLibs = lazy<Props>(function(render) {
   require([ 'lib/jquery-datatables', 'lib/jquery-datatables-natural-type-plugin' ], render);
 });
 export default wrappable(withLibs(DataTable));

@@ -7,6 +7,12 @@ interface PromiseFactory<T> {
 // A Promise that never leaves the pending state.
 export const pendingPromise = { then() { } };
 
+export function delay(ms: number): Promise<undefined> {
+  return new Promise(function(resolve) {
+    window.setTimeout(resolve, ms);
+  });
+}
+
 /**
  * Detect if `maybePromise` is a Promise.
  * @param {any} maybePromise
