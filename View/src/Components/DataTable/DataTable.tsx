@@ -110,19 +110,17 @@ class DataTable extends PureComponent<Props> {
     }
   };
 
-  _childRowContainers: Map<HTMLTableRowElement, HTMLElement>;
+  _childRowContainers: Map<HTMLTableRowElement, HTMLElement> = new Map();
 
-  _isRedrawing: boolean;
+  _isRedrawing: boolean = false;
 
-  _dataTable: DataTables.Api;
-
-  _table: HTMLElement;
+  _dataTable?: DataTables.Api;
 
   _searchTerm = '';
 
-  node: HTMLElement | null;
+  node: HTMLElement | null = null;
 
-  columns: DataTables.ColumnSettings[];
+  columns: DataTables.ColumnSettings[] = [];
 
   componentDidMount() {
     this._childRowContainers = new Map();
@@ -130,6 +128,8 @@ class DataTable extends PureComponent<Props> {
   }
 
   componentDidUpdate(prevProps: Props) {
+    if (this._dataTable == null) return;
+
     let columnsChanged = didPropChange(this, prevProps, 'columns')
     let dataChanged = didPropChange(this, prevProps, 'data');
     let childRowChanged = didPropChange(this, prevProps, 'childRow');
@@ -142,7 +142,7 @@ class DataTable extends PureComponent<Props> {
     this._isRedrawing = true;
 
     if (columnsChanged || dataChanged || heightChanged) {
-      this._destroy();
+      this._destroy(this._dataTable);
       this._setup();
     }
 
@@ -150,26 +150,26 @@ class DataTable extends PureComponent<Props> {
       let needsRedraw = false;
 
       if (childRowChanged) {
-        this._rerenderChildRows();
+        this._rerenderChildRows(this._dataTable);
         needsRedraw = true;
       }
 
       if (sortingChanged) {
-        this._updateSorting();
+        this._updateSorting(this._dataTable);
         needsRedraw = true;
       }
 
       if (widthChanged) {
-        this._updateWidth();
+        this._updateWidth(this._dataTable);
         needsRedraw = true;
       }
 
       if (expandedRowsChanged) {
-        this._updateExpandedRows();
+        this._updateExpandedRows(this._dataTable);
         // needsRedraw = true;
       }
 
-      if (needsRedraw) {
+      if (needsRedraw && this._dataTable) {
         this._dataTable.draw();
       }
     }
@@ -178,7 +178,7 @@ class DataTable extends PureComponent<Props> {
   }
 
   componentWillUnmount() {
-    this._destroy();
+    if (this._dataTable) this._destroy(this._dataTable);
   }
 
 
@@ -259,7 +259,7 @@ class DataTable extends PureComponent<Props> {
         scrollCollapse: !childRow
       });
 
-    this._dataTable = $(this._table = document.createElement('table'))
+    const dataTable = this._dataTable = $(document.createElement('table'))
     .addClass('wdk-DataTable')
     .width(width || '')
     .appendTo(this.node)
@@ -293,26 +293,26 @@ class DataTable extends PureComponent<Props> {
         return;
       }
 
-      let row = this._dataTable.row(tr);
+      let row = dataTable.row(tr);
       if (row.child.isShown()) {
-        this._hideChildRow(row.node() as HTMLTableRowElement);
+        this._hideChildRow(dataTable, row.node() as HTMLTableRowElement);
       }
       else {
-        this._renderChildRow(row.node() as HTMLTableRowElement);
+        this._renderChildRow(dataTable, row.node() as HTMLTableRowElement);
       }
-      this._updateChildRowClassNames();
-      this._callExpandedRowsCallback();
+      this._updateChildRowClassNames(dataTable);
+      this._callExpandedRowsCallback(dataTable);
     })
     // click handler for expand all rows
     .on('click', 'th .wdk-DataTableCellExpand', event => {
       // if all are shown, then hide all, otherwise show any that are hidden
-      let allShown = areAllChildRowsShown(this._dataTable);
+      let allShown = areAllChildRowsShown(dataTable);
       let update = allShown ? this._hideChildRow : this._renderChildRow;
-      for (let tr of this._dataTable.rows().nodes().toArray()) {
+      for (let tr of dataTable.rows().nodes().toArray()) {
         update.call(this, tr);
       }
-      this._updateChildRowClassNames();
-      this._callExpandedRowsCallback();
+      this._updateChildRowClassNames(dataTable);
+      this._callExpandedRowsCallback(dataTable);
     })
     .on('order.dt', () => {
       if (this._isRedrawing || !this.props.onSortingChange || !this._dataTable) return;
@@ -326,63 +326,63 @@ class DataTable extends PureComponent<Props> {
     .DataTable(tableOpts);
 
     if (childRow != null) {
-      this._updateExpandedRows();
+      this._updateExpandedRows(dataTable);
       this._dataTable.draw();
     }
   }
 
-  _rerenderChildRows() {
+  _rerenderChildRows(dataTable: DataTables.Api) {
     for (let tableRowNode of this._childRowContainers.keys()) {
-      this._renderChildRow(tableRowNode, false);
+      this._renderChildRow(dataTable, tableRowNode, false);
     }
   }
 
-  _updateSorting() {
-    this._dataTable.order(formatSorting(this.columns, this.props.sorting));
+  _updateSorting(dataTable: DataTables.Api) {
+    dataTable.order(formatSorting(this.columns, this.props.sorting));
   }
 
-  _updateWidth() {
-    $(this._table).width(this.props.width || '');
-    this._dataTable.columns.adjust();
+  _updateWidth(dataTable: DataTables.Api) {
+    $(dataTable.table('').node()).width(this.props.width || '');
+    dataTable.columns.adjust();
   }
 
-  _updateExpandedRows() {
+  _updateExpandedRows(dataTable: DataTables.Api) {
     let { getRowId, expandedRows = [] } = this.props;
 
-    this._dataTable.rows().every((index) => {
-      let row = this._dataTable.row(index);
+    dataTable.rows().every((index) => {
+      let row = dataTable.row(index);
       let tr = row.node() as HTMLTableRowElement;
       let data = row.data() as Row;
       if (expandedRows.includes(getRowId(data))) {
-        this._renderChildRow(tr);
+        this._renderChildRow(dataTable, tr);
       }
       else {
-        this._hideChildRow(tr);
+        this._hideChildRow(dataTable, tr);
       }
     });
-    this._updateChildRowClassNames();
+    this._updateChildRowClassNames(dataTable);
   }
 
   /** Update class names of child row expand buttons based on datatable state */
-  _updateChildRowClassNames() {
+  _updateChildRowClassNames(dataTable: DataTables.Api) {
     let allShown = true;
-    for (let tr of this._dataTable.rows().nodes().toArray()) {
-      let row = this._dataTable.row(tr);
+    for (let tr of dataTable.rows().nodes().toArray()) {
+      let row = dataTable.row(tr);
       let isShown = Boolean(row.child.isShown());
       $(tr).toggleClass('wdk-DataTableRow__expanded', isShown);
       allShown = allShown && isShown;
     }
-    $(this._table)
+    $(dataTable.table('').node())
       .find('th .wdk-DataTableCellExpand')
       .closest('tr')
       .toggleClass('wdk-DataTableRow__expanded', allShown);
   }
 
   /** Append child row container node to table row and show it */
-  _renderChildRow(tableRowNode: HTMLTableRowElement, openRow = true) {
+  _renderChildRow(dataTable: DataTables.Api, tableRowNode: HTMLTableRowElement, openRow = true) {
     let { childRow } = this.props;
     if (childRow == null) return;
-    let row = this._dataTable.row(tableRowNode);
+    let row = dataTable.row(tableRowNode);
     let childRowContainer = this._getChildRowContainer(tableRowNode);
     if (row.child() == null) row.child(childRowContainer);
     if (typeof childRow === 'string') {
@@ -399,19 +399,19 @@ class DataTable extends PureComponent<Props> {
   }
 
   /** Hide child row */
-  _hideChildRow(tableRowNode: HTMLTableRowElement) {
-    let row = this._dataTable.row(tableRowNode);
+  _hideChildRow(dataTable: DataTables.Api, tableRowNode: HTMLTableRowElement) {
+    let row = dataTable.row(tableRowNode);
     row.child.hide();
       tableRowNode.setAttribute('aria-expanded', 'false');
   }
 
-  _callExpandedRowsCallback() {
+  _callExpandedRowsCallback(dataTable: DataTables.Api) {
     let { onExpandedRowsChange } = this.props;
     if (onExpandedRowsChange == null) return;
 
-    let expandedRows =  this._dataTable.rows().indexes().toArray()
+    let expandedRows =  dataTable.rows().indexes().toArray()
       .reduce((expandedRows, index) => {
-        let row = this._dataTable.row(index);
+        let row = dataTable.row(index);
         if (row.child.isShown()) {
           expandedRows.push(this.props.getRowId(row.data() as Row));
         }
@@ -432,8 +432,8 @@ class DataTable extends PureComponent<Props> {
   }
 
   /** Unmount all child row components and destroy the datatable instance */
-  _destroy() {
-    this._dataTable.destroy(true);
+  _destroy(dataTable: DataTables.Api) {
+    dataTable.destroy(true);
     for (let container of this._childRowContainers.values()) {
       unmountComponentAtNode(container);
     }
@@ -451,7 +451,7 @@ class DataTable extends PureComponent<Props> {
             placeholderText="Search this table..."
             onSearchTermChange={(searchTerm: string) => {
               this._searchTerm = searchTerm;
-              this._dataTable.search(searchTerm).draw();
+              this._dataTable && this._dataTable.search(searchTerm).draw();
             }}
             delayMs={0}
           />

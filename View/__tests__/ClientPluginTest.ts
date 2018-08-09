@@ -5,7 +5,8 @@ import {
   ClientPluginRegistryEntry,
   PluginContext
 } from 'Utils/ClientPlugin';
-import { Subject } from "rxjs/Subject";
+import { Subject } from "rxjs";
+import { mapTo } from 'rxjs/operators';
 
 describe('createPlugin', () => {
   it('should provide default implementations', () => {
@@ -25,7 +26,7 @@ describe('mergePluginsByType', () => {
       plugin: createPlugin<{ count: number }>({
         render: () => 'a1',
         reduce: (state = { count: 0 }) => ({ count: state.count + 1 }),
-        observe: (action$) => action$.mapTo({ type: 'a1' })
+        observe: (action$) => action$.pipe(mapTo({ type: 'a1' }))
       })
     },
     {
@@ -34,7 +35,7 @@ describe('mergePluginsByType', () => {
       plugin: createPlugin<{ count: number }>({
         render: () => 'a2',
         reduce: (state = { count: 0 }) => ({ count: state.count + 2 }),
-        observe: (action$) => action$.mapTo({ type: 'a2' })
+        observe: (action$) => action$.pipe(mapTo({ type: 'a2' }))
       })
     }
   ];
@@ -75,8 +76,11 @@ describe('mergePluginsByType', () => {
     const output: Action[] = [];
     out$.subscribe(out => output.push(out), undefined, done);
     action$.next([context1, anyAction]);
+    action$.next([contextUnknown, anyAction]);
     action$.next([context2, anyAction]);
+    action$.next([contextUnknown, anyAction]);
     action$.next([context1, anyAction]);
+    action$.next([contextUnknown, anyAction]);
     action$.next([context2, anyAction]);
     action$.next([contextUnknown, anyAction]);
     action$.complete();

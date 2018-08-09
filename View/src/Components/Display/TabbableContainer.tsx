@@ -49,7 +49,7 @@ class TabbableContainer extends React.Component<Props> {
     if (event.key !== 'Tab') { return; }
     let tabbables = $(':tabbable', this.node!);
     let l = tabbables.length;
-    let index = tabbables.index($(event.target));
+    let index = tabbables.index($(event.target as HTMLElement));
     let delta = event.shiftKey ? l - 1 : 1;
     let nextIndex = (index + delta) % l;
     let nextTarget = tabbables[nextIndex];

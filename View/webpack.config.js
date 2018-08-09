@@ -39,33 +39,29 @@ var scriptLoaders = scripts.map(function(script) {
 
 // expose module exports as global vars
 var exposeModules = [
-  { module: 'flux',               expose : 'Flux' },
-  { module: 'flux/utils',         expose : 'FluxUtils' },
-  { module: 'history/es',         expose : 'HistoryJS' },
-  { module: 'lodash',             expose : '_' },
-  { module: 'natural-sort',       expose : 'NaturalSort' },
-  { module: 'prop-types',         expose : 'ReactPropTypes' },
-  { module: 'react',              expose : 'React' },
-  { module: 'react-dom',          expose : 'ReactDOM' },
-  { module: 'react-router/es',    expose : 'ReactRouter' },
-  { module: 'rxjs',               expose : 'Rx' }
+  { module: 'flux',           expose : 'Flux' },
+  { module: 'flux/utils',     expose : 'FluxUtils' },
+  { module: 'history',        expose : 'HistoryJS' },
+  { module: 'lodash',         expose : '_' },
+  { module: 'natural-sort',   expose : 'NaturalSort' },
+  { module: 'prop-types',     expose : 'ReactPropTypes' },
+  { module: 'react',          expose : 'React' },
+  { module: 'react-dom',      expose : 'ReactDOM' },
+  { module: 'react-router',   expose : 'ReactRouter' },
+  { module: 'rxjs',           expose : 'Rx' },
+  { module: 'rxjs/operators', expose : 'RxOperators' },
 ];
-
-var exposeLoaders = exposeModules.map(function(entry) {
-  return {
-    test: require.resolve(entry.module),
-    loader: 'expose-loader?' + entry.expose
-  };
-});
 
 var primaryConfig = {
   entry: {
-    'wdk-client': [
+    'wdk-client': exposeModules.map(function(entry) {
+      return 'expose-loader?' + entry.expose + '!' + entry.module;
+    }).concat([
       'whatwg-fetch',
       './webapp/wdk/css/wdk.css',
       './src/Core/Style/index.scss',
       './src/Core/index.ts'
-    ],
+    ]),
     'wdk': [
       './webapp/wdk/css/wdk.css',
       './src/Core/Style/index.scss',
@@ -87,7 +83,7 @@ var primaryConfig = {
     { jquery: 'jQuery' }
   ],
   module: {
-    rules: [ ].concat(scriptLoaders, exposeLoaders),
+    rules: [ ].concat(scriptLoaders),
   },
   plugins: [
     new baseConfig.webpack.optimize.CommonsChunkPlugin({

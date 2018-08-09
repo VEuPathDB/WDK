@@ -109,8 +109,10 @@ export default class LegacyParamController extends AbstractViewController<
       this.props.paramValues != null
     ) {
       const node = ReactDOM.findDOMNode(this);
-      const event = new Event(UNRECOVERABLE_PARAM_ERROR_EVENT, { bubbles: true, cancelable: false });
-      node.dispatchEvent(event);
+      if (node) {
+        const event = new Event(UNRECOVERABLE_PARAM_ERROR_EVENT, { bubbles: true, cancelable: false });
+        node.dispatchEvent(event);
+      }
     }
   }
 
@@ -215,7 +217,7 @@ type ParameterInputProps = {
  */
 class SimpleParamterInput extends React.Component<ParameterInputProps> {
 
-  input: HTMLInputElement | null;
+  input: HTMLInputElement | null = null;
 
   dispatchChangeEvent = debounce(this._dispatchChangeEvent, 1000);
 
@@ -279,7 +281,7 @@ type EnumCheckboxProps = {
 }
 
 class EnumCheckbox extends React.Component<EnumCheckboxProps> {
-  input: HTMLInputElement | null;
+  input: HTMLInputElement | null = null;
 
   dispatchChangeEvent = debounce(this._dispatchChangeEvent, 1000);
 

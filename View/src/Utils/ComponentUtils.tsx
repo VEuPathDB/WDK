@@ -126,7 +126,7 @@ export function wrappable<P>(Component: React.ComponentType<P>): ComponentWrappe
 }
 
 interface LoadCallback {
-  (render: (props?: {}) => void): void
+  <T>(render: (props?: T) => void): void
 }
 
 type LazyEnhance = <P>(Component: React.ComponentClass<P> | React.StatelessComponent<P>) => React.ComponentClass<P>
@@ -144,20 +144,23 @@ type LazyEnhance = <P>(Component: React.ComponentClass<P> | React.StatelessCompo
  */
 export function lazy(load: LoadCallback): LazyEnhance {
   return function<P>(Component: React.ComponentClass<P> | React.StatelessComponent<P>) {
-    return class Lazy extends React.Component<P, { loading: boolean, props: P }> {
+    return class Lazy extends React.Component<P, { loading: boolean, loadedProps?: P }> {
       displayName = `Lazy(${Component.displayName || Component.name})`;
       constructor(props: P) {
         super(props);
-        this.state = { loading: true, props }
+        this.state = { loading: true }
       }
       componentDidMount() {
-        load((props: P) => {
-          this.setState({ loading: false, props: props || {} });
+        load((loadedProps?: P) => {
+          this.setState(prevState => loadedProps
+            ? { ...prevState, loadedProps, loading: false }
+            : { ...prevState, loading: false }
+          );
         })
       }
       render() {
         return this.state.loading ? null :
-          <Component {...this.props} {...this.state.props}/>
+          <Component {...this.props} {...this.state.loadedProps}/>
       }
     }
   }

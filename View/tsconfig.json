@@ -11,7 +11,7 @@
     "noImplicitReturns": true,
     "sourceMap": true,
     "jsx": "react",
-    "strictNullChecks": true,
+    "strict": true,
     "lib": [ "dom", "dom.iterable", "esnext" ],
     "moduleResolution": "node",
     "experimentalDecorators": true,

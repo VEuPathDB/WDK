@@ -32,8 +32,8 @@ export default class WordCloudAnalysis extends React.Component<ModuleProps> {
   onRankChange = (range: RankRange) =>
     this.props.dispatch(RankRangeChanged.create(range));
 
-  onSortChange = (sort: Sort) =>
-    this.props.dispatch(WordCloudSorted.create(sort));
+  onSortChange = (sort: string) =>
+    this.props.dispatch(WordCloudSorted.create(sort as Sort));
 
   render() {
     if (this.props.state.data.status !== 'success') return null;
@@ -73,7 +73,7 @@ type Props = {
   rankRange: RankRange;
   wordCloudSort: Sort;
   onRankRangeChange: (range: RankRange) => void;
-  onSortChange: (sort: Sort) => void;
+  onSortChange: (sort: string) => void;
 }
 
 const getRange = memoize((tags: Props['tags']) =>

@@ -1,6 +1,5 @@
 import React, { Children, Component, ReactChild, ReactNode } from 'react';
 
-import Resizable from 'Components/Display/Resizable';
 import Icon from 'Components/Icon/Icon';
 import Popup from 'Components/Overlays/Popup';
 import { makeClassNameHelper, wrappable } from 'Utils/ComponentUtils';
@@ -46,7 +45,9 @@ class Dialog extends Component<Props> {
 
   private static bodyScrollManager = new BodyScrollManager();
 
-  headerNode: Element | null;
+  prevFocusNode: Element | null = null;
+
+  headerNode: Element | null = null;
 
   makeClassName(suffix = '', ...modifiers: any[]) {
     let { className } = this.props;
@@ -78,14 +79,24 @@ class Dialog extends Component<Props> {
 
   componentDidMount() {
     this.blockScrollingIfModalOpen();
+    this.prevFocusNode = document.activeElement;
   }
 
   componentDidUpdate(prevProps: Props) {
     this.blockScrollingIfModalOpen(prevProps);
+    if (prevProps.open !== this.props.open && this.props.open) {
+      this.prevFocusNode = document.activeElement;
+    }
+    if (prevProps.open !== this.props.open && !this.props.open && this.prevFocusNode instanceof HTMLElement) {
+      this.prevFocusNode.focus();
+    }
   }
 
   componentWillUnmount() {
     document.body.classList.remove('wdk-ModalOpen');
+    if (this.prevFocusNode instanceof HTMLElement) {
+      this.prevFocusNode.focus();
+    }
   }
 
   render () {
@@ -112,19 +123,12 @@ class Dialog extends Component<Props> {
       </div>
     );
 
-    if (this.props.resizable) {
-      content = (
-        <Resizable>
-          {content}
-        </Resizable>
-      );
-    }
-
     return (
       <Popup
         className={this.makeClassName('PopupWrapper')}
-        open={this.props.open}
         dragHandleSelector={() => this.headerNode as Element}
+        open={this.props.open}
+        resizable={this.props.resizable}
       >
         {content}
       </Popup>

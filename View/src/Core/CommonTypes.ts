@@ -42,7 +42,7 @@ export type AbstractViewControllerClass = typeof AbstractViewController;
 
 export interface RouteSpec {
   path: string;
-  component: ComponentType<ViewControllerProps<WdkStore>>
+  component: ComponentType<PageControllerProps<WdkStore>>
 }
 
 export interface MesaColumn {

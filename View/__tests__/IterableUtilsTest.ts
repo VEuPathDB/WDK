@@ -144,7 +144,7 @@ test('every', function() {
 test('reduce', function() {
   expect(i.reduce((acc, n) => acc + n, 5, [1,2,3,4,5,6,7,8,9,10])).toBe(60);
 
-  expect(i.reduce((acc, n) => acc + n, [1,2,3,4,5,6,7,8,9,10])).toBe(55);
+  expect(i.reduce((acc: number, n: number) => acc + n, [1,2,3,4,5,6,7,8,9,10])).toBe(55);
 
 
 });
