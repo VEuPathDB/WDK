@@ -1,9 +1,10 @@
-import { Observable } from 'rxjs';
+import { from, Observable } from 'rxjs';
+import { filter, mergeMap, takeUntil } from 'rxjs/operators';
 
-import { Action, EpicServices, makeActionCreator } from 'Utils/ActionCreatorUtils';
+import { Action, ObserveServices, makeActionCreator } from 'Utils/ActionCreatorUtils';
+import { PluginContext } from 'Utils/ClientPlugin';
 import { Reporter } from 'Utils/WdkModel';
 import { ServiceError } from 'Utils/WdkService';
-import { PluginContext } from 'Utils/ClientPlugin';
 
 // Actions
 // -------
@@ -45,13 +46,16 @@ export const TableSearched =
 export const TabSelected =
   makeActionCreator<string, 'attribute-reporter/tab-selected'>('attribute-reporter/tab-selected');
 
-export function observeReportRequests(action$: Observable<Action>, { wdkService }: EpicServices): Observable<Action> {
-  return action$.filter(AttributeReportRequested.test)
-    .mergeMap(({ payload: { reporterName, stepId }}) =>
-      Observable.from(
+export function observeReportRequests(action$: Observable<Action>, { wdkService }: ObserveServices): Observable<Action> {
+  return action$.pipe(
+    filter(AttributeReportRequested.test),
+    mergeMap(({ payload: { reporterName, stepId }}) =>
+      from(
         wdkService.getStepAnswer(stepId, { format: reporterName }).then(
           report => AttributeReportReceived.create({ report }),
           error => AttributeReportFailed.create({ error })
-        ))
-        .takeUntil(action$.filter(AttributeReportCancelled.test)))
+        )).pipe(
+          takeUntil(action$.pipe(filter(AttributeReportCancelled.test))))
+        )
+      )
 }

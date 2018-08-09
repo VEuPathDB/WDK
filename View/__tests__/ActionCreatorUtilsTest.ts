@@ -1,5 +1,4 @@
 import {
-  combineEpics,
   makeActionCreator,
   isOneOf
 } from 'Utils/ActionCreatorUtils';

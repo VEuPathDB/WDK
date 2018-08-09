@@ -367,8 +367,8 @@ export function matchAction<T>(initialState: T, ...cases: Case<T, AnonTA>[]): Re
  *
  * @param reducers
  */
-export const composeReducers = <T, S extends Action>(...reducers: Reducer<T, S>[]): Reducer<T, S> => (state: T, action: S) =>
-  reducers.reduceRight((state, reducer) => reducer(state, action), state);
+export const composeReducers = <T, S extends Action>(...reducers: Reducer<T, S>[]): Reducer<T, S> => (state: T | undefined, action: S) =>
+  reducers.reduceRight((state, reducer) => reducer(state, action), state) as T;
 
 
 type ReducerRecord<T> = {

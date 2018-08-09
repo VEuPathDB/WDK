@@ -80,9 +80,9 @@ export default class Popup extends React.Component<Props> {
     draggable: false,
   };
 
-  containerNode: HTMLElement;
+  containerNode?: HTMLElement;
 
-  popupNode: Element | null;
+  popupNode: Element | null = null;
 
   componentDidMount() {
     // Create container node and attatch it to the parent node.
@@ -104,7 +104,7 @@ export default class Popup extends React.Component<Props> {
 
   componentWillUnmount() {
     if (this.popupNode) $(this.popupNode).draggable('destroy');
-    this.containerNode.remove();
+    if (this.containerNode) this.containerNode.remove();
   }
 
   _callJqueryWithProps() {

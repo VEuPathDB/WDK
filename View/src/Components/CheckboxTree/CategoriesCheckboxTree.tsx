@@ -31,8 +31,6 @@ type Props = {
   disableHelp?: boolean;
 };
 
-let CheckboxTree_ = CheckboxTree as new (props: any) => CheckboxTree<CategoryTreeNode>;
-
 let CategoriesCheckboxTree: StatelessComponent<Props> = props => {
 
   let {
@@ -69,7 +67,7 @@ let CategoriesCheckboxTree: StatelessComponent<Props> = props => {
     <div className="wdk-CategoriesCheckboxTree">
       {title && <h3 className="wdk-CategoriesCheckboxTreeHeading">{title}</h3>}
       <div className="wdk-CategoriesCheckboxTreeWrapper">
-        <CheckboxTree_ {...treeProps} />
+        <CheckboxTree {...treeProps} />
       </div>
     </div>
   );

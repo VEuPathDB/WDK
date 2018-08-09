@@ -1,5 +1,7 @@
+import 'spin.js/spin.css';
+
 import React from 'react';
-import Spinner from 'spin.js';
+import { Spinner } from 'spin.js';
 import { findDOMNode } from "react-dom";
 import { wrappable } from 'Utils/ComponentUtils';
 
@@ -19,9 +21,9 @@ type Props = {
  */
 class Loading extends React.Component<Props> {
 
-  private timerId: number;
+  private timerId?: number;
 
-  private spinner: Spinner;
+  private spinner?: Spinner;
 
   componentDidMount() {
     this.timerId = window.setTimeout(() => {

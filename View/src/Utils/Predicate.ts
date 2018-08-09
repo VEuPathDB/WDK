@@ -4,11 +4,11 @@ type Predicate = (...args: any[]) => boolean;
  */
 let PredicateMixin = {
 
-  or(test: Predicate) {
+  or(this: Predicate, test: Predicate) {
     return predicate((...args: any[]) => this(...args) || test(...args));
   },
 
-  and(test: Predicate) {
+  and(this: Predicate, test: Predicate) {
     return predicate((...args: any[]) => this(...args) && test(...args));
   }
 

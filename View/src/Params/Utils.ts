@@ -1,5 +1,5 @@
 import { DispatchAction } from 'Core/CommonTypes';
-import { Epic } from 'Utils/ActionCreatorUtils';
+import { ActionObserver } from 'Utils/ActionCreatorUtils';
 import { Parameter, ParameterValues } from 'Utils/WdkModel';
 
 // Types
@@ -26,7 +26,7 @@ export type ParamModule<T extends Parameter, S> = {
   isType: (p: Parameter) => p is T;
   ParamComponent: React.ComponentType<Props<T, S>>;
   reduce?: (state: S, action: any) => S;
-  paramEpic?: Epic
+  observeParam?: ActionObserver
 }
 
 

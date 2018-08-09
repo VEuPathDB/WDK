@@ -4,20 +4,13 @@ import React from 'react';
 
 import Loading from 'Components/Loading/Loading';
 import Dialog from 'Components/Overlays/Dialog';
-import { DispatchAction } from 'Core/CommonTypes';
+import Error from 'Components/PageStatus/Error';
 import { Action } from 'Utils/ActionCreatorUtils';
 import { makeClassNameHelper } from 'Utils/ComponentUtils';
-import { Reporter, RecordClass } from 'Utils/WdkModel';
+import { Reporter } from 'Utils/WdkModel';
 
+import { AttributeReportCancelled, AttributeReportRequested } from './BaseAttributeAnalysis/BaseAttributeAnalysisActions';
 import { State } from './BaseAttributeAnalysis/BaseAttributeAnalysisState';
-import {
-  AttributeReportCancelled,
-  AttributeReportRequested,
-  ScopedAnalysisAction,
-} from './BaseAttributeAnalysis/BaseAttributeAnalysisActions';
-import { ClientPlugin } from 'Utils/ClientPlugin';
-import { IconAlt } from 'Components';
-import Error from 'Components/PageStatus/Error';
 
 const cx = makeClassNameHelper('AttributeAnalysis');
 
@@ -25,7 +18,7 @@ type Props = {
   stepId: number;
   reporter: Reporter;
   recordClassName: string;
-  dispatch: DispatchAction;
+  dispatch: (action: Action) => void;
   analysis?: State<string>;
 }
 

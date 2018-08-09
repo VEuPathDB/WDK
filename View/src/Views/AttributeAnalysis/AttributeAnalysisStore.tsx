@@ -1,9 +1,12 @@
+import { filter, map, withLatestFrom } from 'rxjs/operators';
+
 import WdkStore, { BaseState } from 'Core/State/Stores/WdkStore';
-import { Action, Epic } from 'Utils/ActionCreatorUtils';
+import { Action, ActionObserver, ObserveServices } from 'Utils/ActionCreatorUtils';
+import { CompositeClientPlugin, PluginContext } from 'Utils/ClientPlugin';
 
 import * as Data from './BaseAttributeAnalysis';
 import { ScopedAnalysisAction } from './BaseAttributeAnalysis/BaseAttributeAnalysisActions';
-import { CompositeClientPlugin, PluginContext } from 'Utils/ClientPlugin';
+import { Observable } from 'rxjs';
 
 export type State = BaseState & {
   analyses: Record<string, Data.State<string> | undefined>
@@ -32,22 +35,22 @@ export class AttributeAnalysisStore extends WdkStore<State> {
     };
   }
 
-  getEpics() {
-    return [
-      scopePluginObserve(this.locatePlugin('attributeAnalysis').observe)
-    ]
+  observeActions(action$: Observable<Action>, services: ObserveServices) {
+    return scopePluginObserve(this.locatePlugin('attributeAnalysis').observe)(action$, services);
   }
 
 }
 
-function scopePluginObserve(epic: CompositeClientPlugin['observe']): Epic {
-  return function scopedEpic(action$, services) {
-    const scopedParentAction$ = action$.filter(ScopedAnalysisAction.test);
-    const contextActionPair$ = scopedParentAction$.map(action => [ action.payload.context, action.payload.action ] as [PluginContext, Action]);
-    const scopedChildAction$ = epic(contextActionPair$, services);
-    return scopedChildAction$.withLatestFrom(scopedParentAction$, (child, parent) => ({ child, parent }))
-      .map(({ child, parent }) => {
+function scopePluginObserve(observe: CompositeClientPlugin['observe']): ActionObserver<WdkStore> {
+  return function scopedObserve(action$, services) {
+    const scopedParentAction$ = action$.pipe(filter(ScopedAnalysisAction.test));
+    const contextActionPair$ = scopedParentAction$.pipe(map(action => [ action.payload.context, action.payload.action ] as [PluginContext, Action]));
+    const scopedChildAction$ = observe(contextActionPair$, services);
+    return scopedChildAction$.pipe(
+      withLatestFrom(scopedParentAction$, (child, parent) => ({ child, parent })),
+      map(({ child, parent }) => {
         return { ...parent, payload: { ...parent.payload, action: child } }
       })
+    );
   }
 }

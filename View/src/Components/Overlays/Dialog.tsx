@@ -45,9 +45,9 @@ class Dialog extends Component<Props> {
 
   private static bodyScrollManager = new BodyScrollManager();
 
-  prevFocusNode: Element | null;
+  prevFocusNode: Element | null = null;
 
-  headerNode: Element | null;
+  headerNode: Element | null = null;
 
   makeClassName(suffix = '', ...modifiers: any[]) {
     let { className } = this.props;

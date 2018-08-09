@@ -1,12 +1,14 @@
-import $ from 'jquery';
-import * as React from 'react';
-import PropTypes from 'prop-types';
-import { Router, Switch, Route, RouteComponentProps } from 'react-router';
 import { History, Location } from 'history';
-import { MakeDispatchAction, Container, ViewControllerProps, RouteSpec, LocatePlugin } from "Core/CommonTypes";
-import WdkStore from "Core/State/Stores/WdkStore";
+import PropTypes from 'prop-types';
+import * as React from 'react';
+import { Route, RouteComponentProps, Router, Switch } from 'react-router';
+
+import { Container, LocatePlugin, MakeDispatchAction, RouteSpec } from 'Core/CommonTypes';
 import ErrorBoundary from 'Core/Controllers/ErrorBoundary';
+import WdkStore from 'Core/State/Stores/WdkStore';
 import LoginFormController from 'Views/User/LoginForm/LoginFormController';
+
+import { PageControllerProps } from './CommonTypes';
 
 type Props = {
   rootUrl: string,
@@ -51,7 +53,7 @@ export default class Root extends React.Component<Props> {
     this.props.onLocationChange(this.props.history.location);
   }
 
-  renderRoute(RouteComponent: React.ComponentType<ViewControllerProps<WdkStore>>) {
+  renderRoute(RouteComponent: React.ComponentType<PageControllerProps<WdkStore>>) {
     // Used to inject wdk content as props of Route Component
     return (routerProps: RouteComponentProps<any>) => {
       let { locatePlugin, makeDispatchAction, stores } = this.props;

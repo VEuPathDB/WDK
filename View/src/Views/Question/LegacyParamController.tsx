@@ -217,7 +217,7 @@ type ParameterInputProps = {
  */
 class SimpleParamterInput extends React.Component<ParameterInputProps> {
 
-  input: HTMLInputElement | null;
+  input: HTMLInputElement | null = null;
 
   dispatchChangeEvent = debounce(this._dispatchChangeEvent, 1000);
 
@@ -281,7 +281,7 @@ type EnumCheckboxProps = {
 }
 
 class EnumCheckbox extends React.Component<EnumCheckboxProps> {
-  input: HTMLInputElement | null;
+  input: HTMLInputElement | null = null;
 
   dispatchChangeEvent = debounce(this._dispatchChangeEvent, 1000);
 

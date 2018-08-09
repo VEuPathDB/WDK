@@ -1,8 +1,8 @@
 import { Seq } from 'Utils/IterableUtils';
 import { curry } from 'lodash';
 
-export interface Node {
-  children: Array<Node>;
+export type Node<T> = T & {
+  children: Array<Node<T>>;
 }
 
 export interface ChildrenGetter<T> {
@@ -64,8 +64,8 @@ export function* postorder<T>(root: T, getChildren: ChildrenGetter<T>): Iterable
  * @param {Object} root
  * @return {Seq}
  */
-export function preorderSeq<T extends Node>(root: T) {
-  return Seq.from(preorder(root, n => n.children as T[]));
+export function preorderSeq<T>(root: Node<T>) {
+  return Seq.from(preorder(root, n => n.children));
 }
 
 /**
@@ -86,8 +86,8 @@ export function preorderSeq<T extends Node>(root: T) {
  * @param {Object} root
  * @return {Seq}
  */
-export function postorderSeq<T extends Node>(root: T) {
-  return Seq.from(postorder(root, n => n.children as T[]));
+export function postorderSeq<T>(root: Node<T>) {
+  return Seq.from(postorder(root, n => n.children));
 }
 
 /**
@@ -107,8 +107,8 @@ export function mapStructure<T, U>(mapFn: (root: T, children: U[]) => U, getChil
   return mapFn(root, mappedChildren);
 }
 
-export const foldStructure = <T extends Node, U>(fn: (value: U, node: T) => U, seed: U, root: T): U =>
-  fn(root.children.reduce((acc: U, next: T) => foldStructure(fn, acc, next), seed) as U, root)
+export const foldStructure = <T, U>(fn: (value: U, node: Node<T>) => U, seed: U, root: Node<T>): U =>
+  fn(root.children.reduce((acc: U, next: Node<T>) => foldStructure(fn, acc, next), seed) as U, root)
 
 /**
  * For any node in a tree that does not pass `nodePredicate`, replace it with
@@ -119,7 +119,7 @@ export const foldStructure = <T extends Node, U>(fn: (value: U, node: T) => U, s
  * @param {Object} root Root node of a tree.
  * @return {Object}
  */
-export function pruneDescendantNodes<T extends Node>(fn: (node: T) => boolean, root: T) {
+export function pruneDescendantNodes<T>(fn: (node: Node<T>) => boolean, root: Node<T>) {
   let prunedChildren = pruneNodes(fn, root.children);
   return prunedChildren === root.children
     ? root
@@ -138,13 +138,13 @@ export function pruneDescendantNodes<T extends Node>(fn: (node: T) => boolean, r
  * of a node in a tree.
  * @return {Array}
  */
-export function pruneNodes (fn: (node: Node) => boolean, nodes: Node[]): Node[] {
+export function pruneNodes <T>(fn: (node: Node<T>) => boolean, nodes: Node<T>[]): Node<T>[] {
   let prunedNodes = nodes.reduce((prunedNodes, node) => {
     let prunedNode = pruneDescendantNodes(fn, node);
     return fn(prunedNode)
       ? pushInto(prunedNodes, prunedNode)
       : pushInto(prunedNodes, ...prunedNode.children);
-  }, [] as Node[]);
+  }, [] as Node<T>[]);
   return shallowEqual(nodes, prunedNodes) ? nodes : prunedNodes;
 }
 
@@ -154,12 +154,12 @@ export function pruneNodes (fn: (node: Node) => boolean, nodes: Node[]): Node[] 
  * @param {Object} root Root node of a tree
  * @return {Object} Tree
  */
-export function compactRootNodes (root: Node): Node {
+export function compactRootNodes <T>(root: Node<T>): Node<T> {
   return root.children.length === 1 ? compactRootNodes(root.children[0])
   : root
 }
 
-export function mapNodes (nodeTransform: (root: Node) => Node, root: Node): Node {
+export function mapNodes <T>(nodeTransform: (root: Node<T>) => Node<T>, root: Node<T>): Node<T> {
   return Object.assign({}, nodeTransform(root), {
     children: root.children.map(child => mapNodes(nodeTransform, child))
   });
@@ -168,7 +168,7 @@ export function mapNodes (nodeTransform: (root: Node) => Node, root: Node): Node
 /**
  * Get an array of nodes that satisfy nodePredicate
  */
-export function filterNodes (nodePredicate: (node: Node) => boolean, node: Node) {
+export function filterNodes <T>(nodePredicate: (node: Node<T>) => boolean, node: Node<T>) {
   return preorderSeq(node).filter(nodePredicate).toArray();
 }
 

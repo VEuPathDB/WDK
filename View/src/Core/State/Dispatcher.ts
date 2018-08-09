@@ -1,5 +1,5 @@
 import { Dispatcher } from 'flux';
-import { Subject } from 'rxjs/Subject';
+import { Subject } from 'rxjs';
 
 export default class WdkDispatcher<T> extends Dispatcher<T> {
 

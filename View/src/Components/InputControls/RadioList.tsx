@@ -6,44 +6,31 @@ import HelpIcon from 'Components/Icon/HelpIcon';
 const baseClassName = "wdk-RadioList";
 
 type Props = {
+  /** Value to use for "name" attribute of radio form input elements **/
   name: string;
+  /** Array of items to display in the list **/
   items: Array<{
     name: string;
     display: string;
     value: string;
     description?: string;
   }>;
-  value: string;
+  /** Value of the radio input element that should be checked **/
+  value?: string;
+  /**
+   * Callback function that will be called when user changes selected value.
+   * The new (string) value of the selected button will be passed to this
+   * function.
+   */
   onChange: (value: string) => void;
+  /**
+   * CSS class name that will be applied to the parent <li> element of this
+   * radio list.
+   */
   className?: string;
 }
 
 class RadioList extends React.Component<Props> {
-
-  static propTypes = {
-
-    /** Value to use for "name" attribute of radio form input elements **/
-    name: PropTypes.string,
-
-    /** Array of items to display in the list **/
-    items: PropTypes.array.isRequired,
-
-    /** Value of the radio input element that should be checked **/
-    value: PropTypes.string,
-
-    /**
-     * Callback function that will be called when user changes selected value.
-     * The new (string) value of the selected button will be passed to this
-     * function.
-     */
-    onChange: PropTypes.func,
-
-    /**
-     * CSS class name that will be applied to the parent <li> element of this
-     * radio list.
-     */
-    className: PropTypes.string
-  };
 
   constructor(props: Props) {
     super(props);
