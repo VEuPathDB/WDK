@@ -67,8 +67,8 @@ public class Step implements StrategyElement {
   public static class StepBuilder {
 
     private final WdkModel _wdkModel;
-    private long _userId;
-    private long _stepId;
+    private final long _userId;
+    private final long _stepId;
     private Long _strategyId;
     private Date _createdTime;
     private Date _lastRunTime;
@@ -83,6 +83,7 @@ public class Step implements StrategyElement {
     private long _previousStepId = 0;
     private long _childStepId = 0;
     private AnswerSpec _answerSpec;
+    private boolean _inMemoryOnly = false;
 
     // set during finish() from IDs in DB
     private User _user;
