@@ -129,7 +129,7 @@ interface LoadCallback {
   <T>(render: (props?: T) => void): void
 }
 
-type LazyEnhance = <P>(Component: React.ComponentClass<P> | React.StatelessComponent<P>) => React.ComponentClass<P>
+type LazyEnhance<P> = (Component: React.ComponentType<P>) => React.ComponentClass<P>
 
 
 /**
@@ -142,21 +142,28 @@ type LazyEnhance = <P>(Component: React.ComponentClass<P> | React.StatelessCompo
  *   })
  * })(ComponentThatNeedsData);
  */
-export function lazy(load: LoadCallback): LazyEnhance {
-  return function<P>(Component: React.ComponentClass<P> | React.StatelessComponent<P>) {
+export function lazy<P>(load: LoadCallback): LazyEnhance<P> {
+  return function(Component: React.ComponentClass<P> | React.StatelessComponent<P>) {
     return class Lazy extends React.Component<P, { loading: boolean, loadedProps?: P }> {
       displayName = `Lazy(${Component.displayName || Component.name})`;
+      mounted?: boolean;
       constructor(props: P) {
         super(props);
         this.state = { loading: true }
       }
       componentDidMount() {
+        this.mounted = true;
         load((loadedProps?: P) => {
+          if (this.mounted === false) return;
+
           this.setState(prevState => loadedProps
             ? { ...prevState, loadedProps, loading: false }
             : { ...prevState, loading: false }
           );
         })
+      }
+      componentWillUnmount() {
+        this.mounted = false;
       }
       render() {
         return this.state.loading ? null :
@@ -164,6 +171,10 @@ export function lazy(load: LoadCallback): LazyEnhance {
       }
     }
   }
+}
+
+export function delay<P>(ms: number) {
+  return lazy<P>(render => setTimeout(render, ms));
 }
 
 

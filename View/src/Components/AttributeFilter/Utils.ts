@@ -122,7 +122,7 @@ export const getTree = memoize((ontologyEntries: Iterable<Field>): FieldTreeNode
       term: 'root',
       display: 'Root'
     },
-    children: sortBy(rootChildren, entry => entry.children.length === 0 ? -1 : 1)
+    children: sortBy(rootChildren, entry => isFilterField(entry.field) ? -1 : 1)
   }
 });
 
@@ -131,7 +131,7 @@ function makeOntologyNode(entry: Field, ontologyEntriesByParent: Map<ParentTerm,
     .map(e => makeOntologyNode(e, ontologyEntriesByParent));
   return {
     field: entry,
-    children: sortBy(children, entry => entry.children.length === 0 ? -1 : 1)
+    children: sortBy(children, entry => isFilterField(entry.field) ? -1 : 1)
   };
 }
 
