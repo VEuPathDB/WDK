@@ -82,7 +82,7 @@ type HistogramProps = {
 
 const cx = makeClassNameHelper('HistogramAnalysis');
 
-const Histogram = lazy(render => require([
+const Histogram = lazy<HistogramProps>(render => require([
   'lib/jquery-flot',
   'lib/jquery-flot-categories',
   'lib/jquery-flot-selection',
