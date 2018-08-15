@@ -91,10 +91,14 @@ public class EuPathCategoriesFactory {
       { "Households", "DS_0ad509829eHouseholdRecordClasses.DS_0ad509829eHouseholdRecordClass" },
       { "Observations", "DS_0ad509829eObservationRecordClasses.DS_0ad509829eObservationRecordClass" },
       { "CDC Light Traps", "DS_0ad509829eLightTrapRecordClasses.DS_0ad509829eLightTrapRecordClass" },
-      //India
+      //India longitudinal
       { "Participants", "DS_05ea525fd3ParticipantRecordClasses.DS_05ea525fd3ParticipantRecordClass" },
-      { "Households", "DS_05ea525fd3HouseholdRecordClasses.DS_05ea525fd3HouseholdRecordClass" },
       { "Observations", "DS_05ea525fd3ObservationRecordClasses.DS_05ea525fd3ObservationRecordClass" },
+      //      { "Households", "DS_05ea525fd3HouseholdRecordClasses.DS_05ea525fd3HouseholdRecordClass" },
+      //India cross sectional
+      { "Participants", "DS_a5c969d5faParticipantRecordClasses.DS_a5c969d5faParticipantRecordClass" },
+      { "Observations", "DS_a5c969d5faObservationRecordClasses.DS_a5c969d5faObservationRecordClass" },
+      //      { "Households", "DS_a5c969d5faHouseholdRecordClasses.DS_a5c969d5faHouseholdRecordClass" },
       //GEMs 
       { "Participants", "DS_841a9f5259ParticipantRecordClasses.DS_841a9f5259ParticipantRecordClass" },
       //Maled DCC phase2
