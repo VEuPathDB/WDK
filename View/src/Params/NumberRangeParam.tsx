@@ -1,14 +1,22 @@
+import { stubTrue as isParamValueValid } from 'lodash';
 import React from 'react';
 
 import NumberRangeSelector from 'Components/InputControls/NumberRangeSelector';
-import { Props } from 'Params/Utils';
+import { createParamModule, Props } from 'Params/Utils';
 import { NumberRangeParam, Parameter } from 'Utils/WdkModel';
 
-export function isType(param: Parameter): param is NumberRangeParam {
+
+export default createParamModule({
+  isType,
+  isParamValueValid,
+  Component
+})
+
+function isType(param: Parameter): param is NumberRangeParam {
   return param.type === 'NumberRangeParam';
 }
 
-export function ParamComponent(props: Props<NumberRangeParam, void>) {
+function Component(props: Props<NumberRangeParam, void>) {
   const { parameter, value, onParamValueChange } = props;
   return (
     <NumberRangeSelector

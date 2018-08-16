@@ -121,6 +121,9 @@ public class FilterParamNew extends AbstractDependentParam {
   // the output count of this param can be used to predict the final search results count, if all downstream
   // params (in dependency tree) have default values
   private boolean _countPredictsAnswerCount = false;
+  
+  // Minumum number of selected items required. Defaults to 1.
+  private int _minSelectedCount = -1;
 
   // remove non-terminal nodes with a single child
   private boolean _trimMetadataTerms = true;
@@ -153,6 +156,7 @@ public class FilterParamNew extends AbstractDependentParam {
     _filterItemIdColumn = param._filterItemIdColumn;
     _recordIdColumn = param._recordIdColumn;
     _countPredictsAnswerCount = param._countPredictsAnswerCount;
+    _minSelectedCount = param._minSelectedCount;
   }
 
   @Override
@@ -283,6 +287,14 @@ public class FilterParamNew extends AbstractDependentParam {
   
   public void setCountPredictsAnswerCount(boolean canUse) {
     _countPredictsAnswerCount = canUse;
+  }
+  
+  public int getMinSelectedCount() {
+    return _minSelectedCount;
+  }
+  
+  public void setMinSelectedCount(int count) {
+    _minSelectedCount = count;
   }
 
   @Override

@@ -5,7 +5,7 @@ import 'Params/EnumParam/TreeBoxParam.scss';
 import CheckboxTree from 'Components/CheckboxTree/CheckboxTree';
 import Icon from 'Components/Icon/IconAlt';
 import { ParamInitAction } from 'Core/ActionCreators/QuestionActionCreators';
-import { isType as isEnumParam } from 'Params/EnumParam';
+import enumParamModule from 'Params/EnumParam';
 import SelectionInfo from 'Params/EnumParam/SelectionInfo';
 import { Context, Props } from 'Params/Utils';
 import { makeActionCreator } from 'Utils/ActionCreatorUtils';
@@ -47,7 +47,7 @@ export const SearchTermSet = makeActionCreator<
 
 export function isType(parameter: Parameter): parameter is TreeBoxEnumParam {
   return (
-    isEnumParam(parameter) &&
+    enumParamModule.isType(parameter) &&
     parameter.displayType === 'treeBox'
   );
 }

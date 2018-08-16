@@ -2,11 +2,11 @@ import React from 'react';
 
 import { Parameter, ListEnumParam } from 'Utils/WdkModel';
 import { Props } from 'Params/Utils';
-import { isType as isEnumParam } from 'Params/EnumParam';
+import enumParamModule from 'Params/EnumParam';
 
 export function isType(parameter: Parameter): parameter is ListEnumParam {
   return (
-    isEnumParam(parameter) && (
+    enumParamModule.isType(parameter) && (
       parameter.displayType === 'select' ||
       parameter.displayType === 'checkBox' ||
       parameter.displayType === 'typeAhead'

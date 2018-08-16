@@ -21,6 +21,10 @@ type FieldState = State['fieldStates'][string];
 
 type Props = ParamProps<TFilterParamNew, State>
 
+export function render(props: Props) {
+  return <FilterParamNew {...props}/>
+}
+
 /**
  * FilterParamNew component
  */
@@ -147,6 +151,7 @@ export default class FilterParamNew extends React.PureComponent<Props> {
 
           hideFilterPanel={numLeaves === 1}
           hideFieldPanel={numLeaves === 1}
+          minSelectedCount={parameter.minSelectedCount}
 
           onFiltersChange={this._handleFilterChange}
           onActiveFieldChange={this._handleActiveFieldChange}

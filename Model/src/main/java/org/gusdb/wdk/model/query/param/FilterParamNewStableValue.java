@@ -127,6 +127,8 @@ public class FilterParamNewStableValue {
           errors.add(err);
       }
     }
+    
+    // TODO Add error if param._minSelectedCount < # matching items
 
     if (errors.size() != 0) return errors.stream().collect(Collectors.joining("', '")) + System.lineSeparator() + _stableValueJson;
     return null;

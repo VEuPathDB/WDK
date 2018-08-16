@@ -1,6 +1,8 @@
 import React from 'react';
 import { EnumParam } from 'Utils/WdkModel';
 
+import { countInBounds } from './Utils';
+
 type Props = {
   parameter: EnumParam;
   selectedCount: number;
@@ -18,11 +20,12 @@ export default function SelectionInfo(props: Props) {
     : hasMin ? `You must select at least ${minSelectedCount} values for this parameter.`
     : hasMax ? `You may select up to ${maxSelectedCount} values for this parameter.`
     : null;
-  const countColor = props.selectedCount
+  // XXX This be red if selectedCount is out of bounds??
+  const countColor = countInBounds(props.selectedCount, minSelectedCount, maxSelectedCount)
     ? 'black'
     : 'red';
 
-  if (message == null && alwaysShowCount == false) return null;
+  if (hasMin == false && hasMax == false && alwaysShowCount == false) return null;
 
   return (
     <div className="treeCount">

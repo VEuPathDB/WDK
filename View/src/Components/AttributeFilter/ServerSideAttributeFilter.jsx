@@ -40,6 +40,7 @@ ServerSideAttributeFilter.propTypes = {
   hideFieldPanel: PropTypes.bool,
   hideGlobalCounts: PropTypes.bool,
   selectByDefault: PropTypes.bool, // affects UI state for when no filter is applied
+  minSelectedCount: PropTypes.number,
 
   // state
   fields: PropTypes.instanceOf(Map).isRequired,
