@@ -71,6 +71,9 @@ wdk.namespace('wdk', ns => {
         resolverName == null ? defaultResolver : get(window, resolverName);
       let [ ViewController, context ] =
         await Promise.all([ resolver(name), getContext() ]);
+      let viewControllerRef = React.createRef();
+
+      $el.data('viewControllerRef', viewControllerRef);
 
       observeMutations(el, {
         onPropsChanged(props: any) {
@@ -84,7 +87,7 @@ wdk.namespace('wdk', ns => {
               React.createElement(
                 Router,
                 { history: context.history },
-                React.createElement(ViewController as any, { ...props, ...context })
+                React.createElement(ViewController as any, { ...props, ...context, ref: viewControllerRef })
               )
             ), el)
         },

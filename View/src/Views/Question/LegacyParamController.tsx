@@ -15,10 +15,12 @@ import { preorder } from 'Utils/TreeUtils';
 import { Parameter, EnumParam } from 'Utils/WdkModel';
 import AbstractViewController from 'Core/Controllers/AbstractViewController';
 import { Context } from 'Params/Utils';
-import { isType as isEnumParam } from 'Params/EnumParam';
+import enumParamModule from 'Params/EnumParam';
 import { isType as isTreeBoxParam } from 'Params/EnumParam/TreeBoxEnumParam';
 
 export const UNRECOVERABLE_PARAM_ERROR_EVENT = 'unrecoverable-param-error';
+export const PARAM_VALID_EVENT = 'param-valid';
+export const PARAM_INVALID_EVENT = 'param-invalid';
 
 const ActionCreators = {
   setActiveQuestion: ActiveQuestionUpdatedAction.create,
@@ -102,17 +104,29 @@ export default class LegacyParamController extends AbstractViewController<
       });
     }
 
+    const node = ReactDOM.findDOMNode(this);
+
     // Trigger event in case of question error
     if (
       get(prevState, 'questionStatus') !== get(this.state, 'questionStatus') &&
       this.state.questionStatus === 'error' &&
       this.props.paramValues != null
     ) {
-      const node = ReactDOM.findDOMNode(this);
       if (node) {
         const event = new Event(UNRECOVERABLE_PARAM_ERROR_EVENT, { bubbles: true, cancelable: false });
         node.dispatchEvent(event);
       }
+    }
+
+    // Trigger validation event
+    const parameter = this.getParameter();
+
+    if (parameter != null && node != null) {
+      const eventType = ParamModules.isParamValueValid(this.getContext(parameter), this.state.paramUIState[parameter.name])
+        ? PARAM_VALID_EVENT
+        : PARAM_INVALID_EVENT;
+        const event = new Event(eventType, { bubbles: true, cancelable: false });
+        node.dispatchEvent(event);
     }
   }
 
@@ -126,6 +140,12 @@ export default class LegacyParamController extends AbstractViewController<
 
   isRenderDataNotFound() {
     return this.state.questionStatus === 'not-found';
+  }
+
+  getParameter() {
+    return this.isRenderDataLoaded()
+      ? this.state.question.parameters.find(p => p.name === this.props.paramName)
+      : undefined;
   }
 
   getContext<T extends Parameter>(parameter: T): Context<T> {
@@ -158,7 +178,7 @@ export default class LegacyParamController extends AbstractViewController<
   }
 
   renderView() {
-    const parameter = this.state.question.parameters.find(p => p.name === this.props.paramName);
+    const parameter = this.getParameter();
 
     if (parameter == null) return null;
 
@@ -175,7 +195,7 @@ export default class LegacyParamController extends AbstractViewController<
       )
     }
 
-    const ParameterInput = isEnumParam(parameter) ? EnumParameterInput : SimpleParamterInput;
+    const ParameterInput = enumParamModule.isType(parameter) ? EnumParameterInput : SimpleParamterInput;
 
     return (
       <div>

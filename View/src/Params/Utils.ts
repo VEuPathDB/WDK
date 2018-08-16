@@ -1,6 +1,8 @@
 import { DispatchAction } from 'Core/CommonTypes';
-import { ActionObserver } from 'Utils/ActionCreatorUtils';
+import { ActionObserver, Action, ObserveServices } from 'Utils/ActionCreatorUtils';
 import { Parameter, ParameterValues } from 'Utils/WdkModel';
+import { EMPTY, Observable } from 'rxjs';
+import { QuestionStore } from 'Core/State/Stores';
 
 // Types
 // -----
@@ -22,11 +24,41 @@ export type Props<T extends Parameter, S> = {
 
 }
 
-export type ParamModule<T extends Parameter, S> = {
-  isType: (p: Parameter) => p is T;
-  ParamComponent: React.ComponentType<Props<T, S>>;
+type ParamModuleSpec<T extends Parameter, S> = {
+  isType: (parameter: Parameter) => parameter is T;
+  isParamValueValid: (context: Context<T>, state: S) => boolean;
   reduce?: (state: S, action: any) => S;
-  observeParam?: ActionObserver
+  Component: React.ComponentType<Props<T, S>>;
+  observeParam?: ActionObserver<QuestionStore>;
+}
+
+export type ParamModule<T extends Parameter, S> = {
+  isType: (parameter: Parameter) => parameter is T;
+  /**
+   * Determine if the param value is valid. This can be used by form container
+   * to determine if submit should be disabled. The Component is repsonsible
+   * for providing details about the invalid state.
+   */
+  isParamValueValid: (context: Context<T>, state: S) => boolean;
+  reduce: (state: S, action: Action) => S;
+  Component: React.ComponentType<Props<T, S>>;
+  observeParam: ActionObserver<QuestionStore>;
+}
+
+export function createParamModule<T extends Parameter, S>(spec: ParamModuleSpec<T, S>): ParamModule<T, S> {
+  return {
+    ...spec,
+    reduce: spec.reduce || defaultReduce,
+    observeParam: spec.observeParam || defaultObserve
+  }
+}
+
+function defaultReduce<S>(state: S, action: Action): S {
+  return state;
+}
+
+function defaultObserve(action$: Observable<Action>, services: ObserveServices) {
+  return EMPTY;
 }
 
 

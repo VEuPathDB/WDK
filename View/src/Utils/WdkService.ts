@@ -195,6 +195,7 @@ const parameterDecoder: Decode.Decoder<Parameter> =
       Decode.combine(
         Decode.field('type', Decode.constant('FilterParamNew')),
         Decode.field('filterDataTypeDisplayName', Decode.optional(Decode.string)),
+        Decode.field('minSelectedCount', Decode.number),
         Decode.field('values', Decode.objectOf(Decode.arrayOf(Decode.string))),
         Decode.field('ontology', Decode.arrayOf(
           Decode.combine(
@@ -455,6 +456,7 @@ export default class WdkService {
 
   submitError(error: Error, extra?: any) {
     const { name, message, stack } = error;
+    console.error(error);
     return this._checkStoreVersion().then(() =>
     this.sendRequest(Decode.none, {
       method: 'post',

@@ -3,7 +3,7 @@ import React from 'react';
 import { ParamInitAction } from 'Core/ActionCreators/QuestionActionCreators';
 import * as List from 'Params/EnumParam/ListEnumParam';
 import * as TreeBox from 'Params/EnumParam/TreeBoxEnumParam';
-import { isPropsType, Props } from 'Params/Utils';
+import { Context, createParamModule, isPropsType, Props } from 'Params/Utils';
 import { Action, isOneOf } from 'Utils/ActionCreatorUtils';
 import { EnumParam, Parameter } from 'Utils/WdkModel';
 
@@ -15,7 +15,19 @@ const isEnumParamAction = isOneOf(
   TreeBox.SearchTermSet
 );
 
-export function reduce(state: State, action: Action): State {
+export default createParamModule({
+  isType,
+  isParamValueValid,
+  reduce,
+  Component
+});
+
+function isParamValueValid(context: Context<EnumParam>, state: State) {
+  // TODO Delegate to List and TreeBox params (since counting logic varies)
+  return true
+}
+
+function reduce(state: State, action: Action): State {
   if (!isEnumParamAction(action)) return state;
   const { parameter } = action.payload;
   if (parameter == null || !isType(parameter)) return state;
@@ -26,7 +38,7 @@ export function reduce(state: State, action: Action): State {
 }
 
 // Use this for both EnumParam and FlatVocabParam.
-export function isType(parameter: Parameter): parameter is EnumParam {
+function isType(parameter: Parameter): parameter is EnumParam {
   return (
     parameter.type === 'EnumParam' ||
     parameter.type === 'FlatVocabParam'
@@ -34,7 +46,7 @@ export function isType(parameter: Parameter): parameter is EnumParam {
 }
 
 // TODO Handle various displayTypes (see WDK/Model/lib/rng/wdkModel.rng).
-export function ParamComponent(props: Props<EnumParam, any>) {
+function Component(props: Props<EnumParam, any>) {
   if (isPropsType(props, TreeBox.isType)) {
     return (
       <TreeBox.TreeBoxEnumParam {...props} />
