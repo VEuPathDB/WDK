@@ -27,6 +27,7 @@ var scripts = [
 // polyfills
 var polyfills = [
   'babel-polyfill',
+  'custom-event-polyfill',
   'whatwg-fetch'
 ];
 

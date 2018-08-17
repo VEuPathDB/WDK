@@ -75,20 +75,3 @@ export function dialog(title: string, message: string, buttons: ButtonDescriptor
     }
   });
 }
-
-export function createEvent(eventName: string, customEventInit?: CustomEventInit) {
-  if (typeof CustomEvent === 'function') return new CustomEvent(eventName, customEventInit);
-
-  // Create event the old-fashioned way
-  var event = document.createEvent('CustomEvent');
-  const { bubbles, cancelable, detail } = (customEventInit || {} as CustomEventInit);
-  event.initEvent(eventName, bubbles, cancelable);
-  if (detail) {
-    Object.defineProperty(event, 'detail', {
-      enumerable: true,
-      value: detail
-    });
-  }
-
-  return event;
-}
