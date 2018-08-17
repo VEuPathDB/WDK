@@ -11,6 +11,7 @@ import {
 import * as ParamModules from 'Params';
 import QuestionStore, { State, QuestionState } from 'Views/Question/QuestionStore';
 import { Seq } from 'Utils/IterableUtils';
+import { createEvent } from 'Utils/Platform';
 import { preorder } from 'Utils/TreeUtils';
 import { Parameter, EnumParam } from 'Utils/WdkModel';
 import AbstractViewController from 'Core/Controllers/AbstractViewController';
@@ -113,7 +114,7 @@ export default class LegacyParamController extends AbstractViewController<
       this.props.paramValues != null
     ) {
       if (node) {
-        const event = new Event(UNRECOVERABLE_PARAM_ERROR_EVENT, { bubbles: true, cancelable: false });
+        const event = createEvent(UNRECOVERABLE_PARAM_ERROR_EVENT);
         node.dispatchEvent(event);
       }
     }
@@ -125,7 +126,7 @@ export default class LegacyParamController extends AbstractViewController<
       const eventType = ParamModules.isParamValueValid(this.getContext(parameter), this.state.paramUIState[parameter.name])
         ? PARAM_VALID_EVENT
         : PARAM_INVALID_EVENT;
-        const event = new Event(eventType, { bubbles: true, cancelable: false });
+        const event = createEvent(eventType);
         node.dispatchEvent(event);
     }
   }
@@ -252,7 +253,7 @@ class SimpleParamterInput extends React.Component<ParameterInputProps> {
       console.warn("Input field is not defined. Skipping event dispatch.");
       return;
     }
-    this.input.dispatchEvent(new Event('change', { bubbles: true }));
+    this.input.dispatchEvent(createEvent('change'));
   }
 
   render() {
@@ -316,7 +317,7 @@ class EnumCheckbox extends React.Component<EnumCheckboxProps> {
       console.warn("Input field is not defined. Skipping event dispatch.");
       return;
     }
-    this.input.dispatchEvent(new Event('change', { bubbles: true }));
+    this.input.dispatchEvent(createEvent('change'));
   }
 
   render() {

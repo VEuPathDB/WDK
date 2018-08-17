@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import { createEvent } from 'Utils/Platform';
+
 import HeadingRow from '../Ui/HeadingRow';
 import DataRowList from '../Ui/DataRowList';
 import { makeClassifier, combineWidths } from '../Utils/Utils';
@@ -56,7 +58,7 @@ class DataTable extends React.Component {
     }
     const dynamicWidths = columns.map((c, i) => getInnerCellWidth(contentCells[i], headingCells[i], c) - (hasSelectionColumn && !i ? 1 : 0));
     this.setState({ dynamicWidths }, () => {
-      window.dispatchEvent(new Event('MesaReflow'));
+      window.dispatchEvent(createEvent('MesaReflow'));
     });
   }
 
@@ -87,7 +89,7 @@ class DataTable extends React.Component {
   handleTableBodyScroll (e) {
     const offset = this.bodyNode.scrollLeft;
     this.headerNode.scrollLeft = offset;
-    window.dispatchEvent(new Event('MesaScroll'));
+    window.dispatchEvent(createEvent('MesaScroll'));
   }
 
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
