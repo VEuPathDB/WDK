@@ -1,4 +1,3 @@
-import 'babel-polyfill';
 import 'Core/vendor';
 
 import * as Components from 'Components';

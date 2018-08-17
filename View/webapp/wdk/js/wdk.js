@@ -9,7 +9,6 @@
  */
 
 // create internal packages
-import 'babel-polyfill';
 import './vendor';
 import './core';
 import './user';
