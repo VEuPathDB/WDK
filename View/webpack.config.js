@@ -4,6 +4,7 @@ var baseConfig = require('./base.webpack.config');
 // Shims for global style scripts
 // These will expose global varables on the `window` object.
 // For instance, `window.$`
+// TODO Migrate to npm/yarn packages
 var scripts = [
   { alias: 'lib/jquery',                                path : __dirname + '/webapp/wdk/lib/jquery.js' },
   { alias: 'lib/jquery-migrate',                        path : __dirname + '/webapp/wdk/lib/jquery-migrate-1.2.1.min.js' },
@@ -23,19 +24,11 @@ var scripts = [
   { alias: 'zynga-scroller',                            path : __dirname + '/lib/zynga-scroller/src' }
 ];
 
-// Create webpack alias configuration object
-var alias = scripts.reduce(function(alias, script) {
-  alias[script.alias + '$'] = script.path;
-  return alias;
-}, { });
-
-// Create webpack script-loader configuration object
-var scriptLoaders = scripts.map(function(script) {
-  return {
-    test: script.path,
-    loader: 'script-loader'
-  };
-});
+// polyfills
+var polyfills = [
+  'babel-polyfill',
+  'whatwg-fetch'
+];
 
 // expose module exports as global vars
 var exposeModules = [
@@ -52,16 +45,38 @@ var exposeModules = [
   { module: 'rxjs/operators', expose : 'RxOperators' },
 ];
 
+
+// Create config
+// -------------
+
+// Create webpack alias configuration object
+var alias = scripts.reduce(function(alias, script) {
+  alias[script.alias + '$'] = script.path;
+  return alias;
+}, { });
+
+// Create webpack script-loader configuration object
+var scriptLoaders = scripts.map(function(script) {
+  return {
+    test: script.path,
+    loader: 'script-loader'
+  };
+});
+
+var exposeEntries = exposeModules.map(function(entry) {
+  return 'expose-loader?' + entry.expose + '!' + entry.module;
+})
+
 var primaryConfig = {
   entry: {
-    'wdk-client': exposeModules.map(function(entry) {
-      return 'expose-loader?' + entry.expose + '!' + entry.module;
-    }).concat([
-      'whatwg-fetch',
+    'wdk-client': [].concat(
+      polyfills,
+      exposeEntries,
       './webapp/wdk/css/wdk.css',
       './src/Core/Style/index.scss',
       './src/Core/index.ts'
-    ]),
+    ),
+
     'wdk': [
       './webapp/wdk/css/wdk.css',
       './src/Core/Style/index.scss',
