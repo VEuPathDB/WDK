@@ -1,2 +1,2 @@
-import { ParamComponent } from 'Params';
+import { ParamComponent } from './Params';
 export default ParamComponent;

@@ -1,22 +1,22 @@
-import { debounce, flow, get, isEqual, partial } from 'lodash';
+import { debounce, get } from 'lodash';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {
   ActiveQuestionUpdatedAction,
-  UnloadQuestionAction,
   ParamValueUpdatedAction,
-  QuestionErrorAction
+  UnloadQuestionAction,
 } from 'Core/ActionCreators/QuestionActionCreators';
-import * as ParamModules from 'Params';
-import QuestionStore, { State, QuestionState } from 'Views/Question/QuestionStore';
+import AbstractViewController from 'Core/Controllers/AbstractViewController';
 import { Seq } from 'Utils/IterableUtils';
 import { preorder } from 'Utils/TreeUtils';
-import { Parameter, EnumParam } from 'Utils/WdkModel';
-import AbstractViewController from 'Core/Controllers/AbstractViewController';
-import { Context } from 'Params/Utils';
-import enumParamModule from 'Params/EnumParam';
-import { isType as isTreeBoxParam } from 'Params/EnumParam/TreeBoxEnumParam';
+import { EnumParam, Parameter } from 'Utils/WdkModel';
+import QuestionStore, { QuestionState } from 'Views/Question/QuestionStore';
+
+import * as ParamModules from './Params';
+import enumParamModule from './Params/EnumParam';
+import { isType as isTreeBoxParam } from './Params/EnumParam/TreeBoxEnumParam';
+import { Context } from './Params/Utils';
 
 export const UNRECOVERABLE_PARAM_ERROR_EVENT = 'unrecoverable-param-error';
 export const PARAM_VALID_EVENT = 'param-valid';

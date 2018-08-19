@@ -3,12 +3,12 @@ import natsort from 'natural-sort';
 
 import { Filter, MemberFilter, ValueCounts } from 'Components/AttributeFilter/Types';
 import { getTree, isRange } from 'Components/AttributeFilter/Utils';
-import { filter, Seq } from 'Utils/IterableUtils';
+import { Seq } from 'Utils/IterableUtils';
 import { preorderSeq } from 'Utils/TreeUtils';
 import { FilterParamNew, Parameter } from 'Utils/WdkModel';
 
 import { SortSpec, State } from './State';
-import { Context } from 'Params/Utils';
+import { Context } from '../Utils';
 
 const natSortComparator = (natsort as any)();
 
