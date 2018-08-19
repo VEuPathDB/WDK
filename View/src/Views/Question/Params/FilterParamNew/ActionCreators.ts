@@ -10,13 +10,14 @@ import {
   QuestionLoadedAction,
   UnloadQuestionAction,
 } from 'Core/ActionCreators/QuestionActionCreators';
-import { FieldState, MemberFieldState, State } from 'Params/FilterParamNew/State';
-import { findFirstLeaf, getFilters, isMemberField, isType, sortDistribution } from 'Params/FilterParamNew/Utils';
-import { Context } from 'Params/Utils';
-import { Action, combineObserve, ObserveServices, makeActionCreator } from 'Utils/ActionCreatorUtils';
+import { Action, combineObserve, makeActionCreator, ObserveServices } from 'Utils/ActionCreatorUtils';
 import { FilterParamNew } from 'Utils/WdkModel';
 import WdkService from 'Utils/WdkService';
 import QuestionStore, { QuestionState } from 'Views/Question/QuestionStore';
+
+import { Context } from '../Utils';
+import { FieldState, MemberFieldState, State } from './State';
+import { findFirstLeaf, getFilters, isMemberField, isType, sortDistribution } from './Utils';
 
 
 type Ctx = Context<FilterParamNew>

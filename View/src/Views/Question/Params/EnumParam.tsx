@@ -1,11 +1,12 @@
 import React from 'react';
 
 import { ParamInitAction } from 'Core/ActionCreators/QuestionActionCreators';
-import * as List from 'Params/EnumParam/ListEnumParam';
-import * as TreeBox from 'Params/EnumParam/TreeBoxEnumParam';
-import { Context, createParamModule, isPropsType, Props } from 'Params/Utils';
 import { Action, isOneOf } from 'Utils/ActionCreatorUtils';
 import { EnumParam, Parameter } from 'Utils/WdkModel';
+
+import * as List from './EnumParam/ListEnumParam';
+import * as TreeBox from './EnumParam/TreeBoxEnumParam';
+import { Context, createParamModule, isPropsType, Props } from './Utils';
 
 type State = TreeBox.State;
 

@@ -1,13 +1,13 @@
 import * as React from 'react';
 
-import EnumParamModule from 'Params/EnumParam';
-import FilterParamNewModule from 'Params/FilterParamNew';
-import NumberParamModule from 'Params/NumberParam';
-import NumberRangeParamModule from 'Params/NumberRangeParam';
 import { ActionObserver, combineObserve } from 'Utils/ActionCreatorUtils';
 import { Parameter } from 'Utils/WdkModel';
 
-import { isPropsType, ParamModule, Props, Context } from './Utils';
+import EnumParamModule from './EnumParam';
+import FilterParamNewModule from './FilterParamNew';
+import NumberParamModule from './NumberParam';
+import NumberRangeParamModule from './NumberRangeParam';
+import { Context, isPropsType, ParamModule, Props } from './Utils';
 
 // Param modules
 // -------------

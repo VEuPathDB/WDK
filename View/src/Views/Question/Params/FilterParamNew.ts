@@ -1,7 +1,6 @@
-import observeParam from 'Params/FilterParamNew/ActionCreators';
-import Component from 'Params/FilterParamNew/FilterParamNew';
-import { reduce } from 'Params/FilterParamNew/State';
-
+import observeParam from './FilterParamNew/ActionCreators';
+import Component from './FilterParamNew/FilterParamNew';
+import { reduce } from './FilterParamNew/State';
 import { isParamValueValid, isType } from './FilterParamNew/Utils';
 import { createParamModule } from './Utils';
 

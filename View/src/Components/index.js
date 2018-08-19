@@ -14,7 +14,7 @@ import DateRangeSelector from 'Components/InputControls/DateRangeSelector';
 import DateSelector from 'Components/InputControls/DateSelector';
 import Dialog from 'Components/Overlays/Dialog';
 import DownloadForm from 'Views/ReporterForm/DownloadForm';
-import FilterParamNew from 'Params/FilterParamNew/FilterParamNew';
+import FilterParamNew from 'Views/Question/Params/FilterParamNew/FilterParamNew';
 import Footer from 'Components/Layout/Footer';
 import Header from 'Components/Layout/Header';
 import HelpIcon from 'Components/Icon/HelpIcon';

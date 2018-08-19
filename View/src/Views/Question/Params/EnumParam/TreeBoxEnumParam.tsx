@@ -1,20 +1,21 @@
-import { escapeRegExp, intersection } from 'lodash';
-import React, { ValidationMap } from 'react';
+import './TreeBoxParam.scss';
 
-import 'Params/EnumParam/TreeBoxParam.scss';
+import { escapeRegExp, intersection } from 'lodash';
+import React from 'react';
+
 import CheckboxTree from 'Components/CheckboxTree/CheckboxTree';
 import Icon from 'Components/Icon/IconAlt';
 import { ParamInitAction } from 'Core/ActionCreators/QuestionActionCreators';
-import enumParamModule from 'Params/EnumParam';
-import SelectionInfo from 'Params/EnumParam/SelectionInfo';
-import { Context, Props } from 'Params/Utils';
 import { makeActionCreator } from 'Utils/ActionCreatorUtils';
 import { safeHtml } from 'Utils/ComponentUtils';
 import { Seq } from 'Utils/IterableUtils';
+import { matchAction } from 'Utils/ReducerUtils';
 import { filterNodes, getLeaves, isBranch } from 'Utils/TreeUtils';
-import { Parameter, TreeBoxVocabNode, TreeBoxEnumParam } from 'Utils/WdkModel';
+import { Parameter, TreeBoxEnumParam, TreeBoxVocabNode } from 'Utils/WdkModel';
 
-import { matchAction } from '../../Utils/ReducerUtils';
+import enumParamModule from '../EnumParam';
+import SelectionInfo from '../EnumParam/SelectionInfo';
+import { Context, Props } from '../Utils';
 
 // Types
 // -----

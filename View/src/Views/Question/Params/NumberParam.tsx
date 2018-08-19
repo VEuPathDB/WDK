@@ -2,8 +2,9 @@ import { stubTrue as isParamValueValid } from 'lodash';
 import React from 'react';
 
 import NumberSelector from 'Components/InputControls/NumberSelector';
-import { createParamModule, Props } from 'Params/Utils';
 import { NumberParam, Parameter } from 'Utils/WdkModel';
+
+import { createParamModule, Props } from './Utils';
 
 export default createParamModule({
   isType,

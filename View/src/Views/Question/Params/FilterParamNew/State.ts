@@ -1,16 +1,16 @@
-import { Reducer } from '../../Utils/ReducerUtils';
 import { groupBy, isEqual, mapValues } from 'lodash';
 
 import { Filter, MemberFilter, OntologyTermSummary } from 'Components/AttributeFilter/Types';
+import { matchAction, Reducer } from 'Utils/ReducerUtils';
+
 import {
   ActiveFieldSetAction,
   FieldStateUpdatedAction,
   FiltersUpdatedAction,
   OntologyTermsInvalidated,
   SummaryCountsLoadedAction,
-} from 'Params/FilterParamNew/ActionCreators';
-import { sortDistribution } from 'Params/FilterParamNew/Utils';
-import { matchAction } from 'Utils/ReducerUtils';
+} from './ActionCreators';
+import { sortDistribution } from './Utils';
 
 
 export type SortSpec = {
