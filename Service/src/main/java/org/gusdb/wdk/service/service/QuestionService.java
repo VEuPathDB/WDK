@@ -245,7 +245,7 @@ public class QuestionService extends WdkService {
     // get stale params
     Set<Param> staleDependentParams = changedParam.getStaleDependentParams();
 
-    // remove stale params from the context
+    // remove stale param values from the context
     for (Param dependentParam : staleDependentParams) {
       contextParamValues.remove(dependentParam.getName());
     }
