@@ -12,6 +12,7 @@ import {
   RangeField,
   ValueCounts
 } from './Types';
+import { preorder, preorderSeq } from 'Utils/TreeUtils';
 
 /**
  * Determine if a field should use a range filter display
@@ -107,6 +108,13 @@ export function formatDate(format: string, date: string | Date) {
   .replace(/%d/, padStart(String(date.getDate()), 2, '0'));
 }
 
+export function getFilterFieldsFromOntology(ontologyEntries: Iterable<Field>): FilterField[] {
+  return preorderSeq(getTree(ontologyEntries))
+    .map(node => node.field)
+    .filter(isFilterField)
+    .toArray();
+}
+
 type ParentTerm = string | undefined;
 
 export const getTree = memoize((ontologyEntries: Iterable<Field>): FieldTreeNode => {
@@ -114,11 +122,14 @@ export const getTree = memoize((ontologyEntries: Iterable<Field>): FieldTreeNode
   const rootChildren = (entriesByParentTerm.has(undefined) ? entriesByParentTerm.get(undefined)! : [])
     .map(entry => makeOntologyNode(entry, entriesByParentTerm));
 
-  if (rootChildren.length == 1) return rootChildren[0];
+  // Return single root child, but only if it has children. Otherwise, we need
+  // to place the single root beneath a generated root (below).
+  if (rootChildren.length == 1 && rootChildren[0].children.length > 0) {
+    return rootChildren[0];
+  }
 
   return {
     field: {
-      type: 'string',
       term: 'root',
       display: 'Root'
     },

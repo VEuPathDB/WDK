@@ -1,14 +1,13 @@
 import * as React from 'react';
 
-import * as EnumParamModule from 'Params/EnumParam';
-import * as FilterParamNewModule from 'Params/FilterParamNew';
-import * as NumberParamModule from 'Params/NumberParam';
-import * as NumberRangeParamModule from 'Params/NumberRangeParam';
-import { combineObserve, ActionObserver } from 'Utils/ActionCreatorUtils';
+import { ActionObserver, combineObserve } from 'Utils/ActionCreatorUtils';
 import { Parameter } from 'Utils/WdkModel';
 
-import { isPropsType, ParamModule, Props } from './Utils';
-import { QuestionStore } from 'Core/State/Stores';
+import EnumParamModule from './EnumParam';
+import FilterParamNewModule from './FilterParamNew';
+import NumberParamModule from './NumberParam';
+import NumberRangeParamModule from './NumberRangeParam';
+import { Context, isPropsType, ParamModule, Props } from './Utils';
 
 // Param modules
 // -------------
@@ -29,7 +28,7 @@ const paramModules = [
 export function ParamComponent<T extends Parameter>(props: Props<T, any>) {
   for (let paramModule of paramModules) {
     if (isPropsType(props, paramModule.isType)) {
-      return <paramModule.ParamComponent {...props} />
+      return <paramModule.Component {...props} />
     }
   }
   return (
@@ -56,3 +55,12 @@ export const observeParam = combineObserve(
   ...(paramModules
     .map(m => m.observeParam)
     .filter(e => e != null) as ActionObserver[]))
+
+export function isParamValueValid(context: Context<Parameter>, state: any) {
+  for (let paramModule of paramModules) {
+    if (paramModule.isType(context.parameter)) {
+      return paramModule.isParamValueValid(context, state);
+    }
+  }
+  return true;
+}

@@ -57,6 +57,7 @@ export interface TimestampParam extends ParameterBase {
 export interface FilterParamNew extends ParameterBase {
   type: 'FilterParamNew';
   filterDataTypeDisplayName?: string;
+  minSelectedCount: number;
   ontology: Array<{
     term: string;
     parent?: string;

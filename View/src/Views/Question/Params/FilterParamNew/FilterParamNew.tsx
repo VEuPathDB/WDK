@@ -1,25 +1,30 @@
-import { get, isEqual, memoize, pick } from 'lodash';
+import { memoize } from 'lodash';
 import React from 'react';
 
-import {
-  ActiveFieldSetAction,
-  FieldStateUpdatedAction,
-  FiltersUpdatedAction,
-  FieldCountUpdateRequestAction,
-} from 'Params/FilterParamNew/ActionCreators';
-import Loading from 'Components/Loading/Loading';
-import { Props as ParamProps } from 'Params/Utils';
-import { FilterParamNew as TFilterParamNew } from 'Utils/WdkModel';
-import { getLeaves, sortDistribution } from 'Params/FilterParamNew/Utils';
-import { MemberFieldState, RangeFieldState, State } from 'Params/FilterParamNew/State';
+import _ServerSideAttributeFilter from 'Components/AttributeFilter/ServerSideAttributeFilter';
 import { Field, Filter, MemberFilter } from 'Components/AttributeFilter/Types';
 import { isRange } from 'Components/AttributeFilter/Utils';
-import _ServerSideAttributeFilter from 'Components/AttributeFilter/ServerSideAttributeFilter';
+import Loading from 'Components/Loading/Loading';
+import { FilterParamNew as TFilterParamNew } from 'Utils/WdkModel';
+
+import { Props as ParamProps } from '../Utils';
+import {
+  ActiveFieldSetAction,
+  FieldCountUpdateRequestAction,
+  FieldStateUpdatedAction,
+  FiltersUpdatedAction,
+} from './ActionCreators';
+import { MemberFieldState, RangeFieldState, State } from './State';
+import { getLeaves, sortDistribution } from './Utils';
 
 const ServerSideAttributeFilter: any = _ServerSideAttributeFilter;
 type FieldState = State['fieldStates'][string];
 
 type Props = ParamProps<TFilterParamNew, State>
+
+export function render(props: Props) {
+  return <FilterParamNew {...props}/>
+}
 
 /**
  * FilterParamNew component
@@ -147,6 +152,7 @@ export default class FilterParamNew extends React.PureComponent<Props> {
 
           hideFilterPanel={numLeaves === 1}
           hideFieldPanel={numLeaves === 1}
+          minSelectedCount={parameter.minSelectedCount}
 
           onFiltersChange={this._handleFilterChange}
           onActiveFieldChange={this._handleActiveFieldChange}

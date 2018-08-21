@@ -1,11 +1,11 @@
 import * as React from 'react';
 
 import { DispatchAction } from 'Core/CommonTypes';
-import { EventHandlers } from 'Views/Question/QuestionController';
-import { QuestionState } from 'Views/Question/QuestionStore';
 import { Seq } from 'Utils/IterableUtils';
 import { Parameter, ParameterGroup } from 'Utils/WdkModel';
 import ParameterControl from 'Views/Question/ParameterControl';
+import { EventHandlers } from 'Views/Question/QuestionController';
+import { QuestionState } from 'Views/Question/QuestionStore';
 
 
 type Props = {

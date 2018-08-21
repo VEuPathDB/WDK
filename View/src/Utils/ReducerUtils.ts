@@ -1,5 +1,3 @@
-import { reduce } from 'Params/EnumParam/TreeBoxEnumParam';
-
 import { Action, ActionType, TypedActionCreator } from './ActionCreatorUtils';
 
 type AnonTA = TypedActionCreator<string, any>;

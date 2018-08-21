@@ -674,6 +674,11 @@
           <data type="boolean" />
         </attribute>
       </optional>
+      <optional>
+        <attribute name="minSelectedCount">
+          <data type="unsignedShort" />
+        </attribute>
+      </optional>
 
       <zeroOrMore>
         <choice>

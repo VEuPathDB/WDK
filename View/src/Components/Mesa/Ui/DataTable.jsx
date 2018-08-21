@@ -6,7 +6,6 @@ import DataRowList from '../Ui/DataRowList';
 import { makeClassifier, combineWidths } from '../Utils/Utils';
 
 const dataTableClass = makeClassifier('DataTable');
-const hasWidthProperty = ({ width }) => typeof width === 'string';
 
 class DataTable extends React.Component {
   constructor (props) {
@@ -20,11 +19,10 @@ class DataTable extends React.Component {
     this.hasSelectionColumn = this.hasSelectionColumn.bind(this);
     this.shouldUseStickyHeader = this.shouldUseStickyHeader.bind(this);
     this.handleTableBodyScroll = this.handleTableBodyScroll.bind(this);
-    this.componentWillReceiveProps = this.componentWillReceiveProps.bind(this);
   }
 
   shouldUseStickyHeader () {
-    const { columns, options } = this.props;
+    const { options } = this.props;
     if (!options || !options.useStickyHeader) return false;
     if (!options.tableBodyMaxHeight) return console.error(`
       "useStickyHeader" option enabled but no maxHeight for the table is set.
@@ -37,9 +35,9 @@ class DataTable extends React.Component {
     this.setDynamicWidths();
   }
 
-  componentWillReceiveProps (newProps) {
-    if (newProps && newProps.columns && newProps.columns !== this.props.columns)
-      this.setState({ dynamicWidths: null }, () => this.setDynamicWidths());
+  componentDidUpdate(prevProps) {
+    if (this.props && this.props.columns && this.props.columns !== prevProps.columns)
+      this.setState({ dynamicWidths: null }, () => this.setDynamicWidths()); // eslint-disable-line react/no-did-update-set-state
   }
 
   setDynamicWidths () {
@@ -56,7 +54,7 @@ class DataTable extends React.Component {
     }
     const dynamicWidths = columns.map((c, i) => getInnerCellWidth(contentCells[i], headingCells[i], c) - (hasSelectionColumn && !i ? 1 : 0));
     this.setState({ dynamicWidths }, () => {
-      window.dispatchEvent(new Event('MesaReflow'));
+      window.dispatchEvent(new CustomEvent('MesaReflow'));
     });
   }
 
@@ -65,14 +63,6 @@ class DataTable extends React.Component {
 
     const contentWidth = cell.clientWidth;
     const headingWidth = headingCell.clientWidth;
-    const grabStyle = (prop) => parseInt(window.getComputedStyle(cell, null).getPropertyValue(prop));
-
-    const leftPadding = grabStyle('padding-left');
-    const rightPadding = grabStyle('padding-right');
-    const leftBorder = grabStyle('border-left-width');
-    const rightBorder = grabStyle('border-right-width');
-    const widthOffset = leftPadding + rightPadding + leftBorder + rightBorder;
-
     const higher = Math.max(contentWidth, headingWidth);
     return this.widthCache[key] = higher;
   }
@@ -84,10 +74,10 @@ class DataTable extends React.Component {
       && typeof eventHandlers.onRowDeselect === 'function';
   }
 
-  handleTableBodyScroll (e) {
+  handleTableBodyScroll () {
     const offset = this.bodyNode.scrollLeft;
     this.headerNode.scrollLeft = offset;
-    window.dispatchEvent(new Event('MesaScroll'));
+    window.dispatchEvent(new CustomEvent('MesaScroll'));
   }
 
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -155,7 +145,7 @@ class DataTable extends React.Component {
     const { shouldUseStickyHeader, renderStickyTable, renderPlainTable } = this;
     return shouldUseStickyHeader() ? renderStickyTable() : renderPlainTable();
   }
-};
+}
 
 DataTable.propTypes = {
   rows: PropTypes.array,
