@@ -41,7 +41,6 @@ import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.report.ReporterRef;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferences;
 
 /**

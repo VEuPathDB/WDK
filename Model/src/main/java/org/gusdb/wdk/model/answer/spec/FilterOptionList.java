@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -97,6 +98,10 @@ public class FilterOptionList implements Iterable<FilterOption>, Validateable {
 
   public int getSize() {
     return _options.size();
+  }
+
+  public Stream<FilterOption> stream() {
+    return _options.stream();
   }
 
   @Override
