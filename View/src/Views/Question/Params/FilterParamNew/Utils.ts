@@ -3,16 +3,24 @@ import natsort from 'natural-sort';
 
 import { Filter, MemberFilter, ValueCounts } from 'Components/AttributeFilter/Types';
 import { getTree, isRange } from 'Components/AttributeFilter/Utils';
-import { filter, Seq } from 'Utils/IterableUtils';
+import { Seq } from 'Utils/IterableUtils';
 import { preorderSeq } from 'Utils/TreeUtils';
 import { FilterParamNew, Parameter } from 'Utils/WdkModel';
 
-import { SortSpec } from './State';
+import { SortSpec, State } from './State';
+import { Context } from '../Utils';
 
 const natSortComparator = (natsort as any)();
 
 export function isType(parameter: Parameter): parameter is FilterParamNew {
   return parameter.type === 'FilterParamNew';
+}
+
+export function isParamValueValid(context: Context<FilterParamNew>, state: State) {
+  return (
+    state.filteredCount == null ||
+    context.parameter.minSelectedCount <= state.filteredCount
+  );
 }
 
 export function getLeaves(ontology: FilterParamNew['ontology']) {

@@ -5,6 +5,7 @@ import { partial } from 'lodash';
 import { Seq } from 'Utils/IterableUtils';
 
 import { getFilterValueDisplay, getOperationDisplay, shouldAddFilter } from './Utils';
+import { IconAlt } from 'Components';
 
 /**
  * List of filters configured by the user.
@@ -89,7 +90,8 @@ export default class FilterList extends React.Component {
       dataCount,
       displayName,
       loadingFilteredCount,
-      hideGlobalCounts
+      hideGlobalCounts,
+      minSelectedCount
     } = this.props;
 
     const filteredCount = hideGlobalCounts ? null
@@ -101,8 +103,28 @@ export default class FilterList extends React.Component {
       )
       : filteredDataCount && filteredDataCount.toLocaleString();
 
-    const total = hideGlobalCounts ? null : <span>{dataCount && dataCount.toLocaleString()} {displayName} Total</span>
-    const filtered = hideGlobalCounts ? null : <span style={{ marginRight: '1em' }}>{filteredCount} of {dataCount && dataCount.toLocaleString()} {displayName} selected</span>;
+    const total = hideGlobalCounts
+      ? null
+      : (
+        <span>
+          {dataCount && dataCount.toLocaleString()} {displayName} Total
+        </span>
+      );
+
+
+    const needsMoreCount = minSelectedCount > filteredDataCount;
+
+    const filtered = hideGlobalCounts
+      ? null
+      : (
+        <span
+          style={{ marginRight: '1em', color: needsMoreCount ? '#b40000' : '' }}
+          title={needsMoreCount ? `At least ${minSelectedCount} ${displayName} must be selected.` : ''}
+        >
+          {needsMoreCount ? <React.Fragment><IconAlt fa="warning"/>&nbsp;</React.Fragment>: null}
+          {filteredCount} of {dataCount && dataCount.toLocaleString()} {displayName} selected
+        </span>
+      );
 
 
     return (
@@ -152,5 +174,6 @@ FilterList.propTypes = {
   filteredDataCount: PropTypes.number,
   hideGlobalCounts: PropTypes.bool.isRequired,
   loadingFilteredCount: PropTypes.bool,
-  activeField: PropTypes.object
+  activeField: PropTypes.object,
+  minSelectedCount: PropTypes.number
 };

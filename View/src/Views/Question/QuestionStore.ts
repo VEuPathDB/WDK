@@ -1,33 +1,34 @@
 import { keyBy, mapValues } from 'lodash';
+import { Observable } from 'rxjs';
 
 import {
   ActiveQuestionUpdatedAction,
   GroupStateUpdatedAction,
   GroupVisibilityChangedAction,
+  observeQuestion,
   ParamErrorAction,
   ParamInitAction,
   ParamStateUpdatedAction,
   ParamsUpdatedAction,
   ParamValueUpdatedAction,
-  observeQuestion,
   QuestionErrorAction,
   QuestionLoadedAction,
   QuestionNotFoundAction,
   UnloadQuestionAction,
 } from 'Core/ActionCreators/QuestionActionCreators';
 import WdkStore, { BaseState } from 'Core/State/Stores/WdkStore';
-import { observeParam, reduce as paramReducer } from 'Params';
-import { ExpandedListSet, SearchTermSet } from 'Params/EnumParam/TreeBoxEnumParam';
+import { Action, combineObserve, isOneOf, ObserveServices } from 'Utils/ActionCreatorUtils';
+import { Parameter, ParameterGroup, QuestionWithParameters, RecordClass } from 'Utils/WdkModel';
+
+import { observeParam, reduce as paramReducer } from './Params';
+import { ExpandedListSet, SearchTermSet } from './Params/EnumParam/TreeBoxEnumParam';
 import {
   ActiveFieldSetAction,
   FieldStateUpdatedAction,
   FiltersUpdatedAction,
   OntologyTermsInvalidated,
   SummaryCountsLoadedAction,
-} from 'Params/FilterParamNew/ActionCreators';
-import { Action, ActionObserver, isOneOf, ObserveServices, combineObserve } from 'Utils/ActionCreatorUtils';
-import { Parameter, ParameterGroup, QuestionWithParameters, RecordClass } from 'Utils/WdkModel';
-import { Observable, merge } from 'rxjs';
+} from './Params/FilterParamNew/ActionCreators';
 
 interface GroupState {
   isVisible: boolean;
