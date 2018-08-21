@@ -1,6 +1,9 @@
 package org.gusdb.wdk.model.answer.spec;
 
 import org.gusdb.fgputil.validation.ValidationLevel;
+
+import java.util.Map;
+
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
@@ -70,6 +73,18 @@ public class AnswerSpecBuilder {
 
   public AnswerSpecBuilder setParamValue(String paramName, String stableValue) {
     _queryInstanceSpec.put(paramName, stableValue);
+    return this;
+  }
+
+  /**
+   * Adds the param values represented by the entries in the passed map to the query instance spec,
+   * but does NOT clear the current param values first.
+   * 
+   * @param params map representing a set of param values to add
+   * @return this builder
+   */
+  public AnswerSpecBuilder setParamValues(Map<String, String> params) {
+    _queryInstanceSpec.putAll(params);
     return this;
   }
 
