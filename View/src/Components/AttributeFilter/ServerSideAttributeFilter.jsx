@@ -9,7 +9,13 @@ import FieldFilter from './FieldFilter';
  * Filtering UI for server-side filtering.
  */
 export default function ServerSideAttributeFilter (props) {
-  var { hideFilterPanel, hideFieldPanel, } = props;
+  var { displayName, fields, hideFilterPanel, hideFieldPanel } = props;
+
+  if (fields.size === 0) {
+    return (
+      <h3>Data is not available for {displayName}.</h3>
+    );
+  }
 
   return (
     <div>
