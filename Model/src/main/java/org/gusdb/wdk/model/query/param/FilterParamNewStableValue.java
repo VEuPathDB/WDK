@@ -222,7 +222,7 @@ public class FilterParamNewStableValue {
                   filter = new NumberRangeFilter(jsFilter.getJSONObject(FILTERS_VALUE), includeUnknowns, field);
                 } else {
                   if (jsFilter.has(FILTERS_VALUE)) valueArr = jsFilter.getJSONArray(FILTERS_VALUE);
-                  filter = new NumberMembersFilter(jsFilter.getJSONArray(FILTERS_VALUE), includeUnknowns, field);
+                  filter = new NumberMembersFilter(valueArr, includeUnknowns, field);
                 }               
                 break;
               case STRING:
@@ -523,6 +523,9 @@ public class FilterParamNewStableValue {
     void setMembers(JSONArray jsArray) throws JSONException {
       members = new ArrayList<Double>();
       rawMembers = new ArrayList<Object>();
+
+      if (jsArray == null) return;
+
       for (int i = 0; i < jsArray.length(); i++) {
         members.add(jsArray.getDouble(i));
         rawMembers.add(jsArray.get(i));
@@ -550,6 +553,8 @@ public class FilterParamNewStableValue {
 
     @Override
     List<String> getMembersAsStrings() {
+      if (rawMembers == null) return null;
+
       List<String> list = new ArrayList<String>();
       for (Object mem : rawMembers) list.add(mem.toString());
       return list;
