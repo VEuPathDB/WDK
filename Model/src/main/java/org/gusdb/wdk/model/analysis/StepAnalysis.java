@@ -10,6 +10,7 @@ public interface StepAnalysis {
   public String getDisplayName();
   public String getShortDescription();
   public String getDescription();
+  public String getUserNotes();
   public String getReleaseVersion();
   public String getCustomThumbnail();
   public int getExpirationMinutes();

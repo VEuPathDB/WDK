@@ -62,7 +62,8 @@ public class StepAnalysisContext {
     description,
     status,
     hasParams,
-    invalidStepReason
+    invalidStepReason,
+    userNotes
   }
   
   private WdkModel _wdkModel;
@@ -242,6 +243,7 @@ public class StepAnalysisContext {
    *   strategyId: int
    *   displayName: string
    *   description: string
+   *   userNotes: string
    *   status: enumerated string, see org.gusdb.wdk.model.user.analysis.ExecutionStatus
    *   params: key-value object of params
    * }
@@ -254,6 +256,7 @@ public class StepAnalysisContext {
       json.put(JsonKey.displayName.name(), _displayName);
       json.put(JsonKey.shortDescription.name(), _stepAnalysis.getShortDescription());
       json.put(JsonKey.description.name(), _stepAnalysis.getDescription());
+      json.put(JsonKey.userNotes.name(), _stepAnalysis.getUserNotes());
       json.put(JsonKey.hasParams.name(), _hasParams);
       json.put(JsonKey.status.name(), _status.name());
       json.put(JsonKey.invalidStepReason.name(), (_invalidStepReason == null ? "null" : _invalidStepReason));
