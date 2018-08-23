@@ -160,6 +160,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     return getConfiguredAnalyzer(instance, _fileStore).getFormViewModel();
   }
 
+  // TODO: Why does a validation method also persist changes to the datastore?
   @Override
   public List<String> validateFormParams(StepAnalysisInstance instance) throws WdkModelException, WdkUserException {
     List<String> errorList = new ArrayList<String>();
@@ -392,6 +393,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
    * object.  This method is only to be called when a "recent" call to
    * getSavedInstance() has status COMPLETE.  No checks are done to ensure that
    * persistent storage mechanisms have not been cleared.
+   *
+   * TODO: Refactor this method... what are its responsibilities and does it have more than one?
    * 
    * @param instance instance for this result
    * @return result
@@ -411,6 +414,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     analyzer.setPersistentCharData(result.getStoredString());
     analyzer.setPersistentBinaryData(result.getStoredBytes());
     result.setResultViewModel(analyzer.getResultViewModel());
+    result.setResultViewModelJson(analyzer.getResultViewModelJson());
     result.clearStoredData(); // only care about the view model
     return result;
   }

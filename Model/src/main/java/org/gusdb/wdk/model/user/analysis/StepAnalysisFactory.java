@@ -20,6 +20,12 @@ public interface StepAnalysisFactory {
 
   public Object getFormViewModel(StepAnalysisInstance instance) throws WdkModelException, WdkUserException;
 
+  /**
+   * Validates the form params for a given Step Analysis Instance and returns
+   * a list of validation errors.
+   *
+   * @return Form param validation errors.
+   */
   public List<String> validateFormParams(StepAnalysisInstance instance) throws WdkModelException, WdkUserException;
 
   /**

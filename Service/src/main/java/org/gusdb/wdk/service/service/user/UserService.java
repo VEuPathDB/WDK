@@ -13,7 +13,7 @@ import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.service.WdkService;
 
-@Path("/users/{id}")
+@Path(UserService.USER_PATH)
 public abstract class UserService extends WdkService {
 
   private static final String NOT_LOGGED_IN = "You must log in to use this functionality.";
@@ -22,6 +22,8 @@ public abstract class UserService extends WdkService {
   protected static final String USER_ID_PATH_PARAM = "id";
 
   protected static final String USER_RESOURCE = "User ID ";
+
+  protected static final String USER_PATH = "/users/{"+USER_ID_PATH_PARAM+"}";
 
   protected static enum Access { PUBLIC, PRIVATE, ADMIN; }
 
@@ -40,7 +42,6 @@ public abstract class UserService extends WdkService {
    * permissions requested.  If either condition is not true, the appropriate
    * exception (corresponding to 404 and 403 respectively) is thrown.
    * 
-   * @param userIdStr id string of the target user
    * @param requestedAccess the access requested by the caller
    * @return a userBundle representing the target user and his relationship to the session user
    * @throws WdkModelException if error occurs creating user bundle (probably a DB problem)
@@ -57,8 +58,7 @@ public abstract class UserService extends WdkService {
     return userBundle;
   }
   
-  protected Step getStepByIdAndCheckItsUser(User user, long stepId)
-      throws DataValidationException, WdkModelException {
+  protected Step getStepByIdAndCheckItsUser(User user, long stepId) throws WdkModelException {
 
     Step step = user.getWdkModel().getStepFactory().getStepById(stepId).orElseThrow(
         () -> new NotFoundException("Cannot find step with ID " + stepId));
