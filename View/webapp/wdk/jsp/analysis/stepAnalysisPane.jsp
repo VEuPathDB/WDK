@@ -20,6 +20,13 @@
             <span class="toggle-description" title="Toggle full description">Read More</span>
           </div>
           <div data-bind="description" class="step-analysis-description"><jsp:text/></div>
+<!--
+          <div data-bind="usernotes" class="step-analysis-usernotes">
+            <b>Your notes: </b><br />
+            <textarea data-bind="userNotes" name="usernotes_data" class="data" rows="3" cols="60">
+            </textarea>
+          </div>
+-->
         </div>
         <div class="step-analysis-subpane">
           <div class="step-analysis-errors-pane">
@@ -32,6 +39,7 @@
           </div>
         </div>
         <c:if test="${!hasParameters}">
+          <div style="text-align:center">The analysis results will be shown below.</div>
           <hr/>
         </c:if>
         <div class="step-analysis-subpane step-analysis-results-pane">

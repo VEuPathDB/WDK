@@ -21,6 +21,7 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
    *   displayName: string
    *   shortDescription: string
    *   description: string
+   *   userNotes: string
    *   status: enumerated string, see org.gusdb.wdk.model.user.analysis.ExecutionStatus
    *   params: key-value object of params
    * }
@@ -319,6 +320,9 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
 
           // add description and hide
           $element.find('[data-bind="description"]').html(data.description).hide();
+
+          // add user notes
+          $element.find('[data-bind="userNotes"]').html(data.userNotes);
 
           // add toggle link behavior
           var descriptionVisible = false;
