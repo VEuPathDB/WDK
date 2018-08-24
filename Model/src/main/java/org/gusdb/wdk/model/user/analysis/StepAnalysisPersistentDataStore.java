@@ -61,6 +61,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   private String CREATE_ANALYSIS_TABLE_SQL;
   private String INSERT_ANALYSIS_SQL;
   private String UPDATE_NAME_SQL;
+  private String UPDATE_USERNOTES_SQL;
   private String UPDATE_NEW_FLAG_SQL;
   private String UPDATE_HAS_PARAMS_FLAG_SQL;
   private String UPDATE_INVALID_STEP_REASON;
@@ -128,6 +129,8 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
    *   varchar invalid_step_reason
    *   varchar context_hash
    *   CLOB context
+   *   PROPERTIES CLOB
+   *   USER_NOTES VARCHAR2(4000)
    * }
    */
   private void createUserSql() {
@@ -148,16 +151,19 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         "  CONTEXT_HASH         " + hashType + "," +
         "  CONTEXT              " + clobType + "," +
         "  PROPERTIES           " + clobType + "," +
+        "  USER_NOTES           " + userStringType + "," +
         "  PRIMARY KEY (ANALYSIS_ID)" +
         ")";
     ANALYSIS_SEQUENCE = _userSchema + ANALYSIS_SEQUENCE_NAME;
     INSERT_ANALYSIS_SQL =
         "INSERT INTO " + table +
         " (ANALYSIS_ID, STEP_ID, DISPLAY_NAME, IS_NEW, HAS_PARAMS," +
-        "  INVALID_STEP_REASON, CONTEXT_HASH, CONTEXT)" +
-        " VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )";
+        "  INVALID_STEP_REASON, CONTEXT_HASH, CONTEXT, USER_NOTES)" +
+        " VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? )";
     UPDATE_NAME_SQL =
         "UPDATE " + table + " SET DISPLAY_NAME = ? WHERE ANALYSIS_ID = ?";
+    UPDATE_USERNOTES_SQL =
+        "UPDATE " + table + " SET USER_NOTES = ? WHERE ANALYSIS_ID = ?";
     UPDATE_NEW_FLAG_SQL =
         "UPDATE " + table + " SET IS_NEW = ? WHERE ANALYSIS_ID = ?";
     UPDATE_HAS_PARAMS_FLAG_SQL =
@@ -175,7 +181,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     GET_ALL_ANALYSIS_IDS_SQL =
         "SELECT ANALYSIS_ID FROM " + table;
     GET_ANALYSES_BY_IDS_SQL =
-        "SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, IS_NEW, HAS_PARAMS," +
+        "SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, USER_NOTES, IS_NEW, HAS_PARAMS," +
         " INVALID_STEP_REASON, CONTEXT_HASH, CONTEXT FROM " + table +
         " WHERE ANALYSIS_ID IN (" + IN_CLAUSE_KEY + ")";
     GET_ANALYSIS_PROPERTIES =
@@ -272,15 +278,15 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void insertAnalysis(long analysisId, long stepId, String displayName,
+  public void insertAnalysis(long analysisId, long stepId, String displayName, 
       StepAnalysisState state, boolean hasParams, String invalidStepReason,
-      String contextHash, String serializedContext) throws WdkModelException {
+		  String contextHash, String serializedContext, String userNotes) throws WdkModelException {
     try {
       new SQLRunner(_userDs, INSERT_ANALYSIS_SQL, "insert-step-analysis").executeStatement(
           new Object[] { analysisId, stepId, displayName, state.getDbValue(), hasParams,
-              invalidStepReason, contextHash, serializedContext },
+              invalidStepReason, contextHash, serializedContext, userNotes },
           new Integer[] { Types.INTEGER, Types.INTEGER, Types.VARCHAR, _userBoolType,
-              _userBoolType, Types.VARCHAR, Types.VARCHAR, Types.CLOB });
+              _userBoolType, Types.VARCHAR, Types.VARCHAR, Types.CLOB, Types.VARCHAR });
     }
     catch (SQLRunnerException e) {
       throw new WdkModelException("Unable to complete operation.", e);
@@ -292,6 +298,20 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     try {
       int changed = new SQLRunner(_userDs, UPDATE_NAME_SQL, "update-step-analysis-name")
           .executeUpdate(new Object[] { displayName, analysisId });
+      if (changed == 0) {
+        throw new WdkModelException("Could not find analysis with id " + analysisId);
+      }
+    }
+    catch (SQLRunnerException e) {
+      throw new WdkModelException("Unable to complete operation.", e);
+    }
+  }
+
+ @Override
+  public void setUserNotes(long analysisId, String userNotes) throws WdkModelException {
+    try {
+      int changed = new SQLRunner(_userDs, UPDATE_USERNOTES_SQL, "update-step-analysis-usernotes")
+          .executeUpdate(new Object[] { userNotes, analysisId });
       if (changed == 0) {
         throw new WdkModelException("Could not find analysis with id " + analysisId);
       }
@@ -469,9 +489,9 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         while (rs.next()) {
           try {
             // read result row into an AnalysisInfo object
-            Reader contextReader = rs.getCharacterStream(8);
-            AnalysisInfo info = new AnalysisInfo(rs.getInt(1), rs.getInt(2), rs.getString(3),
-                StepAnalysisState.valueOf(rs.getBoolean(4) ? 1 : 0), rs.getBoolean(5), rs.getString(6), rs.getString(7),
+            Reader contextReader = rs.getCharacterStream(9);
+            AnalysisInfo info = new AnalysisInfo(rs.getInt(1), rs.getInt(2), rs.getString(3), rs.getString(4),
+                StepAnalysisState.valueOf(rs.getBoolean(5) ? 1 : 0), rs.getBoolean(6), rs.getString(7), rs.getString(8),
                 contextReader == null ? null : IoUtil.readAllChars(contextReader));
 
             // add to result map
