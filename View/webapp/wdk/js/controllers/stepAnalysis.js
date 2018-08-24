@@ -46,6 +46,9 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
    *  - renameAnalysis:
    *      takes:   analysis id, display name
    *      returns: instance json
+   *  - setUserNotes:
+   *      takes:   analysis id, user notes
+   *      returns: instance json
    *  - deleteAnalysis:
    *      takes:   analysis id
    *      returns: instance json
@@ -78,6 +81,7 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
     runAnalysis:    { url: '/runStepAnalysis.do',    method: 'POST', type: 'json' },
     rerunAnalysis:  { url: '/rerunStepAnalysis.do',  method: 'POST', type: 'json' },
     renameAnalysis: { url: '/renameStepAnalysis.do', method: 'POST', type: 'json' },
+    setUserNotes:   { url: '/userNotesStepAnalysis.do', method: 'POST', type: 'json' },
     deleteAnalysis: { url: '/deleteStepAnalysis.do', method: 'POST', type: 'json' },
     getAnalysis:    { url: '/stepAnalysis.do',       method: 'GET',  type: 'json' },
     getPane:        { url: '/stepAnalysisPane.do',   method: 'GET',  type: 'html' },
@@ -324,7 +328,10 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
           // add user notes
           $element.find('[data-bind="userNotes"]').html(data.userNotes);
 
-          // add toggle link behavior
+          // add toggle link behavior, if there is a description
+          if($('#step-analysis-description-'+analysisId).html().length === 0) {
+            $('#toggle-description-'+analysisId).hide();
+          }
           var descriptionVisible = false;
           var toggleFunction = function(event) {
             var $link = $(event.target);
