@@ -24,7 +24,6 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   private String _displayName;
   private String _shortDescription;
   private String _description;
-  private String _userNotes;
   private String _releaseVersion;
   private Integer _expirationMinutes;
 
@@ -49,7 +48,6 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     _displayName = obj._displayName;
     _shortDescription = obj._shortDescription;
     _description = obj._description;
-    _userNotes = obj._userNotes;
     _releaseVersion = obj._releaseVersion;
     _expirationMinutes = obj._expirationMinutes;
     _analyzerClass = obj._analyzerClass;
@@ -97,15 +95,6 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   }
   public void setDescription(WdkModelText description) {
     _description = description.getText();
-  }
-
- @Override
-  public String getUserNotes() {
-    return (_userNotes != null && !_userNotes.isEmpty() ? _userNotes :
-      "Please enter your notes on this analysis.");
-  }
-  public void setUserNotes(WdkModelText userNotes) {
-    _userNotes = userNotes.getText();
   }
 
   @Override
@@ -225,7 +214,6 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
     _displayName = chooseValue(_displayName, parent._displayName, saObj._displayName, _name);
     _shortDescription = chooseValue(_shortDescription, parent._shortDescription, saObj._shortDescription, "");
     _description = chooseValue(_description, parent._description, saObj._description, "");
-    _userNotes = chooseValue(_userNotes, parent._userNotes, saObj._userNotes, "");
     _releaseVersion = chooseValue(_releaseVersion, parent._releaseVersion, saObj._releaseVersion, null);
     _expirationMinutes = chooseValue(_expirationMinutes, parent._expirationMinutes, saObj._expirationMinutes, null);
     _formViewName = chooseValue(_formViewName, parent._formViewName, saObj._formViewName, DEFAULT_FORM_VIEW);
@@ -265,7 +253,6 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
       .append("  DisplayName      : ").append(_displayName).append(NL)
       .append("  ShortDescription : ").append(_shortDescription).append(NL)
       .append("  Description      : ").append(_description).append(NL)
-      .append("  UserNotes        : ").append(_userNotes).append(NL)
       .append("  ReleaseVersion   : ").append(_releaseVersion).append(NL)
       .append("  ExpirationMins   : ").append(_expirationMinutes).append(NL)
       .append("  AnalyzerClass    : ").append(_analyzerClass).append(NL)
