@@ -54,6 +54,8 @@ public interface StepAnalysisFactory {
 
   public void renameContext(StepAnalysisContext context) throws WdkModelException;
 
+  public void setUserNotesContext(StepAnalysisContext context) throws WdkModelException;
+
   public StepAnalysisContext getSavedContext(long analysisId) throws WdkUserException, WdkModelException;
 
   public StepAnalysisViewResolver getViewResolver();
