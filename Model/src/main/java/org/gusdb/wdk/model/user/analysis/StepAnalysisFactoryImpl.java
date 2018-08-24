@@ -421,6 +421,11 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     _dataStore.renameAnalysis(context.getAnalysisId(), context.getDisplayName());
   }
 
+ @Override
+  public void setUserNotesContext(StepAnalysisContext context) throws WdkModelException {
+    _dataStore.setUserNotes(context.getAnalysisId(), context.getUserNotes());
+  }
+
   @Override
   public StepAnalysisContext getSavedContext(long analysisId) throws WdkUserException, WdkModelException {
     StepAnalysisContext context = _dataStore.getAnalysisById(analysisId, _fileStore);
