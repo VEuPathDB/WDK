@@ -17,12 +17,12 @@
           <h2 id="step-analysis-title" data-bind="displayName"><jsp:text/></h2>
           <div class="step-analysis-description">
             <span data-bind="shortDescription"><jsp:text/></span>
-            <span class="toggle-description" title="Toggle full description">Read More</span>
+            <span id="toggle-description-${analysisId}" class="toggle-description" title="Toggle full description">Read More</span>
           </div>
-          <div data-bind="description" class="step-analysis-description"><jsp:text/></div>
+          <div data-bind="description" id="step-analysis-description-${analysisId}" class="step-analysis-description"><jsp:text/></div>
 <!--
-          <div data-bind="usernotes" class="step-analysis-usernotes">
-            <b>Your notes: </b><br />
+          <div  class="step-analysis-usernotes">
+            <b>Add your notes: </b><br />
             <textarea data-bind="userNotes" name="usernotes_data" class="data" rows="3" cols="60">
             </textarea>
           </div>
@@ -39,7 +39,7 @@
           </div>
         </div>
         <c:if test="${!hasParameters}">
-          <div style="text-align:center">The analysis results will be shown below.</div>
+          <div style="text-align:center;font-style:italic">The analysis results will be shown below.</div>
           <hr/>
         </c:if>
         <div class="step-analysis-subpane step-analysis-results-pane">
