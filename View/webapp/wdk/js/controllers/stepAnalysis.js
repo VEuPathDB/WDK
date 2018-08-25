@@ -284,6 +284,9 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
     $element.on('click', '[href="#copy"]',
         preventEvent(partial(copyStepAnalysis, analysisId, $element)));
 
+    $element.on('click', '[name="usernotes"]',
+        preventEvent(partial(setUserNotes, analysisId, $element)));
+
     // get json representing analysis (params + status, but not result)
     return doAjax(ROUTES.getAnalysis, {
       data: { "analysisId": analysisId },
@@ -518,6 +521,24 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
     });
   }
 
+  function setUserNotes(analysisId, $element) {
+    var newUserNotes =  $('#usernotes-data-'+analysisId).val();
+    return doAjax(ROUTES.setUserNotes, {
+        data: { "analysisId": analysisId, "userNotes": newUserNotes },
+        success: function() {
+          // update user notes?
+          $element.find('#usernotes-data-'+analysisId).val(newUserNotes);
+          // lose focus on button
+          $('div.step-analysis-usernotes button').trigger("blur");
+        },
+        error: function() {
+          handleAjaxError("Error: Unable to update the user notes for analysis with id " + analysisId);
+        }
+    });
+    // return an empty promise
+    return ($.Deferred().resolve().promise());
+  }
+
   function renameStepAnalysis(analysisId, $element) {
     var newName = prompt("New name:");
     if (newName) {
@@ -556,6 +577,7 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
   ns.createStepAnalysis = createStepAnalysis;
   ns.copyStepAnalysis = copyStepAnalysis;
   ns.renameStepAnalysis = renameStepAnalysis;
+  ns.setUserNotes = setUserNotes;
   ns.analysisRefresh = analysisRefresh;
   ns.showAllAnalyses = showAllAnalyses;
 });
