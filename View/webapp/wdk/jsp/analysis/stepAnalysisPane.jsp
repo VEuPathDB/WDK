@@ -20,13 +20,11 @@
             <span id="toggle-description-${analysisId}" class="toggle-description" title="Toggle full description">Read More</span>
           </div>
           <div data-bind="description" id="step-analysis-description-${analysisId}" class="step-analysis-description"><jsp:text/></div>
-<!--
-          <div  class="step-analysis-usernotes">
-            <b>Add your notes: </b><br />
-            <textarea data-bind="userNotes" name="usernotes_data" class="data" rows="3" cols="60">
+          <div class="step-analysis-usernotes">
+            <textarea data-bind="userNotes" id="usernotes-data-${analysisId}" class="data" rows="3" cols="60">
             </textarea>
+            <br/><button style="font-size:100%" name="usernotes" type="submit" value="submit-true">Update</button>
           </div>
--->
         </div>
         <div class="step-analysis-subpane">
           <div class="step-analysis-errors-pane">
