@@ -388,6 +388,8 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
             heightStyle: "content"
           });
         }
+        else //remove padding on parameters title h3
+						$('div.step-analysis-form-pane h3').css({"padding":0});
 
         // only overwrite any default values if params have been set for this instance in the past
         if (analysisObj.hasParams) {
