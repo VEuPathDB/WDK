@@ -332,8 +332,8 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
           $element.find('[data-bind="userNotes"]').html(data.userNotes);
 
           // add toggle link behavior, if there is a description
-          if($('#step-analysis-description-'+analysisId).html().length === 0) {
-            $('#toggle-description-'+analysisId).hide();
+          if($('#step-analysis-description-'+analysisId).html().length > 0) {
+            $('#toggle-description-'+analysisId).show();
           }
           var descriptionVisible = false;
           var toggleFunction = function(event) {
