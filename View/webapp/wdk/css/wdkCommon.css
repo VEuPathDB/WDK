@@ -1378,6 +1378,7 @@ button.wdk-StepActionButton:focus {
   color: blue;
   font-style: italic;
   margin-left: 4px;
+  display: none;
 }
 
 div.step-analysis-form-pane h3.ui-accordion-header {
