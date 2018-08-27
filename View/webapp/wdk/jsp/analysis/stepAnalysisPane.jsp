@@ -24,6 +24,7 @@
             <textarea data-bind="userNotes" id="usernotes-data-${analysisId}" class="data" rows="3" cols="60">
             </textarea>
             <br/><button style="font-size:100%" name="usernotes" type="submit" value="submit-true">Update</button>
+            <span id="usernotes-ack-${analysisId}" style="display:none;color:blue;font-style:italic;padding-left:1em">done!</span>
           </div>
         </div>
         <div class="step-analysis-subpane">
