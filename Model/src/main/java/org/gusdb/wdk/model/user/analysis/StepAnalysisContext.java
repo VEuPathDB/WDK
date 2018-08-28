@@ -62,12 +62,14 @@ public class StepAnalysisContext {
     description,
     status,
     hasParams,
-    invalidStepReason
+    invalidStepReason,
+    userNotes
   }
   
   private WdkModel _wdkModel;
   private long _analysisId;
   private String _displayName;
+  private String _userNotes;
   private Step _step;
   private String _answerValueHash;
   private StepAnalysis _stepAnalysis;
@@ -135,12 +137,13 @@ public class StepAnalysisContext {
   
   public static StepAnalysisContext createFromStoredData(WdkModel wdkModel,
       long analysisId, long stepId, StepAnalysisState state, boolean hasParams, String invalidStepReason,
-      String displayName, String serializedContext) throws WdkModelException, DeprecatedAnalysisException {
+      String displayName, String userNotes, String serializedContext) throws WdkModelException, DeprecatedAnalysisException {
     try {
       StepAnalysisContext ctx = new StepAnalysisContext();
       ctx._wdkModel = wdkModel;
       ctx._analysisId = analysisId;
       ctx._displayName = displayName;
+      ctx._userNotes = userNotes;
       ctx._state = state;
       ctx._hasParams = hasParams;
       ctx._invalidStepReason = invalidStepReason;
@@ -189,6 +192,7 @@ public class StepAnalysisContext {
     ctx._wdkModel = oldContext._wdkModel;
     ctx._analysisId = oldContext._analysisId;
     ctx._displayName = oldContext._displayName;
+    ctx._userNotes = oldContext._userNotes;
     ctx._step = oldContext._step;
     ctx._answerValueHash = oldContext._answerValueHash;
     ctx._stepAnalysis = oldContext._stepAnalysis;
@@ -242,6 +246,7 @@ public class StepAnalysisContext {
    *   strategyId: int
    *   displayName: string
    *   description: string
+   *   userNotes: string
    *   status: enumerated string, see org.gusdb.wdk.model.user.analysis.ExecutionStatus
    *   params: key-value object of params
    * }
@@ -254,6 +259,7 @@ public class StepAnalysisContext {
       json.put(JsonKey.displayName.name(), _displayName);
       json.put(JsonKey.shortDescription.name(), _stepAnalysis.getShortDescription());
       json.put(JsonKey.description.name(), _stepAnalysis.getDescription());
+      json.put(JsonKey.userNotes.name(), _userNotes);
       json.put(JsonKey.hasParams.name(), _hasParams);
       json.put(JsonKey.status.name(), _status.name());
       json.put(JsonKey.invalidStepReason.name(), (_invalidStepReason == null ? "null" : _invalidStepReason));
@@ -333,6 +339,14 @@ public class StepAnalysisContext {
     _displayName = displayName;
   }
   
+public String getUserNotes() {
+    return _userNotes;
+  }
+  
+  public void setUserNotes(String userNotes) {
+    _userNotes = userNotes;
+  }
+
   public Step getStep() {
     return _step;
   }

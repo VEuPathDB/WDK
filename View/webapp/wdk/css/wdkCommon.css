@@ -1378,6 +1378,7 @@ button.wdk-StepActionButton:focus {
   color: blue;
   font-style: italic;
   margin-left: 4px;
+  display: none;
 }
 
 div.step-analysis-form-pane h3.ui-accordion-header {
@@ -1404,7 +1405,8 @@ div.step-analysis-pane table.dataTable th {
 }
 
 #step-analysis-title {
-  text-align: center;
+  padding-top: 0;
+ /* text-align: center; */
 }
 .step-analysis-subpane {
   margin: 3px;
@@ -1423,7 +1425,7 @@ div.step-analysis-pane table.dataTable th {
 }
 
 .step-analysis-description {
-  margin: 1em;
+  margin-bottom: 1em;
 }
 
 .step-analysis-errors-pane {

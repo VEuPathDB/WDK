@@ -136,7 +136,7 @@ export default class FilterParamNew extends React.PureComponent<Props> {
     let numLeaves = this._countLeaves(parameter);
 
     return (
-      <div className="filter-param">
+      <div className="filter-param" onKeyPress={preventDefaultOnEnter}>
         {uiState.errorMessage && <pre style={{color: 'red'}}>{uiState.errorMessage}</pre>}
         {uiState.loading && <Loading/>}
         <ServerSideAttributeFilter
@@ -163,5 +163,11 @@ export default class FilterParamNew extends React.PureComponent<Props> {
         />
       </div>
     )
+  }
+}
+
+function preventDefaultOnEnter(event: React.KeyboardEvent) {
+  if (event.target instanceof HTMLInputElement && event.key === 'Enter') {
+    event.preventDefault();
   }
 }

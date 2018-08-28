@@ -755,7 +755,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
         staleDependentParams.add(dependentParam);
 
         Set<String> newStaleDependedParams = new HashSet<String>(staleDependedParamsFullNames);
-        newStaleDependedParams.add(getFullName());
+        newStaleDependedParams.add(dependentParam.getFullName());
 
         staleDependentParams.addAll(dependentParam.getStaleDependentParams(newStaleDependedParams));
       }

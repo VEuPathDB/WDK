@@ -21,6 +21,7 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
    *   displayName: string
    *   shortDescription: string
    *   description: string
+   *   userNotes: string
    *   status: enumerated string, see org.gusdb.wdk.model.user.analysis.ExecutionStatus
    *   params: key-value object of params
    * }
@@ -44,6 +45,9 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
    *      returns: instance json
    *  - renameAnalysis:
    *      takes:   analysis id, display name
+   *      returns: instance json
+   *  - setUserNotes:
+   *      takes:   analysis id, user notes
    *      returns: instance json
    *  - deleteAnalysis:
    *      takes:   analysis id
@@ -77,6 +81,7 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
     runAnalysis:    { url: '/runStepAnalysis.do',    method: 'POST', type: 'json' },
     rerunAnalysis:  { url: '/rerunStepAnalysis.do',  method: 'POST', type: 'json' },
     renameAnalysis: { url: '/renameStepAnalysis.do', method: 'POST', type: 'json' },
+    setUserNotes:   { url: '/userNotesStepAnalysis.do', method: 'POST', type: 'json' },
     deleteAnalysis: { url: '/deleteStepAnalysis.do', method: 'POST', type: 'json' },
     getAnalysis:    { url: '/stepAnalysis.do',       method: 'GET',  type: 'json' },
     getPane:        { url: '/stepAnalysisPane.do',   method: 'GET',  type: 'html' },
@@ -279,6 +284,9 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
     $element.on('click', '[href="#copy"]',
         preventEvent(partial(copyStepAnalysis, analysisId, $element)));
 
+    $element.on('click', '[name="usernotes"]',
+        preventEvent(partial(setUserNotes, analysisId, $element)));
+
     // get json representing analysis (params + status, but not result)
     return doAjax(ROUTES.getAnalysis, {
       data: { "analysisId": analysisId },
@@ -320,7 +328,13 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
           // add description and hide
           $element.find('[data-bind="description"]').html(data.description).hide();
 
-          // add toggle link behavior
+          // add user notes
+          $element.find('[data-bind="userNotes"]').html(data.userNotes);
+
+          // add toggle link behavior, if there is a description
+          if($('#step-analysis-description-'+analysisId).html().length > 0) {
+            $('#toggle-description-'+analysisId).show();
+          }
           var descriptionVisible = false;
           var toggleFunction = function(event) {
             var $link = $(event.target);
@@ -374,6 +388,8 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
             heightStyle: "content"
           });
         }
+        else //remove padding on parameters title h3
+						$('div.step-analysis-form-pane h3').css({"padding":0});
 
         // only overwrite any default values if params have been set for this instance in the past
         if (analysisObj.hasParams) {
@@ -507,6 +523,32 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
     });
   }
 
+  function setUserNotes(analysisId, $element) {
+    $('#usernotes-data-'+analysisId).prop('disabled', true);
+    var newUserNotes =  $('#usernotes-data-'+analysisId).val();
+    return doAjax(ROUTES.setUserNotes, {
+        data: { "analysisId": analysisId, "userNotes": newUserNotes },
+        success: function() {
+          // update user notes
+          $element.find('#usernotes-data-'+analysisId).val(newUserNotes);
+          // enable textearea
+          $('#usernotes-data-'+analysisId).prop('disabled', false);
+          // lose focus on button
+          $('div.step-analysis-usernotes button').trigger("blur");
+          // say done!
+          var id = $element.find('#usernotes-ack-'+analysisId);
+          var delayms = 5000; // mseconds to show
+          $(id).show(); 
+          setTimeout(function(){$(id).hide()},delayms);
+        },
+        error: function() {
+          handleAjaxError("Error: Unable to update the user notes for analysis with id " + analysisId);
+        }
+    });
+    // return an empty promise
+    return ($.Deferred().resolve().promise());
+  }
+
   function renameStepAnalysis(analysisId, $element) {
     var newName = prompt("New name:");
     if (newName) {
@@ -545,6 +587,7 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
   ns.createStepAnalysis = createStepAnalysis;
   ns.copyStepAnalysis = copyStepAnalysis;
   ns.renameStepAnalysis = renameStepAnalysis;
+  ns.setUserNotes = setUserNotes;
   ns.analysisRefresh = analysisRefresh;
   ns.showAllAnalyses = showAllAnalyses;
 });
