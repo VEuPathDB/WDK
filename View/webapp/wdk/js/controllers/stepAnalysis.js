@@ -524,14 +524,22 @@ wdk.namespace("window.wdk.stepAnalysis", function(ns, $) {
   }
 
   function setUserNotes(analysisId, $element) {
+    $('#usernotes-data-'+analysisId).prop('disabled', true);
     var newUserNotes =  $('#usernotes-data-'+analysisId).val();
     return doAjax(ROUTES.setUserNotes, {
         data: { "analysisId": analysisId, "userNotes": newUserNotes },
         success: function() {
-          // update user notes?
+          // update user notes
           $element.find('#usernotes-data-'+analysisId).val(newUserNotes);
+          // enable textearea
+          $('#usernotes-data-'+analysisId).prop('disabled', false);
           // lose focus on button
           $('div.step-analysis-usernotes button').trigger("blur");
+          // say done!
+          var id = $element.find('#usernotes-ack-'+analysisId);
+          var delayms = 5000; // mseconds to show
+          $(id).show(); 
+          setTimeout(function(){$(id).hide()},delayms);
         },
         error: function() {
           handleAjaxError("Error: Unable to update the user notes for analysis with id " + analysisId);
