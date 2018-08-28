@@ -113,7 +113,7 @@ public class StepBean {
         return step.getDisplayName();
     }
 
-    public int getResultSize() throws WdkModelException, WdkUserException {
+    public int getResultSize() throws WdkModelException {
         return step.getResultSize();
     }
 
@@ -125,15 +125,15 @@ public class StepBean {
         return step.isFirstStep();
     }
 
-    public AnswerValueBean getAnswerValue() throws WdkModelException, WdkUserException {
+    public AnswerValueBean getAnswerValue() throws WdkModelException {
         return new AnswerValueBean(step.getAnswerValue());
     }
 
-    public AnswerValueBean getAnswerValue(boolean validate) throws WdkModelException, WdkUserException {
+    public AnswerValueBean getAnswerValue(boolean validate) throws WdkModelException {
       return new AnswerValueBean(step.getAnswerValue(validate));
     }
 
-    public AnswerValueBean getViewAnswerValue() throws WdkModelException, WdkUserException {
+    public AnswerValueBean getViewAnswerValue() throws WdkModelException {
         return new AnswerValueBean(step.getViewAnswerValue());
     }
 
@@ -187,7 +187,7 @@ public class StepBean {
         step.setBooleanExpression(booleanExpression);
     }
 
-    public String getQueryChecksum() throws WdkModelException, WdkUserException {
+    public String getQueryChecksum() throws WdkModelException {
         return step.getAnswerValue().getIdsQueryInstance().getQuery().getChecksum(true);
     }
 
@@ -242,7 +242,7 @@ public class StepBean {
     }
 
     public Map<String, String> getParams() {
-        return step.getQueryInstanceSpec();
+        return step.getAnswerSpec().getQueryInstanceSpec().toMap();
     }
 
     public Map<String, String> getParamNames() {
@@ -283,14 +283,6 @@ public class StepBean {
         step.addStep(next.step);
     }
 
-    /**
-     * @param estimateSize
-     * @see org.gusdb.wdk.model.user.Step#setEstimateSize(int)
-     */
-    public void setEstimateSize(int estimateSize) {
-        step.setEstimateSize(estimateSize);
-    }
-
     public int getIndexFromId(int stepId) throws WdkUserException,
             WdkModelException {
         return step.getIndexFromId(stepId);
@@ -326,7 +318,7 @@ public class StepBean {
         return step.getFilterDisplayName();
     }
 
-    public StepBean getFirstStep() throws WdkModelException {
+    public StepBean getFirstStep() {
         return new StepBean(user, step.getFirstStep());
     }
 
@@ -339,17 +331,17 @@ public class StepBean {
     }
 
     public QuestionBean getQuestion() throws WdkModelException {
-        return new QuestionBean(step.getQuestion());
+        return new QuestionBean(step.getAnswerSpec().getQuestion());
     }
 
     public String getFilterName() {
-        return step.getFilterName();
+        return step.getAnswerSpec().getLegacyFilterName();
     }
 
     public String getSummaryUrlParams() {
         StringBuffer sb = new StringBuffer();
-        Map<String, String> paramValues = step.getQueryInstanceSpec();
-        Map<String, Param> params = step.getQuestion().getParamMap();
+        Map<String, String> paramValues = step.getAnswerSpec().getQueryInstanceSpec().toMap();
+        Map<String, Param> params = step.getAnswerSpec().getQuestion().getParamMap();
         for (String paramName : paramValues.keySet()) {
             Object value = paramValues.get(paramName);
             String paramValue = (value == null) ? "" : value.toString();
@@ -370,10 +362,10 @@ public class StepBean {
     }
 
     public String getQuestionUrlParams() {
-        Question question = step.getQuestion();
+        Question question = step.getAnswerSpec().getQuestion();
         if (question == null) return "";
         StringBuffer sb = new StringBuffer();
-        Map<String, String> paramValues = step.getQueryInstanceSpec();
+        Map<String, String> paramValues = step.getAnswerSpec().getQueryInstanceSpec().toMap();
         Map<String, Param> params = question.getParamMap();
         for (String paramName : paramValues.keySet()) {
             String paramValue = paramValues.get(paramName).toString();
@@ -419,7 +411,7 @@ public class StepBean {
      * @see org.gusdb.wdk.model.user.Step#getAssignedWeight()
      */
     public int getAssignedWeight() {
-        return step.getAssignedWeight();
+        return step.getAnswerSpec().getQueryInstanceSpec().getAssignedWeight();
     }
 
     /**
@@ -429,12 +421,13 @@ public class StepBean {
     public boolean isRevisable() {
         return step.isRevisable();
     }
+
     /**
      * @return
      * @see org.gusdb.wdk.model.user.Step#getChildrenCount()
      */
     public int getAnswerParamCount() {
-        return step.getAnswerParamCount();
+        return step.getAnswerSpec().getQuestion().getQuery().getAnswerParamCount();
     }
 
     /**
@@ -479,10 +472,6 @@ public class StepBean {
       return user.getUser().getWdkModel().getStepAnalysisFactory().getAppliedAnalyses(step);
   }
 
-  public void setValid(boolean valid){
-    step.setValidFlag(valid);
-  }
-
   public boolean getHasCompleteAnalyses() throws WdkModelException {
     return step.getHasCompleteAnalyses();
   }
@@ -512,7 +501,7 @@ public class StepBean {
   }
 
   public FilterOptionList getFilterOptions() {
-    return step.getFilterOptions();
+    return step.getAnswerSpec().getFilterOptions();
   }
 
   public void addFilterOption(String filterName, JSONObject filterValue) throws WdkModelException {

@@ -763,24 +763,21 @@ public class FilterParamNew extends AbstractDependentParam {
     // a new SqlQuery object.
     SqlQuery sqlQuery = createValuesMapQuery(_wdkModel, filterSelectSql, ontologyValuesCols,
         _backgroundQuery.getParams(), _ontologyQuery.getParams());
-    try {
-      QueryInstance<?> instance = makeQueryInstanceFromPreValidatedParams(user, sqlQuery, contextParamValues);
-      ResultList resultList = instance.getResults();
-      while (resultList.next()) {
-        String field = (String)resultList.get(FilterParamNew.COLUMN_ONTOLOGY_ID);
-        OntologyItem ontologyItem = ontology.get(field);
-        if (ontologyItem == null)
-          continue; // in the value map sql, but not in the ontology query. skip
-        String value = OntologyItemType.getStringValue(resultList, ontologyItem);
-        String valueString = value == null ? "NULL" : value;
-        if (!ontologyValues.containsKey(field))
-          ontologyValues.put(field, new HashSet<String>());
-        ontologyValues.get(field).add(valueString);
-      }
+
+    QueryInstance<?> instance = makeQueryInstanceFromPreValidatedParams(user, sqlQuery, contextParamValues);
+    ResultList resultList = instance.getResults();
+    while (resultList.next()) {
+      String field = (String)resultList.get(FilterParamNew.COLUMN_ONTOLOGY_ID);
+      OntologyItem ontologyItem = ontology.get(field);
+      if (ontologyItem == null)
+        continue; // in the value map sql, but not in the ontology query. skip
+      String value = OntologyItemType.getStringValue(resultList, ontologyItem);
+      String valueString = value == null ? "NULL" : value;
+      if (!ontologyValues.containsKey(field))
+        ontologyValues.put(field, new HashSet<String>());
+      ontologyValues.get(field).add(valueString);
     }
-    catch (WdkUserException e) {
-      throw new WdkModelException(e);
-    }
+
     return ontologyValues;
   }
   
@@ -858,7 +855,7 @@ public class FilterParamNew extends AbstractDependentParam {
        LOG.info("filteredSql:\n" + filteredSql);
        return filteredSql;
      }
-     catch (JSONException | WdkUserException ex) {
+     catch (JSONException ex) {
        throw new WdkModelException(ex);
      }
    }
@@ -867,9 +864,9 @@ public class FilterParamNew extends AbstractDependentParam {
   private static QueryInstance<?> makeQueryInstanceFromPreValidatedParams(User user, Query internalQuery,
       Map<String, String> paramStableValues) throws WdkModelException {
     return Query.makeQueryInstance(user,
-        ValidObjectFactory.getSemanticallyValid(QueryInstanceSpec.builder()
-            .putAll(paramStableValues)
-            .buildValidated(internalQuery, ValidationLevel.SEMANTIC)));
+        QueryInstanceSpec.builder()
+        .putAll(paramStableValues)
+        .buildRunnable(internalQuery));
   }
 
   public JSONObject getJsonValues(User user, Map<String, String> contextParamValues)

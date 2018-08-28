@@ -8,8 +8,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.validation.ValidObjectFactory;
-import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -339,12 +337,12 @@ public class QuestionBean {
             + "the questionBean before calling to create answerValue.");
 
       AnswerValue answerValue = AnswerValueFactory.makeAnswer(_user.getUser(),
-          ValidObjectFactory.getSemanticallyValid(
-              AnswerSpec.builder(_question.getWdkModel())
-              .setQuestionName(_question.getFullName())
-              .setQueryInstanceSpec(QueryInstanceSpec.builder()
-                  .putAll(_params).setAssignedWeight(_weight))
-              .build(ValidationLevel.SEMANTIC)));
+          AnswerSpec.builder(_question.getWdkModel())
+          .setQuestionName(_question.getFullName())
+          .setQueryInstanceSpec(QueryInstanceSpec.builder()
+              .putAll(_params)
+              .setAssignedWeight(_weight))
+          .buildRunnable());
 
       // reset the params
       _params.clear();

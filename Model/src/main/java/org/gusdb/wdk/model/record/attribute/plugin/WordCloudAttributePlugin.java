@@ -43,11 +43,6 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin {
   private boolean excludeNumbers = true;
   private Set<String> commonWords;
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.AttributePlugin#process()
-   */
   @Override
   public Map<String, Object> process(Step step) {
     StringBuilder content = new StringBuilder();

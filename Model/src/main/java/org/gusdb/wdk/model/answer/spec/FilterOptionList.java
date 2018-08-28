@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -116,5 +117,9 @@ public class FilterOptionList implements Iterable<FilterOption>, Validateable {
 
   public boolean isEmpty() {
     return getSize() == 0;
+  }
+
+  public Optional<FilterOption> getFirst(Predicate<FilterOption> predicate) {
+    return _options.stream().filter(predicate).findFirst();
   }
 }

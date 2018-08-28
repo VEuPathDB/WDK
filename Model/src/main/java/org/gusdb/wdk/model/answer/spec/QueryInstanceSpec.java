@@ -4,6 +4,8 @@ import java.util.Map;
 
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.collection.ReadOnlyHashMap;
+import org.gusdb.fgputil.validation.ValidObjectFactory;
+import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -24,6 +26,10 @@ public class QueryInstanceSpec extends ReadOnlyHashMap<String,String> implements
 
     public QueryInstanceSpec buildValidated(Query query, ValidationLevel level) {
       return new QueryInstanceSpec(toMap(), _assignedWeight, query, level);
+    }
+
+    public Runnable<QueryInstanceSpec> buildRunnable(Query query) {
+      return ValidObjectFactory.getRunnable(buildValidated(query, ValidationLevel.RUNNABLE));
     }
 
     /**

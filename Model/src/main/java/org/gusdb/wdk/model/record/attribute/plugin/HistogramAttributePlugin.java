@@ -41,11 +41,6 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin {
 
   private static final Logger logger = Logger.getLogger(HistogramAttributePlugin.class);
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.AttributePlugin#process()
-   */
   @Override
   public Map<String, Object> process(Step step) throws WdkModelException {
     // load the data.

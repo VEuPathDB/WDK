@@ -3,7 +3,7 @@ package org.gusdb.wdk.model.answer.factory;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
+import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -18,7 +18,7 @@ public class AnswerValueFactory {
   /**
    * make an answer with default page size and sorting
    */
-  public static AnswerValue makeAnswer(User user, SemanticallyValid<AnswerSpec> validSpec)
+  public static AnswerValue makeAnswer(User user, Runnable<AnswerSpec> validSpec)
       throws WdkModelException, WdkUserException {
     Question question = validSpec.getObject().getQuestion();
     int pageStart = 1;
@@ -33,7 +33,7 @@ public class AnswerValueFactory {
     return answerValue;
   }
 
-  public static AnswerValue makeAnswer(User user, SemanticallyValid<AnswerSpec> validSpec,
+  public static AnswerValue makeAnswer(User user, Runnable<AnswerSpec> validSpec,
       int startIndex, int endIndex, Map<String, Boolean> sortingMap) throws WdkModelException {
     Question question = validSpec.getObject().getQuestion();
     if (question instanceof SingleRecordQuestion) {
@@ -45,7 +45,7 @@ public class AnswerValueFactory {
   }
 
   public static AnswerValue makeAnswer(AnswerValue answerValue,
-      SemanticallyValid<AnswerSpec> modifiedSpec) throws WdkModelException {
+      Runnable<AnswerSpec> modifiedSpec) throws WdkModelException {
     return makeAnswer(answerValue.getUser(), modifiedSpec, answerValue.getStartIndex(),
         answerValue.getEndIndex(), answerValue.getSortingMap());
   }

@@ -1,7 +1,10 @@
 package org.gusdb.wdk.model.user;
 
 import static org.gusdb.fgputil.functional.Functions.defaultOnException;
+import static org.gusdb.fgputil.functional.Functions.filterInPlace;
 import static org.gusdb.fgputil.functional.Functions.getMapFromList;
+import static org.gusdb.wdk.model.user.StepContainer.withId;
+import static org.gusdb.wdk.model.user.StepContainer.parentOf;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -20,6 +23,10 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.validation.Validateable;
+import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.fgputil.validation.ValidationStatus;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.events.StepRevisedEvent;
@@ -27,27 +34,28 @@ import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.WdkIllegalArgumentException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
-import org.gusdb.wdk.model.answer.spec.ParamValue;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * @author Charles Treatman
- * 
  */
-public class Step implements StrategyElement {
+public class Step implements StrategyElement, Validateable {
 
   private static final Logger LOG = Logger.getLogger(Step.class);
 
@@ -69,28 +77,27 @@ public class Step implements StrategyElement {
     private final WdkModel _wdkModel;
     private final long _userId;
     private final long _stepId;
-    private Long _strategyId;
-    private Date _createdTime;
-    private Date _lastRunTime;
-    private String _customName;
-    private boolean _isDeleted = false;
-    private boolean _isValidFlag = true;
-    private int _estimateSize = -1;
-    private boolean _collapsible = false;
-    private String _collapsedName = null;
     private String _projectId;
     private String _projectVersion;
+    private Long _strategyId = null;
+    private Date _createdTime = new Date();
+    private Date _lastRunTime = new Date();
+    private String _customName = null;
+    private boolean _isDeleted = false;
+    private int _estimatedSize = -1;
+    private boolean _isCollapsible = false;
+    private String _collapsedName = null;
     private long _previousStepId = 0;
     private long _childStepId = 0;
-    private AnswerSpec _answerSpec;
+    private AnswerSpecBuilder _answerSpec; // cannot be null; must be set
     private boolean _inMemoryOnly = false;
 
-    // set during finish() from IDs in DB
-    private User _user;
-    private Strategy _strategy;
-
-    private StepBuilder(WdkModel wdkModel) {
-      
+    private StepBuilder(WdkModel wdkModel, long userId, long stepId) {
+      _wdkModel = wdkModel;
+      _projectId = wdkModel.getProjectId();
+      _projectVersion = wdkModel.getVersion();
+      _userId = userId;
+      _stepId = stepId;
     }
 
     /**
@@ -100,67 +107,153 @@ public class Step implements StrategyElement {
      */
     private StepBuilder(Step step) {
       _wdkModel = step._wdkModel;
-      _user = step._user;
-      _userId = step._userId;
+      _userId = step._user.getUserId();
+      _strategyId = step._strategy.getStrategyId();
       _stepId = step._stepId;
       _createdTime = step._createdTime;
       _lastRunTime = step._lastRunTime;
       _customName = step._customName;
       _isDeleted = step._isDeleted;
-      _collapsible = step._collapsible;
+      _isCollapsible = step._isCollapsible;
       _collapsedName = step._collapsedName;
       _projectId = step._projectId;
       _projectVersion = step._projectVersion;
-      _isValidFlag = step._isValidFlag;
-      _estimateSize = step._estimateSize;
+      _estimatedSize = step._estimatedSize;
       _previousStepId = step._previousStepId;
       _childStepId = step._childStepId;
-      _strategyId = step._strategyId;
       _inMemoryOnly = step._inMemoryOnly;
-      }
+      _answerSpec = AnswerSpec.builder(step._answerSpec);
     }
+
+    public long getStepId() {
+      return _stepId;
+    }
+
+    public StepBuilder setStrategyId(Long strategyId) {
+      _strategyId = strategyId;
+      return this;
+    }
+
+    public StepBuilder setProjectId(String projectId) {
+      _projectId = projectId;
+      return this;
+    }
+
+    public StepBuilder setProjectVersion(String projectVersion) {
+      _projectVersion = projectVersion;
+      return this;
+    }
+
+    public StepBuilder setCreatedTime(Date createdTime) {
+      _createdTime = createdTime;
+      return this;
+    }
+
+    public StepBuilder setEstimatedSize(int estimatedSize) {
+      _estimatedSize = estimatedSize;
+      return this;
+    }
+
+    public StepBuilder setLastRunTime(Date lastRunTime) {
+      _lastRunTime = lastRunTime;
+      return this;
+    }
+
+    public StepBuilder setInMemoryOnly(boolean inMemoryOnly) {
+      _inMemoryOnly = inMemoryOnly;
+      return this;
+    }
+
+    public StepBuilder setDeleted(boolean isDeleted) {
+      _isDeleted = isDeleted;
+      return this;
+    }
+
+    public StepBuilder setPreviousStepId(Long previousStepId) {
+      _previousStepId = previousStepId;
+      return this;
+    }
+
+    public StepBuilder setChildStepId(Long childStepId) {
+      _childStepId = childStepId;
+      return this;
+    }
+
+    public StepBuilder setCustomName(String customName) {
+      _customName = customName;
+      return this;
+    }
+
+    public StepBuilder setCollapsedName(String collapsedName) {
+      _collapsedName = collapsedName;
+      return this;
+    }
+
+    public StepBuilder setCollapsible(boolean isCollapsible) {
+      _isCollapsible = isCollapsible;
+      return this;
+    }
+
+    public StepBuilder setAnswerSpec(AnswerSpecBuilder answerSpec) {
+      _answerSpec = answerSpec;
+      return this;
+    }
+
+    public Step build(UserCache userCache, ValidationLevel validationLevel, Strategy strategy) {
+      if (!((strategy == null && _strategyId == null) || (strategy != null && strategy.getStrategyId() == _strategyId))) {
+        throw new WdkRuntimeException("Strategy passed to build (ID=" + strategy.getStrategyId() +
+            ") does not match ID set on step builder (ID=" + _strategyId + ").");
+      }
+      if (_answerSpec == null) {
+        throw new WdkRuntimeException("Cannot build a step without an answer spec.");
+      }
+      return new Step(userCache.get(_userId), strategy, this, validationLevel);
+    }
+  }
+
+  public static StepBuilder builder(WdkModel wdkModel, long userId, long stepId) {
+    return new StepBuilder(wdkModel, userId, stepId);
+  }
+
+  public static StepBuilder builder(Step step) {
+    return new StepBuilder(step);
   }
 
   // set during Step object creation
   private final WdkModel _wdkModel;
-  private final StepFactory _stepFactory;
-
-  // in DB, owning user id
-  private long _userId;
+  // set during build() from ID in DB
+  private final User _user;
+  // set during build() from ID in DB (may be null if orphan step)
+  private final Strategy _strategy;
+  // set during build() - will be empty container if strategy is null
+  private final StepContainer _container;
   // in DB, Primary key
-  private long _stepId;
-  // in DB, encapsulating strategy (may be null if orphan step)
-  private Long _strategyId;
+  private final long _stepId;
   // in DB, set during step creation
-  private Date _createdTime;
+  private final Date _createdTime;
   // in DB, last time Answer generated, written to DB each time
-  private Date _lastRunTime;
+  private final Date _lastRunTime;
   // in DB, set by user
-  private String _customName;
+  private final String _customName;
   // in DB, for soft delete
-  private boolean _isDeleted = false;
-  // in DB, valid flag may be set during maintenance (TODO: assess relevance any more?)
-  private boolean _isValidFlag = true;
+  private final boolean _isDeleted;
   // in DB, last known size of result (see _estimateSizeRefreshed below)
-  private int _estimateSize = -1;
+  private int _estimatedSize;
   // in DB, tells if nested step
-  private boolean _collapsible = false;
+  private final boolean _isCollapsible;
   // in DB, custom name for nested "strategy"
-  private String _collapsedName = null;
+  private final String _collapsedName;
   // in DB, project ID when step was created
-  private String _projectId;
+  private final String _projectId;
   // in DB, project version when step was created
-  private String _projectVersion;
+  private final String _projectVersion;
   // in DB, IDs of child steps (i.e. left and right children)
-  private long _previousStepId = 0;
-  private long _childStepId = 0;
+  private final long _previousStepId;
+  private final long _childStepId;
 
   // in DB, defines the parameters used to find this Step's answer
-  private AnswerSpec _answerSpec;
+  private final AnswerSpec _answerSpec;
 
-  // set during finish() from IDs in DB
-  private User _user;
-  private Strategy _strategy;
 
   // Steps within the "main branch" strategy flow
   // Next Step must be combined step (e.g. transform or boolean/span-logic (two-answer function))
@@ -179,7 +272,7 @@ public class Step implements StrategyElement {
    * (in place)- also all steps affected by this step are also changed to -1 so the values are set when those
    * steps are rerun (i.e. value of -1 means step is "dirty" (modified but not run))
    */
-  private boolean _estimateSizeRefreshed = false;
+  private boolean _estimatedSizeRefreshed = false;
 
   // stores answer values for this step object and manages reuse of those objects
   private AnswerValueCache _answerValueCache;
@@ -190,7 +283,10 @@ public class Step implements StrategyElement {
 
   // Set this if this step should not be written to /read from db. A hack in support of
   // summary views, until they are refactored using service.
-  private boolean _inMemoryOnly = false;
+  private final boolean _inMemoryOnly;
+
+  // records validation status and issues that make this Step invalid, if any
+  private final ValidationBundle _validation;
 
   /**
    * Creates a step object for given user and step ID. Note that this constructor lazy-loads the User object
@@ -204,22 +300,41 @@ public class Step implements StrategyElement {
    *          id of the step
    * @throws WdkModelException
    */
-  public Step(WdkModel wdkModel, long userId, long stepId) {
-    _wdkModel = wdkModel;
-    _stepFactory = wdkModel.getStepFactory();
-    _user = null;
-    _userId = userId;
-    _stepId = stepId;
+  private Step(User user, Strategy strategy, StepBuilder builder, ValidationLevel validationLevel) {
+    _user = user;
+    _strategy = strategy;
+    _container = strategy == null ? StepContainer.getEmptyContainer() : strategy;
+    _wdkModel = builder._wdkModel;
+    _stepId = builder._stepId;
+    _createdTime = builder._createdTime;
+    _lastRunTime = builder._lastRunTime;
+    _customName = builder._customName;
+    _isDeleted = builder._isDeleted;
+    _isCollapsible = builder._isCollapsible;
+    _collapsedName = builder._collapsedName;
+    _projectId = builder._projectId;
+    _projectVersion = builder._projectVersion;
+    _estimatedSize = builder._estimatedSize;
+    _previousStepId = builder._previousStepId;
+    _childStepId = builder._childStepId;
+    _inMemoryOnly = builder._inMemoryOnly;
+    _answerSpec = builder._answerSpec.build(validationLevel);
     _answerValueCache = new AnswerValueCache(this);
-    _isDeleted = false;
+    _validation = validate(validationLevel);
+  }
+
+  private ValidationBundle validate(ValidationLevel validationLevel) {
+    if (validationLevel.equals(ValidationLevel.RUNNABLE) && NPE _answerSpec.getQuestion()) {
+      // must check extra stuff
+    }
   }
 
   public Step getPreviousStep() {
-    return _previousStepId == 0 ? null : _strategy.getStep(_previousStepId);
+    return _previousStepId == 0 ? null : _container.findStep(withId(_previousStepId));
   }
 
   public Step getChildStep() {
-    return _childStepId == 0 ? null : _strategy.getStep(_childStepId);
+    return _childStepId == 0 ? null : _container.findStep(withId(_childStepId));
   }
 
   public Step getNextStep() {
@@ -227,7 +342,7 @@ public class Step implements StrategyElement {
   }
 
   public Step getParentStep() {
-    return _strategy.findParentOf(_stepId);
+    return _container.findStep(parentOf(_stepId));
   }
 
   public Step getParentOrNextStep() {
@@ -260,29 +375,21 @@ public class Step implements StrategyElement {
    * @return Size estimate of this step's result
    */
   public int getEstimateSize() {
-    return _answerSpec.isValid() ? _estimateSize : 0;
-  }
-
-  /**
-   * @param estimateSize
-   *          The estimateSize to set.
-   */
-  void setEstimateSize(int estimateSize) {
-    _estimateSize = estimateSize;
+    return _answerSpec.isValid() ? _estimatedSize : 0;
   }
 
   /**
    * Get the real result size from the answerValue. AnswerValue is responsible for caching, if any
    */
   public int getResultSize() throws WdkModelException {
-    return _estimateSizeRefreshed ? _estimateSize : !_answerSpec.isValid() ? 0 : recalculateResultSize();
+    return _estimatedSizeRefreshed ? _estimatedSize : !_answerSpec.isValid() ? 0 : recalculateResultSize();
   }
 
   private int recalculateResultSize() throws WdkModelException {
-    _estimateSize = getAnswerValue().getResultSizeFactory().getDisplayResultSize();
-    _estimateSizeRefreshed = true;
+    _estimatedSize = getAnswerValue().getResultSizeFactory().getDisplayResultSize();
+    _estimatedSizeRefreshed = true;
     update(true);
-    return _estimateSize;
+    return _estimatedSize;
   }
 
   // Needs to be updated for transforms
@@ -342,8 +449,9 @@ public class Step implements StrategyElement {
   }
 
   private void updateAnswerParamValue(String paramName, long stepId) {
-    _answerSpec = AnswerSpec.builder(_answerSpec).setParamValue(paramName, Long.toString(stepId)).build(
-        _answerSpec.getValidationBundle().getLevel());
+    _answerSpec = AnswerSpec.builder(_answerSpec)
+        .setParamValue(paramName, Long.toString(stepId))
+        .build(_answerSpec.getValidationBundle().getLevel());
   }
 
   public boolean isFirstStep() {
@@ -354,19 +462,8 @@ public class Step implements StrategyElement {
     return _user;
   }
 
-  /**
-   * @return Returns the createTime.
-   */
   public Date getCreatedTime() {
     return _createdTime;
-  }
-
-  /**
-   * @param createTime
-   *          The createTime to set.
-   */
-  void setCreatedTime(Date createdTime) {
-    _createdTime = createdTime;
   }
 
   public String getBaseCustomName() {
@@ -413,34 +510,12 @@ public class Step implements StrategyElement {
         : question.getDisplayName();
   }
 
-  /**
-   * @param customName
-   *          The customName to set.
-   */
-  public void setCustomName(String customName) {
-    _customName = customName;
-  }
-
-  /**
-   * @return Returns the stepId.
-   */
   public long getStepId() {
     return _stepId;
   }
 
-  /**
-   * @return Returns the lastRunTime.
-   */
   public Date getLastRunTime() {
     return _lastRunTime;
-  }
-
-  /**
-   * @param lastRunTime
-   *          The lastRunTime to set.
-   */
-  public void setLastRunTime(Date lastRunTime) {
-    _lastRunTime = lastRunTime;
   }
 
   // FIXME: is this really how we should define this method; maybe should be dependent on # of AnswerParam
@@ -476,36 +551,33 @@ public class Step implements StrategyElement {
   public void update(boolean updateTime) throws WdkModelException {
     // HACK: don't update if this is an in-memory only Step
     // remove this once we refactor the world of summary views, so they don't need such Steps
-    if (_inMemoryOnly)
-      return;
-    _stepFactory.updateStep(getUser(), this, updateTime);
+    if (!_inMemoryOnly) {
+      _wdkModel.getStepFactory().updateStep(getUser(), this, updateTime);
+    }
   }
 
   // saves param values AND filter values (AND step name and maybe other things)
   public void saveParamFilters() throws WdkModelException {
     // get Step as it is in the DB (FIXME: we should be tracking this in memory)
-    Step dbStep = _stepFactory.getStepById(getStepId());
+    Step dbStep = _wdkModel.getStepFactory().getStepById(getStepId()).orElseThrow(() -> new WdkModelException());
     saveParamFilters(dbStep);
   }
 
   public void saveParamFilters(Step unmodifiedVersion) throws WdkModelException {
 
-    _stepFactory.saveStepParamFilters(this);
-    _stepFactory.resetStepCounts(this);
+    StepFactory stepFactory = _wdkModel.getStepFactory();
+    stepFactory.saveStepParamFilters(this);
+    stepFactory.resetStepCounts(this);
 
     // Update the in-memory estimateSize with the reset flag in case other
     // step operations are called on the step object.
-    _estimateSize = RESET_SIZE_FLAG;
+    _estimatedSize = RESET_SIZE_FLAG;
 
     // get list of steps dependent on this one; all their results are now invalid
-    List<Long> stepIds = _stepFactory.getStepAndParents(getStepId());
-    Functions.filterInPlace(stepIds, new Predicate<Long>() {
-      @Override
-      public boolean test(Long candidateStepId) {
+    List<Long> stepIds = stepFactory.getStepAndParents(getStepId());
+    filterInPlace(stepIds, candidateStepId ->
         // keep unless id is for this step
-        return (getStepId() != candidateStepId.longValue());
-      }
-    });
+        getStepId() != candidateStepId.longValue());
 
     // alert listeners that this step has been revised and await results
     Events.triggerAndWait(new StepRevisedEvent(this, unmodifiedVersion),
@@ -529,7 +601,8 @@ public class Step implements StrategyElement {
    *           if unable to load updated step
    */
   private void refreshAnswerSpec() throws WdkModelException {
-    Step step = _stepFactory.getStepById(getStepId());
+    Step step = _wdkModel.getStepFactory().getStepById(getStepId())
+        .orElseThrow(() -> new WdkModelException("Cannot find step with ID " + getStepId()));
     _answerSpec = step._answerSpec;
   }
 
@@ -545,33 +618,17 @@ public class Step implements StrategyElement {
     return _isDeleted;
   }
 
-  /**
-   * @param isDeleted
-   *          The isDeleted to set.
-   */
-  public void setDeleted(boolean isDeleted) {
-    _isDeleted = isDeleted;
-  }
-
   public boolean isCollapsible() {
-    if (_collapsible)
+    if (_isCollapsible)
       return true;
     // it is true if the step is a branch
     return (getParentStep() != null && isCombined());
-  }
-
-  public void setCollapsible(boolean isCollapsible) {
-    _collapsible = isCollapsible;
   }
 
   public String getCollapsedName() {
     if (_collapsedName == null && isCollapsible())
       return getCustomName();
     return _collapsedName;
-  }
-
-  public void setCollapsedName(String collapsedName) {
-    _collapsedName = collapsedName;
   }
 
   /**
@@ -584,7 +641,7 @@ public class Step implements StrategyElement {
    * @return true if this step is valid (to the best of our knowledge), else false
    */
   public boolean isValid() {
-    return _answerSpec.isValid();
+    return _validation.isValid();
   }
 
   public Map<String, String> getParamNames() {
@@ -601,16 +658,8 @@ public class Step implements StrategyElement {
     return _projectId;
   }
 
-  public void setProjectId(String projectId) {
-    _projectId = projectId;
-  }
-
   public String getProjectVersion() {
     return _projectVersion;
-  }
-
-  public void setProjectVersion(String projectVersion) {
-    _projectVersion = projectVersion;
   }
 
   /* functions for navigating/manipulating step tree */
@@ -763,8 +812,9 @@ public class Step implements StrategyElement {
   public Step createStep(AnswerFilterInstance filter, int assignedWeight) throws WdkModelException {
     // make sure caller is asking for something new; if not, return this Step
     AnswerFilterInstance oldFilter = _answerSpec.getLegacyFilter();
-    if (_answerSpec.getAssignedWeight() == assignedWeight && ((filter == null && oldFilter == null) ||
-        (filter != null && oldFilter != null && filter.getName().equals(oldFilter.getName())))) {
+    if (_answerSpec.getQueryInstanceSpec().getAssignedWeight() == assignedWeight &&
+        ((filter == null && oldFilter == null) ||
+         (filter != null && oldFilter != null && filter.getName().equals(oldFilter.getName())))) {
       return this;
     }
 
@@ -775,7 +825,7 @@ public class Step implements StrategyElement {
         assignedWeight, _answerSpec.getFilterOptions());
     step._collapsedName = _collapsedName;
     step._customName = _customName;
-    step._collapsible = _collapsible;
+    step._isCollapsible = _isCollapsible;
     step.update(false);
     return step;
   }
@@ -792,7 +842,7 @@ public class Step implements StrategyElement {
     if (!isCombined()) {
       step = StepUtilities.createStep(_user, strategyId, _answerSpec.getQuestion(),
           _answerSpec.getQueryInstanceSpec().toMap(), _answerSpec.getLegacyFilter(), _isDeleted,
-          _answerSpec.getAssignedWeight(), _answerSpec.getFilterOptions());
+          _answerSpec.getQueryInstanceSpec().getAssignedWeight(), _answerSpec.getFilterOptions());
     }
     else {
       Question question = _answerSpec.getQuestion();
@@ -808,16 +858,15 @@ public class Step implements StrategyElement {
         }
         paramValues.put(paramName, paramValue);
       }
-      step = StepUtilities.createStep(getUser(), strategyId, question, paramValues,
-          _answerSpec.getLegacyFilter(), _isDeleted, _answerSpec.getAssignedWeight(),
-          _answerSpec.getFilterOptions());
+      step = StepUtilities.createStep(getUser(), strategyId, question, paramValues, _answerSpec.getLegacyFilter(),
+          _isDeleted, _answerSpec.getQueryInstanceSpec().getAssignedWeight(), _answerSpec.getFilterOptions());
     }
 
     stepIdMap.put(getStepId(), step.getStepId());
 
     step._collapsedName = _collapsedName;
     step._customName = _customName;
-    step._collapsible = _collapsible;
+    step._isCollapsible = _isCollapsible;
     step.update(false);
 
     Events.triggerAndWait(new StepCopiedEvent(this, step),
@@ -887,7 +936,7 @@ public class Step implements StrategyElement {
       }
 
       if (!forChecksum) {
-        jsStep.put("size", _estimateSize);
+        jsStep.put("size", _estimatedSize);
       }
 
       if (this.isCollapsible()) { // a sub-strategy, needs to get order number
@@ -925,14 +974,6 @@ public class Step implements StrategyElement {
     return _previousStepId;
   }
 
-  /**
-   * @param previousStepId
-   *          the previousStepId to set
-   */
-  public void setPreviousStepId(long previousStepId) {
-    _previousStepId = previousStepId;
-  }
-
   public void setAndVerifyPreviousStepId(long previousStepId) throws WdkModelException {
     verifySameOwnerAndProject(this, previousStepId);
     setPreviousStepId(previousStepId);
@@ -943,14 +984,6 @@ public class Step implements StrategyElement {
    */
   public long getChildStepId() {
     return _childStepId;
-  }
-
-  /**
-   * @param childStepId
-   *          the childStepId to set
-   */
-  public void setChildStepId(long childStepId) {
-    _childStepId = childStepId;
   }
 
   public void setAndVerifyChildStepId(long childStepId) throws WdkModelException {
@@ -1033,7 +1066,7 @@ public class Step implements StrategyElement {
 
   public boolean isUncollapsible() {
     // if the step hasn't been collapsed, it cannot be uncollapsed.
-    if (!_collapsible)
+    if (!_isCollapsible)
       return false;
 
     // if the step is a combined step, it cannot be uncollapsed
@@ -1104,20 +1137,12 @@ public class Step implements StrategyElement {
 
   @Override
   public Long getStrategyId() {
-    return _strategyId;
-  }
-
-  public void setStrategyId(Long strategyId) {
-    _strategyId = strategyId;
+    return _strategy == null ? null : _strategy.getStrategyId();
   }
 
   public void setAnswerValuePaging(int start, int end) {
     _answerValueCache.setPaging(start, end);
 
-  }
-
-  public void setInMemoryOnly(boolean inMemoryOnly) {
-    _inMemoryOnly = inMemoryOnly;
   }
 
   public boolean hasAnswerParams() {
@@ -1131,7 +1156,7 @@ public class Step implements StrategyElement {
   }
 
   public boolean isAnswerSpecComplete() {
-    return hasAnswerParams() ? _strategyId != null : true;
+    return hasAnswerParams() ? _strategy != null : true;
   }
 
   public boolean finish(UserCache userCache, Strategy owner) throws WdkModelException {
@@ -1153,14 +1178,6 @@ public class Step implements StrategyElement {
     catch (JSONException e) {
       throw new WdkModelException("ParamFilters not valid JSON", e);
     }
-  }
-
-  Long getUserId() {
-    return _userId;
-  }
-
-  void setUser(User user) {
-    _user = user;
   }
 
   @Override
@@ -1241,6 +1258,13 @@ public class Step implements StrategyElement {
   }
 
   public boolean isRunnable() {
-    if (_answerSpec)
+    return _validation.getStatus().equals(ValidationStatus.VALID) &&
+           _validation.getLevel().equals(ValidationLevel.RUNNABLE);
   }
+
+  @Override
+  public ValidationBundle getValidationBundle() {
+    return _validation;
+  }
+
 }

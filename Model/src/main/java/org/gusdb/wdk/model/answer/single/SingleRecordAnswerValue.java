@@ -13,7 +13,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.db.platform.DBPlatform;
-import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
+import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.ResultSizeFactory;
@@ -38,7 +38,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
   private RecordClass _recordClass;
   private Map<String, Object> _pkMap;
 
-  public SingleRecordAnswerValue(User user, SemanticallyValid<AnswerSpec> validSpec) throws WdkModelException {
+  public SingleRecordAnswerValue(User user, Runnable<AnswerSpec> validSpec) throws WdkModelException {
     super(user, validSpec, 1, 1, Collections.EMPTY_MAP);
     SingleRecordQuestion question = (SingleRecordQuestion)validSpec.getObject().getQuestion();
     SingleRecordQuestionParam param = question.getParam();
@@ -90,7 +90,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
   }
 
   @Override
-  public String getChecksum() throws WdkModelException, WdkUserException {
+  public String getChecksum() throws WdkModelException {
     return EncryptionUtil.encrypt(new StringBuilder("SingleRecordAnswer_")
       .append(_recordClass.getFullName()).append("_")
       .append(FormatUtil.prettyPrint(_pkMap)).toString());

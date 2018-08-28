@@ -6,7 +6,10 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
+import org.gusdb.wdk.model.answer.spec.FilterOptionList;
 import org.gusdb.wdk.model.question.Question;
 
 /**
@@ -98,26 +101,23 @@ public class AnswerValueCache {
   private static int[] getDefaultPageRange(User user) {
     return new int[]{ 1, user.getPreferences().getItemsPerPage() };
   }
-  
+
   private static AnswerValue makeAnswerValue(Step step, int[] range, boolean validate, boolean applyViewFilters)
       throws WdkModelException {
     Question question = step.getAnswerSpec().getQuestion();
     User user = step.getUser();
     Map<String, Boolean> sortingMap = user.getPreferences().getSortingAttributes(
         question.getFullName(), UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
-    AnswerSpec answerSpec = step.getAnswerSpec();
-    // TODO convert to validated answer spec
-    AnswerValue answerValue = question.makeAnswerValue(user, answerSpec.getQueryInstanceSpec(), range[0],
-        range[1], sortingMap, answerSpec.getLegacyFilter(), validate, answerSpec.getAssignedWeight());
-    answerValue.setFilterOptions(answerSpec.getFilterOptions());
-    if (applyViewFilters) {
-      answerValue.setViewFilterOptions(answerSpec.getViewFilterOptions());
+    AnswerSpecBuilder answerSpec = AnswerSpec.builder(step.getAnswerSpec());
+    if (!applyViewFilters) {
+      answerSpec.setViewFilterOptions(FilterOptionList.builder()); // clear any view filters
     }
+    AnswerValue answerValue = AnswerValueFactory.makeAnswer(user, answerSpec.buildRunnable(), range[0], range[1], sortingMap);
     try {
       int displayResultSize = answerValue.getResultSizeFactory().getDisplayResultSize();
       if (!applyViewFilters) {
         // saves updated estimate size
-        step.setEstimateSize(displayResultSize);
+        step.updateEstimatedSize(displayResultSize);
         step.update(false);
       }
     }

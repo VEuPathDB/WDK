@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -16,7 +17,7 @@ import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.question.Question;
 import org.json.JSONObject;
 
-public class FilterOption implements Validateable {
+public class FilterOption implements Validateable, NamedObject {
 
   private static final Logger LOG = Logger.getLogger(FilterOption.class);
 
@@ -159,5 +160,10 @@ public class FilterOption implements Validateable {
         throw new IllegalArgumentException("Argument must be a AnswerValueBean.");
       }
     };
+  }
+
+  @Override
+  public String getName() {
+    return getKey();
   }
 }

@@ -13,8 +13,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
-import org.gusdb.fgputil.validation.ValidObjectFactory;
-import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -216,12 +214,10 @@ public class ResultSizeFactory {
     }
 
     // create a copy of this AnswerValue, overriding current AnswerFilter with one passed in
-    AnswerSpec modifiedSpec = AnswerSpec
-        .builder(_answerValue.getAnswerSpec())
-        .setLegacyFilterName(filterName)
-        .build(ValidationLevel.SEMANTIC);
     AnswerValue modifiedAnswer = AnswerValueFactory.makeAnswer(_answerValue,
-        ValidObjectFactory.getSemanticallyValid(modifiedSpec));
+        AnswerSpec.builder(_answerValue.getAnswerSpec())
+        .setLegacyFilterName(filterName)
+        .buildRunnable());
     String idSql = modifiedAnswer.getIdSql();
 
     // if display count requested, use custom plugin; else use default

@@ -10,8 +10,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.gusdb.fgputil.validation.ValidObjectFactory;
-import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.controller.WdkInitializer;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
@@ -73,10 +71,9 @@ public class ActionUtility {
         throws WdkModelException, WdkUserException {
       return new AnswerValueBean(
         AnswerValueFactory.makeAnswer(user.getUser(),
-          ValidObjectFactory.getSemanticallyValid(AnswerSpec
-            .builder(question.getQuestion().getWdkModel())
-            .setQuestionName(question.getFullName())
-            .setQueryInstanceSpec(QueryInstanceSpec.builder().putAll(params))
-            .build(ValidationLevel.SEMANTIC))));
+          AnswerSpec.builder(question.getQuestion().getWdkModel())
+          .setQuestionName(question.getFullName())
+          .setQueryInstanceSpec(QueryInstanceSpec.builder().putAll(params))
+          .buildRunnable()));
     }
 }

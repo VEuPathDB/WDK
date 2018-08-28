@@ -26,19 +26,18 @@ public class SqlQueryResultSizePlugin implements ResultSize {
   }
 
   @Override
-  public Integer getResultSize(AnswerValue answerValue) throws WdkModelException, WdkUserException {
+  public Integer getResultSize(AnswerValue answerValue) throws WdkModelException {
     return getResultSize(answerValue, answerValue.getIdSql());
   }
 
   @Override
-  public Integer getResultSize(AnswerValue answerValue, String idSql)
-      throws WdkModelException, WdkUserException {
+  public Integer getResultSize(AnswerValue answerValue, String idSql) throws WdkModelException {
 
     QueryInstance<?> queryInstance = getQueryInstance(answerValue, idSql);
     try (ResultList results = queryInstance.getResults()) {
       results.next();
       Integer count = ((BigDecimal) results.get(COUNT_COLUMN)).intValue();
-      RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+      RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
       if (results.next())
         throw new WdkModelException("Record class '" + recordClass.getName() +
             "' has an SqlResultSizePlugin whose SQL returns more than one row.");

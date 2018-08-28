@@ -72,7 +72,7 @@ public class BasketFactory {
     LOG.debug("adding to basket from step...");
 
     AnswerValue answerValue = step.getAnswerValue();
-    RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+    RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
     List<String[]> pkValues = answerValue.getAllIds();
     addToBasket(user, recordClass, pkValues);
   }
@@ -175,7 +175,7 @@ public class BasketFactory {
 
   public void removeFromBasket(User user, Step step) throws WdkModelException, WdkUserException {
     AnswerValue answerValue = step.getAnswerValue();
-    RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+    RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
     List<String[]> pkValues = answerValue.getAllIds();
     removeFromBasket(user, recordClass, pkValues);
   }

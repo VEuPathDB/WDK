@@ -87,14 +87,13 @@ public class AnswerParamHandler extends AbstractParamHandler {
    * the cache can be shared.
    * 
    * @throws WdkModelException
-   * @throws WdkUserException 
    * 
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
    *      java.lang.String, Map)
    */
   @Override
   public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     long stepId = Long.valueOf(stableValue);
     Step step = StepUtilities.getStep(user, stepId);
     AnswerValue answerValue = step.getAnswerValue(false);

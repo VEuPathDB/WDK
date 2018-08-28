@@ -13,7 +13,7 @@ import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
+import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -104,7 +104,7 @@ import org.json.JSONObject;
 public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
   public static QueryInstance<?> makeQueryInstance(User user,
-      SemanticallyValid<QueryInstanceSpec> validSpec) throws WdkModelException {
+      Runnable<QueryInstanceSpec> validSpec) throws WdkModelException {
     // unwrap the spec and use to create an instance of the proper type
     QueryInstanceSpec spec = validSpec.getObject();
     return spec.getQuery().makeInstance(user, spec, spec.getAssignedWeight());

@@ -35,7 +35,7 @@ public class DynamicTableValue extends TableValue {
         initializeRow(resultList);
       }
     }
-    catch (WdkModelException | WdkUserException e) {
+    catch (WdkModelException e) {
       throw new WdkRuntimeException("Unable to load table rows from query for table " + _tableField.getName(), e);
     }
     LOG.debug("Table value rows loaded.");
