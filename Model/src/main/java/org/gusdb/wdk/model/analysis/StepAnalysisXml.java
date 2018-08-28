@@ -91,7 +91,7 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
   @Override
   public String getDescription() {
     return (_description != null && !_description.isEmpty() ? _description :
-      "No further details available.");
+      "");
   }
   public void setDescription(WdkModelText description) {
     _description = description.getText();

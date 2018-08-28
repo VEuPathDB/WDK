@@ -261,7 +261,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     // create new execution instance
     long saId = _dataStore.getNextId();
     _dataStore.insertAnalysis(saId, context.getStep().getStepId(), context.getDisplayName(),
-        context.getState(), context.hasParams(), context.getInvalidStepReason(), context.createHash(), context.serializeContext());
+        context.getState(), context.hasParams(), context.getInvalidStepReason(), context.createHash(), context.serializeContext(), context.getUserNotes());
 
     // override any previous value for id
     context.setAnalysisId(saId);
@@ -419,6 +419,11 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   @Override
   public void renameContext(StepAnalysisContext context) throws WdkModelException {
     _dataStore.renameAnalysis(context.getAnalysisId(), context.getDisplayName());
+  }
+
+ @Override
+  public void setUserNotesContext(StepAnalysisContext context) throws WdkModelException {
+    _dataStore.setUserNotes(context.getAnalysisId(), context.getUserNotes());
   }
 
   @Override

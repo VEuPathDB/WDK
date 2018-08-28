@@ -20,8 +20,8 @@ export default function SelectionInfo(props: Props) {
     : hasMin ? `You must select at least ${minSelectedCount} values for this parameter.`
     : hasMax ? `You may select up to ${maxSelectedCount} values for this parameter.`
     : null;
-  // XXX This be red if selectedCount is out of bounds??
-  const countColor = countInBounds(props.selectedCount, minSelectedCount, maxSelectedCount)
+  // This is usd in TreeBoxParam (eg organism): red if 0 selected
+  const countColor = countInBounds(props.selectedCount, Math.max(minSelectedCount,1), maxSelectedCount)
     ? 'black'
     : 'red';
 
