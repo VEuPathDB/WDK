@@ -694,7 +694,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     // throw error if user selects treeBox displayType but multiSelect=false
     //   note: no technical reason not to allow this, but we think UX for this is bad
     if (!getMultiPick() && getDisplayType().equals(DISPLAY_TREEBOX)) {
-      String contextQueryName = _contextQuery == null ? "null" : _contextQuery.getFullName();
+      String contextQueryName = _container == null ? "null" : _container.getFullName();
       throw new WdkModelException("Param ['" + getFullName() +
           "'] in context query ['" + contextQueryName + "']: " +
           "TreeBox display type cannot be selected when multiPick is false.");

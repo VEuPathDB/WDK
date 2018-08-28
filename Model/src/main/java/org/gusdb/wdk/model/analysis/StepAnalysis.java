@@ -3,8 +3,9 @@ package org.gusdb.wdk.model.analysis;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.param.ParameterContainer;
 
-public interface StepAnalysis {
+public interface StepAnalysis extends ParameterContainer {
 
   public String getName();
   public String getDisplayName();

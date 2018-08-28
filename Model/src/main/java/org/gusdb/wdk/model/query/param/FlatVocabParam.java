@@ -176,23 +176,11 @@ public class FlatVocabParam extends AbstractEnumParam {
     return true;
   }
 
-
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#clone()
-   */
   @Override
   public Param clone() {
     return new FlatVocabParam(this);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     if (extra) {
@@ -202,10 +190,10 @@ public class FlatVocabParam extends AbstractEnumParam {
   }
 
   @Override
-  public void setContextQuery(Query query) {
-    super.setContextQuery(query);
-    if (_contextQuery != null)
-      servedQueryName = _contextQuery.getFullName();
+  public void setContainer(ParameterContainer query) {
+    super.setContainer(query);
+    if (_container != null)
+      servedQueryName = _container.getFullName();
   }
 
   public String getServedQueryName() {

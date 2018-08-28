@@ -14,7 +14,6 @@ import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractDependentParam;
@@ -22,10 +21,8 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.DependentParamInstance;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.ParamReference;
-import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
-import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.param.ParameterContainerImpl;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.gusdb.wdk.model.user.User;
@@ -98,7 +95,7 @@ import org.json.JSONObject;
  * @author Jerric Gao
  * 
  */
-public abstract class Query extends WdkModelBase implements OptionallyTestable {
+public abstract class Query extends ParameterContainerImpl implements OptionallyTestable {
 
   private String name;
   protected boolean isCacheable = false;
@@ -107,10 +104,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
    * A flag to check if the cached has been set. if not set, the value from parent querySet will be used.
    */
   private boolean setCache = false;
-
-  // temp list, will be discarded after resolve references
-  private List<ParamReference> paramRefList;
-  protected Map<String, Param> paramMap;
 
   // temp list, will be discarded after resolve references
   private List<Column> columnList;
@@ -153,8 +146,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
   // =========================================================================
 
   protected Query() {
-    paramRefList = new ArrayList<ParamReference>();
-    paramMap = new LinkedHashMap<String, Param>();
     columnList = new ArrayList<Column>();
     columnMap = new LinkedHashMap<String, Column>();
     hasWeight = false;
@@ -173,9 +164,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     this.name = query.name;
     this.isCacheable = query.isCacheable;
     this.setCache = query.setCache;
-    if (query.paramRefList != null)
-      this.paramRefList = new ArrayList<>(query.paramRefList);
-    this.paramMap = new LinkedHashMap<String, Param>();
     if (query.columnList != null)
       this.columnList = new ArrayList<>(query.columnList);
     this.columnMap = new LinkedHashMap<String, Column>();
@@ -192,13 +180,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
       Column column = new Column(query.columnMap.get(columnName));
       column.setQuery(this);
       columnMap.put(columnName, column);
-    }
-
-    // clone params
-    for (String paramName : query.paramMap.keySet()) {
-      Param param = query.paramMap.get(paramName).clone();
-      param.setContextQuery(this);
-      paramMap.put(paramName, param);
     }
   }
 
@@ -240,61 +221,25 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return indexColumns;
   }
 
-  /**
-   * @return
-   */
   public String getName() {
     return name;
   }
 
-  /**
-   * @param name
-   */
   public void setName(String name) {
     this.name = name;
   }
 
-  /**
-   * @return the querySet
-   */
   public QuerySet getQuerySet() {
     return querySet;
   }
 
-  /**
-   * @param querySet
-   *          the querySet to set
-   */
   public void setQuerySet(QuerySet querySet) {
     this.querySet = querySet;
   }
 
+  @Override
   public String getFullName() {
     return ((querySet != null) ? querySet.getName() + "." : "") + name;
-  }
-
-  public void addParamRef(ParamReference paramRef) {
-    this.paramRefList.add(paramRef);
-  }
-
-  /**
-   * Add a param into the query
-   * 
-   * @param param
-   */
-  public void addParam(Param param) {
-    param.setContextQuery(this);
-    paramMap.put(param.getName(), param);
-  }
-
-  public Map<String, Param> getParamMap() {
-    return new LinkedHashMap<String, Param>(paramMap);
-  }
-
-  public Param[] getParams() {
-    Param[] array = new Param[paramMap.size()];
-    paramMap.values().toArray(array);
-    return array;
   }
 
   public void addColumn(Column column) throws WdkModelException {
@@ -362,8 +307,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     postCacheUpdateSqls.add(postCacheUpdateSql);
   }
 
-
-
   /**
    * @param extra
    *          if extra is true, then column names are also includes, plus the extra info from param.
@@ -413,22 +356,10 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return jsQuery;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
-    // exclude paramRefs
-    List<ParamReference> paramRefs = new ArrayList<ParamReference>();
-    for (ParamReference paramRef : paramRefList) {
-      if (paramRef.include(projectId)) {
-        paramRef.excludeResources(projectId);
-        paramRefs.add(paramRef);
-      }
-    }
-    paramRefList = paramRefs;
+
+    super.excludeResources(projectId);
 
     // exclude columns
     for (Column column : columnList) {
@@ -457,39 +388,16 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    // logger.debug("Resolving " + getFullName() + " - " + resolved);
-	 
+
     if (_resolved)
       return;
     _resolved = true;
-    
+
     super.resolveReferences(wdkModel);
 
     // check if we need to use querySet's cache flag
     if (!setCache)
       isCacheable = getQuerySet().isCacheable();
-
-    for (ParamReference paramRef : paramRefList) {
-
-      Param param =
-          (paramRef.getSetName().equals(Utilities.INTERNAL_PARAM_SET) &&
-             paramRef.getElementName().equals(Utilities.PARAM_USER_ID)) ?
-          getUserParam(wdkModel) :
-          ParamReference.resolveReference(wdkModel, paramRef, this);
-      String paramName = param.getName();
-      if (paramMap.containsKey(paramName)) {
-        throw new WdkModelException("The param '" + paramName + "' is duplicated in query " + getFullName());
-      }
-      else {
-        paramMap.put(paramName, param);
-      }
-    }
-    paramRefList = null;
-
-    // resolve reference for those params
-    for (Param param : paramMap.values()) {
-      param.resolveReferences(wdkModel);
-    }
 
     // FIXME - this cause problems with some params, need to investigate.
     // comment out temporarily
@@ -520,60 +428,21 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
 
     // check the column names in the sorting map
     for (String column : sortingMap.keySet()) {
-      if (!columnMap.containsKey(column))
+      if (!columnMap.containsKey(column)) {
         throw new WdkModelException("Invalid sorting column '" + column + "' in query " + getFullName());
+      }
     }
-    
+
     if (postCacheUpdateSqls != null) {
-    for (PostCacheUpdateSql postCacheUpdateSql : postCacheUpdateSqls)
-      if (postCacheUpdateSql != null && (postCacheUpdateSql.getSql() == null ||
-          !postCacheUpdateSql.getSql().contains(Utilities.MACRO_CACHE_TABLE) ||
-          !postCacheUpdateSql.getSql().contains(Utilities.MACRO_CACHE_INSTANCE_ID)))
-        throw new WdkModelException(
+      for (PostCacheUpdateSql postCacheUpdateSql : postCacheUpdateSqls)
+        if (postCacheUpdateSql != null && (postCacheUpdateSql.getSql() == null ||
+            !postCacheUpdateSql.getSql().contains(Utilities.MACRO_CACHE_TABLE) ||
+            !postCacheUpdateSql.getSql().contains(Utilities.MACRO_CACHE_INSTANCE_ID))) {
+          throw new WdkModelException(
             "Invalid PostCacheInsertSql. <sql> must be provided, and include the macros: " +
                 Utilities.MACRO_CACHE_TABLE + " and " + Utilities.MACRO_CACHE_INSTANCE_ID);
+        }
     }
-  }
-
-  /**
-   * Create or get an internal user param, which is a stringParam with a pre-defined name. This param will be
-   * added to all the queries, and the value of it will be the current user id, and is assigned automatically.
-   * 
-   * @return
-   * @throws WdkModelException
-   */
-  public static Param getUserParam(WdkModel wdkModel) throws WdkModelException {
-    // create the missing user_id param for the attribute query
-    ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
-    if (paramSet.contains(Utilities.PARAM_USER_ID))
-      return paramSet.getParam(Utilities.PARAM_USER_ID);
-
-    StringParam userParam = new StringParam();
-    userParam.setName(Utilities.PARAM_USER_ID);
-    userParam.setNumber(true);
-
-    userParam.excludeResources(wdkModel.getProjectId());
-    userParam.resolveReferences(wdkModel);
-    userParam.setResources(wdkModel);
-    paramSet.addParam(userParam);
-    return userParam;
-  }
-
-  public Param getUserParam() throws WdkModelException {
-    // create the missing user_id param for the attribute query
-    ParamSet paramSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
-    if (paramSet.contains(Utilities.PARAM_USER_ID))
-      return paramSet.getParam(Utilities.PARAM_USER_ID);
-
-    StringParam userParam = new StringParam();
-    userParam.setName(Utilities.PARAM_USER_ID);
-    userParam.setNumber(true);
-
-    userParam.excludeResources(_wdkModel.getProjectId());
-    userParam.resolveReferences(_wdkModel);
-    userParam.setResources(_wdkModel);
-    paramSet.addParam(userParam);
-    return userParam;
   }
 
   /**
@@ -600,14 +469,9 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return count;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer(getFullName());
+    StringBuilder buffer = new StringBuilder(getFullName());
     buffer.append(": params{");
     boolean firstParam = true;
     for (Param param : paramMap.values()) {
@@ -732,8 +596,6 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     return EncryptionUtil.encrypt(JsonUtil.serialize(jsQuery));
   }
 
-
-
   public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
     writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getFullName() + "\">");
     String indent1 = indent + WdkModel.INDENT;
@@ -764,17 +626,4 @@ public abstract class Query extends WdkModelBase implements OptionallyTestable {
     writer.println(indent + "</" + getClass().getSimpleName() + ">");
   }
 
-  public void validateDependentParams() throws WdkModelException {
-   validateDependentParams(getFullName(), paramMap);
-  }
-
-  private static void validateDependentParams(String queryName, Map<String, Param> paramMap) throws WdkModelException {
-    // TODO: Need to validate that no params in the rootQuery paramMap have a short name that in fact refers
-    //       to different params (i.e., params with different full names but the same short name).
-    for (Param param : paramMap.values()) {
-      if (param instanceof AbstractDependentParam) {
-        ((AbstractDependentParam) param).checkParam(queryName, null, paramMap, new ArrayList<String>());
-      }
-    }
-  }
 }

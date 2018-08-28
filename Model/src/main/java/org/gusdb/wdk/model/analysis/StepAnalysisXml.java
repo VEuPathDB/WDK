@@ -6,12 +6,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.query.param.ParameterContainerImpl;
 import org.gusdb.wdk.model.question.Question;
 
-public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
+public class StepAnalysisXml extends ParameterContainerImpl implements StepAnalysis  {
 
   // specify what at what WDK object level this analysis is configured
   public static interface StepAnalysisContainer { }
@@ -266,5 +266,10 @@ public class StepAnalysisXml extends WdkModelBase implements StepAnalysis  {
         .append(entry.getValue()).append(NL);
     }
     return sb.append("  }").append(NL).append("}").append(NL).toString();  
+  }
+
+  @Override
+  public String getFullName() {
+    return getName();
   }
 }
