@@ -93,17 +93,17 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
         // does not know about it.
         for (Param param : dependedParams) {
           // preserve the context query
-          Query contextQuery = param.getContextQuery();
+          ParameterContainer contextQuery = param.getContainer();
           param = param.clone();
           _vocabQuery.addParam(param);
-          param.setContextQuery(contextQuery);
+          param.setContainer(contextQuery);
           String value = vocabInstance.getDependedValues().get(param.getName());
           values.put(param.getName(), value);
         }
       }
 
       Question contextQuestion = _param.getContextQuestion();
-      Query contextQuery = _param.getContextQuery();
+      ParameterContainer contextQuery = _param.getContainer();
       Map<String, String> context = new LinkedHashMap<String, String>();
       context.put(Utilities.QUERY_CTX_PARAM, _param.getFullName());
       if (_param.getContextQuestion() != null)
