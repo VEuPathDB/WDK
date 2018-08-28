@@ -156,7 +156,8 @@ class ActiveStrategyFactory {
     }
 
     private Strategy getStrategy(long strategyId) throws WdkModelException, WdkUserException {
-      return _user.getWdkModel().getStepFactory().getStrategyById(strategyId);
+      return _user.getWdkModel().getStepFactory().getStrategyById(strategyId)
+          .orElseThrow(() -> new WdkUserException("No strategy exists with ID " + strategyId));
     }
 
     private ActiveStrategy getStrategy(String strategyKey) {

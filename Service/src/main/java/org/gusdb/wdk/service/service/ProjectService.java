@@ -29,8 +29,7 @@ public class ProjectService extends WdkService {
   @Path("teapot")
   @Produces(MediaType.TEXT_HTML)
   public Response getTeapot() {
-    String assetsUrl = getWdkModel().getModelConfig().getAssetsUrl();
-    String imageLink = assetsUrl + "/wdk/images/r2d2_ceramic_teapot.jpg";
+    String imageLink = getContextUri() + "/wdk/images/r2d2_ceramic_teapot.jpg";
     String html = "<!DOCTYPE html><html><body><img src=\"" + imageLink + "\"/></body></html>";
     return Response.status(418).entity(html).build();
   }
@@ -39,6 +38,7 @@ public class ProjectService extends WdkService {
   @Path("cpu-test")
   @Produces(MediaType.TEXT_PLAIN)
   public Response doCpuTest(@QueryParam("numTrials") Long numTrials) {
+    assertAdmin();
     if (numTrials == null || numTrials < 1) numTrials = 1L;
     Timer t = new Timer();
     long totalTime = 0;

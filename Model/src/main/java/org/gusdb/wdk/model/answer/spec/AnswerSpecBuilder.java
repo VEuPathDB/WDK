@@ -1,10 +1,11 @@
 package org.gusdb.wdk.model.answer.spec;
 
-import org.gusdb.fgputil.validation.ValidationLevel;
-
 import java.util.Map;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory;
+import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec.QueryInstanceSpecBuilder;
@@ -53,6 +54,10 @@ public class AnswerSpecBuilder {
 
   public AnswerSpec build(ValidationLevel level) {
     return new AnswerSpec(_wdkModel, _questionName, _queryInstanceSpec, _legacyFilterName, _filters, _viewFilters, level);
+  }
+
+  public Runnable<AnswerSpec> buildRunnable() {
+    return ValidObjectFactory.getRunnable(build(ValidationLevel.RUNNABLE));
   }
 
   public AnswerSpecBuilder setQuestionName(String questionName) {

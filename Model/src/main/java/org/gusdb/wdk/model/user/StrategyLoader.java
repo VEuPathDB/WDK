@@ -48,7 +48,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,11 +60,14 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
+import org.gusdb.wdk.model.user.Strategy.StrategyBuilder;
 import org.json.JSONObject;
 
 public class StrategyLoader {
@@ -172,7 +174,7 @@ public class StrategyLoader {
     List<StepBuilder> orphanSteps = new ArrayList<>();
     try {
       new SQLRunner(_userDbDs, sql, "search-steps-strategies").executeQuery(paramValues, paramTypes, rs -> {
-        Strategy currentStrategy = null;
+        StrategyBuilder currentStrategy = null;
         while(rs.next()) {
           // read a row
           long nextStrategyId = rs.getLong(COLUMN_STRATEGY_ID);
@@ -180,12 +182,11 @@ public class StrategyLoader {
             // this step row has no strategy ID
             if (currentStrategy != null) {
               // save off current strategy and reset 
-              strategies.put(currentStrategy.getStrategyId(), currentStrategy);
+              strategies.add(currentStrategy);
               currentStrategy = null;
             }
             // read orphan step and save off
-            Step orphanStep = readStep(rs);
-            orphanSteps.put(orphanStep.getStepId(), orphanStep);
+            orphanSteps.add(readStep(rs));
           }
           else {
             // this step row has a strategy ID
@@ -193,11 +194,11 @@ public class StrategyLoader {
               // check to see if this row part of current strategy or beginning of next one
               if (currentStrategy.getStrategyId() == nextStrategyId) {
                 // part of current; add step to current strategy
-                currentStrategy.appendStep(readStep(rs));
+                currentStrategy.addStep(readStep(rs));
               }
               else {
                 // beginning of next strategy; save off current strat then read and make next strat current
-                strategies.put(currentStrategy.getStrategyId(), currentStrategy);
+                strategies.add(currentStrategy);
                 currentStrategy = readStrategy(rs); // will also read/add step
               }
             }
@@ -208,7 +209,7 @@ public class StrategyLoader {
           }
           // check for leftover strategy to save
           if (currentStrategy != null) {
-            strategies.put(currentStrategy.getStrategyId(), currentStrategy);
+            strategies.add(currentStrategy);
           }
         }
       });
@@ -216,72 +217,63 @@ public class StrategyLoader {
     catch (Exception e) {
       return WdkModelException.unwrap(e, SearchResult.class);
     }
-    // all data loaded; populate users and validate
+    // all data loaded; build steps and strats at the specified validation level
     UserCache userCache = new UserCache(_userFactory);
-    for (Strategy strategy : strategies.values()) {
-      strategy.finish(userCache);
-    }
-    // only validate orphan steps; attached steps will be finished by their strategy
-    for (Step step : filter(orphanSteps.values(), st -> st.getStrategyId() == null)) {
-      step.finish(userCache, null);
-    }
-    return new SearchResult(strategies, orphanSteps);
+    List<Strategy> builtStrategies = Functions.mapToList(strategies,
+        builder -> builder.build(userCache, _validationLevel));
+    // only build orphan steps; attached steps will be built by their strategy
+    List<Step> builtOrphanSteps = Functions.mapToList(orphanSteps,
+        builder -> builder.build(userCache, _validationLevel, null));
+    return new SearchResult(builtStrategies, builtOrphanSteps);
   }
 
-  private Strategy readStrategy(ResultSet rs) throws SQLException {
+  private StrategyBuilder readStrategy(ResultSet rs) throws SQLException {
 
     long strategyId = rs.getLong(toStratCol(COLUMN_STRATEGY_ID));
     long userId = rs.getLong(toStratCol(COLUMN_USER_ID));
 
-    Strategy strategy = new Strategy(_wdkModel, userId, strategyId);
+    return Strategy.builder(_wdkModel, userId, strategyId)
+        .setProjectId(rs.getString(toStratCol(COLUMN_PROJECT_ID)))
+        .setVersion(rs.getString(toStratCol(COLUMN_VERSION)))
+        .setCreatedTime(rs.getTimestamp(toStratCol(COLUMN_CREATE_TIME)))
+        .setDeleted(rs.getBoolean(toStratCol(COLUMN_IS_DELETED)))
+        .setRootStepId(rs.getLong(toStratCol(COLUMN_ROOT_STEP_ID)))
+        .setSaved(rs.getBoolean(toStratCol(COLUMN_IS_SAVED)))
+        .setLastRunTime(rs.getTimestamp(toStratCol(COLUMN_LAST_VIEWED_TIME)))
+        .setLastModifiedTime(rs.getTimestamp(toStratCol(COLUMN_LAST_MODIFIED_TIME)))
+        .setDescription(rs.getString(toStratCol(COLUMN_DESCRIPTION)))
+        .setSignature(rs.getString(toStratCol(COLUMN_SIGNATURE)))
+        .setName(rs.getString(toStratCol(COLUMN_NAME)))
+        .setSavedName(rs.getString(toStratCol(COLUMN_SAVED_NAME)))
+        .setIsPublic(fetchNullableBoolean(rs, toStratCol(COLUMN_IS_PUBLIC), false)); // null = false (not public)
 
-    strategy.setProjectId(rs.getString(toStratCol(COLUMN_PROJECT_ID)));
-    strategy.setCreatedTime(rs.getTimestamp(toStratCol(COLUMN_CREATE_TIME)));
-    strategy.setDeleted(rs.getBoolean(toStratCol(COLUMN_IS_DELETED)));
-    strategy.setLatestStepId(rs.getLong(toStratCol(COLUMN_ROOT_STEP_ID)));
-    strategy.setVersion(rs.getString(toStratCol(COLUMN_VERSION)));
-    strategy.setIsSaved(rs.getBoolean(toStratCol(COLUMN_IS_SAVED)));
-    strategy.setLastRunTime(rs.getTimestamp(toStratCol(COLUMN_LAST_VIEWED_TIME)));
-    strategy.setLastModifiedTime(rs.getTimestamp(toStratCol(COLUMN_LAST_MODIFIED_TIME)));
-    strategy.setDescription(rs.getString(toStratCol(COLUMN_DESCRIPTION)));
-    strategy.setSignature(rs.getString(toStratCol(COLUMN_SIGNATURE)));
-    strategy.setName(rs.getString(toStratCol(COLUMN_NAME)));
-    strategy.setSavedName(rs.getString(toStratCol(COLUMN_SAVED_NAME)));
-    strategy.setIsPublic(fetchNullableBoolean(rs, toStratCol(COLUMN_IS_PUBLIC), false)); // null = false (not public)
-
-    return strategy;
   }
 
-  private Step readStep(ResultSet rs) throws SQLException {
+  private StepBuilder readStep(ResultSet rs) throws SQLException {
 
     long stepId = rs.getLong(COLUMN_STEP_ID);
     long userId = rs.getLong(COLUMN_USER_ID);
 
-    Step step = new Step(_wdkModel, userId, stepId);
-
-    step.setStrategyId(fetchNullableLong(rs, COLUMN_STRATEGY_ID, null));
-    step.setProjectId(rs.getString(COLUMN_PROJECT_ID));
-    step.setProjectVersion(rs.getString(COLUMN_PROJECT_VERSION));
-    step.setCreatedTime(rs.getTimestamp(COLUMN_CREATE_TIME));
-    step.setLastRunTime(rs.getTimestamp(COLUMN_LAST_RUN_TIME));
-    step.setEstimateSize(rs.getInt(COLUMN_ESTIMATE_SIZE));
-    step.setDeleted(rs.getBoolean(COLUMN_IS_DELETED));
-    step.setPreviousStepId(fetchNullableLong(rs, COLUMN_LEFT_CHILD_ID, null));
-    step.setChildStepId(fetchNullableLong(rs, COLUMN_RIGHT_CHILD_ID, null));
-    step.setCustomName(rs.getString(COLUMN_CUSTOM_NAME));
-    step.setCollapsedName(rs.getString(COLUMN_COLLAPSED_NAME));
-    step.setCollapsible(rs.getBoolean(COLUMN_IS_COLLAPSIBLE));
-
-    step.setAnswerSpec(
-      AnswerSpec.builder(_wdkModel)
-        .setQuestionName(rs.getString(COLUMN_QUESTION_NAME))
-        .setLegacyFilterName(rs.getString(COLUMN_ANSWER_FILTER))
-        .setAssignedWeight(fetchNullableInteger(rs, COLUMN_ASSIGNED_WEIGHT, 0))
-        .setDbParamFiltersJson(new JSONObject(_userDbPlatform.getClobData(rs, COLUMN_DISPLAY_PARAMS)))
-        .build(_validationLevel)
-    );
-
-    return step;
+    return Step.builder(_wdkModel, userId, stepId)
+        .setStrategyId(fetchNullableLong(rs, COLUMN_STRATEGY_ID, null))
+        .setProjectId(rs.getString(COLUMN_PROJECT_ID))
+        .setProjectVersion(rs.getString(COLUMN_PROJECT_VERSION))
+        .setCreatedTime(rs.getTimestamp(COLUMN_CREATE_TIME))
+        .setLastRunTime(rs.getTimestamp(COLUMN_LAST_RUN_TIME))
+        .setEstimatedSize(rs.getInt(COLUMN_ESTIMATE_SIZE))
+        .setDeleted(rs.getBoolean(COLUMN_IS_DELETED))
+        .setPreviousStepId(fetchNullableLong(rs, COLUMN_LEFT_CHILD_ID, null))
+        .setChildStepId(fetchNullableLong(rs, COLUMN_RIGHT_CHILD_ID, null))
+        .setCustomName(rs.getString(COLUMN_CUSTOM_NAME))
+        .setCollapsedName(rs.getString(COLUMN_COLLAPSED_NAME))
+        .setCollapsible(rs.getBoolean(COLUMN_IS_COLLAPSIBLE))
+        .setAnswerSpec(
+            AnswerSpec.builder(_wdkModel)
+            .setQuestionName(rs.getString(COLUMN_QUESTION_NAME))
+            .setLegacyFilterName(rs.getString(COLUMN_ANSWER_FILTER))
+            .setAssignedWeight(fetchNullableInteger(rs, COLUMN_ASSIGNED_WEIGHT, 0))
+            .setDbParamFiltersJson(new JSONObject(_userDbPlatform.getClobData(rs, COLUMN_DISPLAY_PARAMS)))
+        );
   }
 
   Optional<Step> getStepById(long stepId) throws WdkModelException {
@@ -380,16 +372,16 @@ public class StrategyLoader {
 
   private static class SearchResult {
 
-    private final Map<Long,Strategy> _strategies;
-    private final Map<Long,Step> _steps;
+    private final List<Strategy> _strategies;
+    private final List<Step> _steps;
 
-    public SearchResult(Map<Long,Strategy> strategies, Map<Long,Step> steps) {
+    public SearchResult(List<Strategy> strategies, List<Step> steps) {
       _strategies = strategies;
       _steps = steps;
     }
 
     public List<Step> findSteps(Predicate<Step> pred) {
-      return _steps.values().stream().filter(pred).collect(toList());
+      return _steps.stream().filter(pred).collect(toList());
     }
 
     public Optional<Step> findFirstStep(Predicate<Step> pred) {
@@ -402,7 +394,7 @@ public class StrategyLoader {
     }
 
     public List<Strategy> findStrategies(Predicate<Strategy> pred) {
-      return _strategies.values().stream().filter(pred).collect(toList());
+      return _strategies.stream().filter(pred).collect(toList());
     }
 
     public Optional<Strategy> getOnlyStrategy(String conditionMessage) throws WdkModelException {

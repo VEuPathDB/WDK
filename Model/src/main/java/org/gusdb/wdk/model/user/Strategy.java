@@ -15,67 +15,186 @@ import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkIllegalArgumentException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Strategy implements StrategyElement {
+public class Strategy implements StrategyElement, StepContainer {
 
   private static final Logger LOG = Logger.getLogger(Strategy.class);
 
-  private final WdkModel _wdkModel;
-  private final StepFactory _stepFactory;
-  private final long _userId;
-  private User _user;
-  private Step _latestStep;
-  private long _strategyId;
-  private boolean _isSaved;
-  private boolean _isDeleted = false;
-  private Date _createdTime;
-  private Date _lastModifiedTime;
-  private String _projectId;
-  private String _signature;
-  private String _description;
-  private String _name;
-  private String _savedName = null;
-  private boolean _isPublic = false;
-  private long _latestStepId = 0;
-  private String _version;
-  private Date _lastRunTime;
-  private RecordClass _recordClass;
-  private Map<Long, Step> _stepMap = new HashMap<>();
+  public static class StrategyBuilder {
 
-  public Strategy(WdkModel wdkModel, long userId, long strategyId) {
-    _wdkModel = wdkModel;
-    _stepFactory = wdkModel.getStepFactory();
-    _userId = userId;
-    _user = null;
-    _strategyId = strategyId;
-    _isSaved = false;
-  }
+    private final WdkModel _wdkModel;
+    private final long _userId;
+    private final long _strategyId;
+    private String _projectId;
+    private String _version;
+    private String _name;
+    private String _description;
+    private boolean _isSaved = false;
+    private String _savedName = null;
+    private boolean _isDeleted = false;
+    private Date _createdTime = new Date();
+    private Date _lastModifiedTime;
+    private Date _lastRunTime;
+    private String _signature;
+    private boolean _isPublic = false;
+    private long _rootStepId = 0;
 
-  public Strategy(WdkModel wdkModel, User user, long strategyId) {
-    _wdkModel = wdkModel;
-    _stepFactory = wdkModel.getStepFactory();
-    _userId = user.getUserId();
-    _user = user;
-    _strategyId = strategyId;
-    _isSaved = false;
-  }
+    private final Map<Long,StepBuilder> _stepMap = new HashMap<>();
 
-  public User getUser() throws WdkModelException {
-    if (_user == null) {
-      // if constructed with only the user id, lazy-load User object
-      _user = _wdkModel.getUserFactory().getUserById(_userId);
+    public StrategyBuilder(WdkModel wdkModel, long userId, long strategyId) {
+      _wdkModel = wdkModel;
+      _projectId = wdkModel.getProjectId();
+      _version = wdkModel.getVersion();
+      _userId = userId;
+      _strategyId = strategyId;
     }
+
+    public StrategyBuilder(Strategy strategy) {
+      _wdkModel = strategy._wdkModel;
+      _userId = strategy.getUser().getUserId();
+      _strategyId = strategy._strategyId;
+      _projectId = strategy._projectId;
+      _version = strategy._version;
+      _name = strategy._name;
+      _description = strategy._description;
+      _isSaved = strategy._isSaved;
+      _savedName = strategy._savedName;
+      _isDeleted = strategy._isDeleted;
+      _createdTime = strategy._createdTime;
+      _lastModifiedTime = strategy._lastModifiedTime;
+      _lastRunTime = strategy._lastRunTime;
+      _signature = strategy._signature;
+      _isPublic = strategy._isPublic;
+      _rootStepId = strategy._rootStepId;
+      _stepMap = Functions.getMapFromList(strategy._stepMap.values(),
+          step -> new TwoTuple<>(step.getStepId(), Step.builder(step)));
+    }
+
+    public long getStrategyId() {
+      return _strategyId;
+    }
+
+    public StrategyBuilder setProjectId(String projectId) {
+      _projectId = projectId;
+      return this;
+    }
+
+    public StrategyBuilder setVersion(String version) {
+      _version = version;
+      return this;
+    }
+
+    public StrategyBuilder setName(String name) {
+      _name = FormatUtil.shrinkUtf8String(name, StepFactory.COLUMN_NAME_LIMIT);
+      return this;
+    }
+
+    public StrategyBuilder setDescription(String description) {
+      _description = description;
+      return this;
+    }
+
+    public StrategyBuilder setSaved(boolean isSaved) {
+      _isSaved = isSaved;
+      return this;
+    }
+
+    public StrategyBuilder setSavedName(String savedName) {
+      _savedName = FormatUtil.shrinkUtf8String(savedName, StepFactory.COLUMN_NAME_LIMIT);
+      return this;
+    }
+
+    public StrategyBuilder setDeleted(boolean isDeleted) {
+      _isDeleted = isDeleted;
+      return this;
+    }
+
+    public StrategyBuilder setCreatedTime(Date createdTime) {
+      _createdTime = createdTime;
+      return this;
+    }
+
+    public StrategyBuilder setLastModifiedTime(Date lastModifiedTime) {
+      _lastModifiedTime = lastModifiedTime;
+      return this;
+    }
+
+    public StrategyBuilder setLastRunTime(Date lastRunTime) {
+      _lastRunTime = lastRunTime;
+      return this;
+    }
+
+    public StrategyBuilder setSignature(String signature) {
+      _signature = signature;
+      return this;
+    }
+
+    public StrategyBuilder setIsPublic(boolean isPublic) {
+      _isPublic = isPublic;
+      return this;
+    }
+
+    // note root step must be added just like any other step
+    public StrategyBuilder setRootStepId(long rootStepId) {
+      _rootStepId = rootStepId;
+      return this;
+    }
+
+    public StrategyBuilder addStep(StepBuilder step) {
+      _stepMap.put(step.getStepId(), step);
+      return this;
+    }
+
+    public Strategy build(UserCache userCache, ValidationLevel validationLevel) {
+      return new Strategy(this, userCache.get(_userId), validationLevel);
+    }
+  }
+
+  public static StrategyBuilder builder(WdkModel wdkModel, long userId, long strategyId) {
+    return new StrategyBuilder(wdkModel, userId, strategyId);
+  }
+
+  private final WdkModel _wdkModel;
+  private final User _user;
+  private final long _strategyId;
+  private final String _projectId;
+  private final String _version;
+  private final String _name;
+  private final String _description;
+  private final boolean _isSaved;
+  private final String _savedName;
+  private final boolean _isDeleted;
+  private final Date _createdTime;
+  private final Date _lastModifiedTime;
+  private final Date _lastRunTime;
+  private final String _signature;
+  private final boolean _isPublic;
+  private final long _rootStepId;
+  private final Map<Long, Step> _stepMap = new HashMap<>();
+
+  public Strategy(StrategyBuilder strategyBuilder, User user, ValidationLevel validationLevel) {
+    _user = user;
+    _wdkModel = strategyBuilder._wdkModel;
+    _strategyId =;
+    _isSaved = false;
+  }
+
+
+  public User getUser() {
     return _user;
   }
 
@@ -83,44 +202,16 @@ public class Strategy implements StrategyElement {
     return _isDeleted;
   }
 
-  void setDeleted(boolean isDeleted) {
-    _isDeleted = isDeleted;
-  }
-
   public String getVersion() {
-    // if (latestStep != null)
-    // version = latestStep.getAnswer().getProjectVersion();
     return _version;
-  }
-
-  void setVersion(String version) {
-    _version = version;
-  }
-
-  public void setName(String name) {
-    if (name != null && name.length() > StepFactory.COLUMN_NAME_LIMIT) {
-      name = name.substring(0, StepFactory.COLUMN_NAME_LIMIT - 1);
-    }
-    _name = name;
   }
 
   public String getName() {
     return _name;
   }
 
-  public void setSavedName(String savedName) {
-    if (savedName != null && savedName.length() > StepFactory.COLUMN_NAME_LIMIT) {
-      savedName = savedName.substring(0, StepFactory.COLUMN_NAME_LIMIT - 1);
-    }
-    _savedName = savedName;
-  }
-
   public String getSavedName() {
     return _savedName;
-  }
-
-  public void setIsSaved(boolean saved) {
-    _isSaved = saved;
   }
 
   public boolean getIsSaved() {
@@ -131,21 +222,13 @@ public class Strategy implements StrategyElement {
     return _isPublic;
   }
 
-  public void setIsPublic(boolean isPublic) {
-    _isPublic = isPublic;
-  }
-
   public String getProjectId() {
     return _projectId;
   }
 
-  public void setProjectId(String projectId) {
-    _projectId = projectId;
-  }
-
   public Step getLatestStep() throws WdkModelException {
-    if (_latestStep == null && _latestStepId != 0)
-      setLatestStep(_stepFactory.getStepById(_latestStepId));
+    if (_latestStep == null && _rootStepId != 0)
+      setLatestStep(_stepFactory.getStepById(_rootStepId));
     return _latestStep;
   }
 
@@ -153,11 +236,7 @@ public class Strategy implements StrategyElement {
     verifySameOwnerAndProject(this, step);
     _latestStep = step;
     // also update the cached info
-    _latestStepId = step.getStepId();
-  }
-
-  void setStrategyId(long strategyId) {
-    _strategyId = strategyId;
+    _rootStepId = step.getStepId();
   }
 
   @Override
@@ -172,28 +251,6 @@ public class Strategy implements StrategyElement {
     return _createdTime;
   }
 
-  /**
-   * @param createTime
-   *          The createTime to set.
-   */
-  void setCreatedTime(Date createdTime) {
-    _createdTime = createdTime;
-  }
-
-  /**
-   * Returns a step in this strategy by step ID
-   * 
-   * @param stepId step ID
-   * @return step with the passed ID
-   * @throws IllegalArgumentException if strategy does not contain a step with the passed ID
-   */
-  public Step getStep(long stepId) throws IllegalArgumentException {
-    if (_stepMap.containsKey(stepId)) {
-      return _stepMap.get(stepId);
-    }
-    throw new IllegalArgumentException("Strategy " + _strategyId + " does not contain step " + stepId);
-  }
-
   public List<Step> getMainBranch() throws WdkModelException {
     return getLatestStep().getMainBranch();
   }
@@ -203,19 +260,12 @@ public class Strategy implements StrategyElement {
   }
 
   public void setLatestStepId(long stepId) {
-    _latestStepId = stepId;
+    _rootStepId = stepId;
     _latestStep = null; // root step is now out of date
   }
 
   public long getLatestStepId() {
-    return _latestStepId;
-  }
-
-  public Step getStepById(long id) throws WdkModelException {
-    Step step = getLatestStep().getStepByDisplayId(id);
-    if (step == null)
-      throw new WdkModelException("Strategy #" + _strategyId + " doesn't have step #" + id);
-    return step;
+    return _rootStepId;
   }
 
   /**
@@ -230,9 +280,7 @@ public class Strategy implements StrategyElement {
     _stepFactory.updateStrategy(_user, this, overwrite);
   }
 
-  public RecordClass getRecordClass() throws WdkModelException {
-    if (_latestStep == null && _recordClass != null)
-      return _recordClass;
+  public RecordClass getRecordClass() {
     return getLatestStep().getRecordClass();
   }
 
@@ -709,26 +757,10 @@ public class Strategy implements StrategyElement {
   }
 
   /**
-   * @param lastRunTime
-   *          the lastRunTime to set
-   */
-  public void setLastRunTime(Date lastRunTime) {
-    _lastRunTime = lastRunTime;
-  }
-
-  /**
    * @return the lastModifiedTime
    */
   public Date getLastModifiedTime() {
     return _lastModifiedTime;
-  }
-
-  /**
-   * @param lastModifiedTime
-   *          the lastModifiedTime to set
-   */
-  public void setLastModifiedTime(Date lastModifiedTime) {
-    _lastModifiedTime = lastModifiedTime;
   }
 
   /**
@@ -743,27 +775,12 @@ public class Strategy implements StrategyElement {
   }
 
   /**
-   * @param signature
-   *          the signature to set
-   */
-  public void setSignature(String signature) {
-    _signature = signature;
-  }
-
-  /**
    * @return the description
    */
   public String getDescription() {
     return _description;
   }
 
-  /**
-   * @param description
-   *          the description to set
-   */
-  public void setDescription(String description) {
-    _description = description;
-  }
 
   public int getEstimateSize() {
     return (_latestStep == null ? 0 : defaultOnException(() -> _latestStep.getResultSize(), 0));
@@ -772,10 +789,6 @@ public class Strategy implements StrategyElement {
   public String getEstimateSizeNoCalculate() {
     int latestStepEstimateSize = _latestStep == null ? 0 : _latestStep.getEstimateSize();
     return (latestStepEstimateSize == Step.RESET_SIZE_FLAG ? "Unknown" : String.valueOf(latestStepEstimateSize));
-  }
-
-  public void setRecordClass(RecordClass recordClass) {
-    _recordClass = recordClass;
   }
 
   /**
@@ -832,10 +845,6 @@ public class Strategy implements StrategyElement {
       }
     }
     return null;
-  }
-
-  void appendStep(Step step) {
-    _stepMap.put(step.getStepId(), step);
   }
 
   void finish(UserCache userCache) throws WdkModelException {
@@ -903,18 +912,6 @@ public class Strategy implements StrategyElement {
     return _stepMap.get(stepId);
   }
 
-  /**
-   * Sets the owner for this strategy and for all the steps in this strategy to the passed user
-   * 
-   * @param user user to set
-   */
-  void setUser(User user) {
-    _user = user;
-    for (Step step : _stepMap.values()) {
-      step.setUser(user);
-    }
-  }
-
   @Override
   public long getId() {
     return getStrategyId();
@@ -956,11 +953,17 @@ public class Strategy implements StrategyElement {
     }
   }
 
-  public Step findParentOf(long stepId) {
-    Optional<Step> foundParent = _stepMap.values().stream()
-      .filter(step -> step.getChildStepId() == stepId || step.getPreviousStepId() == stepId)
-      .findFirst();
-    return foundParent.isPresent() ? foundParent.get() : null;
+  /**
+   * Returns the first step in this strategy that passes the search predicate.  If none exists,
+   * throws IllegalArgumentException with a custom message.
+   * 
+   * @param search step search
+   * @return first step found that passes the predicate
+   * @throws IllegalArgumentException if strategy does not contain a step that matches the search criteria
+   */
+  @Override
+  public Step findStep(StepSearch search) {
+    return _stepMap.values().stream().filter(search.getPredicate()).findFirst()
+        .orElse(StepContainer.super.findStep(search)); // throws exception with the proper message
   }
-
 }

@@ -151,13 +151,12 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    * the signature is a checksum of sorted stable value.
    *
    * @throws WdkModelException
-   * @throws WdkUserException
    *
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
    *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValueString, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
+  public String toSignature(User user, String stableValueString, Map<String, String> contextParamValues) throws WdkModelException {
     FilterParamNew param = (FilterParamNew)_param;
     contextParamValues = param.ensureRequiredContext(user, contextParamValues);
 
@@ -165,7 +164,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     return EncryptionUtil.encrypt(stableValue.toSignatureString() + dependedParamsSignature(user, contextParamValues));
   }
 
-  private String dependedParamsSignature(User user, Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
+  private String dependedParamsSignature(User user, Map<String, String> contextParamValues) throws WdkModelException {
     FilterParamNew filterParam  = (FilterParamNew)_param;
     if (filterParam.getDependedParams() == null) return "";
     List<Param> dependedParamsList = new ArrayList<Param>(filterParam.getDependedParams());

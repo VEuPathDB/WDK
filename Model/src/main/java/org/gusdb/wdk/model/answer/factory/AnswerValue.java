@@ -23,7 +23,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory;
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
+import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -128,7 +128,7 @@ public class AnswerValue {
 
   // basic information about this answer
   protected final User _user;
-  private final SemanticallyValid<AnswerSpec> _validAnswerSpec;
+  private final Runnable<AnswerSpec> _validAnswerSpec;
   protected final AnswerSpec _answerSpec;
 
   // values derived from basic info
@@ -157,13 +157,13 @@ public class AnswerValue {
    *          The index of the last <code>RecordInstance</code> in the page, inclusive.
    * @throws WdkModelException 
    */
-  protected AnswerValue(User user, SemanticallyValid<AnswerSpec> validAnswerSpec, int startIndex,
+  protected AnswerValue(User user, Runnable<AnswerSpec> validAnswerSpec, int startIndex,
       int endIndex, Map<String, Boolean> sortingMap) throws WdkModelException {
     _user = user;
     _validAnswerSpec = validAnswerSpec;
     _answerSpec = validAnswerSpec.getObject();
     _wdkModel = _answerSpec.getWdkModel();
-    _idsQueryInstance = Query.makeQueryInstance(_user, ValidObjectFactory.getSemanticallyValid(_answerSpec.getQueryInstanceSpec()));
+    _idsQueryInstance = Query.makeQueryInstance(_user, ValidObjectFactory.getRunnable(_answerSpec.getQueryInstanceSpec()));
     Question question = _answerSpec.getQuestion();
     _attributes = new AnswerValueAttributes(_user, question);
     _resultSizeFactory = new ResultSizeFactory(this);
@@ -218,7 +218,7 @@ public class AnswerValue {
     return _user;
   }
 
-  public SemanticallyValid<AnswerSpec> getValidAnswerSpec() {
+  public Runnable<AnswerSpec> getRunnableAnswerSpec() {
     return _validAnswerSpec;
   }
 
@@ -258,11 +258,8 @@ public class AnswerValue {
 
   /**
    * the checksum of the iq query, plus the filter information on the answer.
-   * 
-   * @return
-   * @throws WdkUserException
    */
-  public String getChecksum() throws WdkModelException, WdkUserException {
+  public String getChecksum() throws WdkModelException {
     if (_checksum == null) {
       JSONObject jsContent = new JSONObject();
       jsContent.put("query-checksum", _idsQueryInstance.getChecksum());
@@ -373,10 +370,8 @@ public class AnswerValue {
     // original table query; a table query has only one param, user_id. Note
     // that the original table query is different from the table query held by
     // the recordClass.  The user_id param will be added by the query instance.
-    QueryInstanceSpec tableQuerySpec = QueryInstanceSpec
-        .builder().buildValidated(tableQuery, ValidationLevel.SEMANTIC);
-    QueryInstance<?> queryInstance = Query
-        .makeQueryInstance(_user, ValidObjectFactory.getSemanticallyValid(tableQuerySpec));
+    Runnable<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder().buildRunnable(tableQuery);
+    QueryInstance<?> queryInstance = Query.makeQueryInstance(_user, tableQuerySpec);
     String tableSql = queryInstance.getSql();
     DBPlatform platform = _answerSpec.getQuestion().getWdkModel().getAppDb().getPlatform();
     String tableSqlWithRowIndex = "(SELECT tq.*, " + platform.getRowNumberColumn() + " as row_index FROM (" + tableSql + ") tq ";
@@ -417,7 +412,7 @@ public class AnswerValue {
       QueryInstanceSpec attrQuerySpec = QueryInstanceSpec
           .builder().buildValidated(attributeQuery, ValidationLevel.SEMANTIC);
       QueryInstance<?> attributeQueryInstance = Query
-          .makeQueryInstance(_user, ValidObjectFactory.getSemanticallyValid(attrQuerySpec));
+          .makeQueryInstance(_user, ValidObjectFactory.getRunnable(attrQuerySpec));
       sql = attributeQueryInstance.getSql();
 
       // replace the id sql macro.  the injected sql must include filters (but not view filters)

@@ -1773,7 +1773,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     logger.debug("RECORDCLASS: GETTING ALL FILTERs");
     Map<String, Filter> filters = new LinkedHashMap<>();
     for (StepFilter filter : _stepFilters.values()) {
-      if (!filter.getIsViewOnly()) {
+      if (!filter.getFilterType().isViewOnly()) {
         logger.debug("RECORDCLASS: filter name: " + filter.getKey());
         filters.put(filter.getKey(), filter);
       }
@@ -1784,7 +1784,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       if (attribute instanceof QueryColumnAttributeField) {
         QueryColumnAttributeField columnAttribute = (QueryColumnAttributeField) attribute;
         for (ColumnFilter filter : columnAttribute.getColumnFilters()) {
-          if (!filter.getIsViewOnly())
+          if (!filter.getFilterType().isViewOnly())
             filters.put(filter.getKey(), filter);
         }
       }

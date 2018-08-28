@@ -5,7 +5,6 @@ import java.util.Collection;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
 import org.gusdb.wdk.model.question.Question;
@@ -85,9 +84,10 @@ public class StrategyFilter extends StepFilter {
 
   private Strategy getStrategy(AnswerValue answer, JSONObject jsValue) throws WdkModelException {
     int strategyId = jsValue.getInt(KEY_STRATEGY);
-    return answer.getWdkModel().getStepFactory().getStrategyById(strategyId);
+    return answer.getWdkModel().getStepFactory().getStrategyById(strategyId)
+        .orElseThrow(() -> new WdkModelException("Passed ID (" + strategyId + ") does not correspond to a strategy."));
   }
-  
+
   @Override
   public void setDefaultValue(JSONObject defaultValue) {
     throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
