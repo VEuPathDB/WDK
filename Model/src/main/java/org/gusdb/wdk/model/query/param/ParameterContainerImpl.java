@@ -71,6 +71,7 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+    super.resolveReferences(wdkModel);
     for (ParamReference paramRef : paramRefList) {
       Param param =
           (paramRef.getSetName().equals(Utilities.INTERNAL_PARAM_SET) &&
