@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -21,6 +20,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigAccountDB;
+import org.gusdb.wdk.model.user.InvalidEmailException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.service.formatter.Keys;
@@ -43,11 +43,20 @@ public class UserUtilityServices extends WdkService {
 
   private static final String NO_USER_BY_THAT_EMAIL = "No user exists with the email you submitted.";
 
+  /**
+   * Creates a new user (i.e. user registration)
+   * 
+   * @param body JSON body representing a registration form
+   * @return JSON representing the new user
+   * @throws RequestMisformatException if JSON is misformatted
+   * @throws DataValidationException if request contains invalid information
+   * @throws WdkModelException if error occurs creating user
+   */
   @POST
   @Path("users")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createNewUser(String body) throws DataValidationException, WdkModelException, WdkUserException {
+  public Response createNewUser(String body) throws RequestMisformatException, DataValidationException, WdkModelException {
     try {
       JSONObject requestJson = new JSONObject(body);
       List<UserPropertyName> configuredUserProps = getWdkModel().getModelConfig().getAccountDB().getUserPropertyNames();
@@ -61,16 +70,29 @@ public class UserUtilityServices extends WdkService {
       LOG.info("Created new user: " + newUserJson.toString(2));
       return Response.ok(newUserJson.toString()).build();
     }
+    catch (InvalidEmailException e) {
+      throw new DataValidationException(e.getMessage(), e);
+    }
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage(), e);
     }
   }
 
+  /**
+   * Resets a user's forgotten password to a random string.  Request contains a user's email who
+   * forgot their password.  No response is returned but an email is sent to the user with their new password.
+   * 
+   * @param body JSON object with email property containing email of user whose password needs reset
+   * @return no content or error code corresponding to a problem
+   * @throws WdkModelException if error occurs checking for user or sending email
+   * @throws DataValidationException if no user exists with that email
+   * @throws RequestMisformatException if submitted request JSON is in the wrong format
+   */
   @POST
   @Path("user-password-reset")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response resetUserPassword(String body)
-      throws WdkModelException, DataValidationException {
+      throws WdkModelException, DataValidationException, RequestMisformatException {
     try {
       JSONObject json = new JSONObject(body);
       String email = json.getString(Keys.EMAIL);
@@ -84,10 +106,18 @@ public class UserUtilityServices extends WdkService {
       return Response.noContent().build();
     }
     catch (JSONException e) {
-      throw new BadRequestException(e);
+      throw new RequestMisformatException(e.toString());
     }
   }
 
+  /**
+   * Queries user IDs from a set of emails.  Used by user datasets page to share datasets
+   * with users when they know their friends' emails but not user IDs.
+   * 
+   * @param body JSON array of user emails
+   * @return JSON array of user IDs
+   * @throws RequestMisformatException if request is not an array or is otherwise misformatted
+   */
   @POST
   @Path("user-id-query")
   @Consumes(MediaType.APPLICATION_JSON)
