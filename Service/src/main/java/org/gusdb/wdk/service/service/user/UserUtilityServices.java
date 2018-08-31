@@ -1,9 +1,9 @@
 package org.gusdb.wdk.service.service.user;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.ws.rs.Consumes;
@@ -16,9 +16,11 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.accountdb.AccountManager;
 import org.gusdb.fgputil.accountdb.UserPropertyName;
+import org.gusdb.fgputil.json.JsonIterators;
+import org.gusdb.fgputil.json.JsonType;
+import org.gusdb.fgputil.json.JsonType.ValueType;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigAccountDB;
 import org.gusdb.wdk.model.user.InvalidEmailException;
 import org.gusdb.wdk.model.user.User;
@@ -32,9 +34,6 @@ import org.gusdb.wdk.service.service.WdkService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.CollectionType;
 
 @Path("/")
 public class UserUtilityServices extends WdkService {
@@ -115,7 +114,7 @@ public class UserUtilityServices extends WdkService {
    * with users when they know their friends' emails but not user IDs.
    * 
    * @param body JSON array of user emails
-   * @return JSON array of user IDs
+   * @return JSON array of objects, where each object is an email -> ID mapping
    * @throws RequestMisformatException if request is not an array or is otherwise misformatted
    */
   @POST
@@ -123,29 +122,30 @@ public class UserUtilityServices extends WdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response lookupUserId(String body) throws RequestMisformatException {
-    Set<String> userEmails = new HashSet<>();
-    JSONArray userEmailsJsonArray = new JSONObject(body).getJSONArray("emails");
-    ObjectMapper mapper = new ObjectMapper();
-    String userEmailsJson = userEmailsJsonArray.toString();
-    CollectionType setType = mapper.getTypeFactory().constructCollectionType(Set.class, String.class);
     try {
-      userEmails = mapper.readValue(userEmailsJson, setType);
-    }
-    catch(IOException ioe) {
-      throw new RequestMisformatException("The user email list provided could not be parsed.", ioe);
-    }
-    ModelConfig modelConfig = getWdkModel().getModelConfig();
-    ModelConfigAccountDB accountDbConfig = modelConfig.getAccountDB();
-    AccountManager accountManager = new AccountManager(getWdkModel().getAccountDb(),
-        accountDbConfig.getAccountSchema(), accountDbConfig.getUserPropertyNames());
-    Map<String,Long> userEmailIdMap = accountManager.lookUpUserIdsByEmail(userEmails);
-    JSONArray jsonUserList = new JSONArray();
-    for (String userEmail : userEmails) {
-      if (userEmailIdMap.keySet().contains(userEmail)) {
-        jsonUserList.put(new JSONObject().put(userEmail,userEmailIdMap.get(userEmail)));
+      Set<String> userEmails = new HashSet<>();
+      JSONArray userEmailsJsonArray = new JSONObject(body).getJSONArray("emails");
+      for (JsonType jsonValue : JsonIterators.arrayIterable(userEmailsJsonArray)) {
+        if (jsonValue.getType().equals(ValueType.STRING)) {
+          userEmails.add(jsonValue.getString());
+        }
+        else {
+          throw new RequestMisformatException("The user email list provided must be an array of strings.");
+        }
       }
+      ModelConfigAccountDB accountDbConfig = getWdkModel().getModelConfig().getAccountDB();
+      AccountManager accountManager = new AccountManager(getWdkModel().getAccountDb(),
+          accountDbConfig.getAccountSchema(), accountDbConfig.getUserPropertyNames());
+      Map<String,Long> userEmailIdMap = accountManager.lookUpUserIdsByEmail(userEmails);
+      JSONArray jsonUserList = new JSONArray();
+      for (Entry<String, Long> mapping : userEmailIdMap.entrySet()) {
+        jsonUserList.put(new JSONObject().put(mapping.getKey(), mapping.getValue()));
+      }
+      return Response.ok(new JSONObject().put("results", jsonUserList).toString()).build();
     }
-    return Response.ok(new JSONObject().put("results", jsonUserList).toString()).build();
+    catch (JSONException e) {
+      throw new RequestMisformatException(e.getMessage());
+    }
   }
 
 }
