@@ -112,7 +112,7 @@ public class UserFactory {
       Map<String, String> profileProperties,
       Map<String, String> globalPreferences,
       Map<String, String> projectPreferences)
-          throws WdkModelException, WdkUserException {
+          throws WdkModelException, InvalidEmailException {
     String dontEmailProp = _wdkModel.getProperties().get("DONT_EMAIL_NEW_USER");
     boolean sendWelcomeEmail = (dontEmailProp == null || !dontEmailProp.equals("true"));
     return createUser(email, profileProperties, globalPreferences, projectPreferences, sendWelcomeEmail);
@@ -123,7 +123,7 @@ public class UserFactory {
       Map<String, String> globalPreferences,
       Map<String, String> projectPreferences,
       boolean sendWelcomeEmail)
-          throws WdkModelException, WdkUserException {
+          throws WdkModelException, InvalidEmailException {
     try {
       // check email for uniqueness and format
       email = validateAndFormatEmail(email, _accountManager);
@@ -156,10 +156,12 @@ public class UserFactory {
 
       return user;
     }
-    catch (WdkUserException e) {
+    catch (WdkModelException | InvalidEmailException e) {
+      // do not wrap known exceptions
       throw e;
     }
     catch (Exception e) {
+      // wrap unknown exceptions with WdkModelException
       throw new WdkModelException("Could not completely create new user", e);
     }
   }
@@ -227,20 +229,20 @@ public class UserFactory {
     Utilities.sendEmail(smtpServer, user.getEmail(), supportEmail, emailSubject, emailContent);
   }
 
-  private static String validateAndFormatEmail(String email, AccountManager accountMgr) throws WdkUserException {
+  private static String validateAndFormatEmail(String email, AccountManager accountMgr) throws InvalidEmailException {
     // trim and validate passed email address and extract stable name
     if (email == null)
-      throw new WdkUserException("The user's email cannot be empty.");
+      throw new InvalidEmailException("The user's email cannot be empty.");
     // format the info
     email = email.trim().toLowerCase();
     if (email.isEmpty())
-      throw new WdkUserException("The user's email cannot be empty.");
+      throw new InvalidEmailException("The user's email cannot be empty.");
     int atSignIndex = email.indexOf("@");
     if (atSignIndex < 1) // must be present and not the first char
-      throw new WdkUserException("The user's email address is invalid.");
+      throw new InvalidEmailException("The user's email address is invalid.");
     // check whether the user exist in the database already; if email exists, the operation fails
     if (accountMgr.getUserProfile(email) != null)
-      throw new WdkUserException("The email '" + email + "' has already been registered. " + "Please choose another one.");
+      throw new InvalidEmailException("The email '" + email + "' has already been registered. " + "Please choose another one.");
     return email;
   }
 
