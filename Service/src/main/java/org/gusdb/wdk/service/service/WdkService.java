@@ -38,7 +38,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 
-public abstract class WdkService {
+public  class WdkService {
 
   public static final String PERMISSION_DENIED = "Permission Denied.  You do not have access to this resource.";
   public static final String NOT_FOUND = "Resource specified [%s] does not exist.";
