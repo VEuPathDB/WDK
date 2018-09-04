@@ -70,6 +70,14 @@ public class AnswerService extends WdkService {
 
   private static final Logger LOG = Logger.getLogger(AnswerService.class);
 
+  /**
+   * This endpoint that takes a FORM input is used by the client to push the provided data
+   * to a new http target (ie, a tab), for example, a download report
+   * @param data
+   * @return
+   * @throws WdkModelException
+   * @throws DataValidationException
+   */
   @POST
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response buildResultFromForm(@FormParam("data") String data) throws WdkModelException, DataValidationException {
