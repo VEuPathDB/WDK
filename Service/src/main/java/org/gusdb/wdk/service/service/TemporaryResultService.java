@@ -22,7 +22,7 @@ import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONObject;
 
 @Path("/temporary-results")
-public class TemporaryResultService extends WdkService {
+public class TemporaryResultService extends AbstractWdkService {
 
   private static final long EXPIRATION_MILLIS = 60 * 60 * 1000; // one hour
 

@@ -25,7 +25,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
-import org.gusdb.wdk.service.service.WdkService;
+import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.gusdb.wdk.service.statustype.UnprocessableEntityStatusType;
 import org.json.JSONException;
 
@@ -83,7 +83,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     // Some other exception that must be handled by the application; send error event
     catch (Exception other) {
       WdkModel wdkModel = ((WdkModelBean) context.getAttribute("wdkModel")).getModel();
-      ErrorContext errorContext = WdkService.getErrorContext(context, req, wdkModel, ErrorLocation.WDK_SERVICE);
+      ErrorContext errorContext = AbstractWdkService.getErrorContext(context, req, wdkModel, ErrorLocation.WDK_SERVICE);
       LOG.error("log4j marker: " + errorContext.getLogMarker());
       Events.trigger(new ErrorEvent(new ServerErrorBundle(other), errorContext));
       return Response.serverError()
