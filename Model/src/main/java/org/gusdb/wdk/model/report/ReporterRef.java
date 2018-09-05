@@ -7,13 +7,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkModelBase;
-import org.gusdb.wdk.model.RngAnnotations.RngRequired;
 import org.gusdb.wdk.model.RngAnnotations.RngOptional;
 import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelBase;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.record.ScopedField;
 
 /**

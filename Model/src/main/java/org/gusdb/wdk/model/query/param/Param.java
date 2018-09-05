@@ -20,7 +20,6 @@ import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -139,7 +138,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   private boolean _noTranslation = false;
 
   protected Question _contextQuestion;
-  protected Query _contextQuery;
+  protected ParameterContainer _container;
 
   private List<ParamHandlerReference> _handlerReferences;
   private ParamHandlerReference _handlerReference;
@@ -188,7 +187,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     if (param._handler != null)
       _handler = param._handler.clone(this);
     _contextQuestion = param._contextQuestion;
-    _contextQuery = param._contextQuery;
+    _container = param._container;
     _dependentParamsMap = new HashMap<String, Param>(param._dependentParamsMap);
     _dependentParams = new HashSet<Param>(param._dependentParams);
   }
@@ -542,12 +541,12 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     return _contextQuestion;
   }
 
-  public void setContextQuery(Query query) {
-    _contextQuery = query;
+  public void setContainer(ParameterContainer container) {
+    _container = container;
   }
 
-  public Query getContextQuery() {
-    return _contextQuery;
+  public ParameterContainer getContainer() {
+    return _container;
   }
 
   public void setHandler(ParamHandler handler) {

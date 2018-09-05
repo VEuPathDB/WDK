@@ -16,7 +16,7 @@ import org.gusdb.wdk.service.formatter.ProjectFormatter;
 import org.json.JSONObject;
 
 @Path("/")
-public class ProjectService extends WdkService {
+public class ProjectService extends AbstractWdkService {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)

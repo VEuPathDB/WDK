@@ -28,7 +28,7 @@ import org.json.JSONObject;
 
 @Path("/ontologies")
 @Produces(MediaType.APPLICATION_JSON)
-public class OntologyService extends WdkService {
+public class OntologyService extends AbstractWdkService {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(OntologyService.class);
@@ -54,7 +54,7 @@ public class OntologyService extends WdkService {
   public Response getOntologyByName(@PathParam("ontologyName") String ontologyName) throws WdkModelException {
     Ontology ontology = getOntology(ontologyName);
     if (ontology == null)
-      throw new NotFoundException(WdkService.formatNotFound(ONTOLOGY_RESOURCE + ontologyName));
+      throw new NotFoundException(AbstractWdkService.formatNotFound(ONTOLOGY_RESOURCE + ontologyName));
     return Response.ok(OntologyFormatter.getOntologyJson(ontology).toString()).build();
   }
 
@@ -65,7 +65,7 @@ public class OntologyService extends WdkService {
   public Response getPathsToMatchingNodes(@PathParam("ontologyName") String ontologyName, String body) throws WdkModelException {
     Ontology ontology = getOntology(ontologyName);
     if (ontology == null)
-      throw new NotFoundException(WdkService.formatNotFound(ONTOLOGY_RESOURCE + ontologyName));
+      throw new NotFoundException(AbstractWdkService.formatNotFound(ONTOLOGY_RESOURCE + ontologyName));
     try {
       JSONObject criteriaJson = new JSONObject(body);
       Map<String,String> criteria = new HashMap<String,String>();

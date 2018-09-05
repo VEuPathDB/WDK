@@ -9,7 +9,6 @@ import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.query.Query;
 
 /**
  * An object representation of a <paramRef> tag, It is used in query and
@@ -23,7 +22,7 @@ public class ParamReference extends Reference {
   private static final Logger LOG = Logger.getLogger(ParamReference.class);
 
   public static Param resolveReference(WdkModel wdkModel,
-      ParamReference paramRef, Query contextQuery) throws WdkModelException {
+      ParamReference paramRef, ParameterContainer container) throws WdkModelException {
 
     String twoPartName = paramRef.getTwoPartName();
     Param param;
@@ -32,11 +31,11 @@ public class ParamReference extends Reference {
     }
     catch (WdkModelException e) {
       throw new WdkModelException("Unable to resolve param reference '" + twoPartName +
-          "' referred to by context query '" + contextQuery.getFullName() + "'.", e);
+          "' referred to by context query '" + container.getFullName() + "'.", e);
     }
     // clone the param to have different default values
     param = param.clone();
-    param.setContextQuery(contextQuery);
+    param.setContainer(container);
 
     // if the param has customized default value
     String defaultValue = paramRef.getDefault();
@@ -108,7 +107,7 @@ public class ParamReference extends Reference {
         if (LOG.isDebugEnabled()) {
           if (!enumParam.getMultiPick() != multiPick) {
             LOG.debug("ParamRef to '" + enumParam.getFullName() +
-                "' in context query '" + contextQuery.getFullName() +
+                "' in context query '" + container.getFullName() +
                 "' is overriding multi-pick: " + enumParam.getMultiPick() +
                 " -> " + multiPick + ", displayType: " + enumParam.getDisplayType() +
                 " -> " + (displayType == null ? "<inherited>" : displayType));

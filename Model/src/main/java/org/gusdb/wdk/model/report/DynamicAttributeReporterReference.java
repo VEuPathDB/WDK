@@ -1,21 +1,19 @@
 package org.gusdb.wdk.model.report;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.gusdb.fgputil.FormatUtil.prettyPrint;
+
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.RngAnnotations.RngOptional;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.gusdb.fgputil.FormatUtil.prettyPrint;
 
 public class DynamicAttributeReporterReference extends AttributeReporterRef {
   private static final Logger LOG = Logger.getLogger(DynamicAttributeReporterReference.class);
@@ -74,7 +72,6 @@ public class DynamicAttributeReporterReference extends AttributeReporterRef {
     switch(jsonType.getType()) {
       case ARRAY:
         try {
-          Map<String,String> propMap = new HashMap<>();
           JSONArray propArray = jsonType.getJSONArray();
           for (int i = 0; i < propArray.length(); i++) {
             JSONObject prop = propArray.getJSONObject(i);
