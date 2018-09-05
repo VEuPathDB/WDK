@@ -1,0 +1,12 @@
+{
+"extends": "../../WDKClient/Client/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "wdk-client": [ "../../WDKClient/Client/src/Core/index.ts"]
+    }
+  },
+  "include": [
+    "webapp/wdk/js/**/*"
+  ]
+}
