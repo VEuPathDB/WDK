@@ -12,7 +12,6 @@
     <module>Controller</module>
     <module>View</module>
     <module>Service</module>
-    <module>Client</module>
   </modules>
   
   <dependencyManagement>

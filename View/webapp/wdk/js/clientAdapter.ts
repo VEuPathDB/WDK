@@ -1,30 +1,41 @@
-import $ from 'jquery';
-import React from 'react';
+/// <reference path="../../../../../WDKClient/Client/src/index.d.ts" />
+
 import { get } from 'lodash';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router } from 'react-router';
 
-import * as Wdk from 'Core/main';
-import { Seq } from 'Utils/IterableUtils';
-import { createDeferred } from 'Utils/PromiseUtils';
-import AbstractViewController from 'Core/Controllers/AbstractViewController';
-import * as WdkControllers from 'Core/Controllers';
-import ErrorBoundary from 'Core/Controllers/ErrorBoundary';
+import {
+  Controllers as WdkControllers,
+  initialize as initializeWdk,
+  IterableUtils,
+  PromiseUtils
+} from 'wdk-client';
 
-export * from 'Core/index';
+export * from 'wdk-client';
 
-type ViewControllerResolver = (id: string) => Promise<AbstractViewController> | AbstractViewController;
+const { Seq } = IterableUtils;
+
+type ViewControllerResolver = (id: string) => Promise<WdkControllers.AbstractViewController> | WdkControllers.AbstractViewController;
+
+declare const wdk: {
+  namespace(nsString: string, nsFactory: (ns: object) => any): void;
+}
+
+declare const wdkConfig: {
+  readonly wdkServiceUrl: string;
+}
 
 // Only allow initialize to be called once
 let _context: any;
-let _deferredContext = createDeferred();
+let _deferredContext = PromiseUtils.createDeferred();
 
 export function initialize(config: any) {
   if (_context != null) {
     console.log('`initialize` may only be called once on legacy WDK pages.');
   }
   else {
-    _context = Wdk.initialize(config);
+    _context = initializeWdk(config);
     _deferredContext.resolve(_context);
   }
   return _context;
@@ -79,7 +90,7 @@ wdk.namespace('wdk', ns => {
         onPropsChanged(props: any) {
           ReactDOM.render(
             React.createElement(
-              ErrorBoundary,
+              WdkControllers.ErrorBoundary,
               {
                 dispatchAction: context.dispatchAction,
                 renderError: () => 'There was an error!'

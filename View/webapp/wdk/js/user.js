@@ -1,6 +1,8 @@
 /* global wdk, wdkConfig */
-import * as UserActionCreators from 'Core/ActionCreators/UserActionCreators';
+import { ActionCreators } from 'wdk-client';
 import { getContext } from './clientAdapter';
+
+const { UserActionCreators } = ActionCreators;
 
 // FIXME Review module
 // Some redundant functions, some undefined functions called, etc.
