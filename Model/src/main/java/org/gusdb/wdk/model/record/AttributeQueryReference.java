@@ -20,7 +20,6 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
-import org.gusdb.wdk.model.record.attribute.plugin.DynamicAttributePluginReference;
 import org.gusdb.wdk.model.report.DynamicAttributeReporterReference;
 
 /**

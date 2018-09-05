@@ -16,7 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 @Path("/client-errors")
-public class ClientErrorReportingService extends WdkService {
+public class ClientErrorReportingService extends AbstractWdkService {
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)

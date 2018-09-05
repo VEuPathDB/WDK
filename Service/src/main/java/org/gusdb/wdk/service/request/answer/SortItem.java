@@ -38,7 +38,7 @@ public class SortItem {
       if (allowedValues.containsKey(sortingAttribute.getKey())) {
         sorting.add(new SortItem(
             allowedValues.get(sortingAttribute.getKey()),
-            SortDirection.fromBoolean(sortingAttribute.getValue())));
+            SortDirection.getFromIsAscending(sortingAttribute.getValue())));
       }
       else {
         LOG.warn("Sort attribute [ " + sortingAttribute.getKey() + "] passed in but not found in allowed values.  Skipping...");
@@ -51,7 +51,7 @@ public class SortItem {
     Map<String, Boolean> conversion = new LinkedHashMap<>();
     int numSorts = 0;
     for (SortItem sort : sorting) {
-      conversion.put(sort.getAttributeField().getName(), sort.getDirection().getBoolValue());
+      conversion.put(sort.getAttributeField().getName(), sort.getDirection().isAscending());
       numSorts++;
       // don't sort by more than maximum number of fields
       if (numSorts >= UserPreferences.SORTING_LEVEL) break;

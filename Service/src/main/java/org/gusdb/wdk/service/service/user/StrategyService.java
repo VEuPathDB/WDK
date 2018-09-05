@@ -26,7 +26,7 @@ import org.gusdb.wdk.service.formatter.StrategyFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.strategy.StrategyRequest;
-import org.gusdb.wdk.service.service.WdkService;
+import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.json.JSONObject;
 
 
@@ -117,12 +117,12 @@ public class StrategyService extends UserService {
       // Whether the user owns this strategy or not is resolved in the getStepFactory method
       Strategy strategy = getWdkModel().getStepFactory().getStrategyById(Long.parseLong(strategyId));
       if (strategy.getUser().getUserId() != user.getUserId()) {
-        throw new ForbiddenException(WdkService.PERMISSION_DENIED);
+        throw new ForbiddenException(AbstractWdkService.PERMISSION_DENIED);
       }
       return strategy;
     }
     catch (NumberFormatException | WdkUserException | WdkModelException e) {
-      throw new NotFoundException(WdkService.formatNotFound(STRATEGY_RESOURCE + strategyId));
+      throw new NotFoundException(AbstractWdkService.formatNotFound(STRATEGY_RESOURCE + strategyId));
     }
   }
 

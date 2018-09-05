@@ -4,8 +4,6 @@ import static org.gusdb.wdk.model.report.ReporterRef.WDK_SERVICE_JSON_REPORTER_R
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Set;
-import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -28,7 +26,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 import org.gusdb.wdk.model.report.ReporterFactory;
@@ -69,10 +66,18 @@ import org.json.JSONObject;
  * </pre>
  */
 @Path("/answer")
-public class AnswerService extends WdkService {
+public class AnswerService extends AbstractWdkService {
 
   private static final Logger LOG = Logger.getLogger(AnswerService.class);
 
+  /**
+   * This endpoint that takes a FORM input is used by the client to push the provided data
+   * to a new http target (ie, a tab), for example, a download report
+   * @param data
+   * @return
+   * @throws WdkModelException
+   * @throws DataValidationException
+   */
   @POST
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response buildResultFromForm(@FormParam("data") String data) throws WdkModelException, DataValidationException {

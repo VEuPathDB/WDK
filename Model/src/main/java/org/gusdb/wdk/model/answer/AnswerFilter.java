@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.answer;
 
 import java.util.ArrayList;
@@ -8,7 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -37,8 +33,6 @@ import org.gusdb.wdk.model.record.RecordClass;
  */
 public class AnswerFilter extends WdkModelBase {
 
-	private static final Logger logger = Logger.getLogger(AnswerFilter.class);
-	
   private String queryRef;
 
   private List<AnswerFilterInstance> instanceList = new ArrayList<AnswerFilterInstance>();
@@ -63,11 +57,6 @@ public class AnswerFilter extends WdkModelBase {
     return new LinkedHashMap<String, AnswerFilterInstance>(instanceMap);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   /**
    * @param recordClass
    *          the recordClass to set
@@ -102,13 +91,6 @@ public class AnswerFilter extends WdkModelBase {
     instanceList = null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.
-   * WdkModel)
-   */
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     if (_resolved)
@@ -117,7 +99,6 @@ public class AnswerFilter extends WdkModelBase {
     SqlQuery query = (SqlQuery) wdkModel.resolveReference(queryRef);
     query = (SqlQuery) query.clone();
 
-		logger.debug("\n\n*********\n\n" + query + "\n\n************\n\n");
     // all the filter query should has a weight column
     query.setHasWeight(true);
 

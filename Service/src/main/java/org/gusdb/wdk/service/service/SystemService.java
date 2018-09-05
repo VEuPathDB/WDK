@@ -17,7 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 @Path("system")
-public class SystemService extends WdkService {
+public class SystemService extends AbstractWdkService {
 
   @GET
   @Path("userdb/connections")
