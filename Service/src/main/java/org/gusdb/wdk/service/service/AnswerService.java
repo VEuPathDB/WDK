@@ -66,7 +66,7 @@ import org.json.JSONObject;
  * </pre>
  */
 @Path("/answer")
-public class AnswerService extends WdkService {
+public class AnswerService extends AbstractWdkService {
 
   private static final Logger LOG = Logger.getLogger(AnswerService.class);
 

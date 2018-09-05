@@ -14,7 +14,7 @@ import org.gusdb.wdk.service.formatter.ProjectFormatter;
 import org.json.JSONObject;
 
 @Path("/api")
-public class ApiService extends WdkService {
+public class ApiService extends AbstractWdkService {
 
   private static final Logger LOG = Logger.getLogger(ApiService.class);
 

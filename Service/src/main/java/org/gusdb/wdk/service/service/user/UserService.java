@@ -8,10 +8,10 @@ import javax.ws.rs.PathParam;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
-import org.gusdb.wdk.service.service.WdkService;
+import org.gusdb.wdk.service.service.AbstractWdkService;
 
 @Path("/users/{id}")
-public abstract class UserService extends WdkService {
+public abstract class UserService extends AbstractWdkService {
 
   private static final String NOT_LOGGED_IN = "You must log in to use this functionality.";
 
@@ -45,11 +45,11 @@ public abstract class UserService extends WdkService {
   protected UserBundle getUserBundle(Access requestedAccess) throws WdkModelException {
     UserBundle userBundle = parseTargetUserId(_userIdStr);
     if (!userBundle.isValidUserId()) {
-      throw new NotFoundException(WdkService.formatNotFound(USER_RESOURCE + userBundle.getTargetUserIdString()));
+      throw new NotFoundException(AbstractWdkService.formatNotFound(USER_RESOURCE + userBundle.getTargetUserIdString()));
     }
     if ((!userBundle.isSessionUser() && Access.PRIVATE.equals(requestedAccess)) ||
         (!userBundle.isAdminSession() && Access.ADMIN.equals(requestedAccess))) {
-      throw new ForbiddenException(WdkService.PERMISSION_DENIED);
+      throw new ForbiddenException(AbstractWdkService.PERMISSION_DENIED);
     }
     return userBundle;
   }

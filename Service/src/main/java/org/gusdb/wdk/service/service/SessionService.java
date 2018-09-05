@@ -43,7 +43,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 @Path("/")
-public class SessionService extends WdkService {
+public class SessionService extends AbstractWdkService {
 
   private static final Logger LOG = Logger.getLogger(SessionService.class);
 

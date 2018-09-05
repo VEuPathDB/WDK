@@ -34,7 +34,7 @@ import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.strategy.StepRequest;
 import org.gusdb.wdk.service.service.AnswerService;
-import org.gusdb.wdk.service.service.WdkService;
+import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -187,12 +187,12 @@ public class StepService extends UserService {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       Step step = getWdkModel().getStepFactory().getStepById(Integer.parseInt(stepId));
       if (step.getUser().getUserId() != user.getUserId()) {
-        throw new ForbiddenException(WdkService.PERMISSION_DENIED);
+        throw new ForbiddenException(AbstractWdkService.PERMISSION_DENIED);
       }
       return step;
     }
     catch (NumberFormatException | WdkModelException e) {
-      throw new NotFoundException(WdkService.formatNotFound(STEP_RESOURCE + stepId));
+      throw new NotFoundException(AbstractWdkService.formatNotFound(STEP_RESOURCE + stepId));
     }
   }
   

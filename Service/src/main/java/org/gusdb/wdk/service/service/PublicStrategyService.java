@@ -23,7 +23,7 @@ import org.json.JSONException;
  */
 @Path("/strategy-lists/public")
 @Produces(MediaType.APPLICATION_JSON)
-public class PublicStrategyService extends WdkService {
+public class PublicStrategyService extends AbstractWdkService {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(PublicStrategyService.class);

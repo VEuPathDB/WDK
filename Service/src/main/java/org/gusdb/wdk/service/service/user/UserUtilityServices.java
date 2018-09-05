@@ -30,13 +30,13 @@ import org.gusdb.wdk.service.formatter.UserFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.UserCreationRequest;
-import org.gusdb.wdk.service.service.WdkService;
+import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 @Path("/")
-public class UserUtilityServices extends WdkService {
+public class UserUtilityServices extends AbstractWdkService {
 
   private static final Logger LOG = Logger.getLogger(UserUtilityServices.class);
 
