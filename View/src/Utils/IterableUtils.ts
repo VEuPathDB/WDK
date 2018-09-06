@@ -8,8 +8,11 @@ interface FlatMapper<T, U> {
 interface Predicate<T> {
   (x: T): boolean;
 }
+interface Guard<T, U extends T> {
+  (a: T): a is U;
+}
 interface Reducer<T, U> {
-  (acc: U | T, x: T): U;
+  (acc: U, x: T): U;
 }
 interface Collector<T, U> {
   from: (i: Iterable<T>) => U;
@@ -51,6 +54,8 @@ export class Seq<T> {
 
   private static readonly EMPTY = new Seq([]);
 
+  // constructors
+
   static empty<T>() {
     return Seq.EMPTY as Seq<T>;
   }
@@ -61,6 +66,10 @@ export class Seq<T> {
 
   static from<T>(iterable: Iterable<T>) {
     return new Seq(iterable);
+  }
+
+  static concat<T>(...iterables: Iterable<T>[]) {
+    return Seq.from(concat(...iterables));
   }
 
   private _iterator?: Iterator<T>;
@@ -109,6 +118,19 @@ export class Seq<T> {
     return new Seq(uniqBy(fn, this));
   }
 
+  orderBy<U>(fn: Mapper<T, U>, reverse = false) {
+    const reverseBit = reverse ? -1 : 1;
+    return new Seq(this.toArray().sort((a: T, b: T) => {
+      const mappedA = fn(a);
+      const mappedB = fn(b);
+      return mappedA < mappedB ? -1 * reverseBit
+           : mappedA > mappedB ? 1 * reverseBit
+           : 0;
+    }))
+  }
+
+  filter<U extends T>(fn: Guard<T, U>): Seq<U>;
+  filter(fn: Predicate<T>): Seq<T>;
   filter(fn: Predicate<T>) {
     return new Seq(filter(fn, this));
   }
@@ -121,6 +143,8 @@ export class Seq<T> {
     return new Seq(takeLast(n, this));
   }
 
+  takeWhile<U extends T>(fn: Guard<T, U>): Seq<U>;
+  takeWhile(fn: Predicate<T>): Seq<T>
   takeWhile(fn: Predicate<T>) {
     return new Seq(takeWhile(fn, this));
   }
@@ -133,14 +157,20 @@ export class Seq<T> {
     return new Seq(dropLast(n, this));
   }
 
+  dropWhile<U extends T>(fn: Guard<T, U>): Seq<U>;
+  dropWhile(fn: Predicate<T>): Seq<T>;
   dropWhile(fn: Predicate<T>) {
     return new Seq(dropWhile(fn, this));
   }
 
+  find<U extends T>(fn: Guard<T, U>): U;
+  find(fn: Predicate<T>): T;
   find(fn: Predicate<T>) {
     return find(fn, this);
   }
 
+  findLast<U extends T>(fn: Guard<T, U>): U;
+  findLast(fn: Predicate<T>): T;
   findLast(fn: Predicate<T>) {
     return findLast(fn, this);
   }
@@ -255,6 +285,8 @@ export function* uniqBy<T, U>(fn: Mapper<T, U>, iterable: Iterable<T>) {
   }
 }
 
+export function filter<T, U extends T>(fn: Guard<T, U>, iterable: Iterable<T>): Iterable<U>;
+export function filter<T>(fn: Predicate<T>, iterable: Iterable<T>): Iterable<T>;
 export function* filter<T>(fn: Predicate<T>, iterable: Iterable<T>) {
   for (let iter = iterable[Symbol.iterator]();;) {
     let { done, value } = iter.next();
@@ -282,6 +314,8 @@ export function* takeLast<T>(n: number, iterable: Iterable<T>) {
 /**
  * Keep items until test returns false.
  */
+export function takeWhile<T, U extends T>(fn: Guard<T, U>, iterable: Iterable<T>): Iterable<U>;
+export function takeWhile<T>(fn: Predicate<T>, iterable: Iterable<T>): Iterable<T>;
 export function* takeWhile<T>(fn: Predicate<T>, iterable: Iterable<T>) {
   for (let iter = iterable[Symbol.iterator]();;) {
     let { done, value } = iter.next();
@@ -306,6 +340,8 @@ export function* dropLast<T>(n: number, iterable: Iterable<T>) {
 /**
  * Ignore items until test returns false.
  */
+export function dropWhile<T, U extends T>(fn: Guard<T, U>, iterable: Iterable<T>): Iterable<U>;
+export function dropWhile<T>(fn: Predicate<T>, iterable: Iterable<T>): Iterable<T>;
 export function* dropWhile<T>(fn: Predicate<T>, iterable: Iterable<T>) {
   let take = false;
   for (let iter = iterable[Symbol.iterator]();;) {
@@ -322,6 +358,8 @@ export function* dropWhile<T>(fn: Predicate<T>, iterable: Iterable<T>) {
 /**
  * Find the first item that test returns true for.
  */
+export function find<T, U extends T>(test: Guard<T, U>, iterable: Iterable<T>): U;
+export function find<T>(test: Predicate<T>, iterable: Iterable<T>): T;
 export function find<T>(test: Predicate<T>, iterable: Iterable<T>) {
   for (let iter = iterable[Symbol.iterator]();;) {
     let { done, value } = iter.next();
@@ -334,6 +372,8 @@ export function find<T>(test: Predicate<T>, iterable: Iterable<T>) {
 /**
  * Find the last item that the test returns true for.
  */
+export function findLast<T, U extends T>(test: Guard<T, U>, iterable: Iterable<T>): U;
+export function findLast<T>(test: Predicate<T>, iterable: Iterable<T>): T;
 export function findLast<T>(test: Predicate<T>, iterable: Iterable<T>) {
   let last: T|void;
   for (let iter = iterable[Symbol.iterator]();;) {

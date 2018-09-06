@@ -119,11 +119,16 @@ public class FilterParamNewStableValue {
 
       // iterate through our member filters, validating the values of each
       for (MembersFilter mf : memberFilters) {
-        String err = mf.validateValues(metadataMembers.get(mf.getField()));
+        Set<String> validMemberValues = metadataMembers.containsKey(mf.getField())?
+            metadataMembers.get(mf.getField()) : Collections.emptySet();
+        String err = mf.validateValues(validMemberValues);
+
         if (err != null)
           errors.add(err);
       }
     }
+    
+    // TODO Add error if param._minSelectedCount < # matching items
 
     if (errors.size() != 0) return errors.stream().collect(Collectors.joining("', '")) + System.lineSeparator() + _stableValueJson;
     return null;
@@ -508,6 +513,7 @@ public class FilterParamNewStableValue {
   private class NumberMembersFilter extends MembersFilter {
 
     private List<Double> members;
+    private List<Object> rawMembers;
 
     NumberMembersFilter(JSONArray jsArray, Boolean includeUnknowns, String field) throws WdkModelException {
       super(jsArray, includeUnknowns, field);
@@ -516,22 +522,23 @@ public class FilterParamNewStableValue {
     @Override
     void setMembers(JSONArray jsArray) throws JSONException {
       members = new ArrayList<Double>();
+      rawMembers = new ArrayList<Object>();
       for (int i = 0; i < jsArray.length(); i++) {
         members.add(jsArray.getDouble(i));
+        rawMembers.add(jsArray.get(i));
       }
       Collections.sort(members);  // sort for stability.  required for caching.
     }
 
     @Override
     String getDisplayValue() {
-      Collections.sort(members);
-      return FormatUtil.join(members, ",");
+      return FormatUtil.join(rawMembers, ",");
     }
 
     @Override
     protected String getValueSqlClause(String columnName, String metadataTableName) {
-      if (members.size() == 0) return "1 != 1";
-      return metadataTableName + "." + columnName + " IN (" + FormatUtil.join(members, ", ") + ") ";
+      if (rawMembers.size() == 0) return "1 != 1";
+      return metadataTableName + "." + columnName + " IN (" + FormatUtil.join(rawMembers, ", ") + ") ";
     }
 
     @Override
@@ -544,7 +551,7 @@ public class FilterParamNewStableValue {
     @Override
     List<String> getMembersAsStrings() {
       List<String> list = new ArrayList<String>();
-      for (Double mem : members) list.add(mem.toString());
+      for (Object mem : rawMembers) list.add(mem.toString());
       return list;
     }
 

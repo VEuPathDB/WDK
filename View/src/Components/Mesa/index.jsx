@@ -21,6 +21,8 @@ import * as Utils from './Utils/Utils';
 import * as MesaState from './Utils/MesaState';
 import * as MesaSelection from './Utils/MesaSelection';
 
+export default Mesa;
+
 export {
   Mesa,
   DataTable,

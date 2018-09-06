@@ -9,6 +9,7 @@ import { Seq } from 'Utils/IterableUtils';
 import { createDeferred } from 'Utils/PromiseUtils';
 import AbstractViewController from 'Core/Controllers/AbstractViewController';
 import * as WdkControllers from 'Core/Controllers';
+import ErrorBoundary from 'Core/Controllers/ErrorBoundary';
 
 export * from 'Core/index';
 
@@ -70,14 +71,24 @@ wdk.namespace('wdk', ns => {
         resolverName == null ? defaultResolver : get(window, resolverName);
       let [ ViewController, context ] =
         await Promise.all([ resolver(name), getContext() ]);
+      let viewControllerRef = React.createRef();
+
+      $el.data('viewControllerRef', viewControllerRef);
 
       observeMutations(el, {
         onPropsChanged(props: any) {
           ReactDOM.render(
             React.createElement(
-              Router,
-              { history: context.history },
-              React.createElement(ViewController as any, { ...props, ...context })
+              ErrorBoundary,
+              {
+                dispatchAction: context.dispatchAction,
+                renderError: () => 'There was an error!'
+              },
+              React.createElement(
+                Router,
+                { history: context.history },
+                React.createElement(ViewController as any, { ...props, ...context, ref: viewControllerRef })
+              )
             ), el)
         },
         onRemoved() {

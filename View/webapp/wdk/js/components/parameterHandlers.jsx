@@ -2,8 +2,7 @@
 import _ from 'lodash';
 import { Seq } from 'Utils/IterableUtils';
 
-// eslint-disable-next-line no-unused-vars
-import { UNRECOVERABLE_PARAM_ERROR_EVENT } from 'Core/Controllers/LegacyParamController';
+import { PARAM_INVALID_EVENT, PARAM_VALID_EVENT } from 'Views/Question/LegacyParamController';
 
 wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
@@ -16,6 +15,7 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
   function init(element) {
 
     attachLoadingListener(element);
+    attachValidationLister(element);
     initDependentParamHandlers(element);
     initTypeAhead(element);
     initLegacyParamControllers(element);
@@ -42,20 +42,31 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
   //
   //==============================================================================
   function attachLoadingListener(element) {
-    let loadingParams = new Map();
-    let submit = element.closest('form').find(':input[name=questionSubmit]');
-    let originalValue = submit.val();
+    const loadingParams = new Set();
+    const submit = element.closest('form').find(':input[name=questionSubmit]');
+    const originalValue = submit.val();
 
     element.on(PARAM_LOADING_EVENT, function(event, isLoading) {
-      loadingParams.set(event.target, isLoading);
-
-      let someLoading = Array.from(loadingParams.values())
-      .reduce(function(acc, isLoading) {
-        return acc || isLoading;
-      });
-
+      if (isLoading) loadingParams.add(event.target);
+      else loadingParams.delete(event.target);
+      const someLoading = loadingParams.size > 0;
       submit.prop('disabled', someLoading).val(someLoading ? 'Loading...' : originalValue);
     });
+  }
+
+  function attachValidationLister(element) {
+    const invalidParams = new Set();
+    const $form = element.closest('form')
+      .on(`${PARAM_INVALID_EVENT} ${PARAM_VALID_EVENT}`, '.param', event => {
+        const paramName = event.currentTarget.getAttribute('name');
+        if (event.type === PARAM_INVALID_EVENT) invalidParams.add(paramName);
+        else invalidParams.delete(paramName);
+        const someInvalid = invalidParams.size > 0;
+        $form.find(':input[name=questionSubmit]')
+          .prop('disabled', someInvalid)
+          .toggleClass('btn-error', someInvalid)
+          .attr('title', someInvalid ? 'Please fix the errors indicated above' : '');
+      });
   }
 
   //==============================================================================

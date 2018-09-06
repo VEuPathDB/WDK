@@ -15,9 +15,7 @@ export default abstract class AbstractPageController <
   State extends {} = BaseState,
   Store extends WdkStore = WdkStore,
   ActionCreators extends ActionCreatorRecord<Action> = {}
-> extends AbstractViewController<State, Store, ActionCreators> {
-
-  props: PageControllerProps<Store>;
+> extends AbstractViewController<State, Store, ActionCreators, PageControllerProps<Store>> {
 
   /*--------------- Methods to override to display content ---------------*/
 

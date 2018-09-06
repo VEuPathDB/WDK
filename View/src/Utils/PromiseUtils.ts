@@ -7,6 +7,12 @@ interface PromiseFactory<T> {
 // A Promise that never leaves the pending state.
 export const pendingPromise = { then() { } };
 
+export function delay(ms: number): Promise<undefined> {
+  return new Promise(function(resolve) {
+    window.setTimeout(resolve, ms);
+  });
+}
+
 /**
  * Detect if `maybePromise` is a Promise.
  * @param {any} maybePromise
@@ -33,7 +39,7 @@ export function isPromise<T>(maybePromise: any): maybePromise is Promise<T> {
  */
 export function latest<T>(promiseFactory: PromiseFactory<T>) {
   let latestPromise: Promise<T>;
-  return function createPromise(...args: any[]) {
+  return function createPromise(this: any, ...args: any[]) {
     let thisPromise: Promise<T> = latestPromise = promiseFactory.apply(this, args);
     return thisPromise.then(
       data => {
@@ -64,7 +70,7 @@ export function latest<T>(promiseFactory: PromiseFactory<T>) {
  */
 export function synchronized<T>(promiseFactory: PromiseFactory<T>) {
   let queue: Promise<void> = Promise.resolve();
-  return <PromiseFactory<T>>function enque(...args: any[]) {
+  return <PromiseFactory<T>>function enque(this: any, ...args: any[]) {
     const task = queue.then(() => promiseFactory.apply(this, args));
     queue = task.then(() => {}, () => {});
     return task;

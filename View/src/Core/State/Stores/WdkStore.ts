@@ -1,9 +1,11 @@
 import { ReduceStore } from 'flux/utils';
-import { Observable } from 'rxjs/Rx';
+import { Observable, EMPTY } from 'rxjs';
 
 import WdkDispatcher from 'Core/State/Dispatcher';
 import GlobalDataStore, { GlobalData } from 'Core/State/Stores/GlobalDataStore';
-import { Action, ActionCreatorServices, Epic } from 'Utils/ActionCreatorUtils';
+import { Action, ActionCreatorServices, ActionObserver, ObserveServices } from 'Utils/ActionCreatorUtils';
+import { LocatePlugin } from '../../CommonTypes';
+import { catchError, map, filter } from 'rxjs/operators';
 
 export interface BaseState {
   globalData: GlobalData;
@@ -16,6 +18,8 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
 
   /** The store that provides global state */
   globalDataStore: GlobalDataStore;
+
+  locatePlugin: LocatePlugin;
 
   // Makes it possible to access the type of the Store's state via typescript.
   // E.g., Store['state'].
@@ -40,14 +44,6 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
     return state;
   }
 
-  /**
-   * Return an array of Epics that will observe actions handled by this store.
-   * Epics only respond to actions for which `storeShouldReceiveAction(action.chanel)`
-   * returns true.
-   */
-  getEpics(): Epic[] {
-    return [] as Epic[]
-  }
 
   /*---------- Methods that may be overridden in special cases ----------*/
 
@@ -62,21 +58,20 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
   }
 
   /**
-   * A root epic that merges the observables returned by `getEpics()`.
+   * Observe actions handled by this store.
    */
-  rootEpic(actions$: Observable<Action>, services: ActionCreatorServices): Observable<Action> {
-    const epicServices = { ...services, store: this };
-    const epicActions = this.getEpics().map(epic => epic(actions$, epicServices));
-    return Observable.merge(...epicActions);
+  observeActions(actions$: Observable<Action>, services: ObserveServices<this>): Observable<Action> {
+    return EMPTY;
   }
 
   /*------------- Methods that should probably not be overridden -------------*/
 
-  constructor(dispatcher: WdkDispatcher<Action>, channel: string, globalDataStore: GlobalDataStore, services: ActionCreatorServices) {
+  constructor(dispatcher: WdkDispatcher<Action>, channel: string, globalDataStore: GlobalDataStore, services: ActionCreatorServices, locatePlugin: LocatePlugin) {
     super(dispatcher);
     this.channel = channel;
     this.globalDataStore = globalDataStore;
-    this.configureEpic(dispatcher, services);
+    this.locatePlugin = locatePlugin;
+    this.configureObserve(dispatcher, services);
   }
 
   reduce(state: State, action: Action): State {
@@ -93,27 +88,30 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
     return state;
   }
 
-  configureEpic(dispatcher: WdkDispatcher<Action>, services: ActionCreatorServices) {
-    // Wire up epics.
-    const action$ = dispatcher.asObservable().filter(action =>
-      this.storeShouldReceiveAction(action.channel));
+  configureObserve(dispatcher: WdkDispatcher<Action>, services: ActionCreatorServices) {
+    // Wire up observers.
+    const observerServices = { ...services, getState: this.getState.bind(this) };
+
+    const action$ = dispatcher.asObservable().pipe(filter(action =>
+      this.storeShouldReceiveAction(action.channel)));
 
     const logError = (error: Error) => {
       console.error(error);
       services.wdkService.submitError(error);
     };
 
-    const startEpic = (): Observable<Action> =>
-      this.rootEpic(action$, services)
+    const startObserve = (): Observable<Action> =>
+      this.observeActions(action$, observerServices).pipe(
         // Assign channel unless action isBroadcast
-        .map(action => ({ ...action, channel: action.isBroadcast ? undefined : this.channel }))
-        .catch((error: Error, caught) => {
+        map(action => ({ ...action, channel: action.isBroadcast ? undefined : this.channel })),
+        catchError((error: Error, caught) => {
           logError(error);
-          // restart epic
-          return startEpic();
+          // restart observe
+          return startObserve();
         })
+      )
 
-    startEpic().subscribe(
+    startObserve().subscribe(
       action => {
         dispatcher.dispatch(action)
       },
@@ -121,7 +119,7 @@ export default class WdkStore<State extends BaseState = BaseState> extends Reduc
         logError(error);
       },
       () => {
-        console.debug('epic has completed in store "%s"', this.channel);
+        console.debug('`observeActions` has completed in store "%s"', this.channel);
       }
     );
   }

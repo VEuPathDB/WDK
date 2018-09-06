@@ -1,12 +1,14 @@
-import $ from 'jquery';
-import * as React from 'react';
-import PropTypes from 'prop-types';
-import { Router, Switch, Route, RouteComponentProps } from 'react-router';
 import { History, Location } from 'history';
-import { MakeDispatchAction, Container, ViewControllerProps, RouteSpec } from "Core/CommonTypes";
-import WdkStore from "Core/State/Stores/WdkStore";
+import PropTypes from 'prop-types';
+import * as React from 'react';
+import { Route, RouteComponentProps, Router, Switch } from 'react-router';
+
+import { Container, LocatePlugin, MakeDispatchAction, RouteSpec } from 'Core/CommonTypes';
 import ErrorBoundary from 'Core/Controllers/ErrorBoundary';
+import WdkStore from 'Core/State/Stores/WdkStore';
 import LoginFormController from 'Views/User/LoginForm/LoginFormController';
+
+import { PageControllerProps } from './CommonTypes';
 
 type Props = {
   rootUrl: string,
@@ -15,12 +17,13 @@ type Props = {
   routes: RouteSpec[],
   onLocationChange: (location: Location) => void;
   history: History;
+  locatePlugin: LocatePlugin;
 };
 
 
-let REACT_ROUTER_LINK_CLASSNAME = 'wdk-ReactRouterLink';
-let GLOBAL_CLICK_HANDLER_SELECTOR = `a:not(.${REACT_ROUTER_LINK_CLASSNAME})`;
-let RELATIVE_LINK_REGEXP = new RegExp('^((' + location.protocol + ')?//)?' + location.host);
+const REACT_ROUTER_LINK_CLASSNAME = 'wdk-ReactRouterLink';
+const GLOBAL_CLICK_HANDLER_SELECTOR = `a:not(.${REACT_ROUTER_LINK_CLASSNAME})`;
+const RELATIVE_LINK_REGEXP = new RegExp('^((' + location.protocol + ')?//)?' + location.host);
 
 /** WDK Application Root */
 export default class Root extends React.Component<Props> {
@@ -50,19 +53,24 @@ export default class Root extends React.Component<Props> {
     this.props.onLocationChange(this.props.history.location);
   }
 
-  renderRoute(RouteComponent: React.ComponentType<ViewControllerProps<WdkStore>>) {
+  renderRoute(RouteComponent: React.ComponentType<PageControllerProps<WdkStore>>) {
     // Used to inject wdk content as props of Route Component
     return (routerProps: RouteComponentProps<any>) => {
-      let { makeDispatchAction, stores } = this.props;
+      let { locatePlugin, makeDispatchAction, stores } = this.props;
       return (
-        <RouteComponent {...routerProps} makeDispatchAction={makeDispatchAction} stores={stores}/>
+        <RouteComponent
+          {...routerProps}
+          locatePlugin={locatePlugin}
+          makeDispatchAction={makeDispatchAction}
+          stores={stores}
+        />
       );
     };
   }
 
-  handleGlobalClick(event: JQuery.Event<HTMLAnchorElement>) {
-    const target = event.currentTarget;
-    if (!target.href) return;
+  handleGlobalClick(event: MouseEvent) {
+    const target = event.target;
+    if (!target || !(target instanceof HTMLAnchorElement)) return;
 
     let hasModifiers = event.metaKey || event.altKey || event.shiftKey || event.ctrlKey || event.button !== 0;
     let href = (target.getAttribute('href') || '').replace(RELATIVE_LINK_REGEXP, '');
@@ -74,11 +82,11 @@ export default class Root extends React.Component<Props> {
 
   componentDidMount() {
     /** install global click handler */
-    $(document).on('click', GLOBAL_CLICK_HANDLER_SELECTOR, this.handleGlobalClick);
+    document.addEventListener('click', this.handleGlobalClick)
   }
 
   componentWillUnmount() {
-    $(document).off('click', GLOBAL_CLICK_HANDLER_SELECTOR, this.handleGlobalClick);
+    document.removeEventListener('click', this.handleGlobalClick)
     this.removeHistoryListener();
   }
 
@@ -92,7 +100,11 @@ export default class Root extends React.Component<Props> {
                 <Route key={route.path} exact path={route.path} render={this.renderRoute(route.component)}/>
               ))}
             </Switch>
-            <LoginFormController makeDispatchAction={this.props.makeDispatchAction} stores={this.props.stores}/>
+            <LoginFormController
+              locatePlugin={this.props.locatePlugin}
+              makeDispatchAction={this.props.makeDispatchAction}
+              stores={this.props.stores}
+            />
           </React.Fragment>
         </Router>
       </ErrorBoundary>

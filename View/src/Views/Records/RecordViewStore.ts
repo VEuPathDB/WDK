@@ -1,28 +1,29 @@
-import {difference, union} from 'lodash';
-import WdkStore, { BaseState } from 'Core/State/Stores/WdkStore';
-import {filterNodes} from 'Utils/TreeUtils';
-import {getId, getTargetType, CategoryTreeNode} from 'Utils/CategoryUtils';
+import { difference, union } from 'lodash';
+
 import {
+  BasketStatusErrorAction,
+  BasketStatusLoadingAction,
+  BasketStatusReceivedAction,
+  FavoritesStatusErrorAction,
+  FavoritesStatusLoadingAction,
+  FavoritesStatusReceivedAction,
+} from 'Core/ActionCreators/UserActionCreators';
+import WdkStore, { BaseState } from 'Core/State/Stores/WdkStore';
+import { CategoryTreeNode, getId, getTargetType } from 'Utils/CategoryUtils';
+import { filterNodes } from 'Utils/TreeUtils';
+import { RecordClass, RecordInstance } from 'Utils/WdkModel';
+import { ServiceError } from 'Utils/WdkService';
+import {
+  AllFieldVisibilityAction,
+  CategoryExpansionAction,
   NavigationQueryAction,
   NavigationVisibilityAction,
   RecordErrorAction,
   RecordLoadingAction,
+  RecordReceivedAction,
   RecordUpdatedAction,
   SectionVisibilityAction,
-  CategoryExpansionAction,
-  AllFieldVisibilityAction,
-  RecordReceivedAction
 } from 'Views/Records/RecordViewActionCreators';
-import {
-  BasketStatusLoadingAction,
-  BasketStatusReceivedAction,
-  BasketStatusErrorAction,
-  FavoritesStatusLoadingAction,
-  FavoritesStatusReceivedAction,
-  FavoritesStatusErrorAction
-} from 'Core/ActionCreators/UserActionCreators';
-import {RecordInstance, RecordClass} from "Utils/WdkModel";
-import { ServiceError } from "Utils/WdkService";
 
 export type Action = NavigationQueryAction
             | NavigationVisibilityAction

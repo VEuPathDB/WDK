@@ -1,6 +1,7 @@
 import AbstractPageController from 'Core/Controllers/AbstractPageController';
 import WdkStore, { BaseState } from 'Core/State/Stores/WdkStore';
 import { Action, ActionCreatorRecord } from 'Utils/ActionCreatorUtils';
+import { StoreConstructor } from '../CommonTypes';
 
 /**
  * Simple implementation of 'AbstractPageController' that uses 'WdkStore' and
@@ -20,7 +21,7 @@ export default class WdkPageController<ActionCreators extends ActionCreatorRecor
     return this.store.getState();
   }
 
-  getStoreClass() {
+  getStoreClass(): StoreConstructor<WdkStore> {
     return WdkStore;
   }
 

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
+import org.gusdb.wdk.model.report.AttributeReporterRef;
 
 public class AttributeFieldBean extends FieldBean {
 
@@ -55,5 +56,9 @@ public class AttributeFieldBean extends FieldBean {
 
     public Map<String, AttributePluginReference> getAttributePlugins() {
         return attributeField.getAttributePlugins();
+    }
+
+    public Map<String, AttributeReporterRef> getAttributeReporters() {
+        return attributeField.getReporters();
     }
 }

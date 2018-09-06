@@ -25,7 +25,6 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
   private static final String PROP_EXCLUDE_NUMBERS = "exclude-numbers";
   private static final String PROP_COMMON_WORDS = "common-words";
 
-  private static final String ATTR_CONTENT = "content";
   private static final String ATTR_TAGS = "tags";
 
   private static final String NUMBER_PATTERN = "^(\\-)?[\\d\\.]+";
@@ -45,8 +44,7 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
 
   @Override
   public JSONObject getJsonResult(AnswerValue answerValue) throws WdkModelException {
-    StringBuilder content = new StringBuilder();
-    List<WordTag> tags = loadTags(answerValue, content);
+    List<WordTag> tags = loadTags(answerValue);
 
     JSONObject jsonResult = new JSONObject();
  
@@ -55,15 +53,15 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
       JSONObject tagJson = new JSONObject();
       tagJson.put("word", tag.getWord());
       tagJson.put("count", tag.getCount());
+      jsonWordTags.put(tagJson);
     }
     
     jsonResult.put(ATTR_TAGS, jsonWordTags);
-    jsonResult.put(ATTR_CONTENT, content);
 
     return jsonResult;
   }
   
-  private List<WordTag> loadTags(AnswerValue answerValue, StringBuilder content) {
+  private List<WordTag> loadTags(AnswerValue answerValue) {
     List<WordTag> tags = new ArrayList<>();
 
     resolveProperties();
@@ -73,7 +71,6 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
       for (Object value : values.values()) {
         if (value == null)
           continue;
-        content.append(" ").append(value);
         splitWords(value.toString(), tagMap);
       }
       // the tags are sorted by count

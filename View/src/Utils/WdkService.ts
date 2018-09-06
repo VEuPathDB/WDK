@@ -26,6 +26,7 @@ import {
   QuestionWithParameters,
   RecordClass,
   RecordInstance,
+  Reporter,
   TreeBoxVocabNode,
   UserDataset,
   UserDatasetMeta,
@@ -169,15 +170,18 @@ const treeBoxVocabDecoder: Decode.Decoder<TreeBoxVocabNode> =
 
 const parameterDecoder: Decode.Decoder<Parameter> =
   Decode.combine(
-    Decode.field('name', Decode.string),
-    Decode.field('displayName', Decode.string),
-    Decode.field('properties', Decode.optional(Decode.objectOf(Decode.arrayOf(Decode.string)))),
-    Decode.field('help', Decode.string),
-    Decode.field('isVisible', Decode.boolean),
-    Decode.field('group', Decode.string),
-    Decode.field('isReadOnly', Decode.boolean),
-    Decode.field('defaultValue', Decode.optional(Decode.string)),
-    Decode.field('dependentParams', Decode.arrayOf(Decode.string)),
+    /* Common properties */
+    Decode.combine(
+      Decode.field('name', Decode.string),
+      Decode.field('displayName', Decode.string),
+      Decode.field('properties', Decode.optional(Decode.objectOf(Decode.arrayOf(Decode.string)))),
+      Decode.field('help', Decode.string),
+      Decode.field('isVisible', Decode.boolean),
+      Decode.field('group', Decode.string),
+      Decode.field('isReadOnly', Decode.boolean),
+      Decode.field('defaultValue', Decode.optional(Decode.string)),
+      Decode.field('dependentParams', Decode.arrayOf(Decode.string))
+    ),
     Decode.oneOf(
       /* AnswerParam */
       Decode.field('type', Decode.constant('AnswerParam')),
@@ -191,6 +195,7 @@ const parameterDecoder: Decode.Decoder<Parameter> =
       Decode.combine(
         Decode.field('type', Decode.constant('FilterParamNew')),
         Decode.field('filterDataTypeDisplayName', Decode.optional(Decode.string)),
+        Decode.field('minSelectedCount', Decode.number),
         Decode.field('values', Decode.objectOf(Decode.arrayOf(Decode.string))),
         Decode.field('ontology', Decode.arrayOf(
           Decode.combine(
@@ -276,10 +281,22 @@ const paramGroupDecoder: Decode.Decoder<ParameterGroup> =
     Decode.field('parameters', Decode.arrayOf(Decode.string))
   )
 
+const reporterDecoder: Decode.Decoder<Reporter> =
+  Decode.combine(
+    Decode.field('name', Decode.string),
+    Decode.field('type', Decode.string),
+    Decode.field('displayName', Decode.string),
+    Decode.field('description', Decode.string),
+    Decode.field('isInReport', Decode.boolean),
+    // TODO Replace with list of known scopes
+    Decode.field('scopes', Decode.arrayOf(Decode.string)),
+  )
+
 const attributeFieldDecoder: Decode.Decoder<AttributeField> =
   Decode.combine(
     Decode.field('name', Decode.string),
     Decode.field('displayName', Decode.string),
+    Decode.field('formats', Decode.arrayOf(reporterDecoder)),
     Decode.field('properties', Decode.optional(Decode.objectOf(Decode.arrayOf(Decode.string)))),
     Decode.field('help', Decode.optional(Decode.string)),
     Decode.field('align', Decode.optional(Decode.string)),
@@ -439,6 +456,7 @@ export default class WdkService {
 
   submitError(error: Error, extra?: any) {
     const { name, message, stack } = error;
+    console.error(error);
     return this._checkStoreVersion().then(() =>
     this.sendRequest(Decode.none, {
       method: 'post',
@@ -864,6 +882,14 @@ export default class WdkService {
 
   createStep(newStepSpec: NewStepSpec, userId: string = "current") {
     return this._fetchJson<Step>('post', `/users/${userId}/steps`, JSON.stringify(newStepSpec));
+  }
+
+  getStepAnswer(stepId: number, formatting: AnswerFormatting, userId: string = 'current') {
+    return this.sendRequest(Decode.ok, {
+      method: 'post',
+      path: `/users/${userId}/steps/${stepId}/answer`,
+      body: JSON.stringify(formatting)
+    });
   }
 
   getOntology(name = '__wdk_categories__') {

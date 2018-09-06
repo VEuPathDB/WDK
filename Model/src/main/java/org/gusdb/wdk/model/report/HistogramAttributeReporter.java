@@ -17,7 +17,7 @@ import org.json.JSONObject;
 
 public class HistogramAttributeReporter extends AbstractAttributeReporter {
 
-  protected HistogramAttributeReporter(AnswerValue answerValue) {
+  public HistogramAttributeReporter(AnswerValue answerValue) {
     super(answerValue);
   }
 
@@ -28,14 +28,16 @@ public class HistogramAttributeReporter extends AbstractAttributeReporter {
   public static final String TYPE_FLOAT = "float";
 
   private static final String COLUMN_COUNT = "count";
-  private static final String ATTR_DATA = "histogramData";
-  private static final String ATTR_TYPE = "histogramType";
-  private static final String ATTR_MIN = "histogramMin";
-  private static final String ATTR_MAX = "histogramMax";
-  private static final String ATTR_AVG = "histogramAvg";
-  private static final String ATTR_BIN_SIZE = "histogramBinSize";
-  private static final String ATTR_BIN_COUNT = "histogramBinCount";
-  private static final String ATTR_MAX_BIN_COUNT = "histogramMaxBinCount";
+  private static final String ATTR_DATA = "data";
+  private static final String ATTR_TYPE = "type";
+  private static final String ATTR_MIN = "min";
+  private static final String ATTR_MAX = "max";
+  private static final String ATTR_AVG = "avg";
+  private static final String ATTR_BIN_SIZE = "binSize";
+  private static final String ATTR_BIN_COUNT = "binCount";
+  private static final String ATTR_MAX_BIN_COUNT = "maxBinCount";
+  private static final String ATTR_LABEL = "attrLabel";
+  private static final String ATTR_RECORD_COUNT_LABEL = "recordCountLabel";
 
   private static final Integer DEFAULT_BIN_COUNT = 10;
   private static final Integer MAX_BIN_COUNT = 100;
@@ -49,7 +51,7 @@ public class HistogramAttributeReporter extends AbstractAttributeReporter {
    */
   @Override
   protected JSONObject getJsonResult(AnswerValue answerValue) throws WdkModelException {
-    
+
     // load the data.
     Map<String, Integer> data = loadData(answerValue);
     JSONObject jsonData = new JSONObject();
@@ -58,6 +60,10 @@ public class HistogramAttributeReporter extends AbstractAttributeReporter {
     // compose the result
     JSONObject result = new JSONObject();
     result.put(ATTR_DATA, data);
+
+    // add labels
+    result.put(ATTR_LABEL, _attributeField.getDisplayName());
+    result.put(ATTR_RECORD_COUNT_LABEL, "# of " + answerValue.getQuestion().getRecordClass().getDisplayNamePlural());
 
     // determine the type
     String type = getType(data);

@@ -32,7 +32,7 @@ public abstract class AbstractAttributeReporter extends AbstractReporter  {
 
   protected static final String ATTRIBUTE_COLUMN = "wdk_attribute";
 
-  private AttributeField _attributeField;
+  protected AttributeField _attributeField;
 
   protected AbstractAttributeReporter(AnswerValue answerValue) {
     super(answerValue);

@@ -5,30 +5,35 @@ import Error from 'Components/PageStatus/Error';
 import { DispatchAction } from 'Core/CommonTypes';
 import { emptyAction } from 'Utils/ActionCreatorUtils';
 
-export default class ErrorBoundary extends React.Component {
+type Props = {
+  renderError?: () => React.ReactNode;
+  children?: React.ReactNode;
+  dispatchAction?: DispatchAction;
+}
+
+type State = {
+  hasError: boolean;
+}
+
+export default class ErrorBoundary extends React.Component<Props, State> {
 
   static contextTypes = {
     dispatchAction: PropTypes.func
   }
 
-  context: {
-    dispatchAction?: DispatchAction
-  }
+  // FIXME Use new context API https://reactjs.org/docs/context.html
+  // context: {
+  //   dispatchAction?: DispatchAction
+  // }
 
   state = {
     hasError: false
   }
 
-  props: {
-    renderError?: () => React.ReactNode;
-    children: React.ReactNode;
-    dispatchAction?: DispatchAction;
-  }
-
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     this.setState({ hasError: true });
 
-    const dispatch = this.props.dispatchAction || this.context.dispatchAction;
+    const dispatch: DispatchAction | undefined = this.props.dispatchAction || this.context.dispatchAction;
     if (dispatch == null) {
       console.warn('`dispatchAction` function not found. Unable to log render error to server.');
     }

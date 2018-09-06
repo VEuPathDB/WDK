@@ -4,9 +4,13 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import $ from 'jquery';
 
+import TabbableContainer from 'Components/Display/TabbableContainer';
+
 type Props = {
   /** Should the popup be visible or not? */
   open: boolean;
+
+  resizable?: boolean;
 
   className?: string;
 
@@ -76,11 +80,22 @@ export default class Popup extends React.Component<Props> {
     draggable: false,
   };
 
-  containerNode: HTMLElement;
+  containerNode?: HTMLElement;
+
+  popupNode: Element | null = null;
 
   componentDidMount() {
+    // Create container node and attatch it to the parent node.
     this.containerNode = document.createElement('div');
-    this._callJqueryWithProps();
+    const parent = this.props.parentSelector == null ? document.body : this.props.parentSelector();
+    if (parent !== this.containerNode.parentNode) {
+      parent.appendChild(this.containerNode);
+    }
+
+    // Force this component to update, since the containerNode did not exist on
+    // the first render and we want to render the Portal now. This will also
+    // cause `componentDidUpdate` to be called.
+    this.forceUpdate();
   }
 
   componentDidUpdate() {
@@ -88,17 +103,13 @@ export default class Popup extends React.Component<Props> {
   }
 
   componentWillUnmount() {
-    $(this.containerNode).draggable('destroy');
-    ReactDOM.unmountComponentAtNode(this.containerNode);
-    this.containerNode.remove();
+    if (this.popupNode) $(this.popupNode).draggable('destroy');
+    if (this.containerNode) this.containerNode.remove();
   }
 
   _callJqueryWithProps() {
-    this.containerNode.className = this.props.className || '';
-    const parent = this.props.parentSelector == null ? document.body : this.props.parentSelector();
-    if (parent !== this.containerNode.parentNode) parent.appendChild(this.containerNode);
-    ReactDOM.unstable_renderSubtreeIntoContainer(this, this.props.children, this.containerNode);
-    const $node = $(this.containerNode)
+    if (this.popupNode == null) return;
+    const $node = $(this.popupNode)
       .draggable({
         addClasses: false,
         containment: this.props.containerSelector == null ? false : this.props.containerSelector(),
@@ -106,20 +117,27 @@ export default class Popup extends React.Component<Props> {
       })
       .toggle(this.props.open);
 
-    if (this.props.open) this._updatePosition();
+      if (this.props.resizable) {
+        $node.resizable({
+          handles: 'all',
+          minWidth: 100,
+          minHeight: 100
+        });
+      }
   }
 
-  _updatePosition() {
-    if (!this.containerNode.style.top && !this.containerNode.style.left) {
-      let { firstElementChild } = this.containerNode;
-      this.containerNode.style.top = '200px';
-      this.containerNode.style.left = 'calc(50vw - ' +
-        (firstElementChild ? firstElementChild.clientWidth / 2 : 0) + 'px';
-    }
-  }
 
   render() {
-    return null;
+    const content = (
+      <TabbableContainer
+        autoFocus
+        className={this.props.className || ''}
+        ref={c => this.popupNode = c && ReactDOM.findDOMNode(c) as HTMLElement}
+      >
+        {this.props.children}
+      </TabbableContainer>
+    );
+    return this.containerNode ? ReactDOM.createPortal(content, this.containerNode) : null;
   }
 
 }

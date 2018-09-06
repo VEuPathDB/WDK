@@ -4,6 +4,7 @@ var baseConfig = require('./base.webpack.config');
 // Shims for global style scripts
 // These will expose global varables on the `window` object.
 // For instance, `window.$`
+// TODO Migrate to npm/yarn packages
 var scripts = [
   { alias: 'lib/jquery',                                path : __dirname + '/webapp/wdk/lib/jquery.js' },
   { alias: 'lib/jquery-migrate',                        path : __dirname + '/webapp/wdk/lib/jquery-migrate-1.2.1.min.js' },
@@ -23,6 +24,32 @@ var scripts = [
   { alias: 'zynga-scroller',                            path : __dirname + '/lib/zynga-scroller/src' }
 ];
 
+// polyfills
+var polyfills = [
+  'babel-polyfill',
+  'custom-event-polyfill',
+  'whatwg-fetch'
+];
+
+// expose module exports as global vars
+var exposeModules = [
+  { module: 'flux',           expose : 'Flux' },
+  { module: 'flux/utils',     expose : 'FluxUtils' },
+  { module: 'history',        expose : 'HistoryJS' },
+  { module: 'lodash',         expose : '_' },
+  { module: 'natural-sort',   expose : 'NaturalSort' },
+  { module: 'prop-types',     expose : 'ReactPropTypes' },
+  { module: 'react',          expose : 'React' },
+  { module: 'react-dom',      expose : 'ReactDOM' },
+  { module: 'react-router',   expose : 'ReactRouter' },
+  { module: 'rxjs',           expose : 'Rx' },
+  { module: 'rxjs/operators', expose : 'RxOperators' },
+];
+
+
+// Create config
+// -------------
+
 // Create webpack alias configuration object
 var alias = scripts.reduce(function(alias, script) {
   alias[script.alias + '$'] = script.path;
@@ -37,35 +64,20 @@ var scriptLoaders = scripts.map(function(script) {
   };
 });
 
-// expose module exports as global vars
-var exposeModules = [
-  { module: 'flux',               expose : 'Flux' },
-  { module: 'flux/utils',         expose : 'FluxUtils' },
-  { module: 'history/es',         expose : 'HistoryJS' },
-  { module: 'lodash',             expose : '_' },
-  { module: 'natural-sort',       expose : 'NaturalSort' },
-  { module: 'prop-types',         expose : 'ReactPropTypes' },
-  { module: 'react',              expose : 'React' },
-  { module: 'react-dom',          expose : 'ReactDOM' },
-  { module: 'react-router/es',    expose : 'ReactRouter' },
-  { module: 'rxjs',               expose : 'Rx' }
-];
-
-var exposeLoaders = exposeModules.map(function(entry) {
-  return {
-    test: require.resolve(entry.module),
-    loader: 'expose-loader?' + entry.expose
-  };
-});
+var exposeEntries = exposeModules.map(function(entry) {
+  return 'expose-loader?' + entry.expose + '!' + entry.module;
+})
 
 var primaryConfig = {
   entry: {
-    'wdk-client': [
-      'whatwg-fetch',
+    'wdk-client': [].concat(
+      polyfills,
+      exposeEntries,
       './webapp/wdk/css/wdk.css',
       './src/Core/Style/index.scss',
-      './src/Core/index.js'
-    ],
+      './src/Core/index.ts'
+    ),
+
     'wdk': [
       './webapp/wdk/css/wdk.css',
       './src/Core/Style/index.scss',
@@ -87,7 +99,7 @@ var primaryConfig = {
     { jquery: 'jQuery' }
   ],
   module: {
-    rules: [ ].concat(scriptLoaders, exposeLoaders),
+    rules: [ ].concat(scriptLoaders),
   },
   plugins: [
     new baseConfig.webpack.optimize.CommonsChunkPlugin({

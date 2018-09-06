@@ -57,6 +57,7 @@ export interface TimestampParam extends ParameterBase {
 export interface FilterParamNew extends ParameterBase {
   type: 'FilterParamNew';
   filterDataTypeDisplayName?: string;
+  minSelectedCount: number;
   ontology: Array<{
     term: string;
     parent?: string;
@@ -70,7 +71,7 @@ export interface FilterParamNew extends ParameterBase {
   values: Record<string, string[]>;
 }
 
-export interface EnumParam extends ParameterBase {
+export interface EnumParamBase extends ParameterBase {
   type: 'EnumParam' | 'FlatVocabParam';
   displayType: string;
   countOnlyLeaves: boolean;
@@ -84,7 +85,7 @@ type VocabTerm = string;
 type VocabDisplay = string;
 type VocabParent = string;
 
-export interface ListEnumParam extends EnumParam {
+export interface ListEnumParam extends EnumParamBase {
   displayType: 'select' | 'checkBox' | 'typeAhead';
   vocabulary: [ VocabTerm, VocabDisplay, VocabParent | null ][];
 }
@@ -97,10 +98,12 @@ export interface TreeBoxVocabNode {
   children: TreeBoxVocabNode[]
 }
 
-export interface TreeBoxEnumParam extends EnumParam {
+export interface TreeBoxEnumParam extends EnumParamBase {
   displayType: 'treeBox';
   vocabulary: TreeBoxVocabNode;
 }
+
+export type EnumParam = ListEnumParam | TreeBoxEnumParam;
 
 export interface NumberParam extends ParameterBase {
   type: 'NumberParam';
@@ -212,6 +215,7 @@ export interface AttributeField extends ModelEntity {
   isRemovable: boolean;
   type?: string;
   truncateTo: number;
+  formats: Reporter[];
 }
 
 export interface TableField extends ModelEntity {
@@ -266,7 +270,7 @@ export interface AnswerSpec {
 
 export interface AnswerFormatting {
   format: string
-  formatConfig: {}
+  formatConfig?: object
 }
 
 export interface NewStepSpec {

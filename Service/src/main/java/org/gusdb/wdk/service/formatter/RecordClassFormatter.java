@@ -72,7 +72,7 @@ public class RecordClassFormatter {
       .put(Keys.CATEGORIES, getAttributeCategoriesJson(recordClass));
   }
 
-  public static JSONArray getAnswerFormatsJson(Collection<ReporterRef> reporters, FieldScope scope) {
+  public static JSONArray getAnswerFormatsJson(Collection<? extends ReporterRef> reporters, FieldScope scope) {
     JSONArray array = new JSONArray();
     for (ReporterRef reporter : reporters) {
       if (scope.isFieldInScope(reporter)) {

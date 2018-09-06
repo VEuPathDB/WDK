@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.report;
 
+import static org.gusdb.fgputil.functional.Functions.fSwallow;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 import java.util.Iterator;
@@ -7,11 +8,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.iterator.ReadOnlyIterator;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
@@ -54,17 +51,10 @@ public class AttributesRowProvider implements RowsProvider {
         throw new NoSuchElementException();
       }
       _recordFetched = true;
-      return mapToList(_attributes, new Function<AttributeField, Object>() {
-        @Override public Object apply(AttributeField field) {
-          try {
-            AttributeValue value = _record.getAttributeValue(field.getName());
-            return (value == null ? "N/A" : value.getValue());
-          }
-          catch (WdkUserException | WdkModelException e) {
-            throw new WdkRuntimeException("Unable to get attribute value from record", e);
-          }
-        }
-      });
+      return mapToList(_attributes, fSwallow(field -> {
+        AttributeValue value = _record.getAttributeValue(field.getName());
+        return (value == null ? "N/A" : value.getValue());
+      }));
     }
   }
 }

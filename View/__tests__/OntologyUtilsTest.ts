@@ -2,4 +2,6 @@ import {
   getTree
 } from 'Utils/OntologyUtils';
 
-test('TODO: getTree');
+test.skip('getTree', () => {
+  // TODO Add test
+});

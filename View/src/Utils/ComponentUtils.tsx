@@ -15,7 +15,7 @@ interface AnyObject {
  * when props are equal use shallow comparison.
  */
 export function pure<P>(Component: React.StatelessComponent<P>) {
-  return class PureWrapper extends React.PureComponent<P, void> {
+  return class PureWrapper extends React.PureComponent<P> {
     static get displayName() {
       return `PureWrapper(${Component.displayName || Component.name})`;
     }
@@ -126,10 +126,10 @@ export function wrappable<P>(Component: React.ComponentType<P>): ComponentWrappe
 }
 
 interface LoadCallback {
-  (render: (props?: {}) => void): void
+  <T>(render: (props?: T) => void): void
 }
 
-type LazyEnhance = <P>(Component: React.ComponentClass<P> | React.StatelessComponent<P>) => React.ComponentClass<P>
+type LazyEnhance<P> = (Component: React.ComponentType<P>) => React.ComponentClass<P>
 
 
 /**
@@ -142,25 +142,39 @@ type LazyEnhance = <P>(Component: React.ComponentClass<P> | React.StatelessCompo
  *   })
  * })(ComponentThatNeedsData);
  */
-export function lazy(load: LoadCallback): LazyEnhance {
-  return function<P>(Component: React.ComponentClass<P> | React.StatelessComponent<P>) {
-    return class Lazy extends React.Component<P, { loading: boolean, props: P }> {
+export function lazy<P>(load: LoadCallback): LazyEnhance<P> {
+  return function(Component: React.ComponentClass<P> | React.StatelessComponent<P>) {
+    return class Lazy extends React.Component<P, { loading: boolean, loadedProps?: P }> {
       displayName = `Lazy(${Component.displayName || Component.name})`;
+      mounted?: boolean;
       constructor(props: P) {
         super(props);
-        this.state = { loading: true, props }
+        this.state = { loading: true }
       }
       componentDidMount() {
-        load((props: P) => {
-          this.setState({ loading: false, props: props || {} });
+        this.mounted = true;
+        load((loadedProps?: P) => {
+          if (this.mounted === false) return;
+
+          this.setState(prevState => loadedProps
+            ? { ...prevState, loadedProps, loading: false }
+            : { ...prevState, loading: false }
+          );
         })
+      }
+      componentWillUnmount() {
+        this.mounted = false;
       }
       render() {
         return this.state.loading ? null :
-          <Component {...this.props} {...this.state.props}/>
+          <Component {...this.props} {...this.state.loadedProps}/>
       }
     }
   }
+}
+
+export function delay<P>(ms: number) {
+  return lazy<P>(render => setTimeout(render, ms));
 }
 
 

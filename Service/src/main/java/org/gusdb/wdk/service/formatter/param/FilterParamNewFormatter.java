@@ -9,6 +9,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.OntologyItem;
 import org.gusdb.wdk.model.user.User;
+import static org.gusdb.wdk.service.formatter.Keys.MIN_SELECTED_COUNT;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,6 +38,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
     if (valuesMap != null) pJson.put("values", valuesMap);
     pJson.put("hideEmptyOntologyNodes", filterParam.getTrimMetadataTerms());
     pJson.put("countPredictsAnswerCount", filterParam.getCountPredictsAnswerCount());
+    pJson.put(MIN_SELECTED_COUNT, filterParam.getMinSelectedCount());
     return pJson;
   }
 
