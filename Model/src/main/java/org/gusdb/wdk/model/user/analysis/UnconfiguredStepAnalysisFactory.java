@@ -108,6 +108,11 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
+  public void setUserNotesContext(StepAnalysisInstance context) throws WdkModelException {
+    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
+  }
+
+  @Override
   public StepAnalysisInstance getSavedAnalysisInstance(long analysisId) throws WdkUserException, WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }

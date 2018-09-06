@@ -25,7 +25,7 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
   
   /**
    * Eventual table will have:
-   *   analysisId(PK), stepId, displayName, isNew, contextHash, context CLOB
+   *   analysisId(PK), stepId, displayName, userNotes, isNew, contextHash, context CLOB
    */
   // will map stepId -> List<analysisId>
   private static Map<Long, List<Long>> STEP_ANALYSIS_MAP = new HashMap<>();
@@ -54,14 +54,14 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
 
   @Override
   public void insertAnalysis(long analysisId, long stepId, String displayName, StepAnalysisState state,
-      boolean hasParams, String invalidStepReason, String contextHash, String serializedContext)
+		boolean hasParams, String invalidStepReason, String contextHash, String serializedContext, String userNotes)
           throws WdkModelException {
     synchronized(ANALYSIS_INFO_MAP) {
       if (!STEP_ANALYSIS_MAP.containsKey(stepId)) {
         STEP_ANALYSIS_MAP.put(stepId, new ArrayList<Long>());
       }
       STEP_ANALYSIS_MAP.get(stepId).add(analysisId);
-      AnalysisInfo info = new AnalysisInfo(analysisId, stepId, displayName,
+      AnalysisInfo info = new AnalysisInfo(analysisId, stepId, displayName, userNotes, 
           state, hasParams, invalidStepReason, contextHash, serializedContext);
       ANALYSIS_INFO_MAP.put(analysisId, info);
       LOG.info("Inserted analysis with ID " + analysisId + " on step " + stepId +
@@ -100,6 +100,17 @@ public class StepAnalysisInMemoryDataStore extends StepAnalysisDataStore {
     synchronized(ANALYSIS_INFO_MAP) {
       if (ANALYSIS_INFO_MAP.containsKey(analysisId)) {
         ANALYSIS_INFO_MAP.get(analysisId).displayName = displayName;
+        return;
+      }
+      throw new WdkModelException("No analysis exists with id: " + analysisId);
+    }
+  }
+
+ @Override
+  public void setUserNotes(long analysisId, String userNotes) throws WdkModelException {
+    synchronized(ANALYSIS_INFO_MAP) {
+      if (ANALYSIS_INFO_MAP.containsKey(analysisId)) {
+        ANALYSIS_INFO_MAP.get(analysisId).userNotes = userNotes;
         return;
       }
       throw new WdkModelException("No analysis exists with id: " + analysisId);

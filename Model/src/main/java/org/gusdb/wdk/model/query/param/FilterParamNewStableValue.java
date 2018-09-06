@@ -222,7 +222,7 @@ public class FilterParamNewStableValue {
                   filter = new NumberRangeFilter(jsFilter.getJSONObject(FILTERS_VALUE), includeUnknowns, field);
                 } else {
                   if (jsFilter.has(FILTERS_VALUE)) valueArr = jsFilter.getJSONArray(FILTERS_VALUE);
-                  filter = new NumberMembersFilter(jsFilter.getJSONArray(FILTERS_VALUE), includeUnknowns, field);
+                  filter = new NumberMembersFilter(valueArr, includeUnknowns, field);
                 }               
                 break;
               case STRING:
@@ -504,15 +504,28 @@ public class FilterParamNewStableValue {
       return null;
     }
 
-   abstract void setMembers(JSONArray jsArray) throws JSONException;
+    @Override
+    String getSignature() {
+      List<?> sortedMembers = getSortedMembers();
+      String membersSig = sortedMembers == null
+          ? "NULL"
+          : FormatUtil.join(sortedMembers, ",");
+      return membersSig + " --" + includeUnknowns;
+    }
+
+    abstract void setMembers(JSONArray jsArray) throws JSONException;
    
-   abstract List<String> getMembersAsStrings();
+    abstract List<String> getMembersAsStrings();
+
+    abstract List<?> getSortedMembers();
 
   }
 
   private class NumberMembersFilter extends MembersFilter {
 
-    private List<Double> members;
+    // This is used to keep the raw JSON.org values to preserve the raw user
+    // value. Conversion to Double will change the string reprensentation.
+    // This is used by getMembersAsStrings().
     private List<Object> rawMembers;
 
     NumberMembersFilter(JSONArray jsArray, Boolean includeUnknowns, String field) throws WdkModelException {
@@ -521,13 +534,13 @@ public class FilterParamNewStableValue {
 
     @Override
     void setMembers(JSONArray jsArray) throws JSONException {
-      members = new ArrayList<Double>();
       rawMembers = new ArrayList<Object>();
+
+      if (jsArray == null) return;
+
       for (int i = 0; i < jsArray.length(); i++) {
-        members.add(jsArray.getDouble(i));
         rawMembers.add(jsArray.get(i));
       }
-      Collections.sort(members);  // sort for stability.  required for caching.
     }
 
     @Override
@@ -542,14 +555,22 @@ public class FilterParamNewStableValue {
     }
 
     @Override
-    String getSignature() {
-      List<Double> list = new ArrayList<Double>(members);
-      Collections.sort(list);
-      return FormatUtil.join(list, ",") + " --" + includeUnknowns;
+    List<?> getSortedMembers() {
+      if (rawMembers == null) return null;
+
+      return rawMembers.stream()
+          .sorted((o1, o2) -> {
+            Double d1 = Double.parseDouble(o1.toString());
+            Double d2 = Double.parseDouble(o2.toString());
+            return d1 < d2 ? -1 : d1 > d2 ? 1 : 0;
+          })
+          .collect(Collectors.toList());
     }
 
     @Override
     List<String> getMembersAsStrings() {
+      if (rawMembers == null) return null;
+
       List<String> list = new ArrayList<String>();
       for (Object mem : rawMembers) list.add(mem.toString());
       return list;
@@ -572,7 +593,6 @@ public class FilterParamNewStableValue {
       for (int i = 0; i < jsArray.length(); i++) {
         members.add(jsArray.getString(i));
       }
-      Collections.sort(members);
     }
 
     @Override
@@ -591,17 +611,11 @@ public class FilterParamNewStableValue {
     }
 
     @Override
-    String getSignature() {
-      String membersSig;
-      if (members != null) {
-        List<String> list = new ArrayList<String>(members);
-        Collections.sort(list);
-        membersSig = FormatUtil.join(list, ",");
-      }
-      else {
-        membersSig = "NULL";
-      }
-      return  membersSig + " --" + includeUnknowns;
+    List<?> getSortedMembers() {
+      if (members == null) return null;
+      return members.stream()
+          .sorted()
+          .collect(Collectors.toList());
     }
 
     @Override

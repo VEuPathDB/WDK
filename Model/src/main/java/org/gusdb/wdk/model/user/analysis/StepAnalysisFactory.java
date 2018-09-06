@@ -30,7 +30,7 @@ public interface StepAnalysisFactory {
 
   /**
    * Creates a valid new analysis instance (i.e. tab).  If successful,
-   * this method will assign an ID to the construinstancestance, save it in the database, and may modify the display 
+   * this method will assign an ID to the construinstancestance, save it in the database, and may modify the display
    * name to ensure a step's tabs have unique names.
    * 
    * @throws WdkModelException if error occurs while instantiating instance or writing to persistent store
@@ -61,6 +61,8 @@ public interface StepAnalysisFactory {
   public void renameInstance(StepAnalysisInstance instance) throws WdkModelException;
 
   public StepAnalysisInstance getSavedAnalysisInstance(long analysisId) throws WdkUserException, WdkModelException;
+
+  public void setUserNotesContext(StepAnalysisInstance context) throws WdkModelException;
 
   public StepAnalysisViewResolver getViewResolver();
 

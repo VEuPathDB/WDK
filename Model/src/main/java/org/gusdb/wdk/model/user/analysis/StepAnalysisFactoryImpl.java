@@ -187,7 +187,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   @Override
   public StepAnalysisInstance createAnalysisInstance(Step step, StepAnalysis stepAnalysis, String answerValueChecksum)
       throws WdkModelException, IllegalAnswerValueException, WdkUserException {
-    
+
     StepAnalysisInstance stepAnalysisInstance = StepAnalysisInstance.createNewInstance(step, stepAnalysis, answerValueChecksum);
 
     // ensure this is a valid step to analyze
@@ -195,7 +195,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
 
     // analysis valid; write analysis to DB
     writeNewAnalysisInstance(stepAnalysisInstance, true);
-    
+
     return stepAnalysisInstance;
   }
 
@@ -260,7 +260,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     // create new execution instance
     long saId = _dataStore.getNextId();
     _dataStore.insertAnalysis(saId, instance.getStep().getStepId(), instance.getDisplayName(),
-        instance.getState(), instance.hasParams(), instance.getInvalidStepReason(), instance.createHash(), instance.serializeInstance());
+        instance.getState(), instance.hasParams(), instance.getInvalidStepReason(), instance.createHash(), instance.serializeInstance(), instance.getUserNotes());
 
     // override any previous value for id
     instance.setAnalysisId(saId);
@@ -378,7 +378,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
    * persistent storage mechanisms have not been cleared.
    *
    * TODO: Refactor this method... what are its responsibilities and does it have more than one?
-   * 
+   *
    * @param instance instance for this result
    * @return result
    * @throws WdkModelException if inconsistent data is found or other error occurs
@@ -411,6 +411,11 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   @Override
   public void renameInstance(StepAnalysisInstance instance) throws WdkModelException {
     _dataStore.renameAnalysis(instance.getAnalysisId(), instance.getDisplayName());
+  }
+
+ @Override
+  public void setUserNotesContext(StepAnalysisInstance instance) throws WdkModelException {
+    _dataStore.setUserNotes(instance.getAnalysisId(), instance.getUserNotes());
   }
 
   @Override

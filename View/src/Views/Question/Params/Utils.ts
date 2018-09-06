@@ -1,8 +1,9 @@
-import { DispatchAction } from 'Core/CommonTypes';
-import { ActionObserver, Action, ObserveServices } from 'Utils/ActionCreatorUtils';
-import { Parameter, ParameterValues } from 'Utils/WdkModel';
 import { EMPTY, Observable } from 'rxjs';
+
+import { DispatchAction } from 'Core/CommonTypes';
 import { QuestionStore } from 'Core/State/Stores';
+import { Action, ActionObserver, ObserveServices } from 'Utils/ActionCreatorUtils';
+import { Parameter, ParameterValues } from 'Utils/WdkModel';
 
 // Types
 // -----

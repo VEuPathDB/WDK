@@ -26,17 +26,19 @@ public abstract class StepAnalysisDataStore {
     long analysisId;
     long stepId;
     String displayName;
+    String userNotes;
     StepAnalysisState state;
     boolean hasParams;
     String invalidStepReason;
     String contextHash;
     String serializedContext;
 
-    public AnalysisInfo(long analysisId, long stepId, String displayName, StepAnalysisState state,
+    public AnalysisInfo(long analysisId, long stepId, String displayName, String userNotes, StepAnalysisState state,
         boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) {
       this.analysisId = analysisId;
       this.stepId = stepId;
       this.displayName = displayName;
+      this.userNotes = userNotes;
       this.state = state;
       this.hasParams = hasParams;
       this.invalidStepReason = invalidStepReason;
@@ -50,6 +52,7 @@ public abstract class StepAnalysisDataStore {
           .append("analysisId: ").append(analysisId).append(NL)
           .append("stepId: ").append(stepId).append(NL)
           .append("displayName: ").append(displayName).append(NL)
+          .append("userNotes: ").append(userNotes).append(NL)
           .append("isNew: ").append(state).append(NL)
           .append("hasParams: ").append(hasParams).append(NL)
           .append("invalidStepReason: ").append(invalidStepReason).append(NL)
@@ -83,9 +86,10 @@ public abstract class StepAnalysisDataStore {
   // abstract methods to manage analysis information
   public abstract void createAnalysisTableAndSequence() throws WdkModelException;
   public abstract long getNextId() throws WdkModelException;
-  public abstract void insertAnalysis(long analysisId, long stepId, String displayName, StepAnalysisState state, boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException;
+  public abstract void insertAnalysis(long analysisId, long stepId, String displayName, StepAnalysisState state, boolean hasParams, String invalidStepReason, String contextHash, String serializedContext, String userNotes) throws WdkModelException;
   public abstract void deleteAnalysis(long analysisId) throws WdkModelException;
   public abstract void renameAnalysis(long analysisId, String displayName) throws WdkModelException;
+  public abstract void setUserNotes(long analysisId, String userNotes) throws WdkModelException;
   public abstract void setState(long analysisId, StepAnalysisState state) throws WdkModelException;
   public abstract void setHasParams(long analysisId, boolean hasParams) throws WdkModelException;
   public abstract void setInvalidStepReason(long analysisId, String invalidStepReason) throws WdkModelException;
@@ -192,7 +196,7 @@ public abstract class StepAnalysisDataStore {
     try {
       context = StepAnalysisInstance.createFromStoredData(
           _wdkModel, info.analysisId, info.stepId, info.state, info.hasParams,
-          info.invalidStepReason, info.displayName, info.serializedContext);
+          info.invalidStepReason, info.displayName, info.userNotes, info.serializedContext);
     }
     catch (DeprecatedAnalysisException e) {
       LOG.warn("Previously stored step analysis with ID " + info.analysisId +

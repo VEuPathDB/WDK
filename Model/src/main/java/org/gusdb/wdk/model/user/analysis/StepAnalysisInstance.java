@@ -61,12 +61,14 @@ public class StepAnalysisInstance {
     description,
     status,
     hasParams,
-    invalidStepReason
+    invalidStepReason,
+    userNotes
   }
   
   private WdkModel _wdkModel;
   private long _analysisId;
   private String _editableDisplayName;
+  private String _userNotes;
   private Step _step;
   private String _answerValueHash;
   private StepAnalysis _stepAnalysis;
@@ -77,13 +79,13 @@ public class StepAnalysisInstance {
   private Map<String, String[]> _formParams;
 
   private StepAnalysisInstance() { }
-   
+
   /**
    * Creates a step analysis instance.   Does not yet have an analysis id and
    * will receive one when it is written to the database.
    * 
    * This is package scope, and should be called only by the factory.
-   * 
+   *
    * @param stepAnalysis descriptor of the step analysis that will be invoked
    * @param step step referred to by this analysis
    * @param answerValueChecksum the checksum provided by answerValue.getChecksum()
@@ -101,7 +103,7 @@ public class StepAnalysisInstance {
     ctx._stepAnalysis = stepAnalysis;
     
     if (ctx._stepAnalysis == null) throw new WdkModelException ("Null stepAnalysis");
-  
+
     ctx._editableDisplayName = ctx._stepAnalysis.getDisplayName();
     ctx._formParams = new HashMap<String,String[]>();
     ctx._state = StepAnalysisState.NO_RESULTS;
@@ -129,12 +131,13 @@ public class StepAnalysisInstance {
   
   public static StepAnalysisInstance createFromStoredData(WdkModel wdkModel,
       long analysisId, long stepId, StepAnalysisState state, boolean hasParams, String invalidStepReason,
-      String displayName, String serializedInstance) throws WdkModelException, DeprecatedAnalysisException {
+      String displayName, String userNotes, String serializedInstance) throws WdkModelException, DeprecatedAnalysisException {
     try {
       StepAnalysisInstance ctx = new StepAnalysisInstance();
       ctx._wdkModel = wdkModel;
       ctx._analysisId = analysisId;
       ctx._editableDisplayName = displayName;
+      ctx._userNotes = userNotes;
       ctx._state = state;
       ctx._hasParams = hasParams;
       ctx._invalidStepReason = invalidStepReason;
@@ -183,6 +186,7 @@ public class StepAnalysisInstance {
     ctx._wdkModel = oldInstance._wdkModel;
     ctx._analysisId = oldInstance._analysisId;
     ctx._editableDisplayName = oldInstance._editableDisplayName;
+    ctx._userNotes = oldInstance._userNotes;
     ctx._step = oldInstance._step;
     ctx._answerValueHash = oldInstance._answerValueHash;
     ctx._stepAnalysis = oldInstance._stepAnalysis;
@@ -236,6 +240,7 @@ public class StepAnalysisInstance {
    *   strategyId: int
    *   displayName: string
    *   description: string
+   *   userNotes: string
    *   status: enumerated string, see org.gusdb.wdk.model.user.analysis.ExecutionStatus
    *   params: key-value object of params
    * }
@@ -248,6 +253,7 @@ public class StepAnalysisInstance {
       json.put(JsonKey.displayName.name(), _editableDisplayName);
       json.put(JsonKey.shortDescription.name(), _stepAnalysis.getShortDescription());
       json.put(JsonKey.description.name(), _stepAnalysis.getDescription());
+      json.put(JsonKey.userNotes.name(), _userNotes);
       json.put(JsonKey.hasParams.name(), _hasParams);
       json.put(JsonKey.status.name(), _status.name());
       json.put(JsonKey.invalidStepReason.name(), (_invalidStepReason == null ? "null" : _invalidStepReason));
@@ -327,6 +333,14 @@ public class StepAnalysisInstance {
     _editableDisplayName = displayName;
   }
   
+public String getUserNotes() {
+    return _userNotes;
+  }
+
+  public void setUserNotes(String userNotes) {
+    _userNotes = userNotes;
+  }
+
   public Step getStep() {
     return _step;
   }

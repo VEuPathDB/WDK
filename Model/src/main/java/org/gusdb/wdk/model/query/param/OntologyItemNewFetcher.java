@@ -77,11 +77,6 @@ public class OntologyItemNewFetcher implements ValueFactory<String, Map<String, 
         resultList.close();
       }
 
-      // make sure ontology is not empty
-      if (ontologyItemMap.isEmpty()) {
-        throw new WdkModelException("FilterParamNew Ontology Query " + query.getFullName() + " returned zero rows.");
-      }
-
       // secondary validation: make sure node types are compatible with placement in the graph
       validateOntologyItems(ontologyItemMap);
 
@@ -93,6 +88,9 @@ public class OntologyItemNewFetcher implements ValueFactory<String, Map<String, 
   }
 
   private static void validateOntologyItems(Map<String, OntologyItem> ontologyItemMap) throws WdkModelException {
+
+    // allow empty ontology
+    if (ontologyItemMap.size() == 0) return;
 
     // first, build a new map from name to TreeNode from the map
     Map<String, TreeNode<OntologyItem>> nodeMap = transformValues(ontologyItemMap, item -> new TreeNode<OntologyItem>(item));

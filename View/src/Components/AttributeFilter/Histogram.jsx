@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { debounce, memoize, isEqual, noop, throttle } from 'lodash';
 
 import { lazy } from 'Utils/ComponentUtils';
+import { Seq } from 'Utils/IterableUtils';
 import DateSelector from 'Components/InputControls/DateSelector';
 import { formatDate } from './Utils';
 
@@ -28,6 +29,7 @@ var Histogram = (function() {
       };
       this.getRange = memoize(this.getRange);
       this.getSeriesData = memoize(this.getSeriesData);
+      this.getNumFixedDigits = memoize(this.getNumFixedDigits);
     }
 
     componentDidMount() {
@@ -97,7 +99,7 @@ var Histogram = (function() {
       const barWidth = this.getBarWidth(props.distribution);
 
       var { xaxisMin, xaxisMax } = props.uiState;
-      if (xaxisMin == null) xaxisMin = min - barWidth;
+      if (xaxisMin == null) xaxisMin = min;
       if (xaxisMax == null) xaxisMax = max + barWidth;
       return { xaxisMin, xaxisMax };
     }
@@ -129,6 +131,12 @@ var Histogram = (function() {
         hoverable: false,
         // points: { show: true }
       }];
+    }
+
+    getNumFixedDigits(distribution) {
+      return Seq.from(distribution)
+        .map(entry => getNumFixedDigits(entry.value))
+        .reduce(Math.max, 0);
     }
 
     handleResize() {
@@ -196,7 +204,7 @@ var Histogram = (function() {
             fillColor: { colors: [{ opacity: 1 }, { opacity: 1 }] },
             barWidth: barWidth,
             lineWidth: 0,
-            align: 'center'
+            align: 'left'
           }
         },
         xaxis: Object.assign({
@@ -321,14 +329,17 @@ var Histogram = (function() {
     render() {
       var { xaxisLabel, yaxisLabel, chartType, timeformat, distribution } = this.props;
       var { yaxisMax, xaxisMin, xaxisMax } = this.state.uiState;
-      const barWidth = this.getBarWidth(distribution);
+
+      var numFixedDigits = this.getNumFixedDigits(distribution);
+      var barWidth = this.getBarWidth(distribution);
+      var step = 1 * Math.pow(10, numFixedDigits * -1);
 
       var counts = distribution.map(entry => entry.count);
       var countsMin = Math.min(...counts);
       var countsMax = Math.max(...counts);
 
       var values = distribution.map(entry => entry.value);
-      var valuesMin = Math.min(...values) - barWidth;
+      var valuesMin = Math.min(...values);
       var valuesMax = Math.max(...values) + barWidth;
 
       var xaxisMinSelector = chartType === 'date' ? (
@@ -341,9 +352,10 @@ var Histogram = (function() {
       ) : (
         <input
           type="number"
-          value={xaxisMin}
-          min={valuesMin}
-          max={xaxisMax}
+          value={xaxisMin.toFixed(numFixedDigits)}
+          min={valuesMin.toFixed(numFixedDigits)}
+          max={xaxisMax.toFixed(numFixedDigits)}
+          step={step}
           onChange={e => this.setXAxisScale(Number(e.target.value), xaxisMax)}
         />
       );
@@ -358,9 +370,10 @@ var Histogram = (function() {
       ) : (
         <input
           type="number"
-          value={xaxisMax}
-          min={xaxisMin}
-          max={valuesMax}
+          value={xaxisMax.toFixed(numFixedDigits)}
+          min={xaxisMin.toFixed(numFixedDigits)}
+          max={valuesMax.toFixed(numFixedDigits)}
+          step={step}
           onChange={e => this.setXAxisScale(xaxisMin, Number(e.target.value))}
         />
       );
@@ -452,4 +465,10 @@ function unwrapXaxisRange(flotRanges) {
 
   var { from: min, to: max } = flotRanges.xaxis;
   return { min, max };
+}
+
+const FIXED_DIGITS_RE = /^(\d*)\.?(\d*)$/;
+function getNumFixedDigits(num) {
+  const matches = FIXED_DIGITS_RE.exec(String(num));
+  return matches == null ? 0 : matches[2].length;
 }

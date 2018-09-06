@@ -86,8 +86,8 @@ public abstract class AbstractDependentParam extends Param {
       if (_contextQuestion != null) {
         params = _contextQuestion.getParamMap();
       }
-      else if (_contextQuery != null)
-        params = _contextQuery.getParamMap();
+      else if (_container != null)
+        params = _container.getParamMap();
       
       for (String paramRef : _dependedParamRefs) {
         

@@ -7,9 +7,12 @@
 // Those options will be merged with `baseConfig`, and the result will be
 // returned.
 
+var path = require('path');
 var webpack = require('webpack');
 var webpackMerge = require('webpack-merge');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
+var projectHome = path.resolve(__dirname, '../..');
+var devtoolPathPrefixRe = new RegExp('^' + projectHome + '/');
 
 /**
  * Creates a configuration function that is used by webpack. Takes a
@@ -35,6 +38,10 @@ exports.merge = function merge(additionConfig) {
         path: __dirname + '/dist',
         filename: '[name].bundle.js',
         chunkFilename: '[name].bundle-[chunkhash].js',
+        devtoolModuleFilenameTemplate: function(info) {
+          // strip prefix from absolute path
+          return 'webpack:///' + info.absoluteResourcePath.replace(devtoolPathPrefixRe, './');
+        },
         hashDigestLength: 20
       },
       module: {

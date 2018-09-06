@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -241,8 +242,11 @@ public class QuestionService extends WdkService {
     // validate the changed param value (will also validate the paramValuesContext it needs, if dependent)
     changedParam.validate(getSessionUser(), changedParamValue, contextParamValues);
 
-    // find all dependencies of the changed param, and remove them from the context
-    for (Param dependentParam : changedParam.getAllDependentParams()) {
+    // get stale params
+    Set<Param> staleDependentParams = changedParam.getStaleDependentParams();
+
+    // remove stale param values from the context
+    for (Param dependentParam : staleDependentParams) {
       contextParamValues.remove(dependentParam.getName());
     }
 
@@ -251,7 +255,7 @@ public class QuestionService extends WdkService {
 
     // format JSON response (will fill missing values with defaults based on context)
     return Response.ok(QuestionFormatter.getParamsJson(
-        changedParam.getStaleDependentParams(),
+        staleDependentParams,
         true,
         getSessionUser(),
         contextParamValues).toString()).build();
