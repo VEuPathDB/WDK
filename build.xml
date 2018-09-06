@@ -5,6 +5,7 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <import file="${projectsDir}/WSF/build.xml" />
+  <import file="${projectsDir}/WDKClient/build.xml" />
 
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
@@ -41,11 +42,11 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="WDK-Installation" depends="WSF-Installation,
+                                           WDKClient-Installation,
                                            WDK-MavenInstallation,
                                            WDK/Model-Installation,
                                            WDK/Controller-Installation,
                                            WDK/Service-Installation,
-                                           WDK/Client-Installation,
                                            WDK/View-Installation">
     <ant target="defaultProjectInstall">
       <property name="project" value="WDK"/>
@@ -187,18 +188,12 @@
     </ant>
   </target>
 
-  <target name="WDK/Client-Installation">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="Client"/>
-    </ant>
-  </target>
-
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooo  Web Installation  oooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="WDK-WebInstallation" depends="WSF-WebInstallation,
+                                              WDKClient-WebInstallation,
                                               WebsitePlusGusHome">
     <echo message="." />
     <echo message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file ojdbc14.jar) from ${targetDir}/lib/java/db_driver into your webapp server's designated place (such as common/lib for Tomcat). See the installation instructions available at www.gusdb.org/wdk for details."  />
@@ -219,6 +214,17 @@
     </ant>
 
     <echo message="Making JS and CSS bundles"/>
+
+    <exec dir="${projectsDir}/WDKClient/Build"
+          executable="yarn"
+          failonerror="true"
+          failifexecutionfails="true"/>
+
+    <exec dir="${projectsDir}/WDKClient/Client"
+          executable="yarn"
+          failonerror="true"
+          failifexecutionfails="true"/>
+
     <exec dir="${projectsDir}/WDK/View"
           executable="yarn"
           failonerror="true"
@@ -229,7 +235,7 @@
     </condition>
 
     <exec dir="${projectsDir}/WDK/View"
-          executable="node_modules/.bin/webpack"
+          executable="${projectsDir}/WDKClient/Build/node_modules/.bin/webpack"
           failonerror="true"
           failifexecutionfails="true">
           <arg line="${webpack.env}"/>

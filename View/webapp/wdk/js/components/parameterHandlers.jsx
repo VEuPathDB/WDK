@@ -1,8 +1,12 @@
 /* global wdk */
 import _ from 'lodash';
-import { Seq } from 'Utils/IterableUtils';
+import { 
+  IterableUtils,
+  Controllers
+} from 'wdk-client';
 
-import { PARAM_INVALID_EVENT, PARAM_VALID_EVENT } from 'Views/Question/LegacyParamController';
+const { Seq } = IterableUtils;
+const { LegacyParamController } = Controllers;
 
 wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
@@ -57,9 +61,9 @@ wdk.namespace("window.wdk.parameterHandlers", function(ns, $) {
   function attachValidationLister(element) {
     const invalidParams = new Set();
     const $form = element.closest('form')
-      .on(`${PARAM_INVALID_EVENT} ${PARAM_VALID_EVENT}`, '.param', event => {
+      .on(`${LegacyParamController.PARAM_INVALID_EVENT} ${LegacyParamController.PARAM_VALID_EVENT}`, '.param', event => {
         const paramName = event.currentTarget.getAttribute('name');
-        if (event.type === PARAM_INVALID_EVENT) invalidParams.add(paramName);
+        if (event.type === LegacyParamController.PARAM_INVALID_EVENT) invalidParams.add(paramName);
         else invalidParams.delete(paramName);
         const someInvalid = invalidParams.size > 0;
         $form.find(':input[name=questionSubmit]')

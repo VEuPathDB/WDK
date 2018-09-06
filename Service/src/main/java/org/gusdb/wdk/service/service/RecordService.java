@@ -43,7 +43,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 @Path("/records")
-public class RecordService extends WdkService {
+public class RecordService extends AbstractWdkService {
 
   private static final Logger LOG = Logger.getLogger(RecordService.class);
 
@@ -196,7 +196,7 @@ public class RecordService extends WdkService {
       // these may be thrown when the PK values either don't exist or map to >1 record
       // OR the ID exists but the attribute query returns nothing
       String primaryKeys = (recordInstance == null ? "<unknown>" : recordInstance.getPrimaryKey().getValuesAsString());
-      throw new NotFoundException(WdkService.formatNotFound(RECORDCLASS_RESOURCE +
+      throw new NotFoundException(AbstractWdkService.formatNotFound(RECORDCLASS_RESOURCE +
           recordClassName + ", " + String.format("with primary key [%s]", primaryKeys)) ,e);
     }
   }

@@ -11,10 +11,10 @@ import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
-import org.gusdb.wdk.service.service.WdkService;
+import org.gusdb.wdk.service.service.AbstractWdkService;
 
 @Path(UserService.USER_PATH)
-public abstract class UserService extends WdkService {
+public abstract class UserService extends AbstractWdkService {
 
   private static final String NOT_LOGGED_IN = "You must log in to use this functionality.";
 
@@ -41,7 +41,7 @@ public abstract class UserService extends WdkService {
    * Ensures the target user exists and that the session user has the
    * permissions requested.  If either condition is not true, the appropriate
    * exception (corresponding to 404 and 403 respectively) is thrown.
-   * 
+   *
    * @param requestedAccess the access requested by the caller
    * @return a userBundle representing the target user and his relationship to the session user
    * @throws WdkModelException if error occurs creating user bundle (probably a DB problem)
@@ -49,15 +49,15 @@ public abstract class UserService extends WdkService {
   protected UserBundle getUserBundle(Access requestedAccess) throws WdkModelException {
     UserBundle userBundle = parseTargetUserId(_userIdStr);
     if (!userBundle.isValidUserId()) {
-      throw new NotFoundException(WdkService.formatNotFound(USER_RESOURCE + userBundle.getTargetUserIdString()));
+      throw new NotFoundException(AbstractWdkService.formatNotFound(USER_RESOURCE + userBundle.getTargetUserIdString()));
     }
     if ((!userBundle.isSessionUser() && Access.PRIVATE.equals(requestedAccess)) ||
         (!userBundle.isAdminSession() && Access.ADMIN.equals(requestedAccess))) {
-      throw new ForbiddenException(WdkService.PERMISSION_DENIED);
+      throw new ForbiddenException(AbstractWdkService.PERMISSION_DENIED);
     }
     return userBundle;
   }
-  
+
   protected Step getStepByIdAndCheckItsUser(User user, long stepId) throws WdkModelException {
 
     Step step = user.getWdkModel().getStepFactory().getStepById(stepId).orElseThrow(
@@ -67,10 +67,10 @@ public abstract class UserService extends WdkService {
     }
     return step;
   }
-  
+
   // TODO: probably retire this when we retire answervalues in favor of answerspecs
   protected String getAnswerValueChecksum(Step step) throws DataValidationException {
-    
+
     String answerValueChecksum;
     try {
       answerValueChecksum = step.getAnswerValue().getChecksum();

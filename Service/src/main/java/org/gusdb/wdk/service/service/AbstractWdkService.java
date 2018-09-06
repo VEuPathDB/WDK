@@ -38,7 +38,17 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 
-public abstract class WdkService {
+/**
+ * This class serves as a superclass for WDK JAX-RS services.  It provides a number of methods that provide
+ * access to the session and current user, the WdkModel, URI information, cookies, etc.  It does this by
+ * annotating some private fields for JAX-RS dependency injection.  It also provides convenience methods to
+ * help WDK services standardize their responses in common conditions, e.g. return a permission denied if the
+ * user is not an administrator, etc.  WDK service classes do not have to subclass WdkService, but it is
+ * recommended for these reasons.  Since it provides no services of its own is has been made abstract.
+ * 
+ * @author rdoherty
+ */
+public abstract class AbstractWdkService {
 
   public static final String PERMISSION_DENIED = "Permission Denied.  You do not have access to this resource.";
   public static final String NOT_FOUND = "Resource specified [%s] does not exist.";

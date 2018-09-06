@@ -52,7 +52,7 @@ import org.json.JSONObject;
  */
 @Path("/questions")
 @Produces(MediaType.APPLICATION_JSON)
-public class QuestionService extends WdkService {
+public class QuestionService extends AbstractWdkService {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(QuestionService.class);
@@ -118,7 +118,7 @@ public class QuestionService extends WdkService {
           throws WdkUserException, WdkModelException {
     Question question = getQuestionFromSegment(questionName);
     if(question == null)
-      throw new NotFoundException(WdkService.formatNotFound(QUESTION_RESOURCE + questionName));
+      throw new NotFoundException(AbstractWdkService.formatNotFound(QUESTION_RESOURCE + questionName));
     Map<String,String> dependedParamValues = new HashMap<String, String>();
     return Response.ok(QuestionFormatter.getQuestionJson(question,
         getFlag(expandParams), getSessionUser(), dependedParamValues).toString()).build();
@@ -132,7 +132,7 @@ public class QuestionService extends WdkService {
     }
     catch(WdkModelException e) {
       // A WDK Model Exception here implies that a question of the name provided cannot be found.
-      throw new NotFoundException(WdkService.formatNotFound(QUESTION_RESOURCE + questionName));
+      throw new NotFoundException(AbstractWdkService.formatNotFound(QUESTION_RESOURCE + questionName));
     }
   }
 
@@ -218,7 +218,7 @@ public class QuestionService extends WdkService {
     // get requested question and throw not found if invalid
     Question question = getQuestionFromSegment(questionName);
     if (question == null) {
-      throw new NotFoundException(WdkService.NOT_FOUND + questionName);
+      throw new NotFoundException(AbstractWdkService.NOT_FOUND + questionName);
     }
 
     // parse incoming JSON into existing and changed values
@@ -386,10 +386,10 @@ public class QuestionService extends WdkService {
 
   private Param getParam(String questionName, Question question, String paramName) {
     if (question == null)
-      throw new NotFoundException(WdkService.NOT_FOUND + questionName);
+      throw new NotFoundException(AbstractWdkService.NOT_FOUND + questionName);
     Param param = question.getQuery().getParamMap().get(paramName);
     if (param == null)
-      throw new NotFoundException(WdkService.NOT_FOUND + paramName);
+      throw new NotFoundException(AbstractWdkService.NOT_FOUND + paramName);
     return param;
   }
   

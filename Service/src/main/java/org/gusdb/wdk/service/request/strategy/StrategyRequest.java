@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.Keys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
-import org.gusdb.wdk.service.service.WdkService;
+import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -152,7 +152,7 @@ public class StrategyRequest {
     	  errors.append("Step " + step.getStepId() + " belongs to a project other than " + projectId + "." + System.lineSeparator());
     }
     if(step.getUser().getUserId() != user.getUserId()) {
-      throw new ForbiddenException(WdkService.PERMISSION_DENIED);
+      throw new ForbiddenException(AbstractWdkService.PERMISSION_DENIED);
     }
     if(step.isDeleted()) {
     	  errors.append("Step " + step.getStepId() + " is marked as deleted." + System.lineSeparator());

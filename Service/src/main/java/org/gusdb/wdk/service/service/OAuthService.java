@@ -12,7 +12,7 @@ import org.gusdb.wdk.session.OAuthUtil;
 import org.json.JSONObject;
 
 @Path("/oauth")
-public class OAuthService extends WdkService {
+public class OAuthService extends AbstractWdkService {
 
   // ===== OAuth 2.0 + OpenID Connect Support =====
   /**
