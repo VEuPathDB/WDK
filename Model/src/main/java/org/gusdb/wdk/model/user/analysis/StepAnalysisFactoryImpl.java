@@ -160,10 +160,10 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     return getConfiguredAnalyzer(instance, _fileStore).getFormViewModel();
   }
 
-  // TODO: Why does a validation method also persist changes to the datastore?
   @Override
-  public List<String> validateFormParams(StepAnalysisInstance instance) throws WdkModelException, WdkUserException {
-    List<String> errorList = new ArrayList<String>();
+  public List<String> validateFormParams(StepAnalysisInstance instance)
+      throws WdkModelException, WdkUserException {
+    List<String> errorList = new ArrayList<>();
 
     // this is a unique configuration; validate parameters
     ValidationErrors errors = getConfiguredAnalyzer(instance, _fileStore)
@@ -181,12 +181,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       }
     }
 
-    // validation failed; errors present.  Set state to NO_RESULTS so old results are hidden from user
-    if (!instance.getState().equals(StepAnalysisState.NO_RESULTS)) {
-      instance.setState(StepAnalysisState.NO_RESULTS);
-      _dataStore.setState(instance.getAnalysisId(), StepAnalysisState.NO_RESULTS);
-    }
-    
     return errorList;
   }
 
@@ -204,7 +198,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     
     return stepAnalysisInstance;
   }
-  
 
   @Override
   public StepAnalysisInstance copyAnalysisInstance(StepAnalysisInstance instance)
@@ -326,13 +319,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       instanceModified = true;
     }
 
-    // now that this analysis has params, set 'has params' if not yet set
-    if (!instance.hasParams()) {
-      _dataStore.setHasParams(instance.getAnalysisId(), true);
-      instance.setHasParams(true);
-      instanceModified = true;
-    }
-
     // if instance was modified, recheck status
     //   TODO: fix logic here to be less ugly/costly
     if (instanceModified) {
@@ -344,9 +330,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
         throw new WdkModelException("Step Analysis was deleted mid-request!", e);
       }
     }
-
-    // update stored instance with param values (must do even if using cached results)
-    _dataStore.updateInstance(instance.getAnalysisId(), hash, instance.serializeInstance());
 
     // Run analysis plugin under the following conditions:
     //   1. if new execution was created (i.e. none existed before or cache was cleared)
@@ -574,5 +557,17 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     if (!_dataStore.setProperties(analysisId, propertyStream)) {
       throw new WdkUserException("No analysis found with ID " + analysisId);
     }
+  }
+
+  @Override
+  public void setFormParams(StepAnalysisInstance instance)
+      throws WdkModelException {
+    if (!instance.hasParams()) {
+      _dataStore.setHasParams(instance.getAnalysisId(), true);
+      instance.setHasParams(true);
+    }
+
+    _dataStore.updateInstance(instance.getAnalysisId(), instance.createHash(),
+        instance.serializeInstance());
   }
 }

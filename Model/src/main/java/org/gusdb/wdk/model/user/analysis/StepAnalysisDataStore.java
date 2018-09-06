@@ -101,6 +101,19 @@ public abstract class StepAnalysisDataStore {
   // abstract methods to manage result/status information
   public abstract void createExecutionTable() throws WdkModelException;
   public abstract void deleteExecutionTable(boolean purge) throws WdkModelException;
+
+  /**
+   * Inserts a step analysis results record for the given analysis hash if one
+   * does not already exist.
+   *
+   * @param contextHash Step Analysis Instance hash used for matching or for the
+   *                    creation of a new record
+   * @param status      Execution status, used if a new record is created
+   * @param startDate   Execution start date, used if a new record is created
+   *
+   * @return <code>false</code> if a record matching the given hash already
+   * existed, <code>true</code> if a new record was created.
+   */
   public abstract boolean insertExecution(String contextHash, ExecutionStatus status, Date startDate) throws WdkModelException;  
   public abstract void updateExecution(String contextHash, ExecutionStatus status, Date updateDate, String charData, byte[] binData) throws WdkModelException;
   public abstract void resetStartDate(String contextHash, Date startDate) throws WdkModelException;

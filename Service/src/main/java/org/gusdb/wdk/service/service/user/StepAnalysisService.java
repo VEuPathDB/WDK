@@ -1,14 +1,17 @@
 package org.gusdb.wdk.service.service.user;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import javax.print.attribute.standard.Media;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
@@ -16,7 +19,6 @@ import org.gusdb.wdk.model.analysis.StepAnalyzer;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
@@ -56,8 +58,8 @@ public class StepAnalysisService extends UserService {
 
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
     Step step = getStepByIdAndCheckItsUser(user, stepId);
-
     Map<String, StepAnalysis> stepAnalyses = step.getQuestion().getStepAnalyses();
+
     return StepAnalysisFormatter.getStepAnalysisTypesJson(stepAnalyses).toString();
   }
 
@@ -71,13 +73,14 @@ public class StepAnalysisService extends UserService {
   @GET
   @Path("analysis-types/{name}")
   @Produces(MediaType.APPLICATION_JSON)
-  public String getStepAnalysisTypeDataFromName(@PathParam("name") String analysisName)
+  public String getStepAnalysisTypeDataFromName(
+      @PathParam("name") String analysisName)
       throws WdkModelException, DataValidationException, WdkUserException {
 
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
     Step step = getStepByIdAndCheckItsUser(user, stepId);
-    StepAnalyzer analyzer = getStepAnalysisFromQuestion(step.getQuestion(),
-        analysisName).getAnalyzerInstance();
+    StepAnalyzer analyzer = getStepAnalysisFromQuestion(step.getQuestion(), analysisName)
+        .getAnalyzerInstance();
 
     analyzer.setAnswerValue(step.getAnswerValue());
 
@@ -104,6 +107,7 @@ public class StepAnalysisService extends UserService {
       String answerValueChecksum = getAnswerValueChecksum(step);
       StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.getQuestion(), analysisName);
       StepAnalysisInstance stepAnalysisInstance = getStepAnalysisInstance(step, stepAnalysis, answerValueChecksum);
+
       return StepAnalysisFormatter.getStepAnalysisJson(stepAnalysisInstance).toString();
     }
     catch (JSONException | DataValidationException e) {
@@ -138,7 +142,6 @@ public class StepAnalysisService extends UserService {
   public String getStepAnalysisInstance(
       @PathParam("analysisId") long analysisId,
       @QueryParam("accessToken") String accessToken) throws WdkModelException {
-
     return StepAnalysisFormatter.getStepAnalysisJson(getAnalysis(analysisId, accessToken)).toString();
   }
 
@@ -158,24 +161,37 @@ public class StepAnalysisService extends UserService {
   public void updateStepAnalysisInstance(
       @PathParam("analysisId") long analysisId,
       @QueryParam("accessToken") String accessToken,
-      String body) throws WdkModelException {
-
+      String body) throws WdkModelException, WdkUserException {
+    final ObjectMapper mapper = new ObjectMapper();
     final StepAnalysisFactory factory = getWdkModel().getStepAnalysisFactory();
     final StepAnalysisInstance instance = getAnalysis(analysisId, accessToken);
-    final JSONObject json = new JSONObject(body);
+    final JsonNode json;
+    try {
+      json = mapper.readTree(body);
+      if (json.has(ANALYSIS_PARAMS_KEY)) {
+        final Map<String, String[]> inputParams = mapper.readerFor(new TypeReference<Map<String, String[]>>() {}).readValue(json.get(ANALYSIS_PARAMS_KEY));
 
-    if (json.has(ANALYSIS_DISPLAY_NAME_KEY)) {
-      instance.setDisplayName(json.getString(ANALYSIS_DISPLAY_NAME_KEY));
-      factory.renameInstance(instance);
+        instance.getFormParams().clear();
+        instance.getFormParams().putAll(inputParams);
+
+        final List<String> errors = factory.validateFormParams(instance);
+
+        if(!errors.isEmpty()) {
+          throw new WdkUserException(mapper.writeValueAsString(errors));
+        }
+
+        factory.setFormParams(instance);
+      }
+    }
+    catch (IOException e) {
+      throw new WdkModelException(e);
     }
 
-//    if (json.has(ANALYSIS_PARAMS_KEY)) {
-//
-//      instance.getFormParams().clear();
-//      factory.validateFormParams(instance);
-//    }
+    if (json.has(ANALYSIS_DISPLAY_NAME_KEY)) {
+      instance.setDisplayName(json.get(ANALYSIS_DISPLAY_NAME_KEY).asText());
+      factory.renameInstance(instance);
+    }
   }
-
 
   @GET
   @Path("analyses/{analysisId}/result")
@@ -185,7 +201,9 @@ public class StepAnalysisService extends UserService {
       @QueryParam("accessToken") String accessToken)
       throws WdkModelException, WdkUserException {
 
-    final JSONObject value = getWdkModel().getStepAnalysisFactory().getAnalysisResult(getAnalysis(analysisId, accessToken)).getResultViewModelJson();
+    final JSONObject value = getWdkModel().getStepAnalysisFactory()
+        .getAnalysisResult(getAnalysis(analysisId, accessToken))
+        .getResultViewModelJson();
 
     return value == null
         ? Response.noContent().build()
@@ -198,31 +216,29 @@ public class StepAnalysisService extends UserService {
   public Response runAnalysis(
       @PathParam("analysisId") long analysisId,
       @QueryParam("accessToken") String accessToken)
-      throws WdkModelException, WdkUserException {
-
+      throws WdkModelException {
     final StepAnalysisInstance instance = getAnalysis(analysisId, accessToken);
-    final StepAnalysisFactory factory = getWdkModel().getStepAnalysisFactory();
-    final List < String > errors = factory.validateFormParams(instance);
 
-    if (!errors.isEmpty()) {
-      return Response.serverError().entity(new JSONArray(errors).toString()).build();
-    }
+    getWdkModel().getStepAnalysisFactory().runAnalysis(instance);
 
-    factory.runAnalysis(instance);
-
-    return Response.accepted().entity(new JSONObject().put(STATUS_KEY, instance.getStatus().name()).toString()).build();
+    return Response.accepted()
+        .entity(new JSONObject().put(STATUS_KEY, instance.getStatus().name()).toString())
+        .build();
   }
 
   @GET
   @Path("analyses/{analysisId}/result/status")
   @Produces(MediaType.APPLICATION_JSON)
   public String getStepAnalysisResultStatus(
-      @PathParam("analysisId") long analysisIdStr,
+      @PathParam("analysisId") long analysisId,
       @QueryParam("accessToken") String accessToken)
       throws WdkModelException, WdkUserException {
-    final ExecutionStatus value = getWdkModel().getStepAnalysisFactory().getAnalysisResult(getAnalysis(analysisIdStr, accessToken)).getStatus();
+    final String status = getWdkModel().getStepAnalysisFactory()
+        .getSavedAnalysisInstance(analysisId)
+        .getStatus()
+        .name();
 
-    return new JSONObject().put(STATUS_KEY, value.name()).toString();
+    return new JSONObject().put(STATUS_KEY, status).toString();
   }
 
   @GET
@@ -259,31 +275,30 @@ public class StepAnalysisService extends UserService {
    *                            that this analysis is based on.
    * @return A new StepAnalysisInstance
    */
-  private StepAnalysisInstance getStepAnalysisInstance(Step step, StepAnalysis stepAnalysis, String answerValueChecksum) throws DataValidationException {
-    StepAnalysisInstance stepAnalysisInstance;
-
+  private StepAnalysisInstance getStepAnalysisInstance(
+      Step step,
+      StepAnalysis stepAnalysis,
+      String answerValueChecksum) throws DataValidationException {
     try {
-      stepAnalysisInstance = getWdkModel().getStepAnalysisFactory().createAnalysisInstance(step, stepAnalysis, answerValueChecksum);
+      return getWdkModel().getStepAnalysisFactory()
+          .createAnalysisInstance(step, stepAnalysis, answerValueChecksum);
     }
     catch (WdkUserException | IllegalAnswerValueException | WdkModelException e) {
       throw new DataValidationException("Can't create valid step analysis", e);
     }
-    return stepAnalysisInstance;
   }
 
-  private StepAnalysis getStepAnalysisFromQuestion(Question question, String analysisName) throws DataValidationException {
-    StepAnalysis stepAnalysis;
+  private StepAnalysis getStepAnalysisFromQuestion(
+      Question question,
+      String analysisName) throws DataValidationException {
     DataValidationException badStepAnalExcep = new DataValidationException("No step analysis with name " + analysisName + " exists for question " + question.getFullName());
     try {
-      stepAnalysis = question.getStepAnalysis(analysisName);
+      return Optional.ofNullable(question.getStepAnalysis(analysisName))
+        .orElseThrow(() -> badStepAnalExcep);
     }
     catch (WdkUserException e) {
       throw badStepAnalExcep;
     }
-
-    if (stepAnalysis == null)
-      throw badStepAnalExcep;
-    return stepAnalysis;
   }
 
   private StepAnalysisInstance getAnalysis(long analysisId, String accessToken) throws WdkModelException {
@@ -313,9 +328,13 @@ public class StepAnalysisService extends UserService {
    *                           loaded, the user could not be loaded, or the access token could not be
    *                           loaded.
    */
-  private StepAnalysisInstance getAnalysis(long analysisId, UserBundle userBundle, String accessToken) throws WdkModelException {
+  private StepAnalysisInstance getAnalysis(
+      long analysisId,
+      UserBundle userBundle,
+      String accessToken) throws WdkModelException {
     try {
-      StepAnalysisInstance instance = getWdkModel().getStepAnalysisFactory().getSavedAnalysisInstance(analysisId);
+      StepAnalysisInstance instance = getWdkModel().getStepAnalysisFactory()
+          .getSavedAnalysisInstance(analysisId);
       if (userBundle.getTargetUser().getUserId() != instance.getStep().getUser().getUserId()) {
         // owner of this step does not match user in URL
         throw new NotFoundException("User " + userBundle.getTargetUser().getUserId() + " does not own step analysis " + instance.getAnalysisId());

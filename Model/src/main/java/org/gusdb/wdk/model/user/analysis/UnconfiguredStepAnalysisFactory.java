@@ -58,12 +58,12 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   
   @Override
   public List<StepAnalysisInstance> getAllAnalyses() throws WdkModelException {
-    return new ArrayList<StepAnalysisInstance>();
+    return new ArrayList<>();
   }
 
   @Override
   public Map<Long, StepAnalysisInstance> getAppliedAnalyses(Step step) throws WdkModelException {
-    return new HashMap<Long, StepAnalysisInstance>();
+    return new HashMap<>();
   }
 
   @Override
@@ -149,6 +149,12 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
 
   @Override
   public void setProperties(long analysisId, InputStream propertyStream) {
+    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
+  }
+
+  @Override
+  public void setFormParams(StepAnalysisInstance instance)
+      throws WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 }

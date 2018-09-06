@@ -99,4 +99,6 @@ public interface StepAnalysisFactory {
       throw new WdkModelException(e);
     }
   }
+
+  public void setFormParams(StepAnalysisInstance instance) throws WdkModelException;
 }

@@ -139,6 +139,7 @@ public class PersistenceTester {
     System.out.println("Test run #" + testRunId);
     context = StepAnalysisInstance.createFromForm(params, analysisMgr);
     System.out.println("Context right before running: " + context.serializeInstance());
+    analysisMgr.setFormParams(context);
     context = analysisMgr.runAnalysis(context);
     ExecutionStatus status = analysisMgr.getSavedAnalysisInstance(context.getAnalysisId()).getStatus();
     while (!status.equals(ExecutionStatus.COMPLETE)) {
