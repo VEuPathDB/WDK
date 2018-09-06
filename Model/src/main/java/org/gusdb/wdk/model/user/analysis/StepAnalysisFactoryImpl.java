@@ -167,7 +167,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
 
     // this is a unique configuration; validate parameters
     ValidationErrors errors = getConfiguredAnalyzer(instance, _fileStore)
-        .validateFormParams(instance.getFormParams());
+        .validateFormParamValues(instance.getFormParams());
 
     // if no errors present; return empty error list
     if (errors == null || errors.isEmpty()) return errorList;
@@ -431,7 +431,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       StepAnalysisFileStore fileStore) throws WdkModelException, WdkUserException {
     StepAnalyzer analyzer = instance.getStepAnalysis().getAnalyzerInstance();
     analyzer.setStorageDirectory(fileStore.getStorageDirPath(instance.createHash()));
-    analyzer.setFormParams(instance.getFormParams());
+    analyzer.setFormParamValues(instance.getFormParams());
     analyzer.setAnswerValue(instance.getStep().getAnswerValue());
     return analyzer;
   }

@@ -1049,6 +1049,7 @@ public class ModelXmlParser extends XmlParser {
 
   private static void configureStepAnalysisNode(Digester digester, String nodeLocation) {
     configureNode(digester, nodeLocation, StepAnalysisXml.class, "addStepAnalysis");
+    configureNode(digester, nodeLocation + "/paramRef", ParamReference.class, "addParamRef");
     configureNode(digester, nodeLocation + "/shortDescription", WdkModelText.class, "setShortDescription");
     digester.addCallMethod(nodeLocation + "/shortDescription", "setText", 0);
     configureNode(digester, nodeLocation + "/description", WdkModelText.class, "setDescription");

@@ -42,8 +42,8 @@ public class PersistenceTester {
 
   /* Methods tested:
    * 
-   * public Map<Integer,StepAnalysisContext> getAnalysesByStepId(int stepId, StepAnalysisFileStore fileStore) throws WdkModelException;
-   * public StepAnalysisContext getAnalysisById(int analysisId, StepAnalysisFileStore fileStore) throws WdkModelException {
+   * public Map<Integer,StepAnalysisInstance> getAnalysesByStepId(int stepId, StepAnalysisFileStore fileStore) throws WdkModelException;
+   * public StepAnalysisInstance getAnalysisById(int analysisId, StepAnalysisFileStore fileStore) throws WdkModelException {
    * public int getNextId() throws WdkModelException;
    * public void insertAnalysis(int analysisId, int stepId, String displayName, boolean isNew, boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException;
    * public void deleteAnalysis(int analysisId) throws WdkModelException;
@@ -51,7 +51,7 @@ public class PersistenceTester {
    * public void setNewFlag(int analysisId, boolean isNew) throws WdkModelException;
    * public void setHasParams(int analysisId, boolean hasParams) throws WdkModelException;
    * public void updateContext(int analysisId, String contextHash, String serializedContext) throws WdkModelException;
-   * public List<StepAnalysisContext> getAllAnalyses(StepAnalysisFileStore fileStore) throws WdkModelException;
+   * public List<StepAnalysisInstance> getAllAnalyses(StepAnalysisFileStore fileStore) throws WdkModelException;
    * public boolean insertExecution(String contextHash, ExecutionStatus status, Date startDate) throws WdkModelException;  
    * public void updateExecution(String contextHash, ExecutionStatus status, Date updateDate, String charData, byte[] binData) throws WdkModelException;
    * public void resetStartDate(String contextHash, Date startDate) throws WdkModelException;

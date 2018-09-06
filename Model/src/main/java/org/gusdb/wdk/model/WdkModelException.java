@@ -53,5 +53,4 @@ public class WdkModelException extends WdkException {
     unwrap(e, newMessage);
     return null;
   }
-
 }

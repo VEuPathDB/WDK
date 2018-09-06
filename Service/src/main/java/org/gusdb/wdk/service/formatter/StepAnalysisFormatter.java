@@ -1,6 +1,7 @@
 package org.gusdb.wdk.service.formatter;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
@@ -8,6 +9,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class StepAnalysisFormatter {
+  private static final String ANALYSIS_ID_KEY = StepAnalysisInstance.JsonKey.analysisId.name();
+  private static final String ANALYSIS_DISPLAY_NAME_KEY = StepAnalysisInstance.JsonKey.displayName.name();
+
+
   public static JSONObject getStepAnalysisJson(StepAnalysisInstance instance) {
     return instance.getJsonSummary();
   }
@@ -37,4 +42,20 @@ public class StepAnalysisFormatter {
     return analysisJson;
   }
 
+  public static JSONArray getStepAnalysisInstancesJson(
+      Map<Long, StepAnalysisInstance> instances) {
+    return new JSONArray(instances.entrySet().stream()
+        .map(StepAnalysisFormatter::instanceSummaryJson)
+        .collect(Collectors.toList()));
+  }
+
+  private static JSONObject instanceSummaryJson(
+      Map.Entry<Long, StepAnalysisInstance> entry) {
+    return new JSONObject()
+        .put(StepAnalysisInstance.JsonKey.analysisId.name(), entry.getKey())
+        .put(
+            StepAnalysisInstance.JsonKey.displayName.name(),
+            entry.getValue().getDisplayName()
+        );
+  }
 }

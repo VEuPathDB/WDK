@@ -17,15 +17,15 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
   protected Map<String, Param> paramMap;
 
   protected ParameterContainerImpl() {
-    paramRefList = new ArrayList<ParamReference>();
-    paramMap = new LinkedHashMap<String, Param>();
+    paramRefList = new ArrayList<>();
+    paramMap = new LinkedHashMap<>();
   }
 
   protected ParameterContainerImpl(ParameterContainerImpl container) {
     super(container);
     if (container.paramRefList != null)
       this.paramRefList = new ArrayList<>(container.paramRefList);
-    this.paramMap = new LinkedHashMap<String, Param>();
+    this.paramMap = new LinkedHashMap<>();
 
     // clone params
     for (String paramName : container.paramMap.keySet()) {
@@ -46,7 +46,7 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
 
   @Override
   public Map<String, Param> getParamMap() {
-    return new LinkedHashMap<String, Param>(paramMap);
+    return new LinkedHashMap<>(paramMap);
   }
 
   @Override
@@ -59,7 +59,7 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     // exclude paramRefs
-    List<ParamReference> paramRefs = new ArrayList<ParamReference>();
+    List<ParamReference> paramRefs = new ArrayList<>();
     for (ParamReference paramRef : paramRefList) {
       if (paramRef.include(projectId)) {
         paramRef.excludeResources(projectId);
@@ -119,20 +119,7 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
   }
 
   public Param getUserParam() throws WdkModelException {
-    // create the missing user_id param for the attribute query
-    ParamSet paramSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
-    if (paramSet.contains(Utilities.PARAM_USER_ID))
-      return paramSet.getParam(Utilities.PARAM_USER_ID);
-
-    StringParam userParam = new StringParam();
-    userParam.setName(Utilities.PARAM_USER_ID);
-    userParam.setNumber(true);
-
-    userParam.excludeResources(_wdkModel.getProjectId());
-    userParam.resolveReferences(_wdkModel);
-    userParam.setResources(_wdkModel);
-    paramSet.addParam(userParam);
-    return userParam;
+    return getUserParam(_wdkModel);
   }
 
   public void validateDependentParams() throws WdkModelException {
@@ -144,7 +131,7 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
     //       to different params (i.e., params with different full names but the same short name).
     for (Param param : paramMap.values()) {
       if (param instanceof AbstractDependentParam) {
-        ((AbstractDependentParam) param).checkParam(queryName, null, paramMap, new ArrayList<String>());
+        ((AbstractDependentParam) param).checkParam(queryName, null, paramMap, new ArrayList<>());
       }
     }
   }

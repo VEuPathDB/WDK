@@ -62,7 +62,7 @@ public class StepAnalysisInstance {
     status,
     hasParams,
     invalidStepReason,
-    userNotes
+    userNotes;
   }
   
   private WdkModel _wdkModel;

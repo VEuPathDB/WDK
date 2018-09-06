@@ -3,17 +3,13 @@ package org.gusdb.wdk.model.user.analysis;
 import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 
@@ -147,9 +143,12 @@ public abstract class StepAnalysisDataStore {
     updateExecution(contextHash, status, newStartDate, null, null);
   }
 
-  public StepAnalysisInstance getAnalysisById(long analysisId, StepAnalysisFileStore fileStore) throws WdkModelException {
+  public StepAnalysisInstance getAnalysisById(long analysisId, StepAnalysisFileStore fileStore) throws WdkModelException, WdkUserException {
     Map<Long, AnalysisInfoPlusStatus> rawValues = getAnalysisInfoForIds(Arrays.asList(new Long[]{ analysisId }));
-    if (rawValues.get(analysisId).analysisInfo == null) throw new WdkModelException("Did not find exactly" +
+    if (!rawValues.containsKey(analysisId))
+      throw new WdkUserException("No analysis exists with id: " + analysisId);
+    if (rawValues.get(analysisId).analysisInfo == null)
+      throw new WdkModelException("Did not find exactly" +
         " one record for analysis ID " + analysisId + "; found " + rawValues.size());
     return getContexts(rawValues, fileStore).iterator().next();
   }
@@ -176,7 +175,7 @@ public abstract class StepAnalysisDataStore {
 
   private List<StepAnalysisInstance> getContexts(Map<Long, AnalysisInfoPlusStatus> dataMap, 
       StepAnalysisFileStore fileStore) throws WdkModelException {
-    List<StepAnalysisInstance> contextList = new ArrayList<StepAnalysisInstance>();
+    List<StepAnalysisInstance> contextList = new ArrayList<>();
     for (Entry<Long, AnalysisInfoPlusStatus> entry : dataMap.entrySet()) {
       if (entry.getValue().analysisInfo == null) {
         throw new WdkModelException("Unable to find record for analysis ID: " + entry.getKey());

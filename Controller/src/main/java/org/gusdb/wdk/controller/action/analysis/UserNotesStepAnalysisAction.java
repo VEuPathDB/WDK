@@ -7,7 +7,7 @@ import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamDef.Required;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
-import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
 
 public class UserNotesStepAnalysisAction extends AbstractStepAnalysisIdAction {
 
@@ -23,10 +23,9 @@ public class UserNotesStepAnalysisAction extends AbstractStepAnalysisIdAction {
   
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
-    StepAnalysisContext context = getContextFromPassedId();
+    StepAnalysisInstance context = getContextFromPassedId();
     context.setUserNotes(params.getValue(USER_NOTES_KEY));
     getAnalysisMgr().setUserNotesContext(context);
     return getStepAnalysisJsonResult(context);
   }
-  
 }

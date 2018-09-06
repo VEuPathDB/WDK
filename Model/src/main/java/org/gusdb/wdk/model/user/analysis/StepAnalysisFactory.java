@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -12,13 +13,13 @@ import org.gusdb.wdk.model.user.Step;
 
 public interface StepAnalysisFactory {
 
-  public List<StepAnalysisInstance> getAllAnalyses() throws WdkModelException;
+  List<StepAnalysisInstance> getAllAnalyses() throws WdkModelException;
 
-  public Map<Long, StepAnalysisInstance> getAppliedAnalyses(Step step) throws WdkModelException;
+  Map<Long, StepAnalysisInstance> getAppliedAnalyses(Step step) throws WdkModelException;
 
-  public boolean hasCompleteAnalyses(Step step) throws WdkModelException;
+  boolean hasCompleteAnalyses(Step step) throws WdkModelException;
 
-  public Object getFormViewModel(StepAnalysisInstance instance) throws WdkModelException, WdkUserException;
+  Object getFormViewModel(StepAnalysisInstance instance) throws WdkModelException, WdkUserException;
 
   /**
    * Validates the form params for a given Step Analysis Instance and returns
@@ -26,22 +27,24 @@ public interface StepAnalysisFactory {
    *
    * @return Form param validation errors.
    */
-  public List<String> validateFormParams(StepAnalysisInstance instance) throws WdkModelException, WdkUserException;
+  List<String> validateFormParams(StepAnalysisInstance instance) throws WdkModelException, WdkUserException;
 
   /**
    * Creates a valid new analysis instance (i.e. tab).  If successful,
-   * this method will assign an ID to the construinstancestance, save it in the database, and may modify the display
-   * name to ensure a step's tabs have unique names.
+   * this method will assign an ID to the constructed instance, save it in the
+   * database, and may modify the display name to ensure a step's tabs have
+   * unique names.
    * 
    * @throws WdkModelException if error occurs while instantiating instance or writing to persistent store
    * @throws IllegalAnswerValueException if answer cannot be used to create an analysis with the passed instance
    * @throws WdkUserException if answer is OK but analysis params fail validation in another way
    */
-  public StepAnalysisInstance createAnalysisInstance(Step step, StepAnalysis stepAnalysis, String answerValueChecksum) throws WdkModelException, IllegalAnswerValueException, WdkUserException;
+  StepAnalysisInstance createAnalysisInstance(Step step,
+      StepAnalysis stepAnalysis, String answerValueChecksum) throws WdkModelException, IllegalAnswerValueException, WdkUserException;
 
-  public StepAnalysisInstance copyAnalysisInstance(StepAnalysisInstance instance) throws WdkModelException;
+  StepAnalysisInstance copyAnalysisInstance(StepAnalysisInstance instance) throws WdkModelException;
 
-  public StepAnalysisInstance runAnalysis(StepAnalysisInstance instance) throws WdkModelException;
+  StepAnalysisInstance runAnalysis(StepAnalysisInstance instance) throws WdkModelException;
 
   /**
    * Collects the data associated with a result and returns the aggregating
@@ -54,37 +57,37 @@ public interface StepAnalysisFactory {
    * @throws WdkModelException if inconsistent data is found or other error occurs
    * @throws WdkUserException 
    */
-  public AnalysisResult getAnalysisResult(StepAnalysisInstance instance) throws WdkModelException, WdkUserException;
+  AnalysisResult getAnalysisResult(StepAnalysisInstance instance) throws WdkModelException, WdkUserException;
 
-  public StepAnalysisInstance deleteAnalysis(StepAnalysisInstance instance) throws WdkModelException;
+  StepAnalysisInstance deleteAnalysis(StepAnalysisInstance instance) throws WdkModelException;
 
-  public void renameInstance(StepAnalysisInstance instance) throws WdkModelException;
+  void renameInstance(StepAnalysisInstance instance) throws WdkModelException;
 
-  public StepAnalysisInstance getSavedAnalysisInstance(long analysisId) throws WdkUserException, WdkModelException;
+  StepAnalysisInstance getSavedAnalysisInstance(long analysisId) throws WdkUserException, WdkModelException;
 
-  public void setUserNotesContext(StepAnalysisInstance context) throws WdkModelException;
+  void setUserNotesContext(StepAnalysisInstance context) throws WdkModelException;
 
-  public StepAnalysisViewResolver getViewResolver();
+  StepAnalysisViewResolver getViewResolver();
 
-  public void clearResultsCache() throws WdkModelException;
+  void clearResultsCache() throws WdkModelException;
 
-  public Path getResourcePath(StepAnalysisInstance instance, String relativePath);
+  Path getResourcePath(StepAnalysisInstance instance, String relativePath);
 
-  public void shutDown();
+  void shutDown();
 
-  public void expireLongRunningExecutions() throws WdkModelException;
+  void expireLongRunningExecutions() throws WdkModelException;
 
-  public void createResultsTable() throws WdkModelException;
+  void createResultsTable() throws WdkModelException;
 
-  public void clearResultsTable() throws WdkModelException;
+  void clearResultsTable() throws WdkModelException;
 
-  public void dropResultsTable(boolean purge) throws WdkModelException;
+  void dropResultsTable(boolean purge) throws WdkModelException;
 
-  public InputStream getProperties(long analysisId) throws WdkModelException, WdkUserException;
+  InputStream getProperties(long analysisId) throws WdkModelException, WdkUserException;
 
-  public void setProperties(long analysisId, InputStream propertyStream) throws WdkModelException, WdkUserException;
+  void setProperties(long analysisId, InputStream propertyStream) throws WdkModelException, WdkUserException;
 
-  public default InputStream getProperties(StepAnalysisInstance instance) throws WdkModelException {
+  default InputStream getProperties(StepAnalysisInstance instance) throws WdkModelException {
     try{
       return getProperties(instance.getAnalysisId());
     }
@@ -93,7 +96,8 @@ public interface StepAnalysisFactory {
     }
   }
 
-  public default void setProperties(StepAnalysisInstance instance, InputStream propertiesStream) throws WdkModelException {
+  default void setProperties(StepAnalysisInstance instance,
+      InputStream propertiesStream) throws WdkModelException {
     try{
       setProperties(instance.getAnalysisId(), propertiesStream);
     }
@@ -102,5 +106,5 @@ public interface StepAnalysisFactory {
     }
   }
 
-  public void setFormParams(StepAnalysisInstance instance) throws WdkModelException;
+  void setFormParams(StepAnalysisInstance instance) throws WdkModelException;
 }

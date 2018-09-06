@@ -25,7 +25,7 @@ public abstract class UserService extends WdkService {
 
   protected static final String USER_PATH = "/users/{"+USER_ID_PATH_PARAM+"}";
 
-  protected static enum Access { PUBLIC, PRIVATE, ADMIN; }
+  protected enum Access { PUBLIC, PRIVATE, ADMIN }
 
   private final String _userIdStr;
 
