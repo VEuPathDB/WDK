@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 
+
 /**
  * A table field defines a table of data associated with a recordClass. It defines what attributes the table
  * will have. column, link, and text attributes are allowed in the table field.
@@ -81,8 +82,12 @@ public class TableField extends Field implements AttributeFieldContainer {
   public void setClientSortingOrder(String sortingOrderString) {
     _clientSortingOrderString = sortingOrderString;
   }
-   
-  public List<SortDirectionSpec<AttributeField>> getClientSortingOrder() {
+
+  public String getClientSortingOrder() {
+    return _clientSortingOrderString;
+  }
+
+  public List<SortDirectionSpec<AttributeField>> getClientSortingOrderList() {
     return Collections.unmodifiableList(_clientSortingOrderList);
   }
   

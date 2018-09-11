@@ -58,6 +58,6 @@ public class TableFieldFormatter {
   private static JSONArray getClientSortSpecJson(TableField tableField) {
     ObjectMapper mapper = new ObjectMapper();
     mapper.registerModule(new JsonOrgModule()); // use jackson plugin to convert to org.json
-    return mapper.convertValue(tableField.getClientSortingOrder(), JSONArray.class);
+    return mapper.convertValue(tableField.getClientSortingOrderList(), JSONArray.class);
   }
 }
