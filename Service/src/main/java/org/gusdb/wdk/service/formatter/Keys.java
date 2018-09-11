@@ -57,6 +57,8 @@ public class Keys {
   public static final String IS_PUBLIC = "isPublic";
   public static final String USE_BASKET = "useBasket";
   public static final String SCOPES = "scopes";
+  public static final String CLIENT_SORT_SPEC = "clientSortSpec";
+
 
   // scoping-related keys
   public static final String CATEGORIES = "categories";

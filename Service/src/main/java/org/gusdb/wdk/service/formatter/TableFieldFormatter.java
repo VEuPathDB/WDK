@@ -7,6 +7,9 @@ import org.gusdb.wdk.service.formatter.Keys;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
+
 /**
  * Formats WDK TableFields.  TableField JSON will have the following form:
  * {
@@ -48,7 +51,13 @@ public class TableFieldFormatter {
       .put(Keys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(table))
       .put(Keys.PROPERTIES, table.getPropertyLists())
       .put(Keys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
-          table.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes));
+          table.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
+      .put(Keys.CLIENT_SORT_SPEC, getClientSortSpecJson(table));
   }
 
+  private static JSONArray getClientSortSpecJson(TableField tableField) {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(new JsonOrgModule()); // use jackson plugin to convert to org.json
+    return mapper.convertValue(tableField.getClientSortingOrder(), JSONArray.class);
+  }
 }
