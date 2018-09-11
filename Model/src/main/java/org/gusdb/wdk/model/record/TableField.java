@@ -5,10 +5,13 @@ import static org.gusdb.wdk.model.AttributeMetaQueryHandler.getDynamicallyDefine
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.fgputil.SortDirection;
+import org.gusdb.fgputil.SortDirectionSpec;
 import org.gusdb.wdk.model.AttributeMetaQueryHandler;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -41,6 +44,10 @@ public class TableField extends Field implements AttributeFieldContainer {
   private List<WdkModelText> _descriptions = new ArrayList<WdkModelText>();
   private String _description;
   private String _categoryName;
+  private String _clientSortingOrderString;
+  private List<SortDirectionSpec<AttributeField>> _clientSortingOrderList = new ArrayList<SortDirectionSpec<AttributeField>>();
+  public static final String SORT_ASCENDING = "ASC"; 
+  public static final String SORT_DESCENDING = "DESC";
 
   private RecordClass _recordClass;
 
@@ -63,6 +70,20 @@ public class TableField extends Field implements AttributeFieldContainer {
 
   public String getQueryRef() {
     return _queryTwoPartName;
+  }
+  
+  /**
+   * an optional comma delimited list of column names to tell client how to sort this table.
+   * each element of the list is of the form "column_name ASC|DESC"
+   * this is used typically if sorting in SQL is too expensive 
+   * @param sortingOrderString
+   */
+  public void setClientSortingOrder(String sortingOrderString) {
+    _clientSortingOrderString = sortingOrderString;
+  }
+   
+  public List<SortDirectionSpec<AttributeField>> getClientSortingOrder() {
+    return Collections.unmodifiableList(_clientSortingOrderList);
   }
   
   public void setAttributeMetaQueryRef(String attributeMetaQueryRef) {
@@ -154,79 +175,65 @@ public class TableField extends Field implements AttributeFieldContainer {
     for (AttributeField field : _attributeFieldMap.values()) {
       field.setContainerName(_recordClass.getFullName() + "." + _name);
     }
+
+    // Continue only if a table attribute meta query reference is provided.
+    if (_attributeMetaQueryTwoPartName != null) {
+      for (Map<String, Object> row : getDynamicallyDefinedAttributes(_attributeMetaQueryTwoPartName,
+          wdkModel)) {
+        AttributeField attributeField = new QueryColumnAttributeField();
+
+        // Need to call this explicitly since this attribute field originates from the database
+        attributeField.excludeResources(wdkModel.getProjectId());
+
+        // Populate the attributeField with the attribute meta data
+        AttributeMetaQueryHandler.populate(attributeField, row);
+
+        // Add the new attributeField to the map
+        _attributeFieldMap.put(attributeField.getName(), attributeField);
+      }
+    }
+
+    unpackAndValidateClientSortingOrder();
     
-    // Continue only if an table attribute meta query reference is provided.  
-  	if(_attributeMetaQueryTwoPartName != null) {
-  	  for (Map<String,Object> row : getDynamicallyDefinedAttributes(_attributeMetaQueryTwoPartName, wdkModel)) {
-  	    AttributeField attributeField = new QueryColumnAttributeField();
-
-  	    // Need to call this explicitly since this attribute field originates from the database
-  	    attributeField.excludeResources(wdkModel.getProjectId());
-
-  	    // Populate the attributeField with the attribute meta data
-  	    AttributeMetaQueryHandler.populate(attributeField, row);
-  	    
-  	    // Add the new attributeField to the map
-  	    _attributeFieldMap.put(attributeField.getName(), attributeField);
-  	  }  
-
-  		/**
-  	  try {	
-  	    SqlQuery query = (SqlQuery) wdkModel.resolveReference(_attributeMetaQueryTwoPartName);
-  	    final List<AttributeField> attributeFields = new ArrayList<>();
-        new SQLRunner(wdkModel.getAppDb().getDataSource(), query.getSql(), query.getFullName() + "__dyn-cols")
-          .executeQuery(new ResultSetHandler() {
-            @Override
-            public void handleResult(ResultSet resultSet) throws SQLException {
-              try {
-                // Call the attribute meta query
-                ResultSetMetaData metaData = resultSet.getMetaData();
-
-                // Compile a list of database column names - the list will likely be different for
-                // every attribute meta query table.
-                int columnCount = metaData.getColumnCount();
-                List<String> columnNames = new ArrayList<>();
-                for (int i = 1; i <= columnCount; i++ ) {
-                  String columnName = metaData.getColumnName(i).toLowerCase();
-                  columnNames.add(columnName);	
-                }
-
-                // get field setters to populate
-                List<FieldSetter> fieldSetters = RngAnnotations.getRngFields(QueryColumnAttributeField.class);
-
-                // Iterate over each row (database loaded attribute)
-                while(resultSet.next()) {
-                  AttributeField attributeField = new QueryColumnAttributeField();
-
-                  // Need to call this here since this attribute field originates from the database
-                  attributeField.excludeResources(wdkModel.getProjectId());
-
-                  // Populate the attributeField with the attribute meta data
-                  AttributeMetaQueryHandler.populate(attributeField, resultSet,
-                   metaData, columnNames, fieldSetters, wdkModel);
-                    attributeFields.add(attributeField);
-                }
-              }
-              catch (WdkModelException e) {
-                throw new SQLRunnerException("Error loading dynamic attributes", e);
-              }              
-            }
-         });
-      
-        // Add the the attribute field map because the attribute field list may already have been trashed by an
-        // excludeResources method
-        for (AttributeField attributeField : attributeFields) {
-          _attributeFieldMap.put(attributeField.getName(), attributeField);
-        }
-  	  }  
-  	  catch (WdkModelException e) {
-  	    throw new SQLRunnerException("Error loading sql-based table attributes", e);
-      } **/
-  	}
-    
-
     _resolved = true;
   }
+  
+  private String getTableNameForErrMsg() {
+    return "<table name=\""  + _name + "\"> of recordClass " +  _recordClass.getFullName();
+  }
+  
+  private void unpackAndValidateClientSortingOrder() throws WdkModelException {
+
+    // comma delimited list of 'column_name ASC|DESC'
+    String[] sortSpecStrings = _clientSortingOrderString.split(",\\s*"); 
+    
+    for (String sortSpecString : sortSpecStrings) {
+
+      String errPrefix = "Invalid clientSortingOrder item '" + sortSpecString + "' in " + getTableNameForErrMsg() + ": ";
+
+      String[] parsedSpec = sortSpecString.split("\\s+");
+      
+      if (!(parsedSpec.length == 2 || SortDirection.isValidDirection(parsedSpec[1]))) 
+        throw new WdkModelException(errPrefix + "must be in the form: column_name ASC|DESC, ...");
+      
+      if (!_attributeFieldMap.containsKey(parsedSpec[0])) 
+        throw new WdkModelException(errPrefix + " no attribute field exists with name " + parsedSpec[0]);
+      
+      SortDirectionSpec<AttributeField> sortDirection = 
+          new SortDirectionSpec<AttributeField>(_attributeFieldMap.get(parsedSpec[0]), SortDirection.valueOf(parsedSpec[1]));
+          
+      _clientSortingOrderList.add(sortDirection);
+    }
+  }
+  
+  /*
+    public AttributeFieldSortSpec(String sortSpecString) throws WdkModelException {
+
+
+      
+    }
+
+   */
 
   @Override
   public int getTruncateTo() {
@@ -242,8 +249,7 @@ public class TableField extends Field implements AttributeFieldContainer {
     for (WdkModelText description : _descriptions) {
       if (description.include(projectId)) {
         if (hasDescription) {
-          throw new WdkModelException("The table field " + _name + " of recordClass " +
-              _recordClass.getFullName() + " has more than one description for project " + projectId);
+          throw new WdkModelException(getTableNameForErrMsg() + " has more than one description for project " + projectId);
         }
         else {
           _description = description.getText();
@@ -259,7 +265,7 @@ public class TableField extends Field implements AttributeFieldContainer {
         field.excludeResources(projectId);
         String fieldName = field.getName();
         if (_attributeFieldMap.containsKey(fieldName))
-          throw new WdkModelException("The attributeField " + fieldName + " is duplicated in table " + _name);
+          throw new WdkModelException("In " + getTableNameForErrMsg() + "the attributeField " + fieldName + " is duplicated");
         _attributeFieldMap.put(fieldName, field);
       }
     }

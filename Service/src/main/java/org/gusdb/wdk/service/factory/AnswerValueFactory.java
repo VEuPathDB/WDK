@@ -12,7 +12,7 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.ParamValue;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.answer.AnswerDetails;
-import org.gusdb.wdk.service.request.answer.SortItem;
+import org.gusdb.wdk.service.request.answer.AttributeFieldSortSpec;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 
 public class AnswerValueFactory {
@@ -44,7 +44,7 @@ public class AnswerValueFactory {
     int startIndex = config.getOffset() + 1;
     int endIndex = startIndex + config.getNumRecords() - 1;
     AnswerValue configuredAnswer = answerValue.cloneWithNewPaging(startIndex, endIndex);
-    Map<String, Boolean>  sorting = SortItem.convertSorting(config.getSorting());
+    Map<String, Boolean>  sorting = AttributeFieldSortSpec.convertSorting(config.getSorting());
     configuredAnswer.setSortingMap(sorting);
     return configuredAnswer;
   }
