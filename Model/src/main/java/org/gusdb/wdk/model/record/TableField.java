@@ -205,7 +205,7 @@ public class TableField extends Field implements AttributeFieldContainer {
   private void unpackAndValidateClientSortingOrder() throws WdkModelException {
 
     // comma delimited list of 'column_name ASC|DESC'
-    String[] sortSpecStrings = _clientSortingOrderString.split(",\\s*"); 
+    String[] sortSpecStrings = _clientSortingOrderString == null? new String[0] : _clientSortingOrderString.split(",\\s*"); 
     
     for (String sortSpecString : sortSpecStrings) {
 
