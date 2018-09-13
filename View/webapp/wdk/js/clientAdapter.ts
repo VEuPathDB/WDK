@@ -91,17 +91,14 @@ wdk.namespace('wdk', ns => {
         onPropsChanged(props: any) {
           ReactDOM.render(
             React.createElement(
-              WdkControllers.ErrorBoundary,
-              {
-                dispatchAction: context.dispatchAction,
-                renderError: () => 'There was an error!'
-              },
+              Provider,
+              { store: context.store }, 
               React.createElement(
-                Router,
-                { history: context.history },
+                WdkControllers.ErrorBoundary,
+                { renderError: () => 'There was an error!' },
                 React.createElement(
-                  Provider,
-                  { store: context.store }, 
+                  Router,
+                  { history: context.history },
                   React.createElement(ViewController as any, { ...props, ...context, ref: viewControllerRef })
                 )
               )
