@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
@@ -308,12 +309,17 @@ public class ModelConfig implements OAuthConfig {
    */
   public String getSecretKey() {
     if (_secretKey == null && _secretKeyFile != null) {
-      try (FileReader in = new FileReader(_secretKeyFile.toFile())) {
+      FileReader in = null;
+      try {
+        in = new FileReader(_secretKeyFile.toFile());
         _secretKey = EncryptionUtil.md5(IoUtil.readAllChars(in));
       }
       catch (IOException e) {
         // log error but otherwise ignore so null is returned; problem may be remedied in the future
         LOG.error("Unable to read secret key value from file: " + _secretKeyFile, e);
+      }
+      finally {
+        IOUtils.closeQuietly(in);
       }
     }
     return _secretKey;
