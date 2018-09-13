@@ -81,6 +81,9 @@ public class ModelConfigBuilder {
     Path wdkTempDir = Functions.mapException(
         () -> IoUtil.createOpenPermsDirectories(Paths.get(_wdkTempDir)),
         e -> new WdkModelException(e));
+    // confirm that temp dir is present and readable after possible creation
+    wdkTempDir = IoUtil.getWriteableDirectoryOrThrow(wdkTempDir.toString(),
+        () -> new WdkModelException("wdkTempDir" + _wdkTempDir + " is not a writeable directory.")).toPath();
     assertNonNull("webServiceUrl", _webServiceUrl);
     // TODO: assess how we can get rid of this - seems optional in some cases
     //assertNonNull("assetsUrl", _assetsUrl);
