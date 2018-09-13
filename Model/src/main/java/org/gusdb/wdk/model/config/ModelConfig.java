@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.config;
 
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -313,6 +314,10 @@ public class ModelConfig implements OAuthConfig {
       try {
         in = new FileReader(_secretKeyFile.toFile());
         _secretKey = EncryptionUtil.md5(IoUtil.readAllChars(in));
+      }
+      catch (FileNotFoundException e) {
+        // log error but otherwise ignore so null is returned; problem may be remedied in the future
+        LOG.error("Unable to read secret key value from file: " + _secretKeyFile, e);
       }
       catch (IOException e) {
         // log error but otherwise ignore so null is returned; problem may be remedied in the future
