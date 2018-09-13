@@ -88,7 +88,8 @@ public class ModelConfigBuilder {
     assertNonNull("userDb", _userDB);
     assertNonNull("appDb", _appDB);
     assertNonNull("accountDb", _accountDB);
-    assertNonNull("userDatasetStoreConfig", _userDatasetStoreConfig);
+    // TODO: should probably have a default for this- no NPEs!
+    //assertNonNull("userDatasetStoreConfig", _userDatasetStoreConfig);
 
     return new ModelConfig(
 
