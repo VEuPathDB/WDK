@@ -82,7 +82,8 @@ public class ModelConfigBuilder {
         () -> IoUtil.createOpenPermsDirectories(Paths.get(_wdkTempDir)),
         e -> new WdkModelException(e));
     assertNonNull("webServiceUrl", _webServiceUrl);
-    assertNonNull("assetsUrl", _assetsUrl);
+    // TODO: assess how we can get rid of this - seems optional in some cases
+    //assertNonNull("assetsUrl", _assetsUrl);
     assertNonNull("supportEmail", _supportEmail);
     assertNonNull("userDb", _userDB);
     assertNonNull("appDb", _appDB);
