@@ -5,7 +5,6 @@ import static org.gusdb.fgputil.functional.Functions.mapToList;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -140,38 +139,40 @@ public class UserDatasetService extends UserService {
   @Path("user-datasets/{datasetId}/user-datafiles/{datafileName}")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   public Response getBinaryDatafile(@PathParam("datasetId") String datasetIdStr, @PathParam("datafileName") String datafileName) throws WdkModelException, WdkUserException {
-	long userId = getUser(Access.PRIVATE).getUserId();
+    long userId = getUser(Access.PRIVATE).getUserId();
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();
     java.nio.file.Path temporaryDirPath = null;
     try (UserDatasetSession dsSession = dsStore.getSession()) {
-    	  temporaryDirPath = IoUtil.createOpenPermsTempDir(Paths.get(getWdkModel().getModelConfig().getWdkTempDir()), "irods_");
+         temporaryDirPath = IoUtil.createOpenPermsTempDir(getWdkModel().getModelConfig().getWdkTempDir(), "irods_");
       UserDataset userDataset =
-              dsSession.getUserDatasetExists(userId, datasetId) ?
-              dsSession.getUserDataset(userId, datasetId) :
-              dsSession.getExternalUserDatasets(userId).get(datasetId);
+          dsSession.getUserDatasetExists(userId, datasetId) ?
+          dsSession.getUserDataset(userId, datasetId) :
+          dsSession.getExternalUserDatasets(userId).get(datasetId);
       if (userDataset == null) {
         throw new NotFoundException("No user dataset is found with ID " + datasetId);
       }
       UserDatasetFile userDatasetFile = userDataset.getFile(dsSession, datafileName);
-      if(userDatasetFile == null) throw new WdkModelException("There is no data file corresponding to the filename " + datafileName);
+      if (userDatasetFile == null) {
+        throw new WdkModelException("There is no data file corresponding to the filename " + datafileName);
+      }
       InputStream inputStream = userDatasetFile.getFileContents(dsSession, temporaryDirPath);
       return Response.ok(getStreamingOutput(inputStream)).build();
     }
     catch(IOException ioe) {
-    	  throw new WdkModelException(ioe);
+      throw new WdkModelException(ioe);
     }
     finally {
-    	  if(temporaryDirPath != null) {
-    	    java.nio.file.Path temporaryFilePath = temporaryDirPath.resolve(datafileName);
-    	    try {
-    		  Files.delete(temporaryFilePath);
-    		  Files.delete(temporaryDirPath);
-    	    }
-    	    catch(IOException ioe) {
-    	    	  throw new WdkModelException(ioe);
-    	    }
-    	  }
+      if (temporaryDirPath != null) {
+        java.nio.file.Path temporaryFilePath = temporaryDirPath.resolve(datafileName);
+        try {
+          Files.delete(temporaryFilePath);
+          Files.delete(temporaryDirPath);
+        }
+        catch(IOException ioe) {
+          throw new WdkModelException(ioe);
+        }
+      }
     }
   }
 
