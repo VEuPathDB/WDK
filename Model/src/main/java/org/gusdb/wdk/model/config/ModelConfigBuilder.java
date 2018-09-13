@@ -73,8 +73,8 @@ public class ModelConfigBuilder {
     assertNonNull("modelName", _modelName);
     assertNonNull("projectId", _projectId);
     assertNonNull("gusHome", _gusHome);
-    Path gusHome = IoUtil.getReadableDirectoryOrThrow(_gusHome,
-        () -> new WdkModelException("gusHome" + _gusHome + " is not a readable directory.")).toPath();
+    Path gusHome = Paths.get(_gusHome); //IoUtil.getReadableDirectoryOrThrow(_gusHome,
+        //() -> new WdkModelException("gusHome" + _gusHome + " is not a readable directory.")).toPath();
     Path secretKeyFile = Paths.get(_secretKeyFile);
     assertNonNull("wdkTempDir", _wdkTempDir);
     // create wdk temp dir and parents if they do not exist

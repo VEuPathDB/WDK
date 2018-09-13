@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 public class WdkInitializer {
 
-  private static final Logger LOG = Logger.getLogger(ApplicationInitListener.class);
+  private static final Logger LOG = Logger.getLogger(WdkInitializer.class);
 
   public static void initializeWdk(ServletContext servletContext) {
     try {
@@ -53,7 +53,7 @@ public class WdkInitializer {
     }
     catch (Exception e) {
       LOG.error("Unable to initialize WDK web application.", e);
-      throw new RuntimeException(e);
+      throw new RuntimeException("Unable to initialize WDK web application.", e);
     }
     finally {
       MDCUtil.clearValues();
