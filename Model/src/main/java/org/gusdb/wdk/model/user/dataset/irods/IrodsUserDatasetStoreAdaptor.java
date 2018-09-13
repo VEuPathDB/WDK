@@ -50,12 +50,12 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
   private static IRODSAccessObjectFactory accessObjectFactory;
   private static final String IRODS_ID_ATTRIBUTE = "irods_id";
   private static String _homeDir;
-  private String _wdkTempDirName;
-  
-  public IrodsUserDatasetStoreAdaptor(String wdkTempDirName) {
-    _wdkTempDirName = wdkTempDirName;
+  private Path _wdkTempDir;
+
+  public IrodsUserDatasetStoreAdaptor(Path wdkTempDir) {
+    _wdkTempDir = wdkTempDir;
   }
-  
+
   /**
    * This method sets the IRODSFileSystem object instance variable if it is not already populated.
    * It creates a new instance to be used subsequently by all IRODS methods.
@@ -66,7 +66,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
       system = IRODSFileSystem.instance();
     }
   }
-  
+
   /**
    * This method returns the IRODSAccount object instance variable if populated.  Otherwise, it
    * uses the method args to create a new IRODSAccount to be used subsequently by all IRODS methods.
@@ -79,17 +79,17 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    * @return
    */
   private static IRODSAccount initializeAccount(String host,
-		  int port, String user, String password, String zone, String resource) throws WdkModelException {
-    if(account == null) {
-    	  try {
+      int port, String user, String password, String zone, String resource) throws WdkModelException {
+    if (account == null) {
+      try {
         ClientServerNegotiationPolicy csnp = new ClientServerNegotiationPolicy();
         csnp.setSslNegotiationPolicy(SslNegotiationPolicy.CS_NEG_REQUIRE);
         _homeDir = "/" + zone + "/home/" + user;
         account = IRODSAccount.instance(host,port,user,password,_homeDir,zone,resource,csnp);
-    	  }
-    	  catch(JargonException je) {
-    	    throw new WdkModelException(je);
-    	  }
+      }
+      catch(JargonException je) {
+        throw new WdkModelException(je);
+      }
     }
     return account;
   }
@@ -106,7 +106,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    * @throws WdkModelException
    */
   public static void initializeIrods(String host, int port, String user, String pwd, String zone, String resource) throws WdkModelException {
-	try {  
+    try {  
       setSystem();
       initializeAccount(host, port, user, pwd, zone, resource);
       accessObjectFactory = system.getIRODSAccessObjectFactory();
@@ -118,13 +118,12 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
 //      jargonProperties.setEncryptionSaltSize(8);
 //      jargonProperties.setNegotiationPolicy(SslNegotiationPolicy.CS_NEG_REQUIRE);
 //      irodsSession.setJargonProperties(jargonProperties);
-	}
-	catch(JargonException je) {
-	  throw new WdkModelException(je);
-	}
+    }
+    catch(JargonException je) {
+      throw new WdkModelException(je);
+    }
   }
-  
-  
+
   public static IRODSAccessObjectFactory getAccessObjectFactory() {
     return accessObjectFactory;
   }
@@ -136,19 +135,19 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
    * @throws WdkModelException
    */
   public IRODSFileFactory getIrodsFileFactory() throws WdkModelException {
-	  try {
-	  if(accessObjectFactory != null) {
-		return accessObjectFactory.getIRODSFileFactory(account);
-	  }
-	  else {
-		throw new WdkModelException("The IRODS access object factory cannot be null");
-	  }
-	}
-	catch(JargonException je) {
-	  throw new WdkModelException(je);
-	}
+    try {
+      if(accessObjectFactory != null) {
+        return accessObjectFactory.getIRODSFileFactory(account);
+      }
+      else {
+        throw new WdkModelException("The IRODS access object factory cannot be null");
+      }
+    }
+    catch(JargonException je) {
+      throw new WdkModelException(je);
+    }
   }
-  
+
   /**
    * Convenience method to retrieve the IRODS data transfer operations object (hiding account)
    * @param accessObjectFactory
@@ -325,7 +324,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     Path localPath = null;
     Path temporaryPath = null;
     try {
-      temporaryPath = IoUtil.createOpenPermsTempDir(Paths.get(_wdkTempDirName), "irods_");
+      temporaryPath = IoUtil.createOpenPermsTempDir(_wdkTempDir, "irods_");
       localPath = Paths.get(temporaryPath.toString(), irodsFileName);
       DataTransferOperations dataXferOps = getDataTransferOperations();
       dataXferOps.getOperation(file.toString(), localPath.toString(), "", null, null);
@@ -564,7 +563,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
       IRODSFileFactory fileFactory = getIrodsFileFactory();
       irodsFile = getIrodsFile(fileFactory, pathName);
       if(!irodsFile.exists()) {
-    	    temporaryDirPath = IoUtil.createOpenPermsTempDir(Paths.get(_wdkTempDirName), "irods_");
+    	    temporaryDirPath = IoUtil.createOpenPermsTempDir(_wdkTempDir, "irods_");
     	    localPath = Paths.get(temporaryDirPath.toString(), file.getFileName().toString());
     	    localFile = new File(localPath.toString());
     	    localFile.createNewFile();
@@ -649,8 +648,8 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
 	}
   }
   
-  public String getWdkTempDirName() {
-    return _wdkTempDirName;
+  public Path getWdkTempDir() {
+    return _wdkTempDir;
   }
   
   public TransferControlBlock getTranferControlBlock() throws WdkModelException {

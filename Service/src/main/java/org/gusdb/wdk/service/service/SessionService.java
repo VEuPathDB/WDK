@@ -180,7 +180,7 @@ public class SessionService extends AbstractWdkService {
    */
   private Response getSuccessResponse(User user, String redirectUrl, boolean isRedirectResponse) throws WdkModelException {
     getSession().setAttribute(Utilities.WDK_USER_KEY, new UserBean(user));
-    LoginCookieFactory baker = new LoginCookieFactory(getWdkModel().getSecretKey());
+    LoginCookieFactory baker = new LoginCookieFactory(getWdkModel().getModelConfig().getSecretKey());
     Cookie loginCookie = baker.createLoginCookie(user.getEmail(), true);
     redirectUrl = getSuccessRedirectUrl(redirectUrl, user, loginCookie);
     return (isRedirectResponse ?
@@ -296,7 +296,7 @@ public class SessionService extends AbstractWdkService {
     WdkModel wdkModel = getWdkModel();
     return Response.ok(
       getVerificationJsonResult(
-        getVerifiedUsername(cookieValue, wdkModel.getSecretKey()), wdkModel)
+        getVerifiedUsername(cookieValue, wdkModel.getModelConfig().getSecretKey()), wdkModel)
     ).build();
   }
 

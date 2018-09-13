@@ -177,7 +177,7 @@ public class ProfileService extends UserService {
       if (emailUser != null && emailUser.getUserId() != user.getUserId()) {
         throw new ConflictException(DUPLICATE_EMAIL);
       }
-      LoginCookieFactory cookieFactory = new LoginCookieFactory(getWdkModel().getSecretKey());
+      LoginCookieFactory cookieFactory = new LoginCookieFactory(getWdkModel().getModelConfig().getSecretKey());
       Cookie oldLoginCookie = LoginCookieFactory.findLoginCookie(getCookies());
       return CookieConverter.toJaxRsCookie(cookieFactory.createLoginCookie(email, oldLoginCookie.getMaxAge()));
     }

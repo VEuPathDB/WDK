@@ -141,7 +141,8 @@ public class Cache extends BeanBase implements CacheMBean {
    */
   @Override
   public void toggleWdkIsCaching() {
-    boolean isCaching = getWdkModel().getModelConfig().isCaching();
-    getWdkModel().getModelConfig().setCaching( ! isCaching );
+    //boolean isCaching = getWdkModel().getModelConfig().isCaching();
+    //getWdkModel().getModelConfig().setCaching( ! isCaching );
+    throw new UnsupportedOperationException("We're sorry, but toggling WDK caching setting is no longer supported.");
   }
 }

@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.config;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,7 +55,7 @@ public class ModelConfigUserDatasetStore extends WdkModelBase {
   /*
    * Returns an initialized user dataset store.
    */
-  public UserDatasetStore getUserDatasetStore(String wdkTempDirName) throws WdkModelException {
+  public UserDatasetStore getUserDatasetStore(Path wdkTempDir) throws WdkModelException {
 
     // if a store has already been created and configured, return that one
     if (userDatasetStore != null) {
@@ -91,7 +92,7 @@ public class ModelConfigUserDatasetStore extends WdkModelBase {
     }
     propertyList = null;
     
-    userDatasetStore.initialize(properties, getTypeHandlers(), wdkTempDirName);
+    userDatasetStore.initialize(properties, getTypeHandlers(), wdkTempDir);
 
     return userDatasetStore;
   }

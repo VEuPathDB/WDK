@@ -59,7 +59,7 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   protected Path _usersRootDir;
   protected UserDatasetStoreAdaptor _adaptor;
   protected String _id;
-  protected String _wdkTempDirName;
+  protected Path _wdkTempDir;
   protected UserDatasetTypeHandler _unsupportedTypeHandler;
 
   @Override
@@ -68,12 +68,12 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   }
 
   @Override
-  public void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, String wdkTempDirName) throws WdkModelException {
+  public void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, Path wdkTempDir) throws WdkModelException {
     String pathName = configuration.get("rootPath");
     if (pathName == null)
       throw new WdkModelException("Required configuration 'rootPath' not found.");
     _usersRootDir = Paths.get(pathName);
-    _wdkTempDirName = wdkTempDirName;
+    _wdkTempDir = wdkTempDir;
     typeHandlersMap = typeHandlers;
     createUnsupportedTypeHandler();
   }
@@ -110,8 +110,8 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   }
   
   @Override
-  public String getWdkTempDirName() {
-	return _wdkTempDirName;
+  public Path getWdkTempDir() {
+	return _wdkTempDir;
   }
   
 }

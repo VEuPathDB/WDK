@@ -11,8 +11,8 @@ import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStore;
 public class IrodsUserDatasetStore extends JsonUserDatasetStore {
 
   @Override
-  public void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, String wdkTempDirName) throws WdkModelException {
-    super.initialize(configuration, typeHandlers, wdkTempDirName);
+  public void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, Path wdkTempDir) throws WdkModelException {
+    super.initialize(configuration, typeHandlers, wdkTempDir);
     String zone = configuration.get("zone");
     String resource = configuration.get("resource");
     String host = configuration.get("host");
@@ -28,12 +28,12 @@ public class IrodsUserDatasetStore extends JsonUserDatasetStore {
 
   @Override
   public IrodsUserDatasetSession getSession() throws WdkModelException {
-    return new IrodsUserDatasetSession(_usersRootDir, getWdkTempDirName());
+    return new IrodsUserDatasetSession(_usersRootDir, getWdkTempDir());
   }
   
   @Override
   public IrodsUserDatasetSession getSession(Path usersRootDir) throws WdkModelException {
-    return new IrodsUserDatasetSession(usersRootDir, getWdkTempDirName());
+    return new IrodsUserDatasetSession(usersRootDir, getWdkTempDir());
   }
 
 }

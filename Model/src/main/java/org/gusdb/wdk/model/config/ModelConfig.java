@@ -1,11 +1,15 @@
 package org.gusdb.wdk.model.config;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.Named.NamedObject;
 
 /**
  * An object representation of the {@code model-config.xml} file. It holds all the configuration information
@@ -20,86 +24,92 @@ public class ModelConfig implements OAuthConfig {
 
   public static final String WSF_LOCAL = "local";
 
-  public static enum AuthenticationMethod {
+  public enum AuthenticationMethod implements NamedObject {
     USER_DB, OAUTH2;
     public String getName() {
       return name();
     }
   }
 
-  private String _modelName;
-  private String _webServiceUrl;
+  private final String _modelName;
+  private final String _webServiceUrl;
 
   // the information for registration email
 
   /**
    * the SMTP server used to send registration & recover password emails.
    */
-  private String _smtpServer;
+  private final String _smtpServer;
 
   /**
    * the reply of the registration & recover password emails.
    */
-  private String _supportEmail;
+  private final String _supportEmail;
 
   /**
    * the relative or absolute url to find assets
    */
-  private String _assetsUrl;
+  private final String _assetsUrl;
 
   /**
    * the recipient of the super slow query log.
    */
-  private List<String> _adminEmails = Collections.EMPTY_LIST;
+  private final List<String> _adminEmails;
 
   /**
    * the subject of the registration email.
    */
-  private String _emailSubject;
+  private final String _emailSubject;
 
   /**
    * the content of the registration email.
    */
-  private String _emailContent;
+  private final String _emailContent;
 
-  private ModelConfigUserDB _userDB;
-  private ModelConfigAppDB _appDB;
-  private ModelConfigAccountDB _accountDB;
+  private final ModelConfigUserDB _userDB;
+  private final ModelConfigAppDB _appDB;
+  private final ModelConfigAccountDB _accountDB;
 
-  private ModelConfigUserDatasetStore _userDatasetStoreConfig;
+  private final ModelConfigUserDatasetStore _userDatasetStoreConfig;
 
-  private QueryMonitor _queryMonitor = new QueryMonitor();
+  private final QueryMonitor _queryMonitor;
 
   /**
    * The projectId is not part of the config file content, it is input by the user
    */
-  private String _projectId;
-  private String _gusHome;
+  private final String _projectId;
+  private final Path _gusHome;
 
   /**
    * location of secret key file
    */
-  private String _secretKeyFile;
+  private final Path _secretKeyFile;
+
+  /**
+   * cached secret key; value is assigned at construction or as soon as the
+   * secretKeyFile is present and readable when the secret key is requested
+   */
+  private String _secretKey;
 
   /**
    * enable/disable weight feature in the steps. default enabled.
    */
-  private boolean _useWeights = true;
+  private final boolean _useWeights;
 
   /**
    * default regex used by all the stringParams
    */
-  private String _paramRegex;
+  private final String _paramRegex;
 
   /**
    * turn on thread monitor process if set to true
    */
-  private boolean _monitorBlockedThreads = true;
+  private final boolean _monitorBlockedThreads;
 
   /**
    * if blocked
    */
-  private int _blockedThreshold = 20;
+  private final int _blockedThreshold;
 
   /**
    * enable or disable global caching. default enabled, and then each individual sqlQuery can control their
@@ -107,7 +117,7 @@ public class ModelConfig implements OAuthConfig {
    * regardless of the individual setting on the query. Please note that this flag has no effect on
    * processQueries, which is always cached.
    */
-  private boolean _caching = true;
+  private final boolean _caching;
 
   /**
    * Authentication can be performed either the traditional way (i.e. directly
@@ -115,22 +125,86 @@ public class ModelConfig implements OAuthConfig {
    * remotely.  The OAuth server must provide access to a user id resource (a la
    * OpenID Connect).
    */
-  private AuthenticationMethod _authenticationMethod = AuthenticationMethod.USER_DB;
-  private String _oauthUrl = "";          // needed if method is OAUTH2
-  private String _oauthClientId = "";     // needed if method is OAUTH2
-  private String _oauthClientSecret = ""; // needed if method is OAUTH2
-  private String _changePasswordUrl = ""; // probably needed if method is OAUTH2
+  private final AuthenticationMethod _authenticationMethod;
+  private final String _oauthUrl;          // needed if method is OAUTH2
+  private final String _oauthClientId;     // needed if method is OAUTH2
+  private final String _oauthClientSecret; // needed if method is OAUTH2
+  private final String _changePasswordUrl; // probably needed if method is OAUTH2
 
   /**
    * Specify keystore file and pass phrase if SSL security checking is desired
    */
-  private String _keyStoreFile = "";
-  private String _keyStorePassPhrase = "";
+  private final String _keyStoreFile;
+  private final String _keyStorePassPhrase;
 
   /**
    * Specifies the directory within which the wdk will house temporary files.
    */
-  private String _wdkTempDir;
+  private final Path _wdkTempDir;
+
+  public ModelConfig(String modelName, String projectId, Path gusHome, boolean caching, boolean useWeights,
+      String paramRegex, Path secretKeyFile, Path wdkTempDir, String webServiceUrl, String assetsUrl,
+      String smtpServer, String supportEmail, List<String> adminEmails, String emailSubject,
+      String emailContent, ModelConfigUserDB userDB, ModelConfigAppDB appDB, ModelConfigAccountDB accountDB,
+      ModelConfigUserDatasetStore userDatasetStoreConfig, QueryMonitor queryMonitor,
+      boolean monitorBlockedThreads, int blockedThreshold, AuthenticationMethod authenticationMethod,
+      String oauthUrl, String oauthClientId, String oauthClientSecret, String changePasswordUrl,
+      String keyStoreFile, String keyStorePassPhrase) {
+
+    // basic model information
+    _modelName = modelName;
+    _projectId = projectId;
+    _gusHome = gusHome;
+
+    // basic model settings
+    _caching = caching;
+    _useWeights = useWeights;
+    _paramRegex = paramRegex;
+
+    // file locations
+    _secretKeyFile = secretKeyFile;
+    _wdkTempDir = wdkTempDir;
+
+    // network locations
+    _webServiceUrl = webServiceUrl;
+    _assetsUrl = assetsUrl;
+
+    // email setup
+    _smtpServer = smtpServer;
+    _supportEmail = supportEmail;
+    _adminEmails = adminEmails;
+    _emailSubject = emailSubject;
+    _emailContent = emailContent;
+
+    // databases
+    _userDB = userDB;
+    _appDB = appDB;
+    _accountDB = accountDB;
+
+    // user dataset config
+    _userDatasetStoreConfig = userDatasetStoreConfig;
+
+    // query performance monitoring
+    _queryMonitor = queryMonitor;
+
+    // JVM thread monitoring
+    _monitorBlockedThreads = monitorBlockedThreads;
+    _blockedThreshold = blockedThreshold;
+
+    // user authentication setup
+    _authenticationMethod = authenticationMethod;
+    _oauthUrl = oauthUrl;
+    _oauthClientId = oauthClientId;
+    _oauthClientSecret = oauthClientSecret;
+    _changePasswordUrl = changePasswordUrl;
+
+    // SSL key store information
+    _keyStoreFile = keyStoreFile;
+    _keyStorePassPhrase = keyStorePassPhrase;
+
+    // get secret key at object creation time if available
+    getSecretKey();
+  }
 
   /**
    * If it returns true, a monitoring thread will be turned on when webapp is initialized.
@@ -139,10 +213,6 @@ public class ModelConfig implements OAuthConfig {
    */
   public boolean isMonitorBlockedThreads() {
     return _monitorBlockedThreads;
-  }
-
-  public void setMonitorBlockedThreads(boolean monitorBlockedThreads) {
-    _monitorBlockedThreads = monitorBlockedThreads;
   }
 
   /**
@@ -154,10 +224,6 @@ public class ModelConfig implements OAuthConfig {
     return _blockedThreshold;
   }
 
-  public void setBlockedThreshold(int blockedThreshold) {
-    _blockedThreshold = blockedThreshold;
-  }
-
   /**
    * @return the projectId
    */
@@ -166,26 +232,10 @@ public class ModelConfig implements OAuthConfig {
   }
 
   /**
-   * @param projectId
-   *          the projectId to set
-   */
-  public void setProjectId(String projectId) {
-    _projectId = projectId;
-  }
-
-  /**
    * @return the gusHome
    */
-  public String getGusHome() {
+  public Path getGusHome() {
     return _gusHome;
-  }
-
-  /**
-   * @param gusHome
-   *          the gusHome to set
-   */
-  public void setGusHome(String gusHome) {
-    _gusHome = gusHome;
   }
 
   /**
@@ -195,20 +245,8 @@ public class ModelConfig implements OAuthConfig {
     return _modelName;
   }
 
-  /**
-   * @param modelName
-   *          the modelName to set
-   */
-  public void setModelName(String modelName) {
-    _modelName = modelName;
-  }
-
   public String getWebServiceUrl() {
     return _webServiceUrl;
-  }
-
-  public void setWebServiceUrl(String urlString) {
-    _webServiceUrl = urlString;
   }
 
   /**
@@ -219,26 +257,10 @@ public class ModelConfig implements OAuthConfig {
   }
 
   /**
-   * @param smtpServer
-   *          The smtpServer to set.
-   */
-  public void setSmtpServer(String smtpServer) {
-    _smtpServer = smtpServer;
-  }
-
-  /**
    * @return Returns the emailContent.
    */
   public String getEmailContent() {
     return _emailContent;
-  }
-
-  /**
-   * @param emailContent
-   *          The emailContent to set.
-   */
-  public void setEmailContent(String emailContent) {
-    _emailContent = emailContent;
   }
 
   /**
@@ -248,36 +270,12 @@ public class ModelConfig implements OAuthConfig {
     return _emailSubject;
   }
 
-  /**
-   * @param emailSubject
-   *          The emailSubject to set.
-   */
-  public void setEmailSubject(String emailSubject) {
-    _emailSubject = emailSubject;
-  }
-
   public String getSupportEmail() {
     return _supportEmail;
   }
 
-  public void setSupportEmail(String supportEmail) {
-    _supportEmail = supportEmail;
-  }
-
   public String getAssetsUrl() {
     return _assetsUrl;
-  }
-
-  public void setAssetsUrl(String assetsUrl) {
-    _assetsUrl = assetsUrl;
-  }
-
-  /**
-   * @param webAppUrl web app URL (no longer supported) 
-   */
-  public void setWebAppUrl(String webAppUrl) {
-    LOG.warn("WDK Model Config item `webAppUrl` is no longer used." +
-        " If you rely on it in your custom code, consider using a WDK Model Property instead.");
   }
 
   /**
@@ -288,26 +286,10 @@ public class ModelConfig implements OAuthConfig {
   }
 
   /**
-   * @param userDB
-   *          the userDB to set
-   */
-  public void setUserDB(ModelConfigUserDB userDB) {
-    _userDB = userDB;
-  }
-
-  /**
    * @return the appDB
    */
   public ModelConfigAppDB getAppDB() {
     return _appDB;
-  }
-
-  /**
-   * @param appDB
-   *          the appDB to set
-   */
-  public void setAppDB(ModelConfigAppDB appDB) {
-    _appDB = appDB;
   }
 
   /**
@@ -318,26 +300,23 @@ public class ModelConfig implements OAuthConfig {
   }
 
   /**
-   * @param accountDB
-   *          the accountDB to set
+   * Returns a cached secret key, generated by encrypting the value in the
+   * configured secret key file.  If the configured filename is null or the contents
+   * of the file cannot be read for any reason, null is returned.
+   * 
+   * @return
    */
-  public void setAccountDB(ModelConfigAccountDB accountDB) {
-    _accountDB = accountDB;
-  }
-
-  /**
-   * @return the secretKeyFile
-   */
-  public String getSecretKeyFile() {
-    return _secretKeyFile;
-  }
-
-  /**
-   * @param secretKeyFile
-   *          the secretKeyFile to set
-   */
-  public void setSecretKeyFile(String secretKeyFile) {
-    _secretKeyFile = secretKeyFile;
+  public String getSecretKey() {
+    if (_secretKey == null && _secretKeyFile != null) {
+      try (FileReader in = new FileReader(_secretKeyFile.toFile())) {
+        _secretKey = EncryptionUtil.md5(IoUtil.readAllChars(in));
+      }
+      catch (IOException e) {
+        // log error but otherwise ignore so null is returned; problem may be remedied in the future
+        LOG.error("Unable to read secret key value from file: " + _secretKeyFile, e);
+      }
+    }
+    return _secretKey;
   }
 
   /**
@@ -353,15 +332,7 @@ public class ModelConfig implements OAuthConfig {
    * by introspection of getter methods.
    */
   public String getAuthenticationMethod() {
-    return this.getAuthenticationMethodEnum().getName();
-  }
-
-  /**
-   * @param authenticationMethod configured authentication method
-   */
-  public void setAuthenticationMethod(String authenticationMethod) {
-    LOG.debug("Setting authentication method: " + authenticationMethod);
-    _authenticationMethod = AuthenticationMethod.valueOf(authenticationMethod.toUpperCase());
+    return getAuthenticationMethodEnum().getName();
   }
 
   /**
@@ -374,28 +345,12 @@ public class ModelConfig implements OAuthConfig {
   }
 
   /**
-   * @param oauthUrl base URL of OAuth2 server to use for authentication
-   * (used only if authentication method is OAUTH2)
-   */
-  public void setOauthUrl(String oauthUrl) {
-    _oauthUrl = oauthUrl;
-  }
-
-  /**
    * @return OAuth2 client ID to use for authentication
    * (called only if authentication method is OAUTH2)
    */
   @Override
   public String getOauthClientId() {
     return _oauthClientId;
-  }
-
-  /**
-   * @param _oauthUrl OAuth2 client ID to use for authentication
-   * (used only if authentication method is OAUTH2)
-   */
-  public void setOauthClientId(String oauthClientId) {
-    _oauthClientId = oauthClientId;
   }
 
   /**
@@ -408,26 +363,10 @@ public class ModelConfig implements OAuthConfig {
   }
 
   /**
-   * @param _oauthUrl OAuth2 client secret to use for authentication
-   * (used only if authentication method is OAUTH2)
-   */
-  public void setOauthClientSecret(String oauthClientSecret) {
-    _oauthClientSecret = oauthClientSecret;
-  }
-
-  /**
    * @return custom change password URL if specified
    */
   public String getChangePasswordUrl() {
     return _changePasswordUrl;
-  }
-
-  /**
-   * @param changePasswordUrl custom change password URL to set
-   */
-  public void setChangePasswordUrl(String changePasswordUrl) {
-    LOG.debug("Overriding Change Password Page URL: " + changePasswordUrl);
-    _changePasswordUrl = changePasswordUrl;
   }
 
   /**
@@ -440,14 +379,6 @@ public class ModelConfig implements OAuthConfig {
   }
 
   /**
-   * @param keyStoreFile key store file containing acceptable certs
-   * (used only if authentication method is OAUTH2)
-   */
-  public void setKeyStoreFile(String keyStoreFile) {
-    _keyStoreFile = keyStoreFile;
-  }
-
-  /**
    * @return pass phrase needed to access key store
    * (called only if authentication method is OAUTH2)
    */
@@ -457,26 +388,10 @@ public class ModelConfig implements OAuthConfig {
   }
 
   /**
-   * @param keyStorePassPhrase pass phrase needed to access key store
-   * (used only if authentication method is OAUTH2)
-   */
-  public void setKeyStorePassPhrase(String keyStorePassPhrase) {
-    _keyStorePassPhrase = keyStorePassPhrase;
-  }
-
-  /**
    * @return the useWeights
    */
   public boolean getUseWeights() {
     return _useWeights;
-  }
-
-  /**
-   * @param _secretKeyFile
-   *          the secretKeyFile to set
-   */
-  public void setUseWeights(boolean useWeights) {
-    _useWeights = useWeights;
   }
 
   /**
@@ -493,15 +408,6 @@ public class ModelConfig implements OAuthConfig {
   public String getAdminEmail() {
     return FormatUtil.join(_adminEmails.toArray(), ",");
   }
-  
-
-  /**
-   * @param adminEmail comma-delimited list of admin email addresses
-   */
-  public void setAdminEmail(String adminEmail) {
-    _adminEmails = (adminEmail == null || adminEmail.trim().isEmpty() ?
-      Collections.EMPTY_LIST : Arrays.asList(adminEmail.trim().split("[,\\s]+")));
-  }
 
   /**
    * @return the paramRegex
@@ -511,26 +417,10 @@ public class ModelConfig implements OAuthConfig {
   }
 
   /**
-   * @param paramRegex
-   *          the paramRegex to set
-   */
-  public void setParamRegex(String paramRegex) {
-    _paramRegex = paramRegex;
-  }
-
-  /**
    * @return the queryMonitor
    */
   public QueryMonitor getQueryMonitor() {
     return _queryMonitor;
-  }
-
-  /**
-   * @param queryMonitor
-   *          the queryMonitor to set
-   */
-  public void setQueryMonitor(QueryMonitor queryMonitor) {
-    _queryMonitor = queryMonitor;
   }
 
   /**
@@ -545,14 +435,6 @@ public class ModelConfig implements OAuthConfig {
     return _caching;
   }
 
-  public void setCaching(boolean caching) {
-    _caching = caching;
-  }
-
-  public void setUserDatasetStore(ModelConfigUserDatasetStore udsConfig) {
-    _userDatasetStoreConfig = udsConfig;
-  }
-
   /**
    * The config for a user dataset store. Optional.  Might be null.
    * @return
@@ -561,12 +443,8 @@ public class ModelConfig implements OAuthConfig {
     return _userDatasetStoreConfig;
   }
 
-  public String getWdkTempDir() {
+  public Path getWdkTempDir() {
     return _wdkTempDir;
-  }
-
-  public void setWdkTempDir(String wdkTempDir) {
-    _wdkTempDir = wdkTempDir;
   }
 
 }
