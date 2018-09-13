@@ -1,12 +1,10 @@
 package org.gusdb.wdk.model.config;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
@@ -306,25 +304,16 @@ public class ModelConfig implements OAuthConfig {
    * configured secret key file.  If the configured filename is null or the contents
    * of the file cannot be read for any reason, null is returned.
    * 
-   * @return
+   * @return secret key
    */
   public String getSecretKey() {
     if (_secretKey == null && _secretKeyFile != null) {
-      FileReader in = null;
-      try {
-        in = new FileReader(_secretKeyFile.toFile());
+      try (FileReader in = new FileReader(_secretKeyFile.toFile())) {
         _secretKey = EncryptionUtil.md5(IoUtil.readAllChars(in));
-      }
-      catch (FileNotFoundException e) {
-        // log error but otherwise ignore so null is returned; problem may be remedied in the future
-        LOG.error("Unable to read secret key value from file: " + _secretKeyFile, e);
       }
       catch (IOException e) {
         // log error but otherwise ignore so null is returned; problem may be remedied in the future
-        LOG.error("Unable to read secret key value from file: " + _secretKeyFile, e);
-      }
-      finally {
-        IOUtils.closeQuietly(in);
+        LOG.warn("Unable to read secret key value from file: " + _secretKeyFile, e);
       }
     }
     return _secretKey;

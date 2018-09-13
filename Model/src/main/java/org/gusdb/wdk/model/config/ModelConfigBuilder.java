@@ -73,8 +73,8 @@ public class ModelConfigBuilder {
     assertNonNull("modelName", _modelName);
     assertNonNull("projectId", _projectId);
     assertNonNull("gusHome", _gusHome);
-    Path gusHome = Paths.get(_gusHome); //IoUtil.getReadableDirectoryOrThrow(_gusHome,
-        //() -> new WdkModelException("gusHome" + _gusHome + " is not a readable directory.")).toPath();
+    Path gusHome = Paths.get(_gusHome);
+    // TODO: check gusHome presence and readability; we currently use a symbolic link which complicates matters
     Path secretKeyFile = Paths.get(_secretKeyFile);
     assertNonNull("wdkTempDir", _wdkTempDir);
     // create wdk temp dir and parents if they do not exist
@@ -91,7 +91,7 @@ public class ModelConfigBuilder {
     assertNonNull("userDb", _userDB);
     assertNonNull("appDb", _appDB);
     assertNonNull("accountDb", _accountDB);
-    // TODO: should probably have a default for this- no NPEs!
+    // TODO: should probably have a default stub for this to avoid NPEs
     //assertNonNull("userDatasetStoreConfig", _userDatasetStoreConfig);
 
     return new ModelConfig(

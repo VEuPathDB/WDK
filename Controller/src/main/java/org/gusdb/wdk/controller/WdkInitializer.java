@@ -53,6 +53,7 @@ public class WdkInitializer {
     }
     catch (Exception e) {
       LOG.error("Unable to initialize WDK web application.", e);
+      // throw an exception to keep the webapp from loading
       throw new RuntimeException("Unable to initialize WDK web application.", e);
     }
     finally {
