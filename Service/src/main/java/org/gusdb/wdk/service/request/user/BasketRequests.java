@@ -1,7 +1,7 @@
 package org.gusdb.wdk.service.request.user;
 
-import static org.gusdb.wdk.service.formatter.Keys.ADD;
-import static org.gusdb.wdk.service.formatter.Keys.REMOVE;
+import static org.gusdb.wdk.service.formatter.JsonKeys.ADD;
+import static org.gusdb.wdk.service.formatter.JsonKeys.REMOVE;
 
 import java.util.Arrays;
 import java.util.List;

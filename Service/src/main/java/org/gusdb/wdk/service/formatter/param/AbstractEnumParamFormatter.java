@@ -10,7 +10,7 @@ import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,12 +24,12 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
   @Override
   public JSONObject getJson() throws JSONException, WdkModelException, WdkUserException {
     return super.getJson()
-        .put(Keys.COUNT_ONLY_LEAVES, _param.getCountOnlyLeaves())
-        .put(Keys.MAX_SELECTED_COUNT, _param.getMaxSelectedCount())
-        .put(Keys.MIN_SELECTED_COUNT, _param.getMinSelectedCount())
-        .put(Keys.IS_MULTIPICK, _param.getMultiPick())
-        .put(Keys.DISPLAY_TYPE, _param.getDisplayType())
-        .put(Keys.DEPTH_EXPANDED, _param.getDepthExpanded());
+        .put(JsonKeys.COUNT_ONLY_LEAVES, _param.getCountOnlyLeaves())
+        .put(JsonKeys.MAX_SELECTED_COUNT, _param.getMaxSelectedCount())
+        .put(JsonKeys.MIN_SELECTED_COUNT, _param.getMinSelectedCount())
+        .put(JsonKeys.IS_MULTIPICK, _param.getMultiPick())
+        .put(JsonKeys.DISPLAY_TYPE, _param.getDisplayType())
+        .put(JsonKeys.DEPTH_EXPANDED, _param.getDepthExpanded());
   }
 
   /**

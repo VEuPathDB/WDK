@@ -31,14 +31,14 @@ public class UserFormatter {
   public static JSONObject getUserJson(User user, boolean isOwner,
       boolean includePreferences, List<UserPropertyName> propDefs) throws JSONException {
     JSONObject json = new JSONObject()
-      .put(Keys.ID, user.getUserId())
-      .put(Keys.IS_GUEST, user.isGuest());
+      .put(JsonKeys.ID, user.getUserId())
+      .put(JsonKeys.IS_GUEST, user.isGuest());
     // private fields viewable only by owner
     if (isOwner) {
-      json.put(Keys.EMAIL, user.getEmail());
-      json.put(Keys.PROPERTIES, getPropertiesJson(user.getProfileProperties(), propDefs, isOwner));
+      json.put(JsonKeys.EMAIL, user.getEmail());
+      json.put(JsonKeys.PROPERTIES, getPropertiesJson(user.getProfileProperties(), propDefs, isOwner));
       if (includePreferences) {
-        json.put(Keys.PREFERENCES, getPreferencesJson(user.getPreferences()));
+        json.put(JsonKeys.PREFERENCES, getPreferencesJson(user.getPreferences()));
       }
     }
     return json;
@@ -58,8 +58,8 @@ public class UserFormatter {
 
   public static JSONObject getPreferencesJson(UserPreferences prefs) {
     JSONObject prefsJson = new JSONObject();
-    prefsJson.put(Keys.GLOBAL, JsonUtil.toJsonObject(prefs.getGlobalPreferences()));
-    prefsJson.put(Keys.PROJECT, JsonUtil.toJsonObject(prefs.getProjectPreferences()));
+    prefsJson.put(JsonKeys.GLOBAL, JsonUtil.toJsonObject(prefs.getGlobalPreferences()));
+    prefsJson.put(JsonKeys.PROJECT, JsonUtil.toJsonObject(prefs.getProjectPreferences()));
     return prefsJson;
   }
 

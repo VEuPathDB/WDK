@@ -11,7 +11,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.service.AbstractWdkService;
@@ -77,14 +77,14 @@ public class StrategyRequest {
   public static StrategyRequest createFromJson(JSONObject json, StepFactory stepFactory, User user, String projectId)
       throws WdkModelException, RequestMisformatException, DataValidationException {
     try {
-    	  String name = json.getString(Keys.NAME);
-    	  String savedName = getStringOrDefault(json, Keys.SAVED_NAME, "");
-    	  String description = getStringOrDefault(json, Keys.DESCRIPTION, "");
-    	  boolean isSaved = getBooleanOrDefault(json, Keys.IS_SAVED, false);
-    	  boolean isHidden = getBooleanOrDefault(json, Keys.IS_HIDDEN, false);
-    	  boolean isPublic = getBooleanOrDefault(json, Keys.IS_PUBLIC, false);
-    	  JSONObject rootStepJson = json.getJSONObject(Keys.ROOT_STEP);
-    	  Step rootStep = stepFactory.getStepById(rootStepJson.getLong(Keys.ID));
+    	  String name = json.getString(JsonKeys.NAME);
+    	  String savedName = getStringOrDefault(json, JsonKeys.SAVED_NAME, "");
+    	  String description = getStringOrDefault(json, JsonKeys.DESCRIPTION, "");
+    	  boolean isSaved = getBooleanOrDefault(json, JsonKeys.IS_SAVED, false);
+    	  boolean isHidden = getBooleanOrDefault(json, JsonKeys.IS_HIDDEN, false);
+    	  boolean isPublic = getBooleanOrDefault(json, JsonKeys.IS_PUBLIC, false);
+    	  JSONObject rootStepJson = json.getJSONObject(JsonKeys.ROOT_STEP);
+    	  Step rootStep = stepFactory.getStepById(rootStepJson.getLong(JsonKeys.ID));
     	  TreeNode<Step> stepTree = buildStepTree(new TreeNode<Step>(rootStep), rootStepJson, stepFactory, user, projectId, new StringBuilder());
       return new StrategyRequest(name, savedName, description, isSaved, isHidden, isPublic, stepTree);
     }
@@ -106,28 +106,28 @@ public class StrategyRequest {
     if(stepJson.length() == 0) return stepTree;
     Step parentStep = stepTree.getContents();
     errors.append(validateStep(parentStep, user, projectId));
-    if(stepJson.has(Keys.LEFT_STEP)) {
-    	  JSONObject leftStepJson = stepJson.getJSONObject(Keys.LEFT_STEP);
-    	  if(leftStepJson != null && leftStepJson.has(Keys.ID)) {
-    		Step leftStep = stepFactory.getStepById(leftStepJson.getLong(Keys.ID));
+    if(stepJson.has(JsonKeys.LEFT_STEP)) {
+    	  JSONObject leftStepJson = stepJson.getJSONObject(JsonKeys.LEFT_STEP);
+    	  if(leftStepJson != null && leftStepJson.has(JsonKeys.ID)) {
+    		Step leftStep = stepFactory.getStepById(leftStepJson.getLong(JsonKeys.ID));
     		parentStep.setPreviousStep(leftStep);
     	    TreeNode<Step> leftTreeNode = new TreeNode<>(leftStep);
-    	    if(leftStepJson.has(Keys.LEFT_STEP)) {
-    	      stepTree.addChildNode(buildStepTree(leftTreeNode, leftStepJson.getJSONObject(Keys.LEFT_STEP), stepFactory, user, projectId, errors));
+    	    if(leftStepJson.has(JsonKeys.LEFT_STEP)) {
+    	      stepTree.addChildNode(buildStepTree(leftTreeNode, leftStepJson.getJSONObject(JsonKeys.LEFT_STEP), stepFactory, user, projectId, errors));
     	    }
     	    else {
     	    	  stepTree.addChildNode(leftTreeNode);
     	    }
     	  }
     }
-    if(stepJson.has(Keys.RIGHT_STEP)) {
-  	  JSONObject rightStepJson = stepJson.getJSONObject(Keys.RIGHT_STEP);
-  	  if(rightStepJson != null && rightStepJson.has(Keys.ID)) {
-  		Step rightStep = stepFactory.getStepById(rightStepJson.getLong(Keys.ID));
+    if(stepJson.has(JsonKeys.RIGHT_STEP)) {
+  	  JSONObject rightStepJson = stepJson.getJSONObject(JsonKeys.RIGHT_STEP);
+  	  if(rightStepJson != null && rightStepJson.has(JsonKeys.ID)) {
+  		Step rightStep = stepFactory.getStepById(rightStepJson.getLong(JsonKeys.ID));
   		parentStep.setChildStep(rightStep);
   	    TreeNode<Step> rightTreeNode = new TreeNode<>(rightStep);
-  	    if(rightStepJson.has(Keys.RIGHT_STEP)) {
-  	      stepTree.addChildNode(buildStepTree(rightTreeNode, rightStepJson.getJSONObject(Keys.RIGHT_STEP), stepFactory, user, projectId, errors));
+  	    if(rightStepJson.has(JsonKeys.RIGHT_STEP)) {
+  	      stepTree.addChildNode(buildStepTree(rightTreeNode, rightStepJson.getJSONObject(JsonKeys.RIGHT_STEP), stepFactory, user, projectId, errors));
   	    }
 	    else {
 	    	  stepTree.addChildNode(rightTreeNode);

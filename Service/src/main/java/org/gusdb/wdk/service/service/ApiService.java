@@ -9,7 +9,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.formatter.ProjectFormatter;
 import org.json.JSONObject;
 
@@ -30,7 +30,7 @@ public class ApiService extends AbstractWdkService {
   public Response getPropertyKeys() {
     try {
       JSONObject json = new JSONObject();
-      for (Field field : Keys.class.getDeclaredFields()) {
+      for (Field field : JsonKeys.class.getDeclaredFields()) {
         json.put(field.getName(), field.get(null));
       }
       return Response.ok(json.toString()).build();

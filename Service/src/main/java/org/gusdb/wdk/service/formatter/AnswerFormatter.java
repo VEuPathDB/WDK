@@ -104,7 +104,7 @@ public class AnswerFormatter extends AbstractReporter {
             _baseAnswer, _attributes.values(), _tables.values())) {
 
       // start parent object and records array
-      writer.object().key(Keys.RECORDS).array();
+      writer.object().key(JsonKeys.RECORDS).array();
 
       // write records
       int numRecordsReturned = 0;
@@ -117,7 +117,7 @@ public class AnswerFormatter extends AbstractReporter {
       JSONObject metadata = getMetaData(_baseAnswer, _attributes.keySet(), _tables.keySet(), numRecordsReturned);
 
       // end records array, write meta property, and close object
-      writer.endArray().key(Keys.META).value(metadata).endObject();
+      writer.endArray().key(JsonKeys.META).value(metadata).endObject();
     }
     catch (WdkUserException e) {
       // should already have validated any user input
@@ -132,11 +132,11 @@ public class AnswerFormatter extends AbstractReporter {
       Set<String> includedAttributes, Set<String> includedTables, int numRecordsReturned)
       throws WdkModelException, WdkUserException {
     JSONObject meta = new JSONObject();
-    meta.put(Keys.RECORD_CLASS_NAME, answerValue.getQuestion().getRecordClass().getFullName());
-    meta.put(Keys.TOTAL_COUNT, answerValue.getResultSizeFactory().getResultSize());
-    meta.put(Keys.RESPONSE_COUNT, numRecordsReturned);
-    meta.put(Keys.ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(includedAttributes));
-    meta.put(Keys.TABLES, FormatUtil.stringCollectionToJsonArray(includedTables));
+    meta.put(JsonKeys.RECORD_CLASS_NAME, answerValue.getQuestion().getRecordClass().getFullName());
+    meta.put(JsonKeys.TOTAL_COUNT, answerValue.getResultSizeFactory().getResultSize());
+    meta.put(JsonKeys.RESPONSE_COUNT, numRecordsReturned);
+    meta.put(JsonKeys.ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(includedAttributes));
+    meta.put(JsonKeys.TABLES, FormatUtil.stringCollectionToJsonArray(includedTables));
     return meta;
   }
 }

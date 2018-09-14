@@ -6,7 +6,7 @@ package org.gusdb.wdk.service.formatter;
  * A collection of common keys; this is an attempt to standardize the names
  * of JSON object keys received from and returned to the client.
  */
-public class Keys {
+public class JsonKeys {
 
   // response status keys
   public static final String SUCCESS = "success";
