@@ -83,10 +83,20 @@ public class TemporaryFileService extends AbstractWdkService {
   @DELETE
   @Path("/temporary-file/{id}")
   public Response deleteTempFile(@PathParam("id") String tempFileName) throws WdkModelException {
+    
     Optional<java.nio.file.Path> optPath = getTempFileFromSession(tempFileName);
+    
     java.nio.file.Path path = optPath.orElseThrow(() -> new NotFoundException(
         "Temporary file with ID " + tempFileName + " is not found in this user's session"));
-
+    
+    HttpSession session = getSession();
+    @SuppressWarnings("unchecked")
+    Set<String> tempFilesInSession = (Set<String>)(session.getAttribute(TEMP_FILE_NAMES));
+    if (tempFilesInSession != null) {
+      tempFilesInSession.remove(tempFileName.toString());
+      session.setAttribute(TEMP_FILE_NAMES, tempFilesInSession);
+    }
+    
     try {
       Files.deleteIfExists(path);
     }
