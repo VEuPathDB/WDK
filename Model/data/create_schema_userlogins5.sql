@@ -286,6 +286,7 @@ CREATE TABLE userlogins5.step_analysis (
   analysis_id          NUMBER(12) NOT NULL,
   step_id              NUMBER(12) NOT NULL,
   display_name         VARCHAR2(1024),
+  user_notes           VARCHAR2(4000),
   is_new               NUMBER(1),
   has_params           NUMBER(1),
   invalid_step_reason  VARCHAR2(1024),

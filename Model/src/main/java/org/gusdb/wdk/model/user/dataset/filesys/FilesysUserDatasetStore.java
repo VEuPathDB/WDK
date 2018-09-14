@@ -24,8 +24,8 @@ import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStore;
 public class FilesysUserDatasetStore extends JsonUserDatasetStore {
 
   @Override
-  public void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, String wdkTempDirName) throws WdkModelException {
-    super.initialize(configuration, typeHandlers, wdkTempDirName);
+  public void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, Path wdkTempDir) throws WdkModelException {
+    super.initialize(configuration, typeHandlers, wdkTempDir);
     try (FilesysUserDatasetSession session = getSession()) {
       session.checkRootDirExists();
       _id = session.initializeUserDatasetStoreId();

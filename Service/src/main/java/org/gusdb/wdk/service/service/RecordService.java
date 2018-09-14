@@ -31,7 +31,7 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.RecordNotFoundException;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.formatter.RecordClassFormatter;
 import org.gusdb.wdk.service.formatter.RecordFormatter;
 import org.gusdb.wdk.service.formatter.TableFieldFormatter;
@@ -146,7 +146,7 @@ public class RecordService extends AbstractWdkService {
       throw new NotFoundException(formatNotFound(RECORDCLASS_RESOURCE + recordClassName + "/count"));
     }
     long count = recordClass.getAllRecordsCount(getSessionUser());
-    JSONObject json = new JSONObject().put(Keys.TOTAL_COUNT, count);
+    JSONObject json = new JSONObject().put(JsonKeys.TOTAL_COUNT, count);
     return Response.ok(json.toString()).build();
   }
 

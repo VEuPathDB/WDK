@@ -12,10 +12,11 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetSession;
 
 public class IrodsUserDatasetSession extends JsonUserDatasetSession {
+
   private static final Logger logger = Logger.getLogger(IrodsUserDatasetSession.class);	
 
-  public IrodsUserDatasetSession(Path usersRootDir, String wdkTempDirName) {
-    super(new IrodsUserDatasetStoreAdaptor(wdkTempDirName), usersRootDir);
+  public IrodsUserDatasetSession(Path usersRootDir, Path wdkTempDir) {
+    super(new IrodsUserDatasetStoreAdaptor(wdkTempDir), usersRootDir);
   }
 
   @Override

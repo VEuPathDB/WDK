@@ -3,9 +3,12 @@ package org.gusdb.wdk.service.formatter;
 import java.util.Collection;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.TableField;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
 
 /**
  * Formats WDK TableFields.  TableField JSON will have the following form:
@@ -38,17 +41,23 @@ public class TableFieldFormatter {
 
   public static JSONObject getTableJson(TableField table, boolean expandAttributes) {
     return new JSONObject()
-      .put(Keys.NAME, table.getName())
-      .put(Keys.DISPLAY_NAME, table.getDisplayName())
-      .put(Keys.HELP, table.getHelp())
-      .put(Keys.TYPE, table.getType())
-      .put(Keys.CATEGORY, table.getAttributeCategory())
-      .put(Keys.DESCRIPTION, table.getDescription())
-      .put(Keys.IS_DISPLAYABLE, FieldScope.NON_INTERNAL.isFieldInScope(table))
-      .put(Keys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(table))
-      .put(Keys.PROPERTIES, table.getPropertyLists())
-      .put(Keys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
-          table.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes));
+      .put(JsonKeys.NAME, table.getName())
+      .put(JsonKeys.DISPLAY_NAME, table.getDisplayName())
+      .put(JsonKeys.HELP, table.getHelp())
+      .put(JsonKeys.TYPE, table.getType())
+      .put(JsonKeys.CATEGORY, table.getAttributeCategory())
+      .put(JsonKeys.DESCRIPTION, table.getDescription())
+      .put(JsonKeys.IS_DISPLAYABLE, FieldScope.NON_INTERNAL.isFieldInScope(table))
+      .put(JsonKeys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(table))
+      .put(JsonKeys.PROPERTIES, table.getPropertyLists())
+      .put(JsonKeys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
+          table.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
+      .put(JsonKeys.CLIENT_SORT_SPEC, getClientSortSpecJson(table));
   }
 
+  private static JSONArray getClientSortSpecJson(TableField tableField) {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(new JsonOrgModule()); // use jackson plugin to convert to org.json
+    return mapper.convertValue(tableField.getClientSortingOrderList(), JSONArray.class);
+  }
 }

@@ -13,7 +13,7 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -24,29 +24,29 @@ public class StepRequest {
 
   // these props are sent in a step response but are invalid in POST and PATCH
   private static final String[] INVALID_EDIT_PROPS = {
-      Keys.ID,
-      Keys.DISPLAY_NAME,
-      Keys.SHORT_DISPLAY_NAME,
-      Keys.BASE_CUSTOM_NAME,
-      Keys.DESCRIPTION,
-      Keys.OWNER_ID,
-      Keys.STRATEGY_ID,
-      Keys.ESTIMATED_SIZE,
-      Keys.HAS_COMPLETE_STEP_ANALYSES,
-      Keys.RECORD_CLASS_NAME
+      JsonKeys.ID,
+      JsonKeys.DISPLAY_NAME,
+      JsonKeys.SHORT_DISPLAY_NAME,
+      JsonKeys.BASE_CUSTOM_NAME,
+      JsonKeys.DESCRIPTION,
+      JsonKeys.OWNER_ID,
+      JsonKeys.STRATEGY_ID,
+      JsonKeys.ESTIMATED_SIZE,
+      JsonKeys.HAS_COMPLETE_STEP_ANALYSES,
+      JsonKeys.RECORD_CLASS_NAME
   };
 
   public static StepRequest newStepFromJson(JSONObject newStep, WdkModelBean modelBean, User user)
       throws RequestMisformatException, DataValidationException {
     try {
       checkForInvalidProps(newStep);
-      JSONObject answerSpecJson = newStep.getJSONObject(Keys.ANSWER_SPEC);
+      JSONObject answerSpecJson = newStep.getJSONObject(JsonKeys.ANSWER_SPEC);
       // Since this method is intended for new steps, the step can not yet be part of a strategy and so
       // any answer params it has should be null.  So allowIncompleteSpec param is true.
       AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, modelBean, user, true);
-      String customName = getStringOrDefault(newStep, Keys.CUSTOM_NAME, answerSpec.getQuestion().getName());
-      boolean isCollapsible = getBooleanOrDefault(newStep, Keys.IS_COLLAPSIBLE, false);
-      String collapsedName = getStringOrDefault(newStep, Keys.COLLAPSED_NAME, customName);
+      String customName = getStringOrDefault(newStep, JsonKeys.CUSTOM_NAME, answerSpec.getQuestion().getName());
+      boolean isCollapsible = getBooleanOrDefault(newStep, JsonKeys.IS_COLLAPSIBLE, false);
+      String collapsedName = getStringOrDefault(newStep, JsonKeys.COLLAPSED_NAME, customName);
       // DB field length for collapsedName is 200
       collapsedName = collapsedName == null ? collapsedName : collapsedName.substring(0, Math.min(collapsedName.length(),200));
       return new StepRequest(answerSpec, customName, isCollapsible, collapsedName);
@@ -61,9 +61,9 @@ public class StepRequest {
     try {
       checkForInvalidProps(patchSet);
       AnswerSpec answerSpec = getPatchAnswerSpec(step, patchSet, modelBean, user);
-      String customName = getStringOrDefault(patchSet, Keys.CUSTOM_NAME, step.getCustomName());
-      boolean isCollapsible = Boolean.getBoolean(getStringOrDefault(patchSet, Keys.IS_COLLAPSIBLE, String.valueOf(step.isCollapsible())));
-      String collapsedName = getStringOrDefault(patchSet, Keys.COLLAPSED_NAME, step.getCollapsedName());
+      String customName = getStringOrDefault(patchSet, JsonKeys.CUSTOM_NAME, step.getCustomName());
+      boolean isCollapsible = Boolean.getBoolean(getStringOrDefault(patchSet, JsonKeys.IS_COLLAPSIBLE, String.valueOf(step.isCollapsible())));
+      String collapsedName = getStringOrDefault(patchSet, JsonKeys.COLLAPSED_NAME, step.getCollapsedName());
       // DB field length for collapsedName is 200
       collapsedName = collapsedName == null ? collapsedName : collapsedName.substring(0, 200);
       return new StepRequest(answerSpec, customName, isCollapsible, collapsedName);
@@ -75,8 +75,8 @@ public class StepRequest {
   
   private static AnswerSpec getPatchAnswerSpec(Step step, JSONObject patchSet, WdkModelBean modelBean, User user)
       throws DataValidationException, RequestMisformatException, WdkModelException {
-    if (patchSet.has(Keys.ANSWER_SPEC)) {
-      JSONObject answerSpecJson = patchSet.getJSONObject(Keys.ANSWER_SPEC);
+    if (patchSet.has(JsonKeys.ANSWER_SPEC)) {
+      JSONObject answerSpecJson = patchSet.getJSONObject(JsonKeys.ANSWER_SPEC);
       boolean expectIncompleteSpec = step.getStrategyId() == null;
       AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, modelBean, user, expectIncompleteSpec);
       // user cannot change question of an existing step
@@ -107,7 +107,7 @@ public class StepRequest {
   private static void checkForInvalidProps(JSONObject stepJson) throws RequestMisformatException {
     for (String badProp : INVALID_EDIT_PROPS) {
       if (stepJson.has(badProp)) {
-        throw new RequestMisformatException("JSON property " + Keys.ID + " is disallowed. Only the service can assign this value.");
+        throw new RequestMisformatException("JSON property " + JsonKeys.ID + " is disallowed. Only the service can assign this value.");
       }
     }
   }

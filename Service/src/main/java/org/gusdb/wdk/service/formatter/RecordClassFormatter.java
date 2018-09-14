@@ -52,24 +52,24 @@ public class RecordClassFormatter {
   public static JSONObject getRecordClassJson(RecordClass recordClass,
       boolean expandAttributes, boolean expandTables, boolean expandTableAttributes) {
     return new JSONObject()
-      .put(Keys.NAME, recordClass.getFullName())
-      .put(Keys.DISPLAY_NAME, recordClass.getDisplayName())
-      .put(Keys.DISPLAY_NAME_PLURAL, recordClass.getDisplayNamePlural())
-      .put(Keys.SHORT_DISPLAY_NAME, recordClass.getShortDisplayName())
-      .put(Keys.SHORT_DISPLAY_NAME_PLURAL, recordClass.getShortDisplayNamePlural())
-      .put(Keys.URL_SEGMENT,  recordClass.getUrlSegment())
-      .put(Keys.ICON_NAME, recordClass.getIconName())
-      .put(Keys.USE_BASKET, recordClass.isUseBasket())
-      .put(Keys.DESCRIPTION, recordClass.getDescription())
-      .put(Keys.FORMATS, getAnswerFormatsJson(recordClass.getReporterMap().values(), FieldScope.ALL))
-      .put(Keys.HAS_ALL_RECORDS_QUERY, recordClass.hasAllRecordsQuery())
-      .put(Keys.PRIMARY_KEY_REFS, JsonUtil.toJsonStringArray(recordClass.getPrimaryKeyDefinition().getColumnRefs()))
-      .put(Keys.RECORD_ID_ATTRIBUTE_NAME, recordClass.getIdAttributeField().getName())
-      .put(Keys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
+      .put(JsonKeys.NAME, recordClass.getFullName())
+      .put(JsonKeys.DISPLAY_NAME, recordClass.getDisplayName())
+      .put(JsonKeys.DISPLAY_NAME_PLURAL, recordClass.getDisplayNamePlural())
+      .put(JsonKeys.SHORT_DISPLAY_NAME, recordClass.getShortDisplayName())
+      .put(JsonKeys.SHORT_DISPLAY_NAME_PLURAL, recordClass.getShortDisplayNamePlural())
+      .put(JsonKeys.URL_SEGMENT,  recordClass.getUrlSegment())
+      .put(JsonKeys.ICON_NAME, recordClass.getIconName())
+      .put(JsonKeys.USE_BASKET, recordClass.isUseBasket())
+      .put(JsonKeys.DESCRIPTION, recordClass.getDescription())
+      .put(JsonKeys.FORMATS, getAnswerFormatsJson(recordClass.getReporterMap().values(), FieldScope.ALL))
+      .put(JsonKeys.HAS_ALL_RECORDS_QUERY, recordClass.hasAllRecordsQuery())
+      .put(JsonKeys.PRIMARY_KEY_REFS, JsonUtil.toJsonStringArray(recordClass.getPrimaryKeyDefinition().getColumnRefs()))
+      .put(JsonKeys.RECORD_ID_ATTRIBUTE_NAME, recordClass.getIdAttributeField().getName())
+      .put(JsonKeys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
         recordClass.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
-      .put(Keys.TABLES, TableFieldFormatter.getTablesJson(recordClass.getTableFieldMap().values(),
+      .put(JsonKeys.TABLES, TableFieldFormatter.getTablesJson(recordClass.getTableFieldMap().values(),
         FieldScope.ALL, expandTables, expandTableAttributes))
-      .put(Keys.CATEGORIES, getAttributeCategoriesJson(recordClass));
+      .put(JsonKeys.CATEGORIES, getAttributeCategoriesJson(recordClass));
   }
 
   public static JSONArray getAnswerFormatsJson(Collection<? extends ReporterRef> reporters, FieldScope scope) {
@@ -77,12 +77,12 @@ public class RecordClassFormatter {
     for (ReporterRef reporter : reporters) {
       if (scope.isFieldInScope(reporter)) {
         JSONObject obj = new JSONObject()
-          .put(Keys.NAME, reporter.getName())
-          .put(Keys.TYPE,  reporter.getReferenceName())
-          .put(Keys.DISPLAY_NAME, reporter.getDisplayName())
-          .put(Keys.DESCRIPTION, reporter.getDescription())
-          .put(Keys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(reporter))
-          .put(Keys.SCOPES, reporter.getScopesList());
+          .put(JsonKeys.NAME, reporter.getName())
+          .put(JsonKeys.TYPE,  reporter.getReferenceName())
+          .put(JsonKeys.DISPLAY_NAME, reporter.getDisplayName())
+          .put(JsonKeys.DESCRIPTION, reporter.getDescription())
+          .put(JsonKeys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(reporter))
+          .put(JsonKeys.SCOPES, reporter.getScopesList());
         array.put(obj);
       }
     }
@@ -100,14 +100,14 @@ public class RecordClassFormatter {
 
   private static JSONObject getAttributeCategoryJson(AttributeCategory category) {
     JSONObject attributeCategoryJson = new JSONObject()
-      .put(Keys.NAME,  category.getName())
-      .put(Keys.DISPLAY_NAME,  category.getDisplayName())
-      .put(Keys.DESCRIPTION, category.getDescription());
+      .put(JsonKeys.NAME,  category.getName())
+      .put(JsonKeys.DISPLAY_NAME,  category.getDisplayName())
+      .put(JsonKeys.DESCRIPTION, category.getDescription());
     JSONArray subCategoriesJson = new JSONArray();
     for (AttributeCategory subCategory : category.getSubCategories()) {
       subCategoriesJson.put(getAttributeCategoryJson(subCategory));
     }
-    attributeCategoryJson.put(Keys.CATEGORIES, subCategoriesJson);
+    attributeCategoryJson.put(JsonKeys.CATEGORIES, subCategoriesJson);
     return attributeCategoryJson;
   }
 }

@@ -42,7 +42,7 @@ public class WdkSqlScriptRunner {
       boolean stopOnError = (args.length == 5 ? Boolean.parseBoolean(args[4]) : true);
 
       ModelConfigParser parser = new ModelConfigParser(gusHome);
-      ModelConfig modelConf = parser.parseConfig(projectId);
+      ModelConfig modelConf = parser.parseConfig(projectId).build();
       ModelConfigDB dbConfig = (
           whichDb.equals(DbType.APP) ? modelConf.getAppDB() :
           whichDb.equals(DbType.USER) ? modelConf.getUserDB() :

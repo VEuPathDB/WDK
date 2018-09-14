@@ -73,7 +73,7 @@ public class TestDBManager extends BaseCLI {
     String[] tables = getTableNames(tableDir);
 
     ModelConfigParser parser = new ModelConfigParser(gusHome);
-    ModelConfig modelConf = parser.parseConfig(projectId);
+    ModelConfig modelConf = parser.parseConfig(projectId).build();
     ModelConfigDB dbConfig = modelConf.getAppDB();
     QueryLogger.initialize(modelConf.getQueryMonitor());
 
