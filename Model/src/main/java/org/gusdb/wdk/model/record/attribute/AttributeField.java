@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.RngAnnotations.RngOptional;
+import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.Field;
@@ -40,6 +41,7 @@ public abstract class AttributeField extends Field implements Cloneable {
   private boolean _nowrap = false;
   private boolean _removable = true;
   private String _categoryName;
+  protected AttributeFieldContainer _container;
 
   private List<AttributePluginReference> _pluginList = new ArrayList<AttributePluginReference>();
   private Map<String, AttributePluginReference> _pluginMap;
@@ -52,6 +54,15 @@ public abstract class AttributeField extends Field implements Cloneable {
   @Override
   public AttributeField clone() {
     return (AttributeField) super.clone();
+  }
+
+  @RngUndefined
+  public void setContainer(AttributeFieldContainer container) {
+    _container = container;
+  }
+
+  AttributeFieldContainer getContainer() {
+    return _container;
   }
 
   /**
@@ -223,5 +234,4 @@ public abstract class AttributeField extends Field implements Cloneable {
       reporter.resolveReferences(wdkModel);
     }
   }
-  
 }

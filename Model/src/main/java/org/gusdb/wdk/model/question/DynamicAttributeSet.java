@@ -17,7 +17,6 @@ import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
-import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.record.attribute.plugin.HistogramAttributePlugin;
@@ -71,6 +70,10 @@ public class DynamicAttributeSet extends WdkModelBase {
 
   public void setQuestion(Question question) {
     this.question = question;
+    // question will be the container for this container's dynamic fields
+    for (AttributeField field : attributeFieldList) {
+      field.setContainer(question);
+    }
   }
 
   public Question getQuestion() {
@@ -187,11 +190,8 @@ public class DynamicAttributeSet extends WdkModelBase {
             " already exists in recordClass " + recordClass.getFullName());
       }
       AttributeField field = attributeFieldMap.get(fieldName);
-      field.setContainerName(question.getFullName());
-      if (field instanceof DerivedAttributeField) {
-        ((DerivedAttributeField)field).setContainer(question);
-      }
-      else if (field instanceof QueryColumnAttributeField) {
+      field.setContainer(question);
+      if (field instanceof QueryColumnAttributeField) {
         // need to set the column before resolving references
         Column column = columns.get(fieldName);
         if (column == null)

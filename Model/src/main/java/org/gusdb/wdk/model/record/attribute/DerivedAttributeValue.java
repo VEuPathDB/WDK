@@ -13,7 +13,7 @@ public abstract class DerivedAttributeValue extends AttributeValue {
   }
 
   protected String populateMacros(String fieldText) throws WdkModelException, WdkUserException {
-    String label = "attribute [" + _field.getName() + "] of [" + _field.getContainerName() + "]";
+    String label = "attribute [" + _field.getName() + "] of [" + _field.getContainer().getNameForLogging() + "]";
     return DerivedAttributeField.replaceMacrosWithAttributeValues(fieldText, _container, label);
   }
 

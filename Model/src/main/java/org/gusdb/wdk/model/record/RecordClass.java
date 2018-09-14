@@ -55,7 +55,6 @@ import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
-import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
 import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
@@ -447,11 +446,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    *          two part query name (set.name)
    */
   public void addAttributesQueryRef(AttributeQueryReference attributesQueryRef) {
+    attributesQueryRef.setRecordClass(this);
     attributesQueryRefList.add(attributesQueryRef);
   }
 
   public void addAttributeField(AttributeField attributeField) {
-    assignFieldParent(attributeField);
+    attributeField.setContainer(this);
     attributeFieldList.add(attributeField);
   }
 
@@ -901,7 +901,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       Map<String, AttributeField> fields = reference.getAttributeFieldMap();
       Map<String, Column> columns = query.getColumnMap();
       for (AttributeField field : fields.values()) {
-        assignFieldParent(field);
+        field.setContainer(this);
         String fieldName = field.getName();
         // check if the attribute is duplicated
         if (attributeFieldsMap.containsKey(fieldName))
@@ -934,13 +934,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
       Query attributeQuery = RecordClass.prepareQuery(wdkModel, query, pkColumns);
       attributeQueries.put(query.getFullName(), attributeQuery);
-    }
-  }
-
-  private void assignFieldParent(AttributeField field) {
-    field.setContainerName(getFullName());
-    if (field instanceof DerivedAttributeField) {
-      ((DerivedAttributeField)field).setContainer(this);
     }
   }
 
@@ -1435,7 +1428,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       PkColumnAttributeField field = new PkColumnAttributeField();
       field.setName(pkColumnName);
       field.setInternal(true);
-      assignFieldParent(field);
+      field.setContainer(this);
       field.excludeResources(projectId);
       logger.debug("Adding PkColumnAttributeField '" + pkColumnName + "' to attributeFieldsMap of '" + getFullName() + "'.");
       attributeFieldsMap.put(pkColumnName, field);
@@ -1806,5 +1799,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       }
     }
     return false;
+  }
+
+  @Override
+  public String getNameForLogging() {
+    return getFullName();
   }
 }
