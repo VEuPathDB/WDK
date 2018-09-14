@@ -778,20 +778,20 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     if (customBooleanQueryClassName != null) {
-    String errmsg = "Can't create java class for customBooleanQueryClassName from class name '" + customBooleanQueryClassName + "'";
-    try {
-      Class<? extends BooleanQuery> classs = Class.forName(
-          customBooleanQueryClassName).asSubclass(BooleanQuery.class);
-      booleanQuery = classs.newInstance();
-      booleanQuery.setRecordClass(this);
-    } catch (ClassNotFoundException ex) {
-      throw new WdkModelException(errmsg, ex);
-    } catch (InstantiationException ex) {
-      throw new WdkModelException(errmsg, ex);
-    } catch (IllegalAccessException ex) {
-      throw new WdkModelException(errmsg, ex);
-    }     
-    } else booleanQuery = new BooleanQuery(this);
+      String errmsg = "Can't create java class for customBooleanQueryClassName from class name '" + customBooleanQueryClassName + "'";
+      try {
+        Class<? extends BooleanQuery> clazz =
+            Class.forName(customBooleanQueryClassName).asSubclass(BooleanQuery.class);
+        booleanQuery = clazz.newInstance();
+        booleanQuery.setRecordClass(this);
+      }
+      catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+        throw new WdkModelException(errmsg, ex);
+      }
+    }
+    else {
+      booleanQuery = new BooleanQuery(this);
+    }
 
     // resolve the references for table queries
     resolveTableFieldReferences(model);

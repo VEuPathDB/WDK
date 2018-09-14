@@ -19,7 +19,7 @@ public class AnswerDetails {
   private int _numRecords = ALL_RECORDS; // default to all records
   private Map<String, AttributeField> _attributes;
   private Map<String, TableField> _tables;
-  private List<SortItem> _sorting;
+  private List<AttributeFieldSortSpec> _sorting;
   private ContentDisposition _contentDisposition = ContentDisposition.INLINE;
 
   // all getters are public
@@ -27,7 +27,7 @@ public class AnswerDetails {
   public int getNumRecords() {  return _numRecords; }
   public Map<String, AttributeField> getAttributes() { return _attributes; }
   public Map<String, TableField> getTables() { return _tables; }
-  public List<SortItem> getSorting() { return _sorting; }
+  public List<AttributeFieldSortSpec> getSorting() { return _sorting; }
   public ContentDisposition getContentDisposition() { return _contentDisposition; }
 
   // all setters are package-private, available only to factory
@@ -35,7 +35,7 @@ public class AnswerDetails {
   void setNumRecords(int numRecords) { _numRecords = numRecords; }
   void setAttributes(Map<String, AttributeField> attributes) { _attributes = attributes; }
   void setTables(Map<String, TableField> tables) { _tables = tables; }
-  void setSorting(List<SortItem> sorting) { _sorting = sorting; }
+  void setSorting(List<AttributeFieldSortSpec> sorting) { _sorting = sorting; }
   void setContentDisposition(ContentDisposition contentDisposition) { _contentDisposition = contentDisposition; }
 
 }

@@ -27,7 +27,7 @@ public class OAuthUtil {
     String saltedString =
         UUID.randomUUID() + ":::" +
         String.valueOf(new Date().getTime()) + ":::" +
-        wdkModel.getSecretKey();
+        wdkModel.getModelConfig().getSecretKey();
     return EncryptionUtil.encrypt(saltedString);
   }
 

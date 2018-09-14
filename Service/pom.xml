@@ -77,6 +77,11 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <!-- converter to org.json.JSONObject -->
+      <artifactId>jackson-datatype-json-org</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>javax.servlet</groupId>

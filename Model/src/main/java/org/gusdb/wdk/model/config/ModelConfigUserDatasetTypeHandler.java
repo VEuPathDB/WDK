@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 
-public class ModelConfigUserDatasetTypeHandler extends ModelConfig {
+public class ModelConfigUserDatasetTypeHandler {
 
   private String implementationClass;
   private String type;
@@ -39,12 +39,6 @@ public class ModelConfigUserDatasetTypeHandler extends ModelConfig {
   public void setVersion(String version) {
     this.version = version;
   }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model .WdkModel)
-   */
 
   private void initialize() throws WdkModelException {
 

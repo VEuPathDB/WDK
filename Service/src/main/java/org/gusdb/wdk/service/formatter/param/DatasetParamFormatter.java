@@ -4,7 +4,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.query.param.DatasetParam;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,13 +20,13 @@ public class DatasetParamFormatter extends ParamFormatter<DatasetParam> {
 
     JSONObject pJson = super.getJson();
     JSONArray parsersJson = new JSONArray();
-    pJson.put(Keys.PARSERS, parsersJson);
+    pJson.put(JsonKeys.PARSERS, parsersJson);
     for (DatasetParser parser : _param.getParsers()) {
       JSONObject parserJson = new JSONObject();
       parsersJson.put(parserJson);
-      parserJson.put(Keys.NAME, parser.getName());
-      parserJson.put(Keys.DISPLAY_NAME, parser.getDisplay());
-      parserJson.put(Keys.DESCRIPTION, parser.getDescription());
+      parserJson.put(JsonKeys.NAME, parser.getName());
+      parserJson.put(JsonKeys.DISPLAY_NAME, parser.getDisplay());
+      parserJson.put(JsonKeys.DESCRIPTION, parser.getDescription());
     }
     return pJson;
   }

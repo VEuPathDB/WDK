@@ -137,6 +137,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     String table = _userSchema + ANALYSIS_TABLE;
     String idType = _userPlatform.getNumberDataType(12);
     String userStringType = _userPlatform.getStringDataType(1024);
+    String userBigStringType = _userPlatform.getStringDataType(4000);
     String hashType = _userPlatform.getStringDataType(96);
     String boolType = _userPlatform.getBooleanDataType();
     String clobType = _userPlatform.getClobDataType();
@@ -151,7 +152,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         "  CONTEXT_HASH         " + hashType + "," +
         "  CONTEXT              " + clobType + "," +
         "  PROPERTIES           " + clobType + "," +
-        "  USER_NOTES           " + userStringType + "," +
+        "  USER_NOTES           " + userBigStringType + "," +
         "  PRIMARY KEY (ANALYSIS_ID)" +
         ")";
     ANALYSIS_SEQUENCE = _userSchema + ANALYSIS_SEQUENCE_NAME;
