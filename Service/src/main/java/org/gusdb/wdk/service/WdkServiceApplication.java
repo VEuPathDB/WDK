@@ -26,6 +26,7 @@ import org.gusdb.wdk.service.service.SampleService;
 import org.gusdb.wdk.service.service.SessionService;
 import org.gusdb.wdk.service.service.SystemService;
 import org.gusdb.wdk.service.service.TemporaryResultService;
+import org.gusdb.wdk.service.service.TemporaryFileService;
 import org.gusdb.wdk.service.service.user.*;
 
 public class WdkServiceApplication extends Application {
@@ -80,6 +81,7 @@ public class WdkServiceApplication extends Application {
     .add(StepAnalysisService.class)
     .add(ClientErrorReportingService.class)
     .add(TemporaryResultService.class)
+    .add(TemporaryFileService.class)
 
     // test
     .add(SampleService.class)
