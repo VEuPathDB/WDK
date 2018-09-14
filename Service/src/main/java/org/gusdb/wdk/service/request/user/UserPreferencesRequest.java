@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,7 +22,7 @@ import org.json.JSONObject;
  */
 public class UserPreferencesRequest {
 
-  private static final List<String> VALID_SCOPES = Arrays.asList(Keys.GLOBAL, Keys.PROJECT);
+  private static final List<String> VALID_SCOPES = Arrays.asList(JsonKeys.GLOBAL, JsonKeys.PROJECT);
 
   private Map<String,String> _globalPrefs = new HashMap<>();
   private List<String> _globalPrefsToDelete = new ArrayList<>();
@@ -44,8 +44,8 @@ public class UserPreferencesRequest {
     try {
       UserPreferencesRequest request = new UserPreferencesRequest();
       validateRequestJson(json);
-      loadPreferenceChanges(json, Keys.GLOBAL, request._globalPrefs, request._globalPrefsToDelete);
-      loadPreferenceChanges(json, Keys.PROJECT, request._projectPrefs, request._projectPrefsToDelete);
+      loadPreferenceChanges(json, JsonKeys.GLOBAL, request._globalPrefs, request._globalPrefsToDelete);
+      loadPreferenceChanges(json, JsonKeys.PROJECT, request._projectPrefs, request._projectPrefsToDelete);
       return request;
     }
     catch (JSONException e) {

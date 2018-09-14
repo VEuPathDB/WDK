@@ -44,26 +44,26 @@ public class FavoritesFormatter {
     JSONArray pkValuesJson = new JSONArray();
     for(String key : pkValues.keySet()) {
       JSONObject pkValueJson = new JSONObject();
-      pkValueJson.put(Keys.NAME, key).put(Keys.VALUE, pkValues.get(key));
+      pkValueJson.put(JsonKeys.NAME, key).put(JsonKeys.VALUE, pkValues.get(key));
       pkValuesJson.put(pkValueJson);
     }
     return new JSONObject()
-        .put(Keys.ID, favorite.getFavoriteId())
-        .put(Keys.PRIMARY_KEY, pkValuesJson)
-        .put(Keys.RECORD_CLASS_NAME, favorite.getRecordClass().getFullName())
-        .put(Keys.DISPLAY_NAME, favorite.getDisplay())
-        .put(Keys.DESCRIPTION, favorite.getNote())
-        .put(Keys.GROUP, favorite.getGroup());
+        .put(JsonKeys.ID, favorite.getFavoriteId())
+        .put(JsonKeys.PRIMARY_KEY, pkValuesJson)
+        .put(JsonKeys.RECORD_CLASS_NAME, favorite.getRecordClass().getFullName())
+        .put(JsonKeys.DISPLAY_NAME, favorite.getDisplay())
+        .put(JsonKeys.DESCRIPTION, favorite.getNote())
+        .put(JsonKeys.GROUP, favorite.getGroup());
   }
 
   public static JSONObject getCountsJson(int numDeleted, int numUndeleted) {
     return new JSONObject()
-        .put(Keys.DELETE, numDeleted)
-        .put(Keys.UNDELETE, numUndeleted);
+        .put(JsonKeys.DELETE, numDeleted)
+        .put(JsonKeys.UNDELETE, numUndeleted);
   }
 
   public static JSONObject getCountJson(int count) throws JSONException {
-    return new JSONObject().put(Keys.NUMBER_PROCESSED, count);
+    return new JSONObject().put(JsonKeys.NUMBER_PROCESSED, count);
   }
 
 }

@@ -13,7 +13,7 @@ import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.functional.Functions;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
@@ -87,10 +87,10 @@ public class UserProfileRequest {
   private static String validateEmail(JSONObject json, boolean isRequired)
       throws JSONException, DataValidationException {
     String emailProp = "Profile property 'email' ";
-    if (isRequired && !json.has(Keys.EMAIL)) {
+    if (isRequired && !json.has(JsonKeys.EMAIL)) {
       throw new DataValidationException(emailProp + "is required in this request.");
     }
-    String email = json.getString(Keys.EMAIL).trim();
+    String email = json.getString(JsonKeys.EMAIL).trim();
     if (email.isEmpty()) {
       throw new DataValidationException(emailProp + "cannot be empty.");
     }
@@ -118,7 +118,7 @@ public class UserProfileRequest {
    */
   private static Map<String,String> parseProperties(JSONObject json,
       Map<String, UserPropertyName> configuredProps, boolean requireRequiredProperties) throws JSONException, DataValidationException {
-    if (!json.has(Keys.PROPERTIES)) {
+    if (!json.has(JsonKeys.PROPERTIES)) {
       if (requireRequiredProperties) {
         throw new JSONException("'properties' property is required.");
       }
@@ -126,7 +126,7 @@ public class UserProfileRequest {
         return Collections.EMPTY_MAP;
       }
     }
-    JSONObject propsJson = json.getJSONObject(Keys.PROPERTIES);
+    JSONObject propsJson = json.getJSONObject(JsonKeys.PROPERTIES);
     List<String> unrecognizedProps = new ArrayList<>();
     List<String> oversizedProps = new ArrayList<>();
     Map<String, String> parsedProps = new HashMap<>();

@@ -31,7 +31,7 @@ import org.gusdb.wdk.model.user.GuestUser;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.service.CookieConverter;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.LoginRequest;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.statustype.MethodNotAllowedStatusType;
@@ -240,9 +240,9 @@ public class SessionService extends AbstractWdkService {
    */
   private static ResponseBuilder createJsonResponse(boolean success, String message, String redirectUrl) {
     return Response.ok(new JSONObject()
-        .put(Keys.SUCCESS, success)
-        .put(Keys.MESSAGE, message)
-        .put(Keys.REDIRECT_URL, redirectUrl)
+        .put(JsonKeys.SUCCESS, success)
+        .put(JsonKeys.MESSAGE, message)
+        .put(JsonKeys.REDIRECT_URL, redirectUrl)
         .toString());
   }
 

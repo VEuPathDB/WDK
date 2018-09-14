@@ -30,7 +30,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
@@ -70,16 +70,16 @@ public class DatasetService extends UserService {
       JSONObject input = new JSONObject(body);
       DatasetFactory factory = getWdkModel().getDatasetFactory();
       Dataset dataset = createFromSource(
-          JsonUtil.getStringOrDefault(input, Keys.SOURCE_TYPE, Keys.ID_LIST), user,
-          input.getJSONObject(Keys.SOURCE_CONTENT), factory);
-      String displayName = JsonUtil.getStringOrDefault(input, Keys.DISPLAY_NAME, dataset.getName());
+          JsonUtil.getStringOrDefault(input, JsonKeys.SOURCE_TYPE, JsonKeys.ID_LIST), user,
+          input.getJSONObject(JsonKeys.SOURCE_CONTENT), factory);
+      String displayName = JsonUtil.getStringOrDefault(input, JsonKeys.DISPLAY_NAME, dataset.getName());
       if (!displayName.equals(dataset.getName())) {
         dataset.setName(displayName);
         factory.saveDatasetMetadata(dataset);
       }
       JSONObject datasetMetadata = new JSONObject()
-          .put(Keys.ID, dataset.getDatasetId())
-          .put(Keys.DISPLAY_NAME, dataset.getName());
+          .put(JsonKeys.ID, dataset.getDatasetId())
+          .put(JsonKeys.DISPLAY_NAME, dataset.getName());
       return Response.ok(datasetMetadata.toString()).build();
     }
     catch (JSONException e) {
@@ -93,16 +93,16 @@ public class DatasetService extends UserService {
   private Dataset createFromSource(String sourceType, User user, JSONObject sourceConfig, DatasetFactory factory)
       throws WdkModelException, WdkUserException, DataValidationException {
     switch(sourceType) {
-      case Keys.ID_LIST: return createFromIdList(user, sourceConfig, factory);
-      case Keys.BASKET:  return createFromBasket(user, sourceConfig, factory);
+      case JsonKeys.ID_LIST: return createFromIdList(user, sourceConfig, factory);
+      case JsonKeys.BASKET:  return createFromBasket(user, sourceConfig, factory);
       default:
-        throw new DataValidationException("Unrecognized " + Keys.SOURCE_TYPE + ": " + sourceType);
+        throw new DataValidationException("Unrecognized " + JsonKeys.SOURCE_TYPE + ": " + sourceType);
     }
   }
 
   private static Dataset createFromIdList(User user, JSONObject sourceConfig, DatasetFactory factory)
       throws DataValidationException, WdkUserException, WdkModelException {
-    JSONArray jsonIds = sourceConfig.getJSONArray(Keys.IDS);
+    JSONArray jsonIds = sourceConfig.getJSONArray(JsonKeys.IDS);
     if (jsonIds.length() == 0)
       throw new DataValidationException("At least 1 ID must be submitted");
     final List<String> ids = new ArrayList<String>();
@@ -128,7 +128,7 @@ public class DatasetService extends UserService {
   public static Dataset createFromBasket(User user, JSONObject sourceConfig, DatasetFactory factory)
       throws WdkModelException, WdkUserException {
     WdkModel wdkModel = factory.getWdkModel();
-    String recordClassName = sourceConfig.getString(Keys.BASKET_NAME);
+    String recordClassName = sourceConfig.getString(JsonKeys.BASKET_NAME);
     RecordClass recordClass = wdkModel.getRecordClassByUrlSegment(recordClassName);
     String questionName = BasketFactory.getSnapshotBasketQuestionName(recordClass);
     Question question = wdkModel.getQuestion(questionName);

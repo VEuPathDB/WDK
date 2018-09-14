@@ -37,13 +37,13 @@ public class RecordFormatter {
   public static TwoTuple<JSONObject,List<Exception>> getRecordJson(RecordInstance record, Collection<String> attributeNames, Collection<String> tableNames)
       throws WdkModelException, WdkUserException {
     JSONObject recordJson = new JSONObject()
-      .put(Keys.DISPLAY_NAME, record.getIdAttributeValue().getDisplay())
-      .put(Keys.ID, getRecordPrimaryKeyJson(record))
-      .put(Keys.RECORD_CLASS_NAME, record.getRecordClass().getFullName())
-      .put(Keys.ATTRIBUTES, getRecordAttributesJson(record, attributeNames));
+      .put(JsonKeys.DISPLAY_NAME, record.getIdAttributeValue().getDisplay())
+      .put(JsonKeys.ID, getRecordPrimaryKeyJson(record))
+      .put(JsonKeys.RECORD_CLASS_NAME, record.getRecordClass().getFullName())
+      .put(JsonKeys.ATTRIBUTES, getRecordAttributesJson(record, attributeNames));
     ThreeTuple<JSONObject,JSONArray,List<Exception>> tableResult = getRecordTablesJson(record, tableNames);
-    recordJson.put(Keys.TABLES, tableResult.getFirst());
-    recordJson.put(Keys.TABLE_ERRORS, tableResult.getSecond());
+    recordJson.put(JsonKeys.TABLES, tableResult.getFirst());
+    recordJson.put(JsonKeys.TABLE_ERRORS, tableResult.getSecond());
     return new TwoTuple<JSONObject,List<Exception>>(recordJson,tableResult.getThird());
   }
 
@@ -51,7 +51,7 @@ public class RecordFormatter {
     Map<String,String> pkValues = record.getPrimaryKey().getValues();
     JSONArray pkJson = new JSONArray();
     for (String column : record.getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
-      pkJson.put(new JSONObject().put(Keys.NAME, column).put(Keys.VALUE, pkValues.get(column)));
+      pkJson.put(new JSONObject().put(JsonKeys.NAME, column).put(JsonKeys.VALUE, pkValues.get(column)));
     }
     return pkJson;
   }
@@ -111,8 +111,8 @@ public class RecordFormatter {
       }
 
       return new JSONObject()
-        .put(Keys.URL, linkAttr.getUrl())
-        .put(Keys.DISPLAY_TEXT, displayText);
+        .put(JsonKeys.URL, linkAttr.getUrl())
+        .put(JsonKeys.DISPLAY_TEXT, displayText);
     }
 
     else {

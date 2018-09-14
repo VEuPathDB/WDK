@@ -1,8 +1,8 @@
 package org.gusdb.wdk.service.request.user;
 
 import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
-import static org.gusdb.wdk.service.formatter.Keys.DELETE;
-import static org.gusdb.wdk.service.formatter.Keys.UNDELETE;
+import static org.gusdb.wdk.service.formatter.JsonKeys.DELETE;
+import static org.gusdb.wdk.service.formatter.JsonKeys.UNDELETE;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordIdentity;
 import org.gusdb.wdk.model.user.FavoriteFactory.NoteAndGroup;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -93,12 +93,12 @@ public class FavoriteRequests {
   public static FavoriteEdit createFromJson(JSONObject json, WdkModel wdkModel)
       throws RequestMisformatException, DataValidationException {
     try {
-      String recordClassName = json.getString(Keys.RECORD_CLASS_NAME);
+      String recordClassName = json.getString(JsonKeys.RECORD_CLASS_NAME);
       RecordClass recordClass = wdkModel.getRecordClass(recordClassName);
-      JSONArray pkArray = json.getJSONArray(Keys.PRIMARY_KEY);
+      JSONArray pkArray = json.getJSONArray(JsonKeys.PRIMARY_KEY);
       PrimaryKeyValue primaryKey = RecordRequest.parsePrimaryKey(pkArray, recordClass);
-      String note = getStringOrDefault(json, Keys.DESCRIPTION, null);
-      String group = getStringOrDefault(json, Keys.GROUP, null);
+      String note = getStringOrDefault(json, JsonKeys.DESCRIPTION, null);
+      String group = getStringOrDefault(json, JsonKeys.GROUP, null);
       return new FavoriteEdit(
           new RecordIdentity(recordClass, primaryKey),
           new NoteAndGroupImpl(note, group));
@@ -127,8 +127,8 @@ public class FavoriteRequests {
   public static NoteAndGroup createNoteAndGroupFromJson(JSONObject json)
       throws RequestMisformatException, DataValidationException {
     try {
-      String note = getValidatedInputString(json, Keys.DESCRIPTION, 200);
-      String group = getValidatedInputString(json, Keys.GROUP, 50);
+      String note = getValidatedInputString(json, JsonKeys.DESCRIPTION, 200);
+      String group = getValidatedInputString(json, JsonKeys.GROUP, 50);
       return new NoteAndGroupImpl(note, group);
     }
     catch (JSONException e) {
