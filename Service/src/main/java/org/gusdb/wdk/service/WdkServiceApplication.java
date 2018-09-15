@@ -4,6 +4,7 @@ import java.util.Set;
 
 import javax.ws.rs.core.Application;
 
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import org.glassfish.jersey.client.filter.EncodingFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
@@ -13,6 +14,7 @@ import org.gusdb.wdk.service.filter.ClientCacheExpirationFilter;
 import org.gusdb.wdk.service.filter.MethodRewritingFilter;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.provider.ExceptionMapper;
+import org.gusdb.wdk.service.provider.JsonSchemaProvider;
 import org.gusdb.wdk.service.provider.LoggingWriterInterceptor;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.ApiService;
@@ -37,7 +39,7 @@ public class WdkServiceApplication extends Application {
 
   @Override
   public Set<Object> getSingletons() {
-    return new SetBuilder<Object>()
+    return new SetBuilder<>()
 
     // add feature to GZip-compress responses
     .addIf(compressResponses(), new EncodingFeature(GZipEncoder.class))
@@ -50,6 +52,7 @@ public class WdkServiceApplication extends Application {
     return new SetBuilder<Class<?>>()
 
     // add provider classes
+    .add(JsonSchemaProvider.class)
     .add(ExceptionMapper.class)
     .add(LoggingWriterInterceptor.class)
 
