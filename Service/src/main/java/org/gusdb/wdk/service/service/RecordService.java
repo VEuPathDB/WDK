@@ -30,6 +30,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.RecordNotFoundException;
 import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
 import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.formatter.RecordClassFormatter;
@@ -52,6 +53,7 @@ public class RecordService extends AbstractWdkService {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
+  @OutSchema("records.list-response-200.json")
   public Response getRecordClassList(
       @QueryParam("expandRecordClasses") Boolean expandRecordClasses,
       @QueryParam("expandAttributes") Boolean expandAttributes,
@@ -162,7 +164,7 @@ public class RecordService extends AbstractWdkService {
       RecordClass recordClass = getRecordClassOrNotFound(recordClassName, getWdkModel());
       JSONObject requestJson = new JSONObject(body);
       RecordRequest request = RecordRequest.createFromJson(recordClass, requestJson);
-      
+
       // check to see if PKs specified map to multiple records
       try {
         List<Map<String,Object>> ids = recordClass.lookupPrimaryKeys(getSessionUser(), request.getPrimaryKey().getRawValues());
