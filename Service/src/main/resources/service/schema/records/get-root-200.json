@@ -28,8 +28,7 @@
             "type": "string",
             "enum": [
               "record",
-              "results",
-              ""
+              "results"
             ]
           }
         },
@@ -58,6 +57,12 @@
         "type"
       ],
       "additionalProperties": false
+    },
+    "formats": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/format"
+      }
     },
     "category": {
       "type": "object",
@@ -92,10 +97,7 @@
           "type": "boolean"
         },
         "formats": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/format"
-          }
+          "$ref": "#/definitions/formats"
         },
         "hasAllRecordsQuery": {
           "type": "boolean"
@@ -125,7 +127,52 @@
           "type": "string"
         },
         "attributes": {
-          "$ref": "#/definitions/arrayOfString"
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "isInReport": {
+                "type": "boolean"
+              },
+              "formats": {
+                "$ref": "#/definitions/formats"
+              },
+              "truncateTo": {
+                "type": "integer"
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "isSortable": {
+                "type": "boolean"
+              },
+              "isRemovable": {
+                "type": "boolean"
+              },
+              "isDisplayable": {
+                "type": "boolean"
+              },
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "specificAttribution": {
+                    "$ref": "#/definitions/arrayOfString"
+                  },
+                  "organisms": {
+                    "$ref": "#/definitions/arrayOfString"
+                  }
+                }
+              }
+            },
+            "required": [
+              "isInReport",
+              "formats",
+              "truncateTo"
+            ]
+          }
         },
         "primaryKeyColumnRefs": {
           "$ref": "#/definitions/arrayOfString"

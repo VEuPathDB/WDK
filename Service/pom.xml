@@ -12,6 +12,17 @@
   <artifactId>wdk-service</artifactId>
   <packaging>jar</packaging>
 
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <includes>
+          <include>**/*.json</include>
+        </includes>
+      </resource>
+    </resources>
+  </build>
+
   <dependencies>
 
     <dependency>
