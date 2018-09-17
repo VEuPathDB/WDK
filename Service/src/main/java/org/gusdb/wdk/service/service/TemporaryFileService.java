@@ -81,7 +81,7 @@ public class TemporaryFileService extends AbstractWdkService {
    * But, if a client or test knows the file is no longer needed, it can use this endpoint.
    */
   @DELETE
-  @Path("/temporary-file/{id}")
+  @Path("/{id}")
   public Response deleteTempFile(@PathParam("id") String tempFileName) throws WdkModelException {
     
     Optional<java.nio.file.Path> optPath = getTempFileFromSession(tempFileName);
