@@ -93,6 +93,9 @@
         "urlSegment": {
           "type": "string"
         },
+        "iconName": {
+          "type": "string"
+        },
         "useBasket": {
           "type": "boolean"
         },
@@ -183,6 +186,7 @@
       },
       "required": [
         "urlSegment",
+        "iconName",
         "useBasket",
         "formats",
         "hasAllRecordsQuery",
