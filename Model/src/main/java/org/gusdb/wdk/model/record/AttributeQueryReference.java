@@ -68,6 +68,11 @@ public class AttributeQueryReference extends Reference {
     super(twoPartName);
   }
 
+  public void setRecordClass(RecordClass recordClass) {
+    for (AttributeField field : attributeFieldList) {
+      field.setContainer(recordClass);
+    }
+  }
   /**
    * Sets an optional reference to a dynamic columns query
    * @param attributeMetaQueryRef dynamic columns query ref of the form "set.element"

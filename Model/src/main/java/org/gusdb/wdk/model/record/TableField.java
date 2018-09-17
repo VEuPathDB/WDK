@@ -54,7 +54,6 @@ public class TableField extends Field implements AttributeFieldContainer {
 
   public void setRecordClass(RecordClass recordClass) {
     _recordClass = recordClass;
-    setContainerName(recordClass.getFullName());
   }
 
   public Query getUnwrappedQuery() {
@@ -178,7 +177,7 @@ public class TableField extends Field implements AttributeFieldContainer {
     }
 
     for (AttributeField field : _attributeFieldMap.values()) {
-      field.setContainerName(_recordClass.getFullName() + "." + _name);
+      field.setContainer(this);
     }
 
     // Continue only if a table attribute meta query reference is provided.
@@ -307,6 +306,11 @@ public class TableField extends Field implements AttributeFieldContainer {
    */
   public void setAttributeCategory(String categoryName) {
     _categoryName = categoryName;
+  }
+
+  @Override
+  public String getNameForLogging() {
+    return _recordClass.getFullName() + "." + getName();
   }
 
 }

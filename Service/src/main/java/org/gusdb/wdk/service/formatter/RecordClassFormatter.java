@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.formatter;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -30,23 +31,21 @@ import org.json.JSONObject;
  *   tables: [ see TableFieldFormatter ],
  *   categories: [ see getAttributeCategoriesJson() ]
  * }
- * 
+ *
  * @author rdoherty
  */
 public class RecordClassFormatter {
 
-  public static JSONArray getRecordClassesJson(RecordClassSet[] recordClassSets,
-      boolean expandRecordClasses, boolean expandAttributes,
-      boolean expandTables, boolean expandTableAttributes) {
-    JSONArray json = new JSONArray();
+  public static Collection<Object> getRecordClassesJson(RecordClassSet[] recordClassSets,
+      boolean expand) {
+    final Collection<Object> out = new ArrayList<>();
     for (RecordClassSet rcSet : recordClassSets) {
       for (RecordClass rc : rcSet.getRecordClasses()) {
-        json.put(expandRecordClasses ? getRecordClassJson(rc,
-            expandAttributes, expandTables, expandTableAttributes) :
+        out.add(expand ? getRecordClassJson(rc, true, true, true) :
               rc.getFullName());
       }
     }
-    return json;
+    return out;
   }
 
   public static JSONObject getRecordClassJson(RecordClass recordClass,
