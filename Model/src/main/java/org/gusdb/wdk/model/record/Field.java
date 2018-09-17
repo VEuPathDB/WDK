@@ -26,7 +26,6 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
   protected int _truncateTo;
   protected boolean _internal;
   protected boolean _inReportMaker;
-  protected String _containerName = "unknown container";
 
   public Field() {
     // initialize the optional properties
@@ -38,15 +37,6 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
   @Override
   public Field clone() {
     return (Field) super.clone();
-  }
-
-  public String getContainerName() {
-    return _containerName;
-  }
-
-  @RngOptional
-  public void setContainerName(String containerName) {
-    _containerName = containerName;
   }
 
   /**

@@ -4,8 +4,10 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -30,6 +32,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.RecordNotFoundException;
 import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
 import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.formatter.RecordClassFormatter;
@@ -39,6 +42,7 @@ import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.statustype.MultipleChoicesStatusType;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -50,18 +54,18 @@ public class RecordService extends AbstractWdkService {
   private static final String RECORDCLASS_RESOURCE = "RecordClass with name ";
   private static final String TABLE_RESOURCE = "Table with name ";
 
+
+
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getRecordClassList(
-      @QueryParam("expandRecordClasses") Boolean expandRecordClasses,
-      @QueryParam("expandAttributes") Boolean expandAttributes,
-      @QueryParam("expandTables") Boolean expandTables,
-      @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
-    return Response.ok(
-        RecordClassFormatter.getRecordClassesJson(
-            getWdkModel().getAllRecordClassSets(), getFlag(expandRecordClasses),
-            getFlag(expandAttributes), getFlag(expandTables), getFlag(expandTableAttributes)).toString()
-    ).build();
+  @OutSchema("records.get-root-200")
+  public Collection<Object> getRecordClassList(@QueryParam("format") String format) {
+    final boolean tmp = Optional.ofNullable(format)
+        .map(f -> f.equals("expanded"))
+        .orElse(false);
+
+    return RecordClassFormatter.getRecordClassesJson(
+        getWdkModel().getAllRecordClassSets(), tmp);
   }
 
   @GET
@@ -162,7 +166,7 @@ public class RecordService extends AbstractWdkService {
       RecordClass recordClass = getRecordClassOrNotFound(recordClassName, getWdkModel());
       JSONObject requestJson = new JSONObject(body);
       RecordRequest request = RecordRequest.createFromJson(recordClass, requestJson);
-      
+
       // check to see if PKs specified map to multiple records
       try {
         List<Map<String,Object>> ids = recordClass.lookupPrimaryKeys(getSessionUser(), request.getPrimaryKey().getRawValues());

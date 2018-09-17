@@ -1,10 +1,6 @@
 package org.gusdb.wdk.model.report;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.RngAnnotations.RngOptional;
@@ -19,9 +15,9 @@ import org.gusdb.wdk.model.record.ScopedField;
  * A reference to the download Reporter class. the full class name of the
  * reporter is set into implementation, and an instance of the reporter will be
  * created to generate download results.
- * 
+ *
  * @author xingao
- * 
+ *
  */
 public class ReporterRef extends WdkModelBase implements ScopedField {
 
@@ -120,18 +116,19 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
   public void setInReportMaker(boolean inReportMaker) {
     this.inReportMaker = inReportMaker;
   }
-  
+
   /**
    * @return the list of scopes
    */
   public String getScopes() {
     return scopes;
   }
-  
+
   public List<String> getScopesList() {
-    return Arrays.asList(scopes.split("\\s*,\\s*"));
+    return scopes.isEmpty() ? Collections.emptyList() :
+        Arrays.asList(scopes.split("\\s*,\\s*"));
   }
-  
+
   /**
    * @param scopes
    *          comma-separated list of scopes that reporter is visible
