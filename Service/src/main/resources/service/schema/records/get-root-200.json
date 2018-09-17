@@ -186,7 +186,6 @@
       },
       "required": [
         "urlSegment",
-        "iconName",
         "useBasket",
         "formats",
         "hasAllRecordsQuery",
