@@ -34,6 +34,9 @@
     <ant target="defaultProjectUpdate">
       <property name="project" value="WSF"/>
     </ant>
+    <ant target="defaultProjectUpdate">
+      <property name="project" value="WDKClient"/>
+    </ant>
   </target>
 
 
