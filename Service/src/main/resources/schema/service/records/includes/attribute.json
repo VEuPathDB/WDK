@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "properties": {
+    "isInReport": {
+      "type": "boolean"
+    },
+    "formats": {
+      "$ref": "./reporters.json"
+    },
+    "truncateTo": {
+      "type": "integer"
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "isSortable": {
+      "type": "boolean"
+    },
+    "isRemovable": {
+      "type": "boolean"
+    },
+    "isDisplayable": {
+      "type": "boolean"
+    },
+    "properties": {
+      "type": "object",
+      "properties": {
+        "specificAttribution": {
+          "$ref": "../../../includes/array-of-string.json"
+        },
+        "organisms": {
+          "$ref": "../../../includes/array-of-string.json"
+        }
+      }
+    }
+  },
+  "required": [
+    "isInReport",
+    "formats",
+    "truncateTo",
+    "displayName",
+    "name",
+    "isSortable",
+    "isRemovable",
+    "isDisplayable",
+    "properties"
+  ]
+}
