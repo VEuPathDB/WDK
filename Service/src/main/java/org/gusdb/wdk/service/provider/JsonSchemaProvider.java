@@ -64,7 +64,9 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
       Annotation[] annotations, MediaType mediaType,
       MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
       throws IOException, WebApplicationException {
-    final JsonNode node = MAPPER.convertValue(o, JsonNode.class);
+    final JsonNode node = (o instanceof JsonNode)
+        ? (JsonNode) o
+        : MAPPER.convertValue(o, JsonNode.class);
 
     final String schema = findOutAnnotation()
         .map(OutSchema::value)
