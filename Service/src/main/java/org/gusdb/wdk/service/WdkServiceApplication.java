@@ -5,7 +5,6 @@ import java.util.Set;
 import javax.ws.rs.core.Application;
 
 import org.glassfish.jersey.client.filter.EncodingFeature;
-import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.filter.EncodingFilter;
@@ -89,7 +88,6 @@ public class WdkServiceApplication extends Application {
 
     // add extra features to basic Jersey functionality
     .add(MultiPartFeature.class)
-    .add(JacksonFeature.class)
 
     // test
     .add(SampleService.class)
