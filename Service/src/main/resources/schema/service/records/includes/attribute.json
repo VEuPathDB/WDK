@@ -6,7 +6,7 @@
       "type": "boolean"
     },
     "formats": {
-      "$ref": "./reporters.json"
+      "$ref": "reporters.json"
     },
     "truncateTo": {
       "type": "integer"

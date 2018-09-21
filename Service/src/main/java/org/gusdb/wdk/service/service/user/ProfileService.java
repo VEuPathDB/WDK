@@ -100,7 +100,6 @@ public class ProfileService extends UserService {
   /**
    * Web service to replace profile and profile properties of existing user with those provided in the
    * request.  If the properties object is present but not populated, the profile properties will be removed.
-   * @param userIdStr - id or 'current'
    * @param body
    * @return - 204 - Success without content
    * @throws DataValidationException - in the event of a
