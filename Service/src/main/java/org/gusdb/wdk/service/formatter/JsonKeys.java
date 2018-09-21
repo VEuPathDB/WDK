@@ -26,6 +26,7 @@ public class JsonKeys {
   public static final String URL_SEGMENT = "urlSegment";
   public static final String RECORD_ID_ATTRIBUTE_NAME = "recordIdAttributeName";
   public static final String PRIMARY_KEY_REFS = "primaryKeyColumnRefs";
+  public static final String SOURCE_SIGNATURE = "sourceSignature";
 
   // descriptive keys
   public static final String TYPE = "type";

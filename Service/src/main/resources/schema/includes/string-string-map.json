@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "Map <String, String>",
+  "description": "An object which can only contain string values.",
+  "type": "object",
+  "patternProperties": {
+    "^.+$": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

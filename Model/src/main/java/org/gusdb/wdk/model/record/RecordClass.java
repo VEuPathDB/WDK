@@ -1,8 +1,12 @@
 package org.gusdb.wdk.model.record;
 
+import static org.gusdb.fgputil.functional.Functions.fSwallow;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -94,6 +98,31 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private static final Logger logger = Logger.getLogger(RecordClass.class);
 
   private static final Set<Character> VOWELS = new HashSet<>(Arrays.asList('a', 'e', 'i', 'o', 'u'));
+
+  /**
+   * Returns a list of DynamicRecordInstance representing the records to which the passed primary key value
+   * currently maps.
+   * 
+   * @param user user to execute queries under
+   * @param pkValue primary key value to look up
+   * @return a list of record instances associated with the passed primary key
+   * @throws WdkModelException if anything goes wrong
+   */
+  public static List<RecordInstance> getRecordInstances(User user, PrimaryKeyValue pkValue) throws WdkModelException {
+    try {
+      RecordClass recordClass = pkValue.getPrimaryKeyDefinition().getRecordClass();
+      return mapToList(
+          recordClass.lookupPrimaryKeys(user, pkValue.getRawValues()),
+          fSwallow(idMap -> new DynamicRecordInstance(user, recordClass, pkValue.getRawValues())));
+    }
+    catch (RecordNotFoundException rnfe) {
+      return Collections.emptyList();
+    }
+    catch (RuntimeException | WdkUserException e) {
+      // since input to this method is already a PrimaryKeyValue (not Map), should not see these Exceptions
+      throw new WdkModelException(e);
+    }
+  }
 
   /**
    * This method takes in a bulk attribute or table query, and adds the primary key columns as params into the
