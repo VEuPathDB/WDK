@@ -3,7 +3,6 @@ package org.gusdb.wdk.service.provider;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
-import com.github.fge.jackson.JsonLoader;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchema;
@@ -34,7 +33,7 @@ import java.util.Optional;
 public class JsonSchemaProvider implements MessageBodyReader <Object>,
     MessageBodyWriter<Object> {
 
-  private static final String SCHEMA_PATH = "/service/schema";
+  private static final String SCHEMA_PATH = "resource:/schema/service";
   private static final JsonSchemaFactory SCHEMA_FAC = JsonSchemaFactory.byDefault();
   private static final ObjectMapper MAPPER = new ObjectMapper()
       .registerModule(new JsonOrgModule());
@@ -65,7 +64,9 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
       Annotation[] annotations, MediaType mediaType,
       MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
       throws IOException, WebApplicationException {
-    final JsonNode node = MAPPER.convertValue(o, JsonNode.class);
+    final JsonNode node = (o instanceof JsonNode)
+        ? (JsonNode) o
+        : MAPPER.convertValue(o, JsonNode.class);
 
     final String schema = findOutAnnotation()
         .map(OutSchema::value)
@@ -106,11 +107,11 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
   }
 
   private ProcessingReport validate(final String path, final JsonNode node)
-      throws IOException, WebApplicationException {
+      throws WebApplicationException {
     final JsonSchema schema;
 
     try {
-      schema = SCHEMA_FAC.getJsonSchema(JsonLoader.fromResource(path));
+      schema = SCHEMA_FAC.getJsonSchema(path);
       return schema.validate(node);
     } catch (ProcessingException e) {
       throw new InternalServerErrorException(e);

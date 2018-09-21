@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "definitions": {
+    "category": {
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "categories": {
+          "$ref": "#/definitions/categories"
+        }
+      },
+      "required": [
+        "displayName",
+        "name",
+        "categories"
+      ],
+      "additionalProperties": false
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/category"
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "urlSegment": {
+      "type": "string"
+    },
+    "iconName": {
+      "type": "string"
+    },
+    "useBasket": {
+      "type": "boolean"
+    },
+    "formats": {
+      "$ref": "includes/reporters.json"
+    },
+    "hasAllRecordsQuery": {
+      "type": "boolean"
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "shortDisplayName": {
+      "type": "string"
+    },
+    "shortDisplayNamePlural": {
+      "type": "string"
+    },
+    "tables": {
+      "type": "array"
+    },
+    "displayNamePlural": {
+      "type": "string"
+    },
+    "recordIdAttributeName": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "attributes": {
+      "type": "array",
+      "items": {
+        "$ref": "includes/attribute.json"
+      }
+    },
+    "primaryKeyColumnRefs": {
+      "$ref": "../../includes/array-of-string.json"
+    },
+    "categories": {
+      "$ref": "#/definitions/categories"
+    }
+  },
+  "required": [
+    "urlSegment",
+    "useBasket",
+    "formats",
+    "hasAllRecordsQuery",
+    "displayName",
+    "description",
+    "shortDisplayName",
+    "shortDisplayNamePlural",
+    "tables",
+    "displayNamePlural",
+    "name",
+    "attributes",
+    "primaryKeyColumnRefs",
+    "categories"
+  ],
+  "additionalProperties": false
+}

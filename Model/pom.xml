@@ -1,13 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
+
   <parent>
     <groupId>org.gusdb</groupId>
     <artifactId>wdk</artifactId>
     <version>1.0.0</version>
   </parent>
-  
+
   <name>Web Development Kit - Model</name>
   <artifactId>wdk-model</artifactId>
   <packaging>jar</packaging>
@@ -49,11 +49,6 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
-    
-    <dependency>
-      <groupId>org.glassfish.jersey.media</groupId>
-      <artifactId>jersey-media-moxy</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
@@ -63,7 +58,7 @@
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
         </exclusion>
-      </exclusions> 
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -121,7 +116,7 @@
     <dependency>
       <groupId>org.irods.jargon</groupId>
       <artifactId>jargon-core</artifactId>
-    </dependency> 
+    </dependency>
 
     <dependency>
       <groupId>net.sf.opencsv</groupId>

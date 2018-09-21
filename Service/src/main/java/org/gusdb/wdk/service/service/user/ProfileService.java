@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.service.CookieConverter;
 import org.gusdb.wdk.service.UserBundle;
+import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserFormatter;
 import org.gusdb.wdk.service.request.exception.ConflictException;
@@ -34,6 +35,7 @@ import org.gusdb.wdk.session.LoginCookieFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+@Path("/users/{id}")
 public class ProfileService extends UserService {
 
   private static final String DUPLICATE_EMAIL = "This email is already in use by another account.  Please choose another.";
@@ -44,16 +46,18 @@ public class ProfileService extends UserService {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getById(@QueryParam("includePreferences") Boolean includePreferences) throws WdkModelException {
+  @OutSchema("users.get-by-id")
+  public JSONObject getById(@QueryParam("includePreferences") Boolean includePreferences) throws WdkModelException {
     UserBundle userBundle = getUserBundle(Access.PUBLIC);
-    List<UserPropertyName> propDefs = getWdkModel().getModelConfig().getAccountDB().getUserPropertyNames();
-    return Response.ok(formatUser(userBundle.getTargetUser(),
-        userBundle.isSessionUser(), getFlag(includePreferences), propDefs).toString()).build();
+    List<UserPropertyName> propDefs = getWdkModel().getModelConfig()
+        .getAccountDB().getUserPropertyNames();
+    return formatUser(userBundle.getTargetUser(), userBundle.isSessionUser(),
+        getFlag(includePreferences), propDefs);
   }
 
   /**
    * Formats user object to JSON.  Factored to allow easy appending of custom properties by subclasses
-   * 
+   *
    * @param user user to format
    * @param isSessionUser whether the requested user is the currently logged in user
    * @param includePrefs whether to include user preferences in response
@@ -96,7 +100,6 @@ public class ProfileService extends UserService {
   /**
    * Web service to replace profile and profile properties of existing user with those provided in the
    * request.  If the properties object is present but not populated, the profile properties will be removed.
-   * @param userIdStr - id or 'current'
    * @param body
    * @return - 204 - Success without content
    * @throws DataValidationException - in the event of a
@@ -104,7 +107,7 @@ public class ProfileService extends UserService {
    */
   @PATCH
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response updateUserProfile(String body) 
+  public Response updateUserProfile(String body)
       throws ConflictException, DataValidationException, WdkModelException {
     try {
       User user = getPrivateRegisteredUser();

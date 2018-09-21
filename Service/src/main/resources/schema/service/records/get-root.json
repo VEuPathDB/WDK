@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "oneOf": [
+    {
+      "$ref": "../../includes/array-of-string.json"
+    },
+    {
+      "type": "array",
+      "items": {
+        "$ref": "get-by-name.json"
+      }
+    }
+  ]
+}
