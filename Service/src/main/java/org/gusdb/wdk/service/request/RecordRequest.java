@@ -41,7 +41,7 @@ public class RecordRequest {
     try {
       PrimaryKeyValue primaryKey = parsePrimaryKey(json.getJSONArray(JsonKeys.PRIMARY_KEY), recordClass);
       RecordRequest request = new RecordRequest(recordClass, primaryKey);
-      request.setAttributeNames(parseAttributeNames(json.getJSONArray(JsonKeys.DEFAULT_ATTRIBUTES), recordClass));
+      request.setAttributeNames(parseAttributeNames(json.getJSONArray(JsonKeys.ATTRIBUTES), recordClass));
       request.setTableNames(parseTableNames(json.getJSONArray(JsonKeys.TABLES), recordClass));
       return request;
     }
