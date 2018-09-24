@@ -33,7 +33,7 @@ import java.util.Optional;
 public class JsonSchemaProvider implements MessageBodyReader <Object>,
     MessageBodyWriter<Object> {
 
-  private static final String SCHEMA_PATH = "resource:/schema/service";
+  private static final String SCHEMA_PATH = "resource:/schema";
   private static final JsonSchemaFactory SCHEMA_FAC = JsonSchemaFactory.byDefault();
   private static final ObjectMapper MAPPER = new ObjectMapper()
       .registerModule(new JsonOrgModule());

@@ -1,0 +1,196 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "definitions": {
+    "properties": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "specificAttribution": {
+          "type": "array"
+        },
+        "organisms": {
+          "$ref": "../../includes/array-of-string.json"
+        }
+      },
+      "required": [
+        "specificAttribution",
+        "organisms"
+      ]
+    }
+  },
+  "properties": {
+    "defaultAttributes": {
+      "$ref": "../../includes/array-of-string.json"
+    },
+    "defaultSummaryView": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "dynamicAttributes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "align": {
+            "type": "string",
+            "enum": [
+              "center"
+            ]
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "formats": {
+            "type": "array"
+          },
+          "help": {
+            "description": "Optional help text",
+            "type": "string"
+          },
+          "isDisplayable": {
+            "type": "boolean"
+          },
+          "isInReport": {
+            "type": "boolean"
+          },
+          "isRemovable": {
+            "type": "boolean"
+          },
+          "isSortable": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "properties": {
+            "$ref": "#/definitions/properties"
+          },
+          "truncateTo": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "displayName",
+          "formats",
+          "isDisplayable",
+          "isInReport",
+          "isRemovable",
+          "isSortable",
+          "name",
+          "properties",
+          "truncateTo"
+        ]
+      }
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "displayType": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "parameters": {
+            "oneOf": [
+              {
+                "$ref": "../../includes/array-of-string.json"
+              }
+            ]
+          }
+        },
+        "required": [
+          "description",
+          "displayName",
+          "displayType",
+          "name",
+          "isVisible"
+        ]
+      }
+    },
+    "name": {
+      "type": "string"
+    },
+    "parameters": {
+      "oneOf": [
+        {
+          "$ref": "../../includes/array-of-string.json"
+        },
+        {
+          "type": "array",
+          "items": [
+            {
+              "$ref": "includes/answer-param.json"
+            },
+            {
+              "$ref": "includes/enum-param.json"
+            },
+            {
+              "$ref": "includes/string-param.json"
+            }
+          ]
+        }
+      ]
+    },
+    "properties": {
+      "$ref": "#/definitions/properties"
+    },
+    "recordClassName": {
+      "type": "string"
+    },
+    "shortDisplayName": {
+      "type": "string"
+    },
+    "stepAnalysisPlugins": {
+      "type": "array",
+      "description": "TODO: what is this array of?"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "summaryViewPlugins": {
+      "description": "TODO: Determine possible values to make this more strict.",
+      "$ref": "../../includes/array-of-string.json"
+    },
+    "urlSegment": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "description",
+    "defaultAttributes",
+    "defaultSummaryView",
+    "displayName",
+    "dynamicAttributes",
+    "groups",
+    "name",
+    "parameters",
+    "properties",
+    "recordClassName",
+    "shortDisplayName",
+    "stepAnalysisPlugins",
+    "summary",
+    "summaryViewPlugins",
+    "urlSegment"
+  ]
+}
