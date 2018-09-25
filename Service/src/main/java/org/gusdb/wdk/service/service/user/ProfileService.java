@@ -23,7 +23,6 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.service.CookieConverter;
 import org.gusdb.wdk.service.UserBundle;
-import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserFormatter;
 import org.gusdb.wdk.service.request.exception.ConflictException;
