@@ -326,7 +326,7 @@ public class StepUtilities {
 
   public static Strategy importStrategy(User user, Strategy oldStrategy, Map<Long, Long> stepIdsMap)
       throws WdkModelException, WdkUserException {
-    Strategy newStrategy = user.getWdkModel().getStepFactory().importStrategy(user, oldStrategy, stepIdsMap);
+    Strategy newStrategy = user.getWdkModel().getStepFactory().copyStrategy(user, oldStrategy, stepIdsMap, oldStrategy.getName());
     // highlight the imported strategy
     long rootStepId = newStrategy.getLatestStepId();
     String strategyKey = Long.toString(newStrategy.getStrategyId());
