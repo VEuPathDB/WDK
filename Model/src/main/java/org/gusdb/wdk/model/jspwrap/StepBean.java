@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisContext;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -343,7 +344,12 @@ public class StepBean {
      * @see org.gusdb.wdk.model.user.Step#deepClone()
      */
     public StepBean deepClone(Long strategyId, Map<Long, Long> stepIdMap) throws WdkModelException {
-        return new StepBean(user, step.deepClone(strategyId, stepIdMap));
+        StepFactory factory = step.getStepFactory();
+        return new StepBean(user, factory.copyStepTree(user.getUser(), strategyId, step, stepIdMap));
+    }
+    
+    public StepFactory getStepFactory() {
+      return step.getStepFactory();
     }
 
     public QuestionBean getQuestion() throws WdkModelException {
