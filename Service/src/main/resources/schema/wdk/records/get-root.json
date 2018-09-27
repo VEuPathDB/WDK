@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema",
   "oneOf": [
     {
-      "$ref": "/schema/includes/array-of-string.json"
+      "$ref": "/schema/includes/string-array.json"
     },
     {
       "type": "array",
