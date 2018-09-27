@@ -7,7 +7,7 @@
     {
       "type": "array",
       "items": {
-        "$ref": "get-by-name.json"
+        "$ref": "/schema/wdk/records/name/get.json"
       }
     }
   ]
