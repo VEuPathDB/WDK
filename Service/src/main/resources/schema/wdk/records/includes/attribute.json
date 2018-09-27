@@ -30,10 +30,10 @@
       "type": "object",
       "properties": {
         "specificAttribution": {
-          "$ref": "../../../includes/array-of-string.json"
+          "$ref": "/schema/includes/array-of-string.json"
         },
         "organisms": {
-          "$ref": "../../../includes/array-of-string.json"
+          "$ref": "/schema/includes/array-of-string.json"
         }
       }
     }
