@@ -140,13 +140,13 @@
           "type": "array",
           "items": [
             {
-              "$ref": "includes/answer-param.json"
+              "$ref": "/schema/wdk/includes/question-answer-param.json"
             },
             {
-              "$ref": "includes/enum-param.json"
+              "$ref": "/schema/wdk/includes/question-enum-param.json"
             },
             {
-              "$ref": "includes/string-param.json"
+              "$ref": "/schema/wdk/includes/question-string-param.json"
             }
           ]
         }
