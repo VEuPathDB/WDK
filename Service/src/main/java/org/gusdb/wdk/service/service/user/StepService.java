@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -127,6 +128,16 @@ public class StepService extends UserService {
     catch (JSONException e) {
       throw new BadRequestException(e);
     }
+  }
+  
+  @DELETE
+  @Path("steps/{stepId}")
+  public Response deleteStep(@PathParam("stepId") String stepId) throws WdkModelException {
+    Step step = getStepForCurrentUser(stepId);
+    if (step.isDeleted()) throw new NotFoundException(AbstractWdkService.formatNotFound(STEP_RESOURCE + stepId));
+    step.setDeleted(true);
+    step.update(true);
+    return Response.noContent().build();
   }
   
   @POST
