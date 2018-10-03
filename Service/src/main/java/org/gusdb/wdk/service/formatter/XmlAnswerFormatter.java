@@ -1,7 +1,10 @@
 package org.gusdb.wdk.service.formatter;
 
-import org.gusdb.wdk.model.xml.*;
-import org.gusdb.wdk.service.service.XmlAnswerService;
+import org.gusdb.wdk.model.xml.XmlAnswerValue;
+import org.gusdb.wdk.model.xml.XmlAttributeValue;
+import org.gusdb.wdk.model.xml.XmlRecordInstance;
+import org.gusdb.wdk.model.xml.XmlRowValue;
+import org.gusdb.wdk.model.xml.XmlTableValue;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
