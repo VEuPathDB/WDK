@@ -46,7 +46,8 @@ public class ProfileService extends UserService {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  @OutSchema("users.get-by-id")
+  // FIXME Uncomment when overrides can be handled
+  // @OutSchema("wdk.users.get-by-id")
   public JSONObject getById(@QueryParam("includePreferences") Boolean includePreferences) throws WdkModelException {
     UserBundle userBundle = getUserBundle(Access.PUBLIC);
     List<UserPropertyName> propDefs = getWdkModel().getModelConfig()
