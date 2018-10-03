@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "allOf": [
+    { "$ref": "question-base-param.json"},
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "AnswerParam"
+          ]
+        }
+      }
+    }
+  ]
+}

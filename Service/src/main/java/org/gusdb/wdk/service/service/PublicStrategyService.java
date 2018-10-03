@@ -35,7 +35,7 @@ public class PublicStrategyService extends AbstractWdkService {
   public Response getPublicStrategies() throws JSONException, WdkModelException {
     List<Strategy> publicStrategies = getWdkModel().getStepFactory().loadPublicStrategies();
     List<Strategy> validPublicStrategies = filter(publicStrategies, pSwallow(strategy -> strategy.isValid()));
-    return Response.ok(StrategyFormatter.getStrategiesJson(validPublicStrategies, false).toString()).build();
+    return Response.ok(StrategyFormatter.getStrategiesJson(validPublicStrategies).toString()).build();
   }
 
 }

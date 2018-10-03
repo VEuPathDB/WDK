@@ -28,7 +28,7 @@ public class ApiService extends AbstractWdkService {
   @GET
   @Path("keys")
   @Produces(MediaType.APPLICATION_JSON)
-  @OutSchema("api.get-keys-200")
+  @OutSchema("wdk.api.keys.get")
   public Response getPropertyKeys() {
     try {
       JSONObject json = new JSONObject();

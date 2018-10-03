@@ -15,20 +15,7 @@ import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.provider.ExceptionMapper;
 import org.gusdb.wdk.service.provider.JsonSchemaProvider;
 import org.gusdb.wdk.service.provider.LoggingWriterInterceptor;
-import org.gusdb.wdk.service.service.AnswerService;
-import org.gusdb.wdk.service.service.ApiService;
-import org.gusdb.wdk.service.service.ClientErrorReportingService;
-import org.gusdb.wdk.service.service.OAuthService;
-import org.gusdb.wdk.service.service.OntologyService;
-import org.gusdb.wdk.service.service.ProjectService;
-import org.gusdb.wdk.service.service.PublicStrategyService;
-import org.gusdb.wdk.service.service.QuestionService;
-import org.gusdb.wdk.service.service.RecordService;
-import org.gusdb.wdk.service.service.SampleService;
-import org.gusdb.wdk.service.service.SessionService;
-import org.gusdb.wdk.service.service.SystemService;
-import org.gusdb.wdk.service.service.TemporaryResultService;
-import org.gusdb.wdk.service.service.TemporaryFileService;
+import org.gusdb.wdk.service.service.*;
 import org.gusdb.wdk.service.service.user.*;
 
 public class WdkServiceApplication extends Application {
@@ -85,6 +72,7 @@ public class WdkServiceApplication extends Application {
     .add(ClientErrorReportingService.class)
     .add(TemporaryResultService.class)
     .add(TemporaryFileService.class)
+    .add(XmlAnswerService.class)
 
     // add extra features to basic Jersey functionality
     .add(MultiPartFeature.class)
