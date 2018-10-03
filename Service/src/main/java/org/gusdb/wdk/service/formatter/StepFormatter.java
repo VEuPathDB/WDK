@@ -31,7 +31,7 @@ import org.json.JSONObject;
  */
 public class StepFormatter {
 
-  public static JSONObject getStepJson(Step step, boolean loadEstimateSize) throws WdkModelException {
+  private static JSONObject getStepJson(Step step) throws WdkModelException {
     try {
       return new JSONObject()
         .put(JsonKeys.ID, step.getStepId())
@@ -44,7 +44,6 @@ public class StepFormatter {
         .put(JsonKeys.DESCRIPTION, step.getDescription())
         .put(JsonKeys.OWNER_ID, step.getUser().getUserId())
         .put(JsonKeys.STRATEGY_ID, JsonUtil.convertNulls(step.getStrategyId()))
-        .put(JsonKeys.ESTIMATED_SIZE, loadEstimateSize ? step.calculateEstimateSize() : step.getRawEstimateSize())
         .put(JsonKeys.HAS_COMPLETE_STEP_ANALYSES, step.getHasCompleteAnalyses())
         .put(JsonKeys.RECORD_CLASS_NAME, step.getType())
         .put(JsonKeys.IS_ANSWER_SPEC_COMPLETE, step.isAnswerSpecComplete())
@@ -58,6 +57,16 @@ public class StepFormatter {
     catch (JSONException e) {
       throw new WdkModelException("Unable to convert Step to service JSON", e);
     }
+  }
+
+  public static JSONObject getStepJsonWithCalculatedEstimateValue(Step step) throws WdkModelException {
+    return getStepJson(step)
+        .put(JsonKeys.ESTIMATED_SIZE, step.calculateEstimateSize());
+  }
+
+  public static JSONObject getStepJsonWithRawEstimateValue(Step step) throws WdkModelException {
+    return getStepJson(step)
+        .put(JsonKeys.ESTIMATED_SIZE, step.getRawEstimateSize());
   }
 
   // FIXME: this method should convert AnswerSpec -> JSONObject
