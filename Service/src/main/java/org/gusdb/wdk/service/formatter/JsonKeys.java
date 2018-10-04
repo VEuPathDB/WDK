@@ -100,6 +100,7 @@ public class JsonKeys {
   public static final String STEP_ANALYSIS_PLUGINS = "stepAnalysisPlugins";
 
   // param-related keys
+  public static final String DEFAULT_ID_LIST = "defaultIdList";
   public static final String DEFAULT_VALUE = "defaultValue";
   public static final String VOCABULARY = "vocabulary";
   public static final String DEPENDENT_PARAMS = "dependentParams";
@@ -120,6 +121,9 @@ public class JsonKeys {
   public static final String IDS = "ids";
   public static final String BASKET = "basket";
   public static final String BASKET_NAME = "basketName";
+  public static final String FILE = "file";
+  public static final String TEMP_FILE_ID = "temporaryFileId";
+  public static final String STRATEGY = "strategy";
 
   // step- and strategy-specific keys
   public static final String CUSTOM_NAME = "customName";
