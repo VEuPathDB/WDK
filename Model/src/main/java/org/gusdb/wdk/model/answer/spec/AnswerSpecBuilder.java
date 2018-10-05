@@ -9,6 +9,7 @@ import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec.QueryInstanceSpecBuilder;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.json.JSONObject;
 
 public class AnswerSpecBuilder {
@@ -53,7 +54,11 @@ public class AnswerSpecBuilder {
   }
 
   public AnswerSpec build(ValidationLevel level) {
-    return new AnswerSpec(_wdkModel, _questionName, _queryInstanceSpec, _legacyFilterName, _filters, _viewFilters, level);
+    return build(level, null);
+  }
+
+  public AnswerSpec build(ValidationLevel level, StepContainer stepContainer) {
+    return new AnswerSpec(_wdkModel, _questionName, _queryInstanceSpec, _legacyFilterName, _filters, _viewFilters, level, stepContainer);
   }
 
   public Runnable<AnswerSpec> buildRunnable() {
@@ -112,4 +117,5 @@ public class AnswerSpecBuilder {
   public FilterOptionListBuilder getViewFilterOptions() {
     return _viewFilters;
   }
+
 }

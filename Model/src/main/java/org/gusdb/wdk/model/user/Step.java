@@ -59,17 +59,6 @@ public class Step implements StrategyElement, Validateable {
 
   private static final Logger LOG = Logger.getLogger(Step.class);
 
-  // TODO: decide what to do with these constants (key all errors off them somehow?)
-  public static enum InvalidReason {
-
-    // answer spec problems
-    INVALID_QUESTION,
-    INVALID_ANSWER_SPEC,
-
-    // strategy integrity problems
-    CHILD_STEPS_OUTSIDE_STRATEGY;
-  }
-
   public static final int RESET_SIZE_FLAG = -1;
 
   public static class StepBuilder {
@@ -285,9 +274,6 @@ public class Step implements StrategyElement, Validateable {
   // summary views, until they are refactored using service.
   private final boolean _inMemoryOnly;
 
-  // records validation status and issues that make this Step invalid, if any
-  private final ValidationBundle _validation;
-
   /**
    * Creates a step object for given user and step ID. Note that this constructor lazy-loads the User object
    * for the passed ID if one is required for processing after construction.
@@ -318,15 +304,8 @@ public class Step implements StrategyElement, Validateable {
     _previousStepId = builder._previousStepId;
     _childStepId = builder._childStepId;
     _inMemoryOnly = builder._inMemoryOnly;
-    _answerSpec = builder._answerSpec.build(validationLevel);
+    _answerSpec = builder._answerSpec.build(validationLevel, strategy);
     _answerValueCache = new AnswerValueCache(this);
-    _validation = validate(validationLevel);
-  }
-
-  private ValidationBundle validate(ValidationLevel validationLevel) {
-    if (validationLevel.equals(ValidationLevel.RUNNABLE) && NPE _answerSpec.getQuestion()) {
-      // must check extra stuff
-    }
   }
 
   public Step getPreviousStep() {
@@ -629,19 +608,6 @@ public class Step implements StrategyElement, Validateable {
     if (_collapsedName == null && isCollapsible())
       return getCustomName();
     return _collapsedName;
-  }
-
-  /**
-   * Checks validity of this step and all the child steps it depends on and returns result. Value is memoized
-   * for efficiency. This call checks against any preset valid field value (set from the DB or during a
-   * previous call to isValid()), and checks that param names are correct, but does not check param values due
-   * to execution cost. Param values must be checked elsewhere; if they are found invalid, invalidateStep()
-   * should be called, which updates the DB.
-   * 
-   * @return true if this step is valid (to the best of our knowledge), else false
-   */
-  public boolean isValid() {
-    return _validation.isValid();
   }
 
   public Map<String, String> getParamNames() {
@@ -1258,13 +1224,13 @@ public class Step implements StrategyElement, Validateable {
   }
 
   public boolean isRunnable() {
-    return _validation.getStatus().equals(ValidationStatus.VALID) &&
-           _validation.getLevel().equals(ValidationLevel.RUNNABLE);
+    return getValidationBundle().getStatus().equals(ValidationStatus.VALID) &&
+           getValidationBundle().getLevel().equals(ValidationLevel.RUNNABLE);
   }
 
   @Override
   public ValidationBundle getValidationBundle() {
-    return _validation;
+    return _answerSpec.getValidationBundle();
   }
 
 }
