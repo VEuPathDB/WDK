@@ -169,22 +169,22 @@ public class AnswerDetailsFactory {
     }
   }
 
-  private static List<SortItem> ensureElements(List<SortItem> sorting, Question question) {
+  private static List<AttributeFieldSortSpec> ensureElements(List<AttributeFieldSortSpec> sorting, Question question) {
     if (!sorting.isEmpty()) return sorting;
     AttributeField pkAttribute = question.getRecordClass().getIdAttributeField();
-    return SortItem.convertSorting(
+    return AttributeFieldSortSpec.convertSorting(
         question.getRecordClass().getIdSortingAttributeMap(),
         new MapBuilder<String, AttributeField>(pkAttribute.getName(), pkAttribute).toMap());
   }
 
-  private static List<SortItem> getDefaultSorting(Question question, Map<String, AttributeField> attributes) {
+  private static List<AttributeFieldSortSpec> getDefaultSorting(Question question, Map<String, AttributeField> attributes) {
     Map<String, Boolean> defaultSorting = question.getSortingAttributeMap();
-    List<SortItem> convertedSorting = SortItem.convertSorting(defaultSorting, attributes);
+    List<AttributeFieldSortSpec> convertedSorting = AttributeFieldSortSpec.convertSorting(defaultSorting, attributes);
     return ensureElements(convertedSorting, question);
   }
 
-  private static List<SortItem> parseSorting(JSONArray sortingJson, Map<String, AttributeField> attributes) throws RequestMisformatException {
-    List<SortItem> sorting = new ArrayList<>();
+  private static List<AttributeFieldSortSpec> parseSorting(JSONArray sortingJson, Map<String, AttributeField> attributes) throws RequestMisformatException {
+    List<AttributeFieldSortSpec> sorting = new ArrayList<>();
     for (int i = 0; i < sortingJson.length(); i++) {
       JSONObject obj = sortingJson.getJSONObject(i);
       String attributeName = obj.getString("attributeName");
@@ -192,12 +192,12 @@ public class AnswerDetailsFactory {
       if (!attributes.containsKey(attributeName)) {
         LOG.warn("Attribute '" + attributeName + "' was listed in sorting but is not a returned attribute.  Skipping...");
       }
-      if (!SortDirection.isDirection(directionStr)) {
+      if (!SortDirection.isValidDirection(directionStr)) {
         throw new RequestMisformatException("Bad value: '" + directionStr +
             "' is not a direction. Only " + FormatUtil.join(SortDirection.values(), ", ") + " supported.");
       }
       // this entry passed; add sorting item
-      sorting.add(new SortItem(attributes.get(attributeName), SortDirection.valueOf(directionStr)));
+      sorting.add(new AttributeFieldSortSpec(attributes.get(attributeName), SortDirection.valueOf(directionStr)));
     }
     return sorting;
   }

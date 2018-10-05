@@ -33,7 +33,7 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
   private static final Logger logger = Logger.getLogger(WordCloudAttributePlugin.class);
 
   private boolean propertiesResolved = false;
-  private String splitPattern = "[^a-zA-Z0-9_]+";
+  private String splitPattern = "[^a-zA-Z0-9_:]+";
   private int minWordLength = 3;
   private boolean excludeNumbers = true;
   private Set<String> commonWords;

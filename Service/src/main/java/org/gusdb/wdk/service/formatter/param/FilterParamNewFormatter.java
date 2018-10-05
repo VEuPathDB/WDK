@@ -9,7 +9,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.OntologyItem;
 import org.gusdb.wdk.model.user.User;
-import static org.gusdb.wdk.service.formatter.Keys.MIN_SELECTED_COUNT;
+import static org.gusdb.wdk.service.formatter.JsonKeys.MIN_SELECTED_COUNT;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

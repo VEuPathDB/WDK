@@ -1672,6 +1672,12 @@
       <optional>
         <attribute name="attributeCategory" />
       </optional>
+      <optional>
+	<!-- this is a hint to the client about a default sort. if not provided, client should keep order as delivered by server
+	     comma delimited list in the form: column_name1 ASC|DESC,  column_name2 ASC|DESC
+	-->
+        <attribute name="clientSortingOrder" /> 
+      </optional>
       <optional>  
          <attribute name="attributeMetaQueryRef" />
       </optional>

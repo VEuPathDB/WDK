@@ -1,13 +1,12 @@
 package org.gusdb.wdk.service.service;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.gusdb.fgputil.FormatUtil.join;
-import static org.gusdb.fgputil.functional.Functions.mapToList;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -24,14 +23,13 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
-import org.gusdb.wdk.model.record.RecordNotFoundException;
 import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.formatter.RecordClassFormatter;
 import org.gusdb.wdk.service.formatter.RecordFormatter;
 import org.gusdb.wdk.service.formatter.TableFieldFormatter;
@@ -45,6 +43,7 @@ import org.json.JSONObject;
 @Path("/records")
 public class RecordService extends AbstractWdkService {
 
+  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(RecordService.class);
 
   private static final String RECORDCLASS_RESOURCE = "RecordClass with name ";
@@ -52,16 +51,14 @@ public class RecordService extends AbstractWdkService {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getRecordClassList(
-      @QueryParam("expandRecordClasses") Boolean expandRecordClasses,
-      @QueryParam("expandAttributes") Boolean expandAttributes,
-      @QueryParam("expandTables") Boolean expandTables,
-      @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
-    return Response.ok(
-        RecordClassFormatter.getRecordClassesJson(
-            getWdkModel().getAllRecordClassSets(), getFlag(expandRecordClasses),
-            getFlag(expandAttributes), getFlag(expandTables), getFlag(expandTableAttributes)).toString()
-    ).build();
+  @OutSchema("wdk.records.get")
+  public Collection<Object> getRecordClassList(@QueryParam("format") String format) {
+    final boolean tmp = Optional.ofNullable(format)
+        .map(f -> f.equals("expanded"))
+        .orElse(false);
+
+    return RecordClassFormatter.getRecordClassesJson(
+        getWdkModel().getAllRecordClassSets(), tmp);
   }
 
   @GET
@@ -146,7 +143,7 @@ public class RecordService extends AbstractWdkService {
       throw new NotFoundException(formatNotFound(RECORDCLASS_RESOURCE + recordClassName + "/count"));
     }
     long count = recordClass.getAllRecordsCount(getSessionUser());
-    JSONObject json = new JSONObject().put(Keys.TOTAL_COUNT, count);
+    JSONObject json = new JSONObject().put(JsonKeys.TOTAL_COUNT, count);
     return Response.ok(json.toString()).build();
   }
 
@@ -155,49 +152,46 @@ public class RecordService extends AbstractWdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response buildResult(@PathParam("recordClassName") String recordClassName, String body)
-      throws WdkModelException, DataValidationException {
-    RecordInstance recordInstance = null;
+      throws WdkModelException, DataValidationException, RequestMisformatException {
     try {
       // get and parse request information
       RecordClass recordClass = getRecordClassOrNotFound(recordClassName, getWdkModel());
-      JSONObject requestJson = new JSONObject(body);
-      RecordRequest request = RecordRequest.createFromJson(recordClass, requestJson);
-      
-      // check to see if PKs specified map to multiple records
-      try {
-        List<Map<String,Object>> ids = recordClass.lookupPrimaryKeys(getSessionUser(), request.getPrimaryKey().getRawValues());
-        if (ids.size() > 1) {
-          // more than one record found; return multi-choice status and give user IDs from which to choose
-          String idOptionText = join(mapToList(ids, pkValueMap -> join(mapToList(pkValueMap.entrySet(),
-              entry -> entry.getKey() + " = " + entry.getValue()), ", ")), NL);
-          return Response.status(
-              new MultipleChoicesStatusType()).type(MediaType.TEXT_PLAIN).entity(idOptionText).build();
-        }
-      }
-      catch(RecordNotFoundException rnfe) {
-        throw new NotFoundException(rnfe);
-      }
-      catch(WdkUserException e) {
-        throw new BadRequestException(e);
+      RecordRequest request = RecordRequest.createFromJson(recordClass, new JSONObject(body));
+
+      // fetch a list of record instances the passed primary key maps to
+      List<RecordInstance> records = RecordClass.getRecordInstances(getSessionUser(), request.getPrimaryKey());
+
+      // if no mapping exists, return not found
+      if (records.isEmpty()) {
+        throw new NotFoundException(formatNotFound(RECORDCLASS_RESOURCE + recordClassName +
+            " has no record with primary keys: " + request.getPrimaryKey().getValuesAsString()));
       }
 
-      // PKs represent only one record; fetch, format, and return
-      recordInstance = new DynamicRecordInstance(getSessionUser(), request.getRecordClass(), request.getPrimaryKey().getRawValues());
-      TwoTuple<JSONObject,List<Exception>> recordJsonResult = RecordFormatter.getRecordJson(
-          recordInstance, request.getAttributeNames(), request.getTableNames());
-      triggerErrorEvents(recordJsonResult.getSecond());
-      return Response.ok(recordJsonResult.getFirst().toString()).build();
+      // if PK specified maps to multiple records, return Multiple Choices response with IDs from which to choose
+      else if (records.size() > 1) {
+        String idOptionText = records.stream()
+            .map(record -> record.getPrimaryKey().getRawValues().entrySet().stream()
+                .map(entry -> entry.getKey() + " = " + entry.getValue())
+                .collect(Collectors.joining(", ")))
+            .collect(Collectors.joining(NL));
+        return Response.status(new MultipleChoicesStatusType())
+            .type(MediaType.TEXT_PLAIN).entity(idOptionText).build();
+      }
+
+      // PK represents only one record; fetch, format, and return
+      else {
+        TwoTuple<JSONObject,List<Exception>> recordJsonResult = RecordFormatter.getRecordJson(
+            records.get(0), request.getAttributeNames(), request.getTableNames());
+        triggerErrorEvents(recordJsonResult.getSecond());
+        return Response.ok(recordJsonResult.getFirst().toString()).build();
+      }
     }
-    catch (JSONException | RequestMisformatException e) {
-      LOG.warn("Passed request body deemed unacceptable", e);
-      throw new BadRequestException(e);
+    catch (JSONException e) {
+      throw new RequestMisformatException("Passed request body deemed unacceptable. " + e.getMessage(), e);
     }
-    catch (WdkUserException | RecordNotFoundException e) {
-      // these may be thrown when the PK values either don't exist or map to >1 record
-      // OR the ID exists but the attribute query returns nothing
-      String primaryKeys = (recordInstance == null ? "<unknown>" : recordInstance.getPrimaryKey().getValuesAsString());
-      throw new NotFoundException(AbstractWdkService.formatNotFound(RECORDCLASS_RESOURCE +
-          recordClassName + ", " + String.format("with primary key [%s]", primaryKeys)) ,e);
+    catch (WdkUserException e) {
+      // due to checks above during request parsing, this should not happen
+      throw new WdkModelException(e);
     }
   }
 

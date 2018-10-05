@@ -32,33 +32,58 @@ import org.json.JSONObject;
  */
 public class StepFormatter {
 
-  public static JSONObject getStepJson(Step step, boolean loadEstimateSize) throws WdkModelException {
+  private static JSONObject getStepJson(Step step) throws WdkModelException {
     try {
       return new JSONObject()
-        .put(Keys.ID, step.getStepId())
-        .put(Keys.DISPLAY_NAME, step.getDisplayName())
-        .put(Keys.SHORT_DISPLAY_NAME, step.getShortDisplayName())
-        .put(Keys.CUSTOM_NAME, step.getCustomName())
-        .put(Keys.BASE_CUSTOM_NAME, step.getBaseCustomName())
-        .put(Keys.IS_COLLAPSIBLE, step.isCollapsible())
-        .put(Keys.COLLAPSED_NAME, step.getCollapsedName())
-        .put(Keys.DESCRIPTION, step.getDescription())
-        .put(Keys.OWNER_ID, step.getUser().getUserId())
-        .put(Keys.STRATEGY_ID, JsonUtil.convertNulls(step.getStrategyId()))
-        .put(Keys.ESTIMATED_SIZE, loadEstimateSize ? step.getCalculatedEstimateSize() : step.getRawEstimateSize())
-        .put(Keys.HAS_COMPLETE_STEP_ANALYSES, step.getHasCompleteAnalyses())
-        .put(Keys.RECORD_CLASS_NAME, step.getType())
-        .put(Keys.IS_ANSWER_SPEC_COMPLETE, step.isAnswerSpecComplete())
+        .put(JsonKeys.ID, step.getStepId())
+        .put(JsonKeys.DISPLAY_NAME, step.getDisplayName())
+        .put(JsonKeys.SHORT_DISPLAY_NAME, step.getShortDisplayName())
+        .put(JsonKeys.CUSTOM_NAME, step.getCustomName())
+        .put(JsonKeys.BASE_CUSTOM_NAME, step.getBaseCustomName())
+        .put(JsonKeys.IS_COLLAPSIBLE, step.isCollapsible())
+        .put(JsonKeys.COLLAPSED_NAME, step.getCollapsedName())
+        .put(JsonKeys.DESCRIPTION, step.getDescription())
+        .put(JsonKeys.OWNER_ID, step.getUser().getUserId())
+        .put(JsonKeys.STRATEGY_ID, JsonUtil.convertNulls(step.getStrategyId()))
+        .put(JsonKeys.HAS_COMPLETE_STEP_ANALYSES, step.getHasCompleteAnalyses())
+        .put(JsonKeys.RECORD_CLASS_NAME, step.getType())
+        .put(JsonKeys.IS_ANSWER_SPEC_COMPLETE, step.isAnswerSpecComplete())
+
         // FIXME: call AnswerSpecFactory.createFromStep() and pass to formatter;
         //    to do so, must extract JSON formatting from Step and other classes
-        .put(Keys.ANSWER_SPEC, AnswerSpecServiceFormat.format(step.getAnswerSpec()))
-        .put(Keys.IS_VALID, step.isValid())
+        .put(JsonKeys.ANSWER_SPEC, createAnswerSpec(step))
+        .put(JsonKeys.IS_VALID, step.isValid())
         .put(Keys.INVALID_REASON, step.getInvalidReason().name())
-        .put(Keys.CREATED_TIME, step.getCreatedTime())
-        .put(Keys.LAST_RUN_TIME, step.getLastRunTime());
+        .put(JsonKeys.CREATED_TIME, step.getCreatedTime())
+        .put(JsonKeys.LAST_RUN_TIME, step.getLastRunTime());
     }
     catch (JSONException e) {
       throw new WdkModelException("Unable to convert Step to service JSON", e);
     }
+  }
+
+  public static JSONObject getStepJsonWithCalculatedEstimateValue(Step step) throws WdkModelException {
+    return getStepJson(step)
+        .put(JsonKeys.ESTIMATED_SIZE, step.calculateEstimateSize());
+  }
+
+  public static JSONObject getStepJsonWithRawEstimateValue(Step step) throws WdkModelException {
+    return getStepJson(step)
+        .put(JsonKeys.ESTIMATED_SIZE, step.getRawEstimateSize());
+  }
+
+  // FIXME: this method should convert AnswerSpec -> JSONObject
+  private static JSONObject createAnswerSpec(Step step) {
+    JSONObject json = new JSONObject()
+      .put(JsonKeys.QUESTION_NAME, step.getQuestionName())
+      .put(JsonKeys.PARAMETERS, step.getParamsJSON())
+      .put(JsonKeys.FILTERS, JsonUtil.getOrEmptyArray(step.getFilterOptionsJSON()))
+      .put(JsonKeys.VIEW_FILTERS, JsonUtil.getOrEmptyArray(step.getViewFilterOptionsJSON()))
+      .put(JsonKeys.WDK_WEIGHT, step.getAssignedWeight());
+    AnswerFilterInstance legacyFilter = step.getFilter();
+    if (legacyFilter != null) {
+      json.put(JsonKeys.LEGACY_FILTER_NAME, legacyFilter.getName());
+    }
+    return json;
   }
 }

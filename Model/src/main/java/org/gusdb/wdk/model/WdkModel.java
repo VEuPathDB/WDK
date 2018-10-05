@@ -3,15 +3,10 @@ package org.gusdb.wdk.model;
 import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -29,8 +24,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
-import org.gusdb.fgputil.EncryptionUtil;
-import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
@@ -70,7 +63,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.FavoriteFactory;
-import org.gusdb.wdk.model.user.GuestUser.SystemUser;
+import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
@@ -205,8 +198,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private EuPathCategoriesFactory eupathCategoriesFactory = null;
   private String categoriesOntologyName = null;
 
-  private String secretKey;
-
   private ReentrantLock systemUserLock = new ReentrantLock();
   private User systemUser;
 
@@ -236,7 +227,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       WdkModel wdkModel = parser.parseModel(projectId);
       wdkModel.setStartupTime(now.getTime());
       wdkModel.checkSchema();
-      wdkModel.checkTmpDir();
       LOG.info("WDK Model construction complete.");
       return wdkModel;
     }
@@ -275,45 +265,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     _modelConfig.getUserDB().checkSchema(this);
   }
 
-  private void checkTmpDir() throws WdkModelException {
-    checkTmpDir(_modelConfig.getWdkTempDir());
-  }
-
-  public static void checkTmpDir(String configuredDir) throws WdkModelException {
-    WdkModel.checkTempDir(configuredDir);
-  }
-  
-  /**
-   * Checks for the existence of a temporary directory given by the input string.  If
-   * no such dir exist, it is created with appropriate permisions.  This overloaded
-   * method is used directly by the UserDatasetEventArrayHandler to insure that the temp
-   * dir exists because it does not employ a wdk model as such.
-   * @param configuredDir
-   * @throws WdkModelException
-   */
-  public static void checkTempDir(String configuredDir) throws WdkModelException {
-	LOG.info("Checking configured temp dir: " + configuredDir);
-	Path wdkTempDir = Paths.get(configuredDir);
-	if (Files.exists(wdkTempDir) && Files.isDirectory(wdkTempDir) &&
-      Files.isReadable(wdkTempDir) && Files.isWritable(wdkTempDir)) {
-        return;
-	}
-	try {
-	  LOG.info("Temp dir does not exist or has insufficient permissions.  Trying to remedy...");
-	  Files.createDirectories(wdkTempDir);
-      IoUtil.openPosixPermissions(wdkTempDir);
-      LOG.info("Temp dir created at: " + wdkTempDir.toAbsolutePath());
-    }
-    catch (IOException e) {
-      throw new WdkModelException("Unable to create WDK temp directory [" +
-          configuredDir + "] and/or set open permissions", e);
-    }
-  }
-
   public static ModelConfig getModelConfig(String projectId, String gusHome) throws WdkModelException {
     try {
       ModelXmlParser parser = new ModelXmlParser(gusHome);
-      return parser.getModelConfig(projectId);
+      return parser.getModelConfig(projectId).build();
     }
     catch (IOException | SAXException e) {
       throw new WdkModelException("Unable to read model config for gusHome '" + gusHome + "', projectId '" +
@@ -1383,16 +1338,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     macroList.add(macro);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#finalize()
-   */
-  @Override
-  protected void finalize() throws Throwable {
-    LOG.debug("Model unloaded.");
-  }
-
   public String queryParamDisplayName(String paramName) {
     for (String paramSetName : paramSets.keySet()) {
       ParamSet paramSet = paramSets.get(paramSetName);
@@ -1404,45 +1349,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return paramName;
   }
 
-  public String getSecretKey() throws WdkModelException {
-    try {
-      if (secretKey == null) {
-        // load secret key file & read contents
-        String secretKeyFileLoc = _modelConfig.getSecretKeyFile();
-        if (secretKeyFileLoc == null)
-          return null;
-
-        File file = new File(secretKeyFileLoc);
-        if (!file.exists())
-          return null;
-
-        InputStream fis = new FileInputStream(secretKeyFileLoc);
-        StringBuilder contents = new StringBuilder();
-        int chr;
-        while ((chr = fis.read()) != -1) {
-          contents.append((char) chr);
-        }
-        fis.close();
-        this.secretKey = EncryptionUtil.md5(contents.toString());
-      }
-      return secretKey;
-    }
-    catch (IOException e) {
-      throw new WdkModelException("Unable to retrieve secret key from file.", e);
-    }
-  }
-
-  public boolean getUseWeights() {
-    return _modelConfig.getUseWeights();
-  }
-
   public User getSystemUser() {
     if (systemUser == null) {
       try {
-        // ideally would synchronize on systemUser but cannot sync on null so use lock
         systemUserLock.lock();
         if (systemUser == null) {
-          systemUser = new SystemUser(this);
+          systemUser = userFactory.createUnregistedUser(UnregisteredUserType.SYSTEM);
         }
       }
       finally {

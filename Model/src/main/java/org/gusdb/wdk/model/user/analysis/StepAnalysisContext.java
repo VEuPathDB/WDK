@@ -416,6 +416,6 @@ public String getUserNotes() {
    * @throws WdkModelException if unable to read WDK model's secret key file
    */
   public String getAccessToken() throws WdkModelException {
-    return EncryptionUtil.encrypt("__" + _analysisId + _step.getStepId() + _wdkModel.getSecretKey(), true);
+    return EncryptionUtil.encrypt("__" + _analysisId + _step.getStepId() + _wdkModel.getModelConfig().getSecretKey(), true);
   }
 }

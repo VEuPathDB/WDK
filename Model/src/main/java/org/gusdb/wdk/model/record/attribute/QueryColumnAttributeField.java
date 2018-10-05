@@ -87,12 +87,12 @@ public class QueryColumnAttributeField extends ColumnAttributeField {
         ColumnFilter filter = ((ColumnFilterDefinition) definition).getColumnFilter(this);
         if (_columnFilters.containsKey(filter.getKey()))
           throw new WdkModelException("Non-unique column filter key '" + filter.getKey() +
-              "' in attribute " + getName() + " of " + _containerName);
+              "' in attribute " + getName() + " of " + _container.getNameForLogging());
         _columnFilters.put(filter.getKey(), filter);
       }
       else {
         throw new WdkModelException("The filter \"" + name + "\" is not a columnFilter on attribute " +
-            getName() + " of " + _containerName);
+            getName() + " of " + _container.getNameForLogging());
       }
     }
     _filterReferences.clear();

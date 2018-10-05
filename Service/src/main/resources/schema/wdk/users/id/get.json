@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "definitions": {
+    "userProperties": {
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "organization": {
+          "type": "string"
+        },
+        "middleName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "firstName",
+        "lastName",
+        "organization",
+        "middleName"
+      ],
+      "additionalProperties": false
+    },
+    "userPreferences": {
+      "type": "object",
+      "properties": {
+        "global": {
+          "$ref": "/schema/includes/string-string-map.json"
+        },
+        "project": {
+          "$ref": "/schema/includes/string-string-map.json"
+        }
+      },
+      "required": [
+        "global",
+        "project"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "isGuest": {
+      "type": "boolean"
+    },
+    "preferences": {
+      "$ref": "#/definitions/userPreferences"
+    },
+    "properties": {
+      "$ref": "#/definitions/userProperties"
+    }
+  },
+  "required": [
+    "email",
+    "id",
+    "isGuest",
+    "properties"
+  ],
+  "additionalProperties": false
+}

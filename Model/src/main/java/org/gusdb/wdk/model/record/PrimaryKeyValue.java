@@ -46,6 +46,10 @@ public class PrimaryKeyValue {
     }
   }
 
+  public PrimaryKeyDefinition getPrimaryKeyDefinition() {
+    return _pkDef;
+  }
+
   public Map<String, Object> getRawValues() {
     return new LinkedHashMap<String, Object>(_pkValues);
   }

@@ -25,7 +25,7 @@ import org.gusdb.wdk.model.config.ModelConfigAccountDB;
 import org.gusdb.wdk.model.user.InvalidEmailException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.formatter.UserFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -94,7 +94,7 @@ public class UserUtilityServices extends AbstractWdkService {
       throws WdkModelException, DataValidationException, RequestMisformatException {
     try {
       JSONObject json = new JSONObject(body);
-      String email = json.getString(Keys.EMAIL);
+      String email = json.getString(JsonKeys.EMAIL);
       UserFactory userMgr = getWdkModel().getUserFactory();
       try {
         userMgr.resetPassword(email);

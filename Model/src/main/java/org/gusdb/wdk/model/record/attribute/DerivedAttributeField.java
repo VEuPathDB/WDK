@@ -38,12 +38,6 @@ public abstract class DerivedAttributeField extends AttributeField {
    */
   protected abstract Collection<AttributeField> getDependencies() throws WdkModelException;
 
-  protected AttributeFieldContainer _container;
-
-  public AttributeFieldContainer getContainer() {
-    return _container;
-  }
-
   /**
    * @param container
    *          the container to set
@@ -63,7 +57,7 @@ public abstract class DerivedAttributeField extends AttributeField {
 
   protected String excludeModelText(List<WdkModelText> texts, String projectId,
       String textTag, boolean isRequired) throws WdkModelException {
-    String source = "The " + getClass().getSimpleName() + " " + _containerName + "." + getName();
+    String source = "The " + getClass().getSimpleName() + " " + _container.getNameForLogging() + "." + getName();
     String selectedText = null;
     boolean hasText = false;
     for (WdkModelText text : texts) {

@@ -190,7 +190,7 @@ public class AnswerService extends AbstractWdkService {
     }
 
     // check to make sure format name is valid for this recordclass
-    if (!answerValue.getQuestion().getReporterMap().keySet().contains(format)) {
+    if (!answerValue.getQuestion().getReporterMap().containsKey(format)) {
       throw new DataValidationException("Request for an invalid answer format: " + format);
     }
 

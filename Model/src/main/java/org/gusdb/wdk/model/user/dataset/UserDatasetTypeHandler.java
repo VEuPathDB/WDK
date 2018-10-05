@@ -124,7 +124,7 @@ public abstract class UserDatasetTypeHandler {
       p = new ProcessBuilder(command)
           .directory(workingDir.toFile())
           .redirectOutput(workingDir.resolve("stdout").toFile())
-          .redirectError(workingDir.resolve("stderr").toFile())
+          //          .redirectError(workingDir.resolve("stderr").toFile())
           .start();
       p.waitFor();
       success = p.exitValue() == 0;

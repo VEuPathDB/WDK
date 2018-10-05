@@ -7,7 +7,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.session.OAuthUtil;
 import org.json.JSONObject;
 
@@ -33,7 +33,7 @@ public class OAuthService extends AbstractWdkService {
     String newToken = OAuthUtil.generateStateToken(getWdkModel());
     getSession().setAttribute(OAuthUtil.STATE_TOKEN_KEY, newToken);
     JSONObject json = new JSONObject();
-    json.put(Keys.OAUTH_STATE_TOKEN, newToken);
+    json.put(JsonKeys.OAUTH_STATE_TOKEN, newToken);
     return Response.ok(json.toString()).build();
   }
 }
