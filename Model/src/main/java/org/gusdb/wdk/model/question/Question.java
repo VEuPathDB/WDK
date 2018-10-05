@@ -1224,4 +1224,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     return getQuery().isBoolean();
   }
 
+  @Override
+  public String getNameForLogging() {
+    return getFullName();
+  }
+
 }

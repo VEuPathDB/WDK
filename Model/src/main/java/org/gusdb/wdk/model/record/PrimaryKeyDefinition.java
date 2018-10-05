@@ -68,6 +68,10 @@ public class PrimaryKeyDefinition extends WdkModelBase {
     _recordClass = recordClass;
   }
 
+  public RecordClass getRecordClass() {
+    return _recordClass;
+  }
+
   public void addColumnRef(WdkModelText columnRef) {
     _columnRefList.add(columnRef);
   }

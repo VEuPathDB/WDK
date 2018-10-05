@@ -69,25 +69,25 @@ public class QuestionFormatter {
       User user, Map<String, String> dependedParamValues, Collection<Param> params)
       throws JSONException, WdkModelException, WdkUserException {
     return new JSONObject()
-      .put(Keys.NAME, q.getFullName())
-      .put(Keys.DISPLAY_NAME, q.getDisplayName())
-      .put(Keys.SHORT_DISPLAY_NAME, q.getShortDisplayName())
-      .put(Keys.DESCRIPTION, q.getDescription())
-      .put(Keys.SUMMARY, q.getSummary())
-      .put(Keys.HELP, q.getHelp())
-      .put(Keys.NEW_BUILD, q.getNewBuild())
-      .put(Keys.REVISE_BUILD, q.getReviseBuild())
-      .put(Keys.URL_SEGMENT,  q.getUrlSegment())
-      .put(Keys.RECORD_CLASS_NAME, q.getRecordClass().getFullName())
-      .put(Keys.PARAMETERS, getParamsJson(params, expandParams, user, dependedParamValues))
-      .put(Keys.GROUPS, getGroupsJson(q.getParamMapByGroups()))
-      .put(Keys.DEFAULT_ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(q.getSummaryAttributeFieldMap().keySet()))
-      .put(Keys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
+      .put(JsonKeys.NAME, q.getFullName())
+      .put(JsonKeys.DISPLAY_NAME, q.getDisplayName())
+      .put(JsonKeys.SHORT_DISPLAY_NAME, q.getShortDisplayName())
+      .put(JsonKeys.DESCRIPTION, q.getDescription())
+      .put(JsonKeys.SUMMARY, q.getSummary())
+      .put(JsonKeys.HELP, q.getHelp())
+      .put(JsonKeys.NEW_BUILD, q.getNewBuild())
+      .put(JsonKeys.REVISE_BUILD, q.getReviseBuild())
+      .put(JsonKeys.URL_SEGMENT,  q.getUrlSegment())
+      .put(JsonKeys.RECORD_CLASS_NAME, q.getRecordClass().getFullName())
+      .put(JsonKeys.PARAMETERS, getParamsJson(params, expandParams, user, dependedParamValues))
+      .put(JsonKeys.GROUPS, getGroupsJson(q.getParamMapByGroups()))
+      .put(JsonKeys.DEFAULT_ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(q.getSummaryAttributeFieldMap().keySet()))
+      .put(JsonKeys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
           q.getDynamicAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, true))
-      .put(Keys.DEFAULT_SUMMARY_VIEW, q.getDefaultSummaryView().getName())
-      .put(Keys.SUMMARY_VIEW_PLUGINS, FormatUtil.stringCollectionToJsonArray(q.getSummaryViews().keySet()))
-      .put(Keys.STEP_ANALYSIS_PLUGINS, FormatUtil.stringCollectionToJsonArray(q.getStepAnalyses().keySet()))
-      .put(Keys.PROPERTIES, q.getPropertyLists());
+      .put(JsonKeys.DEFAULT_SUMMARY_VIEW, q.getDefaultSummaryView().getName())
+      .put(JsonKeys.SUMMARY_VIEW_PLUGINS, FormatUtil.stringCollectionToJsonArray(q.getSummaryViews().keySet()))
+      .put(JsonKeys.STEP_ANALYSIS_PLUGINS, FormatUtil.stringCollectionToJsonArray(q.getStepAnalyses().keySet()))
+      .put(JsonKeys.PROPERTIES, q.getPropertyLists());
   }
 
   public static JSONArray getParamsJson(Collection<Param> params, boolean expandParams, User user, Map<String, String> dependedParamValues)
@@ -118,12 +118,12 @@ public class QuestionFormatter {
 
   private static JSONObject getGroupJson(Group group, Set<String> params) {
     JSONObject groupJson = new JSONObject();
-    groupJson.put(Keys.NAME, group.getName());
-    groupJson.put(Keys.DISPLAY_NAME, group.getDisplayName());
-    groupJson.put(Keys.DESCRIPTION, group.getDescription());
-    groupJson.put(Keys.IS_VISIBLE, group.isVisible());
-    groupJson.put(Keys.DISPLAY_TYPE, group.getDisplayType());
-    groupJson.put(Keys.PARAMETERS, params);
+    groupJson.put(JsonKeys.NAME, group.getName());
+    groupJson.put(JsonKeys.DISPLAY_NAME, group.getDisplayName());
+    groupJson.put(JsonKeys.DESCRIPTION, group.getDescription());
+    groupJson.put(JsonKeys.IS_VISIBLE, group.isVisible());
+    groupJson.put(JsonKeys.DISPLAY_TYPE, group.getDisplayType());
+    groupJson.put(JsonKeys.PARAMETERS, params);
     return groupJson;
   }
 

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "analysisId": {
+        "type": "integer",
+        "examples": [
+          100108390
+        ]
+      },
+      "displayName": {
+        "type": "string",
+        "examples": [
+          "Gene Ontology Enrichment"
+        ]
+      }
+    },
+    "required": [
+      "analysisId",
+      "displayName"
+    ]
+  }
+}

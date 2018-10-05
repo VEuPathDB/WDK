@@ -28,16 +28,19 @@ public class ModelConfigParser extends XmlParser {
     _digester = configureDigester();
   }
 
-  public ModelConfig parseConfig(String projectId) throws SAXException,
-      IOException, WdkModelException {
-    // validate the configuration file
+  public ModelConfigBuilder parseConfig(String projectId) throws SAXException, IOException, WdkModelException {
+
+    // get URL to the config file
     URL configURL = makeURL(_gusHome + "/config/" + projectId + "/model-config.xml");
 
+    // validate the configuration file
     XmlValidator validator = new XmlValidator(_gusHome + "/lib/rng/wdkModel-config.rng");
     if (!validator.validate(configURL)) {
       throw new WdkModelException("Validation failed: " + configURL.toExternalForm());
     }
-    ModelConfig modelConfig = (ModelConfig) _digester.parse(configURL.openStream());
+
+    // RNG validation passed; create a model config object
+    ModelConfigBuilder modelConfig = (ModelConfigBuilder) _digester.parse(configURL.openStream());
     modelConfig.setGusHome(_gusHome);
     modelConfig.setProjectId(projectId);
     return modelConfig;
@@ -48,19 +51,17 @@ public class ModelConfigParser extends XmlParser {
     Digester digester = new Digester();
     digester.setValidating(false);
 
-    digester.addObjectCreate("modelConfig", ModelConfig.class);
+    digester.addObjectCreate("modelConfig", ModelConfigBuilder.class);
     digester.addSetProperties("modelConfig");
     digester.addBeanPropertySetter("modelConfig/paramRegex");
     digester.addBeanPropertySetter("modelConfig/emailContent");
     digester.addBeanPropertySetter("modelConfig/emailSubject");
 
     // load application db
-    configureNode(digester, "modelConfig/appDb", ModelConfigAppDB.class,
-        "setAppDB");
+    configureNode(digester, "modelConfig/appDb", ModelConfigAppDB.class, "setAppDB");
 
     // load user db
-    configureNode(digester, "modelConfig/userDb", ModelConfigUserDB.class,
-        "setUserDB");
+    configureNode(digester, "modelConfig/userDb", ModelConfigUserDB.class, "setUserDB");
 
     // load user db
     configureNode(digester, "modelConfig/accountDb", ModelConfigAccountDB.class, "setAccountDB");
@@ -72,12 +73,10 @@ public class ModelConfigParser extends XmlParser {
     digester.addCallMethod("modelConfig/userDatasetStore/property", "setText", 0);
     configureNode(digester, "modelConfig/userDatasetStore/typeHandler", ModelConfigUserDatasetTypeHandler.class, "addTypeHandler");
 
-    configureNode(digester, "modelConfig/queryMonitor", QueryMonitor.class,
-        "setQueryMonitor");
-    digester.addCallMethod("modelConfig/queryMonitor/ignoreSlowQueryRegex",
-        "addIgnoreSlowQueryRegex", 0);
-    digester.addCallMethod("modelConfig/queryMonitor/ignoreBrokenQueryRegex",
-        "addIgnoreBrokenQueryRegex", 0);
+    // query monitor
+    configureNode(digester, "modelConfig/queryMonitor", QueryMonitor.class, "setQueryMonitor");
+    digester.addCallMethod("modelConfig/queryMonitor/ignoreSlowQueryRegex", "addIgnoreSlowQueryRegex", 0);
+    digester.addCallMethod("modelConfig/queryMonitor/ignoreBrokenQueryRegex", "addIgnoreBrokenQueryRegex", 0);
 
     return digester;
   }

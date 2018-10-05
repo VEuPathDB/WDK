@@ -3,7 +3,7 @@ package org.gusdb.wdk.service.formatter;
 import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.config.ModelConfig;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -40,34 +40,34 @@ public class ProjectFormatter {
 
     // create authentication config sub-object
     JSONObject authConfig = new JSONObject()
-      .put(Keys.AUTHENTICATION_METHOD, config.getAuthenticationMethodEnum().name())
-      .put(Keys.OAUTH_URL, config.getOauthUrl())
-      .put(Keys.OAUTH_CLIENT_URL, serviceEndpoint)
-      .put(Keys.OAUTH_CLIENT_ID, config.getOauthClientId());
+      .put(JsonKeys.AUTHENTICATION_METHOD, config.getAuthenticationMethodEnum().name())
+      .put(JsonKeys.OAUTH_URL, config.getOauthUrl())
+      .put(JsonKeys.OAUTH_CLIENT_URL, serviceEndpoint)
+      .put(JsonKeys.OAUTH_CLIENT_ID, config.getOauthClientId());
 
     // create profile property config sub-array
     JSONArray userProfileProps = new JSONArray();
     for (UserPropertyName prop : wdkModel.getModelConfig().getAccountDB().getUserPropertyNames()) {
       userProfileProps.put(new JSONObject()
-          .put(Keys.NAME, prop.getName())
-          .put(Keys.DISPLAY_NAME, prop.getDisplayName())
-          .put(Keys.IS_REQUIRED, prop.isRequired())
-          .put(Keys.IS_PUBLIC, prop.isPublic()));
+          .put(JsonKeys.NAME, prop.getName())
+          .put(JsonKeys.DISPLAY_NAME, prop.getDisplayName())
+          .put(JsonKeys.IS_REQUIRED, prop.isRequired())
+          .put(JsonKeys.IS_PUBLIC, prop.isPublic()));
     }
 
     return new JSONObject()
-      .put(Keys.DESCRIPTION, wdkModel.getIntroduction() == null ?
+      .put(JsonKeys.DESCRIPTION, wdkModel.getIntroduction() == null ?
           WELCOME_MESSAGE : wdkModel.getIntroduction())
-      .put(Keys.DISPLAY_NAME, wdkModel.getDisplayName())
-      .put(Keys.PROJECT_ID, wdkModel.getProjectId())
-      .put(Keys.BUILD_NUMBER, wdkModel.getBuildNumber())
-      .put(Keys.RELEASE_DATE, wdkModel.getReleaseDate())
-      .put(Keys.STARTUP_TIME, wdkModel.getStartupTime())
-      .put(Keys.CHANGE_PASSWORD_URL, config.getChangePasswordUrl())
-      .put(Keys.USER_DATASETS_ENABLED, config.getUserDatasetStoreConfig() != null)
-      .put(Keys.USER_DATASET_STORE_STATUS, wdkModel.getUserDatasetStoreStatus())
-      .put(Keys.CATEGORIES_ONTOLOGY_NAME, wdkModel.getCategoriesOntologyName())
-      .put(Keys.AUTHENTICATION, authConfig)
-      .put(Keys.USER_PROFILE_PROPERTIES, userProfileProps);
+      .put(JsonKeys.DISPLAY_NAME, wdkModel.getDisplayName())
+      .put(JsonKeys.PROJECT_ID, wdkModel.getProjectId())
+      .put(JsonKeys.BUILD_NUMBER, wdkModel.getBuildNumber())
+      .put(JsonKeys.RELEASE_DATE, wdkModel.getReleaseDate())
+      .put(JsonKeys.STARTUP_TIME, wdkModel.getStartupTime())
+      .put(JsonKeys.CHANGE_PASSWORD_URL, config.getChangePasswordUrl())
+      .put(JsonKeys.USER_DATASETS_ENABLED, config.getUserDatasetStoreConfig() != null)
+      .put(JsonKeys.USER_DATASET_STORE_STATUS, wdkModel.getUserDatasetStoreStatus())
+      .put(JsonKeys.CATEGORIES_ONTOLOGY_NAME, wdkModel.getCategoriesOntologyName())
+      .put(JsonKeys.AUTHENTICATION, authConfig)
+      .put(JsonKeys.USER_PROFILE_PROPERTIES, userProfileProps);
   }
 }

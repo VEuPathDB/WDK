@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
@@ -38,10 +39,10 @@ public class RecordRequest {
   public static RecordRequest createFromJson(RecordClass recordClass, JSONObject json)
       throws RequestMisformatException, WdkModelException, DataValidationException {
     try {
-      PrimaryKeyValue primaryKey = parsePrimaryKey(json.getJSONArray("primaryKey"), recordClass);
+      PrimaryKeyValue primaryKey = parsePrimaryKey(json.getJSONArray(JsonKeys.PRIMARY_KEY), recordClass);
       RecordRequest request = new RecordRequest(recordClass, primaryKey);
-      request.setAttributeNames(parseAttributeNames(json.getJSONArray("attributes"), recordClass));
-      request.setTableNames(parseTableNames(json.getJSONArray("tables"), recordClass));
+      request.setAttributeNames(parseAttributeNames(json.getJSONArray(JsonKeys.ATTRIBUTES), recordClass));
+      request.setTableNames(parseTableNames(json.getJSONArray(JsonKeys.TABLES), recordClass));
       return request;
     }
     catch (JSONException | WdkUserException e) {

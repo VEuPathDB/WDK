@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "properties": {
+    "isInReport": {
+      "type": "boolean"
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "record",
+          "results"
+        ]
+      }
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "attributesTabular",
+        "tableTabular",
+        "srt",
+        "gff3",
+        "gff3Dump",
+        "fullRecord",
+        "xml",
+        "json",
+        "wordCloud",
+        "histogram"
+      ]
+    }
+  },
+  "required": [
+    "isInReport",
+    "displayName",
+    "name",
+    "description",
+    "scopes",
+    "type"
+  ],
+  "additionalProperties": false
+}
