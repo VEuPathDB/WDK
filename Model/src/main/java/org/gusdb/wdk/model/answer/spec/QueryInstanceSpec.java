@@ -6,11 +6,14 @@ import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.collection.ReadOnlyHashMap;
 import org.gusdb.fgputil.validation.ValidObjectFactory;
 import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
+import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.user.StepContainer;
 
 public class QueryInstanceSpec extends ReadOnlyHashMap<String,String> implements Validateable {
 
@@ -25,11 +28,15 @@ public class QueryInstanceSpec extends ReadOnlyHashMap<String,String> implements
     }
 
     public QueryInstanceSpec buildValidated(Query query, ValidationLevel level) {
-      return new QueryInstanceSpec(toMap(), _assignedWeight, query, level);
+      return buildValidated(query, level, null);
     }
 
-    public Runnable<QueryInstanceSpec> buildRunnable(Query query) {
-      return ValidObjectFactory.getRunnable(buildValidated(query, ValidationLevel.RUNNABLE));
+    public QueryInstanceSpec buildValidated(Query query, ValidationLevel level, StepContainer stepContainer) {
+      return new QueryInstanceSpec(toMap(), _assignedWeight, query, level, stepContainer);
+    }
+
+    public Runnable<QueryInstanceSpec> buildRunnable(Query query, StepContainer stepContainer) {
+      return ValidObjectFactory.getRunnable(buildValidated(query, ValidationLevel.RUNNABLE, stepContainer));
     }
 
     /**
@@ -74,12 +81,28 @@ public class QueryInstanceSpec extends ReadOnlyHashMap<String,String> implements
   private final Query _query;
   private final ValidationBundle _validationBundle;
 
-  private QueryInstanceSpec(Map<String, String> paramValues, int assignedWeight, Query query, ValidationLevel level) {
+  private QueryInstanceSpec(Map<String, String> paramValues, int assignedWeight, Query query, ValidationLevel level, StepContainer stepContainer) {
     super(paramValues);
     _assignedWeight = assignedWeight;
     _query = query;
     // TODO validate params using the passed query's params
     Map<String,Param> params = _query.getParamMap();
+
+    // FIXME: This code should live in AnswerParam's validateValue method
+
+    // if asked to runnably validate and query has answer params, must check child steps
+    if (validationLevel.equals(ValidationLevel.RUNNABLE) && _question.getQuery().getAnswerParamCount() > 0) {
+      validateChildSteps(_queryInstanceSpec, stepContainer, validation);
+    }
+    private void validateChildSteps(QueryInstanceSpec queryInstanceSpec,
+        StepContainer stepContainer, ValidationBundleBuilder validation) {
+      // make sure stepContainer was provided
+      if (stepContainer == null) {
+        throw new WdkRuntimeException("Step container cannot be null if validation level is runnable and question has answer params.");
+      }
+      for (Param param : queryInstanceSpec) {
+    }
+    
     _validationBundle = ValidationBundle.builder(level).build();
     
   }

@@ -12,11 +12,13 @@ import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec.QueryInstanceSpecBuilder;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.json.JSONObject;
 
 public class AnswerSpec implements Validateable {
@@ -69,7 +71,7 @@ public class AnswerSpec implements Validateable {
 
   public AnswerSpec(WdkModel wdkModel, String questionName, QueryInstanceSpecBuilder queryInstanceSpec,
       String legacyFilterName, FilterOptionListBuilder filters, FilterOptionListBuilder viewFilters,
-      ValidationLevel validationLevel) {
+      ValidationLevel validationLevel, StepContainer stepContainer) {
     _wdkModel = wdkModel;
     _questionName = questionName;
     _legacyFilterName = legacyFilterName;
@@ -84,15 +86,15 @@ public class AnswerSpec implements Validateable {
       _viewFilters = viewFilters.buildInvalid();
     }
     else {
-      _question = f0Swallow(() -> wdkModel.getQuestion(questionName)).apply();
-      _legacyFilter = getAssignedLegacyFilter(validation);
-      _queryInstanceSpec = queryInstanceSpec.buildValidated(_question.getQuery(), validationLevel);
+      _question = f0Swallow(() -> wdkModel.getQuestion(questionName)).apply(); // we know this will not throw
+      _queryInstanceSpec = queryInstanceSpec.buildValidated(_question.getQuery(), validationLevel, stepContainer);
       if (_queryInstanceSpec.isValid()) {
         // replace passed filter lists with new ones that have always-on filters applied
         SimpleAnswerSpec simpleSpec = new SimpleAnswerSpec(_question, _queryInstanceSpec);
         filters = applyAlwaysOnFilters(filters, _question.getFilters(), simpleSpec);
         viewFilters = applyAlwaysOnFilters(viewFilters, _question.getViewFilters(), simpleSpec);
       }
+      _legacyFilter = getAssignedLegacyFilter(validation);
       _filters = filters.buildValidated(_question, Filter.FilterType.STANDARD, validationLevel);
       _viewFilters = viewFilters.buildValidated(_question, Filter.FilterType.VIEW_ONLY, validationLevel);
       validation.aggregateStatus(_queryInstanceSpec, _filters, _viewFilters);
