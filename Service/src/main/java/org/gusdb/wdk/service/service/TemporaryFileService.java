@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
@@ -21,7 +22,9 @@ import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.gusdb.fgputil.IoUtil;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 
 /*
  * We need to write a utility that provides the file and meta-data via uuid lookup to other services if the
@@ -105,28 +108,41 @@ public class TemporaryFileService extends AbstractWdkService {
     }
     return Response.noContent().build();
   }
-  
-  /*
-   * return the path to a temp file that is known by the user's session (having
-   * been put there by the temp file service).  
-   * if the file is not found in the session, or does not exist, return empty optional.
+
+  /**
+   * Returns a factory function that can look up temporary files by name.  An optional of path is returned;
+   * if the file is not in the current session or cannot be found, an empty optional is returned.
+   * 
+   * @param wdkModel the WDK model
+   * @param session the current user session
+   * @return a factory function for looking up temporary file paths by name
    */
-  public Optional<java.nio.file.Path> getTempFileFromSession(String tempFileName) throws WdkModelException {
-    
-    java.nio.file.Path tempDirPath = getWdkModel().getModelConfig().getWdkTempDir();
-    java.nio.file.Path tempFilePath = tempDirPath.resolve(tempFileName);
-    
-    Optional<java.nio.file.Path> optional = Optional.empty();
-    if (Files.exists(tempFilePath)) {
-      if (!Files.isReadable(tempFilePath)) throw new WdkModelException("WDK Temp file " + tempFilePath + " exists but is not readable");
-      HttpSession session = getSession();
-      @SuppressWarnings("unchecked")
-      Set<String> tempFilesInSession = (Set<String>)(session.getAttribute(TEMP_FILE_NAMES));
-      if (tempFilesInSession != null && tempFilesInSession.contains(tempFileName)) {
-        optional = Optional.of(tempFilePath);
-      }
-    } 
-    return optional;
+  public static Function<String, Optional<java.nio.file.Path>> getTempFileFactory(WdkModel wdkModel, HttpSession session) {
+    java.nio.file.Path tempDirPath = wdkModel.getModelConfig().getWdkTempDir();
+    return tempFileName -> {
+      java.nio.file.Path tempFilePath = tempDirPath.resolve(tempFileName);
+      
+      Optional<java.nio.file.Path> optional = Optional.empty();
+      if (Files.exists(tempFilePath)) {
+        if (!Files.isReadable(tempFilePath)) {
+          throw new WdkRuntimeException("WDK Temp file " + tempFilePath + " exists but is not readable");
+        }
+        @SuppressWarnings("unchecked")
+        Set<String> tempFilesInSession = (Set<String>)(session.getAttribute(TEMP_FILE_NAMES));
+        if (tempFilesInSession != null && tempFilesInSession.contains(tempFileName)) {
+          optional = Optional.of(tempFilePath);
+        }
+      } 
+      return optional;
+    };
+  }
+
+  /**
+   * Returns the path to a temp file that is known by the user's session (having been put there by the temp
+   * file service).  If the file is not found in the session, or does not exist, return empty optional.
+   */
+  public Optional<java.nio.file.Path> getTempFileFromSession(String tempFileName) {
+    return getTempFileFactory(getWdkModel(), getSession()).apply(tempFileName);
   }
 
 }
