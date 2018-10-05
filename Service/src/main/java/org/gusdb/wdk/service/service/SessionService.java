@@ -27,7 +27,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfig.AuthenticationMethod;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.user.GuestUser;
+import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.service.CookieConverter;
@@ -212,7 +212,7 @@ public class SessionService extends AbstractWdkService {
       session.invalidate();
     }
     session = getSession(true);
-    User user = new GuestUser(getWdkModel());
+    User user = getWdkModel().getUserFactory().createUnregistedUser(UnregisteredUserType.GUEST);
     session.setAttribute(Utilities.WDK_USER_KEY, new UserBean(user));
 
     // create and append logout cookies to response

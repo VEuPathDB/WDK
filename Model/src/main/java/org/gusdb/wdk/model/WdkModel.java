@@ -63,7 +63,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.FavoriteFactory;
-import org.gusdb.wdk.model.user.GuestUser.SystemUser;
+import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
@@ -1352,10 +1352,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public User getSystemUser() {
     if (systemUser == null) {
       try {
-        // ideally would synchronize on systemUser but cannot sync on null so use lock
         systemUserLock.lock();
         if (systemUser == null) {
-          systemUser = new SystemUser(this);
+          systemUser = userFactory.createUnregistedUser(UnregisteredUserType.SYSTEM);
         }
       }
       finally {
