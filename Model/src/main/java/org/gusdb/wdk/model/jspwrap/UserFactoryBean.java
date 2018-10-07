@@ -5,7 +5,7 @@ import java.util.Map;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.GuestUser;
+import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 
@@ -31,7 +31,7 @@ public class UserFactoryBean {
     }
 
     public UserBean getGuestUser() {
-        return new UserBean(new GuestUser(_wdkModel));
+        return new UserBean(_wdkModel.getUserFactory().createUnregistedUser(UnregisteredUserType.GUEST));
     }
 
     public UserBean createUser(String email, 

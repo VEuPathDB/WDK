@@ -19,7 +19,7 @@ import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.test.ParamValuesFactory;
-import org.gusdb.wdk.model.user.GuestUser;
+import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.User;
@@ -67,7 +67,7 @@ public class UnitTestHelper {
 
     public synchronized static User getGuest() throws WdkModelException {
         if (guest == null) {
-            guest = new GuestUser(getModel());
+            guest = getModel().getUserFactory().createUnregistedUser(UnregisteredUserType.GUEST);
         }
         StepUtilities.deleteStrategies(guest);
         StepUtilities.deleteSteps(guest);
