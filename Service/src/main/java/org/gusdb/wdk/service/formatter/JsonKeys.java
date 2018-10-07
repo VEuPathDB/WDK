@@ -113,6 +113,7 @@ public class JsonKeys {
   public static final String DISPLAY_TYPE = "displayType";
   public static final String DEPTH_EXPANDED = "depthExpanded";
   public static final String PARSERS = "parsers";
+  public static final String PARSER = "parser";
 
   // dataset-related keys
   public static final String SOURCE_TYPE = "sourceType";
