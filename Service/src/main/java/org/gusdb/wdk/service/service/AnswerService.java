@@ -24,6 +24,7 @@ import org.gusdb.wdk.cache.AnswerRequest;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.spec.AnswerFormatting;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.report.Reporter;
@@ -33,6 +34,7 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.factory.AnswerValueFactory;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.formatter.AnswerFormatter;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -113,10 +115,11 @@ public class AnswerService extends AbstractWdkService {
     JSONObject requestJson = new JSONObject(requestBody);
 
     // parse answer spec (question, params, etc.) and formatting object
-    JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
+    JSONObject answerSpecJson = requestJson.getJSONObject(JsonKeys.ANSWER_SPEC);
     AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, wdkModel, sessionUser, false);
-    JSONObject formatting = JsonUtil.getJsonObjectOrDefault(requestJson, "formatting", null);
-    return new AnswerRequest(answerSpec, formatting);
+    JSONObject formattingJson = requestJson.getJSONObject(JsonKeys.FORMATTING);
+    AnswerFormatting answerFormatting = new AnswerFormatting(formattingJson.getString(JsonKeys.FORMAT), JsonUtil.getJsonObjectOrDefault(formattingJson, JsonKeys.FORMAT_CONFIG, null));
+    return new AnswerRequest(answerSpec, answerFormatting);
   }
 
   /**
@@ -132,7 +135,7 @@ public class AnswerService extends AbstractWdkService {
    * @throws DataValidationException if answerSpec or formatting are syntacticly valid but the data itself is invalid
    * @throws WdkModelException if an application error occurs
    */
-  public static Response getAnswerResponse(User sessionUser, AnswerSpec answerSpec, JSONObject formatting)
+  public static Response getAnswerResponse(User sessionUser, AnswerSpec answerSpec, AnswerFormatting formatting)
       throws RequestMisformatException, WdkModelException, DataValidationException {
 
     // create base answer value from answer spec
@@ -169,7 +172,7 @@ public class AnswerService extends AbstractWdkService {
    * @throws DataValidationException if a value passed in the configuration is invalid
    * @throws WdkModelException if unable to create reporter due to another reason
    */
-  private static Reporter getConfiguredReporter(AnswerValue answerValue, JSONObject formatting)
+  private static Reporter getConfiguredReporter(AnswerValue answerValue, AnswerFormatting formatting)
       throws RequestMisformatException, WdkModelException, DataValidationException {
 
     if (formatting == null) {
@@ -178,8 +181,8 @@ public class AnswerService extends AbstractWdkService {
     }
 
     // user passed formatting object; get contents and apply defaults if needed
-    String format = JsonUtil.getStringOrDefault(formatting, "format", WDK_SERVICE_JSON_REPORTER_RESERVED_NAME);
-    JSONObject formatConfig = JsonUtil.getJsonObjectOrDefault(formatting, "formatConfig", null);
+    String format = formatting.getFormat();
+    JSONObject formatConfig = formatting.getFormatConfig();
 
     if (format.equals(WDK_SERVICE_JSON_REPORTER_RESERVED_NAME)) {
       return (formatConfig == null ?
