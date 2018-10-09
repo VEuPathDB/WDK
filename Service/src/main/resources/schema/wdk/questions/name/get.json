@@ -11,7 +11,7 @@
           "type": "array"
         },
         "organisms": {
-          "$ref": "../../includes/array-of-string.json"
+          "$ref": "/schema/includes/string-array.json"
         }
       },
       "required": [
@@ -22,7 +22,7 @@
   },
   "properties": {
     "defaultAttributes": {
-      "$ref": "../../includes/array-of-string.json"
+      "$ref": "/schema/includes/string-array.json"
     },
     "defaultSummaryView": {
       "type": "string"
@@ -114,7 +114,7 @@
           "parameters": {
             "oneOf": [
               {
-                "$ref": "../../includes/array-of-string.json"
+                "$ref": "/schema/includes/string-array.json"
               }
             ]
           }
@@ -134,19 +134,19 @@
     "parameters": {
       "oneOf": [
         {
-          "$ref": "../../includes/array-of-string.json"
+          "$ref": "/schema/includes/string-array.json"
         },
         {
           "type": "array",
           "items": [
             {
-              "$ref": "includes/answer-param.json"
+              "$ref": "/schema/wdk/includes/question-answer-param.json"
             },
             {
-              "$ref": "includes/enum-param.json"
+              "$ref": "/schema/wdk/includes/question-enum-param.json"
             },
             {
-              "$ref": "includes/string-param.json"
+              "$ref": "/schema/wdk/includes/question-string-param.json"
             }
           ]
         }
@@ -170,7 +170,7 @@
     },
     "summaryViewPlugins": {
       "description": "TODO: Determine possible values to make this more strict.",
-      "$ref": "../../includes/array-of-string.json"
+      "$ref": "/schema/includes/string-array.json"
     },
     "urlSegment": {
       "type": "string"

@@ -2,17 +2,24 @@
   "$schema": "http://json-schema.org/draft-04/schema",
   "additionalProperties": false,
   "allOf": [
-    { "$ref": "base-param.json" },
+    {
+      "$ref": "question-base-param.json"
+    },
     {
       "type": "object",
       "properties": {
+        "length": {
+          "type": "integer"
+        },
         "type": {
           "type": "string",
-          "enum": [
-            "AnswerParam"
-          ]
+          "enum": ["StringParam"]
         }
-      }
+      },
+      "required": [
+        "length",
+        "type"
+      ]
     }
   ]
 }
