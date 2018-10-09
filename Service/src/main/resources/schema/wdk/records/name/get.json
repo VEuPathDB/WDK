@@ -40,7 +40,7 @@
       "type": "boolean"
     },
     "formats": {
-      "$ref": "includes/reporters.json"
+      "$ref": "/schema/wdk/includes/record-reporter-array.json"
     },
     "hasAllRecordsQuery": {
       "type": "boolean"
@@ -72,11 +72,10 @@
     "attributes": {
       "type": "array",
       "items": {
-        "$ref": "includes/attribute.json"
       }
     },
     "primaryKeyColumnRefs": {
-      "$ref": "../../includes/array-of-string.json"
+      "$ref": "/schema/includes/string-array.json"
     },
     "categories": {
       "$ref": "#/definitions/categories"

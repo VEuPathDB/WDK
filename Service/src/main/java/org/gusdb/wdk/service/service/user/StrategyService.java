@@ -45,7 +45,7 @@ public class StrategyService extends UserService {
   public Response getStrategies() throws WdkModelException {
 	User user = getPrivateRegisteredUser();
 	List<Strategy> strategies = getWdkModel().getStepFactory().loadStrategies(user,false,false);
-    return Response.ok(StrategyFormatter.getStrategiesJson(strategies, false).toString()).build();
+    return Response.ok(StrategyFormatter.getStrategiesJson(strategies).toString()).build();
   }
   
   @POST
@@ -65,7 +65,7 @@ public class StrategyService extends UserService {
       } else {
         strategy = createNewStrategy(user, stepFactory, json);
       }
-      return Response.ok(StrategyFormatter.getStrategyJson(getStrategyForCurrentUser(Long.toString(strategy.getStrategyId())), true).toString()).build();
+      return Response.ok(StrategyFormatter.getDetailedStrategyJson(getStrategyForCurrentUser(Long.toString(strategy.getStrategyId()))).toString()).build();
      }
      catch(WdkModelException wme) {
            throw new WdkModelException("Unable to create the strategy.", wme);
@@ -119,7 +119,7 @@ public class StrategyService extends UserService {
   @Path("strategies/{strategyId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getStrategy(@PathParam("strategyId") String strategyId) throws WdkModelException {
-    return Response.ok(StrategyFormatter.getStrategyJson(getStrategyForCurrentUser(strategyId), true).toString()).build();
+    return Response.ok(StrategyFormatter.getDetailedStrategyJson(getStrategyForCurrentUser(strategyId)).toString()).build();
   }
   
   protected Strategy getStrategyForCurrentUser(String strategyId) {

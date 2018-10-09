@@ -29,6 +29,7 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.factory.AnswerValueFactory;
 import org.gusdb.wdk.service.factory.WdkStepFactory;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.formatter.StepFormatter;
 import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -80,7 +81,7 @@ public class StepService extends UserService {
     	    	  throw new DataValidationException("Cannot run a step with an incomplete answer spec.");
     	    }
       }
-      return Response.ok(StepFormatter.getStepJson(step, true).toString()).build();
+      return Response.ok(StepFormatter.getStepJsonWithCalculatedEstimateValue(step).toString()).build();
     }
     catch (JSONException | RequestMisformatException e) {
       throw new BadRequestException(e);
@@ -91,7 +92,7 @@ public class StepService extends UserService {
   @Path("steps/{stepId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getStep(@PathParam("stepId") String stepId) throws WdkModelException {
-    return Response.ok(StepFormatter.getStepJson(getStepForCurrentUser(stepId), false).toString()).build();
+    return Response.ok(StepFormatter.getStepJsonWithRawEstimateValue(getStepForCurrentUser(stepId)).toString()).build();
   }
 
   @PATCH
@@ -120,7 +121,7 @@ public class StepService extends UserService {
       step.setEstimateSize(-1);
       
       // return updated step
-      return Response.ok(StepFormatter.getStepJson(step, false).toString()).build();
+      return Response.ok(StepFormatter.getStepJsonWithRawEstimateValue(step).toString()).build();
     }
     catch (WdkUserException wue) {
     	  throw new DataValidationException(wue);
@@ -151,7 +152,7 @@ public class StepService extends UserService {
       Step step = stepFactory.getStepById(Long.parseLong(stepId));
       if(!step.isAnswerSpecComplete()) throw new DataValidationException("One or more parameters is missing");
       AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
-      JSONObject formatting = (body == null || body.isEmpty() ? null : new JSONObject(body));
+      JSONObject formatting = new JSONObject(body).getJSONObject(JsonKeys.FORMATTING);
       return AnswerService.getAnswerResponse(user, stepAnswerSpec, formatting);
     }
     catch(NumberFormatException nfe) {

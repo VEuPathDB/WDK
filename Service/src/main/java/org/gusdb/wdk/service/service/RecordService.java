@@ -51,7 +51,7 @@ public class RecordService extends AbstractWdkService {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  @OutSchema("wdk.records.get-root")
+  @OutSchema("wdk.records.get")
   public Collection<Object> getRecordClassList(@QueryParam("format") String format) {
     final boolean tmp = Optional.ofNullable(format)
         .map(f -> f.equals("expanded"))
