@@ -3,13 +3,12 @@ package org.gusdb.wdk.model.user;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.gusdb.fgputil.accountdb.UserProfile;
 import org.gusdb.wdk.model.WdkModel;
 
 /**
  * Represents a WDK user.
  * 
- * @see GuestUser for subclass representing guest user
+ * @see UnregisteredUser for subclass representing guest user
  * @see RegisteredUser for subclass representing registered user
  * 
  * @author rdoherty
@@ -48,9 +47,6 @@ public abstract class User {
    */
   public abstract boolean isGuest();
 
-  /** determines if this user has been saved to the database yet */
-  protected abstract void checkIfSaved();
-
   protected User(WdkModel wdkModel, long userId, String email, String signature, String stableId) {
     _wdkModel = wdkModel;
     _userId = userId;
@@ -62,35 +58,23 @@ public abstract class User {
   }
 
   public long getUserId() {
-    checkIfSaved();
     return _userId;
   }
 
   public String getEmail() {
-    checkIfSaved();
     return _email;
   }
 
   public String getSignature() {
-    checkIfSaved();
     return _signature;
   }
 
   public String getStableId() {
-    checkIfSaved();
     return _stableId;
   }
 
   public void setEmail(String email) {
     _email = email;
-  }
-
-  public void refresh(UserProfile profile) {
-    _userId = profile.getUserId();
-    _email = profile.getEmail();
-    _signature = profile.getSignature();
-    _stableId = profile.getStableId();
-    _properties = profile.getProperties();
   }
 
   /**

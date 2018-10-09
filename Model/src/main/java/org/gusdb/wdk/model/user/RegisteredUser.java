@@ -4,7 +4,7 @@ import org.gusdb.wdk.model.WdkModel;
 
 public class RegisteredUser extends User {
 
-  public RegisteredUser(WdkModel wdkModel, long userId, String email, String signature, String stableId) {
+  RegisteredUser(WdkModel wdkModel, long userId, String email, String signature, String stableId) {
     super(wdkModel, userId, email, signature, stableId);
   }
 
@@ -25,8 +25,4 @@ public class RegisteredUser extends User {
     return (namePart == null || namePart.isEmpty() ? "" : " " + namePart.trim());
   }
 
-  @Override
-  protected void checkIfSaved() {
-    // nothing to do here; registered users are always saved in advance
-  }
 }

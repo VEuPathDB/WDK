@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,11 +31,11 @@ public class UserTest {
 
     @Test
     public void testCreateGuest() {
-        User guest1 = new GuestUser(wdkModel);
+        User guest1 = wdkModel.getUserFactory().createUnregistedUser(UnregisteredUserType.GUEST);
         Assert.assertTrue("guest1", guest1.isGuest());
 
         // try another, different guest
-        User guest2 = new GuestUser(wdkModel);
+        User guest2 = wdkModel.getUserFactory().createUnregistedUser(UnregisteredUserType.GUEST);
         Assert.assertTrue("guest2", guest2.isGuest());
 
         Assert.assertTrue("Different guest ids",
