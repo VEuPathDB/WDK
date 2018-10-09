@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+	"questionName": {
+	    "type": "string"
+	},
+	"parameters": {
+	    "$ref": "/schema/includes/string-string-map.json"
+	},
+	"legacyFilterName": {
+	    "type": "string"
+	},
+	"wdk_weight": {
+	    "type": "integer"
+	},
+	"filters": {
+	    "type": "array",
+	    "items": {
+		"type": "object",
+		"additionalProperties": false,
+		"properties": {
+		    "name": {
+			"type": "string"
+		    },
+		    "value": {
+			"type": "object"
+		    }
+		},
+		"required": [
+		    "name",
+		    "value"
+		]
+	    }
+	}
+    }
+}
