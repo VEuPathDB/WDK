@@ -42,7 +42,7 @@
       <id>eupathdb</id>
       <name>EuPathDB Project Dependencies</name>
       <layout>default</layout>
-      <url>https://www.cbil.upenn.edu/svn/gus/FgpUtil/trunk/Dependencies/</url>
+      <url>https://cbilsvn.pmacs.upenn.edu/svn/gus/FgpUtil/branches/api_build-26/Dependencies/</url>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
