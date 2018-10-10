@@ -19,8 +19,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.spec.AnswerFormatting;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.ParamValue;
 import org.gusdb.wdk.model.user.Step;
@@ -152,8 +154,9 @@ public class StepService extends UserService {
       Step step = stepFactory.getStepById(Long.parseLong(stepId));
       if(!step.isAnswerSpecComplete()) throw new DataValidationException("One or more parameters is missing");
       AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
-      JSONObject formatting = new JSONObject(body).getJSONObject(JsonKeys.FORMATTING);
-      return AnswerService.getAnswerResponse(user, stepAnswerSpec, formatting);
+      JSONObject formattingJson = new JSONObject(body).getJSONObject(JsonKeys.FORMATTING);
+      AnswerFormatting answerFormatting = new AnswerFormatting(formattingJson.getString(JsonKeys.FORMAT), JsonUtil.getJsonObjectOrDefault(formattingJson, JsonKeys.FORMAT_CONFIG, null));
+      return AnswerService.getAnswerResponse(user, stepAnswerSpec, answerFormatting);
     }
     catch(NumberFormatException nfe) {
     	  throw new BadRequestException("The step id " + stepId + " is not a valid id ", nfe);

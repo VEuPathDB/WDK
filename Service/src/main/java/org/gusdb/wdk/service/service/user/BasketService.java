@@ -18,13 +18,16 @@ import javax.ws.rs.core.Response;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.answer.spec.AnswerFormatting;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -198,8 +201,9 @@ public class BasketService extends UserService {
     User user = getPrivateRegisteredUser();
     RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
     AnswerSpec basketAnswerSpec = AnswerSpecFactory.createFromQuestion(recordClass.getRealtimeBasketQuestion());
-    JSONObject formatting = (body == null || body.isEmpty() ? null : new JSONObject(body));
-    return AnswerService.getAnswerResponse(user, basketAnswerSpec, formatting);
+    JSONObject formattingJson = new JSONObject(body).getJSONObject(JsonKeys.FORMATTING);
+    AnswerFormatting answerFormatting = new AnswerFormatting(formattingJson.getString(JsonKeys.FORMAT), JsonUtil.getJsonObjectOrDefault(formattingJson, JsonKeys.FORMAT_CONFIG, null));
+    return AnswerService.getAnswerResponse(user, basketAnswerSpec, answerFormatting);
   }
 
 }
