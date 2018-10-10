@@ -37,6 +37,7 @@ public class JsonKeys {
   public static final String RESPONSE_COUNT = "responseCount";
   public static final String RECORD_CLASS_NAME = "recordClassName";
   public static final String QUESTION_NAME = "questionName";
+  public static final String PARAMETER_NAME = "parameterName";
 
   // UI-related keys
   public static final String DISPLAY_NAME = "displayName";

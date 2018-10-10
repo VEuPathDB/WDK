@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.management.RuntimeErrorException;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -34,6 +35,7 @@ import org.gusdb.wdk.model.dataset.WdkDatasetException;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.DatasetParamHandler;
 import org.gusdb.wdk.model.query.param.MapBasedRequestParams;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -47,6 +49,8 @@ import org.gusdb.wdk.service.service.TemporaryFileService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import scala.Option;
 
 public class DatasetService extends UserService {
 
@@ -64,7 +68,9 @@ public class DatasetService extends UserService {
    *     "basketName": String,        // record class full name, only for basket
    *     "strategyId": Number,        // strategy id, only for strategy
    *     "temporaryFileId": String,   // temporary file id, only for file
-   *     "tempraryFileParser": String // file content parser, only for file
+   *     "parser": String,            // file content parser, only for file
+   *     "parameterName": String,     // name of parameter that contains the parser configuration, only for file
+   *     "questionName": String,      // name of question that contains the parameter associated w/ parameterName, only for file
    *   } 
    * }
    * 
@@ -172,17 +178,38 @@ public class DatasetService extends UserService {
 
   private static Dataset createFromTemporaryFile(User user, JSONObject sourceConfig, DatasetFactory factory, HttpSession session) throws WdkUserException, WdkModelException {
     String tempFileId = sourceConfig.getString(JsonKeys.TEMP_FILE_ID);
-    // TODO Lookup parser by parserName.
     String parserName = sourceConfig.getString(JsonKeys.PARSER);
+    String questionName = sourceConfig.getString(JsonKeys.QUESTION_NAME);
+    String parameterName = sourceConfig.getString(JsonKeys.PARAMETER_NAME);
+
+    Question question = Optional.of(factory.getWdkModel().getQuestion(questionName)).orElseThrow(
+        () -> new WdkUserException(String.format("Could not find a question with the name `%s`.", questionName)));
+
+    Param param = Optional.of(question.getParamMap().get(parameterName)).orElseThrow(() -> new WdkUserException(
+        String.format("Could not find the parameter `%s` with the question `%s`.", parameterName, questionName)));
+    
+    if (!(param instanceof DatasetParam)) {
+      throw new WdkUserException(String.format("Expected % to be a DatasetParam, but instead got a %s.", parameterName,
+          param.getClass().getSimpleName()));
+    }
+
+
+    DatasetParser parser = ((DatasetParam) param).getParser(parserName);
+
+    if (parser == null) {
+      throw new WdkUserException(String.format("Could not find parser `%s` in parameter `%s` of question `%s`.",
+          parserName, parameterName, questionName));
+    }
+
     java.nio.file.Path tempFilePath = TemporaryFileService.getTempFileFactory(factory.getWdkModel(), session)
       .apply(tempFileId)
       .orElseThrow(() -> new WdkUserException("TemporaryFile with the name \"" + tempFileId + "\" could not be found for the user."));
-    ListDatasetParser parser = new ListDatasetParser();
+
     try {
       String contents = new String(Files.readAllBytes(tempFilePath));
       return factory.createOrGetDataset(user, parser, contents, tempFileId);
     } catch (IOException e) {
-      throw new RuntimeException("Unable to read TemporaryFile with name \"" + tempFileId + "\".", e);
+      throw new RuntimeException("Unable to read Te)mporaryFile with name \"" + tempFileId + "\".", e);
     }
   }
 
