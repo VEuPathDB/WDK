@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
 import org.gusdb.wdk.cache.AnswerRequest;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONObject;
@@ -29,11 +30,13 @@ public class TemporaryResultService extends AbstractWdkService {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response setTemporaryResult(String body) throws RequestMisformatException, DataValidationException {
+  public Response setTemporaryResult(String body)
+      throws RequestMisformatException, DataValidationException {
     AnswerRequest request = AnswerService.parseAnswerRequest(body, getWdkModelBean(), getSessionUser());
     String id = UUID.randomUUID().toString();
     CacheMgr.get().getAnswerRequestCache().put(id, request);
-    return Response.ok(new JSONObject().put("id", id).toString()).build();
+    return Response.ok(new JSONObject().put(JsonKeys.ID, id).toString())
+        .location(getUriInfo().getAbsolutePathBuilder().build(id)).build();
   }
 
   @GET

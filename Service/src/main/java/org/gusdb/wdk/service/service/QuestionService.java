@@ -47,7 +47,7 @@ import org.json.JSONObject;
  * defaults to the short name but can be overridden in the XML), or the
  * question's full, two-part name, made by joining the question set name and
  * question short name with a '.'.
- * 
+ *
  * @author rdoherty
  */
 @Path("/questions")
@@ -104,10 +104,14 @@ public class QuestionService extends AbstractWdkService {
     }
     return questions;
   }
-  
+
   /**
-   * Get the information about a specific question.  Use expandParams=true to get the details of each parameter, including vocabularies and metadata info.
-   * This endpoint is typically used to display a question page (using default values). 
+   * Get the information about a specific question.  Use expandParams=true to
+   * get the details of each parameter, including vocabularies and metadata
+   * info.
+   *
+   * This endpoint is typically used to display a question page (using default
+   * values).
    */
   @GET
   @Path("/{questionName}")
@@ -119,7 +123,7 @@ public class QuestionService extends AbstractWdkService {
     Question question = getQuestionFromSegment(questionName);
     if(question == null)
       throw new NotFoundException(AbstractWdkService.formatNotFound(QUESTION_RESOURCE + questionName));
-    Map<String,String> dependedParamValues = new HashMap<String, String>();
+    Map<String,String> dependedParamValues = new HashMap<>();
     return Response.ok(QuestionFormatter.getQuestionJson(question,
         getFlag(expandParams), getSessionUser(), dependedParamValues).toString()).build();
   }
@@ -137,19 +141,20 @@ public class QuestionService extends AbstractWdkService {
   }
 
   /**
-   * Get information about a question, given a complete set of param values.  (This endpoint is 
-   * typically used for a revise operation.)  Throw a WdkUserException if any parameter value
-   * is missing or invalid.  (The exception only describes the first invalid parameter, not all such.)
-   * 
+   * Get information about a question, given a complete set of param values.
+   * (This endpoint is typically used for a revise operation.)
+   *
+   * Throw a WdkUserException if any parameter value is missing or invalid.
+   * (The exception only describes the first invalid parameter, not all such.)
+   *
    * @param questionName
-   * @param expandParams
    * @param body
    * @return
    * @throws WdkUserException
    * @throws WdkModelException
    *
    * Sample request body:
-   * 
+   *
    * {
    *   "contextParamValues": {
    *     "size": "5",
@@ -167,7 +172,7 @@ public class QuestionService extends AbstractWdkService {
     if (question == null)
       throw new NotFoundException(questionName);
     // extract context values from body
-    Map<String, String> contextParamValues = new HashMap<String, String>(); 
+    Map<String, String> contextParamValues;
     try {
       JSONObject jsonBody = new JSONObject(body);
       contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
@@ -189,9 +194,12 @@ public class QuestionService extends AbstractWdkService {
   }
 
   /**
-   * Get an updated set of vocabularies (and meta data info) for the parameters that depend on the specified changed parameter.
+   * Get an updated set of vocabularies (and meta data info) for the parameters
+   * that depend on the specified changed parameter.
    * (Also validate the changed parameter.)
-   * Request must provide the parameter values of any other parameters that those vocabularies depend on, as well as the changed parameter.
+   *
+   * Request must provide the parameter values of any other parameters that
+   * those vocabularies depend on, as well as the changed parameter.
    * (This endpoint is typically used when a user changes a depended param.)
    *
    * Sample request body:
@@ -202,7 +210,6 @@ public class QuestionService extends AbstractWdkService {
    * }
    *
    * @param questionName
-   * @param expandParams
    * @param body
    * @return
    * @throws WdkUserException
@@ -222,9 +229,9 @@ public class QuestionService extends AbstractWdkService {
     }
 
     // parse incoming JSON into existing and changed values
-    Map<String, String> contextParamValues = new HashMap<String, String>();
-    String changedParamName = null;
-    String changedParamValue = null;
+    Map<String, String> contextParamValues;
+    String changedParamName;
+    String changedParamValue;
     try {
       JSONObject jsonBody = new JSONObject(body);
       JSONObject changedParam = jsonBody.getJSONObject("changedParam");
@@ -274,22 +281,28 @@ public class QuestionService extends AbstractWdkService {
   private static Map<String, String> parseContextParamValuesFromJson(JSONObject bodyJson, Question question)
       throws JSONException, WdkUserException {
 
-    Map<String, String> contextParamValues = new HashMap<String, String>();
+    Map<String, String> contextParamValues = new HashMap<>();
     JSONObject contextJson = bodyJson.getJSONObject("contextParamValues");
 
     for (Iterator<?> keys = contextJson.keys(); keys.hasNext();) {
       String keyName = (String) keys.next();
       String keyValue = contextJson.get(keyName).toString();
-      if (keyName == null) throw new WdkUserException("contextParamValues contains a null key");
-      if (keyValue == null) throw new WdkUserException("Parameter name '" + keyName + "' has null value");
-      if (!question.getParamMap().containsKey(keyName)) throw new WdkUserException("Parameter '" + keyName + "' is not in question '" + question.getFullName() + "'.");
+
+      if (keyValue == null)
+        throw new WdkUserException("Parameter name '" + keyName + "' has null value");
+
+      if (!question.getParamMap().containsKey(keyName))
+        throw new WdkUserException("Parameter '" + keyName + "' is not in question '" + question.getFullName() + "'.");
+
       contextParamValues.put(keyName, keyValue);
     }
+
     return contextParamValues;
   }
-  
+
   /**
-   * Exclusive to FilterParams.  Get a summary of filtered and unfiltered counts for a specified ontology term.
+   * Exclusive to FilterParams.  Get a summary of filtered and unfiltered counts
+   * for a specified ontology term.
    *
    * Sample request body:
    *
@@ -305,13 +318,16 @@ public class QuestionService extends AbstractWdkService {
    * @return
    * @throws WdkUserException
    * @throws WdkModelException
-   * @throws DataValidationException 
+   * @throws DataValidationException
    */
   @POST
   @Path("/{questionName}/{paramName}/ontology-term-summary")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getFilterParamOntologyTermSummary(@PathParam("questionName") String questionName, @PathParam("paramName") String paramName, String body)
+  public Response getFilterParamOntologyTermSummary(
+      @PathParam("questionName") String questionName,
+      @PathParam("paramName") String paramName,
+      String body)
           throws WdkUserException, WdkModelException, DataValidationException {
     try {
       Question question = getQuestionFromSegment(questionName);
@@ -336,7 +352,7 @@ public class QuestionService extends AbstractWdkService {
   private <T> JSONObject getOntologyTermSummaryJson(User user, Map<String, String> contextParamValues,
       FilterParamNew param, OntologyItem ontologyItem, JSONObject jsonBody, Class<T> ontologyItemClass)
           throws WdkModelException {
-    
+
     FilterParamNew.OntologyTermSummary<T> summary = param.getOntologyTermSummary(
         user, contextParamValues, ontologyItem, jsonBody, ontologyItemClass);
 
@@ -364,18 +380,19 @@ public class QuestionService extends AbstractWdkService {
   @Path("/{questionName}/{paramName}/summary-counts")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getFilterParamSummaryCounts(@PathParam("questionName") String questionName, @PathParam("paramName") String paramName, String body)
-          throws WdkUserException, WdkModelException {
-    
+  public Response getFilterParamSummaryCounts(
+      @PathParam("questionName") String questionName,
+      @PathParam("paramName") String paramName,
+      String body) throws WdkUserException, WdkModelException {
+
     Question question = getQuestionFromSegment(questionName);
     FilterParamNew filterParam = getFilterParam(questionName, question, paramName);
-    
-    Map<String, String> contextParamValues = new HashMap<String, String>();
-    
+
+    Map<String, String> contextParamValues;
+
     try {
       JSONObject jsonBody = new JSONObject(body);
       contextParamValues = parseContextParamValuesFromJson(jsonBody, question);
-      //JSONObject filters = jsonBody.getJSONObject("filters");
       FilterParamSummaryCounts counts = filterParam.getTotalsSummary(getSessionUser(), contextParamValues, jsonBody);
       return Response.ok(QuestionFormatter.getFilterParamSummaryJson(counts).toString()).build();
     }
@@ -392,7 +409,7 @@ public class QuestionService extends AbstractWdkService {
       throw new NotFoundException(AbstractWdkService.NOT_FOUND + paramName);
     return param;
   }
-  
+
   private FilterParamNew getFilterParam(String questionName, Question question, String paramName) throws WdkUserException {
     Param param = getParam(questionName, question, paramName);
     if (!(param instanceof FilterParamNew)) throw new WdkUserException(paramName + " is not a FilterParam");
@@ -408,13 +425,13 @@ public class QuestionService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getParamInternalValue(@PathParam("questionName") String questionName, @PathParam("paramName") String paramName, String body)
           throws WdkUserException, WdkModelException {
-    
+
     Question question = getQuestionFromSegment(questionName);
     Param param = getParam(questionName, question, paramName);
     ParamHandler paramHandler = param.getParamHandler();
-    
-    Map<String, String> contextParamValues = new HashMap<String, String>();
-    
+
+    Map<String, String> contextParamValues;
+
     try {
       JSONObject jsonBody = new JSONObject(body);
       contextParamValues = parseContextParamValuesFromJson(jsonBody, question);

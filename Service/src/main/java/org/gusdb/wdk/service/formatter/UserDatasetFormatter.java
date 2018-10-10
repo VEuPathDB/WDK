@@ -41,19 +41,19 @@ public class UserDatasetFormatter {
 
   /**
    * Return a JSONObject describing this dataset.  Should not include the contents of data file
-   * 
+   *
    * { id: 12345
    *   type:
    *    {name: "RNA Seq",
    *     version: "1.0",    # our API version
    *     data: [ type specific data ]
-   *   },   
-   *   dependencies: 
-   *      [{resourceIdentifier: "pf3d7_genome_rsrc", 
+   *   },
+   *   dependencies:
+   *      [{resourceIdentifier: "pf3d7_genome_rsrc",
    *        resourceVersion: "12/2/2015",
-   *        resourceDisplayName: "pfal genome"}, 
-   *       {resourceIdentifier: "hsap_genome_rsrc", 
-   *        resourceVersion: "2.6", 
+   *        resourceDisplayName: "pfal genome"},
+   *       {resourceIdentifier: "hsap_genome_rsrc",
+   *        resourceVersion: "2.6",
    *        resourceDisplayName: "human genome"}
    *      ],
    *   projects: ["PlasmoDB", "ToxoDB"],
@@ -88,24 +88,24 @@ public class UserDatasetFormatter {
     json.put("type", typeJson);
     json.put("isInstalled", datasetInfo.isInstalled());
 
-    JSONArray dependenciesJson = new JSONArray(); 
+    JSONArray dependenciesJson = new JSONArray();
     for (UserDatasetDependency dependency : dataset.getDependencies()) {
       JSONObject dependencyJson = new JSONObject();
       dependencyJson.put("resourceIdentifier", dependency.getResourceIdentifier());
       dependencyJson.put("resourceVersion", dependency.getResourceVersion());
       dependencyJson.put("resourceDisplayName", dependency.getResourceDisplayName());
       dependencyJson.put("compatibilityInfo",compatibility != null ?
-        		compatibility.getCompatibilityInfoJson(): JSONObject.NULL);
+          compatibility.getCompatibilityInfoJson(): JSONObject.NULL);
       dependenciesJson.put(dependencyJson);
     }
     json.put("dependencies", dependenciesJson);
     json.put("isCompatible", compatibility != null ? compatibility.isCompatible() : JSONObject.NULL);
 
-    JSONArray projectsJson = new JSONArray(); 
+    JSONArray projectsJson = new JSONArray();
     for (String project : dataset.getProjects()) projectsJson.put(project);
     json.put("projects", projectsJson);
 
-    JSONArray questionsJson = new JSONArray(); 
+    JSONArray questionsJson = new JSONArray();
     for (String questionName : datasetInfo.getRelevantQuestionNames()) {
       questionsJson.put(questionName);
     }
@@ -116,7 +116,7 @@ public class UserDatasetFormatter {
     metaJson.put("description", dataset.getMeta().getDescription());
     metaJson.put("summary", dataset.getMeta().getSummary());
     json.put("meta", metaJson);
-    json.put("owner", datasetInfo.getOwner().getDisplayName()); 
+    json.put("owner", datasetInfo.getOwner().getDisplayName());
     json.put("ownerUserId", dataset.getOwnerId());
     json.put("size", dataset.getSize());
     json.put("created", dataset.getCreatedDate());
@@ -168,7 +168,7 @@ public class UserDatasetFormatter {
     */
     return json;
   }
-  
+
   public static JSONObject getUserDatasetSharesJson(UserFactory userFactory, Map<String, Map<Long, Set<Long>>> userDatasetShareMap) throws WdkModelException {
     JSONObject json = new JSONObject();
     for (String key : userDatasetShareMap.keySet()) {
@@ -188,9 +188,9 @@ public class UserDatasetFormatter {
           jsonOperation.put(Long.toString(targetDatasetId), sharesJson);
         }
         json.put(key, jsonOperation);
-      }  
+      }
     }
     return json;
   }
-    
+
 }

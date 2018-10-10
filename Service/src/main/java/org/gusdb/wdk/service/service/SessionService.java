@@ -105,7 +105,7 @@ public class SessionService extends AbstractWdkService {
       getSession().removeAttribute(OAuthUtil.STATE_TOKEN_KEY);
 
       // Is the state token present and does it match the session state token?
-      if (stateToken == null || storedStateToken == null || !stateToken.equals(storedStateToken)) {
+      if (stateToken == null || !stateToken.equals(storedStateToken)) {
         throw new WdkModelException("Unable to log in; state token missing, incorrect, or expired.");
       }
 

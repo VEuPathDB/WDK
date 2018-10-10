@@ -22,7 +22,6 @@ import org.gusdb.wdk.model.dataset.AbstractDatasetParser;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dataset.DatasetParser;
-import org.gusdb.wdk.model.dataset.WdkDatasetException;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.DatasetParamHandler;
 import org.gusdb.wdk.model.query.param.MapBasedRequestParams;
@@ -51,13 +50,13 @@ public class DatasetService extends UserService {
    *   "sourceContent": {
    *     "ids": Array<String>, // only for IdList
    *     "basketName": String  // record class full name, only for basket
-   *   } 
+   *   }
    * }
-   * 
+   *
    * @param body request body (JSON)
    * @return HTTP response for this request
-   * @throws RequestMisformatException 
-   * @throws DataValidationException 
+   * @throws RequestMisformatException
+   * @throws DataValidationException
    */
   @POST
   @Path("datasets")
@@ -77,10 +76,7 @@ public class DatasetService extends UserService {
         dataset.setName(displayName);
         factory.saveDatasetMetadata(dataset);
       }
-      JSONObject datasetMetadata = new JSONObject()
-          .put(JsonKeys.ID, dataset.getDatasetId())
-          .put(JsonKeys.DISPLAY_NAME, dataset.getName());
-      return Response.ok(datasetMetadata.toString()).build();
+      return Response.ok(new JSONObject().put(JsonKeys.ID, dataset.getDatasetId())).build();
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.toString());
@@ -105,7 +101,7 @@ public class DatasetService extends UserService {
     JSONArray jsonIds = sourceConfig.getJSONArray(JsonKeys.IDS);
     if (jsonIds.length() == 0)
       throw new DataValidationException("At least 1 ID must be submitted");
-    final List<String> ids = new ArrayList<String>();
+    final List<String> ids = new ArrayList<>();
     for (int i = 0; i < jsonIds.length(); i++) {
       ids.add(jsonIds.getString(i));
     }
@@ -114,7 +110,7 @@ public class DatasetService extends UserService {
     //   a List<String> version of that array
     DatasetParser parser = new AbstractDatasetParser() {
       @Override
-      public List<String[]> parse(String content) throws WdkDatasetException {
+      public List<String[]> parse(String content) {
         return Functions.mapToList(ids, str -> new String[]{ str });
       }
       @Override
@@ -152,7 +148,7 @@ public class DatasetService extends UserService {
     DatasetParamHandler handler = (DatasetParamHandler) param.getParamHandler();
     String datasetId = handler.getStableValue(user, new MapBasedRequestParams()
         .setParam(param.getTypeSubParam(), DatasetParam.TYPE_BASKET));
-    return Response.ok(datasetId).build();
+    return Response.ok(new JSONObject().put(JsonKeys.ID, datasetId)).build();
   }
 
   @POST
