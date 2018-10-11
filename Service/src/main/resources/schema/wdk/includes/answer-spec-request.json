@@ -18,15 +18,7 @@
 	"filters": {
 	    "type": "array",
 	    "items": {
-		"type": "object",
-		"additionalProperties": false,
-		"properties": {
-		    "name": {
-			"type": "string"
-		    },
-		    "value": {
-			"type": "object"
-		    }
+		"$ref": "/schema/wdk/includes/name-value.json"
 		},
 		"required": [
 		    "name",

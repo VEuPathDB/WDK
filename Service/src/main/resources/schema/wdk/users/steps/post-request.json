@@ -13,7 +13,7 @@
 	    "type": "string"
 	},
 	"answerSpec" : {
-	    "$ref": "/schema/wdk/includes/answer-spec.json"
+	    "$ref": "/schema/wdk/includes/answer-spec-request.json"
 	},
 	"viewFilters": {
 	    "type": "array",
