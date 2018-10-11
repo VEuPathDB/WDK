@@ -123,13 +123,13 @@ public class AnswerService extends AbstractWdkService {
    * Creates a streaming answer response as the passed user from the passed answer spec and formatting
    * configuration.  To get the default (i.e. standard WDK service JSON) reporter with default configuration,
    * pass null as formatting.
-   * 
+   *
    * @param sessionUser user answer is to be generated as
    * @param answerSpec answer spec determining result ID set
    * @param formatting reporter configuration or null for default reporter/config
    * @return streaming response representing the formatted answer
    * @throws RequestMisformatException if reporter does not support the passed formatConfig object
-   * @throws DataValidationException if answerSpec or formatting are syntacticly valid but the data itself is invalid
+   * @throws DataValidationException if answerSpec or formatting are syntactically valid but the data itself is invalid
    * @throws WdkModelException if an application error occurs
    */
   public static Response getAnswerResponse(User sessionUser, AnswerSpec answerSpec, JSONObject formatting)
@@ -137,7 +137,7 @@ public class AnswerService extends AbstractWdkService {
 
     // create base answer value from answer spec
     AnswerValue answerValue = new AnswerValueFactory(sessionUser).createFromAnswerSpec(answerSpec);
- 
+
     // parse (optional) request details (columns, pagination, etc.- format dependent on reporter) and configure reporter
     Reporter reporter = getConfiguredReporter(answerValue, formatting);
 
@@ -161,7 +161,7 @@ public class AnswerService extends AbstractWdkService {
 
   /**
    * Returns configured reporter based on passed answer value and formatting JSON
-   * 
+   *
    * @param answerValue answer value for which reporter should be constructed
    * @param formatting formatting object if one was passed, else null
    * @return configured reporter
@@ -205,15 +205,12 @@ public class AnswerService extends AbstractWdkService {
   }
 
   private static StreamingOutput getAnswerAsStream(final Reporter reporter) {
-    return new StreamingOutput() {
-      @Override
-      public void write(OutputStream stream) throws IOException {
-        try {
-          reporter.report(stream);
-        }
-        catch (WdkModelException e) {
-          throw new WebApplicationException(e);
-        }
+    return stream -> {
+      try {
+        reporter.report(stream);
+      }
+      catch (WdkModelException e) {
+        throw new WebApplicationException(e);
       }
     };
   }

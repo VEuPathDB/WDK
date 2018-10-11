@@ -1,0 +1,5 @@
+{
+  "analysisType": "string",
+  "parameters": {},
+  "customName": "string" // optional, generated if absent
+}

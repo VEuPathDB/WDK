@@ -1,0 +1,11 @@
+{
+  "isGuest": false,
+  "id": 221741260,
+  "email": "some@email.addr",
+  "properties": {
+      "firstName": "some first name",
+      "lastName": "some last name",
+      "organization": "some organization",
+      "middleName": "some middle name"
+  }
+}
