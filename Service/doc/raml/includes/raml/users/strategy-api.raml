@@ -1,0 +1,20 @@
+# User Strategy API
+
+description: TBD
+
+/{class}:
+  uriParameters: 
+    class: 
+      type: string
+  get:
+    description: >
+      TBD: a multi-column listing of the user's strategies of this record type
+      TBD: filter this set of strategies, by, eg, open, closed, saved, unsaved
+      filter by a hand-selected set
+    queryParameters:
+      filter:
+      filterlist:
+
+/{strategy-id}:
+  patch:
+    description: TBD open, close
