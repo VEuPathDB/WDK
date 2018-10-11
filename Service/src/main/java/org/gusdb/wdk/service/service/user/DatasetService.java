@@ -71,13 +71,13 @@ public class DatasetService extends UserService {
    *     "parser": String,            // file content parser, only for file
    *     "parameterName": String,     // name of parameter that contains the parser configuration, only for file
    *     "questionName": String,      // name of question that contains the parameter associated w/ parameterName, only for file
-   *   } 
+   *   }
    * }
-   * 
+   *
    * @param body request body (JSON)
    * @return HTTP response for this request
-   * @throws RequestMisformatException 
-   * @throws DataValidationException 
+   * @throws RequestMisformatException
+   * @throws DataValidationException
    */
   @POST
   @Path("datasets")
@@ -97,10 +97,7 @@ public class DatasetService extends UserService {
         dataset.setName(displayName);
         factory.saveDatasetMetadata(dataset);
       }
-      JSONObject datasetMetadata = new JSONObject()
-          .put(JsonKeys.ID, dataset.getDatasetId())
-          .put(JsonKeys.DISPLAY_NAME, dataset.getName());
-      return Response.ok(datasetMetadata.toString()).build();
+      return Response.ok(new JSONObject().put(JsonKeys.ID, dataset.getDatasetId())).build();
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.toString());
@@ -127,7 +124,7 @@ public class DatasetService extends UserService {
     JSONArray jsonIds = sourceConfig.getJSONArray(JsonKeys.IDS);
     if (jsonIds.length() == 0)
       throw new DataValidationException("At least 1 ID must be submitted");
-    final List<String> ids = new ArrayList<String>();
+    final List<String> ids = new ArrayList<>();
     for (int i = 0; i < jsonIds.length(); i++) {
       ids.add(jsonIds.getString(i));
     }
@@ -136,7 +133,7 @@ public class DatasetService extends UserService {
     //   a List<String> version of that array
     DatasetParser parser = new AbstractDatasetParser() {
       @Override
-      public List<String[]> parse(String content) throws WdkDatasetException {
+      public List<String[]> parse(String content) {
         return Functions.mapToList(ids, str -> new String[]{ str });
       }
       @Override
@@ -226,7 +223,7 @@ public class DatasetService extends UserService {
     DatasetParamHandler handler = (DatasetParamHandler) param.getParamHandler();
     String datasetId = handler.getStableValue(user, new MapBasedRequestParams()
         .setParam(param.getTypeSubParam(), DatasetParam.TYPE_BASKET));
-    return Response.ok(datasetId).build();
+    return Response.ok(new JSONObject().put(JsonKeys.ID, datasetId)).build();
   }
 
   @POST

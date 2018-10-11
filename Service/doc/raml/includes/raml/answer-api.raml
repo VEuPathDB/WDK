@@ -1,0 +1,33 @@
+displayName: Answer
+
+post:
+  description: >
+    GET by POST.  Submit question values (question name, params, filters,
+    columns, plus optionally offset, numRecords, sortBy, reverseSort).
+    Validates, and returns results.  Client specifies format (xml, json).
+    Response includes meta data, such as count.
+  body:
+    application/json:
+      type: !include ../../../../src/main/resources/schema/wdk/answer/post-request.json
+      example: !include ../example/post-answer-input.json
+    application/x-www-form-urlencoded:
+      example: !include ../example/post-answer-input.txt
+  responses:
+    200:
+      body:
+        application/json:
+          type: !include ../../../../src/main/resources/schema/wdk/answer/post-response.json
+
+/filter-summary:
+  /{filterName}:
+    uriParameters:
+      filterName:
+        type: string
+    post:
+      body:
+        application/json:
+      responses:
+        200:
+          description: Success
+          body:
+            application/json:

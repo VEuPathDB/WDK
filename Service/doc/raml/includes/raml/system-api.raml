@@ -1,0 +1,30 @@
+displayName: System
+
+/appdb/connections:
+  get:
+    description: Unclosed connection info for the app database.
+    responses: 
+      403:
+        description: Unauthorized
+        body: 
+          text/plain:
+            type: string
+            example: Administrative access required for this function.
+/caches:
+  get:
+    description: Usage stats for various in memory data stores.
+    responses: 
+      200:
+        description: Success
+        body: 
+          application/json:
+/userdb/connections:
+  get:domain
+    description: Unclosed connection info for the user database.
+    responses: 
+      403:
+        description: Unauthorized
+        body: 
+          text/plain:
+            type: string
+            example: Administrative access required for this function.

@@ -1,0 +1,18 @@
+{
+  "OrganismRecordClasses.OrganismRecordClass": 0,
+  "OrfRecordClasses.OrfRecordClass": 0,
+  "BuildClasses.BuildRecordClass": 0,
+  "TranscriptRecordClasses.TranscriptRecordClass": 0,
+  "PopsetRecordClasses.PopsetRecordClass": 0,
+  "EstRecordClasses.EstRecordClass": 0,
+  "DynSpanRecordClasses.DynSpanRecordClass": 0,
+  "SnpChipRecordClasses.SnpChipRecordClass": 0,
+  "DatasetRecordClasses.DatasetReleaseNotes": 0,
+  "SampleRecordClasses.SampleRecordClass": 0,
+  "CompoundRecordClasses.CompoundRecordClass": 0,
+  "SnpRecordClasses.SnpRecordClass": 0,
+  "PathwayRecordClasses.PathwayRecordClass": 0,
+  "GeneRecordClasses.GeneRecordClass": 0,
+  "SequenceRecordClasses.SequenceRecordClass": 0,
+  "DatasetRecordClasses.DatasetRecordClass": 0
+}
