@@ -41,6 +41,8 @@ import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.service.annotation.InSchema;
+import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.service.TemporaryFileService;
@@ -70,20 +72,21 @@ public class DatasetService extends UserService {
    *   }
    * }
    *
-   * @param body request body (JSON)
+   * @param input request body (JSON)
    * @return HTTP response for this request
    * @throws RequestMisformatException
    * @throws DataValidationException
    */
   @POST
   @Path("datasets")
+  @InSchema("wdk.users.datasets.post-request")
+  @OutSchema("wdk.users.datasets.post-response")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response addDatasetFromJson(String body)
+  public Response addDatasetFromJson(JSONObject input)
       throws WdkModelException, RequestMisformatException, DataValidationException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      JSONObject input = new JSONObject(body);
       DatasetFactory factory = getWdkModel().getDatasetFactory();
       Dataset dataset = createFromSource(
           JsonUtil.getStringOrDefault(input, JsonKeys.SOURCE_TYPE, JsonKeys.ID_LIST), user,
