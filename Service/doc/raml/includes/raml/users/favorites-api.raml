@@ -1,0 +1,76 @@
+# Users Favorites API
+
+delete:
+  description: Deletes all a user's favorites (takes rc param to filter)
+  responses:
+    200:
+      description: Success
+      body:
+        application/json:
+          type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/delete-response.json
+get:
+  description: Returns array of user's favorites (takes rc param to filter)
+  responses:
+    200:
+      description: Success
+      body:
+        application/json:
+          type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/get-response.json
+          example: !include ../../example/users/favorites/get-favorites-200.json
+patch:
+  description: Accepts instructions for editing/deleting multiple favorites
+  body:
+    application/json:
+      type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/patch-request.json
+  responses:
+    200:
+      description: Success
+      body:
+        application/json:
+          type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/patch-response.json
+
+post:
+  description: >
+    Adds the passed favorite (object) or favorites (array) to user's favorites
+    and returns with IDs
+
+/{favoriteId}:
+  uriParameters:
+    favoriteId:
+      description: user favorite id
+      type: integer
+  delete:
+    description: Deletes the specified favorite
+    responses:
+      204:
+        description: No content
+  get:
+    description: Returns the specified favorite
+    responses:
+      200:
+        description: Success
+        body:
+          application/json:
+            type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/get-response.json
+            example: !include ../../example/users/favorites/get-favorite-200.json
+  put:
+    description: Replaces the specified favorite with the passed one
+    body:
+      application/json:
+        type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/id/put-request.json
+        example: !include ../../example/users/favorites/put-favorite-input.json
+    responses:
+      204:
+        description: No content
+
+/query:
+  post:
+    description: >
+      Takes array of {RC+PKs} objects as JSON and returns object containing an
+      array of {RC+PKs} objects found
+
+/summary:
+  get:
+    description: >
+      Provides an overview of the current state of favorites (e.g. total count,
+      record classes represented)
