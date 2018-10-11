@@ -16,8 +16,8 @@ import javax.ws.rs.core.Response;
 
 import org.gusdb.wdk.cache.AnswerRequest;
 import org.gusdb.wdk.cache.CacheMgr;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONObject;

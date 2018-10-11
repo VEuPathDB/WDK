@@ -8,6 +8,6 @@ my $CLASSPATH = &FgpUtil::Util::CommandHelper::getJavaClasspath($GUS_HOME);
 my $sysProps = &FgpUtil::Util::CommandHelper::getSystemProps($GUS_HOME, 'wdkReporter');
 my $args = &FgpUtil::Util::CommandHelper::getJavaArgs(@ARGV);
 
-my $cmd = "java $sysProps -classpath $CLASSPATH org.gusdb.wdk.model.report.Dumper $args";
+my $cmd = "java $sysProps -classpath $CLASSPATH org.gusdb.wdk.model.report.util.Dumper $args";
 
 system($cmd) && exit(1);

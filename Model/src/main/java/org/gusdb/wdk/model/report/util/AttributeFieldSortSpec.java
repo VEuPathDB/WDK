@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.request.answer;
+package org.gusdb.wdk.model.report.util;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -17,14 +17,16 @@ import org.gusdb.wdk.model.user.UserPreferences;
  * 
  * @author rdoherty
  */
-public class SortItem {
+// this is a legacy class that should be retired when the sorting model in wdk is upgraded to
+// use FgpUtil.SortDirectionSpec --steve
+public class AttributeFieldSortSpec {
 
-  private static final Logger LOG = Logger.getLogger(SortItem.class);
+  private static final Logger LOG = Logger.getLogger(AttributeFieldSortSpec.class);
 
   private AttributeField _attributeField;
   private SortDirection _direction;
 
-  public SortItem(AttributeField attributeField, SortDirection direction) {
+  public AttributeFieldSortSpec(AttributeField attributeField, SortDirection direction) {
     _attributeField = attributeField;
     _direction = direction;
   }
@@ -32,11 +34,11 @@ public class SortItem {
   public AttributeField getAttributeField() { return _attributeField; }
   public SortDirection getDirection() { return _direction; }
 
-  public static List<SortItem> convertSorting(Map<String, Boolean> sortingAttributeMap, Map<String, AttributeField> allowedValues) {
-    List<SortItem> sorting = new ArrayList<>();
+  public static List<AttributeFieldSortSpec> convertSorting(Map<String, Boolean> sortingAttributeMap, Map<String, AttributeField> allowedValues) {
+    List<AttributeFieldSortSpec> sorting = new ArrayList<>();
     for (Entry<String, Boolean> sortingAttribute : sortingAttributeMap.entrySet()) {
       if (allowedValues.containsKey(sortingAttribute.getKey())) {
-        sorting.add(new SortItem(
+        sorting.add(new AttributeFieldSortSpec(
             allowedValues.get(sortingAttribute.getKey()),
             SortDirection.getFromIsAscending(sortingAttribute.getValue())));
       }
@@ -47,10 +49,10 @@ public class SortItem {
     return sorting;
   }
 
-  public static Map<String, Boolean> convertSorting(List<SortItem> sorting) {
+  public static Map<String, Boolean> convertSorting(List<AttributeFieldSortSpec> sorting) {
     Map<String, Boolean> conversion = new LinkedHashMap<>();
     int numSorts = 0;
-    for (SortItem sort : sorting) {
+    for (AttributeFieldSortSpec sort : sorting) {
       conversion.put(sort.getAttributeField().getName(), sort.getDirection().isAscending());
       numSorts++;
       // don't sort by more than maximum number of fields

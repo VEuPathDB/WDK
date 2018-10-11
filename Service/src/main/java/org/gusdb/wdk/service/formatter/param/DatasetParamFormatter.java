@@ -1,10 +1,10 @@
 package org.gusdb.wdk.service.formatter.param;
 
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.query.param.DatasetParam;
-import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

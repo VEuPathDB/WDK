@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.request.answer;
+package org.gusdb.wdk.model.report.config;
 
 import java.util.List;
 import java.util.Map;
@@ -6,6 +6,7 @@ import java.util.Map;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
+import org.gusdb.wdk.model.report.util.AttributeFieldSortSpec;
 
 public class AnswerDetails {
 

@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.formatter;
 
 import java.util.Collection;
 
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.json.JSONArray;

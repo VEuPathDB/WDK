@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.formatter;
+package org.gusdb.wdk.model.report.reporter;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -12,7 +12,9 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonWriter;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
@@ -22,10 +24,12 @@ import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.AbstractReporter;
 import org.gusdb.wdk.model.report.Reporter;
-import org.gusdb.wdk.service.factory.AnswerValueFactory;
-import org.gusdb.wdk.service.request.answer.AnswerDetails;
-import org.gusdb.wdk.service.request.answer.AnswerDetailsFactory;
-import org.gusdb.wdk.service.request.exception.RequestMisformatException;
+import org.gusdb.wdk.model.report.ReporterConfigException;
+import org.gusdb.wdk.model.report.ReporterRef;
+import org.gusdb.wdk.model.report.config.AnswerDetails;
+import org.gusdb.wdk.model.report.config.AnswerDetailsFactory;
+import org.gusdb.wdk.model.report.util.AttributeFieldSortSpec;
+import org.gusdb.wdk.model.report.util.RecordFormatter;
 import org.json.JSONObject;
 
 /**
@@ -41,23 +45,18 @@ import org.json.JSONObject;
  *   records: [ see RecordFormatter ]
  * }
  */
-public class AnswerFormatter extends AbstractReporter {
+public class DefaultJsonReporter extends AbstractReporter {
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = Logger.getLogger(AnswerFormatter.class);
+  private static final Logger LOG = Logger.getLogger(DefaultJsonReporter.class);
 
-  private static final String DEFAULT_JSON_FILENAME = "result.json";
-
-  public static Reporter createDefault(AnswerValue answerValue) throws WdkModelException {
-    AnswerDetails answerDetails = AnswerDetailsFactory.createDefault(answerValue.getQuestion());
-    return new AnswerFormatter(answerValue).configure(answerDetails);
-  }
+  public static final String WDK_SERVICE_JSON_REPORTER_RESERVED_NAME = "wdk-service-json";
 
   private Map<String,AttributeField> _attributes;
   private Map<String,TableField> _tables;
   private ContentDisposition _contentDisposition;
   
-  public AnswerFormatter(AnswerValue answerValue) {
+  public DefaultJsonReporter(AnswerValue answerValue) {
     super(answerValue);
   }
 
@@ -67,17 +66,25 @@ public class AnswerFormatter extends AbstractReporter {
   }
 
   @Override
-  public Reporter configure(JSONObject config) throws RequestMisformatException, WdkModelException {
+  public Reporter configure(JSONObject config) throws ReporterConfigException, WdkModelException {
     return configure(AnswerDetailsFactory.createFromJson(config, _baseAnswer.getQuestion()));
   }
 
-  public AnswerFormatter configure(AnswerDetails config) throws WdkModelException {
-    AnswerValueFactory factory = new AnswerValueFactory(_baseAnswer.getUser());
-    _baseAnswer = factory.getConfiguredAnswer(_baseAnswer, config);
+  private DefaultJsonReporter configure(AnswerDetails config) throws WdkModelException {
+    _baseAnswer = getConfiguredAnswer(_baseAnswer, config);
     _attributes = config.getAttributes();
     _tables = config.getTables();
     _contentDisposition = config.getContentDisposition();
     return this;
+  }
+
+  private static AnswerValue getConfiguredAnswer(AnswerValue answerValue, AnswerDetails config) throws WdkModelException {
+    int startIndex = config.getOffset() + 1;
+    int endIndex = startIndex + config.getNumRecords() - 1;
+    AnswerValue configuredAnswer = answerValue.cloneWithNewPaging(startIndex, endIndex);
+    Map<String, Boolean>  sorting = AttributeFieldSortSpec.convertSorting(config.getSorting());
+    configuredAnswer.setSortingMap(sorting);
+    return configuredAnswer;
   }
 
   @Override
@@ -87,7 +94,7 @@ public class AnswerFormatter extends AbstractReporter {
 
   @Override
   public String getDownloadFileName() {
-    return DEFAULT_JSON_FILENAME;
+    return _baseAnswer.getQuestion().getName() + "_std.json";
   }
 
   @Override
@@ -138,5 +145,14 @@ public class AnswerFormatter extends AbstractReporter {
     meta.put(JsonKeys.ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(includedAttributes));
     meta.put(JsonKeys.TABLES, FormatUtil.stringCollectionToJsonArray(includedTables));
     return meta;
+  }
+
+  public static ReporterRef createReference() {
+    ReporterRef ref = new ReporterRef();
+    ref.setName(WDK_SERVICE_JSON_REPORTER_RESERVED_NAME);
+    ref.setDisplayName("Standard JSON");
+    ref.setDescription(new WdkModelText(null, "Converts your result to the standard JSON used by the web service."));
+    ref.setImplementation(DefaultJsonReporter.class.getName());
+    return ref;
   }
 }

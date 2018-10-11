@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.report;
+package org.gusdb.wdk.model.report.util;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import java.util.LinkedHashMap;
@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.test.ParamValuesFactory;
 import org.gusdb.wdk.model.user.User;
 

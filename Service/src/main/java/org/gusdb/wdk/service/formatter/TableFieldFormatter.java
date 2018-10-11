@@ -1,9 +1,10 @@
 package org.gusdb.wdk.service.formatter;
 
 import java.util.Collection;
+
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.TableField;
-import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

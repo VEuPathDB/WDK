@@ -26,8 +26,6 @@ import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.service.formatter.JsonKeys;
-import org.json.JSONObject;
 
 /*
  * We need to write a utility that provides the file and meta-data via uuid lookup to other services if the
