@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.report;
+package org.gusdb.wdk.model.report.reporter;
 
 import java.sql.ResultSet;
 import java.util.LinkedHashMap;
@@ -11,6 +11,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.report.AbstractAttributeReporter;
 import org.json.JSONObject;
 
 public class HistogramAttributeReporter extends AbstractAttributeReporter {

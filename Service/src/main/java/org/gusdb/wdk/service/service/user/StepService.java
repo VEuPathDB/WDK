@@ -18,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
@@ -27,15 +28,13 @@ import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.factory.AnswerValueFactory;
-import org.gusdb.wdk.service.factory.WdkStepFactory;
-import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.formatter.StepFormatter;
 import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.strategy.StepRequest;
-import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.AbstractWdkService;
+import org.gusdb.wdk.service.service.AnswerService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -70,7 +69,7 @@ public class StepService extends UserService {
       // validateStep(stepRequest.getAnswerSpec(), false);
 
       // create the step and insert into the database
-      Step step = WdkStepFactory.createStep(stepRequest, user, getWdkModel().getStepFactory());
+      Step step = createStep(stepRequest, user, getWdkModel().getStepFactory());
       if(runStep != null && runStep) {
         if(step.isAnswerSpecComplete()) {
           AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
@@ -136,21 +135,23 @@ public class StepService extends UserService {
   @Path("steps/{stepId}/answer")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createAnswer(@PathParam("stepId") String stepId, String body) throws WdkModelException {
+  public Response createAnswer(@PathParam("stepId") String stepId, String body)
+      throws WdkModelException, RequestMisformatException, DataValidationException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepFactory stepFactory = new StepFactory(getWdkModel());
       Step step = stepFactory.getStepById(Long.parseLong(stepId));
-      if(!step.isAnswerSpecComplete()) throw new DataValidationException("One or more parameters is missing");
+      if(!step.isAnswerSpecComplete()) {
+        throw new DataValidationException("One or more parameters is missing");
+      }
       AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
-      JSONObject formatting = (body == null || body.isEmpty() ? null : new JSONObject(body));
-      return AnswerService.getAnswerResponse(user, stepAnswerSpec, formatting);
+      return AnswerService.getAnswerResponse(user, stepAnswerSpec, new JSONObject(body));
     }
     catch(NumberFormatException nfe) {
-      throw new BadRequestException("The step id " + stepId + " is not a valid id ", nfe);
+      throw new NotFoundException(formatNotFound("step ID " + stepId));
     }
-    catch (JSONException | RequestMisformatException | DataValidationException e) {
-      throw new BadRequestException(e);
+    catch (JSONException e) {
+      throw new RequestMisformatException(e.getMessage());
     }
   }
 
@@ -198,4 +199,50 @@ public class StepService extends UserService {
       throw new NotFoundException(AbstractWdkService.formatNotFound(STEP_RESOURCE + stepId));
     }
   }
+
+  private static Step createStep(StepRequest stepRequest, User user, StepFactory stepFactory) throws WdkModelException {
+    try {
+      // new step must be created from raw spec
+      AnswerSpec answerSpec = stepRequest.getAnswerSpec();
+      Step step = stepFactory.createStep(user, answerSpec.getQuestion(),
+          AnswerValueFactory.convertParams(answerSpec.getParamValues()),
+          answerSpec.getLegacyFilter(), 1, -1, false, true, answerSpec.getWeight(),
+          answerSpec.getFilterValues(), stepRequest.getCustomName(),
+          stepRequest.isCollapsible(), stepRequest.getCollapsedName());
+      step.setViewFilterOptions(answerSpec.getViewFilterValues());
+      step.saveParamFilters();
+
+      // once created, additional user-provided fields can be applied
+      //step.setCustomName(stepRequest.getCustomName());
+      //step.setCollapsible(stepRequest.isCollapsible());
+      //step.setCollapsedName(stepRequest.getCollapsedName());
+      //step.update(true);
+      return step;
+    }
+    catch (WdkUserException e) {
+      throw new WdkModelException("Unable to create step", e);
+    }
+  }
+
+  /**
+   * Step services do not necessarily run the steps that are created/patched but as long as the answerSpec is
+   * complete, we want to insure that a step is valid prior to inserting or updating it in the database.
+   * @param answerSpec - the answerSpec that will underlie the step to be checked for validity.
+   * @throws WdkModelException
+   * @throws DataValidationException
+   */
+//  protected void validateStep(AnswerSpec answerSpec, boolean inStrategy) throws WdkModelException, DataValidationException {
+//	Question question = answerSpec.getQuestion();
+//	if(question.hasAnswerParams() ? inStrategy : true) {
+//	  Map<String, String> context = new LinkedHashMap<String, String>();
+//      context.put(Utilities.QUERY_CTX_QUESTION, question.getFullName());
+//	  try {  
+//	    User user = getUserBundle(Access.PRIVATE).getSessionUser();
+//	    //Map<String, String> params = AnswerValueFactory.convertParams(answerSpec.getParamValues());
+//	  }
+//      catch(WdkUserException wue) {
+//        throw new DataValidationException(wue);
+//      }
+//	}
+//  }
 }

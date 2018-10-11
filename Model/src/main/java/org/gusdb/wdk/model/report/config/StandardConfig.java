@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.report;
+package org.gusdb.wdk.model.report.config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.FieldScope;
+import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -173,7 +173,7 @@ public class StandardConfig {
    * 
    * @param config
    */
-  public StandardConfig configure(Map<String, String> config) throws WdkUserException {
+  public StandardConfig configure(Map<String, String> config) throws ReporterConfigException {
 
     if (config.containsKey(INCLUDE_EMPTY_TABLES)) {
       String value = config.get(INCLUDE_EMPTY_TABLES);
@@ -251,7 +251,7 @@ public class StandardConfig {
         paramErrors.put(SELECTED_TABLES, "The following passed tables are invalid: " + FormatUtil.join(badTables.toArray(), ", "));
       }
       if (!paramErrors.isEmpty()) {
-        throw new WdkUserException("Invalid inputs", paramErrors);
+        throw new ReporterConfigException("Invalid inputs", paramErrors);
       }
     }
 

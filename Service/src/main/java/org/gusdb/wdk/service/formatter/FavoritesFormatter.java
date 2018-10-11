@@ -3,6 +3,7 @@ package org.gusdb.wdk.service.formatter;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Favorite;
 import org.json.JSONArray;

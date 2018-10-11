@@ -1,6 +1,4 @@
-package org.gusdb.wdk.service.formatter;
-
-
+package org.gusdb.wdk.core.api;
 
 /**
  * A collection of common keys; this is an attempt to standardize the names
@@ -101,7 +99,6 @@ public class JsonKeys {
   public static final String STEP_ANALYSIS_PLUGINS = "stepAnalysisPlugins";
 
   // param-related keys
-  public static final String DEFAULT_ID_LIST = "defaultIdList";
   public static final String DEFAULT_VALUE = "defaultValue";
   public static final String VOCABULARY = "vocabulary";
   public static final String DEPENDENT_PARAMS = "dependentParams";
@@ -119,6 +116,7 @@ public class JsonKeys {
   // dataset-related keys
   public static final String SOURCE_TYPE = "sourceType";
   public static final String SOURCE_CONTENT = "sourceContent";
+  public static final String DEFAULT_ID_LIST = "defaultIdList";
   public static final String ID_LIST = "idList";
   public static final String IDS = "ids";
   public static final String BASKET = "basket";

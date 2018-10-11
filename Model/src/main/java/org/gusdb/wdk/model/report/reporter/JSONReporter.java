@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.report;
+package org.gusdb.wdk.model.report.reporter;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -19,6 +19,8 @@ import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
+import org.gusdb.wdk.model.report.ReporterRef;
+import org.gusdb.wdk.model.report.util.TableCache;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

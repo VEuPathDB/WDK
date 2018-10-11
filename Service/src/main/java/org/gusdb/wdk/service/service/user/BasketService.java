@@ -198,8 +198,7 @@ public class BasketService extends UserService {
     User user = getPrivateRegisteredUser();
     RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
     AnswerSpec basketAnswerSpec = AnswerSpecFactory.createFromQuestion(recordClass.getRealtimeBasketQuestion());
-    JSONObject formatting = (body == null || body.isEmpty() ? null : new JSONObject(body));
-    return AnswerService.getAnswerResponse(user, basketAnswerSpec, formatting);
+    return AnswerService.getAnswerResponse(user, basketAnswerSpec, new JSONObject(body));
   }
 
 }

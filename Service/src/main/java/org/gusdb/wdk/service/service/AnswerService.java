@@ -1,10 +1,5 @@
 package org.gusdb.wdk.service.service;
 
-import static org.gusdb.wdk.model.report.ReporterRef.WDK_SERVICE_JSON_REPORTER_RESERVED_NAME;
-
-import java.io.IOException;
-import java.io.OutputStream;
-
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -28,11 +23,11 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
-import org.gusdb.wdk.model.report.ReporterFactory;
+import org.gusdb.wdk.model.report.ReporterConfigException;
+import org.gusdb.wdk.model.report.util.ReporterFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.factory.AnswerValueFactory;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
-import org.gusdb.wdk.service.formatter.AnswerFormatter;
 import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -108,15 +103,19 @@ public class AnswerService extends AbstractWdkService {
       throw new RequestMisformatException("Request JSON cannot be empty. " +
           "If submitting a form, include the 'data' input parameter.");
     }
+    try {
+      // read request body into JSON object
+      JSONObject requestJson = new JSONObject(requestBody);
 
-    // read request body into JSON object
-    JSONObject requestJson = new JSONObject(requestBody);
-
-    // parse answer spec (question, params, etc.) and formatting object
-    JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
-    AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, wdkModel, sessionUser, false);
-    JSONObject formatting = JsonUtil.getJsonObjectOrDefault(requestJson, "formatting", null);
-    return new AnswerRequest(answerSpec, formatting);
+      // parse answer spec (question, params, etc.) and formatting object
+      JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
+      AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, wdkModel, sessionUser, false);
+      JSONObject formatting = requestJson.getJSONObject("formatting");
+      return new AnswerRequest(answerSpec, formatting);
+    }
+    catch (JSONException e) {
+      throw new RequestMisformatException(e.getMessage());
+    }
   }
 
   /**
@@ -172,35 +171,28 @@ public class AnswerService extends AbstractWdkService {
   private static Reporter getConfiguredReporter(AnswerValue answerValue, JSONObject formatting)
       throws RequestMisformatException, WdkModelException, DataValidationException {
 
-    if (formatting == null) {
-      // create default service JSON reporter
-      return AnswerFormatter.createDefault(answerValue);
-    }
-
-    // user passed formatting object; get contents and apply defaults if needed
-    String format = JsonUtil.getStringOrDefault(formatting, "format", WDK_SERVICE_JSON_REPORTER_RESERVED_NAME);
-    JSONObject formatConfig = JsonUtil.getJsonObjectOrDefault(formatting, "formatConfig", null);
-
-    if (format.equals(WDK_SERVICE_JSON_REPORTER_RESERVED_NAME)) {
-      return (formatConfig == null ?
-          // create default service JSON reporter
-          AnswerFormatter.createDefault(answerValue) :
-          // use formatConfig to configure standard JSON reporter
-          new AnswerFormatter(answerValue).configure(formatConfig));
-    }
-
-    // check to make sure format name is valid for this recordclass
-    if (!answerValue.getQuestion().getReporterMap().containsKey(format)) {
-      throw new DataValidationException("Request for an invalid answer format: " + format);
-    }
-
-    // configure reporter requested
+    String format = null;
     try {
-      LOG.debug("Creating reporter '" + format + "'");
+      // user passed formatting object; get contents and apply defaults if needed
+      format = formatting.getString("format");
+
+      // check to make sure format name is valid for this recordclass
+      if (!answerValue.getQuestion().getReporterMap().containsKey(format)) {
+        throw new DataValidationException("Request for an invalid answer format: " + format);
+      }
+
+      // look for formatConfig; if not present, pass null to reporter's configure method
+      JSONObject formatConfig = JsonUtil.getJsonObjectOrDefault(formatting, "formatConfig", null);
+
+      // configure reporter requested
+      LOG.debug("Creating and configuring reporter for format '" + format + "'");
       return ReporterFactory.getReporter(answerValue, format, formatConfig);
     }
-    catch (WdkUserException userException) {
-      throw new RequestMisformatException("Could not configure reporter '" + format + "' with passed formatConfig");
+    catch (JSONException e) {
+      throw new RequestMisformatException("Invalid JSON structure: " + e.getMessage());
+    }
+    catch (ReporterConfigException e) {
+      throw new RequestMisformatException("Could not configure reporter '" + format + "' with passed formatConfig. " + e.getMessage());
     }
   }
 
