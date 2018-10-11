@@ -4,15 +4,14 @@
     "additionalProperties": false,
     "properties": {
 	"answerSpec" : {
-	    "$ref": "/schema/wdk/includes/answer-spec.json"
+	    "$ref": "/schema/wdk/includes/answer-spec-request.json"
 
 	},
-	"formatting": {
-	    "$ref": "/schema/wdk/includes/answer-formatting.json"
+	"formatConfig": {
+	    "$ref": "/schema/wdk/includes/answer-formatConfig-json-request-.json"
 	}
     },
     "required" : [
 	"answerSpec",
-	"formatting"
     ]
 }

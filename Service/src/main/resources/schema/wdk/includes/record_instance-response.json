@@ -6,7 +6,7 @@
 	"id": {
 	    "type": "array",
 	    "items" : {
-		"$ref": "/schema/wdk/includes/name-value.json"
+		"$ref": "/schema/wdk/includes/name-stringValue.json"
 	    }
 	},
 	"displayName": {

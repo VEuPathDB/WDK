@@ -3,11 +3,15 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
-	"format": "string",
-	"formatConfig": "object"
+	"name": {
+	    "type": "string",
+	},
+	"value": {
+	    "type": "string"
+	},
     },
     "required": [
-	"format"
-    ]    
+	"name",
+	"value"
+    ]
 }
-
