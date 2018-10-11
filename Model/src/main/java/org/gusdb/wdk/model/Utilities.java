@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import javax.activation.DataHandler;
 import javax.mail.Address;
@@ -222,7 +223,7 @@ public class Utilities {
 
   public static void sendEmail(String smtpServer, String sendTos, String reply,
       String subject, String content, String ccAddresses,
-      DataHandler[] attachments) throws WdkModelException {
+      Attachment[] attachments) throws WdkModelException {
 
     logger.debug("Sending message to: " + sendTos + ", reply: " + reply
         + ", using SMPT: " + smtpServer);
@@ -258,10 +259,10 @@ public class Utilities {
 
       // add attachment
       if (attachments != null) {
-        for (DataHandler attachment : attachments) {
+        for (Attachment attachment : attachments) {
           MimeBodyPart attachmentPart = new MimeBodyPart();
-          attachmentPart.setDataHandler(attachment);
-          attachmentPart.setFileName(attachment.getName());
+          attachmentPart.setDataHandler(attachment.getDataHandler());
+          attachmentPart.setFileName(attachment.getFileName());
           multipart.addBodyPart(attachmentPart);
         }
       }
@@ -278,14 +279,26 @@ public class Utilities {
   }
 
   public static void sendEmail(String smtpServer, String sendTos, String reply,
+      String subject, String content, String ccAddresses,
+      DataHandler[] attachmentDataHandlers) throws WdkModelException {
+    
+    Attachment[] attachments = Stream
+      .of(attachmentDataHandlers)
+      .map(dataHandler -> new Attachment(dataHandler, dataHandler.getName()))
+      .toArray(Attachment[]::new);
+
+    sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, attachments);
+  }
+
+  public static void sendEmail(String smtpServer, String sendTos, String reply,
       String subject, String content, String ccAddresses)
       throws WdkModelException {
-    sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, null);
+    sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, new Attachment[] {});
   }
 
   public static void sendEmail(String smtpServer, String sendTos, String reply,
       String subject, String content) throws WdkModelException {
-    sendEmail(smtpServer, sendTos, reply, subject, content, null, null);
+    sendEmail(smtpServer, sendTos, reply, subject, content, null, new Attachment[] {});
   }
 
   public static byte[] readFile(File file) throws IOException {
