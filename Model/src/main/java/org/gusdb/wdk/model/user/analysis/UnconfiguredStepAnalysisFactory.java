@@ -21,18 +21,18 @@ import org.gusdb.wdk.model.user.Step;
  * operations are independent of plugin configuration since they only depend on
  * the presence of an AppDB.  All other operations either return empty results
  * or throw UnsupportedOperationExceptions.
- * 
+ *
  * @author rdoherty
  */
 public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
 
   private static final Logger LOG = Logger.getLogger(UnconfiguredStepAnalysisFactory.class);
-  
+
   private static final String UNSUPPORTED_MESSAGE =
       "Step Analysis Plugins must be configured in the WDK model to perform this operation.";
 
   private final StepAnalysisDataStore _dataStore;
-  
+
   public UnconfiguredStepAnalysisFactory(WdkModel wdkModel) {
     _dataStore = (StepAnalysisFactoryImpl.USE_DB_PERSISTENCE ?
         new StepAnalysisPersistentDataStore(wdkModel) :
@@ -55,7 +55,7 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
     _dataStore.deleteExecutionTable(purge);
     LOG.warn("Note: no file storage configured for step analysis; only DB data purged.");
   }
-  
+
   @Override
   public List<StepAnalysisInstance> getAllAnalyses() throws WdkModelException {
     return new ArrayList<>();

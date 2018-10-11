@@ -27,11 +27,11 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfig.AuthenticationMethod;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.user.GuestUser;
+import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.service.CookieConverter;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.LoginRequest;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.statustype.MethodNotAllowedStatusType;
@@ -105,7 +105,7 @@ public class SessionService extends AbstractWdkService {
       getSession().removeAttribute(OAuthUtil.STATE_TOKEN_KEY);
 
       // Is the state token present and does it match the session state token?
-      if (stateToken == null || storedStateToken == null || !stateToken.equals(storedStateToken)) {
+      if (stateToken == null || !stateToken.equals(storedStateToken)) {
         throw new WdkModelException("Unable to log in; state token missing, incorrect, or expired.");
       }
 
@@ -133,6 +133,7 @@ public class SessionService extends AbstractWdkService {
   @POST
   @Path("login")
   @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
   public Response processDbLogin(@HeaderParam(REFERRER_HEADER_KEY) String referrer, String body)
       throws RequestMisformatException {
     try {
@@ -158,7 +159,7 @@ public class SessionService extends AbstractWdkService {
       // log in the user and return JSON response
       user = wdkModel.getUserFactory().login(user, request.getEmail(), request.getPassword());
       return getSuccessResponse(user, redirectUrl, false);
-    
+
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage());
@@ -170,8 +171,8 @@ public class SessionService extends AbstractWdkService {
   }
 
   /**
-   * Sets the passed user on the session and packages a successful login response with a login cookie 
-   * 
+   * Sets the passed user on the session and packages a successful login response with a login cookie
+   *
    * @param user newly logged in user
    * @param redirectUrl incoming original page
    * @param isRedirectResponse whether to return redirect or JSON response
@@ -180,7 +181,7 @@ public class SessionService extends AbstractWdkService {
    */
   private Response getSuccessResponse(User user, String redirectUrl, boolean isRedirectResponse) throws WdkModelException {
     getSession().setAttribute(Utilities.WDK_USER_KEY, new UserBean(user));
-    LoginCookieFactory baker = new LoginCookieFactory(getWdkModel().getSecretKey());
+    LoginCookieFactory baker = new LoginCookieFactory(getWdkModel().getModelConfig().getSecretKey());
     Cookie loginCookie = baker.createLoginCookie(user.getEmail(), true);
     redirectUrl = getSuccessRedirectUrl(redirectUrl, user, loginCookie);
     return (isRedirectResponse ?
@@ -191,7 +192,7 @@ public class SessionService extends AbstractWdkService {
 
   /**
    * Does any conversion from passed redirect URL to application-specific redirect URL.  May be overridden.
-   * 
+   *
    * @param redirectUrl incoming original page
    * @param user newly logged in user
    * @param cookie login cookie to be sent to the browser
@@ -211,7 +212,7 @@ public class SessionService extends AbstractWdkService {
       session.invalidate();
     }
     session = getSession(true);
-    User user = new GuestUser(getWdkModel());
+    User user = getWdkModel().getUserFactory().createUnregistedUser(UnregisteredUserType.GUEST);
     session.setAttribute(Utilities.WDK_USER_KEY, new UserBean(user));
 
     // create and append logout cookies to response
@@ -232,7 +233,7 @@ public class SessionService extends AbstractWdkService {
 
   /**
    * Convenience method to set up a response builder that returns JSON containing request result
-   * 
+   *
    * @param success whether the login was successful
    * @param message a failure message if not successful
    * @param redirectUrl url to which to redirect the user if successful
@@ -240,15 +241,15 @@ public class SessionService extends AbstractWdkService {
    */
   private static ResponseBuilder createJsonResponse(boolean success, String message, String redirectUrl) {
     return Response.ok(new JSONObject()
-        .put(Keys.SUCCESS, success)
-        .put(Keys.MESSAGE, message)
-        .put(Keys.REDIRECT_URL, redirectUrl)
+        .put(JsonKeys.SUCCESS, success)
+        .put(JsonKeys.MESSAGE, message)
+        .put(JsonKeys.REDIRECT_URL, redirectUrl)
         .toString());
   }
 
   /**
    * Convenience method to set up a response builder with the redirect url provided
-   * 
+   *
    * @param redirectUrl url of page to which to redirect the user
    * @return partially constructed response
    * @throws WdkModelException if the url is invalid.
@@ -264,7 +265,7 @@ public class SessionService extends AbstractWdkService {
 
   /**
    * Convenience method to safely test whether a string has content
-   * 
+   *
    * @param str string to test
    * @return true if empty or null and false otherwise
    */
@@ -276,10 +277,10 @@ public class SessionService extends AbstractWdkService {
    * Web service action that takes parts of a WDK login cookie and verifies that they indeed represent a valid
    * cookie for an existing WDK user. Returns user's display name and email address for use by caller if
    * valid.
-   * 
+   *
    * A JSON object like the following is returned with the information. If the cookie is invalid, the isValid
    * property is set to false and the userData property is undefined.
-   * 
+   *
    * {
    *   "isValid": true,
    *   "userData": {
@@ -296,14 +297,14 @@ public class SessionService extends AbstractWdkService {
     WdkModel wdkModel = getWdkModel();
     return Response.ok(
       getVerificationJsonResult(
-        getVerifiedUsername(cookieValue, wdkModel.getSecretKey()), wdkModel)
+        getVerifiedUsername(cookieValue, wdkModel.getModelConfig().getSecretKey()), wdkModel)
     ).build();
   }
 
   /**
    * Fetches the cookie value parameter, verifies its validity, and returns the username (email) contained
    * within the cookie value. If the cookie is invalid, null is returned
-   * 
+   *
    * @param cookieValue value of the cookie
    * @param secretKey key used to create user hash
    * @return username, or null if not valid
@@ -326,7 +327,7 @@ public class SessionService extends AbstractWdkService {
    * Generates the appropriate JSON object given the username parsed from the cookie value (if any). Even if a
    * non-null username was retrieved, the cookie value may still be deemed invalid if the username does not
    * correspond to an existing user.
-   * 
+   *
    * @param username username to generate JSON for (or null if no username was able to be parsed)
    * @param wdkModel WDK model
    * @return response JSON

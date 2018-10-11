@@ -34,7 +34,7 @@ public interface StepAnalysisFactory {
    * this method will assign an ID to the constructed instance, save it in the
    * database, and may modify the display name to ensure a step's tabs have
    * unique names.
-   * 
+   *
    * @throws WdkModelException if error occurs while instantiating instance or writing to persistent store
    * @throws IllegalAnswerValueException if answer cannot be used to create an analysis with the passed instance
    * @throws WdkUserException if answer is OK but analysis params fail validation in another way
@@ -51,11 +51,11 @@ public interface StepAnalysisFactory {
    * object.  This method is only to be called when a "recent" call to
    * getSavedAnalysisInstance() has status COMPLETE.  No checks are done to ensure that
    * persistent storage mechanisms have not been cleared.
-   * 
+   *
    * @param instance step analysis instance for this result
    * @return result
    * @throws WdkModelException if inconsistent data is found or other error occurs
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
   AnalysisResult getAnalysisResult(StepAnalysisInstance instance) throws WdkModelException, WdkUserException;
 

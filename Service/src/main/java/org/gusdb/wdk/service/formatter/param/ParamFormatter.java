@@ -3,7 +3,7 @@ package org.gusdb.wdk.service.formatter.param;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,17 +27,17 @@ public class ParamFormatter<T extends Param> {
   public JSONObject getJson()
       throws JSONException, WdkModelException, WdkUserException {
     JSONObject pJson = new JSONObject();
-    pJson.put(Keys.NAME, _param.getName());
-    pJson.put(Keys.DISPLAY_NAME, _param.getPrompt());
-    pJson.put(Keys.HELP, _param.getHelp());
-    pJson.put(Keys.TYPE, _param.getClass().getSimpleName());
-    pJson.put(Keys.IS_VISIBLE, _param.isVisible());
-    pJson.put(Keys.GROUP, _param.getGroup().getName());
-    pJson.put(Keys.IS_READ_ONLY, _param.isReadonly());
+    pJson.put(JsonKeys.NAME, _param.getName());
+    pJson.put(JsonKeys.DISPLAY_NAME, _param.getPrompt());
+    pJson.put(JsonKeys.HELP, _param.getHelp());
+    pJson.put(JsonKeys.TYPE, _param.getClass().getSimpleName());
+    pJson.put(JsonKeys.IS_VISIBLE, _param.isVisible());
+    pJson.put(JsonKeys.GROUP, _param.getGroup().getName());
+    pJson.put(JsonKeys.IS_READ_ONLY, _param.isReadonly());
     JSONArray dependentParamsJson = new JSONArray();
     for (Param p : _param.getDependentParams()) dependentParamsJson.put(p.getName());
-    pJson.put(Keys.DEPENDENT_PARAMS, dependentParamsJson);
-    pJson.put(Keys.DEFAULT_VALUE, getDefault());
+    pJson.put(JsonKeys.DEPENDENT_PARAMS, dependentParamsJson);
+    pJson.put(JsonKeys.DEFAULT_VALUE, getDefault());
     return pJson;
   }
 

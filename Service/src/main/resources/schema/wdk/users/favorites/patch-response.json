@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "required": [
+    "delete",
+    "undelete"
+  ],
+  "properties": {
+    "delete": {
+      "type": "integer"
+    },
+    "undelete": {
+      "type": "integer"
+    }
+  }
+}

@@ -1,8 +1,6 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -49,14 +47,12 @@ public class UserDatasetEventArrayHandler {
   private UserDatasetStore userDatasetStore;
   private ModelConfig modelConfig;
   private String projectId;
-  private String wdkTempDirName;
 
   private static final Logger logger = Logger.getLogger(UserDatasetEventArrayHandler.class);
 
   public UserDatasetEventArrayHandler(String projectId) throws WdkModelException {
 	this.projectId = projectId;
 	modelConfig = getModelConfig();
-	wdkTempDirName = getWdkTempDirName();
 	userDatasetStore = getUserDatasetStore();
   }
   
@@ -71,7 +67,6 @@ public class UserDatasetEventArrayHandler {
    */
   public void handleEventList(List<UserDatasetEvent> eventList) throws WdkModelException {
 
-	Path tmpDir = Paths.get(getWdkTempDirName());
     try (DatabaseInstance appDb = new DatabaseInstance(getModelConfig().getAppDB(), WdkModel.DB_INSTANCE_APP, true)) {
 
       DataSource appDbDataSource = appDb.getDataSource();
@@ -106,7 +101,7 @@ public class UserDatasetEventArrayHandler {
           }
           else {
             UserDatasetEventHandler.handleInstallEvent((UserDatasetInstallEvent) event, typeHandler, getUserDatasetStore(),
-             appDbDataSource, getUserDatasetSchemaName(), tmpDir, getModelConfig().getProjectId());
+             appDbDataSource, getUserDatasetSchemaName(), getModelConfig().getWdkTempDir(), getModelConfig().getProjectId());
           }  
         }
 
@@ -120,7 +115,7 @@ public class UserDatasetEventArrayHandler {
           }
           else {
             UserDatasetEventHandler.handleUninstallEvent((UserDatasetUninstallEvent) event, typeHandler,
-             appDbDataSource, getUserDatasetSchemaName(), tmpDir, getModelConfig().getProjectId());
+             appDbDataSource, getUserDatasetSchemaName(), getModelConfig().getWdkTempDir(), getModelConfig().getProjectId());
           }  
         }
 
@@ -167,47 +162,22 @@ public class UserDatasetEventArrayHandler {
   public UserDatasetStore getUserDatasetStore() throws WdkModelException {
     if (userDatasetStore == null) {
       ModelConfigUserDatasetStore udsConfig= getModelConfig().getUserDatasetStoreConfig();
-      userDatasetStore = udsConfig.getUserDatasetStore(wdkTempDirName);
+      userDatasetStore = udsConfig.getUserDatasetStore(getModelConfig().getWdkTempDir());
     }
     return userDatasetStore;
   }
-
-  /*
-  public String getGusConfig(String key) throws IOException {
-    if (gusProps == null) {
-      String gusHome = System.getProperty("GUS_HOME");
-      String configFileName = gusHome + "/config/gus.config";
-      gusProps = new Properties();
-      gusProps.load(new FileInputStream(configFileName));
-    }
-    String value = gusProps.getProperty(key);
-    if (value == null)
-      error("Required property " + key + " not found in gus.config file: " + configFileName);
-    return value;
-  }
-  */
 
   // TODO: get from model config
   public String getUserDatasetSchemaName() {
     return  "ApiDBUserDatasets.";
   }
 
-  public String getWdkTempDirName() throws WdkModelException {
-    if (wdkTempDirName == null) {
-      wdkTempDirName = getModelConfig().getWdkTempDir();
-      // Checks that the temp dir is there with proper perms and if not, provides it.
-      WdkModel.checkTempDir(wdkTempDirName);
-    }
-    return wdkTempDirName;
-  }
-  
   public ModelConfig getModelConfig() throws  WdkModelException {
     if (modelConfig == null) {
       try {
-    	String gusHome = GusHome.getGusHome();
-        //String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+        String gusHome = GusHome.getGusHome();
         ModelConfigParser parser = new ModelConfigParser(gusHome);
-        modelConfig = parser.parseConfig(getProjectId());
+        modelConfig = parser.parseConfig(getProjectId()).build();
         QueryLogger.initialize(modelConfig.getQueryMonitor());
       }
       catch (SAXException | IOException e) {

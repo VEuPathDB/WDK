@@ -7,7 +7,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -22,8 +22,8 @@ public class EnumParamFormatter extends AbstractEnumParamFormatter implements De
       throws JSONException, WdkModelException, WdkUserException {
     EnumParamVocabInstance vocabInstance = getVocabInstance(user, dependedParamValues);
     return super.getJson()
-        .put(Keys.DEFAULT_VALUE, vocabInstance.getDefaultValue())
-        .put(Keys.VOCABULARY, _param.getDisplayType().equals(AbstractEnumParam.DISPLAY_TREEBOX)
+        .put(JsonKeys.DEFAULT_VALUE, vocabInstance.getDefaultValue())
+        .put(JsonKeys.VOCABULARY, _param.getDisplayType().equals(AbstractEnumParam.DISPLAY_TREEBOX)
             ? getVocabTreeJson(vocabInstance)
             : getVocabArrayJson(vocabInstance));
   }

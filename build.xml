@@ -5,7 +5,6 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <import file="${projectsDir}/WSF/build.xml" />
-  <import file="${projectsDir}/WDKClient/build.xml" />
 
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
@@ -25,7 +24,7 @@
     </ant>
   </target>
 
-    
+
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo    Update    oooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
@@ -42,12 +41,9 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="WDK-Installation" depends="WSF-Installation,
-                                           WDKClient-Installation,
                                            WDK-MavenInstallation,
                                            WDK/Model-Installation,
-                                           WDK/Controller-Installation,
-                                           WDK/Service-Installation,
-                                           WDK/View-Installation">
+                                           WDK/Service-Installation">
     <ant target="defaultProjectInstall">
       <property name="project" value="WDK"/>
     </ant>
@@ -66,22 +62,15 @@
   <target name="WDK-Installation-postprocess">
     <echo message="Postprocessing the WDK installation"/>
 
-    <replace dir="${targetDir}/bin" 
-             propertyFile="${targetDir}/config/replacements.prop" > 
+    <replace dir="${targetDir}/bin"
+             propertyFile="${targetDir}/config/replacements.prop" >
       <include name="**/*" />
       <replacefilter token="@perl@" property="perl"/>
-    </replace> 
-    
+    </replace>
+
   </target>
 
   <!-- ooooooooooooooooooooooo  Install Components  ooooooooooooooooooooooo -->
-
-  <target name="WDK/Controller-Installation">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="Controller"/>
-    </ant>
-  </target>  
 
   <target name="WDK/Model-Installation">
 
@@ -91,7 +80,7 @@
       <property name="project" value="WDK"/>
       <property name="component" value="Model"/>
     </ant>
-  </target>  
+  </target>
 
   <target name="handleOracleDriver">
 
@@ -174,13 +163,6 @@
     </exec>
   </target>
 
-  <target name="WDK/View-Installation">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="View"/>
-    </ant>
-  </target>
-
   <target name="WDK/Service-Installation">
     <ant target="defaultComponentInstall">
       <property name="project" value="WDK"/>
@@ -193,82 +175,13 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="WDK-WebInstallation" depends="WSF-WebInstallation,
-                                              WDKClient-WebInstallation,
-                                              WebsitePlusGusHome">
+                                              GusHome">
     <echo message="." />
     <echo message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file ojdbc14.jar) from ${targetDir}/lib/java/db_driver into your webapp server's designated place (such as common/lib for Tomcat). See the installation instructions available at www.gusdb.org/wdk for details."  />
     <echo message="." />
  </target>
 
-  <target name="WDK/Controller-WebInstallation">
-    <ant target="defaultWebComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="Controller"/>
-    </ant>
-  </target>
-
-  <target name="WDK/View-WebInstallation" depends="yarnBinCheck,installYarnBin">
-    <ant target="defaultWebComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="View"/>
-    </ant>
-
-    <echo message="Making JS and CSS bundles"/>
-
-    <exec dir="${projectsDir}/WDKClient/Build"
-          executable="yarn"
-          failonerror="true"
-          failifexecutionfails="true"/>
-
-    <exec dir="${projectsDir}/WDKClient/Client"
-          executable="yarn"
-          failonerror="true"
-          failifexecutionfails="true"/>
-
-    <exec dir="${projectsDir}/WDK/View"
-          executable="yarn"
-          failonerror="true"
-          failifexecutionfails="true"/>
-
-    <condition property="webpack.env" value="--env.production" else="--env.development">
-      <isset property="optimizeWebAssets"/>
-    </condition>
-
-    <exec dir="${projectsDir}/WDK/View"
-          executable="${projectsDir}/WDKClient/Build/node_modules/.bin/webpack"
-          failonerror="true"
-          failifexecutionfails="true">
-          <arg line="${webpack.env}"/>
-          <arg line="--hide-modules"/>
-    </exec>
-
-    <copy todir="${webappTargetDir}">
-      <fileset dir="${projectsDir}/WDK/View/dist" />
-    </copy>
-
-  </target>
-
-  <target name="installYarnBin" unless="hasYarnBin">
-    <!-- unpack yarn tgz into targetDirectory -->
-    <echo message="Installing yarn binary"/>
-    <mkdir dir="${targetDir}/lib/yarn"/>
-    <mkdir dir="${targetDir}/bin"/>
-    <exec executable="tar"
-      dir="${targetDir}/lib/yarn"
-      failonerror="true"
-      failifexecutionfails="true">
-      <arg line="xzf ${projectsDir}/WDK/View/yarn.tar.gz --strip-components 1"/>
-    </exec>
-    <symlink overwrite="true" link="${targetDir}/bin/yarn" resource="${targetDir}/lib/yarn/bin/yarn"/>
-  </target>
-
-  <target name="yarnBinCheck">
-    <available property="hasYarnBin" file="${targetDir}/bin/yarn"/>
-  </target>
-
-  <target name="WebsitePlusGusHome" depends="WDK-Installation,
-                                             WDK/Controller-WebInstallation,
-                                             WDK/View-WebInstallation,
+  <target name="GusHome" depends="WDK-Installation,
                                              checkLinks,
                                              webInfDir,
                                              libLink,
@@ -301,7 +214,7 @@
   </target>
 
   <target name="configLink" unless="configLinkExists">
-    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model"/>    
+    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model"/>
     <symlink link="${webappTargetDir}/WEB-INF/wdk-model/config" resource="${targetDir}/config"/>
   </target>
 
@@ -314,12 +227,12 @@
   </target>
 
   <target name="rngLink" unless="rngLinkExists">
-    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib"/>    
+    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib"/>
     <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/rng" resource="${targetDir}/lib/rng"/>
   </target>
 
   <target name="perlLink" unless="perlLinkExists">
-    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib"/>    
+    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib"/>
     <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/perl" resource="${targetDir}/lib/perl"/>
   </target>
 
@@ -336,11 +249,11 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="WDK-Release">
-    
+
     <ant target="defaultProjectRelease">
       <property name="cvsroot" value=":ext:cvs.sanger.ac.uk:/cvsroot/GUS"/>
     </ant>
-  </target>  
+  </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Distributable  ooooooooooooooooooooooooo -->
@@ -352,8 +265,8 @@
       <fileset dir="${projectsDir}" >
         <exclude name="**/CVS/*" />
       </fileset>
-    </copy>  
-  </target>  
+    </copy>
+  </target>
 
 </project>
 

@@ -24,6 +24,7 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigAccountDB;
+import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 
 /**
  * Manages persistence of user profile and preferences and creation and
@@ -269,13 +270,11 @@ public class UserFactory {
    * @return the guest user with remaining fields populated
    * @throws WdkRuntimeException if unable to persist temporary user
    */
-  GuestUser saveTemporaryUser(GuestUser user) throws WdkRuntimeException {
+  public UnregisteredUser createUnregistedUser(UnregisteredUserType userType) throws WdkRuntimeException {
     try {
-      UserProfile profile = _accountManager.createGuestAccount(user.getEmailPrefix());
+      UserProfile profile = _accountManager.createGuestAccount(userType.getStableIdPrefix());
       addUserReference(profile.getUserId(), true);
-      user.refresh(profile);
-      _preferenceFactory.savePreferences(user);
-      return user;
+      return new UnregisteredUser(_wdkModel, profile.getUserId(), profile.getEmail(), profile.getSignature(), profile.getStableId());
     }
     catch (Exception e) {
       throw new WdkRuntimeException("Unable to save temporary user", e);
@@ -347,16 +346,24 @@ public class UserFactory {
    */
   public User getUserById(long userId) throws WdkModelException {
     UserProfile profile = _accountManager.getUserProfile(userId);
-    if (profile == null) {
-      // cannot find user in account DB; however, this may be a guest local to this userDb
+    if (profile != null) {
+      // found registered user in account DB; create RegisteredUser and populate
+      return populateRegisteredUser(profile);
+    }
+    else {
+      // cannot find user in account DB; however, the passed ID may represent a guest local to this userDb
       Date accessDate = getGuestUserRefFirstAccess(userId);
-      if (accessDate == null) {
+      if (accessDate != null) {
+        // guest user was found in local user Db; create UnregisteredUser and populate
+        profile = AccountManager.createGuestProfile(UnregisteredUserType.GUEST.getStableIdPrefix(), userId, accessDate);
+        return new UnregisteredUser(_wdkModel, profile.getUserId(), profile.getEmail(), profile.getSignature(), profile.getStableId());
+        
+      }
+      else {
         // user does not exist in account or user DBs; throw exception
         throw new NoSuchUserException("Invalid user id: " + userId);
       }
-      profile = AccountManager.createGuestProfile(GuestUser.GUEST_USER_PREFIX, userId, accessDate);
     }
-    return populateRegisteredUser(profile);
   }
 
   public User getUserByEmail(String email) throws WdkModelException {

@@ -1,6 +1,5 @@
 package org.gusdb.wdk.service.service;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -22,11 +21,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Variant;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonType.ValueType;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,7 +34,7 @@ import org.json.JSONObject;
 public class SampleService {
 
   private static final Logger LOG = Logger.getLogger(SampleService.class);
-  
+
   private static AtomicLong ID_SEQUENCE;
   private static Map<Long, JsonType> STATE = new LinkedHashMap<>();
 
@@ -56,18 +55,19 @@ public class SampleService {
       JsonType input = JsonType.parse(body);
       if (!input.getType().equals(ValueType.OBJECT) && !input.getType().equals(ValueType.ARRAY)) {
         LOG.info("Passed body '" + body + "' is neither JSON object nor array");
-        return Response.notAcceptable(Collections.<Variant>emptyList()).build();
+        return Response.notAcceptable(Collections.emptyList()).build();
       }
       long nextId = ID_SEQUENCE.getAndIncrement();
       STATE.put(nextId, input);
-      String newUri = _uriInfo.getAbsolutePath() + "/" + nextId;
       JSONObject output = new JSONObject();
       output.put("id", nextId);
-      return Response.created(URI.create(newUri)).entity(output.toString()).build();
+
+      return Response.created(_uriInfo.getAbsolutePathBuilder().build(nextId))
+          .entity(new JSONObject().put(JsonKeys.ID, nextId)).build();
     }
     catch (JSONException | IllegalArgumentException e) {
       LOG.info("Passed request body deemed unacceptable", e);
-      return Response.notAcceptable(Collections.<Variant>emptyList()).build();
+      return Response.notAcceptable(Collections.emptyList()).build();
     }
   }
 
@@ -125,15 +125,15 @@ public class SampleService {
       }
       else {
         LOG.warn("Attempted update of non-existing resource");
-        return Response.notAcceptable(Collections.<Variant>emptyList()).build();
+        return Response.notAcceptable(Collections.emptyList()).build();
       }
     }
     catch (JSONException e) {
-      LOG.info("Passed request body deemed unacceptable", e);
-      return Response.notAcceptable(Collections.<Variant>emptyList()).build();
+        LOG.info("Passed request body deemed unacceptable", e);
+      return Response.notAcceptable(Collections.emptyList()).build();
     }
   }
-  
+
   @DELETE
   @Path("{id}")
   public Response deleteById(@PathParam("id") long id) {

@@ -9,7 +9,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.OntologyItem;
 import org.gusdb.wdk.model.user.User;
-import static org.gusdb.wdk.service.formatter.Keys.MIN_SELECTED_COUNT;
+import static org.gusdb.wdk.service.formatter.JsonKeys.MIN_SELECTED_COUNT;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,7 +19,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(FilterParamNewFormatter.class);
 
-  protected FilterParamNew filterParam; 
+  protected FilterParamNew filterParam;
 
   FilterParamNewFormatter(FilterParamNew param) {
     super(param);
@@ -56,19 +56,19 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
       itemJson.put("units", item.getUnits());
       itemJson.put("precision", item.getPrecision());
       itemJson.put("isRange", item.getIsRange());
-      
+
       ontologyJson.put(itemJson);
     }
-    return ontologyJson; 
+    return ontologyJson;
   }
 
   public JSONObject getValuesJson(User user, Map<String, String> dependedParamValues) throws JSONException, WdkModelException {
- 
+
     Map<String, Set<String>>  valuesMap = filterParam.getValuesMap(user, dependedParamValues);
 
     // TODO: remove this when values map is required
     if (valuesMap == null) return null;
- 
+
     JSONObject valuesMapJson = new JSONObject();
     for (String term : valuesMap.keySet()) {
       JSONArray valuesArrayJson = new JSONArray();
@@ -76,7 +76,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
       for (String value : values) valuesArrayJson.put(value);
       valuesMapJson.put(term, valuesArrayJson);
     }
-    return valuesMapJson; 
+    return valuesMapJson;
   }
 
 }

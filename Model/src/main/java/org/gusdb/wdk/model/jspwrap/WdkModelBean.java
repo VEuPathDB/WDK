@@ -258,16 +258,12 @@ public class WdkModelBean implements ConnectionContainer {
         return wdkModel.queryParamDisplayName(paramName);
     }
 
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.WdkModel#getSecretKey()
-     */
-    public String getSecretKey() throws WdkModelException  {
-        return wdkModel.getSecretKey();
+    public String getSecretKey() {
+        return wdkModel.getModelConfig().getSecretKey();
     }
 
     public boolean getUseWeights() {
-        return wdkModel.getUseWeights();
+        return wdkModel.getModelConfig().getUseWeights();
     }
 
     public UserBean getSystemUser() {

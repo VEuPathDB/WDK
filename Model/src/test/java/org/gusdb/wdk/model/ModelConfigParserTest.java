@@ -8,6 +8,8 @@ import java.io.IOException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.xml.sax.SAXException;
 
 /**
@@ -22,7 +24,7 @@ public class ModelConfigParserTest {
     /**
      * get and validate the input
      */
-    @org.junit.Before
+    @Before
     public void getInput() throws WdkModelException {
         // get input from the system environment
         projectId = System.getProperty(Utilities.ARGUMENT_PROJECT_ID);
@@ -41,11 +43,11 @@ public class ModelConfigParserTest {
     /**
      * test parsing a valid config file
      */
-    @org.junit.Test
+    @Test
     public void testParseConfig() throws SAXException, IOException,
             WdkModelException {
         ModelConfigParser parser = new ModelConfigParser(gusHome);
-        ModelConfig config = parser.parseConfig(projectId);
+        ModelConfig config = parser.parseConfig(projectId).build();
         Assert.assertNotNull(config);
     }
 }

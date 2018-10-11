@@ -22,7 +22,6 @@ import org.gusdb.wdk.model.dataset.AbstractDatasetParser;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dataset.DatasetParser;
-import org.gusdb.wdk.model.dataset.WdkDatasetException;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.DatasetParamHandler;
 import org.gusdb.wdk.model.query.param.MapBasedRequestParams;
@@ -30,7 +29,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
@@ -51,13 +50,13 @@ public class DatasetService extends UserService {
    *   "sourceContent": {
    *     "ids": Array<String>, // only for IdList
    *     "basketName": String  // record class full name, only for basket
-   *   } 
+   *   }
    * }
-   * 
+   *
    * @param body request body (JSON)
    * @return HTTP response for this request
-   * @throws RequestMisformatException 
-   * @throws DataValidationException 
+   * @throws RequestMisformatException
+   * @throws DataValidationException
    */
   @POST
   @Path("datasets")
@@ -70,17 +69,14 @@ public class DatasetService extends UserService {
       JSONObject input = new JSONObject(body);
       DatasetFactory factory = getWdkModel().getDatasetFactory();
       Dataset dataset = createFromSource(
-          JsonUtil.getStringOrDefault(input, Keys.SOURCE_TYPE, Keys.ID_LIST), user,
-          input.getJSONObject(Keys.SOURCE_CONTENT), factory);
-      String displayName = JsonUtil.getStringOrDefault(input, Keys.DISPLAY_NAME, dataset.getName());
+          JsonUtil.getStringOrDefault(input, JsonKeys.SOURCE_TYPE, JsonKeys.ID_LIST), user,
+          input.getJSONObject(JsonKeys.SOURCE_CONTENT), factory);
+      String displayName = JsonUtil.getStringOrDefault(input, JsonKeys.DISPLAY_NAME, dataset.getName());
       if (!displayName.equals(dataset.getName())) {
         dataset.setName(displayName);
         factory.saveDatasetMetadata(dataset);
       }
-      JSONObject datasetMetadata = new JSONObject()
-          .put(Keys.ID, dataset.getDatasetId())
-          .put(Keys.DISPLAY_NAME, dataset.getName());
-      return Response.ok(datasetMetadata.toString()).build();
+      return Response.ok(new JSONObject().put(JsonKeys.ID, dataset.getDatasetId())).build();
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.toString());
@@ -93,19 +89,19 @@ public class DatasetService extends UserService {
   private Dataset createFromSource(String sourceType, User user, JSONObject sourceConfig, DatasetFactory factory)
       throws WdkModelException, WdkUserException, DataValidationException {
     switch(sourceType) {
-      case Keys.ID_LIST: return createFromIdList(user, sourceConfig, factory);
-      case Keys.BASKET:  return createFromBasket(user, sourceConfig, factory);
+      case JsonKeys.ID_LIST: return createFromIdList(user, sourceConfig, factory);
+      case JsonKeys.BASKET:  return createFromBasket(user, sourceConfig, factory);
       default:
-        throw new DataValidationException("Unrecognized " + Keys.SOURCE_TYPE + ": " + sourceType);
+        throw new DataValidationException("Unrecognized " + JsonKeys.SOURCE_TYPE + ": " + sourceType);
     }
   }
 
   private static Dataset createFromIdList(User user, JSONObject sourceConfig, DatasetFactory factory)
       throws DataValidationException, WdkUserException, WdkModelException {
-    JSONArray jsonIds = sourceConfig.getJSONArray(Keys.IDS);
+    JSONArray jsonIds = sourceConfig.getJSONArray(JsonKeys.IDS);
     if (jsonIds.length() == 0)
       throw new DataValidationException("At least 1 ID must be submitted");
-    final List<String> ids = new ArrayList<String>();
+    final List<String> ids = new ArrayList<>();
     for (int i = 0; i < jsonIds.length(); i++) {
       ids.add(jsonIds.getString(i));
     }
@@ -114,7 +110,7 @@ public class DatasetService extends UserService {
     //   a List<String> version of that array
     DatasetParser parser = new AbstractDatasetParser() {
       @Override
-      public List<String[]> parse(String content) throws WdkDatasetException {
+      public List<String[]> parse(String content) {
         return Functions.mapToList(ids, str -> new String[]{ str });
       }
       @Override
@@ -128,7 +124,7 @@ public class DatasetService extends UserService {
   public static Dataset createFromBasket(User user, JSONObject sourceConfig, DatasetFactory factory)
       throws WdkModelException, WdkUserException {
     WdkModel wdkModel = factory.getWdkModel();
-    String recordClassName = sourceConfig.getString(Keys.BASKET_NAME);
+    String recordClassName = sourceConfig.getString(JsonKeys.BASKET_NAME);
     RecordClass recordClass = wdkModel.getRecordClassByUrlSegment(recordClassName);
     String questionName = BasketFactory.getSnapshotBasketQuestionName(recordClass);
     Question question = wdkModel.getQuestion(questionName);
@@ -152,7 +148,7 @@ public class DatasetService extends UserService {
     DatasetParamHandler handler = (DatasetParamHandler) param.getParamHandler();
     String datasetId = handler.getStableValue(user, new MapBasedRequestParams()
         .setParam(param.getTypeSubParam(), DatasetParam.TYPE_BASKET));
-    return Response.ok(datasetId).build();
+    return Response.ok(new JSONObject().put(JsonKeys.ID, datasetId)).build();
   }
 
   @POST

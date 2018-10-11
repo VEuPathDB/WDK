@@ -279,4 +279,9 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
   public String getFullName() {
     return getName();
   }
+
+  @Override
+  public String getFullName() {
+    return getName();
+  }
 }

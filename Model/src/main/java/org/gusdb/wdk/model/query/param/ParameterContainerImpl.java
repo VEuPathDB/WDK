@@ -97,7 +97,7 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
   /**
    * Create or get an internal user param, which is a stringParam with a pre-defined name. This param will be
    * added to all the queries, and the value of it will be the current user id, and is assigned automatically.
-   * 
+   *
    * @return
    * @throws WdkModelException
    */

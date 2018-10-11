@@ -1,0 +1,51 @@
+displayName: User API
+
+get:
+  description: list of all users (probably won’t implement)
+post:
+  description: >
+    register a new, unverified user, and return input JSON (but now id is
+    populated)
+
+/{user-id}:
+  uriParameters:
+    user-id:
+      description: either the id of the user or the string "current"
+      type: string
+      pattern: ^[0-9]+|current$
+  delete:
+    description: delete the user (i.e. mark as deleted in DB)
+  get:
+    description: >
+      user details (name, email, etc) of user with {user-id} or current user
+    responses:
+      200:
+        body:
+          application/json:
+            type: !include ../../../../src/main/resources/schema/wdk/users/id/get.json
+            example: !include ../example/users/get-user-200.json
+  patch:
+    description: >
+      update user details, input JSON can be partially completed, unspecified
+      attributes are unchanged (obviously, user cannot change id)
+    body:
+      application/json:
+    responses:
+      200:
+        body:
+          application/json:
+  put:
+    description: >
+      replace user attributes with those in the object (delete missing
+      attributes)
+    body:
+      application/json:
+    responses:
+
+
+  /baskets: !include ./users/basket-api.raml
+  /favorites: !include ./users/favorites-api.raml
+  /preference: !include ./users/preference-api.raml
+  /steps: !include ./users/steps-api.raml
+  /strategy: !include ./users/strategy-api.raml
+  /user-datasets: !include ./users/user-datasets.raml

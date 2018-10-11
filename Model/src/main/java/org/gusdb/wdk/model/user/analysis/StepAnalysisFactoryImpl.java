@@ -382,7 +382,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
    * @param instance instance for this result
    * @return result
    * @throws WdkModelException if inconsistent data is found or other error occurs
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
   @Override
   public AnalysisResult getAnalysisResult(StepAnalysisInstance instance) throws WdkModelException, WdkUserException {

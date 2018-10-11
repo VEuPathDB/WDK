@@ -32,27 +32,27 @@ import org.json.JSONObject;
  * used to look up results, and contains the current state/status of the
  * instance (as influenced by whether it's been run before, has params, and has
  * results).
- * 
+ *
  * Notes:
  *   State tells the UI whether to show empty results, "Invalid due to revise",
  *     or normal request of results (which may show out-of-date, error, etc.)
  *   HasParams tells the UI whether to repopulate form params from stored values
- * 
+ *
  * @author rdoherty
  */
 public class StepAnalysisInstance {
 
   public static final Logger LOG = Logger.getLogger(StepAnalysisInstance.class);
-  
+
   public static final String ANALYSIS_ID_KEY = "analysisId";
 
   public static enum JsonKey {
-    
+
     // the following values define the hashable serialized instance
     analysisName,
     answerValueHash,
     formParams,
-    
+
     // the following values are included with JSON returned to client
     analysisId,
     stepId,
@@ -62,9 +62,9 @@ public class StepAnalysisInstance {
     status,
     hasParams,
     invalidStepReason,
-    userNotes;
+    userNotes
   }
-  
+
   private WdkModel _wdkModel;
   private long _analysisId;
   private String _editableDisplayName;
@@ -83,7 +83,7 @@ public class StepAnalysisInstance {
   /**
    * Creates a step analysis instance.   Does not yet have an analysis id and
    * will receive one when it is written to the database.
-   * 
+   *
    * This is package scope, and should be called only by the factory.
    *
    * @param stepAnalysis descriptor of the step analysis that will be invoked
@@ -99,9 +99,9 @@ public class StepAnalysisInstance {
     ctx._wdkModel = step.getUser().getWdkModel();
     ctx._step = step;
     ctx._answerValueHash = answerValueChecksum;
-    
+
     ctx._stepAnalysis = stepAnalysis;
-    
+
     if (ctx._stepAnalysis == null) throw new WdkModelException ("Null stepAnalysis");
 
     ctx._editableDisplayName = ctx._stepAnalysis.getDisplayName();
@@ -110,7 +110,7 @@ public class StepAnalysisInstance {
     ctx._hasParams = false;
     ctx._invalidStepReason = null;
     ctx._status = ExecutionStatus.CREATED;
-    
+
     return ctx;
   }
 
@@ -127,8 +127,8 @@ public class StepAnalysisInstance {
   public static StepAnalysisInstance createFromId(long analysisId, StepAnalysisFactory analysisMgr)
       throws WdkUserException, WdkModelException {
     return analysisMgr.getSavedAnalysisInstance(analysisId);
-  }  
-  
+  }
+
   public static StepAnalysisInstance createFromStoredData(WdkModel wdkModel,
       long analysisId, long stepId, StepAnalysisState state, boolean hasParams, String invalidStepReason,
       String displayName, String userNotes, String serializedInstance) throws WdkModelException, DeprecatedAnalysisException {
@@ -142,9 +142,9 @@ public class StepAnalysisInstance {
       ctx._hasParams = hasParams;
       ctx._invalidStepReason = invalidStepReason;
       ctx._status = ExecutionStatus.UNKNOWN;
-      
+
       LOG.debug("Got the following serialized instance from the DB: " + serializedInstance);
-      
+
       // deserialize hashable instance values
       JSONObject json = new JSONObject(serializedInstance);
       ctx._step = loadStep(ctx._wdkModel, stepId, new WdkModelException("Unable " +
@@ -165,7 +165,7 @@ public class StepAnalysisInstance {
         }
         ctx._formParams.put(key, values);
       }
-      
+
       return ctx;
     }
     catch (WdkUserException e) {
@@ -198,7 +198,7 @@ public class StepAnalysisInstance {
     ctx._status = oldInstance._status;
     return ctx;
   }
-  
+
   private static <T extends WdkException> Step loadStep(WdkModel wdkModel, long stepId,
       T wdkUserException) throws T {
     try {
@@ -208,7 +208,7 @@ public class StepAnalysisInstance {
       throw wdkUserException;
     }
   }
-  
+
   private static Map<String, String[]> getDuplicateMap(Map<String, String[]> formParams) {
     Map<String, String[]> newParamMap = new HashMap<>(formParams);
     for (String key : newParamMap.keySet()) {
@@ -263,7 +263,7 @@ public class StepAnalysisInstance {
       throw new WdkRuntimeException("Unable to serialize instance.", e);
     }
   }
-  
+
   /**
    * Returns JSON of the following spec (for generating hash):
    * {
@@ -279,16 +279,16 @@ public class StepAnalysisInstance {
       throw new WdkRuntimeException("Unable to serialize instance.", e);
     }
   }
-  
+
   private JSONObject getJsonForDigest() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(JsonKey.analysisName.name(), _stepAnalysis.getName());
     json.put(JsonKey.answerValueHash.name(), _answerValueHash);
-    
+
     // Sort param names so JSON values produce identical hashes
     List<String> sortedParamNames = new ArrayList<>(_formParams.keySet());
     Collections.sort(sortedParamNames);
-    
+
     JSONObject params = new JSONObject();
     for (String paramName : sortedParamNames) {
       // Sort param values so JSON values produce identical hashes
@@ -299,15 +299,15 @@ public class StepAnalysisInstance {
       }
     }
     json.put(JsonKey.formParams.name(), params);
-    
+
     LOG.debug("Returning the following shared JSON: " + json);
     return json;
   }
-  
+
   public String createHash() {
     return createHashFromString(serializeInstance());
   }
-  
+
   public static String createHashFromString(String serializedInstance) {
     try {
       return EncryptionUtil.encrypt(serializedInstance);
@@ -316,23 +316,23 @@ public class StepAnalysisInstance {
       throw new WdkRuntimeException("Unable to generate checksum from serialized instance.", e);
     }
   }
-  
+
   public long getAnalysisId() {
     return _analysisId;
   }
-  
+
   public void setAnalysisId(long analysisId) {
     _analysisId = analysisId;
   }
-  
+
   public String getDisplayName() {
     return _editableDisplayName;
   }
-  
+
   public void setDisplayName(String displayName) {
     _editableDisplayName = displayName;
   }
-  
+
 public String getUserNotes() {
     return _userNotes;
   }
@@ -348,11 +348,11 @@ public String getUserNotes() {
   public void setStep(Step step) {
     _step = step;
   }
-  
+
   public StepAnalysis getStepAnalysis() {
     return _stepAnalysis;
   }
-  
+
   public Map<String, String[]> getFormParams() {
     return _formParams;
   }
@@ -388,15 +388,15 @@ public String getUserNotes() {
   public String getInvalidStepReason() {
     return _invalidStepReason;
   }
-  
+
   public void setIsValidStep(boolean isValidStep) {
     setIsValidStep(isValidStep, null);
   }
-  
+
   public void setIsValidStep(boolean isValidStep, String invalidReason) {
     // valid steps have no invalid reasons; set to null
     _invalidStepReason = (isValidStep ? null :
-      // invalid steps must give a reason or one will be provided 
+      // invalid steps must give a reason or one will be provided
       (invalidReason == null || invalidReason.isEmpty()) ?
           "Unable to determine." : invalidReason);
   }
@@ -405,11 +405,11 @@ public String getUserNotes() {
    * Generates and returns a salted access token.  If user can present
    * this token, they will have access to restricted properties of
    * this particular analysis.
-   * 
+   *
    * @return salted access token
    * @throws WdkModelException if unable to read WDK model's secret key file
    */
   public String getAccessToken() throws WdkModelException {
-    return EncryptionUtil.encrypt("__" + _analysisId + _step.getStepId() + _wdkModel.getSecretKey(), true);
+    return EncryptionUtil.encrypt("__" + _analysisId + _step.getStepId() + _wdkModel.getModelConfig().getSecretKey(), true);
   }
 }

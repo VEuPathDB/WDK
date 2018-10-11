@@ -28,6 +28,7 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.factory.AnswerValueFactory;
 import org.gusdb.wdk.service.factory.WdkStepFactory;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.formatter.StepFormatter;
 import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -63,34 +64,36 @@ public class StepService extends UserService {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       JSONObject json = new JSONObject(body);
       StepRequest stepRequest = StepRequest.newStepFromJson(json, getWdkModelBean(), user);
-      
+
       // validate the step and throw a DataValidation exception if not valid
       // new step are, by definition, not part of a strategy
-//      validateStep(stepRequest.getAnswerSpec(), false);
-      
+      // validateStep(stepRequest.getAnswerSpec(), false);
+
       // create the step and insert into the database
       Step step = WdkStepFactory.createStep(stepRequest, user, getWdkModel().getStepFactory());
       if(runStep != null && runStep) {
-    	    if(step.isAnswerSpecComplete()) {
-    	      AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
-    	    	  new AnswerValueFactory(user).createFromAnswerSpec(stepAnswerSpec);
-    	    }
-    	    else {
-    	    	  throw new DataValidationException("Cannot run a step with an incomplete answer spec.");
-    	    }
+        if(step.isAnswerSpecComplete()) {
+          AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
+          new AnswerValueFactory(user).createFromAnswerSpec(stepAnswerSpec);
+        }
+        else {
+          throw new DataValidationException("Cannot run a step with an incomplete answer spec.");
+        }
       }
-      return Response.ok(StepFormatter.getStepJson(step, true).toString()).build();
+      return Response.ok(new JSONObject().put(JsonKeys.ID, step.getStepId()))
+          .location(getUriInfo().getAbsolutePathBuilder().build(step.getStepId()))
+          .build();
     }
     catch (JSONException | RequestMisformatException e) {
       throw new BadRequestException(e);
     }
   }
-  
+
   @GET
   @Path("steps/{stepId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getStep(@PathParam("stepId") String stepId) throws WdkModelException {
-    return Response.ok(StepFormatter.getStepJson(getStepForCurrentUser(stepId), false).toString()).build();
+    return Response.ok(StepFormatter.getStepJsonWithRawEstimateValue(getStepForCurrentUser(stepId)).toString()).build();
   }
 
   @PATCH
@@ -111,24 +114,24 @@ public class StepService extends UserService {
       if (changes.metadataChanged()) {
         step.update(true);
       }
-      
+
       // reset the estimated size in the database for this step and any downstream steps, if any
       getWdkModel().getStepFactory().resetEstimateSizeForThisAndDownstreamSteps(step);
-      
+
       // reset the current step object estimate size
       step.setEstimateSize(-1);
-      
+
       // return updated step
-      return Response.ok(StepFormatter.getStepJson(step, false).toString()).build();
+      return Response.ok(StepFormatter.getStepJsonWithRawEstimateValue(step).toString()).build();
     }
     catch (WdkUserException wue) {
-    	  throw new DataValidationException(wue);
+      throw new DataValidationException(wue);
     }
     catch (JSONException e) {
       throw new BadRequestException(e);
     }
   }
-  
+
   @POST
   @Path("steps/{stepId}/answer")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -144,12 +147,12 @@ public class StepService extends UserService {
       return AnswerService.getAnswerResponse(user, stepAnswerSpec, formatting);
     }
     catch(NumberFormatException nfe) {
-    	  throw new BadRequestException("The step id " + stepId + " is not a valid id ", nfe);
+      throw new BadRequestException("The step id " + stepId + " is not a valid id ", nfe);
     }
     catch (JSONException | RequestMisformatException | DataValidationException e) {
       throw new BadRequestException(e);
     }
-  }  
+  }
 
   private StepChanges updateStep(Step step, StepRequest stepRequest) throws WdkModelException {
 
@@ -195,26 +198,4 @@ public class StepService extends UserService {
       throw new NotFoundException(AbstractWdkService.formatNotFound(STEP_RESOURCE + stepId));
     }
   }
-  
-  /**
-   * Step services do not necessarily run the steps that are created/patched but as long as the answerSpec is
-   * complete, we want to insure that a step is valid prior to inserting or updating it in the database.
-   * @param answerSpec - the answerSpec that will underlie the step to be checked for validity.
-   * @throws WdkModelException
-   * @throws DataValidationException
-   */
-//  protected void validateStep(AnswerSpec answerSpec, boolean inStrategy) throws WdkModelException, DataValidationException {
-//	Question question = answerSpec.getQuestion();
-//	if(question.hasAnswerParams() ? inStrategy : true) {
-//	  Map<String, String> context = new LinkedHashMap<String, String>();
-//      context.put(Utilities.QUERY_CTX_QUESTION, question.getFullName());
-//	  try {  
-//	    User user = getUserBundle(Access.PRIVATE).getSessionUser();
-//	    //Map<String, String> params = AnswerValueFactory.convertParams(answerSpec.getParamValues());
-//	  }
-//      catch(WdkUserException wue) {
-//        throw new DataValidationException(wue);
-//      }
-//	}
-//  }
 }

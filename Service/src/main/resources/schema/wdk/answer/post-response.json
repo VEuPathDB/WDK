@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "definitions": {
+    "keyValue": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {}
+      }
+    },
+    "keyValueSet": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/keyValue"
+      }
+    },
+    "metaAttribute": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "sortable": {
+          "type": "boolean"
+        },
+        "removable": {
+          "type": "boolean"
+        },
+        "category": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "description": "comes from “type” property of attribute tag"
+        },
+        "className": {
+          "type": "string"
+        },
+        "properties": {
+          "type": "object"
+        }
+      }
+    },
+    "metaAttributeSet": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/metaAttribute"
+      }
+    },
+    "metaTable": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "sortable": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "metaTableSet": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/metaTable"
+      }
+    }
+  },
+  "properties": {
+    "meta": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "number"
+        },
+        "class": {
+          "type": "string"
+        },
+        "attributes": {
+          "$ref": "#/definitions/metaAttributeSet"
+        },
+        "tables": {
+          "$ref": "#/definitions/metaTableSet"
+        }
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "attributes": {
+            "$ref": "#/definitions/keyValueSet"
+          },
+          "tables": {
+            "$ref": "#/definitions/keyValueSet"
+          }
+        }
+      }
+    }
+  }
+}

@@ -21,7 +21,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.formatter.Keys;
+import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
@@ -84,25 +84,25 @@ public class AnswerSpecFactory {
   public static AnswerSpec createFromJson(JSONObject json, WdkModelBean modelBean, User user, boolean expectIncompleteSpec) throws DataValidationException, RequestMisformatException {
     try {
       // get question name, validate, and create instance with valid Question
-      String questionName = json.getString(Keys.QUESTION_NAME);
+      String questionName = json.getString(JsonKeys.QUESTION_NAME);
       modelBean.validateQuestionFullName(questionName);
       WdkModel model = modelBean.getModel();
       Question question = model.getQuestion(questionName);
       AnswerSpec request = new AnswerSpec(question);
       // params are required (empty array if no params)
-      request.setParamValues(parseParamValues(json.getJSONObject(Keys.PARAMETERS), question, user, expectIncompleteSpec));
+      request.setParamValues(parseParamValues(json.getJSONObject(JsonKeys.PARAMETERS), question, user, expectIncompleteSpec));
       // all filter fields are optional
-      if (json.has(Keys.LEGACY_FILTER_NAME)) {
-        request.setLegacyFilter(getLegacyFilter(json.getString(Keys.LEGACY_FILTER_NAME), question));
+      if (json.has(JsonKeys.LEGACY_FILTER_NAME)) {
+        request.setLegacyFilter(getLegacyFilter(json.getString(JsonKeys.LEGACY_FILTER_NAME), question));
       }
-      request.setFilterValues(json.has(Keys.FILTERS) ?
-          parseFilterValues(json.getJSONArray(Keys.FILTERS), question, model, false) :
+      request.setFilterValues(json.has(JsonKeys.FILTERS) ?
+          parseFilterValues(json.getJSONArray(JsonKeys.FILTERS), question, model, false) :
             new FilterOptionList(model, questionName));
-      request.setViewFilterValues(json.has(Keys.VIEW_FILTERS) ?
-          parseFilterValues(json.getJSONArray(Keys.VIEW_FILTERS), question, model, true) :
+      request.setViewFilterValues(json.has(JsonKeys.VIEW_FILTERS) ?
+          parseFilterValues(json.getJSONArray(JsonKeys.VIEW_FILTERS), question, model, true) :
             new FilterOptionList(model, questionName));
-      if (json.has(Keys.WDK_WEIGHT)) {
-        request.setWeight(json.getInt(Keys.WDK_WEIGHT));
+      if (json.has(JsonKeys.WDK_WEIGHT)) {
+        request.setWeight(json.getInt(JsonKeys.WDK_WEIGHT));
       }
       return request;
     }
@@ -212,8 +212,8 @@ public class AnswerSpecFactory {
     if (contextArray == null) return contextValues;
     for (int i = 0; i < contextArray.length(); i++) {
       JSONObject obj = contextArray.getJSONObject(i);
-      String name = obj.getString(Keys.NAME);
-      contextValues.put(name, obj.getJSONObject(Keys.VALUE));
+      String name = obj.getString(JsonKeys.NAME);
+      contextValues.put(name, obj.getJSONObject(JsonKeys.VALUE));
       LOG.info("Added request parameter '" + name +
           "', value = " + contextValues.get(name).toString());
     }

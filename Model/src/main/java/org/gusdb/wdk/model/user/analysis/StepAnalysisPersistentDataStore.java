@@ -43,7 +43,7 @@ import org.gusdb.wdk.model.WdkRuntimeException;
  * see documentation of the createUserSql() and createAppSql() methods below.
  * This class also depends on a primary key sequence for the analysis instance
  * table.
- * 
+ *
  * @author rdoherty
  */
 public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
@@ -100,23 +100,23 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   private final DataSource _appDs;
 
   private static ReentrantLock CONTEXT_INSERTION_LOCK = new ReentrantLock();
-  
+
   public StepAnalysisPersistentDataStore(WdkModel wdkModel) {
     super(wdkModel);
-    
+
     _userDb = wdkModel.getUserDb();
     _userPlatform = _userDb.getPlatform();
     _userDs = _userDb.getDataSource();
     _userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
     _userBoolType = _userPlatform.getBooleanType();
     createUserSql();
-    
+
     _appDb = wdkModel.getAppDb();
     _appPlatform = _appDb.getPlatform();
     _appDs = _appDb.getDataSource();
     createAppSql();
   }
-  
+
   /**
    * Create SQL statements and queries for the analysis instance table:
    *
@@ -137,6 +137,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     String table = _userSchema + ANALYSIS_TABLE;
     String idType = _userPlatform.getNumberDataType(12);
     String userStringType = _userPlatform.getStringDataType(1024);
+    String userBigStringType = _userPlatform.getStringDataType(4000);
     String hashType = _userPlatform.getStringDataType(96);
     String boolType = _userPlatform.getBooleanDataType();
     String clobType = _userPlatform.getClobDataType();
@@ -151,7 +152,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         "  CONTEXT_HASH         " + hashType + "," +
         "  CONTEXT              " + clobType + "," +
         "  PROPERTIES           " + clobType + "," +
-        "  USER_NOTES           " + userStringType + "," +
+        "  USER_NOTES           " + userBigStringType + "," +
         "  PRIMARY KEY (ANALYSIS_ID)" +
         ")";
     ANALYSIS_SEQUENCE = _userSchema + ANALYSIS_SEQUENCE_NAME;
@@ -188,7 +189,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         "SELECT PROPERTIES FROM " + table + " WHERE ANALYSIS_ID = ?";
     SET_ANALYSIS_PROPERTIES =
         "UPDATE " + table + " SET PROPERTIES = ? WHERE ANALYSIS_ID = ?";
-    
+
   }
 
   /**
@@ -278,7 +279,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void insertAnalysis(long analysisId, long stepId, String displayName, 
+  public void insertAnalysis(long analysisId, long stepId, String displayName,
       StepAnalysisState state, boolean hasParams, String invalidStepReason,
 		  String contextHash, String serializedContext, String userNotes) throws WdkModelException {
     try {
@@ -429,7 +430,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     catch (SQLRunnerException e) {
       throw new WdkModelException("Unable to complete operation.", e);
     }
-    
+
   }
 
   @Override
@@ -481,7 +482,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
 
       // don't query DB if no IDs passed
       if (analysisIds.isEmpty()) return result;
-      
+
       // read data about analysis instances from user DB
       String valuesForIn = FormatUtil.join(analysisIds.toArray(), ", ");
       String sql = GET_ANALYSES_BY_IDS_SQL.replace(IN_CLAUSE_KEY, valuesForIn);
@@ -595,7 +596,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     catch (SQLRunnerException e) {
       throw new WdkModelException("Unable to complete operation.", e);
     }
-    
+
   }
 
   @Override
@@ -624,7 +625,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     catch (SQLRunnerException e) {
       throw new WdkModelException("Unable to complete operation.", e);
     }
-    
+
   }
 
   @Override
@@ -635,7 +636,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     catch (SQLRunnerException e) {
       throw new WdkModelException("Unable to complete operation.", e);
     }
-    
+
   }
 
   @Override

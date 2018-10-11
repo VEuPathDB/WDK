@@ -14,8 +14,8 @@ public class OntologyFormatter {
   public static JSONObject getOntologyJson(Ontology o)
       throws JSONException {
     JSONObject qJson = new JSONObject();
-    qJson.put(Keys.NAME, o.getName());
-    qJson.put(Keys.TREE, o.mapStructure(new TreeToJsonMapper()));
+    qJson.put(JsonKeys.NAME, o.getName());
+    qJson.put(JsonKeys.TREE, o.mapStructure(new TreeToJsonMapper()));
     return qJson;
   }
 
@@ -23,8 +23,8 @@ public class OntologyFormatter {
     @Override
     public JSONObject map(OntologyNode contents, List<JSONObject> mappedChildren) {
       JSONObject nodeJson = new JSONObject();
-      nodeJson.put(Keys.PROPERTIES, contents.toJson());
-      nodeJson.put(Keys.CHILDREN, mappedChildren);
+      nodeJson.put(JsonKeys.PROPERTIES, contents.toJson());
+      nodeJson.put(JsonKeys.CHILDREN, mappedChildren);
       return nodeJson;
     }
   }

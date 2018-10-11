@@ -46,6 +46,7 @@ import org.gusdb.wdk.model.answer.AnswerFilterInstanceReference;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.config.ModelConfig;
+import org.gusdb.wdk.model.config.ModelConfigBuilder;
 import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.gusdb.wdk.model.dataset.DatasetParserReference;
 import org.gusdb.wdk.model.filter.ColumnFilterDefinition;
@@ -215,7 +216,7 @@ public class ModelXmlParser extends XmlParser {
     logger.debug("Loading configuration...");
 
     // get model config
-    ModelConfig config = getModelConfig(projectId);
+    ModelConfig config = getModelConfig(projectId).build();
     String modelName = config.getModelName();
 
     // construct urls to model file, prop file, and config file
@@ -250,7 +251,7 @@ public class ModelXmlParser extends XmlParser {
     return model;
   }
 
-  public ModelConfig getModelConfig(String projectId) throws SAXException, IOException, WdkModelException {
+  public ModelConfigBuilder getModelConfig(String projectId) throws SAXException, IOException, WdkModelException {
     ModelConfigParser parser = new ModelConfigParser(_gusHome);
     return parser.parseConfig(projectId);
   }

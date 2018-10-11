@@ -1,8 +1,12 @@
 package org.gusdb.wdk.model.record;
 
+import static org.gusdb.fgputil.functional.Functions.fSwallow;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -55,7 +59,6 @@ import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
-import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
 import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
@@ -95,6 +98,31 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private static final Logger logger = Logger.getLogger(RecordClass.class);
 
   private static final Set<Character> VOWELS = new HashSet<>(Arrays.asList('a', 'e', 'i', 'o', 'u'));
+
+  /**
+   * Returns a list of DynamicRecordInstance representing the records to which the passed primary key value
+   * currently maps.
+   * 
+   * @param user user to execute queries under
+   * @param pkValue primary key value to look up
+   * @return a list of record instances associated with the passed primary key
+   * @throws WdkModelException if anything goes wrong
+   */
+  public static List<RecordInstance> getRecordInstances(User user, PrimaryKeyValue pkValue) throws WdkModelException {
+    try {
+      RecordClass recordClass = pkValue.getPrimaryKeyDefinition().getRecordClass();
+      return mapToList(
+          recordClass.lookupPrimaryKeys(user, pkValue.getRawValues()),
+          fSwallow(idMap -> new DynamicRecordInstance(user, recordClass, pkValue.getRawValues())));
+    }
+    catch (RecordNotFoundException rnfe) {
+      return Collections.emptyList();
+    }
+    catch (RuntimeException | WdkUserException e) {
+      // since input to this method is already a PrimaryKeyValue (not Map), should not see these Exceptions
+      throw new WdkModelException(e);
+    }
+  }
 
   /**
    * This method takes in a bulk attribute or table query, and adds the primary key columns as params into the
@@ -447,11 +475,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    *          two part query name (set.name)
    */
   public void addAttributesQueryRef(AttributeQueryReference attributesQueryRef) {
+    attributesQueryRef.setRecordClass(this);
     attributesQueryRefList.add(attributesQueryRef);
   }
 
   public void addAttributeField(AttributeField attributeField) {
-    assignFieldParent(attributeField);
+    attributeField.setContainer(this);
     attributeFieldList.add(attributeField);
   }
 
@@ -778,20 +807,20 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     if (customBooleanQueryClassName != null) {
-    String errmsg = "Can't create java class for customBooleanQueryClassName from class name '" + customBooleanQueryClassName + "'";
-    try {
-      Class<? extends BooleanQuery> classs = Class.forName(
-          customBooleanQueryClassName).asSubclass(BooleanQuery.class);
-      booleanQuery = classs.newInstance();
-      booleanQuery.setRecordClass(this);
-    } catch (ClassNotFoundException ex) {
-      throw new WdkModelException(errmsg, ex);
-    } catch (InstantiationException ex) {
-      throw new WdkModelException(errmsg, ex);
-    } catch (IllegalAccessException ex) {
-      throw new WdkModelException(errmsg, ex);
-    }     
-    } else booleanQuery = new BooleanQuery(this);
+      String errmsg = "Can't create java class for customBooleanQueryClassName from class name '" + customBooleanQueryClassName + "'";
+      try {
+        Class<? extends BooleanQuery> clazz =
+            Class.forName(customBooleanQueryClassName).asSubclass(BooleanQuery.class);
+        booleanQuery = clazz.newInstance();
+        booleanQuery.setRecordClass(this);
+      }
+      catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+        throw new WdkModelException(errmsg, ex);
+      }
+    }
+    else {
+      booleanQuery = new BooleanQuery(this);
+    }
 
     // resolve the references for table queries
     resolveTableFieldReferences(model);
@@ -901,7 +930,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       Map<String, AttributeField> fields = reference.getAttributeFieldMap();
       Map<String, Column> columns = query.getColumnMap();
       for (AttributeField field : fields.values()) {
-        assignFieldParent(field);
+        field.setContainer(this);
         String fieldName = field.getName();
         // check if the attribute is duplicated
         if (attributeFieldsMap.containsKey(fieldName))
@@ -934,13 +963,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
       Query attributeQuery = RecordClass.prepareQuery(wdkModel, query, pkColumns);
       attributeQueries.put(query.getFullName(), attributeQuery);
-    }
-  }
-
-  private void assignFieldParent(AttributeField field) {
-    field.setContainerName(getFullName());
-    if (field instanceof DerivedAttributeField) {
-      ((DerivedAttributeField)field).setContainer(this);
     }
   }
 
@@ -1435,7 +1457,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       PkColumnAttributeField field = new PkColumnAttributeField();
       field.setName(pkColumnName);
       field.setInternal(true);
-      assignFieldParent(field);
+      field.setContainer(this);
       field.excludeResources(projectId);
       logger.debug("Adding PkColumnAttributeField '" + pkColumnName + "' to attributeFieldsMap of '" + getFullName() + "'.");
       attributeFieldsMap.put(pkColumnName, field);
@@ -1806,5 +1828,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       }
     }
     return false;
+  }
+
+  @Override
+  public String getNameForLogging() {
+    return getFullName();
   }
 }

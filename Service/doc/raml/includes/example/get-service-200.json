@@ -1,0 +1,44 @@
+{
+  "changePasswordUrl": "https://eupathdb.org/oauth/assets/eupathdb-changePassword.html?returnUrl={{returnUrl}}&suggestedUsername={{suggestedUsername}}",
+  "userDatasetsEnabled": true,
+  "releaseDate": "05 July 2018 12:59",
+  "displayName": "PlasmoDB",
+  "userDatasetStoreStatus": "UD_ENABLED",
+  "categoriesOntologyName": "Categories",
+  "description": "Welcome to the WDK 3.0 Web Service",
+  "startupTime": 1533756498246,
+  "projectId": "PlasmoDB",
+  "buildNumber": "38",
+  "userProfileProperties": [
+      {
+          "isRequired": true,
+          "displayName": "First Name",
+          "name": "firstName",
+          "isPublic": true
+      },
+      {
+          "isRequired": false,
+          "displayName": "Middle Name",
+          "name": "middleName",
+          "isPublic": true
+      },
+      {
+          "isRequired": true,
+          "displayName": "Last Name",
+          "name": "lastName",
+          "isPublic": true
+      },
+      {
+          "isRequired": true,
+          "displayName": "Organization",
+          "name": "organization",
+          "isPublic": true
+      }
+  ],
+  "authentication": {
+      "oauthUrl": "https://eupathdb.org/oauth",
+      "method": "OAUTH2",
+      "oauthClientId": "apiComponentSite",
+      "oauthClientUrl": "http://plasmodb.org/plasmo/service"
+  }
+}
