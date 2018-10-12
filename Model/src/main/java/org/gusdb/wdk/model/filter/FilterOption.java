@@ -13,6 +13,11 @@ import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONObject;
 
+/**
+ * Holds the user's choice of values for a filter.
+ * The value is a weakly typed JSONObject because it is passed to a plugged in filter.
+ *
+ */
 public class FilterOption {
 
   private static final Logger LOG = Logger.getLogger(FilterOption.class);

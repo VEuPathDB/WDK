@@ -15,7 +15,6 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.Functions;
-import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.events.StepRevisedEvent;
 import org.gusdb.wdk.model.WdkModelException;
@@ -248,6 +247,11 @@ public class Step {
     // answer value cache copy is NOT shallow- if caller wants a new step, they are
     // probably going to modify it to get a different answer value
     _answerValueCache = new AnswerValueCache(this);
+  }
+  
+  // TODO: remove this when we retire StepBean
+  public StepFactory getStepFactory() {
+    return _stepFactory;
   }
 
   public Step getPreviousStep() throws WdkModelException {
@@ -1054,50 +1058,6 @@ public class Step {
     step._customName = _customName;
     step._collapsible = _collapsible;
     step.update(false);
-    return step;
-  }
-
-  /**
-   * deep clone a step, the step will get a new id, and if the step contains other sub-steps, all those sub
-   * steps are cloned recursively.
-   * 
-   * @throws WdkUserException
-   * @throws WdkModelException
-   */
-  public Step deepClone(Long strategyId, Map<Long, Long> stepIdMap) throws WdkModelException {
-    Step step;
-    if (!isCombined()) {
-      step = StepUtilities.createStep(_user, strategyId, getQuestion(), _paramValues,
-          getFilter(), _isDeleted, false, _assignedWeight, _filterOptions);
-    }
-    else {
-      Question question = getQuestion();
-      Map<String, String> paramValues = new LinkedHashMap<String, String>();
-      Map<String, Param> params = question.getParamMap();
-      for (String paramName : _paramValues.keySet()) {
-        Param param = params.get(paramName);
-        String paramValue = _paramValues.get(paramName);
-        if (param instanceof AnswerParam) {
-          Step child = StepUtilities.getStep(getUser(), Integer.parseInt(paramValue));
-          child = child.deepClone(strategyId, stepIdMap);
-          paramValue = Long.toString(child.getStepId());
-        }
-        paramValues.put(paramName, paramValue);
-      }
-      step = StepUtilities.createStep(getUser(), strategyId, question, paramValues,
-          getFilter(), _isDeleted, false, _assignedWeight, getFilterOptions());
-    }
-
-    stepIdMap.put(getStepId(), step.getStepId());
-
-    step._collapsedName = _collapsedName;
-    step._customName = _customName;
-    step._collapsible = _collapsible;
-    step.update(false);
-
-    Events.triggerAndWait(new StepCopiedEvent(this, step), new WdkModelException(
-        "Unable to execute all operations subsequent to step copy."));
-
     return step;
   }
 

@@ -1,142 +1,17 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema",
-  "definitions": {
-    "keyValue": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "value": {}
-      }
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+	"answerSpec" : {
+	    "$ref": "/schema/wdk/includes/answer-spec-request.json"
+
+	},
+	"formatConfig": {
+	    "$ref": "/schema/wdk/includes/answer-formatConfig-json-request-.json"
+	}
     },
-    "keyValueSet": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/keyValue"
-      }
-    },
-    "fastaFormatConfig": {},
-    "jsonFormatConfig": {
-      "type": "object",
-      "properties": {
-        "pagination": {
-          "type": "object",
-          "properties": {
-            "offset": {
-              "type": "number"
-            },
-            "numRecords": {
-              "type": "number"
-            }
-          },
-          "required": [
-            "offset",
-            "numRecords"
-          ],
-          "additionalProperties": false
-        },
-        "attributes": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "tables": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "sorting": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "columnName": {
-                "type": "string"
-              },
-              "direction": {
-                "type": "string",
-                "enum": [
-                  "ASC",
-                  "DESC"
-                ]
-              }
-            },
-            "required": [
-              "columnName",
-              "direction"
-            ],
-            "additionalProperties": false
-          }
-        }
-      }
-    },
-    "tabFormatConfig": {
-      "$ref": "#/definitions/jsonFormatConfig"
-    },
-    "textFormatConfig": {},
-    "xmlFormatConfig": {
-      "$ref": "#/definitions/jsonFormatConfig"
-    }
-  },
-  "type": "object",
-  "properties": {
-    "questionDefinition": {
-      "type": "object",
-      "properties": {
-        "questionName": {
-          "type": "string"
-        },
-        "params": {
-          "$ref": "#/definitions/keyValueSet"
-        },
-        "legacyFilterName": {
-          "type": "string"
-        },
-        "filters": {
-          "$ref": "#/definitions/keyValueSet"
-        },
-        "viewFilters": {
-          "$ref": "#/definitions/keyValueSet"
-        }
-      }
-    },
-    "displayInfo": {
-      "type": "object",
-      "properties": {
-        "format": {
-          "type": "string",
-          "enum": [
-            "json",
-            "xml",
-            "tab",
-            "text",
-            "fasta"
-          ],
-          "default": "json"
-        },
-        "formatConfig": {
-          "oneOf": [
-            {
-              "$ref": "#/definitions/fastaFormatConfig"
-            },
-            {
-              "$ref": "#/definitions/jsonFormatConfig"
-            },
-            {
-              "$ref": "#/definitions/tabFormatConfig"
-            },
-            {
-              "$ref": "#/definitions/textFormatConfig"
-            },
-            {
-              "$ref": "#/definitions/xmlFormatConfig"
-            }
-          ]
-        }
-      }
-    }
-  }
+    "required" : [
+	"answerSpec",
+    ]
 }
