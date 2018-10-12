@@ -1,9 +1,9 @@
 package org.gusdb.wdk.service.formatter;
 
 import org.gusdb.fgputil.accountdb.UserPropertyName;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.config.ModelConfig;
-import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

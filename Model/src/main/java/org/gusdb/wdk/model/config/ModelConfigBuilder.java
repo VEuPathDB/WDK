@@ -83,7 +83,7 @@ public class ModelConfigBuilder {
         e -> new WdkModelException(e));
     // confirm that temp dir is present and readable after possible creation
     wdkTempDir = IoUtil.getWriteableDirectoryOrThrow(wdkTempDir.toString(),
-        () -> new WdkModelException("wdkTempDir" + _wdkTempDir + " is not a writeable directory.")).toPath();
+        () -> new WdkModelException("wdkTempDir " + _wdkTempDir + " is not a writeable directory.")).toPath();
     assertNonNull("webServiceUrl", _webServiceUrl);
     // TODO: assess how we can get rid of this - seems optional in some cases
     //assertNonNull("assetsUrl", _assetsUrl);
@@ -224,7 +224,7 @@ public class ModelConfigBuilder {
   }
 
   /**
-   * @param webAppUrl web app URL (no longer supported) 
+   * @param webAppUrl web app URL (no longer supported)
    */
   public void setWebAppUrl(String webAppUrl) {
     LOG.warn("WDK Model Config item `webAppUrl` is no longer used." +

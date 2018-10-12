@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "NOT_YET_RUN",
+        "STEP_REVISED",
+        "INVALID",
+        "RUNNING",
+        "COMPLETE",
+        "INTERRUPTED",
+        "ERROR",
+        "EXPIRED",
+        "OUT_OF_DATE"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "status"
+  ]
+}

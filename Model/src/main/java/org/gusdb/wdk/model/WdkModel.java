@@ -607,7 +607,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     accountDb = new DatabaseInstance(accountDbConfig, DB_INSTANCE_ACCOUNT, true);
 
     if (udsConfig != null) {
-      try {	
+      try {
         userDatasetStore = udsConfig.getUserDatasetStore(modelConfig.getWdkTempDir());
         _userDatasetStoreStatus = UD_ENABLED;
       }

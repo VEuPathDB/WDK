@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.wdk.service.formatter.JsonKeys;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
 import org.json.JSONObject;

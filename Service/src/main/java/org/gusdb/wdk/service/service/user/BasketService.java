@@ -27,7 +27,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
-import org.gusdb.wdk.service.formatter.JsonKeys;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -201,9 +201,7 @@ public class BasketService extends UserService {
     User user = getPrivateRegisteredUser();
     RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
     AnswerSpec basketAnswerSpec = AnswerSpecFactory.createFromQuestion(recordClass.getRealtimeBasketQuestion());
-    JSONObject formattingJson = new JSONObject(body).getJSONObject(JsonKeys.FORMATTING);
-    AnswerFormatting answerFormatting = new AnswerFormatting(formattingJson.getString(JsonKeys.FORMAT), JsonUtil.getJsonObjectOrDefault(formattingJson, JsonKeys.FORMAT_CONFIG, null));
-    return AnswerService.getAnswerResponse(user, basketAnswerSpec, answerFormatting);
+    return AnswerService.getAnswerResponse(user, basketAnswerSpec, new JSONObject(body));
   }
 
 }

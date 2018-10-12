@@ -1,10 +1,10 @@
 package org.gusdb.wdk.service.formatter.param;
 
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.query.param.DatasetParam;
-import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,6 +20,7 @@ public class DatasetParamFormatter extends ParamFormatter<DatasetParam> {
 
     JSONObject pJson = super.getJson();
     JSONArray parsersJson = new JSONArray();
+    pJson.put(JsonKeys.DEFAULT_ID_LIST, _param.getDefault());
     pJson.put(JsonKeys.PARSERS, parsersJson);
     for (DatasetParser parser : _param.getParsers()) {
       JSONObject parserJson = new JSONObject();
@@ -29,6 +30,11 @@ public class DatasetParamFormatter extends ParamFormatter<DatasetParam> {
       parserJson.put(JsonKeys.DESCRIPTION, parser.getDescription());
     }
     return pJson;
+  }
+
+  @Override
+  public String getDefault() throws WdkModelException {
+    return null;
   }
 
 }

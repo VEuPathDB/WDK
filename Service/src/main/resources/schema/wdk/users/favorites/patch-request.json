@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "anyOf": [
+    {
+      "required": [
+        "delete"
+      ]
+    },
+    {
+      "required": [
+        "undelete"
+      ]
+    }
+  ],
+  "properties": {
+    "delete": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "undelete": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    }
+  }
+}
