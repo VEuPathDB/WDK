@@ -9,6 +9,7 @@ import org.gusdb.fgputil.cache.InMemoryCache;
 import org.gusdb.fgputil.cache.ManagedMap;
 import org.gusdb.fgputil.db.cache.SqlCountCache;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamNewCache;
 import org.gusdb.wdk.model.query.param.FilterParamNew.MetadataNewCache;

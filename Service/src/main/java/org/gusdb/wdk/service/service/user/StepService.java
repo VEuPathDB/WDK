@@ -1,6 +1,8 @@
 package org.gusdb.wdk.service.service.user;
 
 import static org.gusdb.fgputil.TestUtil.nullSafeEquals;
+import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.DEFAULT_REPORTER_PARSER;
+import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.SPECIFIED_REPORTER_PARSER;
 
 import java.util.Map;
 
@@ -19,11 +21,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.spec.AnswerFormatting;
+import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
+import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.ParamValue;
 import org.gusdb.wdk.model.user.Step;
@@ -36,8 +38,8 @@ import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.strategy.StepRequest;
-import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.AbstractWdkService;
+import org.gusdb.wdk.service.service.AnswerService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -148,7 +150,21 @@ public class StepService extends UserService {
   @Path("steps/{stepId}/answer")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createAnswer(@PathParam("stepId") String stepId, String body) throws WdkModelException, RequestMisformatException, DataValidationException {
+  public Response createDefaultReporterAnswer(@PathParam("stepId") String stepId, String body)
+      throws WdkModelException, RequestMisformatException, DataValidationException {
+    return createAnswer(stepId, body, DEFAULT_REPORTER_PARSER);
+  }
+
+  @POST
+  @Path("steps/{stepId}/answer/report")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response createAnswer(@PathParam("stepId") String stepId, String body)
+      throws WdkModelException, RequestMisformatException, DataValidationException {
+    return createAnswer(stepId, body, SPECIFIED_REPORTER_PARSER);
+  }
+
+  private Response createAnswer(String stepId, String requestBody, AnswerFormattingParser formattingParser)
+      throws WdkModelException, RequestMisformatException, DataValidationException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepFactory stepFactory = new StepFactory(getWdkModel());
@@ -158,14 +174,13 @@ public class StepService extends UserService {
       }
  
       AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
-      JSONObject formattingJson = new JSONObject(body).getJSONObject(JsonKeys.FORMATTING);
-      AnswerFormatting answerFormatting = new AnswerFormatting(formattingJson.getString(JsonKeys.FORMAT), JsonUtil.getJsonObjectOrDefault(formattingJson, JsonKeys.FORMAT_CONFIG, null));
-      return AnswerService.getAnswerResponse(user, stepAnswerSpec, new JSONObject(body));
+      AnswerRequest request = new AnswerRequest(stepAnswerSpec, formattingParser.createFromTopLevelObject(requestBody));
+      return AnswerService.getAnswerResponse(user, request);
     }
     catch(NumberFormatException nfe) {
       throw new NotFoundException(formatNotFound("step ID " + stepId));
     }
-    catch (JSONException | RequestMisformatException | DataValidationException e) {
+    catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage());
     }
   }  
