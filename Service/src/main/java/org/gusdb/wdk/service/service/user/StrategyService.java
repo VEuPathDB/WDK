@@ -22,7 +22,7 @@ import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.formatter.JsonKeys;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.service.formatter.StrategyFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -65,8 +65,10 @@ public class StrategyService extends UserService {
       } else {
         strategy = createNewStrategy(user, stepFactory, json);
       }
-      return Response.ok(StrategyFormatter.getDetailedStrategyJson(getStrategyForCurrentUser(Long.toString(strategy.getStrategyId()))).toString()).build();
-     }
+      return Response.ok(new JSONObject().put(JsonKeys.ID, strategy.getStrategyId()))
+          .location(getUriInfo().getAbsolutePathBuilder().build(strategy.getStrategyId()))
+          .build();
+    }
      catch(WdkModelException wme) {
            throw new WdkModelException("Unable to create the strategy.", wme);
      }
@@ -103,7 +105,7 @@ public class StrategyService extends UserService {
         strategyRequest.isHidden(), strategyRequest.isPublic());
 
     // Add new strategy to all the embedded steps
-    steps.stream().forEach(step -> step.setStrategyId(strategy.getStrategyId()));
+    steps.forEach(step -> step.setStrategyId(strategy.getStrategyId()));
 
     // Update left/right child ids in db first
     // rootStep.update(true);
