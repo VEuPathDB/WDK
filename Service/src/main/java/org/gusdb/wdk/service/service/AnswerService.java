@@ -1,6 +1,5 @@
 package org.gusdb.wdk.service.service;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
@@ -24,6 +23,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 import org.gusdb.wdk.model.report.ReporterConfigException;
+import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.model.report.util.ReporterFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.factory.AnswerValueFactory;
@@ -68,14 +68,17 @@ public class AnswerService extends AbstractWdkService {
   /**
    * This endpoint that takes a FORM input is used by the client to push the provided data
    * to a new http target (ie, a tab), for example, a download report
-   * @param data
-   * @return
-   * @throws WdkModelException
-   * @throws DataValidationException
+   * 
+   * @param data JSON data representing an answer request, passed in the 'data' form param
+   * @return generated report
+   * @throws RequestMisformatException if request body is not JSON or has incorrect JSON structure
+   * @throws DataValidationException if JSON structure is correct but values contained are invalid
+   * @throws WdkModelException if an error occurs while processing the request
    */
   @POST
+  @Path("/report")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  public Response buildResultFromForm(@FormParam("data") String data) throws WdkModelException, DataValidationException {
+  public Response buildResultFromForm(@FormParam("data") String data) throws WdkModelException, DataValidationException, RequestMisformatException {
     // log this request's JSON here since filter will not log form data
     if (RequestLoggingFilter.isLogEnabled()) {
       RequestLoggingFilter.logRequest("POST", getUriInfo(),
@@ -84,20 +87,67 @@ public class AnswerService extends AbstractWdkService {
     return buildResult(data);
   }
 
+  /**
+   * Processes an answer request (answer spec + formatting information) by creating an answer from the
+   * answer spec, then calling the specified reporter, passing a configuration, and streaming back the
+   * reporter's result.
+   * 
+   * @param body request body containing answer spec, format string, format configuration
+   * @return generated report
+   * @throws RequestMisformatException if request body is not JSON or has incorrect JSON structure
+   * @throws DataValidationException if JSON structure is correct but values contained are invalid
+   * @throws WdkModelException if an error occurs while processing the request
+   */
   @POST
+  @Path("/report")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response buildResult(String body) throws WdkModelException, DataValidationException {
+  // Produces an unknown media type; varies depending on reporter selected
+  public Response buildResult(String body) throws WdkModelException, DataValidationException, RequestMisformatException {
     try {
       AnswerRequest request = parseAnswerRequest(body, getWdkModelBean(), getSessionUser());
       return getAnswerResponse(getSessionUser(), request.getAnswerSpec(), request.getFormatting());
     }
-    catch (JSONException | RequestMisformatException e) {
+    catch (JSONException e) {
       LOG.info("Passed request body deemed unacceptable", e);
-      throw new BadRequestException(e);
+      throw new RequestMisformatException(e.getMessage());
+    }
+  }
+
+  /**
+   * Special case answer provider that does not require a format.  The default reporter is used.  This
+   * exists so we can provide a concrete JSON schema for the response, since the /answer/report endpoint
+   * may not even return JSON, depending on which reporter is specified.
+   * 
+   * @param body JSON request body
+   * @return standard WDK answer JSON
+   * @throws RequestMisformatException if request body is not JSON or has incorrect JSON structure
+   * @throws DataValidationException if JSON structure is correct but values contained are invalid
+   * @throws WdkModelException if an error occurs while processing the request
+   */
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response buildDefaultReporterResult(String body) throws RequestMisformatException, WdkModelException, DataValidationException {
+    try {
+      // call 4-arg version since this endpoint automatically uses default reporter
+      AnswerRequest request = parseAnswerRequest(body, getWdkModelBean(), getSessionUser(), "formatConfig");
+      JSONObject formatting = new JSONObject()
+          .put("format", DefaultJsonReporter.WDK_SERVICE_JSON_REPORTER_RESERVED_NAME)
+          .put("formatConfig", request.getFormatting());
+      return getAnswerResponse(getSessionUser(), request.getAnswerSpec(), formatting);
+    }
+    catch (JSONException e) {
+      LOG.info("Passed request body deemed unacceptable", e);
+      throw new RequestMisformatException(e.getMessage());
     }
   }
 
   public static AnswerRequest parseAnswerRequest(String requestBody, WdkModelBean wdkModel, User sessionUser)
+      throws RequestMisformatException, DataValidationException {
+    return parseAnswerRequest(requestBody, wdkModel, sessionUser, "formatting");
+  }
+
+  private static AnswerRequest parseAnswerRequest(String requestBody, WdkModelBean wdkModel, User sessionUser, String formatProperty)
       throws RequestMisformatException, DataValidationException {
     if (requestBody == null || requestBody.isEmpty()) {
       throw new RequestMisformatException("Request JSON cannot be empty. " +
@@ -110,7 +160,7 @@ public class AnswerService extends AbstractWdkService {
       // parse answer spec (question, params, etc.) and formatting object
       JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
       AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, wdkModel, sessionUser, false);
-      JSONObject formatting = requestJson.getJSONObject("formatting");
+      JSONObject formatting = requestJson.getJSONObject(formatProperty);
       return new AnswerRequest(answerSpec, formatting);
     }
     catch (JSONException e) {
