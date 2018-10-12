@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -18,9 +19,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.spec.AnswerFormatting;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.ParamValue;
 import org.gusdb.wdk.model.user.Step;
@@ -33,8 +36,8 @@ import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.strategy.StepRequest;
-import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.gusdb.wdk.service.service.AnswerService;
+import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,21 +66,21 @@ public class StepService extends UserService {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       JSONObject json = new JSONObject(body);
       StepRequest stepRequest = StepRequest.newStepFromJson(json, getWdkModelBean(), user);
-
+      
       // validate the step and throw a DataValidation exception if not valid
       // new step are, by definition, not part of a strategy
-      // validateStep(stepRequest.getAnswerSpec(), false);
-
+//      validateStep(stepRequest.getAnswerSpec(), false);
+      
       // create the step and insert into the database
       Step step = createStep(stepRequest, user, getWdkModel().getStepFactory());
       if(runStep != null && runStep) {
-        if(step.isAnswerSpecComplete()) {
-          AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
-          new AnswerValueFactory(user).createFromAnswerSpec(stepAnswerSpec);
-        }
-        else {
-          throw new DataValidationException("Cannot run a step with an incomplete answer spec.");
-        }
+    	    if(step.isAnswerSpecComplete()) {
+    	      AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
+    	    	  new AnswerValueFactory(user).createFromAnswerSpec(stepAnswerSpec);
+    	    }
+    	    else {
+    	    	  throw new DataValidationException("Cannot run a step with an incomplete answer spec.");
+    	    }
       }
       return Response.ok(new JSONObject().put(JsonKeys.ID, step.getStepId()))
           .location(getUriInfo().getAbsolutePathBuilder().build(step.getStepId()))
@@ -87,7 +90,7 @@ public class StepService extends UserService {
       throw new BadRequestException(e);
     }
   }
-
+  
   @GET
   @Path("steps/{stepId}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -113,30 +116,39 @@ public class StepService extends UserService {
       if (changes.metadataChanged()) {
         step.update(true);
       }
-
+      
       // reset the estimated size in the database for this step and any downstream steps, if any
       getWdkModel().getStepFactory().resetEstimateSizeForThisAndDownstreamSteps(step);
-
+      
       // reset the current step object estimate size
       step.setEstimateSize(-1);
-
+      
       // return updated step
       return Response.ok(StepFormatter.getStepJsonWithRawEstimateValue(step).toString()).build();
     }
     catch (WdkUserException wue) {
-      throw new DataValidationException(wue);
+    	  throw new DataValidationException(wue);
     }
     catch (JSONException e) {
       throw new BadRequestException(e);
     }
   }
-
+  
+  @DELETE
+  @Path("steps/{stepId}")
+  public Response deleteStep(@PathParam("stepId") String stepId) throws WdkModelException {
+    Step step = getStepForCurrentUser(stepId);
+    if (step.isDeleted()) throw new NotFoundException(AbstractWdkService.formatNotFound(STEP_RESOURCE + stepId));
+    step.setDeleted(true);
+    step.update(true);
+    return Response.noContent().build();
+  }
+  
   @POST
   @Path("steps/{stepId}/answer")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createAnswer(@PathParam("stepId") String stepId, String body)
-      throws WdkModelException, RequestMisformatException, DataValidationException {
+  public Response createAnswer(@PathParam("stepId") String stepId, String body) throws WdkModelException, RequestMisformatException, DataValidationException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepFactory stepFactory = new StepFactory(getWdkModel());
@@ -144,16 +156,19 @@ public class StepService extends UserService {
       if(!step.isAnswerSpecComplete()) {
         throw new DataValidationException("One or more parameters is missing");
       }
+ 
       AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
+      JSONObject formattingJson = new JSONObject(body).getJSONObject(JsonKeys.FORMATTING);
+      AnswerFormatting answerFormatting = new AnswerFormatting(formattingJson.getString(JsonKeys.FORMAT), JsonUtil.getJsonObjectOrDefault(formattingJson, JsonKeys.FORMAT_CONFIG, null));
       return AnswerService.getAnswerResponse(user, stepAnswerSpec, new JSONObject(body));
     }
     catch(NumberFormatException nfe) {
       throw new NotFoundException(formatNotFound("step ID " + stepId));
     }
-    catch (JSONException e) {
+    catch (JSONException | RequestMisformatException | DataValidationException e) {
       throw new RequestMisformatException(e.getMessage());
     }
-  }
+  }  
 
   private StepChanges updateStep(Step step, StepRequest stepRequest) throws WdkModelException {
 
@@ -199,7 +214,7 @@ public class StepService extends UserService {
       throw new NotFoundException(AbstractWdkService.formatNotFound(STEP_RESOURCE + stepId));
     }
   }
-
+  
   private static Step createStep(StepRequest stepRequest, User user, StepFactory stepFactory) throws WdkModelException {
     try {
       // new step must be created from raw spec

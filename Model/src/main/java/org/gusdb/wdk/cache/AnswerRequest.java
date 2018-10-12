@@ -2,6 +2,7 @@ package org.gusdb.wdk.cache;
 
 import java.util.Date;
 
+import org.gusdb.wdk.model.answer.spec.AnswerFormatting;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.json.JSONObject;
 
@@ -9,6 +10,7 @@ public class AnswerRequest {
 
   private final Date _creationDate;
   private final AnswerSpec _answerSpec;
+  // private final AnswerFormatting _formatting;
   private final JSONObject _formatting;
 
   public AnswerRequest(AnswerSpec answerSpec, JSONObject formatting) {
