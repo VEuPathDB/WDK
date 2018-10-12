@@ -1,0 +1,120 @@
+{
+  "type": "object",
+  "properties": {
+    "changePasswordUrl": {
+      "type": "string"
+    },
+    "userDatasetsEnabled": {
+      "type": "boolean"
+    },
+    "releaseDate": {
+      "type": "string",
+      "examples": [
+        "1 January 1900 00:00"
+      ]
+    },
+    "displayName": {
+      "type": "string",
+      "examples": [
+        "PlasmoDB"
+      ]
+    },
+    "userDatasetStoreStatus": {
+      "type": "string",
+      "examples": [
+        "UD_ENABLED"
+      ]
+    },
+    "categoriesOntologyName": {
+      "type": "string",
+      "examples": [
+        "Categories"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "examples": [
+        "Welcome to the WDK 3.0 Web Service"
+      ]
+    },
+    "startupTime": {
+      "type": "integer",
+      "examples": [
+        1534167789601
+      ]
+    },
+    "projectId": {
+      "type": "string",
+      "examples": [
+        "PlasmoDB"
+      ]
+    },
+    "buildNumber": {
+      "type": "string",
+      "examples": [
+        "38"
+      ]
+    },
+    "userProfileProperties": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "isRequired": {
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          },
+          "displayName": {
+            "type": "string",
+            "examples": [
+              "First Name"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "examples": [
+              "firstName"
+            ]
+          },
+          "isPublic": {
+            "type": "boolean",
+            "examples": [
+              true
+            ]
+          }
+        }
+      }
+    },
+    "authentication": {
+      "type": "object",
+      "properties": {
+        "oauthUrl": {
+          "type": "string",
+          "examples": [
+            ""
+          ]
+        },
+        "method": {
+          "type": "string",
+          "examples": [
+            "USER_DB"
+          ]
+        },
+        "oauthClientId": {
+          "type": "string",
+          "examples": [
+            ""
+          ]
+        },
+        "oauthClientUrl": {
+          "type": "string",
+          "examples": [
+            "http://plasmodb.vm.ebrc.org/plasmo.vm/service"
+          ]
+        }
+      }
+    }
+  }
+}

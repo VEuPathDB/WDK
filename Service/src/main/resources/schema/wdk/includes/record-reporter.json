@@ -25,19 +25,7 @@
       }
     },
     "type": {
-      "type": "string",
-      "enum": [
-        "attributesTabular",
-        "tableTabular",
-        "srt",
-        "gff3",
-        "gff3Dump",
-        "fullRecord",
-        "xml",
-        "json",
-        "wordCloud",
-        "histogram"
-      ]
+      "type": "string"
     }
   },
   "required": [

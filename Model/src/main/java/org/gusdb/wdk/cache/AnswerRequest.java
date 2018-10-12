@@ -4,14 +4,16 @@ import java.util.Date;
 
 import org.gusdb.wdk.model.answer.spec.AnswerFormatting;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.json.JSONObject;
 
 public class AnswerRequest {
 
   private final Date _creationDate;
   private final AnswerSpec _answerSpec;
-  private final AnswerFormatting _formatting;
+  // private final AnswerFormatting _formatting;
+  private final JSONObject _formatting;
 
-  public AnswerRequest(AnswerSpec answerSpec, AnswerFormatting formatting) {
+  public AnswerRequest(AnswerSpec answerSpec, JSONObject formatting) {
     _creationDate = new Date();
     _answerSpec = answerSpec;
     _formatting = formatting;
@@ -25,7 +27,7 @@ public class AnswerRequest {
     return _answerSpec;
   }
 
-  public AnswerFormatting getFormatting() {
+  public JSONObject getFormatting() {
     return _formatting;
   }
 }

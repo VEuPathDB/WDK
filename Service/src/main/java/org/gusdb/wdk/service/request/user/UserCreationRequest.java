@@ -3,7 +3,7 @@ package org.gusdb.wdk.service.request.user;
 import java.util.List;
 
 import org.gusdb.fgputil.accountdb.UserPropertyName;
-import org.gusdb.wdk.service.formatter.JsonKeys;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;

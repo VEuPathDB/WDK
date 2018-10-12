@@ -1,0 +1,17 @@
+{
+  "id": 69,
+  "primaryKey": [
+    {
+      "name": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
+      "value": "ABCDEFGHI"
+    },
+    {
+      "name": "ABCDEFGHIJKLMNOPQRSTUVWXY",
+      "value": "ABCDEFGHIJKLMNOP"
+    }
+  ],
+  "recordClassName": "ABCDEFGHIJ",
+  "displayName": "ABCDEFGHIJKLMNOPQR",
+  "description": "ABCDEFGHIJKLM",
+  "group": "ABCDEFGHIJKLMNOPQRSTU"
+}

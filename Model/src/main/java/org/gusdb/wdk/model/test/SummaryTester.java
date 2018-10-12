@@ -34,7 +34,7 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.RecordInstanceFormatter;
 import org.gusdb.wdk.model.record.ResultProperty;
 import org.gusdb.wdk.model.report.Reporter;
-import org.gusdb.wdk.model.report.ReporterFactory;
+import org.gusdb.wdk.model.report.util.ReporterFactory;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 

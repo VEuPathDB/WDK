@@ -1,0 +1,56 @@
+{
+  "questionDefinition": {
+    "questionName": "ABCDEFGHIJKLMNOPQRSTUVW",
+    "params": [
+      {
+        "name": "ABCDEFGHIJ",
+        "value": {}
+      },
+      {
+        "name": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+        "value": 794
+      },
+      {
+        "name": "ABCDEFGHIJKLMNOPQRST",
+        "value": null
+      }
+    ],
+    "legacyFilterName": "ABCDEFGHIJKLMN",
+    "filters": [
+      {
+        "name": "ABCDEFGHIJKLMNOPQRST",
+        "value": true
+      },
+      {
+        "name": "ABCDEFGHIJKLMNOPQRSTUV",
+        "value": 393.5
+      },
+      {
+        "name": "ABCDEFGHIJKLMNOPQ",
+        "value": null
+      }
+    ],
+    "viewFilters": [
+      {
+        "name": "ABCDEF",
+        "value": 569
+      },
+      {
+        "name": "ABCDEFGHIJKLMNOPQRS",
+        "value": "ABCDE"
+      },
+      {
+        "name": "ABCDEFGHIJKLMNOPQRSTU",
+        "value": {}
+      }
+    ]
+  },
+  "displayInfo": {
+    "format": "xml",
+    "formatConfig": [
+      {},
+      null,
+      false
+    ]
+  }
+}

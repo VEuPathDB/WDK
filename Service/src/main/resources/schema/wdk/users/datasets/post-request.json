@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "sourceType": {
+          "type": "string",
+          "pattern": "^idList$"
+        },
+        "sourceContent": {
+          "type": "object",
+          "properties": {
+            "ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "ids"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "sourceType",
+        "sourceContent"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "sourceType": {
+          "type": "string",
+          "pattern": "^basket$"
+        },
+        "sourceContent": {
+          "type": "object",
+          "properties": {
+            "basketName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "basketName"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "sourceType",
+        "sourceContent"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "sourceType": {
+          "type": "string",
+          "pattern": "^strategy$"
+        },
+        "sourceContent": {
+          "type": "object",
+          "properties": {
+            "strategyId": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "strategyId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "sourceType",
+        "sourceContent"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "sourceType": {
+          "type": "string",
+          "pattern": "^file$"
+        },
+        "sourceContent": {
+          "type": "object",
+          "properties": {
+            "temporaryFileId": {
+              "type": "string"
+            },
+            "parser": {
+              "type": "string"
+            },
+            "parameterName": {
+              "type": "string"
+            },
+            "questionName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "temporaryFileId",
+            "parser",
+            "parameterName",
+            "questionName"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "sourceType",
+        "sourceContent"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

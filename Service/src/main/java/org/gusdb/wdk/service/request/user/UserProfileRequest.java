@@ -13,7 +13,7 @@ import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.functional.Functions;
-import org.gusdb.wdk.service.formatter.JsonKeys;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
