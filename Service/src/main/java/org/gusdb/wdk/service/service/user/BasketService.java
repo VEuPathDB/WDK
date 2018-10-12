@@ -1,6 +1,8 @@
 package org.gusdb.wdk.service.service.user;
 
 import static org.gusdb.fgputil.functional.Functions.reduce;
+import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.DEFAULT_REPORTER_PARSER;
+import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.SPECIFIED_REPORTER_PARSER;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,16 +20,15 @@ import javax.ws.rs.core.Response;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.spec.AnswerFormatting;
+import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
+import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
-import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -196,12 +197,30 @@ public class BasketService extends UserService {
   @Path(NAMED_BASKET_PATH + "/answer")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getBasketAnswer(@PathParam(BASKET_NAME_PARAM) String basketName, String body)
+  public Response getDefaultReporterBasketAnswer(@PathParam(BASKET_NAME_PARAM) String basketName, String body)
       throws WdkModelException, RequestMisformatException, DataValidationException {
-    User user = getPrivateRegisteredUser();
-    RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
-    AnswerSpec basketAnswerSpec = AnswerSpecFactory.createFromQuestion(recordClass.getRealtimeBasketQuestion());
-    return AnswerService.getAnswerResponse(user, basketAnswerSpec, new JSONObject(body));
+    return getBasketAnswer(basketName, body, DEFAULT_REPORTER_PARSER);
   }
 
+  @POST
+  @Path(NAMED_BASKET_PATH + "/answer/report")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response getBasketAnswer(@PathParam(BASKET_NAME_PARAM) String basketName, String body)
+      throws WdkModelException, RequestMisformatException, DataValidationException {
+    return getBasketAnswer(basketName, body, SPECIFIED_REPORTER_PARSER);
+  }
+
+  private Response getBasketAnswer(String basketName, String requestBody, AnswerFormattingParser formattingParser)
+      throws WdkModelException, RequestMisformatException, DataValidationException {
+    try {
+      User user = getPrivateRegisteredUser();
+      RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
+      AnswerSpec basketAnswerSpec = AnswerSpecFactory.createFromQuestion(recordClass.getRealtimeBasketQuestion());
+      AnswerRequest request = new AnswerRequest(basketAnswerSpec, formattingParser.createFromTopLevelObject(requestBody));
+      return AnswerService.getAnswerResponse(user, request);
+    }
+    catch (JSONException e) {
+      throw new RequestMisformatException(e.toString());
+    }
+  }
 }
