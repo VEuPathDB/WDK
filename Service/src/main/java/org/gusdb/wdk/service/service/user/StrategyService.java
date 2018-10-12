@@ -43,8 +43,8 @@ public class StrategyService extends UserService {
   @Path("strategies")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getStrategies() throws WdkModelException {
-	User user = getPrivateRegisteredUser();
-	List<Strategy> strategies = getWdkModel().getStepFactory().loadStrategies(user,false,false);
+    User user = getPrivateRegisteredUser();
+    List<Strategy> strategies = getWdkModel().getStepFactory().loadStrategies(user,false,false);
     return Response.ok(StrategyFormatter.getStrategiesJson(strategies).toString()).build();
   }
   
@@ -68,7 +68,7 @@ public class StrategyService extends UserService {
       return Response.ok(new JSONObject().put(JsonKeys.ID, strategy.getStrategyId()))
           .location(getUriInfo().getAbsolutePathBuilder().build(strategy.getStrategyId()))
           .build();
-    }
+     }
      catch(WdkModelException wme) {
            throw new WdkModelException("Unable to create the strategy.", wme);
      }
