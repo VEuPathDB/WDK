@@ -1,6 +1,11 @@
 package org.gusdb.wdk.model.report;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.RngAnnotations.RngOptional;
@@ -23,11 +28,9 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
 
   private static final Logger logger = Logger.getLogger(ReporterRef.class);
 
-  public static final String WDK_SERVICE_JSON_REPORTER_RESERVED_NAME = "wdk-service-json";
-
   private String name;
   private String displayName;
-  private String scopes;
+  private String scopes = "";
   private String description;
   private String implementation;
   private boolean inReportMaker = true;
@@ -181,11 +184,6 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
 
   @Override
   public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
-    // warn user if they are using a service JSON reporter reference
-    if (WDK_SERVICE_JSON_REPORTER_RESERVED_NAME.equals(getName())) {
-      logger.warn("You are using reporter reserved name '" + getName() + "'.  This will not affect the " +
-          "WDK answer service endpoint; your reporter may not be accessible in that context.");
-    }
     // try to find implementation class
     String msgStart = "Implementation class for reporter '" + getName() + "' [" + getImplementation() + "] ";
     try {

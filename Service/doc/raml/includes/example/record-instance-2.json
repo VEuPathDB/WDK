@@ -1,0 +1,36 @@
+{
+  "recordInstanceSpecification": {
+    "primaryKey": [
+      {
+        "name": "String",
+        "value": "String"
+      },
+      {
+        "name": "String",
+        "value": "String"
+      }
+    ]
+  },
+  "tables": {
+    "list" { // optional
+      "listType": "String", //"name" or "category"
+      "names": [
+        "String",
+        "String"
+      ]
+    },
+    "internal": "Boolean", //optional
+    "inReportMaker": "Boolean" //optional
+  },
+  "attributes": {
+    "list" {
+      "listType": "String",
+      "names": [
+        "String",
+        "String"
+      ]
+    },
+    "internal": "Boolean",
+    "inReportMaker": "Boolean"
+  }
+}

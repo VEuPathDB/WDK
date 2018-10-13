@@ -1,0 +1,129 @@
+displayName: Record
+
+get:
+  description: >
+    a list of record classes in the model, including options for detailed info
+
+  queryParameters:
+    expandAttributes:
+    expandRecordClasses:
+    expandTableAttributes:
+    expandTables:
+
+/{recordClassName}:
+  uriParameters: 
+    recordClassName: 
+      type: string
+  get:
+    description: properties of a class, eg, is displayable, attributes, tables
+
+  /answer-format:
+
+  /attributes:
+    get:
+      responses:
+        200:
+          description: Success
+          body:
+            application/json:
+  
+  /count:
+    get:
+      responses: 
+        200:
+          description: Success
+          body: 
+            application/json:
+                          
+
+  /instance:
+    post:
+      description: >
+        (GET by POST) get the attributes and tables of a record instance.  If
+        just the PK is supplied, gets all tables and attributes.  Otherwise,
+        only get those that are explicitly specified.
+      queryParameters:
+        source_id:
+        project:
+        attributes:
+        tables:
+        categoriesFilter:
+        internalFilter:
+        inReportMakerFilter:
+        tableNamesFilter:
+        attributesNamesFilter:
+      body:
+        application/json:
+          examples:
+          - !include ../example/record-instance-1.json
+          - !include ../example/record-instance-2.json
+      responses: 
+        200:
+          description: Success
+          body: 
+            application/json:
+
+  /{record-id}/section:
+    uriParameters: 
+      record-id: 
+    get:
+      description: data for a section or sections of a record page
+      queryParameters:
+        names:
+          description: names of sections
+          type: array
+          items: string
+
+    /{name}:
+      uriParameters: 
+        name: 
+          description: name of section
+      get:
+        description: data for a section or sections of a record page
+
+  /columns:
+    get:
+      description: >
+        data for the columns this record can display (in different contexts)
+      queryParameters:
+        context:
+          description: [resultList|reportMaker|etc]
+
+  /columnsAndTables:
+    get:
+      description: Same as above, but returns both columns and tables
+      queryParameters:
+        context:
+          description: [resultList|reportMaker|etc]
+
+    /filters:
+      get:
+        description: filters available for results of this record class
+
+  /tables:
+    get:
+      responses:
+        200:
+          description: Success
+          body:
+            application/json:
+
+    /{tableName}:
+      uriParameters: 
+        tableName: 
+          type: string
+      get:
+        responses: 
+          200:
+            description: Success
+            body: 
+              application/json:
+
+      /attributes:
+        get:
+          responses:
+            200:
+              description: Success
+              body:
+                application/json:
+

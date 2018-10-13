@@ -1,0 +1,21 @@
+displayName: API
+
+get:
+  description: API Welcome message
+  responses:
+    200:
+      description: Success
+      body:
+        text/plain:
+
+/keys:
+  get:
+    description: >
+      A listing of many of the valid JSON keys mapped from enum format to
+      camel case format
+    responses:
+      200:
+        description: Success
+        body:
+          application/json:
+            

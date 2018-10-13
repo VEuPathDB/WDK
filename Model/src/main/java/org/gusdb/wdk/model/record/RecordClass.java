@@ -63,6 +63,7 @@ import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.report.ReporterRef;
+import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.FavoriteReference;
@@ -95,7 +96,7 @@ import org.gusdb.wdk.model.user.UserPreferences;
  */
 public class RecordClass extends WdkModelBase implements AttributeFieldContainer, StepAnalysisContainer, OptionallyTestable {
 
-  private static final Logger logger = Logger.getLogger(RecordClass.class);
+  private static final Logger LOG = Logger.getLogger(RecordClass.class);
 
   private static final Set<Character> VOWELS = new HashSet<>(Arrays.asList('a', 'e', 'i', 'o', 'u'));
 
@@ -1132,14 +1133,28 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
+
+    // first add the default reporter; XML may want to override
+    ReporterRef defaultReporterRef = DefaultJsonReporter.createReference();
+    defaultReporterRef.excludeResources(projectId);
+    reporterMap.put(DefaultJsonReporter.WDK_SERVICE_JSON_REPORTER_RESERVED_NAME, defaultReporterRef);
+
     // exclude reporters
+    boolean defaultOverridden = false;
     for (ReporterRef reporter : reporterList) {
       if (reporter.include(projectId)) {
         reporter.excludeResources(projectId);
         String reporterName = reporter.getName();
-        if (reporterMap.containsKey(reporterName))
-          throw new WdkModelException("The reporter " + reporterName + " is duplicated in recordClass " +
-              this.getFullName());
+        if (reporterMap.containsKey(reporterName)) {
+          if (reporterName.equals(DefaultJsonReporter.WDK_SERVICE_JSON_REPORTER_RESERVED_NAME) && !defaultOverridden) {
+            LOG.warn("A reporter in recordClass " + getFullName() +
+                " is overriding the default WDK reporter by using the name '" +
+                DefaultJsonReporter.WDK_SERVICE_JSON_REPORTER_RESERVED_NAME + "'.");
+            defaultOverridden = true;
+          }
+          // disallow duplicate definition
+          else throw new WdkModelException("Reporter name '" + reporterName + "' is duplicated in recordClass " + getFullName());
+        }
         reporterMap.put(reporterName, reporter);
       }
     }
@@ -1438,7 +1453,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    */
   private void createPrimaryKeySubFields(String projectId) throws WdkModelException {
     String[] pkColumns = primaryKeyDefinition.getColumnRefs();
-    logger.debug("[" + getName() + "] Creating PK subfields for columns: " + FormatUtil.arrayToString(pkColumns));
+    LOG.debug("[" + getName() + "] Creating PK subfields for columns: " + FormatUtil.arrayToString(pkColumns));
     for (String pkColumnName : pkColumns) {
       if (attributeFieldsMap.containsKey(pkColumnName)) {
         AttributeField pkColumnField = attributeFieldsMap.get(pkColumnName);
@@ -1459,7 +1474,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       field.setInternal(true);
       field.setContainer(this);
       field.excludeResources(projectId);
-      logger.debug("Adding PkColumnAttributeField '" + pkColumnName + "' to attributeFieldsMap of '" + getFullName() + "'.");
+      LOG.debug("Adding PkColumnAttributeField '" + pkColumnName + "' to attributeFieldsMap of '" + getFullName() + "'.");
       attributeFieldsMap.put(pkColumnName, field);
     }
   }
@@ -1792,11 +1807,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    */
   public Map<String, Filter> getFilters() {
     // get all step filters
-    logger.debug("RECORDCLASS: GETTING ALL FILTERs");
+    LOG.debug("RECORDCLASS: GETTING ALL FILTERs");
     Map<String, Filter> filters = new LinkedHashMap<>();
     for (StepFilter filter : _stepFilters.values()) {
       if (!filter.getFilterType().isViewOnly()) {
-        logger.debug("RECORDCLASS: filter name: " + filter.getKey());
+        LOG.debug("RECORDCLASS: filter name: " + filter.getKey());
         filters.put(filter.getKey(), filter);
       }
     }

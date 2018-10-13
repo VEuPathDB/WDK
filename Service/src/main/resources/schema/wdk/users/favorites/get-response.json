@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "primaryKey": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "value"
+          ]
+        }
+      },
+      "recordClassName": {
+        "type": "string"
+      },
+      "displayName": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string",
+        "maxLength": 200
+      },
+      "group": {
+        "type": "string",
+        "maxLength": 50
+      }
+    },
+    "required": [
+      "id",
+      "primaryKey",
+      "recordClassName",
+      "displayName",
+      "description",
+      "group"
+    ]
+  }
+}

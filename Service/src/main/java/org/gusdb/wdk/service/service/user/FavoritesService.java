@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -39,7 +40,7 @@ import org.json.JSONObject;
 
 /**
  * Provides the following service endpoints (all behind /user/{id}):
- * 
+ *
  * GET    /favorites              returns list of all favorites for the user
  * POST   /favorites              creates a new favorite (or returns existing if present or even deleted)
  * PATCH  /favorites              allows deletion and undeletion of multiple favorites in one request
@@ -48,7 +49,7 @@ import org.json.JSONObject;
  * PUT    /favorites/{favoriteId} updates a favorite by ID
  * DELETE /favorites/{favoriteId} deletes a favorite by ID
  * POST   /favorites/query        queries favorite status (presence) of multiple records at one time
- * 
+ *
  * @author crisl
  */
 public class FavoritesService extends UserService {
@@ -56,7 +57,7 @@ public class FavoritesService extends UserService {
   private static final String FAVORITE_ID_PATH_PARAM = "favoriteId";
 
   @SuppressWarnings("unused")
-  private static Logger LOG = Logger.getLogger(FavoritesService.class);	
+  private static Logger LOG = Logger.getLogger(FavoritesService.class);
 
   public FavoritesService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
@@ -103,12 +104,12 @@ public class FavoritesService extends UserService {
    * Updates an existing favorite found by its favorite id (if belonging to the given user) with a
    * new favorite.  The body need only contain note and group (both required but can be empty strings).
    * Note that once created, a user cannot alter the recordClass or primarykey data of a favorite.
-   * 
+   *
    * @param favoriteId
    * @param body
    * @return - a 204 response in the event of a successful edit.
    * @throws WdkModelException
-   * @throws DataValidationException 
+   * @throws DataValidationException
    */
   @PUT
   @Path("favorites/{favoriteId}")
@@ -125,7 +126,7 @@ public class FavoritesService extends UserService {
     }
     catch(WdkUserException e) {
       throw new BadRequestException(e);
-    }   
+    }
   }
 
   /**
@@ -141,16 +142,16 @@ public class FavoritesService extends UserService {
     List<Long> favoriteIds = new ArrayList<>();
     favoriteIds.add(favoriteId);
     getWdkModel().getFavoriteFactory().deleteFavorites(user,favoriteIds);
-    return Response.noContent().build(); 
+    return Response.noContent().build();
   }
 
   /**
    * Remove multiple favorites using a json array of favorite ids in the body of the request
-   * 
+   *
    * @param body - json array of favorite ids
    * @return no response for successful execution
    * @throws WdkModelException
-   * @throws DataValidationException 
+   * @throws DataValidationException
    */
   @PATCH
   @Path("favorites")
@@ -181,11 +182,11 @@ public class FavoritesService extends UserService {
   /**
    * Creates a new favorite for the given user.  If a favorite already exists for this record, it is returned.
    * If a favorite previously existed but was deleted, the original is undeleted and returned.
-   * 
+   *
    * @param body
    * @return
    * @throws WdkModelException
-   * @throws DataValidationException 
+   * @throws DataValidationException
    */
   @POST
   @Path("favorites")
@@ -198,11 +199,11 @@ public class FavoritesService extends UserService {
       FavoriteEdit newFavorite = FavoriteRequests.createFromJson(json, getWdkModel());
       RecordIdentity identity = newFavorite.getIdentity();
       FavoriteFactory factory = getWdkModel().getFavoriteFactory();
-      Favorite favorite = null;
+      Favorite favorite;
       if ((favorite = factory.getFavorite(user, identity.getRecordClass(), identity.getPrimaryKey().getRawValues())) == null) {
         favorite = factory.addToFavorites(user, identity.getRecordClass(), identity.getPrimaryKey().getRawValues());
       }
-      return Response.ok(FavoritesFormatter.getFavoriteJson(favorite).toString()).build();
+      return Response.ok(new JSONObject().put(JsonKeys.ID, favorite.getFavoriteId())).build();
     }
     catch(WdkUserException e) {
       throw new BadRequestException(e);
@@ -219,18 +220,18 @@ public class FavoritesService extends UserService {
    *     ...
    *   ]
    * }
-   * 
+   *
    * Output is an integer array of identical size representing the
    * favorite IDs of any favorites found, with null placeholders for
    * favorites not found.  Ordering is the same as the incoming
    * array (i.e. output element at index N is the ID of incoming
    * favorite at index N (or null if not found)).
-   * 
+   *
    * @param body
    * @return
    * @throws WdkModelException
    * @throws RequestMisformatException
-   * @throws DataValidationException 
+   * @throws DataValidationException
    */
   @POST
   @Path("favorites/query")

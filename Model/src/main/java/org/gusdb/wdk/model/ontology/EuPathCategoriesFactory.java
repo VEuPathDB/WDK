@@ -104,6 +104,12 @@ public class EuPathCategoriesFactory {
       //Maled DCC phase2
       { "Participants", "DS_3dbf92dc05ParticipantRecordClasses.DS_3dbf92dc05ParticipantRecordClass" },
       { "Observations", "DS_3dbf92dc05ObservationRecordClasses.DS_3dbf92dc05ObservationRecordClass" },
+      // south asia
+      { "Participants", "DS_13c737a528ParticipantRecordClasses.DS_13c737a528ParticipantRecordClass" },
+      { "Observations", "DS_13c737a528ObservationRecordClasses.DS_13c737a528ObservationRecordClass" },
+      // amazonia peru
+      { "Participants", "DS_897fe55e6fParticipantRecordClasses.DS_897fe55e6fParticipantRecordClass" },
+      { "Observations", "DS_897fe55e6fObservationRecordClasses.DS_897fe55e6fObservationRecordClass" },
   };
 
   // record classes whose individuals all have both scope website and menu

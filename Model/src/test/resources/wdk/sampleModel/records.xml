@@ -48,7 +48,7 @@
 
           <reporter name="tabular" 
                     displayName="Summary - Tab delimited"
-                    implementation="org.gusdb.wdk.model.report.AttributesTabularReporter"
+                    implementation="org.gusdb.wdk.model.report.reporter.AttributesTabularReporter"
                     includeProjects="SampleDB">
               <property name="sample_property">Sample Value</property>
               <property name="toydb_property" includeProjects="ToyDB">Sample Value</property>
@@ -56,11 +56,11 @@
           
           <reporter name="tabular" 
                     displayName="Summary - Tab delimited"
-                    implementation="org.gusdb.wdk.model.report.AttributesTabularReporter"
+                    implementation="org.gusdb.wdk.model.report.reporter.AttributesTabularReporter"
                     excludeProjects="SampleDB" />
           
           <reporter name="fullRecord" displayName="Detailed"
-                    implementation="org.gusdb.wdk.model.report.FullRecordReporter"/>
+                    implementation="org.gusdb.wdk.model.report.reporter.FullRecordReporter"/>
                     
             <attributeQueryRef ref="SampleQueries.SampleAttributeQuery" excludeProjects="ToyDB">
                 <columnAttribute displayName="Query ID" name="query_instance_id"/>
