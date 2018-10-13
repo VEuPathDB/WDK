@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.report;
+package org.gusdb.wdk.model.report.util;
 
 import static org.gusdb.fgputil.functional.Functions.fSwallow;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
@@ -12,7 +12,7 @@ import org.gusdb.fgputil.iterator.ReadOnlyIterator;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
-import org.gusdb.wdk.model.report.AbstractTabularReporter.RowsProvider;
+import org.gusdb.wdk.model.report.reporter.AbstractTabularReporter.RowsProvider;
 
 public class AttributesRowProvider implements RowsProvider {
 

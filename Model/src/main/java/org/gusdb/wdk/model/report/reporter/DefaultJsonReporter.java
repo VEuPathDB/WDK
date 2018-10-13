@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.formatter;
+package org.gusdb.wdk.model.report.reporter;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -12,6 +12,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonWriter;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.factory.AnswerValue;
@@ -22,9 +23,11 @@ import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.AbstractReporter;
 import org.gusdb.wdk.model.report.Reporter;
+import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
+import org.gusdb.wdk.model.report.config.AnswerDetails;
+import org.gusdb.wdk.model.report.config.AnswerDetailsFactory;
 import org.gusdb.wdk.service.factory.AnswerValueFactory;
-import org.gusdb.wdk.service.request.answer.AnswerDetails;
-import org.gusdb.wdk.service.request.answer.AnswerDetailsFactory;
+import org.gusdb.wdk.service.formatter.RecordFormatter;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONObject;
 
@@ -41,23 +44,23 @@ import org.json.JSONObject;
  *   records: [ see RecordFormatter ]
  * }
  */
-public class AnswerFormatter extends AbstractReporter {
+public class DefaultJsonReporter extends AbstractReporter {
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = Logger.getLogger(AnswerFormatter.class);
+  private static final Logger LOG = Logger.getLogger(DefaultJsonReporter.class);
 
   private static final String DEFAULT_JSON_FILENAME = "result.json";
 
   public static Reporter createDefault(AnswerValue answerValue) throws WdkModelException {
     AnswerDetails answerDetails = AnswerDetailsFactory.createDefault(answerValue.getQuestion());
-    return new AnswerFormatter(answerValue).configure(answerDetails);
+    return new DefaultJsonReporter(answerValue).configure(answerDetails);
   }
 
   private Map<String,AttributeField> _attributes;
   private Map<String,TableField> _tables;
   private ContentDisposition _contentDisposition;
   
-  public AnswerFormatter(AnswerValue answerValue) {
+  public DefaultJsonReporter(AnswerValue answerValue) {
     super(answerValue);
   }
 
@@ -71,7 +74,7 @@ public class AnswerFormatter extends AbstractReporter {
     return configure(AnswerDetailsFactory.createFromJson(config, _baseAnswer.getQuestion()));
   }
 
-  public AnswerFormatter configure(AnswerDetails config) throws WdkModelException {
+  public DefaultJsonReporter configure(AnswerDetails config) throws WdkModelException {
     AnswerValueFactory factory = new AnswerValueFactory(_baseAnswer.getUser());
     _baseAnswer = factory.getConfiguredAnswer(_baseAnswer, config);
     _attributes = config.getAttributes();

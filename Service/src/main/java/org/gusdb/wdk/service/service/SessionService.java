@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkCookie;
 import org.gusdb.wdk.model.WdkModel;
@@ -31,7 +32,6 @@ import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.service.CookieConverter;
-import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.LoginRequest;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.statustype.MethodNotAllowedStatusType;

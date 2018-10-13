@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.report;
+package org.gusdb.wdk.model.report.reporter;
 
 import java.io.PrintWriter;
 import java.sql.SQLException;
@@ -27,6 +27,11 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.report.AbstractReporter;
+import org.gusdb.wdk.model.report.Reporter;
+import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
+import org.gusdb.wdk.model.report.config.StandardConfig;
+import org.gusdb.wdk.model.report.util.TableCache;
 import org.json.JSONObject;
 
 /**

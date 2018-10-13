@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.report;
+package org.gusdb.wdk.model.report.reporter;
 
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
@@ -8,6 +8,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.report.util.AttributesRowProvider;
 
 public class AttributesTabularReporter extends AbstractTabularReporter {
 

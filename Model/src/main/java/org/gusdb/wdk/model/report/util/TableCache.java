@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.report;
+package org.gusdb.wdk.model.report.util;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

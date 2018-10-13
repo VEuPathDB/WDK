@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.report;
+package org.gusdb.wdk.model.report.reporter;
 
 import static org.gusdb.fgputil.ListBuilder.asList;
 
@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.report.util.TableRowProvider;
 import org.json.JSONObject;
 
 public class TableTabularReporter extends AbstractTabularReporter {

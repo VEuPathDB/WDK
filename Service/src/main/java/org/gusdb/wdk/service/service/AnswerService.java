@@ -28,11 +28,11 @@ import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
-import org.gusdb.wdk.model.report.ReporterFactory;
+import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
+import org.gusdb.wdk.model.report.util.ReporterFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.factory.AnswerValueFactory;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
-import org.gusdb.wdk.service.formatter.AnswerFormatter;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -174,7 +174,7 @@ public class AnswerService extends AbstractWdkService {
 
     if (formatting == null) {
       // create default service JSON reporter
-      return AnswerFormatter.createDefault(answerValue);
+      return DefaultJsonReporter.createDefault(answerValue);
     }
 
     // user passed formatting object; get contents and apply defaults if needed
@@ -184,9 +184,9 @@ public class AnswerService extends AbstractWdkService {
     if (format.equals(WDK_SERVICE_JSON_REPORTER_RESERVED_NAME)) {
       return (formatConfig == null ?
           // create default service JSON reporter
-          AnswerFormatter.createDefault(answerValue) :
+          DefaultJsonReporter.createDefault(answerValue) :
           // use formatConfig to configure standard JSON reporter
-          new AnswerFormatter(answerValue).configure(formatConfig));
+          new DefaultJsonReporter(answerValue).configure(formatConfig));
     }
 
     // check to make sure format name is valid for this recordclass

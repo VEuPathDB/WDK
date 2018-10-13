@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;

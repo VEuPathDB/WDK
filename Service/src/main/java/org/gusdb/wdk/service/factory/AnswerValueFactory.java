@@ -10,9 +10,9 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.ParamValue;
+import org.gusdb.wdk.model.report.config.AnswerDetails;
+import org.gusdb.wdk.model.report.util.AttributeFieldSortSpec;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.request.answer.AnswerDetails;
-import org.gusdb.wdk.service.request.answer.AttributeFieldSortSpec;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 
 public class AnswerValueFactory {
