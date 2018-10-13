@@ -1,0 +1,19 @@
+{
+  "analysisName": "some analysis name",
+  "analysisId": 1234,
+  "stepId": 1234,
+  "answerValueHash": "MD5 hash",
+  "displayName": "some customizable name",
+  "shortDescription": "a short description",
+  "description": "a longer description",
+  "hasParams": true,
+  "status": "a status?",
+  "formParams": {
+    "param name": [
+      "some",
+      "param",
+      "values"
+    ]
+  },
+  "invalidStepReason": null
+}

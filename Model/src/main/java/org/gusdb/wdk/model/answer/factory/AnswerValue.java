@@ -122,6 +122,8 @@ public class AnswerValue {
 
   private static final Logger LOG = Logger.getLogger(AnswerValue.class);
 
+  public static final int UNBOUNDED_END_PAGE_INDEX = -1;
+
   // ------------------------------------------------------------------
   // Instance variables
   // ------------------------------------------------------------------
@@ -683,7 +685,7 @@ public class AnswerValue {
 
   public int getPageSize() throws WdkModelException, WdkUserException {
     int resultSize = _resultSizeFactory.getResultSize();
-    return (_endIndex == -1 ? resultSize : Math.min(_endIndex, resultSize)) - _startIndex + 1;
+    return (_endIndex == UNBOUNDED_END_PAGE_INDEX ? resultSize : Math.min(_endIndex, resultSize)) - _startIndex + 1;
   }
 
   public String getResultMessage() {
@@ -805,7 +807,7 @@ public class AnswerValue {
 
   public void setPageToEntireResult() {
     _startIndex = 1;
-    _endIndex = -1;
+    _endIndex = UNBOUNDED_END_PAGE_INDEX;
     reset();
   }
 

@@ -13,7 +13,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.accountdb.AccountManager;
 import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.fgputil.json.JsonIterators;
@@ -38,13 +37,11 @@ import org.json.JSONObject;
 @Path("/")
 public class UserUtilityServices extends AbstractWdkService {
 
-  private static final Logger LOG = Logger.getLogger(UserUtilityServices.class);
-
   private static final String NO_USER_BY_THAT_EMAIL = "No user exists with the email you submitted.";
 
   /**
    * Creates a new user (i.e. user registration)
-   * 
+   *
    * @param body JSON body representing a registration form
    * @return JSON representing the new user
    * @throws RequestMisformatException if JSON is misformatted
@@ -60,14 +57,16 @@ public class UserUtilityServices extends AbstractWdkService {
       JSONObject requestJson = new JSONObject(body);
       List<UserPropertyName> configuredUserProps = getWdkModel().getModelConfig().getAccountDB().getUserPropertyNames();
       UserCreationRequest request = UserCreationRequest.createFromJson(requestJson, configuredUserProps);
+
       User newUser = getWdkModel().getUserFactory().createUser(
           request.getProfileRequest().getEmail(),
           request.getProfileRequest().getProfileMap(),
           request.getPreferencesRequest().getGlobalPreferenceMods(),
           request.getPreferencesRequest().getProjectPreferenceMods());
-      JSONObject newUserJson = UserFormatter.getUserJson(newUser, true, true, configuredUserProps);
-      LOG.info("Created new user: " + newUserJson.toString(2));
-      return Response.ok(newUserJson.toString()).build();
+
+      return Response.ok(new JSONObject().put(JsonKeys.ID, newUser.getUserId()))
+          .location(getUriInfo().getAbsolutePathBuilder().build(newUser.getUserId()))
+          .build();
     }
     catch (InvalidEmailException e) {
       throw new DataValidationException(e.getMessage(), e);
@@ -80,7 +79,7 @@ public class UserUtilityServices extends AbstractWdkService {
   /**
    * Resets a user's forgotten password to a random string.  Request contains a user's email who
    * forgot their password.  No response is returned but an email is sent to the user with their new password.
-   * 
+   *
    * @param body JSON object with email property containing email of user whose password needs reset
    * @return no content or error code corresponding to a problem
    * @throws WdkModelException if error occurs checking for user or sending email
@@ -112,7 +111,7 @@ public class UserUtilityServices extends AbstractWdkService {
   /**
    * Queries user IDs from a set of emails.  Used by user datasets page to share datasets
    * with users when they know their friends' emails but not user IDs.
-   * 
+   *
    * @param body JSON array of user emails
    * @return JSON array of objects, where each object is an email -> ID mapping
    * @throws RequestMisformatException if request is not an array or is otherwise misformatted

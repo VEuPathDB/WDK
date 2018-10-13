@@ -1,0 +1,31 @@
+displayName: Ontologies
+
+get:
+  responses:
+    200:
+      description: Success
+      body:
+        application/json:
+          type: !include ../../../../src/main/resources/schema/wdk/ontologies/get-response.json
+          example: !include ../example/get-ontologies-200.json
+
+/{ontologyName}:
+  uriParameters:
+    ontologyName:
+      type: string
+  get:
+    responses:
+      200:
+        description: Sucess
+        body:
+          application/json:
+
+  /path:
+    post:
+      body:
+        application/json:
+      responses:
+        200:
+          description: Success
+          body:
+            application/json:

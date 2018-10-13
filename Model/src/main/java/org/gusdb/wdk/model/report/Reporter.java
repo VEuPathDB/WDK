@@ -38,7 +38,7 @@ public interface Reporter {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public Reporter configure(Map<String, String> config) throws WdkUserException, WdkModelException;
+  public Reporter configure(Map<String, String> config) throws ReporterConfigException, WdkModelException;
 
   /**
    * Gather end-user configurations for this reporter.  Uses the builder pattern (returns this reporter). 
@@ -47,7 +47,7 @@ public interface Reporter {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public Reporter configure(JSONObject config) throws WdkUserException, WdkModelException;
+  public Reporter configure(JSONObject config) throws ReporterConfigException, WdkModelException;
 
   // methods used to deliver report
   public String getHttpContentType();

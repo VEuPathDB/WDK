@@ -1,0 +1,46 @@
+# User Basket API
+get:
+  description: an array of string, names of user’s baskets
+  queryParameters:
+    expandBaskets:
+      description: >
+        makes service return array of “basket” objects, containing
+        recordclass of the basket, current count, maybe other stuff?
+  responses:
+    200:
+      description: Success
+      body:
+        application/json:
+          type: !include ../../../../../src/main/resources/schema/wdk/users/baskets/get-response.json
+          example: !include ../../example/users/baskets/get-baskets-200.json
+
+post:
+  description: >
+    (new feature, TBR) create a new basket for the current user, inputs
+    include display name, recordclass.  RecordClass baskets will be created
+    for user by default.
+
+/{basketName}:
+  delete:
+    responses:
+      204:
+        description: No content
+  get:
+    description: Returns expanded basket of this name
+  patch:
+    description: >
+      takes { add: [ pk_objects ], delete: [ pk_objects ] }, maybe?
+      Return number of records added and deleted?
+      Maybe check if IDs are valid for the recordclass of the basket?
+    responses:
+      204:
+
+  /query:
+    post:
+      description: >
+        Takes array of PK objects, returns array of { primaryKey: object,
+        inBasket: boolean }
+
+  /answer:
+    post:
+      description: Normal answer request but with mods (TBD)

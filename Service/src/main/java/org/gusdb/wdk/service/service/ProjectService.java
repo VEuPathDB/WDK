@@ -58,7 +58,7 @@ public class ProjectService extends AbstractWdkService {
           .append(" (").append(Timer.getDurationString(totalTime / numTrials)).append(" avg)\n");
     return Response.ok(output.toString()).build();
   }
-  
+
   /**
    * A public access service that reports the default quota in MB and can double as a health check of
    * the user dataset store.
@@ -69,7 +69,7 @@ public class ProjectService extends AbstractWdkService {
   @Path("user-datasets/config")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getDefaultQuota() throws WdkModelException {
-	UserDatasetStore dsStore = getWdkModel().getUserDatasetStore();
+    UserDatasetStore dsStore = getWdkModel().getUserDatasetStore();
     if(dsStore == null) throw new NotFoundException("The user dataset store is not enabled.");
     JSONObject json = new JSONObject();
     try (UserDatasetSession dsSession = dsStore.getSession()) {

@@ -40,15 +40,6 @@ public class AnswerValueFactory {
     }
   }
 
-  public AnswerValue getConfiguredAnswer(AnswerValue answerValue, AnswerDetails config) throws WdkModelException {
-    int startIndex = config.getOffset() + 1;
-    int endIndex = startIndex + config.getNumRecords() - 1;
-    AnswerValue configuredAnswer = answerValue.cloneWithNewPaging(startIndex, endIndex);
-    Map<String, Boolean>  sorting = AttributeFieldSortSpec.convertSorting(config.getSorting());
-    configuredAnswer.setSortingMap(sorting);
-    return configuredAnswer;
-  }
-
   public static Map<String, String> convertParams(Map<String, ParamValue> params) {
     Map<String, String> conversion = new HashMap<>();
     for (ParamValue param : params.values()) {

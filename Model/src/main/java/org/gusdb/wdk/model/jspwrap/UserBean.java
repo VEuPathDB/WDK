@@ -515,7 +515,7 @@ public class UserBean {
 
   public StrategyBean copyStrategy(StrategyBean strategy, Map<Long, Long> stepIdMap, String name)
       throws WdkModelException, WdkUserException {
-    return new StrategyBean(this, _wdkModel.getStepFactory().copyStrategy(strategy.strategy, stepIdMap, name));
+    return new StrategyBean(this, _wdkModel.getStepFactory().copyStrategy(strategy.strategy.getUser(), strategy.strategy, stepIdMap, name));
   }
 
   public void addToBasket(RecordClassBean recordClass, List<String[]> ids) throws WdkModelException {

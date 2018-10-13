@@ -28,7 +28,7 @@ import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
 import org.json.JSONObject;
 
-public abstract class AbstractAttributeReporter extends AbstractReporter  {
+public abstract class AbstractAttributeReporter extends AbstractReporter {
 
   protected static final String ATTRIBUTE_COLUMN = "wdk_attribute";
 
@@ -38,22 +38,22 @@ public abstract class AbstractAttributeReporter extends AbstractReporter  {
     super(answerValue);
   }
 
+  abstract protected JSONObject getJsonResult(AnswerValue answerValue) throws WdkModelException;
+
   @Override
-  protected void write(OutputStream out) throws WdkModelException {
+  protected final void write(OutputStream out) throws WdkModelException {
     JSONObject json = getJsonResult(_baseAnswer);
     PrintStream ps = new PrintStream(out);
     ps.print(json.toString());
   }
 
-  abstract protected JSONObject getJsonResult(AnswerValue answerValue) throws WdkModelException;
-
   @Override
-  public Reporter configure(Map<String, String> config) throws WdkUserException, WdkModelException {
+  public Reporter configure(Map<String, String> config) throws ReporterConfigException, WdkModelException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Reporter configure(JSONObject config) throws WdkUserException, WdkModelException {
+  public Reporter configure(JSONObject config) throws ReporterConfigException, WdkModelException {
     return this;
   }
 

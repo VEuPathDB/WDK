@@ -45,7 +45,7 @@ import org.gusdb.wdk.service.UserBundle;
  * help WDK services standardize their responses in common conditions, e.g. return a permission denied if the
  * user is not an administrator, etc.  WDK service classes do not have to subclass WdkService, but it is
  * recommended for these reasons.  Since it provides no services of its own is has been made abstract.
- * 
+ *
  * @author rdoherty
  */
 public abstract class AbstractWdkService {
@@ -100,9 +100,9 @@ public abstract class AbstractWdkService {
       _request.getContextPath()
     );
   }
-  
+
   protected String getContextPath() {
-	return _request.getContextPath();
+    return _request.getContextPath();
   }
 
   protected String getScheme() {
@@ -139,7 +139,7 @@ public abstract class AbstractWdkService {
   protected HttpSession getSession() {
     return _request.getSession();
   }
-  
+
   protected HttpSession getSession(boolean newSession) {
     return _request.getSession(newSession);
   }
@@ -176,7 +176,7 @@ public abstract class AbstractWdkService {
 
   /**
    * Returns a session-aware user bundle based on the input string.
-   * 
+   *
    * @param userIdStr potential target user ID as string, or special string 'current' indicating session user
    * @return user bundle describing status of the requested user string
    * @throws WdkModelException if error occurs while accessing user data (probably a DB problem)
@@ -188,7 +188,7 @@ public abstract class AbstractWdkService {
   /**
    * Triggers error events for errors caught during the processing of a service request.  This is for
    * non-fatal errors that admins nevertheless may want to be alerted to.
-   * 
+   *
    * @param errors list of errors for which to trigger error events
    */
   protected void triggerErrorEvents(List<Exception> errors) {
@@ -200,7 +200,7 @@ public abstract class AbstractWdkService {
 
   /**
    * Returns an error context for the current request
-   * 
+   *
    * @return error context for the current request
    */
   public ErrorContext getErrorContext(ErrorLocation errorLocation) {
@@ -209,7 +209,7 @@ public abstract class AbstractWdkService {
 
   /**
    * Aggregate environment context data into an object for easy referencing
-   * 
+   *
    * @param context current servlet context
    * @param request current HTTP servlet request
    * @param wdkModel this WDK Model
@@ -229,7 +229,7 @@ public abstract class AbstractWdkService {
   /**
    * Creates a JAX/RS StreamingOutput object based on incoming data
    * content from a file, database, or other data producer
-   * 
+   *
    * @param content data to be streamed to the client
    * @return streaming output object that will stream content to the client
    */
@@ -250,7 +250,7 @@ public abstract class AbstractWdkService {
   /**
    * Returns an unboxed version of the passed value or the default
    * boolean flag value (false) if the passed value is null.
-   * 
+   *
    * @param boolValue flag value passed to service
    * @return unboxed value or false if null
    */
@@ -261,7 +261,7 @@ public abstract class AbstractWdkService {
   /**
    * Returns an unboxed version of the passed value or the default
    * boolean flag value if the passed value is null.
-   * 
+   *
    * @param boolValue flag value passed to service
    * @param defaultValue default value if boolValue is null
    * @return unboxed value or defaultValue if null
@@ -273,7 +273,7 @@ public abstract class AbstractWdkService {
   /**
    * Attempts to parse the passed string into a long int.  If successful,
    * returns it; if not, a service NotFoundException is thrown.
-   * 
+   *
    * @param resourceType type of resource to display if not found
    * @param idString string to parse to ID (type long)
    * @return successfully passed long value

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "results": {
+      "type":"array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "^.+$": {
+            "description": "Key/value object where the key is an email address and the value is the id for the user matching that email",
+            "type": "integer"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "results"
+  ]
+}

@@ -1,0 +1,44 @@
+# User Datasets
+get:
+  queryParameters: 
+    expandDetails:
+      type: boolean
+  responses: 
+    200:
+      body: 
+        application/json:
+
+/{datasetId}:
+  uriParameters: 
+    datasetId: 
+      type: integer
+  delete:
+    responses: 
+      204:
+  get:
+    responses: 
+      200:
+        body:
+          application/json:
+
+  /meta:
+    put:
+      body:
+        application/json:
+      responses: 
+        204:
+  
+  /user-datafiles/{datafileName}:
+    get:
+      responses: 
+        200:
+          body:
+            application/octet-stream:
+/sharing:
+  patch:
+    body:
+      application/json:
+    responses: 
+      200:
+        body: 
+          application/json:
