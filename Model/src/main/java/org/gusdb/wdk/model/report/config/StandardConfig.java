@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.report;
+package org.gusdb.wdk.model.report.config;
 
 import java.util.ArrayList;
 import java.util.Arrays;

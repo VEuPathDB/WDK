@@ -1,21 +1,21 @@
 package org.gusdb.wdk.service.request.user;
 
 import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
-import static org.gusdb.wdk.service.formatter.JsonKeys.DELETE;
-import static org.gusdb.wdk.service.formatter.JsonKeys.UNDELETE;
+import static org.gusdb.wdk.core.api.JsonKeys.DELETE;
+import static org.gusdb.wdk.core.api.JsonKeys.UNDELETE;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordIdentity;
 import org.gusdb.wdk.model.user.FavoriteFactory.NoteAndGroup;
-import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;

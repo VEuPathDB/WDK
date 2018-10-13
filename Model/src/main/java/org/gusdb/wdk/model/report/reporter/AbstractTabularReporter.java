@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.report;
+package org.gusdb.wdk.model.report.reporter;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

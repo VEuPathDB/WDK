@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.report;
+package org.gusdb.wdk.model.report.reporter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.attribute.plugin.WordCloudAttributePlugin;
 import org.gusdb.wdk.model.record.attribute.plugin.WordTag;
+import org.gusdb.wdk.model.report.AbstractAttributeReporter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

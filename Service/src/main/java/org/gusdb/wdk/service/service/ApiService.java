@@ -9,8 +9,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.service.annotation.OutSchema;
-import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.formatter.ProjectFormatter;
 import org.json.JSONObject;
 

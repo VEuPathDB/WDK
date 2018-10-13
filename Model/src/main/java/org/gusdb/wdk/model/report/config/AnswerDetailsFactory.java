@@ -1,4 +1,4 @@
-package org.gusdb.wdk.service.request.answer;
+package org.gusdb.wdk.model.report.config;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
+import org.gusdb.wdk.service.request.answer.AttributeFieldSortSpec;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
 import org.json.JSONException;

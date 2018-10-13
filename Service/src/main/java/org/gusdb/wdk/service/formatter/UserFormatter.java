@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferences;
 import org.json.JSONException;
