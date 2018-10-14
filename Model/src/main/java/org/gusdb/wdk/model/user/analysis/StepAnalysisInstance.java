@@ -105,7 +105,7 @@ public class StepAnalysisInstance {
     if (ctx._stepAnalysis == null) throw new WdkModelException ("Null stepAnalysis");
 
     ctx._editableDisplayName = ctx._stepAnalysis.getDisplayName();
-    ctx._formParams = new HashMap<String,String[]>();
+    ctx._formParams = new HashMap<>();
     ctx._state = StepAnalysisState.NO_RESULTS;
     ctx._hasParams = false;
     ctx._invalidStepReason = null;

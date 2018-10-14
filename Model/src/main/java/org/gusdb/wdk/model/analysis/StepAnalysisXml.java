@@ -220,7 +220,7 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
         parent = (StepAnalysisXml)rcAnalysisRef;
       }
     }
-    
+
     // always use values from reference, then obj, then default
     _analyzerClass = saObj._analyzerClass;
     _displayName = chooseValue(_displayName, parent._displayName, saObj._displayName, _name);
@@ -236,7 +236,7 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
     // override properties, retaining non-conflicts from parent ref and obj
     inheritParentProps(parent);
     inheritParentProps(saObj);
- 
+
     // test to make sure we can create instance
     getAnalyzerInstance();
   }
@@ -273,11 +273,6 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
         .append(entry.getValue()).append(NL);
     }
     return sb.append("  }").append(NL).append("}").append(NL).toString();
-  }
-
-  @Override
-  public String getFullName() {
-    return getName();
   }
 
   @Override
