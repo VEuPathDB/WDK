@@ -1,0 +1,41 @@
+# Step Analysis By ID API
+#
+# @path /users/{id}/steps/{id}/analyses/{id}
+
+
+# URI Params
+
+uriParameters:
+  analysis-id:
+    description: Analysis instance id.
+    type: integer
+
+
+# Methods
+
+delete:
+  description: Deletes this analysis and associated run if present
+
+get:
+  description: Returns the resource above for form population
+
+patch:
+  description: >
+    analysisType is not supported; if parameters is modified, then results
+    are cleared
+  body:
+    application/json:
+      example: !include ../../../../example/users-steps-analyses-patch-request.json
+  responses:
+    204:
+      description: No Content
+    422:
+      description: Unprocessable entry
+      body:
+         application/json:
+            type: !include ../../../../../../../src/main/resources/schema/includes/string-array.json
+
+
+# Child Endpoints
+
+/result: !include result.raml

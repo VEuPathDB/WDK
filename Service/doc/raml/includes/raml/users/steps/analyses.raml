@@ -1,0 +1,32 @@
+# Step Analysis API
+#
+# @path /users/{id}/steps/{id}/analyses
+
+
+# Methods
+
+get:
+  description: Retrieve a list of analyses that have been run on this step.
+  responses:
+    200:
+      body:
+        application/json:
+          type: !include ../../../../../../src/main/resources/schema/wdk/users/steps/analyses/get-response.json
+          example: !include ../../../example/users/steps/get-analyses-200.json
+
+post:
+  description: Creates a new analysis (i.e. tab)
+  body:
+    application/json:
+      example: !include ../../../example/users-steps-analyses-post-request.json
+  responses:
+    200:
+      body:
+        application/json:
+          type: !include ../../../../../../src/main/resources/schema/wdk/users/steps/analyses/post-response.json
+          example: !include ../../../example/StepAnalysisInstanceSummary.example.json
+
+
+# Child Endpoints
+
+/{analysis-id}: !include analyses/by-id.raml

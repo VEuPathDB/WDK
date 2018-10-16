@@ -217,14 +217,14 @@ public class StepAnalysisService extends UserService {
     getWdkModel().getStepAnalysisFactory().runAnalysis(instance);
 
     return Response.accepted()
-        .entity(new JSONObject().put(STATUS_KEY, instance.getStatus().name()).toString())
+        .entity(new JSONObject().put(STATUS_KEY, instance.getStatus().name()))
         .build();
   }
 
   @GET
   @Path("analyses/{analysisId}/result/status")
   @Produces(MediaType.APPLICATION_JSON)
-  public String getStepAnalysisResultStatus(
+  public JSONObject getStepAnalysisResultStatus(
       @PathParam("analysisId") long analysisId,
       @QueryParam("accessToken") String accessToken)
       throws WdkModelException {
@@ -239,7 +239,7 @@ public class StepAnalysisService extends UserService {
       throw new NotFoundException(e);
     }
 
-    return new JSONObject().put(STATUS_KEY, status).toString();
+    return new JSONObject().put(STATUS_KEY, status);
   }
 
   @GET
