@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model.answer.spec;
 
-import static org.gusdb.fgputil.functional.Functions.filter;
 import static org.gusdb.fgputil.functional.Functions.f0Swallow;
+import static org.gusdb.fgputil.functional.Functions.filter;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +12,6 @@ import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec.QueryInstanceSpecBuilder;
@@ -69,12 +68,16 @@ public class AnswerSpec implements Validateable {
   // validation-related values
   private final ValidationBundle _validationBundle;
 
+  // resource to look up steps referred to by answer param values
+  private final StepContainer _stepContainer;
+
   public AnswerSpec(WdkModel wdkModel, String questionName, QueryInstanceSpecBuilder queryInstanceSpec,
       String legacyFilterName, FilterOptionListBuilder filters, FilterOptionListBuilder viewFilters,
       ValidationLevel validationLevel, StepContainer stepContainer) {
     _wdkModel = wdkModel;
     _questionName = questionName;
     _legacyFilterName = legacyFilterName;
+    _stepContainer = stepContainer;
     ValidationBundleBuilder validation = ValidationBundle.builder(validationLevel);
     if (!wdkModel.hasQuestion(questionName)) {
       // invalid question name; cannot validate other data
@@ -185,4 +188,7 @@ public class AnswerSpec implements Validateable {
     return new SimpleAnswerSpec(_question, _queryInstanceSpec);
   }
 
+  public StepContainer getStepContainer() {
+    return _stepContainer;
+  }
 }

@@ -36,7 +36,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
    * @param assignedWeight weight of the query
    * @throws WdkModelException
    */
-  BooleanQueryInstance(User user, SqlQuery query, ReadOnlyMap<String, String> paramValues,
+  protected BooleanQueryInstance(User user, SqlQuery query, ReadOnlyMap<String, String> paramValues,
       int assignedWeight) throws WdkModelException {
     super(user, query, paramValues, assignedWeight);
   }

@@ -22,7 +22,7 @@ public interface StepContainer {
     return new StepSearch(step -> step.getChildStepId() == stepId || step.getPreviousStepId() == stepId, " that is the parent of " + stepId);
   }
 
-  public static StepContainer getEmptyContainer() {
+  public static StepContainer emptyContainer() {
     return new StepContainer(){};
   }
 

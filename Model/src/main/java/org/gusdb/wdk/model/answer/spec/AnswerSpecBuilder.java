@@ -7,6 +7,7 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.answer.spec.FilterOption.FilterOptionBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec.QueryInstanceSpecBuilder;
 import org.gusdb.wdk.model.user.StepContainer;
@@ -114,8 +115,30 @@ public class AnswerSpecBuilder {
     return this;
   }
 
+  public FilterOptionListBuilder getFilterOptions() {
+    return _filters;
+  }
+
   public FilterOptionListBuilder getViewFilterOptions() {
     return _viewFilters;
+  }
+
+  /**
+   * Finds the first instance of a filter with the passed name and replaces its value with the passed value.
+   * If no filters are found, nothing will be replaced.
+   * 
+   * @param filterName
+   * @param newValue
+   * @return
+   */
+  public AnswerSpecBuilder replaceFirstFilterOption(String filterName, JSONObject newValue) {
+    for (FilterOptionBuilder filterOption : _filters) {
+      if (filterOption.getFilterName().equals(filterName)) {
+        filterOption.setValue(newValue);
+        break; // only replace first filter found
+      }
+    }
+    return this;
   }
 
 }

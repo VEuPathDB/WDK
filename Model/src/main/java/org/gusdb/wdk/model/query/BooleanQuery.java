@@ -68,6 +68,7 @@ public class BooleanQuery extends SqlQuery {
 
  /**
   * Need a no-arg constructor for easy construction using newInstance()
+  * FIXME: why? where are we using newInstance()?
   * @throws WdkModelException
   */
   public BooleanQuery() throws WdkModelException {

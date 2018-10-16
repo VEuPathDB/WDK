@@ -7,7 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.gusdb.fgputil.db.platform.DBPlatform;
-import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 
 /**
  * Since we no longer offer boolean expressions, this class might be deprecated
@@ -39,9 +39,9 @@ public enum BooleanOperator {
    * 
    * @param name
    * @return
-   * @throws WdkModelException if invalid operator value
+   * @throws WdkRuntimeException if invalid operator value
    */
-  public static BooleanOperator parse(String name) throws WdkModelException {
+  public static BooleanOperator parse(String name) {
     if (unions.size() == 0)
       initialize(unions, "union", "or", "|", "||");
     if (intersets.size() == 0)
@@ -70,7 +70,7 @@ public enum BooleanOperator {
     else if (rightOnlys.contains(name))
       return RIGHT_ONLY;
     else
-      throw new WdkModelException("Invalid boolean operator: '" + name + "'");
+      throw new WdkRuntimeException("Invalid boolean operator: '" + name + "'");
   }
 
   private static void initialize(Set<String> set, String... operators) {
