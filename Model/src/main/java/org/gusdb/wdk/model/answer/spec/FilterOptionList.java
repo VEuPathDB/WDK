@@ -21,7 +21,7 @@ import org.gusdb.wdk.model.question.Question;
 
 public class FilterOptionList implements Iterable<FilterOption>, Validateable {
 
-  public static class FilterOptionListBuilder {
+  public static class FilterOptionListBuilder implements Iterable<FilterOptionBuilder>{
 
     private List<FilterOptionBuilder> _options = new ArrayList<>();
 
@@ -72,6 +72,11 @@ public class FilterOptionList implements Iterable<FilterOption>, Validateable {
 
     public boolean hasFilter(String name) {
       return _options.stream().anyMatch(option -> name.equals(option.getFilterName()));
+    }
+
+    @Override
+    public Iterator<FilterOptionBuilder> iterator() {
+      return _options.iterator();
     }
   }
 

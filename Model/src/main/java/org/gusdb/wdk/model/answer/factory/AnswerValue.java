@@ -54,6 +54,7 @@ import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
@@ -372,7 +373,7 @@ public class AnswerValue {
     // original table query; a table query has only one param, user_id. Note
     // that the original table query is different from the table query held by
     // the recordClass.  The user_id param will be added by the query instance.
-    Runnable<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder().buildRunnable(tableQuery);
+    Runnable<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder().buildRunnable(tableQuery, StepContainer.emptyContainer());
     QueryInstance<?> queryInstance = Query.makeQueryInstance(_user, tableQuerySpec);
     String tableSql = queryInstance.getSql();
     DBPlatform platform = _answerSpec.getQuestion().getWdkModel().getAppDb().getPlatform();
