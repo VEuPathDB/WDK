@@ -131,6 +131,9 @@ public class JsonKeys {
   public static final String ESTIMATED_SIZE = "estimatedSize";
   public static final String HAS_COMPLETE_STEP_ANALYSES = "hasCompleteStepAnalyses";
   public static final String ANSWER_SPEC = "answerSpec";
+  public static final String FORMATTING = "formatting";
+  public static final String FORMAT = "format";
+  public static final String FORMAT_CONFIG = "formatConfig";
   public static final String LEGACY_FILTER_NAME = "legacyFilterName";
   public static final String FILTERS = "filters";
   public static final String VIEW_FILTERS = "viewFilters";
