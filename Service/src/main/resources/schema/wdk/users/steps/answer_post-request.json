@@ -3,10 +3,11 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
-	"formatting": {
-	    "$ref": "/schema/wdk/includes/answer-formatting.json"
-	}
+	"formatConfig": {
+	    "$ref": "/schema/wdk/includes/answer-formatConfig-json-request.json"
+	    }
+	},
     "required" : [
-	"formatting"
+	"formatConfig"
     ]
 }

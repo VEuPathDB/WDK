@@ -40,6 +40,6 @@
 	]
     },
     "required" : [
-	"answerSpec",
+	"answerSpec"
     ]
 }
