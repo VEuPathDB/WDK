@@ -15,7 +15,8 @@ get:
           example: !include ../../../example/users/steps/get-analyses-200.json
 
 post:
-  description: Creates a new analysis (i.e. tab)
+  description: >
+    Creates a new analysis instance from the given input JSON configuration.
   body:
     application/json:
       example: !include ../../../example/users-steps-analyses-post-request.json

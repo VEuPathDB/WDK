@@ -14,15 +14,25 @@ uriParameters:
 # Methods
 
 delete:
-  description: Deletes this analysis and associated run if present
+  description: >
+    Deletes the analysis with the ID provided in the analysis-id URI param.
+  responses:
+    204:
+      description: No Content
+    500:
+      description: WDKModelException
 
 get:
-  description: Returns the resource above for form population
+  description: >
+    Returns the current analysis instance config JSON.
+  responses:
+    200:
+      body:
+        application/json:
+          type: !include ../../../../../../../src/main/resources/schema/wdk/users/steps/analyses/id/get-response.json
 
 patch:
-  description: >
-    analysisType is not supported; if parameters is modified, then results
-    are cleared
+  description: Update analysis instance
   body:
     application/json:
       example: !include ../../../../example/users-steps-analyses-patch-request.json
@@ -34,6 +44,8 @@ patch:
       body:
          application/json:
             type: !include ../../../../../../../src/main/resources/schema/includes/string-array.json
+    500:
+      description: WDKModelException
 
 
 # Child Endpoints

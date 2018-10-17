@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "$id": "org.gusdb.wdk.model.user.analysis.StepAnalysisInstance#getJsonSummary",
+  "type": "object",
+  "properties": {
+    "analysisName": {
+      "type": "string"
+    },
+    "answerValueHash": {
+      "type": "string"
+    },
+    "formParams": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "analysisId": {
+      "type": "integer"
+    },
+    "stepId": {
+      "type": "integer"
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "shortDescription": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "userNotes": {
+      "type": "string"
+    },
+    "hasParams": {
+      "type": "boolean"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "CREATED",
+        "STEP_REVISED",
+        "INVALID",
+        "PENDING",
+        "RUNNING",
+        "COMPLETE",
+        "INTERRUPTED",
+        "ERROR",
+        "EXPIRED",
+        "OUT_OF_DATE",
+        "UNKNOWN"
+      ]
+    },
+    "invalidStepReason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "analysisId",
+    "stepId",
+    "hasParams"
+  ],
+  "additionalProperties": false
+}
