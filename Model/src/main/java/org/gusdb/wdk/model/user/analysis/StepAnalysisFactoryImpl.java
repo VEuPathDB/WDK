@@ -99,11 +99,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     }
     else if (event instanceof StepCopiedEvent) {
       StepCopiedEvent copyEvent = (StepCopiedEvent)event;
-      copyAnalysisInstances(copyEvent.getFromStep(), copyEvent.getToStep(), false);
-    }
-    else if (event instanceof StepImportedEvent) {
-      StepImportedEvent importEvent = (StepImportedEvent)event;
-      copyAnalysisInstances(importEvent.getFromStep(), importEvent.getToStep(), true);
+      copyAnalysisInstances(copyEvent.getFromStep(), copyEvent.getToStep());
     }
   }
 
@@ -209,7 +205,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     return copy;
   }
 
-  private void copyAnalysisInstances(Step fromStep, Step toStep, boolean alwaysNoResults)
+  private void copyAnalysisInstances(Step fromStep, Step toStep)
       throws WdkModelException, WdkUserException {
     LOG.info("Request made to copy analysis instances from step " + fromStep.getStepId() + " to " + toStep.getStepId());
     Map<Long, StepAnalysisInstance> fromInstances = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
@@ -220,8 +216,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       toInstance.setStep(toStep);
       // non-new steps copied during revise have invalid results until run again
       // non-new steps copied during import should always have no_results
-      toInstance.setState(fromInstance.getState().equals(StepAnalysisState.NO_RESULTS) || alwaysNoResults ?
-          StepAnalysisState.NO_RESULTS : StepAnalysisState.INVALID_RESULTS);
+      toInstance.setState(StepAnalysisState.NO_RESULTS);
       try {
         checkStepForValidity(toInstance);
         toInstance.setIsValidStep(true);

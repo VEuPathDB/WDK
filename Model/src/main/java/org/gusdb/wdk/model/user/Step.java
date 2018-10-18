@@ -15,7 +15,6 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.Functions;
-import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.events.StepRevisedEvent;
 import org.gusdb.wdk.model.WdkModelException;
@@ -37,7 +36,7 @@ import org.json.JSONObject;
 
 /**
  * @author Charles Treatman
- * 
+ *
  */
 public class Step {
 
@@ -159,14 +158,14 @@ public class Step {
   /**
    * Creates a step object for given user and step ID. Note that this constructor lazy-loads the User object
    * for the passed ID if one is required for processing after construction.
-   * 
+   *
    * @param stepFactory
    *          step factory that generated this step
    * @param userId
    *          id of the owner of this step
    * @param stepId
    *          id of the step
-   * @throws WdkModelException 
+   * @throws WdkModelException
    */
   public Step(StepFactory stepFactory, long userId, long stepId) throws WdkModelException {
     _stepFactory = stepFactory;
@@ -181,14 +180,14 @@ public class Step {
 
   /**
    * Creates a step object for the given user and step ID.
-   * 
+   *
    * @param stepFactory
    *          step factory that generated this step
    * @param user
    *          owner of this step
    * @param stepId
    *          id of the step
-   * @throws WdkModelException 
+   * @throws WdkModelException
    * @throws NullPointerException
    *           if user is null
    */
@@ -206,9 +205,9 @@ public class Step {
   /**
    * Constructor that takes an existing step and makes a shallow copy of the
    * existing private fields.
-   * 
+   *
    * @param step Step to make a shallow copy of
-   * @throws WdkModelException 
+   * @throws WdkModelException
    */
   public Step(Step step) throws WdkModelException {
     _stepFactory = step._stepFactory;
@@ -250,6 +249,11 @@ public class Step {
     _answerValueCache = new AnswerValueCache(this);
   }
 
+  // TODO: remove this when we retire StepBean
+  public StepFactory getStepFactory() {
+    return _stepFactory;
+  }
+
   public Step getPreviousStep() throws WdkModelException {
     if (_previousStep == null && _previousStepId != 0)
       setPreviousStep(_stepFactory.loadStepFromValidStepId(getUser(), _previousStepId));
@@ -283,7 +287,7 @@ public class Step {
     }
   }
 
-  /** 
+  /**
    * Get the real result size from the answerValue.  AnswerValue is
    * responsible for caching, if any
    */
@@ -419,7 +423,7 @@ public class Step {
   public String getShortDisplayName() {
     /*
      * String name = customName;
-     * 
+     *
      * if (name == null) name = getQuestion().getShortDisplayName(); if (name != null) { // remove script
      * injections name = name.replaceAll("<.+?>", " "); name = name.replaceAll("['\"]", " "); name =
      * name.trim().replaceAll("\\s+", " "); if (name.length() > 4000) name = name.substring(0, 4000); } return
@@ -456,7 +460,7 @@ public class Step {
   public long getStepId() {
     return _stepId;
   }
-  
+
   /**
    * Basic getter than just returns the current value for this field without checks,
    * lazy loading, or side effects (e.g., database updates)
@@ -465,7 +469,7 @@ public class Step {
   public int getRawEstimateSize() {
 	return _estimateSize;
   }
-  
+
   /**
    * Calculate the estimate size
    * @return
@@ -563,7 +567,7 @@ public class Step {
   /**
    * A combined step can take one or more steps as input. a Transform is a special case of combined step, and
    * a boolean is another special case.
-   * 
+   *
    * @return a flag to determine if a step can take other step(s) as input.
    */
   public boolean isCombined() {
@@ -577,7 +581,7 @@ public class Step {
 
   /**
    * A transform step can take exactly one step as input.
-   * 
+   *
    * @return Returns whether this Step is a transform
    */
   public boolean isTransform() {
@@ -655,7 +659,7 @@ public class Step {
    * is to support outside modification of the step by event listeners.  If a listener
    * modifies the step in response to a change we made, we will want to reflect these
    * secondary changes in this current execution flow.
-   * 
+   *
    * @throws WdkModelException if unable to load updated step
    */
   private void refreshParamFilters() throws WdkModelException {
@@ -718,7 +722,7 @@ public class Step {
    * previous call to isValid()), and checks that param names are correct, but does not check param values due
    * to execution cost. Param values must be checked elsewhere; if they are found invalid, invalidateStep()
    * should be called, which updates the DB.
-   * 
+   *
    * @return true if this step is valid (to the best of our knowledge), else false
    */
   public boolean isValid() throws WdkModelException {
@@ -764,7 +768,7 @@ public class Step {
 
   /**
    * Sets valid value to false and sends change to the DB
-   * 
+   *
    * @throws WdkModelException
    *           if unable to update DB
    */
@@ -825,7 +829,7 @@ public class Step {
 
   /**
    * Get all the previous steps in the strategy. This doesn't include any child steps.
-   * 
+   *
    * @return A list of the previous steps from the current one; the first step in the strategy will be the
    *         first one in the list, and the direct previous step of the current one will be the last in the
    *         list, in that order.
@@ -848,7 +852,7 @@ public class Step {
 
   /**
    * Get all the descendants from the current step, including both previous steps and child steps.
-   * 
+   *
    * @return
    * @throws WdkModelException
    */
@@ -1057,50 +1061,6 @@ public class Step {
     return step;
   }
 
-  /**
-   * deep clone a step, the step will get a new id, and if the step contains other sub-steps, all those sub
-   * steps are cloned recursively.
-   * 
-   * @throws WdkUserException
-   * @throws WdkModelException
-   */
-  public Step deepClone(Long strategyId, Map<Long, Long> stepIdMap) throws WdkModelException {
-    Step step;
-    if (!isCombined()) {
-      step = StepUtilities.createStep(_user, strategyId, getQuestion(), _paramValues,
-          getFilter(), _isDeleted, false, _assignedWeight, _filterOptions);
-    }
-    else {
-      Question question = getQuestion();
-      Map<String, String> paramValues = new LinkedHashMap<String, String>();
-      Map<String, Param> params = question.getParamMap();
-      for (String paramName : _paramValues.keySet()) {
-        Param param = params.get(paramName);
-        String paramValue = _paramValues.get(paramName);
-        if (param instanceof AnswerParam) {
-          Step child = StepUtilities.getStepByValidStepId(getUser(), Integer.parseInt(paramValue));
-          child = child.deepClone(strategyId, stepIdMap);
-          paramValue = Long.toString(child.getStepId());
-        }
-        paramValues.put(paramName, paramValue);
-      }
-      step = StepUtilities.createStep(getUser(), strategyId, question, paramValues,
-          getFilter(), _isDeleted, false, _assignedWeight, getFilterOptions());
-    }
-
-    stepIdMap.put(getStepId(), step.getStepId());
-
-    step._collapsedName = _collapsedName;
-    step._customName = _customName;
-    step._collapsible = _collapsible;
-    step.update(false);
-
-    Events.triggerAndWait(new StepCopiedEvent(this, step), new WdkModelException(
-        "Unable to execute all operations subsequent to step copy."));
-
-    return step;
-  }
-
   public boolean isFiltered() throws WdkModelException {
     // first check if new filter has been applied
     if (_filterOptions != null && _filterOptions.isFiltered(this))
@@ -1179,7 +1139,7 @@ public class Step {
       if (!forChecksum) {
         jsStep.put("size", _estimateSize);
       }
-     
+
       if (this.isCollapsible()) { // a sub-strategy, needs to get order number
         String subStratId = strategyId + "_" + _stepId;
         int order = getUser().getSession().getStrategyOrder(subStratId);
@@ -1291,7 +1251,7 @@ public class Step {
   /**
    * Get the answerParam that take the previousStep as input, which is the first answerParam in the param
    * list.
-   * 
+   *
    * @return an AnswerParam
    * @throws WdkModelException
    */
@@ -1308,7 +1268,7 @@ public class Step {
 
   /**
    * The previous step param is always the first answerParam.
-   * 
+   *
    * @return
    * @throws WdkModelException
    */
@@ -1332,7 +1292,7 @@ public class Step {
 
   /**
    * the child step param is always the second answerParam
-   * 
+   *
    * @return
    * @throws WdkModelException
    */
@@ -1525,7 +1485,7 @@ public class Step {
   /**
    * Check id the given step can be assigned as the previous step of the current one. If it's not allowed, a
    * WdkUserException will be thrown out
-   * 
+   *
    * @param previousStep
    * @throws WdkModelException
    * @throws WdkUserException
@@ -1546,7 +1506,7 @@ public class Step {
   /**
    * Check id the given step can be assigned as the child step of the current one. If it's not allowed, a
    * WdkUserException will be thrown out.
-   * 
+   *
    * @param childStep
    * @throws WdkUserException
    * @throws WdkModelException
@@ -1574,20 +1534,20 @@ public class Step {
 
   public void setAnswerValuePaging(int start, int end) {
     _answerValueCache.setPaging(start, end);
-    
+
   }
 
   public void setInMemoryOnly(boolean inMemoryOnly) {
     _inMemoryOnly = inMemoryOnly;
   }
-  
+
   public boolean hasAnswerParams() throws WdkModelException {
     for(Param param : getQuestion().getParams()) {
     	  if(param instanceof AnswerParam) return true;
     }
     return false;
   }
-  
+
   public boolean isAnswerSpecComplete() throws WdkModelException {
     return hasAnswerParams() ? _strategyId != null : true;
   }

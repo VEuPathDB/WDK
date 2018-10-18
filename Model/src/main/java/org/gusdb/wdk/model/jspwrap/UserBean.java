@@ -531,12 +531,14 @@ public class UserBean {
 
   public StrategyBean copyStrategy(StrategyBean strategy, Map<Long, Long> stepIdMap)
       throws WdkUserException, WdkModelException {
-    return new StrategyBean(this, _wdkModel.getStepFactory().copyStrategy(strategy.strategy, stepIdMap));
+    String name = strategy.getName();
+    if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
+    return copyStrategy(strategy, stepIdMap, name) ;
   }
 
   public StrategyBean copyStrategy(StrategyBean strategy, Map<Long, Long> stepIdMap, String name)
       throws WdkModelException, WdkUserException {
-    return new StrategyBean(this, _wdkModel.getStepFactory().copyStrategy(strategy.strategy, stepIdMap, name));
+    return new StrategyBean(this, _wdkModel.getStepFactory().copyStrategy(strategy.strategy.getUser(), strategy.strategy, stepIdMap, name));
   }
 
   public void addToBasket(RecordClassBean recordClass, List<String[]> ids) throws WdkModelException {

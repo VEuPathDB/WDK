@@ -101,6 +101,8 @@ public class EuPathCategoriesFactory {
       //      { "Households", "DS_a5c969d5faHouseholdRecordClasses.DS_a5c969d5faHouseholdRecordClass" },
       //GEMs
       { "Participants", "DS_841a9f5259ParticipantRecordClasses.DS_841a9f5259ParticipantRecordClass" },
+      //GEMs1a 
+      { "Participants", "DS_2a6ace17a1ParticipantRecordClasses.DS_2a6ace17a1ParticipantRecordClass" },
       //Maled DCC phase2
       { "Participants", "DS_3dbf92dc05ParticipantRecordClasses.DS_3dbf92dc05ParticipantRecordClass" },
       { "Observations", "DS_3dbf92dc05ObservationRecordClasses.DS_3dbf92dc05ObservationRecordClass" },

@@ -25,7 +25,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonType.ValueType;
-import org.gusdb.wdk.service.formatter.JsonKeys;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

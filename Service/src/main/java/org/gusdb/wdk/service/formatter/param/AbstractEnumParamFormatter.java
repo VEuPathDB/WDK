@@ -4,13 +4,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

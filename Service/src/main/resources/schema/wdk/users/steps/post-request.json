@@ -1,0 +1,45 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+	"customName": {
+	    "type": "string"
+	},
+	"isCollabsible": {
+	    "type": "boolean"
+	},
+	"collapsedName": {
+	    "type": "string"
+	},
+	"answerSpec" : {
+	    "$ref": "/schema/wdk/includes/answer-spec-request.json"
+	},
+	"viewFilters": {
+	    "type": "array",
+	    "items": {
+		"type": "object",
+		"additionalProperties": false,
+		"properties": {
+		    "name": {
+			"type": "string"
+		    },
+		    "value": {
+			"type": "object"
+		    }
+		},
+		"required": [
+		    "name",
+		    "value"
+		]
+	    }
+	},
+	"required": [
+	    "questionName",
+	    "parameters"
+	]
+    },
+    "required" : [
+	"answerSpec"
+    ]
+}

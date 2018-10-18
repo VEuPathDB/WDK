@@ -1,5 +1,7 @@
 package org.gusdb.wdk.service.service;
 
+import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.SPECIFIED_REPORTER_PARSER;
+
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -14,10 +16,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.gusdb.wdk.cache.AnswerRequest;
 import org.gusdb.wdk.cache.CacheMgr;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.service.formatter.JsonKeys;
+import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONObject;
@@ -32,7 +34,7 @@ public class TemporaryResultService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response setTemporaryResult(String body)
       throws RequestMisformatException, DataValidationException {
-    AnswerRequest request = AnswerService.parseAnswerRequest(body, getWdkModelBean(), getSessionUser());
+    AnswerRequest request = AnswerService.parseAnswerRequest(body, getWdkModelBean(), getSessionUser(), SPECIFIED_REPORTER_PARSER);
     String id = UUID.randomUUID().toString();
     CacheMgr.get().getAnswerRequestCache().put(id, request);
     return Response.ok(new JSONObject().put(JsonKeys.ID, id).toString())
@@ -52,6 +54,6 @@ public class TemporaryResultService extends AbstractWdkService {
       }
       throw new NotFoundException(formatNotFound("temporary result with ID '" + id + "'"));
     }
-    return AnswerService.getAnswerResponse(getSessionUser(), savedRequest.getAnswerSpec(), savedRequest.getFormatting());
+    return AnswerService.getAnswerResponse(getSessionUser(), savedRequest);
   }
 }

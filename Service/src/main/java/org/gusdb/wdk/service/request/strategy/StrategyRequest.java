@@ -7,12 +7,12 @@ import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.formatter.JsonKeys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.service.AbstractWdkService;

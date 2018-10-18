@@ -37,6 +37,8 @@ import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.events.StepImportedEvent;
+import org.gusdb.wdk.cache.CacheMgr;
+import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkIllegalArgumentException;
@@ -175,15 +177,15 @@ public class StepFactory {
     modTimeSortSql = new StringBuilder(" ORDER BY sr.").append(COLUMN_LAST_MODIFIED_TIME).append(" DESC").toString();
 
     // estimate validity of strategies by executing subquery against steps in the strategy
-    invalidStratSubquerySql = "( SELECT sr." + COLUMN_STRATEGY_ID + ", min(CAST(" + 
+    invalidStratSubquerySql = "( SELECT sr." + COLUMN_STRATEGY_ID + ", min(CAST(" +
     	_userDb.getPlatform().getNvlFunctionName() + "(" + COLUMN_IS_VALID +
         ", " + _userDb.getPlatform().convertBoolean(true) + ") AS INTEGER)) AS " + COLUMN_IS_VALID + " FROM " + _userSchema + TABLE_STRATEGY + " sr, " + _userSchema +
         TABLE_STEP + " sp WHERE sp." + COLUMN_STRATEGY_ID + " = sr." + COLUMN_STRATEGY_ID + " GROUP BY sr." +
         COLUMN_STRATEGY_ID + " )";
-    
+
     // basic select with required joins
     basicStratsSql = "SELECT sr.*, sp." + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", sp." +
-        COLUMN_QUESTION_NAME + ", sv." + COLUMN_IS_VALID + " AS " + COLUMN_IS_ALL_STEPS_VALID + " FROM " + 
+        COLUMN_QUESTION_NAME + ", sv." + COLUMN_IS_VALID + " AS " + COLUMN_IS_ALL_STEPS_VALID + " FROM " +
         _userSchema + TABLE_STRATEGY + " sr, " + _userSchema + TABLE_STEP + " sp, " + invalidStratSubquerySql +
         " sv WHERE sr." + COLUMN_ROOT_STEP_ID + " = sp." + COLUMN_STEP_ID + " AND sr." + COLUMN_USER_ID +
         " = sp." + COLUMN_USER_ID + " AND sr." + COLUMN_PROJECT_ID + " = sp." + COLUMN_PROJECT_ID + " AND sr." +
@@ -246,9 +248,9 @@ public class StepFactory {
   WdkModel getWdkModel() {
     return _wdkModel;
   }
-  
+
   /**
-   * Creates a step using new step service concept.  
+   * Creates a step using new step service concept.
    * @param user
    * @param question
    * @param dependentValues
@@ -273,14 +275,14 @@ public class StepFactory {
     LOG.debug("Creating step!");
 
     String questionName = question.getFullName();
-   
+
     // prepare the values to be inserted.
     long userId = user.getUserId();
 
     String filterName = null;
-   
+
     Exception exception = null;
-   
+
 
     // prepare SQLs
     String userIdColumn = Utilities.COLUMN_USER_ID;
@@ -303,7 +305,7 @@ public class StepFactory {
     sqlInsertStep.append(COLUMN_CUSTOM_NAME).append(", ");
     sqlInsertStep.append(COLUMN_IS_COLLAPSIBLE).append(", ");
     sqlInsertStep.append(COLUMN_COLLAPSED_NAME).append(") ");
-    
+
     sqlInsertStep.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     // Create the Step sans Answer
@@ -715,7 +717,7 @@ public class StepFactory {
   public Optional<Step> getStepById(long stepId) throws WdkModelException {
     return loadStep(null, stepId);
   }
-  
+
   /**
    * @param validStepId a previously validated step id
    * @throws WdkModelException if no step found for this ID, or if system problem occurred
@@ -902,7 +904,7 @@ public class StepFactory {
   /**
    * This method updates the custom name, the time stamp of last running, isDeleted, isCollapsible, and
    * collapsed name
-   * 
+   *
    * @param user
    * @param step
    * @throws WdkUserException
@@ -1209,87 +1211,110 @@ public class StepFactory {
     return strategies;
   }
 
-  Strategy importStrategy(User user, Strategy oldStrategy, Map<Long, Long> stepIdsMap)
-      throws WdkModelException, WdkUserException {
-    LOG.debug("import strategy #" + oldStrategy.getStrategyId() + "(internal) to user #" +
-        user.getUserId());
-
-    if (stepIdsMap == null)
-      stepIdsMap = new LinkedHashMap<>();
-
-    Step oldRootStep = oldStrategy.getLatestStep();
-    String name = getNextName(user, oldStrategy.getName(), false);
-
-    // get a new strategy id
-    long newStrategyId;
-    try {
-      newStrategyId = _userDb.getPlatform().getNextId(_userDbDs, _userSchema, TABLE_STRATEGY);
-    }
-    catch (SQLException e) {
-      throw new WdkModelException(e);
-    }
-
-    // If user does not already have a copy of this strategy, need to
-    // look up the answers recursively, construct step objects.
-    Step latestStep = importStep(user, newStrategyId, oldRootStep, stepIdsMap);
-
-    // Need to create strategy & then load it so that all AnswerValues
-    // are created properly
-    // Jerric - the imported strategy should always be unsaved.
-    Strategy strategy = createStrategy(user, newStrategyId, latestStep, name, null, false,
-        oldStrategy.getDescription(), false, false);
-    return loadStrategy(user, strategy.getStrategyId(), false);
+  /**
+   * Make a copy of the strategy, and if the original strategy's name is not ended with ", Copy of", then that
+   * suffix will be appended to it. The copy will be unsaved.
+   *
+   * The steps of the strategy will be cloned, and an id map will be filled during the cloning.
+   *
+   * @param strategy
+   * @param stepIdMap
+   *          the mapping from ids of old steps to those of newly cloned ones will be put into this provided
+   *          map.
+   * @return
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
+  public Strategy copyStrategy_old(Strategy strategy, Map<Long, Long> stepIdMap) throws WdkModelException,
+      WdkUserException {
+    String name = strategy.getName();
+    if (!name.toLowerCase().endsWith(", copy of"))
+      name += ", Copy of";
+    return copyStrategy(strategy.getUser(), strategy, stepIdMap, name);
   }
 
-  Step importStep(User newUser, long newStrategyId, Step oldStep, Map<Long, Long> stepIdsMap)
+  /**
+   *
+   * @param user
+   * @param oldStrategy
+   * @param stepIdsMap An output map of old to new step IDs. Steps recursively encountered in the copy are added by the copy
+   * @param baseName The name to use as a basis for the new name.  If the user does not already have this name,
+   * then use it.  Otherwise, add a numeric suffix to it.  If it already has a suffix, increment it
+   * @return
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
+  public Strategy copyStrategy(User user, Strategy oldStrategy, Map<Long, Long> stepIdsMap, String baseName)
+      throws WdkModelException, WdkUserException {
+
+    // get a new strategy id
+    long newStrategyId = getNewStrategyId();
+
+    Step latestStep = copyStepTree(user, newStrategyId, oldStrategy.getLatestStep(), stepIdsMap);
+
+    String name = addSuffixToStratNameIfNeeded(user, baseName, false);
+
+    return createStrategy(user, newStrategyId, latestStep, name, null, false, oldStrategy.getDescription(),
+        false, false);
+  }
+
+  public Step copyStepTree(User newUser, long newStrategyId, Step oldStep, Map<Long, Long> stepIdsMap)
       throws WdkModelException {
-    User oldUser = oldStep.getUser();
 
-    // Is this answer a boolean? Import depended steps first.
-    Question question = oldStep.getQuestion();
-    AnswerFilterInstance filter = oldStep.getFilter();
+    Map<String, String> paramValues = new HashMap<String, String>(oldStep.getParamValues());
 
-    Map<String, Param> params = question.getParamMap();
+    // recursively copy AnswerParams (aka child steps)
+    // also copy Datasetparams (we want a fresh copy per step because we don't track what steps are using a dataset param.  A 1-1 is easiest to manage)
+    copyAnswerAndDatasetParams(paramValues, newUser, newStrategyId, oldStep, stepIdsMap);
 
-    Map<String, String> paramValues = oldStep.getParamValues();
-    for (String paramName : paramValues.keySet()) {
-      Param param = params.get(paramName);
-      String paramValue = paramValues.get(paramName);
+    Step newStep = StepUtilities.createStep(newUser, newStrategyId, oldStep.getQuestion(), paramValues, oldStep.getFilter(),
+        oldStep.isDeleted(), false, oldStep.getAssignedWeight(), oldStep.getFilterOptions());
 
-      if (param instanceof AnswerParam) {
-        int oldStepId = Integer.parseInt(paramValue);
-        Step oldChildStep = StepUtilities.getStepByValidStepId(oldUser, oldStepId);
-        Step newChildStep = importStep(newUser, newStrategyId, oldChildStep, stepIdsMap);
-        paramValue = Long.toString(newChildStep.getStepId());
-      }
-      else if (param instanceof DatasetParam) {
-        DatasetFactory datasetFactory = _wdkModel.getDatasetFactory();
-        int oldUserDatasetId = Integer.parseInt(paramValue);
-        Dataset oldDataset = datasetFactory.getDataset(oldUser, oldUserDatasetId);
-        Dataset newDataset = datasetFactory.cloneDataset(oldDataset, newUser);
-        paramValue = Long.toString(newDataset.getDatasetId());
-      }
-      paramValues.put(paramName, paramValue);
-    }
-
-    boolean deleted = oldStep.isDeleted();
-    int assignedWeight = oldStep.getAssignedWeight();
-    Step newStep = StepUtilities.createStep(newUser, newStrategyId, question, paramValues, filter,
-          deleted, false, assignedWeight, oldStep.getFilterOptions());
-
-    Events.triggerAndWait(new StepImportedEvent(oldStep, newStep), new WdkModelException(
-        "Unable to execute all operations subsequent to step copy."));
-
-    // create mapping from old step to new step
-    stepIdsMap.put(oldStep.getStepId(), newStep.getStepId());
+    // copy step properties
     newStep.setCollapsedName(oldStep.getCollapsedName());
     newStep.setCollapsible(oldStep.isCollapsible());
-    String customName = oldStep.getBaseCustomName();
-    if (customName != null)
-      newStep.setCustomName(customName);
+    newStep.setCustomName(oldStep.getBaseCustomName());
     newStep.setValid(oldStep.isValid());
+
+    // update properties on disk
     newStep.update(false);
+
+    stepIdsMap.put(oldStep.getStepId(), newStep.getStepId());
+
+    Events.triggerAndWait(new StepCopiedEvent(oldStep, newStep), new WdkModelException(
+        "Unable to execute all operations subsequent to step copy."));
+
     return newStep;
+  }
+
+  private void copyAnswerAndDatasetParams(Map<String, String> paramValues, User newUser, long newStrategyId,
+      Step oldStep, Map<Long, Long> stepIdsMap) throws WdkModelException {
+    for (String paramName : paramValues.keySet()) {
+      Param param = oldStep.getQuestion().getParamMap().get(paramName);
+      String paramValue = paramValues.get(paramName);
+
+      if (param instanceof AnswerParam)
+        paramValues.put(paramName,
+            copyAnswerParam(newUser, newStrategyId, paramValue, oldStep.getUser(), stepIdsMap));
+
+      else if (param instanceof DatasetParam)
+        paramValues.put(paramName, copyDatasetParam(newUser, paramValue, oldStep.getUser()));
+    }
+  }
+
+  private String copyAnswerParam(User newUser, long newStrategyId, String paramValue, User oldUser, Map<Long, Long> stepIdsMap) throws WdkModelException {
+    int oldStepId = Integer.parseInt(paramValue);
+    Step oldChildStep = StepUtilities.getStepByValidStepId(oldUser, oldStepId);
+    Step newChildStep = copyStepTree(newUser, newStrategyId, oldChildStep, stepIdsMap);
+    return Long.toString(newChildStep.getStepId());
+  }
+
+  private String copyDatasetParam(User newUser, String paramValue, User oldUser) throws WdkModelException {
+    DatasetFactory datasetFactory = _wdkModel.getDatasetFactory();
+    int oldUserDatasetId = Integer.parseInt(paramValue);
+    Dataset oldDataset = datasetFactory.getDataset(oldUser, oldUserDatasetId);
+    Dataset newDataset = datasetFactory.cloneDataset(oldDataset, newUser);
+    return Long.toString(newDataset.getDatasetId());
   }
 
   public Strategy getStrategyById(User user, long strategyId) throws WdkModelException, WdkUserException {
@@ -1338,7 +1363,7 @@ public class StepFactory {
     }
   }
 
-  Strategy loadStrategy(String strategySignature) throws WdkModelException, WdkUserException {
+  public Strategy loadStrategy(String strategySignature) throws WdkModelException, WdkUserException {
     PreparedStatement ps = null;
     ResultSet resultSet = null;
     try {
@@ -1477,7 +1502,7 @@ public class StepFactory {
     return createStrategy(user, strategyId, root, name, savedName, saved, description, hidden, isPublic);
   }
 
-  Strategy createStrategy(User user, long strategyId, Step root, String name, String savedName, boolean saved,
+  Strategy createStrategy(User user, long strategyId, Step root, String newName, String savedName, boolean saved,
       String description, boolean hidden, boolean isPublic) throws WdkModelException, WdkUserException {
     LOG.debug("creating strategy, saved=" + saved);
 
@@ -1491,16 +1516,16 @@ public class StepFactory {
         userIdColumn + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME + " = ? AND " +
         COLUMN_IS_SAVED + "= ? AND " + COLUMN_IS_DELETED + "= ?";
     try {
-      // If name is not null, check if strategy exists
-      if (name != null) {
-        if (name.length() > COLUMN_NAME_LIMIT) {
-          name = name.substring(0, COLUMN_NAME_LIMIT - 1);
+      // If newName is not null, check if strategy exists.  if so, just load it and return.  don't create a new one.
+      if (newName != null) {
+        if (newName.length() > COLUMN_NAME_LIMIT) {
+          newName = newName.substring(0, COLUMN_NAME_LIMIT - 1);
         }
         long start = System.currentTimeMillis();
         psCheckName = SqlUtils.getPreparedStatement(_userDbDs, sql);
         psCheckName.setLong(1, userId);
         psCheckName.setString(2, _wdkModel.getProjectId());
-        psCheckName.setString(3, name);
+        psCheckName.setString(3, newName);
         psCheckName.setBoolean(4, saved);
         psCheckName.setBoolean(5, hidden);
         rsCheckName = psCheckName.executeQuery();
@@ -1509,8 +1534,10 @@ public class StepFactory {
         if (rsCheckName.next())
           return loadStrategy(user, rsCheckName.getInt(COLUMN_STRATEGY_ID), false);
       }
-      else {// otherwise, generate default name
-        name = getNextName(user, root.getCustomName(), saved);
+
+      // if newName is null, generate default name from root step (by adding/incrementing numeric suffix)
+      else {
+        newName = addSuffixToStratNameIfNeeded(user, root.getCustomName(), saved);
       }
     }
     catch (SQLException e) {
@@ -1535,7 +1562,7 @@ public class StepFactory {
       psStrategy.setLong(2, userId);
       psStrategy.setLong(3, root.getStepId());
       psStrategy.setBoolean(4, saved);
-      psStrategy.setString(5, name);
+      psStrategy.setString(5, newName);
       psStrategy.setString(6, savedName);
       psStrategy.setString(7, _wdkModel.getProjectId());
       psStrategy.setBoolean(8, false);
@@ -1645,51 +1672,7 @@ public class StepFactory {
     }
   }
 
-  /**
-   * Make a copy of the strategy, and if the original strategy's name is not ended with ", Copy of", then that
-   * suffix will be appended to it. The copy will be unsaved.
-   * 
-   * The steps of the strategy will be cloned, and an id map will be filled during the cloning.
-   * 
-   * @param strategy
-   * @param stepIdMap
-   *          the mapping from ids of old steps to those of newly cloned ones will be put into this provided
-   *          map.
-   * @return
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public Strategy copyStrategy(Strategy strategy, Map<Long, Long> stepIdMap) throws WdkModelException,
-      WdkUserException {
-    String name = strategy.getName();
-    if (!name.toLowerCase().endsWith(", copy of"))
-      name += ", Copy of";
-    return copyStrategy(strategy, stepIdMap, name);
-  }
-
-  /**
-   * Make a copy of a strategy with a new name. The copy will be unsaved.
-   * 
-   * @param strategy
-   * @param name
-   * @param stepIdMap
-   * @return
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public Strategy copyStrategy(Strategy strategy, Map<Long, Long> stepIdMap, String name)
-      throws WdkModelException, WdkUserException {
-    User user = strategy.getUser();
-    long strategyId = getNewStrategyId();
-    Step newRootStep = strategy.getLatestStep().deepClone(strategyId, stepIdMap);
-    name = getNextName(user, name, false);
-    // we want the unsaved strat to save the description #21855
-    Strategy copy = createStrategy(user, strategyId, newRootStep, name, null, false, strategy.getDescription(), false, false);
-    LOG.info("Copy Strategy #" + strategy.getStrategyId() + " -> " + copy.getStrategyId());
-    return copy;
-  }
-
-  private String getNextName(User user, String oldName, boolean saved) throws WdkModelException {
+  private String addSuffixToStratNameIfNeeded(User user, String oldName, boolean saved) throws WdkModelException {
     PreparedStatement psNames = null;
     ResultSet rsNames = null;
     String sql = "SELECT " + COLUMN_NAME + " FROM " + _userSchema + TABLE_STRATEGY + " WHERE " +
@@ -1711,6 +1694,9 @@ public class StepFactory {
       while (rsNames.next())
         names.add(rsNames.getString(COLUMN_NAME));
 
+      // randomly find the first name that matches oldName (\d+).
+      // increment that numeric suffix, and continue looping until the incremented guys is not found.
+      // that's our new name.
       String name = oldName;
       Pattern pattern = Pattern.compile("(.+?)\\((\\d+)\\)");
       while (names.contains(name)) {
@@ -1853,7 +1839,7 @@ public class StepFactory {
 
   /**
    * This method will reset the estimate size of the step and all other steps that depends on it.
-   * 
+   *
    * @param fromStep
    * @return
    * @throws WdkModelException
@@ -1873,7 +1859,7 @@ public class StepFactory {
 
   /**
    * Generates an SQL that will return the step and all the steps along the path back to the root.
-   * 
+   *
    * @param stepId
    * @return an SQL that returns a step_id column.
    * @throws WdkModelException
@@ -1904,7 +1890,7 @@ public class StepFactory {
 
   /**
    * TODO - consider refactor this code into platform.
-   * 
+   *
    * @param stepId
    * @return
    * @throws WdkModelException

@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -35,7 +36,7 @@ public class StepBean {
         this.user = user;
         this.step = step;
     }
-    
+
     public Step getStep() {
         return step;
     }
@@ -46,7 +47,7 @@ public class StepBean {
         }
         return null;
     }
-    
+
     public StepBean getNextStep() {
         Step nextStep = step.getNextStep();
         return (nextStep == null) ? null : new StepBean(user, nextStep);
@@ -307,11 +308,11 @@ public class StepBean {
     /**
      * @param filterName
      * @return
-     * @throws WdkModelException 
-     * @throws SQLException 
-     * @throws JSONException 
-     * @throws WdkUserException 
-     * @throws NoSuchAlgorithmException 
+     * @throws WdkModelException
+     * @throws SQLException
+     * @throws JSONException
+     * @throws WdkUserException
+     * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.user.Step#createStep(org.gusdb.wdk.model.AnswerFilterInstance)
      */
     public StepBean createStep(String filterName, int assignedWeight) throws WdkModelException  {
@@ -343,7 +344,12 @@ public class StepBean {
      * @see org.gusdb.wdk.model.user.Step#deepClone()
      */
     public StepBean deepClone(Long strategyId, Map<Long, Long> stepIdMap) throws WdkModelException {
-        return new StepBean(user, step.deepClone(strategyId, stepIdMap));
+        StepFactory factory = step.getStepFactory();
+        return new StepBean(user, factory.copyStepTree(user.getUser(), strategyId, step, stepIdMap));
+    }
+
+    public StepFactory getStepFactory() {
+      return step.getStepFactory();
     }
 
     public QuestionBean getQuestion() throws WdkModelException {
@@ -415,7 +421,7 @@ public class StepBean {
     }
 
     /**
-     * 
+     *
      * @see org.gusdb.wdk.model.user.Step#resetAnswerValue()
      */
     public void resetAnswerValue() {
@@ -482,11 +488,11 @@ public class StepBean {
   public boolean isUncollapsible() {
       return step.isUncollapsible();
   }
-  
+
   public Exception getException() {
       return step.getException();
   }
-  
+
   public Map<Long, StepAnalysisInstance> getAppliedAnalyses() throws WdkModelException {
       return user.getUser().getWdkModel().getStepAnalysisFactory().getAppliedAnalyses(step);
   }
