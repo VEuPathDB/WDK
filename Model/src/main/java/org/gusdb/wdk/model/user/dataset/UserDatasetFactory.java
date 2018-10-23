@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.json.JsonType;
@@ -21,11 +22,13 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 
 public class UserDatasetFactory {
+  private static Logger LOG = Logger.getLogger(UserDatasetFactory.class);
 
   private final WdkModel _wdkModel;
   private final String _userDatasetSchema;
 
   public UserDatasetFactory(WdkModel wdkModel) {
+
     _wdkModel = wdkModel;
     // TODO: put in model-config.xml + masterConfig.yaml and fetch from there
     _userDatasetSchema = "ApiDBUserDatasets.";

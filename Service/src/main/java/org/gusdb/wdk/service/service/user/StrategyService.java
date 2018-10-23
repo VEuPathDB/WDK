@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.service.user;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +29,7 @@ import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.strategy.StrategyRequest;
 import org.gusdb.wdk.service.service.AbstractWdkService;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 
@@ -60,25 +62,37 @@ public class StrategyService extends UserService {
 
       Strategy strategy;
       if (json.has(JsonKeys.SOURCE_SIGNATURE)) {
-        Strategy sourceStrategy = stepFactory.loadStrategy( json.getString(JsonKeys.SOURCE_SIGNATURE));
-        strategy = stepFactory.copyStrategy(user, sourceStrategy, sourceStrategy.getName());       
-      } else {
+       strategy = copyStrategy(user, stepFactory, json);
+      }
+      else {
         strategy = createNewStrategy(user, stepFactory, json);
       }
 
-      return Response.ok(new JSONObject().put(JsonKeys.ID, strategy.getStrategyId()))
-          .location(getUriInfo().getAbsolutePathBuilder().build(strategy.getStrategyId()))
-          .build();
-     }
-     catch(WdkModelException wme) {
-           throw new WdkModelException("Unable to create the strategy.", wme);
-     }
-     catch(RequestMisformatException rmfe) {
-           throw new BadRequestException(rmfe);
-     }
-     catch(WdkUserException wue) {
-           throw new DataValidationException(wue);
-     }
+      return Response.ok(new JSONObject().put(JsonKeys.ID, strategy.getStrategyId())).location(
+          getUriInfo().getAbsolutePathBuilder().build(strategy.getStrategyId())).build();
+    }
+    catch (WdkModelException wme) {
+      throw new WdkModelException("Unable to create the strategy.", wme);
+    }
+    catch (RequestMisformatException rmfe) {
+      throw new BadRequestException(rmfe);
+    }
+    catch (WdkUserException wue) {
+      throw new DataValidationException(wue);
+    }
+  }
+    
+  private Strategy copyStrategy(User user, StepFactory stepFactory, JSONObject json) throws WdkModelException, WdkUserException, JSONException {
+
+    Strategy sourceStrategy = stepFactory.loadStrategy(json.getString(JsonKeys.SOURCE_SIGNATURE));
+    String baseName = sourceStrategy.getName(); // backend might add a numeric suffix to the basename, if duplicate
+    
+    // append "Copy of" if this is an intra-user copy (unless there is already a "Copy of" present)
+    if (sourceStrategy.getUser().getUserId() == user.getUserId() && 
+      !baseName.toLowerCase().endsWith(", copy of")) baseName += ", Copy of";
+
+    return stepFactory.copyStrategy(user, sourceStrategy, new LinkedHashMap<Long, Long>(),
+        baseName);  
   }
     
   private Strategy createNewStrategy(User user, StepFactory stepFactory, JSONObject json)

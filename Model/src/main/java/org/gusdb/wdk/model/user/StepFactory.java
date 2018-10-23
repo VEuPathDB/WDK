@@ -667,7 +667,7 @@ public class StepFactory {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Strategy copyStrategy(Strategy strategy, Map<Long, Long> stepIdMap) throws WdkModelException,
+  public Strategy copyStrategy_old(Strategy strategy, Map<Long, Long> stepIdMap) throws WdkModelException,
       WdkUserException {
     String name = strategy.getName();
     if (!name.toLowerCase().endsWith(", copy of"))
@@ -675,13 +675,18 @@ public class StepFactory {
     return copyStrategy(strategy.getUser(), strategy, stepIdMap, name);
   }
 
-  public Strategy copyStrategy(User user, Strategy oldStrategy, String name)
-      throws WdkModelException, WdkUserException {
-    Map<Long, Long> stepIdsMap = new LinkedHashMap<Long, Long>();
-    return copyStrategy(user, oldStrategy, stepIdsMap, name);
-  }
-
-  public Strategy copyStrategy(User user, Strategy oldStrategy, Map<Long, Long> stepIdsMap, String name)
+  /**
+   * 
+   * @param user
+   * @param oldStrategy
+   * @param stepIdsMap An output map of old to new step IDs. Steps recursively encountered in the copy are added by the copy
+   * @param baseName The name to use as a basis for the new name.  If the user does not already have this name, 
+   * then use it.  Otherwise, add a numeric suffix to it.  If it already has a suffix, increment it
+   * @return
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
+  public Strategy copyStrategy(User user, Strategy oldStrategy, Map<Long, Long> stepIdsMap, String baseName)
       throws WdkModelException, WdkUserException {
 
     // get a new strategy id
@@ -689,7 +694,7 @@ public class StepFactory {
 
     Step latestStep = copyStepTree(user, newStrategyId, oldStrategy.getLatestStep(), stepIdsMap);
 
-    // String name = getNextName(user, oldStrategy.getName(), false);
+    String name = addSuffixToStratNameIfNeeded(user, baseName, false);
 
     return createStrategy(user, newStrategyId, latestStep, name, null, false, oldStrategy.getDescription(),
         false, false);
@@ -872,8 +877,8 @@ public class StepFactory {
     return createStrategy(user, root, name, savedName, saved, description, hidden, isPublic, strategyId);
   }
 
-  public Strategy createStrategy(User user, Step root, String name, String savedName, boolean saved,
-      String description, boolean hidden, boolean isPublic, long strategyId) throws WdkModelException {
+  Strategy createStrategy(User user, long strategyId, Step root, String newName, String savedName, boolean saved,
+      String description, boolean hidden, boolean isPublic) throws WdkModelException, WdkUserException {
 
     LOG.debug("creating strategy, saved=" + saved);
 
@@ -892,16 +897,16 @@ public class StepFactory {
         "   AND " + COLUMN_IS_SAVED + "= ?" +
         "   AND " + COLUMN_IS_DELETED + "= ?";
     try {
-      // If name is not null, check if strategy exists
-      if (name != null) {
-        if (name.length() > COLUMN_NAME_LIMIT) {
-          name = name.substring(0, COLUMN_NAME_LIMIT - 1);
+      // If newName is not null, check if strategy exists.  if so, just load it and return.  don't create a new one.
+      if (newName != null) {
+        if (newName.length() > COLUMN_NAME_LIMIT) {
+          newName = newName.substring(0, COLUMN_NAME_LIMIT - 1);
         }
         long start = System.currentTimeMillis();
         psCheckName = SqlUtils.getPreparedStatement(_userDbDs, sql);
         psCheckName.setLong(1, userId);
         psCheckName.setString(2, _wdkModel.getProjectId());
-        psCheckName.setString(3, name);
+        psCheckName.setString(3, newName);
         psCheckName.setBoolean(4, saved);
         psCheckName.setBoolean(5, hidden);
         rsCheckName = psCheckName.executeQuery();
@@ -913,8 +918,10 @@ public class StepFactory {
           return strategy.orElseThrow(() -> new WdkModelException("Newly created strategy could not be found."));
         }
       }
-      else {// otherwise, generate default name
-        name = getNextName(user, root.getCustomName(), saved);
+      
+      // if newName is null, generate default name from root step (by adding/incrementing numeric suffix)
+      else {
+        newName = addSuffixToStratNameIfNeeded(user, root.getCustomName(), saved);
       }
     }
     catch (SQLException e) {
@@ -939,7 +946,7 @@ public class StepFactory {
       psStrategy.setLong(2, userId);
       psStrategy.setLong(3, root.getStepId());
       psStrategy.setBoolean(4, saved);
-      psStrategy.setString(5, name);
+      psStrategy.setString(5, newName);
       psStrategy.setString(6, savedName);
       psStrategy.setString(7, _wdkModel.getProjectId());
       psStrategy.setBoolean(8, false);
@@ -1051,7 +1058,7 @@ public class StepFactory {
     }
   }
 
-  private String getNextName(User user, String oldName, boolean saved) throws WdkModelException {
+  private String addSuffixToStratNameIfNeeded(User user, String oldName, boolean saved) throws WdkModelException {
     PreparedStatement psNames = null;
     ResultSet rsNames = null;
     String sql = "SELECT " + COLUMN_NAME + " FROM " + _userSchema + TABLE_STRATEGY + " WHERE " +
@@ -1073,6 +1080,9 @@ public class StepFactory {
       while (rsNames.next())
         names.add(rsNames.getString(COLUMN_NAME));
 
+      // randomly find the first name that matches oldName (\d+).  
+      // increment that numeric suffix, and continue looping until the incremented guys is not found.
+      // that's our new name.
       String name = oldName;
       Pattern pattern = Pattern.compile("(.+?)\\((\\d+)\\)");
       while (names.contains(name)) {

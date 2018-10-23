@@ -120,7 +120,10 @@ public class DefaultJsonReporter extends AbstractReporter {
       JSONObject metadata = getMetaData(_baseAnswer, _attributes.keySet(), _tables.keySet(), numRecordsReturned);
 
       // end records array, write meta property, and close object
-      writer.endArray().key(JsonKeys.META).value(metadata).endObject();
+      writer.endArray().key(JsonKeys.META).value(metadata);
+      
+      // allow subclasses an opportunity to extend the JSON
+      writeAdditionalJson(writer).endObject();
     }
     catch (WdkUserException e) {
       // should already have validated any user input
@@ -130,6 +133,14 @@ public class DefaultJsonReporter extends AbstractReporter {
       throw new WdkModelException("Unable to write reporter result to output stream", e);
     }
   }
+  
+  /**
+   * to be used by subclasses, to add their additional json to the 
+   * top level json object
+   * @param writer
+   * @return the JsonWriter that now includes the addtions, if any
+   */
+  public JsonWriter writeAdditionalJson(JsonWriter writer) { return writer; }
 
   private static JSONObject getMetaData(AnswerValue answerValue,
       Set<String> includedAttributes, Set<String> includedTables, int numRecordsReturned)
