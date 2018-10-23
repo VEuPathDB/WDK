@@ -38,7 +38,7 @@ public class RecordStreamFactory {
   
       // if result is smaller than maxPageSize, load entire answer into memory and lazy load attributes/tables
       if (answerValue.getResultSizeFactory().getResultSize() <= MAX_PAGE_SIZE) {
-        return new PagedAnswerRecordStream(answerValue.cloneWithNewPaging(1, MAX_PAGE_SIZE), MAX_PAGE_SIZE);
+        return new PagedAnswerRecordStream(answerValue, answerValue.getResultSizeFactory().getResultSize());
       }
   
       // otherwise, use file-based; most efficient method for large results where we already know attrs/tables

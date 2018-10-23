@@ -4,10 +4,10 @@
     "additionalProperties": false,
     "properties": {
 	"name": {
-	    "type": "string",
+	    "type": "string"
 	},
 	"value": {
-	},
+	}
     },
     "required": [
 	"name",

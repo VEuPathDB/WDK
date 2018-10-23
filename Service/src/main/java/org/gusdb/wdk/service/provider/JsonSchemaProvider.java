@@ -50,7 +50,7 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
   @Override
   public boolean isReadable(Class<?> type, Type genericType, Annotation[] anns,
       MediaType mediaType) {
-    return MediaType.APPLICATION_JSON_TYPE.equals(mediaType);
+    return "json".equals(mediaType.getSubtype());
   }
 
   @Override

@@ -203,6 +203,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     copy.setStatus(ExecutionStatus.CREATED);
     copy.setState(StepAnalysisState.NO_RESULTS);
     writeNewAnalysisContext(copy, true);
+    copyProperties(context, copy);
     return copy;
   }
 
@@ -230,20 +231,29 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       writeNewAnalysisContext(toContext, false);
       LOG.info("Wrote new duplicate context with ID " + toContext.getAnalysisId() +
           " for revised step " + toContext.getStep().getStepId() + ".  Copying properties...");
-      // copy properties of old context to new and make sure to close- not closing is a connection leak!
-      InputStream propertyStream = null;
-      try {
-        propertyStream = getProperties(fromContext.getAnalysisId());
-        if (propertyStream != null) {
-          setProperties(toContext.getAnalysisId(), propertyStream);
-          LOG.info("Properties copied.");
-        }
-      }
-      finally {
-        IoUtil.closeQuietly(propertyStream);
-      }
+      copyProperties(fromContext, toContext);
     }
     LOG.info("Completed copy.");
+  }
+
+  private void copyProperties(StepAnalysisContext fromContext, StepAnalysisContext toContext)
+      throws WdkModelException {
+    // copy properties of old context to new and make sure to close- not closing is a connection leak!
+    InputStream propertyStream = null;
+    try {
+      propertyStream = getProperties(fromContext.getAnalysisId());
+      if (propertyStream != null) {
+        setProperties(toContext.getAnalysisId(), propertyStream);
+        LOG.info("Properties copied.");
+      }
+    }
+    catch (WdkUserException e) {
+      // IDs should be valid here since the exist in contexts (not passed in by service)
+      throw new WdkModelException("Passed context contains invalid step analysis ID.", e);
+    }
+    finally {
+      IoUtil.closeQuietly(propertyStream);
+    }
   }
 
   private void writeNewAnalysisContext(StepAnalysisContext context, boolean adjustDisplayName)

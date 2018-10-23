@@ -67,6 +67,8 @@ public class UserDatasetService extends UserService {
   @Path("user-datasets")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAllUserDatasets(@QueryParam("expandDetails") Boolean expandDatasets) throws WdkModelException {
+    LOG.debug("\nservice user-datasets has been called ---gets all user datasets\n");
+
     expandDatasets = getFlag(expandDatasets, false);
     User user = getUser(Access.PRIVATE);
     long userId = user.getUserId();
@@ -104,6 +106,8 @@ public class UserDatasetService extends UserService {
   @Path("user-datasets/{datasetId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getUserDataset(@PathParam("datasetId") String datasetIdStr) throws WdkModelException {
+    LOG.debug("\nservice user-datasets/datasetId has been called  --gives you one dataset\n");
+
     User user = getUser(Access.PRIVATE);
     long userId = user.getUserId();
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
@@ -139,6 +143,8 @@ public class UserDatasetService extends UserService {
   @Path("user-datasets/{datasetId}/user-datafiles/{datafileName}")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   public Response getBinaryDatafile(@PathParam("datasetId") String datasetIdStr, @PathParam("datafileName") String datafileName) throws WdkModelException, WdkUserException {
+    LOG.debug("\nservice user-datasets/datasetId/user-datafiles/filename has been called\n");
+
     long userId = getUser(Access.PRIVATE).getUserId();
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();
@@ -181,6 +187,8 @@ public class UserDatasetService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response updateMetaInfo(@PathParam("datasetId") String datasetIdStr, String body) throws WdkModelException {
+    LOG.debug("\nservice user-datasets/datasetId/meta has been called\n");
+
     long userId = getUser(Access.PRIVATE).getUserId();
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();

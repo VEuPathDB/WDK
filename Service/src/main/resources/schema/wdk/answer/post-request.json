@@ -8,10 +8,10 @@
 
 	},
 	"formatConfig": {
-	    "$ref": "/schema/wdk/includes/answer-formatConfig-json-request-.json"
+	    "$ref": "/schema/wdk/includes/answer-formatConfig-json-request.json"
 	}
     },
     "required" : [
-	"answerSpec",
+	"answerSpec"
     ]
 }
