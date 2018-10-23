@@ -878,7 +878,7 @@ public class FilterParamNew extends AbstractDependentParam {
     try {
       // get the applied filters and the ontology
       List<FilterParamNewStableValue.Filter> filters = stableValue.getFilters();
-      Map<String, OntologyItem> ontology = getOntology(user, contextParamValues);
+      Map<String, OntologyItem> ontology = getOntology(user, contextParamValues); 
      
       // if no filters, return sql for the full set of internals
       String filteredSql;
