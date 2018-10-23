@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.provider;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
@@ -64,9 +65,7 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
       Annotation[] annotations, MediaType mediaType,
       MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
       throws IOException, WebApplicationException {
-    final JsonNode node = (o instanceof JsonNode)
-        ? (JsonNode) o
-        : MAPPER.convertValue(o, JsonNode.class);
+    final JsonNode node = MAPPER.convertValue(o, JsonNode.class);
 
     final String schema = findOutAnnotation()
         .map(OutSchema::value)
@@ -88,7 +87,8 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
   public Object readFrom(Class<Object> cls, Type type, Annotation[] anns,
       MediaType media, MultivaluedMap<String,String> headers, InputStream stream)
       throws IOException, WebApplicationException {
-    final JsonNode node = MAPPER.readTree(stream);
+    final JsonNode node = Optional.ofNullable(MAPPER.readTree(stream))
+        .orElseGet(NullNode::getInstance);
 
     final String schema = findInAnnotation()
         .map(InSchema::value)
@@ -103,7 +103,7 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
       }
     }
 
-    return  MAPPER.convertValue(node, cls);
+    return MAPPER.convertValue(node, cls);
   }
 
   private ProcessingReport validate(final String path, final JsonNode node)
