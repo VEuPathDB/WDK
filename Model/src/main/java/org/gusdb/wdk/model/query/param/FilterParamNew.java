@@ -106,7 +106,8 @@ public class FilterParamNew extends AbstractDependentParam {
 
   private String _metadataQueryRef;
   private Query _metadataQuery;
-
+  private List<String> _metadataValueColumns = new ArrayList<String>();  // the value columns actually found in the metadata query
+  
   private String _ontologyQueryRef;
   private Query _ontologyQuery;
 
@@ -157,6 +158,7 @@ public class FilterParamNew extends AbstractDependentParam {
     _recordIdColumn = param._recordIdColumn;
     _countPredictsAnswerCount = param._countPredictsAnswerCount;
     _minSelectedCount = param._minSelectedCount;
+    _metadataValueColumns = new ArrayList<String>(param._metadataValueColumns);
   }
 
   @Override
@@ -325,6 +327,9 @@ public class FilterParamNew extends AbstractDependentParam {
     // resolve metadata query
     ///////////////////////////
 
+    _metadataValueColumns = new ArrayList<String>();
+    _metadataValueColumns.add(COLUMN_INTERNAL);
+    
     List<String> metadataCols = new ArrayList<String>(OntologyItemType.getTypedValueColumnNames());
     metadataCols.add(COLUMN_INTERNAL);
     metadataCols.add(COLUMN_ONTOLOGY_ID);
@@ -340,10 +345,12 @@ public class FilterParamNew extends AbstractDependentParam {
     if (columns.containsKey(COLUMN_FILTER_ITEM_ID)) { // if model includes this optional column, use it
       metadataCols.add(COLUMN_FILTER_ITEM_ID);
       _filterItemIdColumn = COLUMN_FILTER_ITEM_ID;
+      _metadataValueColumns.add(COLUMN_FILTER_ITEM_ID);
     }
     if (columns.containsKey(COLUMN_RECORD_ID)) { // if model includes this optional column, use it
       metadataCols.add(COLUMN_RECORD_ID);
       _recordIdColumn = COLUMN_RECORD_ID;
+      _metadataValueColumns.add(COLUMN_RECORD_ID);
     }
     if (columns.size() != metadataCols.size())
       throw new WdkModelException(errMsgPrefix + " has the wrong number of columns (" + columns.size() + ").  It should have " + String.join(",", metadataCols));
@@ -449,16 +456,16 @@ public class FilterParamNew extends AbstractDependentParam {
     // sql to find the filtered count
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(appliedFilters, this);
     
-    // get filtered   filter_item_ids  count
-    String filteredItemIdsSql = getFilteredIdsSql(user, stableValue, contextParamValues, _metadataQuery, _filterItemIdColumn);
+    // get filtered filter_item_ids  count
+    String filteredItemIdsSql = getFilteredFilterItemIdsSql(user, stableValue, contextParamValues, _metadataQuery, _filterItemIdColumn, null);
     sql = "select count( distinct " + _filterItemIdColumn + ") as CNT from (" + filteredItemIdsSql + ")";
     fpsc.filteredFilterItemCount = runCountSql(sql, "filterItemIds-filtered");
 
     if (_filterItemIdColumn.equals(_recordIdColumn)) {
       fpsc.filteredRecordCount = fpsc.filteredFilterItemCount;
     } else {
-      String filteredRecordIdsSql = getFilteredIdsSql(user, stableValue, contextParamValues, _metadataQuery, _recordIdColumn);
-      sql = "select count( distinct " + _recordIdColumn + ") as CNT from (" + filteredRecordIdsSql + ")";
+      String filteredMetadataSql = getFilteredMetadataSql(user, stableValue, contextParamValues, _metadataQuery, null);
+      sql = "select count( distinct " + _recordIdColumn + ") as CNT from (" + filteredMetadataSql + ")";
       fpsc.filteredRecordCount = runCountSql(sql, "recordIds-filtered");
     }
     return fpsc;
@@ -525,7 +532,7 @@ public class FilterParamNew extends AbstractDependentParam {
     
     // get sql for the set internal ids that are pruned by the filters
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(appliedFilters, this);
-    String filteredFilterItemIdSql = getFilteredIdsSql(user, stableValue, contextParamValues, getMetadataQuery(), _filterItemIdColumn,
+    String filteredFilterItemIdSql = getFilteredFilterItemIdsSql(user, stableValue, contextParamValues, getMetadataQuery(), _filterItemIdColumn,
         " where " + COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId().replaceAll("'", "''") + "'");
 
     // use that set of ids to limit our ontology id's metadata
@@ -795,36 +802,28 @@ public class FilterParamNew extends AbstractDependentParam {
   
   private SqlQuery createValuesMapQuery(WdkModel wdkModel, String sql, List<String> colNames, Param[] bgdQueryParams, Param[] ontoQueryParams)
       throws WdkModelException {
-  QuerySet querySet = wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
-  SqlQuery query = new SqlQuery();
-  query.setName(getFullName() + "_values_map");
-  query.setIsCacheable(true);
-  query.setSql(sql);
-  for (Param param : bgdQueryParams) query.addParam(param);
-  for (Param param : ontoQueryParams) query.addParam(param);
-  querySet.addQuery(query);
-  for (String colName : colNames) {
+    QuerySet querySet = wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
+    SqlQuery query = new SqlQuery();
+    query.setName(getFullName() + "_values_map");
+    query.setIsCacheable(true);
+    query.setSql(sql);
+    for (Param param : bgdQueryParams)
+      query.addParam(param);
+    for (Param param : ontoQueryParams)
+      query.addParam(param);
+    querySet.addQuery(query);
+    for (String colName : colNames) {
       Column column = new Column();
       column.setName(colName);
       column.setQuery(query);
       query.addColumn(column);
-  }
-  query.resolveReferences(wdkModel);
-  return query;
-}
-
-   
-  /**
-   * this is factored out to allow use with an alternative metadata query (eg, the summaryMetadataQuery)
-   * @return sql that provides a filtered set of internal IDs
-   */
-  String getFilteredIdsSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String idColumn)
-      throws WdkModelException {
-    return getFilteredIdsSql(user, stableValue, contextParamValues, metadataQuery, idColumn, null);
+    }
+    query.resolveReferences(wdkModel);
+    return query;
   }
 
   /**
-   * Return sql that provides a filtered set of IDs.    
+   * Return sql that provides a filtered set of IDs, using the id column provided.    
    * @param user
    * @param stableValue
    * @param contextParamValues
@@ -834,46 +833,76 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return
    * @throws WdkModelException
    */
-  String getFilteredIdsSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String idColumn, String defaultFilterClause)
+    String getFilteredFilterItemIdsSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String idColumn, String defaultFilterClause)
        throws WdkModelException {
 
      try {
-       
        // get sql that selects the full set of distinct internals from the metadata query
        String metadataSql;
        QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
        metadataSql = instance.getSql();
        String metadataTableName = "md";
-       String filterSelectSql = "SELECT distinct md." + idColumn + " FROM (" + metadataSql + ") md";
+       String filterSelectSql = "SELECT distinct " + metadataTableName + "." + idColumn + " FROM (" + metadataSql + ") " + metadataTableName;
        
-       // get the applied filters and the ontology
-       List<FilterParamNewStableValue.Filter> filters = stableValue.getFilters();
-       Map<String, OntologyItem> ontology = getOntology(user, contextParamValues);
-      
-       // if no filters, return sql for the full set of internals
-       String filteredSql;
-       if (filters.size() == 0) {
-         filteredSql = filterSelectSql;
-         if (defaultFilterClause != null) filteredSql += defaultFilterClause;
-       } 
-       
-       // otherwise apply the filters
-       else {
-        List<String> filterSqls = new ArrayList<String>();
-        for (FilterParamNewStableValue.Filter filter : filters)
-          filterSqls.add(filter.getFilterAsWhereClause(metadataTableName, ontology, filterSelectSql));
-
-        filteredSql = FormatUtil.join(filterSqls, " INTERSECT ");
-       }
-       LOG.info("filteredSql:\n" + filteredSql);
-       return filteredSql;
+       return getFilteredIdsSql(user, stableValue, contextParamValues, metadataQuery, metadataTableName, filterSelectSql, defaultFilterClause);
      }
      catch (JSONException | WdkUserException ex) {
        throw new WdkModelException(ex);
      }
    }
    
+    /*
+     * Apply provided filters to metadata sql, returning all three value columns
+     */
+    String getFilteredMetadataSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String defaultFilterClause)
+        throws WdkModelException {
 
+      try {
+        // get sql that selects the full set of distinct internals from the metadata query
+        String metadataSql;
+        QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
+        metadataSql = instance.getSql();
+        String metadataTableName = "md";
+        String selectCols = String.join(", md.", _metadataValueColumns);
+        String filterSelectSql = "SELECT md." + selectCols + " FROM (" + metadataSql + ") " + metadataTableName;           
+        return getFilteredIdsSql(user, stableValue, contextParamValues, metadataQuery, metadataTableName, filterSelectSql, defaultFilterClause);
+     }
+      catch (JSONException | WdkUserException ex) {
+        throw new WdkModelException(ex);
+      }
+    }
+    
+    private String getFilteredIdsSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String metadataTableAbbrev, String filterSelectSql, String defaultFilterClause)
+      throws WdkModelException {
+
+    try {
+      // get the applied filters and the ontology
+      List<FilterParamNewStableValue.Filter> filters = stableValue.getFilters();
+      Map<String, OntologyItem> ontology = getOntology(user, contextParamValues);
+     
+      // if no filters, return sql for the full set of internals
+      String filteredSql;
+      if (filters.size() == 0) {
+        filteredSql = filterSelectSql;
+        if (defaultFilterClause != null) filteredSql += defaultFilterClause;
+      } 
+      
+      // otherwise apply the filters
+      else {
+       List<String> filterSqls = new ArrayList<String>();
+       for (FilterParamNewStableValue.Filter filter : filters)
+         filterSqls.add(filter.getFilterAsWhereClause(metadataTableAbbrev, ontology, filterSelectSql));
+
+       filteredSql = FormatUtil.join(filterSqls, " INTERSECT ");
+      }
+      LOG.info("filteredSql:\n" + filteredSql);
+      return filteredSql;
+    }
+    catch (JSONException ex) {
+      throw new WdkModelException(ex);
+    }
+  }
+  
   public JSONObject getJsonValues(User user, Map<String, String> contextParamValues)
       throws WdkModelException {
 
