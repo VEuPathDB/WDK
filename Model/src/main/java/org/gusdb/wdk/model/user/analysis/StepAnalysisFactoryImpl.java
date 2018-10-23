@@ -202,6 +202,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     copy.setStatus(ExecutionStatus.CREATED);
     copy.setState(StepAnalysisState.NO_RESULTS);
     writeNewAnalysisInstance(copy, true);
+    copyProperties(instance, copy);
     return copy;
   }
 
@@ -227,22 +228,32 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
         toInstance.setIsValidStep(false, e.getMessage());
       }
       writeNewAnalysisInstance(toInstance, false);
-      LOG.info("Wrote new duplicate instance with ID " + toInstance.getAnalysisId() +
+      LOG.info("Wrote new duplicate context with ID " + toInstance.getAnalysisId() +
           " for revised step " + toInstance.getStep().getStepId() + ".  Copying properties...");
-      // copy properties of old instance to new and make sure to close- not closing is a connection leak!
-      InputStream propertyStream = null;
-      try {
-        propertyStream = getProperties(fromInstance.getAnalysisId());
-        if (propertyStream != null) {
-          setProperties(toInstance.getAnalysisId(), propertyStream);
-          LOG.info("Properties copied.");
-        }
-      }
-      finally {
-        IoUtil.closeQuietly(propertyStream);
-      }
+      // copy properties of old context to new and make sure to close- not closing is a connection leak!
+      copyProperties(fromInstance, toInstance);
     }
     LOG.info("Completed copy.");
+  }
+
+  private void copyProperties(StepAnalysisInstance fromInstance, StepAnalysisInstance toInstance)
+      throws WdkModelException {
+    // copy properties of old context to new and make sure to close- not closing is a connection leak!
+    InputStream propertyStream = null;
+    try {
+      propertyStream = getProperties(fromInstance.getAnalysisId());
+      if (propertyStream != null) {
+        setProperties(toInstance.getAnalysisId(), propertyStream);
+        LOG.info("Properties copied.");
+      }
+    }
+    catch (WdkUserException e) {
+      // IDs should be valid here since the exist in contexts (not passed in by service)
+      throw new WdkModelException("Passed context contains invalid step analysis ID.", e);
+    }
+    finally {
+      IoUtil.closeQuietly(propertyStream);
+    }
   }
 
   private void writeNewAnalysisInstance(StepAnalysisInstance instance, boolean adjustDisplayName)
