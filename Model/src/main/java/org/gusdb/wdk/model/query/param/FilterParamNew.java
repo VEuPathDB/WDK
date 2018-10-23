@@ -870,7 +870,7 @@ public class FilterParamNew extends AbstractDependentParam {
       catch (JSONException | WdkUserException ex) {
         throw new WdkModelException(ex);
       }
-    }
+    } 
     
     private String getFilteredIdsSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String metadataTableAbbrev, String filterSelectSql, String defaultFilterClause)
       throws WdkModelException {
