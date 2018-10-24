@@ -32,6 +32,7 @@ import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
+import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.factory.AnswerValueFactory;
 import org.gusdb.wdk.service.formatter.StepFormatter;
 import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;
@@ -63,11 +64,11 @@ public class StepService extends UserService {
   @Path("steps")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createStep(@QueryParam("runStep") Boolean runStep, String body) throws WdkModelException, DataValidationException {
+  @InSchema("wdk/users/steps/post-request")
+  public Response createStep(@QueryParam("runStep") Boolean runStep, JSONObject jsonBody) throws WdkModelException, DataValidationException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      JSONObject json = new JSONObject(body);
-      StepRequest stepRequest = StepRequest.newStepFromJson(json, getWdkModelBean(), user);
+      StepRequest stepRequest = StepRequest.newStepFromJson(jsonBody, getWdkModelBean(), user);
       
       // validate the step and throw a DataValidation exception if not valid
       // new step are, by definition, not part of a strategy
