@@ -8,6 +8,7 @@ import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -32,10 +33,14 @@ public class PublicStrategyService extends AbstractWdkService {
    * Get a list of all valid public strategies
    */
   @GET
-  public Response getPublicStrategies() throws JSONException, WdkModelException {
+  public Response getPublicStrategies(@QueryParam("userEmail") List<String> userEmails) throws JSONException, WdkModelException {
     List<Strategy> publicStrategies = getWdkModel().getStepFactory().loadPublicStrategies();
     List<Strategy> validPublicStrategies = filter(publicStrategies, pSwallow(strategy -> strategy.isValid()));
-    return Response.ok(StrategyFormatter.getStrategiesJson(validPublicStrategies).toString()).build();
+    List<Strategy> filteredPublicStrategies = userEmails.isEmpty() ? validPublicStrategies :
+      filter(validPublicStrategies, pSwallow(strategy ->
+        userEmails.stream().anyMatch(userEmail ->
+          strategy.getUser().getEmail().equals(userEmail))));
+    return Response.ok(StrategyFormatter.getStrategiesJson(filteredPublicStrategies).toString()).build();
   }
 
 }
