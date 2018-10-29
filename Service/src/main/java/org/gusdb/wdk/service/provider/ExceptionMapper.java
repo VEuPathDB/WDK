@@ -95,8 +95,8 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
    * Unwinds the exception stack, pulling out and assembling into one message, all
    * the exception messages but only if a JSONException or a WdkUserException exists
    * somewhere within the stack.  The unwinding stops when either exception is found.
-   * If neither exception is found, the message of the top leve exception only is
-   * returned.  The underlying JSOMException and WdkUserException message are potentially
+   * If neither exception is found, the message of the top level exception only is
+   * returned.  The underlying JSONException and WdkUserException message are potentially
    * very informative.  This method is protection against a developer who neglects
    * to bubble up that useful information.
    * @param e = top level exception
