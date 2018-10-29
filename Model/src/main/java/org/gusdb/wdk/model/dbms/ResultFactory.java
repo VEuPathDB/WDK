@@ -136,9 +136,7 @@ public class ResultFactory {
       InstanceInfo instanceInfo = USE_INSTANCE_INFO_CACHE ?
           INSTANCE_INFO_CACHE.getValue(InstanceInfoFetcher.getKey(checksum), instanceInfoFetcher) :
           getInstanceInfo(checksum);
-      if (instanceInfo.message != null) {
-        instance.setResultMessage(instanceInfo.message);
-      }
+      instance.setResultMessage(instanceInfo.message);
       return instanceInfo;
     }
     catch (ValueProductionException e) {

@@ -340,7 +340,7 @@ public class AnswerValueBean {
      * 
      * @see org.gusdb.wdk.model.Answer#getResultMessage()
      */
-    public String getResultMessage() {
+    public String getResultMessage() throws WdkModelException, WdkUserException {
         String message = answerValue.getResultMessage();
         System.out.println("Result message from AnswerBean: " + message);
         return message;
