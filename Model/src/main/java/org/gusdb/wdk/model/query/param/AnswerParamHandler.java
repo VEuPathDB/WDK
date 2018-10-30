@@ -148,7 +148,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
           if (pos < 0) {
             long strategyId = Long.parseLong(strategyKey);
             Strategy strategy = StepUtilities.getStrategy(user, strategyId);
-            stepId = Long.toString(strategy.getLatestStepId());
+            stepId = Long.toString(strategy.getRootStepId());
           }
           else {
             stepId = strategyKey.substring(pos + 1);

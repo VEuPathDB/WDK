@@ -80,7 +80,7 @@ public class ResultFactory {
     queryInstance.setInstanceId(instanceId);
 
     // get the cached sql
-    StringBuffer sql = new StringBuffer("SELECT * ");
+    StringBuilder sql = new StringBuilder("SELECT * ");
     sql.append(" FROM ").append(getCacheTableName(instanceId));
     //    sql.append(" WHERE ").append(CacheFactory.COLUMN_INSTANCE_ID);
     //sql.append(" = ").append(instanceId);

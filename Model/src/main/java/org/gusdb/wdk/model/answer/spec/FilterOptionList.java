@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.gusdb.fgputil.validation.Validateable;
@@ -21,32 +20,37 @@ import org.gusdb.wdk.model.question.Question;
 
 public class FilterOptionList implements Iterable<FilterOption>, Validateable {
 
-  public static class FilterOptionListBuilder implements Iterable<FilterOptionBuilder>{
+  public static class FilterOptionListBuilder extends ArrayList<FilterOptionBuilder> {
 
-    private List<FilterOptionBuilder> _options = new ArrayList<>();
+    private static final long serialVersionUID = 1L;
 
     private FilterOptionListBuilder() {}
 
     public FilterOptionListBuilder addFilterOption(FilterOptionBuilder filter) {
-      _options.add(filter);
+      add(filter);
       return this;
     }
 
     public FilterOptionListBuilder fromFilterOptionList(FilterOptionList filters) {
       for (FilterOption filter : filters) {
-        _options.add(FilterOption.builder().fromFilterOption(filter));
+        add(FilterOption.builder().fromFilterOption(filter));
       }
       return this;
     }
 
     public FilterOptionListBuilder removeAll(Predicate<FilterOptionBuilder> predicate) {
-      _options = _options.stream().filter(predicate.negate()).collect(Collectors.toList());
+      for (int i = 0; i < size(); i++) {
+        if (predicate.test(get(i))) {
+          remove(i);
+          i--;
+        }
+      }
       return this;
     }
 
     public FilterOptionList buildInvalid() {
       List<FilterOption> options = new ArrayList<>();
-      for (FilterOptionBuilder filterBuilder : _options) {
+      for (FilterOptionBuilder filterBuilder : this) {
         options.add(filterBuilder.buildInvalid());
       }
       return new FilterOptionList(options, ValidationBundle.builder(ValidationLevel.NONE)
@@ -56,7 +60,7 @@ public class FilterOptionList implements Iterable<FilterOption>, Validateable {
     public FilterOptionList buildValidated(Question question, FilterType containerType, ValidationLevel level) {
       ValidationBundleBuilder validation = ValidationBundle.builder(level);
       List<FilterOption> options = new ArrayList<>();
-      for (FilterOptionBuilder filterBuilder : _options) {
+      for (FilterOptionBuilder filterBuilder : this) {
         FilterOption filterOption = filterBuilder.buildValidated(question, level);
         Filter filter = filterOption.getFilter();
         if (filter != null && !containerType.containerSupports(filter.getFilterType())) {
@@ -71,12 +75,7 @@ public class FilterOptionList implements Iterable<FilterOption>, Validateable {
     }
 
     public boolean hasFilter(String name) {
-      return _options.stream().anyMatch(option -> name.equals(option.getFilterName()));
-    }
-
-    @Override
-    public Iterator<FilterOptionBuilder> iterator() {
-      return _options.iterator();
+      return stream().anyMatch(option -> name.equals(option.getFilterName()));
     }
   }
 

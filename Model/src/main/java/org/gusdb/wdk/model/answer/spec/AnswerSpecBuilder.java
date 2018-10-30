@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.answer.spec;
 
 import java.util.Map;
+import java.util.function.Function;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory;
 import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
@@ -131,10 +132,10 @@ public class AnswerSpecBuilder {
    * @param newValue
    * @return
    */
-  public AnswerSpecBuilder replaceFirstFilterOption(String filterName, JSONObject newValue) {
-    for (FilterOptionBuilder filterOption : _filters) {
-      if (filterOption.getFilterName().equals(filterName)) {
-        filterOption.setValue(newValue);
+  public AnswerSpecBuilder replaceFirstFilterOption(String filterName, Function<FilterOptionBuilder,FilterOptionBuilder> modifier) {
+    for (int i = 0; i < _filters.size(); i++) {
+      if (_filters.get(i).getFilterName().equals(filterName)) {
+        _filters.set(i, modifier.apply(_filters.get(i)));
         break; // only replace first filter found
       }
     }

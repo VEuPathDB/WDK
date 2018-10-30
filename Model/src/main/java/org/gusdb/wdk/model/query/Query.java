@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.collection.ReadOnlyMap;
@@ -481,12 +482,14 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   }
 
   public int getAnswerParamCount() {
-    int count = 0;
-    for (Param param : paramMap.values()) {
-      if (param instanceof AnswerParam)
-        count++;
-    }
-    return count;
+    return getAnswerParams().size();
+  }
+
+  public List<AnswerParam> getAnswerParams() {
+    return paramMap.values().stream()
+        .filter(param -> param instanceof AnswerParam)
+        .map(param -> (AnswerParam)param)
+        .collect(Collectors.toList());
   }
 
   @Override

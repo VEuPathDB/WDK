@@ -156,8 +156,7 @@ public class StepUtilities {
     return formatStrategiesByRecordClass(strategies, wdkModel);
   }
 
-  public static Map<String, List<Strategy>> getActiveStrategiesByCategory(User user) throws WdkModelException,
-      WdkUserException {
+  public static Map<String, List<Strategy>> getActiveStrategiesByCategory(User user) {
     Strategy[] strategies = user.getSession().getActiveStrategies();
     List<Strategy> list = new ArrayList<Strategy>();
     for (Strategy strategy : strategies)
@@ -165,8 +164,7 @@ public class StepUtilities {
     return formatStrategiesByRecordClass(list, user.getWdkModel());
   }
 
-  private static Map<String, List<Strategy>> formatStrategiesByRecordClass(Collection<Strategy> strategies, WdkModel wdkModel)
-      throws WdkModelException {
+  private static Map<String, List<Strategy>> formatStrategiesByRecordClass(Collection<Strategy> strategies, WdkModel wdkModel) {
     Map<String, List<Strategy>> category = new LinkedHashMap<String, List<Strategy>>();
     for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
       for (RecordClass recordClass : rcSet.getRecordClasses()) {
@@ -306,7 +304,7 @@ public class StepUtilities {
       throws WdkModelException, WdkUserException {
     Strategy newStrategy = user.getWdkModel().getStepFactory().copyStrategy(user, oldStrategy, stepIdsMap, oldStrategy.getName());
     // highlight the imported strategy
-    long rootStepId = newStrategy.getLatestStepId();
+    long rootStepId = newStrategy.getRootStepId();
     String strategyKey = Long.toString(newStrategy.getStrategyId());
     if (newStrategy.isValid())
       user.getSession().setViewResults(strategyKey, rootStepId, 0);

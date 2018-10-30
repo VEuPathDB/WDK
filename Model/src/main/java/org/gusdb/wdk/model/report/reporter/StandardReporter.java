@@ -29,7 +29,7 @@ import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.AbstractReporter;
 import org.gusdb.wdk.model.report.Reporter;
-import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
+import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.gusdb.wdk.model.report.config.StandardConfig;
 import org.gusdb.wdk.model.report.util.TableCache;
 import org.json.JSONObject;
@@ -68,7 +68,7 @@ public abstract class StandardReporter extends AbstractReporter {
   }
 
   @Override
-  public Reporter configure(Map<String, String> config) throws WdkUserException {
+  public Reporter configure(Map<String, String> config) throws ReporterConfigException {
     LOG.info(getClass().getName() + " instantiated and configured with: " +
         FormatUtil.prettyPrint(config, Style.MULTI_LINE));
     _standardConfig = new StandardConfig(getQuestion()).configure(config);
@@ -77,7 +77,7 @@ public abstract class StandardReporter extends AbstractReporter {
   }
 
   @Override
-  public Reporter configure(JSONObject config) throws WdkUserException {
+  public Reporter configure(JSONObject config) throws ReporterConfigException {
     LOG.info(getClass().getName() + " instantiated and configured with: " + config.toString(2));
     _standardConfig = new StandardConfig(getQuestion()).configure(config);
     loadValidatedFields();
@@ -120,7 +120,7 @@ public abstract class StandardReporter extends AbstractReporter {
     }
   }
 
-  private void loadValidatedFields() throws WdkUserException {
+  private void loadValidatedFields() throws ReporterConfigException {
 
     // get the columns that will be in the report
     Set<Field> fields = validateColumns(getQuestion(), _standardConfig);
@@ -143,7 +143,7 @@ public abstract class StandardReporter extends AbstractReporter {
    * @throws WdkModelException if an error occurs while validating
    * @throws WdkUserException if column inputs are invalid
    */
-  private static Set<Field> validateColumns(Question question, StandardConfig stdConfig) throws WdkUserException {
+  private static Set<Field> validateColumns(Question question, StandardConfig stdConfig) throws ReporterConfigException {
     // get a map of report maker fields
     Map<String, Field> fieldMap = question.getFields(FieldScope.ALL);
     // the config map contains a list of column names;
@@ -167,7 +167,7 @@ public abstract class StandardReporter extends AbstractReporter {
         for (String table : stdConfig.getTables()) {
           table = table.trim();
           if (!fieldMap.containsKey(table))
-            throw new WdkUserException("The table '" + table + "' is requested for the report, but is not available for this type of record");
+            throw new ReporterConfigException("The table '" + table + "' is requested for the report, but is not available for this type of record");
           columns.add(fieldMap.get(table));
         }
       }
@@ -182,7 +182,7 @@ public abstract class StandardReporter extends AbstractReporter {
    * @param columns add the attribute columns here
    * @throws WdkUserException 
    */
-  private static Set<AttributeField> validateAttributeColumns(Question question, StandardConfig stdConfig) throws WdkUserException {
+  private static Set<AttributeField> validateAttributeColumns(Question question, StandardConfig stdConfig) throws ReporterConfigException {
     Map<String, AttributeField> fieldMap = question.getAttributeFieldMap();
     Set<AttributeField> columns = new LinkedHashSet<AttributeField>();
     
@@ -199,7 +199,7 @@ public abstract class StandardReporter extends AbstractReporter {
         column = column.trim();
         if (fieldMap.containsKey(column)) {
           columns.add(fieldMap.get(column));
-        } else throw new WdkUserException("Column '" + column + "' is requested for the report, but is not available for this type of record");
+        } else throw new ReporterConfigException("Column '" + column + "' is requested for the report, but is not available for this type of record");
       }
     }
     return columns;

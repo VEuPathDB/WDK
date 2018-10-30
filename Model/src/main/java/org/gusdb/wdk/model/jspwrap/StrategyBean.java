@@ -98,7 +98,7 @@ public class StrategyBean {
   }
 
   public long getLatestStepId() {
-    return strategy.getLatestStepId();
+    return strategy.getRootStepId();
   }
 
   public long getStrategyId() {
@@ -141,10 +141,6 @@ public class StrategyBean {
   public  Map<Long, Long> insertStepBefore(StepBean newStep, long targetId) throws WdkModelException,
       WdkUserException {
     return strategy.insertStepBefore(newStep.getStep(), targetId);
-  }
-
-  public Map<Long, Long> deleteStep(StepBean step) throws WdkModelException, WdkUserException {
-    return strategy.deleteStep(step.getStep());
   }
 
   public String getImportId() {
@@ -207,7 +203,7 @@ public class StrategyBean {
     return strategy.isValid();
   }
 
-  public RecordClassBean getRecordClass() throws WdkModelException {
+  public RecordClassBean getRecordClass() {
     return new RecordClassBean(strategy.getRecordClass());
   }
 

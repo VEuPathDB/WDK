@@ -14,8 +14,8 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
-import org.gusdb.wdk.service.request.answer.AttributeFieldSortSpec;
-import org.gusdb.wdk.service.request.exception.RequestMisformatException;
+import org.gusdb.wdk.model.report.ReporterConfigException;
+import org.gusdb.wdk.model.report.util.AttributeFieldSortSpec;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -79,7 +79,7 @@ public class AnswerDetailsFactory {
    * @throws RequestMisformatException if values are invalid or structure is malformed
    */
   public static AnswerDetails createFromJson(JSONObject specJson,
-      Question question) throws RequestMisformatException {
+      Question question) throws ReporterConfigException {
       AnswerDetails specs = new AnswerDetails();
 
       // set requested paging
@@ -87,7 +87,7 @@ public class AnswerDetailsFactory {
         JSONObject paging = specJson.getJSONObject("pagination");
         specs.setOffset(paging.getInt("offset"));
         if (specs.getOffset() < 0)
-          throw new RequestMisformatException("Paging offset must be non-negative.");
+          throw new ReporterConfigException("Paging offset must be non-negative.");
         specs.setNumRecords(paging.getInt("numRecords"));
         if (specs.getNumRecords() < 0) {
           specs.setNumRecords(AnswerDetails.ALL_RECORDS);
@@ -119,7 +119,7 @@ public class AnswerDetailsFactory {
       return specs;
   }
 
-  private static Map<String, TableField> parseTableJson(JSONObject specJson, Question question) throws RequestMisformatException {
+  private static Map<String, TableField> parseTableJson(JSONObject specJson, Question question) throws ReporterConfigException {
     if (specJson.has("tables")) {
       // see if property value is a String, if so, it could be a special value
       try {
@@ -127,7 +127,7 @@ public class AnswerDetailsFactory {
           case RETURN_ALL_TABLES:
             return question.getRecordClass().getTableFieldMap();
           default:
-            throw new RequestMisformatException("Illegal string found for " +
+            throw new ReporterConfigException("Illegal string found for " +
                 "tables property.  Must be an array or '" + RETURN_ALL_TABLES + "'.");
         }
       }
@@ -142,7 +142,7 @@ public class AnswerDetailsFactory {
     return Collections.EMPTY_MAP;
   }
 
-  private static Map<String, AttributeField> parseAttributeJson(JSONObject specJson, Question question) throws RequestMisformatException {
+  private static Map<String, AttributeField> parseAttributeJson(JSONObject specJson, Question question) throws ReporterConfigException {
     if (specJson.has("attributes")) {
       // see if property value is a String, if so, it could be a special value
       try {
@@ -152,7 +152,7 @@ public class AnswerDetailsFactory {
           case RETURN_DEFAULT_ATTRIBUTES:
             return question.getSummaryAttributeFieldMap();
           default:
-            throw new RequestMisformatException("Illegal string found for " +
+            throw new ReporterConfigException("Illegal string found for " +
                 "attributes property.  Must be an array or '" + RETURN_ALL_ATTRIBUTES +
                 "' or '" + RETURN_DEFAULT_ATTRIBUTES + "'.");
         }
@@ -184,7 +184,7 @@ public class AnswerDetailsFactory {
     return ensureElements(convertedSorting, question);
   }
 
-  private static List<AttributeFieldSortSpec> parseSorting(JSONArray sortingJson, Map<String, AttributeField> attributes) throws RequestMisformatException {
+  private static List<AttributeFieldSortSpec> parseSorting(JSONArray sortingJson, Map<String, AttributeField> attributes) throws ReporterConfigException {
     List<AttributeFieldSortSpec> sorting = new ArrayList<>();
     for (int i = 0; i < sortingJson.length(); i++) {
       JSONObject obj = sortingJson.getJSONObject(i);
@@ -194,7 +194,7 @@ public class AnswerDetailsFactory {
         LOG.warn("Attribute '" + attributeName + "' was listed in sorting but is not a returned attribute.  Skipping...");
       }
       if (!SortDirection.isValidDirection(directionStr)) {
-        throw new RequestMisformatException("Bad value: '" + directionStr +
+        throw new ReporterConfigException("Bad value: '" + directionStr +
             "' is not a direction. Only " + FormatUtil.join(SortDirection.values(), ", ") + " supported.");
       }
       // this entry passed; add sorting item
@@ -204,14 +204,14 @@ public class AnswerDetailsFactory {
   }
 
   private static Map<String, TableField> parseTableArray(JSONArray tablesJson,
-      Question question) throws RequestMisformatException {
+      Question question) throws ReporterConfigException {
     Map<String, TableField> availableTables = question.getRecordClass().getTableFieldMap();
     Map<String, TableField> tables = new LinkedHashMap<>();
     for (int i = 0; i < tablesJson.length(); i++) {
       String tableName = tablesJson.getString(i);
       TableField table = availableTables.get(tableName);
       if (table == null) {
-        throw new RequestMisformatException("Table '" + tableName +
+        throw new ReporterConfigException("Table '" + tableName +
             "' is not available for question '" + question.getFullName() + "'");
       }
       tables.put(table.getName(), table);
@@ -220,14 +220,14 @@ public class AnswerDetailsFactory {
   }
 
   private static Map<String, AttributeField> parseAttributeArray(JSONArray attributesJson,
-      Question question) throws RequestMisformatException {
+      Question question) throws ReporterConfigException {
     Map<String, AttributeField> availableAttribs = question.getAttributeFieldMap();
     Map<String, AttributeField> attributes = new LinkedHashMap<>();
     for (int i = 0; i < attributesJson.length(); i++) {
       String attribName = attributesJson.getString(i);
       AttributeField attrib = availableAttribs.get(attribName);
       if (attrib == null) {
-        throw new RequestMisformatException("Attribute '" + attribName +
+        throw new ReporterConfigException("Attribute '" + attribName +
             "' is not available for record class '" + question.getFullName() + "'");
       }
       attributes.put(attrib.getName(), attrib);

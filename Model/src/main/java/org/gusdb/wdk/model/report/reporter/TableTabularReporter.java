@@ -11,7 +11,7 @@ import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.single.SingleRecordAnswerValue;
 import org.gusdb.wdk.model.answer.stream.FileBasedRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.gusdb.wdk.model.report.util.TableRowProvider;
 import org.json.JSONObject;
 
@@ -34,21 +35,21 @@ public class TableTabularReporter extends AbstractTabularReporter {
   }
 
   @Override
-  public TableTabularReporter configure(Map<String,String> config) throws WdkUserException {
+  public TableTabularReporter configure(Map<String,String> config) throws ReporterConfigException {
     super.configure(config);
     return setTable();
   }
 
   @Override
-  public TableTabularReporter configure(JSONObject config) throws WdkUserException {
+  public TableTabularReporter configure(JSONObject config) throws ReporterConfigException {
     super.configure(config);
     return setTable();
   }
 
-  private TableTabularReporter setTable() throws WdkUserException {
+  private TableTabularReporter setTable() throws ReporterConfigException {
     Set<TableField> tables = getSelectedTables();
     if (tables.size() != 1 || !getSelectedAttributes().isEmpty()) {
-      throw new WdkUserException("This report supports exactly one table and no attributes.");
+      throw new ReporterConfigException("This report supports exactly one table and no attributes.");
     }
     _tableField = tables.iterator().next();
     return this;

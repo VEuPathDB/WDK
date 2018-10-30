@@ -68,6 +68,11 @@ public class StepFactoryHelpers {
       _userFactory = userFactory;
     }
 
+    /**
+     * Creates a user cache with an initial value.
+     * 
+     * @param user a user to place in the cache.
+     */
     public UserCache(User user) {
       put(user.getUserId(), user);
       _userFactory = null;
@@ -82,13 +87,16 @@ public class StepFactoryHelpers {
             put(userId, _userFactory.getUserById(userId));
           }
           else {
-            throw new WdkRuntimeException("Single-user cache created but not for correct user.");
+            throw new WdkRuntimeException("No-lookup cache does not contain the requested user (" + id + ").");
           }
         }
         return super.get(userId);
       }
+      catch (NoSuchElementException e) {
+        throw new WdkRuntimeException("User with ID " + id + " does not exist.", e);
+      }
       catch (WdkModelException e) {
-        throw new WdkRuntimeException(e);
+        throw new WdkRuntimeException("Unable to execute user lookup query.", e);
       }
     }
   }

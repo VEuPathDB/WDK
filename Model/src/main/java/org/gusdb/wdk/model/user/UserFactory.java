@@ -341,10 +341,10 @@ public class UserFactory {
    * 
    * @param userId user ID
    * @return user user object for the passed ID
-   * @throws NoSuchUserException if user cannot be found
+   * @throws NoSuchElementException if user cannot be found
    * @throws WdkModelException if an error occurs in the attempt
    */
-  public User getUserById(long userId) throws WdkModelException {
+  public User getUserById(long userId) throws WdkModelException, NoSuchElementException {
     UserProfile profile = _accountManager.getUserProfile(userId);
     if (profile != null) {
       // found registered user in account DB; create RegisteredUser and populate
@@ -361,7 +361,7 @@ public class UserFactory {
       }
       else {
         // user does not exist in account or user DBs; throw exception
-        throw new NoSuchUserException("Invalid user id: " + userId);
+        throw new NoSuchElementException("Invalid user id: " + userId);
       }
     }
   }

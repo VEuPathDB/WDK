@@ -234,7 +234,7 @@ class ActiveStrategyFactory {
             ActiveStrategy activeStrategy = getStrategy(_viewStrategyKey);
             Strategy strategy = getStrategy(activeStrategy._strategyId);
             Step step = strategy.getStepById(_viewStepId);
-        if (step == null) _viewStepId = strategy.getLatestStepId();
+        if (step == null) _viewStepId = strategy.getRootStepId();
         } catch (Exception ex) {
             return 0;
         }
