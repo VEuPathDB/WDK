@@ -73,6 +73,8 @@ public abstract class QueryInstance<T extends Query> {
   private Map<String, String> _paramInternalValues;
   private long _instanceId;
   protected String _resultMessage;
+  private boolean _resultMessageSet = false;
+
   private String _checksum;
 
   /**
@@ -133,14 +135,17 @@ public abstract class QueryInstance<T extends Query> {
     _instanceId = instanceId;
   }
 
-  public String getResultMessage() {
-    // make sure the result message is loaded by getting instance id
-    getInstanceId();
+  public String getResultMessage() throws WdkModelException, WdkUserException {
+    if (!_resultMessageSet) {
+      // make sure the result message is loaded by caching results
+      new ResultFactory(_wdkModel).getCachedSql(this, false);
+    }
     return _resultMessage;
   }
 
   public void setResultMessage(String message) {
     _resultMessage = message;
+    _resultMessageSet = true;
   }
 
   /**
