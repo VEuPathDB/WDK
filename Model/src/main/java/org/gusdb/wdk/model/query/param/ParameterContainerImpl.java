@@ -14,7 +14,7 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
 
   // temp list, will be discarded after resolve references
   protected List<ParamReference> paramRefList;
-  protected Map<String, Param> paramMap;
+  protected LinkedHashMap<String, Param> paramMap;
 
   protected ParameterContainerImpl() {
     paramRefList = new ArrayList<ParamReference>();

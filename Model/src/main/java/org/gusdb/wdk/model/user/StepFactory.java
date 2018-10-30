@@ -44,6 +44,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -71,6 +72,7 @@ import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunctionWithException;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.Utilities;
@@ -81,6 +83,7 @@ import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList;
 import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
 import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
@@ -88,10 +91,12 @@ import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.NameCheckInfo;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.json.JSONException;
@@ -133,9 +138,9 @@ public class StepFactory {
   /**
    * Creates a step and adds to database
    */
-  public Step createStep(User user, Question question, Map<String, String> dependentValues,
+  public Runnable<Step> createStep(User user, Question question, Map<String, String> dependentValues,
       AnswerFilterInstance filter, FilterOptionList filterOptions, int assignedWeight, boolean deleted,
-      String customName, boolean isCollapsible, String collapsedName, Long strategyId) throws WdkModelException, WdkUserException {
+      String customName, boolean isCollapsible, String collapsedName, Strategy strategy) throws WdkModelException {
   
     LOG.debug("Creating step!");
 
@@ -145,28 +150,28 @@ public class StepFactory {
     Date lastRunTime = new Date(createTime.getTime());
 
     // create the Step
-    Step step = new Step(_wdkModel, user.getUserId(), getNextStepId());
-    step.setCreatedTime(createTime);
-    step.setLastRunTime(lastRunTime);
-    step.setDeleted(deleted);
-    step.setProjectId(_wdkModel.getProjectId());
-    step.setProjectVersion(_wdkModel.getVersion());
-    step.setCustomName(customName);
-    step.setCollapsible(isCollapsible);
-    step.setCollapsedName(collapsedName);
-    step.setStrategyId(strategyId);
-    step.setAnswerSpec(AnswerSpec.builder(_wdkModel)
-      .setQuestionName(question.getFullName())
-      .setQueryInstanceSpec(QueryInstanceSpec.builder().putAll(dependentValues))
-      .setLegacyFilterName(filter.getName())
-      .setFilterOptions(FilterOptionList.builder().fromFilterOptionList(filterOptions))
-      .setAssignedWeight(assignedWeight)
-      .build(ValidationLevel.SEMANTIC)
-    );
-    step.finish(new UserCache(user), strategyId == null ? null : getStrategyByValidId(strategyId));
+    Runnable<Step> runnableStep = Step
+        .builder(_wdkModel, user.getUserId(), getNewStepId())
+        .setCreatedTime(createTime)
+        .setLastRunTime(lastRunTime)
+        .setDeleted(deleted)
+        .setProjectId(_wdkModel.getProjectId())
+        .setProjectVersion(_wdkModel.getVersion())
+        .setCustomName(customName)
+        .setCollapsible(isCollapsible)
+        .setCollapsedName(collapsedName)
+        .setStrategyId(strategy == null ? null : strategy.getStrategyId())
+        .setAnswerSpec(AnswerSpec.builder(_wdkModel)
+            .setQuestionName(question.getFullName())
+            .setQueryInstanceSpec(QueryInstanceSpec.builder().putAll(dependentValues))
+            .setLegacyFilterName(filter.getName())
+            .setFilterOptions(FilterOptionList.builder().fromFilterOptionList(filterOptions))
+            .setAssignedWeight(assignedWeight))
+        .buildRunnable(new UserCache(user), strategy);
 
-    TwoTuple<Integer,Exception> runStatus = tryEstimateSize(step);
-    step.setEstimateSize(runStatus.getFirst());
+    Step step = runnableStep.getObject();
+    TwoTuple<Integer,Exception> runStatus = tryEstimateSize(runnableStep);
+    step.updateEstimatedSize(runStatus.getFirst());
     step.setException(runStatus.getSecond());
 
     // insert step into the database
@@ -177,10 +182,9 @@ public class StepFactory {
       updateStepTree(step);
     }
 
-    return step;
+    return runnableStep;
   }
 
-  
   private void insertStep(Step step) throws WdkModelException {
     // prepare SQL
     String sql = new StringBuilder("INSERT INTO ")
@@ -211,7 +215,7 @@ public class StepFactory {
     try {
       ps = SqlUtils.getPreparedStatement(_userDbDs, sql);
       ps.setLong(1, step.getStepId());
-      ps.setLong(2, step.getUserId());
+      ps.setLong(2, step.getUser().getUserId());
       ps.setTimestamp(3, new Timestamp(step.getCreatedTime().getTime()));
       ps.setTimestamp(4, new Timestamp(step.getLastRunTime().getTime()));
       ps.setInt(5, step.getEstimateSize());
@@ -219,7 +223,7 @@ public class StepFactory {
       ps.setInt(7, step.getAnswerSpec().getQueryInstanceSpec().getAssignedWeight());
       ps.setString(8, _wdkModel.getProjectId());
       ps.setString(9, _wdkModel.getVersion());
-      ps.setString(10, step.getQuestionName());
+      ps.setString(10, step.getAnswerSpec().getQuestionName());
       setNullableString(ps, 11, step.getCustomName());
       setNullableString(ps, 12, step.getCollapsedName());
       setNullableLong(ps, 13, step.getStrategyId());
@@ -235,30 +239,25 @@ public class StepFactory {
     }
   }
 
-  private static TwoTuple<Integer, Exception> tryEstimateSize(Step step) {
+  private static TwoTuple<Integer, Exception> tryEstimateSize(Runnable<Step> runnableStep) {
     try {
-      // create answer
-      if (!step.isRunnable()) {
-        return new TwoTuple<>(-1, new WdkModelException("Passed step is not runnable."));
-      }
       // is there a difference between semantically valid and runnable???  When do we want the former
       //  but not the latter?  If no difference then semantically valid must check children.  Hmmm... but
       //  want to know if we should put an 'X' on a step in the middle of a strat.  Children may or may not
       //  be valid, but if semantically valid, then no 'X' needed on a boolean.  So yes, there is a difference.
       //  TODO: need to be able to "upgrade" steps I think...  ugh
-      SemanticallyValid
-      Map<String, Boolean> sortingAttributes = step.getUser().getPreferences().getSortingAttributes(
-          step.getQuestionName(), UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
-      AnswerValue answerValue = AnswerValueFactory.makeAnswer(step.getUser(), , startIndex, endIndex, sortingMap)
-      AnswerValue answerValue = step.getAnswerSpec().getQuestion().makeAnswerValue(
-          step.getUser(), step.getAnswerSpec().getQueryInstanceSpec().toMap(), 0, -1, sortingAttributes,
-          step.getAnswerSpec().getLegacyFilter(), true, step.getAnswerSpec().getQueryInstanceSpec().getAssignedWeight());
-      answerValue.setFilterOptions(step.getAnswerSpec().getFilterOptions());
+      Step step = runnableStep.getObject();
+      User user = step.getUser();
+      String questionName = step.getAnswerSpec().getQuestion().getFullName();
+      Map<String, Boolean> sortingAttributes = user.getPreferences().getSortingAttributes(
+          questionName, UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+      AnswerValue answerValue = AnswerValueFactory.makeAnswer(user, step.getAnswerSpec().toRunnable(),
+          0, AnswerValue.UNBOUNDED_END_PAGE_INDEX, sortingAttributes);
 
       QueryInstance<?> qi = answerValue.getIdsQueryInstance();
       LOG.debug("id query name  :" + (qi == null ? "<no_query_specified>" : qi.getQuery().getFullName()));
       LOG.debug("answer checksum:" + answerValue.getChecksum());
-      LOG.debug("question name:  " + step.getQuestionName());
+      LOG.debug("question name:  " + questionName);
       int estimateSize = answerValue.getResultSizeFactory().getDisplayResultSize();
       return new TwoTuple<>(estimateSize, null);
     }
@@ -268,7 +267,7 @@ public class StepFactory {
     }
   }
 
-  private long getNextStepId() throws WdkModelException {
+  private long getNewStepId() throws WdkModelException {
     try {
       return _userDbPlatform.getNextId(_userDbDs, _userSchema, TABLE_STEP);
     }
@@ -471,7 +470,7 @@ public class StepFactory {
     step.setAndVerifyChildStepId(rightStepId);
 
     // construct the update sql
-    StringBuffer sql = new StringBuffer("UPDATE ");
+    StringBuilder sql = new StringBuilder("UPDATE ");
     sql.append(_userSchema).append(TABLE_STEP).append(" SET ");
     sql.append(COLUMN_CUSTOM_NAME).append(" = ? ");
     if (query.isCombined()) {
@@ -518,11 +517,8 @@ public class StepFactory {
    * 
    * @param user
    * @param step
-   * @throws WdkUserException
-   * @throws SQLException
-   * @throws JSONException
+   * @param updateTime
    * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
    */
   void updateStep(User user, Step step, boolean updateTime) throws WdkModelException {
     LOG.debug("updateStep(): step #" + step.getStepId() + " new custom name: '" + step.getBaseCustomName() + "'");
@@ -653,6 +649,15 @@ public class StepFactory {
         .getPublicStrategies(), strat -> strat.isValid()).size();
   }
 
+  private Strategy getStrategyByValidId(long strategyId) throws WdkModelException {
+    return getStrategyById(strategyId).orElseThrow(() ->
+        new WdkModelException("Could not find strategy with 'valid' ID: " + strategyId));
+  }
+
+  public Optional<Strategy> getStrategyById(long strategyId) throws WdkModelException {
+    return new StrategyLoader(_wdkModel, ValidationLevel.SEMANTIC).getStrategyById(strategyId);
+  }
+
   /**
    * Make a copy of the strategy, and if the original strategy's name is not ended with ", Copy of", then that
    * suffix will be appended to it. The copy will be unsaved.
@@ -701,10 +706,11 @@ public class StepFactory {
   }
 
   public Step copyStepTree(User newUser, long newStrategyId, Step oldStep, Map<Long, Long> stepIdsMap)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
 
-    Map<String, String> paramValues = new HashMap<String, String>(oldStep.getParamValues());
-    
+    StepBuilder newStep = Step.builder(oldStep, this.getNewStepId());
+    AnswerSpecBuilder answerSpec = newStep.getAnswerSpec();
+
     // recursively copy AnswerParams (aka child steps)
     // also copy Datasetparams (we want a fresh copy per step because we don't track what steps are using a dataset param.  A 1-1 is easiest to manage)
     copyAnswerAndDatasetParams(paramValues, newUser, newStrategyId, oldStep, stepIdsMap);
@@ -756,10 +762,6 @@ public class StepFactory {
     Dataset oldDataset = datasetFactory.getDataset(oldUser, oldUserDatasetId);
     Dataset newDataset = datasetFactory.cloneDataset(oldDataset, newUser);
     return Long.toString(newDataset.getDatasetId());
-  }
-
-  public Strategy getStrategyById(User user, long strategyId) throws WdkModelException, WdkUserException {
-    return loadStrategy(user, strategyId, false);
   }
 
   public Optional<Strategy> getStrategyBySignature(String strategySignature) throws WdkModelException {
@@ -878,7 +880,7 @@ public class StepFactory {
   }
 
   Strategy createStrategy(User user, long strategyId, Step root, String newName, String savedName, boolean saved,
-      String description, boolean hidden, boolean isPublic) throws WdkModelException, WdkUserException {
+      String description, boolean hidden, boolean isPublic) throws WdkModelException {
 
     LOG.debug("creating strategy, saved=" + saved);
 

@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.answer.stream.FileBasedRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.record.CsvResultList;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.json.JSONObject;
 
 import com.lowagie.text.Document;
@@ -47,7 +48,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
   protected boolean _includeHeader = true;
   protected String _divider = "\t";
 
-  protected static interface RowsProvider extends Iterable<List<Object>> { }
+  public static interface RowsProvider extends Iterable<List<Object>> { }
 
   protected abstract List<String> getHeader() throws WdkUserException, WdkModelException;
 
@@ -59,7 +60,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
   }
 
   @Override
-  public AbstractTabularReporter configure(Map<String, String> config) throws WdkUserException {
+  public AbstractTabularReporter configure(Map<String, String> config) throws ReporterConfigException {
     super.configure(config);
 
     // get basic configurations
@@ -76,7 +77,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
   }
 
   @Override
-  public AbstractTabularReporter configure(JSONObject config) throws WdkUserException {
+  public AbstractTabularReporter configure(JSONObject config) throws ReporterConfigException {
     super.configure(config);
     _includeHeader = (config.has(FIELD_HAS_HEADER) ? config.getBoolean(FIELD_HAS_HEADER) : true);
     return this;

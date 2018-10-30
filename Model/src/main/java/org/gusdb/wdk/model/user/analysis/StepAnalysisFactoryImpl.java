@@ -168,7 +168,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     if (errors.getStatus().isValid()) return errorList;
 
     // otherwise, add and return messages to client
-    errorList.addAll(errors.getErrors());
+    errorList.addAll(errors.getUnkeyedErrors());
     // FIXME: figure out display of these values; for now, translate param errors into strings
     for (Entry<String,List<String>> paramErrors : errors.getKeyedErrors().entrySet()) {
       for (String message : paramErrors.getValue()) {

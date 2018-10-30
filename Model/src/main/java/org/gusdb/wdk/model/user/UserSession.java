@@ -67,7 +67,7 @@ public class UserSession {
     _frontStep = null;
   }
 
-  public Strategy[] getActiveStrategies() throws WdkUserException {
+  public Strategy[] getActiveStrategies() {
     long[] ids = _activeStrategyFactory.getRootStrategies();
     List<Strategy> strategies = new ArrayList<Strategy>();
     for (long id : ids) {

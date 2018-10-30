@@ -2,7 +2,7 @@ package org.gusdb.wdk.service;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.NoSuchUserException;
+import org.gusdb.wdk.model.user.NoSuchElementException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 
@@ -44,7 +44,7 @@ public class UserBundle {
       User user = userFactory.getUserById(userId);
       return new UserBundle(userIdStr, true, user, false, sessionUser, isAdminSession);
     }
-    catch (NoSuchUserException | NumberFormatException | NullPointerException e) {
+    catch (NoSuchElementException | NumberFormatException | NullPointerException e) {
       LOG.warn("User requested by ID that is misformatted or does not exist", e);
       // userIdStr is null or misformatted, or no user by the passed ID could be found
       return getBadIdBundle(userIdStr, sessionUser);

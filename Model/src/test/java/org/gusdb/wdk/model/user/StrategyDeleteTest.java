@@ -73,7 +73,7 @@ public class StrategyDeleteTest extends StrategyOperationTest {
     Map<Long, Long> rootMap = strategy.deleteStep(step2);
 
     // step2 & boolean should be delete, and step1 becomes root again
-    Assert.assertEquals(step1.getStepId(), strategy.getLatestStepId());
+    Assert.assertEquals(step1.getStepId(), strategy.getRootStepId());
     Assert.assertEquals(1, rootMap.size());
     Assert.assertEquals(step1.getStepId(), rootMap.get(boolean2.getStepId()).intValue());
     Assert.assertFalse(stepFactory.isStrategyDeleted(strategy.getStrategyId()));
@@ -96,7 +96,7 @@ public class StrategyDeleteTest extends StrategyOperationTest {
     Map<Long, Long> rootMap = strategy.deleteStep(step1);
 
     // step2 & boolean should be delete, and step1 becomes root again
-    Assert.assertEquals(step2.getStepId(), strategy.getLatestStepId());
+    Assert.assertEquals(step2.getStepId(), strategy.getRootStepId());
     Assert.assertEquals(1, rootMap.size());
     Assert.assertEquals(step2.getStepId(), rootMap.get(boolean2.getStepId()).intValue());
     Assert.assertFalse(stepFactory.isStrategyDeleted(strategy.getStrategyId()));
@@ -119,7 +119,7 @@ public class StrategyDeleteTest extends StrategyOperationTest {
     Map<Long, Long> rootMap = strategy.deleteStep(boolean2);
 
     // step2 & boolean should be delete, and step1 becomes root again
-    Assert.assertEquals(step2.getStepId(), strategy.getLatestStepId());
+    Assert.assertEquals(step2.getStepId(), strategy.getRootStepId());
     Assert.assertEquals(1, rootMap.size());
     Assert.assertEquals(step2.getStepId(), rootMap.get(boolean2.getStepId()).intValue());
     Assert.assertFalse(stepFactory.isStrategyDeleted(strategy.getStrategyId()));
@@ -148,7 +148,7 @@ public class StrategyDeleteTest extends StrategyOperationTest {
 
     // delete step1.
     Map<Long, Long> rootMap = strategy.deleteStep(step1);
-    Assert.assertEquals(boolean2.getStepId(), strategy.getLatestStepId());
+    Assert.assertEquals(boolean2.getStepId(), strategy.getRootStepId());
     Assert.assertEquals(1, rootMap.size());
     Assert.assertEquals(step3.getStepId(), rootMap.get(boolean3.getStepId()).intValue());
   }

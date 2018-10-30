@@ -23,12 +23,10 @@ import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_SAVED;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_MODIFIED_TIME;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_RUN_TIME;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_VIEWED_TIME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LEFT_CHILD_ID;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_NAME;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_PROJECT_ID;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_PROJECT_VERSION;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_QUESTION_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_RIGHT_CHILD_ID;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ROOT_STEP_ID;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_SAVED_NAME;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_SIGNATURE;
@@ -145,7 +143,7 @@ public class StrategyLoader {
   private final UserFactory _userFactory;
   private final ValidationLevel _validationLevel;
 
-  StrategyLoader(WdkModel wdkModel, ValidationLevel validationLevel) {
+  public StrategyLoader(WdkModel wdkModel, ValidationLevel validationLevel) {
     _wdkModel = wdkModel;
     _userDbDs = wdkModel.getUserDb().getDataSource();
     _userDbPlatform = wdkModel.getUserDb().getPlatform();
@@ -262,8 +260,9 @@ public class StrategyLoader {
         .setLastRunTime(rs.getTimestamp(COLUMN_LAST_RUN_TIME))
         .setEstimatedSize(rs.getInt(COLUMN_ESTIMATE_SIZE))
         .setDeleted(rs.getBoolean(COLUMN_IS_DELETED))
-        .setPreviousStepId(fetchNullableLong(rs, COLUMN_LEFT_CHILD_ID, null))
-        .setChildStepId(fetchNullableLong(rs, COLUMN_RIGHT_CHILD_ID, null))
+        // no longer load these; Step will figure out which params hold these values
+        //.setPreviousStepId(fetchNullableLong(rs, COLUMN_LEFT_CHILD_ID, null))
+        //.setChildStepId(fetchNullableLong(rs, COLUMN_RIGHT_CHILD_ID, null))
         .setCustomName(rs.getString(COLUMN_CUSTOM_NAME))
         .setCollapsedName(rs.getString(COLUMN_COLLAPSED_NAME))
         .setCollapsible(rs.getBoolean(COLUMN_IS_COLLAPSIBLE))
@@ -276,14 +275,13 @@ public class StrategyLoader {
         );
   }
 
-  Optional<Step> getStepById(long stepId) throws WdkModelException {
+  public Optional<Step> getStepById(long stepId) throws WdkModelException {
     String sql = prepareSql(FIND_STEPS_SQL
         .replace(SEARCH_CONDITIONS_MACRO, "and st." + COLUMN_STEP_ID + " = " + stepId));
     return doSearch(sql).findFirstStep(st -> st.getStepId() == stepId);
-
   }
 
-  Optional<Strategy> getStrategyById(long strategyId) throws WdkModelException {
+  public Optional<Strategy> getStrategyById(long strategyId) throws WdkModelException {
     String sql = prepareSql(FIND_STRATEGIES_SQL
         .replace(SEARCH_CONDITIONS_MACRO, "and sr." + toStratCol(COLUMN_STRATEGY_ID) + " = " + strategyId));
     return doSearch(sql).getOnlyStrategy("with strategy ID = " + strategyId);

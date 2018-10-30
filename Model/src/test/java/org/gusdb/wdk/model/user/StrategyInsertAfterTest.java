@@ -21,7 +21,7 @@ public class StrategyInsertAfterTest extends StrategyOperationTest {
 
     // insert the boolean after step1
     Map<Long, Long> rootMap = strategy.insertStepAfter(booleanStep, step1.getStepId());
-    Assert.assertEquals(booleanStep.getStepId(), strategy.getLatestStepId());
+    Assert.assertEquals(booleanStep.getStepId(), strategy.getRootStepId());
     Assert.assertEquals(1, rootMap.size());
     Assert.assertEquals(booleanStep.getStepId(), rootMap.get(step1.getStepId()).intValue());
   }
@@ -37,7 +37,7 @@ public class StrategyInsertAfterTest extends StrategyOperationTest {
 
     // insert the transform after step1
     Map<Long, Long> rootMap = strategy.insertStepAfter(transform, step1.getStepId());
-    Assert.assertEquals(transform.getStepId(), strategy.getLatestStepId());
+    Assert.assertEquals(transform.getStepId(), strategy.getRootStepId());
     Assert.assertEquals(1, rootMap.size());
     Assert.assertEquals(transform.getStepId(), rootMap.get(step1.getStepId()).intValue());
   }
@@ -59,7 +59,7 @@ public class StrategyInsertAfterTest extends StrategyOperationTest {
 
     // insert the boolean3 after boolean2
     Map<Long, Long> rootMap = strategy.insertStepAfter(boolean3, boolean2.getStepId());
-    Assert.assertEquals(boolean3.getStepId(), strategy.getLatestStepId());
+    Assert.assertEquals(boolean3.getStepId(), strategy.getRootStepId());
     Assert.assertEquals(1, rootMap.size());
     Assert.assertEquals(boolean3.getStepId(), rootMap.get(boolean2.getStepId()).intValue());
   }
@@ -81,7 +81,7 @@ public class StrategyInsertAfterTest extends StrategyOperationTest {
 
     // insert the boolean3 after boolean2
     Map<Long, Long> rootMap = strategy.insertStepAfter(boolean3, step1.getStepId());
-    Assert.assertEquals(boolean2.getStepId(), strategy.getLatestStepId());
+    Assert.assertEquals(boolean2.getStepId(), strategy.getRootStepId());
     Assert.assertEquals(0, rootMap.size());
   }
 
@@ -104,7 +104,7 @@ public class StrategyInsertAfterTest extends StrategyOperationTest {
 
     // insert the boolean3 after boolean2
     Map<Long, Long> rootMap = strategy.insertStepAfter(boolean22, step2.getStepId());
-    Assert.assertEquals(boolean2.getStepId(), strategy.getLatestStepId());
+    Assert.assertEquals(boolean2.getStepId(), strategy.getRootStepId());
     Assert.assertEquals(1, rootMap.size());
     Assert.assertEquals(boolean22.getStepId(), rootMap.get(step2.getStepId()).intValue());
   }

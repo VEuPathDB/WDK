@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
@@ -230,5 +231,12 @@ public class AnswerParam extends Param {
   @Override
   public String toString() {
     return super.toString() + "  exposeAsAttribute=" + _exposeAsAttribute + FormatUtil.NL;
+  }
+
+  public static long toStepId(String stableValue) {
+    if (FormatUtil.isInteger(stableValue)) {
+      return Integer.parseInt(stableValue);
+    }
+    throw new WdkRuntimeException("AnswerParam value '" + stableValue + "' is not an integer.");
   }
 }

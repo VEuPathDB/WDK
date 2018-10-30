@@ -6,6 +6,8 @@ import static org.gusdb.fgputil.functional.Functions.filter;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory;
+import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -190,5 +192,9 @@ public class AnswerSpec implements Validateable {
 
   public StepContainer getStepContainer() {
     return _stepContainer;
+  }
+
+  public Runnable<AnswerSpec> toRunnable() {
+    return ValidObjectFactory.getRunnable(this);
   }
 }
