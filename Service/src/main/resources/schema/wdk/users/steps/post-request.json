@@ -33,11 +33,7 @@
 		    "value"
 		]
 	    }
-	},
-	"required": [
-	    "questionName",
-	    "parameters"
-	]
+	}
     },
     "required" : [
 	"answerSpec"
