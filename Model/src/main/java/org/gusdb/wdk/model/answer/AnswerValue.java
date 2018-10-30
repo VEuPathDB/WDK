@@ -687,7 +687,7 @@ public class AnswerValue {
     return (_endIndex == UNBOUNDED_END_PAGE_INDEX ? resultSize : Math.min(_endIndex, resultSize)) - _startIndex + 1;
   }
 
-  public String getResultMessage() {
+  public String getResultMessage() throws WdkModelException, WdkUserException {
     return _idsQueryInstance.getResultMessage();
   }
 

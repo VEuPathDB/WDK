@@ -17,14 +17,18 @@
 	},
 	"filters": {
 	    "type": "array",
-	    "items": {
+	    "items": 
+	    {
 		"$ref": "/schema/wdk/includes/name-value.json"
-		},
-		"required": [
-		    "name",
-		    "value"
-		]
+	    }
+	},
+	"viewFilters": {
+	    "type": "array",
+	    "items": 
+	    {
+		"$ref": "/schema/wdk/includes/name-value.json"
 	    }
 	}
     }
 }
+

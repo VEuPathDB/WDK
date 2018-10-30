@@ -102,9 +102,9 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       FilterParamNew fpn = (FilterParamNew) _param;
       contextParamValues = fpn.ensureRequiredContext(user, contextParamValues);
       FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, fpn);
-      String fvSql = fpn.getFilteredIdsSql(user, stableValue, contextParamValues, fpn.getMetadataQuery(), FilterParamNew.COLUMN_INTERNAL);
+      String fvSql = fpn.getFilteredMetadataSql(user, stableValue, contextParamValues, fpn.getMetadataQuery(), null);
       String cachedSql = getCachedFilteredSql(user, fvSql, _param.getWdkModel());
-      return "select /*distinct yoohoo*/ " + FilterParamNew.COLUMN_INTERNAL + " from (" + cachedSql + ")";
+      return "select " + FilterParamNew.COLUMN_INTERNAL + " from (" + cachedSql + ")";
       
     }
     catch (JSONException ex) {
@@ -119,7 +119,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
        SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel);
        Map<String, String> paramValues = new MapBuilder<String, String>("sql", filteredSql).toMap();
        SqlQueryInstance instance = sqlQuery.makeInstance(user, paramValues, false, 0, Collections.emptyMap());
-       return "select " + FilterParamNew.COLUMN_INTERNAL + " from (" + instance.getSqlUnsorted() + ")"; // because isCacheable=true, we get the cached sql
+       return  instance.getSqlUnsorted(); // because isCacheable=true, we get the cached sql
      }
      catch (WdkUserException e) {
        throw new WdkModelException(e);
