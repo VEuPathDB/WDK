@@ -13,7 +13,7 @@ import org.gusdb.fgputil.iterator.ReadOnlyIterator;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.PrimaryKeyDefinition;

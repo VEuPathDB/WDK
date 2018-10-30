@@ -27,7 +27,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.query.Query;

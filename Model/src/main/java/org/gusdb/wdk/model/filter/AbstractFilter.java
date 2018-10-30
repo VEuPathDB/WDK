@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model.filter;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
 import org.json.JSONObject;
 

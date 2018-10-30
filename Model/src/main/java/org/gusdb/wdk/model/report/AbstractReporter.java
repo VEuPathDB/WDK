@@ -9,7 +9,7 @@ import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
 
 public abstract class AbstractReporter implements Reporter {

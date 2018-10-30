@@ -5,7 +5,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;

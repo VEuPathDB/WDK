@@ -31,7 +31,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins.ExecutionConfig;
-import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.analysis.StepAnalyzer;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.analysis.FutureCleaner.RunningAnalysis;

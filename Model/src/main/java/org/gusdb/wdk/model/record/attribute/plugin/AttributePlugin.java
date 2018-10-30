@@ -3,7 +3,7 @@ package org.gusdb.wdk.model.record.attribute.plugin;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.user.Step;
 

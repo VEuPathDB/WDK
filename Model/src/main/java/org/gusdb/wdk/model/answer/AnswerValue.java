@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.answer.factory;
+package org.gusdb.wdk.model.answer;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.FormatUtil.join;
@@ -28,9 +28,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
-import org.gusdb.wdk.model.answer.AnswerValueAttributes;
-import org.gusdb.wdk.model.answer.ResultSizeFactory;
+import org.gusdb.wdk.model.answer.factory.DynamicRecordInstanceList;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.FilterOption;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList;
