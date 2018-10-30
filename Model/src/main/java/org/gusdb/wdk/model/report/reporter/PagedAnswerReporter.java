@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model.report.reporter;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.PagedAnswerRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.report.AbstractReporter;

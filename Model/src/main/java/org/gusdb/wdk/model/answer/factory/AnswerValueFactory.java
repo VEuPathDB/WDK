@@ -7,6 +7,7 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.single.SingleRecordAnswerValue;
 import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;

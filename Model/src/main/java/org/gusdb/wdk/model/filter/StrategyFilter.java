@@ -5,7 +5,7 @@ import java.util.Collection;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -38,7 +38,7 @@ public class StrategyFilter extends StepFilter {
 
   /**
    * @throws WdkModelException 
-   * @see org.gusdb.wdk.model.filter.Filter#getSummary(org.gusdb.wdk.model.answer.factory.AnswerValue)
+   * @see org.gusdb.wdk.model.filter.Filter#getSummary(org.gusdb.wdk.model.answer.AnswerValue)
    */
   @Override
   public FilterSummary getSummary(AnswerValue answer, String idSql) throws WdkModelException {
@@ -52,7 +52,7 @@ public class StrategyFilter extends StepFilter {
    * the options contains the id of the strategy chosen as the filter.
    * @throws WdkModelException 
    * 
-   * @see org.gusdb.wdk.model.filter.Filter#getSql(org.gusdb.wdk.model.answer.factory.AnswerValue, java.lang.String, java.lang.String)
+   * @see org.gusdb.wdk.model.filter.Filter#getSql(org.gusdb.wdk.model.answer.AnswerValue, java.lang.String, java.lang.String)
    */
   @Override
   public String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException {

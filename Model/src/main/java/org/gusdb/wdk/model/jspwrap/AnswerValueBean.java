@@ -14,8 +14,8 @@ import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.AnswerValueAttributes;
-import org.gusdb.wdk.model.answer.factory.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList;
 import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
 import org.gusdb.wdk.model.filter.FilterSummary;
@@ -350,7 +350,7 @@ public class AnswerValueBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.answer.factory.AnswerValue#getSortingAttributeNames()
+     * @see org.gusdb.wdk.model.answer.AnswerValue#getSortingAttributeNames()
      */
     public String[] getSortingAttributeNames() {
         Map<String, Boolean> sortingFields = answerValue.getSortingMap();
@@ -361,7 +361,7 @@ public class AnswerValueBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.answer.factory.AnswerValue#getSortingAttributeOrders()
+     * @see org.gusdb.wdk.model.answer.AnswerValue#getSortingAttributeOrders()
      */
     public boolean[] getSortingAttributeOrders() {
         Map<String, Boolean> sortingFields = answerValue.getSortingMap();
@@ -423,7 +423,7 @@ public class AnswerValueBean {
     /**
      * @return
      * @throws WdkUserException 
-     * @see org.gusdb.wdk.model.answer.factory.AnswerValue#getAllPkValues()
+     * @see org.gusdb.wdk.model.answer.AnswerValue#getAllPkValues()
      */
     public String getAllIdList() throws WdkModelException, WdkUserException {
         List<String[]> pkValues = answerValue.getAllIds();
@@ -444,7 +444,7 @@ public class AnswerValueBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.answer.factory.AnswerValue#getEndIndex()
+     * @see org.gusdb.wdk.model.answer.AnswerValue#getEndIndex()
      */
     public int getEndIndex() {
         return answerValue.getEndIndex();
@@ -452,7 +452,7 @@ public class AnswerValueBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.answer.factory.AnswerValue#getStartIndex()
+     * @see org.gusdb.wdk.model.answer.AnswerValue#getStartIndex()
      */
     public int getStartIndex() {
         return answerValue.getStartIndex();
@@ -461,7 +461,7 @@ public class AnswerValueBean {
     /**
      * @param startIndex
      * @param endIndex
-     * @see org.gusdb.wdk.model.answer.factory.AnswerValue#setPageIndex(int, int)
+     * @see org.gusdb.wdk.model.answer.AnswerValue#setPageIndex(int, int)
      */
     public void setPageIndex(int startIndex, int endIndex) {
         answerValue.setPageIndex(startIndex, endIndex);

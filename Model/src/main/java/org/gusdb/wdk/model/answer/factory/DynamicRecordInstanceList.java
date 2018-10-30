@@ -15,6 +15,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.query.Column;

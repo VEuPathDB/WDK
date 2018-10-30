@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;

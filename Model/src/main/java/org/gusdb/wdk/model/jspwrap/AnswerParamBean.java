@@ -3,7 +3,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.factory.AnswerValue;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
