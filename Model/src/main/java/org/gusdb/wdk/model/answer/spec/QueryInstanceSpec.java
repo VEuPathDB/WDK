@@ -55,6 +55,11 @@ public class QueryInstanceSpec extends ReadOnlyHashMap<String,String> implements
     }
 
     @Override
+    public QueryInstanceSpecBuilder put(String key, String value) {
+      return (QueryInstanceSpecBuilder)super.put(key, value);
+    }
+
+    @Override
     public QueryInstanceSpecBuilder putAll(Map<String,String> values) {
       return (QueryInstanceSpecBuilder)super.putAll(values);
     }

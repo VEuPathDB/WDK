@@ -3,21 +3,22 @@ package org.gusdb.wdk.model.query.param;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.Column;
+import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.QuerySet;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.gusdb.wdk.model.query.Column;
-import org.gusdb.wdk.model.query.QuerySet;
-import org.gusdb.wdk.model.query.SqlQuery;
-import org.gusdb.wdk.model.query.SqlQueryInstance;
-import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
 /**
@@ -118,8 +119,9 @@ public class FilterParamNewHandler extends AbstractParamHandler {
        // get an sqlquery so we can cache this internal value. it is parameterized by the sql itself
        SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel);
        Map<String, String> paramValues = new MapBuilder<String, String>("sql", filteredSql).toMap();
-       SqlQueryInstance instance = sqlQuery.makeInstance(user, paramValues, false, 0, Collections.emptyMap());
-       return  instance.getSqlUnsorted(); // because isCacheable=true, we get the cached sql
+       QueryInstance<?> instance = Query.makeQueryInstance(user, QueryInstanceSpec.builder()
+           .putAll(paramValues).buildRunnable(sqlQuery, null));
+       return instance.getSqlUnsorted(); // because isCacheable=true, we get the cached sql
      }
      catch (WdkUserException e) {
        throw new WdkModelException(e);

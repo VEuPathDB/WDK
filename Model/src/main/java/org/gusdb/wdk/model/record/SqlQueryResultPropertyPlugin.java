@@ -1,13 +1,13 @@
 package org.gusdb.wdk.model.record;
 
 import java.math.BigDecimal;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -39,40 +39,22 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
   @Override
   public Integer getPropertyValue(AnswerValue answerValue, String propertyName)
       throws WdkModelException, WdkUserException {
-    RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-    // logger.debug("Getting property : " + propertyName + " in record class: " + recordClass.getFullName() +
-    // " and question: " + answerValue.getQuestion().getDisplayName());
-    // logger.debug(" .... with idSQL: " + answerValue.getIdSql());
-
-    if (!propertyName.equals(this._propertyName))
+    String recordClassName = answerValue.getAnswerSpec().getQuestion().getRecordClass().getFullName();
+    if (!propertyName.equals(_propertyName))
       throw new WdkModelException("Accessing result property plugin for record class '" +
-          recordClass.getName() + "' with illegal property name '" + propertyName +
+          recordClassName + "' with illegal property name '" + propertyName +
           "'.  The allowed property name is '" + this._propertyName + "'");
 
-    QueryInstance<?> queryInstance = getQueryInstance(answerValue);
+    QueryInstance<?> queryInstance = Query.makeQueryInstance(answerValue.getUser(),
+        QueryInstanceSpec.builder().put(WDK_ID_SQL_PARAM, answerValue.getIdSql()).buildRunnable(_query, null));
     try (ResultList results = queryInstance.getResults()) {
       results.next();
       Integer count = ((BigDecimal) results.get(PROPERTY_COLUMN)).intValue();
       if (results.next())
-        throw new WdkModelException("Record class '" + recordClass.getName() +
+        throw new WdkModelException("Record class '" + recordClassName +
             "' has an SqlResultPropertyPlugin whose SQL returns more than one row.");
       return count;
     }
-  }
-
-  private QueryInstance<?> getQueryInstance(AnswerValue answerValue)
-      throws WdkModelException, WdkUserException {
-    Map<String, String> params = new LinkedHashMap<String, String>();
-    params.put(WDK_ID_SQL_PARAM, answerValue.getIdSql());
-    QueryInstance<?> queryInstance;
-    try {
-      queryInstance = _query.makeInstance(answerValue.getUser(), params, true, 0,
-          new LinkedHashMap<String, String>());
-    }
-    catch (WdkUserException ex) {
-      throw new WdkModelException(ex);
-    }
-    return queryInstance;
   }
 
   private void validateQuery(Query query) throws WdkModelException {

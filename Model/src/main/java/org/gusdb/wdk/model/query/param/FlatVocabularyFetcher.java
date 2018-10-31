@@ -12,7 +12,7 @@ import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -112,7 +112,9 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
           ", context Question: " + ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName()) +
           ", context Query: " + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
 
-      QueryInstance<?> instance = _vocabQuery.makeInstance(_user, values, false, 0, context);
+      // FIXME: Do we need to send context info above or is the way we are extracting it sufficient??
+      QueryInstance<?> instance = Query.makeQueryInstance(_user, QueryInstanceSpec.builder()
+          .putAll(values).buildRunnable(_vocabQuery, null));
       try (ResultList result = instance.getResults()) {
         while (result.next()) {
           Object objTerm = result.get(FlatVocabParam.COLUMN_TERM);
@@ -164,7 +166,7 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
       logger.debug("Returning instance with default value '" + vocabInstance.getDefaultValue() +
           "' out of possible terms: " + FormatUtil.arrayToString(vocabInstance.getTerms().toArray()));
     }
-    catch (WdkModelException | WdkUserException e) {
+    catch (WdkModelException e) {
       throw new ValueProductionException(e);
     }
   }

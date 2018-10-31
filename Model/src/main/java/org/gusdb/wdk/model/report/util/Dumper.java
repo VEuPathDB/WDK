@@ -18,6 +18,8 @@ import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
@@ -81,7 +83,8 @@ public class Dumper {
           Map<String, String> config = parseListArgs("config", reporterConfig);
 
           // Get the reporter
-          AnswerValue answer = question.makeAnswerValue(user, params, true, 0);
+          AnswerValue answer = AnswerValueFactory.makeAnswer(user, AnswerSpec.builder(wdkModel)
+              .setQuestionName(questionName).setParamValues(params).buildRunnable());
           Reporter reporter = ReporterFactory.getReporter(answer, reporterName, config);
 
           reporter.report(out);

@@ -5,6 +5,7 @@ import java.util.Map;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.NoSuchElementException;
 import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
@@ -101,14 +102,14 @@ public class UserFactoryBean {
         return new UserBean(user);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.UserFactory#loadUser(int)
-     */
     public UserBean getUser(int userId) throws WdkModelException {
+      try {
         User user = _userFactory.getUserById(userId);
         return new UserBean(user);
+      }
+      catch (NoSuchElementException e) {
+        throw new WdkModelException(e);
+      }
     }
 
     public void setSignature(String signature) {

@@ -362,8 +362,7 @@ public class UserBean {
     return convertMap(strategies);
   }
 
-  public Map<String, List<StrategyBean>> getActiveStrategiesByCategory() throws WdkModelException,
-      WdkUserException {
+  public Map<String, List<StrategyBean>> getActiveStrategiesByCategory() {
     Map<String, List<Strategy>> strategies = StepUtilities.getActiveStrategiesByCategory(_user);
     return convertMap(strategies);
   }
@@ -473,7 +472,7 @@ public class UserBean {
     return _user.getSession().getViewPagerOffset();
   }
 
-  public StrategyBean[] getActiveStrategies() throws WdkUserException {
+  public StrategyBean[] getActiveStrategies() {
     List<StrategyBean> strategies = new ArrayList<StrategyBean>();
     for (Strategy strategy : _user.getSession().getActiveStrategies()) {
       strategies.add(new StrategyBean(this, strategy));
@@ -720,7 +719,7 @@ public class UserBean {
   }
 
   public long getNewStrategyId() throws WdkModelException {
-    return _wdkModel.getStepFactory().getNextStrategyId();
+    return _wdkModel.getStepFactory().getNewStrategyId();
   }
 
 }

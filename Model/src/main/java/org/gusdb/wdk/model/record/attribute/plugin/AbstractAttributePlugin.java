@@ -135,7 +135,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
    * @throws WdkUserException 
    */
   protected String getAttributeSql(AnswerValue answerValue) throws WdkModelException, WdkUserException {
-    WdkModel wdkModel = step.getRecordClass().getWdkModel();
+    WdkModel wdkModel = answerValue.getWdkModel();
 
     // format the display of the attribute in sql
     Map<String, String> queries = new LinkedHashMap<String, String>();
