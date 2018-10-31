@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,6 +35,7 @@ import org.gusdb.wdk.model.answer.AnswerFilter;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.SummaryView;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.filter.ColumnFilter;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.FilterDefinition;
@@ -723,7 +723,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   public Long getAllRecordsCount(User user) throws WdkModelException {
     try {
-      String baseSql = allRecordsQuery.makeInstance(user, new HashMap<>(), false, 0, new HashMap<>()).getSql();
+      String baseSql = Query.makeQueryInstance(user, QueryInstanceSpec.builder()
+          .buildRunnable(allRecordsQuery, null)).getSql();
       String sql = "select count(*) from ( " + baseSql + " )";
       SingleLongResultSetHandler result = new SQLRunner(_wdkModel.getAppDb().getDataSource(),
           sql, fullName + "-all-records-count").executeQuery(new SingleLongResultSetHandler());
@@ -734,11 +735,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     catch (SQLRunnerException e) {
       // unwrap exception and rewrap as WdkModelException
-      throw new WdkModelException(e.getCause());
-    }
-    catch (WdkUserException ue) {
-      // no user exception should be thrown here since query takes no params
-      throw new WdkModelException(ue);
+      return WdkModelException.unwrap(e, Long.class);
     }
   }
 

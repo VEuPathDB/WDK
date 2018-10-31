@@ -16,6 +16,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 
@@ -242,9 +243,11 @@ public class ResultFactory {
       ps.setString(4, instance.getChecksum());
       platform.setClobData(ps, 5, instance.getResultMessage(), false);
       ps.executeUpdate();
-    } catch (SQLException e) {
+    }
+    catch (SQLException | WdkUserException e) {
       throw new WdkModelException("Unable to add cache instance.", e);
-    } finally {
+    }
+    finally {
       // close the statement manually, since we cannot close the
       // connection; it's not committed yet.
       SqlUtils.closeStatement(ps);

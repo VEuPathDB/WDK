@@ -15,7 +15,7 @@ import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -47,8 +47,8 @@ public class OntologyItemNewFetcher implements ValueFactory<String, Map<String, 
         if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
           requiredParamValues.put(paramName, paramValues.get(paramName));
 
-      QueryInstance<?> instance = query.makeInstance(user, requiredParamValues, true, 0,
-          new HashMap<String, String>());
+      QueryInstance<?> instance = Query.makeQueryInstance(user, QueryInstanceSpec.builder()
+          .putAll(requiredParamValues).buildRunnable(query, null));
       Map<String, OntologyItem> ontologyItemMap = new LinkedHashMap<>();
       ResultList resultList = instance.getResults();
       try {
@@ -82,7 +82,7 @@ public class OntologyItemNewFetcher implements ValueFactory<String, Map<String, 
 
       return ontologyItemMap;
     }
-    catch (WdkModelException | WdkUserException ex) {
+    catch (WdkModelException ex) {
       throw new ValueProductionException(ex);
     }
   }

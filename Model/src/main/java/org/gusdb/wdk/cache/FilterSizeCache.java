@@ -144,7 +144,8 @@ public class FilterSizeCache {
       public void eventTriggered(Event event) throws Exception {
         if (event instanceof StepRevisedEvent) {
           long stepId = ((StepRevisedEvent)event).getRevisedStep().getStepId();
-          LOG.info("Notification of step revision, step ID: " + stepId + " and question: " + ((StepRevisedEvent)event).getRevisedStep().getQuestionName() );
+          LOG.info("Notification of step revision, step ID: " + stepId + " and question: " +
+              ((StepRevisedEvent)event).getRevisedStep().getAnswerSpec().getQuestionName() );
           _cache.expireEntries(stepId);
         }
         else if (event instanceof StepResultsModifiedEvent) {

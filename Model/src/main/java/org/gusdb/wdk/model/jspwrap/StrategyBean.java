@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import static org.gusdb.wdk.model.user.StepContainer.withId;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -9,6 +11,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.Strategy;
 
 public class StrategyBean {
@@ -119,7 +122,8 @@ public class StrategyBean {
   }
 
   public StepBean getStepById(long stepId) throws WdkModelException {
-    Step target = strategy.getStepById(stepId);
+    Step target = strategy.findFirstStep(withId(stepId)).orElseThrow(
+        () -> new WdkModelException("Step " + stepId + " is not in strategy " + strategy.getStrategyId()));
     if (target != null) {
       return new StepBean(user, target);
     }

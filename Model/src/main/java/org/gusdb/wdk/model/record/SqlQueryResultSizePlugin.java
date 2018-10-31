@@ -1,12 +1,11 @@
 package org.gusdb.wdk.model.record;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.math.BigDecimal;
+import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -33,7 +32,8 @@ public class SqlQueryResultSizePlugin implements ResultSize {
   @Override
   public Integer getResultSize(AnswerValue answerValue, String idSql) throws WdkModelException {
 
-    QueryInstance<?> queryInstance = getQueryInstance(answerValue, idSql);
+    QueryInstance<?> queryInstance = Query.makeQueryInstance(answerValue.getUser(),
+        QueryInstanceSpec.builder().put(WDK_ID_SQL_PARAM, idSql).buildRunnable(_query, null));
     try (ResultList results = queryInstance.getResults()) {
       results.next();
       Integer count = ((BigDecimal) results.get(COUNT_COLUMN)).intValue();
@@ -43,20 +43,6 @@ public class SqlQueryResultSizePlugin implements ResultSize {
             "' has an SqlResultSizePlugin whose SQL returns more than one row.");
       return count;
     }
-  }
-
-  private QueryInstance<?> getQueryInstance(AnswerValue answerValue, String idSql) throws WdkModelException {
-    Map<String, String> params = new LinkedHashMap<String, String>();
-    params.put(WDK_ID_SQL_PARAM, idSql);
-    QueryInstance<?> queryInstance;
-    try {
-      queryInstance = _query.makeInstance(answerValue.getUser(), params, true, 0,
-          new LinkedHashMap<String, String>());
-    }
-    catch (WdkUserException ex) {
-      throw new WdkModelException(ex);
-    }
-    return queryInstance;
   }
 
   private void validateQuery(Query query) throws WdkModelException {

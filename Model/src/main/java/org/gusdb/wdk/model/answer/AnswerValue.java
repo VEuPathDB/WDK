@@ -158,7 +158,7 @@ public class AnswerValue {
    *          The index of the last <code>RecordInstance</code> in the page, inclusive.
    * @throws WdkModelException 
    */
-  protected AnswerValue(User user, Runnable<AnswerSpec> validAnswerSpec, int startIndex,
+  public AnswerValue(User user, Runnable<AnswerSpec> validAnswerSpec, int startIndex,
       int endIndex, Map<String, Boolean> sortingMap) throws WdkModelException {
     _user = user;
     _validAnswerSpec = validAnswerSpec;
@@ -363,7 +363,7 @@ public class AnswerValue {
     return new SqlResultList(resultSet);
   }
 
-  String getPagedTableSql(Query tableQuery) throws WdkModelException {
+  public String getPagedTableSql(Query tableQuery) throws WdkModelException {
     // get the paged SQL of id query
     String idSql = getPagedIdSql();
 

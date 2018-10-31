@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -226,7 +227,7 @@ public class PrimaryKeyDefinition extends WdkModelBase {
   }
 
   private List<Map<String, Object>> getPrimaryKeyFromAliasQuery(User user, Map<String, Object> pkValues)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
 
     List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
 
@@ -238,8 +239,8 @@ public class PrimaryKeyDefinition extends WdkModelBase {
       oldValues.put(oldParam, value);
     }
 
-    QueryInstance<?> instance = _aliasQuery.makeInstance(user, oldValues, true, 0,
-        new LinkedHashMap<String, String>());
+    QueryInstance<?> instance = Query.makeQueryInstance(user, QueryInstanceSpec.builder()
+        .putAll(oldValues).buildRunnable(_aliasQuery, null));
     
     try (ResultList resultList = instance.getResults()) {
       while (resultList.next()) {
