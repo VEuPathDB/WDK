@@ -144,7 +144,7 @@ public class DefaultJsonReporter extends AbstractReporter {
    * @param writer
    * @return the JsonWriter that now includes the addtions, if any
    */
-  public JsonWriter writeAdditionalJson(JsonWriter writer) { return writer; }
+  public JsonWriter writeAdditionalJson(JsonWriter writer) throws WdkModelException, WdkUserException { return writer; }
 
   private static JSONObject getMetaData(AnswerValue answerValue,
       Set<String> includedAttributes, Set<String> includedTables, int numRecordsReturned)
