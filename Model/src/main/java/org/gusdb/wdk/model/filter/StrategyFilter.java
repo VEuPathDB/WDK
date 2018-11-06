@@ -57,7 +57,7 @@ public class StrategyFilter extends StepFilter {
   @Override
   public String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException {
     Strategy strategy = getStrategy(answer, jsValue);
-    AnswerValue rootAnswer = strategy.getLatestStep().getAnswerValue();
+    AnswerValue rootAnswer = strategy.getRootStep().getAnswerValue();
 
     // make sure both answers are of the same type.
     RecordClass recordClass = answer.getAnswerSpec().getQuestion().getRecordClass();

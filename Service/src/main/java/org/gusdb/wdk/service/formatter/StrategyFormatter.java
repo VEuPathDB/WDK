@@ -28,7 +28,7 @@ public class StrategyFormatter {
         .put(JsonKeys.NAME, strategy.getName())
         .put(JsonKeys.AUTHOR, strategy.getUser().getDisplayName())
         .put(JsonKeys.LATEST_STEP_ID, strategy.getRootStepId())
-        .put(JsonKeys.RECORD_CLASS_NAME, strategy.getLatestStep().getQuestion().getRecordClass().getFullName())
+        .put(JsonKeys.RECORD_CLASS_NAME, strategy.getRootStep().getQuestion().getRecordClass().getFullName())
         .put(JsonKeys.SIGNATURE, strategy.getSignature())
         .put(JsonKeys.LAST_MODIFIED, strategy.getLastModifiedTime())
         .put(JsonKeys.IS_PUBLIC, strategy.getIsPublic())
@@ -37,12 +37,12 @@ public class StrategyFormatter {
         .put(JsonKeys.IS_DELETED, strategy.isDeleted())
         .put(JsonKeys.IS_PUBLIC, strategy.getIsPublic())
         .put(JsonKeys.ORGANIZATION, strategy.getUser().getProfileProperties().get("organization"))
-        .put(JsonKeys.ESTIMATED_SIZE, strategy.getLatestStep().getRawEstimateSize());
+        .put(JsonKeys.ESTIMATED_SIZE, strategy.getRootStep().getRawEstimateSize());
   }
 
   public static JSONObject getDetailedStrategyJson(Strategy strategy) throws WdkModelException, JSONException {
     return getListingStrategyJson(strategy)
-        .put(JsonKeys.ROOT_STEP, getStepsJson(strategy.getLatestStep()));
+        .put(JsonKeys.ROOT_STEP, getStepsJson(strategy.getRootStep()));
   }
   
   protected static JSONObject getStepsJson(Step step) throws WdkModelException, JSONException {

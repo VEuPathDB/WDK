@@ -55,7 +55,7 @@ public class Bug4446Test {
     transformStep.setCustomName(CUSTOM_NAME);
     transformStep.update(false);
     Strategy strategy = StepUtilities.createStrategy(transformStep, false);
-    logger.debug("name before revising: " + strategy.getLatestStep().getCustomName());
+    logger.debug("name before revising: " + strategy.getRootStep().getCustomName());
 
     // now revise the previous step of the boolean
     Step previousStep = booleanStep.getPreviousStep();
@@ -63,7 +63,7 @@ public class Bug4446Test {
     previousStep.saveParamFilters();
 
     // check the custom name, see if it is preserved
-    Step newTransformStep = strategy.getLatestStep();
+    Step newTransformStep = strategy.getRootStep();
 
     Assert.assertEquals(CUSTOM_NAME, newTransformStep.getCustomName());
   }

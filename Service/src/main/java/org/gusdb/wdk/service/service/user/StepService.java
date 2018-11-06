@@ -29,6 +29,8 @@ import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecFactory;
 import org.gusdb.wdk.model.answer.spec.ParamValue;
+import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.user.NoSuchElementException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
@@ -125,7 +127,7 @@ public class StepService extends UserService {
       getWdkModel().getStepFactory().resetEstimateSizeForThisAndDownstreamSteps(step);
 
       // reset the current step object estimate size
-      step.setEstimateSize(-1);
+      step.resetEstimatedSize();
 
       // return updated step
       return Response.ok(StepFormatter.getStepJsonWithRawEstimateValue(step).toString()).build();
@@ -194,7 +196,7 @@ public class StepService extends UserService {
 
     // check for param or filter changes
     AnswerSpec answerSpec = stepRequest.getAnswerSpec();
-    Map<String,ParamValue> newParamValues = answerSpec.getQueryInstanceSpec();
+    QueryInstanceSpec newParamValues = answerSpec.getQueryInstanceSpec();
     Map<String,String> oldParamValues = step.getQueryInstanceSpec();
     for (String paramName : newParamValues.keySet()) {
       if (nullSafeEquals(oldParamValues.get(paramName), newParamValues.get(paramName).getObjectValue())) paramFiltersChanged = true;
@@ -218,16 +220,17 @@ public class StepService extends UserService {
     return new StepChanges(paramFiltersChanged, metadataChanged);
   }
 
-  private Step getStepForCurrentUser(String stepId) {
+  private Step getStepForCurrentUser(String stepId) throws WdkModelException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      Step step = getWdkModel().getStepFactory().getStepById(Integer.parseInt(stepId));
+      Step step = getWdkModel().getStepFactory().getStepById(Long.parseLong(stepId))
+          .orElseThrow(() -> new NoSuchElementException("Cannot find step with ID " + stepId));
       if (step.getUser().getUserId() != user.getUserId()) {
         throw new ForbiddenException(AbstractWdkService.PERMISSION_DENIED);
       }
       return step;
     }
-    catch (NumberFormatException | WdkModelException e) {
+    catch (NumberFormatException | NoSuchElementException e) {
       throw new NotFoundException(AbstractWdkService.formatNotFound(STEP_RESOURCE + stepId));
     }
   }

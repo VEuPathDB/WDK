@@ -72,8 +72,11 @@ public class UserSession {
     List<Strategy> strategies = new ArrayList<Strategy>();
     for (long id : ids) {
       try {
-        Strategy strategy = _user.getWdkModel().getStepFactory().getStrategyById(id);
-        strategies.add(strategy);
+        Strategy strategy = _user.getWdkModel().getStepFactory().getStrategyById(id).orElse(null);
+        if (strategy != null) {
+          // only add to active if found
+          strategies.add(strategy);
+        }
       }
       catch (WdkModelException ex) {
         // something wrong with loading a strat, probably the strategy
@@ -158,7 +161,7 @@ public class UserSession {
     Map<Long, Long> stepsMap = new LinkedHashMap<>();
     for (Strategy strategy : StepUtilities.getStrategies(guestUser)) {
       // the root step is considered as imported
-      Step rootStep = strategy.getLatestStep();
+      Step rootStep = strategy.getRootStep();
 
       // import the strategy
       Strategy newStrategy = StepUtilities.importStrategy(_user, strategy, stepsMap);

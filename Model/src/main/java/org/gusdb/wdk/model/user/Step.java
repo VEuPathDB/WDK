@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
@@ -234,7 +235,7 @@ public class Step implements StrategyElement, Validateable {
   // in DB, last known size of result (see _estimateSizeRefreshed below)
   private int _estimatedSize;
   // in DB, tells if nested step
-  private final boolean _isCollapsible;
+  private boolean _isCollapsible; // <- MODIFIABLE
   // in DB, custom name for nested "strategy"
   private String _collapsedName;
   // in DB, project ID when step was created
@@ -243,7 +244,7 @@ public class Step implements StrategyElement, Validateable {
   private final String _projectVersion;
 
   // in DB, defines the parameters used to find this Step's answer
-  private final AnswerSpec _answerSpec;
+  private AnswerSpec _answerSpec; // <- MODIFIABLE
 
 
   // Steps within the "main branch" strategy flow
@@ -313,8 +314,8 @@ public class Step implements StrategyElement, Validateable {
     return _wdkModel.getStepFactory();
   }
 
-  public Step getParentStep() {
-    return _container.findStep(parentOf(_stepId));
+  public Optional<Step> getParentStep() {
+    return _container.findFirstStep(parentOf(_stepId));
   }
 
   public long getPreviousStepId() {
@@ -328,11 +329,11 @@ public class Step implements StrategyElement, Validateable {
   }
 
   public Step getPreviousStep() {
-    return findAnswerParamsStep(0);
+    return findAnswerParamsStep(0).orElse(null);
   }
 
   public Step getChildStep() {
-    return findAnswerParamsStep(1);
+    return findAnswerParamsStep(1).orElse(null);
   }
 
   /**
@@ -343,14 +344,14 @@ public class Step implements StrategyElement, Validateable {
    * @param answerParamOrdinal index of the answer param whose value should be used to look up step
    * @return the found step, or null if not found
    */
-  private Step findAnswerParamsStep(int answerParamOrdinal) {
+  private Optional<Step> findAnswerParamsStep(int answerParamOrdinal) {
     AnswerParam param = getNthOrNull(_answerSpec.getQuestion().getQuery().getAnswerParams(), answerParamOrdinal);
     if (!_answerSpec.hasValidQuestion()) return null;
     QueryInstanceSpec spec = _answerSpec.getQueryInstanceSpec();
     String stableValue = spec.get(param.getName());
     if (stableValue == null) return null;
     long stepId = AnswerParam.toStepId(stableValue);
-    return _container.findStep(withId(stepId));
+    return _container.findFirstStep(withId(stepId));
   }
 
   /**
@@ -408,9 +409,11 @@ public class Step implements StrategyElement, Validateable {
   @Deprecated
   public void setParentStep(Step parentStep) throws WdkModelException {
     // check if this is a no-op
-    if (parentStep.getStepId() == _parentStepId)
+    if (parentStep.getStepId() == getParentStep().map(step -> step.getStepId()).orElse(-1L)) {
       return;
+    }
     verifySameOwnerAndProject(this, parentStep);
+    parentStep.setChildStep(this);
     _strategy.appendStep(parentStep);
     _parentStepId = parentStep.getStepId();
     if (parentStep != null) {
@@ -749,32 +752,6 @@ public class Step implements StrategyElement, Validateable {
     throw new WdkUserException("Id not found!");
   }
 
-  public Step createStep(String filterName, int assignedWeight) throws WdkModelException {
-    AnswerFilterInstance filter = _answerSpec.getQuestion().getRecordClass().getFilterInstance(filterName);
-    return createStep(filter, assignedWeight);
-  }
-
-  public Step createStep(AnswerFilterInstance filter, int assignedWeight) throws WdkModelException {
-    // make sure caller is asking for something new; if not, return this Step
-    AnswerFilterInstance oldFilter = _answerSpec.getLegacyFilter();
-    if (_answerSpec.getQueryInstanceSpec().getAssignedWeight() == assignedWeight &&
-        ((filter == null && oldFilter == null) ||
-         (filter != null && oldFilter != null && filter.getName().equals(oldFilter.getName())))) {
-      return this;
-    }
-
-    // create new steps
-    Question question = _answerSpec.getQuestion();
-    Map<String, String> params = _answerSpec.getQueryInstanceSpec().toMap();
-    Step step = StepUtilities.createStep(_user, _strategyId, question, params, filter, _isDeleted,
-        assignedWeight, _answerSpec.getFilterOptions());
-    step._collapsedName = _collapsedName;
-    step._customName = _customName;
-    step._isCollapsible = _isCollapsible;
-    step.update(false);
-    return step;
-  }
-
   public boolean isFiltered() throws WdkModelException {
     // first check if new filter has been applied
     if (_answerSpec.getFilterOptions() != null &&
@@ -799,6 +776,12 @@ public class Step implements StrategyElement, Validateable {
   public void updateEstimatedSize(int checkedSize) {
     _estimatedSize = checkedSize;
     _estimatedSizeRefreshed = true;
+  }
+
+  public void resetEstimatedSize() {
+    _estimatedSize = RESET_SIZE_FLAG;
+    _estimatedSizeRefreshed = false;
+    
   }
 
   public JSONObject getJSONContent(int strategyId) throws WdkModelException {
@@ -935,7 +918,7 @@ public class Step implements StrategyElement, Validateable {
 
   @Override
   public String toString() {
-    return _stepId + " (" + _previousStepId + ", " + _childStepId + ")";
+    return _stepId + " (" + getPreviousStepId() + ", " + getChildStepId() + ")";
   }
 
   public boolean isUncollapsible() {
@@ -1155,6 +1138,10 @@ public class Step implements StrategyElement, Validateable {
 
   public void setCollapsedName(String collapsedName) {
     _collapsedName = collapsedName;
+  }
+
+  public void setCollapsible(boolean isCollapsible) {
+    _isCollapsible = isCollapsible;
   }
 
 }

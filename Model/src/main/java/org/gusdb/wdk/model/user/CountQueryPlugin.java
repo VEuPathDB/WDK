@@ -3,9 +3,7 @@ package org.gusdb.wdk.model.user;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.gusdb.fgputil.validation.ValidObjectFactory;
 import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
-import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -52,19 +50,16 @@ public class CountQueryPlugin implements CountPlugin {
   }
 
   @Override
-  public int count(Runnable<Step> step) throws WdkModelException, WdkUserException {
+  public int count(Runnable<Step> runnableStep) throws WdkModelException, WdkUserException {
     // prepare params, which has only one answerParam
+    Step step = runnableStep.getObject();
     Param[] params = _query.getParams();
     Map<String, String> paramValues = new HashMap<>();
     paramValues.put(params[0].getName(), Long.toString(step.getStepId()));
 
     // create a queryInstance, and get count;
-
-    Runnable<QueryInstanceSpec> spec = QueryInstanceSpec.builder().putAll(paramValues).buildRunnable(_query);
-    QueryInstance<?> queryInstance = Query.makeQueryInstance(step.getUser(), spec);
-
     QueryInstance<?> queryInstance = Query.makeQueryInstance(step.getUser(),
-        QueryInstanceSpec.builder().putAll(paramValues).buildRunnable(_query));
+        QueryInstanceSpec.builder().putAll(paramValues).buildRunnable(_query, step.getStrategy()));
 
     try (ResultList resultList = queryInstance.getResults()) {
 

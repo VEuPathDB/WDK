@@ -22,6 +22,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 
 public class UserDatasetFactory {
+
+  @SuppressWarnings("unused")
   private static Logger LOG = Logger.getLogger(UserDatasetFactory.class);
 
   private final WdkModel _wdkModel;

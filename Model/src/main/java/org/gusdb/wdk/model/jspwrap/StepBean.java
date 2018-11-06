@@ -289,24 +289,6 @@ public class StepBean {
         return step.getIndexFromId(stepId);
     }
 
-    /**
-     * @param filterName
-     * @return
-     * @throws WdkModelException 
-     * @throws SQLException 
-     * @throws JSONException 
-     * @throws WdkUserException 
-     * @throws NoSuchAlgorithmException 
-     * @see org.gusdb.wdk.model.user.Step#createStep(org.gusdb.wdk.model.AnswerFilterInstance)
-     */
-    public StepBean createStep(String filterName, int assignedWeight) throws WdkModelException  {
-        return new StepBean(user, step.createStep(filterName, assignedWeight));
-    }
-
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.user.Step#isCombined()
-     */
     public boolean isCombined() {
         return step.isCombined();
     }

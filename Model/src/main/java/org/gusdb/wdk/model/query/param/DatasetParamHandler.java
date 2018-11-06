@@ -171,7 +171,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
         String strId = requestParams.getParam(datasetParam.getStrategySubParam());
         long strategyId = Long.valueOf(strId);
         Strategy strategy = StepUtilities.getStrategy(user, strategyId);
-        Step step = strategy.getLatestStep();
+        Step step = strategy.getRootStep();
         List<RecordInstance> list = new ArrayList<>();
         try (RecordStream fullAnswer = step.getAnswerValue().getFullAnswer()) {
           for (RecordInstance record : fullAnswer) {
