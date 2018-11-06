@@ -25,6 +25,7 @@ import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkIllegalArgumentException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
@@ -185,7 +186,7 @@ public class Strategy implements StrategyElement, StepContainer {
   private final Date _lastRunTime;
   private final String _signature;
   private final boolean _isPublic;
-  private final long _rootStepId;
+  private long _rootStepId; // <- MODIFIABLE
   private final Map<Long, Step> _stepMap;
 
   private Strategy(StrategyBuilder strategyBuilder, User user, ValidationLevel validationLevel) {
@@ -240,16 +241,15 @@ public class Strategy implements StrategyElement, StepContainer {
     return _projectId;
   }
 
-  public Step getLatestStep() throws WdkModelException {
-    if (_latestStep == null && _rootStepId != 0)
-      setLatestStep(_stepFactory.getStepById(_rootStepId));
-    return _latestStep;
+  public Step getRootStep() {
+    return findFirstStep(withId(_rootStepId)).orElseThrow(
+        () -> new WdkRuntimeException("Root step ID " + _rootStepId + " no longer present in strategy."));
   }
 
-  public void setLatestStep(Step step) throws WdkModelException {
+  public void setRootStep(Step step) throws WdkModelException {
     verifySameOwnerAndProject(this, step);
-    _latestStep = step;
     // also update the cached info
+    _stepMap.put(step.getStepId(), step);
     _rootStepId = step.getStepId();
   }
 
@@ -266,11 +266,11 @@ public class Strategy implements StrategyElement, StepContainer {
   }
 
   public List<Step> getMainBranch() throws WdkModelException {
-    return getLatestStep().getMainBranch();
+    return getRootStep().getMainBranch();
   }
 
   public int getLength() throws WdkModelException {
-    return getLatestStep().getLength();
+    return getRootStep().getLength();
   }
 
   public long getRootStepId() {
@@ -290,7 +290,7 @@ public class Strategy implements StrategyElement, StepContainer {
   }
 
   public RecordClass getRecordClass() {
-    return getLatestStep().getRecordClass();
+    return getRootStep().getRecordClass();
   }
 
   /**
@@ -346,7 +346,7 @@ public class Strategy implements StrategyElement, StepContainer {
           rootMap.put(targetId, newStep.getStepId());
         }
         else { // target is at the end of the strategy, set newStep as the end of the strategy
-          setLatestStep(newStep);
+          setRootStep(newStep);
           update(false); // don't overwrite a saved strategy.
           rootMap.put(targetId, newStep.getStepId());
         }
@@ -434,7 +434,7 @@ public class Strategy implements StrategyElement, StepContainer {
         parentStep.saveParamFilters();
       }
       else { // a step is inserted at the end of main strategy
-        setLatestStep(newStep);
+        setRootStep(newStep);
         update(false);
       }
     }
@@ -533,7 +533,7 @@ public class Strategy implements StrategyElement, StepContainer {
     if (step == null) {
       if (previousStep != null) { // current step is null, then previous step should become new root.
         rootMap.put(getRootStepId(), previousStep.getStepId());
-        setLatestStep(previousStep);
+        setRootStep(previousStep);
         update(false);
       }
       else { // no more steps left in the strategy, delete the strategy itself.
@@ -551,12 +551,8 @@ public class Strategy implements StrategyElement, StepContainer {
     return rootMap;
   }
 
-  public Step getRootStep() {
-    return findFirstStep(withId(_rootStepId)).get();
-  }
-
   public Step getFirstStep() throws WdkModelException {
-    Step step = getLatestStep();
+    Step step = getRootStep();
     while (step.getPreviousStep() != null) {
       step = step.getPreviousStep();
     }
@@ -600,7 +596,7 @@ public class Strategy implements StrategyElement, StepContainer {
         jsStrategy.put("resultSize", getEstimateSize());
       }
 
-      JSONObject stepContent = getLatestStep().getJSONContent(_strategyId, forChecksum);
+      JSONObject stepContent = getRootStep().getJSONContent(_strategyId, forChecksum);
       jsStrategy.put("latestStep", stepContent);
     }
     catch (JSONException ex) {
@@ -670,7 +666,7 @@ public class Strategy implements StrategyElement, StepContainer {
   private Step getParent(Step step) throws WdkModelException {
     // use a stack to store the previous steps to be examined.
     Stack<Step> stack = new Stack<>();
-    stack.push(getLatestStep());
+    stack.push(getRootStep());
     while (!stack.isEmpty()) {
       Step s = stack.pop();
       Step parent = null;
@@ -698,7 +694,7 @@ public class Strategy implements StrategyElement, StepContainer {
   private Step getNext(Step step) throws WdkModelException {
     // use a stack to store the child steps to be examined.
     Stack<Step> stack = new Stack<>();
-    stack.push(getLatestStep());
+    stack.push(getRootStep());
     while (!stack.isEmpty()) {
       Step s = stack.pop();
       Step next = null;

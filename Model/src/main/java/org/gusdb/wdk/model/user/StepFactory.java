@@ -697,7 +697,7 @@ public class StepFactory {
     // get a new strategy id
     long newStrategyId = getNewStrategyId();
 
-    Step latestStep = copyStepTree(user, newStrategyId, oldStrategy.getLatestStep(), stepIdsMap);
+    Step latestStep = copyStepTree(user, newStrategyId, oldStrategy.getRootStep(), stepIdsMap);
 
     String name = addSuffixToStratNameIfNeeded(user, baseName, false);
 
@@ -833,7 +833,7 @@ public class StepFactory {
       long start = System.currentTimeMillis();
       psStrategy = SqlUtils.getPreparedStatement(_userDbDs, sql);
       psStrategy.setString(1, strategy.getName());
-      psStrategy.setLong(2, strategy.getLatestStep().getStepId());
+      psStrategy.setLong(2, strategy.getRootStep().getStepId());
       psStrategy.setString(3, strategy.getSavedName());
       psStrategy.setBoolean(4, strategy.getIsSaved());
       psStrategy.setString(5, strategy.getDescription());
@@ -974,7 +974,7 @@ public class StepFactory {
 
     Optional<Strategy> strategy = new StrategyLoader(_wdkModel, ValidationLevel.SEMANTIC).getStrategyById(strategyId);
     if (strategy.isPresent()) {
-      strategy.get().setLatestStep(root);
+      strategy.get().setRootStep(root);
     }
     return strategy.orElseThrow(() -> new WdkModelException("Newly created strategy could not be found."));
   }

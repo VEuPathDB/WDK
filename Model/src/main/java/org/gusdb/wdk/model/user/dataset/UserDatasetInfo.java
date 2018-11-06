@@ -13,6 +13,7 @@ import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
+import org.gusdb.wdk.model.user.NoSuchElementException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 
@@ -22,6 +23,8 @@ import org.gusdb.wdk.model.user.UserFactory;
  * @author rdoherty
  */
 public class UserDatasetInfo {
+
+  @SuppressWarnings("unused")
   private static Logger LOG = Logger.getLogger(UserDatasetInfo.class);
 
   private final WdkModel _wdkModel;
@@ -74,7 +77,7 @@ public class UserDatasetInfo {
       }
       return user;
     }
-    catch (WdkModelException e) {
+    catch (WdkModelException | NoSuchElementException e) {
       throw new WdkRuntimeException("Could not load user with ID " + userId + " from DB.", e);
     }
   }

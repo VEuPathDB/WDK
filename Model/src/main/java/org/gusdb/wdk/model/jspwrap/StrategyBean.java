@@ -97,7 +97,7 @@ public class StrategyBean {
   }
 
   public StepBean getLatestStep() throws WdkModelException {
-    return new StepBean(user, strategy.getLatestStep());
+    return new StepBean(user, strategy.getRootStep());
   }
 
   public long getLatestStepId() {
@@ -113,12 +113,12 @@ public class StrategyBean {
   }
 
   public StepBean[] getAllSteps() throws WdkModelException {
-    StepBean latestStep = new StepBean(user, strategy.getLatestStep());
+    StepBean latestStep = new StepBean(user, strategy.getRootStep());
     return latestStep.getMainBranch();
   }
 
   public void setLatestStep(StepBean step) throws WdkModelException {
-    strategy.setLatestStep(step.step);
+    strategy.setRootStep(step.step);
   }
 
   public StepBean getStepById(long stepId) throws WdkModelException {

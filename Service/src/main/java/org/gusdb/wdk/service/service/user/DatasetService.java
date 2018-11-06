@@ -163,7 +163,7 @@ public class DatasetService extends UserService {
     StepFactory stepFactory = wdkModel.getStepFactory();
     long strategyId = sourceConfig.getLong(JsonKeys.STRATEGY_ID);
     Strategy strategy = stepFactory.getStrategyById(user, strategyId);
-    AnswerValue answerValue = strategy.getLatestStep().getAnswerValue();
+    AnswerValue answerValue = strategy.getRootStep().getAnswerValue();
     List<String[]> ids = answerValue.getAllIds();
     ListDatasetParser parser = new ListDatasetParser();
     String content = ids.stream()

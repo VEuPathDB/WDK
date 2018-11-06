@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -24,26 +25,26 @@ public class StepUtilities {
 
   private static Logger logger = Logger.getLogger(StepUtilities.class);
 
-  public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
-      String filterName, boolean deleted, int assignedWeight) throws WdkModelException, WdkUserException {
+  public static Runnable<Step> createStep(User user, Strategy strategy, Question question, Map<String, String> paramValues,
+      String filterName, boolean deleted, int assignedWeight) throws WdkModelException {
     RecordClass recordClass = question.getRecordClass();
     AnswerFilterInstance filter = filterName != null ?
         recordClass.getFilterInstance(filterName) :
         recordClass.getDefaultFilter();
-    return createStep(user, strategyId, question, paramValues, filter, deleted, assignedWeight);
+    return createStep(user, strategy, question, paramValues, filter, deleted, assignedWeight);
   }
 
-  public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
+  public static Runnable<Step> createStep(User user, Strategy strategy, Question question, Map<String, String> paramValues,
       AnswerFilterInstance filter, boolean deleted, int assignedWeight)
-      throws WdkModelException, WdkUserException {
-    return createStep(user, strategyId, question, paramValues, filter, deleted, assignedWeight, null);
+      throws WdkModelException {
+    return createStep(user, strategy, question, paramValues, filter, deleted, assignedWeight, null);
   }
 
-  public static Step createStep(User user, Long strategyId, Question question, Map<String, String> paramValues,
-      AnswerFilterInstance filter, boolean deleted,
-      int assignedWeight, FilterOptionList filterOptions) throws WdkModelException, WdkUserException {
+  public static Runnable<Step> createStep(User user, Strategy strategy, Question question,
+      Map<String, String> paramValues, AnswerFilterInstance filter, boolean deleted, int assignedWeight,
+      FilterOptionList filterOptions) throws WdkModelException {
     return user.getWdkModel().getStepFactory().createStep(user, question, paramValues,
-        filter, filterOptions, assignedWeight, deleted, null, false, null, strategyId);
+        filter, filterOptions, assignedWeight, deleted, null, false, null, strategy);
   }
 
   public static Strategy createStrategy(Step step, boolean saved) throws WdkModelException, WdkUserException {
@@ -230,15 +231,6 @@ public class StepUtilities {
     return array;
   }
 
-  public static Step getStep(User user, long stepId) throws WdkModelException {
-    return user.getWdkModel().getStepFactory().getStepById(stepId);
-  }
-
-  public static Strategy getStrategy(User user, long strategyId)
-      throws WdkModelException, WdkUserException {
-    return user.getWdkModel().getStepFactory().getStrategyById(strategyId);
-  }
-
   public static void deleteSteps(User user) throws WdkModelException {
     user.getWdkModel().getStepFactory().deleteSteps(user, false);
   }
@@ -284,7 +276,8 @@ public class StepUtilities {
     if (parts.length == 1) {
       // new strategy export url
       String strategySignature = parts[0];
-      oldStrategy = wdkModel.getStepFactory().getStrategyBySignature(strategySignature);
+      oldStrategy = wdkModel.getStepFactory().getStrategyBySignature(strategySignature)
+          .orElseThrow(() -> new WdkUserException("Could not find strategy with signature " + strategySignature));
     }
     else {
       // get user from user signature
@@ -294,8 +287,10 @@ public class StepUtilities {
       if (!FormatUtil.isInteger(strategyIdStr)) {
         throw new WdkUserException("Invalid strategy ID: " + strategyIdStr);
       }
-      int strategyId = Integer.parseInt(strategyIdStr);
-      oldStrategy = StepUtilities.getStrategy(owner, strategyId);
+      oldStrategy = wdkModel.getStepFactory().getStrategyById(Long.parseLong(strategyIdStr)).orElse(null);
+      if (oldStrategy == null || oldStrategy.getUser().getUserId() != owner.getUserId()) {
+        throw new WdkUserException("Can not find strategy " + strategyIdStr + " for user " + owner.getUserId());
+      }
     }
     return oldStrategy;
   }
@@ -311,8 +306,8 @@ public class StepUtilities {
     return newStrategy;
   }
 
-  public static Step createBooleanStep(User user, long strategyId, Step leftStep, Step rightStep, String booleanOperator,
-      String filterName) throws WdkModelException, WdkUserException {
+  public static Step createBooleanStep(User user, Strategy strategy, Step leftStep, Step rightStep, String booleanOperator,
+      String filterName) throws WdkModelException {
     BooleanOperator operator = BooleanOperator.parse(booleanOperator);
     Question question = leftStep.getAnswerSpec().getQuestion();
     if (question == null) {
@@ -326,11 +321,11 @@ public class StepUtilities {
     }
     else
       filter = recordClass.getDefaultFilter();
-    return createBooleanStep(user, strategyId, leftStep, rightStep, operator, filter);
+    return createBooleanStep(user, strategy, leftStep, rightStep, operator, filter);
   }
 
-  public static Step createBooleanStep(User user, long strategyId, Step leftStep, Step rightStep, BooleanOperator operator,
-      AnswerFilterInstance filter) throws WdkModelException, WdkUserException {
+  public static Step createBooleanStep(User user, Strategy strategy, Step leftStep, Step rightStep, BooleanOperator operator,
+      AnswerFilterInstance filter) throws WdkModelException {
     // make sure the left & right step belongs to the user
     if (leftStep.getUser().getUserId() != user.getUserId())
       throw new WdkModelException("The Left Step [" + leftStep.getStepId() +
@@ -365,7 +360,7 @@ public class StepUtilities {
     params.put(booleanQuery.getOperatorParam().getName(), operatorString);
     //    params.put(booleanQuery.getUseBooleanFilter().getName(), Boolean.toString(useBooleanFilter));
 
-    Step booleanStep = createStep(user, strategyId, question, params, filter, false, 0);
+    Step booleanStep = createStep(user, strategy, question, params, filter, false, 0).getObject();
     booleanStep.setPreviousStep(leftStep);
     booleanStep.setChildStep(rightStep);
     return booleanStep;
