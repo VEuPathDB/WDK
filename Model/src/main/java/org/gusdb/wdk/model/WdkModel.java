@@ -861,7 +861,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     }
 
     // comment out to use old categories
-    if (!ontologyFactoryMap.isEmpty() && !getProjectId().equals("OrthoMCL")) eupathCategoriesFactory = new EuPathCategoriesFactory(this);
+    if (!ontologyFactoryMap.isEmpty() && !getProjectId().equals("OrthoMCL")) { // FIXME: remove ortho hardcode
+      eupathCategoriesFactory = new EuPathCategoriesFactory(this);
+    }
 
     LOG.info("Total ontology load time: " + ontologyTime.getElapsedString());
   }
