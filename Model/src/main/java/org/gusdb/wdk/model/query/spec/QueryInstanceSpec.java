@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.query.spec;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.fgputil.MapBuilder;
@@ -16,6 +17,10 @@ public class QueryInstanceSpec extends ReadOnlyHashMap<String,String> implements
   @SuppressWarnings("unchecked")
   public static QueryInstanceSpecBuilder builder() {
     return new QueryInstanceSpecBuilder();
+  }
+
+  public static QueryInstanceSpecBuilder builder(QueryInstanceSpec spec) {
+    return new QueryInstanceSpecBuilder(spec);
   }
 
   // only applied to leaf steps, user-defined
@@ -75,7 +80,8 @@ public class QueryInstanceSpec extends ReadOnlyHashMap<String,String> implements
   }
 
   public Map<String, String> toMap() {
-    return MapBuilder.getMapFromEntries(entrySet());
+    // use linked hashmap since sometimes param ordering matters
+    return new MapBuilder<String,String>(new LinkedHashMap<>()).putAll(_map).toMap();
   }
 
 }

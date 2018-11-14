@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -649,7 +650,8 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @return internal value to be used to create query SQL
    * @throws WdkModelException
    */
-  public String getInternalValue(RunnableObj<QueryInstanceSpec> queryInstanceSpec)
+  // TODO: using SemanticallyValid instead of Runnable here because of AnswerFilterInstance; change when we retire legacy filters
+  public String getInternalValue(SemanticallyValid<QueryInstanceSpec> queryInstanceSpec)
       throws WdkModelException {
     String stableValue = queryInstanceSpec.getObject().get(getName());
     if ((stableValue == null || stableValue.length() == 0) && isAllowEmpty()) {

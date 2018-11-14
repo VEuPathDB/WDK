@@ -6,7 +6,6 @@ import java.util.Map;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.single.SingleRecordAnswerValue;
 import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
@@ -20,7 +19,7 @@ public class AnswerValueFactory {
    * make an answer with default page size and sorting
    */
   public static AnswerValue makeAnswer(User user, RunnableObj<AnswerSpec> validSpec)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     Question question = validSpec.getObject().getQuestion();
     int pageStart = 1;
     int pageEnd = Utilities.DEFAULT_PAGE_SIZE;

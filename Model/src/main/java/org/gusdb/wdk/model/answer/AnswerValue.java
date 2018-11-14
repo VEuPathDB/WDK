@@ -45,6 +45,7 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -164,7 +165,7 @@ public class AnswerValue {
     _validAnswerSpec = validAnswerSpec;
     _answerSpec = validAnswerSpec.getObject();
     _wdkModel = _answerSpec.getWdkModel();
-    _idsQueryInstance = Query.makeQueryInstance(_user, ValidObjectFactory.getRunnable(_answerSpec.getQueryInstanceSpec()));
+    _idsQueryInstance = Query.makeQueryInstance(ValidObjectFactory.getRunnable(_answerSpec.getQueryInstanceSpec()));
     Question question = _answerSpec.getQuestion();
     _attributes = new AnswerValueAttributes(_user, question);
     _resultSizeFactory = new ResultSizeFactory(this);
@@ -371,8 +372,9 @@ public class AnswerValue {
     // original table query; a table query has only one param, user_id. Note
     // that the original table query is different from the table query held by
     // the recordClass.  The user_id param will be added by the query instance.
-    RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder().buildRunnable(tableQuery, StepContainer.emptyContainer());
-    QueryInstance<?> queryInstance = Query.makeQueryInstance(_user, tableQuerySpec);
+    RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder().buildRunnable(
+        _user, tableQuery, StepContainer.emptyContainer());
+    QueryInstance<?> queryInstance = Query.makeQueryInstance(tableQuerySpec);
     String tableSql = queryInstance.getSql();
     DBPlatform platform = _answerSpec.getQuestion().getWdkModel().getAppDb().getPlatform();
     String tableSqlWithRowIndex = "(SELECT tq.*, " + platform.getRowNumberColumn() + " as row_index FROM (" + tableSql + ") tq ";
@@ -410,10 +412,10 @@ public class AnswerValue {
       // attribute query is different from the attribute query held by the
       // recordClass.  The user_id param will be added by the query instance.
       // TODO: decide if construction of this validated spec should be moved elsewhere?
-      QueryInstanceSpec attrQuerySpec = QueryInstanceSpec
-          .builder().buildValidated(attributeQuery, ValidationLevel.SEMANTIC);
+      QueryInstanceSpec attrQuerySpec = QueryInstanceSpec.builder().buildValidated(_user,
+          attributeQuery, StepContainer.emptyContainer(), ValidationLevel.SEMANTIC, FillStrategy.NO_FILL);
       QueryInstance<?> attributeQueryInstance = Query
-          .makeQueryInstance(_user, ValidObjectFactory.getRunnable(attrQuerySpec));
+          .makeQueryInstance(ValidObjectFactory.getRunnable(attrQuerySpec));
       sql = attributeQueryInstance.getSql();
 
       // replace the id sql macro.  the injected sql must include filters (but not view filters)
@@ -682,12 +684,12 @@ public class AnswerValue {
     return _startIndex;
   }
 
-  public int getPageSize() throws WdkModelException, WdkUserException {
+  public int getPageSize() throws WdkModelException {
     int resultSize = _resultSizeFactory.getResultSize();
     return (_endIndex == UNBOUNDED_END_PAGE_INDEX ? resultSize : Math.min(_endIndex, resultSize)) - _startIndex + 1;
   }
 
-  public String getResultMessage() throws WdkModelException, WdkUserException {
+  public String getResultMessage() throws WdkModelException {
     return _idsQueryInstance.getResultMessage();
   }
 
