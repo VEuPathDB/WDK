@@ -844,7 +844,7 @@ public class FilterParamNew extends AbstractDependentParam {
        String metadataTableName = "md";
        String filterSelectSql = "SELECT distinct " + metadataTableName + "." + idColumn + " FROM (" + metadataSql + ") " + metadataTableName;
        
-       return getFilteredIdsSql(user, stableValue, contextParamValues, metadataQuery, metadataTableName, filterSelectSql, defaultFilterClause);
+       return getFilteredIdsSql(user, stableValue, contextParamValues, metadataTableName, filterSelectSql, defaultFilterClause);
      }
      catch (JSONException | WdkUserException ex) {
        throw new WdkModelException(ex);
@@ -865,14 +865,15 @@ public class FilterParamNew extends AbstractDependentParam {
         String metadataTableName = "md";
         String selectCols = String.join(", md.", _metadataValueColumns);
         String filterSelectSql = "SELECT md." + selectCols + " FROM (" + metadataSql + ") " + metadataTableName;           
-        return getFilteredIdsSql(user, stableValue, contextParamValues, metadataQuery, metadataTableName, filterSelectSql, defaultFilterClause);
+        return getFilteredIdsSql(user, stableValue, contextParamValues, metadataTableName, filterSelectSql, defaultFilterClause);
      }
       catch (JSONException | WdkUserException ex) {
         throw new WdkModelException(ex);
       }
     } 
     
-    private String getFilteredIdsSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String metadataTableAbbrev, String filterSelectSql, String defaultFilterClause)
+    private String getFilteredIdsSql(User user, FilterParamNewStableValue stableValue,
+        Map<String, String> contextParamValues, String metadataTableAbbrev, String filterSelectSql, String defaultFilterClause)
       throws WdkModelException {
 
     try {

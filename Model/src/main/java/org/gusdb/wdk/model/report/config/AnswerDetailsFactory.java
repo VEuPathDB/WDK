@@ -78,45 +78,51 @@ public class AnswerDetailsFactory {
    * @param question question used to validate incoming values
    * @throws RequestMisformatException if values are invalid or structure is malformed
    */
-  public static AnswerDetails createFromJson(JSONObject specJson,
-      Question question) throws ReporterConfigException {
-      AnswerDetails specs = new AnswerDetails();
+  public static AnswerDetails createFromJson(JSONObject specJson, Question question)
+      throws ReporterConfigException {
 
-      // set requested paging
-      if (specJson.has("pagination")) {
-        JSONObject paging = specJson.getJSONObject("pagination");
-        specs.setOffset(paging.getInt("offset"));
-        if (specs.getOffset() < 0)
-          throw new ReporterConfigException("Paging offset must be non-negative.");
-        specs.setNumRecords(paging.getInt("numRecords"));
-        if (specs.getNumRecords() < 0) {
-          specs.setNumRecords(AnswerDetails.ALL_RECORDS);
-        }
+    if (specJson == null) {
+      // user did not send a configuration; use default
+      return createDefault(question);
+    }
+
+    AnswerDetails specs = new AnswerDetails();
+
+    // set requested paging
+    if (specJson.has("pagination")) {
+      JSONObject paging = specJson.getJSONObject("pagination");
+      specs.setOffset(paging.getInt("offset"));
+      if (specs.getOffset() < 0)
+        throw new ReporterConfigException("Paging offset must be non-negative.");
+      specs.setNumRecords(paging.getInt("numRecords"));
+      if (specs.getNumRecords() < 0) {
+        specs.setNumRecords(AnswerDetails.ALL_RECORDS);
       }
+    }
 
-      // set requested attributes
-      specs.setAttributes(parseAttributeJson(specJson, question));
+    // set requested attributes
+    specs.setAttributes(parseAttributeJson(specJson, question));
 
-      // set requested tables
-      specs.setTables(parseTableJson(specJson, question));
+    // set requested tables
+    specs.setTables(parseTableJson(specJson, question));
 
-      // set requested sorting
-      if (specJson.has("sorting")) {
-        JSONArray sortingJson = specJson.getJSONArray("sorting");
-        specs.setSorting(sortingJson.length() == 0 ?
-            getDefaultSorting(question, specs.getAttributes()) :
-            ensureElements(parseSorting(sortingJson, specs.getAttributes()), question));
-      }
-      else {
-        specs.setSorting(getDefaultSorting(question, specs.getAttributes()));
-      }
+    // set requested sorting
+    if (specJson.has("sorting")) {
+      JSONArray sortingJson = specJson.getJSONArray("sorting");
+      specs.setSorting(sortingJson.length() == 0 ?
+          getDefaultSorting(question, specs.getAttributes()) :
+          ensureElements(parseSorting(sortingJson, specs.getAttributes()), question));
+    }
+    else {
+      specs.setSorting(getDefaultSorting(question, specs.getAttributes()));
+    }
 
-      // set content disposition
-      if (specJson.has("contentDisposition")) {
-        specs.setContentDisposition(ContentDisposition.valueOf(specJson.getString("contentDisposition").toUpperCase()));
-      }
+    // set content disposition
+    if (specJson.has("contentDisposition")) {
+      specs.setContentDisposition(ContentDisposition.valueOf(specJson.getString("contentDisposition").toUpperCase()));
+    }
 
-      return specs;
+    return specs;
   }
 
   private static Map<String, TableField> parseTableJson(JSONObject specJson, Question question) throws ReporterConfigException {
