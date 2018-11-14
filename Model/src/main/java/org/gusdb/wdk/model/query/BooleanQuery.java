@@ -1,14 +1,14 @@
 package org.gusdb.wdk.model.query;
 
-import org.gusdb.fgputil.collection.ReadOnlyMap;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.RecordClassReference;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -201,9 +201,8 @@ public class BooleanQuery extends SqlQuery {
   }
 
   @Override
-  protected BooleanQueryInstance makeInstance(User user, ReadOnlyMap<String,String> paramValues,
-      int assignedWeight) throws WdkModelException {
-    return new BooleanQueryInstance(user, this, paramValues, assignedWeight);
+  protected BooleanQueryInstance makeInstance(RunnableObj<QueryInstanceSpec> spec) {
+    return new BooleanQueryInstance(spec);
   }
 
   @Override

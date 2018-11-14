@@ -682,7 +682,8 @@ public class UserBean {
    * @throws Exception
    */
   public Map<String,SummaryView> getCurrentSummaryViews() {
-    return exposeAsMap(questionName -> _user.getPreferences().getCurrentSummaryView(questionName));
+    return exposeAsMap(questionName -> _user.getPreferences()
+        .getCurrentSummaryView(_wdkModel.getQuestionOrFail(questionName)));
   }
 
   public void setCurrentSummaryView(QuestionBean question, SummaryView summaryView) throws WdkModelException {

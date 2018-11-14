@@ -1,13 +1,12 @@
 package org.gusdb.wdk.model.answer.spec;
 
-import static org.gusdb.fgputil.functional.Functions.f0Swallow;
 import static org.gusdb.fgputil.functional.Functions.filter;
 
 import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory;
-import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -16,8 +15,9 @@ import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
-import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec.QueryInstanceSpecBuilder;
 import org.gusdb.wdk.model.filter.Filter;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.json.JSONObject;
@@ -73,7 +73,7 @@ public class AnswerSpec implements Validateable {
   // resource to look up steps referred to by answer param values
   private final StepContainer _stepContainer;
 
-  public AnswerSpec(WdkModel wdkModel, String questionName, QueryInstanceSpecBuilder queryInstanceSpec,
+  AnswerSpec(WdkModel wdkModel, String questionName, QueryInstanceSpecBuilder queryInstanceSpec,
       String legacyFilterName, FilterOptionListBuilder filters, FilterOptionListBuilder viewFilters,
       ValidationLevel validationLevel, StepContainer stepContainer) {
     _wdkModel = wdkModel;
@@ -81,7 +81,7 @@ public class AnswerSpec implements Validateable {
     _legacyFilterName = legacyFilterName;
     _stepContainer = stepContainer;
     ValidationBundleBuilder validation = ValidationBundle.builder(validationLevel);
-    if (!wdkModel.hasQuestion(questionName)) {
+    if (!wdkModel.getQuestion(questionName).isPresent()) {
       // invalid question name; cannot validate other data
       validation.addError("Question '" + questionName + "' is not supported.");
       _question = null;
@@ -91,7 +91,7 @@ public class AnswerSpec implements Validateable {
       _viewFilters = viewFilters.buildInvalid();
     }
     else {
-      _question = f0Swallow(() -> wdkModel.getQuestion(questionName)).apply(); // we know this will not throw
+      _question = wdkModel.getQuestion(questionName).get(); // we know this will not throw
       _queryInstanceSpec = queryInstanceSpec.buildValidated(_question.getQuery(), validationLevel, stepContainer);
       if (_queryInstanceSpec.isValid()) {
         // replace passed filter lists with new ones that have always-on filters applied
@@ -194,7 +194,7 @@ public class AnswerSpec implements Validateable {
     return _stepContainer;
   }
 
-  public Runnable<AnswerSpec> toRunnable() {
+  public RunnableObj<AnswerSpec> toRunnable() {
     return ValidObjectFactory.getRunnable(this);
   }
 }

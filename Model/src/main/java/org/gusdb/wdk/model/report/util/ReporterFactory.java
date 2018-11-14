@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.report.Reporter;
+import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.gusdb.wdk.model.report.ReporterRef;
 import org.json.JSONObject;
 
@@ -30,7 +31,7 @@ public class ReporterFactory {
   }
 
   public static Reporter getReporter(AnswerValue answerValue, String reporterName, JSONObject config)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException, ReporterConfigException {
     Reporter reporter = createReporterInstance(answerValue, reporterName);
     reporter.configure(config);
     return reporter;

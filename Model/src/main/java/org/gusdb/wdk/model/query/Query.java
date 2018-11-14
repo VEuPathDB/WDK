@@ -4,32 +4,25 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.EncryptionUtil;
-import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
-import org.gusdb.wdk.model.query.param.AbstractDependentParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.DatasetParam;
-import org.gusdb.wdk.model.query.param.DependentParamInstance;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.ParameterContainerImpl;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
-import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -101,11 +94,11 @@ import org.json.JSONObject;
  */
 public abstract class Query extends ParameterContainerImpl implements OptionallyTestable {
 
-  public static QueryInstance<?> makeQueryInstance(User user,
-      Runnable<QueryInstanceSpec> validSpec) throws WdkModelException {
+  public static QueryInstance<?> makeQueryInstance(RunnableObj<QueryInstanceSpec> validSpec)
+      throws WdkModelException {
     // unwrap the spec and use to create an instance of the proper type
     QueryInstanceSpec spec = validSpec.getObject();
-    return spec.getQuery().makeInstance(user, spec, spec.getAssignedWeight());
+    return spec.getQuery().makeInstance(validSpec);
   }
 
   private String name;
@@ -145,8 +138,7 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
 
   protected abstract void appendChecksumJSON(JSONObject jsQuery, boolean extra) throws JSONException;
 
-  protected abstract QueryInstance<? extends Query> makeInstance(User user,
-      ReadOnlyMap<String,String> paramValues, int assignedWeight) throws WdkModelException;
+  protected abstract QueryInstance<? extends Query> makeInstance(RunnableObj<QueryInstanceSpec> paramValues) throws WdkModelException;
 
   @Override
   public abstract Query clone();
@@ -519,21 +511,6 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     return buffer.toString();
   }
 
-  public Map<String, String> getSignatures(User user, Map<String, String> stableValues)
-      throws WdkModelException {
-    Map<String, String> signatures = new LinkedHashMap<String, String>();
-    for (String paramName : stableValues.keySet()) {
-      Param param = paramMap.get(paramName);
-      if (param == null) {
-         continue;
-      }
-      String stableValue = stableValues.get(paramName);
-      String signature = param.getSignature(user, stableValue, stableValues);
-      signatures.put(paramName, signature);
-    }
-    return signatures;
-  }
-
   /**
    * @param hasWeight
    *          the hasWeight to set
@@ -547,36 +524,6 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
    */
   public boolean isHasWeight() {
     return hasWeight;
-  }
-
-  /**
-   * NOTE: this method is only called from actionland/beans and does not need to be compatible with
-   * FilterParamNew (which is only valid in the service)
-   * 
-   * for reviseStep action, validate all the values, and if it's invalid, substitute it with default. if the
-   * value doesn't exist in the map, I will add default into it.
-   * 
-   * @param contextParamValues
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public void fillContextParamValues(User user, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
-    for (Param param : paramMap.values()) {
-      if (param instanceof AbstractDependentParam) {
-        // for enum/flatVocab params, call a special method to process it
-        Map<String, DependentParamInstance> caches = new HashMap<>();
-        ((AbstractDependentParam) param).fillContextParamValues(user, contextParamValues, caches);
-      }
-      else if (!(param instanceof DatasetParam)) {
-        // for other params, just fill it with default value;
-        // However, we cannot use default for datasetParam, which is just
-        // sample, not a valid value (a valid value must be a dataset id)
-        if (!contextParamValues.containsKey(param.getName())) {
-          contextParamValues.put(param.getName(), param.getDefault());
-        }
-      }
-    }
   }
 
   public void setSorting(String sorting) {

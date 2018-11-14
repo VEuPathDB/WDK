@@ -3,17 +3,17 @@ package org.gusdb.wdk.model.user;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 
 public class CountQueryPlugin implements CountPlugin {
 
@@ -50,7 +50,7 @@ public class CountQueryPlugin implements CountPlugin {
   }
 
   @Override
-  public int count(Runnable<Step> runnableStep) throws WdkModelException, WdkUserException {
+  public int count(RunnableObj<Step> runnableStep) throws WdkModelException, WdkUserException {
     // prepare params, which has only one answerParam
     Step step = runnableStep.getObject();
     Param[] params = _query.getParams();

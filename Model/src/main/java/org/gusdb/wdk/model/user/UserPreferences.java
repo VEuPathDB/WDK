@@ -152,7 +152,7 @@ public class UserPreferences {
 
   public Map<String, Boolean> getSortingAttributes(
       String questionFullName, String keySuffix) throws WdkModelException {
-    Question question = _wdkModel.getQuestion(questionFullName);
+    Question question = _wdkModel.getQuestionOrFail(questionFullName);
     Map<String, AttributeField> attributes = question.getAttributeFieldMap();
 
     String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX + keySuffix;
@@ -181,7 +181,7 @@ public class UserPreferences {
   public String addSortingAttribute(String questionFullName, String attrName,
       boolean ascending, String keySuffix) throws WdkModelException {
     // make sure the attribute exists in the question
-    Question question = _wdkModel.getQuestion(questionFullName);
+    Question question = _wdkModel.getQuestionOrFail(questionFullName);
     if (!question.getAttributeFieldMap().containsKey(attrName))
       throw new WdkModelException("Cannot sort by attribute '" + attrName +
           "' since it doesn't belong the question " + questionFullName);
@@ -213,7 +213,7 @@ public class UserPreferences {
   }
 
   public String[] getSummaryAttributes(String questionFullName, String keySuffix) throws WdkModelException {
-    Question question = _wdkModel.getQuestion(questionFullName);
+    Question question = _wdkModel.getQuestionOrFail(questionFullName);
     Map<String, AttributeField> attributes = question.getAttributeFieldMap();
 
     String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX + keySuffix;
@@ -265,10 +265,6 @@ public class UserPreferences {
     String summaryValue = summary.toString();
     saveProjectPreference(summaryKey, summaryValue);
     return summaryValue;
-  }
-
-  public SummaryView getCurrentSummaryView(String questionName) throws WdkModelException {
-    return getCurrentSummaryView(_wdkModel.getQuestion(questionName));
   }
 
   public SummaryView getCurrentSummaryView(Question question) {

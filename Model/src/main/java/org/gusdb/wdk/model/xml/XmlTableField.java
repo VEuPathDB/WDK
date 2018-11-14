@@ -45,11 +45,6 @@ public class XmlTableField extends Field {
         return _attributeFields.size();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
@@ -64,11 +59,6 @@ public class XmlTableField extends Field {
         return sb.toString();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-     */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
         // exclude attribute fields
@@ -86,11 +76,6 @@ public class XmlTableField extends Field {
         _attributeFieldList = null;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
-     */
     @Override
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     // do nothing

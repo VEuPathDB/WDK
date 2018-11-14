@@ -27,7 +27,7 @@ import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidObjectFactory;
-import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -45,11 +45,11 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
-import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
@@ -201,7 +201,7 @@ public class Step implements StrategyElement, Validateable {
      * @param strategy strategy containing the step
      * @return a runnable step
      */
-    public Runnable<Step> buildRunnable(UserCache userCache, Strategy strategy) {
+    public RunnableObj<Step> buildRunnable(UserCache userCache, Strategy strategy) {
       return ValidObjectFactory.getRunnable(build(userCache, ValidationLevel.RUNNABLE, strategy));
     }
   }

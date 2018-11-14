@@ -17,8 +17,8 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
-import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
-import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec.QueryInstanceSpecBuilder;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec.QueryInstanceSpecBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 

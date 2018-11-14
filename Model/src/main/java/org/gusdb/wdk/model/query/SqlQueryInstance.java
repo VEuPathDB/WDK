@@ -7,10 +7,10 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -18,7 +18,7 @@ import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.json.JSONObject;
 
 /**
@@ -31,21 +31,13 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
 
   private static final Logger LOG = Logger.getLogger(SqlQueryInstance.class);
 
-  /**
-   * @param user user to execute query as
-   * @param query query to create instance for
-   * @param paramValues stable values of all params in the query's context
-   * @param assignedWeight weight of the query
-   * @throws WdkModelException
-   */
-  SqlQueryInstance(User user, SqlQuery query, ReadOnlyMap<String, String> paramValues,
-      int assignedWeight) throws WdkModelException {
-    super(user, query, paramValues, assignedWeight);
+  SqlQueryInstance(RunnableObj<QueryInstanceSpec> spec) {
+    super(spec);
   }
 
   @Override
   protected void appendJSONContent(JSONObject jsInstance) {
-    // nothing to add to;
+    // nothing to add
   }
 
   @Override
@@ -128,7 +120,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       // the last column.
       Map<String, Column> columns = _query.getColumnMap();
       if (!columns.containsKey(Utilities.COLUMN_WEIGHT)) {
-        buffer.append(", " + _assignedWeight + " AS " + Utilities.COLUMN_WEIGHT);
+        buffer.append(", " + _spec.getObject().getAssignedWeight() + " AS " + Utilities.COLUMN_WEIGHT);
       }
     }
     buffer.append(" FROM (" + sql + ") o");
