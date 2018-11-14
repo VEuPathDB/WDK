@@ -139,12 +139,16 @@ public class DefaultJsonReporter extends AbstractReporter {
   }
   
   /**
-   * to be used by subclasses, to add their additional json to the 
-   * top level json object
-   * @param writer
-   * @return the JsonWriter that now includes the addtions, if any
+   * Adds supplemental JSON to the top-level response object. Default implementation adds nothing, but can
+   * be overridden by subclasses if additional data must be delivered
+   * 
+   * @param writer response stream writer
+   * @return the passed writer
+   * @throws WdkModelException if unable to generate or write supplemental data
    */
-  public JsonWriter writeAdditionalJson(JsonWriter writer) throws WdkModelException, WdkUserException { return writer; }
+  public JsonWriter writeAdditionalJson(JsonWriter writer) throws WdkModelException {
+    return writer;
+  }
 
   private static JSONObject getMetaData(AnswerValue answerValue,
       Set<String> includedAttributes, Set<String> includedTables, int numRecordsReturned)
