@@ -4,13 +4,14 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory;
-import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.answer.spec.FilterOption.FilterOptionBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
-import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec.QueryInstanceSpecBuilder;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.json.JSONObject;
 
@@ -63,7 +64,7 @@ public class AnswerSpecBuilder {
     return new AnswerSpec(_wdkModel, _questionName, _queryInstanceSpec, _legacyFilterName, _filters, _viewFilters, level, stepContainer);
   }
 
-  public Runnable<AnswerSpec> buildRunnable() {
+  public RunnableObj<AnswerSpec> buildRunnable() {
     return ValidObjectFactory.getRunnable(build(ValidationLevel.RUNNABLE));
   }
 

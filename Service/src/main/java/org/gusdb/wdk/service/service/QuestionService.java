@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.ws.rs.BadRequestException;
@@ -121,23 +122,17 @@ public class QuestionService extends AbstractWdkService {
       @QueryParam("expandParams") Boolean expandParams)
           throws WdkUserException, WdkModelException {
     Question question = getQuestionFromSegment(questionName);
-    if(question == null)
-      throw new NotFoundException(AbstractWdkService.formatNotFound(QUESTION_RESOURCE + questionName));
     Map<String,String> dependedParamValues = new HashMap<>();
     return Response.ok(QuestionFormatter.getQuestionJson(question,
         getFlag(expandParams), getSessionUser(), dependedParamValues).toString()).build();
   }
 
   private Question getQuestionFromSegment(String questionName) {
-    WdkModel model = getWdkModel();
-    try {
-      Question q = model.getQuestionByUrlSegment(questionName);
-      return (q == null ? model.getQuestion(questionName) : q);
-    }
-    catch(WdkModelException e) {
-      // A WDK Model Exception here implies that a question of the name provided cannot be found.
-      throw new NotFoundException(AbstractWdkService.formatNotFound(QUESTION_RESOURCE + questionName));
-    }
+    return getWdkModel().getQuestionByUrlSegment(questionName)
+      .orElseGet(() -> getWdkModel().getQuestion(questionName)
+        .orElseThrow(() ->
+          // A WDK Model Exception here implies that a question of the name provided cannot be found.
+          new NotFoundException(AbstractWdkService.formatNotFound(QUESTION_RESOURCE + questionName))));
   }
 
   /**
@@ -169,8 +164,6 @@ public class QuestionService extends AbstractWdkService {
   public Response getQuestionRevise(@PathParam("questionName") String questionName, String body)
           throws WdkUserException, WdkModelException {
     Question question = getQuestionFromSegment(questionName);
-    if (question == null)
-      throw new NotFoundException(questionName);
     // extract context values from body
     Map<String, String> contextParamValues;
     try {
@@ -224,9 +217,6 @@ public class QuestionService extends AbstractWdkService {
 
     // get requested question and throw not found if invalid
     Question question = getQuestionFromSegment(questionName);
-    if (question == null) {
-      throw new NotFoundException(AbstractWdkService.NOT_FOUND + questionName);
-    }
 
     // parse incoming JSON into existing and changed values
     Map<String, String> contextParamValues;

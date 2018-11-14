@@ -3,13 +3,13 @@ package org.gusdb.wdk.model.query;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.user.User;
 
 /**
  * BooleanQueryInstance.java
@@ -29,16 +29,8 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 
   private BooleanQuery booleanQuery;
 
-  /**
-   * @param user user to execute query as
-   * @param query query to create instance for
-   * @param paramValues stable values of all params in the query's context
-   * @param assignedWeight weight of the query
-   * @throws WdkModelException
-   */
-  protected BooleanQueryInstance(User user, SqlQuery query, ReadOnlyMap<String, String> paramValues,
-      int assignedWeight) throws WdkModelException {
-    super(user, query, paramValues, assignedWeight);
+  protected BooleanQueryInstance(RunnableObj<QueryInstanceSpec> spec) {
+    super(spec);
   }
 
   @Override

@@ -1,7 +1,5 @@
 package org.gusdb.wdk.core.api;
 
-
-
 /**
  * A collection of common keys; this is an attempt to standardize the names
  * of JSON object keys received from and returned to the client.
@@ -37,6 +35,7 @@ public class JsonKeys {
   public static final String RESPONSE_COUNT = "responseCount";
   public static final String RECORD_CLASS_NAME = "recordClassName";
   public static final String QUESTION_NAME = "questionName";
+  public static final String PARAMETER_NAME = "parameterName";
 
   // UI-related keys
   public static final String DISPLAY_NAME = "displayName";
@@ -112,14 +111,19 @@ public class JsonKeys {
   public static final String DISPLAY_TYPE = "displayType";
   public static final String DEPTH_EXPANDED = "depthExpanded";
   public static final String PARSERS = "parsers";
+  public static final String PARSER = "parser";
 
   // dataset-related keys
   public static final String SOURCE_TYPE = "sourceType";
   public static final String SOURCE_CONTENT = "sourceContent";
+  public static final String DEFAULT_ID_LIST = "defaultIdList";
   public static final String ID_LIST = "idList";
   public static final String IDS = "ids";
   public static final String BASKET = "basket";
   public static final String BASKET_NAME = "basketName";
+  public static final String FILE = "file";
+  public static final String TEMP_FILE_ID = "temporaryFileId";
+  public static final String STRATEGY = "strategy";
 
   // step- and strategy-specific keys
   public static final String CUSTOM_NAME = "customName";
@@ -197,7 +201,6 @@ public class JsonKeys {
   public static final String LAST_MODIFIED = "lastModified";
   public static final String IS_SAVED = "isSaved";
   public static final String IS_VALID = "isValid";
-  public static final String INVALID_REASON = "invalidReason";
   public static final String IS_HIDDEN = "isHidden";
   public static final String IS_DELETED = "isDeleted";
   public static final String ROOT_STEP = "root";

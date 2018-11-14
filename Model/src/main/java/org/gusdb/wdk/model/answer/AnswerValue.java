@@ -23,7 +23,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory;
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -33,7 +33,6 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.FilterOption;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList;
 import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
-import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.answer.stream.PagedAnswerRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.dbms.ResultList;
@@ -45,6 +44,7 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -129,7 +129,7 @@ public class AnswerValue {
 
   // basic information about this answer
   protected final User _user;
-  private final Runnable<AnswerSpec> _validAnswerSpec;
+  private final RunnableObj<AnswerSpec> _validAnswerSpec;
   protected final AnswerSpec _answerSpec;
 
   // values derived from basic info
@@ -158,7 +158,7 @@ public class AnswerValue {
    *          The index of the last <code>RecordInstance</code> in the page, inclusive.
    * @throws WdkModelException 
    */
-  public AnswerValue(User user, Runnable<AnswerSpec> validAnswerSpec, int startIndex,
+  public AnswerValue(User user, RunnableObj<AnswerSpec> validAnswerSpec, int startIndex,
       int endIndex, Map<String, Boolean> sortingMap) throws WdkModelException {
     _user = user;
     _validAnswerSpec = validAnswerSpec;
@@ -219,7 +219,7 @@ public class AnswerValue {
     return _user;
   }
 
-  public Runnable<AnswerSpec> getRunnableAnswerSpec() {
+  public RunnableObj<AnswerSpec> getRunnableAnswerSpec() {
     return _validAnswerSpec;
   }
 
@@ -371,7 +371,7 @@ public class AnswerValue {
     // original table query; a table query has only one param, user_id. Note
     // that the original table query is different from the table query held by
     // the recordClass.  The user_id param will be added by the query instance.
-    Runnable<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder().buildRunnable(tableQuery, StepContainer.emptyContainer());
+    RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder().buildRunnable(tableQuery, StepContainer.emptyContainer());
     QueryInstance<?> queryInstance = Query.makeQueryInstance(_user, tableQuerySpec);
     String tableSql = queryInstance.getSql();
     DBPlatform platform = _answerSpec.getQuestion().getWdkModel().getAppDb().getPlatform();

@@ -14,16 +14,16 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.ServiceResolver;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wsf.client.ClientModelException;
 import org.gusdb.wsf.client.ClientRequest;
 import org.gusdb.wsf.client.ClientUserException;
@@ -48,16 +48,8 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
 
   private int _signal;
 
-  /**
-   * @param user user to execute query as
-   * @param query query to create instance for
-   * @param paramValues stable values of all params in the query's context
-   * @param assignedWeight weight of the query
-   * @throws WdkModelException
-   */
-  ProcessQueryInstance(User user, ProcessQuery query, ReadOnlyMap<String, String> paramValues,
-      int assignedWeight) throws WdkModelException {
-    super(user, query, paramValues, assignedWeight);
+  ProcessQueryInstance(RunnableObj<QueryInstanceSpec> spec) {
+    super(spec);
   }
 
   @Override
@@ -131,7 +123,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
       indices.put(column.getName(), i);
     }
     request.setOrderedColumns(columnNames);
-    request.setContext(_context);
+    request.setContext(_context.toWriteableMap().getUnderlyingMap());
 
     // create client
     WsfClient client;
@@ -193,7 +185,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
 
     // insert weight to the last column, if doesn't exist
     if (_query.isHasWeight() && !columnNames.contains(weightColumn))
-      sql.append(", ").append(_assignedWeight);
+      sql.append(", ").append(_spec.getObject().getAssignedWeight());
 
     return sql.append(")").toString();
   }

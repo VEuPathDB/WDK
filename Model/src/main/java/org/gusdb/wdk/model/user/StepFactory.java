@@ -72,7 +72,7 @@ import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunctionWithException;
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.Utilities;
@@ -86,7 +86,6 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList;
 import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
-import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.query.BooleanQuery;
@@ -95,6 +94,7 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.NameCheckInfo;
@@ -138,7 +138,7 @@ public class StepFactory {
   /**
    * Creates a step and adds to database
    */
-  public Runnable<Step> createStep(User user, Question question, Map<String, String> dependentValues,
+  public RunnableObj<Step> createStep(User user, Question question, Map<String, String> dependentValues,
       AnswerFilterInstance filter, FilterOptionList filterOptions, int assignedWeight, boolean deleted,
       String customName, boolean isCollapsible, String collapsedName, Strategy strategy) throws WdkModelException {
   
@@ -150,7 +150,7 @@ public class StepFactory {
     Date lastRunTime = new Date(createTime.getTime());
 
     // create the Step
-    Runnable<Step> runnableStep = Step
+    RunnableObj<Step> runnableStep = Step
         .builder(_wdkModel, user.getUserId(), getNewStepId())
         .setCreatedTime(createTime)
         .setLastRunTime(lastRunTime)
@@ -239,7 +239,7 @@ public class StepFactory {
     }
   }
 
-  private static TwoTuple<Integer, Exception> tryEstimateSize(Runnable<Step> runnableStep) {
+  private static TwoTuple<Integer, Exception> tryEstimateSize(RunnableObj<Step> runnableStep) {
     try {
       // is there a difference between semantically valid and runnable???  When do we want the former
       //  but not the latter?  If no difference then semantically valid must check children.  Hmmm... but

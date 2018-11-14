@@ -1,10 +1,10 @@
 package org.gusdb.wdk.model.query;
 
-import org.gusdb.fgputil.collection.ReadOnlyMap;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfig;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -48,9 +48,8 @@ public class ProcessQuery extends Query {
   }
 
   @Override
-  protected ProcessQueryInstance makeInstance(User user, ReadOnlyMap<String,String> paramValues,
-      int assignedWeight) throws WdkModelException {
-    return new ProcessQueryInstance(user, this, paramValues, assignedWeight);
+  protected ProcessQueryInstance makeInstance(RunnableObj<QueryInstanceSpec> spec) throws WdkModelException {
+    return new ProcessQueryInstance(spec);
   }
 
   /**

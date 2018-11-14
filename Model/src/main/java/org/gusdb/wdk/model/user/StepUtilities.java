@@ -9,7 +9,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.validation.ValidObjectFactory.Runnable;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -25,7 +25,7 @@ public class StepUtilities {
 
   private static Logger logger = Logger.getLogger(StepUtilities.class);
 
-  public static Runnable<Step> createStep(User user, Strategy strategy, Question question, Map<String, String> paramValues,
+  public static RunnableObj<Step> createStep(User user, Strategy strategy, Question question, Map<String, String> paramValues,
       String filterName, boolean deleted, int assignedWeight) throws WdkModelException {
     RecordClass recordClass = question.getRecordClass();
     AnswerFilterInstance filter = filterName != null ?
@@ -34,13 +34,13 @@ public class StepUtilities {
     return createStep(user, strategy, question, paramValues, filter, deleted, assignedWeight);
   }
 
-  public static Runnable<Step> createStep(User user, Strategy strategy, Question question, Map<String, String> paramValues,
+  public static RunnableObj<Step> createStep(User user, Strategy strategy, Question question, Map<String, String> paramValues,
       AnswerFilterInstance filter, boolean deleted, int assignedWeight)
       throws WdkModelException {
     return createStep(user, strategy, question, paramValues, filter, deleted, assignedWeight, null);
   }
 
-  public static Runnable<Step> createStep(User user, Strategy strategy, Question question,
+  public static RunnableObj<Step> createStep(User user, Strategy strategy, Question question,
       Map<String, String> paramValues, AnswerFilterInstance filter, boolean deleted, int assignedWeight,
       FilterOptionList filterOptions) throws WdkModelException {
     return user.getWdkModel().getStepFactory().createStep(user, question, paramValues,

@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -279,16 +280,25 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   /**
    * @param questionFullName question's full name (two-part name)
    * @return question with the passed name
-   * @throws WdkModelException if unable to resolve name to question
    */
-  public Question getQuestion(String questionFullName) throws WdkModelException {
+  public Optional<Question> getQuestion(String questionFullName) {
     // special case to fetch a single record of a recordClass (by primary keys)
     if (SingleRecordQuestion.isSingleQuestionName(questionFullName, this)){
-      return new SingleRecordQuestion(questionFullName, this);
+      return Optional.of(new SingleRecordQuestion(questionFullName, this));
     }
-    Reference r = new Reference(questionFullName);
-    QuestionSet ss = getQuestionSet(r.getSetName());
-    return ss.getQuestion(r.getElementName());
+    try {
+      Reference r = new Reference(questionFullName);
+      QuestionSet ss = getQuestionSet(r.getSetName());
+      return Optional.of(ss.getQuestion(r.getElementName()));
+    }
+    catch (WdkModelException e) {
+      return Optional.empty();
+    }
+  }
+
+  public Question getQuestionOrFail(String questionFullName) throws WdkModelException {
+    return getQuestion(questionFullName).orElseThrow(
+        () -> new WdkModelException("Question with name " + questionFullName + " cannot be found."));
   }
 
   public Question[] getQuestions(RecordClass recordClass) {
@@ -449,16 +459,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   public boolean hasQuestionSet(String setName) {
     return questionSets.containsKey(setName);
-  }
-
-  public boolean hasQuestion(String questionName) {
-    try {
-      getQuestion(questionName);
-      return true;
-    }
-    catch (WdkModelException e) {
-      return false;
-    }
   }
 
   public Map<String, QuestionSet> getQuestionSets() {
@@ -1537,9 +1537,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     _questionUrlSegmentMap.put(urlSegment, questionFullName);
   }
 
-  public Question getQuestionByUrlSegment(String urlSegment) throws WdkModelException {
+  public Optional<Question> getQuestionByUrlSegment(String urlSegment) {
     String questionFullName = _questionUrlSegmentMap.get(urlSegment);
-    return (questionFullName == null ? null : getQuestion(questionFullName));
+    return (questionFullName == null ? Optional.empty() : getQuestion(questionFullName));
   }
 
   public static AutoCloseableList<WdkModel> loadMultipleModels(String gusHome, String[] projects) throws WdkModelException {

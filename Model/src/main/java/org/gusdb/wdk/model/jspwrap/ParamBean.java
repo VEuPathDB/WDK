@@ -56,19 +56,14 @@ public abstract class ParamBean<T extends Param> {
     return _param.getHelp();
   }
 
-	public String getVisibleHelp() {
+  public String getVisibleHelp() {
     return _param.getVisibleHelp();
   }
 
-  public String getDefault() throws WdkModelException {
-    return _param.getDefault();
+  public String getDefault() {
+    return _param.getXmlDefault();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#isReadonly()
-   */
   public boolean getIsReadonly() {
     return _param.isReadonly();
   }
@@ -112,7 +107,7 @@ public abstract class ParamBean<T extends Param> {
    */
   public void validate(UserBean user, String rawOrDependentValue, Map<String, String> contextValues)
       throws WdkModelException, WdkUserException {
-    _param.validate(user.getUser(), rawOrDependentValue, contextValues);
+    _param.validate(rawOrDependentValue, contextValues);
   }
 
   /**

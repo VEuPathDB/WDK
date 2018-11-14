@@ -12,14 +12,14 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Timer;
-import org.gusdb.fgputil.collection.ReadOnlyMap;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.AttributeMetaQueryHandler;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -87,9 +87,8 @@ public class SqlQuery extends Query {
   }
 
   @Override
-  protected SqlQueryInstance makeInstance(User user, ReadOnlyMap<String,String> paramValues,
-      int assignedWeight) throws WdkModelException {
-    return new SqlQueryInstance(user, this, paramValues, assignedWeight);
+  protected SqlQueryInstance makeInstance(RunnableObj<QueryInstanceSpec> spec) throws WdkModelException {
+    return new SqlQueryInstance(spec);
   }
 
   public void addSql(WdkModelText sql) {

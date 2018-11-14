@@ -106,7 +106,7 @@ public class AnswerService extends AbstractWdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   // Produces an unknown media type; varies depending on reporter selected
   public Response buildResult(String body) throws WdkModelException, DataValidationException, RequestMisformatException {
-    AnswerRequest request = parseAnswerRequest(body, getWdkModelBean(), getSessionUser(), SPECIFIED_REPORTER_PARSER);
+    AnswerRequest request = parseAnswerRequest(body, getWdkModel(), getSessionUser(), SPECIFIED_REPORTER_PARSER);
     return getAnswerResponse(getSessionUser(), request);
   }
 
@@ -125,11 +125,11 @@ public class AnswerService extends AbstractWdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response buildDefaultReporterResult(String body) throws RequestMisformatException, WdkModelException, DataValidationException {
-    AnswerRequest request = parseAnswerRequest(body, getWdkModelBean(), getSessionUser(), DEFAULT_REPORTER_PARSER);
+    AnswerRequest request = parseAnswerRequest(body, getWdkModel(), getSessionUser(), DEFAULT_REPORTER_PARSER);
     return getAnswerResponse(getSessionUser(), request);
   }
 
-  public static AnswerRequest parseAnswerRequest(String requestBody, WdkModelBean wdkModel,
+  public static AnswerRequest parseAnswerRequest(String requestBody, WdkModel wdkModel,
       User sessionUser, AnswerFormattingParser formatParser)
       throws RequestMisformatException, DataValidationException {
     if (requestBody == null || requestBody.isEmpty()) {
@@ -137,9 +137,6 @@ public class AnswerService extends AbstractWdkService {
           "If submitting a form, include the 'data' input parameter.");
     }
     try {
-      // read request body into JSON object
-      JSONObject requestJson = new JSONObject(requestBody);
-
       // read request body into JSON object
       JSONObject requestJson = new JSONObject(requestBody);
 
@@ -212,7 +209,7 @@ public class AnswerService extends AbstractWdkService {
     try {
 
       // check to make sure format name is valid for this recordclass
-      if (!answerValue.getQuestion().getReporterMap().containsKey(format)) {
+      if (!answerValue.getAnswerSpec().getQuestion().getReporterMap().containsKey(format)) {
         throw new DataValidationException("Request for an invalid answer format: " + format);
       }
 

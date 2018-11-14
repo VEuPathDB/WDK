@@ -149,7 +149,7 @@ public class DatasetService extends UserService {
     String recordClassName = sourceConfig.getString(JsonKeys.BASKET_NAME);
     RecordClass recordClass = wdkModel.getRecordClassByUrlSegment(recordClassName);
     String questionName = BasketFactory.getSnapshotBasketQuestionName(recordClass);
-    Question question = wdkModel.getQuestion(questionName);
+    Question question = wdkModel.getQuestion(questionName).get(); // basket question always present
     DatasetParam param = (DatasetParam) question.getParamMap().get(BasketFactory.getDatasetParamName(recordClass));
     DatasetParamHandler handler = (DatasetParamHandler) param.getParamHandler();
     String datasetId = handler.getStableValue(user, new MapBasedRequestParams()
@@ -162,7 +162,8 @@ public class DatasetService extends UserService {
     WdkModel wdkModel = factory.getWdkModel();
     StepFactory stepFactory = wdkModel.getStepFactory();
     long strategyId = sourceConfig.getLong(JsonKeys.STRATEGY_ID);
-    Strategy strategy = stepFactory.getStrategyById(user, strategyId);
+    Strategy strategy = stepFactory.getStrategyById(strategyId)
+        .orElseThrow(() -> new WdkUserException("Strategy with ID " + strategyId + " not found."));
     AnswerValue answerValue = strategy.getRootStep().getAnswerValue();
     List<String[]> ids = answerValue.getAllIds();
     ListDatasetParser parser = new ListDatasetParser();
@@ -178,7 +179,7 @@ public class DatasetService extends UserService {
     String questionName = sourceConfig.getString(JsonKeys.QUESTION_NAME);
     String parameterName = sourceConfig.getString(JsonKeys.PARAMETER_NAME);
 
-    Question question = Optional.of(factory.getWdkModel().getQuestion(questionName)).orElseThrow(
+    Question question = factory.getWdkModel().getQuestion(questionName).orElseThrow(
         () -> new WdkUserException(String.format("Could not find a question with the name `%s`.", questionName)));
 
     Param param = Optional.of(question.getParamMap().get(parameterName)).orElseThrow(() -> new WdkUserException(
@@ -217,7 +218,7 @@ public class DatasetService extends UserService {
     WdkModel wdkModel = getWdkModel();
     RecordClass recordClass = wdkModel.getRecordClassByUrlSegment(recordClassName);
     String questionName = BasketFactory.getSnapshotBasketQuestionName(recordClass);
-    Question question = wdkModel.getQuestion(questionName);
+    Question question = wdkModel.getQuestion(questionName).get(); // basket question always present
     DatasetParam param = (DatasetParam) question.getParamMap().get(BasketFactory.getDatasetParamName(recordClass));
     DatasetParamHandler handler = (DatasetParamHandler) param.getParamHandler();
     String datasetId = handler.getStableValue(user, new MapBasedRequestParams()

@@ -27,9 +27,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.answer.spec.AnswerSpecFactory;
-import org.gusdb.wdk.model.answer.spec.ParamValue;
-import org.gusdb.wdk.model.answer.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.NoSuchElementException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
@@ -71,7 +69,7 @@ public class StepService extends UserService {
   public Response createStep(@QueryParam("runStep") Boolean runStep, JSONObject jsonBody) throws WdkModelException, DataValidationException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      StepRequest stepRequest = StepRequest.newStepFromJson(jsonBody, getWdkModelBean(), user);
+      StepRequest stepRequest = StepRequest.newStepFromJson(jsonBody, getWdkModel(), user);
       
       // validate the step and throw a DataValidation exception if not valid
       // new step are, by definition, not part of a strategy
@@ -96,7 +94,7 @@ public class StepService extends UserService {
       throw new BadRequestException(e);
     }
   }
-  
+
   @GET
   @Path("steps/{stepId}")
   @Produces(MediaType.APPLICATION_JSON)

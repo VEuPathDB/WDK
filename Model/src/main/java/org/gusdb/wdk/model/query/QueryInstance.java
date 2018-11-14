@@ -1,8 +1,8 @@
 package org.gusdb.wdk.model.query;
 
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,14 +16,15 @@ import org.gusdb.fgputil.collection.ReadOnlyHashMap;
 import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.query.param.AbstractDependentParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -66,9 +67,8 @@ public abstract class QueryInstance<T extends Query> {
   protected final User _user;
   protected final T _query;
   protected final WdkModel _wdkModel;
-  protected final Map<String, String> _paramStableValues;
-  protected final int _assignedWeight;
-  protected final Map<String, String> _context;
+  protected final RunnableObj<QueryInstanceSpec> _spec;
+  protected final ReadOnlyMap<String, String> _context;
 
   private Map<String, String> _paramInternalValues;
   private long _instanceId;
@@ -78,42 +78,28 @@ public abstract class QueryInstance<T extends Query> {
   private String _checksum;
 
   /**
-   * @param user user to execute query as
-   * @param query query to create instance for
-   * @param paramStableValues stable values of all params in the query's context
-   * @param assignedWeight weight of the query
-   * @throws WdkModelException
+   * @param spec query instance spec
    */
-  protected QueryInstance(User user, T query, ReadOnlyMap<String, String> paramStableValues,
-      int assignedWeight) throws WdkModelException {
-    _user = user;
-    _query = query;
-    _wdkModel = query.getWdkModel();
-    _paramStableValues = addUserId(paramStableValues);
-    _assignedWeight = assignedWeight;
+  @SuppressWarnings("unchecked")
+  protected QueryInstance(RunnableObj<QueryInstanceSpec> spec) {
+    // can cast here since the only way to get to the instance subclass is via the query subclass
+    _query = (T)spec.getObject().getQuery();
+    _user = spec.getObject().getUser();
+    _wdkModel = _query.getWdkModel();
+    _spec = spec;
     _context = createContext();
   }
 
-  private Map<String, String> createContext() {
+  private ReadOnlyMap<String, String> createContext() {
     Question question = _query.getContextQuestion();
     Param param = _query.getContextParam();
-    return new MapBuilder<String,String>()
-      .put(Utilities.QUERY_CTX_USER, String.valueOf(_user.getUserId()))
-      .put(Utilities.QUERY_CTX_QUERY, _query.getFullName())
-      .putIf(question != null, Utilities.QUERY_CTX_QUESTION, () -> question.getFullName())
-      .putIf(param != null, Utilities.QUERY_CTX_PARAM, () -> param.getFullName())
-      .toMap();
-  }
-
-  private Map<String, String> addUserId(ReadOnlyMap<String, String> incomingParamValues) {
-    // add user_id into the param values
-    Map<String, String> supplementedParamValues = incomingParamValues.toWriteableMap();
-    Map<String, Param> params = _query.getParamMap();
-    String userKey = Utilities.PARAM_USER_ID;
-    if (params.containsKey(userKey) && !incomingParamValues.containsKey(userKey)) {
-      supplementedParamValues.put(userKey, Long.toString(_user.getUserId()));
-    }
-    return supplementedParamValues;
+    return new ReadOnlyHashMap<>(
+      new MapBuilder<String,String>()
+        .put(Utilities.QUERY_CTX_USER, String.valueOf(_user.getUserId()))
+        .put(Utilities.QUERY_CTX_QUERY, _query.getFullName())
+        .putIf(question != null, Utilities.QUERY_CTX_QUESTION, () -> question.getFullName())
+        .putIf(param != null, Utilities.QUERY_CTX_PARAM, () -> param.getFullName())
+        .toMap());
   }
 
   public Query getQuery() {
@@ -135,22 +121,14 @@ public abstract class QueryInstance<T extends Query> {
     _instanceId = instanceId;
   }
 
-  public String getResultMessage() throws WdkModelException, WdkUserException {
+  public String getResultMessage() throws WdkModelException {
     if (!_resultMessageSet) {
-      // make sure the result message is loaded by caching results
-      new ResultFactory(_wdkModel).getCachedSql(this, false);
+      _resultMessage = new ResultFactory(_wdkModel).getResultMessage(this);
+      _resultMessageSet = true;
     }
     return _resultMessage;
   }
 
-  public void setResultMessage(String message) {
-    _resultMessage = message;
-    _resultMessageSet = true;
-  }
-
-  /**
-   * @return the cached
-   */
   public boolean getIsCacheable() {
     return _query.getIsCacheable();
   }
@@ -171,7 +149,7 @@ public abstract class QueryInstance<T extends Query> {
       jsInstance.put("queryChecksum", _query.getChecksum());
 
       jsInstance.put("params", getParamSignatures());
-      jsInstance.put("assignedWeight", _assignedWeight);
+      jsInstance.put("assignedWeight", _spec.getObject().getAssignedWeight());
 
       // include extra info from child
       appendJSONContent(jsInstance);
@@ -185,18 +163,22 @@ public abstract class QueryInstance<T extends Query> {
     }
   }
 
+  private Map<String, String> getSignatures() throws WdkModelException {
+    Map<String, String> signatures = new HashMap<String, String>();
+    for (Param param : _query.getParamMap().values()) {
+      signatures.put(param.getName(), param.getSignature(_spec));
+    }
+    return signatures;
+  }
+
   public JSONObject getParamSignatures() throws WdkModelException {
     // the values are dependent values. need to convert it into independent values
-    Map<String, String> signatures = _query.getSignatures(_user, _paramStableValues);
+    Map<String, String> signatures = getSignatures();
 
-    // construct param-value map; param is sorted by name
-    String[] paramNames = new String[signatures.size()];
-    signatures.keySet().toArray(paramNames);
-    Arrays.sort(paramNames);
-
+    // build JSON from signatures; slightly different than new JSONObject(map)
     try {
       JSONObject jsParams = new JSONObject();
-      for (String paramName : paramNames) {
+      for (String paramName : _spec.getObject().getQuery().getParamMap().keySet()) {
         String value = signatures.get(paramName);
         if (value != null && value.length() > 0)
           jsParams.put(paramName, value);
@@ -237,7 +219,7 @@ public abstract class QueryInstance<T extends Query> {
   }
 
   public ReadOnlyMap<String, String> getParamStableValues() {
-    return new ReadOnlyHashMap<>(_paramStableValues);
+    return new ReadOnlyHashMap<String,String>(_spec.getObject().toMap());
   }
 
   private ResultList getCachedResults(boolean performSorting) throws WdkModelException {
@@ -250,100 +232,11 @@ public abstract class QueryInstance<T extends Query> {
     return resultFactory.getCachedSql(this, performSorting);
   }
 
-  @Deprecated
-  private void validateContextValuesAndFillEmptyWithDefaults(User user, Map<String, String> values) throws
-      WdkModelException {
-    Map<String, Param> params = _query.getParamMap();
-    Map<String, String> errors = null;
-
-    values = fillEmptyValues(values);
-    // then check that all params have supplied values
-    for (String paramName : values.keySet()) {
-      String errMsg = null;
-      String dependentValue = values.get(paramName);
-      String prompt = paramName;
-      try {
-        if (!params.containsKey(paramName)) {
-          // LOG.warn("The parameter '" + paramName + "' doesn't exist in query " + _query.getFullName());
-          continue;
-        }
-
-        Param param = params.get(paramName);
-        prompt = param.getPrompt();
-
-        // validate param
-        param.validate(user, dependentValue, values);
-      }
-      catch (Exception ex) {
-        ex.printStackTrace();
-        errMsg = ex.getMessage();
-        if (errMsg == null)
-          errMsg = ex.getClass().getName();
-      }
-      if (errMsg != null) {
-        if (errors == null)
-          errors = new LinkedHashMap<String, String>();
-        errors.put(prompt, errMsg);
-      }
-    }
-    if (errors != null) {
-      WdkUserException ex = new ParamValuesInvalidException("In query " + _query.getFullName() + " some of the input parameters are invalid or missing.", errors);
-      LOG.error(ex);
-      throw new WdkModelException("Could not validate and fill values", ex);
-    }
-  }
-
-  private Map<String, String> fillEmptyValues(Map<String, String> stableValues) throws WdkModelException {
-    Map<String, String> newValues = new LinkedHashMap<String, String>(stableValues);
-    Map<String, Param> paramMap = _query.getParamMap();
-
-    // iterate through this query's params, filling values
-    for (String paramName : paramMap.keySet()) {
-      resolveParamValue(paramMap.get(paramName), newValues);
-    }
-    return newValues;
-  }
-
-  private void resolveParamValue(Param param, Map<String, String> stableValues) throws WdkModelException {
-    String value;
-    if (!stableValues.containsKey(param.getName())) {
-      // param not provided, determine value
-      if (param instanceof AbstractDependentParam && ((AbstractDependentParam) param).isDependentParam()) {
-        // special case; must get value of depended param first
-        AbstractDependentParam adParam = (AbstractDependentParam) param;
-        Map<String, String> dependedValues = new LinkedHashMap<>();
-        for (Param dependedParam : adParam.getDependedParams()) {
-          resolveParamValue(dependedParam, stableValues);
-          String dependedName = dependedParam.getName();
-          dependedValues.put(dependedName, stableValues.get(dependedName));
-        }
-        value = adParam.getDefault(_user, dependedValues);
-      }
-      else {
-        value = param.getDefault();
-      }
-    }
-    else { // param provided, but it can be empty
-      value = stableValues.get(param.getName());
-      if (value == null || value.length() == 0) {
-        value = param.isAllowEmpty() ? param.getEmptyValue() : null;
-      }
-    }
-    stableValues.put(param.getName(), value);
-  }
-
   protected Map<String, String> getParamInternalValues() throws WdkModelException {
-
     if (_paramInternalValues == null) {
-      // the empty & default values are filled
-      Map<String, String> stableValues = fillEmptyValues(_paramStableValues);
       _paramInternalValues = new LinkedHashMap<String, String>();
-      Map<String, Param> params = _query.getParamMap();
-      for (String paramName : params.keySet()) {
-        Param param = params.get(paramName);
-        String internalValue, stableValue = stableValues.get(paramName);
-        internalValue = param.getInternalValue(_user, stableValue, stableValues);
-        _paramInternalValues.put(paramName, internalValue);
+      for (Param param : _query.getParamMap().values()) {
+        _paramInternalValues.put(param.getName(), param.getInternalValue(_spec));
       }
     }
     return Collections.unmodifiableMap(_paramInternalValues);
@@ -369,10 +262,9 @@ public abstract class QueryInstance<T extends Query> {
         throw new WdkModelException("Unable to run postCacheinsertSql:  " + sql, ex);
       }
     }
-
   }
 
   public int getAssignedWeight() {
-    return _assignedWeight;
+    return _spec.getObject().getAssignedWeight();
   }
 }

@@ -16,7 +16,6 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 
@@ -55,6 +54,10 @@ public class ResultFactory {
 
   public CacheFactory getCacheFactory() {
     return cacheFactory;
+  }
+
+  public String getResultMessage(QueryInstance<?> queryInstance) throws WdkModelException {
+    return getInstanceInfo(queryInstance).message;
   }
 
   public String getCachedSql(QueryInstance<?> queryInstance, boolean performSorting)
@@ -136,7 +139,6 @@ public class ResultFactory {
       InstanceInfo instanceInfo = USE_INSTANCE_INFO_CACHE ?
           INSTANCE_INFO_CACHE.getValue(InstanceInfoFetcher.getKey(checksum), instanceInfoFetcher) :
           getInstanceInfo(checksum);
-      instance.setResultMessage(instanceInfo.message);
       return instanceInfo;
     }
     catch (ValueProductionException e) {
@@ -244,7 +246,7 @@ public class ResultFactory {
       platform.setClobData(ps, 5, instance.getResultMessage(), false);
       ps.executeUpdate();
     }
-    catch (SQLException | WdkUserException e) {
+    catch (SQLException e) {
       throw new WdkModelException("Unable to add cache instance.", e);
     }
     finally {

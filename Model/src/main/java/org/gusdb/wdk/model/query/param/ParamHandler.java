@@ -2,9 +2,11 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.Map;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -32,6 +34,7 @@ public interface ParamHandler {
    * @throws WdkUserException
    * @throws WdkModelException
    */
+  @Deprecated
   String getStableValue(User user, RequestParams requestParams) throws WdkUserException, WdkModelException;
 
   /**
@@ -49,11 +52,11 @@ public interface ParamHandler {
    * 
    * @param user
    * @param requestParams
-   * @param contextParamValues
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
+   @Deprecated
+   void prepareDisplay(User user, RequestParams requestParams)
       throws WdkModelException, WdkUserException;
 
   /**
@@ -66,6 +69,7 @@ public interface ParamHandler {
    * @throws WdkUserException
    * @throws WdkModelException
    */
+  //TODO - CWL Verify 
   String toStableValue(User user, Object rawValue)
       throws WdkUserException, WdkModelException;
 
@@ -78,16 +82,14 @@ public interface ParamHandler {
    * @return
    * @throws WdkModelException
    */
-  Object toRawValue(User user, String stableValue)
-      throws WdkModelException;
+  Object toRawValue(User user, String stableValue) throws WdkModelException;
 
-  String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException;
+  String toInternalValue(RunnableObj<QueryInstanceSpec> contextParamValues) throws WdkModelException;
 
-  String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException;
+  String toSignature(RunnableObj<QueryInstanceSpec> contextParamValues) throws WdkModelException;
+
+  String getDisplayValue(RunnableObj<QueryInstanceSpec> contextParamValues) throws WdkModelException;
 
   ParamHandler clone(Param param);
-  
-  String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException;
+
 }
