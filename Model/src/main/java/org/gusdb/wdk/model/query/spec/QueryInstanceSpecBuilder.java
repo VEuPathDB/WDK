@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.query.spec;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.fgputil.collection.ReadOnlyHashMap;
@@ -31,7 +32,14 @@ public class QueryInstanceSpecBuilder extends ReadOnlyHashMap.Builder<String,Str
 
   private int _assignedWeight = 0;
 
-  QueryInstanceSpecBuilder() {}
+  QueryInstanceSpecBuilder() {
+    super(new LinkedHashMap<>());
+  }
+
+  public QueryInstanceSpecBuilder(QueryInstanceSpec spec) {
+    super(new LinkedHashMap<>(spec.toMap()));
+    _assignedWeight = spec.getAssignedWeight();
+  }
 
   /**
    * Builds a "known invalid" spec- basically a container for params when an answer spec's question is

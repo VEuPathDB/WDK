@@ -132,11 +132,6 @@ public class AnswerParam extends Param {
     this._resolved = true;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     // add recordClass names
@@ -146,12 +141,6 @@ public class AnswerParam extends Param {
     jsParam.put("recordClass", jsArray);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#validateValue(org.gusdb.wdk.model .user.User,
-   * java.lang.String)
-   */
   @Override
   protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
@@ -165,11 +154,6 @@ public class AnswerParam extends Param {
           "' is not allowed in the answerParam " + this.getFullName());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
@@ -204,11 +188,16 @@ public class AnswerParam extends Param {
   /**
    * AnswerParam doesn't allow empty values since we cannot define user-independent empty values in the model.
    * 
+   * Correction for b36(?): we do allow null values since that will be how combiner steps are constructed
+   * prior to them being incorporated into a strategy.  However, once the step is incorporated into a
+   * strategy, AnswerParams MUST be filled in and null would be invalid.  Hoping to guarantee this in other
+   * ways.  For now, validation must pass null values in AnswerParams.
+   * 
    * @see org.gusdb.wdk.model.query.param.Param#isAllowEmpty()
    */
   @Override
   public boolean isAllowEmpty() {
-    return false;
+    return true;
   }
 
   @Override

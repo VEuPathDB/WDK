@@ -1,12 +1,10 @@
 package org.gusdb.wdk.model.ontology;
 
-import java.util.Collections;
-import java.util.List;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.TreeNode;
@@ -15,7 +13,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.question.CategoryQuestionRef;
 import org.gusdb.wdk.model.question.SearchCategory;
-import org.apache.log4j.Logger;
 
 /**
  * A temporary class to adapt from the eupath categories ontology to the wdk categories objects. Will be
@@ -35,8 +32,6 @@ import org.apache.log4j.Logger;
  *
  */
 public class EuPathCategoriesFactory {
-
-  private static final Logger LOG = Logger.getLogger(EuPathCategoriesFactory.class);
 
   // maps to collect the categories we make
   private Map<String, SearchCategory> websiteRootCategories = new LinkedHashMap<String, SearchCategory>();
@@ -140,7 +135,10 @@ public class EuPathCategoriesFactory {
       // set the display name in the ref, so it can be used for sorting. ignore questions not found in model
       for (CategoryQuestionRef ref : category.getQuestionRefs()) {
         try {
-          ref.setQuestionDisplayName(model.getQuestion(ref.getQuestionFullName()).getDisplayName());
+          ref.setQuestionDisplayName(model
+              .getQuestion(ref.getQuestionFullName())
+              .orElseThrow(() -> new WdkModelException("Categories ontology contains invalid question name ref '" + ref.getQuestionFullName() + "'."))
+              .getDisplayName());
         }
         catch (WdkModelException e) {}
       }
@@ -316,22 +314,17 @@ public class EuPathCategoriesFactory {
     @Override
     public boolean test(OntologyNode node) {
       boolean hasScope = false;
-      for (String scope : scopes)
-        if (node.containsKey("scope") && node.get("scope").contains(scope))
+      for (String scope : scopes) {
+        if (node.containsKey("scope") && node.get("scope").contains(scope)) {
           hasScope = true;
-      try {
-        return node.containsKey("targetType") && node.get("targetType").contains("search") &&
-            node.containsKey("recordClassName") && node.get("recordClassName").contains(recordClass) &&
-            model.getQuestion(node.get("name").get(0)) != null && hasScope;
+        }
       }
-      catch (WdkModelException e) {
-        LOG.debug("Error attempting to resolve ontology node with model entity.");
-        LOG.debug(e.getMessage());
-        StringWriter sw = new StringWriter();
-        e.printStackTrace(new PrintWriter(sw));
-        LOG.debug(sw.toString());
-        return false;
-      }
+      return node.containsKey("targetType") &&
+          node.get("targetType").contains("search") &&
+          node.containsKey("recordClassName") &&
+          node.get("recordClassName").contains(recordClass) &&
+          model.getQuestion(node.get("name").get(0)).isPresent() &&
+          hasScope;
     }
   }
 

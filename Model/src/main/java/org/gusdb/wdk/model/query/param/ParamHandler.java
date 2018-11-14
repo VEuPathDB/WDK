@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.query.param;
 import java.util.Map;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -69,7 +70,6 @@ public interface ParamHandler {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  //TODO - CWL Verify 
   String toStableValue(User user, Object rawValue)
       throws WdkUserException, WdkModelException;
 
@@ -84,7 +84,7 @@ public interface ParamHandler {
    */
   Object toRawValue(User user, String stableValue) throws WdkModelException;
 
-  String toInternalValue(RunnableObj<QueryInstanceSpec> contextParamValues) throws WdkModelException;
+  String toInternalValue(SemanticallyValid<QueryInstanceSpec> contextParamValues) throws WdkModelException;
 
   String toSignature(RunnableObj<QueryInstanceSpec> contextParamValues) throws WdkModelException;
 

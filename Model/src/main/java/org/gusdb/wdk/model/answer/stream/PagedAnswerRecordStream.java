@@ -5,7 +5,6 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.RecordInstance;
 
@@ -28,7 +27,7 @@ public class PagedAnswerRecordStream implements RecordStream {
     try {
       return new PagedAnswerRecordIterator(new PagedAnswerIterator(_answerValue, _pageSize));
     }
-    catch (WdkModelException | WdkUserException e) {
+    catch (WdkModelException e) {
       throw new WdkRuntimeException("Unable to create paged answer iterator", e);
     }
   }
@@ -48,7 +47,7 @@ public class PagedAnswerRecordStream implements RecordStream {
     private int _startIndex;
 
     public PagedAnswerIterator(AnswerValue answerValue, int pageSize)
-        throws WdkModelException, WdkUserException {
+        throws WdkModelException {
       _baseAnswer = answerValue;
       int resultSize = _baseAnswer.getResultSizeFactory().getResultSize();
       _startIndex = answerValue.getStartIndex();

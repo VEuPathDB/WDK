@@ -127,7 +127,7 @@ public class FileBasedRecordStream implements RecordStream {
    */
   private static Path createTemporaryDirectory(AnswerValue answerValue) throws WdkModelException {
     try {
-      Path wdkTempDir = answerValue.getQuestion().getWdkModel().getModelConfig().getWdkTempDir();
+      Path wdkTempDir = answerValue.getWdkModel().getModelConfig().getWdkTempDir();
       return IoUtil.createOpenPermsTempDir(wdkTempDir, DIRECTORY_PREFIX);
     }
     catch (IOException ioe) {

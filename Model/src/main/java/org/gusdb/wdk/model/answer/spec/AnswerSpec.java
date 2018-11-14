@@ -18,8 +18,10 @@ import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.StepContainer;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
 public class AnswerSpec implements Validateable {
@@ -73,7 +75,7 @@ public class AnswerSpec implements Validateable {
   // resource to look up steps referred to by answer param values
   private final StepContainer _stepContainer;
 
-  AnswerSpec(WdkModel wdkModel, String questionName, QueryInstanceSpecBuilder queryInstanceSpec,
+  AnswerSpec(User user, WdkModel wdkModel, String questionName, QueryInstanceSpecBuilder queryInstanceSpec,
       String legacyFilterName, FilterOptionListBuilder filters, FilterOptionListBuilder viewFilters,
       ValidationLevel validationLevel, StepContainer stepContainer) {
     _wdkModel = wdkModel;
@@ -92,7 +94,8 @@ public class AnswerSpec implements Validateable {
     }
     else {
       _question = wdkModel.getQuestion(questionName).get(); // we know this will not throw
-      _queryInstanceSpec = queryInstanceSpec.buildValidated(_question.getQuery(), validationLevel, stepContainer);
+      _queryInstanceSpec = queryInstanceSpec.buildValidated(user, _question.getQuery(),
+          stepContainer, validationLevel, FillStrategy.NO_FILL);
       if (_queryInstanceSpec.isValid()) {
         // replace passed filter lists with new ones that have always-on filters applied
         SimpleAnswerSpec simpleSpec = new SimpleAnswerSpec(_question, _queryInstanceSpec);

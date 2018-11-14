@@ -16,7 +16,6 @@ import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.dbms.ResultList;
@@ -56,14 +55,14 @@ public class ResultSizeFactory {
   /**
    * @return number of pages needed to display entire result given the current page size
    */
-  public int getPageCount() throws WdkModelException, WdkUserException {
+  public int getPageCount() throws WdkModelException {
     int total = getResultSize();
     int pageSize = _answerValue.getEndIndex() - _answerValue.getStartIndex() + 1;
     int pageCount = (int) Math.round(Math.ceil((float) total / pageSize));
     return pageCount;
   }
 
-  public int getResultSize() throws WdkModelException, WdkUserException {
+  public int getResultSize() throws WdkModelException {
     QueryInstance<?> idsQueryInstance = _answerValue.getIdsQueryInstance();
     if (_resultSize == null || !idsQueryInstance.getIsCacheable()) {
       _resultSize = new DefaultResultSizePlugin().getResultSize(_answerValue);
@@ -78,7 +77,7 @@ public class ResultSizeFactory {
     return plugin.getResultSize(_answerValue);
   }
 
-  public Map<String, Integer> getResultSizesByProject() throws WdkModelException, WdkUserException {
+  public Map<String, Integer> getResultSizesByProject() throws WdkModelException {
     if (_resultSizesByProject == null) {
       _resultSizesByProject = new LinkedHashMap<String, Integer>();
       Question question = _answerValue.getAnswerSpec().getQuestion();
@@ -216,7 +215,7 @@ public class ResultSizeFactory {
     AnswerValue modifiedAnswer = AnswerValueFactory.makeAnswer(_answerValue,
         AnswerSpec.builder(_answerValue.getAnswerSpec())
         .setLegacyFilterName(filterName)
-        .buildRunnable());
+        .buildRunnable(_answerValue.getUser()));
     String idSql = modifiedAnswer.getIdSql();
 
     // if display count requested, use custom plugin; else use default

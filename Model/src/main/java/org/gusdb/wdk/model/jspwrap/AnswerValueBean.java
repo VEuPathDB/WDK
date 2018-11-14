@@ -108,7 +108,7 @@ public class AnswerValueBean {
         return answerValue.getIdsQueryInstance().getParamStableValues().toWriteableMap();
     }
 
-    public String getChecksum() throws WdkModelException, WdkUserException {
+    public String getChecksum() throws WdkModelException {
         return answerValue.getChecksum();
     }
 
@@ -178,15 +178,15 @@ public class AnswerValueBean {
         return new AnswerValueBean(step.getAnswerValue());
     }
 
-    public int getPageSize() throws WdkModelException, WdkUserException {
+    public int getPageSize() throws WdkModelException {
         return answerValue.getPageSize();
     }
 
-    public int getPageCount() throws WdkModelException, WdkUserException {
+    public int getPageCount() throws WdkModelException {
         return answerValue.getResultSizeFactory().getPageCount();
     }
 
-    public int getResultSize() throws WdkModelException, WdkUserException {
+    public int getResultSize() throws WdkModelException {
         return answerValue.getResultSizeFactory().getResultSize();
     }
 
@@ -195,7 +195,7 @@ public class AnswerValueBean {
     }
 
    public Map<String, Integer> getResultSizesByProject()
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         return answerValue.getResultSizeFactory().getResultSizesByProject();
     }
 
@@ -342,7 +342,7 @@ public class AnswerValueBean {
      * 
      * @see org.gusdb.wdk.model.Answer#getResultMessage()
      */
-    public String getResultMessage() throws WdkModelException, WdkUserException {
+    public String getResultMessage() throws WdkModelException {
         String message = answerValue.getResultMessage();
         System.out.println("Result message from AnswerBean: " + message);
         return message;
@@ -393,7 +393,7 @@ public class AnswerValueBean {
     }
 
     public int getFilterSize(String filterName)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         return answerValue.getResultSizeFactory().getFilterSize(filterName);
     }
 
@@ -402,7 +402,7 @@ public class AnswerValueBean {
     }
 
     public int getFilterDisplaySize(String filterName)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         return answerValue.getResultSizeFactory().getFilterDisplaySize(filterName);
     }
 
@@ -485,11 +485,11 @@ public class AnswerValueBean {
       return answerValue.getAttributes();
     }
 
-    public FilterSummary getFilterSummary(String filterName) throws WdkModelException, WdkUserException {
+    public FilterSummary getFilterSummary(String filterName) throws WdkModelException {
       return answerValue.getFilterSummary(filterName);
     }
     
-    public String getIdSql() throws WdkModelException, WdkUserException {
+    public String getIdSql() throws WdkModelException {
       return answerValue.getIdSql();
     }    
 

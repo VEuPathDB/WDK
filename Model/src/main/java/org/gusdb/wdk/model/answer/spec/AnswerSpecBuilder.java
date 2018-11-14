@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
 import org.gusdb.wdk.model.user.StepContainer;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
 public class AnswerSpecBuilder {
@@ -56,16 +57,12 @@ public class AnswerSpecBuilder {
     return this;
   }
 
-  public AnswerSpec build(ValidationLevel level) {
-    return build(level, null);
+  public AnswerSpec build(User user, ValidationLevel level, StepContainer stepContainer) {
+    return new AnswerSpec(user, _wdkModel, _questionName, _queryInstanceSpec, _legacyFilterName, _filters, _viewFilters, level, stepContainer);
   }
 
-  public AnswerSpec build(ValidationLevel level, StepContainer stepContainer) {
-    return new AnswerSpec(_wdkModel, _questionName, _queryInstanceSpec, _legacyFilterName, _filters, _viewFilters, level, stepContainer);
-  }
-
-  public RunnableObj<AnswerSpec> buildRunnable() {
-    return ValidObjectFactory.getRunnable(build(ValidationLevel.RUNNABLE));
+  public RunnableObj<AnswerSpec> buildRunnable(User user) {
+    return ValidObjectFactory.getRunnable(build(user, ValidationLevel.RUNNABLE, StepContainer.emptyContainer()));
   }
 
   public AnswerSpecBuilder setQuestionName(String questionName) {

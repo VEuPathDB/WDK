@@ -112,8 +112,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     return getVocabInstance().getDefaultValue();
   }
 
-  // NOTE: not threadsafe! This class is expected only to be used in a single
-  // thread
+  // NOTE: not threadsafe! This class is expected only to be used in a single thread
   protected EnumParamVocabInstance getVocabInstance() {
     if (_cache == null || _dependedValueChanged) {
       _cache = _param.getVocabInstance(_userBean.getUser(), _contextValues);

@@ -18,7 +18,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
-import org.gusdb.wdk.model.query.spec.QueryInstanceSpec.QueryInstanceSpecBuilder;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -79,7 +80,7 @@ public class Migrator_b18_b19 implements Migrator {
           .setQuestionName(questionName)
           .setDbParamFiltersJson(new JSONObject(paramContent))
           .setQueryInstanceSpec(QueryInstanceSpec.builder().putAll(newParams))
-          .build(ValidationLevel.SEMANTIC);
+          .build(wdkModel.getSystemUser(), ValidationLevel.SYNTACTIC, StepContainer.emptyContainer());
 
         paramContent = ParamFiltersClobFormat.formatParamFilters(answerSpec).toString();
 
