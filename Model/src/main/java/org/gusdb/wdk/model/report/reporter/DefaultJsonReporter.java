@@ -143,12 +143,13 @@ public class DefaultJsonReporter extends AbstractReporter {
    * top level json object
    * @param writer
    * @return the JsonWriter that now includes the addtions, if any
+   * @throws WdkModelException if unable to generate additional data
    */
-  public JsonWriter writeAdditionalJson(JsonWriter writer) throws WdkModelException, WdkUserException { return writer; }
+  public JsonWriter writeAdditionalJson(JsonWriter writer) throws WdkModelException { return writer; }
 
   private static JSONObject getMetaData(AnswerValue answerValue,
       Set<String> includedAttributes, Set<String> includedTables, int numRecordsReturned)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     JSONObject meta = new JSONObject();
     meta.put(JsonKeys.RECORD_CLASS_NAME, answerValue.getAnswerSpec().getQuestion().getRecordClass().getFullName());
     meta.put(JsonKeys.TOTAL_COUNT, answerValue.getResultSizeFactory().getResultSize());

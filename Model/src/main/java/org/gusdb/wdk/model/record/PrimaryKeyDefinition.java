@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -239,8 +240,8 @@ public class PrimaryKeyDefinition extends WdkModelBase {
       oldValues.put(oldParam, value);
     }
 
-    QueryInstance<?> instance = Query.makeQueryInstance(user, QueryInstanceSpec.builder()
-        .putAll(oldValues).buildRunnable(_aliasQuery, null));
+    QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+        .putAll(oldValues).buildRunnable(user, _aliasQuery, StepContainer.emptyContainer()));
     
     try (ResultList resultList = instance.getResults()) {
       while (resultList.next()) {

@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 public class DynamicTableValue extends TableValue {
@@ -25,8 +26,8 @@ public class DynamicTableValue extends TableValue {
     super(tableField);
 
     // create query instance; TableValue will initialize rows by itself
-    _queryInstance = Query.makeQueryInstance(user, QueryInstanceSpec.builder()
-        .putAll(primaryKey.getValues()).buildRunnable(tableField.getWrappedQuery(), null));
+    _queryInstance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+        .putAll(primaryKey.getValues()).buildRunnable(user, tableField.getWrappedQuery(), StepContainer.emptyContainer()));
   }
 
   private void loadRowsFromQuery() {

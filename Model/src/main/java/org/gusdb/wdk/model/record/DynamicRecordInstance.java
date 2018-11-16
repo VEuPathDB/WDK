@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeValue;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -79,8 +80,8 @@ public class DynamicRecordInstance extends StaticRecordInstance {
     Map<String, String> paramValues = _primaryKey.getValues();
 
     // put user id in the attribute query
-    QueryInstance<?> instance = Query.makeQueryInstance(_user, QueryInstanceSpec.builder()
-        .putAll(paramValues).buildRunnable(query, null));
+    QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+        .putAll(paramValues).buildRunnable(_user, query, StepContainer.emptyContainer()));
 
     try (ResultList resultList = instance.getResults()) {
       if (!resultList.next()) {

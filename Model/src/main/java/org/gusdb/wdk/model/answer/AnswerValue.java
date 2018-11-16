@@ -831,9 +831,4 @@ public class AnswerValue {
     return _answerSpec.getLegacyFilter();
   }
 
-  @Deprecated // should be removed once JSPs are purged
-  public Question getQuestion() {
-    return _answerSpec.getQuestion();
-  }
-
 }

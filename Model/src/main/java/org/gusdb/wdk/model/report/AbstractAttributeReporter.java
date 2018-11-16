@@ -149,7 +149,7 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
     // replace each attribute in the content
     StringBuilder builder = new StringBuilder("'");
     int pos = 0;
-    Map<String, AttributeField> fields = answerValue.getQuestion().getAttributeFieldMap();
+    Map<String, AttributeField> fields = answerValue.getAnswerSpec().getQuestion().getAttributeFieldMap();
     Matcher matcher = DerivedAttributeField.MACRO_PATTERN.matcher(content);
     while (matcher.find()) {
       String fieldName = matcher.group(1);
@@ -173,9 +173,9 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
    */
   protected Map<PrimaryKeyValue, Object> getAttributeValues(AnswerValue answerValue)
       throws WdkModelException, SQLException, WdkUserException {
-    WdkModel wdkModel = answerValue.getQuestion().getRecordClass().getWdkModel();
+    WdkModel wdkModel = answerValue.getWdkModel();
     Map<PrimaryKeyValue, Object> values = new LinkedHashMap<>();
-    RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+    RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
     PrimaryKeyDefinition pkDef = recordClass.getPrimaryKeyDefinition();
     String[] pkColumns = pkDef.getColumnRefs();
     String sql = getAttributeSql(answerValue);
@@ -183,7 +183,7 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
     ResultSet resultSet = null;
     try {
       resultSet = SqlUtils.executeQuery(dataSource, sql,
-          answerValue.getQuestion().getQuery().getFullName()
+          answerValue.getAnswerSpec().getQuestion().getQuery().getFullName()
               + "__attribute-plugin-combined", 5000);
       while (resultSet.next()) {
         Map<String, Object> pkValues = new LinkedHashMap<String, Object>();

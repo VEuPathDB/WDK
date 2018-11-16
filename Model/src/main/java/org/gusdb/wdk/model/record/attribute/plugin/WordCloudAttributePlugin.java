@@ -11,8 +11,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
-import org.gusdb.wdk.model.user.Step;
 
 /**
  * @author jerric
@@ -44,9 +44,9 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin {
   private Set<String> commonWords;
 
   @Override
-  public Map<String, Object> process(Step step) {
+  public Map<String, Object> process(AnswerValue answer) {
     StringBuilder content = new StringBuilder();
-    List<WordTag> tags = loadTags(step, content);
+    List<WordTag> tags = loadTags(answer, content);
 
     // compose the result
     Map<String, Object> result = new LinkedHashMap<String, Object>();
@@ -55,13 +55,13 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin {
     return result;
   }
 
-  private List<WordTag> loadTags(Step step, StringBuilder content) {
+  private List<WordTag> loadTags(AnswerValue answer, StringBuilder content) {
     List<WordTag> tags = new ArrayList<>();
 
     resolveProperties();
     try {
       Map<String, WordTag> tagMap = new HashMap<String, WordTag>();
-      Map<PrimaryKeyValue, Object> values = getAttributeValues(step);
+      Map<PrimaryKeyValue, Object> values = getAttributeValues(answer);
       for (Object value : values.values()) {
         if (value == null)
           continue;

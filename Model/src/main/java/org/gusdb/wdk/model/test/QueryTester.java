@@ -28,6 +28,8 @@ import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 public class QueryTester {
@@ -43,27 +45,20 @@ public class QueryTester {
   }
 
   private String showSql(Query query, Map<String, String> paramHash)
-      throws WdkModelException, WdkUserException {
-    QueryInstance<?> instance = query.makeInstance(user, paramHash, true, 0,
-        new LinkedHashMap<String, String>());
+      throws WdkModelException {
+    QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+        .putAll(paramHash).buildRunnable(user, query, StepContainer.emptyContainer()));
     if (instance instanceof SqlQueryInstance) {
       return ((SqlQueryInstance) instance).getUncachedSql();
     } else return instance.getSql();
   }
 
   private String showResultTable(Query query, Map<String, String> paramHash)
-      throws WdkModelException, WdkUserException {
-    QueryInstance<?> instance = query.makeInstance(user, paramHash, true, 0,
-        new LinkedHashMap<String, String>());
-    //ResultFactory resultFactory = wdkModel.getResultFactory();
-    //CacheFactory cacheFactory = resultFactory.getCacheFactory();
+      throws WdkModelException {
+    QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+        .putAll(paramHash).buildRunnable(user, query, StepContainer.emptyContainer()));
     long instanceId = instance.getInstanceId();
     return "QueryResult" + instanceId;
-    /*
-    QueryInfo queryInfo = cacheFactory.getQueryInfo(instance.getQuery());
-    String cacheTable = queryInfo.getCacheTable();
-    return cacheTable + ":" + instanceId;
-    */
   }
 
   // ////////////////////////////////////////////////////////////////////
@@ -191,8 +186,8 @@ public class QueryTester {
           String table = tester.showResultTable(query, stableValues);
           System.out.println(table);
         } else {
-          QueryInstance<?> instance = query.makeInstance(tester.user, stableValues,
-              true, 0, new LinkedHashMap<String, String>());
+          QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+              .putAll(stableValues).buildRunnable(tester.user, query, StepContainer.emptyContainer()));
           try (ResultList rs = instance.getResults()) {
             print(query, rs);
           }

@@ -10,9 +10,8 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.answer.AnswerValue;
 
 /**
  * @author jerric
@@ -42,9 +41,9 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin {
   private static final Logger logger = Logger.getLogger(HistogramAttributePlugin.class);
 
   @Override
-  public Map<String, Object> process(Step step) throws WdkModelException {
+  public Map<String, Object> process(AnswerValue answer) throws WdkModelException {
     // load the data.
-    Map<String, Integer> data = loadData(step);
+    Map<String, Integer> data = loadData(answer);
 
     // compose the result
     Map<String, Object> result = new LinkedHashMap<String, Object>();
@@ -165,15 +164,14 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin {
     }
   }
 
-  private Map<String, Integer> loadData(Step step) throws WdkModelException {
-    WdkModel wdkModel = step.getRecordClass().getWdkModel();
+  private Map<String, Integer> loadData(AnswerValue answer) {
     Map<String, Integer> counts = new LinkedHashMap<>();
     ResultSet resultSet = null;
     try {
       String attributeColumn = AbstractAttributePlugin.ATTRIBUTE_COLUMN;
-      String attributeSql = getAttributeSql(step);
+      String attributeSql = getAttributeSql(answer);
       String groupSql = composeSql(attributeColumn, attributeSql);
-      DataSource dataSource = wdkModel.getAppDb().getDataSource();
+      DataSource dataSource = answer.getWdkModel().getAppDb().getDataSource();
       resultSet = SqlUtils.executeQuery(dataSource, groupSql,
           attributeField.getName() + "__attribute-histogram");
       while (resultSet.next()) {

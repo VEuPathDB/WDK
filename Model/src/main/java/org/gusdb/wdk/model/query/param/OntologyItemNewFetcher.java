@@ -47,8 +47,8 @@ public class OntologyItemNewFetcher implements ValueFactory<String, Map<String, 
         if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
           requiredParamValues.put(paramName, paramValues.get(paramName));
 
-      QueryInstance<?> instance = Query.makeQueryInstance(user, QueryInstanceSpec.builder()
-          .putAll(requiredParamValues).buildRunnable(query, null));
+      QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+          .putAll(requiredParamValues).buildRunnable(user, query, null));
       Map<String, OntologyItem> ontologyItemMap = new LinkedHashMap<>();
       ResultList resultList = instance.getResults();
       try {
