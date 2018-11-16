@@ -67,6 +67,7 @@ import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.FavoriteReference;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferences;
 
@@ -723,8 +724,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   public Long getAllRecordsCount(User user) throws WdkModelException {
     try {
-      String baseSql = Query.makeQueryInstance(user, QueryInstanceSpec.builder()
-          .buildRunnable(allRecordsQuery, null)).getSql();
+      String baseSql = Query.makeQueryInstance(QueryInstanceSpec.builder()
+          .buildRunnable(user, allRecordsQuery, StepContainer.emptyContainer())).getSql();
       String sql = "select count(*) from ( " + baseSql + " )";
       SingleLongResultSetHandler result = new SQLRunner(_wdkModel.getAppDb().getDataSource(),
           sql, fullName + "-all-records-count").executeQuery(new SingleLongResultSetHandler());

@@ -68,7 +68,7 @@ public class JSONReporter extends StandardReporter {
       AnswerValue av = _baseAnswer;
       writer.object().key("response").object().key("recordset").object().key("id").value(
           av.getChecksum()).key("count").value(this.getResultSize()).key("type").value(
-              av.getQuestion().getRecordClass().getDisplayName()).key("records").array();
+              av.getAnswerSpec().getQuestion().getRecordClass().getDisplayName()).key("records").array();
 
       if (_tableCache != null) {
         _tableCache.open();

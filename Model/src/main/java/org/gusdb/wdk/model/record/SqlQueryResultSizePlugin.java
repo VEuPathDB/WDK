@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.user.StepContainer;
 
 public class SqlQueryResultSizePlugin implements ResultSize {
 
@@ -32,8 +33,9 @@ public class SqlQueryResultSizePlugin implements ResultSize {
   @Override
   public Integer getResultSize(AnswerValue answerValue, String idSql) throws WdkModelException {
 
-    QueryInstance<?> queryInstance = Query.makeQueryInstance(answerValue.getUser(),
-        QueryInstanceSpec.builder().put(WDK_ID_SQL_PARAM, idSql).buildRunnable(_query, null));
+    QueryInstance<?> queryInstance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+        .put(WDK_ID_SQL_PARAM, idSql)
+        .buildRunnable(answerValue.getUser(), _query, StepContainer.emptyContainer()));
     try (ResultList results = queryInstance.getResults()) {
       results.next();
       Integer count = ((BigDecimal) results.get(COUNT_COLUMN)).intValue();

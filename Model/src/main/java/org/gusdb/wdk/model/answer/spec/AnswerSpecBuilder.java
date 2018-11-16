@@ -8,6 +8,7 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.spec.FilterOption.FilterOptionBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
@@ -57,11 +58,12 @@ public class AnswerSpecBuilder {
     return this;
   }
 
-  public AnswerSpec build(User user, ValidationLevel level, StepContainer stepContainer) {
-    return new AnswerSpec(user, _wdkModel, _questionName, _queryInstanceSpec, _legacyFilterName, _filters, _viewFilters, level, stepContainer);
+  public AnswerSpec build(User user, ValidationLevel level, StepContainer stepContainer) throws WdkModelException {
+    return new AnswerSpec(user, _wdkModel, _questionName, _queryInstanceSpec,
+        _legacyFilterName, _filters, _viewFilters, level, stepContainer);
   }
 
-  public RunnableObj<AnswerSpec> buildRunnable(User user) {
+  public RunnableObj<AnswerSpec> buildRunnable(User user) throws WdkModelException {
     return ValidObjectFactory.getRunnable(build(user, ValidationLevel.RUNNABLE, StepContainer.emptyContainer()));
   }
 

@@ -187,7 +187,7 @@ public class ParamValuesFactory {
 
         // if no sanity default exists, use regular default
         if (defaultValue == null) {
-          defaultValue = param.getDefault();
+          defaultValue = param.getXmlDefault();
         }
 
         // throw if value cannot be populated, unless param is user_id

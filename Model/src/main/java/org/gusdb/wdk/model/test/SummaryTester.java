@@ -17,6 +17,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.gusdb.fgputil.runtime.GusHome;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -24,6 +25,8 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.ResultSizeFactory;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -127,8 +130,14 @@ public class SummaryTester {
         int nextStartRowIndex = Integer.parseInt(rows[i]);
         int nextEndRowIndex = Integer.parseInt(rows[i + 1]);
 
-        AnswerValue answerValue = question.makeAnswerValue(user, paramValues, nextStartRowIndex, nextEndRowIndex,
-            sortingMap, filter, true, 0);
+        RunnableObj<AnswerSpec> validSpec = AnswerSpec.builder(wdkModel)
+            .setQuestionName(question.getFullName())
+            .setParamValues(paramValues)
+            .setLegacyFilterName(filter.getName())
+            .buildRunnable(user);
+
+        AnswerValue answerValue = AnswerValueFactory.makeAnswer(
+            user, validSpec, nextStartRowIndex, nextEndRowIndex, sortingMap);
 
         // this is wrong. it only shows one attribute query, not
         // all. Fix this in Answer by saving a list of attribute
@@ -145,7 +154,7 @@ public class SummaryTester {
         ResultSizeFactory resultSizes = answerValue.getResultSizeFactory();
         System.out.println("Total # of records: " + resultSizes.getResultSize());
         System.out.println("Display Size: " + resultSizes.getDisplayResultSize());
-        ResultProperty rp = answerValue.getQuestion().getRecordClass().getResultPropertyPlugin();
+        ResultProperty rp = answerValue.getAnswerSpec().getQuestion().getRecordClass().getResultPropertyPlugin();
         /* temp for debugging */
         if (rp != null) {
           Integer missingTrans = rp.getPropertyValue(answerValue, "genesMissingTranscriptsCount");
@@ -202,11 +211,15 @@ public class SummaryTester {
   private static void writeSummaryAsXml(User user, Question question, Map<String, String> paramValues,
       String xmlFile, AnswerFilterInstance filter) throws WdkModelException, WdkUserException, IOException, JSONException {
 
+    RunnableObj<AnswerSpec> answerSpec = AnswerSpec.builder(question.getWdkModel())
+        .setQuestionName(question.getFullName())
+        .setParamValues(paramValues)
+        .setLegacyFilterName(filter.getName())
+        .buildRunnable(user);
     Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
-
-    AnswerValue answerValue = question.makeAnswerValue(user, paramValues, 1, 2, sortingMap, filter, true, 0);
+    AnswerValue answerValue = AnswerValueFactory.makeAnswer(user, answerSpec, 1, 2, sortingMap);
     int resultSize = answerValue.getResultSizeFactory().getResultSize();
-    answerValue = question.makeAnswerValue(user, paramValues, 1, resultSize, sortingMap, filter, false, 0);
+    answerValue = AnswerValueFactory.makeAnswer(user, answerSpec, 1, resultSize, sortingMap);
     FileWriter fw = new FileWriter(new File(xmlFile), false);
 
     String newline = System.getProperty("line.separator");
@@ -222,7 +235,7 @@ public class SummaryTester {
     fw.close();
   }
 
-  private static String getLowLevelQuery(AnswerValue answerValue) throws WdkModelException, WdkUserException {
+  private static String getLowLevelQuery(AnswerValue answerValue) throws WdkModelException {
     // QueryInstance instance = answer.getAttributesQueryInstance();
     QueryInstance<?> instance = answerValue.getIdsQueryInstance();
     String query = (instance instanceof SqlQueryInstance) ? ((SqlQueryInstance) instance).getUncachedSql()

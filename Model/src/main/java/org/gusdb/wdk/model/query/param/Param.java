@@ -15,13 +15,13 @@ import java.util.regex.Matcher;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
@@ -93,10 +93,11 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    * methods on contextParamValues.
    * 
    * @param contextParamValues partially validated stable value set- to be appended to
+   * @param level level of validation
    * @return proper param validity enum value
    * @throws WdkModelException if application error happens while trying to validate
    */
-  protected abstract ParamValidity validateValue(PartiallyValidatedStableValues contextParamValues)
+  protected abstract ParamValidity validateValue(PartiallyValidatedStableValues contextParamValues, ValidationLevel level)
       throws WdkModelException;
 
   /**
@@ -150,7 +151,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   private boolean _noTranslation = false;
 
   protected Question _contextQuestion;
-  protected Query _contextQuery;
+  protected ParameterContainer _container;
 
   private List<ParamHandlerReference> _handlerReferences;
   private ParamHandlerReference _handlerReference;
@@ -199,7 +200,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     if (param._handler != null)
       _handler = param._handler.clone(this);
     _contextQuestion = param._contextQuestion;
-    _contextQuery = param._contextQuery;
+    _container = param._container;
     _dependentParamsMap = new HashMap<String, Param>(param._dependentParamsMap);
     _dependentParams = new HashSet<Param>(param._dependentParams);
   }
@@ -510,7 +511,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
   }
 
-  public ParamValidity validate(PartiallyValidatedStableValues stableValues, FillStrategy fillStrategy)
+  public ParamValidity validate(PartiallyValidatedStableValues stableValues, ValidationLevel level, FillStrategy fillStrategy)
       throws WdkModelException {
 
     // check to see if this param has already been validated
@@ -521,7 +522,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     // validate any parent (depended) params
     boolean allParentsPassValidation = true;
     for (Param parent : getDependedParams()) {
-      parent.validate(stableValues, fillStrategy);
+      parent.validate(stableValues, level, fillStrategy);
       if (!stableValues.isParamValid(parent.getName())) {
         allParentsPassValidation = false;
         // continue to validate parents so caller has most complete information
@@ -553,7 +554,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     }
 
     // sub-classes will complete further validation
-    return validateValue(stableValues);
+    return validateValue(stableValues, level);
   }
 
   /**
@@ -593,12 +594,12 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     return _contextQuestion;
   }
 
-  public void setContextQuery(Query query) {
-    _contextQuery = query;
+  public void setContainer(ParameterContainer container) {
+    _container = container;
   }
 
-  public Query getContextQuery() {
-    return _contextQuery;
+  public ParameterContainer getContainer() {
+    return _container;
   }
 
   public void setHandler(ParamHandler handler) {

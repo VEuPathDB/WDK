@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.user.StepContainer;
 
 /**
  * For now only supports numeric property (count)
@@ -45,8 +46,9 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
           recordClassName + "' with illegal property name '" + propertyName +
           "'.  The allowed property name is '" + this._propertyName + "'");
 
-    QueryInstance<?> queryInstance = Query.makeQueryInstance(answerValue.getUser(),
-        QueryInstanceSpec.builder().put(WDK_ID_SQL_PARAM, answerValue.getIdSql()).buildRunnable(_query, null));
+    QueryInstance<?> queryInstance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+        .put(WDK_ID_SQL_PARAM, answerValue.getIdSql())
+        .buildRunnable(answerValue.getUser(), _query, StepContainer.emptyContainer()));
     try (ResultList results = queryInstance.getResults()) {
       results.next();
       Integer count = ((BigDecimal) results.get(PROPERTY_COLUMN)).intValue();

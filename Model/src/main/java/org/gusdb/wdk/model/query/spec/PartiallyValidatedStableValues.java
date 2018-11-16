@@ -1,21 +1,8 @@
 package org.gusdb.wdk.model.query.spec;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
-import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.param.AbstractDependentParam;
-import org.gusdb.wdk.model.query.param.DatasetParam;
-import org.gusdb.wdk.model.query.param.DependentParamInstance;
-import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 public class PartiallyValidatedStableValues extends HashMap<String,String> {
@@ -23,20 +10,29 @@ public class PartiallyValidatedStableValues extends HashMap<String,String> {
   private static final long serialVersionUID = 1L;
 
   public static class ParamValidity {
+
     private final boolean _isValid;
-    private ParamValidity(boolean isValid) {
+    private final String _errorMessage;
+
+    private ParamValidity(boolean isValid, String errorMessage) {
       _isValid = isValid;
+      _errorMessage = errorMessage;
     }
-    public boolean isValid() {
-      return _isValid;
-    }
+
+    public boolean isValid()   { return _isValid; }
+    public String getMessage() { return _errorMessage; }
   }
 
-  private final HashMap<String,Boolean> _validationStatusMap = new HashMap<>();
-  private final Map<String,String> _validationErrorMap = new HashMap<>();
+  private final User _user;
+  private final Map<String, ParamValidity> _validationStatusMap = new HashMap<>();
 
-  public PartiallyValidatedStableValues(QueryInstanceSpecBuilder specBuilder) {
-    // TODO Auto-generated constructor stub
+  public PartiallyValidatedStableValues(User user, Map<String,String> initialValues) {
+    _user = user;
+    putAll(initialValues);
+  }
+
+  public User getUser() {
+    return _user;
   }
 
   public boolean hasParamBeenValidated(String paramName) {
@@ -44,40 +40,27 @@ public class PartiallyValidatedStableValues extends HashMap<String,String> {
   }
 
   public boolean isParamValid(String paramName) {
-    return _validationStatusMap.containsKey(paramName) && _validationStatusMap.get(paramName);
+    return _validationStatusMap.containsKey(paramName) && _validationStatusMap.get(paramName).isValid();
   }
 
-  public boolean isValid() {
-    return _validationErrorMap.isEmpty();
+  public Map<String,ParamValidity> getValidationStatusMap() {
+    return _validationStatusMap;
   }
 
-  public Map<String,String> getValidationErrors() {
-    return _validationErrorMap;
-  }
-
-  /** returns true */
   public ParamValidity setValid(String paramName) {
-    _validationStatusMap.put(paramName, true);
-    return new ParamValidity(true);
+    ParamValidity validity = new ParamValidity(true, null);
+    _validationStatusMap.put(paramName, validity);
+    return validity;
   }
 
-  /** returns false */
   public ParamValidity setInvalid(String paramName, String reason) {
-    _validationStatusMap.put(paramName, false);
-    _validationErrorMap.put(paramName, reason);
-    return new ParamValidity(false);
+    ParamValidity validity = new ParamValidity(false, reason);
+    _validationStatusMap.put(paramName, validity);
+    return validity;
   }
+}
 
-  public ParamValidity getParamValidity(String paramName) {
-    return new ParamValidity(isParamValid(paramName));
-  }
-
-  @Override
-  public Map<String, String> getUnderlyingMap() {
-    return _values;
-  }
-  }
-
+/* RRD: Saving code below for review to make sure our bases are covered
 
 // TODO validate params using the passed query's params
 Map<String,Param> params = _query.getParamMap();
@@ -113,7 +96,7 @@ _validationBundle = ValidationBundle.builder(level).build();
  * @param contextParamValues
  * @throws WdkModelException
  * @throws WdkUserException
- */
+ *//*
 public void fillContextParamValues(User user, Map<String, String> contextParamValues)
     throws WdkModelException, WdkUserException {
   for (Param param : paramMap.values()) {
@@ -172,3 +155,33 @@ private void resolveParamValue(Param param, Map<String, String> stableValues) th
   stableValues.put(param.getName(), value);
 }
 }
+
+  protected Map<String,String> ensureRequiredContext(User user, Map<String, String> contextParamValues) {
+    if (contextParamValues == null) {
+      contextParamValues = new LinkedHashMap<>();
+    }
+    if (isDependentParam()) {
+      try {
+        // for each depended param, ensure it has a value in contextParamValues
+        for (Param dependedParam : getDependedParams()) {
+
+          String dependedParamVal = contextParamValues.get(dependedParam.getName());
+          if (dependedParamVal == null) {
+            dependedParamVal = (dependedParam instanceof AbstractEnumParam)
+                ? ((AbstractEnumParam) dependedParam).getDefault(user, contextParamValues)
+                : dependedParam.getDefault();
+            if (dependedParamVal == null)
+              throw new NoDependedValueException(
+                  "Attempt made to retrieve values of " + dependedParam.getName() + " in dependent param " +
+                      getName() + " without setting depended value.");
+            contextParamValues.put(dependedParam.getName(), dependedParamVal);
+          }
+        }
+      }
+      catch (Exception ex) {
+        throw new NoDependedValueException(ex);
+      }
+    }
+    return contextParamValues;
+  }
+*/

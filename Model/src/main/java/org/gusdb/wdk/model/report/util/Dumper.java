@@ -84,7 +84,7 @@ public class Dumper {
 
           // Get the reporter
           AnswerValue answer = AnswerValueFactory.makeAnswer(user, AnswerSpec.builder(wdkModel)
-              .setQuestionName(questionName).setParamValues(params).buildRunnable());
+              .setQuestionName(questionName).setParamValues(params).buildRunnable(user));
           Reporter reporter = ReporterFactory.getReporter(answer, reporterName, config);
 
           reporter.report(out);

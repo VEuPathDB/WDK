@@ -24,8 +24,6 @@ import org.gusdb.wdk.model.record.attribute.LinkAttributeField;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
-import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.User;
 
 public abstract class AbstractAttributePlugin implements AttributePlugin {
 
@@ -139,11 +137,10 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
 
     // format the display of the attribute in sql
     Map<String, String> queries = new LinkedHashMap<String, String>();
-    String column = formatColumn(step, attributeField, queries);
+    String column = formatColumn(answerValue, attributeField, queries);
 
-    RecordClass recordClass = step.getQuestion().getRecordClass();
+    RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
-    AnswerValue answerValue = getAnswerValue(step, step.getUser());
     String idSql = answerValue.getIdSql();
 
     // construct the select clause
@@ -183,19 +180,18 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
    *         primary key of a record instance.
    * @throws WdkUserException 
    */
-  protected Map<PrimaryKeyValue, Object> getAttributeValues(Step step)
+  protected Map<PrimaryKeyValue, Object> getAttributeValues(AnswerValue answer)
       throws WdkModelException, SQLException, WdkUserException {
-    WdkModel wdkModel = step.getRecordClass().getWdkModel();
     Map<PrimaryKeyValue, Object> values = new LinkedHashMap<>();
-    RecordClass recordClass = step.getQuestion().getRecordClass();
+    RecordClass recordClass = answer.getAnswerSpec().getQuestion().getRecordClass();
     PrimaryKeyDefinition pkDef = recordClass.getPrimaryKeyDefinition();
     String[] pkColumns = pkDef.getColumnRefs();
-    String sql = getAttributeSql(step);
-    DataSource dataSource = wdkModel.getAppDb().getDataSource();
+    String sql = getAttributeSql(answer);
+    DataSource dataSource = answer.getWdkModel().getAppDb().getDataSource();
     ResultSet resultSet = null;
     try {
       resultSet = SqlUtils.executeQuery(dataSource, sql,
-          step.getQuestion().getQuery().getFullName()
+          answer.getAnswerSpec().getQuestion().getQuery().getFullName()
               + "__attribute-plugin-combined", 5000);
       while (resultSet.next()) {
         Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
@@ -212,7 +208,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
     return values;
   }
 
-  private String formatColumn(Step step, AttributeField attribute,
+  private String formatColumn(AnswerValue answerValue, AttributeField attribute,
       Map<String, String> queries) throws WdkModelException {
 
     // if column attribute can be formatted directly (ColumnAttributeField subclasses)
@@ -247,12 +243,12 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
     // replace each attribute in the content
     StringBuilder builder = new StringBuilder("'");
     int pos = 0;
-    Map<String, AttributeField> fields = step.getQuestion().getAttributeFieldMap();
+    Map<String, AttributeField> fields = answerValue.getAnswerSpec().getQuestion().getAttributeFieldMap();
     Matcher matcher = DerivedAttributeField.MACRO_PATTERN.matcher(content);
     while (matcher.find()) {
       String fieldName = matcher.group(1);
       AttributeField field = fields.get(fieldName);
-      String fieldContent = formatColumn(step, field, queries);
+      String fieldContent = formatColumn(answerValue, field, queries);
 
       if (matcher.start() > pos)
         builder.append(content.substring(pos, matcher.start()));

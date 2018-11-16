@@ -6,10 +6,14 @@ import java.util.Map;
 import org.gusdb.fgputil.collection.ReadOnlyHashMap;
 import org.gusdb.fgputil.validation.ValidObjectFactory;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
@@ -36,7 +40,7 @@ public class QueryInstanceSpecBuilder extends ReadOnlyHashMap.Builder<String,Str
     super(new LinkedHashMap<>());
   }
 
-  public QueryInstanceSpecBuilder(QueryInstanceSpec spec) {
+  QueryInstanceSpecBuilder(QueryInstanceSpec spec) {
     super(new LinkedHashMap<>(spec.toMap()));
     _assignedWeight = spec.getAssignedWeight();
   }
@@ -59,9 +63,12 @@ public class QueryInstanceSpecBuilder extends ReadOnlyHashMap.Builder<String,Str
    * @param query query for this instance spec
    * @param stepContainer step container used to look up steps for answer params
    * @return
+   * @throws WdkModelException 
    */
-  public RunnableObj<QueryInstanceSpec> buildRunnable(User user, Query query, StepContainer stepContainer) {
-    return ValidObjectFactory.getRunnable(buildValidated(user, query, stepContainer, ValidationLevel.RUNNABLE, FillStrategy.NO_FILL));
+  public RunnableObj<QueryInstanceSpec> buildRunnable(User user, Query query, StepContainer stepContainer)
+      throws WdkModelException {
+    return ValidObjectFactory.getRunnable(buildValidated(
+        user, query, stepContainer, ValidationLevel.RUNNABLE, FillStrategy.NO_FILL));
   }
 
   /**
@@ -74,20 +81,25 @@ public class QueryInstanceSpecBuilder extends ReadOnlyHashMap.Builder<String,Str
    * @param validationLevel a level to validate the spec against
    * @param fillStrategy whether to fill in missing param values with defaults
    * @return a built spec
+   * @throws WdkModelException if unable to validate (e.g. DB query fails or other runtime exception)
    */
   public QueryInstanceSpec buildValidated(User user, Query query, StepContainer stepContainer,
-      ValidationLevel validationLevel, FillStrategy fillStrategy) {
+      ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
     // add user_id to the param values if needed
     String userKey = Utilities.PARAM_USER_ID;
     if (query.getParamMap().containsKey(userKey) && !containsKey(userKey)) {
       put(userKey, Long.toString(user.getUserId()));
     }
 
-    PartiallyValidatedStableValues tmpValues = new PartiallyValidatedStableValues(this);
+    PartiallyValidatedStableValues stableValues = new PartiallyValidatedStableValues(user, toMap());
+    ValidationBundleBuilder validation = ValidationBundle.builder(validationLevel);
     for (Param param : query.getParams()) {
-      param.validate(tmpValues, fillStrategy);
+      ParamValidity result = param.validate(stableValues, validationLevel, fillStrategy);
+      if (!result.isValid()) {
+        validation.addError(param.getName(), result.getMessage());
+      }
     }
-    return new QueryInstanceSpec(toMap(), _assignedWeight, query, level, stepContainer);
+    return new QueryInstanceSpec(user, query, stableValues, _assignedWeight, validation.build(), stepContainer);
   }
 
   /**

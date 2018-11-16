@@ -8,7 +8,6 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
 
@@ -37,7 +36,7 @@ public abstract class AbstractReporter implements Reporter {
     return FormatUtil.prettyPrint(_properties, Style.MULTI_LINE);
   }
 
-  protected int getResultSize() throws WdkModelException, WdkUserException {
+  protected int getResultSize() throws WdkModelException {
     return _baseAnswer.getResultSizeFactory().getResultSize();
   }
 

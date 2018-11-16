@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -128,35 +127,6 @@ public abstract class AbstractDependentParam extends Param {
   // ///////////////////////////////////////////////////////////////////
   // /////////// Protected properties ////////////////////////////////////
   // ///////////////////////////////////////////////////////////////////
-
-  protected Map<String,String> ensureRequiredContext(User user, Map<String, String> contextParamValues) {
-    if (contextParamValues == null) {
-      contextParamValues = new LinkedHashMap<>();
-    }
-    if (isDependentParam()) {
-      try {
-        // for each depended param, ensure it has a value in contextParamValues
-        for (Param dependedParam : getDependedParams()) {
-
-          String dependedParamVal = contextParamValues.get(dependedParam.getName());
-          if (dependedParamVal == null) {
-            dependedParamVal = (dependedParam instanceof AbstractEnumParam)
-                ? ((AbstractEnumParam) dependedParam).getDefault(user, contextParamValues)
-                : dependedParam.getDefault();
-            if (dependedParamVal == null)
-              throw new NoDependedValueException(
-                  "Attempt made to retrieve values of " + dependedParam.getName() + " in dependent param " +
-                      getName() + " without setting depended value.");
-            contextParamValues.put(dependedParam.getName(), dependedParamVal);
-          }
-        }
-      }
-      catch (Exception ex) {
-        throw new NoDependedValueException(ex);
-      }
-    }
-    return contextParamValues;
-  }
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
