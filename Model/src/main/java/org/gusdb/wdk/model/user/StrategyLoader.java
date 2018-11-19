@@ -6,6 +6,7 @@ import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.db.SqlUtils.fetchNullableBoolean;
 import static org.gusdb.fgputil.db.SqlUtils.fetchNullableInteger;
 import static org.gusdb.fgputil.db.SqlUtils.fetchNullableLong;
+import static org.gusdb.fgputil.functional.Functions.fSwallow;
 import static org.gusdb.fgputil.functional.Functions.filter;
 import static org.gusdb.fgputil.functional.Functions.getMapFromList;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ANSWER_FILTER;
@@ -211,18 +212,18 @@ public class StrategyLoader {
           }
         }
       });
+      // all data loaded; build steps and strats at the specified validation level
+      UserCache userCache = new UserCache(_userFactory);
+      List<Strategy> builtStrategies = Functions.mapToList(strategies,
+          builder -> builder.build(userCache, _validationLevel));
+      // only build orphan steps; attached steps will be built by their strategy
+      List<Step> builtOrphanSteps = Functions.mapToList(orphanSteps,
+          fSwallow(builder -> builder.build(userCache, _validationLevel, null)));
+      return new SearchResult(builtStrategies, builtOrphanSteps);
     }
     catch (Exception e) {
       return WdkModelException.unwrap(e, SearchResult.class);
     }
-    // all data loaded; build steps and strats at the specified validation level
-    UserCache userCache = new UserCache(_userFactory);
-    List<Strategy> builtStrategies = Functions.mapToList(strategies,
-        builder -> builder.build(userCache, _validationLevel));
-    // only build orphan steps; attached steps will be built by their strategy
-    List<Step> builtOrphanSteps = Functions.mapToList(orphanSteps,
-        builder -> builder.build(userCache, _validationLevel, null));
-    return new SearchResult(builtStrategies, builtOrphanSteps);
   }
 
   private StrategyBuilder readStrategy(ResultSet rs) throws SQLException {

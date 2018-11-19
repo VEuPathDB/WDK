@@ -33,8 +33,8 @@ public class RecordRequest {
    * @param json request json in the format above
    * @return object representing request
    * @throws RequestMisformatException
- * @throws DataValidationException 
- * @throws WdkModelException 
+   * @throws DataValidationException 
+   * @throws WdkModelException 
    */
   public static RecordRequest createFromJson(RecordClass recordClass, JSONObject json)
       throws RequestMisformatException, WdkModelException, DataValidationException {

@@ -82,6 +82,9 @@ public class StepFactoryHelpers {
     public User get(Object id) {
       try {
         Long userId = (Long)id;
+        if (userId == null) {
+          throw new WdkRuntimeException("User ID cannot be null.");
+        }
         if (!containsKey(userId)) {
           if (_userFactory != null) {
             put(userId, _userFactory.getUserById(userId));

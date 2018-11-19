@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.collection.ReadOnlyHashMap.Builder;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -159,6 +160,11 @@ public class Strategy implements StrategyElement, StepContainer {
 
     public StrategyBuilder addStep(StepBuilder step) {
       _stepMap.put(step.getStepId(), step);
+      return this;
+    }
+
+    public StrategyBuilder addSteps(Collection<StepBuilder> steps) {
+      _stepMap.putAll(Functions.getMapFromList(steps, step -> new TwoTuple<>(step.getStepId(), step)));
       return this;
     }
 

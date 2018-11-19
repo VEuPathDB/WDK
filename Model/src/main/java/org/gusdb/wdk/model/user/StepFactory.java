@@ -4,7 +4,9 @@ import static org.gusdb.fgputil.db.SqlUtils.setNullableLong;
 import static org.gusdb.fgputil.db.SqlUtils.setNullableString;
 import static org.gusdb.fgputil.functional.Functions.f2Swallow;
 import static org.gusdb.fgputil.functional.Functions.filter;
+import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
 import static org.gusdb.fgputil.functional.Functions.getMapFromList;
+import static org.gusdb.wdk.model.user.StepContainer.withId;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ANSWER_FILTER;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ASSIGNED_WEIGHT;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_COLLAPSED_NAME;
@@ -49,15 +51,19 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -71,6 +77,7 @@ import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunctionWithException;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -99,6 +106,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.NameCheckInfo;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
+import org.gusdb.wdk.model.user.Strategy.StrategyBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -659,28 +667,6 @@ public class StepFactory {
   }
 
   /**
-   * Make a copy of the strategy, and if the original strategy's name is not ended with ", Copy of", then that
-   * suffix will be appended to it. The copy will be unsaved.
-   * 
-   * The steps of the strategy will be cloned, and an id map will be filled during the cloning.
-   * 
-   * @param strategy
-   * @param stepIdMap
-   *          the mapping from ids of old steps to those of newly cloned ones will be put into this provided
-   *          map.
-   * @return
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public Strategy copyStrategy_old(Strategy strategy, Map<Long, Long> stepIdMap) throws WdkModelException,
-      WdkUserException {
-    String name = strategy.getName();
-    if (!name.toLowerCase().endsWith(", copy of"))
-      name += ", Copy of";
-    return copyStrategy(strategy.getUser(), strategy, stepIdMap, name);
-  }
-
-  /**
    * 
    * @param user
    * @param oldStrategy
@@ -694,72 +680,94 @@ public class StepFactory {
   public Strategy copyStrategy(User user, Strategy oldStrategy, Map<Long, Long> stepIdsMap, String baseName)
       throws WdkModelException, WdkUserException {
 
-    // get a new strategy id
-    long newStrategyId = getNewStrategyId();
-
-    Step latestStep = copyStepTree(user, newStrategyId, oldStrategy.getRootStep(), stepIdsMap);
-
+    WdkModel wdkModel = user.getWdkModel();
+    long strategyId = getNewStrategyId();
+    String projectId = oldStrategy.getProjectId();
     String name = addSuffixToStratNameIfNeeded(user, baseName, false);
+    String signature = getStrategySignature(projectId, user.getUserId(), strategyId);
+    Map<Long, StepBuilder> newStepMap = copyStepTree(user, oldStrategy.getRootStep()).toMap();
 
-    return createStrategy(user, newStrategyId, latestStep, name, null, false, oldStrategy.getDescription(),
-        false, false);
-  }
+    // construct the new strategy
+    Strategy newStrategy = Strategy
+        .builder(wdkModel, user.getUserId(), strategyId)
+        .setCreatedTime(new Date())
+        .setDeleted(false)
+        .setDescription(oldStrategy.getDescription())
+        .setIsPublic(false)
+        .setLastModifiedTime(null)
+        .setLastRunTime(null)
+        .setName(name)
+        .setProjectId(projectId)
+        .setSaved(false)
+        .setSavedName(null)
+        .setSignature(signature)
+        .setVersion(wdkModel.getVersion())
+        .addSteps(newStepMap.values())
+        .build(new UserCache(user), ValidationLevel.RUNNABLE);
 
-  public Step copyStepTree(User newUser, long newStrategyId, Step oldStep, Map<Long, Long> stepIdsMap)
-      throws WdkModelException {
+    // persist new strategy and all steps to the DB
+    insertStrategy(newStrategy);
 
-    StepBuilder newStep = Step.builder(oldStep, this.getNewStepId());
-    AnswerSpecBuilder answerSpec = newStep.getAnswerSpec();
-
-    // recursively copy AnswerParams (aka child steps)
-    // also copy Datasetparams (we want a fresh copy per step because we don't track what steps are using a dataset param.  A 1-1 is easiest to manage)
-    copyAnswerAndDatasetParams(paramValues, newUser, newStrategyId, oldStep, stepIdsMap);
-
-    Step newStep = StepUtilities.createStep(newUser, newStrategyId, oldStep.getQuestion(), paramValues, oldStep.getFilter(),
-        oldStep.isDeleted(), false, oldStep.getAssignedWeight(), oldStep.getFilterOptions());
-
-    // copy step properties
-    newStep.setCollapsedName(oldStep.getCollapsedName());
-    newStep.setCollapsible(oldStep.isCollapsible());
-    newStep.setCustomName(oldStep.getBaseCustomName());
-    
-    // update properties on disk
-    newStep.update(false);
-    
-    stepIdsMap.put(oldStep.getStepId(), newStep.getStepId());
-    
-    Events.triggerAndWait(new StepCopiedEvent(oldStep, newStep), new WdkModelException(
-        "Unable to execute all operations subsequent to step copy."));
-
-    return newStep;
-  }
-  
-  private void copyAnswerAndDatasetParams(Map<String, String> paramValues, User newUser, long newStrategyId,
-      Step oldStep, Map<Long, Long> stepIdsMap) throws WdkModelException {
-    for (String paramName : paramValues.keySet()) {
-      Param param = oldStep.getQuestion().getParamMap().get(paramName);
-      String paramValue = paramValues.get(paramName);
-
-      if (param instanceof AnswerParam)
-        paramValues.put(paramName,
-            copyAnswerParam(newUser, newStrategyId, paramValue, oldStep.getUser(), stepIdsMap));
-
-      else if (param instanceof DatasetParam)
-        paramValues.put(paramName, copyDatasetParam(newUser, paramValue, oldStep.getUser()));
+    // trigger copy events on all steps
+    for (Entry<Long,Long> stepMapping : stepIdsMap.entrySet()) {
+      Events.triggerAndWait(new StepCopiedEvent(
+          // using get() here because we know these steps exist
+          oldStrategy.findFirstStep(withId(stepMapping.getKey())).get(),
+          newStrategy.findFirstStep(withId(stepMapping.getValue())).get()),
+          new WdkModelException("Unable to execute all operations subsequent to step copy."));
     }
+
+    // populate stepIdsMap with mapping from oldId -> newId
+    stepIdsMap.putAll(getMapFromKeys(newStepMap.keySet(), oldId -> newStepMap.get(oldId).getStepId()));
+
+    return newStrategy;
   }
 
-  private String copyAnswerParam(User newUser, long newStrategyId, String paramValue, User oldUser, Map<Long, Long> stepIdsMap) throws WdkModelException {
-    int oldStepId = Integer.parseInt(paramValue);
-    Step oldChildStep = StepUtilities.getStep(oldUser, oldStepId);
-    Step newChildStep = copyStepTree(newUser, newStrategyId, oldChildStep, stepIdsMap);
-    return Long.toString(newChildStep.getStepId());
+  public MapBuilder<Long, StepBuilder> copyStepTree(User newUser, Step oldStep) throws WdkModelException {
+
+    StepBuilder newStep = Step.builder(oldStep)
+        .setStepId(getNewStepId())
+        .setUserId(newUser.getUserId())
+        .setStrategyId(null);
+
+    // recursively copy AnswerParams (aka child steps) and DatasetParams
+    //   (we want a fresh copy per step because we don't track which steps are using a dataset param)
+    MapBuilder<Long,StepBuilder> childSteps = copyAnswerAndDatasetParams(
+        oldStep.getUser(), oldStep.getAnswerSpec(), newUser, newStep.getAnswerSpec());
+
+    return childSteps.put(oldStep.getStepId(), newStep);
   }
-  
-  private String copyDatasetParam(User newUser, String paramValue, User oldUser) throws WdkModelException {
+
+  private MapBuilder<Long, StepBuilder> copyAnswerAndDatasetParams(User oldUser, AnswerSpec oldSpec, User newUser, 
+      AnswerSpecBuilder newSpec) throws WdkModelException {
+    MapBuilder<Long,StepBuilder> newStepMap = new MapBuilder<>();
+    for (Param param : oldSpec.getQuestion().getParams()) {
+      String oldStableValue = oldSpec.getQueryInstanceSpec().get(param.getName());
+      String replacementValue =
+          param instanceof AnswerParam ?
+              cloneAnswerParam(oldSpec, oldStableValue, newUser, newStepMap) :
+          param instanceof DatasetParam ?
+              cloneDatasetParam(oldUser, oldStableValue, newUser) :
+          // otherwise use original value
+              oldStableValue;
+      newSpec.setParamValue(param.getName(), replacementValue);
+    }
+    return newStepMap;
+  }
+
+  private String cloneAnswerParam(AnswerSpec oldSpec, String oldStableValue, User newUser,
+      MapBuilder<Long, StepBuilder> stepIdsMap) throws WdkModelException {
+    Step oldStepValue = oldSpec.getStepContainer()
+        .findFirstStep(withId(Long.parseLong(oldStableValue)))
+        .orElseThrow(() -> new WdkModelException("Step container cannot find expected step."));
+    stepIdsMap.putAll(copyStepTree(newUser, oldStepValue).toMap());
+    return Long.toString(stepIdsMap.get(oldStepValue.getStepId()).getStepId());
+  }
+
+  private String cloneDatasetParam(User oldUser, String oldStableValue, User newUser) throws WdkModelException {
+    long oldDatasetId = Long.parseLong(oldStableValue);
     DatasetFactory datasetFactory = _wdkModel.getDatasetFactory();
-    int oldUserDatasetId = Integer.parseInt(paramValue);
-    Dataset oldDataset = datasetFactory.getDataset(oldUser, oldUserDatasetId);
+    Dataset oldDataset = datasetFactory.getDataset(oldUser, oldDatasetId);
     Dataset newDataset = datasetFactory.cloneDataset(oldDataset, newUser);
     return Long.toString(newDataset.getDatasetId());
   }
