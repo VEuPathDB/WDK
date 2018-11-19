@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.dataset;
 
 import java.util.Date;

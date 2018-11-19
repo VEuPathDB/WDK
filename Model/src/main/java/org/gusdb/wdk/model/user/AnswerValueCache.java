@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
@@ -22,7 +23,7 @@ public class AnswerValueCache {
   private static final Logger LOG = Logger.getLogger(AnswerValueCache.class);
 
   // Step object this cache is for
-  private final Step _step;
+  private final RunnableObj<Step> _step;
 
   // record range for this page
   private int[] _range;
@@ -34,7 +35,7 @@ public class AnswerValueCache {
   //    (may be different than answerValue IFF viewOnlyFilters are present)
   private TwoTuple<AnswerValue, AnswerValue> _viewAnswerValues = new TwoTuple<>(null, null);
 
-  public AnswerValueCache(Step step) {
+  public AnswerValueCache(RunnableObj<Step> step) {
     _step = step;
   }
 
@@ -60,7 +61,7 @@ public class AnswerValueCache {
 
   public AnswerValue getViewAnswerValue(boolean validate)
       throws WdkModelException {
-    if (_step.getAnswerSpec().getViewFilterOptions().getSize() == 0) {
+    if (_step.getObject().getAnswerSpec().getViewFilterOptions().getSize() == 0) {
       return getAnswerValue(validate);
     }
     _viewAnswerValues = getAnswerValuePair(_viewAnswerValues, validate, true);
@@ -93,7 +94,7 @@ public class AnswerValueCache {
   private int[] getRange() {
     if (_range == null) {
       // expandStep script generates step in memory with step_id 0 and user_id 0
-      _range = _step.getStepId() == 0 ? new int[]{1, 20} : getDefaultPageRange(_step.getUser());
+      _range = _step.getObject().getStepId() == 0 ? new int[]{1, 20} : getDefaultPageRange(_step.getObject().getUser());
     }
     return _range;
   }
@@ -102,8 +103,9 @@ public class AnswerValueCache {
     return new int[]{ 1, user.getPreferences().getItemsPerPage() };
   }
 
-  private static AnswerValue makeAnswerValue(Step step, int[] range, boolean validate, boolean applyViewFilters)
+  private static AnswerValue makeAnswerValue(RunnableObj<Step> runnableStep, int[] range, boolean validate, boolean applyViewFilters)
       throws WdkModelException {
+    Step step = runnableStep.getObject();
     Question question = step.getAnswerSpec().getQuestion();
     User user = step.getUser();
     Map<String, Boolean> sortingMap = user.getPreferences().getSortingAttributes(
@@ -112,7 +114,8 @@ public class AnswerValueCache {
     if (!applyViewFilters) {
       answerSpec.setViewFilterOptions(FilterOptionList.builder()); // clear any view filters
     }
-    AnswerValue answerValue = AnswerValueFactory.makeAnswer(user, answerSpec.buildRunnable(), range[0], range[1], sortingMap);
+    AnswerValue answerValue = AnswerValueFactory.makeAnswer(user,
+        answerSpec.buildRunnable(user, step.getContainer()), range[0], range[1], sortingMap);
     try {
       int displayResultSize = answerValue.getResultSizeFactory().getDisplayResultSize();
       if (!applyViewFilters) {
@@ -122,10 +125,6 @@ public class AnswerValueCache {
       }
     }
     catch (WdkModelException ex) {
-     /* if(step.isValid()) {
-          LOG.info("invalidating a step based on invalid param values, step: " + step.getStepId() + " question: " + step.getQuestionName());
-          step.invalidateStep();
-      } */
       // if validate is false, the error will be ignored to allow the process to continue.
       if (validate)
         throw ex;

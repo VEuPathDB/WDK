@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.user;
 
+import static org.gusdb.wdk.model.user.StepContainer.withId;
+
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -146,13 +148,18 @@ class ActiveStrategyFactory {
         long strategyId = Long.parseLong(strategyKey.substring(0, pos));
         long stepId = Long.parseLong(strategyKey.substring(pos + 1));
         Strategy strategy = getStrategy(strategyId);
-        Step parent = strategy.getStepById(stepId).getParentStep();
+        Step parent = strategy
+            .findFirstStep(withId(stepId))
+            .orElseThrow(() -> new WdkModelException("Cannot find step with ID " + stepId))
+            .getParentStep()
+            .orElseThrow(() -> new WdkModelException("Step " + stepId + " does not have a parent (is a root step)."));
         while (parent.getNextStep() != null) {
             parent = parent.getNextStep();
         }
         // check if the parent is top level
-        if (parent.getParentStep() == null) return Long.toString(strategyId);
-        else return strategyId + "_" + parent.getStepId();
+        return parent.getParentStep() == null ?
+            Long.toString(strategyId) :
+            strategyId + "_" + parent.getStepId();
     }
 
     private Strategy getStrategy(long strategyId) throws WdkModelException, WdkUserException {
@@ -180,15 +187,13 @@ class ActiveStrategyFactory {
             Long newId = stepMap.get(oldId);
             logger.debug("convert step " + oldId + "->" + newId);
             if (newId == null) {
-                Step step;
-                try {
-                    step = strategy.getStepById(oldId);
-                    if (step == null) throw new WdkModelException();
-                    newId = oldId;
-                } catch (Exception ex) { // step no longer exist
-                    logger.debug("step #" + oldId + " has been deleted");
-                    continue; // skip this branch
+                Step step = strategy.findFirstStep(withId(oldId)).orElse(null);
+                if (step == null) {
+                  // step no longer exist
+                  logger.debug("step #" + oldId + " has been deleted");
+                  continue; // skip this branch
                 }
+                newId = oldId;
             }
             String newKey = newStrategy._strategyId + "_" + newId;
             ActiveStrategy newChild = new ActiveStrategy(newKey);
@@ -233,8 +238,8 @@ class ActiveStrategyFactory {
         try {
             ActiveStrategy activeStrategy = getStrategy(_viewStrategyKey);
             Strategy strategy = getStrategy(activeStrategy._strategyId);
-            Step step = strategy.getStepById(_viewStepId);
-        if (step == null) _viewStepId = strategy.getRootStepId();
+            Step step = strategy.findFirstStep(withId(_viewStepId)).orElse(null);
+            if (step == null) _viewStepId = strategy.getRootStepId();
         } catch (Exception ex) {
             return 0;
         }
