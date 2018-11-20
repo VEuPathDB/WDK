@@ -43,7 +43,6 @@ public class FavoriteRequests {
     public NoteAndGroup getNoteAndGroup() { return getSecond(); }
   }
 
-  @SuppressWarnings("serial")
   public static class FavoriteActions extends PatchMap<Long> {
 
     private static final List<String> ACTION_TYPES = Arrays.asList(DELETE, UNDELETE);

@@ -42,6 +42,7 @@ public abstract class DerivedAttributeField extends AttributeField {
    * @param container
    *          the container to set
    */
+  @Override
   public void setContainer(AttributeFieldContainer container) {
     _container = container;
   }

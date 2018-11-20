@@ -26,6 +26,7 @@ public class ModelConfig implements OAuthConfig {
 
   public enum AuthenticationMethod implements NamedObject {
     USER_DB, OAUTH2;
+    @Override
     public String getName() {
       return name();
     }
