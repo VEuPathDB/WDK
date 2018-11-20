@@ -100,7 +100,6 @@ public class FilterOption {
   // FIXME: this is a total hack to support the JSP calling
   //   getDisplayValue(AnswerValue) with an argument.  It should be removed
   //   once we move filter displays from JSP to the new service architecture.
-  @SuppressWarnings("serial")
   public Map<AnswerValueBean, String> getDisplayValueMap() {
     return new HashMap<AnswerValueBean, String>() {
       @Override
