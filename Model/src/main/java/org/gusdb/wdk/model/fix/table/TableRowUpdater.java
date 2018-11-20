@@ -296,7 +296,6 @@ public class TableRowUpdater<T extends TableRow> {
    *  Static helper inner classes 
    **%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-  @SuppressWarnings("serial")
   private static class ThreadCollection<T extends TableRow> extends ArrayList<RowHandler<T>> {
     public boolean allThreadsFinished() {
       for (RowHandler<T> thread : this) {
@@ -314,7 +313,6 @@ public class TableRowUpdater<T extends TableRow> {
    * 
    * @param <T> type of objects stored in this queue
    */
-  @SuppressWarnings("serial")
   private static class RecordQueue<T> extends ConcurrentLinkedDeque<T> {
     public void pushRecord(T row) {
       add(row);

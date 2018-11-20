@@ -228,15 +228,13 @@ public class MBeanRegistration {
 
     return contextName;
   }
-  
-  @SuppressWarnings("serial")
+
   private static class ContextResolutionException extends Exception {
     public ContextResolutionException(String message, Exception cause) {
       super(message, cause);
     }
   }
 
-  @SuppressWarnings("serial")
   private static class HostnameResolutionException extends Exception {
     public HostnameResolutionException(String message, Exception cause) {
       super(message, cause);
