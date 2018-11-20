@@ -46,8 +46,8 @@ import org.json.JSONObject;
  *       see AnswerRequestFactory for details
  *   },
  *   formatting: {
- *     format: String,   (reporter internal name. optional.  if not provided, use WDK standard JSON)
- *     formatConfig: Any (sample for JSON, XML, etc. below)
+ *     format: String, (reporter internal name, required)
+ *     formatConfig: Object (sample for JSON, XML, etc. below)
  *   }
  * }
  * </pre>

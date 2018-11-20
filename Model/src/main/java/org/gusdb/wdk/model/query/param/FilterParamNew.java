@@ -819,6 +819,46 @@ public class FilterParamNew extends AbstractDependentParam {
   String getFilteredFilterItemIdsSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String idColumn, String defaultFilterClause)
       throws WdkModelException {
 
+     try {
+       // get sql that selects the full set of distinct internals from the metadata query
+       String metadataSql;
+       QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
+       metadataSql = instance.getSql();
+       String metadataTableName = "md";
+       String filterSelectSql = "SELECT distinct " + metadataTableName + "." + idColumn + " FROM (" + metadataSql + ") " + metadataTableName;
+       
+       return getFilteredIdsSql(user, stableValue, contextParamValues, metadataTableName, filterSelectSql, defaultFilterClause);
+     }
+     catch (JSONException | WdkUserException ex) {
+       throw new WdkModelException(ex);
+     }
+   }
+   
+    /*
+     * Apply provided filters to metadata sql, returning all three value columns
+     */
+    String getFilteredMetadataSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String defaultFilterClause)
+        throws WdkModelException {
+
+      try {
+        // get sql that selects the full set of distinct internals from the metadata query
+        String metadataSql;
+        QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
+        metadataSql = instance.getSql();
+        String metadataTableName = "md";
+        String selectCols = String.join(", md.", _metadataValueColumns);
+        String filterSelectSql = "SELECT md." + selectCols + " FROM (" + metadataSql + ") " + metadataTableName;           
+        return getFilteredIdsSql(user, stableValue, contextParamValues, metadataTableName, filterSelectSql, defaultFilterClause);
+     }
+      catch (JSONException | WdkUserException ex) {
+        throw new WdkModelException(ex);
+      }
+    } 
+    
+    private String getFilteredIdsSql(User user, FilterParamNewStableValue stableValue,
+        Map<String, String> contextParamValues, String metadataTableAbbrev, String filterSelectSql, String defaultFilterClause)
+      throws WdkModelException {
+
     try {
       // get sql that selects the full set of distinct internals from the metadata query
       QueryInstance<?> instance = makeQueryInstanceFromPreValidatedParams(user, metadataQuery, contextParamValues);

@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkModel;
@@ -23,9 +22,6 @@ import org.gusdb.wdk.model.user.UserFactory;
  * @author rdoherty
  */
 public class UserDatasetInfo {
-
-  @SuppressWarnings("unused")
-  private static Logger LOG = Logger.getLogger(UserDatasetInfo.class);
 
   private final WdkModel _wdkModel;
   private final UserDataset _userDataset;
