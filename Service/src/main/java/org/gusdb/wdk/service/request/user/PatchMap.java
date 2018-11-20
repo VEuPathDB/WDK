@@ -34,7 +34,6 @@ import org.json.JSONObject;
  *
  * @param <T> type of IDs parsed by this PatchMap
  */
-@SuppressWarnings("serial")
 public class PatchMap<T> extends HashMap<String,List<T>> {
 
   private final List<String> _validActions;

@@ -704,7 +704,6 @@ public class UserBean {
     _user.getPreferences().setCurrentRecordView(recordClass.recordClass, recordView);
   }
 
-  @SuppressWarnings("serial")
   private static <T> Map<String, T> exposeAsMap(FunctionWithException<String,T> getter) {
     return new HashMap<String, T>() {
       @Override

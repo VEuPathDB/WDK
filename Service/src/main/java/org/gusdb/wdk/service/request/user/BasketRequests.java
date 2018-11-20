@@ -15,7 +15,6 @@ import org.json.JSONObject;
 
 public class BasketRequests {
 
-  @SuppressWarnings("serial")
   public static class BasketActions extends PatchMap<PrimaryKeyValue> {
 
     private static final List<String> ACTION_TYPES = Arrays.asList(ADD, REMOVE);
