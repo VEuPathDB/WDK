@@ -2,21 +2,177 @@
 
 post:
   description: >
-    create new step, provide question values (question name, params); returns
+    Create new step, provide question values (question name, params); returns
     a step id; use this for boolean too
+  queryParameters:
+    runStep:
+      description: Whether or not this step should be run immediately
+      type: boolean
+      required: false
+      default: false
+  body:
+    application/json:
+  responses:
+    200:
+      body:
+        application/json:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              description: ID of the created step
 
 /{step-id}:
   uriParameters:
     step-id:
       type: integer
+      format: int64
+
   delete:
-    description: delete
+    description: Delete step
+    responses:
+      204:
+        description: Success
+
   get:
-    description: custom name, collapsible, collapsed
+    description: Get step details by step ID
+    responses:
+      200:
+        description: Success
+        body:
+          application/json:
+            type: object
+            properties:
+              id:
+                type: integer
+                format: int64
+              displayName:
+                type: string
+              shortDisplayName:
+                type: string
+              customName:
+                type: string
+              baseCustomName:
+                type: string
+              isCollapsible:
+                type: boolean
+              collapsedName:
+                type: string
+              description:
+                type: string
+              ownerId:
+                type: integer
+                format: int64
+              strategyId:
+                type: integer
+                format: int64
+              estimatedSize:
+                type: integer
+                format: int64
+              hasCompleteStepAnalysis:
+                type: boolean
+              recordClass:
+                type: string
+              answerSpecComplete:
+                type: boolean
+              answerSpec:
+                type: object
+                properties:
+                  questionName:
+                  parameters:
+                  filters:
+                    type: array
+                  viewFilters:
+                    type: array
+                  wdkWeight:
+                  legacyFilterName:
+                    type: string
+                    required: false
+              isValid:
+                type: boolean
+              invalidReason:
+                type: string
+              createdTime:
+                type: string
+              lastRunTime:
+                type: string
+
   patch:
-    description: rename, sort, revise, nest
+    description: Update step
+    body:
+      application/json:
+    responses:
+      200:
+        body:
+          application/json:
+            type: object
+            properties:
+              id:
+                type: integer
+                format: int64
+              displayName:
+                type: string
+              shortDisplayName:
+                type: string
+              customName:
+                type: string
+              baseCustomName:
+                type: string
+              isCollapsible:
+                type: boolean
+              collapsedName:
+                type: string
+              description:
+                type: string
+              ownerId:
+                type: integer
+                format: int64
+              strategyId:
+                type: integer
+                format: int64
+              estimatedSize:
+                type: integer
+                format: int64
+              hasCompleteStepAnalysis:
+                type: boolean
+              recordClass:
+                type: string
+              answerSpecComplete:
+                type: boolean
+              answerSpec:
+                type: object
+                properties:
+                  questionName:
+                  parameters:
+                  filters:
+                    type: array
+                  viewFilters:
+                    type: array
+                  wdkWeight:
+                  legacyFilterName:
+                    type: string
+                    required: false
+              isValid:
+                type: boolean
+              invalidReason:
+                type: string
+              createdTime:
+                type: string
+              lastRunTime:
+                type: string
+
+  /answer:
+    get:
+      responses:
+        200:
+          description: Success
 
   /count:
+    get:
+      responses:
+        200:
+          description: ???
 
   /filter:
     get:
@@ -30,10 +186,11 @@ post:
         description: add or update a filter on this step
 
   /params:
+    description: ???
     get:
-
-  /answer:
-    get:
+      responses:
+        200:
+          description: Success
 
   /analyses:
     get:
@@ -137,7 +294,6 @@ post:
                 body:
                   application/json:
                     type: !include ../../../../../src/main/resources/schema/wdk/users/steps/analyses/result/status/get-response.json
-                    description: |
 
   /analysis-types:
     get:
