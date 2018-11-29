@@ -1,10 +1,59 @@
 # User Strategy API
 
 description: TBD
+get:
+  responses:
+    200:
+      body:
+        application/json:
+          type: array
+          items:
+            type: object
+            properties:
+              strategyId:
+                type: integer
+                format: int64
+              description:
+                type: string
+              name:
+                type: string
+              author:
+                type: string
+              latestStepId:
+                type: string
+              recordClassName:
+                type: string
+              signature:
+                type: string
+              lastModified:
+                type: string
+              isPublic:
+                type: boolean
+              isSaved:
+                type: boolean
+              isValid:
+                type: boolean
+              isDeleted:
+                type: boolean
+              organization:
+                type: string
+              estimatedSize:
+                type: integer
+post:
+  responses:
+    200:
+      body:
+        application/json:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+
 
 /{class}:
-  uriParameters: 
-    class: 
+  uriParameters:
+    class:
       type: string
   get:
     description: >
@@ -16,5 +65,10 @@ description: TBD
       filterlist:
 
 /{strategy-id}:
+  get:
+    responses:
+      200:
+        body:
+          application/json:
   patch:
     description: TBD open, close
