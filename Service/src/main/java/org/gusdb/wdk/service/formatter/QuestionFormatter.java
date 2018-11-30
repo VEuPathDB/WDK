@@ -74,6 +74,7 @@ public class QuestionFormatter {
       .put(JsonKeys.DISPLAY_NAME, q.getDisplayName())
       .put(JsonKeys.SHORT_DISPLAY_NAME, q.getShortDisplayName())
       .put(JsonKeys.DESCRIPTION, q.getDescription())
+      .put(JsonKeys.ICON_NAME, q.getIconName())
       .put(JsonKeys.SUMMARY, q.getSummary())
       .put(JsonKeys.HELP, q.getHelp())
       .put(JsonKeys.NEW_BUILD, q.getNewBuild())

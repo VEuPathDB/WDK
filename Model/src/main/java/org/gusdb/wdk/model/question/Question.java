@@ -78,6 +78,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   private String _name;
 
   private String _displayName;
+  
+  private String _iconName;
 
   private List<WdkModelText> _descriptions = new ArrayList<WdkModelText>();
   private String _description;
@@ -184,6 +186,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     super(question);
     _description = question._description;
     _displayName = question._displayName;
+    _iconName = question._iconName;
 
     // TODO - need to deep-copy dynamicAttributeSet as well
     _dynamicAttributeSet = question._dynamicAttributeSet;
@@ -303,6 +306,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   public void setDisplayName(String displayName) {
     _displayName = displayName;
+  }
+
+  public void setIconName(String iconName) {
+    _iconName = iconName;
   }
 
   public void setCustomJavascript(String customJavascript) {
@@ -446,6 +453,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     if (_displayName == null)
       _displayName = getFullName();
     return _displayName;
+  }
+
+  public String getIconName() {
+    return _iconName;
   }
 
   public String getCustomJavascript() {
