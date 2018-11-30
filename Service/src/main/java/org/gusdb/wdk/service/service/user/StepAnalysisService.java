@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
@@ -27,6 +28,7 @@ import org.gusdb.wdk.service.formatter.StepAnalysisFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.json.JSONException;
 import org.json.JSONObject;
+//import org.apache.log4j.Logger;
 
 @Path(StepAnalysisService.STEP_ANALYSIS_PATH)
 public class StepAnalysisService extends UserService {
@@ -41,6 +43,7 @@ public class StepAnalysisService extends UserService {
 
   private final long stepId;
 
+  //  private static final Logger LOG = Logger.getLogger(StepAnalysisService.class);
 
   protected StepAnalysisService(
       @PathParam(USER_ID_PATH_PARAM) String uid,
@@ -76,12 +79,23 @@ public class StepAnalysisService extends UserService {
 
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
     Step step = getStepByIdAndCheckItsUser(user, stepId);
+    
+    Map<String, Param> paramMap = getStepAnalysisFromQuestion(step.getQuestion(), analysisName).getParamMap();
+    Map<String,String> context = Collections.emptyMap();
+
+    // TODO: this is a hack.  We could fix it by introducing a dedicated
+    // param type called something like <stepAnalysisIdSqlParam> that would
+    // have no attributes, and be dedicated to this need.
+    if (paramMap.containsKey("answerIdSql")) {
+      context = new HashMap<String, String>();
+      context.put("answerIdSql", step.getAnswerValue().getIdSql());
+    }
 
     return QuestionFormatter.getParamsJson(
-        getStepAnalysisFromQuestion(step.getQuestion(), analysisName).getParamMap().values(),
+        paramMap.values(),
         true,
         user,
-        Collections.emptyMap()).toString();
+        context).toString();
   }
 
   /**
