@@ -45,6 +45,8 @@ import org.json.JSONObject;
  */
 public class AnswerParam extends Param {
 
+  public static final String NULL_VALUE = "";
+
   private List<RecordClassReference> recordClassRefs;
   private Map<String, RecordClass> recordClasses;
 

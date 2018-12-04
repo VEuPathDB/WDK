@@ -1,18 +1,24 @@
 package org.gusdb.wdk.service.request.strategy;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.json.JsonUtil.getBooleanOrDefault;
 import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
 
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Optional;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -36,96 +42,125 @@ public class StepRequest {
       JsonKeys.RECORD_CLASS_NAME
   };
 
-  public static StepRequest newStepFromJson(JSONObject newStep, WdkModel wdkModel, User user)
-      throws RequestMisformatException, DataValidationException {
+  public static StepRequest newStepFromJson(JSONObject stepJson, WdkModel wdkModel, User user)
+      throws RequestMisformatException, DataValidationException, WdkModelException {
     try {
-      checkForInvalidProps(newStep);
-      JSONObject answerSpecJson = newStep.getJSONObject(JsonKeys.ANSWER_SPEC);
-      // Since this method is intended for new steps, the step can not yet be part of a strategy and so
-      // any answer params it has should be null.  So allowIncompleteSpec param is true.
-      AnswerSpec answerSpec = AnswerSpecServiceFormat.parse(answerSpecJson, wdkModel, user, true);
-      String customName = getStringOrDefault(newStep, JsonKeys.CUSTOM_NAME, answerSpec.getQuestion().getName());
-      boolean isCollapsible = getBooleanOrDefault(newStep, JsonKeys.IS_COLLAPSIBLE, false);
-      String collapsedName = getStringOrDefault(newStep, JsonKeys.COLLAPSED_NAME, customName);
-      // DB field length for collapsedName is 200
-      collapsedName = collapsedName == null ? collapsedName : collapsedName.substring(0, Math.min(collapsedName.length(),200));
-      return new StepRequest(answerSpec, customName, isCollapsible, collapsedName);
+      checkForInvalidProps(stepJson);
+      SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(
+          stepJson, wdkModel, user, StepContainer.emptyContainer());
+      AnswerSpec spec = validSpec.getObject();
+
+      // Since this method is intended for new steps, the step can not yet be
+      // part of a strategy and so any answer params it has should be null (empty string).
+      for (AnswerParam param : spec.getQuestion().getQuery().getAnswerParams()) {
+        if (!spec.getQueryInstanceSpec().get(param.getName()).equals(AnswerParam.NULL_VALUE)) {
+          throw new DataValidationException("Answer Params in new steps must have the null value (empty string).");
+        }
+      }
+
+      String customName = getStringOrDefault(stepJson, JsonKeys.CUSTOM_NAME, spec.getQuestion().getName());
+      boolean isCollapsible = getBooleanOrDefault(stepJson, JsonKeys.IS_COLLAPSIBLE, false);
+      String collapsedName = getStringOrDefault(stepJson, JsonKeys.COLLAPSED_NAME, customName);
+
+      return new StepRequest(validSpec, true, customName, isCollapsible, collapsedName);
     }
     catch (JSONException e) {
       throw new RequestMisformatException("Invalid JSON in step request", e);
     }
   }
 
+  private static SemanticallyValid<AnswerSpec> parseAnswerSpec(JSONObject stepJson, WdkModel wdkModel, User user, StepContainer container)
+      throws JSONException, RequestMisformatException, DataValidationException, WdkModelException {
+    JSONObject answerSpecJson = stepJson.getJSONObject(JsonKeys.ANSWER_SPEC);
+    AnswerSpecBuilder parsedSpec = AnswerSpecServiceFormat.parse(answerSpecJson, wdkModel);
+    AnswerSpec answerSpec = parsedSpec.build(user, container, ValidationLevel.SEMANTIC);
+    return answerSpec.getSemanticallyValid().orElseThrow(() ->
+      // incoming answer spec not semantically valid
+      new DataValidationException("Invalid answer spec: " + join(answerSpec.getValidationBundle().getAllErrors(), NL)));
+  }
+
   public static StepRequest patchStepFromJson(Step step, JSONObject patchSet, WdkModel wdkModel, User user)
-      throws RequestMisformatException, DataValidationException {
+      throws RequestMisformatException, DataValidationException, WdkModelException {
     try {
       checkForInvalidProps(patchSet);
       AnswerSpec answerSpec = getPatchAnswerSpec(step, patchSet, wdkModel, user);
+      boolean answerSpecModified = answerSpec != step.getAnswerSpec(); // referential equality
       String customName = getStringOrDefault(patchSet, JsonKeys.CUSTOM_NAME, step.getCustomName());
-      boolean isCollapsible = Boolean.getBoolean(getStringOrDefault(patchSet, JsonKeys.IS_COLLAPSIBLE, String.valueOf(step.isCollapsible())));
+      boolean isCollapsible = getBooleanOrDefault(patchSet, JsonKeys.IS_COLLAPSIBLE, step.isCollapsible());
       String collapsedName = getStringOrDefault(patchSet, JsonKeys.COLLAPSED_NAME, step.getCollapsedName());
-      // DB field length for collapsedName is 200
-      collapsedName = collapsedName == null ? collapsedName : collapsedName.substring(0, 200);
-      return new StepRequest(answerSpec, customName, isCollapsible, collapsedName);
+      return new StepRequest(answerSpec, answerSpecModified, customName, isCollapsible, collapsedName);
     }
     catch (JSONException e) {
       throw new RequestMisformatException("Invalid JSON in patch step request", e);
     }
   }
   
-  private static AnswerSpec getPatchAnswerSpec(Step step, JSONObject patchSet, WdkModel wdkModel, User user)
-      throws DataValidationException, RequestMisformatException {
+  private static Optional<SemanticallyValid<AnswerSpec>> getPatchAnswerSpec(Step step, JSONObject patchSet, WdkModel wdkModel, User user)
+      throws DataValidationException, RequestMisformatException, JSONException, WdkModelException {
     if (patchSet.has(JsonKeys.ANSWER_SPEC)) {
-      JSONObject answerSpecJson = patchSet.getJSONObject(JsonKeys.ANSWER_SPEC);
-      boolean expectIncompleteSpec = step.getStrategyId() == null;
-      AnswerSpec answerSpec = AnswerSpecServiceFormat.parse(answerSpecJson, wdkModel, user, expectIncompleteSpec);
-      // user cannot change question of an existing step
-      if (!answerSpec.getQuestion().getFullName().equals(step.getAnswerSpec().getQuestion().getFullName())) {
+      SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(patchSet, wdkModel, user, step.getContainer());
+      AnswerSpec answerSpec = validSpec.getObject();
+
+      // user cannot change question of an existing step (since # of answer params may change)
+      if (!answerSpec.getQuestion().getFullName().equals(
+          step.getAnswerSpec().getQuestion().getFullName())) {
         throw new DataValidationException("Question of an existing step cannot be changed.");
       }
-      Map<String, Param> updateParamMap = answerSpec.getQuestion().getParamMap();
-      QueryInstanceSpec updateParamValueMap = answerSpec.getQueryInstanceSpec();
-      QueryInstanceSpec currentParamValueMap = step.getAnswerSpec().getQueryInstanceSpec();
-      for (Entry<String,Param> entry : updateParamMap.entrySet()) {
-        if (entry.getValue() instanceof AnswerParam) {
-          Object updateParamValue = updateParamValueMap.get(entry.getKey());
-          Object currentParamValue = currentParamValueMap.get(entry.getKey());
-          if (updateParamValue == null && currentParamValue != null ||
-              updateParamValue != null && !updateParamValue.equals(currentParamValue)) {
-            throw new DataValidationException("Changes to the answer param values are not allowed.");
+      QueryInstanceSpec updateParams = answerSpec.getQueryInstanceSpec();
+      QueryInstanceSpec currentParams = step.getAnswerSpec().getQueryInstanceSpec();
+      DataValidationException illegalAnswerParamException =
+          new DataValidationException("Changes to the answer param values are not allowed.");
+      for (Param param : answerSpec.getQuestion().getQuery().getAnswerParams()) {
+        String updateParamValue = updateParams.get(param.getName());
+        if (step.getStrategy() == null) {
+          // incoming answer params must be "null" = empty strings
+          if (!updateParamValue.equals(AnswerParam.NULL_VALUE)) {
+            throw illegalAnswerParamException;
+          }
+        }
+        else {
+          // incoming answer params must match existing values
+          if (!updateParamValue.equals(currentParams.get(param.getName()))) {
+            throw illegalAnswerParamException;
           }
         }
       }
-      return answerSpec;
+      return Optional.of(validSpec);
     }
     else {
       // patch set did not include new answer spec; use spec from existing step
-      return step.getAnswerSpec();
+      return Optional.empty();
     }
   }
 
   private static void checkForInvalidProps(JSONObject stepJson) throws RequestMisformatException {
     for (String badProp : INVALID_EDIT_PROPS) {
       if (stepJson.has(badProp)) {
-        throw new RequestMisformatException("JSON property " + JsonKeys.ID + " is disallowed. Only the service can assign this value.");
+        throw new RequestMisformatException("JSON property " + badProp + " is disallowed. Only the service can assign this value.");
       }
     }
   }
 
-  private final AnswerSpec _answerSpec;
+  private final SemanticallyValid<AnswerSpec> _answerSpec;
+  private final boolean _answerSpecModified;
   private final String _customName;
   private final boolean _isCollapsible;
   private final String _collapsedName;
 
-  public StepRequest(AnswerSpec answerSpec, String customName, boolean isCollapsible, String collapsedName) {
+  public StepRequest(SemanticallyValid<AnswerSpec> answerSpec, boolean answerSpecModified, String customName, boolean isCollapsible, String collapsedName) {
     _answerSpec = answerSpec;
+    _answerSpecModified = answerSpecModified;
     _customName = customName;
     _isCollapsible = isCollapsible;
     _collapsedName = collapsedName;
   }
 
-  public AnswerSpec getAnswerSpec() {
+  public SemanticallyValid<AnswerSpec> getAnswerSpec() {
     return _answerSpec;
+  }
+
+  public boolean isAnswerSpecModified() {
+    return _answerSpecModified;
   }
 
   public String getCustomName() {

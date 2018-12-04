@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.ListBuilder;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowWriter;
 
@@ -25,9 +24,7 @@ public class StepDataWriter implements TableRowWriter<StepData> {
   
   private static final List<String> UPDATE_COLS = filter(Arrays.asList(COLS), negate(equalTo(STEP_ID)));
 
-  private static final String UPDATE_COLS_TEXT = join(mapToList(UPDATE_COLS, new Function<String, String>() {
-        @Override public String apply(String col) { return col + " = ?"; }
-      }).toArray(), ", ");
+  private static final String UPDATE_COLS_TEXT = join(mapToList(UPDATE_COLS, col -> col + " = ?").toArray(), ", ");
 
   private static final Integer[] UPDATE_PARAMETER_TYPES =
       mapToList(new ListBuilder<String>().addAll(UPDATE_COLS).add(STEP_ID).toList(),

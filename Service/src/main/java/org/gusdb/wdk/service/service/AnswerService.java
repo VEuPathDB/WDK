@@ -3,6 +3,10 @@ package org.gusdb.wdk.service.service;
 import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.DEFAULT_REPORTER_PARSER;
 import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.SPECIFIED_REPORTER_PARSER;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
@@ -16,21 +20,32 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.request.AnswerFormatting;
 import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.gusdb.wdk.model.report.util.ReporterFactory;
+import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepContainer;
+import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.user.StepContainer.ListStepContainer;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -131,7 +146,7 @@ public class AnswerService extends AbstractWdkService {
 
   public static AnswerRequest parseAnswerRequest(String requestBody, WdkModel wdkModel,
       User sessionUser, AnswerFormattingParser formatParser)
-      throws RequestMisformatException, DataValidationException {
+      throws RequestMisformatException, DataValidationException, WdkModelException {
     if (requestBody == null || requestBody.isEmpty()) {
       throw new RequestMisformatException("Request JSON cannot be empty. " +
           "If submitting a form, include the 'data' input parameter.");
@@ -140,17 +155,100 @@ public class AnswerService extends AbstractWdkService {
       // read request body into JSON object
       JSONObject requestJson = new JSONObject(requestBody);
 
-      // parse answer spec (question, params, etc.) and formatting object
-      JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
-      AnswerSpec answerSpec = AnswerSpecServiceFormat.parse(answerSpecJson, wdkModel, sessionUser, false);
+      // parse answer spec (question, params, etc.)
+      RunnableObj<AnswerSpec> answerSpec = parseAnswerSpec(requestJson, wdkModel, sessionUser);
+
+      // parse formatting
       AnswerFormatting formatting = Functions.mapException(
           () -> formatParser.apply(requestJson),
           e -> new RequestMisformatException(e.getMessage()));
+
+      // create request
       return new AnswerRequest(answerSpec, formatting);
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage());
     }
+  }
+
+  private static RunnableObj<AnswerSpec> parseAnswerSpec(JSONObject requestJson, WdkModel wdkModel, User sessionUser) throws RequestMisformatException, WdkModelException, DataValidationException {
+    JSONObject answerSpecJson = requestJson.getJSONObject(JsonKeys.ANSWER_SPEC);
+    AnswerSpecBuilder specBuilder = AnswerSpecServiceFormat.parse(answerSpecJson, wdkModel);
+    StepContainer stepContainer = loadContainer(specBuilder, wdkModel, sessionUser);
+    AnswerSpec answerSpec = specBuilder.build(sessionUser, stepContainer, ValidationLevel.RUNNABLE);
+    if (!answerSpec.isValid()) {
+      throw new DataValidationException("Invalid answer spec: " + answerSpec.getValidationBundle().toString());
+    }
+    return answerSpec.getRunnable().get();
+  }
+
+  private static StepContainer loadContainer(AnswerSpecBuilder specBuilder,
+      WdkModel wdkModel, User sessionUser) throws WdkModelException, DataValidationException {
+
+    // to allow a user to use steps from an existing strategy, need to get the
+    // strategy they want to use as a step container to look up those steps;
+    // can't do that without knowing if the question is valid
+    Optional<Question> question = wdkModel.getQuestion(specBuilder.getQuestionName());
+
+    if (!question.isPresent() || question.get().getQuery().getAnswerParamCount() == 0) {
+      // question will fail validation or is valid but does not contain answer params; no need for lookup
+      return StepContainer.emptyContainer();
+    }
+
+    Strategy strategy = null;
+    List<Step> stepsForLookup = new ArrayList<>();
+    for (AnswerParam answerParam : question.get().getQuery().getAnswerParams()) {
+      String stableValue = specBuilder.getParamValue(answerParam.getName());
+      String notFoundMessage = "Answer Param value '" + stableValue + "' does not refer to a step.";
+      if (!FormatUtil.isInteger(stableValue)) {
+        throw new DataValidationException(notFoundMessage);
+      }
+      long stepId = Long.parseLong(stableValue);
+      if (strategy == null) {
+        // have not selected a strategy yet
+        Step step = wdkModel.getStepFactory().getStepById(stepId)
+            .orElseThrow(() -> new DataValidationException(notFoundMessage));
+        if (step.getStrategy() == null) {
+          stepsForLookup.add(step); // stand-alone step; add it
+        }
+        else {
+          strategy = step.getStrategy(); // this becomes our one and only strategy
+        }
+      }
+      else {
+        // strategy has been selected; see if this step is in it
+        if (strategy.findFirstStep(StepContainer.withId(stepId)).isPresent()) {
+          // nothing to do here; referred step lives in this strategy
+        }
+        else {
+          Step step = wdkModel.getStepFactory().getStepById(stepId)
+              .orElseThrow(() -> new DataValidationException(notFoundMessage));
+          if (step.getStrategy() == null) {
+            stepsForLookup.add(step); // stand-alone step; add it
+          }
+          else {
+            throw new DataValidationException("Only one strategy at a time can be used as a source of referred steps.");
+          }
+        }
+      }
+    }
+
+    // make sure all referred steps are owned by the session user
+    if (strategy != null && strategy.getUser().getUserId() != sessionUser.getUserId()) {
+      throw new DataValidationException("You do not have permission to use the steps in strategy with ID " + strategy.getId() + "'.");
+    }
+    for (Step step : stepsForLookup) {
+      if (step.getUser().getUserId() != sessionUser.getUserId()) {
+        throw new DataValidationException("You do not have permission to use step '" + step.getId() + "'.");
+      }
+    }
+
+    // build a container that contains all needed steps
+    ListStepContainer container = new ListStepContainer();
+    container.addAll(strategy.getAllSteps());
+    container.addAll(stepsForLookup);
+    return container;
+
   }
 
   /**
@@ -170,7 +268,7 @@ public class AnswerService extends AbstractWdkService {
       throws RequestMisformatException, WdkModelException, DataValidationException {
 
     // create base answer value from answer spec
-    AnswerValue answerValue = new AnswerValueFactory(sessionUser).createFromAnswerSpec(request.getAnswerSpec());
+    AnswerValue answerValue = AnswerValueFactory.makeAnswer(sessionUser, request.getAnswerSpec());
 
     // parse (optional) request details (columns, pagination, etc.- format dependent on reporter) and configure reporter
     Reporter reporter = getConfiguredReporter(answerValue, request.getFormatting());
@@ -187,8 +285,8 @@ public class AnswerService extends AbstractWdkService {
   public Response displayFilterResults(@PathParam("filterName") String filterName, String body) throws WdkModelException, WdkUserException, DataValidationException {
     JSONObject requestJson = new JSONObject(body);
     JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
-    AnswerSpec answerSpec = AnswerSpecServiceFormat.parse(answerSpecJson, getWdkModel(), getSessionUser(), false);
-    AnswerValue answerValue = new AnswerValueFactory(getSessionUser()).createFromAnswerSpec(answerSpec);
+    RunnableObj<AnswerSpec> answerSpec = parseAnswerSpec(answerSpecJson, getWdkModel(), getSessionUser());
+    AnswerValue answerValue = AnswerValueFactory.makeAnswer(getSessionUser(), answerSpec);
     JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
     return Response.ok(filterSummaryJson.toString()).build();
   }

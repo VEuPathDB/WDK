@@ -82,6 +82,10 @@ public class AnswerSpecBuilder {
     return this;
   }
 
+  public String getQuestionName() {
+    return _questionName;
+  }
+
   public AnswerSpecBuilder setLegacyFilterName(String legacyFilterName) {
     _legacyFilterName = legacyFilterName;
     return this;
@@ -96,6 +100,10 @@ public class AnswerSpecBuilder {
   public AnswerSpecBuilder setParamValue(String paramName, String stableValue) {
     _queryInstanceSpec.put(paramName, stableValue);
     return this;
+  }
+
+  public String getParamValue(String name) {
+    return _queryInstanceSpec.get(name);
   }
 
   /**

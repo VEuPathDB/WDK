@@ -215,7 +215,7 @@ public class ResultSizeFactory {
     AnswerValue modifiedAnswer = AnswerValueFactory.makeAnswer(_answerValue,
         AnswerSpec.builder(_answerValue.getAnswerSpec())
         .setLegacyFilterName(filterName)
-        .buildRunnable(_answerValue.getUser()));
+        .buildRunnable(_answerValue.getUser(), _answerValue.getAnswerSpec().getStepContainer()));
     String idSql = modifiedAnswer.getIdSql();
 
     // if display count requested, use custom plugin; else use default

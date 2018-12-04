@@ -39,6 +39,7 @@ import static org.gusdb.wdk.model.user.StepFactoryHelpers.TABLE_STEP;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.TABLE_STRATEGY;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -80,6 +81,7 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunctionWithExcep
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.Utilities;
@@ -146,7 +148,7 @@ public class StepFactory {
   /**
    * Creates a step and adds to database
    */
-  public RunnableObj<Step> createStep(User user, Question question, Map<String, String> dependentValues,
+  public Step createStep(User user, Question question, Map<String, String> dependentValues,
       AnswerFilterInstance filter, FilterOptionList filterOptions, int assignedWeight, boolean deleted,
       String customName, boolean isCollapsible, String collapsedName, Strategy strategy) throws WdkModelException {
   
@@ -158,7 +160,7 @@ public class StepFactory {
     Date lastRunTime = new Date(createTime.getTime());
 
     // create the Step
-    RunnableObj<Step> runnableStep = Step
+    Step step = Step
         .builder(_wdkModel, user.getUserId(), getNewStepId())
         .setCreatedTime(createTime)
         .setLastRunTime(lastRunTime)
@@ -175,12 +177,13 @@ public class StepFactory {
             .setLegacyFilterName(filter.getName())
             .setFilterOptions(FilterOptionList.builder().fromFilterOptionList(filterOptions))
             .setAssignedWeight(assignedWeight))
-        .buildRunnable(new UserCache(user), strategy);
+        .build(new UserCache(user), ValidationLevel.RUNNABLE, strategy);
 
-    Step step = runnableStep.getObject();
-    TwoTuple<Integer,Exception> runStatus = tryEstimateSize(runnableStep);
-    step.updateEstimatedSize(runStatus.getFirst());
-    step.setException(runStatus.getSecond());
+    if (step.isRunnable()) {
+      TwoTuple<Integer,Exception> runStatus = tryEstimateSize(step.getRunnable().get());
+      step.updateEstimatedSize(runStatus.getFirst());
+      step.setException(runStatus.getSecond());
+    }
 
     // insert step into the database
     insertStep(step);
@@ -190,7 +193,7 @@ public class StepFactory {
       updateStepTree(step);
     }
 
-    return runnableStep;
+    return step;
   }
 
   private void insertStep(Step step) throws WdkModelException {
@@ -235,8 +238,8 @@ public class StepFactory {
       setNullableString(ps, 11, step.getCustomName());
       setNullableString(ps, 12, step.getCollapsedName());
       setNullableLong(ps, 13, step.getStrategyId());
-      _userDbPlatform.setClobData(ps, 14,
-          JsonUtil.serialize(ParamFiltersClobFormat.formatParamFilters(step.getAnswerSpec())), false);
+      _userDbPlatform.setClobData(ps, 14, JsonUtil.serialize(
+          ParamFiltersClobFormat.formatParamFilters(step.getAnswerSpec())), false);
       ps.executeUpdate();
     }
     catch (SQLException ex) {
@@ -284,6 +287,7 @@ public class StepFactory {
     }
   }
 
+  @Deprecated // only orphan remover should be deleting steps
   public void deleteStep(long stepId) throws WdkModelException {
     String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_IS_DELETED + " = " +
         _userDbPlatform.convertBoolean(true) + " WHERE " + COLUMN_STEP_ID + " = ?";
@@ -671,19 +675,17 @@ public class StepFactory {
    * @param user
    * @param oldStrategy
    * @param stepIdsMap An output map of old to new step IDs. Steps recursively encountered in the copy are added by the copy
-   * @param baseName The name to use as a basis for the new name.  If the user does not already have this name, 
-   * then use it.  Otherwise, add a numeric suffix to it.  If it already has a suffix, increment it
    * @return
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public Strategy copyStrategy(User user, Strategy oldStrategy, Map<Long, Long> stepIdsMap, String baseName)
+  public Strategy copyStrategy(User user, Strategy oldStrategy, Map<Long, Long> stepIdsMap)
       throws WdkModelException, WdkUserException {
 
     WdkModel wdkModel = user.getWdkModel();
     long strategyId = getNewStrategyId();
     String projectId = oldStrategy.getProjectId();
-    String name = addSuffixToStratNameIfNeeded(user, baseName, false);
+    String name = addSuffixToStratNameIfNeeded(user, oldStrategy.getName(), false);
     String signature = getStrategySignature(projectId, user.getUserId(), strategyId);
     Map<Long, StepBuilder> newStepMap = copyStepTree(user, oldStrategy.getRootStep()).toMap();
 
@@ -721,6 +723,39 @@ public class StepFactory {
     stepIdsMap.putAll(getMapFromKeys(newStepMap.keySet(), oldId -> newStepMap.get(oldId).getStepId()));
 
     return newStrategy;
+  }
+
+  private void insertStrategy(Connection connection, Strategy newStrategy) {
+    String sql = "INSERT INTO " + _userSchema + TABLE_STRATEGY + " (" +
+        COLUMN_STRATEGY_ID + ", " +
+        COLUMN_USER_ID + ", " +
+        COLUMN_ROOT_STEP_ID + ", " +
+        COLUMN_IS_SAVED + ", " +
+        COLUMN_NAME + ", " +
+        COLUMN_SAVED_NAME + ", " +
+        COLUMN_PROJECT_ID + ", " +
+        COLUMN_IS_DELETED + ", " +
+        COLUMN_SIGNATURE + ", " +
+        COLUMN_DESCRIPTION + ", " +
+        COLUMN_VERSION + ", " +
+        COLUMN_IS_PUBLIC +
+        ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    new SQLRunner(connection, sql, "wdk-step-factory-insert-strategy")
+      .executeStatement(
+        new Object[] {
+          newStrategy.getStrategyId(),
+          newStrategy.getUser().getUserId(),
+          newStrategy.getRootStep().getStepId(),
+          newStrategy.getIsSaved(),
+          newStrategy.getName(),
+          newStrategy.getSavedName(),
+          newStrategy.getProjectId(),
+          false,
+          newStrategy.getSignature(),
+          newStrategy.getDescription(),
+          newStrategy.getVersion(),
+          newStrategy.getIsPublic()
+        });
   }
 
   public MapBuilder<Long, StepBuilder> copyStepTree(User newUser, Step oldStep) throws WdkModelException {

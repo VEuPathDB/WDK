@@ -2,15 +2,16 @@ package org.gusdb.wdk.model.answer.request;
 
 import java.util.Date;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 
 public class AnswerRequest {
 
   private final Date _creationDate;
-  private final AnswerSpec _answerSpec;
+  private final RunnableObj<AnswerSpec> _answerSpec;
   private final AnswerFormatting _formatting;
 
-  public AnswerRequest(AnswerSpec answerSpec, AnswerFormatting formatting) {
+  public AnswerRequest(RunnableObj<AnswerSpec> answerSpec, AnswerFormatting formatting) {
     _creationDate = new Date();
     _answerSpec = answerSpec;
     _formatting = formatting;
@@ -20,7 +21,7 @@ public class AnswerRequest {
     return _creationDate;
   }
 
-  public AnswerSpec getAnswerSpec() {
+  public RunnableObj<AnswerSpec> getAnswerSpec() {
     return _answerSpec;
   }
 

@@ -25,7 +25,7 @@ import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
-public class AnswerSpec implements Validateable {
+public class AnswerSpec implements Validateable<AnswerSpec> {
 
   public static AnswerSpecBuilder builder(WdkModel wdkModel) {
     return new AnswerSpecBuilder(wdkModel);

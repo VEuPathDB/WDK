@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.user;
 
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -25,6 +26,13 @@ public interface StepContainer {
 
   public static StepContainer emptyContainer() {
     return new StepContainer(){};
+  }
+
+  public static class ListStepContainer extends ArrayList<Step> implements StepContainer {
+    @Override
+    public Optional<Step> findFirstStep(StepSearch search) {
+      return stream().filter(search.getPredicate()).findFirst();
+    }
   }
 
   /**
