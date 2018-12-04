@@ -15,7 +15,6 @@ import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.wdk.model.WdkModel;
 
 /**
@@ -44,8 +43,7 @@ public class StepDataTestWriter extends StepDataWriter {
 
   private static final String INSERT_COLS_TEXT = StepDataFactory.SELECT_COLS_TEXT + ",OLD_DISPLAY_PARAMS";
 
-  private static final String INSERT_WILDCARDS = join(mapToList(SQLTYPES.keySet(), new Function<String, String>() {
-    @Override public String apply(String obj) { return "?"; }}).toArray(), ",") + ",?";
+  private static final String INSERT_WILDCARDS = join(mapToList(SQLTYPES.keySet(), str -> "?").toArray(), ",") + ",?";
 
   private static final String INSERT_SQL = "INSERT INTO " + TEST_TABLE_NAME + " (" +
       INSERT_COLS_TEXT + ") VALUES (" + INSERT_WILDCARDS + ")";

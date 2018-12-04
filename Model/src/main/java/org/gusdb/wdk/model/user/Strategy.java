@@ -837,4 +837,8 @@ public class Strategy implements StrategyElement, StepContainer {
     return _stepMap.values().stream().filter(search.getPredicate()).findFirst();
   }
 
+  public Collection<Step> getAllSteps() {
+    return _stepMap.values();
+  }
+
 }

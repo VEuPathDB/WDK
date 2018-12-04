@@ -12,7 +12,7 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
-public class QueryInstanceSpec extends ReadOnlyHashMap<String,String> implements Validateable {
+public class QueryInstanceSpec extends ReadOnlyHashMap<String,String> implements Validateable<QueryInstanceSpec> {
 
   @SuppressWarnings("unchecked")
   public static QueryInstanceSpecBuilder builder() {

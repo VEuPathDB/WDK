@@ -509,9 +509,7 @@ public class UserBean {
 
   public StrategyBean copyStrategy(StrategyBean strategy, Map<Long, Long> stepIdMap)
       throws WdkUserException, WdkModelException {
-    String name = strategy.getName();
-    if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
-    return copyStrategy(strategy, stepIdMap, name) ;
+    return copyStrategy(strategy, stepIdMap, strategy.getName()) ;
   }
 
   public StrategyBean copyStrategy(StrategyBean strategy, Map<Long, Long> stepIdMap, String name)

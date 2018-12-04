@@ -28,7 +28,6 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.fgputil.validation.ValidationStatus;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.events.StepRevisedEvent;
 import org.gusdb.wdk.model.MDCUtil;
@@ -55,11 +54,13 @@ import org.json.JSONObject;
 /**
  * @author Charles Treatman
  */
-public class Step implements StrategyElement, Validateable {
+public class Step implements StrategyElement, Validateable<Step> {
 
   private static final Logger LOG = Logger.getLogger(Step.class);
 
   public static final int RESET_SIZE_FLAG = -1;
+
+  public static final int NAME_COLUMN_MAX_SIZE = 200; // bytes
 
   public static class StepBuilder {
 
@@ -223,6 +224,8 @@ public class Step implements StrategyElement, Validateable {
     return new StepBuilder(step);
   }
 
+  // TODO: Find the use cases for the modifiable fields below and fix; goal is for Step instance to be immutable
+
   // set during Step object creation
   private final WdkModel _wdkModel;
   // set during build() from ID in DB
@@ -238,7 +241,7 @@ public class Step implements StrategyElement, Validateable {
   // in DB, set by user
   private String _customName; // <- MODIFIABLE
   // in DB, for soft delete
-  private final boolean _isDeleted;
+  private boolean _isDeleted; // <- MODIFIABLE
   // in DB, last known size of result (see _estimateSizeRefreshed below)
   private int _estimatedSize;
   // in DB, tells if nested step
@@ -303,10 +306,10 @@ public class Step implements StrategyElement, Validateable {
     _stepId = builder._stepId;
     _createdTime = builder._createdTime;
     _lastRunTime = builder._lastRunTime;
-    _customName = builder._customName;
+    _customName = trimName(builder._customName);
     _isDeleted = builder._isDeleted;
     _isCollapsible = builder._isCollapsible;
-    _collapsedName = builder._collapsedName;
+    _collapsedName = trimName(builder._collapsedName);
     _projectId = builder._projectId;
     _projectVersion = builder._projectVersion;
     _estimatedSize = builder._estimatedSize;
@@ -324,6 +327,10 @@ public class Step implements StrategyElement, Validateable {
              (getPreviousStepParam() != null && getPreviousStepId() == 0)) {
       throw new WdkModelException("Step " + _stepId + " is part of a strategy but at least one answer param does not have a value.");
     }
+  }
+
+  private static String trimName(String nameValue) {
+    return nameValue == null ? null : FormatUtil.shrinkUtf8String(nameValue, NAME_COLUMN_MAX_SIZE);
   }
 
   // TODO: remove this when we retire StepBean
@@ -1077,11 +1084,6 @@ public class Step implements StrategyElement, Validateable {
     return _answerSpec;
   }
 
-  public boolean isRunnable() {
-    return getValidationBundle().getStatus().equals(ValidationStatus.VALID) &&
-           getValidationBundle().getLevel().equals(ValidationLevel.RUNNABLE);
-  }
-
   @Override
   public ValidationBundle getValidationBundle() {
     return _answerSpec.getValidationBundle();
@@ -1105,6 +1107,10 @@ public class Step implements StrategyElement, Validateable {
 
   public StepContainer getContainer() {
     return _strategy == null ? StepContainer.emptyContainer() : _strategy;
+  }
+
+  public void setDeleted(boolean isDeleted) {
+    _isDeleted = isDeleted;
   }
 
 }

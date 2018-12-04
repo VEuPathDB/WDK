@@ -13,8 +13,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.fgputil.validation.ValidObjectFactory;
-import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -297,12 +296,11 @@ public class AnswerFilterInstance extends WdkModelBase {
     // validate params
     QueryInstanceSpecBuilder specBuilder = QueryInstanceSpec.builder(_partialParamStableValues);
     QueryInstanceSpec spec = specBuilder.buildValidated(user, _filterQuery,
-        StepContainer.emptyContainer(), ValidationLevel.SEMANTIC, FillStrategy.NO_FILL);
-    if (!spec.isValid()) {
-      throw new WdkModelException("AnswerFilterInstance params failed semantic validation: " + NL +
-          join(spec.getValidationBundle().getAllErrors(), NL));
-    }
-    SemanticallyValid<QueryInstanceSpec> validSpec = ValidObjectFactory.getSemanticallyValid(spec);
+        StepContainer.emptyContainer(), ValidationLevel.RUNNABLE, FillStrategy.NO_FILL);
+    RunnableObj<QueryInstanceSpec> validSpec = spec.getRunnable()
+        .orElseThrow(() -> new WdkModelException(
+            "AnswerFilterInstance params failed semantic validation: " + NL +
+            join(spec.getValidationBundle().getAllErrors(), NL)));
 
     // don't use QueryInstance here because of the way we are injecting the AnswerParam's SQL
     String filterSql = _filterQuery.getSql();

@@ -83,16 +83,10 @@ public class StrategyService extends UserService {
   }
     
   private Strategy copyStrategy(User user, StepFactory stepFactory, JSONObject json) throws WdkModelException, WdkUserException, JSONException {
-
-    Strategy sourceStrategy = stepFactory.loadStrategy(json.getString(JsonKeys.SOURCE_SIGNATURE));
-    String baseName = sourceStrategy.getName(); // backend might add a numeric suffix to the basename, if duplicate
-    
-    // append "Copy of" if this is an intra-user copy (unless there is already a "Copy of" present)
-    if (sourceStrategy.getUser().getUserId() == user.getUserId() && 
-      !baseName.toLowerCase().endsWith(", copy of")) baseName += ", Copy of";
-
-    return stepFactory.copyStrategy(user, sourceStrategy, new LinkedHashMap<Long, Long>(),
-        baseName);  
+    String signature = json.getString(JsonKeys.SOURCE_SIGNATURE);
+    Strategy sourceStrategy = stepFactory.getStrategyBySignature(signature)
+        .orElseThrow(() -> new WdkUserException("No strategy exists with signature " + signature));
+    return stepFactory.copyStrategy(user, sourceStrategy, new LinkedHashMap<Long, Long>());  
   }
     
   private Strategy createNewStrategy(User user, StepFactory stepFactory, JSONObject json)

@@ -43,6 +43,10 @@ public class PartiallyValidatedStableValues extends HashMap<String,String> {
     return _validationStatusMap.containsKey(paramName) && _validationStatusMap.get(paramName).isValid();
   }
 
+  public ParamValidity getParamValidity(String paramName) {
+    return _validationStatusMap.get(paramName);
+  }
+
   public Map<String,ParamValidity> getValidationStatusMap() {
     return _validationStatusMap;
   }

@@ -30,13 +30,14 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.NoSuchElementException;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.annotation.InSchema;
-import org.gusdb.wdk.service.factory.AnswerValueFactory;
 import org.gusdb.wdk.service.formatter.StepFormatter;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
+import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.strategy.StepRequest;
@@ -46,14 +47,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class StepService extends UserService {
-
-  private static class StepChanges extends TwoTuple<Boolean,Boolean> {
-    public StepChanges(boolean paramFiltersChanged, boolean metadataChanged) {
-      super(paramFiltersChanged, metadataChanged);
-    }
-    public boolean paramFiltersChanged() { return getFirst(); }
-    public boolean metadataChanged() { return getSecond(); }
-  }
 
   public static final String STEP_RESOURCE = "Step ID ";
 
@@ -70,10 +63,7 @@ public class StepService extends UserService {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepRequest stepRequest = StepRequest.newStepFromJson(jsonBody, getWdkModel(), user);
-      
-      // validate the step and throw a DataValidation exception if not valid
-      // new step are, by definition, not part of a strategy
-      //validateStep(stepRequest.getAnswerSpec(), false);
+      Step newStep = getWdkModel().getStepFactory().createStep(user, stepRequest.getAnswerSpec(), filter, filterOptions, assignedWeight, deleted, customName, isCollapsible, collapsedName, strategy)
       
       // create the step and insert into the database
       Step step = createStep(stepRequest, user, getWdkModel().getStepFactory());
@@ -110,22 +100,24 @@ public class StepService extends UserService {
     try {
       Step step = getStepForCurrentUser(stepId);
       JSONObject patchJson = new JSONObject(body);
-      StepRequest stepRequest = StepRequest.patchStepFromJson(step, patchJson, getWdkModelBean(), getSessionUser());
-      StepChanges changes = updateStep(step, stepRequest);
+      StepRequest stepRequest = StepRequest.patchStepFromJson(step, patchJson, getWdkModel(), getSessionUser());
+      step = updateStep(step, stepRequest);
 
       // save parts of step that changed
-      if (changes.paramFiltersChanged()) {
+      if (stepRequest.isAnswerSpecModified()) {
+
+        // save the clob to the DB
         step.saveParamFilters();
-      }
-      if (changes.metadataChanged()) {
-        step.update(true);
+
+        // reset the estimated size in the database for this step and any downstream steps, if any
+        getWdkModel().getStepFactory().resetEstimateSizeForThisAndDownstreamSteps(step);
+
+        // reset the current step object estimate size
+        step.resetEstimatedSize();
       }
 
-      // reset the estimated size in the database for this step and any downstream steps, if any
-      getWdkModel().getStepFactory().resetEstimateSizeForThisAndDownstreamSteps(step);
-
-      // reset the current step object estimate size
-      step.resetEstimatedSize();
+      // always update other data
+      step.update(true);
 
       // return updated step
       return Response.ok(StepFormatter.getStepJsonWithRawEstimateValue(step).toString()).build();
@@ -140,9 +132,15 @@ public class StepService extends UserService {
 
   @DELETE
   @Path("steps/{stepId}")
-  public Response deleteStep(@PathParam("stepId") String stepId) throws WdkModelException {
+  public Response deleteStep(@PathParam("stepId") String stepId) throws WdkModelException, ConflictException {
     Step step = getStepForCurrentUser(stepId);
-    if (step.isDeleted()) throw new NotFoundException(AbstractWdkService.formatNotFound(STEP_RESOURCE + stepId));
+    if (step.isDeleted()) {
+      throw new NotFoundException(AbstractWdkService.formatNotFound(STEP_RESOURCE + stepId));
+    }
+    if (step.getStrategy() != null) {
+      throw new ConflictException("Steps that are part of strategies cannot be " +
+          "deleted.  Remove the step from strategy " + step.getStrategyId() + " and try again.");
+    }
     step.setDeleted(true);
     step.update(true);
     return Response.noContent().build();
@@ -187,25 +185,15 @@ public class StepService extends UserService {
     }
   }  
 
-  private StepChanges updateStep(Step step, StepRequest stepRequest) throws WdkModelException {
+  private Step updateStep(Step step, StepRequest stepRequest) throws WdkModelException {
 
-    boolean paramFiltersChanged = false;
-    boolean metadataChanged = false;
-
-    // check for param or filter changes
-    AnswerSpec answerSpec = stepRequest.getAnswerSpec();
-    QueryInstanceSpec newParamValues = answerSpec.getQueryInstanceSpec();
-    Map<String,String> oldParamValues = step.getQueryInstanceSpec();
-    for (String paramName : newParamValues.keySet()) {
-      if (nullSafeEquals(oldParamValues.get(paramName), newParamValues.get(paramName).getObjectValue())) paramFiltersChanged = true;
-      step.setParamValue(paramName, (String)newParamValues.get(paramName).getObjectValue());
+    StepBuilder newStep = Step.builder(step)
+        .setCustomName(stepRequest.getCustomName())
+    
+    if (stepRequest.isAnswerSpecModified()) {
+      // FIXME: this is no good- duplicate validation of the answer spec here
+      newStep.setAnswerSpec(AnswerSpec.builder(stepRequest.getAnswerSpec()));
     }
-    if (nullSafeEquals(step.getFilter(), answerSpec.getLegacyFilter())) paramFiltersChanged = true;
-    step.setFilterName(answerSpec.getLegacyFilter() == null ? null : answerSpec.getLegacyFilter().getName());
-    if (nullSafeEquals(step.getFilterOptions(), answerSpec.getFilterOptions())) paramFiltersChanged = true;
-    step.setFilterOptions(answerSpec.getFilterOptions());
-    if (nullSafeEquals(step.getViewFilterOptions(), answerSpec.getViewFilterOptions())) paramFiltersChanged = true;
-    step.setViewFilterOptions(answerSpec.getViewFilterOptions());
 
     // check for metadata changes and assign new values
     if (nullSafeEquals(step.getCustomName(), stepRequest.getCustomName())) metadataChanged = true;
@@ -231,64 +219,6 @@ public class StepService extends UserService {
     catch (NumberFormatException | NoSuchElementException e) {
       throw new NotFoundException(AbstractWdkService.formatNotFound(STEP_RESOURCE + stepId));
     }
-  }
-
-  private static Step createStep(StepRequest stepRequest, User user, StepFactory stepFactory) throws WdkModelException {
-    try {
-      // new step must be created from raw spec
-      AnswerSpec answerSpec = stepRequest.getAnswerSpec();
-      Step step = stepFactory.createStep(user, answerSpec.getQuestion(),
-          AnswerValueFactory.convertParams(answerSpec.getParamValues()),
-          answerSpec.getLegacyFilter(), 1, -1, false, true, answerSpec.getWeight(),
-          answerSpec.getFilterValues(), stepRequest.getCustomName(),
-          stepRequest.isCollapsible(), stepRequest.getCollapsedName());
-      step.setViewFilterOptions(answerSpec.getViewFilterValues());
-      step.saveParamFilters();
-
-      // once created, additional user-provided fields can be applied
-      //step.setCustomName(stepRequest.getCustomName());
-      //step.setCollapsible(stepRequest.isCollapsible());
-      //step.setCollapsedName(stepRequest.getCollapsedName());
-      //step.update(true);
-      return step;
-    }
-    catch (WdkUserException e) {
-      throw new WdkModelException("Unable to create step", e);
-    }
-  }
-
-  /**
-   * Step services do not necessarily run the steps that are created/patched but as long as the answerSpec is
-   * complete, we want to insure that a step is valid prior to inserting or updating it in the database.
-   * @param answerSpec - the answerSpec that will underlie the step to be checked for validity.
-   * @throws WdkModelException
-   * @throws DataValidationException
-   *//*
-  private void validateStep(AnswerSpec answerSpec, boolean inStrategy) throws WdkModelException, DataValidationException {
-    Question question = answerSpec.getQuestion();
-    if(question.hasAnswerParams() ? inStrategy : true) {
-      Map<String, String> context = new LinkedHashMap<String, String>();
-      context.put(Utilities.QUERY_CTX_QUESTION, question.getFullName());
-      try {  
-        User user = getUserBundle(Access.PRIVATE).getSessionUser();
-        //Map<String, String> params = AnswerValueFactory.convertParams(answerSpec.getParamValues());
-      }
-      catch(WdkUserException wue) {
-        throw new DataValidationException(wue);
-      }
-    }
-  }*/
-
-  private static Step createStep(StepRequest stepRequest, User user, StepFactory stepFactory) throws WdkModelException {
-    // new step must be created from raw spec
-    AnswerSpec answerSpec = stepRequest.getAnswerSpec();
-    Step step = stepFactory.createStep(user, answerSpec.getQuestion(),
-        AnswerValueFactory.convertParams(answerSpec.getQueryInstanceSpec()),
-        answerSpec.getLegacyFilter(), answerSpec.getFilterOptions(), answerSpec.getAssignedWeight(), false,
-        stepRequest.getCustomName(), stepRequest.isCollapsible(), stepRequest.getCollapsedName(), null);
-    step.setViewFilterOptions(answerSpec.getViewFilterOptions());
-    step.saveParamFilters();
-    return step;
   }
 
 }

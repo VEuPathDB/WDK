@@ -18,7 +18,7 @@ import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.Filter.FilterType;
 import org.gusdb.wdk.model.question.Question;
 
-public class FilterOptionList implements Iterable<FilterOption>, Validateable {
+public class FilterOptionList implements Iterable<FilterOption>, Validateable<FilterOptionList> {
 
   public static class FilterOptionListBuilder extends ArrayList<FilterOptionBuilder> {
 

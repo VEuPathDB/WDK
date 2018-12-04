@@ -75,7 +75,7 @@ public class ParamFiltersClobFormat {
     return parseFiltersJson(paramFiltersJson, KEY_VIEW_FILTERS);
   }
 
-  private static FilterOptionListBuilder parseFiltersJson(JSONObject paramFiltersJson, String filtersKey) {
+  public static FilterOptionListBuilder parseFiltersJson(JSONObject paramFiltersJson, String filtersKey) {
     FilterOptionListBuilder builder = FilterOptionList.builder();
     if (paramFiltersJson == null || !paramFiltersJson.has(KEY_PARAMS) || !paramFiltersJson.has(filtersKey)) {
       return builder;

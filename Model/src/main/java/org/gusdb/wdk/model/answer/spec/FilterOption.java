@@ -21,7 +21,7 @@ import org.json.JSONObject;
  * Holds the user's choice of values for a filter.
  * The value is a weakly typed JSONObject because it is passed to a plugged in filter.
  */
-public class FilterOption implements Validateable, NamedObject {
+public class FilterOption implements Validateable<FilterOption>, NamedObject {
 
   private static final Logger LOG = Logger.getLogger(FilterOption.class);
 

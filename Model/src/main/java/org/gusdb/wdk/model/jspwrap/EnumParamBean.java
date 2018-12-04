@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.SelectableItem;
@@ -18,7 +17,6 @@ import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
 /**
@@ -108,7 +106,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   @Override
-  public String getDefault() throws WdkModelException {
+  public String getDefault() {
     return getVocabInstance().getDefaultValue();
   }
 
@@ -143,10 +141,6 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
 
   public Map<String, String> getParentMap() {
     return getVocabInstance().getParentMap();
-  }
-
-  public String getInternalValue(User user, String dependentValue) throws WdkModelException, WdkUserException {
-    return _param.getInternalValue(user, dependentValue, _contextValues);
   }
 
   @Override
@@ -279,14 +273,6 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
       tree.setSelectedLeaves(currentValueList);
       tree.addDefaultLeaves(currentValueList);
     }
-  }
-
-  @Override
-  public void validate(UserBean user, String rawOrDependentValue, Map<String, String> contextValues)
-      throws WdkModelException, WdkUserException {
-    logger.debug("Validating param=" + getName() + ", value=" + rawOrDependentValue + ", dependedValue=" +
-        FormatUtil.prettyPrint(contextValues));
-    _param.validate(user.getUser(), rawOrDependentValue, contextValues);
   }
 
   public boolean isSuppressNode() {
