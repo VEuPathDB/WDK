@@ -1,9 +1,25 @@
 # Users Steps API
 
 post:
-  description: >
-    Create new step, provide question values (question name, params); returns
-    a step id; use this for boolean too
+  description: |
+    * Creates a new step (including transforms/booleans!)
+    * AnswerParams must have empty string values (handled by /strategy)
+    * Strategy ID cannot be specified and is not assigned (handled by /strategy)
+    * If question has AnswerParams:
+        * Their values must be set to an empty string
+        * Other parameters are validated as much as possible
+        * answerSpecComplete set to false since AnswerParams not populated
+    * If question does not have AnswerParams
+        * Validates the answer spec
+        * answerSpecComplete set to true since this is a runnable answer spec
+    * If validation of non-answer params fails, no step is created and a 400/500 HTTP response will be returned
+    * Inputs: JSON containing AnswerSpec, name (optional- pulled from question if absent)
+        * Also, optional query param flag for whether to try to run step
+            * If answerSpecComplete = false and flag true, throw error 40x?
+            * If answerSpecComplete = true and flag true, run step and populate estimatedSize, last_run
+    * Outputs:
+        * JSON containing step ID + Location header with URL, OR
+        * Error document telling where and why request failed
   queryParameters:
     runStep:
       description: Whether or not this step should be run immediately
@@ -12,16 +28,13 @@ post:
       default: false
   body:
     application/json:
+      type: !include ../../../../../src/main/resources/schema/wdk/users/steps/post-request.json
   responses:
     200:
+      description: Success
       body:
         application/json:
-          type: object
-          properties:
-            id:
-              type: integer
-              format: int64
-              description: ID of the created step
+          type: !include ../../../../../src/main/resources/schema/wdk/users/steps/post-response.json
 
 /{step-id}:
   uriParameters:
@@ -36,158 +49,96 @@ post:
         description: Success
 
   get:
-    description: Get step details by step ID
+    description: |
+      * Returns full JSON of the step
+          * This is to support revise question form and display of step's answer spec
+          * /answer service will still check validity of:
+              * step ownership (child steps must be owned by requester)
+              * dataset ownership (dataset params must be owned by requester)
+          * Includes:
+              * Name populated with default name if not sent in
+              * Strategy ID (always null)
+              * answerSpecComplete
+              * estimatedSize (unpopulated since step has not yet run)
+              * isValid (always true here since params had to have validated)
+              * Newly populated dates (creation, last_run)
+              * Step ID
+
     responses:
       200:
         description: Success
         body:
           application/json:
-            type: object
-            properties:
-              id:
-                type: integer
-                format: int64
-              displayName:
-                type: string
-              shortDisplayName:
-                type: string
-              customName:
-                type: string
-              baseCustomName:
-                type: string
-              isCollapsible:
-                type: boolean
-              collapsedName:
-                type: string
-              description:
-                type: string
-              ownerId:
-                type: integer
-                format: int64
-              strategyId:
-                type: integer
-                format: int64
-              estimatedSize:
-                type: integer
-                format: int64
-              hasCompleteStepAnalysis:
-                type: boolean
-              recordClass:
-                type: string
-              answerSpecComplete:
-                type: boolean
-              answerSpec:
-                type: object
-                properties:
-                  questionName:
-                  parameters:
-                  filters:
-                    type: array
-                  viewFilters:
-                    type: array
-                  wdkWeight:
-                  legacyFilterName:
-                    type: string
-                    required: false
-              isValid:
-                type: boolean
-              invalidReason:
-                type: string
-              createdTime:
-                type: string
-              lastRunTime:
-                type: string
+            type: !include ../../../../../src/main/resources/schema/wdk/users/steps/post-response.json
 
   patch:
-    description: Update step
+    description: |
+      * Used to modify step (but not its placement within its strategy)
+      * The only modifiable fields are:
+          * AnswerSpec (i.e. revise)
+              * Question can be changed, but RecordClasses of inputs/output can not, since doing so could invalidate parent steps (boolean/transform)
+              * AnswerParams cannot be modified and must contain their existing values or answer spec will not validate
+          * Name
+          * IsCollapsible
+          * CollapsedName
+      * New answer spec is validated
+          * if validation fails, 400/500 response is returned and step is not updated
+      * If answer spec sent and valid
+          * Estimate size is cleared for this and all downstream steps
+          * Step is not run
+
     body:
       application/json:
+        type: !include ../../../../../src/main/resources/schema/wdk/users/steps/id/patch-request.json
     responses:
       200:
-        body:
-          application/json:
-            type: object
-            properties:
-              id:
-                type: integer
-                format: int64
-              displayName:
-                type: string
-              shortDisplayName:
-                type: string
-              customName:
-                type: string
-              baseCustomName:
-                type: string
-              isCollapsible:
-                type: boolean
-              collapsedName:
-                type: string
-              description:
-                type: string
-              ownerId:
-                type: integer
-                format: int64
-              strategyId:
-                type: integer
-                format: int64
-              estimatedSize:
-                type: integer
-                format: int64
-              hasCompleteStepAnalysis:
-                type: boolean
-              recordClass:
-                type: string
-              answerSpecComplete:
-                type: boolean
-              answerSpec:
-                type: object
-                properties:
-                  questionName:
-                  parameters:
-                  filters:
-                    type: array
-                  viewFilters:
-                    type: array
-                  wdkWeight:
-                  legacyFilterName:
-                    type: string
-                    required: false
-              isValid:
-                type: boolean
-              invalidReason:
-                type: string
-              createdTime:
-                type: string
-              lastRunTime:
-                type: string
+        description: Success
 
   /answer:
     get:
+      description: >
+        TODO: this endpoint does not appear in the step/strategy service doc
       responses:
         200:
           description: Success
+    post:
+      description: |
+        * Input JSON is identical to value of "formatting" property in answer service requests
+            * If body is empty, defaults are used; same as answer service
+        * Answer spec of the step is used to create answer
+        * Output is same as answer service (i.e. all normal reporters are supported)
+        * Step status fields (estimatedSize, isValid, last_run) are updated
+        * Branch steps (i.e. >0 answer params) not part of a strategy will error as invalid answer spec (since answer params should have empty string values)
+      responses:
+        200:
+          Success
 
   /count:
     get:
+      description: >
+        TODO: this endpoint does not appear in the step/strategy service doc
       responses:
         200:
           description: ???
 
   /filter:
     get:
-      description: filters available on this step
-
+      description: >
+        filters available on this step
+        TODO: this endpoint does not appear in the step/strategy service doc
     /{name}:
       uriParameters:
         name:
           type: string
       put:
-        description: add or update a filter on this step
+        description: >
+          add or update a filter on this step
+          TODO: this endpoint does not appear in the step/strategy service doc
 
   /params:
-    description: ???
     get:
+      description: >
+        TODO: this endpoint does not appear in the step/strategy service doc
       responses:
         200:
           description: Success
