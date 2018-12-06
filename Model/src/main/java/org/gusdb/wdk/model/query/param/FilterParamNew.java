@@ -896,7 +896,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
        filteredSql = FormatUtil.join(filterSqls, " INTERSECT ");
       }
-      LOG.info("filteredSql:\n" + filteredSql);
+      LOG.debug("filteredSql:\n" + filteredSql);
       return filteredSql;
     }
     catch (JSONException ex) {
