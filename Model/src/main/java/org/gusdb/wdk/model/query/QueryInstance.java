@@ -278,8 +278,8 @@ public abstract class QueryInstance<T extends Query> {
         // validate param
         param.validate(user, dependentValue, values);
       }
-      catch (Exception ex) {
-        ex.printStackTrace();
+      catch (WdkUserException ex) {
+        ex.printStackTrace();  // this is left over from when we caught all exceptions.  might be worth losing.
         errMsg = ex.getMessage();
         if (errMsg == null)
           errMsg = ex.getClass().getName();
