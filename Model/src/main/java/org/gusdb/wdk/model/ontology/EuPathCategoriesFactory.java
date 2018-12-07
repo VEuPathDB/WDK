@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.functional.TreeNode.StructureMapper;
 import org.gusdb.wdk.model.WdkModel;

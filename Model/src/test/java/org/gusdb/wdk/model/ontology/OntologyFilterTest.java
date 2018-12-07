@@ -3,10 +3,10 @@ package org.gusdb.wdk.model.ontology;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.functional.TreeNode;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.TreeNode.StructureMapper;
 import org.junit.Test;
 
