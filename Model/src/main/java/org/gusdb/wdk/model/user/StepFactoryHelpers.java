@@ -18,8 +18,8 @@ public class StepFactoryHelpers {
   // steps table and columns
   static final String TABLE_STEP = "steps";
   static final String COLUMN_STEP_ID = "step_id";
-  static final String COLUMN_LEFT_CHILD_ID = "left_child_id";
-  static final String COLUMN_RIGHT_CHILD_ID = "right_child_id";
+  static final String COLUMN_PREVIOUS_STEP_ID = "left_child_id";
+  static final String COLUMN_CHILD_STEP_ID = "right_child_id";
   static final String COLUMN_LAST_RUN_TIME = "last_run_time";
   static final String COLUMN_ESTIMATE_SIZE = "estimate_size";
   static final String COLUMN_ANSWER_FILTER = "answer_filter";
@@ -34,7 +34,7 @@ public class StepFactoryHelpers {
 
   static final String[] STEP_TABLE_COLUMNS = {
       COLUMN_USER_ID, COLUMN_STRATEGY_ID, COLUMN_PROJECT_ID, COLUMN_CREATE_TIME, COLUMN_IS_DELETED,
-      COLUMN_STEP_ID, COLUMN_LEFT_CHILD_ID, COLUMN_RIGHT_CHILD_ID, COLUMN_LAST_RUN_TIME, COLUMN_ESTIMATE_SIZE,
+      COLUMN_STEP_ID, COLUMN_PREVIOUS_STEP_ID, COLUMN_CHILD_STEP_ID, COLUMN_LAST_RUN_TIME, COLUMN_ESTIMATE_SIZE,
       COLUMN_ANSWER_FILTER, COLUMN_CUSTOM_NAME, COLUMN_IS_VALID, COLUMN_COLLAPSED_NAME, COLUMN_IS_COLLAPSIBLE,
       COLUMN_ASSIGNED_WEIGHT, COLUMN_PROJECT_VERSION, COLUMN_QUESTION_NAME, COLUMN_DISPLAY_PARAMS
   };
