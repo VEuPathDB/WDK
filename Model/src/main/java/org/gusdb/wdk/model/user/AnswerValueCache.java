@@ -121,7 +121,7 @@ public class AnswerValueCache {
       if (!applyViewFilters) {
         // saves updated estimate size
         step.updateEstimatedSize(displayResultSize);
-        step.update(false);
+        step.writeMetadataToDb(false);
       }
     }
     catch (WdkModelException ex) {

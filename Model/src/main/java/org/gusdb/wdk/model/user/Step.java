@@ -65,8 +65,8 @@ public class Step implements StrategyElement, Validateable<Step> {
   public static class StepBuilder {
 
     private final WdkModel _wdkModel;
-    private Long _userId;
-    private Long _stepId;
+    private long _userId;
+    private long _stepId;
     private String _projectId;
     private String _projectVersion;
     private Long _strategyId = null;
@@ -96,7 +96,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     private StepBuilder(Step step) {
       _wdkModel = step._wdkModel;
       _userId = step._user.getUserId();
-      _strategyId = step._strategy.getStrategyId();
+      _strategyId = step.getStrategy() == null ? null : step.getStrategy().getId();
       _stepId = step._stepId;
       _createdTime = step._createdTime;
       _lastRunTime = step._lastRunTime;
@@ -190,9 +190,6 @@ public class Step implements StrategyElement, Validateable<Step> {
     }
 
     public Step build(UserCache userCache, ValidationLevel validationLevel, Strategy strategy) throws WdkModelException {
-      if (_stepId == null) {
-        throw new WdkRuntimeException("Step ID must be set before calling build()");
-      }
       if (!((strategy == null && _strategyId == null) || (strategy != null && strategy.getStrategyId() == _strategyId))) {
         throw new WdkRuntimeException("Strategy passed to build (ID=" + strategy.getStrategyId() +
             ") does not match ID set on step builder (ID=" + _strategyId + ").");
@@ -213,6 +210,22 @@ public class Step implements StrategyElement, Validateable<Step> {
      */
     public RunnableObj<Step> buildRunnable(UserCache userCache, Strategy strategy) throws WdkModelException {
       return ValidObjectFactory.getRunnable(build(userCache, ValidationLevel.RUNNABLE, strategy));
+    }
+
+    public long getUserId() {
+      return _userId;
+    }
+
+    public String getProjectId() {
+      return _projectId;
+    }
+
+    public Long getStrategyId() {
+      return _strategyId;
+    }
+
+    public String getParamValue(String paramName) {
+      return _answerSpec.getParamValue(paramName);
     }
   }
 
@@ -416,7 +429,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   private int recalculateResultSize() throws WdkModelException {
     _estimatedSize = getAnswerValue().getResultSizeFactory().getDisplayResultSize();
     _estimatedSizeRefreshed = true;
-    update(true);
+    writeMetadataToDb(true);
     return _estimatedSize;
   }
 
@@ -607,16 +620,16 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   // saves attributes of the step that do NOT impact results or parent steps
-  public void update(boolean updateTime) throws WdkModelException {
+  public void writeMetadataToDb(boolean setLastRunTime) throws WdkModelException {
     // HACK: don't update if this is an in-memory only Step
     // remove this once we refactor the world of summary views, so they don't need such Steps
     if (!_inMemoryOnly) {
-      _wdkModel.getStepFactory().updateStep(getUser(), this, updateTime);
+      _wdkModel.getStepFactory().updateStep(getUser(), this, setLastRunTime);
     }
   }
 
   // saves param values AND filter values (AND step name and maybe other things)
-  public void saveParamFilters() throws WdkModelException {
+  public void writeParamFiltersToDb() throws WdkModelException {
     // get Step as it is in the DB (FIXME: we should be tracking this in memory)
     Step dbStep = _wdkModel.getStepFactory().getStepById(getStepId()).orElseThrow(() -> new WdkModelException());
     saveParamFilters(dbStep);

@@ -77,7 +77,7 @@ import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunctionWithException;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.BiFunctionWithException;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
@@ -529,13 +529,13 @@ public class StepFactory {
    * 
    * @param user
    * @param step
-   * @param updateTime
+   * @param setLastRunTime
    * @throws WdkModelException
    */
-  void updateStep(User user, Step step, boolean updateTime) throws WdkModelException {
+  void updateStep(User user, Step step, boolean setLastRunTime) throws WdkModelException {
     LOG.debug("updateStep(): step #" + step.getStepId() + " new custom name: '" + step.getBaseCustomName() + "'");
     // update custom name
-    Date lastRunTime = updateTime ? new Date() : step.getLastRunTime();
+    Date lastRunTime = setLastRunTime ? new Date() : step.getLastRunTime();
     PreparedStatement psStep = null;
     String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_CUSTOM_NAME + " = ?, " +
         COLUMN_LAST_RUN_TIME + " = ?, " + COLUMN_IS_DELETED + " = ?, " + COLUMN_IS_COLLAPSIBLE + " = ?, " +

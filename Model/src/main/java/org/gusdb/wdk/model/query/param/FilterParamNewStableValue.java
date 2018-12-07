@@ -372,8 +372,8 @@ public class FilterParamNewStableValue {
       String maxStr = getMaxStringSql();
       String rowValue = metadataTableName + "." + columnName;
       List<String> conditions = new ListBuilder<String>()
-        .addIf(minStr != null, rowValue + " >= " + minStr)
-        .addIf(maxStr != null, rowValue + " <= " + maxStr)
+        .addIf(val -> minStr != null, rowValue + " >= " + minStr)
+        .addIf(val -> maxStr != null, rowValue + " <= " + maxStr)
         .toList();
       return (minStr == null && maxStr == null ?
           " 1=1 " : // return "true" because we want to retain all values (i.e. no filter on existing range)

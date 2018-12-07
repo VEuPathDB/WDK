@@ -186,14 +186,14 @@ public class StrategyBean {
   /**
    * @return
    * @throws WdkModelException 
-   * @see org.gusdb.wdk.model.user.Strategy#getEstimateSize()
+   * @see org.gusdb.wdk.model.user.Strategy#getEstimatedSize()
    */
   public int getEstimateSize() throws WdkModelException {
-    return strategy.getEstimateSize();
+    return strategy.getEstimatedSize();
   }
 
   public String getEstimateSizeNoCalculate() {
-    return strategy.getEstimateSizeNoCalculate();
+    return strategy.getEstimatedSizeNoCalculate();
   }
 
   private String formatDate(Date date) {

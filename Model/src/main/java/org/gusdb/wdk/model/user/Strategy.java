@@ -1,7 +1,10 @@
 package org.gusdb.wdk.model.user;
 
+import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.defaultOnException;
+import static org.gusdb.fgputil.functional.Functions.getMapFromList;
 import static org.gusdb.fgputil.functional.Functions.reduce;
+import static org.gusdb.fgputil.functional.Functions.wrapException;
 import static org.gusdb.wdk.model.user.StepContainer.withId;
 
 import java.util.ArrayList;
@@ -10,24 +13,22 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Stack;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.collection.ReadOnlyHashMap.Builder;
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.wdk.model.WdkIllegalArgumentException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
@@ -168,7 +169,7 @@ public class Strategy implements StrategyElement, StepContainer {
       return this;
     }
 
-    public Strategy build(UserCache userCache, ValidationLevel validationLevel) {
+    public Strategy build(UserCache userCache, ValidationLevel validationLevel) throws WdkModelException {
       return new Strategy(this, userCache.get(_userId), validationLevel);
     }
   }
@@ -195,7 +196,7 @@ public class Strategy implements StrategyElement, StepContainer {
   private long _rootStepId; // <- MODIFIABLE
   private final Map<Long, Step> _stepMap;
 
-  private Strategy(StrategyBuilder strategyBuilder, User user, ValidationLevel validationLevel) {
+  private Strategy(StrategyBuilder strategyBuilder, User user, ValidationLevel validationLevel) throws WdkModelException {
     _user = user;
     _wdkModel = strategyBuilder._wdkModel;
     _strategyId = strategyBuilder._strategyId;
@@ -212,7 +213,101 @@ public class Strategy implements StrategyElement, StepContainer {
     _signature = strategyBuilder._signature;
     _isPublic = strategyBuilder._isPublic;
     _rootStepId = strategyBuilder._rootStepId;
-    _stepMap = createStepTree(user, _rootStepId, strategyBuilder._stepMap.values(), validationLevel);
+    _stepMap = validateStepTree(user, _rootStepId, strategyBuilder._stepMap, validationLevel);
+  }
+
+  private Map<Long, Step> validateStepTree(User user, long rootStepId, Map<Long, StepBuilder> steps,
+      ValidationLevel validationLevel) throws WdkModelException {
+
+    // Confirm project and user id match across strat and all steps, and that steps were properly assigned
+    for (StepBuilder step : steps.values()) {
+      String identifier = "Step " + step.getStepId();
+      if (_user.getUserId() != step.getUserId()) {
+        throw new WdkModelException(identifier + " does not have the same owner as its strategy, " + _strategyId);
+      }
+      if (!_projectId.equals(step.getProjectId())) {
+        throw new WdkModelException(identifier + " does not have the same project as its strategy, " + _strategyId);
+      }
+      Long stepStratId = step.getStrategyId();
+      if (stepStratId == null || _strategyId != stepStratId.longValue()) {
+        throw new WdkModelException(identifier + " was given to strategy " + _strategyId + " but belongs to strategy " + stepStratId + " (i.e. SQL is broken).");
+      }
+    }
+
+    // temporarily build an actual tree of the steps from a copy of the step map
+    Map<Long, StepBuilder> stepMap = new HashMap<>(steps); // make a copy since buildTree modifies
+    TreeNode<StepBuilder> tree = buildTree(stepMap, rootStepId);
+    if (!stepMap.isEmpty()) {
+      throw new WdkModelException("Strategy " + _strategyId + " has been " +
+          "assigned the following steps which are not referenced in its tree: " +
+          join(stepMap.values().stream().map(step -> step.getStepId()), ", "));
+    }
+
+    // build StepBuilders from the bottom up into a tree of Steps
+    UserCache userCache = new UserCache(user);
+    Strategy thisStrategy = this;
+    try {
+      TreeNode<Step> stepTree = tree.mapStructure((builder, mappedChildren) ->
+        wrapException(() -> new TreeNode<>(
+          builder.build(userCache, validationLevel, thisStrategy))
+            .addChildNodes(mappedChildren, node -> true)));
+      return getMapFromList(stepTree.findAll(node -> true), node ->
+          new TwoTuple<Long,Step>(node.getContents().getStepId(), node.getContents()));
+    }
+    catch (Exception e) {
+      return WdkModelException.unwrap(e, Map.class);
+    }
+  }
+
+  /**
+   * Recursive function builds a tree of step builders from the passed map,
+   * starting by assigning the stepbuilder of stepId as a child to parentNode.
+   * If parentNode is null, an initial node is created for the root.
+   * 
+   * @param steps
+   * @param stepId
+   * @param parentNode
+   * @return
+   * @throws WdkModelException 
+   */
+  private TreeNode<StepBuilder> buildTree(Map<Long, StepBuilder> steps, long stepId) throws WdkModelException {
+    StepBuilder step = steps.get(stepId);
+    if (step == null) {
+      throw new WdkModelException("Step " + stepId + " is referenced in the" +
+          " tree of strategy " + _strategyId + " but has not been assigned to that strategy.");
+    }
+    // create a node for this step and remove from the map
+    TreeNode<StepBuilder> node = new TreeNode<>(step);
+    steps.remove(stepId);
+
+    // check for answer params; if not present or undeterminable (bad question name), simply return
+    String questionName = step.getAnswerSpec().getQuestionName();
+    Optional<List<AnswerParam>> answerParams = _wdkModel.getQuestion(questionName)
+        .map(question -> question.getQuery().getAnswerParams());
+
+    // Check if answer params are present.  If not present in optional, then
+    // question name is invalid in this step; if leaf step, that's ok- will just
+    // be invalid, but if boolean/transform, then the branch below it is
+    // irretrieveable and will result in a WdkModelException since extra steps
+    // will be found in this strategy.  This is probably ok since we don't
+    // change boolean/transform question names very often.  If it's NOT ok,
+    // we'll have to reintroduce the child/previous DB cols back into this code,
+    // OR ignore strats with extra (non-referenced) steps and not throw an
+    // exception when that case is found.
+    if (answerParams.isPresent()) {
+      // answer params are present; find child steps
+      for (String paramValue : answerParams.get().stream()
+          .map(param -> step.getParamValue(param.getName()))
+          .collect(Collectors.toList())) {
+        if (FormatUtil.isInteger(paramValue)) { // skip if non-numeric; param will fail validation
+          Long childStepId = Long.valueOf(paramValue);
+          node.addChildNode(buildTree(steps, childStepId));
+        }
+      }
+    }
+
+    // all child nodes have been added; return node for this step
+    return node;
   }
 
   public User getUser() {
@@ -250,13 +345,6 @@ public class Strategy implements StrategyElement, StepContainer {
   public Step getRootStep() {
     return findFirstStep(withId(_rootStepId)).orElseThrow(
         () -> new WdkRuntimeException("Root step ID " + _rootStepId + " no longer present in strategy."));
-  }
-
-  public void setRootStep(Step step) throws WdkModelException {
-    verifySameOwnerAndProject(this, step);
-    // also update the cached info
-    _stepMap.put(step.getStepId(), step);
-    _rootStepId = step.getStepId();
   }
 
   @Override
@@ -299,265 +387,7 @@ public class Strategy implements StrategyElement, StepContainer {
     return getRootStep().getRecordClass();
   }
 
-  /**
-   * Insert a new step before the target. The new step will become the previous step of the target, and the
-   * old previousStep of the target should become the previousStep of the new step.
-   * 
-   * @param newStep
-   *          the newStep
-   * @param targetId
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public Map<Long, Long> insertStepBefore(Step newStep, long targetId) throws WdkModelException,
-      WdkUserException {
-    Step targetStep = findFirstStep(withId(targetId)).get();
-    verifySameOwnerAndProject(this, targetStep);
-
-    Map<Long, Long> rootMap = new HashMap<>();
-
-    // if the strategy is saved, need to make a unsaved copy first
-    if (getIsSaved())
-      update(false);
-
-    // make sure the previousStep of the target is now the previousStep of newStep
-    if (targetStep.isFirstStep()) { // inserting before first step will cause the first step being replaced by
-      // the new step, while old first step will become the child of this new step
-      if (newStep.getChildStep() == null || newStep.getChildStep().getStepId() != targetId)
-        throw new WdkUserException("Cannot insert step #" + newStep.getStepId() + " before step #" +
-            targetId + " since it will corrupt the structure of the strategy #" + _strategyId);
-
-      // if the first step has any step upstream, will link it to the new step
-      Step nextStep = getNext(targetStep);
-      if (nextStep != null) { // insert the new step in the same strategy panel
-        nextStep.checkPreviousAllowed(newStep);
-        nextStep.setPreviousStep(newStep);
-        nextStep.saveParamFilters();
-      }
-      else { // the target is the only step in the strategy/nested strategy.
-        Step parentStep = getParent(targetStep);
-        if (parentStep != null) {
-          // add the new step as the last one in a nested strategy
-          // copy information from target step
-          newStep.setCollapsible(targetStep.isCollapsible());
-          newStep.setCollapsedName(targetStep.getCollapsedName());
-          newStep.update(false); // don't need to update LastRunTime
-          targetStep.setCollapsible(false);
-          targetStep.update(false);
-
-          // check and set the newStep as the child of the parent, to replace the target step
-          parentStep.checkChildAllowed(newStep);
-          parentStep.setChildStep(newStep);
-          parentStep.saveParamFilters();
-          rootMap.put(targetId, newStep.getStepId());
-        }
-        else { // target is at the end of the strategy, set newStep as the end of the strategy
-          setRootStep(newStep);
-          update(false); // don't overwrite a saved strategy.
-          rootMap.put(targetId, newStep.getStepId());
-        }
-      }
-    }
-    else { // target is not the first, then the previousStep of the target will become the previous of the
-      // new step.
-      if (targetStep.getPreviousStepId() != newStep.getPreviousStepId())
-        throw new WdkUserException("Cannot insert step #" + newStep.getStepId() + " before step #" +
-            targetId + " since it will corrupt the structure of the strategy #" + _strategyId);
-
-      // make sure the target step can take the newStep as previousStep
-      targetStep.checkPreviousAllowed(newStep);
-
-      targetStep.setPreviousStep(newStep);
-      targetStep.saveParamFilters();
-    }
-    return rootMap;
-  }
-
-  /**
-   * Inserting a step after the target. This is used when we add steps in main and nested strategy. The
-   * newStep will become the next step of the target.
-   * 
-   * @param newStep
-   *          The next step has to be a combined step, with the target as the previous step of it.
-   * @param targetId
-   *          a target step id that can live anywhere in the step tree.
-   * @return a map of oldStepId to newStepId that are roots of the strategy or nested strategy.
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public Map<Long, Long> insertStepAfter(Step newStep, long targetId) throws WdkModelException,
-      WdkUserException {
-    Map<Long, Long> rootMap = new HashMap<>();
-
-    // make sure the newStep uses target step as its previousStep
-    Step previousStep = newStep.getPreviousStep();
-    if (previousStep == null || previousStep.getStepId() != targetId)
-      throw new WdkUserException("Cannot insert step #" + newStep.getStepId() + " after step #" + targetId +
-          " since it will corrupt the structure of the strategy #" + _strategyId);
-
-    // if the strategy is saved, need to make a unsaved copy first
-    if (getIsSaved())
-      update(false);
-
-    Step targetStep = findFirstStep(withId(targetId))
-        .orElseThrow(() -> new WdkModelException("Could not find target step."));
-
-    Step nextStep = getNext(targetStep);
-    if (nextStep != null) { // insert in the middle of a strategy
-      // make sure the next step can take the newStep as previousStep
-      nextStep.checkPreviousAllowed(newStep);
-      // link new step to target step.
-      targetStep.setNextStep(newStep);
-      // link next step to the new step
-      nextStep.setPreviousStep(newStep);
-      nextStep.saveParamFilters();
-    }
-    else { // newStep will be the last one in main/nested strategy
-      Step parentStep = getParent(targetStep);
-      if (parentStep != null) {
-        // make sure the parent step can take the newStep as childStep
-        parentStep.checkChildAllowed(newStep);
-      }
-
-      // copy over collapsing info
-      if (previousStep.isCollapsible()) {
-        newStep.setCollapsible(previousStep.isCollapsible());
-        newStep.setCollapsedName(previousStep.getCollapsedName());
-        newStep.update(false);
-
-        // reset the colllapsing infom
-        previousStep.setCollapsible(false);
-        previousStep.setCollapsedName(null);
-        previousStep.update(false);
-      }
-
-      rootMap.put(previousStep.getStepId(), newStep.getStepId());
-
-      if (parentStep != null) {
-        // a step is inserted at the end of a nested strategy -- ie. add step on nested strategy.
-        // the new step will become the child of the parentStep
-        parentStep.setChildStep(newStep);
-        parentStep.saveParamFilters();
-      }
-      else { // a step is inserted at the end of main strategy
-        setRootStep(newStep);
-        update(false);
-      }
-    }
-    return rootMap;
-  }
-
-  /**
-   * Delete the given step from the strategy. Additional step, or even the current strategy maybe deleted,
-   * depending on the following cases:
-   * 
-   * #1 - if there is only one step in the strategy and it's deleted, then the whole strategy will be deleted.
-   * 
-   * #2 - if the step to be deleted is a combined one, all the steps in its child branch will also be deleted.
-   * 
-   * #3 - if the step has previous and next, the previous will be connected to the next;
-   * 
-   * #2 & #3 means that when deleting a nested step in the main strategy, we should send the id of the boolean
-   * that takes the nested step, and it will delete both boolean and the whole nested strategy; however, if
-   * the root of the nested strategy is passed in, the only the root will be deleted, and the remaining steps
-   * in the nested strategy will become a new sub-tree.
-   * 
-   * @param step
-   * @return a map of root id changes (both main & nested strategies) {old, new}; the information will be used
-   *         to update the states of active strategies.
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public Map<Long, Long> deleteStep(Step step) throws WdkModelException, WdkUserException {
-    StepFactory stepFactory = _wdkModel.getStepFactory();
-    List<Step> deletes = new ArrayList<>();
-    Map<Long, Long> rootMap = new HashMap<>();
-
-    // if the strategy is saved, need to make a unsaved copy first
-    if (getIsSaved())
-      update(false);
-
-    // if a step has child, delete all the steps on that branch.
-    Step childStep = step.getChildStep();
-    if (childStep != null)
-      deletes.addAll(childStep.getNestedBranch());
-    deletes.add(step); // delete the current step
-
-    // keep a reference to previous step, in case we need to delete multiple steps. this previousStep will be
-    // used to connect to the remaining steps.
-    Step previousStep = step.getPreviousStep();
-
-    // loop while the current step is marked to be deleted.
-    while (step != null && deletes.contains(step)) {
-      Step nextStep = getNext(step);
-      if (nextStep != null) { // go to the next step in the same panel.
-        step = nextStep;
-        if (previousStep == null) {
-          if (step.isCombined() && !step.isTransform()) {
-            // a two-input combined step, since there is no previousStep, the child of it will become new
-            // previousStep, and this combined step will be deleted
-            previousStep = step.getChildStep();
-          } // otherwise, a transform step, and since there is no previousStep, it will also be deleted
-          deletes.add(step);
-        }
-        else { // otherwise, previous step exists, no more deletion needed. will exit loop.
-          // check if the step can take the previous step
-          stepFactory.dropDependency(previousStep.getStepId(), StepFactoryHelpers.COLUMN_LEFT_CHILD_ID);
-          step.checkPreviousAllowed(previousStep);
-          step.setPreviousStep(previousStep);
-          step.saveParamFilters();
-        }
-      }
-      else { // no next step exists, the current step must be a root of main/nested strategy.
-        Step parentStep = getParent(step);
-        if (parentStep != null) { // found a parent, which means we are deleting in a nested strategy.
-          if (previousStep != null) { // make the previous step in the nested strategy a new root there.
-            // get the collapsing info from old root of the nested strategy.
-            previousStep.setCollapsible(step.isCollapsible());
-            previousStep.setCollapsedName(step.getCollapsedName());
-            previousStep.update(false);
-            rootMap.put(step.getStepId(), previousStep.getStepId());
-
-            // check if parent can take previous step as child
-            stepFactory.dropDependency(previousStep.getStepId(), StepFactoryHelpers.COLUMN_RIGHT_CHILD_ID);
-            parentStep.checkChildAllowed(previousStep);
-            parentStep.setChildStep(previousStep);
-            parentStep.saveParamFilters();
-            break;
-          }
-          else { // no previousStep
-            // Otherwise, the last step from nested strategy is deleted, we will also delete the parent; but
-            // now the previousStep will become the previous one from the parent.
-            previousStep = parentStep.getPreviousStep();
-            deletes.add(parentStep);
-          }
-        } // otherwise, we are deleting the last step in main branch, will handle it outside of the loop
-        step = parentStep;
-      }
-    }
-
-    if (step == null) {
-      if (previousStep != null) { // current step is null, then previous step should become new root.
-        rootMap.put(getRootStepId(), previousStep.getStepId());
-        setRootStep(previousStep);
-        update(false);
-      }
-      else { // no more steps left in the strategy, delete the strategy itself.
-        stepFactory.deleteStrategy(_strategyId);
-        rootMap.clear();
-      }
-    }
-
-    // after strategy is deleted (if needed), will now delete steps
-    LOG.debug("Total " + deletes.size() + " steps deleted.");
-    for (Step delete : deletes) {
-      stepFactory.deleteStep(delete.getStepId());
-    }
-
-    return rootMap;
-  }
-
-  public Step getFirstStep() throws WdkModelException {
+  public Step getFirstStep() {
     Step step = getRootStep();
     while (step.getPreviousStep() != null) {
       step = step.getPreviousStep();
@@ -584,6 +414,7 @@ public class Strategy implements StrategyElement, StepContainer {
     return getJSONContent(false);
   }
 
+  // TODO: see if this is really the JSON we want to send and also whether we want isValid in the checksum
   public JSONObject getJSONContent(boolean forChecksum) throws WdkModelException {
     JSONObject jsStrategy = new JSONObject();
 
@@ -599,7 +430,7 @@ public class Strategy implements StrategyElement, StepContainer {
       if (!forChecksum) {
         jsStrategy.put("valid", isValid());
         jsStrategy.put("version", getVersion());
-        jsStrategy.put("resultSize", getEstimateSize());
+        jsStrategy.put("resultSize", getEstimatedSize());
       }
 
       JSONObject stepContent = getRootStep().getJSONContent(_strategyId, forChecksum);
@@ -649,138 +480,15 @@ public class Strategy implements StrategyElement, StepContainer {
   }
 
 
-  public int getEstimateSize() {
+  public int getEstimatedSize() {
     // FIXME: could root step really be null?  I think if root step is deleted, strategy id deleted?
     return (getRootStep() == null ? 0 : defaultOnException(() -> getRootStep().getResultSize(), 0));
   }
 
-  public String getEstimateSizeNoCalculate() {
+  public String getEstimatedSizeNoCalculate() {
     // FIXME: could root step really be null?  I think if root step is deleted, strategy id deleted?
     int latestStepEstimateSize = getRootStep() == null ? 0 : getRootStep().getEstimateSize();
     return (latestStepEstimateSize == Step.RESET_SIZE_FLAG ? "Unknown" : String.valueOf(latestStepEstimateSize));
-  }
-
-  /**
-   * Get the parent of the given step in the context of the strategy, which maybe different from the parent
-   * set in the step itself (in the case that the step is updated, but the strategy tree hasn't been updated).
-   * 
-   * @param step
-   * @return the parent of the step, or null if the step doesn't have parent, or doesn't belong to the
-   *         strategy.
-   * @throws WdkModelException
-   */
-  private Step getParent(Step step) throws WdkModelException {
-    // use a stack to store the previous steps to be examined.
-    Stack<Step> stack = new Stack<>();
-    stack.push(getRootStep());
-    while (!stack.isEmpty()) {
-      Step s = stack.pop();
-      Step parent = null;
-      while (s != null) {
-        if (s.getPreviousStep() != null)
-          stack.push(s.getPreviousStep());
-        if (s.getStepId() == step.getStepId())
-          return parent;
-        parent = s;
-        s = s.getChildStep();
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Get the next of the given step, which could be different from the next stored in the step itself (in the
-   * case that step is updated, but strategy hasn't been updated).
-   * 
-   * @param step
-   * @return return the next of the given step, or null if the step doesn't have next, or if the step doesn't
-   *         belong the the strategy.
-   * @throws WdkModelException
-   */
-  private Step getNext(Step step) throws WdkModelException {
-    // use a stack to store the child steps to be examined.
-    Stack<Step> stack = new Stack<>();
-    stack.push(getRootStep());
-    while (!stack.isEmpty()) {
-      Step s = stack.pop();
-      Step next = null;
-      while (s != null) {
-        if (s.getChildStep() != null)
-          stack.push(s.getChildStep());
-        if (s.getStepId() == step.getStepId())
-          return next;
-        next = s;
-        s = s.getPreviousStep();
-      }
-    }
-    return null;
-  }
-
-  private static Map<Long, Step> createStepTree(User user, long rootStepId, Collection<StepBuilder> steps,
-      ValidationLevel validationLevel) {
-
-    // 1. Confirm project and user id match across strat and all steps, and that steps were properly assigned
-    for (StepBuilder step : steps) {
-      String identifier = "Step " + step.getStepId();
-      if (_userId != step.getUserId().longValue()) {
-        throw new WdkModelException(identifier + " does not have the same owner as its strategy, " + _strategyId);
-      }
-      if (!_projectId.equals(step.getProjectId())) {
-        throw new WdkModelException(identifier + " does not have the same project as its strategy, " + _strategyId);
-      }
-      if (_strategyId != step.getStrategyId().longValue()) {
-        throw new WdkModelException(identifier + " was given to strategy " + _strategyId + " but belongs to strategy " + step.getStrategyId() + " (i.e. SQL is broken).");
-      }
-    }
-
-    // temporary map to keep track of which steps have been referenced so far
-    Map<Long, Boolean> stepRefMap = Functions.getMapFromList(_stepMap.values(),
-        step -> new TwoTuple<Long,Boolean>(step.getId(), false));
-
-    // 2. Make sure all referenced steps are present and used only once
-    _latestStep = getReferencedStep(stepRefMap, this, getRootStepId(), false);
-    for (Step step : _stepMap.values()) {
-      step.setPreviousStep(getReferencedStep(stepRefMap, step, step.getPreviousStepId(), true));
-      step.setChildStep(getReferencedStep(stepRefMap, step, step.getChildStepId(), true));
-    }
-
-    // 3. Throw exception if steps are assigned to this strat that are not in the tree
-    for (Entry<Long,Boolean> ref : stepRefMap.entrySet()) {
-      if (!ref.getValue()) {
-        throw new WdkModelException("Step " + ref.getKey() + " has strategy ID " + _strategyId +
-            " but is not referenced as the root step or by any steps in the strategy.");
-      }
-    }
-
-    Functions.getMapFromList(strategyBuilder._stepMap.values(),
-        stepBuilder -> new TwoTuple<>(stepBuilder.getStepId(),
-            stepBuilder.build(new UserCache(user), validationLevel, this)));
-
-    // 4. Validate each step in the strategy; regardless of validity, strategy can be sent out and hopefully displayed
-    for (Step step : _stepMap.values()) {
-      step.finish(userCache, this);
-    }
-  }
-
-  private Step getReferencedStep(Map<Long,Boolean> stepRefMap, StrategyElement parent, long stepId, boolean allowZero) throws WdkModelException {
-    String parentIdentifier = parent.getClass().getSimpleName() + " " + parent.getId();
-    if (stepId == 0) {
-      if (allowZero) {
-        return null;
-      }
-      else {
-        throw new WdkModelException(parentIdentifier + " " + " must refer to a valid step ID.");
-      }
-    }
-    Boolean isReferenced = stepRefMap.get(stepId);
-    if (isReferenced == null) {
-      throw new WdkModelException(parentIdentifier + " refers to step " + stepId + " which is not part of its strategy.");
-    }
-    if (isReferenced) {
-      throw new WdkModelException("Step " + stepId + " is referenced by >1 steps in strategy " + parent.getStrategyId());
-    }
-    stepRefMap.put(stepId, true);
-    return _stepMap.get(stepId);
   }
 
   @Override
@@ -790,38 +498,6 @@ public class Strategy implements StrategyElement, StepContainer {
 
   public int getNumSteps() {
     return _stepMap.size();
-  }
-
-  @Deprecated // used???
-  public int getNumStepsUi() {
-    return _stepMap.values().stream()
-      // FIXME: the following line has issues if getQuestion() returns null (i.e. invalid question name)
-      .filter(step -> step.getAnswerSpec().getQuestion().getQuery().getAnswerParamCount() < 2)
-      .collect(Collectors.counting()).intValue();
-  }
-
-  private void verifySameOwnerAndProject(Strategy strategy, Step step) throws WdkModelException {
-    // check that users match
-    if (strategy.getUser().getUserId() != step.getUser().getUserId()) {
-      throw new WdkIllegalArgumentException(Step.getVerificationPrefix() +
-          "Cannot assign a root step to a strategy unless they have the same" + "owner.  Existing strategy " +
-          strategy.getStrategyId() + " has" + "owner " + strategy.getUser().getUserId() + " (" +
-          strategy.getUser().getEmail() + ")\n  Call made to assign the " +
-          "following root step (see stack below for how):\n  Newly assigned" + "step " + step.getStepId() +
-          " has owner " + step.getUser().getUserId() + " (" + step.getUser().getEmail() + ")");
-    }
-
-    // check that projects both match current project
-    String projectId = _wdkModel.getProjectId();
-    if (!strategy.getProjectId().equals(projectId) || !step.getProjectId().equals(projectId)) {
-      throw new WdkIllegalArgumentException(Step.getVerificationPrefix() +
-          "Cannot assign a root step to a strategy " +
-          "unless they have the same project.  Project IDs don't match " +
-          "during assignment of root step to strategy!!\n  Currently loaded " + "model has project " +
-          projectId + ".\n  Root step to be assigned (" + step.getStepId() + ") has project " +
-          step.getProjectId() + ".\n  " + "Strategy being assigned step (" + strategy.getStrategyId() +
-          ") has project " + strategy.getProjectId());
-    }
   }
 
   /**
@@ -837,8 +513,11 @@ public class Strategy implements StrategyElement, StepContainer {
     return _stepMap.values().stream().filter(search.getPredicate()).findFirst();
   }
 
-  public Collection<Step> getAllSteps() {
-    return _stepMap.values();
+  /**
+   * @return all steps in this strategy
+   */
+  public List<Step> getAllSteps() {
+    return new ArrayList<>(_stepMap.values());
   }
 
 }

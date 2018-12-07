@@ -197,7 +197,7 @@ public class StepBean {
     }
 
     public void update(boolean updateTime) throws WdkModelException {
-        step.update(updateTime);
+        step.writeMetadataToDb(updateTime);
     }
 
     public String getDescription() {
@@ -481,7 +481,7 @@ public class StepBean {
   }
 
   public void saveParamFilters() throws WdkModelException {
-    step.saveParamFilters();
+    step.writeParamFiltersToDb();
   }
 
   public void setAssignedWeight(int assignedWeight) {
