@@ -1,69 +1,7 @@
 package org.gusdb.wdk.model.user;
 
-import static org.gusdb.fgputil.db.SqlUtils.setNullableLong;
-import static org.gusdb.fgputil.db.SqlUtils.setNullableString;
-import static org.gusdb.fgputil.functional.Functions.f2Swallow;
-import static org.gusdb.fgputil.functional.Functions.filter;
-import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
-import static org.gusdb.fgputil.functional.Functions.getMapFromList;
-import static org.gusdb.wdk.model.user.StepContainer.withId;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ANSWER_FILTER;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ASSIGNED_WEIGHT;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_COLLAPSED_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_CREATE_TIME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_CUSTOM_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_DESCRIPTION;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_DISPLAY_PARAMS;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ESTIMATE_SIZE;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_COLLAPSIBLE;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_DELETED;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_PUBLIC;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_SAVED;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_MODIFIED_TIME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_RUN_TIME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_VIEWED_TIME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LEFT_CHILD_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_PROJECT_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_PROJECT_VERSION;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_QUESTION_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_RIGHT_CHILD_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ROOT_STEP_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_SAVED_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_SIGNATURE;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_STEP_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_STRATEGY_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_USER_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_VERSION;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.TABLE_STEP;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.TABLE_STRATEGY;
-
-import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import javax.sql.DataSource;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
-import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.Wrapper;
@@ -72,6 +10,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.platform.Oracle;
 import org.gusdb.fgputil.db.platform.PostgreSQL;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.runner.BasicArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
@@ -81,7 +20,6 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.BiFunctionWithException
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
-import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.Utilities;
@@ -106,15 +44,27 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
-import org.gusdb.wdk.model.user.StepFactoryHelpers.NameCheckInfo;
-import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
-import org.gusdb.wdk.model.user.Strategy.StrategyBuilder;
-import org.json.JSONException;
+import org.gusdb.wdk.model.user.StepFactoryHelpers.*;
 import org.json.JSONObject;
+
+import javax.sql.DataSource;
+import java.sql.*;
+import java.util.Date;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.gusdb.fgputil.db.SqlUtils.setNullableLong;
+import static org.gusdb.fgputil.db.SqlUtils.setNullableString;
+import static org.gusdb.fgputil.functional.Functions.filter;
+import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
+import static org.gusdb.wdk.model.user.StepContainer.withId;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.*;
 
 /**
  * Provides interface to the database to find, read, and write Step and Strategy objects to DB
- * 
+ *
  * @author rdoherty
  */
 public class StepFactory {
@@ -151,7 +101,7 @@ public class StepFactory {
   public Step createStep(User user, Question question, Map<String, String> dependentValues,
       AnswerFilterInstance filter, FilterOptionList filterOptions, int assignedWeight, boolean deleted,
       String customName, boolean isCollapsible, String collapsedName, Strategy strategy) throws WdkModelException {
-  
+
     LOG.debug("Creating step!");
 
     // define creation time
@@ -222,9 +172,7 @@ public class StepFactory {
         .append(", ?, ?)") // save custom cases til the end
         .toString();
 
-    PreparedStatement ps = null;
-    try {
-      ps = SqlUtils.getPreparedStatement(_userDbDs, sql);
+    try (PreparedStatement ps = SqlUtils.getPreparedStatement(_userDbDs, sql)) {
       ps.setLong(1, step.getStepId());
       ps.setLong(2, step.getUser().getUserId());
       ps.setTimestamp(3, new Timestamp(step.getCreatedTime().getTime()));
@@ -244,9 +192,6 @@ public class StepFactory {
     }
     catch (SQLException ex) {
       throw new WdkModelException("Error while inserting step", ex);
-    }
-    finally {
-      SqlUtils.closeStatement(ps);
     }
   }
 
@@ -310,9 +255,9 @@ public class StepFactory {
     String userIdColumn = Utilities.COLUMN_USER_ID;
     try {
       StringBuilder sql = new StringBuilder("DELETE FROM " + stepTable);
-      sql.append(" WHERE " + userIdColumn + " = ? ");
+      sql.append(" WHERE ").append(userIdColumn).append(" = ? ");
       if (!allProjects) {
-        sql.append(" AND " + COLUMN_PROJECT_ID + " = ? ");
+        sql.append(" AND ").append(COLUMN_PROJECT_ID).append(" = ? ");
       }
       sql.append(" AND ").append(COLUMN_STEP_ID);
       sql.append(" NOT IN (SELECT ").append(COLUMN_ROOT_STEP_ID);
@@ -523,7 +468,7 @@ public class StepFactory {
   /**
    * This method updates the custom name, the time stamp of last running, isDeleted, isCollapsible, and
    * collapsed name
-   * 
+   *
    * @param user
    * @param step
    * @param setLastRunTime
@@ -668,7 +613,7 @@ public class StepFactory {
   }
 
   /**
-   * 
+   *
    * @param user
    * @param oldStrategy
    * @param stepIdsMap An output map of old to new step IDs. Steps recursively encountered in the copy are added by the copy
@@ -781,7 +726,7 @@ public class StepFactory {
     return childSteps.put(oldStep.getStepId(), newStep);
   }
 
-  private MapBuilder<Long, StepBuilder> copyAnswerAndDatasetParams(User oldUser, AnswerSpec oldSpec, User newUser, 
+  private MapBuilder<Long, StepBuilder> copyAnswerAndDatasetParams(User oldUser, AnswerSpec oldSpec, User newUser,
       AnswerSpecBuilder newSpec) throws WdkModelException {
     MapBuilder<Long,StepBuilder> newStepMap = new MapBuilder<>();
     for (Param param : oldSpec.getQuestion().getParams()) {
@@ -971,7 +916,7 @@ public class StepFactory {
           return strategy.orElseThrow(() -> new WdkModelException("Newly created strategy could not be found."));
         }
       }
-      
+
       // if newName is null, generate default name from root step (by adding/incrementing numeric suffix)
       else {
         newName = addSuffixToStratNameIfNeeded(user, root.getCustomName(), saved);
@@ -1030,6 +975,99 @@ public class StepFactory {
     return strategy.orElseThrow(() -> new WdkModelException("Newly created strategy could not be found."));
   }
 
+  /**
+   * Overwrite the details of a collection of steps in the database.
+   *
+   * @param steps The collection of steps that will be updated in the database.
+   *
+   * @throws WdkModelException if a connection to the database cannot be opened.
+   */
+  public void updateSteps(Collection<Step> steps) throws WdkModelException {
+    try {
+      updateSteps(_userDbDs.getConnection(), steps);
+    } catch (SQLException e) {
+      throw new WdkModelException(e);
+    }
+  }
+
+  /**
+   * Overwrite the details of a collection of steps in the database.
+   *
+   * @param con   Open connection to the DB.  This can be used to run the step
+   *              update queries in a controlled connection such as a
+   *              transaction.
+   * @param steps The collection of steps that will be updated in the database.
+   */
+  private void updateSteps(Connection con, Collection<Step> steps) {
+    final String sql = "UPDATE " + _userSchema + TABLE_STEP + "\n" +
+        "SET\n" +
+        "  " + COLUMN_LEFT_CHILD_ID   + " = ?,\n" +
+        "  " + COLUMN_RIGHT_CHILD_ID  + " = ?,\n" +
+        "  " + COLUMN_LAST_RUN_TIME   + " = ?,\n" +
+        "  " + COLUMN_ESTIMATE_SIZE   + " = ?,\n" +
+        "  " + COLUMN_ANSWER_FILTER   + " = ?,\n" +
+        "  " + COLUMN_CUSTOM_NAME     + " = ?,\n" +
+        "  " + COLUMN_IS_DELETED      + " = ?,\n" +
+        "  " + COLUMN_IS_VALID        + " = ?,\n" +
+        "  " + COLUMN_COLLAPSED_NAME  + " = ?,\n" +
+        "  " + COLUMN_IS_COLLAPSIBLE  + " = ?,\n" +
+        "  " + COLUMN_ASSIGNED_WEIGHT + " = ?,\n" +
+        "  " + COLUMN_PROJECT_ID      + " = ?,\n" +
+        "  " + COLUMN_PROJECT_VERSION + " = ?,\n" +
+        "  " + COLUMN_QUESTION_NAME   + " = ?,\n" +
+        "  " + COLUMN_STRATEGY_ID     + " = ?,\n" +
+        "  " + COLUMN_DISPLAY_PARAMS  + " = ?\n"  +
+        "WHERE\n" +
+        "  " + COLUMN_STEP_ID + " = ?";
+
+    final BasicArgumentBatch batch = new BasicArgumentBatch();
+    batch.setParameterTypes(new Integer[]{
+        Types.BIGINT,    // LEFT_CHILD_ID
+        Types.BIGINT,    // RIGHT_CHILD_ID
+        Types.TIMESTAMP, // LAST_RUN_TIME
+        Types.BIGINT,    // ESTIMATE_SIZE
+        Types.VARCHAR,   // ANSWER_FILTER
+        Types.VARCHAR,   // CUSTOM_NAME
+        Types.INTEGER,   // IS_DELETED
+        Types.INTEGER,   // IS_VALID
+        Types.VARCHAR,   // COLLAPSED_NAME
+        Types.INTEGER,   // IS_COLLAPSIBLE
+        Types.BIGINT,    // ASSIGNED_WEIGHT
+        Types.VARCHAR,   // PROJECT_ID
+        Types.VARCHAR,   // PROJECT_VERSION
+        Types.VARCHAR,   // QUESTION_NAME
+        Types.BIGINT,    // STRATEGY_ID
+        Types.CLOB,      // DISPLAY_PARAMS
+        Types.BIGINT     // STEP_ID
+    });
+
+    for (final Step step : steps) {
+      final AnswerSpec spec = step.getAnswerSpec();
+
+      batch.add(new Object[]{
+          // TODO: get left child id
+          // TODO: get right child id
+          step.getLastRunTime(),
+          step.getEstimateSize(),
+          spec.getLegacyFilterName(), // TODO: confirm this is correct
+          step.getCustomName(),
+          step.isDeleted() ? 1 : 0,
+          step.isValid() ? 1 : 0,
+          step.getCollapsedName(),
+          step.isCollapsible(),
+          // TODO: get assigned weight
+          step.getProjectId(),
+          step.getProjectVersion(),
+          spec.getQuestionName(),
+          step.getStrategyId(),
+          // TODO: get display params
+          step.getStepId()
+      });
+    }
+
+    new SQLRunner(con, sql).executeUpdateBatch(batch);
+  }
+
   private void updateStrategyId(long strategyId, Step rootStep) throws WdkModelException {
     String stepIdSql = selectStepAndChildren(rootStep.getStepId());
     String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_STRATEGY_ID + " = " + strategyId +
@@ -1050,7 +1088,7 @@ public class StepFactory {
         " WHERE " + Utilities.COLUMN_USER_ID + " = ?" +
         " AND " + COLUMN_IS_DELETED + " = " + _userDbPlatform.convertBoolean(false) +
         " AND " + COLUMN_PROJECT_ID + " = ?";
-      SingleLongResultSetHandler result = 
+      SingleLongResultSetHandler result =
         new SQLRunner(_userDbDs, sql, "wdk-step-factory-strategy-count").executeQuery(
           new Object[]{ user.getUserId(), _wdkModel.getProjectId() },
           new Integer[]{ Types.BIGINT, Types.VARCHAR },
@@ -1124,7 +1162,7 @@ public class StepFactory {
       while (rsNames.next())
         names.add(rsNames.getString(COLUMN_NAME));
 
-      // randomly find the first name that matches oldName (\d+).  
+      // randomly find the first name that matches oldName (\d+).
       // increment that numeric suffix, and continue looping until the incremented guys is not found.
       // that's our new name.
       String name = oldName;
@@ -1181,7 +1219,7 @@ public class StepFactory {
 
   /**
    * This method will reset the estimate size of the step and all other steps that depends on it.
-   * 
+   *
    * @param fromStep
    * @return
    * @throws WdkModelException
@@ -1199,7 +1237,7 @@ public class StepFactory {
 
   /**
    * Generates an SQL that will return the step and all the steps along the path back to the root.
-   * 
+   *
    * @param stepId
    * @return an SQL that returns a step_id column.
    * @throws WdkModelException
@@ -1229,7 +1267,7 @@ public class StepFactory {
 
   /**
    * TODO - consider refactor this code into platform.
-   * 
+   *
    * @param stepId
    * @return
    * @throws WdkModelException
