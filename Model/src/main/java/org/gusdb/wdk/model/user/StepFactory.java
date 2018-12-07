@@ -871,8 +871,9 @@ public class StepFactory {
     return createStrategy(user, root, name, savedName, saved, description, hidden, isPublic, strategyId);
   }
 
-  Strategy createStrategy(User user, long strategyId, Step root, String newName, String savedName, boolean saved,
-      String description, boolean hidden, boolean isPublic) throws WdkModelException {
+  Strategy createStrategy(User user, long strategyId, Step root, String newName,
+      String savedName, boolean saved, String description, boolean hidden,
+      boolean isPublic) throws WdkModelException {
 
     LOG.debug("creating strategy, saved=" + saved);
 
@@ -979,8 +980,8 @@ public class StepFactory {
    * @throws WdkModelException if a connection to the database cannot be opened.
    */
   public void updateSteps(Collection<Step> steps) throws WdkModelException {
-    try {
-      updateSteps(_userDbDs.getConnection(), steps);
+    try(Connection con = _userDbDs.getConnection()) {
+      updateSteps(con, steps);
     } catch (SQLException e) {
       throw new WdkModelException(e);
     }
