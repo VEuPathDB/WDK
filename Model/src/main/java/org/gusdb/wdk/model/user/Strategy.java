@@ -213,10 +213,10 @@ public class Strategy implements StrategyElement, StepContainer {
     _signature = strategyBuilder._signature;
     _isPublic = strategyBuilder._isPublic;
     _rootStepId = strategyBuilder._rootStepId;
-    _stepMap = validateStepTree(user, _rootStepId, strategyBuilder._stepMap, validationLevel);
+    _stepMap = buildSteps(user, _rootStepId, strategyBuilder._stepMap, validationLevel);
   }
 
-  private Map<Long, Step> validateStepTree(User user, long rootStepId, Map<Long, StepBuilder> steps,
+  private Map<Long, Step> buildSteps(User user, long rootStepId, Map<Long, StepBuilder> steps,
       ValidationLevel validationLevel) throws WdkModelException {
 
     // Confirm project and user id match across strat and all steps, and that steps were properly assigned
@@ -236,7 +236,7 @@ public class Strategy implements StrategyElement, StepContainer {
 
     // temporarily build an actual tree of the steps from a copy of the step map
     Map<Long, StepBuilder> stepMap = new HashMap<>(steps); // make a copy since buildTree modifies
-    TreeNode<StepBuilder> tree = buildTree(stepMap, rootStepId);
+    TreeNode<StepBuilder> builderTree = buildTree(stepMap, rootStepId);
     if (!stepMap.isEmpty()) {
       throw new WdkModelException("Strategy " + _strategyId + " has been " +
           "assigned the following steps which are not referenced in its tree: " +
@@ -247,7 +247,7 @@ public class Strategy implements StrategyElement, StepContainer {
     UserCache userCache = new UserCache(user);
     Strategy thisStrategy = this;
     try {
-      TreeNode<Step> stepTree = tree.mapStructure((builder, mappedChildren) ->
+      TreeNode<Step> stepTree = builderTree.mapStructure((builder, mappedChildren) ->
         wrapException(() -> new TreeNode<>(
           builder.build(userCache, validationLevel, thisStrategy))
             .addChildNodes(mappedChildren, node -> true)));
