@@ -418,9 +418,9 @@ public class StepFactory {
       }
     }
 
-    dropDependency(leftStepId, COLUMN_LEFT_CHILD_ID);
+    dropDependency(leftStepId, COLUMN_PREVIOUS_STEP_ID);
     if (rightStepId != 0) {
-      dropDependency(rightStepId, COLUMN_RIGHT_CHILD_ID);
+      dropDependency(rightStepId, COLUMN_CHILD_STEP_ID);
     }
 
     // construct the update sql
@@ -428,9 +428,9 @@ public class StepFactory {
     sql.append(_userSchema).append(TABLE_STEP).append(" SET ");
     sql.append(COLUMN_CUSTOM_NAME).append(" = ? ");
     if (query.isCombined()) {
-      sql.append(", " + COLUMN_LEFT_CHILD_ID + " = " + leftStepId);
+      sql.append(", " + COLUMN_PREVIOUS_STEP_ID + " = " + leftStepId);
       if (rightStepId != 0) {
-        sql.append(", " + COLUMN_RIGHT_CHILD_ID + " = " + rightStepId);
+        sql.append(", " + COLUMN_CHILD_STEP_ID + " = " + rightStepId);
       }
     }
     sql.append(" WHERE " + COLUMN_STEP_ID + " = " + step.getStepId());
@@ -520,7 +520,7 @@ public class StepFactory {
     LOG.debug("Saving params/filters of step #" + step.getStepId());
     PreparedStatement psStep = null;
     String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_QUESTION_NAME + " = ?, " +
-        COLUMN_ANSWER_FILTER + " = ?, " + COLUMN_LEFT_CHILD_ID + " = ?, " + COLUMN_RIGHT_CHILD_ID + " = ?, " +
+        COLUMN_ANSWER_FILTER + " = ?, " + COLUMN_PREVIOUS_STEP_ID + " = ?, " + COLUMN_CHILD_STEP_ID + " = ?, " +
         COLUMN_ASSIGNED_WEIGHT + " = ?, " + COLUMN_DISPLAY_PARAMS + " = ? " +
         "    WHERE " + COLUMN_STEP_ID + " = ?";
 
@@ -695,15 +695,15 @@ public class StepFactory {
           newStrategy.getStrategyId(),
           newStrategy.getUser().getUserId(),
           newStrategy.getRootStep().getStepId(),
-          newStrategy.getIsSaved(),
+          _userDbPlatform.convertBoolean(newStrategy.getIsSaved()),
           newStrategy.getName(),
           newStrategy.getSavedName(),
           newStrategy.getProjectId(),
-          false,
+          _userDbPlatform.convertBoolean(false),
           newStrategy.getSignature(),
           newStrategy.getDescription(),
           newStrategy.getVersion(),
-          newStrategy.getIsPublic()
+          _userDbPlatform.convertBoolean(newStrategy.getIsPublic())
         });
   }
 
@@ -998,8 +998,8 @@ public class StepFactory {
   private void updateSteps(Connection con, Collection<Step> steps) {
     final String sql = "UPDATE " + _userSchema + TABLE_STEP + "\n" +
         "SET\n" +
-        "  " + COLUMN_LEFT_CHILD_ID   + " = ?,\n" +
-        "  " + COLUMN_RIGHT_CHILD_ID  + " = ?,\n" +
+        "  " + COLUMN_PREVIOUS_STEP_ID   + " = ?,\n" +
+        "  " + COLUMN_CHILD_STEP_ID   + " = ?,\n" +
         "  " + COLUMN_LAST_RUN_TIME   + " = ?,\n" +
         "  " + COLUMN_ESTIMATE_SIZE   + " = ?,\n" +
         "  " + COLUMN_ANSWER_FILTER   + " = ?,\n" +
@@ -1025,10 +1025,10 @@ public class StepFactory {
         Types.BIGINT,    // ESTIMATE_SIZE
         Types.VARCHAR,   // ANSWER_FILTER
         Types.VARCHAR,   // CUSTOM_NAME
-        Types.INTEGER,   // IS_DELETED
-        Types.INTEGER,   // IS_VALID
+        _userDbPlatform.getBooleanType(),   // IS_DELETED
+        _userDbPlatform.getBooleanType(),   // IS_VALID
         Types.VARCHAR,   // COLLAPSED_NAME
-        Types.INTEGER,   // IS_COLLAPSIBLE
+        _userDbPlatform.getBooleanType(),   // IS_COLLAPSIBLE
         Types.BIGINT,    // ASSIGNED_WEIGHT
         Types.VARCHAR,   // PROJECT_ID
         Types.VARCHAR,   // PROJECT_VERSION
@@ -1042,22 +1042,22 @@ public class StepFactory {
       final AnswerSpec spec = step.getAnswerSpec();
 
       batch.add(new Object[]{
-          // TODO: get left child id
-          // TODO: get right child id
+          step.getPreviousStepId() == 0 ? null : step.getPreviousStepId(),
+          step.getChildStepId() == 0 ? null : step.getChildStepId(),
           step.getLastRunTime(),
-          step.getEstimateSize(),
-          spec.getLegacyFilterName(), // TODO: confirm this is correct
+          step.getEstimatedSize(),
+          spec.getLegacyFilterName(),
           step.getCustomName(),
-          step.isDeleted() ? 1 : 0,
-          step.isValid() ? 1 : 0,
+          _userDbPlatform.convertBoolean(step.isDeleted()),
+          _userDbPlatform.convertBoolean(step.isValid()),
           step.getCollapsedName(),
-          step.isCollapsible(),
-          // TODO: get assigned weight
+          _userDbPlatform.convertBoolean(step.isCollapsible()),
+          spec.getQueryInstanceSpec().getAssignedWeight(),
           step.getProjectId(),
           step.getProjectVersion(),
           spec.getQuestionName(),
           step.getStrategyId(),
-          // TODO: get display params
+          ParamFiltersClobFormat.formatParamFilters(spec),
           step.getStepId()
       });
     }
