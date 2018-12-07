@@ -674,10 +674,6 @@ public class StepFactory {
     return newStrategy;
   }
 
-  private void updateSteps(Connection conn, List<Step> stepsToUpdate) {
-    // TODO Ellie
-  }
-
   private void insertStrategy(Connection connection, Strategy newStrategy) {
     String sql = "INSERT INTO " + _userSchema + TABLE_STRATEGY + " (" +
         COLUMN_STRATEGY_ID + ", " +
