@@ -399,7 +399,7 @@ public class Step implements StrategyElement, Validateable<Step> {
    */
   @Deprecated
   public int getRawEstimateSize() {
-    return getEstimateSize();
+    return getEstimatedSize();
   }
 
   /**
@@ -413,14 +413,21 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   /**
-   * @return Size estimate of this step's result
+   * Returns an estimate of the size of this step (number of records returned).
+   * This may be the value of the estimate_size column in the steps table, or
+   * if getResultSize() has been called, an refreshed value.
+   * 
+   * @return estimate of this step's result size
    */
-  public int getEstimateSize() {
+  public int getEstimatedSize() {
     return _answerSpec.isValid() ? _estimatedSize : 0;
   }
 
   /**
-   * Get the real result size from the answerValue. AnswerValue is responsible for caching, if any
+   * Returns the real result size of this step (numbe of records returned); once
+   * this method is called, getEstimateSize() will also return this value.
+   * 
+   * @return the real result size gained by running the step
    */
   public int getResultSize() throws WdkModelException {
     return _estimatedSizeRefreshed ? _estimatedSize : !_answerSpec.isValid() ? 0 : recalculateResultSize();

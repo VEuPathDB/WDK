@@ -229,7 +229,7 @@ public class StepFactory {
       ps.setLong(2, step.getUser().getUserId());
       ps.setTimestamp(3, new Timestamp(step.getCreatedTime().getTime()));
       ps.setTimestamp(4, new Timestamp(step.getLastRunTime().getTime()));
-      ps.setInt(5, step.getEstimateSize());
+      ps.setInt(5, step.getEstimatedSize());
       ps.setString(6, step.getAnswerSpec().getLegacyFilterName());
       ps.setInt(7, step.getAnswerSpec().getQueryInstanceSpec().getAssignedWeight());
       ps.setString(8, _wdkModel.getProjectId());
@@ -478,9 +478,6 @@ public class StepFactory {
       dropDependency(rightStepId, COLUMN_RIGHT_CHILD_ID);
     }
 
-    step.setAndVerifyPreviousStepId(leftStepId);
-    step.setAndVerifyChildStepId(rightStepId);
-
     // construct the update sql
     StringBuilder sql = new StringBuilder("UPDATE ");
     sql.append(_userSchema).append(TABLE_STEP).append(" SET ");
@@ -549,7 +546,7 @@ public class StepFactory {
       psStep.setBoolean(3, step.isDeleted());
       psStep.setBoolean(4, step.isCollapsible());
       psStep.setString(5, step.getCollapsedName());
-      psStep.setInt(6, step.getEstimateSize());
+      psStep.setInt(6, step.getEstimatedSize());
       psStep.setInt(7, step.getAnswerSpec().getQueryInstanceSpec().getAssignedWeight());
       psStep.setLong(8, step.getStepId());
       int result = psStep.executeUpdate();
@@ -677,10 +674,9 @@ public class StepFactory {
    * @param stepIdsMap An output map of old to new step IDs. Steps recursively encountered in the copy are added by the copy
    * @return
    * @throws WdkModelException
-   * @throws WdkUserException
    */
   public Strategy copyStrategy(User user, Strategy oldStrategy, Map<Long, Long> stepIdsMap)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
 
     WdkModel wdkModel = user.getWdkModel();
     long strategyId = getNewStrategyId();
@@ -708,7 +704,15 @@ public class StepFactory {
         .build(new UserCache(user), ValidationLevel.RUNNABLE);
 
     // persist new strategy and all steps to the DB
-    insertStrategy(newStrategy);
+    try (Connection conn = _userDbDs.getConnection()){
+      SqlUtils.performInTransaction(conn,
+        () -> insertStrategy(conn, newStrategy),
+        () -> updateSteps(conn, newStrategy.getAllSteps())
+      );
+    }
+    catch (Exception e) {
+      throw new WdkModelException("Unable to insert strategy or update steps.");
+    }
 
     // trigger copy events on all steps
     for (Entry<Long,Long> stepMapping : stepIdsMap.entrySet()) {
@@ -723,6 +727,10 @@ public class StepFactory {
     stepIdsMap.putAll(getMapFromKeys(newStepMap.keySet(), oldId -> newStepMap.get(oldId).getStepId()));
 
     return newStrategy;
+  }
+
+  private void updateSteps(Connection conn, List<Step> stepsToUpdate) {
+    // TODO Ellie
   }
 
   private void insertStrategy(Connection connection, Strategy newStrategy) {
@@ -1037,32 +1045,23 @@ public class StepFactory {
   public int getStrategyCount(User user) throws WdkModelException {
     try {
       String sql =
-        "SELECT st.question_name" +
-        " FROM " + _userSchema + TABLE_STEP + " st, " + _userSchema + TABLE_STRATEGY + " sr" +
-        " WHERE sr." + Utilities.COLUMN_USER_ID + " = ?" +
-        " AND sr." + COLUMN_IS_DELETED + " = " + _userDbPlatform.convertBoolean(false) +
-        " AND sr." + COLUMN_PROJECT_ID + " = ?" +
-        " AND st." + COLUMN_STEP_ID + " = sr.root_step_id";
-      Wrapper<Integer> result = new Wrapper<>();
-      new SQLRunner(_userDbDs, sql, "wdk-step-factory-strategy-count").executeQuery(
-        new Object[]{ user.getUserId(), _wdkModel.getProjectId() },
-        new Integer[]{ Types.BIGINT, Types.VARCHAR },
-        rs -> {
-          int count = 0;
-          while (rs.next()) {
-            try {
-              _wdkModel.getQuestion(rs.getString(1));
-              count++;
-            }
-            catch (WdkModelException e) { /* invalid question; ignore */ }
-          }
-          result.set(count);
-        });
-      return result.get();
+        "SELECT count(1)" +
+        " FROM " + _userSchema + TABLE_STRATEGY +
+        " WHERE " + Utilities.COLUMN_USER_ID + " = ?" +
+        " AND " + COLUMN_IS_DELETED + " = " + _userDbPlatform.convertBoolean(false) +
+        " AND " + COLUMN_PROJECT_ID + " = ?";
+      SingleLongResultSetHandler result = 
+        new SQLRunner(_userDbDs, sql, "wdk-step-factory-strategy-count").executeQuery(
+          new Object[]{ user.getUserId(), _wdkModel.getProjectId() },
+          new Integer[]{ Types.BIGINT, Types.VARCHAR },
+          new SingleLongResultSetHandler());
+      if (result.containsValue()) {
+        return result.getRetrievedValue().intValue();
+      }
+      throw new WdkModelException("Failed to execute count query (status = " + result.getStatus());
     }
     catch (Exception e) {
-      WdkModelException.unwrap(e);
-      return 0;
+      return WdkModelException.unwrap(e, Integer.class);
     }
   }
 

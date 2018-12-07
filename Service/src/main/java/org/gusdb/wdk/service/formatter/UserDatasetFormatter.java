@@ -179,7 +179,8 @@ public class UserDatasetFormatter {
           JSONArray sharesJson = new JSONArray();
           for (long targetUserId : userDatasetShareMap.get(key).get(targetDatasetId)) {
             JSONObject shareJson = new JSONObject();
-            User user = userFactory.getUserById(targetUserId);
+            User user = userFactory.getUserById(targetUserId)
+                .orElseThrow(() -> new WdkModelException("No user exists with ID " + targetUserId));
             shareJson.put("email", user.getEmail());
             shareJson.put("user", user.getUserId());
             shareJson.put("userDisplayName", user.getDisplayName());

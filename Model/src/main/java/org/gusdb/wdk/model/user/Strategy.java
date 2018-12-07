@@ -480,14 +480,14 @@ public class Strategy implements StrategyElement, StepContainer {
   }
 
 
-  public int getEstimatedSize() {
+  public int getResultSize() {
     // FIXME: could root step really be null?  I think if root step is deleted, strategy id deleted?
     return (getRootStep() == null ? 0 : defaultOnException(() -> getRootStep().getResultSize(), 0));
   }
 
-  public String getEstimatedSizeNoCalculate() {
+  public String getEstimatedSize() {
     // FIXME: could root step really be null?  I think if root step is deleted, strategy id deleted?
-    int latestStepEstimateSize = getRootStep() == null ? 0 : getRootStep().getEstimateSize();
+    int latestStepEstimateSize = getRootStep() == null ? 0 : getRootStep().getEstimatedSize();
     return (latestStepEstimateSize == Step.RESET_SIZE_FLAG ? "Unknown" : String.valueOf(latestStepEstimateSize));
   }
 

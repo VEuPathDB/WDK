@@ -143,7 +143,7 @@ public class StepBean {
     }
 
     public int getEstimateSize() {
-        return step.getEstimateSize();
+        return step.getEstimatedSize();
     }
 
     public String getLastRunTimeFormatted() {
