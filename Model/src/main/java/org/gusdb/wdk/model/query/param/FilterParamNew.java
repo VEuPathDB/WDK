@@ -866,7 +866,9 @@ public class FilterParamNew extends AbstractDependentParam {
       String metadataTableName = "md";
       String filterSelectSql = "SELECT distinct " + metadataTableName + "." + idColumn + " FROM (" + metadataSql + ") " + metadataTableName;
 
-      return getFilteredIdsSql(user, stableValue, contextParamValues, metadataTableName, filterSelectSql, defaultFilterClause);
+      filteredSql = FormatUtil.join(filterSqls, " INTERSECT ");
+      LOG.debug("filteredSql:\n" + filteredSql);
+      return filteredSql;
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);

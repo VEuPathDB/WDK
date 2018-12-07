@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "array",
+  "description": "Collection of strategies to delete/restore",
+  "items": {
+    "type": "object",
+    "properties": {
+      "strategyId": {
+        "description": "Strategy ID",
+        "type": "integer"
+      },
+      "isDeleted": {
+        "description": "Whether or not the given strategy ID should be marked as deleted.",
+        "type": "boolean"
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "isDeleted",
+      "strategyId"
+    ]
+  }
+}
