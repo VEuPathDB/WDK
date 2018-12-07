@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.regex.Matcher;
 
@@ -282,7 +283,7 @@ public class UserFactory {
   }
 
   private User completeLogin(User guestUser, User registeredUser)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     if (registeredUser == null)
       return registeredUser;
 
@@ -314,9 +315,9 @@ public class UserFactory {
     return completeLogin(guest, user);
   }
 
-  public User login(User guest, long userId)
-      throws WdkModelException, WdkUserException {
-    return completeLogin(guest, getUserById(userId));
+  public User login(User guest, long userId) throws WdkModelException {
+    return completeLogin(guest, getUserById(userId)
+        .orElseThrow(() -> new WdkModelException("User with ID " + userId + " could not be found.")));
   }
 
   /**
@@ -336,19 +337,17 @@ public class UserFactory {
   }
 
   /**
-   * Returns user by user ID. Since the ID will generally be produced
-   * "internally", this function throws WdkModelException if user is not found.
+   * Returns user by user ID, or an empty optional if not found
    * 
    * @param userId user ID
    * @return user user object for the passed ID
-   * @throws NoSuchElementException if user cannot be found
    * @throws WdkModelException if an error occurs in the attempt
    */
-  public User getUserById(long userId) throws WdkModelException, NoSuchElementException {
+  public Optional<User> getUserById(long userId) throws WdkModelException {
     UserProfile profile = _accountManager.getUserProfile(userId);
     if (profile != null) {
       // found registered user in account DB; create RegisteredUser and populate
-      return populateRegisteredUser(profile);
+      return Optional.of(populateRegisteredUser(profile));
     }
     else {
       // cannot find user in account DB; however, the passed ID may represent a guest local to this userDb
@@ -356,12 +355,13 @@ public class UserFactory {
       if (accessDate != null) {
         // guest user was found in local user Db; create UnregisteredUser and populate
         profile = AccountManager.createGuestProfile(UnregisteredUserType.GUEST.getStableIdPrefix(), userId, accessDate);
-        return new UnregisteredUser(_wdkModel, profile.getUserId(), profile.getEmail(), profile.getSignature(), profile.getStableId());
+        return Optional.of(new UnregisteredUser(_wdkModel, profile.getUserId(),
+            profile.getEmail(), profile.getSignature(), profile.getStableId()));
         
       }
       else {
-        // user does not exist in account or user DBs; throw exception
-        throw new NoSuchElementException("Invalid user id: " + userId);
+        // user does not exist in account or user DBs
+        return Optional.empty();
       }
     }
   }

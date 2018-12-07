@@ -3,9 +3,9 @@ package org.gusdb.wdk.service.formatter;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -52,9 +52,9 @@ public class StepFormatter {
 
         // FIXME: call AnswerSpecFactory.createFromStep() and pass to formatter;
         //    to do so, must extract JSON formatting from Step and other classes
-        .put(JsonKeys.ANSWER_SPEC, createAnswerSpec(step))
+        .put(JsonKeys.ANSWER_SPEC, AnswerSpecServiceFormat.format(step.getAnswerSpec()))
         .put(JsonKeys.IS_VALID, step.isValid())
-        .put(Keys.INVALID_REASON, step.getInvalidReason().name())
+        .put(JsonKeys.INVALID_REASONS, new JSONArray(step.getValidationBundle().getAllErrors()))
         .put(JsonKeys.CREATED_TIME, step.getCreatedTime())
         .put(JsonKeys.LAST_RUN_TIME, step.getLastRunTime());
     }
@@ -65,26 +65,12 @@ public class StepFormatter {
 
   public static JSONObject getStepJsonWithCalculatedEstimateValue(Step step) throws WdkModelException {
     return getStepJson(step)
-        .put(JsonKeys.ESTIMATED_SIZE, step.calculateEstimateSize());
+        .put(JsonKeys.ESTIMATED_SIZE, step.getResultSize());
   }
 
-  public static JSONObject getStepJsonWithRawEstimateValue(Step step) throws WdkModelException {
+  public static JSONObject getStepJsonWithEstimatedSize(Step step) throws WdkModelException {
     return getStepJson(step)
-        .put(JsonKeys.ESTIMATED_SIZE, step.getRawEstimateSize());
+        .put(JsonKeys.ESTIMATED_SIZE, step.getEstimatedSize());
   }
 
-  // FIXME: this method should convert AnswerSpec -> JSONObject
-  private static JSONObject createAnswerSpec(Step step) {
-    JSONObject json = new JSONObject()
-      .put(JsonKeys.QUESTION_NAME, step.getQuestionName())
-      .put(JsonKeys.PARAMETERS, step.getParamsJSON())
-      .put(JsonKeys.FILTERS, JsonUtil.getOrEmptyArray(step.getFilterOptionsJSON()))
-      .put(JsonKeys.VIEW_FILTERS, JsonUtil.getOrEmptyArray(step.getViewFilterOptionsJSON()))
-      .put(JsonKeys.WDK_WEIGHT, step.getAssignedWeight());
-    AnswerFilterInstance legacyFilter = step.getFilter();
-    if (legacyFilter != null) {
-      json.put(JsonKeys.LEGACY_FILTER_NAME, legacyFilter.getName());
-    }
-    return json;
-  }
 }

@@ -149,9 +149,8 @@ public class UserSession {
    * 
    * @param guestUser
    * @throws WdkModelException
-   * @throws WdkUserException
    */
-  public void mergeUser(User guestUser) throws WdkModelException, WdkUserException {
+  public void mergeUser(User guestUser) throws WdkModelException {
 
     logger.debug("Merging user #" + guestUser.getUserId() + " into user #" + _user.getUserId() + "...");
 

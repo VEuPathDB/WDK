@@ -201,6 +201,7 @@ public class JsonKeys {
   public static final String LAST_MODIFIED = "lastModified";
   public static final String IS_SAVED = "isSaved";
   public static final String IS_VALID = "isValid";
+  public static final String INVALID_REASONS = "invalidReasons";
   public static final String IS_HIDDEN = "isHidden";
   public static final String IS_DELETED = "isDeleted";
   public static final String ROOT_STEP = "root";

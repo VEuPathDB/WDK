@@ -21,14 +21,14 @@ public class StrategyFormatter {
     ), new JSONArray());
   }
 
-  public static JSONObject getListingStrategyJson(Strategy strategy) throws WdkModelException, JSONException {
+  public static JSONObject getListingStrategyJson(Strategy strategy) throws JSONException {
     return new JSONObject() 
         .put(JsonKeys.STRATEGY_ID, strategy.getStrategyId())
         .put(JsonKeys.DESCRIPTION, strategy.getDescription())
         .put(JsonKeys.NAME, strategy.getName())
         .put(JsonKeys.AUTHOR, strategy.getUser().getDisplayName())
         .put(JsonKeys.LATEST_STEP_ID, strategy.getRootStepId())
-        .put(JsonKeys.RECORD_CLASS_NAME, strategy.getRootStep().getQuestion().getRecordClass().getFullName())
+        .put(JsonKeys.RECORD_CLASS_NAME, strategy.getRootStep().getRecordClass().getFullName())
         .put(JsonKeys.SIGNATURE, strategy.getSignature())
         .put(JsonKeys.LAST_MODIFIED, strategy.getLastModifiedTime())
         .put(JsonKeys.IS_PUBLIC, strategy.getIsPublic())
@@ -37,17 +37,18 @@ public class StrategyFormatter {
         .put(JsonKeys.IS_DELETED, strategy.isDeleted())
         .put(JsonKeys.IS_PUBLIC, strategy.getIsPublic())
         .put(JsonKeys.ORGANIZATION, strategy.getUser().getProfileProperties().get("organization"))
-        .put(JsonKeys.ESTIMATED_SIZE, strategy.getRootStep().getRawEstimateSize());
+        .put(JsonKeys.ESTIMATED_SIZE, strategy.getEstimatedSize());
   }
 
   public static JSONObject getDetailedStrategyJson(Strategy strategy) throws WdkModelException, JSONException {
     return getListingStrategyJson(strategy)
-        .put(JsonKeys.ROOT_STEP, getStepsJson(strategy.getRootStep()));
+        .put(JsonKeys.ROOT_STEP, getStepsJson(strategy.getRootStep()))
+        .put(JsonKeys.ESTIMATED_SIZE, strategy.getResultSize()); // overwrite with real size
   }
-  
+
   protected static JSONObject getStepsJson(Step step) throws WdkModelException, JSONException {
     if(step == null) return new JSONObject();
-    return StepFormatter.getStepJsonWithRawEstimateValue(step)
+    return StepFormatter.getStepJsonWithEstimatedSize(step)
         .put(JsonKeys.LEFT_STEP, getStepsJson(step.getPreviousStep()))
         .put(JsonKeys.RIGHT_STEP, getStepsJson(step.getChildStep()));
   }

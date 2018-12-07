@@ -5,7 +5,6 @@ import java.util.Map;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.NoSuchElementException;
 import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
@@ -59,29 +58,10 @@ public class UserFactoryBean {
         return new UserBean(user);
     }
 
-    public UserBean login(UserBean guest, long userId)
-        throws WdkModelException, WdkUserException {
-      User user = _userFactory.login(guest.getUser(), userId);
-      if (user == null) return null;
-      return new UserBean(user);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.gusdb.wdk.model.user.UserFactory#resetPassword(org.gusdb.wdk.model
-     * .user.User)
-     */
     public void resetPassword(String email) throws WdkUserException, WdkModelException {
         _userFactory.resetPassword(email);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.UserFactory#loadUser(java.lang.String)
-     */
     public UserBean getUserByEmail(String email) throws WdkModelException,
             WdkUserException {
         User user = _userFactory.getUserByEmail(email);
@@ -103,13 +83,8 @@ public class UserFactoryBean {
     }
 
     public UserBean getUser(int userId) throws WdkModelException {
-      try {
-        User user = _userFactory.getUserById(userId);
-        return new UserBean(user);
-      }
-      catch (NoSuchElementException e) {
-        throw new WdkModelException(e);
-      }
+      return new UserBean(_userFactory.getUserById(userId)
+          .orElseThrow(() -> new WdkModelException("No user exists with ID " + userId)));
     }
 
     public void setSignature(String signature) {
