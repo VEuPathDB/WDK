@@ -128,6 +128,36 @@ public abstract class AbstractDependentParam extends Param {
   // /////////// Protected properties ////////////////////////////////////
   // ///////////////////////////////////////////////////////////////////
 
+  protected Map<String,String> ensureRequiredContext(User user, Map<String, String> contextParamValues) {
+    Map<String, String> newContextParamValues = contextParamValues == null?
+        new LinkedHashMap<String, String>() :
+        new LinkedHashMap<String, String>(contextParamValues);
+
+    if (isDependentParam()) {
+      try {
+        // for each depended param, ensure it has a value in contextParamValues
+        for (Param dependedParam : getDependedParams()) {
+
+          String dependedParamVal = newContextParamValues.get(dependedParam.getName());
+          if (dependedParamVal == null) {
+            dependedParamVal = (dependedParam instanceof AbstractEnumParam)
+                ? ((AbstractEnumParam) dependedParam).getDefault(user, newContextParamValues)
+                : dependedParam.getDefault();
+            if (dependedParamVal == null)
+              throw new NoDependedValueException(
+                  "Attempt made to retrieve values of " + dependedParam.getName() + " in dependent param " +
+                      getName() + " without setting depended value.");
+            newContextParamValues.put(dependedParam.getName(), dependedParamVal);
+          }
+        }
+      }
+      catch (Exception ex) {
+        throw new NoDependedValueException(ex);
+      }
+    }
+    return newContextParamValues;
+  }
+
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
@@ -217,9 +247,13 @@ public abstract class AbstractDependentParam extends Param {
           || (param.getFullName().equals(Utilities.INTERNAL_PARAM_SET + "." + Utilities.PARAM_USER_ID)))
         continue;
 
-      if (!_dependedParamRefs.contains(queryParamName))
-        throw new WdkModelException("The " + queryType + query.getFullName() + " declares a depended param " +
-            queryParamName + ", but its containing param " + getFullName() + " doesn't declare it in its depended params.");
+      if (!_dependedParamRefs.contains(queryParamName)) {
+        WdkModelException ex = new WdkModelException("In parameter " + getFullName() + ", " + queryType + query.getFullName() + 
+            " declares a depended param " +
+            queryParamName + ", but " + getFullName() + " doesn't declare that in its depended params.");
+        ex.printStackTrace(); // TODO: temporary for debugging filter param new bug
+        throw ex;
+      }
     }
 
     return query;

@@ -1,20 +1,196 @@
 # User Strategy API
 
-description: TBD
+get:
+  description: |
+    * Returns an array of full strategy JSON (see GET for individual strategy below)
+    * One key difference!!  Does NOT run steps or update estimate size
+        * This endpoint needs to be cheap to support the All tab and Add Step
+  responses:
+    200:
+      body:
+        application/json:
+          type: array
+          items:
+            type: object
+            properties:
+              strategyId:
+                type: integer
+                format: int64
+              description:
+                type: string
+              name:
+                type: string
+              author:
+                type: string
+              latestStepId:
+                type: string
+              recordClassName:
+                type: string
+              signature:
+                type: string
+              lastModified:
+                type: string
+              isPublic:
+                type: boolean
+              isSaved:
+                type: boolean
+              isValid:
+                type: boolean
+              isDeleted:
+                type: boolean
+              organization:
+                type: string
+              estimatedSize:
+                type: integer
+post:
+  description: |
 
-/{class}:
-  uriParameters: 
-    class: 
+    **Without Source Strategy**
+
+    * Used to create a strategy from >0 independent steps
+    * Cannot "steal" steps from another strat
+        * Error thrown if any submitted step IDs already have strategy (in DB)
+    * Other validation: steps must have same owner, same project
+    * Tree of steps submitted as a data structure, e.g.
+
+    ```json
+    {
+      name: String,
+      ...other_UI_properties_above,
+      root: {
+        id: 1234,
+        left: {
+          id: 2345,
+          left: { id: 3456 },
+          right: { id: 4567 }
+        },
+        right: {
+          id: 5678,
+          left: { id: 6789 }
+        }
+      }
+    }
+    ```
+
+    * Strategy ID is generated and assigned to all steps in tree
+    * Root step is run; then any steps with null/-1 estimate size are updated
+        * estimate size should then exist on every step
+        * last_run updated on newly run steps
+    * Signature, dates, and identifying information also generated and assigned
+    * Returns JSON with ID + Location header containing URL, OR
+        * Error document telling where and why request failed
+
+    **With Source Strategy**
+
+    * This is to support import
+    * Input JSON same as regular post but instead of root property, include:
+        * sourceStrategy: {strategy-signature}
+    * Looks up another user's strategy by signature
+    * Makes copy of strategy, assigning new step IDs and new strategy ID
+    * Should not need to run the strat since all estimate_size values should be populated
+    * Returns JSON with ID + Location header containing URL, OR
+        * Error document telling where and why request failed
+  body:
+    application/json:
+      type: !include ../../../../../src/main/resources/schema/wdk/users/strategy/post-request.json
+  responses:
+    200:
+      body:
+        application/json:
+          type: !include ../../../../../src/main/resources/schema/wdk/users/strategy/post-response.json
+
+patch:
+  description: |
+    * Enables deletion and undeletion of one or more strategies by ID
+        * sets is_deleted flag to true/false in DB (enables undo like favorites)
+  body:
+    application/json:
+      type:  !include ../../../../../src/main/resources/schema/wdk/users/strategy/patch-request.json
+
+
+/branches:
+  uriParameters:
+    class:
       type: string
-  get:
-    description: >
-      TBD: a multi-column listing of the user's strategies of this record type
-      TBD: filter this set of strategies, by, eg, open, closed, saved, unsaved
-      filter by a hand-selected set
-    queryParameters:
-      filter:
-      filterlist:
+  post:
+    description: |
+      * This is to support adding a separate strategy as a step in an existing strategy
+      * Input is JSON { sourceStrategy: {strategy-id} }
+      * Looks up another strategy by signature
+      * Makes copies of all steps in the strategy, assigning new step IDs but removing strategy ID, estimate_size, and values of AnswerParams
+      * Returns strategy structure JSON with new IDs
+          * This will look like the value of the "root" property in the endpoint:
+              * POST /users/{user-id}/strategies
+      * If the strategy was a single step, root step will be non-nested, otherwise the root of the new branch will be a nested step for incorporation into the "right" side of an existing strategy
+      * In short, this endpoint tells the client how to incorporate a copy of an existing strategy into another strategy
 
 /{strategy-id}:
+  get:
+    description: |
+      * Will return full JSON for a strategy, including step JSON for every step in the strategy
+      * Any steps that have null/-1 estimate size will be run and updated
+      * An example based on the POST /strategies JSON above:
+
+      ```json
+      {
+        id: Integer,
+        name: String,
+        savedName: String,
+        description: String,
+        isSaved: Boolean, // TBD change to isMutable?
+        isPublic: Boolean,
+        signature: String,
+        creationDate: String (date formatted),
+        lastViewDate: String (date formatted),
+        lastModDate: String (date formatted),
+        root: {
+          id: 1234,
+          step: <step_json_above>,
+          left: {
+            id: 2345,
+            step: <step_json_above>,
+            left: { id: 3456, step: <step_json_above> },
+            right: { id: 4567, step: <step_json_above> }
+          },
+          right: {
+            id: 5678,
+            step: <step_json_above>,
+            left: { id: 6789, step: <step_json_above> }
+          }
+        }
+      }
+      ```
+
+    responses:
+      200:
+        body:
+          application/json:
   patch:
-    description: TBD open, close
+    description: |
+      * Input is like POST but only supporting mutable fields
+      * Mutable fields include:
+          * "root": the tree of steps itself
+              * All steps submitted must already have this strat ID (in DB) or null
+              * Structure will go through rigorous validation
+                  * input recordclasses must be compatible with answer param specs
+              * Strategy cannot "steal" steps from another strat
+              * Any "independent" steps will be assigned this strat ID
+              * Steps removed from this strat (i.e. orphaned steps):
+                  * Strategy ID = null
+                  * Any AnswerParam values = null
+                  * estimate_size = null
+                  * last_run = null
+                  * In theory they could be reused, even by another strat
+                  * Will be purged later with other orphan steps
+          * Any UI fields listed above, including:
+              * name
+              * savedName
+              * description
+              * isSaved (TBD, change to isMutable?)
+              * isPublic
+      * Root step is run; then any steps with null/-1 estimate size are updated
+          * estimate size should then exist on every step
+          * last_run updated on newly run steps
+      * Last mod date is updated
+      * Returns full strategy JSON (see GET below for format)
+

@@ -1376,6 +1376,9 @@
         <attribute name="shortDisplayName" />
       </optional>
       <optional>
+        <attribute name="iconName"/>
+      </optional>
+      <optional>
         <attribute name="customJavascript" />
       </optional>
       <optional>
