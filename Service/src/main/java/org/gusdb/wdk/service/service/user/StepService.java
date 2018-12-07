@@ -63,7 +63,9 @@ public class StepService extends UserService {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepRequest stepRequest = StepRequest.newStepFromJson(jsonBody, getWdkModel(), user);
-      Step newStep = getWdkModel().getStepFactory().createStep(user, stepRequest.getAnswerSpec(), filter, filterOptions, assignedWeight, deleted, customName, isCollapsible, collapsedName, strategy)
+      Step newStep = getWdkModel().getStepFactory().createStep(
+          user, stepRequest.getAnswerSpec(), filter, filterOptions,
+          assignedWeight, deleted, customName, isCollapsible, collapsedName, strategy);
       
       // create the step and insert into the database
       Step step = createStep(stepRequest, user, getWdkModel().getStepFactory());
@@ -89,7 +91,7 @@ public class StepService extends UserService {
   @Path("steps/{stepId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getStep(@PathParam("stepId") String stepId) throws WdkModelException {
-    return Response.ok(StepFormatter.getStepJsonWithRawEstimateValue(getStepForCurrentUser(stepId)).toString()).build();
+    return Response.ok(StepFormatter.getStepJsonWithEstimatedSize(getStepForCurrentUser(stepId)).toString()).build();
   }
 
   @PATCH
@@ -188,7 +190,7 @@ public class StepService extends UserService {
   private Step updateStep(Step step, StepRequest stepRequest) throws WdkModelException {
 
     StepBuilder newStep = Step.builder(step)
-        .setCustomName(stepRequest.getCustomName())
+        .setCustomName(stepRequest.getCustomName());
     
     if (stepRequest.isAnswerSpecModified()) {
       // FIXME: this is no good- duplicate validation of the answer spec here

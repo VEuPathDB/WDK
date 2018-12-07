@@ -33,7 +33,7 @@ public class StrategyOperations {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  // previously part of Strategy.java
+  /* previously part of Strategy.java
   public Map<Long, Long> deleteStep(Step step) throws WdkModelException, WdkUserException {
     StepFactory stepFactory = _wdkModel.getStepFactory();
     List<Step> deletes = new ArrayList<>();
@@ -121,7 +121,7 @@ public class StrategyOperations {
     }
 
     return rootMap;
-  }
+  }*/
 
   /**
    * Inserting a step after the target. This is used when we add steps in main and nested strategy. The
@@ -135,7 +135,7 @@ public class StrategyOperations {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  // previously part of Strategy.java
+  /* previously part of Strategy.java
   public Map<Long, Long> insertStepAfter(Step newStep, long targetId) throws WdkModelException,
       WdkUserException {
     Map<Long, Long> rootMap = new HashMap<>();
@@ -196,7 +196,7 @@ public class StrategyOperations {
       }
     }
     return rootMap;
-  }
+  }*/
 
   /**
    * Insert a new step before the target. The new step will become the previous step of the target, and the
@@ -208,7 +208,7 @@ public class StrategyOperations {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  // previously part of Strategy.java
+  /* previously part of Strategy.java
   public Map<Long, Long> insertStepBefore(Step newStep, long targetId) throws WdkModelException,
       WdkUserException {
     Step targetStep = findFirstStep(withId(targetId)).get();
@@ -271,5 +271,5 @@ public class StrategyOperations {
       targetStep.writeParamFiltersToDb();
     }
     return rootMap;
-  }
+  }*/
 }
