@@ -56,6 +56,7 @@ import java.util.function.Predicate;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.runner.SQLRunner;
@@ -135,7 +136,7 @@ public class StrategyLoader {
   private static final Comparator<? super Step> STEP_COMPARATOR_LAST_RUN_TIME_DESC =
       (s1, s2) -> (int)(s2.getLastRunTime().getTime() - s1.getLastRunTime().getTime());
   private static final Comparator<? super Strategy> STRATEGY_COMPARATOR_LAST_MOD_TIME_DESC =
-      (s1,s2) -> (int)(s2.getLastModifiedTime().getTime() - s1.getLastModifiedTime().getTime());
+      (s1, s2) -> (int)(s2.getLastModifiedTime().getTime() - s1.getLastModifiedTime().getTime());
 
   private final WdkModel _wdkModel;
   private final DataSource _userDbDs;
@@ -206,16 +207,16 @@ public class StrategyLoader {
               currentStrategy = readStrategy(rs); // will also read/add step
             }
           }
-          // check for leftover strategy to save
-          if (currentStrategy != null) {
-            strategies.add(currentStrategy);
-          }
+        }
+        // check for leftover strategy to save
+        if (currentStrategy != null) {
+          strategies.add(currentStrategy);
         }
       });
       // all data loaded; build steps and strats at the specified validation level
       UserCache userCache = new UserCache(_userFactory);
       List<Strategy> builtStrategies = Functions.mapToList(strategies,
-          builder -> builder.build(userCache, _validationLevel));
+          fSwallow(builder -> builder.build(userCache, _validationLevel)));
       // only build orphan steps; attached steps will be built by their strategy
       List<Step> builtOrphanSteps = Functions.mapToList(orphanSteps,
           fSwallow(builder -> builder.build(userCache, _validationLevel, null)));
@@ -279,7 +280,7 @@ public class StrategyLoader {
   public Optional<Step> getStepById(long stepId) throws WdkModelException {
     String sql = prepareSql(FIND_STEPS_SQL
         .replace(SEARCH_CONDITIONS_MACRO, "and st." + COLUMN_STEP_ID + " = " + stepId));
-    return doSearch(sql).findFirstStep(st -> st.getStepId() == stepId);
+    return doSearch(sql).findFirstOverallStep(st -> st.getStepId() == stepId);
   }
 
   public Optional<Strategy> getStrategyById(long strategyId) throws WdkModelException {
@@ -297,7 +298,7 @@ public class StrategyLoader {
   Map<Long, Step> getSteps(Long userId) throws WdkModelException {
     String sql = prepareSql(FIND_STEPS_SQL
         .replace(SEARCH_CONDITIONS_MACRO, "and st." + COLUMN_USER_ID + " = " + userId));
-    List<Step> steps = doSearch(sql).findSteps(step -> true);
+    List<Step> steps = doSearch(sql).findAllSteps(step -> true);
     // sort steps by last run time, descending
     steps.sort(STEP_COMPARATOR_LAST_RUN_TIME_DESC);
     return toStepMap(steps);
@@ -372,20 +373,28 @@ public class StrategyLoader {
   private static class SearchResult {
 
     private final List<Strategy> _strategies;
-    private final List<Step> _steps;
+    private final List<Step> _orphanSteps;
 
-    public SearchResult(List<Strategy> strategies, List<Step> steps) {
+    public SearchResult(List<Strategy> strategies, List<Step> orphanSteps) {
       _strategies = strategies;
-      _steps = steps;
+      _orphanSteps = orphanSteps;
     }
 
-    public List<Step> findSteps(Predicate<Step> pred) {
-      return _steps.stream().filter(pred).collect(toList());
+    public List<Step> findAllSteps(Predicate<Step> pred) {
+      ListBuilder<Step> result = new ListBuilder<>(findOrphanSteps(pred));
+      for (Strategy strat : _strategies) {
+        result.addIf(pred, strat.getAllSteps());
+      }
+      return result.toList();
     }
 
-    public Optional<Step> findFirstStep(Predicate<Step> pred) {
-      List<Step> found = findSteps(pred);
+    public Optional<Step> findFirstOverallStep(Predicate<Step> pred) {
+      List<Step> found = findAllSteps(pred);
       return found.isEmpty() ? Optional.empty() : Optional.of(found.get(0));
+    }
+
+    public List<Step> findOrphanSteps(Predicate<Step> pred) {
+      return _orphanSteps.stream().filter(pred).collect(toList());
     }
 
     public List<Strategy> getStrategies() {

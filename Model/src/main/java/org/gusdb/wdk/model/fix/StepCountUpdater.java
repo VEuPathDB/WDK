@@ -246,7 +246,7 @@ public class StepCountUpdater extends BaseCLI {
             //step.setValidFlag(false); // RRD 7/23/18, all validity is runtime checked now...
           }
           finally {
-            step.update(false);
+            step.writeMetadataToDb(false);
           }
         }
         _sharedData.recordStep(stepId);

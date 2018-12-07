@@ -156,7 +156,7 @@ public class FavoriteFactory {
           try {
             while (resultSet.next()) {
               Favorite favorite = loadFavorite(user, resultSet);
-              favorites.addIf(favorite != null, favorite);
+              favorites.addIf(fav -> fav != null, favorite);
             }
           }
           catch (WdkModelException e) {

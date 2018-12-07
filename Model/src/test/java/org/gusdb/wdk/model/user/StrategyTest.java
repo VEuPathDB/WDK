@@ -150,7 +150,7 @@ public class StrategyTest {
     }
     while (filter != null && filter.getName().equals(newFilter.getName()));
     oldStep.setFilterName(newFilter.getName());
-    oldStep.saveParamFilters();
+    oldStep.writeParamFiltersToDb();
     Step newStep = strategy.getStepById(oldStep.getStepId());
     StepTest.compareStep(newStep, strategy.getRootStep());
   }
@@ -173,7 +173,7 @@ public class StrategyTest {
     }
     while (oldFilter != null && oldFilter.getName().equals(newFilter.getName()));
     oldStep.setFilterName(newFilter.getName());
-    oldStep.saveParamFilters();
+    oldStep.writeParamFiltersToDb();
 
     Step newStep = strategy.getStepById(oldStep.getStepId());
     StepTest.compareStep(newStep, strategy.getRootStep());
