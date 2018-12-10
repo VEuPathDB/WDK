@@ -48,6 +48,7 @@ import org.gusdb.wdk.model.user.StepFactoryHelpers.*;
 import org.json.JSONObject;
 
 import javax.sql.DataSource;
+import java.io.StringReader;
 import java.sql.*;
 import java.util.Date;
 import java.util.*;
@@ -55,7 +56,6 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.gusdb.fgputil.db.SqlUtils.setNullableLong;
 import static org.gusdb.fgputil.db.SqlUtils.setNullableString;
 import static org.gusdb.fgputil.functional.Functions.filter;
 import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
@@ -146,53 +146,67 @@ public class StepFactory {
     return step;
   }
 
-  private void insertStep(Step step) throws WdkModelException {
-    // prepare SQL
-    String sql = new StringBuilder("INSERT INTO ")
-        .append(_userSchema).append(TABLE_STEP).append(" (")
-        .append(COLUMN_STEP_ID).append(", ")
-        .append(COLUMN_USER_ID).append(", ")
-        .append(COLUMN_CREATE_TIME).append(", ")
-        .append(COLUMN_LAST_RUN_TIME).append(", ")
-        .append(COLUMN_ESTIMATE_SIZE).append(", ")
-        .append(COLUMN_ANSWER_FILTER).append(", ")
-        .append(COLUMN_ASSIGNED_WEIGHT).append(", ")
-        .append(COLUMN_PROJECT_ID).append(", ")
-        .append(COLUMN_PROJECT_VERSION).append(", ")
-        .append(COLUMN_QUESTION_NAME).append(", ")
-        .append(COLUMN_CUSTOM_NAME).append(", ")
-        .append(COLUMN_COLLAPSED_NAME).append(", ")
-        .append(COLUMN_IS_DELETED).append(", ")
-        .append(COLUMN_IS_COLLAPSIBLE).append(", ")
-        .append(COLUMN_STRATEGY_ID).append(", ")
-        .append(COLUMN_DISPLAY_PARAMS).append(", ")
-        .append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?")
-        .append(", " + _userDbPlatform.convertBoolean(step.isDeleted()))
-        .append(", " + _userDbPlatform.convertBoolean(step.isCollapsible()))
-        .append(", ?, ?)") // save custom cases til the end
-        .toString();
+  private void insertStep(Step step) {
+    final String sql = "INSERT INTO " +  _userSchema + TABLE_STEP + " (\n" +
+        "  " + COLUMN_STEP_ID         + ",\n" +
+        "  " + COLUMN_USER_ID         + ",\n" +
+        "  " + COLUMN_CREATE_TIME     + ",\n" +
+        "  " + COLUMN_LAST_RUN_TIME   + ",\n" +
+        "  " + COLUMN_ESTIMATE_SIZE   + ",\n" +
+        "  " + COLUMN_ANSWER_FILTER   + ",\n" +
+        "  " + COLUMN_ASSIGNED_WEIGHT + ",\n" +
+        "  " + COLUMN_PROJECT_ID      + ",\n" +
+        "  " + COLUMN_PROJECT_VERSION + ",\n" +
+        "  " + COLUMN_QUESTION_NAME   + ",\n" +
+        "  " + COLUMN_CUSTOM_NAME     + ",\n" +
+        "  " + COLUMN_COLLAPSED_NAME  + ",\n" +
+        "  " + COLUMN_IS_DELETED      + ",\n" +
+        "  " + COLUMN_IS_COLLAPSIBLE  + ",\n" +
+        "  " + COLUMN_STRATEGY_ID     + ",\n" +
+        "  " + COLUMN_DISPLAY_PARAMS  + ",\n" +
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    final int boolType = _userDbPlatform.getBooleanType();
+    final AnswerSpec spec = step.getAnswerSpec();
 
-    try (PreparedStatement ps = SqlUtils.getPreparedStatement(_userDbDs, sql)) {
-      ps.setLong(1, step.getStepId());
-      ps.setLong(2, step.getUser().getUserId());
-      ps.setTimestamp(3, new Timestamp(step.getCreatedTime().getTime()));
-      ps.setTimestamp(4, new Timestamp(step.getLastRunTime().getTime()));
-      ps.setInt(5, step.getEstimatedSize());
-      ps.setString(6, step.getAnswerSpec().getLegacyFilterName());
-      ps.setInt(7, step.getAnswerSpec().getQueryInstanceSpec().getAssignedWeight());
-      ps.setString(8, _wdkModel.getProjectId());
-      ps.setString(9, _wdkModel.getVersion());
-      ps.setString(10, step.getAnswerSpec().getQuestionName());
-      setNullableString(ps, 11, step.getCustomName());
-      setNullableString(ps, 12, step.getCollapsedName());
-      setNullableLong(ps, 13, step.getStrategyId());
-      _userDbPlatform.setClobData(ps, 14, JsonUtil.serialize(
-          ParamFiltersClobFormat.formatParamFilters(step.getAnswerSpec())), false);
-      ps.executeUpdate();
-    }
-    catch (SQLException ex) {
-      throw new WdkModelException("Error while inserting step", ex);
-    }
+    new SQLRunner(_userDbDs, sql)
+        .executeUpdate(
+            new Object[]{
+                step.getStepId(),
+                step.getUser().getUserId(),
+                new Timestamp(step.getCreatedTime().getTime()),
+                new Timestamp(step.getLastRunTime().getTime()),
+                step.getEstimatedSize(),
+                spec.getLegacyFilterName(),
+                spec.getQueryInstanceSpec().getAssignedWeight(),
+                _wdkModel.getProjectId(),
+                _wdkModel.getVersion(),
+                spec.getQuestionName(),
+                step.getCustomName(),
+                step.getCollapsedName(),
+                _userDbPlatform.convertBoolean(step.isDeleted()),
+                _userDbPlatform.convertBoolean(step.isCollapsible()),
+                step.getStrategyId(),
+                new StringReader(ParamFiltersClobFormat.formatParamFilters(spec).toString())
+            },
+            new Integer[] {
+                Types.BIGINT,    // STEP_ID
+                Types.BIGINT,    // USER_ID
+                Types.TIMESTAMP, // CREATE_TIME
+                Types.TIMESTAMP, // LAST_RUN_TIME
+                Types.BIGINT,    // ESTIMATE_SIZE
+                Types.VARCHAR,   // ANSWER_FILTER
+                Types.BIGINT,    // ASSIGNED_WEIGHT
+                Types.VARCHAR,   // PROJECT_ID
+                Types.VARCHAR,   // PROJECT_VERSION
+                Types.VARCHAR,   // QUESTION_NAME
+                Types.VARCHAR,   // CUSTOM_NAME
+                Types.VARCHAR,   // COLLAPSED_NAME
+                boolType,        // IS_DELETED
+                boolType,        // IS_COLLAPSIBLE
+                Types.BIGINT,    // STRATEGY_ID
+                Types.CLOB,      // DISPLAY_PARAMS
+            }
+        );
   }
 
   private static TwoTuple<Integer, Exception> tryEstimateSize(RunnableObj<Step> runnableStep) {
@@ -1018,6 +1032,7 @@ public class StepFactory {
         "  " + COLUMN_STEP_ID + " = ?";
 
     final BasicArgumentBatch batch = new BasicArgumentBatch();
+    final int boolType = _userDbPlatform.getBooleanType();
     batch.setParameterTypes(new Integer[]{
         Types.BIGINT,    // LEFT_CHILD_ID
         Types.BIGINT,    // RIGHT_CHILD_ID
@@ -1025,10 +1040,10 @@ public class StepFactory {
         Types.BIGINT,    // ESTIMATE_SIZE
         Types.VARCHAR,   // ANSWER_FILTER
         Types.VARCHAR,   // CUSTOM_NAME
-        _userDbPlatform.getBooleanType(),   // IS_DELETED
-        _userDbPlatform.getBooleanType(),   // IS_VALID
+        boolType,        // IS_DELETED
+        boolType,        // IS_VALID
         Types.VARCHAR,   // COLLAPSED_NAME
-        _userDbPlatform.getBooleanType(),   // IS_COLLAPSIBLE
+        boolType,        // IS_COLLAPSIBLE
         Types.BIGINT,    // ASSIGNED_WEIGHT
         Types.VARCHAR,   // PROJECT_ID
         Types.VARCHAR,   // PROJECT_VERSION

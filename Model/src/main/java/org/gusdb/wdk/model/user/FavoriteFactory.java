@@ -86,13 +86,13 @@ public class FavoriteFactory {
       PK_PREDICATE_MACRO;
 
   private static final String DELETE_ALL_FAVORITES_SQL =
-      "UPDATE " + USER_SCHEMA_MACRO + TABLE_FAVORITES + 
+      "UPDATE " + USER_SCHEMA_MACRO + TABLE_FAVORITES +
       " SET " + COLUMN_IS_DELETED + " = " + IS_DELETED_SETTER_VALUE_MACRO +
       " WHERE " + COLUMN_USER_ID + " = ?" +
       "   AND " + COLUMN_PROJECT_ID + " = ?";
 
   private static final String SET_IS_DELETED_BY_ID_SQL =
-      "UPDATE " + USER_SCHEMA_MACRO + TABLE_FAVORITES + 
+      "UPDATE " + USER_SCHEMA_MACRO + TABLE_FAVORITES +
       " SET " + COLUMN_IS_DELETED + " = " + IS_DELETED_SETTER_VALUE_MACRO +
       " WHERE " + COLUMN_FAVORITE_ID + "= ?" +
       "   AND " + COLUMN_USER_ID + " = ?" +
@@ -100,7 +100,7 @@ public class FavoriteFactory {
       "   AND " + COLUMN_IS_DELETED + " = " + IS_DELETED_CONDITIONAL_VALUE_MACRO;
 
   private static final String UPDATE_FAVORITE_BY_ID_SQL =
-      "UPDATE "  + USER_SCHEMA_MACRO + TABLE_FAVORITES + 
+      "UPDATE "  + USER_SCHEMA_MACRO + TABLE_FAVORITES +
       " SET " + COLUMN_RECORD_NOTE + " = ?, " + COLUMN_RECORD_GROUP + " = ? " +
       " WHERE " + COLUMN_FAVORITE_ID + "= ?" +
       "   AND " + COLUMN_USER_ID + " = ?" +
@@ -108,7 +108,7 @@ public class FavoriteFactory {
       "   AND " + COLUMN_IS_DELETED + " = " + IS_DELETED_CONDITIONAL_VALUE_MACRO;
 
   private static final String INSERT_FAVORITE_SQL =
-      "INSERT INTO " + USER_SCHEMA_MACRO + TABLE_FAVORITES + 
+      "INSERT INTO " + USER_SCHEMA_MACRO + TABLE_FAVORITES +
       " ( " + COLUMN_FAVORITE_ID +
       " , " + COLUMN_USER_ID +
       " , " + COLUMN_PROJECT_ID  +
@@ -137,7 +137,7 @@ public class FavoriteFactory {
   /**
    * Returns a list of all undeleted favorites (i.e., the is_deleted flag is not raised)
    * for the user provided
-   * 
+   *
    * @param user
    * @return - list of favorites
    * @throws WdkModelException
@@ -148,7 +148,7 @@ public class FavoriteFactory {
       ListBuilder<Favorite> favorites = new ListBuilder<>();
       String sql = SELECT_FAVORITES_SQL
           .replace(USER_SCHEMA_MACRO, _userSchema)
-          .replace(IS_DELETED_CONDITIONAL_VALUE_MACRO, _userDb.getPlatform().convertBoolean(false));
+          .replace(IS_DELETED_CONDITIONAL_VALUE_MACRO, _userDb.getPlatform().convertBoolean(false).toString());
       new SQLRunner(_userDb.getDataSource(), sql, "select-undeleted-favorites").executeQuery(
         new Object[]{ userId, _wdkModel.getProjectId() },
         new Integer[]{ Types.BIGINT, Types.VARCHAR },
@@ -177,7 +177,7 @@ public class FavoriteFactory {
   /**
    * Loads favorite from the current row of the result set, or null if favorite contains an invalid
    * recordclass.
-   * 
+   *
    * @param user
    * @param resultSet
    * @return
@@ -223,7 +223,7 @@ public class FavoriteFactory {
   /**
    * Gets an undeleted favorite by favorite id if owned by the given user.  Returns null if favorite does not
    * exist or cannot be used for some other reason (e.g. recordclass no longer valid).
-   * 
+   *
    * @param user
    * @param favoriteId
    * @return
@@ -236,7 +236,7 @@ public class FavoriteFactory {
   private Favorite getFavorite(User user, Long favoriteId, boolean includeDeleted) throws WdkModelException {
     long userId = user.getUserId();
     Wrapper<Favorite> wrapper = new Wrapper<>();
-    try {  
+    try {
       String selectFavoriteSql = SELECT_FAVORITE_BY_ID_SQL.replace(USER_SCHEMA_MACRO, _userSchema);
       new SQLRunner(_userDb.getDataSource(), selectFavoriteSql, "select-favorite-by-id").executeQuery(
         new Object[]{ favoriteId, userId, _wdkModel.getProjectId() },
@@ -272,7 +272,7 @@ public class FavoriteFactory {
 
   /**
    * Returns favorite if found, or null if not found
-   * 
+   *
    * @param user owner of the desired favorite
    * @param recordClass recordclass of the desired favorite
    * @param recordId primary key values of the desired favorite
@@ -311,7 +311,7 @@ public class FavoriteFactory {
 
   /**
    * Deletes all of a given user's favorites (i.e. is_deleted flag is raised)
-   * 
+   *
    * @param user
    * @return - number of deletions
    * @throws WdkModelException
@@ -320,7 +320,7 @@ public class FavoriteFactory {
     try {
       String sql = DELETE_ALL_FAVORITES_SQL
           .replace(USER_SCHEMA_MACRO, _userSchema)
-          .replace(IS_DELETED_SETTER_VALUE_MACRO, _userDb.getPlatform().convertBoolean(true));
+          .replace(IS_DELETED_SETTER_VALUE_MACRO, _userDb.getPlatform().convertBoolean(true).toString());
       return new SQLRunner(_userDb.getDataSource(), sql, "delete-all-favorites").executeUpdate(
           new Object[]{ user.getUserId(), _wdkModel.getProjectId() },
           new Integer[]{ Types.BIGINT, Types.VARCHAR });
@@ -336,7 +336,7 @@ public class FavoriteFactory {
   /**
    * Transaction-safe batch operation to delete multiple favorites.  Only those favorites owned by the user
    * and set on the current project will be deleted (i.e. is_deleted set to true).
-   * 
+   *
    * @param user owner of the favorites
    * @param favoriteIds list of favorite IDs to delete
    * @return number of favorites affected
@@ -349,7 +349,7 @@ public class FavoriteFactory {
   /**
    * Transaction-safe batch operation to undelete multiple favorites.  Only those favorites owned by the user
    * and set on the current project will be undeleted (i.e. is_deleted set to false).
-   * 
+   *
    * @param user owner of the favorites
    * @param favoriteIds list of favorite IDs to delete
    * @return number of favorites affected
@@ -367,8 +367,8 @@ public class FavoriteFactory {
       Wrapper<Integer> updateCountWrapper = new Wrapper<>();
       String sql = SET_IS_DELETED_BY_ID_SQL
           .replace(USER_SCHEMA_MACRO, _userSchema)
-          .replace(IS_DELETED_SETTER_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isDeletedValue))
-          .replace(IS_DELETED_CONDITIONAL_VALUE_MACRO, _userDb.getPlatform().convertBoolean(!isDeletedValue));
+          .replace(IS_DELETED_SETTER_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isDeletedValue).toString())
+          .replace(IS_DELETED_CONDITIONAL_VALUE_MACRO, _userDb.getPlatform().convertBoolean(!isDeletedValue).toString());
       SqlUtils.performInTransaction(conn, () -> {
         BasicArgumentBatch batch = new BasicArgumentBatch();
         batch.setBatchSize(BATCH_SIZE);
@@ -381,7 +381,7 @@ public class FavoriteFactory {
       return updateCountWrapper.get();
     }
     catch (SQLRunnerException sre) {
-      throw new WdkModelException(sre.getCause().getMessage(), sre.getCause()); 
+      throw new WdkModelException(sre.getCause().getMessage(), sre.getCause());
     }
     catch(Exception ex) {
       throw new WdkModelException(ex);
@@ -393,7 +393,7 @@ public class FavoriteFactory {
 
   /**
    * Updates the favorite's note and group to the passed values
-   * 
+   *
    * @param user owner of the favorite
    * @param favoriteId favorite ID
    * @param note new note
@@ -405,7 +405,7 @@ public class FavoriteFactory {
     try {
       String sql = UPDATE_FAVORITE_BY_ID_SQL
           .replace(USER_SCHEMA_MACRO, _userSchema)
-          .replace(IS_DELETED_CONDITIONAL_VALUE_MACRO, _userDb.getPlatform().convertBoolean(false));
+          .replace(IS_DELETED_CONDITIONAL_VALUE_MACRO, _userDb.getPlatform().convertBoolean(false).toString());
       int affectedRows = new SQLRunner(_userDb.getDataSource(), sql, "edit-favorite").executeUpdate(
           new Object[]{ note, group, favoriteId, user.getUserId(), _wdkModel.getProjectId() },
           new Integer[]{ Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR });
@@ -415,7 +415,7 @@ public class FavoriteFactory {
       return affectedRows > 0;
     }
     catch (SQLRunnerException sre) {
-      throw new WdkModelException(sre.getCause().getMessage(), sre.getCause()); 
+      throw new WdkModelException(sre.getCause().getMessage(), sre.getCause());
     }
     catch(Exception ex) {
       throw new WdkModelException(ex);
@@ -447,7 +447,7 @@ public class FavoriteFactory {
       String sql = INSERT_FAVORITE_SQL
           .replace(USER_SCHEMA_MACRO, _userSchema)
           .replace(PK_COLUMNS_MACRO, pkColumnsText)
-          .replace(IS_DELETED_SETTER_VALUE_MACRO, _userDb.getPlatform().convertBoolean(false))
+          .replace(IS_DELETED_SETTER_VALUE_MACRO, _userDb.getPlatform().convertBoolean(false).toString())
           .replace(PK_WILDCARDS_MACRO, pkWildcardText);
 
       // set up non-PK values
@@ -508,7 +508,7 @@ public class FavoriteFactory {
    * @param recordIds
    *          a list of primary key values. the inner map is a primary-key
    *          column-value map.
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
   @Deprecated // pending struts removal
   public void addToFavorite(User user, RecordClass recordClass,
