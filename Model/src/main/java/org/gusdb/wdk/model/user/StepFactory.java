@@ -56,7 +56,6 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.gusdb.fgputil.db.SqlUtils.setNullableString;
 import static org.gusdb.fgputil.functional.Functions.filter;
 import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
 import static org.gusdb.wdk.model.user.StepContainer.withId;
@@ -305,7 +304,9 @@ public class StepFactory {
 
   public void deleteStrategy(long strategyId) throws WdkModelException {
     PreparedStatement psStrategy = null;
-    String sql = "DELETE FROM " + _userSchema + TABLE_STRATEGY + " WHERE " + COLUMN_STRATEGY_ID + " = ?";
+    String sql = "DELETE FROM " + _userSchema + TABLE_STRATEGY +
+        " WHERE " + COLUMN_STRATEGY_ID + " = ?";
+
     try {
       long start = System.currentTimeMillis();
       psStrategy = SqlUtils.getPreparedStatement(_userDbDs, sql);
@@ -358,10 +359,14 @@ public class StepFactory {
           " WHERE " + COLUMN_USER_ID + " = ?" +
           "   AND " + COLUMN_PROJECT_ID + " = ? " +
           "   AND is_deleted = " + _userDbPlatform.convertBoolean(false);
-      SingleLongResultSetHandler result = new SQLRunner(_userDbDs, sql, "wdk-step-factory-step-count").executeQuery(
+
+      SingleLongResultSetHandler result = new SQLRunner(_userDbDs, sql, "wdk-step-factory-step-count")
+          .executeQuery(
               new Object[] { user.getUserId(), _wdkModel.getProjectId() },
               new Integer[] { Types.BIGINT, Types.VARCHAR },
-              new SingleLongResultSetHandler());
+              new SingleLongResultSetHandler()
+          );
+
       if (Status.NON_NULL_VALUE.equals(result.getStatus())) {
         return result.getRetrievedValue().intValue();
       }
@@ -489,44 +494,60 @@ public class StepFactory {
    * @throws WdkModelException
    */
   void updateStep(User user, Step step, boolean setLastRunTime) throws WdkModelException {
-    LOG.debug("updateStep(): step #" + step.getStepId() + " new custom name: '" + step.getBaseCustomName() + "'");
+    LOG.debug("updateStep(): step #" + step.getStepId() +
+        " new custom name: '" + step.getBaseCustomName() + "'");
+
     // update custom name
     Date lastRunTime = setLastRunTime ? new Date() : step.getLastRunTime();
-    PreparedStatement psStep = null;
-    String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_CUSTOM_NAME + " = ?, " +
-        COLUMN_LAST_RUN_TIME + " = ?, " + COLUMN_IS_DELETED + " = ?, " + COLUMN_IS_COLLAPSIBLE + " = ?, " +
-        COLUMN_COLLAPSED_NAME + " = ?, " + COLUMN_ESTIMATE_SIZE + " = ?, " +
-        COLUMN_ASSIGNED_WEIGHT + " = ? WHERE " + COLUMN_STEP_ID + " = ?";
-    try {
-      long start = System.currentTimeMillis();
-      psStep = SqlUtils.getPreparedStatement(_userDbDs, sql);
-      psStep.setString(1, step.getBaseCustomName());
-      psStep.setTimestamp(2, new Timestamp(lastRunTime.getTime()));
-      psStep.setBoolean(3, step.isDeleted());
-      psStep.setBoolean(4, step.isCollapsible());
-      psStep.setString(5, step.getCollapsedName());
-      psStep.setInt(6, step.getEstimatedSize());
-      psStep.setInt(7, step.getAnswerSpec().getQueryInstanceSpec().getAssignedWeight());
-      psStep.setLong(8, step.getStepId());
-      int result = psStep.executeUpdate();
-      QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-update-step", start);
-      if (result == 0)
-        throw new WdkModelException("The Step #" + step.getStepId() + " of user " + user.getEmail() +
-            " cannot be found.");
 
-      // update the last run stamp
-      step.setLastRunTime(lastRunTime);
+    final String sql = "UPDATE " + _userSchema + TABLE_STEP + "\n" +
+        "SET\n" +
+        "  " + COLUMN_CUSTOM_NAME     + " = ?,\n" +
+        "  " + COLUMN_LAST_RUN_TIME   + " = ?,\n" +
+        "  " + COLUMN_IS_DELETED      + " = ?,\n" +
+        "  " + COLUMN_IS_COLLAPSIBLE  + " = ?,\n" +
+        "  " + COLUMN_COLLAPSED_NAME  + " = ?,\n" +
+        "  " + COLUMN_ESTIMATE_SIZE   + " = ?,\n" +
+        "  " + COLUMN_ASSIGNED_WEIGHT + " = ?\n"  +
+        "WHERE\n" +
+        "  " + COLUMN_STEP_ID + " = ?";
 
-      // update dependencies
-      if (step.isCombined())
-        updateStepTree(step);
-    }
-    catch (SQLException e) {
-      throw new WdkModelException("Could not update step.", e);
-    }
-    finally {
-      SqlUtils.closeStatement(psStep);
-    }
+    final int boolType = _userDbPlatform.getBooleanType();
+
+    final int result = new SQLRunner(_userDbDs, sql).executeUpdate(
+        new Object[]{
+            step.getBaseCustomName(),
+            new Timestamp(lastRunTime.getTime()),
+            _userDbPlatform.convertBoolean(step.isDeleted()),
+            _userDbPlatform.convertBoolean(step.isCollapsible()),
+            step.getCollapsedName(),
+            step.getEstimatedSize(),
+            step.getAnswerSpec().getQueryInstanceSpec().getAssignedWeight(),
+            step.getStepId()
+        },
+        new Integer[]{
+            Types.VARCHAR,   // CUSTOM_NAME
+            Types.TIMESTAMP, // LAST_RUN_TIME
+            boolType,        // IS_DELETED
+            boolType,        // IS_COLLAPSIBLE
+            Types.VARCHAR,   // COLLAPSED_NAME
+            Types.BIGINT,    // ESTIMATE_SIZE
+            Types.BIGINT,    // ASSIGNED_WEIGHT
+            Types.BIGINT     // STEP_ID
+        }
+    );
+
+    if (result == 0)
+      throw new WdkModelException("The Step #" + step.getStepId() +
+          " of user " + user.getEmail() + " cannot be found.");
+
+    // update the last run stamp
+    step.setLastRunTime(lastRunTime);
+
+    // update dependencies
+    if (step.isCombined())
+      updateStepTree(step);
+
     LOG.debug("updateStep(): DONE");
   }
 
