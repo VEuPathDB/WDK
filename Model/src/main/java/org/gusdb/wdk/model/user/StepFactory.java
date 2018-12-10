@@ -11,6 +11,7 @@ import org.gusdb.fgputil.db.platform.Oracle;
 import org.gusdb.fgputil.db.platform.PostgreSQL;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.BasicArgumentBatch;
+import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
@@ -590,7 +591,6 @@ public class StepFactory {
     finally {
       SqlUtils.closeStatement(psStep);
     }
-
   }
 
   public Map<Long, Strategy> getStrategies(long userId, Map<Long, Strategy> invalidStrategies) throws WdkModelException {
@@ -1173,51 +1173,65 @@ public class StepFactory {
     }
   }
 
-  private String addSuffixToStratNameIfNeeded(User user, String oldName, boolean saved) throws WdkModelException {
-    PreparedStatement psNames = null;
-    ResultSet rsNames = null;
-    String sql = "SELECT " + COLUMN_NAME + " FROM " + _userSchema + TABLE_STRATEGY + " WHERE " +
-        Utilities.COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME +
-        " LIKE ? AND " + COLUMN_IS_SAVED + "= ? AND " + COLUMN_IS_DELETED + "= ?";
+  private String addSuffixToStratNameIfNeeded(final User user,
+      final String oldName, final boolean saved) {
+
+    final String sql = "SELECT " + COLUMN_NAME       + "\n" +
+        "FROM " + _userSchema + TABLE_STRATEGY + "\n" +
+        "WHERE\n" +
+        "  "     + COLUMN_USER_ID    + " = ?\n" +
+        "  AND " + COLUMN_PROJECT_ID + " = ?\n" +
+        "  AND " + COLUMN_NAME       + " LIKE ?\n" +
+        "  AND " + COLUMN_IS_SAVED   + "= ?\n" +
+        "  AND " + COLUMN_IS_DELETED + "= ?\n" +
+        "ORDER BY COLUMN_NAME DESC";
+
+    final int boolType = _userDbPlatform.getBooleanType();
+
+    final Wrapper<String> wrapper = new Wrapper<>();
+
+    new SQLRunner(_userDbDs, sql).executeQuery(
+        new Object[] {
+            user.getUserId(),
+            _wdkModel.getProjectId(),
+            SqlUtils.escapeWildcards(oldName) + "%",
+            _userDbPlatform.convertBoolean(saved),
+            _userDbPlatform.convertBoolean(false)
+        },
+        new Integer[] {
+            Types.BIGINT,
+            Types.VARCHAR,
+            Types.VARCHAR,
+            boolType,
+            boolType
+        },
+        rs -> {
+          int index = 1;
+          while (rs.next()) {
+            int res = parseStrategyNameIndex(rs.getString(COLUMN_NAME), oldName)
+                .orElse(0);
+            if (res > index)
+              index = res;
+          }
+
+          wrapper.set(index > 1
+              ? String.format("%s (%d)", oldName, index)
+              : oldName);
+        }
+    );
+
+    return wrapper.get();
+  }
+
+  Optional<Integer> parseStrategyNameIndex(String test, String against) {
+    final int len = against.trim().length();
+    final String trimmed = test.trim();
+
     try {
-      // get the existing names
-      long start = System.currentTimeMillis();
-      psNames = SqlUtils.getPreparedStatement(_userDbDs, sql);
-      psNames.setLong(1, user.getUserId());
-      psNames.setString(2, _wdkModel.getProjectId());
-      psNames.setString(3, SqlUtils.escapeWildcards(oldName) + "%");
-      psNames.setBoolean(4, saved);
-      psNames.setBoolean(5, false);
-      rsNames = psNames.executeQuery();
-      QueryLogger.logStartResultsProcessing(sql, "wdk-step-factory-strategy-next-name", start, rsNames);
-
-      Set<String> names = new LinkedHashSet<String>();
-      while (rsNames.next())
-        names.add(rsNames.getString(COLUMN_NAME));
-
-      // randomly find the first name that matches oldName (\d+).
-      // increment that numeric suffix, and continue looping until the incremented guys is not found.
-      // that's our new name.
-      String name = oldName;
-      Pattern pattern = Pattern.compile("(.+?)\\((\\d+)\\)");
-      while (names.contains(name)) {
-        Matcher matcher = pattern.matcher(name);
-        if (matcher.matches() && !name.equals(oldName)) {
-          int number = Integer.parseInt(matcher.group(2));
-          name = matcher.group(1).trim();
-          name += "(" + (++number) + ")";
-        }
-        else { // the initial name, no tailing serial number
-          name += "(2)";
-        }
-      }
-      return name;
-    }
-    catch (SQLException e) {
-      throw new WdkModelException("Unable to get next name", e);
-    }
-    finally {
-      SqlUtils.closeResultSetAndStatement(rsNames, psNames);
+      return Optional.of(
+          Integer.parseInt(trimmed.substring(len + 1, trimmed.length() - 2)));
+    } catch (NumberFormatException e) {
+      return Optional.empty();
     }
   }
 
@@ -1367,5 +1381,4 @@ public class StepFactory {
       throw new WdkModelException(ex);
     }
   }
-
 }
