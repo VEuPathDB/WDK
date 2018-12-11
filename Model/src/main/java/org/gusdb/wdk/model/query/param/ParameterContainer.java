@@ -4,10 +4,10 @@ import java.util.Map;
 
 public interface ParameterContainer {
 
-  public Map<String, Param> getParamMap();
+  Map<String, Param> getParamMap();
 
-  public Param[] getParams();
+  Param[] getParams();
 
-  public String getFullName();
+  String getFullName();
 
 }
