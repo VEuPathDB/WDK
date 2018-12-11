@@ -11,14 +11,11 @@ import org.gusdb.fgputil.db.platform.Oracle;
 import org.gusdb.fgputil.db.platform.PostgreSQL;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.BasicArgumentBatch;
-import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.BiFunctionWithException;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -54,8 +51,6 @@ import java.sql.*;
 import java.util.Date;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.gusdb.fgputil.functional.Functions.filter;
 import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
@@ -795,6 +790,60 @@ public class StepFactory {
     return new StrategyLoader(_wdkModel, ValidationLevel.SEMANTIC).getStrategyBySignature(strategySignature);
   }
 
+  private Optional<TwoTuple<Long, String>> getOverwriteStrategy(long userId,
+      String name) {
+    final String sql = "SELECT\n" +
+        "  " + COLUMN_STRATEGY_ID + ",\n" +
+        "  " + COLUMN_SIGNATURE +
+        "FROM "  + _userSchema + TABLE_STRATEGY +
+        "WHERE " + COLUMN_USER_ID    + " = ?\n" +
+        "  AND " + COLUMN_PROJECT_ID + " = ?\n" +
+        "  AND " + COLUMN_NAME       + " = ?\n" +
+        "  AND " + COLUMN_IS_SAVED   + " = ?\n" +
+        "  AND " + COLUMN_IS_DELETED + " = ?\n";
+
+    // If we're overwriting, need to look up saved strategy id by
+    // name (only if the saved strategy is not the one we're
+    // updating, i.e. the saved strategy id != this strategy id)
+
+    // jerric - will also find the saved copy of itself, so that we
+    // can keep the signature.
+
+    final int boolType = _userDbPlatform.getBooleanType();
+
+    final Wrapper<Optional<TwoTuple<Long, String>>> out = new Wrapper<>();
+
+    new SQLRunner(_userDbDs, sql)
+      .executeQuery(
+        new Object[]{
+          userId,
+          _wdkModel.getProjectId(),
+          name,
+          _userDbPlatform.convertBoolean(true),
+          _userDbPlatform.convertBoolean(false)
+        },
+        new Integer[] {
+          Types.BIGINT,  // USER_ID
+          Types.VARCHAR, // PROJECT_ID
+          Types.VARCHAR, // NAME
+          boolType,      // IS_SAVED
+          boolType       // IS_DELETED
+        },
+        rs -> {
+          if (rs.next()) {
+            out.set(Optional.of(new TwoTuple<>(
+              rs.getLong(COLUMN_STRATEGY_ID),
+              rs.getString(COLUMN_SIGNATURE)
+            )));
+          } else {
+            out.set(Optional.empty());
+          }
+        }
+        );
+
+    return out.get();
+  }
+
   // This function only updates the strategies table
   void updateStrategy(User user, Strategy strategy, boolean overwrite) throws WdkModelException,
       WdkUserException {
@@ -802,89 +851,73 @@ public class StepFactory {
 
     // cannot update a saved strategy if overwrite flag is false
     if (!overwrite && strategy.getIsSaved())
-      throw new WdkUserException("Cannot update a saved strategy. Please create a copy and update it, "
-          + "or set overwrite flag to true.");
-
-    // update strategy name, saved, step_id
-    PreparedStatement psStrategy = null;
-    PreparedStatement psCheck = null;
-    ResultSet rsStrategy = null;
+      throw new WdkUserException("Cannot update a saved strategy. Please " +
+          "create a copy and update it, or set overwrite flag to true.");
 
     long userId = user.getUserId();
 
-    String userIdColumn = Utilities.COLUMN_USER_ID;
-    try {
-      if (overwrite) {
-        String sql = "SELECT " + COLUMN_STRATEGY_ID + ", " + COLUMN_SIGNATURE + " FROM " + _userSchema +
-            TABLE_STRATEGY + " WHERE " + userIdColumn + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND " +
-            COLUMN_NAME + " = ? AND " + COLUMN_IS_SAVED + " = ? AND " + COLUMN_IS_DELETED + " = ? ";
-        // AND " + COLUMN_DISPLAY_ID + " <> ?";
+    if (overwrite) {
+      Optional<TwoTuple<Long,String>> opSaved = getOverwriteStrategy(userId,
+          strategy.getName());
 
-        // If we're overwriting, need to look up saved strategy id by
-        // name (only if the saved strategy is not the one we're
-        // updating, i.e. the saved strategy id != this strategy id)
-
-        // jerric - will also find the saved copy of itself, so that we
-        // can keep the signature.
-        long start = System.currentTimeMillis();
-        psCheck = SqlUtils.getPreparedStatement(_userDbDs, sql);
-        psCheck.setLong(1, userId);
-        psCheck.setString(2, _wdkModel.getProjectId());
-        psCheck.setString(3, strategy.getName());
-        psCheck.setBoolean(4, true);
-        psCheck.setBoolean(5, false);
-        // psCheck.setInt(6, strategy.getStrategyId());
-        rsStrategy = psCheck.executeQuery();
-        QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-check-strategy-name", start);
-
+      if (opSaved.isPresent()) {
+        TwoTuple<Long, String> saved = opSaved.get();
         // If there's already a saved strategy with this strategy's name,
         // we need to write the new saved strategy & mark the old
         // saved strategy as deleted
-        if (rsStrategy.next()) {
-          int idToDelete = rsStrategy.getInt(COLUMN_STRATEGY_ID);
-          String signature = rsStrategy.getString(COLUMN_SIGNATURE);
-          strategy.setIsSaved(true);
-          strategy.setSignature(signature);
-          strategy.setSavedName(strategy.getName());
-          // jerric - only delete the strategy if it's a different one
-          if (strategy.getStrategyId() != idToDelete)
-            StepUtilities.deleteStrategy(user, idToDelete);
-        }
+        strategy.setIsSaved(true);
+        strategy.setSignature(saved.getSecond());
+        strategy.setSavedName(strategy.getName());
+        // jerric - only delete the strategy if it's a different one
+        if (!strategy.getStrategyId().equals(saved.getFirst()))
+          StepUtilities.deleteStrategy(user, saved.getFirst());
       }
-
-      Date modifiedTime = new Date();
-      String sql = "UPDATE " + _userSchema + TABLE_STRATEGY + " SET " + COLUMN_NAME + " = ?, " +
-          COLUMN_ROOT_STEP_ID + " = ?, " + COLUMN_SAVED_NAME + " = ?, " + COLUMN_IS_SAVED + " = ?, " +
-          COLUMN_DESCRIPTION + " = ?, " + COLUMN_LAST_MODIFIED_TIME + " = ?, " + COLUMN_SIGNATURE + "= ?, " +
-          COLUMN_IS_PUBLIC + " = ? " + "WHERE " + COLUMN_STRATEGY_ID + " = ?";
-      long start = System.currentTimeMillis();
-      psStrategy = SqlUtils.getPreparedStatement(_userDbDs, sql);
-      psStrategy.setString(1, strategy.getName());
-      psStrategy.setLong(2, strategy.getRootStep().getStepId());
-      psStrategy.setString(3, strategy.getSavedName());
-      psStrategy.setBoolean(4, strategy.getIsSaved());
-      psStrategy.setString(5, strategy.getDescription());
-      psStrategy.setTimestamp(6, new Timestamp(modifiedTime.getTime()));
-      psStrategy.setString(7, strategy.getSignature());
-      psStrategy.setBoolean(8, strategy.getIsPublic());
-      psStrategy.setLong(9, strategy.getStrategyId());
-      int result = psStrategy.executeUpdate();
-      QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-update-strategy", start);
-
-      strategy.setLastModifiedTime(modifiedTime);
-
-      if (result == 0)
-        throw new WdkUserException("The strategy #" + strategy.getStrategyId() + " of user " +
-            user.getEmail() + " cannot be found.");
-    }
-    catch (SQLException ex) {
-      throw new WdkModelException(ex);
-    }
-    finally {
-      SqlUtils.closeStatement(psStrategy);
-      SqlUtils.closeResultSetAndStatement(rsStrategy, psCheck);
     }
 
+    final Date modifiedTime = new Date();
+    final int boolType =_userDbPlatform.getBooleanType();
+    final String sql = "UPDATE " + _userSchema + TABLE_STRATEGY + "\n" +
+        "SET\n" +
+        "  " + COLUMN_NAME               + " = ?,\n" +
+        "  " + COLUMN_ROOT_STEP_ID       + " = ?,\n" +
+        "  " + COLUMN_SAVED_NAME         + " = ?,\n" +
+        "  " + COLUMN_IS_SAVED           + " = ?,\n" +
+        "  " + COLUMN_DESCRIPTION        + " = ?,\n" +
+        "  " + COLUMN_LAST_MODIFIED_TIME + " = ?,\n" +
+        "  " + COLUMN_SIGNATURE          + " = ?,\n" +
+        "  " + COLUMN_IS_PUBLIC          + " = ?\n" +
+        "WHERE " + COLUMN_STRATEGY_ID + " = ?";
+
+    final int result = new SQLRunner(_userDbDs, sql).executeUpdate(
+      new Object[]{
+        strategy.getName(),
+        strategy.getRootStep().getStepId(),
+        strategy.getSavedName(),
+        _userDbPlatform.convertBoolean(strategy.getIsSaved()),
+        strategy.getDescription(),
+        new Timestamp(modifiedTime.getTime()),
+        strategy.getSignature(),
+        _userDbPlatform.convertBoolean(strategy.getIsPublic()),
+        strategy.getStrategyId()
+      },
+      new Integer[]{
+        Types.VARCHAR,   // NAME
+        Types.BIGINT,    // ROOT_STEP_ID
+        Types.VARCHAR,   // SAVED_NAME
+        boolType,        // IS_SAVED
+        Types.VARCHAR,   // DESCRIPTION
+        Types.TIMESTAMP, // LAST_MODIFY_TIME
+        Types.VARCHAR,   // SIGNATURE
+        boolType,        // IS_PUBLIC
+        Types.BIGINT     // STRATEGY_ID
+      }
+    );
+
+    strategy.setLastModifiedTime(modifiedTime);
+
+    if (result == 0)
+      throw new WdkUserException("The strategy #" + strategy.getStrategyId() + " of user " +
+          user.getEmail() + " cannot be found.");
   }
 
   public long getNewStrategyId() throws WdkModelException {
@@ -903,7 +936,7 @@ public class StepFactory {
   public Strategy createStrategy(User user, Step root, String name, String savedName, boolean saved,
       String description, boolean hidden, boolean isPublic) throws WdkModelException {
     long strategyId = (root.getStrategyId() == null) ? getNextStrategyId() : root.getStrategyId();
-    return createStrategy(user, root, name, savedName, saved, description, hidden, isPublic, strategyId);
+    return createStrategy(user, strategyId, root, name, savedName, saved, description, hidden, isPublic);
   }
 
   Strategy createStrategy(User user, long strategyId, Step root, String newName,
@@ -927,7 +960,8 @@ public class StepFactory {
         "   AND " + COLUMN_IS_SAVED + "= ?" +
         "   AND " + COLUMN_IS_DELETED + "= ?";
     try {
-      // If newName is not null, check if strategy exists.  if so, just load it and return.  don't create a new one.
+      // If newName is not null, check if strategy exists.  if so, just load it
+      // and return.  don't create a new one.
       if (newName != null) {
         if (newName.length() > COLUMN_NAME_LIMIT) {
           newName = newName.substring(0, COLUMN_NAME_LIMIT - 1);
@@ -1033,22 +1067,22 @@ public class StepFactory {
   private void updateSteps(Connection con, Collection<Step> steps) {
     final String sql = "UPDATE " + _userSchema + TABLE_STEP + "\n" +
         "SET\n" +
-        "  " + COLUMN_PREVIOUS_STEP_ID   + " = ?,\n" +
-        "  " + COLUMN_CHILD_STEP_ID   + " = ?,\n" +
-        "  " + COLUMN_LAST_RUN_TIME   + " = ?,\n" +
-        "  " + COLUMN_ESTIMATE_SIZE   + " = ?,\n" +
-        "  " + COLUMN_ANSWER_FILTER   + " = ?,\n" +
-        "  " + COLUMN_CUSTOM_NAME     + " = ?,\n" +
-        "  " + COLUMN_IS_DELETED      + " = ?,\n" +
-        "  " + COLUMN_IS_VALID        + " = ?,\n" +
-        "  " + COLUMN_COLLAPSED_NAME  + " = ?,\n" +
-        "  " + COLUMN_IS_COLLAPSIBLE  + " = ?,\n" +
-        "  " + COLUMN_ASSIGNED_WEIGHT + " = ?,\n" +
-        "  " + COLUMN_PROJECT_ID      + " = ?,\n" +
-        "  " + COLUMN_PROJECT_VERSION + " = ?,\n" +
-        "  " + COLUMN_QUESTION_NAME   + " = ?,\n" +
-        "  " + COLUMN_STRATEGY_ID     + " = ?,\n" +
-        "  " + COLUMN_DISPLAY_PARAMS  + " = ?\n"  +
+        "  " + COLUMN_PREVIOUS_STEP_ID + " = ?,\n" +
+        "  " + COLUMN_CHILD_STEP_ID    + " = ?,\n" +
+        "  " + COLUMN_LAST_RUN_TIME    + " = ?,\n" +
+        "  " + COLUMN_ESTIMATE_SIZE    + " = ?,\n" +
+        "  " + COLUMN_ANSWER_FILTER    + " = ?,\n" +
+        "  " + COLUMN_CUSTOM_NAME      + " = ?,\n" +
+        "  " + COLUMN_IS_DELETED       + " = ?,\n" +
+        "  " + COLUMN_IS_VALID         + " = ?,\n" +
+        "  " + COLUMN_COLLAPSED_NAME   + " = ?,\n" +
+        "  " + COLUMN_IS_COLLAPSIBLE   + " = ?,\n" +
+        "  " + COLUMN_ASSIGNED_WEIGHT  + " = ?,\n" +
+        "  " + COLUMN_PROJECT_ID       + " = ?,\n" +
+        "  " + COLUMN_PROJECT_VERSION  + " = ?,\n" +
+        "  " + COLUMN_QUESTION_NAME    + " = ?,\n" +
+        "  " + COLUMN_STRATEGY_ID      + " = ?,\n" +
+        "  " + COLUMN_DISPLAY_PARAMS   + " = ?\n"  +
         "WHERE\n" +
         "  " + COLUMN_STEP_ID + " = ?";
 
@@ -1136,47 +1170,58 @@ public class StepFactory {
     }
   }
 
-  public NameCheckInfo checkNameExists(Strategy strategy, String name, boolean saved) throws WdkModelException {
-    PreparedStatement psCheckName = null;
-    ResultSet rsCheckName = null;
-    String sql = "SELECT strategy_id, is_public, description FROM " + _userSchema + TABLE_STRATEGY +
-        " WHERE " + Utilities.COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME +
-        " = ? AND " + COLUMN_IS_SAVED + " = ? AND " + COLUMN_IS_DELETED + " = ? AND " + COLUMN_STRATEGY_ID +
-        " <> ?";
-    try {
-      long start = System.currentTimeMillis();
-      psCheckName = SqlUtils.getPreparedStatement(_userDbDs, sql);
-      psCheckName.setLong(1, strategy.getUser().getUserId());
-      psCheckName.setString(2, _wdkModel.getProjectId());
-      psCheckName.setString(3, name);
-      psCheckName.setBoolean(4, (saved || strategy.getIsSaved()));
-      psCheckName.setBoolean(5, false);
-      psCheckName.setLong(6, strategy.getStrategyId());
-      rsCheckName = psCheckName.executeQuery();
-      QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-strategy-name-exist", start);
+  public NameCheckInfo checkNameExists(Strategy strategy, String name, boolean saved) {
+    final int boolType = _userDbPlatform.getBooleanType();
+    final Wrapper<NameCheckInfo> out = new Wrapper<>();
+    final String sql = "SELECT\n" +
+      "  " + COLUMN_STRATEGY_ID + ",\n" +
+      "  " + COLUMN_IS_PUBLIC   + ",\n" +
+      "  " + COLUMN_DESCRIPTION + "\n" +
+      "FROM " + _userSchema + TABLE_STRATEGY +
+      "WHERE\n" +
+      "  "     + COLUMN_USER_ID     + " = ?\n" +
+      "  AND " + COLUMN_PROJECT_ID  + " = ?\n" +
+      "  AND " + COLUMN_NAME        + " = ?\n" +
+      "  AND " + COLUMN_IS_SAVED    + " = ?\n" +
+      "  AND " + COLUMN_IS_DELETED  + " = ?\n" +
+      "  AND " + COLUMN_STRATEGY_ID + " <> ?";
 
-      if (rsCheckName.next()) {
-        boolean isPublic = rsCheckName.getBoolean(2);
-        String description = rsCheckName.getString(3);
-        return new NameCheckInfo(true, isPublic, description);
+    new SQLRunner(_userDbDs, sql).executeQuery(
+      new Object[] {
+        strategy.getUser().getUserId(),
+        _wdkModel.getProjectId(),
+        name,
+        _userDbPlatform.convertBoolean(saved || strategy.getIsSaved()),
+        _userDbPlatform.convertBoolean(false),
+        strategy.getStrategyId()
+      },
+      new Integer[] {
+        Types.BIGINT,
+        Types.VARCHAR,
+        Types.VARCHAR,
+        boolType,
+        boolType,
+        Types.BIGINT
+      },
+      rs -> {
+        if (rs.next()) {
+          boolean isPublic = rs.getBoolean(2);
+          String description = rs.getString(3);
+          out.set(new NameCheckInfo(true, isPublic, description));
+        } else {
+          // otherwise, no strat by this name exists
+          out.set(new NameCheckInfo(false, false, null));
+        }
       }
-      // otherwise, no strat by this name exists
-      return new NameCheckInfo(false, false, null);
+    );
 
-    }
-    catch (SQLException e) {
-      throw new WdkModelException(
-          "Error checking name for strategy " + strategy.getStrategyId() + ":" + name, e);
-    }
-    finally {
-      SqlUtils.closeResultSetAndStatement(rsCheckName, psCheckName);
-    }
+    return out.get();
   }
 
   private String addSuffixToStratNameIfNeeded(final User user,
       final String oldName, final boolean saved) {
 
-    final String sql = "SELECT " + COLUMN_NAME       + "\n" +
+    final String sql = "SELECT " + COLUMN_NAME + "\n" +
         "FROM " + _userSchema + TABLE_STRATEGY + "\n" +
         "WHERE\n" +
         "  "     + COLUMN_USER_ID    + " = ?\n" +
@@ -1223,7 +1268,16 @@ public class StepFactory {
     return wrapper.get();
   }
 
-  Optional<Integer> parseStrategyNameIndex(String test, String against) {
+  /**
+   * Attempt to parse an int out of parenthesis at the end of a strategy name.
+   *
+   * @param test    String to check for appended counter
+   * @param against Original strategy name
+   *
+   * @return If a counter value is present, an option wrapping that int.
+   *         If no counter is present, an option of none.
+   */
+  static Optional<Integer> parseStrategyNameIndex(String test, String against) {
     final int len = against.trim().length();
     final String trimmed = test.trim();
 
@@ -1235,28 +1289,27 @@ public class StepFactory {
     }
   }
 
-  void updateStrategyViewTime(int strategyId) throws WdkModelException {
-    StringBuffer sql = new StringBuffer("UPDATE ");
-    sql.append(_userSchema).append(TABLE_STRATEGY);
-    sql.append(" SET ").append(COLUMN_LAST_VIEWED_TIME + " = ?, ");
-    sql.append(COLUMN_VERSION + " = ? ");
-    sql.append(" WHERE ").append(COLUMN_STRATEGY_ID).append(" = ?");
-    PreparedStatement psUpdate = null;
-    try {
-      long start = System.currentTimeMillis();
-      psUpdate = SqlUtils.getPreparedStatement(_userDbDs, sql.toString());
-      psUpdate.setTimestamp(1, new Timestamp(new Date().getTime()));
-      psUpdate.setString(2, _wdkModel.getVersion());
-      psUpdate.setInt(3, strategyId);
-      psUpdate.executeUpdate();
-      QueryLogger.logEndStatementExecution(sql.toString(), "wdk-step-factory-update-strategy-time", start);
-    }
-    catch (SQLException e) {
-      throw new WdkModelException("Could not update strategy view time for strat with id " + strategyId, e);
-    }
-    finally {
-      SqlUtils.closeStatement(psUpdate);
-    }
+  void updateStrategyViewTime(int strategyId) {
+    final String sql = "UPDATE " + _userSchema + TABLE_STRATEGY + "\n" +
+        "SET\n" +
+        "  " + COLUMN_LAST_VIEWED_TIME + " = ?,\n" +
+        "  " + COLUMN_VERSION          + " = ?\n" +
+        "WHERE\n" +
+        "  " + COLUMN_STRATEGY_ID + " = ?";
+
+    new SQLRunner(_userDbDs, sql, "wdk-step-factory-update-strategy-time")
+      .executeUpdate(
+        new Object[]{
+          new Timestamp(new Date().getTime()),
+          _wdkModel.getVersion(),
+          strategyId,
+        },
+        new Integer[]{
+          Types.TIMESTAMP,
+          Types.VARCHAR,
+          Types.BIGINT
+        }
+    );
   }
 
   public static String getStrategySignature(String projectId, long userId, long strategyId) {
