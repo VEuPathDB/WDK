@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.test.ParamValuesFactory;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -55,7 +56,7 @@ public class DumperHelp {
       Map<String, String> emptyConfig = new LinkedHashMap<String, String>();
   
       AnswerValue answer = AnswerValueFactory.makeAnswer(user, AnswerSpec.builder(wdkModel)
-          .setQuestionName(questionName).setParamValues(params).buildRunnable(user));
+          .setQuestionName(questionName).setParamValues(params).buildRunnable(user, StepContainer.emptyContainer()));
       Reporter reporter = ReporterFactory.getReporter(answer, reporterName, emptyConfig);
   
       System.out.println("Help for reporter: " + reporterName + NL);

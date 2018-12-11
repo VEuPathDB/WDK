@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.RequestParams;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 
 /**
  * A wrapper on a {@link Param} that provides simplified access for consumption by a view
@@ -184,18 +185,20 @@ public abstract class ParamBean<T extends Param> {
     _contextValues = contextValues;
   }
 
+  @Deprecated
   public void prepareDisplay(UserBean user, RequestParams requestParams)
       throws WdkModelException, WdkUserException {
     _param.prepareDisplay(user.getUser(), requestParams, _contextValues);
   }
 
+  @Deprecated
   public void prepareDisplay(UserBean user, RequestParams requestParams, Map<String, String> contextValues)
       throws WdkModelException, WdkUserException {
     _param.prepareDisplay(user.getUser(), requestParams, contextValues);
   }
 
   public String getDisplayValue() throws WdkModelException {
-    return _param.getDisplayValue(_userBean.getUser(), _stableValue, _contextValues);
+    return _param.getDisplayValue(QueryInstanceSpec.builder().putAll(_contextValues).buildInvalid());
   }
 
 }

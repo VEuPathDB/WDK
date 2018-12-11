@@ -713,9 +713,9 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   }
 
   @Deprecated
-  public void prepareDisplay(User user, RequestParams requestParams)
+  public void prepareDisplay(User user, RequestParams requestParams, Map<String,String> contextValues)
       throws WdkModelException, WdkUserException {
-    _handler.prepareDisplay(user, requestParams);
+    _handler.prepareDisplay(user, requestParams, contextValues);
   }
 
   public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
@@ -737,7 +737,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     _handlerReferences.add(handlerReference);
   }
 
-  public String getDisplayValue(RunnableObj<QueryInstanceSpec> paramValueSet) throws WdkModelException {
+  public String getDisplayValue(QueryInstanceSpec paramValueSet) throws WdkModelException {
     return _handler.getDisplayValue(paramValueSet);
   }
 
