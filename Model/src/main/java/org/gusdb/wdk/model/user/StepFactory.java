@@ -844,6 +844,75 @@ public class StepFactory {
     return out.get();
   }
 
+  /**
+   * Overwrite the given strategy in the strategies table.
+   *
+   * @param strat Strategy to overwrite
+   *
+   * @return Whether or not that strategy was updated in the database.  A return
+   *         value of false indicates that the strategy has not been created in
+   *         the database.
+   */
+  public boolean updateStrategy(Strategy strat) throws WdkModelException {
+    try(Connection con = _userDbDs.getConnection()) {
+      return updateStrategy(con, strat);
+    } catch (SQLException e) {
+      throw new WdkModelException(e);
+    }
+  }
+
+  /**
+   * Overwrite the given strategy in the strategies table.
+   *
+   * @param con   Open connection to the DB.  This can be used to run the step
+   *              update queries in a controlled connection such as a
+   *              transaction.
+   * @param strat Strategy to overwrite
+   *
+   * @return Whether or not that strategy was updated in the database.  A return
+   *         value of false indicates that the strategy has not been created in
+   *         the database.
+   */
+  public boolean updateStrategy(Connection con, Strategy strat) {
+    final int boolType =_userDbPlatform.getBooleanType();
+    final String sql = "UPDATE " + _userSchema + TABLE_STRATEGY + "\n" +
+      "SET\n" +
+      "  " + COLUMN_NAME               + " = ?,\n" +
+      "  " + COLUMN_ROOT_STEP_ID       + " = ?,\n" +
+      "  " + COLUMN_SAVED_NAME         + " = ?,\n" +
+      "  " + COLUMN_IS_SAVED           + " = ?,\n" +
+      "  " + COLUMN_DESCRIPTION        + " = ?,\n" +
+      "  " + COLUMN_LAST_MODIFIED_TIME + " = ?,\n" +
+      "  " + COLUMN_SIGNATURE          + " = ?,\n" +
+      "  " + COLUMN_IS_PUBLIC          + " = ?\n" +
+      "WHERE " + COLUMN_STRATEGY_ID + " = ?";
+
+    return 0 < new SQLRunner(con, sql).executeUpdate(
+      new Object[]{
+        strat.getName(),
+        strat.getRootStep().getStepId(),
+        strat.getSavedName(),
+        _userDbPlatform.convertBoolean(strat.getIsSaved()),
+        strat.getDescription(),
+        new Timestamp(strat.getLastModifiedTime().getTime()),
+        strat.getSignature(),
+        _userDbPlatform.convertBoolean(strat.getIsPublic()),
+        strat.getStrategyId()
+      },
+      new Integer[]{
+        Types.VARCHAR,   // NAME
+        Types.BIGINT,    // ROOT_STEP_ID
+        Types.VARCHAR,   // SAVED_NAME
+        boolType,        // IS_SAVED
+        Types.VARCHAR,   // DESCRIPTION
+        Types.TIMESTAMP, // LAST_MODIFY_TIME
+        Types.VARCHAR,   // SIGNATURE
+        boolType,        // IS_PUBLIC
+        Types.BIGINT     // STRATEGY_ID
+      }
+    );
+  }
+
   // This function only updates the strategies table
   void updateStrategy(User user, Strategy strategy, boolean overwrite) throws WdkModelException,
       WdkUserException {
@@ -874,50 +943,11 @@ public class StepFactory {
       }
     }
 
-    final Date modifiedTime = new Date();
-    final int boolType =_userDbPlatform.getBooleanType();
-    final String sql = "UPDATE " + _userSchema + TABLE_STRATEGY + "\n" +
-        "SET\n" +
-        "  " + COLUMN_NAME               + " = ?,\n" +
-        "  " + COLUMN_ROOT_STEP_ID       + " = ?,\n" +
-        "  " + COLUMN_SAVED_NAME         + " = ?,\n" +
-        "  " + COLUMN_IS_SAVED           + " = ?,\n" +
-        "  " + COLUMN_DESCRIPTION        + " = ?,\n" +
-        "  " + COLUMN_LAST_MODIFIED_TIME + " = ?,\n" +
-        "  " + COLUMN_SIGNATURE          + " = ?,\n" +
-        "  " + COLUMN_IS_PUBLIC          + " = ?\n" +
-        "WHERE " + COLUMN_STRATEGY_ID + " = ?";
+    strategy.setLastModifiedTime(new Date());
 
-    final int result = new SQLRunner(_userDbDs, sql).executeUpdate(
-      new Object[]{
-        strategy.getName(),
-        strategy.getRootStep().getStepId(),
-        strategy.getSavedName(),
-        _userDbPlatform.convertBoolean(strategy.getIsSaved()),
-        strategy.getDescription(),
-        new Timestamp(modifiedTime.getTime()),
-        strategy.getSignature(),
-        _userDbPlatform.convertBoolean(strategy.getIsPublic()),
-        strategy.getStrategyId()
-      },
-      new Integer[]{
-        Types.VARCHAR,   // NAME
-        Types.BIGINT,    // ROOT_STEP_ID
-        Types.VARCHAR,   // SAVED_NAME
-        boolType,        // IS_SAVED
-        Types.VARCHAR,   // DESCRIPTION
-        Types.TIMESTAMP, // LAST_MODIFY_TIME
-        Types.VARCHAR,   // SIGNATURE
-        boolType,        // IS_PUBLIC
-        Types.BIGINT     // STRATEGY_ID
-      }
-    );
-
-    strategy.setLastModifiedTime(modifiedTime);
-
-    if (result == 0)
-      throw new WdkUserException("The strategy #" + strategy.getStrategyId() + " of user " +
-          user.getEmail() + " cannot be found.");
+    if (!updateStrategy(strategy))
+      throw new WdkUserException("The strategy #" + strategy.getStrategyId() +
+          " of user " + user.getEmail() + " cannot be found.");
   }
 
   public long getNewStrategyId() throws WdkModelException {
