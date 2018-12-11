@@ -726,12 +726,13 @@ public class FilterParamNew extends AbstractDependentParam {
   }
   
   /**
-   * return map of ontology field name to values (as strings), for the provided list of ontology terms
+   * return map of ontology field name to values (as strings), for the provided list of ontology terms.
+   * only includes values for terms that are not isRange.
    * 
    * @param user
    * @param contextParamValues
    * @param ontologyTerms
-   *          a list of ontology term to include in result.  NULL to use all terms in ontologyValues query
+   *          a list of ontology term to include in result.  NULL to use all terms found in bgd query
    * @return a map from field name -> a set of valid values. (We convert number values to strings)
    * @throws WdkModelException
    */
@@ -739,9 +740,12 @@ public class FilterParamNew extends AbstractDependentParam {
       Set<String> ontologyTerms, Map<String, OntologyItem> ontology)
       throws WdkModelException {
 
+    // the names of value columns in the background query.
     List<String> ontologyValuesCols = new ArrayList<String>(OntologyItemType.getTypedValueColumnNames());
     ontologyValuesCols.add(COLUMN_ONTOLOGY_ID);
 
+    // get query instances for both ontology and background query
+    // and extract from them their sql.  we'll compose those sqls into our own query
     String bgdQuerySql;
     String ontologyQuerySql;
     try {
@@ -758,26 +762,32 @@ public class FilterParamNew extends AbstractDependentParam {
 
     String ontologyTermsWhereClause = "";
 
+    // if ontology terms supplied, construct a where clause from them
+    // (otherwise, we do not limit by ontology term, instead using all those in the bgd query)
     if (ontologyTerms != null) {
-      // find ontology terms used in our set of member filters
       String ontologyTermsString = ontologyTerms
         .stream()
         .map(term -> term.replaceAll("'", "''"))
         .collect(Collectors.joining("', '"));
+      
       ontologyTermsWhereClause = " where " + FilterParamNew.COLUMN_ONTOLOGY_ID + " IN ('" +
           ontologyTermsString + "')"; 
     }
     
+    // sql to find all rows in bgd query where ontology_id points to ontology term that is not isRange
     String bgdQueryNotIsRangeSql = "select bgd.* from (" + bgdQuerySql + ") bgd, (" + ontologyQuerySql + ") onto where bgd." + COLUMN_ONTOLOGY_ID + " = onto." + COLUMN_ONTOLOGY_ID + " and onto." + COLUMN_IS_RANGE + " = 0";
     
-
+    // sql to find the distinct values (from value columns) in the bgd query for non isRange terms
     String filterSelectSql = "SELECT distinct " + String.join(", ", ontologyValuesCols) + " FROM (" + bgdQueryNotIsRangeSql + ") bgd" + ontologyTermsWhereClause;
 
+    // the map that we will return
     Map<String, Set<String>> ontologyValues = new HashMap<String, Set<String>>();
 
-    // We want to use the WDK cache for this sql, so have to force the sql into
-    // a new SqlQuery object.
+    // Now that we've contstructed the sql, 
+    // we want to use the WDK cache for it, so have to force the sql into a new SqlQuery object.
     SqlQuery sqlQuery = createValuesMapQuery(_wdkModel, filterSelectSql, ontologyValuesCols, _backgroundQuery.getParams(), _ontologyQuery.getParams());
+
+    // run the sqlQuery to get all the values, and stuff into the map
     try {
       QueryInstance<?> instance = sqlQuery.makeInstance(user, contextParamValues, true, 0,
           new HashMap<String, String>());
@@ -800,6 +810,9 @@ public class FilterParamNew extends AbstractDependentParam {
     return ontologyValues;
   }
   
+  // given sql to provide data for the values map, construct a wdk-cacheable sqlQuery from it
+  // because the sql embeds the ontology and bgd queries, which might have parameters, this query
+  // must inherit their parameters
   private SqlQuery createValuesMapQuery(WdkModel wdkModel, String sql, List<String> colNames, Param[] bgdQueryParams, Param[] ontoQueryParams)
       throws WdkModelException {
     QuerySet querySet = wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
@@ -807,10 +820,13 @@ public class FilterParamNew extends AbstractDependentParam {
     query.setName(getFullName() + "_values_map");
     query.setIsCacheable(true);
     query.setSql(sql);
-    for (Param param : bgdQueryParams)
-      query.addParam(param);
+    Set <String> paramsSeen = new HashSet<String>();
+    for (Param param : bgdQueryParams) {
+      query.addParamRef(new ParamReference(param.getFullName()));
+      paramsSeen.add(param.getFullName());
+    }
     for (Param param : ontoQueryParams)
-      query.addParam(param);
+      if (!paramsSeen.contains(param.getFullName()))query.addParamRef(new ParamReference(param.getFullName()));
     querySet.addQuery(query);
     for (String colName : colNames) {
       Column column = new Column();
