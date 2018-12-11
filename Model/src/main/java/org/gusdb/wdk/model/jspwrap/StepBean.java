@@ -180,19 +180,11 @@ public class StepBean {
         return step.isTransform();
     }
 
-    public String getBooleanExpression() {
-        return step.getBooleanExpression();
-    }
-
-    public void setBooleanExpression(String booleanExpression) {
-        step.setBooleanExpression(booleanExpression);
-    }
-
     public String getQueryChecksum() throws WdkModelException {
         return step.getAnswerValue().getIdsQueryInstance().getQuery().getChecksum(true);
     }
 
-    public String getChecksum() throws WdkModelException, WdkUserException {
+    public String getChecksum() throws WdkModelException {
         return step.getAnswerValue().getChecksum();
     }
 
@@ -251,7 +243,7 @@ public class StepBean {
     }
 
     public String getQuestionName() {
-        return step.getQuestionName();
+        return step.getAnswerSpec().getQuestionName();
     }
 
     /* functions for navigating/manipulating step tree */
@@ -268,20 +260,8 @@ public class StepBean {
         return beans;
     }
 
-    public StepBean getStepByDisplayId(int stepId) throws WdkModelException {
-        Step target = step.getStepByDisplayId(stepId);
-        if (target != null) {
-            return new StepBean(user, target);
-        }
-        return null;
-    }
-
     public int getLength() throws WdkModelException {
         return step.getLength();
-    }
-
-    public void addStep(StepBean next) throws WdkModelException {
-        step.addStep(next.step);
     }
 
     public int getIndexFromId(int stepId) throws WdkUserException,
@@ -301,17 +281,13 @@ public class StepBean {
         return step.getFilterDisplayName();
     }
 
-    public StepBean getFirstStep() {
-        return new StepBean(user, step.getFirstStep());
+    public StepBean getFirstStep() throws WdkModelException {
+        return new StepBean(user, step.getMainBranch().get(0));
     }
 
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.user.Step#deepClone()
-     */
-    public StepBean deepClone(Long strategyId, Map<Long, Long> stepIdMap) throws WdkModelException {
+    public StepBean deepClone() throws WdkModelException {
         StepFactory factory = step.getStepFactory();
-        return new StepBean(user, factory.copyStepTree(user.getUser(), strategyId, step, stepIdMap));
+        return new StepBean(user, factory.copyStrategyToBranch(user.getUser(), getStep().getStrategy()));
     }
     
     public StepFactory getStepFactory() {

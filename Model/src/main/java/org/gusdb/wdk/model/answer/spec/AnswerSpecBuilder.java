@@ -1,16 +1,19 @@
 package org.gusdb.wdk.model.answer.spec;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
+import org.gusdb.fgputil.validation.ValidObjectWrappingException;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.spec.FilterOption.FilterOptionBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
+import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
 import org.gusdb.wdk.model.user.StepContainer;
@@ -155,6 +158,18 @@ public class AnswerSpecBuilder {
       if (_filters.get(i).getFilterName().equals(filterName)) {
         _filters.set(i, modifier.apply(_filters.get(i)));
         break; // only replace first filter found
+      }
+    }
+    return this;
+  }
+
+  public AnswerSpecBuilder nullifyAnswerParams() {
+    List<AnswerParam> answerParams = _wdkModel.getQuestion(_questionName)
+        .map(q -> q.getQuery().getAnswerParams()).orElse(null);
+    // if question name not set, do nothing
+    if (answerParams != null) {
+      for (AnswerParam param : answerParams) {
+        setParamValue(param.getName(), AnswerParam.NULL_VALUE);
       }
     }
     return this;

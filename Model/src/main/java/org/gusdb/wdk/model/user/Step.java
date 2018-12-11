@@ -227,6 +227,12 @@ public class Step implements StrategyElement, Validateable<Step> {
     public String getParamValue(String paramName) {
       return _answerSpec.getParamValue(paramName);
     }
+
+    public StepBuilder removeStrategy() {
+      _strategyId = null;
+      _answerSpec.nullifyAnswerParams();
+      return this;
+    }
   }
 
   public static StepBuilder builder(WdkModel wdkModel, long userId, long stepId) {
