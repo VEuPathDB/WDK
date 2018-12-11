@@ -1,17 +1,17 @@
 package org.gusdb.wdk.model.test.sanity.tests;
 
-import java.util.LinkedHashMap;
-
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.test.sanity.RangeCountTestUtil;
 import org.gusdb.wdk.model.test.sanity.SanityTester.ElementTest;
 import org.gusdb.wdk.model.test.sanity.SanityTester.Statistics;
 import org.gusdb.wdk.model.test.sanity.TestResult;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 public class QueryTest implements ElementTest {
@@ -98,9 +98,9 @@ public class QueryTest implements ElementTest {
   protected int runQuery(User user, Query query, ParamValuesSet paramValuesSet,
       TestResult result) throws Exception {
     int count = 0;
-    QueryInstance<?> instance = query.makeInstance(user,
-        paramValuesSet.getParamValues(), true, 0,
-        new LinkedHashMap<String, String>());
+    QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+        .putAll(paramValuesSet.getParamValues())
+        .buildRunnable(user, query, StepContainer.emptyContainer()));
     try (ResultList resultList = instance.getResults()) {
       while (resultList.next()) {
         count++;

@@ -1064,10 +1064,9 @@ public class StepFactory {
       SqlUtils.closeStatement(psStrategy);
     }
 
+    // FIXME: once this method is refactored to create an in-memory strategy
+    //        before insertion, just use that one; do not load from the DB again
     Optional<Strategy> strategy = new StrategyLoader(_wdkModel, ValidationLevel.SEMANTIC).getStrategyById(strategyId);
-    if (strategy.isPresent()) {
-      strategy.get().setRootStep(root);
-    }
     return strategy.orElseThrow(() -> new WdkModelException("Newly created strategy could not be found."));
   }
 

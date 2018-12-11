@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -20,6 +21,7 @@ import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.SearchCategory;
 import org.gusdb.wdk.model.record.Field;
@@ -27,6 +29,7 @@ import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.json.JSONObject;
 
 /**
@@ -342,7 +345,7 @@ public class QuestionBean {
           .setQueryInstanceSpec(QueryInstanceSpec.builder()
               .putAll(_params)
               .setAssignedWeight(_weight))
-          .buildRunnable());
+          .buildRunnable(_user.getUser(), StepContainer.emptyContainer()));
 
       // reset the params
       _params.clear();
@@ -426,9 +429,11 @@ public class QuestionBean {
   }
 
   public void fillContextParamValues(UserBean user,
-      Map<String, String> contextParamValues) throws WdkModelException, WdkUserException {
-    _question.getQuery().fillContextParamValues(user.getUser(),
-        contextParamValues);
+      Map<String, String> contextParamValues) throws WdkModelException {
+    QueryInstanceSpec spec = QueryInstanceSpec.builder().buildValidated(
+        user.getUser(), _question.getQuery(), StepContainer.emptyContainer(),
+        ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING);
+    contextParamValues.putAll(spec.toMap());
   }
 
   public Map<String, Filter> getFilters() {

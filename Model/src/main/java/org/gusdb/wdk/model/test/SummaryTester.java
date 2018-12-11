@@ -38,6 +38,7 @@ import org.gusdb.wdk.model.record.RecordInstanceFormatter;
 import org.gusdb.wdk.model.record.ResultProperty;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.util.ReporterFactory;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
@@ -134,7 +135,7 @@ public class SummaryTester {
             .setQuestionName(question.getFullName())
             .setParamValues(paramValues)
             .setLegacyFilterName(filter.getName())
-            .buildRunnable(user);
+            .buildRunnable(user, StepContainer.emptyContainer());
 
         AnswerValue answerValue = AnswerValueFactory.makeAnswer(
             user, validSpec, nextStartRowIndex, nextEndRowIndex, sortingMap);
@@ -215,7 +216,7 @@ public class SummaryTester {
         .setQuestionName(question.getFullName())
         .setParamValues(paramValues)
         .setLegacyFilterName(filter.getName())
-        .buildRunnable(user);
+        .buildRunnable(user, StepContainer.emptyContainer());
     Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
     AnswerValue answerValue = AnswerValueFactory.makeAnswer(user, answerSpec, 1, 2, sortingMap);
     int resultSize = answerValue.getResultSizeFactory().getResultSize();

@@ -53,11 +53,12 @@ public interface ParamHandler {
    * 
    * @param user
    * @param requestParams
+   * @param contextValues 
    * @throws WdkUserException
    * @throws WdkModelException
    */
    @Deprecated
-   void prepareDisplay(User user, RequestParams requestParams)
+   void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextValues)
       throws WdkModelException, WdkUserException;
 
   /**
@@ -88,7 +89,7 @@ public interface ParamHandler {
 
   String toSignature(RunnableObj<QueryInstanceSpec> contextParamValues) throws WdkModelException;
 
-  String getDisplayValue(RunnableObj<QueryInstanceSpec> contextParamValues) throws WdkModelException;
+  String getDisplayValue(QueryInstanceSpec contextParamValues) throws WdkModelException;
 
   ParamHandler clone(Param param);
 

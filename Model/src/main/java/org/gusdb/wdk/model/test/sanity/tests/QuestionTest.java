@@ -3,6 +3,8 @@ package org.gusdb.wdk.model.test.sanity.tests;
 import java.util.Map;
 
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -11,6 +13,7 @@ import org.gusdb.wdk.model.test.sanity.SanityTester.ElementTest;
 import org.gusdb.wdk.model.test.sanity.SanityTester.Statistics;
 import org.gusdb.wdk.model.test.sanity.RangeCountTestUtil;
 import org.gusdb.wdk.model.test.sanity.TestResult;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 public class QuestionTest implements ElementTest {
@@ -50,8 +53,11 @@ public class QuestionTest implements ElementTest {
     result.setExpected("Expect [" + sanityMin + " - " + sanityMax + "] rows" +
         ((sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS) ? "" : " (default)"));
     _question.getQuery().setIsCacheable(false);
-    AnswerValue answerValue = _question.makeAnswerValue(_user,
-        _paramValuesSet.getParamValues(), true, 0);
+    AnswerValue answerValue = AnswerValueFactory.makeAnswer(_user,
+        AnswerSpec.builder(_question.getWdkModel())
+        .setQuestionName(_question.getFullName())
+        .setParamValues(_paramValuesSet.getParamValues())
+        .buildRunnable(_user, StepContainer.emptyContainer()));
     int resultSize = answerValue.getResultSizeFactory().getResultSize();
 
     // get the summary attribute list
