@@ -643,6 +643,47 @@ public class StepFactory {
   }
 
   /**
+   * This method is to be used specifically for cloning a strategy for use as a
+   * step in a separate, existing strategy.  Clones of the steps of the passed
+   * strategy are created and written to the DB; however, the one returned by
+   * this step does NOT have a saved strategy; the DB will reflect that the new
+   * steps are orphans until attached to a new strategy.
+   * 
+   * @param user owner of the new steps
+   * @param strategy strategy to clone
+   * @return a step representing a branch created from an existing strategy
+   * @throws WdkModelException if something goes wrong
+   */
+  public Step copyStrategyToBranch(User user, Strategy strategy) throws WdkModelException {
+
+    // copy the step tree
+    Collection<StepBuilder> stepBuilders = copyStepTree(user, strategy.getRootStep()).toMap().values();
+
+    // create stub strategy- will not be saved to DB; used only to create and validate steps
+    Strategy stratStub = Strategy.builder(user.getWdkModel(), user.getUserId(), 0)
+        .addSteps(stepBuilders)
+        .build(new UserCache(user), ValidationLevel.NONE);
+
+    // now that strategy is created (which will be returned), clean up steps for saving to DB
+    List<Step> orphanSteps = new ArrayList<>();
+    for (StepBuilder step : stepBuilders) {
+      step.removeStrategy();
+      orphanSteps.add(step.build(new UserCache(user), ValidationLevel.NONE, null));
+    }
+
+    // write orphan steps to the DB to be used by caller
+    try (Connection conn = _userDbDs.getConnection()){
+      SqlUtils.performInTransaction(conn, () -> insertSteps(conn, orphanSteps));
+    }
+    catch (Exception e) {
+      throw new WdkModelException("Unable to insert strategy or update steps.");
+    }
+
+    // return the strategy's root step- will be used to create a branch for adding to another strat
+    return stratStub.getRootStep();
+  }
+
+  /**
    *
    * @param user
    * @param oldStrategy
@@ -682,7 +723,7 @@ public class StepFactory {
     try (Connection conn = _userDbDs.getConnection()){
       SqlUtils.performInTransaction(conn,
         () -> insertStrategy(conn, newStrategy),
-        () -> updateSteps(conn, newStrategy.getAllSteps())
+        () -> insertSteps(conn, newStrategy.getAllSteps())
       );
     }
     catch (Exception e) {
@@ -702,6 +743,10 @@ public class StepFactory {
     stepIdsMap.putAll(getMapFromKeys(newStepMap.keySet(), oldId -> newStepMap.get(oldId).getStepId()));
 
     return newStrategy;
+  }
+
+  private void insertSteps(Connection conn, List<Step> allSteps) {
+    // TODO Ellie to write
   }
 
   private void insertStrategy(Connection connection, Strategy newStrategy) {

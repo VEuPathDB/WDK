@@ -716,8 +716,4 @@ public class UserBean {
     };
   }
 
-  public long getNewStrategyId() throws WdkModelException {
-    return _wdkModel.getStepFactory().getNewStrategyId();
-  }
-
 }
