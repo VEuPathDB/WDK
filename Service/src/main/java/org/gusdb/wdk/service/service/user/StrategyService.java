@@ -4,15 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -24,6 +16,7 @@ import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.core.api.JsonKeys;
+import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.StrategyFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -82,6 +75,25 @@ public class StrategyService extends UserService {
     }
   }
 
+  @PATCH
+  @Path("strategies/{strategyId}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response updateStrategy(@PathParam("strategyId") long strategyId) {
+    // get strategy
+    // if strategy is saved:
+    //   validateSavedStrategyRequest()
+    // else
+    //   validateUnsavedStrategyRequest()
+    // Build modified strategy
+    // if strategy is valid
+    //   writeStrategyUpdate()
+    //   return 204
+    // else
+    //   return 4xx with errors
+    throw new InternalServerErrorException("this action is not yet implemented.");
+  }
+
   private Strategy copyStrategy(User user, StepFactory stepFactory, JSONObject json) throws WdkModelException, WdkUserException, JSONException {
     String signature = json.getString(JsonKeys.SOURCE_SIGNATURE);
     Strategy sourceStrategy = stepFactory.getStrategyBySignature(signature)
@@ -133,14 +145,18 @@ public class StrategyService extends UserService {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       // Whether the user owns this strategy or not is resolved in the getStepFactory method
-      Strategy strategy = getWdkModel().getStepFactory().getStrategyById(Long.parseLong(strategyId));
-      if (strategy.getUser().getUserId() != user.getUserId()) {
+      Strategy strategy = getWdkModel().getStepFactory()
+          .getStrategyById(Long.parseLong(strategyId))
+          .orElseThrow(() -> new NotFoundException(
+              AbstractWdkService.formatNotFound(STRATEGY_RESOURCE + strategyId)));
+
+      if (strategy.getUser().getUserId() != user.getUserId())
         throw new ForbiddenException(AbstractWdkService.PERMISSION_DENIED);
-      }
+
       return strategy;
-    }
-    catch (NumberFormatException | WdkUserException | WdkModelException e) {
-      throw new NotFoundException(AbstractWdkService.formatNotFound(STRATEGY_RESOURCE + strategyId));
+    } catch (NumberFormatException | WdkModelException e) {
+      throw new NotFoundException(
+          AbstractWdkService.formatNotFound(STRATEGY_RESOURCE + strategyId));
     }
   }
 
