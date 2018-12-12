@@ -58,7 +58,8 @@ import static org.gusdb.wdk.model.user.StepContainer.withId;
 import static org.gusdb.wdk.model.user.StepFactoryHelpers.*;
 
 /**
- * Provides interface to the database to find, read, and write Step and Strategy objects to DB
+ * Provides interface to the database to find, read, and write Step and Strategy
+ * objects to DB
  *
  * @author rdoherty
  */
@@ -1485,16 +1486,9 @@ public class StepFactory {
    *
    * @return number of steps updated.
    */
+  @Deprecated
   int resetStepCounts(Step fromStep) throws WdkModelException {
-    String sql = "UPDATE " + _userSchema + TABLE_STEP + "\n" +
-        "SET " + COLUMN_ESTIMATE_SIZE + " = " + UNKNOWN_SIZE + "\n" +
-        "WHERE step_id IN (" + selectStepAndParents(fromStep.getStepId()) + ")";
-
-    try {
-      return SqlUtils.executeUpdate(_userDbDs, sql, "wdk-step-reset-count-recursive");
-    } catch (SQLException ex) {
-      throw new WdkModelException(ex);
-    }
+    return resetEstimateSizeForThisAndDownstreamSteps(fromStep);
   }
 
   /**
@@ -1575,14 +1569,14 @@ public class StepFactory {
    *
    * @param step step to start from
    */
-  public void resetEstimateSizeForThisAndDownstreamSteps(Step step)
+  public int resetEstimateSizeForThisAndDownstreamSteps(Step step)
       throws WdkModelException {
     String sql = "UPDATE " + _userSchema + TABLE_STEP + "\n" +
         "SET " + COLUMN_ESTIMATE_SIZE + " = " + UNKNOWN_SIZE + "\n" +
         "WHERE step_id IN (" + selectStepAndParents(step.getStepId()) + ")";
 
     try {
-      SqlUtils.executeUpdate(_userDbDs, sql, "wdk-update-estimate-size-on-steps");
+      return SqlUtils.executeUpdate(_userDbDs, sql, "wdk-update-estimate-size-on-steps");
     } catch (SQLException ex) {
       throw new WdkModelException(ex);
     }
