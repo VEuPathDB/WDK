@@ -29,7 +29,6 @@ import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-//import org.apache.log4j.Logger;
 
 @Path(StepAnalysisService.STEP_ANALYSIS_PATH)
 public class StepAnalysisService extends UserService {
@@ -45,8 +44,6 @@ public class StepAnalysisService extends UserService {
   private static final String ACCESS_TOKEN_KEY = "accessToken";
 
   private final long stepId;
-
-  //  private static final Logger LOG = Logger.getLogger(StepAnalysisService.class);
 
   protected StepAnalysisService(
       @PathParam(USER_ID_PATH_PARAM) String uid,
@@ -82,7 +79,7 @@ public class StepAnalysisService extends UserService {
 
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
     Step step = getStepByIdAndCheckItsUser(user, stepId);
-    
+
     Map<String, Param> paramMap = getStepAnalysisFromQuestion(step.getQuestion(), analysisName).getParamMap();
     Map<String,String> context = Collections.emptyMap();
 
@@ -90,7 +87,7 @@ public class StepAnalysisService extends UserService {
     // param type called something like <stepAnalysisIdSqlParam> that would
     // have no attributes, and be dedicated to this need.
     if (paramMap.containsKey("answerIdSql")) {
-      context = new HashMap<String, String>();
+      context = new HashMap<>();
       context.put("answerIdSql", step.getAnswerValue().getIdSql());
     }
 
