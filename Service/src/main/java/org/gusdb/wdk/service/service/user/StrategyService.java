@@ -81,14 +81,14 @@ public class StrategyService extends UserService {
       throw new DataValidationException(wue);
     }
   }
-    
+
   private Strategy copyStrategy(User user, StepFactory stepFactory, JSONObject json) throws WdkModelException, WdkUserException, JSONException {
     String signature = json.getString(JsonKeys.SOURCE_SIGNATURE);
     Strategy sourceStrategy = stepFactory.getStrategyBySignature(signature)
         .orElseThrow(() -> new WdkUserException("No strategy exists with signature " + signature));
-    return stepFactory.copyStrategy(user, sourceStrategy, new LinkedHashMap<Long, Long>());  
+    return stepFactory.copyStrategy(user, sourceStrategy, new LinkedHashMap<>());
   }
-    
+
   private Strategy createNewStrategy(User user, StepFactory stepFactory, JSONObject json)
       throws WdkModelException, DataValidationException, WdkUserException {
 

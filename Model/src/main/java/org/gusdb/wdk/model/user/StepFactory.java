@@ -959,7 +959,7 @@ public class StepFactory {
   }
 
   // This function only updates the strategies table
-  void updateStrategy(User user, Strategy strategy, boolean overwrite) throws WdkModelException,
+  Strategy updateStrategy(User user, Strategy strategy, boolean overwrite) throws WdkModelException,
       WdkUserException {
     LOG.debug("Updating strategy internal#=" + strategy.getStrategyId() + ", overwrite=" + overwrite);
 
@@ -969,6 +969,7 @@ public class StepFactory {
           "create a copy and update it, or set overwrite flag to true.");
 
     long userId = user.getUserId();
+    Strategy.StrategyBuilder build = new Strategy.StrategyBuilder(strategy);
 
     if (overwrite) {
       Optional<TwoTuple<Long,String>> opSaved = getOverwriteStrategy(userId,
@@ -979,20 +980,22 @@ public class StepFactory {
         // If there's already a saved strategy with this strategy's name,
         // we need to write the new saved strategy & mark the old
         // saved strategy as deleted
-        strategy.setIsSaved(true);
-        strategy.setSignature(saved.getSecond());
-        strategy.setSavedName(strategy.getName());
+        build.setSaved(true);
+        build.setSignature(saved.getSecond());
+        build.setSavedName(strategy.getName());
         // jerric - only delete the strategy if it's a different one
         if (!strategy.getStrategyId().equals(saved.getFirst()))
           StepUtilities.deleteStrategy(user, saved.getFirst());
       }
     }
 
-    strategy.setLastModifiedTime(new Date());
+    build.setLastModifiedTime(new Date());
 
     if (!updateStrategy(strategy))
       throw new WdkUserException("The strategy #" + strategy.getStrategyId() +
           " of user " + user.getEmail() + " cannot be found.");
+
+    return build.build();
   }
 
   public long getNewStrategyId() throws WdkModelException {
@@ -1018,96 +1021,83 @@ public class StepFactory {
       String savedName, boolean saved, String description, boolean hidden,
       boolean isPublic) throws WdkModelException {
 
+    final String projectId = _wdkModel.getProjectId();
+
     LOG.debug("creating strategy, saved=" + saved);
 
     long userId = user.getUserId();
 
     String userIdColumn = Utilities.COLUMN_USER_ID;
-    PreparedStatement psCheckName = null;
-    ResultSet rsCheckName = null;
 
-    String sql =
-        "SELECT " + COLUMN_STRATEGY_ID +
-        " FROM " + _userSchema + TABLE_STRATEGY +
-        " WHERE " + userIdColumn + " = ?" +
-        "   AND " + COLUMN_PROJECT_ID + " = ?" +
-        "   AND " + COLUMN_NAME + " = ?" +
-        "   AND " + COLUMN_IS_SAVED + "= ?" +
-        "   AND " + COLUMN_IS_DELETED + "= ?";
-    try {
-      // If newName is not null, check if strategy exists.  if so, just load it
-      // and return.  don't create a new one.
-      if (newName != null) {
-        if (newName.length() > COLUMN_NAME_LIMIT) {
-          newName = newName.substring(0, COLUMN_NAME_LIMIT - 1);
-        }
-        long start = System.currentTimeMillis();
-        psCheckName = SqlUtils.getPreparedStatement(_userDbDs, sql);
-        psCheckName.setLong(1, userId);
-        psCheckName.setString(2, _wdkModel.getProjectId());
-        psCheckName.setString(3, newName);
-        psCheckName.setBoolean(4, saved);
-        psCheckName.setBoolean(5, hidden);
-        rsCheckName = psCheckName.executeQuery();
-        QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-check-strategy-name", start);
+    final int boolType = _userDbPlatform.getBooleanType();
+    final String sql =
+        "SELECT " + COLUMN_STRATEGY_ID + "\n" +
+        "FROM " + _userSchema + TABLE_STRATEGY + "\n" +
+        "WHERE " + userIdColumn      + " = ?\n" +
+        "  AND " + COLUMN_PROJECT_ID + " = ?\n" +
+        "  AND " + COLUMN_NAME       + " = ?\n" +
+        "  AND " + COLUMN_IS_SAVED   + "= ?\n" +
+        "  AND " + COLUMN_IS_DELETED + "= ?";
 
-        if (rsCheckName.next()) {
-          Optional<Strategy> strategy = new StrategyLoader(_wdkModel, ValidationLevel.SEMANTIC)
-              .getStrategyById(rsCheckName.getLong(COLUMN_STRATEGY_ID));
-          return strategy.orElseThrow(() -> new WdkModelException("Newly created strategy could not be found."));
-        }
+    final Wrapper<Optional<Long>> stratId = new Wrapper<>();
+
+    // If newName is not null, check if strategy exists.  if so, just load it
+    // and return.  don't create a new one.
+    if (newName != null) {
+      if (newName.length() > COLUMN_NAME_LIMIT) {
+        newName = newName.substring(0, COLUMN_NAME_LIMIT - 1);
+      }
+      new SQLRunner(_userDbDs, sql)
+        .executeQuery(
+          new Object[]{
+            userId,
+            projectId,
+            newName,
+            _userDbPlatform.convertBoolean(saved),
+            _userDbPlatform.convertBoolean(hidden)
+          },
+          new Integer[]{
+            Types.BIGINT,
+            Types.VARCHAR,
+            Types.VARCHAR,
+            boolType,
+            boolType
+          },
+          rs -> {
+            if (rs.next())
+              stratId.set(Optional.of(rs.getLong(COLUMN_STRATEGY_ID)));
+            else
+              stratId.set(Optional.empty());
+          }
+        );
+
+      if (stratId.get().isPresent()) {
+        Optional<Strategy> strategy = new StrategyLoader(_wdkModel,
+            ValidationLevel.SEMANTIC).getStrategyById(stratId.get().get());
+        if (strategy.isPresent())
+          return strategy.get();
       }
 
+      throw  new WdkModelException("Newly created strategy could not be found.");
+    } else {
       // if newName is null, generate default name from root step (by adding/incrementing numeric suffix)
-      else {
-        newName = addSuffixToStratNameIfNeeded(user, root.getCustomName(), saved);
-      }
-    }
-    catch (SQLException e) {
-      throw new WdkModelException("Could not create strategy", e);
-    }
-    finally {
-      SqlUtils.closeResultSetAndStatement(rsCheckName, psCheckName);
+      newName = addSuffixToStratNameIfNeeded(user, root.getCustomName(), saved);
     }
 
-    PreparedStatement psStrategy = null;
-    String signature = getStrategySignature(_wdkModel.getProjectId(), user.getUserId(), strategyId);
-    try {
-      // insert the row into strategies
-      sql = "INSERT INTO " + _userSchema + TABLE_STRATEGY + " (" + COLUMN_STRATEGY_ID + ", " + userIdColumn +
-          ", " + COLUMN_ROOT_STEP_ID + ", " + COLUMN_IS_SAVED + ", " + COLUMN_NAME + ", " +
-          COLUMN_SAVED_NAME + ", " + COLUMN_PROJECT_ID + ", " + COLUMN_IS_DELETED + ", " + COLUMN_SIGNATURE +
-          ", " + COLUMN_DESCRIPTION + ", " + COLUMN_VERSION + ", " + COLUMN_IS_PUBLIC +
-          ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-      long start = System.currentTimeMillis();
-      psStrategy = SqlUtils.getPreparedStatement(_userDbDs, sql);
-      psStrategy.setLong(1, strategyId);
-      psStrategy.setLong(2, userId);
-      psStrategy.setLong(3, root.getStepId());
-      psStrategy.setBoolean(4, saved);
-      psStrategy.setString(5, newName);
-      psStrategy.setString(6, savedName);
-      psStrategy.setString(7, _wdkModel.getProjectId());
-      psStrategy.setBoolean(8, false);
-      psStrategy.setString(9, signature);
-      psStrategy.setString(10, description);
-      psStrategy.setString(11, _wdkModel.getVersion());
-      psStrategy.setBoolean(12, isPublic);
-      psStrategy.executeUpdate();
-      QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-insert-strategy", start);
+    String signature = getStrategySignature(projectId, user.getUserId(), strategyId);
+    try(final Connection con = _userDbDs.getConnection()) {
+      insertStrategy(con, new Strategy.StrategyBuilder(_wdkModel, userId, strategyId)
+          .setRootStepId(root.getStepId()).setSaved(saved).setName(newName)
+          .setSavedName(savedName).setProjectId(projectId)
+          .setDeleted(false).setSignature(signature).setDescription(description)
+          .setVersion(_wdkModel.getVersion()).setIsPublic(isPublic).build());
+    } catch (SQLException e) {
+      throw new WdkModelException(e);
+    }
 
-      LOG.debug("new strategy created, id=" + strategyId);
-
-      // check if we need to update the strategy id on the step;
-      if (root.getStrategyId() == null || root.getStrategyId() != strategyId)
-        updateStrategyId(strategyId, root);
-    }
-    catch (SQLException ex) {
-      throw new WdkModelException(ex);
-    }
-    finally {
-      SqlUtils.closeStatement(psStrategy);
-    }
+    // check if we need to update the strategy id on the step;
+    if (root.getStrategyId() == null || root.getStrategyId() != strategyId)
+      updateStrategyId(strategyId, root);
 
     // FIXME: once this method is refactored to create an in-memory strategy
     //        before insertion, just use that one; do not load from the DB again

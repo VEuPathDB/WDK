@@ -263,12 +263,12 @@ public class Strategy implements StrategyElement, StepContainer {
    * Recursive function builds a tree of step builders from the passed map,
    * starting by assigning the stepbuilder of stepId as a child to parentNode.
    * If parentNode is null, an initial node is created for the root.
-   * 
+   *
    * @param steps
    * @param stepId
    * @param parentNode
    * @return
-   * @throws WdkModelException 
+   * @throws WdkModelException
    */
   private TreeNode<StepBuilder> buildTree(Map<Long, StepBuilder> steps, long stepId) throws WdkModelException {
     StepBuilder step = steps.get(stepId);
@@ -375,12 +375,12 @@ public class Strategy implements StrategyElement, StepContainer {
    * @param overwrite
    *          if true, it will overwrite the strategy even if it's already saved; if false, we will create a
    *          new unsaved copy if the strategy is already saved.
-   * 
+   *
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public void update(boolean overwrite) throws WdkModelException, WdkUserException {
-    _wdkModel.getStepFactory().updateStrategy(_user, this, overwrite);
+  public Strategy update(boolean overwrite) throws WdkModelException, WdkUserException {
+    return _wdkModel.getStepFactory().updateStrategy(_user, this, overwrite);
   }
 
   public RecordClass getRecordClass() {
@@ -399,7 +399,7 @@ public class Strategy implements StrategyElement, StepContainer {
    * checksum of a strategy is different from signature in that signature is stable and it will never change
    * after the strategy is created, while checksum depends on many properties of a strategy, and it will
    * change when the strategies properties are changed.
-   * 
+   *
    * @return
    * @throws WdkModelException
    */
@@ -465,7 +465,7 @@ public class Strategy implements StrategyElement, StepContainer {
    * checksum of a strategy is different from signature in that signature is stable and it will never change
    * after the strategy is created, while checksum depends on many properties of a strategy, and it will
    * change when the strategies properties are changed.
-   * 
+   *
    * @return the signature
    */
   public String getSignature() {
@@ -503,7 +503,7 @@ public class Strategy implements StrategyElement, StepContainer {
   /**
    * Returns the first step in this strategy that passes the search predicate.  If none exists,
    * throws IllegalArgumentException with a custom message.
-   * 
+   *
    * @param search step search
    * @return first step found that passes the predicate
    * @throws IllegalArgumentException if strategy does not contain a step that matches the search criteria
