@@ -80,8 +80,8 @@ public class StepFactory {
   }
 
   /**
-   * Initialize the step factory.  Kept separate from constructor so unit tests can subclass and not do
-   * any DB interaction.
+   * Initialize the step factory.  Kept separate from constructor so unit tests
+   * can subclass and not do any DB interaction.
    */
   protected void initialize() {
     DatabaseInstance userDb = _wdkModel.getUserDb();
@@ -139,69 +139,6 @@ public class StepFactory {
     }
 
     return step;
-  }
-
-  private void insertStep(Step step) {
-    final String sql = "INSERT INTO " +  _userSchema + TABLE_STEP + " (\n" +
-        "  " + COLUMN_STEP_ID         + ",\n" +
-        "  " + COLUMN_USER_ID         + ",\n" +
-        "  " + COLUMN_CREATE_TIME     + ",\n" +
-        "  " + COLUMN_LAST_RUN_TIME   + ",\n" +
-        "  " + COLUMN_ESTIMATE_SIZE   + ",\n" +
-        "  " + COLUMN_ANSWER_FILTER   + ",\n" +
-        "  " + COLUMN_ASSIGNED_WEIGHT + ",\n" +
-        "  " + COLUMN_PROJECT_ID      + ",\n" +
-        "  " + COLUMN_PROJECT_VERSION + ",\n" +
-        "  " + COLUMN_QUESTION_NAME   + ",\n" +
-        "  " + COLUMN_CUSTOM_NAME     + ",\n" +
-        "  " + COLUMN_COLLAPSED_NAME  + ",\n" +
-        "  " + COLUMN_IS_DELETED      + ",\n" +
-        "  " + COLUMN_IS_COLLAPSIBLE  + ",\n" +
-        "  " + COLUMN_STRATEGY_ID     + ",\n" +
-        "  " + COLUMN_DISPLAY_PARAMS  + ",\n" +
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    final int boolType = _userDbPlatform.getBooleanType();
-    final AnswerSpec spec = step.getAnswerSpec();
-
-    new SQLRunner(_userDbDs, sql)
-        .executeUpdate(
-            new Object[]{
-                step.getStepId(),
-                step.getUser().getUserId(),
-                new Timestamp(step.getCreatedTime().getTime()),
-                new Timestamp(step.getLastRunTime().getTime()),
-                step.getEstimatedSize(),
-                spec.getLegacyFilterName(),
-                spec.getQueryInstanceSpec().getAssignedWeight(),
-                _wdkModel.getProjectId(),
-                _wdkModel.getVersion(),
-                spec.getQuestionName(),
-                step.getCustomName(),
-                step.getCollapsedName(),
-                _userDbPlatform.convertBoolean(step.isDeleted()),
-                _userDbPlatform.convertBoolean(step.isCollapsible()),
-                step.getStrategyId(),
-                new StringReader(ParamFiltersClobFormat.formatParamFilters(spec).toString())
-            },
-            new Integer[] {
-                Types.BIGINT,    // STEP_ID
-                Types.BIGINT,    // USER_ID
-                Types.TIMESTAMP, // CREATE_TIME
-                Types.TIMESTAMP, // LAST_RUN_TIME
-                Types.BIGINT,    // ESTIMATE_SIZE
-                Types.VARCHAR,   // ANSWER_FILTER
-                Types.BIGINT,    // ASSIGNED_WEIGHT
-                Types.VARCHAR,   // PROJECT_ID
-                Types.VARCHAR,   // PROJECT_VERSION
-                Types.VARCHAR,   // QUESTION_NAME
-                Types.VARCHAR,   // CUSTOM_NAME
-                Types.VARCHAR,   // COLLAPSED_NAME
-                boolType,        // IS_DELETED
-                boolType,        // IS_COLLAPSIBLE
-                Types.BIGINT,    // STRATEGY_ID
-                Types.CLOB,      // DISPLAY_PARAMS
-            }
-        );
   }
 
   private static TwoTuple<Integer, Exception> tryEstimateSize(RunnableObj<Step> runnableStep) {
@@ -648,7 +585,7 @@ public class StepFactory {
    * strategy are created and written to the DB; however, the one returned by
    * this step does NOT have a saved strategy; the DB will reflect that the new
    * steps are orphans until attached to a new strategy.
-   * 
+   *
    * @param user owner of the new steps
    * @param strategy strategy to clone
    * @return a step representing a branch created from an existing strategy
@@ -745,8 +682,108 @@ public class StepFactory {
     return newStrategy;
   }
 
+  /**
+   * Build SQL for inserting a step record.
+   *
+   * @return constructed SQL insert statement.
+   */
+  private String buildInsertStepSQL() {
+    return "INSERT INTO " + _userSchema + TABLE_STEP + " (\n" +
+        "  " + COLUMN_STEP_ID         + ",\n" +
+        "  " + COLUMN_USER_ID         + ",\n" +
+        "  " + COLUMN_CREATE_TIME     + ",\n" +
+        "  " + COLUMN_LAST_RUN_TIME   + ",\n" +
+        "  " + COLUMN_ESTIMATE_SIZE   + ",\n" +
+        "  " + COLUMN_ANSWER_FILTER   + ",\n" +
+        "  " + COLUMN_ASSIGNED_WEIGHT + ",\n" +
+        "  " + COLUMN_PROJECT_ID      + ",\n" +
+        "  " + COLUMN_PROJECT_VERSION + ",\n" +
+        "  " + COLUMN_QUESTION_NAME   + ",\n" +
+        "  " + COLUMN_CUSTOM_NAME     + ",\n" +
+        "  " + COLUMN_COLLAPSED_NAME  + ",\n" +
+        "  " + COLUMN_IS_DELETED      + ",\n" +
+        "  " + COLUMN_IS_COLLAPSIBLE  + ",\n" +
+        "  " + COLUMN_STRATEGY_ID     + ",\n" +
+        "  " + COLUMN_DISPLAY_PARAMS  + ",\n" +
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+  }
+
+  /**
+   * Get an array of SQL Types matching the columns for both the SQL returned by
+   * {@link #buildInsertStepSQL()} as well as {@link #stepToInsertParams(Step)}
+   * for use with {@link SQLRunner}.
+   *
+   * @return SQL type array.
+   */
+  private Integer[] getInsertStepParamTypes() {
+    final int boolType = _userDbPlatform.getBooleanType();
+    return new Integer[] {
+      Types.BIGINT,    // STEP_ID
+      Types.BIGINT,    // USER_ID
+      Types.TIMESTAMP, // CREATE_TIME
+      Types.TIMESTAMP, // LAST_RUN_TIME
+      Types.BIGINT,    // ESTIMATE_SIZE
+      Types.VARCHAR,   // ANSWER_FILTER
+      Types.BIGINT,    // ASSIGNED_WEIGHT
+      Types.VARCHAR,   // PROJECT_ID
+      Types.VARCHAR,   // PROJECT_VERSION
+      Types.VARCHAR,   // QUESTION_NAME
+      Types.VARCHAR,   // CUSTOM_NAME
+      Types.VARCHAR,   // COLLAPSED_NAME
+      boolType,        // IS_DELETED
+      boolType,        // IS_COLLAPSIBLE
+      Types.BIGINT,    // STRATEGY_ID
+      Types.CLOB,      // DISPLAY_PARAMS
+    };
+  }
+
+  /**
+   * Constructs an array of values from the given step matching the columns and
+   * types returned by {@link #buildInsertStepSQL()} and
+   * {@link #getInsertStepParamTypes()} for use with {@link SQLRunner}.
+   *
+   * @param step The step for which a values array should be constructed.
+   *
+   * @return an array of values for use in an insert query run with SQLRunner.
+   */
+  private Object[] stepToInsertParams(Step step) {
+    final AnswerSpec spec = step.getAnswerSpec();
+
+    return new Object[] {
+        step.getStepId(),
+        step.getUser().getUserId(),
+        new Timestamp(step.getCreatedTime().getTime()),
+        new Timestamp(step.getLastRunTime().getTime()),
+        step.getEstimatedSize(),
+        spec.getLegacyFilterName(),
+        spec.getQueryInstanceSpec().getAssignedWeight(),
+        _wdkModel.getProjectId(),
+        _wdkModel.getVersion(),
+        spec.getQuestionName(),
+        step.getCustomName(),
+        step.getCollapsedName(),
+        _userDbPlatform.convertBoolean(step.isDeleted()),
+        _userDbPlatform.convertBoolean(step.isCollapsible()),
+        step.getStrategyId(),
+        new StringReader(ParamFiltersClobFormat.formatParamFilters(spec).toString())
+    };
+  }
+
+  private void insertStep(Step step) {
+    new SQLRunner(_userDbDs, buildInsertStepSQL())
+        .executeUpdate(stepToInsertParams(step), getInsertStepParamTypes());
+  }
+
   private void insertSteps(Connection conn, List<Step> allSteps) {
-    // TODO Ellie to write
+    final BasicArgumentBatch batch = new BasicArgumentBatch();
+
+    batch.setParameterTypes(getInsertStepParamTypes());
+    allSteps.stream()
+        .map(this::stepToInsertParams)
+        .forEach(batch::add);
+
+    new SQLRunner(conn, buildInsertStepSQL())
+        .executeStatementBatch(batch);
   }
 
   private void insertStrategy(Connection connection, Strategy newStrategy) {
@@ -1400,9 +1437,10 @@ public class StepFactory {
   }
 
   /**
-   * Generates an SQL that will return the step and all the steps along the path back to the root.
+   * Generates an SQL that will return the step and all the steps along the path
+   * back to the root.
    *
-   * @param stepId
+   * @param stepId ID of the step to select.
    * @return an SQL that returns a step_id column.
    * @throws WdkModelException
    */
@@ -1471,9 +1509,10 @@ public class StepFactory {
   }
 
   /**
-   * Given a step, identify it and all downstream steps and set the estimate size of each to -1.
-   * @param step - step to start from
-   * @throws WdkModelException
+   * Given a step, identify it and all downstream steps and set the estimate
+   * size of each to -1.
+   *
+   * @param step step to start from
    */
   public void resetEstimateSizeForThisAndDownstreamSteps(Step step) throws WdkModelException {
     try {
