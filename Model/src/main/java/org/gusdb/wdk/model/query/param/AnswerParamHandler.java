@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query.param;
 
 import java.util.Map;
@@ -16,24 +13,24 @@ import org.gusdb.wdk.model.user.User;
 
 /**
  * @author jerric
- * 
+ *
  */
 public class AnswerParamHandler extends AbstractParamHandler {
 
   public static final String PARAM_INPUT_STEP = "inputStep";
   public static final String PARAM_INPUT_STRATEGY = "strategy";
-  
+
   private static final Logger LOG = Logger.getLogger(AnswerParamHandler.class);
 
   public AnswerParamHandler(){}
-  
+
   public AnswerParamHandler(AnswerParamHandler handler, Param param) {
     super(handler, param);
   }
 
   /**
    * the stable value is the step id;
-   * 
+   *
    * @throws WdkModelException
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toStableValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String, java.util.Map)
@@ -47,9 +44,9 @@ public class AnswerParamHandler extends AbstractParamHandler {
 
   /**
    * the raw value is a step object.
-   * 
+   *
    * @throws WdkModelException
-   * 
+   *
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toRawValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
@@ -63,9 +60,9 @@ public class AnswerParamHandler extends AbstractParamHandler {
   /**
    * The internal is an SQL that represent the result of the step. If noTranslation is true, it returns
    * step_id
-   * 
+   *
    * @throws WdkModelException
-   * 
+   *
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toInternalValue(org.gusdb.wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    */
@@ -85,9 +82,9 @@ public class AnswerParamHandler extends AbstractParamHandler {
   /**
    * the signature is the checksum of answer, which doesn't have any user related information, to make sure
    * the cache can be shared.
-   * 
+   *
    * @throws WdkModelException
-   * 
+   *
    * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
    *      java.lang.String, Map)
    */
@@ -104,10 +101,10 @@ public class AnswerParamHandler extends AbstractParamHandler {
 
   /**
    * The stable value is string representation step id.
-   * 
+   *
    * @throws WdkUserException
    * @throws WdkModelException
-   * 
+   *
    * @see org.gusdb.wdk.model.query.param.ParamHandler#getStableValue(org.gusdb.wdk.model.user.User,
    *      org.gusdb.wdk.model.query.param.RequestParams)
    */
