@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkModel;
@@ -42,13 +41,14 @@ public class UserDatasetFactory {
    */
   public Set<Long> getInstalledUserDatasets(long userId) throws WdkModelException {
     String sql = "select user_dataset_id from " + _userDatasetSchema + "userDatasetAccessControl where user_id = ?";
-    final Set<Long> datasetIds = new HashSet<>();
-    new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "installed-datasets-by-user")
+    return new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "installed-datasets-by-user")
       .executeQuery(new Object[] { userId }, new Integer[] { Types.BIGINT }, rs -> {
+        Set<Long> datasetIds = new HashSet<>();
         while (rs.next()) {
           datasetIds.add(rs.getLong(1));
-        }});
-    return datasetIds;
+        }
+        return datasetIds;
+      });
   }
   
   /**
@@ -59,14 +59,8 @@ public class UserDatasetFactory {
    */
   public boolean isUserDatasetInstalled(long datasetId) throws WdkModelException {
     String sql = "select user_dataset_id from " + _userDatasetSchema + "userDatasetAccessControl where dataset_id = ?";
-    Wrapper<Boolean> wrapper = new Wrapper<>();
-    wrapper.set(false);
-    new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "is-user-dataset-installed")
-      .executeQuery(new Object[] { datasetId }, new Integer[] { Types.BIGINT }, rs -> {
-        if (rs.next()) {
-          wrapper.set(true);
-        }});
-    return wrapper.get();
+    return new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "is-user-dataset-installed")
+      .executeQuery(new Object[] { datasetId }, new Integer[] { Types.BIGINT }, rs -> rs.next());
   }
 
   /**

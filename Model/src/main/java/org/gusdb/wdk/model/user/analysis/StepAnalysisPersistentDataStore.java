@@ -274,7 +274,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       _userPlatform.createSequence(_userDs, ANALYSIS_SEQUENCE, 1, 1);
     }
     catch (SQLRunnerException|SQLException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      WdkModelException.unwrap(e);
     }
   }
 
@@ -290,7 +290,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
               _userBoolType, Types.VARCHAR, Types.VARCHAR, Types.CLOB, Types.VARCHAR });
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      WdkModelException.unwrap(e);
     }
   }
 
@@ -304,7 +304,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       }
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      WdkModelException.unwrap(e);
     }
   }
 
@@ -318,7 +318,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       }
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      WdkModelException.unwrap(e);
     }
   }
 
@@ -332,7 +332,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       }
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      WdkModelException.unwrap(e);
     }
   }
 
@@ -346,7 +346,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       }
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      WdkModelException.unwrap(e);
     }
   }
 
@@ -360,7 +360,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       }
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      WdkModelException.unwrap(e);
     }
   }
 
@@ -376,7 +376,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       }
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      WdkModelException.unwrap(e);
     }
   }
 
@@ -428,7 +428,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       }
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      WdkModelException.unwrap(e);
     }
     
   }
@@ -436,39 +436,51 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   @Override
   protected List<Long> getAnalysisIdsByStepId(long stepId) throws WdkModelException {
     try {
-      List<Long> ids = new ArrayList<>();
-      new SQLRunner(_userDs, GET_ANALYSIS_IDS_BY_STEP_SQL, "select-step-analysis-ids-by-step")
-        .executeQuery(new Object[] { stepId }, rs -> { while (rs.next()) ids.add(rs.getLong(1)); });
-      return ids;
+      return new SQLRunner(_userDs, GET_ANALYSIS_IDS_BY_STEP_SQL, "select-step-analysis-ids-by-step")
+        .executeQuery(new Object[] { stepId }, rs -> {
+          List<Long> ids = new ArrayList<>();
+          while (rs.next()) {
+            ids.add(rs.getLong(1));
+          }
+          return ids;
+        });
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      return WdkModelException.unwrap(e, List.class);
     }
   }
 
   @Override
   protected List<Long> getAnalysisIdsByHash(String contextHash) throws WdkModelException {
     try {
-      List<Long> ids = new ArrayList<>();
-      new SQLRunner(_userDs, GET_ANALYSIS_IDS_BY_HASH_SQL, "select-step-analyses-by-hash")
-        .executeQuery(new Object[] { contextHash }, rs -> { while (rs.next()) ids.add(rs.getLong(1)); });
-      return ids;
+      return new SQLRunner(_userDs, GET_ANALYSIS_IDS_BY_HASH_SQL, "select-step-analyses-by-hash")
+        .executeQuery(new Object[] { contextHash }, rs -> {
+          List<Long> ids = new ArrayList<>();
+          while (rs.next()) {
+            ids.add(rs.getLong(1));
+          }
+          return ids;
+        });
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      return WdkModelException.unwrap(e, List.class);
     }
   }
 
   @Override
   protected List<Long> getAllAnalysisIds() throws WdkModelException {
     try {
-      final List<Long> ids = new ArrayList<>();
-      new SQLRunner(_userDs, GET_ALL_ANALYSIS_IDS_SQL, "select-all-step-analysis-ids")
-        .executeQuery(rs -> { while (rs.next()) ids.add(rs.getLong(1)); });
-      return ids;
+      return new SQLRunner(_userDs, GET_ALL_ANALYSIS_IDS_SQL, "select-all-step-analysis-ids")
+        .executeQuery(rs -> {
+          List<Long> ids = new ArrayList<>();
+          while (rs.next()) {
+            ids.add(rs.getLong(1));
+          }
+          return ids;
+        });
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      return WdkModelException.unwrap(e, List.class);
     }
   }
 
@@ -510,6 +522,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
             throw new SQLException("Unable to read context value.", ioe);
           }
         }
+        return null;
       });
 
       if (result.isEmpty()) return result;
@@ -525,6 +538,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
             result.get(analysisId).status = status;
           }
         }
+        return null;
       });
 
       // any statuses we couldn't find have been purged somehow; null is the
@@ -532,7 +546,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       return result;
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      return WdkModelException.unwrap(e, Map.class);
     }
   }
 
@@ -542,7 +556,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       new SQLRunner(_appDs, CREATE_EXECUTION_TABLE_SQL, "create-step-analysis-cache-table").executeStatement();
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      WdkModelException.unwrap(e);
     }
   }
 
@@ -575,7 +589,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       return true;
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      return WdkModelException.unwrap(e, Boolean.class);
     }
     finally {
       CONTEXT_INSERTION_LOCK.unlock();
@@ -594,7 +608,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       }
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      WdkModelException.unwrap(e);
     }
     
   }
@@ -609,7 +623,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       }
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      WdkModelException.unwrap(e);
     }
   }
 
@@ -623,7 +637,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       }
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      WdkModelException.unwrap(e);
     }
     
   }
@@ -634,7 +648,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       new SQLRunner(_appDs, DELETE_ALL_EXECUTIONS_SQL, "delete-all-step-analysis-runs").executeUpdate();
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      WdkModelException.unwrap(e);
     }
     
   }
@@ -650,15 +664,14 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       return parseStatus((String)result.getResults().get(0).values().iterator().next(), contextHash);
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      return WdkModelException.unwrap(e, ExecutionStatus.class);
     }
   }
 
   @Override
   public AnalysisResult getRawAnalysisResult(final String contextHash) throws WdkModelException {
     try {
-      final AnalysisResult[] resultContainer = new AnalysisResult[1];
-      new SQLRunner(_appDs, GET_RESULTS_BY_HASH_SQL, "select-step-analysis-run").executeQuery(
+      return new SQLRunner(_appDs, GET_RESULTS_BY_HASH_SQL, "select-step-analysis-run").executeQuery(
         new Object[]{ contextHash }, new Integer[]{ Types.VARCHAR }, rs -> {
           try {
             if (rs.next()) {
@@ -670,28 +683,27 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
               String charData = IoUtil.readAllChars(rs.getCharacterStream(5));
               byte[] binData = IoUtil.readAllBytes(rs.getBinaryStream(6));
 
-              // construct result object, place in container and return
-              resultContainer[0] = new AnalysisResult(status, startDate, updateDate, charData, binData, log);
+              // construct result object and return
+              return new AnalysisResult(status, startDate, updateDate, charData, binData, log);
             }
+            return null;
           }
           catch (IOException e) {
             throw new SQLException("Unable to read data from DB over stream field", e);
           }
         }
       );
-      // return object retrieved, or null if not found
-      return resultContainer[0];
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      return WdkModelException.unwrap(e, AnalysisResult.class);
     }
   }
 
   @Override
   public List<ExecutionInfo> getAllRunningExecutions() throws WdkModelException {
     try {
-      final List<ExecutionInfo> results = new ArrayList<>();
-      new SQLRunner(_appDs, GET_RUNNING_EXECUTIONS_SQL, "select-all-step-analysis-runs").executeQuery(rs -> {
+      return new SQLRunner(_appDs, GET_RUNNING_EXECUTIONS_SQL, "select-all-step-analysis-runs").executeQuery(rs -> {
+        List<ExecutionInfo> results = new ArrayList<>();
         while (rs.next()) {
           // parse values retrieved from database
           String contextHash = rs.getString(1);
@@ -700,11 +712,11 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
           Date updateDate = new Date(rs.getTimestamp(4).getTime());
           results.add(new ExecutionInfo(contextHash, status, startDate, updateDate));
         }
+        return results;
       });
-      return results;
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      return WdkModelException.unwrap(e, List.class);
     }
   }
 
@@ -718,29 +730,28 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       }
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      WdkModelException.unwrap(e);
     }
   }
 
   @Override
   public String getAnalysisLog(String contextHash) throws WdkModelException {
     try {
-      final String[] resultContainer = new String[1];
-      new SQLRunner(_appDs, GET_EXECUTION_LOG_SQL, "get-step-analysis-log-clob")
+      return new SQLRunner(_appDs, GET_EXECUTION_LOG_SQL, "get-step-analysis-log-clob")
         .executeQuery(new Object[]{ contextHash }, new Integer[]{ Types.VARCHAR }, rs -> {
           if (rs.next()) {
             try {
-              resultContainer[0] = IoUtil.readAllChars(rs.getCharacterStream(1));
+              return IoUtil.readAllChars(rs.getCharacterStream(1));
             }
             catch (IOException e) {
               throw new SQLException("Unable to read data from DB over stream field", e);
             }
           }
+          return null;
         });
-      return resultContainer[0];
     }
     catch (SQLRunnerException e) {
-      throw new WdkModelException("Unable to complete operation.", e);
+      return WdkModelException.unwrap(e, String.class);
     }
   }
 

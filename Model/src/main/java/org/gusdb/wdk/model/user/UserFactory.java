@@ -9,7 +9,6 @@ import java.util.Random;
 import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.accountdb.AccountManager;
 import org.gusdb.fgputil.accountdb.UserProfile;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -176,7 +175,7 @@ public class UserFactory {
     Timestamp insertedOn = new Timestamp(new Date().getTime());
     String sql = INSERT_USER_REF_SQL
         .replace(USER_SCHEMA_MACRO, _userSchema)
-        .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isGuest));
+        .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isGuest).toString());
     new SQLRunner(_userDb.getDataSource(), sql, "insert-user-ref")
       .executeStatement(new Object[]{ userId, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
   }
@@ -200,16 +199,10 @@ public class UserFactory {
   private Date getGuestUserRefFirstAccess(long userId) {
     String sql = SELECT_GUEST_USER_REF_BY_ID_SQL
         .replace(USER_SCHEMA_MACRO, _userSchema)
-        .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(true));
-    Wrapper<Date> resultWrapper = new Wrapper<>();
-    new SQLRunner(_userDb.getDataSource(), sql, "get-guest-user-ref")
-      .executeQuery(new Object[]{ userId }, SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES, rs -> {
-        if (rs.next()) {
-          resultWrapper.set(new Date(rs.getTimestamp(COL_FIRST_ACCESS).getTime()));
-        }
-      });
-    // will return null if result set contained no rows
-    return resultWrapper.get();
+        .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(true).toString());
+    return new SQLRunner(_userDb.getDataSource(), sql, "get-guest-user-ref")
+      .executeQuery(new Object[]{ userId }, SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES, rs ->
+          !rs.next() ? null : new Date(rs.getTimestamp(COL_FIRST_ACCESS).getTime()));
   }
 
   private static void emailTemporaryPassword(User user, String password,

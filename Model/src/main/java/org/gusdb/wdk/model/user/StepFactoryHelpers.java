@@ -87,16 +87,14 @@ public class StepFactoryHelpers {
         }
         if (!containsKey(userId)) {
           if (_userFactory != null) {
-            put(userId, _userFactory.getUserById(userId));
+            put(userId, _userFactory.getUserById(userId)
+                .orElseThrow(() -> new WdkRuntimeException("User with ID " + id + " does not exist.")));
           }
           else {
             throw new WdkRuntimeException("No-lookup cache does not contain the requested user (" + id + ").");
           }
         }
         return super.get(userId);
-      }
-      catch (NoSuchElementException e) {
-        throw new WdkRuntimeException("User with ID " + id + " does not exist.", e);
       }
       catch (WdkModelException e) {
         throw new WdkRuntimeException("Unable to execute user lookup query.", e);

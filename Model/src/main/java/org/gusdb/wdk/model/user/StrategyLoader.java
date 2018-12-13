@@ -155,7 +155,7 @@ public class StrategyLoader {
   }
 
   private String sqlBoolean(boolean boolValue) {
-    return _userDbPlatform.convertBoolean(boolValue);
+    return _userDbPlatform.convertBoolean(boolValue).toString();
   }
 
   private String prepareSql(String sql) {
@@ -212,6 +212,7 @@ public class StrategyLoader {
         if (currentStrategy != null) {
           strategies.add(currentStrategy);
         }
+        return this;
       });
       // all data loaded; build steps and strats at the specified validation level
       UserCache userCache = new UserCache(_userFactory);

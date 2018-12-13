@@ -1,10 +1,60 @@
 package org.gusdb.wdk.model.user;
 
+import static org.gusdb.fgputil.functional.Functions.filter;
+import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
+import static org.gusdb.wdk.model.user.StepContainer.withId;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ANSWER_FILTER;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ASSIGNED_WEIGHT;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_CHILD_STEP_ID;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_COLLAPSED_NAME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_CREATE_TIME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_CUSTOM_NAME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_DESCRIPTION;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_DISPLAY_PARAMS;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ESTIMATE_SIZE;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_COLLAPSIBLE;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_DELETED;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_PUBLIC;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_SAVED;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_VALID;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_MODIFIED_TIME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_RUN_TIME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_VIEWED_TIME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_NAME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_PREVIOUS_STEP_ID;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_PROJECT_ID;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_PROJECT_VERSION;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_QUESTION_NAME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ROOT_STEP_ID;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_SAVED_NAME;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_SIGNATURE;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_STEP_ID;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_STRATEGY_ID;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_USER_ID;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_VERSION;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.TABLE_STEP;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.TABLE_STRATEGY;
+
+import java.io.StringReader;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+
+import javax.sql.DataSource;
+
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.platform.Oracle;
@@ -13,10 +63,8 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.BasicArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
-import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.StepCopiedEvent;
@@ -42,20 +90,8 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
-import org.gusdb.wdk.model.user.StepFactoryHelpers.*;
-import org.json.JSONObject;
-
-import javax.sql.DataSource;
-import java.io.StringReader;
-import java.sql.*;
-import java.util.Date;
-import java.util.*;
-import java.util.Map.Entry;
-
-import static org.gusdb.fgputil.functional.Functions.filter;
-import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
-import static org.gusdb.wdk.model.user.StepContainer.withId;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.*;
+import org.gusdb.wdk.model.user.StepFactoryHelpers.NameCheckInfo;
+import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 
 /**
  * Provides interface to the database to find, read, and write Step and Strategy
@@ -294,18 +330,15 @@ public class StepFactory {
           "   AND " + COLUMN_PROJECT_ID + " = ? " +
           "   AND is_deleted = " + _userDbPlatform.convertBoolean(false);
 
-      SingleLongResultSetHandler result = new SQLRunner(_userDbDs, sql, "wdk-step-factory-step-count")
+      return new SQLRunner(_userDbDs, sql, "wdk-step-factory-step-count")
           .executeQuery(
               new Object[] { user.getUserId(), _wdkModel.getProjectId() },
               new Integer[] { Types.BIGINT, Types.VARCHAR },
               new SingleLongResultSetHandler()
-          );
-
-      if (Status.NON_NULL_VALUE.equals(result.getStatus())) {
-        return result.getRetrievedValue().intValue();
-      }
-      throw new WdkModelException("Could not get step count for user " +
-          user.getEmail() + "[status=" + result.getStatus() + "]");
+          )
+          .orElseThrow(() -> new WdkModelException(
+              "Could not get step count for user " + user.getEmail()))
+          .intValue();
     }
     catch (Exception e) {
       return WdkModelException.unwrap(e, Integer.class);
@@ -930,9 +963,7 @@ public class StepFactory {
 
     final int boolType = _userDbPlatform.getBooleanType();
 
-    final Wrapper<Optional<TwoTuple<Long, String>>> out = new Wrapper<>();
-
-    new SQLRunner(_userDbDs, sql)
+    return new SQLRunner(_userDbDs, sql)
       .executeQuery(
         new Object[]{
           userId,
@@ -949,18 +980,14 @@ public class StepFactory {
           boolType       // IS_DELETED
         },
         rs -> {
-          if (rs.next()) {
-            out.set(Optional.of(new TwoTuple<>(
+          return rs.next() ?
+            Optional.of(new TwoTuple<>(
               rs.getLong(COLUMN_STRATEGY_ID),
               rs.getString(COLUMN_SIGNATURE)
-            )));
-          } else {
-            out.set(Optional.empty());
-          }
+            )) :
+            Optional.empty();
         }
-        );
-
-    return out.get();
+      );
   }
 
   /**
@@ -1033,7 +1060,7 @@ public class StepFactory {
   }
 
   // This function only updates the strategies table
-  Strategy updateStrategy(User user, Strategy strategy, boolean overwrite)
+  Strategy updateStrategy(Strategy strategy, boolean overwrite)
       throws WdkModelException,
       WdkUserException {
     LOG.debug("Updating strategy internal#=" + strategy.getStrategyId() +
@@ -1044,34 +1071,34 @@ public class StepFactory {
       throw new WdkUserException("Cannot update a saved strategy. Please " +
           "create a copy and update it, or set overwrite flag to true.");
 
-    long userId = user.getUserId();
-    Strategy.StrategyBuilder build = new Strategy.StrategyBuilder(strategy);
+    User user = strategy.getUser();
+    Strategy.StrategyBuilder builder = new Strategy.StrategyBuilder(strategy);
 
     if (overwrite) {
-      Optional<TwoTuple<Long,String>> opSaved = getOverwriteStrategy(userId,
-          strategy.getName());
+      Optional<TwoTuple<Long,String>> opSaved = getOverwriteStrategy(
+          user.getUserId(), strategy.getName());
 
       if (opSaved.isPresent()) {
         TwoTuple<Long, String> saved = opSaved.get();
         // If there's already a saved strategy with this strategy's name,
         // we need to write the new saved strategy & mark the old
         // saved strategy as deleted
-        build.setSaved(true);
-        build.setSignature(saved.getSecond());
-        build.setSavedName(strategy.getName());
-        // jerric - only delete the strategy if it's a different one
+        builder.setSaved(true);
+        builder.setSignature(saved.getSecond());
+        builder.setSavedName(strategy.getName());
+        // only delete the strategy if it's a different one
         if (!strategy.getStrategyId().equals(saved.getFirst()))
           StepUtilities.deleteStrategy(user, saved.getFirst());
       }
     }
 
-    build.setLastModifiedTime(new Date());
+    builder.setLastModifiedTime(new Date());
 
     if (!updateStrategy(strategy))
       throw new WdkUserException("The strategy #" + strategy.getStrategyId() +
           " of user " + user.getEmail() + " cannot be found.");
 
-    return build.build();
+    return builder.build(new UserCache(user), strategy.getRootStep().getValidationBundle().getLevel());
   }
 
   public long getNewStrategyId() throws WdkModelException {
@@ -1091,7 +1118,7 @@ public class StepFactory {
       String savedName, boolean saved, String description, boolean hidden,
       boolean isPublic) throws WdkModelException {
     long strategyId = (root.getStrategyId() == null)
-        ? getNextStrategyId()
+        ? getNewStrategyId()
         : root.getStrategyId();
     return createStrategy(user, strategyId, root, name, savedName, saved,
         description, hidden, isPublic);
@@ -1119,15 +1146,13 @@ public class StepFactory {
         "  AND " + COLUMN_IS_SAVED   + "= ?\n" +
         "  AND " + COLUMN_IS_DELETED + "= ?";
 
-    final Wrapper<Optional<Long>> stratId = new Wrapper<>();
-
     // If newName is not null, check if strategy exists.  if so, just load it
     // and return.  don't create a new one.
     if (newName != null) {
       if (newName.length() > COLUMN_NAME_LIMIT) {
         newName = newName.substring(0, COLUMN_NAME_LIMIT - 1);
       }
-      new SQLRunner(_userDbDs, sql)
+      Optional<Long> stratId = new SQLRunner(_userDbDs, sql)
         .executeQuery(
           new Object[]{
             userId,
@@ -1143,17 +1168,14 @@ public class StepFactory {
             boolType,
             boolType
           },
-          rs -> {
-            if (rs.next())
-              stratId.set(Optional.of(rs.getLong(COLUMN_STRATEGY_ID)));
-            else
-              stratId.set(Optional.empty());
-          }
+          rs -> rs.next() ?
+            Optional.of(rs.getLong(COLUMN_STRATEGY_ID)) :
+            Optional.empty()
         );
 
-      if (stratId.get().isPresent()) {
+      if (stratId.isPresent()) {
         Optional<Strategy> strategy = new StrategyLoader(_wdkModel,
-            ValidationLevel.SEMANTIC).getStrategyById(stratId.get().get());
+            ValidationLevel.SEMANTIC).getStrategyById(stratId.get());
         if (strategy.isPresent())
           return strategy.get();
       }
@@ -1179,7 +1201,8 @@ public class StepFactory {
       .setDescription(description)
       .setVersion(_wdkModel.getVersion())
       .setIsPublic(isPublic)
-      .build();
+      .addStep(Step.builder(root))
+      .build(new UserCache(root.getUser()), root.getValidationBundle().getLevel());
 
     try(final Connection con = _userDbDs.getConnection()) {
       insertStrategy(con, outStrat);
@@ -1311,15 +1334,13 @@ public class StepFactory {
         " WHERE " + Utilities.COLUMN_USER_ID + " = ?" +
         " AND " + COLUMN_IS_DELETED + " = " + _userDbPlatform.convertBoolean(false) +
         " AND " + COLUMN_PROJECT_ID + " = ?";
-      SingleLongResultSetHandler result =
-        new SQLRunner(_userDbDs, sql, "wdk-step-factory-strategy-count").executeQuery(
+      return new SQLRunner(_userDbDs, sql, "wdk-step-factory-strategy-count")
+        .executeQuery(
           new Object[]{ user.getUserId(), _wdkModel.getProjectId() },
           new Integer[]{ Types.BIGINT, Types.VARCHAR },
-          new SingleLongResultSetHandler());
-      if (result.containsValue()) {
-        return result.getRetrievedValue().intValue();
-      }
-      throw new WdkModelException("Failed to execute count query (status = " + result.getStatus());
+          new SingleLongResultSetHandler())
+        .orElseThrow(() -> new WdkModelException("Failed to execute strategy count for user: " + user.getUserId()))
+        .intValue();
     }
     catch (Exception e) {
       return WdkModelException.unwrap(e, Integer.class);
@@ -1328,7 +1349,6 @@ public class StepFactory {
 
   public NameCheckInfo checkNameExists(Strategy strategy, String name, boolean saved) {
     final int boolType = _userDbPlatform.getBooleanType();
-    final Wrapper<NameCheckInfo> out = new Wrapper<>();
     final String sql = "SELECT\n" +
       "  " + COLUMN_STRATEGY_ID + ",\n" +
       "  " + COLUMN_IS_PUBLIC   + ",\n" +
@@ -1342,7 +1362,7 @@ public class StepFactory {
       "  AND " + COLUMN_IS_DELETED  + " = ?\n" +
       "  AND " + COLUMN_STRATEGY_ID + " <> ?";
 
-    new SQLRunner(_userDbDs, sql).executeQuery(
+    return new SQLRunner(_userDbDs, sql).executeQuery(
       new Object[] {
         strategy.getUser().getUserId(),
         _wdkModel.getProjectId(),
@@ -1363,15 +1383,12 @@ public class StepFactory {
         if (rs.next()) {
           boolean isPublic = rs.getBoolean(2);
           String description = rs.getString(3);
-          out.set(new NameCheckInfo(true, isPublic, description));
-        } else {
-          // otherwise, no strat by this name exists
-          out.set(new NameCheckInfo(false, false, null));
+          return new NameCheckInfo(true, isPublic, description);
         }
+        // otherwise, no strat by this name exists
+        return new NameCheckInfo(false, false, null);
       }
     );
-
-    return out.get();
   }
 
   private String addSuffixToStratNameIfNeeded(final User user,
@@ -1389,9 +1406,7 @@ public class StepFactory {
 
     final int boolType = _userDbPlatform.getBooleanType();
 
-    final Wrapper<String> wrapper = new Wrapper<>();
-
-    new SQLRunner(_userDbDs, sql).executeQuery(
+    return new SQLRunner(_userDbDs, sql).executeQuery(
         new Object[] {
             user.getUserId(),
             _wdkModel.getProjectId(),
@@ -1415,13 +1430,11 @@ public class StepFactory {
               index = res;
           }
 
-          wrapper.set(index > 1
+          return index > 1
               ? String.format("%s (%d)", oldName, index)
-              : oldName);
+              : oldName;
         }
     );
-
-    return wrapper.get();
   }
 
   /**
@@ -1553,14 +1566,14 @@ public class StepFactory {
   }
 
   public List<Long> getStepAndParents(final long stepId) throws WdkModelException {
-    final List<Long> ids = new ArrayList<>();
-    new SQLRunner(_userDbDs, selectStepAndParents(stepId), "select-step-and-parent-ids")
+    return new SQLRunner(_userDbDs, selectStepAndParents(stepId), "select-step-and-parent-ids")
       .executeQuery(rs -> {
+        final List<Long> ids = new ArrayList<>();
         while (rs.next()) {
           ids.add(rs.getLong(1));
         }
+        return ids;
       });
-    return ids;
   }
 
   /**
