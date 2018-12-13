@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -30,11 +29,7 @@ import org.gusdb.wdk.model.xml.XmlRecordClassSet;
  */
 public class WdkModelBean implements ConnectionContainer {
 
-    private static final Logger logger = Logger.getLogger(WdkModelBean.class.getName());
-
     WdkModel wdkModel;
-
-    private String questionName;
 
     public WdkModelBean(WdkModel wdkModel) {
         this.wdkModel = wdkModel;
@@ -44,11 +39,6 @@ public class WdkModelBean implements ConnectionContainer {
         return wdkModel.getProperties();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.WdkModel#getVersion()
-     */
     public String getVersion() {
         return wdkModel.getVersion();
     }
@@ -67,7 +57,7 @@ public class WdkModelBean implements ConnectionContainer {
 
     // to do: figure out how to do this without using getModel()
     public WdkModel getModel() {
-        return this.wdkModel;
+        return wdkModel;
     }
 
     /**
@@ -280,7 +270,8 @@ public class WdkModelBean implements ConnectionContainer {
 
     public QuestionBean getQuestion(String questionFullName)
             throws WdkModelException {
-        return new QuestionBean(wdkModel.getQuestion(questionFullName));
+        return new QuestionBean(wdkModel.getQuestion(questionFullName)
+            .orElseThrow(() -> new WdkModelException("No question exists with name " + questionFullName)));
     }
 
     public Map<String, ParamBean<?>> getParams(UserBean user) throws WdkModelException {
@@ -296,19 +287,6 @@ public class WdkModelBean implements ConnectionContainer {
     
     public RecordClassBean getRecordClass(String rcName) throws WdkModelException {
         return new RecordClassBean(wdkModel.getRecordClass(rcName));
-    }
-
-    public void setQuestionName(String questionName) {
-        this.questionName = questionName;
-    }
-
-    public QuestionBean getQuestion() {
-        try {
-            return new QuestionBean(wdkModel.getQuestion(questionName));
-        } catch (Exception ex) {
-            logger.error(ex);
-            return null;
-        }
     }
 
     @Override

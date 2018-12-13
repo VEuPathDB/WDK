@@ -9,7 +9,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -25,7 +24,7 @@ public class StepUtilities {
 
   private static Logger logger = Logger.getLogger(StepUtilities.class);
 
-  public static RunnableObj<Step> createStep(User user, Strategy strategy, Question question, Map<String, String> paramValues,
+  public static Step createStep(User user, Strategy strategy, Question question, Map<String, String> paramValues,
       String filterName, boolean deleted, int assignedWeight) throws WdkModelException {
     RecordClass recordClass = question.getRecordClass();
     AnswerFilterInstance filter = filterName != null ?
@@ -34,13 +33,13 @@ public class StepUtilities {
     return createStep(user, strategy, question, paramValues, filter, deleted, assignedWeight);
   }
 
-  public static RunnableObj<Step> createStep(User user, Strategy strategy, Question question, Map<String, String> paramValues,
+  public static Step createStep(User user, Strategy strategy, Question question, Map<String, String> paramValues,
       AnswerFilterInstance filter, boolean deleted, int assignedWeight)
       throws WdkModelException {
     return createStep(user, strategy, question, paramValues, filter, deleted, assignedWeight, null);
   }
 
-  public static RunnableObj<Step> createStep(User user, Strategy strategy, Question question,
+  public static Step createStep(User user, Strategy strategy, Question question,
       Map<String, String> paramValues, AnswerFilterInstance filter, boolean deleted, int assignedWeight,
       FilterOptionList filterOptions) throws WdkModelException {
     return user.getWdkModel().getStepFactory().createStep(user, question, paramValues,
@@ -297,7 +296,7 @@ public class StepUtilities {
 
   public static Strategy importStrategy(User user, Strategy oldStrategy, Map<Long, Long> stepIdsMap)
       throws WdkModelException {
-    Strategy newStrategy = user.getWdkModel().getStepFactory().copyStrategy(user, oldStrategy, stepIdsMap, oldStrategy.getName());
+    Strategy newStrategy = user.getWdkModel().getStepFactory().copyStrategy(user, oldStrategy, stepIdsMap);
     // highlight the imported strategy
     long rootStepId = newStrategy.getRootStepId();
     String strategyKey = Long.toString(newStrategy.getStrategyId());
@@ -379,5 +378,21 @@ public class StepUtilities {
       }
     }
     return new TwoTuple<>(successfulStrats, failedStratKeys);
+  }
+
+  public static Strategy getStrategy(User user, long strategyId) throws WdkUserException, WdkModelException {
+    return user.getWdkModel().getStepFactory()
+      .getStrategyById(strategyId)
+      .filter(strategy -> strategy.getUser().getUserId() == user.getUserId())
+      .orElseThrow(() -> new WdkUserException(
+        "No strategy with ID " + strategyId + " exists for user " + user.getUserId()));
+  }
+
+  public static Step getStep(User user, long stepId) throws WdkUserException, WdkModelException {
+    return user.getWdkModel().getStepFactory()
+        .getStepById(stepId)
+        .filter(step -> step.getUser().getUserId() == user.getUserId())
+        .orElseThrow(() -> new WdkUserException(
+          "No step with ID " + stepId + " exists for user " + user.getUserId()));
   }
 }

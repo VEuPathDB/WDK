@@ -329,7 +329,7 @@ public class TableRowUpdater<T extends TableRow> {
    * 
    * @param <T> type of record that will be created from each row in the ResultSet (and subsequently added to the queue)
    */
-  private static class RecordQueuer<T extends TableRow> implements ResultSetHandler {
+  private static class RecordQueuer<T extends TableRow> implements ResultSetHandler<RecordQueuer<T>> {
 
     private final WdkModel _wdkModel;
     private final TableRowFactory<T> _factory;
@@ -344,7 +344,7 @@ public class TableRowUpdater<T extends TableRow> {
     }
 
     @Override
-    public void handleResult(ResultSet rs) throws SQLException {
+    public RecordQueuer<T> handleResult(ResultSet rs) throws SQLException {
       DBPlatform platform = _wdkModel.getUserDb().getPlatform();
       boolean exitEarly = false;
       while (rs.next() && !exitEarly) {
@@ -361,6 +361,7 @@ public class TableRowUpdater<T extends TableRow> {
           _recordQueue.pushRecord(_factory.newTableRow(rs, platform));
         }
       }
+      return this;
     }
   }
 

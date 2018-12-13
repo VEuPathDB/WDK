@@ -618,12 +618,6 @@ public class StepFactory {
         .getPublicStrategies(), strat -> strat.isValid()).size();
   }
 
-  private Strategy getStrategyByValidId(long strategyId)
-      throws WdkModelException {
-    return getStrategyById(strategyId) .orElseThrow(() ->new WdkModelException(
-      "Could not find strategy with 'valid' ID: " + strategyId));
-  }
-
   public Optional<Strategy> getStrategyById(long strategyId) throws WdkModelException {
     return new StrategyLoader(_wdkModel, ValidationLevel.SEMANTIC)
         .getStrategyById(strategyId);

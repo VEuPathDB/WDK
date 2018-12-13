@@ -29,8 +29,7 @@ public class WdkModelException extends WdkException {
   }
 
   public static void unwrap(Exception e) throws WdkModelException {
-    Throwable t = (e.getCause() != null ? e.getCause() : e);
-    throw (t instanceof WdkModelException ? (WdkModelException)t : new WdkModelException(t));
+    unwrap(e, e.getMessage());
   }
 
   public static void unwrap(Exception e, String newMessage) throws WdkModelException {

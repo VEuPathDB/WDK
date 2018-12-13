@@ -149,6 +149,7 @@ public class UserSession {
    * 
    * @param guestUser
    * @throws WdkModelException
+   * @throws  
    */
   public void mergeUser(User guestUser) throws WdkModelException {
 
@@ -174,10 +175,15 @@ public class UserSession {
 
     // the current implementation can only keep the root level of the
     // imported strategies open;
-    long[] oldActiveStrategies = guestSession.getActiveStrategyFactory().getRootStrategies();
-    for (long oldStrategyId : oldActiveStrategies) {
-      long newStrategyId = strategiesMap.get(oldStrategyId);
-      _activeStrategyFactory.openActiveStrategy(Long.toString(newStrategyId));
+    try {
+      long[] oldActiveStrategies = guestSession.getActiveStrategyFactory().getRootStrategies();
+      for (long oldStrategyId : oldActiveStrategies) {
+        long newStrategyId = strategiesMap.get(oldStrategyId);
+        _activeStrategyFactory.openActiveStrategy(Long.toString(newStrategyId));
+      }
+    }
+    catch (WdkUserException e) { // eventually this will not be needed
+      throw new WdkModelException(e);
     }
 
     // no need to import steps that don't belong to any strategies, since they won't be referenced in any way.

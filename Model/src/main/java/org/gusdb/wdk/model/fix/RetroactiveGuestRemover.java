@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.fix;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -17,7 +16,6 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
-import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -99,27 +97,19 @@ public class RetroactiveGuestRemover extends BaseCLI {
    * @throws WdkModelException
    */
   public static Calendar findOldestGuestUserRegistry(DataSource dataSource, String userSchema) throws WdkModelException {
-    final Calendar calendar = Calendar.getInstance();
-	String sql = "SELECT min(first_access) AS oldest_date FROM " + userSchema + "users WHERE is_guest = 1";
+    String sql = "SELECT min(first_access) AS oldest_date FROM " + userSchema + "users WHERE is_guest = 1";
     try {
-      new SQLRunner(dataSource, sql).executeQuery(new ResultSetHandler() {
-        @Override
-        public void handleResult(ResultSet resultSet) throws SQLException {
-          try { 
-            if(resultSet.next()) {
-              calendar.setTime(resultSet.getTimestamp("oldest_date"));
-            }
-          }
-          catch(SQLException sre) {
-            throw new SQLRunnerException("Unable to obtain oldest guest first access.");
-          }
-        }  
-      }); 
+      return new SQLRunner(dataSource, sql).executeQuery(resultSet -> {
+        Calendar calendar = Calendar.getInstance();
+        if(resultSet.next()) {
+          calendar.setTime(resultSet.getTimestamp("oldest_date"));
+        }
+        return calendar;
+      });
     }
     catch(SQLRunnerException se) {
-      throw new WdkModelException("Unable to oldest guest user registry.", se.getCause());
+      return WdkModelException.unwrap(se, "Unable to obtain oldest guest first access.", Calendar.class);
     }
-    return calendar;
   }
 
   public static int deleteByBatch(DataSource dataSource, String table, String condition) throws SQLException {

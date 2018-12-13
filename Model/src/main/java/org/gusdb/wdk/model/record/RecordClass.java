@@ -727,12 +727,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       String baseSql = Query.makeQueryInstance(QueryInstanceSpec.builder()
           .buildRunnable(user, allRecordsQuery, StepContainer.emptyContainer())).getSql();
       String sql = "select count(*) from ( " + baseSql + " )";
-      SingleLongResultSetHandler result = new SQLRunner(_wdkModel.getAppDb().getDataSource(),
-          sql, fullName + "-all-records-count").executeQuery(new SingleLongResultSetHandler());
-      if (result.getStatus().equals(SingleLongResultSetHandler.Status.NON_NULL_VALUE)) {
-        return result.getRetrievedValue();
-      }
-      throw new WdkModelException("Count query did not return single value.  SQL: " + sql);
+      return new SQLRunner(_wdkModel.getAppDb().getDataSource(),
+          sql, fullName + "-all-records-count")
+        .executeQuery(new SingleLongResultSetHandler())
+        .orElseThrow(() -> new WdkModelException(
+            "Count query did not return single value.  SQL: " + sql));
     }
     catch (SQLRunnerException e) {
       // unwrap exception and rewrap as WdkModelException

@@ -826,9 +826,4 @@ public class AnswerValue {
     return filter.getSummaryJson(this, idSql);
   }
 
-  @Deprecated
-  public AnswerFilterInstance getFilter() {
-    return _answerSpec.getLegacyFilter();
-  }
-
 }
