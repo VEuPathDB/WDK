@@ -16,6 +16,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkRuntimeException;
 
 public class RemoveBrokenStratsSteps extends BaseCLI {
   private static final int PAGE_SIZE = 9000;
@@ -116,7 +117,8 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
     for (String queryName : sqlFroms.keySet()) {
       String sql = "select count(*) " + sqlFroms.get(queryName);
       long count = new SQLRunner(dataSource, sql, "report-broken-" + queryName)
-          .executeQuery(new SingleLongResultSetHandler()).getRetrievedValue();
+          .executeQuery(new SingleLongResultSetHandler())
+          .orElseThrow(() -> new WdkRuntimeException("Count query returned no rows."));
       System.out.println(queryName + ": " + count);
     }
   }

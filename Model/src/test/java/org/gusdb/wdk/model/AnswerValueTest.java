@@ -122,10 +122,10 @@ public class AnswerValueTest {
     public void testGetFilterSizes() throws Exception {
         Step step = UnitTestHelper.createNormalStep(user);
         AnswerValue answerValue = step.getAnswerValue();
-        AnswerFilterInstance currentFilter = answerValue.getFilter();
+        AnswerFilterInstance currentFilter = answerValue.getAnswerSpec().getLegacyFilter();
         int size = answerValue.getResultSizeFactory().getResultSize();
 
-        AnswerFilterInstance[] filters = answerValue.getQuestion()
+        AnswerFilterInstance[] filters = answerValue.getAnswerSpec().getQuestion()
                 .getRecordClass().getFilterInstances();
         for (AnswerFilterInstance filter : filters) {
             int filterSize = answerValue.getResultSizeFactory().getFilterSize(filter.getName());

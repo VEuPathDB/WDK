@@ -938,11 +938,8 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   /**
    * The previous step param is always the first answerParam.
-   *
-   * @return
-   * @throws WdkModelException
    */
-  public Optional<String> getPreviousStepParamName() throws WdkModelException {
+  public Optional<String> getPreviousStepParamName() {
     return getPreviousStepParam().map(Named.TO_NAME);
   }
 
@@ -963,11 +960,8 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   /**
    * the child step param is always the second answerParam
-   *
-   * @return
-   * @throws WdkModelException
    */
-  public Optional<String> getChildStepParamName() throws WdkModelException {
+  public Optional<String> getChildStepParamName() {
     return getChildStepParam().map(Named.TO_NAME);
   }
 
@@ -1137,6 +1131,14 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   public void setDeleted(boolean isDeleted) {
     _isDeleted = isDeleted;
+  }
+
+  public boolean isMutable() {
+    return !hasStrategy() || !getStrategy().getIsSaved();
+  }
+
+  public boolean hasStrategy() {
+    return _strategy != null;
   }
 
 }

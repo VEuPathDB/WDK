@@ -122,6 +122,7 @@ public class UserBean {
    * 
    * @see org.gusdb.wdk.model.user.User#clearHistories()
    */
+  @Deprecated
   public void deleteSteps() throws WdkModelException {
     StepUtilities.deleteSteps(_user);
   }
@@ -131,9 +132,11 @@ public class UserBean {
    * 
    * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
    */
+  @Deprecated
   public StepBean createStep(Long strategyId, QuestionBean question, Map<String, String> params,
       String filterName, boolean deleted, int assignedWeight) throws WdkModelException, WdkUserException {
-    Step step = StepUtilities.createStep(_user, strategyId, question._question, params, filterName, deleted,
+    Strategy strategy = StepUtilities.getStrategy(_user, strategyId);
+    Step step = StepUtilities.createStep(_user, strategy, question._question, params, filterName, deleted,
         assignedWeight);
     return new StepBean(this, step);
   }
@@ -143,6 +146,7 @@ public class UserBean {
    * 
    * @see org.gusdb.wdk.model.user.User#deleteHistory(int)
    */
+  @Deprecated
   public void deleteStep(int displayId) throws WdkModelException {
     _wdkModel.getStepFactory().deleteStep(displayId);
   }
@@ -152,6 +156,7 @@ public class UserBean {
    * 
    * @see org.gusdb.wdk.model.user.User#getHistories()
    */
+  @Deprecated
   public StepBean[] getSteps() throws WdkModelException {
     Step[] steps = StepUtilities.getSteps(_user);
     StepBean[] beans = new StepBean[steps.length];
@@ -161,6 +166,7 @@ public class UserBean {
     return beans;
   }
 
+  @Deprecated
   public Map<String, List<StepBean>> getStepsByCategory() throws WdkModelException {
     Map<String, List<Step>> steps = StepUtilities.getStepsByCategory(_user);
     Map<String, List<StepBean>> category = new LinkedHashMap<String, List<StepBean>>();
@@ -180,6 +186,7 @@ public class UserBean {
    * 
    * @see org.gusdb.wdk.model.user.User#getHistories(java.lang.String)
    */
+  @Deprecated
   public StepBean[] getSteps(String recordClassName) throws WdkModelException {
     Step[] steps = StepUtilities.getSteps(_user, recordClassName);
     StepBean[] beans = new StepBean[steps.length];
@@ -189,10 +196,12 @@ public class UserBean {
     return beans;
   }
 
+  @Deprecated
   public StrategyBean getStrategy(long strategyId) throws WdkUserException, WdkModelException {
     return new StrategyBean(this, StepUtilities.getStrategy(_user, strategyId));
   }
 
+  @Deprecated
   public Map<String, List<StrategyBean>> getStrategiesByCategory() throws Exception {
     try {
       Map<String, List<Strategy>> strategies = StepUtilities.getStrategiesByCategory(_user);
@@ -217,12 +226,14 @@ public class UserBean {
     return category;
   }
 
+  @Deprecated
   public int getPublicCount() throws WdkModelException {
     int count = _user.getWdkModel().getStepFactory().getPublicStrategyCount();
     LOG.debug("Found number of public strats: " + count);
     return count;
   }
 
+  @Deprecated
   public List<StrategyBean> getInvalidStrategies() {
     // Strategy[] strategies = user.getInvalidStrategies();
     List<StrategyBean> beans = new ArrayList<StrategyBean>();
@@ -237,6 +248,7 @@ public class UserBean {
    * 
    * @see org.gusdb.wdk.model.user.User#getStrategyCount()
    */
+  @Deprecated
   public int getStrategyCount() throws WdkModelException {
     return _wdkModel.getStepFactory().getStrategyCount(_user);
   }
@@ -246,6 +258,7 @@ public class UserBean {
    * 
    * @see org.gusdb.wdk.model.user.User#getHistoryCount()
    */
+  @Deprecated
   public int getStepCount() throws WdkModelException {
     return _wdkModel.getStepFactory().getStepCount(_user);
   }
@@ -255,6 +268,7 @@ public class UserBean {
    * 
    * @see org.gusdb.wdk.model.user.User#getItemsPerPage()
    */
+  @Deprecated
   public int getItemsPerPage() {
     return _user.getPreferences().getItemsPerPage();
   }
@@ -264,6 +278,7 @@ public class UserBean {
    * 
    * @see org.gusdb.wdk.model.user.User#setItemsPerPage(int)
    */
+  @Deprecated
   public void setItemsPerPage(int itemsPerPage) throws WdkModelException {
     _user.getPreferences().setItemsPerPage(itemsPerPage);
   }
@@ -295,6 +310,7 @@ public class UserBean {
   /**
    * @see org.gusdb.wdk.model.user.User#deleteStrategies()
    */
+  @Deprecated
   public void deleteStrategies() throws WdkModelException {
     _wdkModel.getStepFactory().deleteStrategies(_user, false);
   }
@@ -303,6 +319,7 @@ public class UserBean {
    * @param strategyId
    * @see org.gusdb.wdk.model.user.User#deleteStrategy(int)
    */
+  @Deprecated
   public void deleteStrategy(int strategyId) throws WdkModelException {
     StepUtilities.deleteStrategy(_user, strategyId);
   }
@@ -312,13 +329,14 @@ public class UserBean {
    * @return
    * @see org.gusdb.wdk.model.user.User#importStrategyByAnswer(java.lang.String)
    */
+  @Deprecated
   public StrategyBean importStrategy(String strategyKey) throws WdkModelException, WdkUserException {
     Strategy strategy = StepUtilities.importStrategy(_user, strategyKey);
     return new StrategyBean(this, strategy);
   }
 
-  public NameCheckInfo checkNameExists(StrategyBean strategy, String name, boolean saved)
-      throws WdkModelException {
+  @Deprecated
+  public NameCheckInfo checkNameExists(StrategyBean strategy, String name, boolean saved) {
     return _wdkModel.getStepFactory().checkNameExists(strategy.strategy, name, saved);
   }
 
@@ -328,6 +346,7 @@ public class UserBean {
    * @return
    * @see org.gusdb.wdk.model.user.User#createStrategy(org.gusdb.wdk.model.user.Step, boolean)
    */
+  @Deprecated
   public StrategyBean createStrategy(StepBean step, boolean saved, boolean hidden) throws WdkUserException,
       WdkModelException {
     return new StrategyBean(this, StepUtilities.createStrategy(step.step, saved, hidden));
@@ -429,26 +448,13 @@ public class UserBean {
    * @return
    * @see org.gusdb.wdk.model.user.User#getStep(int)
    */
+  @Deprecated
   public StepBean getStep(long stepId) throws WdkModelException {
-    return new StepBean(this, StepUtilities.getStep(_user, stepId));
-  }
-
-  /**
-   * @param previousStep
-   * @param childStep
-   * @param operator
-   * @param useBooleanFilter
-   * @param filter
-   * @return
-   * @throws WdkUserException 
-   * @see org.gusdb.wdk.model.user.User#createBooleanStep(org.gusdb.wdk.model.user.Step,
-   *      org.gusdb.wdk.model.user.Step, org.gusdb.wdk.model.BooleanOperator, boolean,
-   *      org.gusdb.wdk.model.AnswerFilterInstance)
-   */
-  public StepBean createBooleanStep(int strategyId, StepBean previousStep, StepBean childStep,
-      String operator, String filterName) throws WdkModelException, WdkUserException {
-    Step step = StepUtilities.createBooleanStep(_user, strategyId, previousStep.step, childStep.step, operator, filterName);
-    return new StepBean(this, step);
+    return new StepBean(this, _wdkModel.getStepFactory()
+      .getStepById(stepId)
+      .filter(step -> step.getUser().getUserId() == _user.getUserId())
+      .orElseThrow(() ->
+        new WdkModelException("No step " + stepId + " for user " + _user.getUserId())));
   }
 
   public void setViewResults(String strategyKey, int stepId, int viewPagerOffset) {
@@ -504,17 +510,13 @@ public class UserBean {
   }
 
   public StepBean getStepByCachedId() throws WdkModelException {
-    return new StepBean(this, StepUtilities.getStep(_user, _stepId));
+    return getStep(_stepId);
   }
 
   public StrategyBean copyStrategy(StrategyBean strategy, Map<Long, Long> stepIdMap)
-      throws WdkUserException, WdkModelException {
-    return copyStrategy(strategy, stepIdMap, strategy.getName()) ;
-  }
-
-  public StrategyBean copyStrategy(StrategyBean strategy, Map<Long, Long> stepIdMap, String name)
-      throws WdkModelException, WdkUserException {
-    return new StrategyBean(this, _wdkModel.getStepFactory().copyStrategy(strategy.strategy.getUser(), strategy.strategy, stepIdMap, name));
+      throws WdkModelException {
+    return new StrategyBean(this, _wdkModel.getStepFactory().copyStrategy(
+        strategy.strategy.getUser(), strategy.strategy, stepIdMap));
   }
 
   public void addToBasket(RecordClassBean recordClass, List<String[]> ids) throws WdkModelException {

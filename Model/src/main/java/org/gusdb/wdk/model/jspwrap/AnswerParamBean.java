@@ -19,6 +19,7 @@ public class AnswerParamBean extends ParamBean<AnswerParam> {
         super(answerParam);
     }
 
+    @Deprecated
     public StepBean[] getSteps(UserBean user) throws WdkModelException {
         // only get the steps for the first record class
         Map<String, RecordClass> recordClasses = _param.getRecordClasses();

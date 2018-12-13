@@ -79,15 +79,15 @@ public class AttributeMetaQueryHandler {
     public List<Map<String,Object>> getNewValue(String queryName) throws ValueProductionException {
       try {
         SqlQuery query = (SqlQuery) _wdkModel.resolveReference(queryName);
-        final List<Map<String, Object>> dynamicAttrs = new ArrayList<>();
-        new SQLRunner(_wdkModel.getAppDb().getDataSource(), query.getSql(),
+        return new SQLRunner(_wdkModel.getAppDb().getDataSource(), query.getSql(),
             query.getFullName() + "__dyn-cols").executeQuery(rs -> {
+              List<Map<String, Object>> dynamicAttrs = new ArrayList<>();
               List<String> columnNames = getColumnNames(rs.getMetaData());
               while (rs.next()) {
                 dynamicAttrs.add(processAttributeRow(rs, columnNames));
               }
+              return dynamicAttrs;
             });
-        return dynamicAttrs;
       }
       catch (SQLRunnerException | WdkModelException e) {
         throw new ValueProductionException((Exception)e.getCause());
