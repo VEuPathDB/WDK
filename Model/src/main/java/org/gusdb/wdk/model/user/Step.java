@@ -90,7 +90,7 @@ public class Step implements StrategyElement, Validateable<Step> {
 
     /**
      * Constructor that takes an existing step
-     * 
+     *
      * @param step step to make a shallow copy of
      */
     private StepBuilder(Step step) {
@@ -202,7 +202,7 @@ public class Step implements StrategyElement, Validateable<Step> {
 
     /**
      * Builds a runnable step.  Will throw ValidObjectWrappingException if step is not runnable after validation
-     * 
+     *
      * @param userCache a user cache
      * @param strategy strategy containing the step
      * @return a runnable step
@@ -309,7 +309,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   /**
    * Creates a step object for given user and step ID. Note that this constructor lazy-loads the User object
    * for the passed ID if one is required for processing after construction.
-   * 
+   *
    * @param stepFactory
    *          step factory that generated this step
    * @param userId
@@ -383,7 +383,7 @@ public class Step implements StrategyElement, Validateable<Step> {
    * Finds this step's question's answer param at the passed ordinal (0 or 1 since a maximum of 2 answer
    * params are supported), then finds that param's value in the answer spec and asks this step's step
    * container (typically a strategy) to find that step by ID.  Returns null if step cannot be found.
-   * 
+   *
    * @param answerParamOrdinal index of the answer param whose value should be used to look up step
    * @return the found step, or null if not found
    */
@@ -400,7 +400,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   /**
    * Basic getter than just returns the current value for this field without checks, lazy loading, or side
    * effects (e.g., database updates)
-   * 
+   *
    * @return "current" estimate size as shown in DB
    */
   @Deprecated
@@ -410,7 +410,7 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   /**
    * Calculate the estimate size
-   * 
+   *
    * @return newly calculated estimate size
    */
   @Deprecated
@@ -422,7 +422,7 @@ public class Step implements StrategyElement, Validateable<Step> {
    * Returns an estimate of the size of this step (number of records returned).
    * This may be the value of the estimate_size column in the steps table, or
    * if getResultSize() has been called, an refreshed value.
-   * 
+   *
    * @return estimate of this step's result size
    */
   public int getEstimatedSize() {
@@ -432,7 +432,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   /**
    * Returns the real result size of this step (numbe of records returned); once
    * this method is called, getEstimateSize() will also return this value.
-   * 
+   *
    * @return the real result size gained by running the step
    */
   public int getResultSize() throws WdkModelException {
@@ -612,7 +612,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   /**
    * A combined step can take one or more steps as input. a Transform is a special case of combined step, and
    * a boolean is another special case.
-   * 
+   *
    * @return a flag to determine if a step can take other step(s) as input.
    */
   // FIXME: is this really how we should define this method; maybe should be dependent on # of AnswerParam
@@ -623,7 +623,7 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   /**
    * A transform step can take exactly one step as input.
-   * 
+   *
    * @return Returns whether this Step is a transform
    */
   // FIXME: is this really how we should define this method; maybe should be dependent on # of AnswerParam
@@ -652,7 +652,7 @@ public class Step implements StrategyElement, Validateable<Step> {
 
     StepFactory stepFactory = _wdkModel.getStepFactory();
     stepFactory.saveStepParamFilters(this);
-    stepFactory.resetStepCounts(this);
+    stepFactory.resetEstimateSizeForThisAndDownstreamSteps(this);
 
     // Update the in-memory estimateSize with the reset flag in case other
     // step operations are called on the step object.
@@ -681,7 +681,7 @@ public class Step implements StrategyElement, Validateable<Step> {
    * Refreshes some key fields of this step with the current values in the DB. This is to support outside
    * modification of the step by event listeners. If a listener modifies the step in response to a change we
    * made, we will want to reflect these secondary changes in this current execution flow.
-   * 
+   *
    * @throws WdkModelException
    *           if unable to load updated step
    */
@@ -738,7 +738,7 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   /**
    * Get all the previous steps in the strategy. This doesn't include any child steps.
-   * 
+   *
    * @return A list of the previous steps from the current one; the first step in the strategy will be the
    *         first one in the list, and the direct previous step of the current one will be the last in the
    *         list, in that order.
@@ -761,7 +761,7 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   /**
    * Get all the descendants from the current step, including both previous steps and child steps.
-   * 
+   *
    * @return
    * @throws WdkModelException
    */
@@ -851,7 +851,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   public void resetEstimatedSize() {
     _estimatedSize = RESET_SIZE_FLAG;
     _estimatedSizeRefreshed = false;
-    
+
   }
 
   public JSONObject getJSONContent(int strategyId) throws WdkModelException {
@@ -921,7 +921,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   /**
    * Get the answerParam that take the previousStep as input, which is the first answerParam in the param
    * list.
-   * 
+   *
    * @return an AnswerParam
    */
   public Optional<AnswerParam> getPreviousStepParam() {
@@ -938,7 +938,7 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   /**
    * The previous step param is always the first answerParam.
-   * 
+   *
    * @return
    * @throws WdkModelException
    */
@@ -963,7 +963,7 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   /**
    * the child step param is always the second answerParam
-   * 
+   *
    * @return
    * @throws WdkModelException
    */
@@ -1020,7 +1020,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   /**
    * Check id the given step can be assigned as the previous step of the current one. If it's not allowed, a
    * WdkUserException will be thrown out
-   * 
+   *
    * @param previousStep
    * @throws WdkModelException
    * @throws WdkUserException
@@ -1042,7 +1042,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   /**
    * Check id the given step can be assigned as the child step of the current one. If it's not allowed, a
    * WdkUserException will be thrown out.
-   * 
+   *
    * @param childStep
    * @throws WdkUserException
    * @throws WdkModelException
