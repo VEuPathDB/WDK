@@ -144,30 +144,29 @@ public class FavoriteFactory {
    */
   public List<Favorite> getAllFavorites(User user) throws WdkModelException {
     try {
-      long userId = user.getUserId();
-      ListBuilder<Favorite> favorites = new ListBuilder<>();
       String sql = SELECT_FAVORITES_SQL
           .replace(USER_SCHEMA_MACRO, _userSchema)
           .replace(IS_DELETED_CONDITIONAL_VALUE_MACRO, _userDb.getPlatform().convertBoolean(false).toString());
-      new SQLRunner(_userDb.getDataSource(), sql, "select-undeleted-favorites").executeQuery(
-        new Object[]{ userId, _wdkModel.getProjectId() },
+      return new SQLRunner(_userDb.getDataSource(), sql, "select-undeleted-favorites").executeQuery(
+        new Object[]{ user.getUserId(), _wdkModel.getProjectId() },
         new Integer[]{ Types.BIGINT, Types.VARCHAR },
         resultSet -> {
           try {
+            ListBuilder<Favorite> favorites = new ListBuilder<>();
             while (resultSet.next()) {
               Favorite favorite = loadFavorite(user, resultSet);
               favorites.addIf(fav -> fav != null, favorite);
             }
+            return favorites.toList();
           }
           catch (WdkModelException e) {
             throw new SQLRunnerException(e);
           }
         }
       );
-      return favorites.toList();
     }
     catch(SQLRunnerException sre) {
-      throw new WdkModelException(sre.getCause().getMessage(), sre.getCause());
+      return WdkModelException.unwrap(sre, List.class);
     }
     catch(Exception e) {
       throw new WdkModelException("Unable to load favorites for user " + user.getUserId(), e);
@@ -235,35 +234,31 @@ public class FavoriteFactory {
 
   private Favorite getFavorite(User user, Long favoriteId, boolean includeDeleted) throws WdkModelException {
     long userId = user.getUserId();
-    Wrapper<Favorite> wrapper = new Wrapper<>();
     try {
       String selectFavoriteSql = SELECT_FAVORITE_BY_ID_SQL.replace(USER_SCHEMA_MACRO, _userSchema);
-      new SQLRunner(_userDb.getDataSource(), selectFavoriteSql, "select-favorite-by-id").executeQuery(
+      return new SQLRunner(_userDb.getDataSource(), selectFavoriteSql, "select-favorite-by-id").executeQuery(
         new Object[]{ favoriteId, userId, _wdkModel.getProjectId() },
         new Integer[]{ Types.BIGINT, Types.BIGINT, Types.VARCHAR },
-        resultSet -> {
-          fillWrapperWithFavorite(wrapper, resultSet, user, includeDeleted);
-        }
+        resultSet -> loadFavorite(resultSet, user, includeDeleted)
       );
-      return wrapper.get();
     }
     catch(SQLRunnerException sre) {
-      throw new WdkModelException(sre.getCause().getMessage(), sre.getCause());
+      return WdkModelException.unwrap(sre, Favorite.class);
     }
     catch(Exception e) {
       throw new WdkModelException(e);
     }
   }
 
-  private void fillWrapperWithFavorite(Wrapper<Favorite> wrapper,
-      ResultSet resultSet, User user, boolean includeDeleted) throws SQLException {
+  private Favorite loadFavorite(ResultSet resultSet, User user, boolean includeDeleted) throws SQLException {
     try {
       if (resultSet.next()) {
         Favorite favorite = loadFavorite(user, resultSet);
         if (favorite != null && (includeDeleted || !favorite.isDeleted())) {
-          wrapper.set(favorite);
+          return favorite;
         }
       }
+      return null;
     }
     catch (WdkModelException e) {
       throw new SQLRunnerException(e);
@@ -298,15 +293,12 @@ public class FavoriteFactory {
         .replace(PK_PREDICATE_MACRO, pkPredicate);
 
     // fetch favorite and return
-    Wrapper<Favorite> wrapper = new Wrapper<>();
-    new SQLRunner(_userDb.getDataSource(), sql, "wdk-favorite-instance-query").executeQuery(
+    return new SQLRunner(_userDb.getDataSource(), sql, "wdk-favorite-instance-query")
+      .executeQuery(
         concatenate(new Object[]{ user.getUserId(), _wdkModel.getProjectId(), recordClass.getFullName() }, pkValues),
         concatenate(new Integer[]{ Types.BIGINT, Types.VARCHAR, Types.VARCHAR }, pkTypes),
-        resultSet -> {
-          fillWrapperWithFavorite(wrapper, resultSet, user, includeDeleted);
-        }
-    );
-    return wrapper.get();
+        resultSet -> loadFavorite(resultSet, user, includeDeleted)
+      );
   }
 
   /**

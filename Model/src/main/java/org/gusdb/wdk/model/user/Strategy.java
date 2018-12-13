@@ -380,7 +380,7 @@ public class Strategy implements StrategyElement, StepContainer {
    * @throws WdkUserException
    */
   public Strategy update(boolean overwrite) throws WdkModelException, WdkUserException {
-    return _wdkModel.getStepFactory().updateStrategy(_user, this, overwrite);
+    return _wdkModel.getStepFactory().updateStrategy(this, overwrite);
   }
 
   public RecordClass getRecordClass() {
