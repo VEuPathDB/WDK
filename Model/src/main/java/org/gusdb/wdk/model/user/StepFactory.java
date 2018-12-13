@@ -1490,21 +1490,6 @@ public class StepFactory {
   }
 
   /**
-   * This method will reset the estimate size of the step and all other steps
-   * that depends on it.
-   *
-   * TODO: What is the difference between this and resetEstimateSizeForThisAndDownstreamSteps?
-   *
-   * @param fromStep Starting step for count resets.
-   *
-   * @return number of steps updated.
-   */
-  @Deprecated
-  int resetStepCounts(Step fromStep) throws WdkModelException {
-    return resetEstimateSizeForThisAndDownstreamSteps(fromStep);
-  }
-
-  /**
    * Generates an SQL that will return the step and all the steps along the path
    * back to the root.
    *
