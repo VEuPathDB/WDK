@@ -237,17 +237,17 @@ public class StepFactory {
     String strategyTable = _userSchema + TABLE_STRATEGY;
     String userIdColumn = Utilities.COLUMN_USER_ID;
     try {
-      StringBuilder sql = new StringBuilder("DELETE FROM " + stepTable);
-      sql.append(" WHERE ").append(userIdColumn).append(" = ? ");
+      StringBuilder sql = new StringBuilder("DELETE FROM " + stepTable)
+          .append(" WHERE ").append(userIdColumn).append(" = ? ");
       if (!allProjects) {
         sql.append(" AND ").append(COLUMN_PROJECT_ID).append(" = ? ");
       }
-      sql.append(" AND ").append(COLUMN_STEP_ID);
-      sql.append(" NOT IN (SELECT ").append(COLUMN_ROOT_STEP_ID);
-      sql.append(" FROM ").append(strategyTable);
+      sql.append(" AND ").append(COLUMN_STEP_ID)
+          .append(" NOT IN (SELECT ").append(COLUMN_ROOT_STEP_ID)
+          .append(" FROM ").append(strategyTable);
       if (!allProjects) {
-        sql.append(" WHERE ").append(COLUMN_PROJECT_ID).append(" = ? ");
-        sql.append(" AND ").append(userIdColumn).append(" = ? ");
+        sql.append(" WHERE ").append(COLUMN_PROJECT_ID).append(" = ? ")
+            .append(" AND ").append(userIdColumn).append(" = ? ");
       }
       sql.append(") ");
 
@@ -273,52 +273,34 @@ public class StepFactory {
   }
 
   public void deleteStrategy(long strategyId) throws WdkModelException {
-    PreparedStatement psStrategy = null;
     String sql = "DELETE FROM " + _userSchema + TABLE_STRATEGY +
         " WHERE " + COLUMN_STRATEGY_ID + " = ?";
 
-    try {
-      long start = System.currentTimeMillis();
-      psStrategy = SqlUtils.getPreparedStatement(_userDbDs, sql);
-      psStrategy.setLong(1, strategyId);
-      int result = psStrategy.executeUpdate();
-      QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-delete-strategy", start);
-      if (result == 0)
-        throw new WdkModelException("The strategy #" + strategyId + " cannot be found.");
-    }
-    catch (SQLException e) {
-      throw new WdkModelException("Could not delete strategy", e);
-    }
-    finally {
-      SqlUtils.closeStatement(psStrategy);
-    }
+    final int result = new SQLRunner(_userDbDs, sql, "wdk-step-factory-delete-strategy")
+        .executeUpdate(new Object[]{strategyId}, new Integer[]{Types.BIGINT});
+
+    if (result == 0)
+      throw new WdkModelException("The strategy #" + strategyId + " cannot be found.");
   }
 
-  public void deleteStrategies(User user, boolean allProjects) throws WdkModelException {
-    PreparedStatement psDeleteStrategies = null;
-    try {
-      StringBuffer sql = new StringBuffer("DELETE FROM ");
-      sql.append(_userSchema).append(TABLE_STRATEGY).append(" WHERE ");
-      sql.append(Utilities.COLUMN_USER_ID).append(" = ?");
-      if (!allProjects) {
-        sql.append(" AND ").append(COLUMN_PROJECT_ID).append(" = ?");
-      }
-      long start = System.currentTimeMillis();
-      psDeleteStrategies = SqlUtils.getPreparedStatement(_userDbDs, sql.toString());
+  public void deleteStrategies(User user, boolean allProjects) {
+    final Object[] values;
+    final Integer[] types;
+    final StringBuilder sql = new StringBuilder("DELETE FROM ")
+        .append(_userSchema).append(TABLE_STRATEGY)
+        .append(" WHERE ").append(Utilities.COLUMN_USER_ID).append(" = ?");
 
-      psDeleteStrategies.setLong(1, user.getUserId());
-      if (!allProjects)
-        psDeleteStrategies.setString(2, _wdkModel.getProjectId());
-      psDeleteStrategies.executeUpdate();
-      QueryLogger.logEndStatementExecution(sql.toString(), "wdk-step-factory-delete-all-strategies", start);
+    if (!allProjects) {
+      values = new Object[] { user.getUserId(), _wdkModel.getProjectId() };
+      types  = new Integer[] { Types.BIGINT, Types.VARCHAR };
+      sql.append(" AND ").append(COLUMN_PROJECT_ID).append(" = ?");
+    } else {
+      values = new Object[] { user.getUserId() };
+      types  = new Integer[] { Types.BIGINT };
     }
-    catch (SQLException e) {
-      throw new WdkModelException("Could not delete strategies for user " + user.getEmail() +
-          ", allProjects = " + allProjects, e);
-    }
-    finally {
-      SqlUtils.closeStatement(psDeleteStrategies);
-    }
+
+    new SQLRunner(_userDbDs, sql.toString(), "wdk-step-factory-delete-all-strategies")
+        .executeStatement(values, types);
   }
 
   public int getStepCount(User user) throws WdkModelException {
@@ -410,9 +392,9 @@ public class StepFactory {
     }
 
     // construct the update sql
-    StringBuilder sql = new StringBuilder("UPDATE ");
-    sql.append(_userSchema).append(TABLE_STEP).append(" SET ");
-    sql.append(COLUMN_CUSTOM_NAME).append(" = ? ");
+    StringBuilder sql = new StringBuilder("UPDATE ")
+        .append(_userSchema).append(TABLE_STEP).append(" SET ")
+        .append(COLUMN_CUSTOM_NAME).append(" = ? ");
     if (query.isCombined()) {
       sql.append(", " + COLUMN_PREVIOUS_STEP_ID + " = " + leftStepId);
       if (rightStepId != 0) {
@@ -422,20 +404,9 @@ public class StepFactory {
     sql.append(" WHERE " + COLUMN_STEP_ID + " = " + step.getStepId());
 
     step.setCustomName(customName);
-    PreparedStatement psUpdateStepTree = null;
-    try {
-      long start = System.currentTimeMillis();
-      psUpdateStepTree = SqlUtils.getPreparedStatement(_userDbDs, sql.toString());
-      psUpdateStepTree.setString(1, customName);
-      psUpdateStepTree.executeUpdate();
-      QueryLogger.logEndStatementExecution(sql.toString(), "wdk-step-factory-update-step-tree", start);
-    }
-    catch (SQLException e) {
-      throw new WdkModelException("Could not update step tree.", e);
-    }
-    finally {
-      SqlUtils.closeStatement(psUpdateStepTree);
-    }
+
+    new SQLRunner(_userDbDs, sql.toString(), "wdk-step-factory-update-step-tree")
+        .executeUpdate(new Object[]{ customName }, new Integer[]{ Types.VARCHAR });
   }
 
   int dropDependency(long stepId, String column) throws WdkModelException {
@@ -615,7 +586,7 @@ public class StepFactory {
 
   public int getPublicStrategyCount() throws WdkModelException {
     return filter(new StrategyLoader(_wdkModel, ValidationLevel.SYNTACTIC)
-        .getPublicStrategies(), strat -> strat.isValid()).size();
+        .getPublicStrategies(), Strategy::isValid).size();
   }
 
   public Optional<Strategy> getStrategyById(long strategyId) throws WdkModelException {
@@ -1310,14 +1281,10 @@ public class StepFactory {
 
   private void updateStrategyId(long strategyId, Step rootStep) throws WdkModelException {
     String stepIdSql = selectStepAndChildren(rootStep.getStepId());
-    String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_STRATEGY_ID + " = " + strategyId +
-        " WHERE step_id IN (" + stepIdSql + ")";
-    try {
-      SqlUtils.executeUpdate(_userDbDs, sql, "wdk-update-strategy-on-steps");
-    }
-    catch (SQLException ex) {
-      throw new WdkModelException(ex);
-    }
+    String sql = "UPDATE " + _userSchema + TABLE_STEP + "\n" +
+        "SET " + COLUMN_STRATEGY_ID + " = " + strategyId + "\n" +
+        "WHERE step_id IN (" + stepIdSql + ")";
+    new SQLRunner(_userDbDs, sql, "wdk-update-strategy-on-steps").executeUpdate();
   }
 
   public int getStrategyCount(User user) throws WdkModelException {
