@@ -13,8 +13,7 @@ import org.junit.Test;
  */
 public class StepTest {
 
-  public static void compareStep(Step expectedStep, Step actualStep) throws WdkModelException,
-      WdkUserException {
+  public static void compareStep(Step expectedStep, Step actualStep) throws WdkModelException {
     Assert.assertEquals("step id", expectedStep.getStepId(), actualStep.getStepId());
     Assert.assertEquals("valid", expectedStep.isValid(), actualStep.isValid());
     Assert.assertEquals("custom name", expectedStep.getCustomName(), actualStep.getCustomName());
