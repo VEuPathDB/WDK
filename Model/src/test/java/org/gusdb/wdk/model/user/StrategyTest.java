@@ -16,7 +16,7 @@ import org.junit.Test;
 
 /**
  * @author xingao
- * 
+ *
  */
 public class StrategyTest {
 
@@ -259,7 +259,7 @@ public class StrategyTest {
     for (String category : strategies.keySet()) {
       for (Strategy strategy : strategies.get(category)) {
         Assert.assertEquals(category, strategy.getRecordClass().getFullName());
-        Assert.assertTrue(strategy.getIsSaved());
+        Assert.assertTrue(strategy.isSaved());
         Assert.assertFalse(strategy.isDeleted());
       }
     }
@@ -271,7 +271,7 @@ public class StrategyTest {
     for (String category : strategies.keySet()) {
       for (Strategy strategy : strategies.get(category)) {
         Assert.assertEquals(category, strategy.getRecordClass().getFullName());
-        Assert.assertFalse(strategy.getIsSaved());
+        Assert.assertFalse(strategy.isSaved());
         Assert.assertFalse(strategy.isDeleted());
         System.err.println("#" + strategy.getStrategyId() + ": " + strategy.getLastRunTime());
       }
@@ -287,7 +287,7 @@ public class StrategyTest {
     for (String category : strategies.keySet()) {
       for (Strategy strategy : strategies.get(category)) {
         Assert.assertEquals(category, strategy.getRecordClass().getFullName());
-        Assert.assertFalse(strategy.getIsSaved());
+        Assert.assertFalse(strategy.isSaved());
         Assert.assertFalse(strategy.isDeleted());
 
         Date date = strategy.getLastRunTime();

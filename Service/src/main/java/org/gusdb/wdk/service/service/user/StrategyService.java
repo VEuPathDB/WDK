@@ -79,13 +79,19 @@ public class StrategyService extends UserService {
   @Path("strategies/{strategyId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response updateStrategy(@PathParam("strategyId") long strategyId) {
-    // get strategy
-    // if strategy is saved:
-    //   validateSavedStrategyRequest()
-    // else
-    //   validateUnsavedStrategyRequest()
-    // Build modified strategy
+  public Response updateStrategy(@PathParam("strategyId") long strategyId,
+      JSONObject body) throws WdkModelException {
+    final StepFactory fac = getWdkModel().getStepFactory();
+    final Strategy strat = fac.getStrategyById(strategyId)
+        .orElseThrow(NotFoundException::new);
+
+    if (strat.isSaved()) {
+      // validateSavedStrategyRequest()
+    } else {
+      // validateUnsavedStrategyRequest()
+    }
+
+    // Build modified strategy... how exactly?
     // if strategy is valid
     //   writeStrategyUpdate()
     //   return 204
@@ -110,8 +116,9 @@ public class StrategyService extends UserService {
     Step rootStep = stepTree.getContents();
 
     // Pull all the steps out of the tree
-    List<Step> steps = stepTree.findAll(step -> true).stream().map(node -> node.getContents()).collect(
-        Collectors.toList());
+    List<Step> steps = stepTree.findAll(step -> true).stream()
+        .map(TreeNode::getContents)
+        .collect(Collectors.toList());
 
     // Update steps with filled in answer params and save.
     for (Step step : steps) {

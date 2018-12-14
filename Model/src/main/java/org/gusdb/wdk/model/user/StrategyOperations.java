@@ -15,18 +15,18 @@ public class StrategyOperations {
   /**
    * Delete the given step from the strategy. Additional step, or even the current strategy maybe deleted,
    * depending on the following cases:
-   * 
+   *
    * #1 - if there is only one step in the strategy and it's deleted, then the whole strategy will be deleted.
-   * 
+   *
    * #2 - if the step to be deleted is a combined one, all the steps in its child branch will also be deleted.
-   * 
+   *
    * #3 - if the step has previous and next, the previous will be connected to the next;
-   * 
+   *
    * #2 & #3 means that when deleting a nested step in the main strategy, we should send the id of the boolean
    * that takes the nested step, and it will delete both boolean and the whole nested strategy; however, if
    * the root of the nested strategy is passed in, the only the root will be deleted, and the remaining steps
    * in the nested strategy will become a new sub-tree.
-   * 
+   *
    * @param step
    * @return a map of root id changes (both main & nested strategies) {old, new}; the information will be used
    *         to update the states of active strategies.
@@ -40,7 +40,7 @@ public class StrategyOperations {
     Map<Long, Long> rootMap = new HashMap<>();
 
     // if the strategy is saved, need to make a unsaved copy first
-    if (getIsSaved())
+    if (isSaved())
       writeMetadataToDb(false);
 
     // if a step has child, delete all the steps on that branch.
@@ -126,7 +126,7 @@ public class StrategyOperations {
   /**
    * Inserting a step after the target. This is used when we add steps in main and nested strategy. The
    * newStep will become the next step of the target.
-   * 
+   *
    * @param newStep
    *          The next step has to be a combined step, with the target as the previous step of it.
    * @param targetId
@@ -147,7 +147,7 @@ public class StrategyOperations {
           " since it will corrupt the structure of the strategy #" + _strategyId);
 
     // if the strategy is saved, need to make a unsaved copy first
-    if (getIsSaved())
+    if (isSaved())
       writeMetadataToDb(false);
 
     Step targetStep = findFirstStep(withId(targetId))
@@ -201,7 +201,7 @@ public class StrategyOperations {
   /**
    * Insert a new step before the target. The new step will become the previous step of the target, and the
    * old previousStep of the target should become the previousStep of the new step.
-   * 
+   *
    * @param newStep
    *          the newStep
    * @param targetId
@@ -217,7 +217,7 @@ public class StrategyOperations {
     Map<Long, Long> rootMap = new HashMap<>();
 
     // if the strategy is saved, need to make a unsaved copy first
-    if (getIsSaved())
+    if (isSaved())
       writeMetadataToDb(false);
 
     // make sure the previousStep of the target is now the previousStep of newStep

@@ -22,7 +22,7 @@ public class StrategyFormatter {
   }
 
   public static JSONObject getListingStrategyJson(Strategy strategy) throws JSONException {
-    return new JSONObject() 
+    return new JSONObject()
         .put(JsonKeys.STRATEGY_ID, strategy.getStrategyId())
         .put(JsonKeys.DESCRIPTION, strategy.getDescription())
         .put(JsonKeys.NAME, strategy.getName())
@@ -31,11 +31,11 @@ public class StrategyFormatter {
         .put(JsonKeys.RECORD_CLASS_NAME, strategy.getRootStep().getRecordClass().getFullName())
         .put(JsonKeys.SIGNATURE, strategy.getSignature())
         .put(JsonKeys.LAST_MODIFIED, strategy.getLastModifiedTime())
-        .put(JsonKeys.IS_PUBLIC, strategy.getIsPublic())
-        .put(JsonKeys.IS_SAVED, strategy.getIsSaved())
+        .put(JsonKeys.IS_PUBLIC, strategy.isPublic())
+        .put(JsonKeys.IS_SAVED, strategy.isSaved())
         .put(JsonKeys.IS_VALID, strategy.isValid())
         .put(JsonKeys.IS_DELETED, strategy.isDeleted())
-        .put(JsonKeys.IS_PUBLIC, strategy.getIsPublic())
+        .put(JsonKeys.IS_PUBLIC, strategy.isPublic())
         .put(JsonKeys.ORGANIZATION, strategy.getUser().getProfileProperties().get("organization"))
         .put(JsonKeys.ESTIMATED_SIZE, strategy.getEstimatedSize());
   }

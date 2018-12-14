@@ -1134,7 +1134,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   public boolean isMutable() {
-    return !hasStrategy() || !getStrategy().getIsSaved();
+    return !hasStrategy() || !getStrategy().isSaved();
   }
 
   public boolean hasStrategy() {
