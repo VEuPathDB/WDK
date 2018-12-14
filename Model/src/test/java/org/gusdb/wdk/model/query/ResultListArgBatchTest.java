@@ -1,7 +1,8 @@
 package org.gusdb.wdk.model.query;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,12 +10,9 @@ import javax.sql.DataSource;
 
 import org.gusdb.fgputil.TestUtil;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class ResultListArgBatchTest {
 
@@ -85,17 +83,16 @@ public class ResultListArgBatchTest {
     List<Column> cols = getColumns();
     ResultListArgumentBatch argBatch = new ResultListArgumentBatch(resultList, cols, batchSize);
     new SQLRunner(ds, INSERT_SQL).executeStatementBatch(argBatch);
-    new SQLRunner(ds, COUNT_SQL).executeQuery(new ResultSetHandler() {
-      @Override
-      public void handleResult(ResultSet rs) throws SQLException {
-        if (rs.next()) {
-          assertEquals(insertCount, rs.getInt(1));
-          return;
-        }
+    new SQLRunner(ds, COUNT_SQL).executeQuery(rs -> {
+      if (rs.next()) {
+        assertEquals(insertCount, rs.getInt(1));
+      }
+      else {
         // have no idea why this returns no rows if no inserts are none
         assertEquals(insertCount, 0);
         //throw new RuntimeException("Should have received a count.");
       }
+      return this;
     });
     new SQLRunner(ds, DROP_TABLE_SQL).executeStatement();
   }

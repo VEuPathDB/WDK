@@ -28,7 +28,7 @@ public interface StepContainer {
     return new StepContainer(){};
   }
 
-  class ListStepContainer extends ArrayList<Step> implements StepContainer {
+  public static class ListStepContainer extends ArrayList<Step> implements StepContainer {
     @Override
     public Optional<Step> findFirstStep(StepSearch search) {
       return stream().filter(search.getPredicate()).findFirst();

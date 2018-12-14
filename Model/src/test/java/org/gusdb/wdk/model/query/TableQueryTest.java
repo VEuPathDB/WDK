@@ -1,20 +1,17 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.test.ParamValuesFactory;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,7 +33,7 @@ public class TableQueryTest {
     }
 
     @Test
-    public void testTableQueries() throws WdkModelException, WdkUserException {
+    public void testTableQueries() throws WdkModelException {
         for (RecordClassSet recordClassSet : wdkModel.getAllRecordClassSets()) {
             for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
                 for (TableField table : recordClass.getTableFields()) {
@@ -49,9 +46,9 @@ public class TableQueryTest {
                             continue;
                         int min = valueSet.getMinRows();
                         int max = valueSet.getMaxRows();
-                        QueryInstance<?> instance = query.makeInstance(user,
-                                values, true, 0,
-                                new LinkedHashMap<String, String>());
+                        QueryInstance<?> instance = Query.makeQueryInstance(
+                            QueryInstanceSpec.builder().putAll(values)
+                            .buildRunnable(user, query, StepContainer.emptyContainer()));
                         int result = instance.getResultSize();
                         if (ASSERTION) {
                         	Assert.assertTrue(result + " >= " + min, result >= min);
