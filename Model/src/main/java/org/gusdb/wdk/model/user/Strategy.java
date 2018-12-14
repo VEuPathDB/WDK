@@ -330,11 +330,11 @@ public class Strategy implements StrategyElement, StepContainer {
     return _savedName;
   }
 
-  public boolean getIsSaved() {
+  public boolean isSaved() {
     return _isSaved;
   }
 
-  public boolean getIsPublic() {
+  public boolean isPublic() {
     return _isPublic;
   }
 

@@ -43,7 +43,7 @@ public class StrategyBean {
   }
 
   public boolean getIsSaved() {
-    return strategy.getIsSaved();
+    return strategy.isSaved();
   }
 
   public String getLastRunTimeFormatted() {
@@ -75,7 +75,7 @@ public class StrategyBean {
   }
 
   public boolean getIsPublic() {
-    return strategy.getIsPublic();
+    return strategy.isPublic();
   }
 
   public StepBean getLatestStep() {
@@ -142,7 +142,7 @@ public class StrategyBean {
 
   /**
    * @return
-   * @throws WdkModelException 
+   * @throws WdkModelException
    * @see org.gusdb.wdk.model.user.Strategy#getEstimatedSize()
    */
   public int getEstimateSize() throws WdkModelException {

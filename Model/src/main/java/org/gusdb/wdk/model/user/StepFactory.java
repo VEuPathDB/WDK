@@ -838,7 +838,7 @@ public class StepFactory {
           newStrategy.getStrategyId(),
           newStrategy.getUser().getUserId(),
           newStrategy.getRootStep().getStepId(),
-          _userDbPlatform.convertBoolean(newStrategy.getIsSaved()),
+          _userDbPlatform.convertBoolean(newStrategy.isSaved()),
           newStrategy.getName(),
           newStrategy.getSavedName(),
           newStrategy.getProjectId(),
@@ -846,7 +846,7 @@ public class StepFactory {
           newStrategy.getSignature(),
           newStrategy.getDescription(),
           newStrategy.getVersion(),
-          _userDbPlatform.convertBoolean(newStrategy.getIsPublic())
+          _userDbPlatform.convertBoolean(newStrategy.isPublic())
         });
   }
 
@@ -1003,11 +1003,11 @@ public class StepFactory {
         strat.getName(),
         strat.getRootStep().getStepId(),
         strat.getSavedName(),
-        _userDbPlatform.convertBoolean(strat.getIsSaved()),
+        _userDbPlatform.convertBoolean(strat.isSaved()),
         strat.getDescription(),
         new Timestamp(strat.getLastModifiedTime().getTime()),
         strat.getSignature(),
-        _userDbPlatform.convertBoolean(strat.getIsPublic()),
+        _userDbPlatform.convertBoolean(strat.isPublic()),
         strat.getStrategyId()
       },
       new Integer[]{
@@ -1032,7 +1032,7 @@ public class StepFactory {
         ", overwrite=" + overwrite);
 
     // cannot update a saved strategy if overwrite flag is false
-    if (!overwrite && strategy.getIsSaved())
+    if (!overwrite && strategy.isSaved())
       throw new WdkUserException("Cannot update a saved strategy. Please " +
           "create a copy and update it, or set overwrite flag to true.");
 
@@ -1328,7 +1328,7 @@ public class StepFactory {
         strategy.getUser().getUserId(),
         _wdkModel.getProjectId(),
         name,
-        _userDbPlatform.convertBoolean(saved || strategy.getIsSaved()),
+        _userDbPlatform.convertBoolean(saved || strategy.isSaved()),
         _userDbPlatform.convertBoolean(false),
         strategy.getStrategyId()
       },
