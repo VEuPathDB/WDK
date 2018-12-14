@@ -9,10 +9,9 @@ import java.util.Random;
 
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
 import org.json.JSONException;
-import org.junit.Test;
 import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author xingao
@@ -27,7 +26,7 @@ public class ParamTest {
     }
 
     @Test
-    public void testClone() throws WdkModelException, JSONException {
+    public void testClone() throws JSONException {
         List<Param> params = new ArrayList<Param>();
         for (ParamSet paramSet : wdkModel.getAllParamSets()) {
             for (Param param : paramSet.getParams()) {
@@ -41,7 +40,7 @@ public class ParamTest {
             Param clone = param.clone();
 
             // make sure everything is identical
-            Assert.assertEquals(param.getDefault(), clone.getDefault());
+            Assert.assertEquals(param.getXmlDefault(), clone.getXmlDefault());
             Assert.assertEquals(param.getEmptyValue(),
                     clone.getEmptyValue());
             Assert.assertEquals(param.getFullName(), clone.getFullName());
@@ -60,10 +59,10 @@ public class ParamTest {
     }
 
     @Test
-    public void testReplaceSql() throws WdkModelException {
+    public void testReplaceSql() {
         for (ParamSet paramSet : wdkModel.getAllParamSets()) {
             for (Param param : paramSet.getParams()) {
-                String defaultValue = param.getDefault();
+                String defaultValue = param.getXmlDefault();
 
                 // skip the param if it doesn't have a default value
                 if (defaultValue == null) continue;

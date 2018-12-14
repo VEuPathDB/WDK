@@ -4,7 +4,6 @@
 package org.gusdb.wdk.model.query;
 
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,10 +14,12 @@ import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.test.ParamValuesFactory;
 import org.gusdb.wdk.model.test.QueryTester;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.junit.Assert;
 import org.junit.Test;
@@ -104,8 +105,9 @@ public class QueryTest {
       Map<String, String> stableValues = QueryTester.getStableValues(query, user, rawValues);
 
       // try to make a query instance
-      QueryInstance<?> instance = query.makeInstance(user, stableValues, true, 0,
-          new LinkedHashMap<String, String>());
+      QueryInstance<?> instance = Query.makeQueryInstance(
+          QueryInstanceSpec.builder().putAll(stableValues)
+          .buildRunnable(user, query, StepContainer.emptyContainer()));
       int rows = instance.getResultSize();
 
       String qName = query.getFullName();

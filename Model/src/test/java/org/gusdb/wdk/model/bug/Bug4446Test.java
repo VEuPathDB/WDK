@@ -2,11 +2,15 @@ package org.gusdb.wdk.model.bug;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
+import java.util.function.Function;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -78,7 +82,7 @@ public class Bug4446Test {
 
   private Step createTransformStep(Step inputStep) throws WdkModelException {
     // look for a transform question
-    RecordClass recordClass = inputStep.getQuestion().getRecordClass();
+    RecordClass recordClass = inputStep.getAnswerSpec().getQuestion().getRecordClass();
     Question[] questions = recordClass.getTransformQuestions(true);
     if (questions.length == 0)
       return null;
@@ -99,6 +103,9 @@ public class Bug4446Test {
       }
     }
 
-    return StepUtilities.createStep(user, inputStep.getStrategyId(), question, values, (String) null, false, 0);
+    Function<Long, Strategy> lookup = Functions.fSwallow(id -> user.getWdkModel().getStepFactory().getStrategyById(id)
+        .orElseThrow(() -> new WdkRuntimeException("No strategy exists with ID " + inputStep.getStrategyId())));
+    Strategy strategy = Optional.ofNullable(inputStep.getStrategyId()).map(lookup).orElse(null);
+    return StepUtilities.createStep(user, strategy, question, values, (String) null, false, 0);
   }
 }

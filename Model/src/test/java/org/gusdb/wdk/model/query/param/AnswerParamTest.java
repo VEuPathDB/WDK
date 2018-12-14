@@ -8,9 +8,12 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepContainer.ListStepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.junit.Assert;
 import org.junit.Test;
@@ -56,17 +59,24 @@ public class AnswerParamTest {
   @Test
   public void testUseAnswerParam() throws Exception {
     Map<String, String> paramValues = new LinkedHashMap<String, String>();
+    ListStepContainer container = new ListStepContainer();
     for (Param param : _question.getParams()) {
       String paramValue;
       if (param instanceof AnswerParam) {
         Step step = UnitTestHelper.createNormalStep(_user);
         paramValue = Long.toString(step.getStepId());
+        container.add(step);
       }
-      else
-        paramValue = param.getDefault();
+      else {
+        paramValue = param.getXmlDefault();
+      }
       paramValues.put(param.getName(), paramValue);
     }
-    AnswerValue answerValue = _question.makeAnswerValue(_user, paramValues, true, 0);
+    AnswerValue answerValue = AnswerValueFactory.makeAnswer(_user,
+        AnswerSpec.builder(_question.getWdkModel())
+        .setQuestionName(_question.getFullName())
+        .setParamValues(paramValues)
+        .buildRunnable(_user, container));
 
     Assert.assertTrue("result size", answerValue.getResultSizeFactory().getResultSize() >= 0);
   }

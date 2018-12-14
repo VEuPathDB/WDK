@@ -12,6 +12,8 @@ import java.util.Random;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.question.Question;
@@ -67,7 +69,11 @@ public class BasketTest {
         Question question = recordClass.getRealtimeBasketQuestion();
         Map<String, String> params = new HashMap<String, String>();
         params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
-        AnswerValue answerValue = question.makeAnswerValue(user, params, true, 0);
+        AnswerValue answerValue = AnswerValueFactory.makeAnswer(user,
+            AnswerSpec.builder(wdkModel)
+            .setQuestionName(question.getFullName())
+            .setParamValues(params)
+            .buildRunnable(user, StepContainer.emptyContainer())); // basket questions have no answer params
         Assert.assertTrue("answer size >= 5", answerValue.getResultSizeFactory().getResultSize() >= 5);
         // check each records
         for (RecordInstance instance : answerValue.getRecordInstances()) {
@@ -115,7 +121,7 @@ public class BasketTest {
         User user = UnitTestHelper.getRegisteredUser();
         Step step = UnitTestHelper.createNormalStep(user);
         AnswerValue answerValue = step.getAnswerValue();
-        RecordClass recordClass = step.getQuestion().getRecordClass();
+        RecordClass recordClass = step.getAnswerSpec().getQuestion().getRecordClass();
         String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
         List<String[]> ids = new ArrayList<String[]>();
 

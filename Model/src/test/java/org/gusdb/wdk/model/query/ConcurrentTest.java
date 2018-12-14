@@ -1,17 +1,15 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.test.ParamValuesFactory;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.junit.Test;
 
@@ -36,17 +34,13 @@ public class ConcurrentTest {
             this.user = UnitTestHelper.getRegisteredUser();
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.lang.Thread#run()
-         */
         @Override
         public void run() {
             System.out.println("start test thread: #" + id);
             try {
-                QueryInstance<?> instance = query.makeInstance(user, values, true,
-                        0, new LinkedHashMap<String, String>());
+                QueryInstance<?> instance = Query.makeQueryInstance(
+                    QueryInstanceSpec.builder().putAll(values)
+                    .buildRunnable(user, query, StepContainer.emptyContainer()));
                 try (ResultList resultList = instance.getResults()) {
                   resultList.next();
                 }

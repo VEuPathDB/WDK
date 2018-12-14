@@ -72,7 +72,8 @@ public class UserTest {
     public void testGetUser() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
 
-        User user1 = userFactory.getUserById(user.getUserId());
+        User user1 = userFactory.getUserById(user.getUserId())
+            .orElseThrow(() -> new WdkModelException("No user with ID " + user.getUserId()));
         Assert.assertEquals("get user by id", user, user1);
 
         User user2 = userFactory.getUserByEmail(user.getEmail());
