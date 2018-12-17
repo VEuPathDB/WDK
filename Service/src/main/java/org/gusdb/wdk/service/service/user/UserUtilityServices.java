@@ -25,7 +25,6 @@ import org.gusdb.wdk.model.config.ModelConfigAccountDB;
 import org.gusdb.wdk.model.user.InvalidEmailException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
-import org.gusdb.wdk.service.formatter.UserFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.UserCreationRequest;

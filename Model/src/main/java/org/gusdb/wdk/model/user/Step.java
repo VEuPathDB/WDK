@@ -79,6 +79,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     private String _collapsedName = null;
     private AnswerSpecBuilder _answerSpec; // cannot be null; must be set
     private boolean _inMemoryOnly = false;
+    private boolean _isResultSizeDirty = false;
 
     private StepBuilder(WdkModel wdkModel, long userId, long stepId) {
       _wdkModel = wdkModel;
@@ -189,6 +190,11 @@ public class Step implements StrategyElement, Validateable<Step> {
       return _answerSpec;
     }
 
+    public StepBuilder setResultSizeDirty(boolean isResultSizeDirty) {
+      _isResultSizeDirty = isResultSizeDirty;
+      return this;
+    }
+
     public Step build(UserCache userCache, ValidationLevel validationLevel, Strategy strategy) throws WdkModelException {
       if (!((strategy == null && _strategyId == null) || (strategy != null && strategy.getStrategyId() == _strategyId))) {
         throw new WdkRuntimeException("Strategy passed to build (ID=" + strategy.getStrategyId() +
@@ -233,6 +239,10 @@ public class Step implements StrategyElement, Validateable<Step> {
       _answerSpec.nullifyAnswerParams();
       return this;
     }
+
+    public boolean isResultSizeDirty() {
+      return _isResultSizeDirty;
+    }
   }
 
   public static StepBuilder builder(WdkModel wdkModel, long userId, long stepId) {
@@ -256,25 +266,24 @@ public class Step implements StrategyElement, Validateable<Step> {
   // in DB, set during step creation
   private final Date _createdTime;
   // in DB, last time Answer generated, written to DB each time
-  private Date _lastRunTime; // <- MODIFIABLE
+  private final Date _lastRunTime;
   // in DB, set by user
-  private String _customName; // <- MODIFIABLE
+  private final String _customName;
   // in DB, for soft delete
-  private boolean _isDeleted; // <- MODIFIABLE
-  // in DB, last known size of result (see _estimateSizeRefreshed below)
-  private int _estimatedSize;
+  private final boolean _isDeleted;
   // in DB, tells if nested step
-  private boolean _isCollapsible; // <- MODIFIABLE
+  private final boolean _isCollapsible;
   // in DB, custom name for nested "strategy"
-  private String _collapsedName;
+  private final String _collapsedName;
   // in DB, project ID when step was created
   private final String _projectId;
   // in DB, project version when step was created
   private final String _projectVersion;
-
   // in DB, defines the parameters used to find this Step's answer
-  private AnswerSpec _answerSpec; // <- MODIFIABLE
+  private final AnswerSpec _answerSpec;
 
+  // in DB, last known size of result (see _estimateSizeRefreshed below)
+  private int _estimatedSize;
 
   // Steps within the "main branch" strategy flow
   // Next Step must be combined step (e.g. transform or boolean/span-logic (two-answer function))
@@ -306,6 +315,12 @@ public class Step implements StrategyElement, Validateable<Step> {
   // summary views, until they are refactored using service.
   private final boolean _inMemoryOnly;
 
+  // Set if answer spec was modified from the version stored in the database;
+  // like most other attributes it is immutable and serves only to inform its
+  // strategy that downstream steps' estimatedSize must be reset to -1 since
+  // they are out of date.
+  private final boolean _isResultSizeDirty;
+
   /**
    * Creates a step object for given user and step ID. Note that this constructor lazy-loads the User object
    * for the passed ID if one is required for processing after construction.
@@ -334,6 +349,12 @@ public class Step implements StrategyElement, Validateable<Step> {
     _estimatedSize = builder._estimatedSize;
     _inMemoryOnly = builder._inMemoryOnly;
     _answerSpec = builder._answerSpec.build(user, getContainer(), validationLevel);
+
+    // set estimated size appropriately if this step set dirty
+    _isResultSizeDirty = builder._isResultSizeDirty;
+    if (_isResultSizeDirty) {
+      _estimatedSize = RESET_SIZE_FLAG;
+    }
 
     // sanity checks regarding answer param values vs strategy present
     if (_strategy == null) {
@@ -648,6 +669,14 @@ public class Step implements StrategyElement, Validateable<Step> {
     saveParamFilters(dbStep);
   }
 
+
+  // FIXME: This method does some important things but is obsolete in the new
+  //        order.  Note the compiler error in refreshAnswerSpec.  In the new
+  //        world, either the entire strategy will be saved or if step is
+  //        unattached, resetEstimateSizeForThisAndDownstreamSteps() is not
+  //        necessary.  Some thinking must go in to how we will throw events
+  //        and refresh the steps if things change- probably will just have
+  //        to reload from DB.
   public void saveParamFilters(Step unmodifiedVersion) throws WdkModelException {
 
     StepFactory stepFactory = _wdkModel.getStepFactory();
@@ -1070,13 +1099,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   public boolean hasAnswerParams() {
-    if (!hasValidQuestion())
-      return false;
-    for (Param param : _answerSpec.getQuestion().getParams()) {
-      if (param instanceof AnswerParam)
-        return true;
-    }
-    return false;
+    return !hasValidQuestion() ? false : _answerSpec.getQuestion().getQuery().getAnswerParamCount() > 0;
   }
 
   public boolean isAnswerSpecComplete() {
@@ -1086,10 +1109,6 @@ public class Step implements StrategyElement, Validateable<Step> {
   @Override
   public long getId() {
     return getStepId();
-  }
-
-  public void setAnswerSpec(AnswerSpec answerSpec) {
-    _answerSpec = answerSpec;
   }
 
   static String getVerificationPrefix() {
@@ -1109,32 +1128,16 @@ public class Step implements StrategyElement, Validateable<Step> {
     return _answerSpec.getValidationBundle();
   }
 
-  public void setCustomName(String customName) {
-    _customName = customName;
-  }
-
-  public void setLastRunTime(Date lastRunTime) {
-    _lastRunTime = lastRunTime;
-  }
-
-  public void setCollapsedName(String collapsedName) {
-    _collapsedName = collapsedName;
-  }
-
-  public void setCollapsible(boolean isCollapsible) {
-    _isCollapsible = isCollapsible;
-  }
-
   public StepContainer getContainer() {
     return _strategy == null ? StepContainer.emptyContainer() : _strategy;
   }
 
-  public void setDeleted(boolean isDeleted) {
-    _isDeleted = isDeleted;
-  }
-
   public boolean isMutable() {
     return !hasStrategy() || !getStrategy().isSaved();
+  }
+
+  public boolean isResultSizeDirty() {
+    return _isResultSizeDirty;
   }
 
   public boolean hasStrategy() {

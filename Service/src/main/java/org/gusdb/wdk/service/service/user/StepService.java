@@ -111,6 +111,9 @@ public class StepService extends UserService {
         // save the clob to the DB
         step.saveParamFilters();
 
+        // TODO: don't forget to set result size dirty in this step; means
+        //   we don't have to call resetEstimateSizeForThisAndDownstreamSteps() or resetEstimatedSize() any more
+        
         // reset the estimated size in the database for this step and any downstream steps, if any
         getWdkModel().getStepFactory().resetEstimateSizeForThisAndDownstreamSteps(step);
 
