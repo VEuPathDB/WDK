@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Named;
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.Utilities;
@@ -61,7 +62,7 @@ import org.gusdb.wdk.model.user.UserPreferences;
  * @version $Revision$ $Date: 2007-01-10 14:54:53 -0500 (Wed, 10 Jan
  *          2007) $ $Author$
  */
-public class Question extends WdkModelBase implements AttributeFieldContainer, StepAnalysisContainer {
+public class Question extends WdkModelBase implements AttributeFieldContainer, StepAnalysisContainer, NamedObject {
 
   public static final String BOOLEAN_QUESTION_PREFIX = "boolean_question_";
 
@@ -442,6 +443,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     _query.setContextQuestion(this);
   }
 
+  @Override
   public String getName() {
     return _name;
   }
@@ -450,6 +452,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     return _urlSegment;
   }
 
+  @Override
   public String getFullName() {
     if (_questionSet == null)
       return _name;
@@ -1030,7 +1033,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     for (Param param : _query.getParams()) {
       if (param instanceof AnswerParam) {
         AnswerParam answerParam = (AnswerParam) param;
-        Map<String, RecordClass> recordClasses = answerParam.getRecordClasses();
+        Map<String, RecordClass> recordClasses = answerParam.getAllowedRecordClasses();
         if (recordClasses.containsKey(rcName))
           list.add(answerParam);
       }

@@ -87,9 +87,9 @@ public class DateParam extends Param {
   }
 
   @Override
-  public String getDefault() throws WdkModelException {
-    String defaultValue = super.getDefault();  
-    if(defaultValue == null || defaultValue.isEmpty()) {	
+  public String getXmlDefault() {
+    String defaultValue = super.getXmlDefault();  
+    if (defaultValue == null || defaultValue.isEmpty()) {	
       defaultValue = _minDate;
     } 
     return defaultValue;

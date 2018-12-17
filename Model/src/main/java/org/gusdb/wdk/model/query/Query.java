@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.EncryptionUtil;
@@ -594,6 +595,16 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     }
 
     writer.println(indent + "</" + getClass().getSimpleName() + ">");
+  }
+
+  public Optional<AnswerParam> getPrimaryAnswerParam() {
+    List<AnswerParam> params = getAnswerParams();
+    return params.isEmpty() ? Optional.empty() : Optional.of(params.get(0));
+  }
+
+  public Optional<AnswerParam> getSecondaryAnswerParam() {
+    List<AnswerParam> params = getAnswerParams();
+    return params.size() > 1 ? Optional.of(params.get(1)) : Optional.empty();
   }
 
 }

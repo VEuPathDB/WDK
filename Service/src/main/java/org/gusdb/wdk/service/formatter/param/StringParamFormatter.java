@@ -2,9 +2,8 @@ package org.gusdb.wdk.service.formatter.param;
 
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.StringParam;
-import org.json.JSONException;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.json.JSONObject;
 
 public class StringParamFormatter extends ParamFormatter<StringParam> {
@@ -14,9 +13,7 @@ public class StringParamFormatter extends ParamFormatter<StringParam> {
   }
 
   @Override
-  public JSONObject getJson() throws JSONException, WdkModelException, WdkUserException {
-    JSONObject pJson = super.getJson();
-    pJson.put(JsonKeys.LENGTH, _param.getLength());
-    return pJson;
+  public JSONObject getJson(QueryInstanceSpec spec) throws WdkModelException {
+    return getBaseJson(spec).put(JsonKeys.LENGTH, _param.getLength());
   }
 }

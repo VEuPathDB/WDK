@@ -1,25 +1,25 @@
 package org.gusdb.wdk.service.formatter;
 
-import java.util.Collection;
+import static org.gusdb.fgputil.functional.Functions.reduce;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
-import org.gusdb.wdk.model.query.param.FilterParamNew;
+import org.gusdb.wdk.model.query.param.FilterParamNew.OntologyTermSummary;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
-import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.formatter.param.ParamFormatter;
 import org.gusdb.wdk.service.formatter.param.ParamFormatterFactory;
-import org.gusdb.wdk.service.formatter.param.DependentParamProvider;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,26 +49,17 @@ import org.json.JSONObject;
  */
 public class QuestionFormatter {
 
-  public static JSONArray getQuestionsJson(List<Question> questions, boolean expandQuestions, boolean expandParams, User user, Map<String, String> dependedParamValues)
-      throws JSONException, WdkModelException, WdkUserException {
-    JSONArray json = new JSONArray();
-    for (Question q : questions) {
-      json.put(expandQuestions ?
-          getQuestionJson(q, expandParams, user, dependedParamValues) :
-          q.getFullName());
-    }
-    return json;
+  public static JSONArray getQuestionsJsonWithoutParams(List<Question> questions) {
+    return reduce(questions, (arr, next) -> arr.put(getQuestionJson(next)), new JSONArray());
   }
 
-  public static JSONObject getQuestionJson(Question q, boolean expandParams,
-      User user, Map<String, String> dependedParamValues)
-      throws JSONException, WdkModelException, WdkUserException {
-    return getQuestionJson(q, expandParams, user, dependedParamValues, q.getParamMap().values());
+  public static JSONObject getQuestionJsonWithParamValues(AnswerSpec spec)
+      throws JSONException, WdkModelException {
+    return getQuestionJson(spec.getQuestion())
+        .put(JsonKeys.PARAMETERS, getParamsJson(spec.getQueryInstanceSpec()));
   }
 
-  public static JSONObject getQuestionJson(Question q, boolean expandParams,
-      User user, Map<String, String> dependedParamValues, Collection<Param> params)
-      throws JSONException, WdkModelException, WdkUserException {
+  public static JSONObject getQuestionJson(Question q) {
     return new JSONObject()
       .put(JsonKeys.NAME, q.getFullName())
       .put(JsonKeys.DISPLAY_NAME, q.getDisplayName())
@@ -80,31 +71,35 @@ public class QuestionFormatter {
       .put(JsonKeys.NEW_BUILD, q.getNewBuild())
       .put(JsonKeys.REVISE_BUILD, q.getReviseBuild())
       .put(JsonKeys.URL_SEGMENT,  q.getUrlSegment())
-      .put(JsonKeys.RECORD_CLASS_NAME, q.getRecordClass().getFullName())
-      .put(JsonKeys.PARAMETERS, getParamsJson(params, expandParams, user, dependedParamValues))
+      .put(JsonKeys.OUTPUT_RECORD_CLASS_NAME, q.getRecordClass().getFullName())
       .put(JsonKeys.GROUPS, getGroupsJson(q.getParamMapByGroups()))
-      .put(JsonKeys.DEFAULT_ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(q.getSummaryAttributeFieldMap().keySet()))
+      .put(JsonKeys.DEFAULT_ATTRIBUTES, new JSONArray(q.getSummaryAttributeFieldMap().keySet()))
       .put(JsonKeys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
           q.getDynamicAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, true))
       .put(JsonKeys.DEFAULT_SUMMARY_VIEW, q.getDefaultSummaryView().getName())
-      .put(JsonKeys.SUMMARY_VIEW_PLUGINS, FormatUtil.stringCollectionToJsonArray(q.getSummaryViews().keySet()))
-      .put(JsonKeys.STEP_ANALYSIS_PLUGINS, FormatUtil.stringCollectionToJsonArray(q.getStepAnalyses().keySet()))
+      .put(JsonKeys.SUMMARY_VIEW_PLUGINS, new JSONArray(q.getSummaryViews().keySet()))
+      .put(JsonKeys.STEP_ANALYSIS_PLUGINS, new JSONArray(q.getStepAnalyses().keySet()))
+      // NOTE: if null returned by getAllowedRecordClasses, property will be omitted in returned JSON
+      .put(JsonKeys.ALLOWED_PRIMARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getPrimaryAnswerParam()))
+      .put(JsonKeys.ALLOWED_SECONDARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getSecondaryAnswerParam()))
       .put(JsonKeys.PROPERTIES, q.getPropertyLists());
   }
 
-  public static JSONArray getParamsJson(Collection<Param> params, boolean expandParams, User user, Map<String, String> dependedParamValues)
-      throws JSONException, WdkModelException, WdkUserException {
+  /**
+   * Returns the names of any allowed recordclasses for the param as a
+   * JSONArray, or null if the optional is empty.
+   * 
+   * @param answerParam answer param for which allowed RCs should be returned
+   * @return array of allowed names or null if no param present
+   */
+  private static JSONArray getAllowedRecordClasses(Optional<AnswerParam> answerParam) {
+    return answerParam.map(param -> new JSONArray(param.getAllowedRecordClasses().values())).orElse(null);
+  }
+
+  public static JSONArray getParamsJson(QueryInstanceSpec spec) throws WdkModelException {
     JSONArray paramsJson = new JSONArray();
-    for (Param param : params) {
-      if (expandParams) {
-        ParamFormatter<?> formatter = ParamFormatterFactory.getFormatter(param);
-        paramsJson.put(formatter instanceof DependentParamProvider ?
-          ((DependentParamProvider)formatter).getJson(user, dependedParamValues) :
-          formatter.getJson());
-      }
-      else {
-        paramsJson.put(param.getName());
-      }
+    for (Param param : spec.getQuery().getParams()) {
+      paramsJson.put(ParamFormatterFactory.getFormatter(param).getJson(spec));
     }
     return paramsJson;
   }
@@ -136,7 +131,7 @@ public class QuestionFormatter {
    *   "internalsFilteredCount" : 4352
    * }
    */
-  public static <T> JSONObject getOntologyTermSummaryJson(FilterParamNew.OntologyTermSummary<T> summary) {
+  public static <T> JSONObject getOntologyTermSummaryJson(OntologyTermSummary<T> summary) {
     Map<T,FilterParamSummaryCounts> counts = summary.getSummaryCounts();
 
     JSONObject json = new JSONObject();

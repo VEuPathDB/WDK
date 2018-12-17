@@ -241,6 +241,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _paramSet = paramSet;
   }
 
+  @Override
   public String getFullName() {
     if (_name == null) return null;
     String paramSetName = (_paramSet == null ? "<unknown_param_set>" : _paramSet.getName());
@@ -534,7 +535,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
 
     // all parents passed validation; handle case where empty value allowed
     String value = stableValues.get(getName());
-    if ((value == null || value.isEmpty()) && isAllowEmpty() && !fillStrategy.shouldFill()) {
+    if ((value == null || value.isEmpty()) && isAllowEmpty() && !fillStrategy.shouldFillWhenMissing()) {
       // make sure entry present (might have been missing);
       //  empty value will be filled in at query execution time (internal value conversion)
       stableValues.put(getName(), null);
@@ -543,7 +544,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
 
     // empty value not allowed; fill with default value if requested, otherwise fail on missing
     if (stableValues.get(getName()) == null) {
-      if (fillStrategy.shouldFill()) {
+      if (fillStrategy.shouldFillWhenMissing()) {
         // fill in default value; value will still be validated below (cheap because vocabs are cached)
         stableValues.put(getName(), getDefault(stableValues));
       }
@@ -553,6 +554,15 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     }
 
     // sub-classes will complete further validation
+    ParamValidity validity = validateValue(stableValues, level);
+
+    // if valid or (invalid but we were not asked to replace with default) return
+    if (validity.isValid() || !fillStrategy.shouldFillWhenInvalid()) {
+      return validity;
+    }
+
+    // invalid and asked to replace with default; do it, then revalidate
+    stableValues.put(getName(), getDefault(stableValues));
     return validateValue(stableValues, level);
   }
 

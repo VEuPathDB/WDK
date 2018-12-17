@@ -15,7 +15,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -41,8 +40,7 @@ public class OntologyService extends AbstractWdkService {
    */
   @GET
   public Response getOntologies() throws JSONException {
-    return Response.ok(FormatUtil.stringCollectionToJsonArray(
-        getWdkModel().getOntologyNames()).toString()).build();
+    return Response.ok(new JSONArray(getWdkModel().getOntologyNames()).toString()).build();
   }
 
   /**

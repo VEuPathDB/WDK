@@ -2,17 +2,14 @@ package org.gusdb.wdk.service.formatter.param;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public abstract class AbstractEnumParamFormatter extends ParamFormatter<AbstractEnumParam> {
@@ -22,26 +19,14 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
   }
 
   @Override
-  public JSONObject getJson() throws JSONException, WdkModelException, WdkUserException {
-    return super.getJson()
+  public JSONObject getJson(QueryInstanceSpec spec) throws WdkModelException {
+    return getBaseJson(spec)
         .put(JsonKeys.COUNT_ONLY_LEAVES, _param.getCountOnlyLeaves())
         .put(JsonKeys.MAX_SELECTED_COUNT, _param.getMaxSelectedCount())
         .put(JsonKeys.MIN_SELECTED_COUNT, _param.getMinSelectedCount())
         .put(JsonKeys.IS_MULTIPICK, _param.getMultiPick())
         .put(JsonKeys.DISPLAY_TYPE, _param.getDisplayType())
         .put(JsonKeys.DEPTH_EXPANDED, _param.getDepthExpanded());
-  }
-
-  /**
-   * Override so we don't unnecessarily calculate context-free default
-   */
-  @Override
-  protected String getDefault() {
-    return null;
-  }
-
-  protected EnumParamVocabInstance getVocabInstance(User user, Map<String,String> dependedParamValues) {
-    return _param.getVocabInstance(user, dependedParamValues);
   }
 
   protected JSONArray getVocabArrayJson(EnumParamVocabInstance vocabInstance) throws WdkModelException {

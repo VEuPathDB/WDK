@@ -81,7 +81,7 @@ public class AnswerParam extends Param {
   /**
    * @return the recordClass
    */
-  public Map<String, RecordClass> getRecordClasses() {
+  public Map<String, RecordClass> getAllowedRecordClasses() {
     return new LinkedHashMap<String, RecordClass>(recordClasses);
   }
 

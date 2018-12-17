@@ -7,44 +7,42 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.OntologyItem;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> implements DependentParamProvider {
+public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(FilterParamNewFormatter.class);
 
-  protected FilterParamNew filterParam; 
+  protected FilterParamNew _filterParam; 
 
   FilterParamNewFormatter(FilterParamNew param) {
     super(param);
-    this.filterParam = param;
+    _filterParam = param;
   }
 
   @Override
-  public JSONObject getJson(User user, Map<String, String> dependedParamValues)
-      throws JSONException, WdkModelException, WdkUserException {
-    JSONObject pJson = super.getJson();
+  public JSONObject getJson(QueryInstanceSpec spec) throws WdkModelException {
+    JSONObject pJson = getBaseJson(spec);
 
-    pJson.put("filterDataTypeDisplayName", filterParam.getFilterDataTypeDisplayName());
-    pJson.put("ontology", getOntologyJson(user, dependedParamValues));
-    JSONObject valuesMap = getValuesJson(user, dependedParamValues);
+    pJson.put("filterDataTypeDisplayName", _filterParam.getFilterDataTypeDisplayName());
+    pJson.put("ontology", getOntologyJson(spec));
+    JSONObject valuesMap = getValuesJson(spec);
     //TODO: remove the null test when val map query becomes required
     if (valuesMap != null) pJson.put("values", valuesMap);
-    pJson.put("hideEmptyOntologyNodes", filterParam.getTrimMetadataTerms());
-    pJson.put("countPredictsAnswerCount", filterParam.getCountPredictsAnswerCount());
-    pJson.put(MIN_SELECTED_COUNT, filterParam.getMinSelectedCount());
+    pJson.put("hideEmptyOntologyNodes", _filterParam.getTrimMetadataTerms());
+    pJson.put("countPredictsAnswerCount", _filterParam.getCountPredictsAnswerCount());
+    pJson.put(MIN_SELECTED_COUNT, _filterParam.getMinSelectedCount());
     return pJson;
   }
 
-  public JSONArray getOntologyJson(User user, Map<String, String> dependedParamValues) throws JSONException, WdkModelException {
-    Map<String, OntologyItem> ontologyMap = filterParam.getOntology(user, dependedParamValues);
+  public JSONArray getOntologyJson(QueryInstanceSpec spec) throws JSONException, WdkModelException {
+    Map<String, OntologyItem> ontologyMap = _filterParam.getOntology(spec);
     JSONArray ontologyJson = new JSONArray();
     for (String term : ontologyMap.keySet()) {
       JSONObject itemJson = new JSONObject();
@@ -63,9 +61,9 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
     return ontologyJson; 
   }
 
-  public JSONObject getValuesJson(User user, Map<String, String> dependedParamValues) throws JSONException, WdkModelException {
+  public JSONObject getValuesJson(QueryInstanceSpec spec) throws JSONException, WdkModelException {
  
-    Map<String, Set<String>>  valuesMap = filterParam.getValuesMap(user, dependedParamValues);
+    Map<String, Set<String>>  valuesMap = _filterParam.getValuesMap(spec);
 
     // TODO: remove this when values map is required
     if (valuesMap == null) return null;

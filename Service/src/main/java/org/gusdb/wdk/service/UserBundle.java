@@ -41,7 +41,8 @@ public class UserBundle {
       if (userId == sessionUser.getUserId()) {
         return getSessionUserBundle(userIdStr, sessionUser, isAdminSession);
       }
-      User user = userFactory.getUserById(userId);
+      User user = userFactory.getUserById(userId)
+          .orElseThrow(() -> new NoSuchElementException("No user exists with ID " + userId));
       return new UserBundle(userIdStr, true, user, false, sessionUser, isAdminSession);
     }
     catch (NoSuchElementException | NumberFormatException | NullPointerException e) {

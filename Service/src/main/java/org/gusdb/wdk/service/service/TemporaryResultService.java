@@ -33,7 +33,7 @@ public class TemporaryResultService extends AbstractWdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response setTemporaryResult(String body)
-      throws RequestMisformatException, DataValidationException {
+      throws RequestMisformatException, DataValidationException, WdkModelException {
     AnswerRequest request = AnswerService.parseAnswerRequest(body, getWdkModel(), getSessionUser(), SPECIFIED_REPORTER_PARSER);
     String id = UUID.randomUUID().toString();
     CacheMgr.get().getAnswerRequestCache().put(id, request);

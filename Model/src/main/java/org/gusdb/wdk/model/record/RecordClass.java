@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Named;
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
@@ -95,7 +96,7 @@ import org.gusdb.wdk.model.user.UserPreferences;
  * 
  * @author jerric
  */
-public class RecordClass extends WdkModelBase implements AttributeFieldContainer, StepAnalysisContainer, OptionallyTestable {
+public class RecordClass extends WdkModelBase implements AttributeFieldContainer, StepAnalysisContainer, OptionallyTestable, NamedObject {
 
   private static final Logger LOG = Logger.getLogger(RecordClass.class);
 
@@ -532,10 +533,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   // public getters
   // ////////////////////////////////////////////////////////////
 
+  @Override
   public String getName() {
     return name;
   }
 
+  @Override
   public String getFullName() {
     return fullName;
   }

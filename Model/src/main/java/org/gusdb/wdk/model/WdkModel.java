@@ -64,8 +64,8 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.FavoriteFactory;
-import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
@@ -1575,5 +1575,21 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   
   public String getUserDatasetStoreStatus() {
     return _userDatasetStoreStatus;
+  }
+
+  public List<Question> getAllQuestions() {
+    List<Question> questions = new ArrayList<>();
+    for (QuestionSet qSet : getAllQuestionSets()) {
+      questions.addAll(Arrays.asList(qSet.getQuestions()));
+    }
+    return questions;
+  }
+
+  public List<RecordClass> getAllRecordClasses() {
+    List<RecordClass> recordClasses = new ArrayList<>();
+    for (RecordClassSet rcSet : getAllRecordClassSets()) {
+      recordClasses.addAll(Arrays.asList(rcSet.getRecordClasses()));
+    }
+    return recordClasses;
   }
 }
