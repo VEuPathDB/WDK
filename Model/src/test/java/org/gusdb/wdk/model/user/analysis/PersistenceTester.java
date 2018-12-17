@@ -11,6 +11,7 @@ import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.user.Step;
 
@@ -41,8 +42,8 @@ public class PersistenceTester {
 
   /* Methods tested:
    * 
-   * public Map<Integer,StepAnalysisContext> getAnalysesByStepId(int stepId, StepAnalysisFileStore fileStore) throws WdkModelException;
-   * public StepAnalysisContext getAnalysisById(int analysisId, StepAnalysisFileStore fileStore) throws WdkModelException {
+   * public Map<Integer,StepAnalysisInstance> getAnalysesByStepId(int stepId, StepAnalysisFileStore fileStore) throws WdkModelException;
+   * public StepAnalysisInstance getAnalysisById(int analysisId, StepAnalysisFileStore fileStore) throws WdkModelException {
    * public int getNextId() throws WdkModelException;
    * public void insertAnalysis(int analysisId, int stepId, String displayName, boolean isNew, boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) throws WdkModelException;
    * public void deleteAnalysis(int analysisId) throws WdkModelException;
@@ -50,7 +51,7 @@ public class PersistenceTester {
    * public void setNewFlag(int analysisId, boolean isNew) throws WdkModelException;
    * public void setHasParams(int analysisId, boolean hasParams) throws WdkModelException;
    * public void updateContext(int analysisId, String contextHash, String serializedContext) throws WdkModelException;
-   * public List<StepAnalysisContext> getAllAnalyses(StepAnalysisFileStore fileStore) throws WdkModelException;
+   * public List<StepAnalysisInstance> getAllAnalyses(StepAnalysisFileStore fileStore) throws WdkModelException;
    * public boolean insertExecution(String contextHash, ExecutionStatus status, Date startDate) throws WdkModelException;  
    * public void updateExecution(String contextHash, ExecutionStatus status, Date updateDate, String charData, byte[] binData) throws WdkModelException;
    * public void resetStartDate(String contextHash, Date startDate) throws WdkModelException;
@@ -65,17 +66,24 @@ public class PersistenceTester {
     System.out.println("Getting user from email: " + TEST_USER_EMAIL);
     UserBean user = new UserBean(_wdkModel.getUserFactory().getUserByEmail(TEST_USER_EMAIL));
     System.out.println("Creating context in memory.");
-    StepAnalysisContext context = StepAnalysisContext.createNewContext(user, TEST_PLUGIN_NAME, TEST_STEP_ID);
-    Step step = context.getStep();
-    System.out.println("Adding created context to DB; context id = " + context.getAnalysisId());
-    analysisMgr.createAnalysis(context);
+    
+    
+    StepAnalysisFactory analysisFactory = _wdkModel.getStepAnalysisFactory();
+    
+    Step step = user.getUser().getWdkModel().getStepFactory().getStepByValidId(TEST_STEP_ID);
+
+    String answerValueChecksum = step.getAnswerValue().getChecksum();
+    StepAnalysis stepAnalysis = step.getQuestion().getStepAnalysis(TEST_PLUGIN_NAME);
+    
+    StepAnalysisInstance context = analysisFactory.createAnalysisInstance(step, stepAnalysis, answerValueChecksum);
+
     System.out.println("Trying to change display name.");
     context.setDisplayName(TEST_CUSTOM_TAB_NAME);
-    analysisMgr.renameContext(context);
+    analysisMgr.renameInstance(context);
     
     // context created and inserted; retrieve by multiple means
     System.out.println("Getting freshly created/modified context from DB using ID: " + context.getAnalysisId());
-    context = StepAnalysisContext.createFromId(context.getAnalysisId(), analysisMgr);
+    context = StepAnalysisInstance.createFromId(context.getAnalysisId(), analysisMgr);
     System.out.println("Comparing display name values...");
     assertEquals(TEST_CUSTOM_TAB_NAME, context.getDisplayName());
     System.out.println("Running getAllAnalyses() to look for errors.");
@@ -125,22 +133,23 @@ public class PersistenceTester {
     System.out.println("Done.");
   }
 
-  private static StepAnalysisContext run(StepAnalysisContext context,
+  private static StepAnalysisInstance run(StepAnalysisInstance context,
       Map<String, String[]> params, StepAnalysisFactory analysisMgr,
       int testRunId) throws WdkModelException, WdkUserException, InterruptedException {
     System.out.println("Test run #" + testRunId);
-    context = StepAnalysisContext.createFromForm(params, analysisMgr);
-    System.out.println("Context right before running: " + context.serializeContext());
+    context = StepAnalysisInstance.createFromForm(params, analysisMgr);
+    System.out.println("Context right before running: " + context.serializeInstance());
+    analysisMgr.setFormParams(context);
     context = analysisMgr.runAnalysis(context);
-    ExecutionStatus status = analysisMgr.getSavedContext(context.getAnalysisId()).getStatus();
+    ExecutionStatus status = analysisMgr.getSavedAnalysisInstance(context.getAnalysisId()).getStatus();
     while (!status.equals(ExecutionStatus.COMPLETE)) {
-      status = analysisMgr.getSavedContext(context.getAnalysisId()).getStatus();
+      status = analysisMgr.getSavedAnalysisInstance(context.getAnalysisId()).getStatus();
       System.out.println("Checking run status: " + status);
       Thread.sleep(1000);
     }
     System.out.println("Complete!  Checking results.");
     analysisMgr.getAnalysisResult(context);
-    return analysisMgr.getSavedContext(context.getAnalysisId());
+    return analysisMgr.getSavedAnalysisInstance(context.getAnalysisId());
   }
 
   public static void main(String[] args) {

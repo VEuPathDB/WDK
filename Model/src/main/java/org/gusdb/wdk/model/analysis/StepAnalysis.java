@@ -13,13 +13,14 @@ public interface StepAnalysis extends ParameterContainer {
   public String getDescription();
   public String getReleaseVersion();
   public String getCustomThumbnail();
-  public int getExpirationMinutes();
+  public int getExecutionTimeoutThresholdInMinutes();  // getExecutionTimeoutMinutes  change RNG.
   
   public StepAnalyzer getAnalyzerInstance() throws WdkModelException;
   public String getFormViewName();
   public String getAnalysisViewName();
 
   public boolean getHasParameters();
-  public Map<String,String> getProperties();
+ 
+  public Map<String,String> getProperties(); // server side properties, from model XML
 
 }

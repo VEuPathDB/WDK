@@ -14,7 +14,7 @@ import org.gusdb.wdk.model.question.Question;
 public class StepAnalysisXml extends ParameterContainerImpl implements StepAnalysis  {
 
   // specify what at what WDK object level this analysis is configured
-  public static interface StepAnalysisContainer { }
+  public interface StepAnalysisContainer { }
 
   private static final String DEFAULT_FORM_VIEW = "/wdk/jsp/analysis/defaultAnalysisForm.jsp";
   private static final String DEFAULT_ANALYSIS_VIEW = "/wdk/jsp/analysis/defaultAnalysisResult.jsp";
@@ -54,7 +54,7 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
     _formViewName = obj._formViewName;
     _analysisViewName = obj._analysisViewName;
     _hasParameters = obj._hasParameters;
-    _properties = new HashMap<String,String>(obj._properties);
+    _properties = new HashMap<>(obj._properties);
     _customThumbnail = obj._customThumbnail;
     _containerReference = obj._containerReference;
   }
@@ -101,6 +101,7 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
   public String getReleaseVersion() {
     return _releaseVersion;
   }
+
   public void setReleaseVersion(String releaseVersion) {
     _releaseVersion = releaseVersion;
   }
@@ -109,6 +110,7 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
   public String getFormViewName() {
     return (_formViewName == null ? DEFAULT_FORM_VIEW : _formViewName);
   }
+
   public void setFormViewName(String formViewName) {
     _formViewName = formViewName;
   }
@@ -117,6 +119,7 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
   public String getAnalysisViewName() {
     return (_analysisViewName == null ? DEFAULT_ANALYSIS_VIEW : _analysisViewName);
   }
+
   public void setAnalysisViewName(String analysisViewName) {
     _analysisViewName = analysisViewName;
   }
@@ -125,6 +128,7 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
   public boolean getHasParameters() {
     return _hasParameters;
   }
+
   public void setHasParameters(boolean hasParameters) {
     _hasParameters = hasParameters;
   }
@@ -133,6 +137,7 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
   public Map<String, String> getProperties() {
     return _properties;
   }
+
   public void addProperty(WdkModelText property) {
     String name = property.getName();
     if (name == null || name.isEmpty())
@@ -144,17 +149,20 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
   public String getCustomThumbnail() {
     return _customThumbnail;
   }
+
   public void setCustomThumbnail(String customThumbnail) {
     _customThumbnail = customThumbnail;
   }
 
   @Override
-  public int getExpirationMinutes() {
+  public int getExecutionTimeoutThresholdInMinutes() {
     return _expirationMinutes;
   }
+
   public void setExpirationMinutes(int expirationMinutes) {
     _expirationMinutes = expirationMinutes;
   }
+
   public boolean isExpirationMinutesSet() {
     return _expirationMinutes != null;
   }
@@ -171,13 +179,13 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
       // instantiate instance and pass reference to model
       StepAnalyzer analyzer = aClass.newInstance();
       analyzer.setWdkModel(getWdkModel());
-      
+
+      analyzer.validateParams(paramMap);
+
       // set properties defined in model and validate
-      for (Entry<String,String> prop : _properties.entrySet()) {
-        analyzer.setProperty(prop.getKey(), prop.getValue());
-      }
+      _properties.forEach(analyzer::setProperty);
       analyzer.validateProperties();
-      
+
       return analyzer;
     }
     catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
@@ -190,7 +198,8 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    super.resolveReferences(wdkModel);
+    // Copy over the param refs before calling super.resolve so the super method
+    // actually has something to resolve.
 
     // look up analysis object, then override with my values
     StepAnalysisXml saObj = wdkModel.getStepAnalysisPlugins().getStepAnalysis(_name);
@@ -198,17 +207,20 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
       throw new WdkModelException("StepAnalysisRef using name (" +
           _name + ") that does not map to StepAnalysisPlugin.");
     }
+    paramRefList.addAll(saObj.paramRefList);
+
+    super.resolveReferences(wdkModel);
 
     // if container is Question, look up recordclass to see if there are inheritable values
     StepAnalysisXml parent = new StepAnalysisXml(); // empty reference
-    if (_containerReference != null && _containerReference instanceof Question) {
+    if (_containerReference instanceof Question) {
       // see if reference also exists on recordclass
       StepAnalysis rcAnalysisRef = ((Question)_containerReference).getRecordClass().getStepAnalyses().get(_name);
       if (rcAnalysisRef != null) {
         parent = (StepAnalysisXml)rcAnalysisRef;
       }
     }
-    
+
     // always use values from reference, then obj, then default
     _analyzerClass = saObj._analyzerClass;
     _displayName = chooseValue(_displayName, parent._displayName, saObj._displayName, _name);
@@ -224,18 +236,13 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
     // override properties, retaining non-conflicts from parent ref and obj
     inheritParentProps(parent);
     inheritParentProps(saObj);
- 
+
     // test to make sure we can create instance
     getAnalyzerInstance();
   }
 
   private void inheritParentProps(StepAnalysisXml parent) {
-    for (Entry<String,String> entry : parent._properties.entrySet()) {
-      // only add to this reference if not already present
-      if (!_properties.containsKey(entry.getKey())) {
-        _properties.put(entry.getKey(), entry.getValue());
-      }
-    }
+    parent._properties.forEach((k, v) -> _properties.putIfAbsent(k, v));
   }
 
   private static <T> T chooseValue(T refValue, T parentValue, T objValue, T defaultValue) {
@@ -265,7 +272,7 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
       sb.append("    ").append(entry.getKey()).append(" = ")
         .append(entry.getValue()).append(NL);
     }
-    return sb.append("  }").append(NL).append("}").append(NL).toString();  
+    return sb.append("  }").append(NL).append("}").append(NL).toString();
   }
 
   @Override

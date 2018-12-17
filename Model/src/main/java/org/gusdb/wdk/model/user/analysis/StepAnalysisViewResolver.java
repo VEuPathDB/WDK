@@ -15,17 +15,17 @@ public class StepAnalysisViewResolver {
     _viewConfig = viewConfig;
   }
 
-  public String resolveFormView(WdkResourceChecker resourceChecker, StepAnalysisContext context) throws WdkModelException {
+  public String resolveFormView(WdkResourceChecker resourceChecker, StepAnalysisInstance context) throws WdkModelException {
     // first try to resolve name with prefix/suffix
     return resolveView(resourceChecker, context, context.getStepAnalysis().getFormViewName(), "form");
   }
 
-  public String resolveResultsView(WdkResourceChecker resourceChecker, StepAnalysisContext context) throws WdkModelException {
+  public String resolveResultsView(WdkResourceChecker resourceChecker, StepAnalysisInstance context) throws WdkModelException {
     // first try to resolve name with prefix/suffix
     return resolveView(resourceChecker, context, context.getStepAnalysis().getAnalysisViewName(), "analysis");
   }
   
-  private String resolveView(WdkResourceChecker resourceChecker, StepAnalysisContext context,
+  private String resolveView(WdkResourceChecker resourceChecker, StepAnalysisInstance context,
       String viewName, String viewType) throws WdkModelException {
 
     String defaultFixedName = DEFAULT_PREFIX + viewName + DEFAULT_SUFFIX;

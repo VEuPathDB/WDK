@@ -1,0 +1,436 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "definitions": {
+    "enumParam": {
+      "$id": "org.gusdb.wdk.service.formatter.param.EnumParamFormatter#getJson",
+      "allOf": [
+        { "$ref": "#/definitions/abstractEnumParam" },
+        {
+          "type": "object",
+          "properties": {
+            "defaultValue": {
+              "type": "string"
+            },
+            "vocabulary": {
+              "oneOf": [
+                {
+                  "$ref": "#/definitions/vocabArray"
+                },
+                {
+                  "$ref": "#/definitions/vocabTree"
+                }
+              ]
+            }
+          },
+          "required": [
+            "vocabulary"
+          ]
+        }
+      ]
+    },
+    "abstractEnumParam": {
+      "$id": "org.gusdb.wdk.service.formatter.param.AbstractEnumFormatter#getJson",
+      "allOf": [
+        { "$ref": "#/definitions/param" },
+        {
+          "type": "object",
+          "properties": {
+            "countOnlyLeaves": {
+              "type": "boolean"
+            },
+            "maxSelectedCount": {
+              "type": "integer"
+            },
+            "minSelectedCount": {
+              "type": "integer"
+            },
+            "multiPick": {
+              "type": "boolean"
+            },
+            "displayType": {
+              "type": "string"
+            },
+            "depthExpanded": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "countOnlyLeaves",
+            "maxSelectedCount",
+            "minSelectedCount",
+            "multiPick",
+            "depthExpanded"
+          ]
+        }
+      ]
+    },
+    "param": {
+      "$id": "org.gusdb.wdk.service.formatter.param.ParamFormatter#getJson",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "isVisible": {
+          "type": "boolean"
+        },
+        "group": {
+          "type": "string"
+        },
+        "isReadOnly": {
+          "type": "boolean"
+        },
+        "dependentParams": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "defaultValue": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "isVisible",
+        "isReadOnly",
+        "dependentParams"
+      ]
+    },
+    "vocabArray": {
+      "$id": "org.gusdb.wdk.service.formatter.param.AbstractEnumParamFormatter#getVocabArrayJson",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/vocabRow"
+      }
+    },
+    "vocabRow": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minLength": 3,
+      "maxLength": 3
+    },
+    "vocabTree": {
+      "$id": "org.gusdb.wdk.service.formatter.param.AbstractEnumParamFormatter#nodeToJson",
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/vocabTreeData"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/vocabTree"
+          }
+        }
+      },
+      "required": [
+        "data",
+        "children"
+      ],
+      "additionalProperties": false
+    },
+    "vocabTreeData": {
+      "type": "object",
+      "properties": {
+        "term": {
+          "type": "string"
+        },
+        "display": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "term",
+        "display"
+      ],
+      "additionalProperties": false
+    },
+    "filterParam": {
+      "$id": "org.gusdb.wdk.service.formatter.param.FilterParamNewFormatter#getJson",
+      "allOf": [
+        {
+          "$ref": "#/definitions/param"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "filterDataTypeDisplayName": {
+              "type": "string"
+            },
+            "ontology": {
+              "$ref": "#/definitions/filterOntology"
+            },
+            "values": {
+              "$ref": "#/definitions/filterValues"
+            },
+            "hideEmptyOntologyNodes": {
+              "type": "boolean"
+            },
+            "countPredictsAnswerCount": {
+              "type": "boolean"
+            },
+            "minSelectedCount": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "ontology",
+            "hideEmptyOntologyNodes",
+            "countPredictsAnswerCount",
+            "minSelectedCount"
+          ]
+        }
+      ]
+    },
+    "filterOntology": {
+      "$id": "org.gusdb.wdk.service.formatter.param.FilterParamNewFormatter#getOntologyJson",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "term": {
+            "type": "string"
+          },
+          "parent": {
+            "type": "string"
+          },
+          "display": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "units": {
+            "type": "string"
+          },
+          "precision": {
+            "type": "integer"
+          },
+          "isRange": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "filterValues": {
+      "$id": "org.gusdb.wdk.service.formatter.param.FilterParamNewFormatter#getValuesJson",
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "typeAheadParam": {
+      "$id": "org.gusdb.wdk.service.formatter.param.TypeAheadParamFormatter#getJson",
+      "allOf": [
+        {
+          "$ref": "#/definitions/abstractEnumParam"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "vocabulary": {
+              "$ref": "#/definitions/vocabArray"
+            }
+          }
+        }
+      ]
+    },
+    "datasetParam": {
+      "$id": "org.gusdb.wdk.service.formatter.param.DatasetParamFormatter#getJson",
+      "allOf": [
+        {
+          "$ref": "#/definitions/param"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "parsers": {
+              "type": "array",
+              "items": {
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": [
+            "parsers"
+          ]
+        }
+      ]
+    },
+    "dateParam": {
+      "$id": "org.gusdb.wdk.service.formatter.param.DateParamFormatter#getJson",
+      "allOf": [
+        {
+          "$ref": "#/definitions/param"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "minDate": {
+              "type": "string"
+            },
+            "maxDate": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "dateRangeParam": {
+      "$id": "org.gusdb.wdk.service.formatter.param.DateRangeParamFormatter#getJson",
+      "allOf": [
+        {
+          "$ref": "#/definitions/param"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "minDate": {
+              "type": "string"
+            },
+            "maxDate": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "numberParam": {
+      "$id": "org.gusdb.wdk.service.formatter.param.NumberParamFormatter#getJson",
+      "allOf": [
+        {
+          "$ref": "#/definitions/param"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            },
+            "step": {
+              "type": "number"
+            }
+          }
+        }
+      ]
+    },
+    "numberRangeParam": {
+      "$id": "org.gusdb.wdk.service.formatter.param.NumberRangeParamFormatter#getJson",
+      "allOf": [
+        {
+          "$ref": "#/definitions/param"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            },
+            "step": {
+              "type": "number"
+            }
+          }
+        }
+      ]
+    },
+    "stringParam": {
+      "$id": "org.gusdb.wdk.service.formatter.param.StringParamFormatter#getJson",
+      "allOf": [
+        {
+          "$ref": "#/definitions/param"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "length": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "length"
+          ]
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "type": "array",
+      "items": [
+        {
+          "$ref": "#/definitions/enumParam"
+        },
+        {
+          "$ref": "#/definitions/filterParam"
+        },
+        {
+          "$ref": "#/definitions/typeAheadParam"
+        },
+        {
+          "$ref": "#/definitions/datasetParam"
+        },
+        {
+          "$ref": "#/definitions/dateParam"
+        },
+        {
+          "$ref": "#/definitions/dateRangeParam"
+        },
+        {
+          "$ref": "#/definitions/numberParam"
+        },
+        {
+          "$ref": "#/definitions/numberRangeParam"
+        },
+        {
+          "$ref": "#/definitions/stringParam"
+        },
+        {
+          "$ref": "#/definitions/param"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  ]
+}

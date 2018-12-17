@@ -69,11 +69,11 @@ public class StepService extends UserService {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepRequest stepRequest = StepRequest.newStepFromJson(jsonBody, getWdkModelBean(), user);
-      
+
       // validate the step and throw a DataValidation exception if not valid
       // new step are, by definition, not part of a strategy
 //      validateStep(stepRequest.getAnswerSpec(), false);
-      
+
       // create the step and insert into the database
       Step step = createStep(stepRequest, user, getWdkModel().getStepFactory());
       if(runStep != null && runStep) {
@@ -93,7 +93,7 @@ public class StepService extends UserService {
       throw new BadRequestException(e);
     }
   }
-  
+
   @GET
   @Path("steps/{stepId}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -119,13 +119,13 @@ public class StepService extends UserService {
       if (changes.metadataChanged()) {
         step.update(true);
       }
-      
+
       // reset the estimated size in the database for this step and any downstream steps, if any
       getWdkModel().getStepFactory().resetEstimateSizeForThisAndDownstreamSteps(step);
-      
+
       // reset the current step object estimate size
       step.setEstimateSize(-1);
-      
+
       // return updated step
       return Response.ok(StepFormatter.getStepJsonWithRawEstimateValue(step).toString()).build();
     }
@@ -136,7 +136,7 @@ public class StepService extends UserService {
       throw new BadRequestException(e);
     }
   }
-  
+
   @DELETE
   @Path("steps/{stepId}")
   public Response deleteStep(@PathParam("stepId") String stepId) throws WdkModelException {
@@ -146,7 +146,7 @@ public class StepService extends UserService {
     step.update(true);
     return Response.noContent().build();
   }
-  
+
   @POST
   @Path("steps/{stepId}/answer")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -169,11 +169,11 @@ public class StepService extends UserService {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepFactory stepFactory = new StepFactory(getWdkModel());
-      Step step = stepFactory.getStepById(Long.parseLong(stepId));
+      Step step = stepFactory.getStepById(Long.parseLong(stepId)).orElseThrow(() -> new NotFoundException("Step ID not found: " + stepId));
       if(!step.isAnswerSpecComplete()) {
         throw new DataValidationException("One or more parameters is missing");
       }
- 
+
       AnswerSpec stepAnswerSpec = AnswerSpecFactory.createFromStep(step);
       AnswerRequest request = new AnswerRequest(stepAnswerSpec, formattingParser.createFromTopLevelObject(requestBody));
       return AnswerService.getAnswerResponse(user, request);
@@ -184,7 +184,7 @@ public class StepService extends UserService {
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage());
     }
-  }  
+  }
 
   private StepChanges updateStep(Step step, StepRequest stepRequest) throws WdkModelException {
 
@@ -220,7 +220,7 @@ public class StepService extends UserService {
   private Step getStepForCurrentUser(String stepId) {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      Step step = getWdkModel().getStepFactory().getStepById(Integer.parseInt(stepId));
+      Step step = getWdkModel().getStepFactory().getStepById(Integer.parseInt(stepId)).orElseThrow(() -> new NotFoundException("Step ID not found: " + stepId));
       if (step.getUser().getUserId() != user.getUserId()) {
         throw new ForbiddenException(AbstractWdkService.PERMISSION_DENIED);
       }
@@ -230,7 +230,7 @@ public class StepService extends UserService {
       throw new NotFoundException(AbstractWdkService.formatNotFound(STEP_RESOURCE + stepId));
     }
   }
-  
+
   private static Step createStep(StepRequest stepRequest, User user, StepFactory stepFactory) throws WdkModelException {
     try {
       // new step must be created from raw spec
@@ -267,7 +267,7 @@ public class StepService extends UserService {
 //	if(question.hasAnswerParams() ? inStrategy : true) {
 //	  Map<String, String> context = new LinkedHashMap<String, String>();
 //      context.put(Utilities.QUERY_CTX_QUESTION, question.getFullName());
-//	  try {  
+//	  try {
 //	    User user = getUserBundle(Access.PRIVATE).getSessionUser();
 //	    //Map<String, String> params = AnswerValueFactory.convertParams(answerSpec.getParamValues());
 //	  }

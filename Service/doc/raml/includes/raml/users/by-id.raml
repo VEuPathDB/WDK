@@ -1,0 +1,60 @@
+# User By ID API
+#
+# This RAML doc is a draft.  The details below are pulled from the google doc
+# do not necessarily reflect the actual implementation.
+#
+# @path /users/{id}
+
+
+# URI Params
+
+uriParameters:
+  user-id:
+    description: either the id of the user or the string "current"
+    type: string
+    pattern: ^[0-9]+|current$
+
+
+# Methods
+
+delete:
+  description: delete the user (i.e. mark as deleted in DB)
+
+get:
+  description: >
+    user details (name, email, etc) of user with {user-id} or current user
+  responses:
+    200:
+      body:
+        application/json:
+          type: !include ../../../../../src/main/resources/schema/wdk/users/id/get.json
+          example: !include ../../example/users/get-user-200.json
+
+patch:
+  description: >
+    update user details, input JSON can be partially completed, unspecified
+    attributes are unchanged (obviously, user cannot change id)
+  body:
+    application/json:
+  responses:
+    200:
+      body:
+        application/json:
+
+put:
+  description: >
+    replace user attributes with those in the object (delete missing
+    attributes)
+  body:
+    application/json:
+  responses:
+
+
+# Child Endpoints
+
+/baskets: !include basket-api.raml
+/favorites: !include favorites-api.raml
+/preference: !include preference-api.raml
+/steps: !include steps-api.raml
+/strategy: !include strategy-api.raml
+/user-datasets: !include user-datasets.raml
