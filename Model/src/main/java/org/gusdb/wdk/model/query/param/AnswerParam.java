@@ -155,7 +155,7 @@ public class AnswerParam extends Param {
   protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     long stepId = Long.valueOf(stableValue);
-    Step step = StepUtilities.getStep(user, stepId);
+    Step step = StepUtilities.getStepByValidStepId(user, stepId);
 
     // make sure the input step is of the acceptable type
     String rcName = step.getRecordClass().getFullName();

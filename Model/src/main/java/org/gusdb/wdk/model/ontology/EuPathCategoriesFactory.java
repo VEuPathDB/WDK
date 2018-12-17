@@ -20,17 +20,17 @@ import org.apache.log4j.Logger;
 /**
  * A temporary class to adapt from the eupath categories ontology to the wdk categories objects. Will be
  * retired when the client no longer uses wdk categories
- * 
+ *
  * Exposes a couple of public methods used by the WDK to serve out categories
- * 
+ *
  * For each usedBy (website, webservice, datasets), make a per-recordclass root searchcategory.
- * 
+ *
  * For genes, add to that the category tree found in the ontology
- * 
+ *
  * For non-genes, add to that one additional category, with the display name of the record class
- * 
+ *
  * Individuals are added to the leaf categories as question refs
- * 
+ *
  * @author steve
  *
  */
@@ -99,7 +99,7 @@ public class EuPathCategoriesFactory {
       { "Participants", "DS_a5c969d5faParticipantRecordClasses.DS_a5c969d5faParticipantRecordClass" },
       { "Observations", "DS_a5c969d5faObservationRecordClasses.DS_a5c969d5faObservationRecordClass" },
       //      { "Households", "DS_a5c969d5faHouseholdRecordClasses.DS_a5c969d5faHouseholdRecordClass" },
-      //GEMs 
+      //GEMs
       { "Participants", "DS_841a9f5259ParticipantRecordClasses.DS_841a9f5259ParticipantRecordClass" },
       //GEMs1a 
       { "Participants", "DS_2a6ace17a1ParticipantRecordClasses.DS_2a6ace17a1ParticipantRecordClass" },

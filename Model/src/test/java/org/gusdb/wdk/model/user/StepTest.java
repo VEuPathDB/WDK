@@ -87,7 +87,7 @@ public class StepTest {
     // create a step
     Step step = UnitTestHelper.createNormalStep(user);
 
-    Step loadedStep = StepUtilities.getStep(user, step.getStepId());
+    Step loadedStep = StepUtilities.getStepByValidStepId(user, step.getStepId());
 
     compareStep(step, loadedStep);
   }
@@ -114,7 +114,7 @@ public class StepTest {
     // now check if the step is really deleted; a WdkUserException should be
     // thrown
     try {
-      StepUtilities.getStep(user, step.getStepId());
+      StepUtilities.getStepByValidStepId(user, step.getStepId());
       Assert.assertTrue("step is not deleted", false);
     }
     catch (WdkModelException ex) {

@@ -1,4 +1,11 @@
 # User Basket API
+#
+# This RAML doc is a draft.  The details below are pulled from the google doc
+# do not necessarily reflect the actual implementation.
+#
+# @path /users/{id}/baskets
+
+# Methods
 get:
   description: an array of string, names of user’s baskets
   queryParameters:
@@ -20,6 +27,7 @@ post:
     include display name, recordclass.  RecordClass baskets will be created
     for user by default.
 
+# Child Endpoints
 /{basketName}:
   delete:
     responses:

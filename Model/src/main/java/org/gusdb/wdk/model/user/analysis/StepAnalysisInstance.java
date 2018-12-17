@@ -18,7 +18,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
-import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
@@ -27,33 +26,33 @@ import org.json.JSONObject;
 
 /**
  * Encapsulation of values associated with a particular instance of a step
- * analysis plugin (as identified as a tab in the UI).  Contexts have their own
+ * analysis plugin (as identified as a tab in the UI).  Instances have their own
  * IDs and params, but may share results if they are similar enough.  This class
- * is responsible for generating the JSON sent to the client and the context hash
+ * is responsible for generating the JSON sent to the client and the instance hash
  * used to look up results, and contains the current state/status of the
  * instance (as influenced by whether it's been run before, has params, and has
  * results).
- * 
+ *
  * Notes:
  *   State tells the UI whether to show empty results, "Invalid due to revise",
  *     or normal request of results (which may show out-of-date, error, etc.)
  *   HasParams tells the UI whether to repopulate form params from stored values
- * 
+ *
  * @author rdoherty
  */
-public class StepAnalysisContext {
+public class StepAnalysisInstance {
 
-  public static final Logger LOG = Logger.getLogger(StepAnalysisContext.class);
-  
+  public static final Logger LOG = Logger.getLogger(StepAnalysisInstance.class);
+
   public static final String ANALYSIS_ID_KEY = "analysisId";
 
   public static enum JsonKey {
-    
-    // the following values define the hashable serialized context
+
+    // the following values define the hashable serialized instance
     analysisName,
     answerValueHash,
     formParams,
-    
+
     // the following values are included with JSON returned to client
     analysisId,
     stepId,
@@ -65,10 +64,10 @@ public class StepAnalysisContext {
     invalidStepReason,
     userNotes
   }
-  
+
   private WdkModel _wdkModel;
   private long _analysisId;
-  private String _displayName;
+  private String _editableDisplayName;
   private String _userNotes;
   private Step _step;
   private String _answerValueHash;
@@ -79,82 +78,77 @@ public class StepAnalysisContext {
   private ExecutionStatus _status;
   private Map<String, String[]> _formParams;
 
-  private StepAnalysisContext() { }
-  
+  private StepAnalysisInstance() { }
+
   /**
-   * Creates a step analysis context based on the passed user, step id, and
-   * analysis plugin name.  This context does not yet have an analysis id and
+   * Creates a step analysis instance.   Does not yet have an analysis id and
    * will receive one when it is written to the database.
-   * 
-   * @param userBean user for which to create analysis
-   * @param analysisName name of analysis plugin that will be invoked
-   * @param stepId id of step referred to by this analysis
+   *
+   * This is package scope, and should be called only by the factory.
+   *
+   * @param stepAnalysis descriptor of the step analysis that will be invoked
+   * @param step step referred to by this analysis
+   * @param answerValueChecksum the checksum provided by answerValue.getChecksum()
    * @throws WdkModelException if something goes wrong during creation
    * @throws WdkUserException if the passed values do not refer to real objects
    */
-  public static StepAnalysisContext createNewContext(UserBean userBean, String analysisName,
-      int stepId) throws WdkModelException, WdkUserException {
+    static StepAnalysisInstance createNewInstance(Step step, StepAnalysis stepAnalysis, String answerValueChecksum) throws WdkModelException {
 
-    StepAnalysisContext ctx = new StepAnalysisContext();
+    StepAnalysisInstance ctx = new StepAnalysisInstance();
     ctx._analysisId = -1;
-    ctx._wdkModel = userBean.getUser().getWdkModel();
-    ctx._step = loadStep(ctx._wdkModel, stepId, new WdkUserException("No step " +
-        "bean exists with id " + stepId + " for user " + userBean.getUserId()));
-    ctx._answerValueHash = ctx._step.getAnswerValue().getChecksum();
-    
-    Question question = ctx._step.getQuestion();
-    ctx._stepAnalysis = question.getStepAnalyses().get(analysisName);
-    
-    if (ctx._stepAnalysis == null) {
-      throw new WdkUserException("No step analysis with name " + analysisName +
-          " exists for question " + question.getFullName() + " (see step=" + stepId);
-    }
-    
-    ctx._displayName = ctx._stepAnalysis.getDisplayName();
-    ctx._formParams = new HashMap<String,String[]>();
+    ctx._wdkModel = step.getUser().getWdkModel();
+    ctx._step = step;
+    ctx._answerValueHash = answerValueChecksum;
+
+    ctx._stepAnalysis = stepAnalysis;
+
+    if (ctx._stepAnalysis == null) throw new WdkModelException ("Null stepAnalysis");
+
+    ctx._editableDisplayName = ctx._stepAnalysis.getDisplayName();
+    ctx._formParams = new HashMap<>();
     ctx._state = StepAnalysisState.NO_RESULTS;
     ctx._hasParams = false;
     ctx._invalidStepReason = null;
     ctx._status = ExecutionStatus.CREATED;
-    
+
     return ctx;
   }
 
-  public static StepAnalysisContext createFromForm(Map<String,String[]> params, StepAnalysisFactory analysisMgr)
+  public static StepAnalysisInstance createFromForm(Map<String,String[]> params, StepAnalysisFactory analysisMgr)
       throws WdkUserException, WdkModelException {
     int analysisId = getAnalysisIdParam(params);
-    StepAnalysisContext ctx = createFromId(analysisId, analysisMgr);
+    StepAnalysisInstance ctx = createFromId(analysisId, analysisMgr);
     // overwrite old set of form params and set new values
     ctx._formParams = new HashMap<>(params);
     ctx._formParams.remove(ANALYSIS_ID_KEY);
     return ctx;
   }
 
-  public static StepAnalysisContext createFromId(long analysisId, StepAnalysisFactory analysisMgr)
+  public static StepAnalysisInstance createFromId(long analysisId, StepAnalysisFactory analysisMgr)
       throws WdkUserException, WdkModelException {
-    return analysisMgr.getSavedContext(analysisId);
-  }  
-  
-  public static StepAnalysisContext createFromStoredData(WdkModel wdkModel,
+    return analysisMgr.getSavedAnalysisInstance(analysisId);
+  }
+
+  public static StepAnalysisInstance createFromStoredData(WdkModel wdkModel,
       long analysisId, long stepId, StepAnalysisState state, boolean hasParams, String invalidStepReason,
-      String displayName, String userNotes, String serializedContext) throws WdkModelException, DeprecatedAnalysisException {
+      String displayName, String userNotes, String serializedInstance) throws WdkModelException, DeprecatedAnalysisException {
     try {
-      StepAnalysisContext ctx = new StepAnalysisContext();
+      StepAnalysisInstance ctx = new StepAnalysisInstance();
       ctx._wdkModel = wdkModel;
       ctx._analysisId = analysisId;
-      ctx._displayName = displayName;
+      ctx._editableDisplayName = displayName;
       ctx._userNotes = userNotes;
       ctx._state = state;
       ctx._hasParams = hasParams;
       ctx._invalidStepReason = invalidStepReason;
       ctx._status = ExecutionStatus.UNKNOWN;
-      
-      LOG.debug("Got the following serialized context from the DB: " + serializedContext);
-      
-      // deserialize hashable context values
-      JSONObject json = new JSONObject(serializedContext);
+
+      LOG.debug("Got the following serialized instance from the DB: " + serializedInstance);
+
+      // deserialize hashable instance values
+      JSONObject json = new JSONObject(serializedInstance);
       ctx._step = loadStep(ctx._wdkModel, stepId, new WdkModelException("Unable " +
-          "to find step (ID=" + stepId + ") defined in step analysis context (ID=" + analysisId + ")"));
+          "to find step (ID=" + stepId + ") defined in step analysis instance (ID=" + analysisId + ")"));
       ctx._answerValueHash = ctx._step.getAnswerValue().getChecksum();
       Question question = ctx._step.getQuestion();
       ctx._stepAnalysis = question.getStepAnalysis(json.getString(JsonKey.analysisName.name()));
@@ -171,7 +165,7 @@ public class StepAnalysisContext {
         }
         ctx._formParams.put(key, values);
       }
-      
+
       return ctx;
     }
     catch (WdkUserException e) {
@@ -179,42 +173,42 @@ public class StepAnalysisContext {
           "name for analysis with ID: " + analysisId, e);
     }
     catch (WdkModelException e) {
-      throw new DeprecatedAnalysisException("Unable to construct context " +
+      throw new DeprecatedAnalysisException("Unable to construct instance " +
           "from analysis with ID: " + analysisId, e);
     }
     catch (JSONException e) {
-      throw new WdkModelException("Unable to deserialize context.", e);
+      throw new WdkModelException("Unable to deserialize instance.", e);
     }
   }
 
-  public static StepAnalysisContext createCopy(StepAnalysisContext oldContext) {
-    StepAnalysisContext ctx = new StepAnalysisContext();
-    ctx._wdkModel = oldContext._wdkModel;
-    ctx._analysisId = oldContext._analysisId;
-    ctx._displayName = oldContext._displayName;
-    ctx._userNotes = oldContext._userNotes;
-    ctx._step = oldContext._step;
-    ctx._answerValueHash = oldContext._answerValueHash;
-    ctx._stepAnalysis = oldContext._stepAnalysis;
+  public static StepAnalysisInstance createCopy(StepAnalysisInstance oldInstance) {
+    StepAnalysisInstance ctx = new StepAnalysisInstance();
+    ctx._wdkModel = oldInstance._wdkModel;
+    ctx._analysisId = oldInstance._analysisId;
+    ctx._editableDisplayName = oldInstance._editableDisplayName;
+    ctx._userNotes = oldInstance._userNotes;
+    ctx._step = oldInstance._step;
+    ctx._answerValueHash = oldInstance._answerValueHash;
+    ctx._stepAnalysis = oldInstance._stepAnalysis;
     // deep copy params
-    ctx._formParams = getDuplicateMap(oldContext._formParams);
-    ctx._state = oldContext._state;
-    ctx._hasParams = oldContext._hasParams;
-    ctx._invalidStepReason = oldContext._invalidStepReason;
-    ctx._status = oldContext._status;
+    ctx._formParams = getDuplicateMap(oldInstance._formParams);
+    ctx._state = oldInstance._state;
+    ctx._hasParams = oldInstance._hasParams;
+    ctx._invalidStepReason = oldInstance._invalidStepReason;
+    ctx._status = oldInstance._status;
     return ctx;
   }
-  
+
   private static <T extends WdkException> Step loadStep(WdkModel wdkModel, long stepId,
       T wdkUserException) throws T {
     try {
-      return wdkModel.getStepFactory().getStepById(stepId);
+      return wdkModel.getStepFactory().getStepByValidId(stepId);
     }
     catch (WdkModelException e) {
       throw wdkUserException;
     }
   }
-  
+
   private static Map<String, String[]> getDuplicateMap(Map<String, String[]> formParams) {
     Map<String, String[]> newParamMap = new HashMap<>(formParams);
     for (String key : newParamMap.keySet()) {
@@ -251,12 +245,12 @@ public class StepAnalysisContext {
    *   params: key-value object of params
    * }
    */
-  public JSONObject getInstanceJson() {
+  public JSONObject getJsonSummary() {
     try {
-      JSONObject json = getSharedJson();
+      JSONObject json = getJsonForDigest();
       json.put(JsonKey.analysisId.name(), _analysisId);
       json.put(JsonKey.stepId.name(), _step.getStepId());
-      json.put(JsonKey.displayName.name(), _displayName);
+      json.put(JsonKey.displayName.name(), _editableDisplayName);
       json.put(JsonKey.shortDescription.name(), _stepAnalysis.getShortDescription());
       json.put(JsonKey.description.name(), _stepAnalysis.getDescription());
       json.put(JsonKey.userNotes.name(), _userNotes);
@@ -269,7 +263,7 @@ public class StepAnalysisContext {
       throw new WdkRuntimeException("Unable to serialize instance.", e);
     }
   }
-  
+
   /**
    * Returns JSON of the following spec (for generating hash):
    * {
@@ -277,24 +271,24 @@ public class StepAnalysisContext {
    *   answerValueHash: string
    *   params: key-value object of params
    */
-  public String serializeContext() {
+  public String serializeInstance() {
     try {
-      return JsonUtil.serialize(getSharedJson());
+      return JsonUtil.serialize(getJsonForDigest());
     }
     catch (JSONException e) {
-      throw new WdkRuntimeException("Unable to serialize context.", e);
+      throw new WdkRuntimeException("Unable to serialize instance.", e);
     }
   }
-  
-  private JSONObject getSharedJson() throws JSONException {
+
+  private JSONObject getJsonForDigest() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(JsonKey.analysisName.name(), _stepAnalysis.getName());
     json.put(JsonKey.answerValueHash.name(), _answerValueHash);
-    
+
     // Sort param names so JSON values produce identical hashes
     List<String> sortedParamNames = new ArrayList<>(_formParams.keySet());
     Collections.sort(sortedParamNames);
-    
+
     JSONObject params = new JSONObject();
     for (String paramName : sortedParamNames) {
       // Sort param values so JSON values produce identical hashes
@@ -305,44 +299,44 @@ public class StepAnalysisContext {
       }
     }
     json.put(JsonKey.formParams.name(), params);
-    
+
     LOG.debug("Returning the following shared JSON: " + json);
     return json;
   }
-  
+
   public String createHash() {
-    return createHashFromString(serializeContext());
+    return createHashFromString(serializeInstance());
   }
-  
-  public static String createHashFromString(String serializedContext) {
+
+  public static String createHashFromString(String serializedInstance) {
     try {
-      return EncryptionUtil.encrypt(serializedContext);
+      return EncryptionUtil.encrypt(serializedInstance);
     }
     catch (Exception e) {
-      throw new WdkRuntimeException("Unable to generate checksum from serialized context.", e);
+      throw new WdkRuntimeException("Unable to generate checksum from serialized instance.", e);
     }
   }
-  
+
   public long getAnalysisId() {
     return _analysisId;
   }
-  
+
   public void setAnalysisId(long analysisId) {
     _analysisId = analysisId;
   }
-  
+
   public String getDisplayName() {
-    return _displayName;
+    return _editableDisplayName;
   }
-  
+
   public void setDisplayName(String displayName) {
-    _displayName = displayName;
+    _editableDisplayName = displayName;
   }
-  
+
 public String getUserNotes() {
     return _userNotes;
   }
-  
+
   public void setUserNotes(String userNotes) {
     _userNotes = userNotes;
   }
@@ -354,11 +348,11 @@ public String getUserNotes() {
   public void setStep(Step step) {
     _step = step;
   }
-  
+
   public StepAnalysis getStepAnalysis() {
     return _stepAnalysis;
   }
-  
+
   public Map<String, String[]> getFormParams() {
     return _formParams;
   }
@@ -394,15 +388,15 @@ public String getUserNotes() {
   public String getInvalidStepReason() {
     return _invalidStepReason;
   }
-  
+
   public void setIsValidStep(boolean isValidStep) {
     setIsValidStep(isValidStep, null);
   }
-  
+
   public void setIsValidStep(boolean isValidStep, String invalidReason) {
     // valid steps have no invalid reasons; set to null
     _invalidStepReason = (isValidStep ? null :
-      // invalid steps must give a reason or one will be provided 
+      // invalid steps must give a reason or one will be provided
       (invalidReason == null || invalidReason.isEmpty()) ?
           "Unable to determine." : invalidReason);
   }
@@ -411,7 +405,7 @@ public String getUserNotes() {
    * Generates and returns a salted access token.  If user can present
    * this token, they will have access to restricted properties of
    * this particular analysis.
-   * 
+   *
    * @return salted access token
    * @throws WdkModelException if unable to read WDK model's secret key file
    */

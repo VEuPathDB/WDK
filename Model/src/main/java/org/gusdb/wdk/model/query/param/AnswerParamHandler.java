@@ -57,7 +57,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
   public Step toRawValue(User user, String stableValue)
       throws WdkModelException {
     long stepId = Long.valueOf(stableValue);
-    return StepUtilities.getStep(user, stepId);
+    return StepUtilities.getStepByValidStepId(user, stepId);
   }
 
   /**
@@ -78,7 +78,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
     if (_param.isNoTranslation())
       return Integer.toString(stepId);
 
-    Step step = StepUtilities.getStep(user, stepId);
+    Step step = StepUtilities.getStepByValidStepId(user, stepId);
     AnswerValue answerValue = step.getAnswerValue();
     return answerValue.getIdSql();
   }
@@ -97,7 +97,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
   public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {
     long stepId = Long.valueOf(stableValue);
-    Step step = StepUtilities.getStep(user, stepId);
+    Step step = StepUtilities.getStepByValidStepId(user, stepId);
     AnswerValue answerValue = step.getAnswerValue(false);
     String checksum= answerValue.getChecksum();
     LOG.debug("Signature for step#" + stepId + ": " + checksum);
@@ -126,7 +126,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
     if (stepId == null || stepId.isEmpty())
       throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
     try {
-      Step step = StepUtilities.getStep(user, Long.valueOf(stepId));
+      Step step = StepUtilities.getStepByValidStepId(user, Long.valueOf(stepId));
       return Long.toString(step.getStepId());
     }
     catch (NumberFormatException ex) {
@@ -165,7 +165,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
     // if stable value is assigned, also prepare the raw value
     if (stableValue != null) {
       requestParams.setParam(_param.getName(), stableValue);
-      Step step = StepUtilities.getStep(user, Long.valueOf(stableValue));
+      Step step = StepUtilities.getStepByValidStepId(user, Long.valueOf(stableValue));
       requestParams.setAttribute(_param.getName() + Param.RAW_VALUE_SUFFIX, step);
     }
   }

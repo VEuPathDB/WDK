@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,7 +26,6 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.Wrapper;
-import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.platform.Oracle;
@@ -36,6 +36,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.wdk.events.StepImportedEvent;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.MDCUtil;
@@ -101,8 +102,6 @@ public class StepFactory {
   private static final String COLUMN_VERSION = "version";
   private static final String COLUMN_IS_PUBLIC = "is_public";
 
-  private static final boolean USE_CACHE = false;
-
   static final int COLUMN_NAME_LIMIT = 200;
 
   private static final int UNKNOWN_SIZE = -1;
@@ -139,8 +138,6 @@ public class StepFactory {
   private DatabaseInstance _userDb;
   private DataSource _userDbDs;
 
-  private StepFetcherProvider _stepFetcherProvider;
-
   // define SQL snippet "constants" to avoid building SQL each time
   private String modTimeSortSql;
   private String invalidStratSubquerySql;
@@ -176,23 +173,19 @@ public class StepFactory {
     ModelConfigUserDB userDbConfig = _wdkModel.getModelConfig().getUserDB();
     _userSchema = userDbConfig.getUserSchema();
 
-    _stepFetcherProvider = new StepFetcherProvider(this);
-
-    /* define "static" SQL statements dependent only on schema name */
-
     // sort options
     modTimeSortSql = new StringBuilder(" ORDER BY sr.").append(COLUMN_LAST_MODIFIED_TIME).append(" DESC").toString();
 
     // estimate validity of strategies by executing subquery against steps in the strategy
-    invalidStratSubquerySql = "( SELECT sr." + COLUMN_STRATEGY_ID + ", min(CAST(" + 
+    invalidStratSubquerySql = "( SELECT sr." + COLUMN_STRATEGY_ID + ", min(CAST(" +
     	_userDb.getPlatform().getNvlFunctionName() + "(" + COLUMN_IS_VALID +
         ", " + _userDb.getPlatform().convertBoolean(true) + ") AS INTEGER)) AS " + COLUMN_IS_VALID + " FROM " + _userSchema + TABLE_STRATEGY + " sr, " + _userSchema +
         TABLE_STEP + " sp WHERE sp." + COLUMN_STRATEGY_ID + " = sr." + COLUMN_STRATEGY_ID + " GROUP BY sr." +
         COLUMN_STRATEGY_ID + " )";
-    
+
     // basic select with required joins
     basicStratsSql = "SELECT sr.*, sp." + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", sp." +
-        COLUMN_QUESTION_NAME + ", sv." + COLUMN_IS_VALID + " AS " + COLUMN_IS_ALL_STEPS_VALID + " FROM " + 
+        COLUMN_QUESTION_NAME + ", sv." + COLUMN_IS_VALID + " AS " + COLUMN_IS_ALL_STEPS_VALID + " FROM " +
         _userSchema + TABLE_STRATEGY + " sr, " + _userSchema + TABLE_STEP + " sp, " + invalidStratSubquerySql +
         " sv WHERE sr." + COLUMN_ROOT_STEP_ID + " = sp." + COLUMN_STEP_ID + " AND sr." + COLUMN_USER_ID +
         " = sp." + COLUMN_USER_ID + " AND sr." + COLUMN_PROJECT_ID + " = sp." + COLUMN_PROJECT_ID + " AND sr." +
@@ -255,9 +248,9 @@ public class StepFactory {
   WdkModel getWdkModel() {
     return _wdkModel;
   }
-  
+
   /**
-   * Creates a step using new step service concept.  
+   * Creates a step using new step service concept.
    * @param user
    * @param question
    * @param dependentValues
@@ -282,14 +275,14 @@ public class StepFactory {
     LOG.debug("Creating step!");
 
     String questionName = question.getFullName();
-   
+
     // prepare the values to be inserted.
     long userId = user.getUserId();
 
     String filterName = null;
-   
+
     Exception exception = null;
-   
+
 
     // prepare SQLs
     String userIdColumn = Utilities.COLUMN_USER_ID;
@@ -312,7 +305,7 @@ public class StepFactory {
     sqlInsertStep.append(COLUMN_CUSTOM_NAME).append(", ");
     sqlInsertStep.append(COLUMN_IS_COLLAPSIBLE).append(", ");
     sqlInsertStep.append(COLUMN_COLLAPSED_NAME).append(") ");
-    
+
     sqlInsertStep.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     // Create the Step sans Answer
@@ -716,28 +709,31 @@ public class StepFactory {
   }
 
   /**
-   * @param stepId step ID for which to retrieve step
-   * @return step by step ID
-   * @throws WdkModelException if step not found or problem occurs
+   * Get a step for the provided step id, if the step exists.
+   * @param stepId step ID for which to retrieve step.  This step ID has been not previously validated, so there might not be a corresponding step.
+   * @return Optional step (not present if the step was not found in the database)
+   * @throws WdkModelException system problem occurred
    */
-  public Step getStepById(long stepId) throws WdkModelException {
+  public Optional<Step> getStepById(long stepId) throws WdkModelException {
     return loadStep(null, stepId);
   }
 
-  // get left child id, right child id in here
-  Step loadStep(User user, long stepId) throws WdkModelException {
-    if (USE_CACHE) {
-      try {
-        return CacheMgr.get().getStepCache().getValue(stepId, _stepFetcherProvider.getFetcher(user));
-      }
-      catch (ValueProductionException e) {
-        throw (WdkModelException)e.getCause();
-      }
-    }
-    return loadStepNoCache(user, stepId);
+  /**
+   * @param validStepId a previously validated step id
+   * @throws WdkModelException if no step found for this ID, or if system problem occurred
+   */
+
+  public Step getStepByValidId(long validStepId)throws WdkModelException {
+    return loadStep(null, validStepId).orElseThrow(() -> new WdkModelException("Failed retrieving step from valid ID " + validStepId));
   }
 
-  Step loadStepNoCache(User user, long stepId) throws WdkModelException {
+  Step loadStepFromValidStepId(User user, long stepId) throws WdkModelException {
+    return loadStep(user, stepId).orElseThrow(() -> new WdkModelException("Can't find step with ID: " + stepId));
+  }
+
+  // TODO: fix this so that it doesn't take a possibly NULL User
+  // get left child id, right child id in here
+  private Optional<Step> loadStep(User user, long stepId) throws WdkModelException {
     LOG.debug("Loading step#" + stepId + "....");
     PreparedStatement psStep = null;
     ResultSet rsStep = null;
@@ -750,13 +746,10 @@ public class StepFactory {
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-load-step", start);
 
       LOG.debug("SELECT step#" + stepId + " SQL finished execution, now creating step object...");
-      if (!rsStep.next())
-        throw new WdkModelException("The Step #" + stepId + " of user " +
-            (user == null ? "unspecified" : user.getEmail()) + " doesn't exist.");
-
+      if (!rsStep.next()) return Optional.empty();
       Step step = loadStep(user, rsStep);
       LOG.debug("Step#" + stepId + " object loaded.");
-      return step;
+      return Optional.of(step);
     }
     catch (SQLException | JSONException ex) {
       throw new WdkModelException("Unable to load step.", ex);
@@ -911,7 +904,7 @@ public class StepFactory {
   /**
    * This method updates the custom name, the time stamp of last running, isDeleted, isCollapsible, and
    * collapsed name
-   * 
+   *
    * @param user
    * @param step
    * @throws WdkUserException
@@ -1221,9 +1214,9 @@ public class StepFactory {
   /**
    * Make a copy of the strategy, and if the original strategy's name is not ended with ", Copy of", then that
    * suffix will be appended to it. The copy will be unsaved.
-   * 
+   *
    * The steps of the strategy will be cloned, and an id map will be filled during the cloning.
-   * 
+   *
    * @param strategy
    * @param stepIdMap
    *          the mapping from ids of old steps to those of newly cloned ones will be put into this provided
@@ -1241,11 +1234,11 @@ public class StepFactory {
   }
 
   /**
-   * 
+   *
    * @param user
    * @param oldStrategy
    * @param stepIdsMap An output map of old to new step IDs. Steps recursively encountered in the copy are added by the copy
-   * @param baseName The name to use as a basis for the new name.  If the user does not already have this name, 
+   * @param baseName The name to use as a basis for the new name.  If the user does not already have this name,
    * then use it.  Otherwise, add a numeric suffix to it.  If it already has a suffix, increment it
    * @return
    * @throws WdkModelException
@@ -1269,7 +1262,7 @@ public class StepFactory {
       throws WdkModelException {
 
     Map<String, String> paramValues = new HashMap<String, String>(oldStep.getParamValues());
-    
+
     // recursively copy AnswerParams (aka child steps)
     // also copy Datasetparams (we want a fresh copy per step because we don't track what steps are using a dataset param.  A 1-1 is easiest to manage)
     copyAnswerAndDatasetParams(paramValues, newUser, newStrategyId, oldStep, stepIdsMap);
@@ -1282,18 +1275,18 @@ public class StepFactory {
     newStep.setCollapsible(oldStep.isCollapsible());
     newStep.setCustomName(oldStep.getBaseCustomName());
     newStep.setValid(oldStep.isValid());
-    
+
     // update properties on disk
     newStep.update(false);
-    
+
     stepIdsMap.put(oldStep.getStepId(), newStep.getStepId());
-    
+
     Events.triggerAndWait(new StepCopiedEvent(oldStep, newStep), new WdkModelException(
         "Unable to execute all operations subsequent to step copy."));
 
     return newStep;
   }
-  
+
   private void copyAnswerAndDatasetParams(Map<String, String> paramValues, User newUser, long newStrategyId,
       Step oldStep, Map<Long, Long> stepIdsMap) throws WdkModelException {
     for (String paramName : paramValues.keySet()) {
@@ -1311,11 +1304,11 @@ public class StepFactory {
 
   private String copyAnswerParam(User newUser, long newStrategyId, String paramValue, User oldUser, Map<Long, Long> stepIdsMap) throws WdkModelException {
     int oldStepId = Integer.parseInt(paramValue);
-    Step oldChildStep = StepUtilities.getStep(oldUser, oldStepId);
+    Step oldChildStep = StepUtilities.getStepByValidStepId(oldUser, oldStepId);
     Step newChildStep = copyStepTree(newUser, newStrategyId, oldChildStep, stepIdsMap);
     return Long.toString(newChildStep.getStepId());
   }
-  
+
   private String copyDatasetParam(User newUser, String paramValue, User oldUser) throws WdkModelException {
     DatasetFactory datasetFactory = _wdkModel.getDatasetFactory();
     int oldUserDatasetId = Integer.parseInt(paramValue);
@@ -1541,7 +1534,7 @@ public class StepFactory {
         if (rsCheckName.next())
           return loadStrategy(user, rsCheckName.getInt(COLUMN_STRATEGY_ID), false);
       }
-      
+
       // if newName is null, generate default name from root step (by adding/incrementing numeric suffix)
       else {
         newName = addSuffixToStratNameIfNeeded(user, root.getCustomName(), saved);
@@ -1701,7 +1694,7 @@ public class StepFactory {
       while (rsNames.next())
         names.add(rsNames.getString(COLUMN_NAME));
 
-      // randomly find the first name that matches oldName (\d+).  
+      // randomly find the first name that matches oldName (\d+).
       // increment that numeric suffix, and continue looping until the incremented guys is not found.
       // that's our new name.
       String name = oldName;
@@ -1807,7 +1800,7 @@ public class StepFactory {
       return;
     Step step2;
     try {
-      step2 = getStepById(step2Id);
+      step2 = getStepByValidId(step2Id);
     }
     catch (Exception e) {
       throw new WdkIllegalArgumentException(getVerificationPrefix() + "Unable to load step with ID " +
@@ -1846,7 +1839,7 @@ public class StepFactory {
 
   /**
    * This method will reset the estimate size of the step and all other steps that depends on it.
-   * 
+   *
    * @param fromStep
    * @return
    * @throws WdkModelException
@@ -1866,7 +1859,7 @@ public class StepFactory {
 
   /**
    * Generates an SQL that will return the step and all the steps along the path back to the root.
-   * 
+   *
    * @param stepId
    * @return an SQL that returns a step_id column.
    * @throws WdkModelException
@@ -1897,7 +1890,7 @@ public class StepFactory {
 
   /**
    * TODO - consider refactor this code into platform.
-   * 
+   *
    * @param stepId
    * @return
    * @throws WdkModelException
