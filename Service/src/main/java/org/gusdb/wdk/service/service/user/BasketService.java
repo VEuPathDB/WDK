@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
@@ -27,6 +28,7 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.BasketFactory;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.request.RecordRequest;
@@ -214,7 +216,9 @@ public class BasketService extends UserService {
     try {
       User user = getPrivateRegisteredUser();
       RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
-      AnswerSpec basketAnswerSpec = AnswerSpecFactory.createFromQuestion(recordClass.getRealtimeBasketQuestion());
+      RunnableObj<AnswerSpec> basketAnswerSpec = AnswerSpec.builder(getWdkModel())
+          .setQuestionName(recordClass.getRealtimeBasketQuestion().getFullName())
+          .buildRunnable(getSessionUser(), StepContainer.emptyContainer());
       AnswerRequest request = new AnswerRequest(basketAnswerSpec, formattingParser.createFromTopLevelObject(requestBody));
       return AnswerService.getAnswerResponse(user, request);
     }

@@ -243,14 +243,17 @@ public class Strategy implements StrategyElement, StepContainer {
           join(stepMap.values().stream().map(step -> step.getStepId()), ", "));
     }
 
-    // build StepBuilders from the bottom up into a tree of Steps
+    // Build StepBuilders from the bottom up into a tree of Steps, setting dirty
+    // bits on steps downstream from dirty steps as it builds the tree.
     UserCache userCache = new UserCache(user);
     Strategy thisStrategy = this;
     try {
       TreeNode<Step> stepTree = builderTree.mapStructure((builder, mappedChildren) ->
         wrapException(() -> new TreeNode<>(
-          builder.build(userCache, validationLevel, thisStrategy))
-            .addChildNodes(mappedChildren, node -> true)));
+          builder
+            .setResultSizeDirty(thisOrAnyChildrenDirty(builder, mappedChildren))
+            .build(userCache, validationLevel, thisStrategy))
+              .addChildNodes(mappedChildren, node -> true)));
       return getMapFromList(stepTree.findAll(node -> true), node ->
           new TwoTuple<Long,Step>(node.getContents().getStepId(), node.getContents()));
     }
@@ -259,16 +262,21 @@ public class Strategy implements StrategyElement, StepContainer {
     }
   }
 
+  private boolean thisOrAnyChildrenDirty(StepBuilder builder, List<TreeNode<Step>> mappedChildren) {
+    return builder.isResultSizeDirty() ||
+        reduce(
+          mappedChildren,
+          (isDirty, childNode) -> isDirty || childNode.getContents().isResultSizeDirty(),
+          false);
+  }
+
   /**
-   * Recursive function builds a tree of step builders from the passed map,
-   * starting by assigning the stepbuilder of stepId as a child to parentNode.
-   * If parentNode is null, an initial node is created for the root.
+   * Recursive function builds a tree of step builders from the passed map.
    *
-   * @param steps
-   * @param stepId
-   * @param parentNode
-   * @return
-   * @throws WdkModelException
+   * @param steps map of step builders to put in tree
+   * @param stepId step being added to the tree in the current recursive call
+   * @return tree of steps whose root has the passed stepId
+   * @throws WdkModelException if step ID referenced that does not exist in map
    */
   private TreeNode<StepBuilder> buildTree(Map<Long, StepBuilder> steps, long stepId) throws WdkModelException {
     StepBuilder step = steps.get(stepId);

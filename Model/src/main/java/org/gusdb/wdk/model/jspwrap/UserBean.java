@@ -311,7 +311,7 @@ public class UserBean {
    * @see org.gusdb.wdk.model.user.User#deleteStrategies()
    */
   @Deprecated
-  public void deleteStrategies() throws WdkModelException {
+  public void deleteStrategies() {
     _wdkModel.getStepFactory().deleteStrategies(_user, false);
   }
 
