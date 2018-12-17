@@ -10,7 +10,6 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonWriter;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
@@ -30,6 +29,7 @@ import org.gusdb.wdk.model.report.config.AnswerDetails;
 import org.gusdb.wdk.model.report.config.AnswerDetailsFactory;
 import org.gusdb.wdk.model.report.util.AttributeFieldSortSpec;
 import org.gusdb.wdk.model.report.util.RecordFormatter;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -158,8 +158,8 @@ public class DefaultJsonReporter extends AbstractReporter {
     meta.put(JsonKeys.RECORD_CLASS_NAME, answerValue.getAnswerSpec().getQuestion().getRecordClass().getFullName());
     meta.put(JsonKeys.TOTAL_COUNT, answerValue.getResultSizeFactory().getResultSize());
     meta.put(JsonKeys.RESPONSE_COUNT, numRecordsReturned);
-    meta.put(JsonKeys.ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(includedAttributes));
-    meta.put(JsonKeys.TABLES, FormatUtil.stringCollectionToJsonArray(includedTables));
+    meta.put(JsonKeys.ATTRIBUTES, new JSONArray(includedAttributes));
+    meta.put(JsonKeys.TABLES, new JSONArray(includedTables));
     return meta;
   }
 

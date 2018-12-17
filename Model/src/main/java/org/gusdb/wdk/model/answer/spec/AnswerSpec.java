@@ -78,7 +78,7 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
 
   AnswerSpec(User user, WdkModel wdkModel, String questionName, QueryInstanceSpecBuilder queryInstanceSpec,
       String legacyFilterName, FilterOptionListBuilder filters, FilterOptionListBuilder viewFilters,
-      ValidationLevel validationLevel, StepContainer stepContainer) throws WdkModelException {
+      ValidationLevel validationLevel, StepContainer stepContainer, FillStrategy fillStrategy) throws WdkModelException {
     _wdkModel = wdkModel;
     _questionName = questionName;
     _legacyFilterName = legacyFilterName;
@@ -96,7 +96,7 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
     else {
       _question = wdkModel.getQuestion(questionName).get(); // we know this will not throw
       _queryInstanceSpec = queryInstanceSpec.buildValidated(user, _question.getQuery(),
-          stepContainer, validationLevel, FillStrategy.NO_FILL);
+          stepContainer, validationLevel, fillStrategy);
       if (_queryInstanceSpec.isValid()) {
         // replace passed filter lists with new ones that have always-on filters applied
         SimpleAnswerSpec simpleSpec = new SimpleAnswerSpec(_question, _queryInstanceSpec);

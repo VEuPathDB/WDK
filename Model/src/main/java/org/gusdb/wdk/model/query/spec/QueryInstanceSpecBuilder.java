@@ -20,17 +20,24 @@ import org.gusdb.wdk.model.user.User;
 public class QueryInstanceSpecBuilder extends ReadOnlyHashMap.Builder<String,String>  {
 
   public static enum FillStrategy {
-    NO_FILL(false),
-    FILL_PARAM_IF_MISSING(true);
+    NO_FILL(false, false),
+    FILL_PARAM_IF_MISSING(true, false),
+    FILL_PARAM_IF_MISSING_OR_INVALID(true, true);
 
-    private final boolean _fill;
+    private final boolean _fillWhenMissing;
+    private final boolean _fillWhenInvalid;
 
-    private FillStrategy(boolean fill) {
-      _fill = fill;
+    private FillStrategy(boolean fillWhenMissing, boolean fillWhenInvalid) {
+      _fillWhenMissing = fillWhenMissing;
+      _fillWhenInvalid = fillWhenInvalid;
     }
 
-    public boolean shouldFill() {
-      return _fill;
+    public boolean shouldFillWhenMissing() {
+      return _fillWhenMissing;
+    }
+
+    public boolean shouldFillWhenInvalid() {
+      return _fillWhenInvalid;
     }
   }
 

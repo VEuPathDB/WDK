@@ -26,7 +26,7 @@ public class PartiallyValidatedStableValues extends HashMap<String,String> {
   private final User _user;
   private final Map<String, ParamValidity> _validationStatusMap = new HashMap<>();
 
-  public PartiallyValidatedStableValues(User user, Map<String,String> initialValues) {
+  PartiallyValidatedStableValues(User user, Map<String,String> initialValues) {
     _user = user;
     putAll(initialValues);
   }

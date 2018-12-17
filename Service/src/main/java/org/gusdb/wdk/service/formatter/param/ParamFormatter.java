@@ -1,9 +1,13 @@
 package org.gusdb.wdk.service.formatter.param;
 
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,6 +21,13 @@ public class ParamFormatter<T extends Param> {
   }
 
   /**
+   * @throws WdkModelException if error occurs while collecting information 
+   */
+  public JSONObject getJson(QueryInstanceSpec spec) throws WdkModelException {
+    return getBaseJson(spec);
+  }
+
+  /**
    * Formats this param into JSON.
    * 
    * @return This param's data as JSON
@@ -24,8 +35,7 @@ public class ParamFormatter<T extends Param> {
    * @throws WdkModelException if system problem occurs
    * @throws WdkUserException if data in param is invalid for some reason
    */
-  public JSONObject getJson()
-      throws JSONException, WdkModelException, WdkUserException {
+  protected JSONObject getBaseJson(QueryInstanceSpec spec) {
     JSONObject pJson = new JSONObject();
     pJson.put(JsonKeys.NAME, _param.getName());
     pJson.put(JsonKeys.DISPLAY_NAME, _param.getPrompt());
@@ -34,23 +44,11 @@ public class ParamFormatter<T extends Param> {
     pJson.put(JsonKeys.IS_VISIBLE, _param.isVisible());
     pJson.put(JsonKeys.GROUP, _param.getGroup().getName());
     pJson.put(JsonKeys.IS_READ_ONLY, _param.isReadonly());
-    JSONArray dependentParamsJson = new JSONArray();
-    for (Param p : _param.getDependentParams()) dependentParamsJson.put(p.getName());
-    pJson.put(JsonKeys.DEPENDENT_PARAMS, dependentParamsJson);
-    pJson.put(JsonKeys.DEFAULT_VALUE, getDefault());
+    pJson.put(JsonKeys.DEPENDENT_PARAMS, new JSONArray(
+        mapToList(_param.getDependentParams(), NamedObject::getName)));
+    pJson.put(JsonKeys.DEFAULT_VALUE, _param.getXmlDefault());
+    pJson.put(JsonKeys.STABLE_VALUE, spec.get(_param.getName()));
     return pJson;
-  }
-
-  /**
-   * Returns a context-free default value.  Subclasses that override the
-   * default value in JSON should override this method and return null since
-   * determining the default value can be expensive.
-   * 
-   * @return default value
-   * @throws WdkModelException
-   */
-  protected String getDefault() throws WdkModelException {
-    return _param.getDefault();
   }
 
 }

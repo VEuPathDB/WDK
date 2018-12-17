@@ -90,6 +90,11 @@ public class JsonKeys {
   public static final String SORTING = "sorting";
   public static final String DIRECTION = "direction";
 
+  // question specific keys
+  public static final String OUTPUT_RECORD_CLASS_NAME = "outputRecordClassName";
+  public static final String ALLOWED_PRIMARY_INPUT_RECORD_CLASS_NAMES = "allowedPrimaryInputRecordClassNames";
+  public static final String ALLOWED_SECONDARY_INPUT_RECORD_CLASS_NAMES = "allowedSecondaryInputRecordClassNames";
+
   // record class specific keys
   public static final String HAS_ALL_RECORDS_QUERY = "hasAllRecordsQuery";
 
@@ -99,6 +104,7 @@ public class JsonKeys {
   public static final String STEP_ANALYSIS_PLUGINS = "stepAnalysisPlugins";
 
   // param-related keys
+  public static final String STABLE_VALUE = "stableValue";
   public static final String DEFAULT_VALUE = "defaultValue";
   public static final String VOCABULARY = "vocabulary";
   public static final String DEPENDENT_PARAMS = "dependentParams";

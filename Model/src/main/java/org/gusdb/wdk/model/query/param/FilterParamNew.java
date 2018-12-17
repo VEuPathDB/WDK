@@ -33,6 +33,7 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
@@ -389,7 +390,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return <propertyName, <infoKey, infoValue>> 
    * @throws WdkModelException
    */
-  public Map<String, OntologyItem> getOntology(User user, Map<String, String> contextParamValues)
+  public Map<String, OntologyItem> getOntology(QueryInstanceSpec spec)
       throws WdkModelException {
 
     contextParamValues = ensureRequiredContext(user, contextParamValues);
@@ -716,8 +717,7 @@ public class FilterParamNew extends AbstractDependentParam {
   
 
   
-  public Map<String, Set<String>> getValuesMap(User user,
-      Map<String, String> contextParamValues) throws WdkModelException {
+  public Map<String, Set<String>> getValuesMap(QueryInstanceSpec spec) throws WdkModelException {
     
     contextParamValues = ensureRequiredContext(user, contextParamValues);
 

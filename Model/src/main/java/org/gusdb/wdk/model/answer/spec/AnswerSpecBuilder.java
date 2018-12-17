@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
@@ -61,9 +62,15 @@ public class AnswerSpecBuilder {
     return this;
   }
 
-  public AnswerSpec build(User user, StepContainer stepContainer, ValidationLevel level) throws WdkModelException {
+  public AnswerSpec build(User user, StepContainer stepContainer,
+      ValidationLevel level) throws WdkModelException {
+    return build(user, stepContainer, level, FillStrategy.NO_FILL);
+  }
+
+  public AnswerSpec build(User user, StepContainer stepContainer,
+      ValidationLevel level, FillStrategy fillStrategy) throws WdkModelException {
     return new AnswerSpec(user, _wdkModel, _questionName, _queryInstanceSpec,
-        _legacyFilterName, _filters, _viewFilters, level, stepContainer);
+        _legacyFilterName, _filters, _viewFilters, level, stepContainer, fillStrategy);
   }
 
   /**

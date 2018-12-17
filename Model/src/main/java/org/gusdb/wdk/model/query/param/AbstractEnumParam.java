@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -359,8 +360,8 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return getVocabInstance(user, contextParamValues).getSanityDefaultValue(sanitySelectMode, getMultiPick(), getSanityDefault());
   }
 
-  public EnumParamVocabInstance getVocabInstance(User user) {
-    return getVocabInstance(user, null);
+  public EnumParamVocabInstance getVocabInstance(QueryInstanceSpec spec) {
+    return getVocabInstance(spec, null);
   }
 
   public String[] getVocab(User user) {

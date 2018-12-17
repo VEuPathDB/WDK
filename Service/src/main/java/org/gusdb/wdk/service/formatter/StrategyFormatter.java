@@ -35,7 +35,6 @@ public class StrategyFormatter {
         .put(JsonKeys.IS_SAVED, strategy.isSaved())
         .put(JsonKeys.IS_VALID, strategy.isValid())
         .put(JsonKeys.IS_DELETED, strategy.isDeleted())
-        .put(JsonKeys.IS_PUBLIC, strategy.isPublic())
         .put(JsonKeys.ORGANIZATION, strategy.getUser().getProfileProperties().get("organization"))
         .put(JsonKeys.ESTIMATED_SIZE, strategy.getEstimatedSize());
   }
