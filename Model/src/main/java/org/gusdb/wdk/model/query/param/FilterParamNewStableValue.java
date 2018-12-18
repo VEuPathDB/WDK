@@ -115,7 +115,7 @@ public class FilterParamNewStableValue {
     if (memberFilters.size() != 0) {
       Set<String> relevantOntologyTerms = memberFilters.stream().map(FilterParamNewStableValue.MembersFilter::getField).collect(Collectors.toSet());
       Map<String, Set<String>> metadataMembers = _param.getValuesMap(user, contextParamValues,
-          relevantOntologyTerms, ontology);
+								     null, ontology);
 
       // iterate through our member filters, validating the values of each
       for (MembersFilter mf : memberFilters) {
