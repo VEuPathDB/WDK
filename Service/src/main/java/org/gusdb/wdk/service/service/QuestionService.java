@@ -1,15 +1,12 @@
 package org.gusdb.wdk.service.service;
 
-import static org.gusdb.fgputil.functional.Functions.filter;
+import static org.gusdb.fgputil.functional.Functions.f0Swallow;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -26,9 +23,10 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Named.NamedObject;
-import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -38,21 +36,16 @@ import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
 import org.gusdb.wdk.model.query.param.OntologyItem;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.ParamHandler;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.question.QuestionSet;
-import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.StepContainer;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.QuestionFormatter;
+import org.gusdb.wdk.service.request.QuestionRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-
 
 /**
  * Provides access to Question data configured in the WDK Model.  All question
@@ -67,10 +60,8 @@ import org.json.JSONObject;
 @Produces(MediaType.APPLICATION_JSON)
 public class QuestionService extends AbstractWdkService {
 
-  @SuppressWarnings("unused")
-  private static final Logger LOG = Logger.getLogger(QuestionService.class);
-
-  private static final String QUESTION_RESOURCE = "Question Name: ";
+  private static final String QUESTION_RESOURCE = "question: ";
+  private static final String FILTER_PARAM_RESOURCE = "filter parameter: ";
 
   /**
    * Returns an array of questions in this site's model.  Caller can filter by
@@ -95,20 +86,6 @@ public class QuestionService extends AbstractWdkService {
         .filter(q -> recordClassFilter.test(q.getRecordClass().getFullName()))
         .collect(Collectors.toList());
     return QuestionFormatter.getQuestionsJsonWithoutParams(questions);
-  }
-
-  private static <T extends NamedObject> Predicate<String> stringListFilter(String commaDelimitedStrs, List<T> validNames) {
-    if (commaDelimitedStrs == null || commaDelimitedStrs.trim().isEmpty()) {
-      return str -> true;
-    }
-    List<String> strs = Arrays.asList(commaDelimitedStrs.trim().split(","));
-    List<String> validStrs = mapToList(validNames, NamedObject::getFullName);
-    for (String str : strs) {
-      if (!validStrs.contains(str)) {
-        throw new BadRequestException("Specified filter value '" + str + "' is not valid.");
-      }
-    }
-    return str -> strs.contains(str);
   }
 
   /**
@@ -137,17 +114,9 @@ public class QuestionService extends AbstractWdkService {
     return Response.ok(QuestionFormatter.getQuestionJsonWithParamValues(spec).toString()).build();
   }
 
-  private Question getQuestionFromSegment(String questionName) {
-    return getWdkModel().getQuestionByUrlSegment(questionName)
-      .orElseGet(() -> getWdkModel().getQuestion(questionName)
-        .orElseThrow(() ->
-          // A WDK Model Exception here implies that a question of the name provided cannot be found.
-          new NotFoundException(AbstractWdkService.formatNotFound(QUESTION_RESOURCE + questionName))));
-  }
-
   /**
-   * Get information about a single question, given a complete set of parameter
-   * values.  Any missing or invalid parameters are replace with valid values
+   * Returns information about a single question, given a set of parameter
+   * values.  Any missing or invalid parameters are replaced with valid values
    * and the associated vocabularies.  Response includes parameter information,
    * including vocabularies and metadata based on the incoming values. This
    * endpoint is typically used to render a revise question page.  Input JSON
@@ -163,6 +132,8 @@ public class QuestionService extends AbstractWdkService {
    * @param body body of request (see JSON above)
    * @return question json
    * @throws WdkModelException if unable to generate param information
+   * @throws DataValidationException 
+   * @throws RequestMisformatException 
    */
   @POST
   @Path("/{questionName}")
@@ -171,28 +142,17 @@ public class QuestionService extends AbstractWdkService {
   public Response getQuestionRevise(
       @PathParam("questionName") String questionName,
       String body)
-          throws WdkModelException {
+          throws WdkModelException, RequestMisformatException, DataValidationException {
     Question question = getQuestionFromSegment(questionName);
-    // extract context values from body
-    Map<String, String> contextParamValues;
-    try {
-      JSONObject jsonBody = new JSONObject(body);
-      contextParamValues = parseParamValuesFromJson(jsonBody, question);
-    }
-    catch (JSONException e) {
-      throw new BadRequestException(e);
-    }
-
-    // confirm that we got all param values
-    for (Param param : question.getParams()) {
-      if (!contextParamValues.containsKey(param.getName()))
-        throw new WdkUserException("This call to the question service requires " +
-            "that the body contain values for all params.  But it is missing one for: " + param.getName());
-      param.validate(getSessionUser(), contextParamValues.get(param.getName()), contextParamValues);
-    }
-
-    return Response.ok(QuestionFormatter.getQuestionJson(question, true, getSessionUser(),
-        contextParamValues).toString()).build();
+    AnswerSpec spec = AnswerSpec.builder(getWdkModel())
+        .setQuestionName(question.getFullName())
+        .setParamValues(QuestionRequest.parse(body, question).getContextParamValues())
+        .build(
+            getSessionUser(), 
+            StepContainer.emptyContainer(),
+            ValidationLevel.SEMANTIC,
+            FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID);
+    return Response.ok(QuestionFormatter.getQuestionJsonWithParamValues(spec).toString()).build();
   }
 
   /**
@@ -216,87 +176,72 @@ public class QuestionService extends AbstractWdkService {
    * @return
    * @throws WdkUserException
    * @throws WdkModelException
+   * @throws DataValidationException 
    */
   @POST
   @Path("/{questionName}/refreshed-dependent-params")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getQuestionChange(@PathParam("questionName") String questionName, String body)
-          throws WdkUserException, WdkModelException {
+          throws WdkUserException, WdkModelException, DataValidationException {
 
     // get requested question and throw not found if invalid
     Question question = getQuestionFromSegment(questionName);
 
     // parse incoming JSON into existing and changed values
-    Map<String, String> contextParamValues;
-    String changedParamName;
-    String changedParamValue;
-    try {
-      JSONObject jsonBody = new JSONObject(body);
-      JSONObject changedParam = jsonBody.getJSONObject("changedParam");
-      changedParamName = changedParam.getString("name");
-      changedParamValue = changedParam.getString("value");
-      contextParamValues = parseParamValuesFromJson(jsonBody, question);
-    }
-    catch (JSONException e) {
-      throw new BadRequestException(e);
+    QuestionRequest request = QuestionRequest.parse(body, question);
+
+    if (!request.getChangedParam().isPresent()) {
+      throw new RequestMisformatException("'changedParam' property is required at this endpoint");
     }
 
     // find the param object for the changed param
-    Param changedParam = findParam(question, changedParamName);
+    Entry<String,String> changedParamEntry = request.getChangedParam().get();
+    Param changedParam = question.getParamMap().get(changedParamEntry.getKey());
 
-    // validate the changed param value (will also validate the paramValuesContext it needs, if dependent)
-    changedParam.validate(getSessionUser(), changedParamValue, contextParamValues);
+    // make sure incoming values reflect changed value
+    Map<String,String> contextParams = new MapBuilder<String,String>(
+        request.getContextParamValues()).put(changedParamEntry).toMap();
 
-    // get stale params
+    // Build an answer spec with the passed values but replace missing/invalid
+    // values with defaults.  Will remove unaffected params below.
+    AnswerSpec answerSpec = AnswerSpec.builder(getWdkModel())
+        .setQuestionName(question.getFullName())
+        .setParamValues(contextParams)
+        .build(
+            getSessionUser(),
+            StepContainer.emptyContainer(),
+            ValidationLevel.SEMANTIC,
+            FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID);
+
+    // see if changed param value changed during build; if so, then invalid
+    if (!answerSpec.getQueryInstanceSpec().get(changedParam.getName()).equals(changedParamEntry.getValue())) {
+      // means the build process determined the incoming changed param value to
+      // be invalid and changed it to the default; this is disallowed, so throw
+      // TODO: figure out an elegant way to tell the user WHY the value is invalid
+      throw new DataValidationException("The passed changed param value '" + 
+          changedParamEntry.getValue() + "' is invalid.");
+    }
+
+    // get stale params of the changed value; if any of these are invalid, also throw exception
     Set<Param> staleDependentParams = changedParam.getStaleDependentParams();
-
-    // remove stale param values from the context
-    for (Param dependentParam : staleDependentParams) {
-      contextParamValues.remove(dependentParam.getName());
+    Map<String,List<String>> errors = answerSpec.getValidationBundle().getKeyedErrors();
+    if (!errors.isEmpty()) {
+      for (Param param : staleDependentParams) {
+        if (errors.containsKey(param.getName())) {
+          throw new WdkModelException("Unable to generate valid values for question " +
+              question.getFullName() + FormatUtil.NL + answerSpec.getValidationBundle().toString());
+        }
+      }
     }
 
-    // set the new value on the contextValues map so new dependent values can be generated
-    contextParamValues.put(changedParamName, changedParamValue);
-
-    // format JSON response (will fill missing values with defaults based on context)
-    return Response.ok(QuestionFormatter.getParamsJson(
-        staleDependentParams,
-        true,
-        getSessionUser(),
-        contextParamValues).toString()).build();
-  }
-
-  private static Param findParam(Question question, String changedParamName) throws WdkUserException {
-    List<Param> changedParamList = filter(question.getParamMap().values(),
-        param -> param.getName().equals(changedParamName));
-    if (changedParamList.isEmpty()) {
-      throw new WdkUserException("Param with name '" + changedParamName +
-          "' is no longer valid for question '" + question.getName() + "'");
-    }
-    return changedParamList.get(0);
-  }
-
-  private static Map<String, String> parseParamValuesFromJson(JSONObject bodyJson, Question question)
-      throws RequestMisformatException {
-
-    Map<String, String> contextParamValues = new HashMap<>();
-    JSONObject contextJson = bodyJson.getJSONObject("contextParamValues");
-
-    for (Iterator<?> keys = contextJson.keys(); keys.hasNext();) {
-      String keyName = (String) keys.next();
-      String keyValue = contextJson.get(keyName).toString();
-
-      if (keyValue == null)
-        throw new WdkUserException("Parameter name '" + keyName + "' has null value");
-
-      if (!question.getParamMap().containsKey(keyName))
-        throw new WdkUserException("Parameter '" + keyName + "' is not in question '" + question.getFullName() + "'.");
-
-      contextParamValues.put(keyName, keyValue);
-    }
-
-    return contextParamValues;
+    // output JSON but tell formatter to skip non-stale params; their values
+    // may have inadvertently changed (if incoming values were invalid) but the
+    // client should only be modifying params that depend on the changed param
+    List<String> paramsToOutput = mapToList(staleDependentParams, NamedObject::getName);
+    JSONArray output = QuestionFormatter.getParamsJson(answerSpec.getQueryInstanceSpec(),
+        param -> paramsToOutput.contains(param.getName()));
+    return Response.ok(output.toString()).build();
   }
 
   /**
@@ -315,9 +260,9 @@ public class QuestionService extends AbstractWdkService {
    * @param paramName
    * @param body
    * @return
-   * @throws WdkUserException
    * @throws WdkModelException
    * @throws DataValidationException
+   * @throws RequestMisformatException 
    */
   @POST
   @Path("/{questionName}/{paramName}/ontology-term-summary")
@@ -327,35 +272,38 @@ public class QuestionService extends AbstractWdkService {
       @PathParam("questionName") String questionName,
       @PathParam("paramName") String paramName,
       String body)
-          throws WdkUserException, WdkModelException, DataValidationException {
-    try {
-      Question question = getQuestionFromSegment(questionName);
-      FilterParamNew filterParam = getFilterParam(questionName, question, paramName);
-      User user = getSessionUser();
-      JSONObject jsonBody = new JSONObject(body);
-      String ontologyId = jsonBody.getString("ontologyId");
-      Map<String, String> contextParamValues = parseParamValuesFromJson(jsonBody, question);
-      OntologyItem ontologyItem = filterParam.getOntology(user, contextParamValues).get(ontologyId);
-      if (ontologyItem == null) {
-        throw new DataValidationException("Requested ontology item '" + ontologyId + "' does not exist for this parameter (" + paramName + ").");
-      }
-      JSONObject summaryJson = getOntologyTermSummaryJson(user, contextParamValues, filterParam,
-          ontologyItem, jsonBody, ontologyItem.getType().getJavaClass());
-      return Response.ok(summaryJson.toString()).build();
+          throws WdkModelException, DataValidationException, RequestMisformatException {
+
+    // parse elements of the request
+    Question question = getQuestionFromSegment(questionName);
+    FilterParamNew filterParam = getFilterParam(question, paramName);
+    Map<String, String> contextParamValues = QuestionRequest.parse(body, question).getContextParamValues();
+    JSONObject jsonBody = new JSONObject(body);
+    String ontologyId = jsonBody.getString("ontologyId");
+
+    // build a query instance spec from passed values
+    SemanticallyValid<QueryInstanceSpec> validSpec = QueryInstanceSpec.builder()
+        .putAll(contextParamValues)
+        .buildValidated(
+            getSessionUser(),
+            question.getQuery(),
+            StepContainer.emptyContainer(),
+            ValidationLevel.SEMANTIC,
+            FillStrategy.NO_FILL)
+        .getSemanticallyValid()
+        .getOrThrow(spec -> new DataValidationException(spec.getValidationBundle().toString()));
+
+    // try to look up ontology term with this ID
+    OntologyItem ontologyItem = filterParam.getOntology(validSpec).get(ontologyId);
+    if (ontologyItem == null) {
+      throw new DataValidationException("Requested ontology item '" + ontologyId + "' does not exist for this parameter (" + paramName + ").");
     }
-    catch (JSONException e) {
-      throw new BadRequestException(e);
-    }
-  }
 
-  private <T> JSONObject getOntologyTermSummaryJson(User user, Map<String, String> contextParamValues,
-      FilterParamNew param, OntologyItem ontologyItem, JSONObject jsonBody, Class<T> ontologyItemClass)
-          throws WdkModelException {
-
-    FilterParamNew.OntologyTermSummary<T> summary = param.getOntologyTermSummary(
-        user, contextParamValues, ontologyItem, jsonBody, ontologyItemClass);
-
-    return QuestionFormatter.getOntologyTermSummaryJson(summary);
+    // get term summary and format
+    JSONObject summaryJson = QuestionFormatter.getOntologyTermSummaryJson(
+        f0Swallow(() -> filterParam.getOntologyTermSummary(validSpec, ontologyItem,
+            jsonBody, ontologyItem.getType().getJavaClass())));
+    return Response.ok(summaryJson.toString()).build();
   }
 
   /**
@@ -374,6 +322,8 @@ public class QuestionService extends AbstractWdkService {
    * @return
    * @throws WdkUserException
    * @throws WdkModelException
+   * @throws DataValidationException 
+   * @throws RequestMisformatException 
    */
   @POST
   @Path("/{questionName}/{paramName}/summary-counts")
@@ -382,36 +332,61 @@ public class QuestionService extends AbstractWdkService {
   public Response getFilterParamSummaryCounts(
       @PathParam("questionName") String questionName,
       @PathParam("paramName") String paramName,
-      String body) throws WdkUserException, WdkModelException {
+      String body)
+          throws WdkModelException, RequestMisformatException, DataValidationException {
 
+    // parse elements of the request
     Question question = getQuestionFromSegment(questionName);
-    FilterParamNew filterParam = getFilterParam(questionName, question, paramName);
+    FilterParamNew filterParam = getFilterParam(question, paramName);
+    Map<String, String> contextParamValues = QuestionRequest.parse(body, question).getContextParamValues();
+    JSONObject jsonBody = new JSONObject(body);
 
-    Map<String, String> contextParamValues;
+    // build a query instance spec from passed values
+    SemanticallyValid<QueryInstanceSpec> validSpec = QueryInstanceSpec.builder()
+        .putAll(contextParamValues)
+        .buildValidated(
+            getSessionUser(),
+            question.getQuery(),
+            StepContainer.emptyContainer(),
+            ValidationLevel.SEMANTIC,
+            FillStrategy.NO_FILL)
+        .getSemanticallyValid()
+        .getOrThrow(spec -> new DataValidationException(spec.getValidationBundle().toString()));
 
-    try {
-      JSONObject jsonBody = new JSONObject(body);
-      contextParamValues = parseParamValuesFromJson(jsonBody, question);
-      FilterParamSummaryCounts counts = filterParam.getTotalsSummary(getSessionUser(), contextParamValues, jsonBody);
-      return Response.ok(QuestionFormatter.getFilterParamSummaryJson(counts).toString()).build();
-    }
-    catch (JSONException e) {
-      throw new BadRequestException(e);
-    }
+    FilterParamSummaryCounts counts = filterParam.getTotalsSummary(validSpec, jsonBody);
+    JSONObject result = QuestionFormatter.getFilterParamSummaryJson(counts);
+    return Response.ok(result.toString()).build();
+
   }
 
-  private Param getParam(String questionName, Question question, String paramName) {
-    if (question == null)
-      throw new NotFoundException(AbstractWdkService.NOT_FOUND + questionName);
-    Param param = question.getQuery().getParamMap().get(paramName);
-    if (param == null)
-      throw new NotFoundException(AbstractWdkService.NOT_FOUND + paramName);
-    return param;
+  private static <T extends NamedObject> Predicate<String> stringListFilter(
+      String commaDelimitedStrs, List<T> validValues) {
+    if (commaDelimitedStrs == null || commaDelimitedStrs.trim().isEmpty()) {
+      return str -> true;
+    }
+    List<String> strs = Arrays.asList(commaDelimitedStrs.trim().split(","));
+    List<String> validStrs = mapToList(validValues, NamedObject::getFullName);
+    for (String str : strs) {
+      if (!validStrs.contains(str)) {
+        throw new BadRequestException("Specified filter value '" + str + "' is not valid.");
+      }
+    }
+    return str -> strs.contains(str);
   }
 
-  private FilterParamNew getFilterParam(String questionName, Question question, String paramName) throws WdkUserException {
-    Param param = getParam(questionName, question, paramName);
-    if (!(param instanceof FilterParamNew)) throw new WdkUserException(paramName + " is not a FilterParam");
+  private Question getQuestionFromSegment(String questionName) {
+    return getWdkModel().getQuestionByUrlSegment(questionName)
+      .orElseGet(() -> getWdkModel().getQuestion(questionName)
+        .orElseThrow(() ->
+          // A WDK Model Exception here implies that a question of the name provided cannot be found.
+          new NotFoundException(formatNotFound(QUESTION_RESOURCE + questionName))));
+  }
+
+  private static FilterParamNew getFilterParam(Question question, String paramName) {
+    Param param = question.getParamMap().get(paramName);
+    if (param == null || !(param instanceof FilterParamNew)) {
+      throw new NotFoundException(formatNotFound(FILTER_PARAM_RESOURCE + paramName));
+    }
     return (FilterParamNew)param;
   }
 

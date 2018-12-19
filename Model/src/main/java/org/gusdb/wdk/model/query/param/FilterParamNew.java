@@ -22,6 +22,8 @@ import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.cache.SqlCountCache;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -33,8 +35,10 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -384,26 +388,23 @@ public class FilterParamNew extends AbstractDependentParam {
   }
 
   /**
-   * We cache this because typically ontologies are sensitive only to the grossest dependent param (eg,
+   * We cache this because typically ontologies are sensitive only to the grossest dependent param (e.g.
    * dataset), so will be reused across users.
    * 
    * @return <propertyName, <infoKey, infoValue>> 
    * @throws WdkModelException
    */
-  public Map<String, OntologyItem> getOntology(QueryInstanceSpec spec)
+  public Map<String, OntologyItem> getOntology(SemanticallyValid<QueryInstanceSpec> validSpec)
       throws WdkModelException {
-
-    contextParamValues = ensureRequiredContext(user, contextParamValues);
-
-    OntologyItemNewFetcher fetcher = new OntologyItemNewFetcher(_ontologyQuery, contextParamValues, user);
-    Map<String, OntologyItem> map = null;
+    RunnableObj<QueryInstanceSpec> ontologySpec = QueryInstanceSpec.builder(validSpec.getObject())
+        .buildRunnable(validSpec.getObject().getUser(), _ontologyQuery, StepContainer.emptyContainer());
+    OntologyItemNewFetcher fetcher = new OntologyItemNewFetcher(ontologySpec);
     try {
-      map = CacheMgr.get().getOntologyNewCache().getValue(fetcher.getCacheKey(), fetcher);
+      return CacheMgr.get().getOntologyNewCache().getValue(fetcher.getCacheKey(), fetcher);
     }
     catch (ValueProductionException ex) {
-      decodeException(ex);
+      return WdkModelException.unwrap(ex, Map.class);
     }
-    return map;
   }
 
   /**
@@ -416,24 +417,14 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return { totalCount: number; filteredCount: number; }
    * @throws WdkModelException
    */
-  public FilterParamSummaryCounts getTotalsSummary(User user, Map<String, String> contextParamValues,
+  public FilterParamSummaryCounts getTotalsSummary(SemanticallyValid<QueryInstanceSpec> validSpec,
       JSONObject appliedFilters) throws WdkModelException {
-
-    contextParamValues = ensureRequiredContext(user, contextParamValues);
 
     ////////////////////////////////////////
     /* GET UNFILTERED (BACKGROUND) COUNTS */
     ////////////////////////////////////////
-    
-    String bgdSql;
-    try {
-      QueryInstance<?> queryInstance = _backgroundQuery.makeInstance(user, contextParamValues, true, 0,
-          new HashMap<String, String>());
-      bgdSql = queryInstance.getSql();
-    }
-    catch (WdkUserException e) {
-      throw new WdkModelException(e);
-    }
+
+    String bgdSql = getInternalQuerySql(validSpec, _backgroundQuery);
 
     // Set up counts store
     FilterParamSummaryCounts fpsc = new FilterParamSummaryCounts();
@@ -445,7 +436,8 @@ public class FilterParamNew extends AbstractDependentParam {
     // get unfiltered count of records, unless the record id column is the same as the filter item id column
     if (_recordIdColumn.equals(_filterItemIdColumn)) {
       fpsc.unfilteredRecordCount = fpsc.unfilteredFilterItemCount;
-    } else {
+    }
+    else {
       sql = "SELECT count (distinct md." + _recordIdColumn + ") FROM (" + bgdSql + ") md";
       fpsc.unfilteredRecordCount = runCountSql(sql, "recordIds-unfiltered");
     }
@@ -458,18 +450,25 @@ public class FilterParamNew extends AbstractDependentParam {
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(appliedFilters, this);
     
     // get filtered filter_item_ids  count
-    String filteredItemIdsSql = getFilteredFilterItemIdsSql(user, stableValue, contextParamValues, _metadataQuery, _filterItemIdColumn, null);
+    String filteredItemIdsSql = getFilteredFilterItemIdsSql(validSpec, stableValue, _metadataQuery, _filterItemIdColumn, null);
     sql = "select count( distinct " + _filterItemIdColumn + ") as CNT from (" + filteredItemIdsSql + ")";
     fpsc.filteredFilterItemCount = runCountSql(sql, "filterItemIds-filtered");
 
     if (_filterItemIdColumn.equals(_recordIdColumn)) {
       fpsc.filteredRecordCount = fpsc.filteredFilterItemCount;
-    } else {
-      String filteredMetadataSql = getFilteredMetadataSql(user, stableValue, contextParamValues, _metadataQuery, null);
+    }
+    else {
+      String filteredMetadataSql = getFilteredMetadataSql(validSpec, stableValue, _metadataQuery, null);
       sql = "select count( distinct " + _recordIdColumn + ") as CNT from (" + filteredMetadataSql + ")";
       fpsc.filteredRecordCount = runCountSql(sql, "recordIds-filtered");
     }
     return fpsc;
+  }
+
+  private static String getInternalQuerySql(SemanticallyValid<QueryInstanceSpec> validSpec, Query query) throws WdkModelException {
+    RunnableObj<QueryInstanceSpec> backgroundSpec = QueryInstanceSpec.builder(validSpec.getObject())
+        .buildRunnable(validSpec.getObject().getUser(), query, StepContainer.emptyContainer());
+    return Query.makeQueryInstance(backgroundSpec).getSql();
   }
 
   private long runCountSql(String sql, String qName) throws WdkModelException {
@@ -480,47 +479,37 @@ public class FilterParamNew extends AbstractDependentParam {
   }
 
   /**
-   * @param user
-   * @param contextParamValues
-   * @param ontologyId
-   * @param appliedFilters
-   * @param <T>
-   *          The type of the values
+   * @param spec valid spec for this param's parent query
+   * @param ontologyItem item for which summary should be returned
+   * @param appliedFilters any filters to apply
+   * @param ontologyItemClass class of the values
+   * @param <T> The type of the values
    * @return a map from a value for this ontology term to the counts for that value.
    * @throws WdkModelException
    * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
    */
-
-  public <T> OntologyTermSummary<T> getOntologyTermSummary(User user,
-      Map<String, String> contextParamValues, OntologyItem ontologyItem, JSONObject appliedFilters,
-      Class<T> ontologyItemClass) throws WdkModelException {
-
-    contextParamValues = ensureRequiredContext(user, contextParamValues);
+  public <T> OntologyTermSummary<T> getOntologyTermSummary(SemanticallyValid<QueryInstanceSpec> spec,
+      OntologyItem ontologyItem, JSONObject appliedFilters, Class<T> ontologyItemClass)
+          throws WdkModelException {
 
     ////////////////////////////////////////////
     /* GET UNFILTERED MAP AND POPULATE COUNTS */
     ////////////////////////////////////////////
-
-    String bgdSql;
-    try {
-      QueryInstance<?> queryInstance = _backgroundQuery.makeInstance(user, contextParamValues, true, 0,
-          new HashMap<String, String>());
-      bgdSql = queryInstance.getSql();
-    }
-    catch (WdkUserException e) {
-      throw new WdkModelException(e);
-    }
+    
+    String bgdSql = getInternalQuerySql(spec, _backgroundQuery);
 
     // limit it to our ontology_id
     List<String> metadataCols = new ArrayList<String>(OntologyItemType.getTypedValueColumnNames());
     metadataCols.add(_filterItemIdColumn);
     metadataCols.add(COLUMN_ONTOLOGY_ID);
     String cols = metadataCols.stream().collect(Collectors.joining(", "));
-    String unfilteredSqlPerOntologyId = "SELECT distinct " + cols + " FROM (" + bgdSql + ") mq WHERE mq." + COLUMN_ONTOLOGY_ID +
-        " = ?";
+    String unfilteredSqlPerOntologyId =
+        "SELECT distinct " + cols +
+        " FROM (" + bgdSql + ") mq" +
+        " WHERE mq." + COLUMN_ONTOLOGY_ID + " = ?";
     
     // read into a map of filter_item_id -> value(s)
-    Map<T, Long> unfiltered = countMetaDataForOntologyTerm(user, contextParamValues, ontologyItem,
+    Map<T, Long> unfiltered = countMetaDataForOntologyTerm(spec, ontologyItem,
         unfilteredSqlPerOntologyId, ontologyItemClass);
 
     // get histogram of those, stored in JSON
@@ -533,7 +522,7 @@ public class FilterParamNew extends AbstractDependentParam {
     
     // get sql for the set internal ids that are pruned by the filters
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(appliedFilters, this);
-    String filteredFilterItemIdSql = getFilteredFilterItemIdsSql(user, stableValue, contextParamValues, getMetadataQuery(), _filterItemIdColumn,
+    String filteredFilterItemIdSql = getFilteredFilterItemIdsSql(spec, stableValue, getMetadataQuery(), _filterItemIdColumn,
         " where " + COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId().replaceAll("'", "''") + "'");
 
     // use that set of ids to limit our ontology id's metadata
@@ -541,7 +530,7 @@ public class FilterParamNew extends AbstractDependentParam {
     String filteredSqlPerOntologyId = unfilteredSqlPerOntologyId + andClause;
 
     // read this filtered set into map of internal -> value(s)
-    Map<T, Long> filtered = countMetaDataForOntologyTerm(user, contextParamValues, ontologyItem,
+    Map<T, Long> filtered = countMetaDataForOntologyTerm(spec, ontologyItem,
         filteredSqlPerOntologyId, ontologyItemClass);
 
     // add the filtered set into the histogram
@@ -656,30 +645,18 @@ public class FilterParamNew extends AbstractDependentParam {
     }
   }
 
-  private void decodeException(ValueProductionException ex) throws WdkModelException {
-    Throwable nestedException = ex.getCause();
-    if (nestedException == null)
-      throw new WdkModelException(ex.getMessage());
-    if (nestedException instanceof WdkModelException)
-      throw (WdkModelException) nestedException;
-    throw new WdkModelException(nestedException);
-  }
-
-  
   /**
    * for a specified ontology term, return a map of value -> count of that value
-   * @param user
-   * @param contextParamValues
+   * @param spec
    * @param ontologyItem
-   * @param cache
    * @param metaDataSql
    * @param ontologyItemClass
    * @return
    * @throws WdkModelException
    */
-  private <T> Map<T, Long> countMetaDataForOntologyTerm(User user, Map<String, String> contextParamValues,
+  private <T> Map<T, Long> countMetaDataForOntologyTerm(SemanticallyValid<QueryInstanceSpec> spec,
       OntologyItem ontologyItem, String metaDataSql, Class<T> ontologyItemClass)
-      throws WdkModelException {
+          throws WdkModelException {
     
     String valueColumnName = ontologyItem.getType().getMetadataQueryColumn();
 
@@ -714,31 +691,24 @@ public class FilterParamNew extends AbstractDependentParam {
 
     return metadata;
   }
-  
 
-  
-  public Map<String, Set<String>> getValuesMap(QueryInstanceSpec spec) throws WdkModelException {
-    
-    contextParamValues = ensureRequiredContext(user, contextParamValues);
-
-    Map<String, OntologyItem> ontology = getOntology(user, contextParamValues);
-    return getValuesMap(user, contextParamValues, null, ontology);
+  public Map<String, Set<String>> getValuesMap(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
+    return getValuesMap(spec, null, getOntology(spec));
   }
   
   /**
    * return map of ontology field name to values (as strings), for the provided list of ontology terms.
    * only includes values for terms that are not isRange.
    * 
-   * @param user
-   * @param contextParamValues
+   * @param spec valid spec for this param's parent query
    * @param ontologyTerms
    *          a list of ontology term to include in result.  NULL to use all terms found in bgd query
    * @return a map from field name -> a set of valid values. (We convert number values to strings)
    * @throws WdkModelException
    */
-  Map<String, Set<String>> getValuesMap(User user, Map<String, String> contextParamValues,
+  Map<String, Set<String>> getValuesMap(SemanticallyValid<QueryInstanceSpec> spec,
       Set<String> ontologyTerms, Map<String, OntologyItem> ontology)
-      throws WdkModelException {
+          throws WdkModelException {
 
     // the names of value columns in the background query.
     List<String> ontologyValuesCols = new ArrayList<String>(OntologyItemType.getTypedValueColumnNames());
@@ -746,19 +716,8 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // get query instances for both ontology and background query
     // and extract from them their sql.  we'll compose those sqls into our own query
-    String bgdQuerySql;
-    String ontologyQuerySql;
-    try {
-      QueryInstance<?> instance = _backgroundQuery.makeInstance(user, contextParamValues, true, 0,
-          new HashMap<String, String>());
-      bgdQuerySql = instance.getSql();
-      instance = _ontologyQuery.makeInstance(user, contextParamValues, true, 0,
-          new HashMap<String, String>());
-      ontologyQuerySql = instance.getSql();
-    }
-    catch (WdkUserException e) {
-      throw new WdkModelException(e);
-    }
+    String bgdQuerySql = getInternalQuerySql(spec, _backgroundQuery);
+    String ontologyQuerySql = getInternalQuerySql(spec, _ontologyQuery);
 
     String ontologyTermsWhereClause = "";
 
@@ -783,15 +742,14 @@ public class FilterParamNew extends AbstractDependentParam {
     // the map that we will return
     Map<String, Set<String>> ontologyValues = new HashMap<String, Set<String>>();
 
-    // Now that we've contstructed the sql, 
-    // we want to use the WDK cache for it, so have to force the sql into a new SqlQuery object.
+    // Now that we've constructed the sql, we want to use the WDK cache for it,
+    //   so have to force the sql into a new SqlQuery object.
     SqlQuery sqlQuery = createValuesMapQuery(_wdkModel, filterSelectSql, ontologyValuesCols, _backgroundQuery.getParams(), _ontologyQuery.getParams());
 
     // run the sqlQuery to get all the values, and stuff into the map
-    try {
-      QueryInstance<?> instance = sqlQuery.makeInstance(user, contextParamValues, true, 0,
-          new HashMap<String, String>());
-      ResultList resultList = instance.getResults();
+    RunnableObj<QueryInstanceSpec> valuesMapSpec = QueryInstanceSpec.builder(spec.getObject())
+        .buildRunnable(spec.getObject().getUser(), sqlQuery, StepContainer.emptyContainer());
+    try (ResultList resultList = Query.makeQueryInstance(valuesMapSpec).getResults()) {
       while (resultList.next()) {
         String field = (String)resultList.get(FilterParamNew.COLUMN_ONTOLOGY_ID);
         OntologyItem ontologyItem = ontology.get(field);
@@ -804,12 +762,9 @@ public class FilterParamNew extends AbstractDependentParam {
         ontologyValues.get(field).add(valueString);
       }
     }
-    catch (WdkUserException e) {
-      throw new WdkModelException(e);
-    }
     return ontologyValues;
   }
-  
+
   // given sql to provide data for the values map, construct a wdk-cacheable sqlQuery from it
   // because the sql embeds the ontology and bgd queries, which might have parameters, this query
   // must inherit their parameters
@@ -825,8 +780,11 @@ public class FilterParamNew extends AbstractDependentParam {
       query.addParamRef(new ParamReference(param.getFullName()));
       paramsSeen.add(param.getFullName());
     }
-    for (Param param : ontoQueryParams)
-      if (!paramsSeen.contains(param.getFullName()))query.addParamRef(new ParamReference(param.getFullName()));
+    for (Param param : ontoQueryParams) {
+      if (!paramsSeen.contains(param.getFullName())) {
+        query.addParamRef(new ParamReference(param.getFullName()));
+      }
+    }
     querySet.addQuery(query);
     for (String colName : colNames) {
       Column column = new Column();
@@ -840,97 +798,77 @@ public class FilterParamNew extends AbstractDependentParam {
 
   /**
    * Return sql that provides a filtered set of IDs, using the id column provided.    
-   * @param user
+   * 
+   * @param validSpec valid parameter set for this param's parent query
    * @param stableValue
-   * @param contextParamValues
    * @param metadataQuery
    * @param idColumn  the id column in the metadata query to return
    * @param defaultFilterClause if there are no active filters, use this as a default.  if null, don't use a default filter.
-   * @return
+   * @return sql
    * @throws WdkModelException
    */
-    String getFilteredFilterItemIdsSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String idColumn, String defaultFilterClause)
-       throws WdkModelException {
-
-     try {
-       // get sql that selects the full set of distinct internals from the metadata query
-       String metadataSql;
-       QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
-       metadataSql = instance.getSql();
-       String metadataTableName = "md";
-       String filterSelectSql = "SELECT distinct " + metadataTableName + "." + idColumn + " FROM (" + metadataSql + ") " + metadataTableName;
-       
-       return getFilteredIdsSql(user, stableValue, contextParamValues, metadataTableName, filterSelectSql, defaultFilterClause);
-     }
-     catch (JSONException | WdkUserException ex) {
-       throw new WdkModelException(ex);
-     }
-   }
-   
-    /*
-     * Apply provided filters to metadata sql, returning all three value columns
-     */
-    String getFilteredMetadataSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String defaultFilterClause)
-        throws WdkModelException {
-
-      try {
-        // get sql that selects the full set of distinct internals from the metadata query
-        String metadataSql;
-        QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
-        metadataSql = instance.getSql();
-        String metadataTableName = "md";
-        String selectCols = String.join(", md.", _metadataValueColumns);
-        String filterSelectSql = "SELECT md." + selectCols + " FROM (" + metadataSql + ") " + metadataTableName;           
-        return getFilteredIdsSql(user, stableValue, contextParamValues, metadataTableName, filterSelectSql, defaultFilterClause);
-     }
-      catch (JSONException | WdkUserException ex) {
-        throw new WdkModelException(ex);
-      }
-    } 
-    
-    private String getFilteredIdsSql(User user, FilterParamNewStableValue stableValue,
-        Map<String, String> contextParamValues, String metadataTableAbbrev, String filterSelectSql, String defaultFilterClause)
-      throws WdkModelException {
-
-    try {
-      // get the applied filters and the ontology
-      List<FilterParamNewStableValue.Filter> filters = stableValue.getFilters();
-      Map<String, OntologyItem> ontology = getOntology(user, contextParamValues); 
-     
-      // if no filters, return sql for the full set of internals
-      String filteredSql;
-      if (filters.size() == 0) {
-        filteredSql = filterSelectSql;
-        if (defaultFilterClause != null) filteredSql += defaultFilterClause;
-      } 
-      
-      // otherwise apply the filters
-      else {
-       List<String> filterSqls = new ArrayList<String>();
-       for (FilterParamNewStableValue.Filter filter : filters)
-         filterSqls.add(filter.getFilterAsWhereClause(metadataTableAbbrev, ontology, filterSelectSql));
-
-       filteredSql = FormatUtil.join(filterSqls, " INTERSECT ");
-      }
-      LOG.debug("filteredSql:\n" + filteredSql);
-      return filteredSql;
-    }
-    catch (JSONException ex) {
-      throw new WdkModelException(ex);
-    }
+  String getFilteredFilterItemIdsSql(SemanticallyValid<QueryInstanceSpec> validSpec,
+      FilterParamNewStableValue stableValue, Query metadataQuery,
+      String idColumn, String defaultFilterClause)
+          throws WdkModelException {
+    // get sql that selects the full set of distinct internals from the metadata query
+    String metadataSql = getInternalQuerySql(validSpec, metadataQuery);
+    String metadataTableName = "md";
+    String filterSelectSql = "SELECT distinct " + metadataTableName + "." + idColumn + " FROM (" + metadataSql + ") " + metadataTableName;
+    return getFilteredIdsSql(validSpec, stableValue, metadataTableName, filterSelectSql, defaultFilterClause);
   }
-  
-  public JSONObject getJsonValues(User user, Map<String, String> contextParamValues)
+
+  /**
+   * Apply provided filters to metadata sql, returning all three value columns
+   */
+  String getFilteredMetadataSql(SemanticallyValid<QueryInstanceSpec> validSpec,
+      FilterParamNewStableValue stableValue, Query metadataQuery, String defaultFilterClause)
+          throws WdkModelException {
+    // get sql that selects the full set of distinct internals from the metadata query
+    String metadataSql = getInternalQuerySql(validSpec, metadataQuery);
+    String metadataTableName = "md";
+    String selectCols = String.join(", md.", _metadataValueColumns);
+    String filterSelectSql = "SELECT md." + selectCols + " FROM (" + metadataSql + ") " + metadataTableName;
+    return getFilteredIdsSql(validSpec, stableValue, metadataTableName, filterSelectSql, defaultFilterClause);
+  }
+
+  private String getFilteredIdsSql(SemanticallyValid<QueryInstanceSpec> validSpec,
+      FilterParamNewStableValue stableValue, String metadataTableAbbrev,
+      String filterSelectSql, String defaultFilterClause)
+          throws WdkModelException {
+
+    // get the applied filters and the ontology
+    List<FilterParamNewStableValue.Filter> filters = stableValue.getFilters();
+    Map<String, OntologyItem> ontology = getOntology(validSpec); 
+
+    // if no filters, return sql for the full set of internals
+    String filteredSql;
+    if (filters.size() == 0) {
+      filteredSql = filterSelectSql;
+      if (defaultFilterClause != null) {
+        filteredSql += defaultFilterClause;
+      }
+    }
+
+    // otherwise apply the filters
+    else {
+      List<String> filterSqls = new ArrayList<String>();
+      for (FilterParamNewStableValue.Filter filter : filters) {
+        filterSqls.add(filter.getFilterAsWhereClause(metadataTableAbbrev, ontology, filterSelectSql));
+      }
+      filteredSql = FormatUtil.join(filterSqls, " INTERSECT ");
+    }
+    LOG.debug("filteredSql:\n" + filteredSql);
+    return filteredSql;
+  }
+
+  public JSONObject getJsonValues(SemanticallyValid<QueryInstanceSpec> validSpec)
       throws WdkModelException {
-
-    contextParamValues = ensureRequiredContext(user, contextParamValues);
-
     JSONObject jsParam = new JSONObject();
-
     try {
       // create json for the ontology
       JSONObject jsOntology = new JSONObject();
-      Map<String, OntologyItem> ontologyMap = getOntology(user, contextParamValues);
+      Map<String, OntologyItem> ontologyMap = getOntology(validSpec);
       for (String itemName : ontologyMap.keySet()) {
         OntologyItem item = ontologyMap.get(itemName);
         JSONObject jsOntoItem = new JSONObject();
@@ -940,15 +878,14 @@ public class FilterParamNew extends AbstractDependentParam {
         jsOntoItem.put(COLUMN_TYPE, item.getType());
         jsOntoItem.put(COLUMN_UNITS, item.getUnits());
         jsOntoItem.put(COLUMN_PRECISION, item.getPrecision());
-
         jsOntology.put(itemName, jsOntoItem);
       }
       jsParam.put("ontology", jsOntology);
+      return jsParam;
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
     }
-    return jsParam;
   }
 
   /**
@@ -969,19 +906,12 @@ public class FilterParamNew extends AbstractDependentParam {
    * return jsStableValue.toString(); } catch (JSONException ex) { throw new WdkModelException(ex); } }
    */
 
-  @Override
-  public String getDefault() throws WdkModelException {
-    String defaultValue = new JSONObject().put(FilterParamNewHandler.FILTERS_KEY, new JSONArray()).toString();
-    return defaultValue;
-  }
-
   /**
    * Default is always no filter... until there is pressure to change this.
    */
   @Override
-  public String getDefault(User user, Map<String, String> contextParamValues) {
-    String defaultValue = new JSONObject().toString();
-    return defaultValue;
+  protected String getDefault(PartiallyValidatedStableValues stableValues) throws WdkModelException {
+    return new JSONObject().put(FilterParamNewHandler.FILTERS_KEY, new JSONArray()).toString();
   }
 
   @Override
@@ -1059,7 +989,45 @@ public class FilterParamNew extends AbstractDependentParam {
     }
     return stale;
   }
+  
+  /**
+   * 
+   * @param user
+   * @param contextParamValues map from name to stable values
+   * @param instances
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
+  private void fillContextParamValues(User user, Map<String, String> contextParamValues,
+      Map<String, DependentParamInstance> instances) throws WdkModelException, WdkUserException {
 
+    //logger.debug("Fixing value " + name + "='" + contextParamValues.get(name) + "'");
+
+    // make sure the values for depended params are fetched first.
+    if (isDependentParam()) {
+      for (Param dependedParam : getDependedParams()) {
+        LOG.debug(_name + " depends on " + dependedParam.getName());
+        if (dependedParam instanceof AbstractDependentParam) {
+          ((AbstractDependentParam) dependedParam).fillContextParamValues(user, contextParamValues, instances);
+        }
+      }
+    }
+
+    // check if the value for this param is correct
+    DependentParamInstance instance = instances.get(_name);
+    if (instance == null) {
+      instance = createDependentParamInstance(user, contextParamValues);
+      instances.put(_name, instance);
+    }
+
+    String stableValue = contextParamValues.get(_name);
+    String value = instance.getValidStableValue(user, stableValue, contextParamValues);
+
+    if (value != null) {
+      contextParamValues.put(_name, value);
+      //logger.debug("Corrected " + name + "\"" + contextParamValues.get(name) + "\"");
+    }
+  }
   protected String getValidStableValue(User user, String stableValueString, Map<String, String> contextParamValues) throws WdkModelException {
     if (stableValueString == null) return getDefault();
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, this);

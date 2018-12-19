@@ -150,7 +150,7 @@ public class StepService extends UserService {
     step.update(true);
     return Response.noContent().build();
   }
-  
+
   @POST
   @Path("steps/{stepId}/answer")
   @Consumes(MediaType.APPLICATION_JSON)

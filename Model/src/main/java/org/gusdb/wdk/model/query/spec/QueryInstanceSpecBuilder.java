@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.query.spec;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -92,13 +93,24 @@ public class QueryInstanceSpecBuilder extends ReadOnlyHashMap.Builder<String,Str
    */
   public QueryInstanceSpec buildValidated(User user, Query query, StepContainer stepContainer,
       ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
-    // add user_id to the param values if needed
-    String userKey = Utilities.PARAM_USER_ID;
-    if (query.getParamMap().containsKey(userKey) && !containsKey(userKey)) {
-      put(userKey, Long.toString(user.getUserId()));
+
+    // create a copy of the values in this builder which will be modified before passing to constructor
+    Map<String,String> tmpValues = new HashMap<>(toMap());
+
+    // trim off any values supplied that don't apply to this query
+    for (String name : tmpValues.keySet()) {
+      if (!query.getParamMap().keySet().contains(name)) {
+        tmpValues.remove(name);
+      }
     }
 
-    PartiallyValidatedStableValues stableValues = new PartiallyValidatedStableValues(user, toMap());
+    // add user_id to the param values if needed
+    String userKey = Utilities.PARAM_USER_ID;
+    if (query.getParamMap().containsKey(userKey) && !tmpValues.containsKey(userKey)) {
+      tmpValues.put(userKey, Long.toString(user.getUserId()));
+    }
+
+    PartiallyValidatedStableValues stableValues = new PartiallyValidatedStableValues(user, tmpValues);
     ValidationBundleBuilder validation = ValidationBundle.builder(validationLevel);
     for (Param param : query.getParams()) {
       ParamValidity result = param.validate(stableValues, validationLevel, fillStrategy);

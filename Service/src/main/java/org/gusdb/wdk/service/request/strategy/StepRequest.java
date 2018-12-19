@@ -13,7 +13,6 @@ import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
@@ -62,7 +61,7 @@ public class StepRequest {
       boolean isCollapsible = getBooleanOrDefault(stepJson, JsonKeys.IS_COLLAPSIBLE, false);
       String collapsedName = getStringOrDefault(stepJson, JsonKeys.COLLAPSED_NAME, customName);
 
-      return new StepRequest(validSpec, true, customName, isCollapsible, collapsedName);
+      return new StepRequest(Optional.of(validSpec), customName, isCollapsible, collapsedName);
     }
     catch (JSONException e) {
       throw new RequestMisformatException("Invalid JSON in step request", e);
@@ -71,24 +70,24 @@ public class StepRequest {
 
   private static SemanticallyValid<AnswerSpec> parseAnswerSpec(JSONObject stepJson, WdkModel wdkModel, User user, StepContainer container)
       throws JSONException, RequestMisformatException, DataValidationException, WdkModelException {
-    JSONObject answerSpecJson = stepJson.getJSONObject(JsonKeys.ANSWER_SPEC);
-    AnswerSpecBuilder parsedSpec = AnswerSpecServiceFormat.parse(answerSpecJson, wdkModel);
-    AnswerSpec answerSpec = parsedSpec.build(user, container, ValidationLevel.SEMANTIC);
-    return answerSpec.getSemanticallyValid().orElseThrow(() ->
-      // incoming answer spec not semantically valid
-      new DataValidationException("Invalid answer spec: " + join(answerSpec.getValidationBundle().getAllErrors(), NL)));
+    return AnswerSpecServiceFormat
+        .parse(stepJson.getJSONObject(JsonKeys.ANSWER_SPEC), wdkModel)
+        .build(user, container, ValidationLevel.SEMANTIC)
+        .getSemanticallyValid()
+        .getOrThrow(spec ->
+          // incoming answer spec not semantically valid
+          new DataValidationException("Invalid answer spec: " + join(spec.getValidationBundle().getAllErrors(), NL)));
   }
 
   public static StepRequest patchStepFromJson(Step step, JSONObject patchSet, WdkModel wdkModel, User user)
       throws RequestMisformatException, DataValidationException, WdkModelException {
     try {
       checkForInvalidProps(patchSet);
-      AnswerSpec answerSpec = getPatchAnswerSpec(step, patchSet, wdkModel, user);
-      boolean answerSpecModified = answerSpec != step.getAnswerSpec(); // referential equality
+      Optional<SemanticallyValid<AnswerSpec>> answerSpec = getPatchAnswerSpec(step, patchSet, wdkModel, user);
       String customName = getStringOrDefault(patchSet, JsonKeys.CUSTOM_NAME, step.getCustomName());
       boolean isCollapsible = getBooleanOrDefault(patchSet, JsonKeys.IS_COLLAPSIBLE, step.isCollapsible());
       String collapsedName = getStringOrDefault(patchSet, JsonKeys.COLLAPSED_NAME, step.getCollapsedName());
-      return new StepRequest(answerSpec, answerSpecModified, customName, isCollapsible, collapsedName);
+      return new StepRequest(answerSpec, customName, isCollapsible, collapsedName);
     }
     catch (JSONException e) {
       throw new RequestMisformatException("Invalid JSON in patch step request", e);
@@ -141,26 +140,20 @@ public class StepRequest {
     }
   }
 
-  private final SemanticallyValid<AnswerSpec> _answerSpec;
-  private final boolean _answerSpecModified;
+  private final Optional<SemanticallyValid<AnswerSpec>> _answerSpec;
   private final String _customName;
   private final boolean _isCollapsible;
   private final String _collapsedName;
 
-  public StepRequest(SemanticallyValid<AnswerSpec> answerSpec, boolean answerSpecModified, String customName, boolean isCollapsible, String collapsedName) {
+  public StepRequest(Optional<SemanticallyValid<AnswerSpec>> answerSpec, String customName, boolean isCollapsible, String collapsedName) {
     _answerSpec = answerSpec;
-    _answerSpecModified = answerSpecModified;
     _customName = customName;
     _isCollapsible = isCollapsible;
     _collapsedName = collapsedName;
   }
 
-  public SemanticallyValid<AnswerSpec> getAnswerSpec() {
+  public Optional<SemanticallyValid<AnswerSpec>> getAnswerSpec() {
     return _answerSpec;
-  }
-
-  public boolean isAnswerSpecModified() {
-    return _answerSpecModified;
   }
 
   public String getCustomName() {

@@ -4,7 +4,6 @@ import static org.gusdb.fgputil.functional.Functions.mapToList;
 import static org.gusdb.fgputil.functional.Functions.transformValues;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,12 +13,11 @@ import org.gusdb.fgputil.cache.ValueFactory;
 import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
-import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,30 +26,17 @@ public class OntologyItemNewFetcher implements ValueFactory<String, Map<String, 
   private static final String QUERY_NAME_KEY = "queryName";
   private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
 
-  private Query query;
-  private Map<String, String> paramValues;
-  private User user;
+  private final RunnableObj<QueryInstanceSpec> _queryInstanceSpec;
 
-  public OntologyItemNewFetcher(Query ontologyQuery, Map<String, String> paramValues, User user) {
-    this.query = ontologyQuery;
-    this.paramValues = paramValues;
-    this.user = user;
+  public OntologyItemNewFetcher(RunnableObj<QueryInstanceSpec> queryInstanceSpec) {
+    _queryInstanceSpec = queryInstanceSpec;
   }
 
   @Override
   public Map<String, OntologyItem> getNewValue(String cacheKey) throws ValueProductionException {
     try {
-      // trim away param values not needed by query, to avoid warnings
-      Map<String, String> requiredParamValues = new HashMap<String, String>();
-      for (String paramName : paramValues.keySet())
-        if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
-          requiredParamValues.put(paramName, paramValues.get(paramName));
-
-      QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
-          .putAll(requiredParamValues).buildRunnable(user, query, null));
       Map<String, OntologyItem> ontologyItemMap = new LinkedHashMap<>();
-      ResultList resultList = instance.getResults();
-      try {
+      try (ResultList resultList = Query.makeQueryInstance(_queryInstanceSpec).getResults()) {
         while (resultList.next()) {
           OntologyItem oItem = new OntologyItem();
           oItem.setOntologyId((String) resultList.get(FilterParamNew.COLUMN_ONTOLOGY_ID));
@@ -68,13 +53,13 @@ public class OntologyItemNewFetcher implements ValueFactory<String, Map<String, 
           if (isRange != null) oItem.setIsRange(isRange.toBigInteger().intValue() != 0);
 
           if (ontologyItemMap.containsKey(oItem.getOntologyId()))
-            throw new WdkModelException("FilterParamNew Ontology Query " + query.getFullName() + " has duplicate " + FilterParamNew.COLUMN_ONTOLOGY_ID + ": " + oItem.getOntologyId());
+            throw new WdkModelException("FilterParamNew Ontology Query " +
+                _queryInstanceSpec.getObject().getQuery().getFullName() +
+                " has duplicate " + FilterParamNew.COLUMN_ONTOLOGY_ID + ": " +
+                oItem.getOntologyId());
  
           ontologyItemMap.put(oItem.getOntologyId(), oItem);
         }
-      }
-      finally {
-        resultList.close();
       }
 
       // secondary validation: make sure node types are compatible with placement in the graph
@@ -136,12 +121,14 @@ public class OntologyItemNewFetcher implements ValueFactory<String, Map<String, 
   }
 
   public String getCacheKey() throws JSONException {
+    QueryInstanceSpec spec = _queryInstanceSpec.getObject();
+    Query query = spec.getQuery();
     JSONObject cacheKeyJson = new JSONObject();
     cacheKeyJson.put(QUERY_NAME_KEY, query.getName());
     JSONObject paramValuesJson = new JSONObject();
-    for (String paramName : paramValues.keySet())
+    for (String paramName : spec.keySet())
       if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
-        paramValuesJson.put(paramName, paramValues.get(paramName));
+        paramValuesJson.put(paramName, spec.get(paramName));
     cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY, paramValuesJson);
     return JsonUtil.serialize(cacheKeyJson);
   }

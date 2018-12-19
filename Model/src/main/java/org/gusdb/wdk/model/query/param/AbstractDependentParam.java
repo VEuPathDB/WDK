@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -61,15 +62,15 @@ public abstract class AbstractDependentParam extends Param {
    * This method should be called only after the complete Resolve References phase is done.
    * Before then, we do not have the proper contexts.
    * 
-   * We do not validate the existance of the param ref in the context because
-   * some params that call this are contained by queries that are not "root" queries (eg, ID queries).
+   * We do not validate the existence of the param ref in the context because
+   * some params that call this are contained by queries that are not "root" queries (e.g. ID queries).
    * They might have an incomplete context.  Instead, validation is done as a dedicated
    * post-process after resolve references.
    * 
-   * 
-   * @return
+   * @return set of params this param depends on
    * @throws WdkModelException
    */
+  @Override
   public Set<Param> getDependedParams() throws WdkModelException {
     if (!isDependentParam())
       return null;
@@ -127,36 +128,6 @@ public abstract class AbstractDependentParam extends Param {
   // ///////////////////////////////////////////////////////////////////
   // /////////// Protected properties ////////////////////////////////////
   // ///////////////////////////////////////////////////////////////////
-
-  protected Map<String,String> ensureRequiredContext(User user, Map<String, String> contextParamValues) {
-    Map<String, String> newContextParamValues = contextParamValues == null?
-        new LinkedHashMap<String, String>() :
-        new LinkedHashMap<String, String>(contextParamValues);
-
-    if (isDependentParam()) {
-      try {
-        // for each depended param, ensure it has a value in contextParamValues
-        for (Param dependedParam : getDependedParams()) {
-
-          String dependedParamVal = newContextParamValues.get(dependedParam.getName());
-          if (dependedParamVal == null) {
-            dependedParamVal = (dependedParam instanceof AbstractEnumParam)
-                ? ((AbstractEnumParam) dependedParam).getDefault(user, newContextParamValues)
-                : dependedParam.getDefault();
-            if (dependedParamVal == null)
-              throw new NoDependedValueException(
-                  "Attempt made to retrieve values of " + dependedParam.getName() + " in dependent param " +
-                      getName() + " without setting depended value.");
-            newContextParamValues.put(dependedParam.getName(), dependedParamVal);
-          }
-        }
-      }
-      catch (Exception ex) {
-        throw new NoDependedValueException(ex);
-      }
-    }
-    return newContextParamValues;
-  }
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
@@ -258,49 +229,7 @@ public abstract class AbstractDependentParam extends Param {
 
     return query;
   }
-  
-  /**
-   * 
-   * @param user
-   * @param contextParamValues map from name to stable values
-   * @param instances
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public void fillContextParamValues(User user, Map<String, String> contextParamValues,
-      Map<String, DependentParamInstance> instances) throws WdkModelException, WdkUserException {
 
-    //logger.debug("Fixing value " + name + "='" + contextParamValues.get(name) + "'");
-
-    // make sure the values for depended params are fetched first.
-    if (isDependentParam()) {
-      for (Param dependedParam : getDependedParams()) {
-        LOG.debug(_name + " depends on " + dependedParam.getName());
-        if (dependedParam instanceof AbstractDependentParam) {
-          ((AbstractDependentParam) dependedParam).fillContextParamValues(user, contextParamValues, instances);
-        }
-      }
-    }
-
-    // check if the value for this param is correct
-    DependentParamInstance instance = instances.get(_name);
-    if (instance == null) {
-      instance = createDependentParamInstance(user, contextParamValues);
-      instances.put(_name, instance);
-    }
-
-    String stableValue = contextParamValues.get(_name);
-    String value = instance.getValidStableValue(user, stableValue, contextParamValues);
-
-    if (value != null) {
-      contextParamValues.put(_name, value);
-      //logger.debug("Corrected " + name + "\"" + contextParamValues.get(name) + "\"");
-    }
-  }
-
-
-  public abstract String getDefault(User user, Map<String, String> contextParamValues) throws WdkModelException;
-  
   @Override
   public abstract boolean isStale(Set<String> dependedParamsFullNames);
   
@@ -316,7 +245,7 @@ public abstract class AbstractDependentParam extends Param {
     if (dependedParams == null || dependedParams.isEmpty())
       return dependedParamValuesJson;
     // get depended param names in advance since getDependedParams() is expensive
-    List<String> dependedParamNames = mapToList(dependedParams, obj -> obj.getName());
+    List<String> dependedParamNames = mapToList(dependedParams, NamedObject::getName);
     for (String paramName : dependedParamValues.keySet()) {
       if (dependedParamNames.contains(paramName)) {
         dependedParamValuesJson.put(paramName, dependedParamValues.get(paramName));
