@@ -162,7 +162,7 @@ public class StepFactory {
         .build(new UserCache(user), ValidationLevel.RUNNABLE, strategy);
 
     if (step.isRunnable()) {
-      TwoTuple<Integer,Exception> runStatus = tryEstimateSize(step.getRunnable().get());
+      TwoTuple<Integer,Exception> runStatus = tryEstimateSize(step.getRunnable().getLeft());
       step.updateEstimatedSize(runStatus.getFirst());
       step.setException(runStatus.getSecond());
     }
@@ -190,7 +190,7 @@ public class StepFactory {
       String questionName = step.getAnswerSpec().getQuestion().getFullName();
       Map<String, Boolean> sortingAttributes = user.getPreferences().getSortingAttributes(
           questionName, UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
-      AnswerValue answerValue = AnswerValueFactory.makeAnswer(user, step.getAnswerSpec().toRunnable(),
+      AnswerValue answerValue = AnswerValueFactory.makeAnswer(user, step.getAnswerSpec().getRunnable().getLeft(),
           0, AnswerValue.UNBOUNDED_END_PAGE_INDEX, sortingAttributes);
 
       QueryInstance<?> qi = answerValue.getIdsQueryInstance();

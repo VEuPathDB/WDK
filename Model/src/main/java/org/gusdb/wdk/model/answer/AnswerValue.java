@@ -21,9 +21,8 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.fgputil.validation.ValidObjectFactory;
-import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -165,7 +164,7 @@ public class AnswerValue {
     _validAnswerSpec = validAnswerSpec;
     _answerSpec = validAnswerSpec.getObject();
     _wdkModel = _answerSpec.getWdkModel();
-    _idsQueryInstance = Query.makeQueryInstance(ValidObjectFactory.getRunnable(_answerSpec.getQueryInstanceSpec()));
+    _idsQueryInstance = Query.makeQueryInstance(_answerSpec.getQueryInstanceSpec().getRunnable().getLeft());
     Question question = _answerSpec.getQuestion();
     _attributes = new AnswerValueAttributes(_user, question);
     _resultSizeFactory = new ResultSizeFactory(this);
@@ -410,14 +409,17 @@ public class AnswerValue {
       // Make an instance from the original attribute query; an attribute
       // query has only one param, user_id. Note that the original
       // attribute query is different from the attribute query held by the
-      // recordClass.  The user_id param will be added by the query instance.
+      // recordClass.  The user_id param will be added by the builder.
       // TODO: decide if construction of this validated spec should be moved elsewhere?
-      QueryInstanceSpec attrQuerySpec = QueryInstanceSpec.builder().buildValidated(_user,
-          attributeQuery, StepContainer.emptyContainer(), ValidationLevel.SEMANTIC, FillStrategy.NO_FILL);
-      QueryInstance<?> attributeQueryInstance = Query
-          .makeQueryInstance(ValidObjectFactory.getRunnable(attrQuerySpec));
-      sql = attributeQueryInstance.getSql();
+      RunnableObj<QueryInstanceSpec> attrQuerySpec = QueryInstanceSpec.builder()
+          .buildValidated(_user, attributeQuery, StepContainer.emptyContainer(),
+              ValidationLevel.SEMANTIC, FillStrategy.NO_FILL)
+          .getRunnable()
+          .getOrThrow(spec -> new WdkModelException(
+              "Attribute query spec found invalid: " + spec.getValidationBundle().toString()));
 
+      // get attribute query sql from the instance
+      sql = Query.makeQueryInstance(attrQuerySpec).getSql();
       // replace the id sql macro.  the injected sql must include filters (but not view filters)
       sql = sql.replace(Utilities.MACRO_ID_SQL, getIdSql(null, true));
       // replace the no-filters id sql macro.  the injected sql must NOT include filters (but should return any dynamic columns)

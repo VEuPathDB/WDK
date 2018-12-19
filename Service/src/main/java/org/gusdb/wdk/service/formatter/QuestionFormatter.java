@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.Group;
@@ -97,9 +99,16 @@ public class QuestionFormatter {
   }
 
   public static JSONArray getParamsJson(QueryInstanceSpec spec) throws WdkModelException {
+    return getParamsJson(spec, param -> true);
+  }
+
+  public static JSONArray getParamsJson(QueryInstanceSpec spec,
+      Predicate<Param> inclusionPredicate) throws WdkModelException {
     JSONArray paramsJson = new JSONArray();
     for (Param param : spec.getQuery().getParams()) {
-      paramsJson.put(ParamFormatterFactory.getFormatter(param).getJson(spec));
+      if (inclusionPredicate.test(param)) {
+        paramsJson.put(ParamFormatterFactory.getFormatter(param).getJson(spec));
+      }
     }
     return paramsJson;
   }
@@ -131,7 +140,8 @@ public class QuestionFormatter {
    *   "internalsFilteredCount" : 4352
    * }
    */
-  public static <T> JSONObject getOntologyTermSummaryJson(OntologyTermSummary<T> summary) {
+  public static <T> JSONObject getOntologyTermSummaryJson(Supplier<OntologyTermSummary<T>> supplier) {
+    OntologyTermSummary<T> summary = supplier.get();
     Map<T,FilterParamSummaryCounts> counts = summary.getSummaryCounts();
 
     JSONObject json = new JSONObject();

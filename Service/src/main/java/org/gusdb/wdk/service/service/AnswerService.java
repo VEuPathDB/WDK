@@ -175,11 +175,11 @@ public class AnswerService extends AbstractWdkService {
     JSONObject answerSpecJson = requestJson.getJSONObject(JsonKeys.ANSWER_SPEC);
     AnswerSpecBuilder specBuilder = AnswerSpecServiceFormat.parse(answerSpecJson, wdkModel);
     StepContainer stepContainer = loadContainer(specBuilder, wdkModel, sessionUser);
-    AnswerSpec answerSpec = specBuilder.build(sessionUser, stepContainer, ValidationLevel.RUNNABLE);
-    if (!answerSpec.isValid()) {
-      throw new DataValidationException("Invalid answer spec: " + answerSpec.getValidationBundle().toString());
-    }
-    return answerSpec.getRunnable().get();
+    return specBuilder
+        .build(sessionUser, stepContainer, ValidationLevel.RUNNABLE)
+        .getRunnable()
+        .getOrThrow(spec -> new DataValidationException(
+            "Invalid answer spec: " + spec.getValidationBundle().toString()));
   }
 
   private static StepContainer loadContainer(AnswerSpecBuilder specBuilder,

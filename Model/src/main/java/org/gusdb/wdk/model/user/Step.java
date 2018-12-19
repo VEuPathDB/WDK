@@ -442,7 +442,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   /**
    * Returns an estimate of the size of this step (number of records returned).
    * This may be the value of the estimate_size column in the steps table, or
-   * if getResultSize() has been called, an refreshed value.
+   * if getResultSize() has been called, a refreshed value.
    *
    * @return estimate of this step's result size
    */

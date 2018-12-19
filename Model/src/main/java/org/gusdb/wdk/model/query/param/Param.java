@@ -122,7 +122,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   // both default value and empty values will be used to construct default raw value. these values themselves
   // are neither valid raw values nor stable values.
-  protected String _defaultValue;
+  protected String _xmlDefaultValue;
   private String _emptyValue;
 
   // sometimes different values are desired for normal operation vs. sanity test;
@@ -166,7 +166,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _noTranslations = new ArrayList<ParamConfiguration>();
     _allowEmpty = false;
     _emptyValue = null;
-    _defaultValue = null;
+    _xmlDefaultValue = null;
     _sanityDefaultValue = null;
     _handlerReferences = new ArrayList<>();
   }
@@ -178,7 +178,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _prompt = param._prompt;
     _help = param._help;
     _visibleHelp = param._visibleHelp;
-    _defaultValue = param._defaultValue;
+    _xmlDefaultValue = param._xmlDefaultValue;
     _sanityDefaultValue = param._sanityDefaultValue;
     _visible = param._visible;
     _readonly = param._readonly;
@@ -217,7 +217,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   }
 
   public String getXmlDefault() {
-    return _defaultValue;
+    return _xmlDefaultValue;
   }
 
   /**
@@ -286,8 +286,8 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     _visibleHelp = visibleHelp;
   }
 
-  public void setDefault(String defaultValue) {
-    _defaultValue = defaultValue;
+  public void setDefault(String xmlDefaultValue) {
+    _xmlDefaultValue = xmlDefaultValue;
   }
 
   /**
@@ -298,7 +298,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * @throws WdkModelException if unable to retrieve default value
    */
   protected String getDefault(PartiallyValidatedStableValues stableValues) throws WdkModelException {
-    return _defaultValue;
+    return _xmlDefaultValue;
   }
 
   public void setSanityDefault(String sanityDefaultValue) {
@@ -394,7 +394,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
       .append("  prompt='").append(_prompt).append("'").append(NL)
       .append("  help='").append(_help).append("'").append(NL)
       .append("  visibleHelp='").append(_visibleHelp).append("'").append(NL)
-      .append("  default='").append(_defaultValue).append("'").append(NL)
+      .append("  xmlDefault='").append(_xmlDefaultValue).append("'").append(NL)
       .append("  sanityDefault='").append(_sanityDefaultValue).append("'").append(NL)
       .append("  readonly=").append(_readonly).append(NL)
       .append("  visible=").append(_visible).append(NL)
@@ -450,7 +450,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
               " has more than one <suggest> for project " + projectId);
 
         suggest.excludeResources(projectId);
-        _defaultValue = suggest.getDefault();
+        _xmlDefaultValue = suggest.getDefault();
         _allowEmpty = suggest.isAllowEmpty();
         _emptyValue = suggest.getEmptyValue();
 
@@ -776,9 +776,15 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   }
   
   /**
-   * By default, params are not dependent, and so do not become stale.  must be overridden by dependent params
-   * The definition of stale is: given a possible changes in values of the depended params provided on input,
-   * this param is stale if a previous value for it might no longer be valid
+   * By default, params are not dependent, and so do not become stale.  It must
+   * be overridden by possibly dependent params.  The definition of stale is:
+   * given a possible changes in values of the depended params provided on
+   * input, this param is stale if a previous value for it might no longer be
+   * valid, e.g. vocabulary of acceptable values has changed.
+   * 
+   * This is more nuanced than simply asking if a depended param is in the
+   * passed list. Sometimes declare a dependency on a param for reasons other
+   * than vocabulary generation (e.g. internal value generation).
    * 
    * @param staleDependedParamsFullNames
    * @return

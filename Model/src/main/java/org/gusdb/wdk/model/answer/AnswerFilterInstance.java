@@ -294,11 +294,12 @@ public class AnswerFilterInstance extends WdkModelBase {
   public String applyFilter(User user, String sql, int assignedWeight)
       throws WdkModelException {
     // validate params
-    QueryInstanceSpecBuilder specBuilder = QueryInstanceSpec.builder(_partialParamStableValues);
-    QueryInstanceSpec spec = specBuilder.buildValidated(user, _filterQuery,
-        StepContainer.emptyContainer(), ValidationLevel.RUNNABLE, FillStrategy.NO_FILL);
-    RunnableObj<QueryInstanceSpec> validSpec = spec.getRunnable()
-        .orElseThrow(() -> new WdkModelException(
+    RunnableObj<QueryInstanceSpec> validSpec = QueryInstanceSpec
+        .builder(_partialParamStableValues)
+        .buildValidated(user, _filterQuery, StepContainer.emptyContainer(),
+            ValidationLevel.RUNNABLE, FillStrategy.NO_FILL)
+        .getRunnable()
+        .getOrThrow(spec -> new WdkModelException(
             "AnswerFilterInstance params failed semantic validation: " + NL +
             join(spec.getValidationBundle().getAllErrors(), NL)));
 
