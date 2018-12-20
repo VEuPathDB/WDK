@@ -23,6 +23,8 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.validation.Validateable;
+import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -35,7 +37,7 @@ import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Strategy implements StrategyElement, StepContainer {
+public class Strategy implements StrategyElement, StepContainer, Validateable<Strategy> {
 
   private static final Logger LOG = Logger.getLogger(Strategy.class);
 
@@ -178,6 +180,10 @@ public class Strategy implements StrategyElement, StepContainer {
     return new StrategyBuilder(wdkModel, userId, strategyId);
   }
 
+  public static StrategyBuilder builder(Strategy strategy) {
+    return new StrategyBuilder(strategy);
+  }
+
   private final WdkModel _wdkModel;
   private final User _user;
   private final long _strategyId;
@@ -193,8 +199,9 @@ public class Strategy implements StrategyElement, StepContainer {
   private final Date _lastRunTime;
   private final String _signature;
   private final boolean _isPublic;
-  private long _rootStepId; // <- MODIFIABLE
+  private final long _rootStepId;
   private final Map<Long, Step> _stepMap;
+  private final ValidationBundle _validationBundle;
 
   private Strategy(StrategyBuilder strategyBuilder, User user, ValidationLevel validationLevel) throws WdkModelException {
     _user = user;
@@ -214,6 +221,9 @@ public class Strategy implements StrategyElement, StepContainer {
     _isPublic = strategyBuilder._isPublic;
     _rootStepId = strategyBuilder._rootStepId;
     _stepMap = buildSteps(user, _rootStepId, strategyBuilder._stepMap, validationLevel);
+    _validationBundle = ValidationBundle.builder(validationLevel)
+        .aggregateStatus(_stepMap.values().toArray(new Step[0]))
+        .build();
   }
 
   private Map<Long, Step> buildSteps(User user, long rootStepId, Map<Long, StepBuilder> steps,
@@ -450,9 +460,9 @@ public class Strategy implements StrategyElement, StepContainer {
     return jsStrategy;
   }
 
+  @Override
   public boolean isValid() {
-    // if any steps are invalid, the strategy is invalid
-    return reduce(_stepMap.values(), (acc, next) -> (!next.isValid() ? false : acc), true);
+    return _validationBundle.getStatus().isValid();
   }
 
   /**
@@ -526,6 +536,11 @@ public class Strategy implements StrategyElement, StepContainer {
    */
   public List<Step> getAllSteps() {
     return new ArrayList<>(_stepMap.values());
+  }
+
+  @Override
+  public ValidationBundle getValidationBundle() {
+    return _validationBundle;
   }
 
 }

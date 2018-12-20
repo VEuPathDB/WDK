@@ -58,7 +58,7 @@ public class StepFactoryHelpers {
       COLUMN_DESCRIPTION, COLUMN_SIGNATURE, COLUMN_NAME, COLUMN_SAVED_NAME, COLUMN_IS_PUBLIC
   };
 
-  static class UserCache extends HashMap<Long,User> {
+  public static class UserCache extends HashMap<Long,User> {
 
     private static final long serialVersionUID = 1L;
 
