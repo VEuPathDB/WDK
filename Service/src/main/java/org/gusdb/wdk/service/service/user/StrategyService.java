@@ -106,18 +106,6 @@ public class StrategyService extends UserService {
     fac.updateStrategy(applyStrategyChange(strat, body));
   }
 
-  @PUT
-  @Path("strategies/{strategyId}/answerSpec")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  // TODO: @InSchema(...)
-  public void putAnswerSpec(
-    @PathParam("strategyId") long strategyId,
-    ObjectNode body
-  ) {
-    throw new InternalServerErrorException("method not implemented");
-  }
-
   @GET
   @Path("strategies/{strategyId}")
   @Produces(MediaType.APPLICATION_JSON)
