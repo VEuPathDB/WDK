@@ -53,6 +53,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -348,7 +349,9 @@ public class StepFactory {
 
   private void updateStepTree(Step step) throws WdkModelException {
     Question question = step.getAnswerSpec().getQuestion();
-    Map<String, String> displayParams = step.getAnswerSpec().getQueryInstanceSpec().toMap();
+    Map<String, String> displayParams = step.getAnswerSpec()
+        .getQueryInstanceSpec()
+        .toMap();
 
     Query query = question.getQuery();
     long leftStepId = 0;
@@ -425,15 +428,16 @@ public class StepFactory {
   }
 
   /**
-   * This method updates the custom name, the time stamp of last running, isDeleted, isCollapsible, and
-   * collapsed name
+   * This method updates the custom name, the time stamp of last running,
+   * isDeleted, isCollapsible, and collapsed name
    *
    * @param user
    * @param step
    * @param setLastRunTime
    * @throws WdkModelException
    */
-  void updateStep(User user, Step step, boolean setLastRunTime) throws WdkModelException {
+  void updateStep(User user, Step step, boolean setLastRunTime)
+      throws WdkModelException {
     LOG.debug("updateStep(): step #" + step.getStepId() +
         " new custom name: '" + step.getBaseCustomName() + "'");
 
@@ -1183,6 +1187,17 @@ public class StepFactory {
     //        before insertion, just use that one; do not load from the DB again
     Optional<Strategy> strategy = new StrategyLoader(_wdkModel, ValidationLevel.SEMANTIC).getStrategyById(strategyId);
     return strategy.orElseThrow(() -> new WdkModelException("Newly created strategy could not be found."));
+  }
+
+  /**
+   * Overwrite the details of a step in the database.
+   *
+   * @param step the step that will will be updated
+   *
+   * @throws WdkModelException if a connection to the database cannot be opened.
+   */
+  public void updateStep(Step step) throws WdkModelException {
+    updateSteps(ListBuilder.asList(step));
   }
 
   /**
