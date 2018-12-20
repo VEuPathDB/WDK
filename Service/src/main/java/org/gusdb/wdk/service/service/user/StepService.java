@@ -5,12 +5,14 @@ import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.user.*;
+import org.gusdb.wdk.model.user.NoSuchElementException;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
+import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.StepFormatter;
@@ -183,6 +185,16 @@ public class StepService extends UserService {
     throw new InternalServerErrorException("method not implemented");
   }
 
+  @GET
+  @Path("steps/{stepId}/answer/filter-summary/{filterName}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONObject getFilterSummary(@PathParam("stepId") long stepId,
+      @PathParam("filterName") String filterName)
+      throws WdkModelException {
+    return getStepForCurrentUser(stepId).getAnswerValue()
+        .getFilterSummaryJson(filterName);
+  }
+
   private Response createAnswer(long stepId, String requestBody, AnswerFormattingParser formattingParser)
       throws WdkModelException, RequestMisformatException, DataValidationException {
     try {
@@ -202,20 +214,6 @@ public class StepService extends UserService {
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage());
-    }
-  }
-
-  @GET
-  @Path("steps/{stepId}/answer/filter-summary/{filterName}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getFilterSummary(@PathParam("stepId") String stepId, @PathParam("filterName") String filterName) throws WdkModelException, DataValidationException {
-    Step step = getStepForCurrentUser(stepId);
-    try {
-    AnswerValue answerValue = step.getAnswerValue();
-    JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
-    return Response.ok(filterSummaryJson.toString()).build();
-    } catch (WdkUserException e) {
-      throw new DataValidationException(e);
     }
   }
 
