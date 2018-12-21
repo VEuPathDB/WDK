@@ -874,13 +874,11 @@ public class StepFactory {
     MapBuilder<Long,StepBuilder> newStepMap = new MapBuilder<>();
     for (Param param : oldSpec.getQuestion().getParams()) {
       String oldStableValue = oldSpec.getQueryInstanceSpec().get(param.getName());
-      String replacementValue =
-          param instanceof AnswerParam ?
-              cloneAnswerParam(oldSpec, oldStableValue, newUser, newStepMap) :
-          param instanceof DatasetParam ?
-              cloneDatasetParam(oldUser, oldStableValue, newUser) :
-          // otherwise use original value
-              oldStableValue;
+      String replacementValue = param instanceof AnswerParam
+          ? cloneAnswerParam(oldSpec, oldStableValue, newUser, newStepMap)
+          : param instanceof DatasetParam
+              ? cloneDatasetParam(oldUser, oldStableValue, newUser)
+              : oldStableValue; // otherwise use original value
       newSpec.setParamValue(param.getName(), replacementValue);
     }
     return newStepMap;
@@ -948,14 +946,12 @@ public class StepFactory {
           boolType,      // IS_SAVED
           boolType       // IS_DELETED
         },
-        rs -> {
-          return rs.next() ?
-            Optional.of(new TwoTuple<>(
-              rs.getLong(COLUMN_STRATEGY_ID),
-              rs.getString(COLUMN_SIGNATURE)
-            )) :
-            Optional.empty();
-        }
+        rs -> rs.next()
+            ? Optional.of(new TwoTuple<>(
+                rs.getLong(COLUMN_STRATEGY_ID),
+                rs.getString(COLUMN_SIGNATURE)
+              ))
+            : Optional.empty()
       );
   }
 
@@ -1319,7 +1315,7 @@ public class StepFactory {
         .intValue();
     }
     catch (Exception e) {
-      return WdkModelException.unwrap(e, Integer.class);
+      return WdkModelException.unwrap(e, Integer.class); //FIXME: This returns null, this method returns int.  NPE?
     }
   }
 
