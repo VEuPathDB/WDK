@@ -2,10 +2,10 @@ package org.gusdb.wdk.model.answer;
 
 import java.util.Map;
 
-import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -17,9 +17,9 @@ import org.gusdb.wdk.model.user.User;
 public interface SummaryViewHandler {
 
     /**
-     * Provides a model for a summary view of the given step.
+     * Provides a model for a summary view of the given answer spec.
      * 
-     * @param step step for which to provide a model
+     * @param answerSpec answer spec for which to provide a model
      * @param parameters parameters passed to configure this view
      * @param user current user
      * @param wdkModel WDK model
@@ -27,14 +27,14 @@ public interface SummaryViewHandler {
      * @throws WdkModelException if system exception occurs
      * @throws WdkUserException if input parameters are invalid
      */
-    Map<String, Object> process(Step step, Map<String, String[]> parameters, User user, WdkModel wdkModel)
+    Map<String, Object> process(RunnableObj<AnswerSpec> answerSpec, Map<String, String[]> parameters, User user)
         throws WdkModelException, WdkUserException;
 
     /**
      * Process updates related to this summary view and return a configuration
      * for a reload of the summary view.
      * 
-     * @param step step for which to provide a model
+     * @param answerSpec answer spec for which to provide a model
      * @param parameters parameters passed to update this view
      * @param user current user
      * @param wdkModel WDK model
@@ -42,6 +42,6 @@ public interface SummaryViewHandler {
      * @throws WdkModelException if system exception occurs
      * @throws WdkUserException if input parameters are invalid
      */
-    String processUpdate(Step step, Map<String, String[]> parameters, User user, WdkModel wdkModel)
+    String processUpdate(RunnableObj<AnswerSpec> answerSpec, Map<String, String[]> parameters, User user)
         throws WdkModelException, WdkUserException;
 }
