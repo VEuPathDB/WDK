@@ -46,11 +46,13 @@ public class StepService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk/users/steps/post-request")
-  public Response createStep(@QueryParam("runStep") Boolean runStep, JSONObject jsonBody) throws WdkModelException, DataValidationException {
+  public Response createStep(@QueryParam("runStep") Boolean runStep,
+      JSONObject jsonBody) throws WdkModelException, DataValidationException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepRequest stepRequest = StepRequest.newStepFromJson(jsonBody, getWdkModel(), user);
-      Step newStep = getWdkModel().getStepFactory().createStep(
+      Step newStep = getWdkModel().getStepFactory()
+          .createStep(
           user, stepRequest.getAnswerSpec(), filter, filterOptions,
           assignedWeight, deleted, customName, isCollapsible, collapsedName, strategy);
 
@@ -136,7 +138,8 @@ public class StepService extends UserService {
 
   @DELETE
   @Path("steps/{stepId}")
-  public void deleteStep(@PathParam("stepId") long stepId) throws WdkModelException, ConflictException {
+  public void deleteStep(@PathParam("stepId") long stepId)
+      throws WdkModelException, ConflictException {
 
     Step step = getStepForCurrentUser(stepId);
     if (step.isDeleted())
@@ -200,7 +203,8 @@ public class StepService extends UserService {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepFactory stepFactory = new StepFactory(getWdkModel());
-      Step step = stepFactory.getStepById(stepId);
+      Step step = stepFactory.getStepById(stepId)
+          .orElseThrow(NotFoundException::new);
 
       if(!step.isAnswerSpecComplete())
         throw new DataValidationException("One or more parameters is missing");
@@ -208,9 +212,6 @@ public class StepService extends UserService {
       AnswerSpec stepAnswerSpec = AnswerSpecServiceFormat.createFromStep(step);
       AnswerRequest request = new AnswerRequest(stepAnswerSpec, formattingParser.createFromTopLevelObject(requestBody));
       return AnswerService.getAnswerResponse(user, request);
-    }
-    catch(NumberFormatException nfe) {
-      throw new NotFoundException(formatNotFound("step ID " + stepId));
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage());
