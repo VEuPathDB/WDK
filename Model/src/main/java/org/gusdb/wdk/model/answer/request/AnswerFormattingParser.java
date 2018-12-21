@@ -8,16 +8,16 @@ import org.json.JSONObject;
 
 public interface AnswerFormattingParser extends FunctionWithException<JSONObject, AnswerFormatting> {
 
-  public static final String FORMATTING_KEY = "formatting";
-  public static final String FORMAT_KEY = "format";
-  public static final String FORMAT_CONFIG_KEY = "formatConfig";
+  String FORMATTING_KEY = "formatting";
+  String FORMAT_KEY = "format";
+  String FORMAT_CONFIG_KEY = "formatConfig";
 
   @Override
-  public AnswerFormatting apply(JSONObject input) throws JSONException;
+  AnswerFormatting apply(JSONObject input) throws JSONException;
 
-  public AnswerFormatting createFromTopLevelObject(String requestBody) throws JSONException;
+  AnswerFormatting createFromTopLevelObject(String requestBody) throws JSONException;
 
-  public static final AnswerFormattingParser SPECIFIED_REPORTER_PARSER = new AnswerFormattingParser() {
+  AnswerFormattingParser SPECIFIED_REPORTER_PARSER = new AnswerFormattingParser() {
     @Override
     public AnswerFormatting apply(JSONObject input) throws JSONException {
       JSONObject formatting = input.getJSONObject(FORMATTING_KEY);
@@ -33,7 +33,7 @@ public interface AnswerFormattingParser extends FunctionWithException<JSONObject
     }
   };
 
-  public static final AnswerFormattingParser DEFAULT_REPORTER_PARSER = new AnswerFormattingParser() {
+  AnswerFormattingParser DEFAULT_REPORTER_PARSER = new AnswerFormattingParser() {
     @Override
     public AnswerFormatting apply(JSONObject input) throws JSONException {
       return new AnswerFormatting(
