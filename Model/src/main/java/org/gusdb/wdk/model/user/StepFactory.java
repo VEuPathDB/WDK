@@ -337,9 +337,21 @@ public class StepFactory {
    * @return step by step ID
    * @throws WdkModelException if step not found or problem occurs
    */
+  @Deprecated
   public Optional<Step> getStepById(long stepId) throws WdkModelException {
     LOG.debug("Loading step#" + stepId + "....");
-    return new StrategyLoader(_wdkModel, ValidationLevel.SEMANTIC).getStepById(stepId);
+    return getStepById(stepId, ValidationLevel.SEMANTIC);
+  }
+
+  /**
+   * @param stepId step ID for which to retrieve step
+   * @param validationLevel level with which to validate step
+   * @return step by step ID
+   * @throws WdkModelException if step not found or problem occurs
+   */
+  public Optional<Step> getStepById(long stepId, ValidationLevel validationLevel) throws WdkModelException {
+    LOG.debug("Loading step#" + stepId + "....");
+    return new StrategyLoader(_wdkModel, validationLevel).getStepById(stepId);
   }
 
   public Step getStepByValidId(long stepId) throws WdkModelException {

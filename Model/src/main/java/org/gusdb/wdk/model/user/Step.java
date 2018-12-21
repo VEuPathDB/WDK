@@ -253,6 +253,11 @@ public class Step implements StrategyElement, Validateable<Step> {
     return new StepBuilder(step);
   }
 
+  public static RunnableObj<AnswerSpec> getRunnableAnswerSpec(RunnableObj<Step> runnableStep) {
+    // we know we can simply return the answer spec because the step is runnable
+    return runnableStep.getObject().getAnswerSpec().getRunnable().getLeft();
+  }
+
   // TODO: Find the use cases for the modifiable fields below and fix; goal is for Step instance to be immutable
 
   // set during Step object creation
