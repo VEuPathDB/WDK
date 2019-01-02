@@ -101,6 +101,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
       json.put("iframeBaseUrl", _iframeBaseUrl);
       json.put("iframeWidth", _iframeWidth);
       json.put("iframeHeight", _iframeHeight);
+      json.put("downloadPath", ATTRIBUTES_FILE_NAME);
 
       return json;
     }

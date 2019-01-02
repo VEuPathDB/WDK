@@ -42,6 +42,8 @@ public class StepAnalysisService extends UserService {
   private static final String STATUS_KEY = "status";
   private static final String CONTEXT_HASH_KEY = "contextHash";
   private static final String ACCESS_TOKEN_KEY = "accessToken";
+  private static final String DOWNLOAD_URL_BASE_KEY = "downloadUrlBase";
+  private static final String PROPERTIES_URL_BASE_KEY = "propertiesUrlBase";
 
   private final long stepId;
 
@@ -219,7 +221,9 @@ public class StepAnalysisService extends UserService {
     // This should be moved upstream.
     StepAnalysisInstance inst = fac.getSavedAnalysisInstance(analysisId);
     value.put(CONTEXT_HASH_KEY, inst.createHash())
-        .put(ACCESS_TOKEN_KEY, inst.getAccessToken());
+        .put(ACCESS_TOKEN_KEY, inst.getAccessToken())
+        .put(DOWNLOAD_URL_BASE_KEY, getContextUri())
+        .put(PROPERTIES_URL_BASE_KEY, getServiceUri());
 
     return Response.ok(value).build();
   }
