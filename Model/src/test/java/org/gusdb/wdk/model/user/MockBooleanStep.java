@@ -45,12 +45,12 @@ public class MockBooleanStep extends MockStep {
   }
 
   @Override
-  public AnswerParam getPreviousStepParam() {
+  public AnswerParam getPrimaryInputStepParam() {
     return previousParam;
   }
 
   @Override
-  public AnswerParam getChildStepParam() {
+  public AnswerParam getSecondaryInputStepParam() {
     return childParam;
   }
 }

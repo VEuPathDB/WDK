@@ -398,18 +398,18 @@ public class StepBean {
   /**
    * @return
    * @throws WdkModelException
-   * @see org.gusdb.wdk.model.user.Step#getChildStepParamName()
+   * @see org.gusdb.wdk.model.user.Step#getSecondaryInputStepParamName()
    */
   public String getChildStepParam() {
-    return step.getChildStepParamName().orElse(null);
+    return step.getSecondaryInputStepParamName().orElse(null);
   }
 
   /**
    * @return
-   * @see org.gusdb.wdk.model.user.Step#getPreviousStepParamName()
+   * @see org.gusdb.wdk.model.user.Step#getPrimaryInputStepParamName()
    */
   public String getPreviousStepParam() {
-    return step.getPreviousStepParamName().orElse(null);
+    return step.getPrimaryInputStepParamName().orElse(null);
   }
 
   /**

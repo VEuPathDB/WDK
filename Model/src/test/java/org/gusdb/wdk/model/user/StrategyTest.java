@@ -245,7 +245,7 @@ public class StrategyTest {
     // change the filter of step2
     step2.setFilterName(newFilter.getName());
     Step root = strategy.getRootStep();
-    Step newMiddleStep1 = strategy.getStepById(root.getPreviousStepId());
+    Step newMiddleStep1 = strategy.getStepById(root.getPrimaryInputStepId());
 
     StepTest.compareStep(newMiddleStep1, root.getPrimaryInputStep());
     StepTest.compareStep(step3, root.getSecondaryInputStep());

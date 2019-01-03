@@ -154,8 +154,8 @@ public class StrategyRequest {
     if(step.isDeleted()) {
     	  errors.append("Step " + step.getStepId() + " is marked as deleted." + System.lineSeparator());
     }
-    if(step.getPrimaryInputStep() != null  || step.getPreviousStepId() != 0 ||
-    	    step.getSecondaryInputStep() != null || step.getChildStepId() != 0) {
+    if(step.getPrimaryInputStep() != null  || step.getPrimaryInputStepId() != 0 ||
+    	    step.getSecondaryInputStep() != null || step.getSecondaryInputStepId() != 0) {
     	  errors.append("Step " + step.getStepId() + " cannot already be wired." + System.lineSeparator());
     }
     return errors.toString();

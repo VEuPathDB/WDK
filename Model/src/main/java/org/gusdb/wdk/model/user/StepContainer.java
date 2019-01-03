@@ -21,7 +21,7 @@ public interface StepContainer {
   }
 
   static StepSearch parentOf(long stepId) {
-    return new StepSearch(step -> step.getChildStepId() == stepId || step.getPreviousStepId() == stepId, " that is the parent of " + stepId);
+    return new StepSearch(step -> step.getSecondaryInputStepId() == stepId || step.getPrimaryInputStepId() == stepId, " that is the parent of " + stepId);
   }
 
   static StepContainer emptyContainer() {

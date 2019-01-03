@@ -40,7 +40,7 @@ public class MockTransformStep extends MockStep {
   }
 
   @Override
-  public AnswerParam getPreviousStepParam() {
+  public AnswerParam getPrimaryInputStepParam() {
     return previousParam;
   }
 }
