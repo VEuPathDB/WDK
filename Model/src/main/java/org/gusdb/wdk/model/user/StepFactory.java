@@ -520,8 +520,8 @@ public class StepFactory {
         "WHERE " + COLUMN_STEP_ID + " = ?";
 
     final AnswerSpec spec = step.getAnswerSpec();
-    final long leftId = step.getPreviousStepId();
-    final long childId = step.getChildStepId();
+    final long leftId = step.getPrimaryInputStepId();
+    final long childId = step.getSecondaryInputStepId();
 
     final Integer[] types = {
         Types.VARCHAR,
@@ -1279,8 +1279,8 @@ public class StepFactory {
       final AnswerSpec spec = step.getAnswerSpec();
 
       batch.add(new Object[]{
-          step.getPreviousStepId() == 0 ? null : step.getPreviousStepId(),
-          step.getChildStepId() == 0 ? null : step.getChildStepId(),
+          step.getPrimaryInputStepId() == 0 ? null : step.getPrimaryInputStepId(),
+          step.getSecondaryInputStepId() == 0 ? null : step.getSecondaryInputStepId(),
           step.getLastRunTime(),
           step.getEstimatedSize(),
           spec.getLegacyFilterName(),

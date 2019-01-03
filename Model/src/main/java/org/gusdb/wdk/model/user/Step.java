@@ -21,6 +21,7 @@ import java.util.Stack;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Named;
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.validation.ValidObjectFactory;
@@ -364,12 +365,12 @@ public class Step implements StrategyElement, Validateable<Step> {
     // sanity checks regarding answer param values vs strategy present
     if (_strategy == null) {
       // Confirm left and right child null if strategyId = null
-      if (getChildStepId() != 0 || getPreviousStepId() != 0) {
+      if (getSecondaryInputStepId() != 0 || getPrimaryInputStepId() != 0) {
         throw new WdkModelException("Step " + _stepId + " does not have a strategy but has answer param values.");
       }
     }
-    else if ((getChildStepParam() != null && getChildStepId() == 0) ||
-             (getPreviousStepParam() != null && getPreviousStepId() == 0)) {
+    else if ((getSecondaryInputStepParam() != null && getSecondaryInputStepId() == 0) ||
+             (getPrimaryInputStepParam() != null && getPrimaryInputStepId() == 0)) {
       throw new WdkModelException("Step " + _stepId + " is part of a strategy but at least one answer param does not have a value.");
     }
   }
@@ -387,12 +388,12 @@ public class Step implements StrategyElement, Validateable<Step> {
     return getContainer().findFirstStep(parentOf(_stepId));
   }
 
-  public long getPreviousStepId() {
+  public long getPrimaryInputStepId() {
     Step step = getPrimaryInputStep();
     return step == null ? 0 : step.getStepId();
   }
 
-  public long getChildStepId() {
+  public long getSecondaryInputStepId() {
     Step step = getSecondaryInputStep();
     return step == null ? 0 : step.getStepId();
   }
@@ -566,7 +567,7 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   // FIXME: this is just straight wrong; if no previous step param, just means this could be any leaf
   public boolean isFirstStep() {
-    return !getPreviousStepParam().isPresent();
+    return !getPrimaryInputStepParam().isPresent();
   }
 
   public User getUser() {
@@ -820,7 +821,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   public Step getStepByPreviousId(int previousId) throws WdkModelException {
     LOG.debug("gettting step by prev id. current=" + this + ", input=" + previousId);
     Step target;
-    if (getPreviousStepId() == previousId) {
+    if (getPrimaryInputStepId() == previousId) {
       return this;
     }
     Step childStep = getSecondaryInputStep();
@@ -962,7 +963,7 @@ public class Step implements StrategyElement, Validateable<Step> {
    *
    * @return an AnswerParam
    */
-  public Optional<AnswerParam> getPreviousStepParam() {
+  public Optional<AnswerParam> getPrimaryInputStepParam() {
     if (!hasValidQuestion())
       return Optional.empty();
     Param[] params = _answerSpec.getQuestion().getParams();
@@ -977,11 +978,11 @@ public class Step implements StrategyElement, Validateable<Step> {
   /**
    * The previous step param is always the first answerParam.
    */
-  public Optional<String> getPreviousStepParamName() {
-    return getPreviousStepParam().map(Named.TO_NAME);
+  public Optional<String> getPrimaryInputStepParamName() {
+    return getPrimaryInputStepParam().map(NamedObject::getName);
   }
 
-  public Optional<AnswerParam> getChildStepParam() {
+  public Optional<AnswerParam> getSecondaryInputStepParam() {
     if (!hasValidQuestion())
       return Optional.empty();
     Param[] params = _answerSpec.getQuestion().getParams();
@@ -999,8 +1000,8 @@ public class Step implements StrategyElement, Validateable<Step> {
   /**
    * the child step param is always the second answerParam
    */
-  public Optional<String> getChildStepParamName() {
-    return getChildStepParam().map(Named.TO_NAME);
+  public Optional<String> getSecondaryInputStepParamName() {
+    return getSecondaryInputStepParam().map(NamedObject::getName);
   }
 
   public int getFrontId() throws WdkUserException, WdkModelException, SQLException, JSONException {
@@ -1017,7 +1018,7 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   @Override
   public String toString() {
-    return _stepId + " (" + getPreviousStepId() + ", " + getChildStepId() + ")";
+    return _stepId + " (" + getPrimaryInputStepId() + ", " + getSecondaryInputStepId() + ")";
   }
 
   public boolean isUncollapsible() {
@@ -1057,14 +1058,14 @@ public class Step implements StrategyElement, Validateable<Step> {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public void checkPreviousAllowed(Step previousStep) throws WdkModelException, WdkUserException {
+  public void checkIfPassedStepAllowedAsPrimaryInput(Step previousStep) throws WdkModelException, WdkUserException {
     // make sure the current step can take any previous step.
     if (!isCombined())
       throw new WdkUserException("The step #" + getStepId() + " cannot take any step as its previousStep.");
 
     // make sure the current step can take the newStep as previousStep
     String type = previousStep.getType();
-    AnswerParam param = getPreviousStepParam()
+    AnswerParam param = getPrimaryInputStepParam()
         .orElseThrow(() -> new WdkUserException("Cannot assign a previous step to step " + getStepId()));
     if (!param.allowRecordClass(type))
       throw new WdkUserException("The new step#" + previousStep.getStepId() + " of type " + type +
@@ -1079,14 +1080,14 @@ public class Step implements StrategyElement, Validateable<Step> {
    * @throws WdkUserException
    * @throws WdkModelException
    */
-  public void checkChildAllowed(Step childStep) throws WdkUserException, WdkModelException {
+  public void checkIfPassedStepAllowedAsSecondaryInput(Step childStep) throws WdkUserException, WdkModelException {
     // check if the current step can take any child steps.
     if (!isCombined() || isTransform())
       throw new WdkUserException("The step #" + getStepId() + " cannot take any step as its childStep.");
 
     // make sure the current step can take the newStep as childStep
     String type = childStep.getType();
-    AnswerParam param = getChildStepParam()
+    AnswerParam param = getSecondaryInputStepParam()
         .orElseThrow(() -> new WdkUserException("Cannot assign a child step to step " + getStepId()));
     if (!param.allowRecordClass(type))
       throw new WdkUserException("The new step#" + childStep.getStepId() + " of type " + type +
