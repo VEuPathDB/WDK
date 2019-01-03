@@ -62,7 +62,7 @@ public class Bug4446Test {
     logger.debug("name before revising: " + strategy.getRootStep().getCustomName());
 
     // now revise the previous step of the boolean
-    Step previousStep = booleanStep.getPreviousStep();
+    Step previousStep = booleanStep.getPrimaryInputStep();
     // TODO - change the param values of the previousStep
     previousStep.writeParamFiltersToDb();
 

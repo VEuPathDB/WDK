@@ -1,9 +1,15 @@
 package org.gusdb.wdk.service.service.user;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
@@ -12,6 +18,7 @@ import org.gusdb.wdk.model.user.NoSuchElementException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
@@ -61,6 +68,7 @@ public class StepService extends UserService {
       if (runStep != null && runStep) {
         if (step.isAnswerSpecComplete()) {
           AnswerSpec stepAnswerSpec = AnswerSpecServiceFormat.parse(step);
+          
           new AnswerValueFactory(user).createFromAnswerSpec(stepAnswerSpec);
         }
         else {
@@ -79,8 +87,12 @@ public class StepService extends UserService {
   @GET
   @Path("steps/{stepId}")
   @Produces(MediaType.APPLICATION_JSON)
-  public JSONObject getStep(@PathParam("stepId") long stepId) throws WdkModelException {
-    return StepFormatter.getStepJsonWithEstimatedSize(getStepForCurrentUser(stepId));
+  public JSONObject getStep(
+      @PathParam("stepId") long stepId,
+      @QueryParam("validationLevel") String validationLevelStr) throws WdkModelException {
+    ValidationLevel validationLevel = Functions.defaultOnException(
+        () -> ValidationLevel.valueOf(validationLevelStr), ValidationLevel.SEMANTIC);
+    return StepFormatter.getStepJsonWithEstimatedSize(getStepForCurrentUser(stepId, validationLevel));
   }
 
   /**
@@ -103,7 +115,7 @@ public class StepService extends UserService {
       return Response.ok().build();
 
     try {
-      final Step step = updateStepMeta(getStepForCurrentUser(stepId), body);
+      final Step step = updateStepMeta(getStepForCurrentUser(stepId, ValidationLevel.NONE), body);
 
       // TODO: Move this to PUT
       // save parts of step that changed
@@ -141,7 +153,7 @@ public class StepService extends UserService {
   public void deleteStep(@PathParam("stepId") long stepId)
       throws WdkModelException, ConflictException {
 
-    Step step = getStepForCurrentUser(stepId);
+    Step step = getStepForCurrentUser(stepId, ValidationLevel.NONE);
     if (step.isDeleted())
       throw new NotFoundException(
           AbstractWdkService.formatNotFound(STEP_RESOURCE + stepId));
@@ -155,7 +167,7 @@ public class StepService extends UserService {
     getWdkModel().getStepFactory()
         .updateStep(Step.builder(step)
             .setDeleted(true)
-            .build()
+            .build(new UserCache(step.getUser()), ValidationLevel.NONE, null)
         );
   }
 
@@ -193,9 +205,19 @@ public class StepService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   public JSONObject getFilterSummary(@PathParam("stepId") long stepId,
       @PathParam("filterName") String filterName)
-      throws WdkModelException {
-    return getStepForCurrentUser(stepId).getAnswerValue()
-        .getFilterSummaryJson(filterName);
+      throws WdkModelException, DataValidationException {
+    return AnswerValueFactory.makeAnswer(
+      getUserBundle(Access.PRIVATE).getSessionUser(),
+      Step.getRunnableAnswerSpec(
+        getStepForCurrentUser(stepId, ValidationLevel.RUNNABLE)
+          .getRunnable()
+          .getOrThrow(StepService::getNotRunnableException))
+    ).getFilterSummaryJson(filterName);
+  }
+
+  private static DataValidationException getNotRunnableException(Step badStep) {
+    return new DataValidationException(
+        "This step is not runnable for the following reasons: " + badStep.getValidationBundle().toString());
   }
 
   private Response createAnswer(long stepId, String requestBody, AnswerFormattingParser formattingParser)
@@ -203,15 +225,21 @@ public class StepService extends UserService {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepFactory stepFactory = new StepFactory(getWdkModel());
-      Step step = stepFactory.getStepById(stepId)
-          .orElseThrow(NotFoundException::new);
+      RunnableObj<Step> runnableStep = stepFactory
+          .getStepById(stepId, ValidationLevel.RUNNABLE)
+          .orElseThrow(NotFoundException::new)
+          .getRunnable()
+          .getOrThrow(StepService::getNotRunnableException);
 
-      if(!step.isAnswerSpecComplete())
-        throw new DataValidationException("One or more parameters is missing");
-
-      AnswerSpec stepAnswerSpec = AnswerSpecServiceFormat.createFromStep(step);
-      AnswerRequest request = new AnswerRequest(stepAnswerSpec, formattingParser.createFromTopLevelObject(requestBody));
-      return AnswerService.getAnswerResponse(user, request);
+      AnswerRequest request = new AnswerRequest(
+          Step.getRunnableAnswerSpec(runnableStep),
+          formattingParser.createFromTopLevelObject(requestBody));
+      TwoTuple<AnswerValue, Response> result = AnswerService.getAnswerResponse(user, request);
+      
+      // TODO: get result size from answer value, write it as estimated size, and update last_run
+      
+      
+      return result.getSecond();
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage());
@@ -235,14 +263,14 @@ public class StepService extends UserService {
 //      newStep.setAnswerSpec(AnswerSpec.builder(stepRequest.getAnswerSpec()));
 //    }
 
-    return newStep.build();
+    return newStep.build(new UserCache(step.getUser()), step.getValidationBundle().getLevel(), step.getStrategy());
   }
 
-  private Step getStepForCurrentUser(long stepId) throws WdkModelException {
+  private Step getStepForCurrentUser(long stepId, ValidationLevel level) throws WdkModelException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       Step step = getWdkModel().getStepFactory()
-          .getStepById(stepId)
+          .getStepById(stepId, level)
           .orElseThrow(() -> new NoSuchElementException("Cannot find step with ID " + stepId));
 
       if (step.getUser().getUserId() != user.getUserId())

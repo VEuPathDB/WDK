@@ -9,6 +9,7 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
@@ -153,23 +154,24 @@ public class StrategyRequest {
     if(step.isDeleted()) {
     	  errors.append("Step " + step.getStepId() + " is marked as deleted." + System.lineSeparator());
     }
-    if(step.getPreviousStep() != null  || step.getPreviousStepId() != 0 ||
-    	    step.getChildStep() != null || step.getChildStepId() != 0) {
+    if(step.getPrimaryInputStep() != null  || step.getPreviousStepId() != 0 ||
+    	    step.getSecondaryInputStep() != null || step.getChildStepId() != 0) {
     	  errors.append("Step " + step.getStepId() + " cannot already be wired." + System.lineSeparator());
     }
     return errors.toString();
   }
   
   protected static void validateWiring(TreeNode<Step> stepTree, StringBuilder errors) throws WdkUserException, WdkModelException {
-	Step step = stepTree.getContents(); 
-    if(step.isBoolean() && (step.getPreviousStep() == null || step.getChildStep() == null)) {
+    Step step = stepTree.getContents();
+    int numExpectedChildren = step.getAnswerSpec().getQuestion().getQuery().getAnswerParamCount();
+    if (numExpectedChildren == 2 && (step.getPrimaryInputStep() == null || step.getSecondaryInputStep() == null)) {
       errors.append("The boolean step " + step.getStepId() + " requires two input steps." + System.lineSeparator());
     }
-    if(step.isTransform() && (step.getPreviousStep() == null || step.getChildStep() != null)) {
-    	  errors.append("The transform step " + step.getStepId() + " requires exactly one input step." + System.lineSeparator());
+    if (numExpectedChildren == 1 && (step.getPrimaryInputStep() == null || step.getSecondaryInputStep() != null)) {
+      errors.append("The transform step " + step.getStepId() + " requires exactly one input step." + System.lineSeparator());
     }
     for(TreeNode<Step> subTree : stepTree.getChildNodes()) {
-    	  validateWiring(subTree, errors);
+      validateWiring(subTree, errors);
     }
   }
 
