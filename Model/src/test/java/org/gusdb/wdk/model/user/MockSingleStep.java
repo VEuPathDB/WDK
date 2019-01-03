@@ -25,12 +25,12 @@ public class MockSingleStep extends MockStep {
   }
 
   @Override
-  public Step getPreviousStep() throws WdkModelException {
+  public Step getPrimaryInputStep() throws WdkModelException {
     return null;
   }
 
   @Override
-  public Step getChildStep() throws WdkModelException {
+  public Step getSecondaryInputStep() throws WdkModelException {
     return null;
   }
 }

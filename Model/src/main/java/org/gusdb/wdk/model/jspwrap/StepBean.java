@@ -42,8 +42,8 @@ public class StepBean {
   }
 
   public StepBean getPreviousStep() {
-    if (step.getPreviousStep() != null) {
-      return new StepBean(user, step.getPreviousStep());
+    if (step.getPrimaryInputStep() != null) {
+      return new StepBean(user, step.getPrimaryInputStep());
     }
     return null;
   }
@@ -64,8 +64,8 @@ public class StepBean {
   }
 
   public StepBean getChildStep() {
-    if (step.getChildStep() != null) {
-      return new StepBean(user, step.getChildStep());
+    if (step.getSecondaryInputStep() != null) {
+      return new StepBean(user, step.getSecondaryInputStep());
     }
     return null;
   }

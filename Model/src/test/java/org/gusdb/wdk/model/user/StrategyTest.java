@@ -122,10 +122,10 @@ public class StrategyTest {
     strategy.insertStepAfter(booleanStep, step1.getStepId());
     Step rootStep = strategy.getRootStep();
     StepTest.compareStep(booleanStep, rootStep);
-    StepTest.compareStep(step1, rootStep.getPreviousStep());
-    StepTest.compareStep(step2, rootStep.getChildStep());
-    StepTest.compareStep(rootStep, rootStep.getPreviousStep().getNextStep());
-    StepTest.compareStep(rootStep, rootStep.getChildStep().getParentStep());
+    StepTest.compareStep(step1, rootStep.getPrimaryInputStep());
+    StepTest.compareStep(step2, rootStep.getSecondaryInputStep());
+    StepTest.compareStep(rootStep, rootStep.getPrimaryInputStep().getNextStep());
+    StepTest.compareStep(rootStep, rootStep.getSecondaryInputStep().getParentStep());
   }
 
   @Test
@@ -207,7 +207,7 @@ public class StrategyTest {
     Step newBooleanStep = strategy.getStepById(oldBooleanStep.getStepId());
 
     StepTest.compareStep(newBooleanStep, strategy.getRootStep());
-    StepTest.compareStep(step2, strategy.getRootStep().getChildStep());
+    StepTest.compareStep(step2, strategy.getRootStep().getSecondaryInputStep());
   }
 
   @Test
@@ -247,10 +247,10 @@ public class StrategyTest {
     Step root = strategy.getRootStep();
     Step newMiddleStep1 = strategy.getStepById(root.getPreviousStepId());
 
-    StepTest.compareStep(newMiddleStep1, root.getPreviousStep());
-    StepTest.compareStep(step3, root.getChildStep());
-    StepTest.compareStep(step2, root.getPreviousStep().getChildStep());
-    StepTest.compareStep(step1, root.getPreviousStep().getPreviousStep());
+    StepTest.compareStep(newMiddleStep1, root.getPrimaryInputStep());
+    StepTest.compareStep(step3, root.getSecondaryInputStep());
+    StepTest.compareStep(step2, root.getPrimaryInputStep().getSecondaryInputStep());
+    StepTest.compareStep(step1, root.getPrimaryInputStep().getPrimaryInputStep());
   }
 
   @Test
@@ -326,10 +326,10 @@ public class StrategyTest {
     strategy.insertStepAfter(middleStep3, middleStep1.getStepId());
 
     Step root = strategy.getRootStep();
-    StepTest.compareStep(step3, root.getChildStep());
-    StepTest.compareStep(step4, root.getPreviousStep().getChildStep());
-    StepTest.compareStep(step2, root.getPreviousStep().getPreviousStep().getChildStep());
-    StepTest.compareStep(step1, root.getPreviousStep().getPreviousStep().getPreviousStep().getPreviousStep());
+    StepTest.compareStep(step3, root.getSecondaryInputStep());
+    StepTest.compareStep(step4, root.getPrimaryInputStep().getSecondaryInputStep());
+    StepTest.compareStep(step2, root.getPrimaryInputStep().getPrimaryInputStep().getSecondaryInputStep());
+    StepTest.compareStep(step1, root.getPrimaryInputStep().getPrimaryInputStep().getPrimaryInputStep().getPrimaryInputStep());
   }
 
   @Test

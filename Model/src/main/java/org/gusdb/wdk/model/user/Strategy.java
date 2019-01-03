@@ -407,8 +407,8 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
 
   public Step getFirstStep() {
     Step step = getRootStep();
-    while (step.getPreviousStep() != null) {
-      step = step.getPreviousStep();
+    while (step.getPrimaryInputStep() != null) {
+      step = step.getPrimaryInputStep();
     }
     return step;
   }

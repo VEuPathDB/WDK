@@ -388,20 +388,20 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   public long getPreviousStepId() {
-    Step step = getPreviousStep();
+    Step step = getPrimaryInputStep();
     return step == null ? 0 : step.getStepId();
   }
 
   public long getChildStepId() {
-    Step step = getChildStep();
+    Step step = getSecondaryInputStep();
     return step == null ? 0 : step.getStepId();
   }
 
-  public Step getPreviousStep() {
+  public Step getPrimaryInputStep() {
     return findAnswerParamsStep(0).orElse(null);
   }
 
-  public Step getChildStep() {
+  public Step getSecondaryInputStep() {
     return findAnswerParamsStep(1).orElse(null);
   }
 
@@ -781,10 +781,10 @@ public class Step implements StrategyElement, Validateable<Step> {
   public List<Step> getMainBranch() throws WdkModelException {
     LinkedList<Step> list = new LinkedList<>();
     list.add(this);
-    Step previousStep = getPreviousStep();
+    Step previousStep = getPrimaryInputStep();
     while (previousStep != null) {
       list.offerFirst(previousStep);
-      previousStep = previousStep.getPreviousStep();
+      previousStep = previousStep.getPrimaryInputStep();
     }
     return list;
   }
@@ -806,7 +806,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     while (!stack.isEmpty()) {
       Step step = stack.pop();
       list.add(step);
-      Step previousStep = step.getPreviousStep(), childStep = step.getChildStep();
+      Step previousStep = step.getPrimaryInputStep(), childStep = step.getSecondaryInputStep();
       if (previousStep != null) {
         stack.push(previousStep);
       }
@@ -823,14 +823,14 @@ public class Step implements StrategyElement, Validateable<Step> {
     if (getPreviousStepId() == previousId) {
       return this;
     }
-    Step childStep = getChildStep();
+    Step childStep = getSecondaryInputStep();
     if (childStep != null) {
       target = childStep.getStepByPreviousId(previousId);
       if (target != null) {
         return target;
       }
     }
-    Step prevStep = getPreviousStep();
+    Step prevStep = getPrimaryInputStep();
     if (prevStep != null) {
       target = prevStep.getStepByPreviousId(previousId);
       if (target != null) {
@@ -849,7 +849,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     for (int i = 0; i < steps.size(); ++i) {
       Step step = steps.get(i);
       if (step.getStepId() == stepId ||
-          (step.getChildStep() != null && step.getChildStep().getStepId() == stepId)) {
+          (step.getSecondaryInputStep() != null && step.getSecondaryInputStep().getStepId() == stepId)) {
         return i;
       }
     }
@@ -910,12 +910,12 @@ public class Step implements StrategyElement, Validateable<Step> {
       jsStep.put(ParamFiltersClobFormat.KEY_FILTERS,
           ParamFiltersClobFormat.formatFilters(_answerSpec.getFilterOptions()));
 
-      Step childStep = getChildStep();
+      Step childStep = getSecondaryInputStep();
       if (childStep != null) {
         jsStep.put("child", childStep.getJSONContent(strategyId, forChecksum));
       }
 
-      Step prevStep = getPreviousStep();
+      Step prevStep = getPrimaryInputStep();
       if (prevStep != null) {
         jsStep.put("previous", prevStep.getJSONContent(strategyId, forChecksum));
       }
@@ -936,18 +936,22 @@ public class Step implements StrategyElement, Validateable<Step> {
     return jsStep;
   }
 
+  @Deprecated
   public AnswerValue getAnswerValue() throws WdkModelException {
     return _answerValueCache.getAnswerValue(true);
   }
 
+  @Deprecated
   public AnswerValue getViewAnswerValue() throws WdkModelException {
     return _answerValueCache.getViewAnswerValue(true);
   }
 
+  @Deprecated
   public AnswerValue getAnswerValue(boolean validate) throws WdkModelException {
     return _answerValueCache.getAnswerValue(validate);
   }
 
+  @Deprecated
   public void resetAnswerValue() {
     _answerValueCache.invalidateAll();
   }
@@ -1001,7 +1005,7 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   public int getFrontId() throws WdkUserException, WdkModelException, SQLException, JSONException {
     int frontId;
-    Step previousStep = getPreviousStep();
+    Step previousStep = getPrimaryInputStep();
     if (previousStep == null)
       frontId = 1;
     else {

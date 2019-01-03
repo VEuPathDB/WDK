@@ -21,6 +21,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -122,7 +123,7 @@ public class AnswerService extends AbstractWdkService {
   // Produces an unknown media type; varies depending on reporter selected
   public Response buildResult(String body) throws WdkModelException, DataValidationException, RequestMisformatException {
     AnswerRequest request = parseAnswerRequest(body, getWdkModel(), getSessionUser(), SPECIFIED_REPORTER_PARSER);
-    return getAnswerResponse(getSessionUser(), request);
+    return getAnswerResponse(getSessionUser(), request).getSecond();
   }
 
   /**
@@ -141,7 +142,7 @@ public class AnswerService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response buildDefaultReporterResult(String body) throws RequestMisformatException, WdkModelException, DataValidationException {
     AnswerRequest request = parseAnswerRequest(body, getWdkModel(), getSessionUser(), DEFAULT_REPORTER_PARSER);
-    return getAnswerResponse(getSessionUser(), request);
+    return getAnswerResponse(getSessionUser(), request).getSecond();
   }
 
   public static AnswerRequest parseAnswerRequest(String requestBody, WdkModel wdkModel,
@@ -206,7 +207,7 @@ public class AnswerService extends AbstractWdkService {
       long stepId = Long.parseLong(stableValue);
       if (strategy == null) {
         // have not selected a strategy yet
-        Step step = wdkModel.getStepFactory().getStepById(stepId)
+        Step step = wdkModel.getStepFactory().getStepById(stepId, ValidationLevel.RUNNABLE)
             .orElseThrow(() -> new DataValidationException(notFoundMessage));
         if (step.getStrategy() == null) {
           stepsForLookup.add(step); // stand-alone step; add it
@@ -221,7 +222,7 @@ public class AnswerService extends AbstractWdkService {
           // nothing to do here; referred step lives in this strategy
         }
         else {
-          Step step = wdkModel.getStepFactory().getStepById(stepId)
+          Step step = wdkModel.getStepFactory().getStepById(stepId, ValidationLevel.RUNNABLE)
               .orElseThrow(() -> new DataValidationException(notFoundMessage));
           if (step.getStrategy() == null) {
             stepsForLookup.add(step); // stand-alone step; add it
@@ -264,7 +265,7 @@ public class AnswerService extends AbstractWdkService {
    * @throws DataValidationException if answerSpec or formatting are syntactically valid but the data itself is invalid
    * @throws WdkModelException if an application error occurs
    */
-  public static Response getAnswerResponse(User sessionUser, AnswerRequest request)
+  public static TwoTuple<AnswerValue,Response> getAnswerResponse(User sessionUser, AnswerRequest request)
       throws RequestMisformatException, WdkModelException, DataValidationException {
 
     // create base answer value from answer spec
@@ -275,7 +276,8 @@ public class AnswerService extends AbstractWdkService {
 
     // build response from stream, apply delivery details, and return
     ResponseBuilder builder = Response.ok(getAnswerAsStream(reporter)).type(reporter.getHttpContentType());
-    return applyDisposition(builder, reporter.getContentDisposition(), reporter.getDownloadFileName()).build();
+    return new TwoTuple<>(answerValue, applyDisposition(
+        builder, reporter.getContentDisposition(), reporter.getDownloadFileName()).build());
   }
 
   @POST
