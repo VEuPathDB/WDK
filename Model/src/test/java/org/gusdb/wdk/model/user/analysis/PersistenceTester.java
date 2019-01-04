@@ -11,8 +11,8 @@ import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * This class was used to test the step analysis framework during development.
@@ -63,7 +63,7 @@ public class PersistenceTester {
   private void runTests() throws WdkModelException, WdkUserException, IllegalAnswerValueException, InterruptedException {
     StepAnalysisFactory analysisMgr = _wdkModel.getStepAnalysisFactory();
     System.out.println("Getting user from email: " + TEST_USER_EMAIL);
-    UserBean user = new UserBean(_wdkModel.getUserFactory().getUserByEmail(TEST_USER_EMAIL));
+    User user = _wdkModel.getUserFactory().getUserByEmail(TEST_USER_EMAIL);
     System.out.println("Creating context in memory.");
     StepAnalysisContext context = StepAnalysisContext.createNewContext(user, TEST_PLUGIN_NAME, TEST_STEP_ID);
     Step step = context.getStep();

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.user;
 
 import java.util.ArrayList;
@@ -12,8 +9,6 @@ import java.util.Random;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.jspwrap.RecordClassBean;
-import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
@@ -80,10 +75,10 @@ public class BasketTest {
 
     @Test
     public void testGetCounts() throws Exception {
-        UserBean user = new UserBean(UnitTestHelper.getRegisteredUser());
-        Map<RecordClassBean, Integer> beanCounts = user.getBasketCounts();
+        User user = UnitTestHelper.getRegisteredUser();
+        Map<RecordClass, Integer> beanCounts = wdkModel.getBasketFactory().getBasketCounts(user);
         Map<String, Integer> counts = new HashMap<String, Integer>();
-        for (RecordClassBean rcBean : beanCounts.keySet()) {
+        for (RecordClass rcBean : beanCounts.keySet()) {
         	String rcName = rcBean.getFullName();
         	counts.put(rcName, beanCounts.get(rcBean));
         }

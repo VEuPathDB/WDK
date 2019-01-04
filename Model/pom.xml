@@ -123,6 +123,12 @@
       <artifactId>opencsv</artifactId>
     </dependency>
 
+    <!-- NOTE: msg-simple must be explicitly depended on for json-schema-validator -->
+    <dependency>
+      <groupId>com.github.fge</groupId>
+      <artifactId>msg-simple</artifactId>
+    </dependency>
+
   </dependencies>
 
 </project>

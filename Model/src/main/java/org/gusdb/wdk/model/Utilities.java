@@ -110,8 +110,11 @@ public class Utilities {
   public static final String RECORD_DIVIDER = "\n";
   public static final String COLUMN_DIVIDER = ",";
 
-  public static final String WDK_MODEL_KEY = "wdkModel";
-  public static final String WDK_USER_KEY = "wdkUser";
+  public static final String WDK_MODEL_KEY = "wdk_model";
+  public static final String WDK_MODEL_BEAN_KEY = "wdkModel"; // cannot change this because of JSPs
+  public static final String WDK_USER_KEY = "wdk_user";
+  public static final String WDK_USER_BEAN_KEY = "wdkUser";
+
   public static final String WDK_SERVICE_ENDPOINT_KEY = "wdkServiceEndpoint";
 
   /*

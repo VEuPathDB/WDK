@@ -34,7 +34,7 @@ public class TemporaryResultService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response setTemporaryResult(String body)
       throws RequestMisformatException, DataValidationException {
-    AnswerRequest request = AnswerService.parseAnswerRequest(body, getWdkModelBean(), getSessionUser(), SPECIFIED_REPORTER_PARSER);
+    AnswerRequest request = AnswerService.parseAnswerRequest(body, getWdkModel(), getSessionUser(), SPECIFIED_REPORTER_PARSER);
     String id = UUID.randomUUID().toString();
     CacheMgr.get().getAnswerRequestCache().put(id, request);
     return Response.ok(new JSONObject().put(JsonKeys.ID, id).toString())

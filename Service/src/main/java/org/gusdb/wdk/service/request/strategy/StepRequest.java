@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.gusdb.wdk.core.api.JsonKeys;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.Step;
@@ -36,14 +36,14 @@ public class StepRequest {
       JsonKeys.RECORD_CLASS_NAME
   };
 
-  public static StepRequest newStepFromJson(JSONObject newStep, WdkModelBean modelBean, User user)
+  public static StepRequest newStepFromJson(JSONObject newStep, WdkModel model, User user)
       throws RequestMisformatException, DataValidationException {
     try {
       checkForInvalidProps(newStep);
       JSONObject answerSpecJson = newStep.getJSONObject(JsonKeys.ANSWER_SPEC);
       // Since this method is intended for new steps, the step can not yet be part of a strategy and so
       // any answer params it has should be null.  So allowIncompleteSpec param is true.
-      AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, modelBean, user, true);
+      AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, model, user, true);
       String customName = getStringOrDefault(newStep, JsonKeys.CUSTOM_NAME, answerSpec.getQuestion().getName());
       boolean isCollapsible = getBooleanOrDefault(newStep, JsonKeys.IS_COLLAPSIBLE, false);
       String collapsedName = getStringOrDefault(newStep, JsonKeys.COLLAPSED_NAME, customName);
@@ -56,11 +56,11 @@ public class StepRequest {
     }
   }
 
-  public static StepRequest patchStepFromJson(Step step, JSONObject patchSet, WdkModelBean modelBean, User user)
+  public static StepRequest patchStepFromJson(Step step, JSONObject patchSet, WdkModel model, User user)
       throws RequestMisformatException, WdkModelException, DataValidationException {
     try {
       checkForInvalidProps(patchSet);
-      AnswerSpec answerSpec = getPatchAnswerSpec(step, patchSet, modelBean, user);
+      AnswerSpec answerSpec = getPatchAnswerSpec(step, patchSet, model, user);
       String customName = getStringOrDefault(patchSet, JsonKeys.CUSTOM_NAME, step.getCustomName());
       boolean isCollapsible = Boolean.getBoolean(getStringOrDefault(patchSet, JsonKeys.IS_COLLAPSIBLE, String.valueOf(step.isCollapsible())));
       String collapsedName = getStringOrDefault(patchSet, JsonKeys.COLLAPSED_NAME, step.getCollapsedName());
@@ -73,12 +73,12 @@ public class StepRequest {
     }
   }
   
-  private static AnswerSpec getPatchAnswerSpec(Step step, JSONObject patchSet, WdkModelBean modelBean, User user)
+  private static AnswerSpec getPatchAnswerSpec(Step step, JSONObject patchSet, WdkModel model, User user)
       throws DataValidationException, RequestMisformatException, WdkModelException {
     if (patchSet.has(JsonKeys.ANSWER_SPEC)) {
       JSONObject answerSpecJson = patchSet.getJSONObject(JsonKeys.ANSWER_SPEC);
       boolean expectIncompleteSpec = step.getStrategyId() == null;
-      AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, modelBean, user, expectIncompleteSpec);
+      AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, model, user, expectIncompleteSpec);
       // user cannot change question of an existing step
       if (!answerSpec.getQuestion().getFullName().equals(step.getQuestion().getFullName())) {
         throw new DataValidationException("Question of an existing step cannot be changed.");
