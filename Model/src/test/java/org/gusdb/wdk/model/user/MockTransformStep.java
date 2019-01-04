@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.user;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -40,7 +41,7 @@ public class MockTransformStep extends MockStep {
   }
 
   @Override
-  public AnswerParam getPrimaryInputStepParam() {
-    return previousParam;
+  public Optional<AnswerParam> getPrimaryInputStepParam() {
+    return Optional.of(previousParam);
   }
 }

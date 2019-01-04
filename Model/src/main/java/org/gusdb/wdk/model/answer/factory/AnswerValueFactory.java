@@ -11,9 +11,19 @@ import org.gusdb.wdk.model.answer.single.SingleRecordAnswerValue;
 import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 
 public class AnswerValueFactory {
+
+  /**
+   * make an answer with default page size and sorting
+   */
+  public static AnswerValue makeAnswer(RunnableObj<Step> validStep)
+      throws WdkModelException {
+    return makeAnswer(validStep.getObject().getUser(),
+        Step.getRunnableAnswerSpec(validStep));
+  }
 
   /**
    * make an answer with default page size and sorting

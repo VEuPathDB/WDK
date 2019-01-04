@@ -1323,7 +1323,7 @@ public class StepFactory {
           new Object[]{ userId, _wdkModel.getProjectId() },
           new Integer[]{ Types.BIGINT, Types.VARCHAR },
           new SingleLongResultSetHandler())
-        .orElseThrow(() -> new WdkModelException("Failed to execute strategy count for user: " + user.getUserId()))
+        .orElseThrow(() -> new WdkModelException("Failed to execute strategy count for user: " + userId))
         .intValue();
     }
     catch (Exception e) {
