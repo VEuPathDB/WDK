@@ -9,7 +9,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONObject;
 
@@ -100,13 +99,16 @@ public class FilterOption {
   // FIXME: this is a total hack to support the JSP calling
   //   getDisplayValue(AnswerValue) with an argument.  It should be removed
   //   once we move filter displays from JSP to the new service architecture.
-  public Map<AnswerValueBean, String> getDisplayValueMap() {
-    return new HashMap<AnswerValueBean, String>() {
+  public interface AnswerValueProvider {
+    AnswerValue getAnswerValue();
+  }
+  public Map<AnswerValueProvider, String> getDisplayValueMap() {
+    return new HashMap<AnswerValueProvider, String>() {
       @Override
       public String get(Object answerValue) {
-        if (answerValue instanceof AnswerValueBean) {
+        if (answerValue instanceof AnswerValueProvider) {
           try {
-            return getDisplayValue(((AnswerValueBean)answerValue).getAnswerValue());
+            return getDisplayValue(((AnswerValueProvider)answerValue).getAnswerValue());
           }
           catch (WdkModelException | WdkUserException e) {
             throw new WdkRuntimeException(e);

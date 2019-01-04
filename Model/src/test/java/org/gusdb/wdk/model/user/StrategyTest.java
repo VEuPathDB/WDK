@@ -30,12 +30,12 @@ public class StrategyTest {
 
   @Test
   public void testCreateStrategy() throws Exception {
-    int strategyCount = stepFactory.getStrategyCount(user);
+    int strategyCount = stepFactory.getStrategyCount(user.getUserId());
 
     Step step = UnitTestHelper.createNormalStep(user);
     Strategy strategy = StepUtilities.createStrategy(step, false);
 
-    Assert.assertEquals("strategy count", strategyCount + 1, stepFactory.getStrategyCount(user));
+    Assert.assertEquals("strategy count", strategyCount + 1, stepFactory.getStrategyCount(user.getUserId()));
 
     Step root = strategy.getLatestStep();
     StepTest.compareStep(step, root);
@@ -83,10 +83,10 @@ public class StrategyTest {
     Step step = UnitTestHelper.createNormalStep(user);
     Strategy strategy = StepUtilities.createStrategy(step, false);
 
-    int count = stepFactory.getStrategyCount(user);
+    int count = stepFactory.getStrategyCount(user.getUserId());
     StepUtilities.deleteStrategy(user, strategy.getStrategyId());
 
-    Assert.assertEquals("strategy count", count - 1, stepFactory.getStrategyCount(user));
+    Assert.assertEquals("strategy count", count - 1, stepFactory.getStrategyCount(user.getUserId()));
 
     // get a delete strategy, should raise a WdkUserException
     try {
@@ -106,7 +106,7 @@ public class StrategyTest {
 
     StepUtilities.deleteStrategies(user);
 
-    Assert.assertEquals("strategy count", 0, stepFactory.getStrategyCount(user));
+    Assert.assertEquals("strategy count", 0, stepFactory.getStrategyCount(user.getUserId()));
   }
 
   @Test

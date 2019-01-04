@@ -18,9 +18,9 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
-import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -86,20 +86,20 @@ public class StepAnalysisContext {
    * analysis plugin name.  This context does not yet have an analysis id and
    * will receive one when it is written to the database.
    * 
-   * @param userBean user for which to create analysis
+   * @param user user for which to create analysis
    * @param analysisName name of analysis plugin that will be invoked
    * @param stepId id of step referred to by this analysis
    * @throws WdkModelException if something goes wrong during creation
    * @throws WdkUserException if the passed values do not refer to real objects
    */
-  public static StepAnalysisContext createNewContext(UserBean userBean, String analysisName,
+  public static StepAnalysisContext createNewContext(User user, String analysisName,
       int stepId) throws WdkModelException, WdkUserException {
 
     StepAnalysisContext ctx = new StepAnalysisContext();
     ctx._analysisId = -1;
-    ctx._wdkModel = userBean.getUser().getWdkModel();
+    ctx._wdkModel = user.getWdkModel();
     ctx._step = loadStep(ctx._wdkModel, stepId, new WdkUserException("No step " +
-        "bean exists with id " + stepId + " for user " + userBean.getUserId()));
+        "bean exists with id " + stepId + " for user " + user.getUserId()));
     ctx._answerValueHash = ctx._step.getAnswerValue().getChecksum();
     
     Question question = ctx._step.getQuestion();

@@ -89,6 +89,10 @@ public class XmlRecordInstance {
         return attrArray;
     }
 
+    public Map<String,XmlAttributeValue> getAttributesMap() {
+      return attributes;
+    }
+
     public XmlAttributeValue getAttribute(String name) throws WdkModelException {
         XmlAttributeValue attribute = attributes.get(name);
         if (attribute == null)

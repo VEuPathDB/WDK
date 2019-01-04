@@ -6,7 +6,8 @@ import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.MDCUtil;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
 
 /**
  * An implementation of the ServletContextListener interface that receives 
@@ -36,7 +37,7 @@ public final class JmxInitListener implements ServletContextListener {
     //   failed, so warn in logs and skip JMX initialization.  If this is caused
     //   by a race condition between the two listeners, will need to address in
     //   a different way.
-    WdkModelBean model = (WdkModelBean)context.getAttribute(BeanBase.WDK_MODEL_KEY);
+    WdkModel model = (WdkModel)context.getAttribute(Utilities.WDK_MODEL_KEY);
     if (model == null) {
       LOG.warn("Missing model in ServletContext.  Skipping MBean registration.");
       return;

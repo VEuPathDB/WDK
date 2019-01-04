@@ -33,8 +33,6 @@ import org.gusdb.wdk.events.ErrorEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 
@@ -69,22 +67,16 @@ public abstract class AbstractWdkService {
   private UriInfo _uriInfo;
 
   private ServletContext _servletContext;
-  private WdkModelBean _wdkModelBean;
-  private UserBean _user;
+  private WdkModel _wdkModel;
   private String _serviceEndpoint;
 
   // public setter for unit tests
-  public void testSetup(WdkModel wdkModel, User user) {
-    _wdkModelBean = new WdkModelBean(wdkModel);
-    _user = new UserBean(user);
-  }
-
-  protected WdkModelBean getWdkModelBean() {
-    return _wdkModelBean;
+  public void testSetup(WdkModel wdkModel) {
+    _wdkModel = wdkModel;
   }
 
   protected WdkModel getWdkModel() {
-    return _wdkModelBean.getModel();
+    return _wdkModel;
   }
 
   protected UriInfo getUriInfo() {
@@ -140,20 +132,8 @@ public abstract class AbstractWdkService {
     return _request.getSession();
   }
 
-  protected HttpSession getSession(boolean newSession) {
-    return _request.getSession(newSession);
-  }
-
-  protected UserBean getSessionUserBean() {
-    return (_user != null ? _user : (UserBean)_request.getSession().getAttribute(Utilities.WDK_USER_KEY));
-  }
-
-  protected long getSessionUserId() {
-    return getSessionUserBean().getUserId();
-  }
-
   protected User getSessionUser() {
-    return getSessionUserBean().getUser();
+    return (User)_request.getSession().getAttribute(Utilities.WDK_USER_KEY);
   }
 
   protected boolean isSessionUserAdmin() {
@@ -170,7 +150,7 @@ public abstract class AbstractWdkService {
   @Context
   protected void setServletContext(ServletContext context) {
     _servletContext = context;
-    _wdkModelBean = (WdkModelBean)context.getAttribute(Utilities.WDK_MODEL_KEY);
+    _wdkModel = (WdkModel)context.getAttribute(Utilities.WDK_MODEL_KEY);
     _serviceEndpoint = context.getContextPath() + context.getInitParameter(Utilities.WDK_SERVICE_ENDPOINT_KEY);
   }
 
@@ -204,7 +184,7 @@ public abstract class AbstractWdkService {
    * @return error context for the current request
    */
   public ErrorContext getErrorContext(ErrorLocation errorLocation) {
-    return getErrorContext(_servletContext, _request, _wdkModelBean.getModel(), errorLocation);
+    return getErrorContext(_servletContext, _request, _wdkModel, errorLocation);
   }
 
   /**

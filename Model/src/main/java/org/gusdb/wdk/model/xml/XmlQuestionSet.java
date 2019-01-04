@@ -96,6 +96,10 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI<XmlQuestio
         return quesArray;
     }
 
+    public Map<String,XmlQuestion> getQuestionsMap() {
+      return _questions;
+    }
+
     public void addQuestion(XmlQuestion question) {
         _questionList.add(question);
     }

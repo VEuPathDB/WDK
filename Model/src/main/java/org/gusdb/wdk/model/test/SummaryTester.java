@@ -24,7 +24,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.ResultSizeFactory;
-import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
@@ -156,8 +155,7 @@ public class SummaryTester {
         System.out.println("Display Size: " + resultSizes.getDisplayResultSize());
         System.out.println("Answer Checksum: " + answerValue.getChecksum());
 
-        AnswerValueBean answerValueBean = new AnswerValueBean(answerValue);
-        answerValueBean.getResultSizesByProject();
+        answerValue.getResultSizeFactory().getResultSizesByProject();
 
         // load configuration for output format
         if (!hasFormat)
