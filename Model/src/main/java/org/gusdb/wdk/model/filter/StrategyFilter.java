@@ -15,9 +15,9 @@ import org.json.JSONObject;
 public class StrategyFilter extends StepFilter {
 
   public static final String FILTER_NAME = "WdkStrategyFilter";
-  
+
   public static final String KEY_STRATEGY = "strategy";
-  
+
   public static StepFilterDefinition getDefinition() {
     StepFilterDefinition definition = new StepFilterDefinition();
     definition.setName(FILTER_NAME);
@@ -25,7 +25,6 @@ public class StrategyFilter extends StepFilter {
     definition.setDescription("Filter the results by other strategies of the same type.");
     definition.setImplementation(StrategyFilter.class.getName());
     definition.setView("/wdk/jsp/results/strategyFilter.jsp");
-   
     return definition;
   }
 
@@ -34,11 +33,6 @@ public class StrategyFilter extends StepFilter {
     return FILTER_NAME;
   }
 
-  @Override
-  public void setDisplay(String display) {
-    super.setDisplay(display);
-  }
-  
   /**
    * @throws WdkModelException 
    * @see org.gusdb.wdk.model.filter.Filter#getSummary(org.gusdb.wdk.model.answer.AnswerValue)
@@ -52,7 +46,7 @@ public class StrategyFilter extends StepFilter {
   }
 
   /**
-   * the options contains the id of the strategy choosen as the filter.
+   * the options contains the id of the strategy chosen as the filter.
    * @throws WdkUserException 
    * @throws WdkModelException 
    * 
@@ -90,17 +84,17 @@ public class StrategyFilter extends StepFilter {
     int strategyId = jsValue.getInt(KEY_STRATEGY);
     return answer.getQuestion().getWdkModel().getStepFactory().getStrategyById(answer.getUser(), strategyId);
   }
-  
+
   @Override
   public void setDefaultValue(JSONObject defaultValue) {
-	  throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
+    throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
   }
-  
-  @Override
+
   /**
    * Not fully implemented yet.
    */
+  @Override
   public boolean defaultValueEquals(Step step, JSONObject value)  throws WdkModelException {
-	  return false;
+    return false;
   }
 }
