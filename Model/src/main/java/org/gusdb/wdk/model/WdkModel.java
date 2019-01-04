@@ -408,15 +408,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return recordClassSets.get(recordClassSetName);
   }
 
-  public RecordClass[] getAllRecordClasses() {
-    List<RecordClass> allRecordClasses = new ArrayList<>();
-    for (RecordClassSet rcSet : getAllRecordClassSets()) {
-      for (RecordClass rc : rcSet.getRecordClasses()) {
-        allRecordClasses.add(rc);
-      }
-    }
-    return allRecordClasses.toArray(new RecordClass[0]);
-  }
   // Start CWL 29JUN2016
   /**
    * Used to determine whether a record class set exists for the given reference
