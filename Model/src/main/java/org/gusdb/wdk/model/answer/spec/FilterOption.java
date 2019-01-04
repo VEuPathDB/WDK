@@ -152,20 +152,20 @@ public class FilterOption implements Validateable<FilterOption>, NamedObject {
   }
   @Deprecated
   public Map<AnswerValueProvider, String> getDisplayValueMap() {
-      return new HashMap<AnswerValueProvider, String>() {
+    return new HashMap<AnswerValueProvider, String>() {
       @Override
-	  public String get(Object answerValue) {
-	  if (answerValue instanceof AnswerValueProvider) {
-	      try {
-		  return getDisplayValue(((AnswerValueProvider)answerValue).getAnswerValue());
-	      }
-	      catch (WdkModelException | WdkUserException e) {
-		  throw new WdkRuntimeException(e);
-	      }
-	  }
-	  throw new IllegalArgumentException("Argument must be a AnswerValueBean.");
+      public String get(Object answerValue) {
+        if (answerValue instanceof AnswerValueProvider) {
+          try {
+            return getDisplayValue(((AnswerValueProvider)answerValue).getAnswerValue());
+          }
+          catch (WdkModelException e) {
+            throw new WdkRuntimeException(e);
+          }
+        }
+        throw new IllegalArgumentException("Argument must be a AnswerValueProvider.");
       }
-      };
+    };
   }
 
   @Override
