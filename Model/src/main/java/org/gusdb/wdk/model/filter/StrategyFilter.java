@@ -17,9 +17,9 @@ import org.json.JSONObject;
 public class StrategyFilter extends StepFilter {
 
   public static final String FILTER_NAME = "WdkStrategyFilter";
-  
+
   public static final String KEY_STRATEGY = "strategy";
-  
+
   public static StepFilterDefinition getDefinition() {
     StepFilterDefinition definition = new StepFilterDefinition();
     definition.setName(FILTER_NAME);
@@ -27,7 +27,6 @@ public class StrategyFilter extends StepFilter {
     definition.setDescription("Filter the results by other strategies of the same type.");
     definition.setImplementation(StrategyFilter.class.getName());
     definition.setView("/wdk/jsp/results/strategyFilter.jsp");
-   
     return definition;
   }
 
@@ -96,9 +95,15 @@ public class StrategyFilter extends StepFilter {
   /**
    * Not fully implemented yet.
    */
+<<<<<<< .working
   @Override
   public boolean defaultValueEquals(SimpleAnswerSpec answerSpec, JSONObject value)  throws WdkModelException {
     return false;
+=======
+  @Override
+  public boolean defaultValueEquals(Step step, JSONObject value)  throws WdkModelException {
+    return false;
+>>>>>>> .merge-right.r23635
   }
 
   @Override

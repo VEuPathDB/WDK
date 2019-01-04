@@ -1310,7 +1310,7 @@ public class StepFactory {
     new SQLRunner(_userDbDs, sql, "wdk-update-strategy-on-steps").executeUpdate();
   }
 
-  public int getStrategyCount(User user) throws WdkModelException {
+  public int getStrategyCount(long userId) throws WdkModelException {
     try {
       String sql =
         "SELECT count(1)" +
@@ -1320,7 +1320,7 @@ public class StepFactory {
         " AND " + COLUMN_PROJECT_ID + " = ?";
       return new SQLRunner(_userDbDs, sql, "wdk-step-factory-strategy-count")
         .executeQuery(
-          new Object[]{ user.getUserId(), _wdkModel.getProjectId() },
+          new Object[]{ userId, _wdkModel.getProjectId() },
           new Integer[]{ Types.BIGINT, Types.VARCHAR },
           new SingleLongResultSetHandler())
         .orElseThrow(() -> new WdkModelException("Failed to execute strategy count for user: " + user.getUserId()))

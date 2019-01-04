@@ -13,7 +13,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.filter.Filter;
-import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.question.Question;
 import org.json.JSONObject;
 
@@ -148,21 +147,25 @@ public class FilterOption implements Validateable<FilterOption>, NamedObject {
   //   getDisplayValue(AnswerValue) with an argument.  It should be removed
   //   once we move filter displays from JSP to the new service architecture.
   @Deprecated
-  public Map<AnswerValueBean, String> getDisplayValueMap() {
-    return new HashMap<AnswerValueBean, String>() {
+  public interface AnswerValueProvider {
+      AnswerValue getAnswerValue();
+  }
+  @Deprecated
+  public Map<AnswerValueProvider, String> getDisplayValueMap() {
+      return new HashMap<AnswerValueProvider, String>() {
       @Override
-      public String get(Object answerValue) {
-        if (answerValue instanceof AnswerValueBean) {
-          try {
-            return getDisplayValue(((AnswerValueBean)answerValue).getAnswerValue());
-          }
-          catch (WdkModelException e) {
-            throw new WdkRuntimeException(e);
-          }
-        }
-        throw new IllegalArgumentException("Argument must be a AnswerValueBean.");
+	  public String get(Object answerValue) {
+	  if (answerValue instanceof AnswerValueProvider) {
+	      try {
+		  return getDisplayValue(((AnswerValueProvider)answerValue).getAnswerValue());
+	      }
+	      catch (WdkModelException | WdkUserException e) {
+		  throw new WdkRuntimeException(e);
+	      }
+	  }
+	  throw new IllegalArgumentException("Argument must be a AnswerValueBean.");
       }
-    };
+      };
   }
 
   @Override
