@@ -20,7 +20,6 @@ import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.events.Events;

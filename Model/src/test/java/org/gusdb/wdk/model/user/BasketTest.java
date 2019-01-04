@@ -11,8 +11,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.jspwrap.RecordClassBean;
-import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;

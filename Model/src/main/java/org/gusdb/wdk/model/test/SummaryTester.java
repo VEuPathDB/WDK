@@ -27,7 +27,6 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.ResultSizeFactory;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQueryInstance;

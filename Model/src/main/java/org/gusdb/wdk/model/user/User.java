@@ -12,7 +12,6 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.record.RecordClass;
 
 /**
@@ -246,8 +245,7 @@ public abstract class User {
     return convertMap(strategies);
   }
 
-  public Map<String, List<Strategy>> getActiveStrategiesByCategory() throws WdkModelException,
-      WdkUserException {
+  public Map<String, List<Strategy>> getActiveStrategiesByCategory() {
     Map<String, List<Strategy>> strategies = StepUtilities.getActiveStrategiesByCategory(this);
     return convertMap(strategies);
   }
@@ -321,7 +319,7 @@ public abstract class User {
     return getSession().getViewPagerOffset();
   }
 
-  public Strategy[] getActiveStrategies() throws WdkUserException {
+  public Strategy[] getActiveStrategies() {
     List<Strategy> strategies = new ArrayList<>();
     for (Strategy strategy : getSession().getActiveStrategies()) {
       strategies.add(strategy);
@@ -372,10 +370,6 @@ public abstract class User {
   @Deprecated
   public String[] getFavoriteGroups() throws WdkModelException {
     return getWdkModel().getFavoriteFactory().getGroups(this);
-  }
-
-  public Map<String,SummaryView> getCurrentSummaryViews() {
-    return exposeAsMap(questionName -> getPreferences().getCurrentSummaryView(questionName));
   }
 
   static <T> Map<String, T> exposeAsMap(FunctionWithException<String,T> getter) {

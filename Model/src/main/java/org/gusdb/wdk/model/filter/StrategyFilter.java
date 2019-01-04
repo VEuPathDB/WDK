@@ -2,13 +2,16 @@ package org.gusdb.wdk.model.filter;
 
 import java.util.Collection;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
@@ -56,7 +59,9 @@ public class StrategyFilter extends StepFilter {
   @Override
   public String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException {
     Strategy strategy = getStrategy(answer, jsValue);
-    AnswerValue rootAnswer = strategy.getRootStep().getAnswerValue();
+    RunnableObj<Step> step = strategy.getRootStep().getRunnable()
+        .getOrThrow(st -> new WdkModelException("Strategy specified must have a runnable root step."));
+    AnswerValue rootAnswer = AnswerValueFactory.makeAnswer(step);
 
     // make sure both answers are of the same type.
     RecordClass recordClass = answer.getAnswerSpec().getQuestion().getRecordClass();
@@ -95,20 +100,14 @@ public class StrategyFilter extends StepFilter {
   /**
    * Not fully implemented yet.
    */
-<<<<<<< .working
   @Override
   public boolean defaultValueEquals(SimpleAnswerSpec answerSpec, JSONObject value)  throws WdkModelException {
     return false;
-=======
-  @Override
-  public boolean defaultValueEquals(Step step, JSONObject value)  throws WdkModelException {
-    return false;
->>>>>>> .merge-right.r23635
   }
 
   @Override
   public ValidationBundle validate(Question question, JSONObject value, ValidationLevel validationLevel) {
-    // TODO: determine if validation is warranted here
+    // TODO: make sure incoming strategy has a runnable root step
     return ValidationBundle.builder(ValidationLevel.SEMANTIC).build();
   }
 }

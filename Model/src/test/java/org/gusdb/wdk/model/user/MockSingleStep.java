@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.user;
 
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
 
 public class MockSingleStep extends MockStep {
 
@@ -25,12 +24,12 @@ public class MockSingleStep extends MockStep {
   }
 
   @Override
-  public Step getPrimaryInputStep() throws WdkModelException {
+  public Step getPrimaryInputStep() {
     return null;
   }
 
   @Override
-  public Step getSecondaryInputStep() throws WdkModelException {
+  public Step getSecondaryInputStep() {
     return null;
   }
 }
