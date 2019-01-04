@@ -57,13 +57,13 @@ public class MergeUserTest {
     StepUtilities.createStrategy(step, false);
 
     User registeredUser = UnitTestHelper.getRegisteredUser();
-    int count = stepFactory.getStrategyCount(guest) + stepFactory.getStrategyCount(registeredUser);
+    int count = stepFactory.getStrategyCount(guest.getUserId()) + stepFactory.getStrategyCount(registeredUser.getUserId());
     int unsavedCount = countStrategies(StepUtilities.getUnsavedStrategiesByCategory(registeredUser));
 
     registeredUser.getSession().mergeUser(guest);
 
     int newCount = countStrategies(StepUtilities.getUnsavedStrategiesByCategory(registeredUser));
-    Assert.assertEquals(count, stepFactory.getStrategyCount(registeredUser));
+    Assert.assertEquals(count, stepFactory.getStrategyCount(registeredUser.getUserId()));
     Assert.assertEquals(unsavedCount + 1, newCount);
   }
 
@@ -75,11 +75,11 @@ public class MergeUserTest {
     StepUtilities.createStrategy(UnitTestHelper.createNormalStep(guest), false);
 
     User registeredUser = UnitTestHelper.getRegisteredUser();
-    int count = stepFactory.getStrategyCount(guest) + stepFactory.getStrategyCount(registeredUser);
+    int count = stepFactory.getStrategyCount(guest.getUserId()) + stepFactory.getStrategyCount(registeredUser.getUserId());
 
     registeredUser.getSession().mergeUser(guest);
 
-    Assert.assertEquals(count, stepFactory.getStrategyCount(registeredUser));
+    Assert.assertEquals(count, stepFactory.getStrategyCount(registeredUser.getUserId()));
   }
 
   @Test
@@ -99,11 +99,11 @@ public class MergeUserTest {
     strategy.update(true);
 
     User registeredUser = UnitTestHelper.getRegisteredUser();
-    int count = stepFactory.getStrategyCount(guest) + stepFactory.getStrategyCount(registeredUser);
+    int count = stepFactory.getStrategyCount(guest.getUserId()) + stepFactory.getStrategyCount(registeredUser.getUserId());
 
     registeredUser.getSession().mergeUser(guest);
 
-    Assert.assertEquals(count, stepFactory.getStrategyCount(registeredUser));
+    Assert.assertEquals(count, stepFactory.getStrategyCount(registeredUser.getUserId()));
   }
 
   @Test
@@ -118,11 +118,11 @@ public class MergeUserTest {
     Step newStep = UnitTestHelper.createNormalStep(registeredUser);
     Strategy expected = StepUtilities.createStrategy(newStep, false, existName);
 
-    int count = stepFactory.getStrategyCount(guest) + stepFactory.getStrategyCount(registeredUser);
+    int count = stepFactory.getStrategyCount(guest.getUserId()) + stepFactory.getStrategyCount(registeredUser.getUserId());
 
     registeredUser.getSession().mergeUser(guest);
 
-    Assert.assertEquals(count, stepFactory.getStrategyCount(registeredUser));
+    Assert.assertEquals(count, stepFactory.getStrategyCount(registeredUser.getUserId()));
 
     Strategy actual = StepUtilities.getStrategy(registeredUser, expected.getStrategyId());
     StrategyTest.compareStrategy(expected, actual);
@@ -140,11 +140,11 @@ public class MergeUserTest {
     Step newStep = UnitTestHelper.createNormalStep(registeredUser);
     Strategy expected = StepUtilities.createStrategy(newStep, true, existName);
 
-    int count = stepFactory.getStrategyCount(guest) + stepFactory.getStrategyCount(registeredUser);
+    int count = stepFactory.getStrategyCount(guest.getUserId()) + stepFactory.getStrategyCount(registeredUser.getUserId());
 
     registeredUser.getSession().mergeUser(guest);
 
-    Assert.assertEquals(count, stepFactory.getStrategyCount(registeredUser));
+    Assert.assertEquals(count, stepFactory.getStrategyCount(registeredUser.getUserId()));
 
     Strategy actual = StepUtilities.getStrategy(registeredUser, expected.getStrategyId());
     StrategyTest.compareStrategy(expected, actual);

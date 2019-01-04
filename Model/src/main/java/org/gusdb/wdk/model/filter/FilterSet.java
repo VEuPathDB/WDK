@@ -15,14 +15,17 @@ public class FilterSet extends WdkModelBase implements ModelSetI<FilterDefinitio
   public static final String WDK_FILTER_SET = "WdkFilters";
 
   public static FilterSet getWdkFilterSet() {
+
     FilterSet filterSet = new FilterSet();
     filterSet.setName(WDK_FILTER_SET);
-    
+
     // also create the default filters provided by WDK
     filterSet.addStepFilter(StrategyFilter.getDefinition());
+    filterSet.addStepFilter(AnswerSpecFilter.getDefinition());
     filterSet.addColumnFilter(ListColumnFilter.getDefinition());
-    
+
     return filterSet;
+
   }
 
   private List<FilterDefinition> _filterDefinitionList = new ArrayList<>();

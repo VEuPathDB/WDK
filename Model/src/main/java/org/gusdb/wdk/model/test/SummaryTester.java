@@ -166,8 +166,7 @@ public class SummaryTester {
         System.out.println("Display Size: " + resultSizes.getDisplayResultSize());
         System.out.println("Answer Checksum: " + answerValue.getChecksum());
 
-        AnswerValueBean answerValueBean = new AnswerValueBean(answerValue);
-        answerValueBean.getResultSizesByProject();
+        answerValue.getResultSizeFactory().getResultSizesByProject();
 
         // load configuration for output format
         if (!hasFormat)

@@ -266,6 +266,11 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     _modelConfig.getUserDB().checkSchema(this);
   }
 
+  @Deprecated // stand-in until JSPs are removed
+  public WdkModel getModel() {
+    return this;
+  }
+
   public static ModelConfig getModelConfig(String projectId, String gusHome) throws WdkModelException {
     try {
       ModelXmlParser parser = new ModelXmlParser(gusHome);
@@ -402,7 +407,16 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     }
     return recordClassSets.get(recordClassSetName);
   }
-  
+
+  public RecordClass[] getAllRecordClasses() {
+    List<RecordClass> allRecordClasses = new ArrayList<>();
+    for (RecordClassSet rcSet : getAllRecordClassSets()) {
+      for (RecordClass rc : rcSet.getRecordClasses()) {
+        allRecordClasses.add(rc);
+      }
+    }
+    return allRecordClasses.toArray(new RecordClass[0]);
+  }
   // Start CWL 29JUN2016
   /**
    * Used to determine whether a record class set exists for the given reference
@@ -461,7 +475,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return questionSets.containsKey(setName);
   }
 
-  public Map<String, QuestionSet> getQuestionSets() {
+  public Map<String, QuestionSet> getQuestionSetsMap() {
     Map<String, QuestionSet> sets = new LinkedHashMap<String, QuestionSet>();
     for (String setName : questionSets.keySet()) {
       sets.put(setName, questionSets.get(setName));
@@ -1199,6 +1213,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return qsets;
   }
 
+  public Map<String, XmlQuestionSet> getXmlQuestionSetsMap() {
+    return xmlQuestionSets;
+  }
+
   public XmlQuestionSet getXmlQuestionSet(String setName) throws WdkModelException {
     XmlQuestionSet qset = xmlQuestionSets.get(setName);
     if (qset == null)
@@ -1454,7 +1472,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
         .append("*******************************************\n");
     if (stepAnalysisPlugins != null) {
       sb.append("Step Analysis Plugins per Question:\n");
-      for (QuestionSet questionSet : getQuestionSets().values()) {
+      for (QuestionSet questionSet : getQuestionSetsMap().values()) {
         for (Question question : questionSet.getQuestions()) {
           Map<String, StepAnalysis> sas = question.getStepAnalyses();
           if (!sas.isEmpty()) {
@@ -1591,5 +1609,73 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       recordClasses.addAll(Arrays.asList(rcSet.getRecordClasses()));
     }
     return recordClasses;
+  }
+
+  /**
+   * Checks for a valid question name and throws WdkUserException if param is
+   * not valid.  For now we simply check that it is a valid two-part name
+   * (i.e. \S+\.\S+), so we will still get a WdkModelException down the line
+   * if the question name is the correct format but does not actually exist.
+   * We do this because sometimes developers change question names in one
+   * place but not another and if so, then we want to know about it.  If we
+   * mask this mistake with a WdkUserException, we might see bad consequences
+   * down the line.
+   * 
+   * @param qFullName potential question name
+   * @throws WdkUserException if name is not in format *.*
+   */
+  public void validateQuestionFullName(String qFullName) throws WdkUserException {
+    String message = "The search '" + qFullName + "' is not or is no longer available.";
+    try {
+      // First check to see if this is a 'regular' question; if not, check XML questions
+      if (qFullName == null || getQuestion(qFullName) == null) {
+        throw new WdkModelException("Question name is null or resulting question is null");
+      }
+    }
+    catch (WdkModelException e) {
+      try {
+        // exception will be thrown below; will mean that name is neither 'regular' question nor XML
+        Reference r = new Reference(qFullName);
+        XmlQuestionSet xqs = getXmlQuestionSet(r.getSetName());
+        xqs.getQuestion(r.getElementName());
+      }
+      catch (WdkModelException e2) {
+        throw new WdkUserException(message, e2);
+      }
+    }
+  }
+
+  /**
+   * Checks for a valid record class name and throws WdkUserException if param
+   * is not valid.  For now we simply check that it is a valid two-part name
+   * (i.e. \S+\.\S+), so we will still get a WdkModelException down the line
+   * if the record class name is the correct format but does not actually
+   * exist.  We do this because sometimes developers change record class names
+   * in one place but not another and if so, then we want to know about it.
+   * If we mask this mistake with a WdkUserException, we might see bad
+   * consequences down the line.
+   * 
+   * @param recordClassName potential record class name
+   * @throws WdkUserException if name is not in format *.*
+   */
+  public void validateRecordClassName(String recordClassName) throws WdkUserException {
+    String message = "The record type '" + recordClassName + "' is not or is no longer available.";
+    try {
+      // First check to see if this is a 'regular' record class; if not, check XML record classes
+      if (recordClassName == null || getRecordClass(recordClassName) == null) {
+        throw new WdkModelException("RecordClass name is null or resulting RecordClass is null");
+      }
+    }
+    catch (WdkModelException e) {
+      try {
+        // exception will be thrown below; will mean that name is neither 'regular' RC nor XML
+        Reference r = new Reference(recordClassName);
+        XmlRecordClassSet xrcs = getXmlRecordClassSet(r.getSetName());
+        xrcs.getRecordClass(r.getElementName());
+      }
+      catch (WdkModelException e2) {
+        throw new WdkUserException(message, e2);
+      }
+    }
   }
 }

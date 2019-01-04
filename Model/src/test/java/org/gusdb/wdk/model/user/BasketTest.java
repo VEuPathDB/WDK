@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.user;
 
 import java.util.ArrayList;
@@ -86,10 +83,10 @@ public class BasketTest {
 
     @Test
     public void testGetCounts() throws Exception {
-        UserBean user = new UserBean(UnitTestHelper.getRegisteredUser());
-        Map<RecordClassBean, Integer> beanCounts = user.getBasketCounts();
+        User user = UnitTestHelper.getRegisteredUser();
+        Map<RecordClass, Integer> beanCounts = wdkModel.getBasketFactory().getBasketCounts(user);
         Map<String, Integer> counts = new HashMap<String, Integer>();
-        for (RecordClassBean rcBean : beanCounts.keySet()) {
+        for (RecordClass rcBean : beanCounts.keySet()) {
         	String rcName = rcBean.getFullName();
         	counts.put(rcName, beanCounts.get(rcBean));
         }
