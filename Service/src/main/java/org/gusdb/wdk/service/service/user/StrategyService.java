@@ -7,10 +7,7 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.StepFactory;
-import org.gusdb.wdk.model.user.Strategy;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.*;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.StrategyFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -24,6 +21,7 @@ import org.json.JSONObject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -154,9 +152,7 @@ public class StrategyService extends UserService {
     Step rootStep = stepTree.getContents();
 
     // Pull all the steps out of the tree
-    List<Step> steps = stepTree.findAll(step -> true).stream()
-        .map(TreeNode::getContents)
-        .collect(Collectors.toList());
+    Collection<Step> steps = stepTree.flatten();
 
     // Update steps with filled in answer params and save.
     for (Step step : steps) {
@@ -169,8 +165,14 @@ public class StrategyService extends UserService {
         strategyRequest.isSaved(), strategyRequest.getDescription(),
         strategyRequest.isHidden(), strategyRequest.isPublic());
 
+    final StepFactoryHelpers.UserCache uc = new StepFactoryHelpers.UserCache(user);
+
     // Add new strategy to all the embedded steps
-    steps.forEach(step -> step.setStrategyId(strategy.getStrategyId()));
+    // TODO: Review this because it's probably wrong
+    steps.stream()
+      .map(Step::builder)
+      .peek(step -> step.setStrategyId(strategy.getStrategyId()))
+      .forEach(step -> step.build(uc, /*TODO: Validation level*/, strategy.getStrategyId()));
 
     // Update left/right child ids in db first
     // rootStep.update(true);
@@ -183,7 +185,7 @@ public class StrategyService extends UserService {
   private Strategy applyStrategyChange(
     Strategy strat,
     JSONObject change
-  ) {
+  ) throws WdkModelException {
     final Strategy.StrategyBuilder build = new Strategy.StrategyBuilder(strat);
 
     for(final String key : change.keySet()) {
@@ -205,7 +207,8 @@ public class StrategyService extends UserService {
       }
     }
 
-    return build.build(); // TODO: Should this even go here?
+    return build.build(getUserBundle(Access.PRIVATE).getSessionUser(),
+        /*TODO: Validation level*/);
   }
 
   /**

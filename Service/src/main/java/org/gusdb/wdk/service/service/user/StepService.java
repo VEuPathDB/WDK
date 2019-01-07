@@ -13,7 +13,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
-import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.user.NoSuchElementException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
@@ -23,7 +23,6 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.StepFormatter;
-import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -53,28 +52,18 @@ public class StepService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk/users/steps/post-request")
-  public Response createStep(@QueryParam("runStep") Boolean runStep,
-      JSONObject jsonBody) throws WdkModelException, DataValidationException {
+  public Response createStep(JSONObject jsonBody)
+  throws WdkModelException, DataValidationException
+  {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepRequest stepRequest = StepRequest.newStepFromJson(jsonBody, getWdkModel(), user);
-      Step newStep = getWdkModel().getStepFactory()
-          .createStep(
-          user, stepRequest.getAnswerSpec(), filter, filterOptions,
-          assignedWeight, deleted, customName, isCollapsible, collapsedName, strategy);
 
-      // create the step and insert into the database
-      Step step = createStep(stepRequest, user, getWdkModel().getStepFactory());
-      if (runStep != null && runStep) {
-        if (step.isAnswerSpecComplete()) {
-          AnswerSpec stepAnswerSpec = AnswerSpecServiceFormat.parse(step);
-          
-          new AnswerValueFactory(user).createFromAnswerSpec(stepAnswerSpec);
-        }
-        else {
-          throw new DataValidationException("Cannot run a step with an incomplete answer spec.");
-        }
-      }
+      Step step = getWdkModel().getStepFactory()
+        .createStep(
+          user, stepRequest.getAnswerSpec(), filters, filterOptions,
+          assignedWeight, false, stepRequest.getCustomName(), stepRequest.isCollapsible(), stepRequest.getCollapsedName(), strategy);
+
       return Response.ok(new JSONObject().put(JsonKeys.ID, step.getStepId()))
           .location(getUriInfo().getAbsolutePathBuilder().build(step.getStepId()))
           .build();
@@ -88,11 +77,15 @@ public class StepService extends UserService {
   @Path("steps/{stepId}")
   @Produces(MediaType.APPLICATION_JSON)
   public JSONObject getStep(
-      @PathParam("stepId") long stepId,
-      @QueryParam("validationLevel") String validationLevelStr) throws WdkModelException {
+    @PathParam("stepId") long stepId,
+    @QueryParam("validationLevel") String validationLevelStr
+  ) throws WdkModelException {
     ValidationLevel validationLevel = Functions.defaultOnException(
-        () -> ValidationLevel.valueOf(validationLevelStr), ValidationLevel.SEMANTIC);
-    return StepFormatter.getStepJsonWithEstimatedSize(getStepForCurrentUser(stepId, validationLevel));
+      () -> ValidationLevel.valueOf(validationLevelStr),
+      ValidationLevel.SEMANTIC);
+
+    return StepFormatter.getStepJsonWithEstimatedSize(getStepForCurrentUser(
+        stepId, validationLevel));
   }
 
   /**
@@ -100,8 +93,6 @@ public class StepService extends UserService {
    *
    * @param stepId Database ID of the step to update
    * @param body   Json body containing only updated fields for a step.
-   *
-   * @return
    */
   @PATCH
   @Path("steps/{stepId}")
@@ -117,28 +108,11 @@ public class StepService extends UserService {
     try {
       final Step step = updateStepMeta(getStepForCurrentUser(stepId, ValidationLevel.NONE), body);
 
-      // TODO: Move this to PUT
-      // save parts of step that changed
-//      if (stepRequest.isAnswerSpecModified()) {
-//
-//        // save the clob to the DB
-//        step.saveParamFilters();
-//
-//        // TODO: don't forget to set result size dirty in this step; means
-//        //   we don't have to call resetEstimateSizeForThisAndDownstreamSteps() or resetEstimatedSize() any more
-//
-//        // reset the estimated size in the database for this step and any downstream steps, if any
-//        getWdkModel().getStepFactory().resetEstimateSizeForThisAndDownstreamSteps(step);
-//
-//        // reset the current step object estimate size
-//        step.resetEstimatedSize();
-//      }
-
       getWdkModel().getStepFactory()
           .updateStep(step);
 
       // return updated step
-      return Response.ok(StepFormatter.getStepJsonWithRawEstimateValue(step).toString()).build();
+      return Response.ok(StepFormatter.getStepJsonWithEstimatedSize(step)).build();
     }
     catch (WdkUserException wue) {
       throw new DataValidationException(wue);
@@ -196,23 +170,29 @@ public class StepService extends UserService {
   public void putAnswerSpec(
       @PathParam("stepId") long stepId,
       ObjectNode body
-  ) {
-    throw new InternalServerErrorException("method not implemented");
+  ) throws WdkModelException {
+    final Step step = getStepForCurrentUser(stepId, /* TODO: Validation level*/);
+    final AnswerSpecBuilder spec; // TODO: How to populate this from body?
+
+    Step.builder(step)
+      .setAnswerSpec(spec)
+      .build(new UserCache(getUserBundle(Access.PRIVATE).getSessionUser()), /* TODO: Validation level*/, step.getStrategy());
   }
 
   @GET
   @Path("steps/{stepId}/answer/filter-summary/{filterName}")
   @Produces(MediaType.APPLICATION_JSON)
-  public JSONObject getFilterSummary(@PathParam("stepId") long stepId,
-      @PathParam("filterName") String filterName)
-      throws WdkModelException, DataValidationException {
+  public JSONObject getFilterSummary(
+    @PathParam("stepId") long stepId,
+    @PathParam("filterName") String filterName
+  ) throws WdkModelException, DataValidationException {
     return AnswerValueFactory.makeAnswer(
-      getUserBundle(Access.PRIVATE).getSessionUser(),
-      Step.getRunnableAnswerSpec(
-        getStepForCurrentUser(stepId, ValidationLevel.RUNNABLE)
-          .getRunnable()
-          .getOrThrow(StepService::getNotRunnableException))
-    ).getFilterSummaryJson(filterName);
+        getUserBundle(Access.PRIVATE).getSessionUser(),
+        Step.getRunnableAnswerSpec(
+          getStepForCurrentUser(stepId, ValidationLevel.RUNNABLE)
+            .getRunnable()
+            .getOrThrow(StepService::getNotRunnableException)))
+      .getFilterSummaryJson(filterName);
   }
 
   private static DataValidationException getNotRunnableException(Step badStep) {
@@ -235,10 +215,10 @@ public class StepService extends UserService {
           Step.getRunnableAnswerSpec(runnableStep),
           formattingParser.createFromTopLevelObject(requestBody));
       TwoTuple<AnswerValue, Response> result = AnswerService.getAnswerResponse(user, request);
-      
+
       // TODO: get result size from answer value, write it as estimated size, and update last_run
-      
-      
+
+
       return result.getSecond();
     }
     catch (JSONException e) {
@@ -246,7 +226,8 @@ public class StepService extends UserService {
     }
   }
 
-  private Step updateStepMeta(Step step, JSONObject req) throws WdkModelException {
+  private Step updateStepMeta(Step step, JSONObject req)
+      throws WdkModelException {
 
     StepBuilder newStep = Step.builder(step);
 
@@ -257,13 +238,8 @@ public class StepService extends UserService {
     if(req.has(JsonKeys.COLLAPSED_NAME))
       newStep.setCollapsedName(req.getString(JsonKeys.COLLAPSED_NAME));
 
-    // TODO: Move this to PUT answer spec
-//    if (stepRequest.isAnswerSpecModified()) {
-//      // FIXME: this is no good- duplicate validation of the answer spec here
-//      newStep.setAnswerSpec(AnswerSpec.builder(stepRequest.getAnswerSpec()));
-//    }
-
-    return newStep.build(new UserCache(step.getUser()), step.getValidationBundle().getLevel(), step.getStrategy());
+    return newStep.build(new UserCache(step.getUser()),
+        step.getValidationBundle().getLevel(), step.getStrategy());
   }
 
   private Step getStepForCurrentUser(long stepId, ValidationLevel level) throws WdkModelException {

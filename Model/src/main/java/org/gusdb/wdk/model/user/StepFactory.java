@@ -324,6 +324,7 @@ public class StepFactory {
           .intValue();
     }
     catch (Exception e) {
+      // FIXME: This will throw a NullPointerException (null vs primitive return type)
       return WdkModelException.unwrap(e, Integer.class);
     }
   }
