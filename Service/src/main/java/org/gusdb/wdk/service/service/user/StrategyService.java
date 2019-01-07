@@ -23,10 +23,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 import static org.gusdb.fgputil.functional.Functions.not;
 
@@ -44,30 +42,26 @@ public class StrategyService extends UserService {
   @Path("strategies")
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray getStrategies() throws WdkModelException {
-    User user = getPrivateRegisteredUser();
-    List<Strategy> strategies = getWdkModel().getStepFactory()
-        .getStrategies(user.getUserId(), false, false);
-    return StrategyFormatter.getStrategiesJson(strategies);
+    return StrategyFormatter.getStrategiesJson(getWdkModel().getStepFactory()
+      .getStrategies(getPrivateRegisteredUser().getUserId(), false, false));
   }
 
   @POST
   @Path("strategies")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createStrategy(String body)
+  public Response createStrategy(JSONObject body)
       throws WdkModelException, DataValidationException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      JSONObject json = new JSONObject(body);
       StepFactory stepFactory = getWdkModel().getStepFactory();
-
-      Strategy strategy = json.has(JsonKeys.SOURCE_SIGNATURE)
-          ? copyStrategy(user, stepFactory, json)
-          : createNewStrategy(user, stepFactory, json);
+      Strategy strategy = body.has(JsonKeys.SOURCE_SIGNATURE)
+        ? copyStrategy(user, stepFactory, body)
+        : createNewStrategy(user, stepFactory, body);
 
       return Response.ok(new JSONObject().put(JsonKeys.ID, strategy.getStrategyId()))
-          .location(getUriInfo().getAbsolutePathBuilder().build(strategy.getStrategyId()))
-          .build();
+        .location(getUriInfo().getAbsolutePathBuilder().build(strategy.getStrategyId()))
+        .build();
     }
     catch (WdkModelException wme) {
       throw new WdkModelException("Unable to create the strategy.", wme);
@@ -89,16 +83,13 @@ public class StrategyService extends UserService {
       JSONObject body) throws WdkModelException {
     final StepFactory fac = getWdkModel().getStepFactory();
     final Strategy strat = fac.getStrategyById(strategyId)
-        .orElseThrow(NotFoundException::new);
+      .orElseThrow(NotFoundException::new);
 
     if (strat.isSaved()) {
-      Optional<JsonNode> err = validateSavedStratChange(body);
-      if (err.isPresent())
+      validateSavedStratChange(body).ifPresent(err -> {
         throw new BadRequestException(
-            Response.status(Response.Status.BAD_REQUEST)
-              .entity(err)
-              .build()
-        );
+          Response.status(Response.Status.BAD_REQUEST).entity(err).build());
+      });
     }
 
     fac.updateStrategy(applyStrategyChange(strat, body));
@@ -107,20 +98,20 @@ public class StrategyService extends UserService {
   @GET
   @Path("strategies/{strategyId}")
   @Produces(MediaType.APPLICATION_JSON)
-  public JSONObject getStrategy(@PathParam("strategyId") String strategyId)
+  public JSONObject getStrategy(@PathParam("strategyId") long strategyId)
       throws WdkModelException {
     return StrategyFormatter.getDetailedStrategyJson(
-        getStrategyForCurrentUser(strategyId));
+      getStrategyForCurrentUser(strategyId));
   }
 
-  protected Strategy getStrategyForCurrentUser(String strategyId) {
+  protected Strategy getStrategyForCurrentUser(long strategyId) {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       // Whether the user owns this strategy or not is resolved in the getStepFactory method
       Strategy strategy = getWdkModel().getStepFactory()
-          .getStrategyById(Long.parseLong(strategyId))
-          .orElseThrow(() -> new NotFoundException(
-              AbstractWdkService.formatNotFound(STRATEGY_RESOURCE + strategyId)));
+        .getStrategyById(strategyId)
+        .orElseThrow(() -> new NotFoundException(
+          AbstractWdkService.formatNotFound(STRATEGY_RESOURCE + strategyId)));
 
       if (strategy.getUser().getUserId() != user.getUserId())
         throw new ForbiddenException(AbstractWdkService.PERMISSION_DENIED);
@@ -129,7 +120,7 @@ public class StrategyService extends UserService {
     }
     catch (NumberFormatException | WdkModelException e) {
       throw new NotFoundException(
-          AbstractWdkService.formatNotFound(STRATEGY_RESOURCE + strategyId));
+        AbstractWdkService.formatNotFound(STRATEGY_RESOURCE + strategyId));
     }
   }
 
@@ -137,27 +128,21 @@ public class StrategyService extends UserService {
       throws WdkModelException, WdkUserException, JSONException {
     String signature = json.getString(JsonKeys.SOURCE_SIGNATURE);
     Strategy sourceStrategy = stepFactory.getStrategyBySignature(signature)
-        .orElseThrow(() -> new WdkUserException(
-            "No strategy exists with signature " + signature));
+      .orElseThrow(() -> new WdkUserException(
+        "No strategy exists with signature " + signature));
     return stepFactory.copyStrategy(user, sourceStrategy, new LinkedHashMap<>());
   }
 
   private Strategy createNewStrategy(User user, StepFactory stepFactory,
       JSONObject json)
       throws WdkModelException, DataValidationException, WdkUserException {
-
     StrategyRequest strategyRequest = StrategyRequest.createFromJson(json,
-        stepFactory, user, getWdkModel().getProjectId());
+      stepFactory, user, getWdkModel().getProjectId());
     TreeNode<Step> stepTree = strategyRequest.getStepTree();
     Step rootStep = stepTree.getContents();
 
     // Pull all the steps out of the tree
     Collection<Step> steps = stepTree.flatten();
-
-    // Update steps with filled in answer params and save.
-    for (Step step : steps) {
-      stepFactory.patchAnswerParams(step);
-    }
 
     // Create the strategy
     Strategy strategy = stepFactory.createStrategy(user, rootStep,
@@ -174,14 +159,20 @@ public class StrategyService extends UserService {
       .peek(step -> step.setStrategyId(strategy.getStrategyId()))
       .forEach(step -> step.build(uc, /*TODO: Validation level*/, strategy.getStrategyId()));
 
-    // Update left/right child ids in db first
-    // rootStep.update(true);
-
     // Update those steps in the database with the strategyId
     stepFactory.setStrategyIdForThisAndUpstreamSteps(rootStep, strategy.getStrategyId());
     return strategy;
   }
 
+  /**
+   * Parse the new values from a change request json object and apply them to
+   * given strategy.
+   *
+   * @param strat  Strategy to update.
+   * @param change JSON object containing change set to apply.
+   *
+   * @return New strategy instance with the given changes applied.
+   */
   private Strategy applyStrategyChange(
     Strategy strat,
     JSONObject change
@@ -215,6 +206,7 @@ public class StrategyService extends UserService {
    * Validate the change request on a saved strategy
    *
    * @param body Change request
+   *
    * @return an option of an error report.
    */
   private static Optional<JsonNode> validateSavedStratChange(JSONObject body) {
@@ -231,6 +223,15 @@ public class StrategyService extends UserService {
         Optional.of(JSON.createObjectNode().set(JsonKeys.ERRORS, invalid));
   }
 
+  /**
+   * Returns whether or not data stored at the given key is legal to change on
+   * a saved strategy.
+   *
+   * @param key Key to check.
+   *
+   * @return Whether or not data stored at the given key can be changed on a
+   *         saved strategy.
+   */
   private static boolean isAllowedOnSavedStrategy(final String key) {
     return JsonKeys.NAME.equals(key) || JsonKeys.IS_PUBLIC.equals(key);
   }

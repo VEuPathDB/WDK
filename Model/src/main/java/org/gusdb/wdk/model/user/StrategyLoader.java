@@ -181,7 +181,7 @@ public class StrategyLoader {
           if (rs.wasNull()) {
             // this step row has no strategy ID
             if (currentStrategy != null) {
-              // save off current strategy and reset 
+              // save off current strategy and reset
               strategies.add(currentStrategy);
               currentStrategy = null;
             }
@@ -305,7 +305,19 @@ public class StrategyLoader {
     return toStepMap(steps);
   }
 
-  List<Strategy> getStrategies(long userId, boolean saved, boolean recent) throws WdkModelException {
+  /**
+   * Find strategies matching the given criteria.
+   *
+   * @param userId id of the user who owns the strategy
+   * @param saved  TRUE = return only saved strategies, FALSE = return only
+   *               unsaved strategies.
+   * @param recent TRUE = filter strategies to only those viewed within the past
+   *               24 hours.
+   *
+   * @return A list of Strategy instances matching the search criteria.
+   */
+  List<Strategy> getStrategies(long userId, boolean saved, boolean recent)
+      throws WdkModelException {
     String baseSql = prepareSql(FIND_STRATEGIES_SQL);
     String baseConditions =
         "and sr." + toStratCol(COLUMN_USER_ID) + " = " + userId +
@@ -340,7 +352,7 @@ public class StrategyLoader {
         .replace(SEARCH_CONDITIONS_MACRO, "and sr." + toStratCol(COLUMN_SIGNATURE) + " = ?"));
     return doSearch(sql, new Object[]{ strategySignature }, new Integer[]{ Types.VARCHAR })
         .getOnlyStrategy("with strategy signature = " + strategySignature);
-    
+
   }
 
   private static Timestamp getRecentTimestamp() {

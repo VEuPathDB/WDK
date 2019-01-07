@@ -559,6 +559,17 @@ public class StepFactory {
         .getStrategies(userId, invalidStrategies);
   }
 
+  /**
+   * Find strategies matching the given criteria.
+   *
+   * @param userId id of the user who owns the strategy
+   * @param saved  TRUE = return only saved strategies, FALSE = return only
+   *               unsaved strategies.
+   * @param recent TRUE = filter strategies to only those viewed within the past
+   *               24 hours.
+   *
+   * @return A list of Strategy instances matching the search criteria.
+   */
   public List<Strategy> getStrategies(long userId, boolean saved,
       boolean recent) throws WdkModelException {
     return new StrategyLoader(_wdkModel, ValidationLevel.SYNTACTIC)
