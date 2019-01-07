@@ -30,11 +30,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@Path(StepAnalysisService.STEP_ANALYSIS_PATH)
 public class StepAnalysisService extends UserService {
 
   protected static final String STEP_ID_PATH_PARAM = "stepId";
-  protected static final String STEP_ANALYSIS_PATH = USER_PATH + "/steps/{"+STEP_ID_PATH_PARAM+"}";
+  protected static final String STEP_ANALYSIS_PATH = "steps/{"+STEP_ID_PATH_PARAM+"}";
 
   private static final String ANALYSIS_PARAMS_KEY = StepAnalysisInstance.JsonKey.formParams.name();
   private static final String ANALYSIS_NAME_KEY = StepAnalysisInstance.JsonKey.analysisName.name();
@@ -55,7 +54,7 @@ public class StepAnalysisService extends UserService {
   }
 
   @GET
-  @Path("analysis-types")
+  @Path(STEP_ANALYSIS_PATH + "/analysis-types")
   @Produces(MediaType.APPLICATION_JSON)
   public String getStepAnalysisTypes() throws WdkModelException {
 
@@ -74,7 +73,7 @@ public class StepAnalysisService extends UserService {
    * @return Ok response containing JSON provided by the Analyzer instance.
    */
   @GET
-  @Path("analysis-types/{name}")
+  @Path(STEP_ANALYSIS_PATH + "/analysis-types/{name}")
   @Produces(MediaType.APPLICATION_JSON)
   public String getStepAnalysisTypeDataFromName(@PathParam("name") String analysisName)
       throws WdkModelException, DataValidationException, WdkUserException {
@@ -107,7 +106,7 @@ public class StepAnalysisService extends UserService {
    * @return Details of the newly created step analysis instance as JSON
    */
   @POST
-  @Path("analyses")
+  @Path(STEP_ANALYSIS_PATH + "/analyses")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public String createStepAnalysis(String body) throws WdkModelException {
@@ -136,7 +135,7 @@ public class StepAnalysisService extends UserService {
    */
   // TODO: IS THIS NEEDED?  Maybe this should be in the step details...
   @GET
-  @Path("analyses")
+  @Path(STEP_ANALYSIS_PATH + "/analyses")
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray getStepAnalysisInstanceList() throws WdkModelException {
     final User user = getUserBundle(Access.PRIVATE).getSessionUser();
@@ -148,7 +147,7 @@ public class StepAnalysisService extends UserService {
   }
 
   @GET
-  @Path("analyses/{analysisId}")
+  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}")
   @Produces(MediaType.APPLICATION_JSON)
   public JSONObject getStepAnalysisInstance(
       @PathParam("analysisId") long analysisId,
@@ -158,7 +157,7 @@ public class StepAnalysisService extends UserService {
 
   //  TODO: Why is this so slow?
   @DELETE
-  @Path("analyses/{analysisId}")
+  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}")
   public void deleteStepAnalysisInstance(
       @PathParam("analysisId") long analysisId,
       @QueryParam("accessToken") String accessToken) throws WdkModelException {
@@ -166,7 +165,7 @@ public class StepAnalysisService extends UserService {
   }
 
   @PATCH
-  @Path("analyses/{analysisId}")
+  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}")
   @Consumes(MediaType.APPLICATION_JSON)
   public void updateStepAnalysisInstance(
       @PathParam("analysisId") long analysisId,
@@ -204,7 +203,7 @@ public class StepAnalysisService extends UserService {
   }
 
   @GET
-  @Path("analyses/{analysisId}/result")
+  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}/result")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getStepAnalysisResult(
     @PathParam("analysisId")   long analysisId,
@@ -229,7 +228,7 @@ public class StepAnalysisService extends UserService {
   }
 
   @POST
-  @Path("analyses/{analysisId}/result")
+  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}/result")
   @Produces(MediaType.APPLICATION_JSON)
   public Response runAnalysis(
     @PathParam("analysisId") long analysisId,
@@ -245,7 +244,7 @@ public class StepAnalysisService extends UserService {
   }
 
   @GET
-  @Path("analyses/{analysisId}/result/status")
+  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}/result/status")
   @Produces(MediaType.APPLICATION_JSON)
   public JSONObject getStepAnalysisResultStatus(
     @PathParam("analysisId") long analysisId,
@@ -265,7 +264,7 @@ public class StepAnalysisService extends UserService {
   }
 
   @GET
-  @Path("analyses/{analysisId}/properties")
+  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}/properties")
   @Produces(MediaType.TEXT_PLAIN)
   public Response getStepAnalysisProperties(
     @PathParam("analysisId") long analysisId,
@@ -279,7 +278,7 @@ public class StepAnalysisService extends UserService {
 
   // TODO: this should 404 if the analysis or step id are not found, presently it 500s
   @PUT
-  @Path("analyses/{analysisId}/properties")
+  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}/properties")
   @Consumes(MediaType.TEXT_PLAIN)
   public void setStepAnalysisProperties(
       @PathParam("analysisId") long analysisId,
