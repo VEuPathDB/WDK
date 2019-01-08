@@ -8,6 +8,8 @@ import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.*;
+import org.gusdb.wdk.service.annotation.InSchema;
+import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.StrategyFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -41,6 +43,7 @@ public class StrategyService extends UserService {
   @GET
   @Path("strategies")
   @Produces(MediaType.APPLICATION_JSON)
+  // TODO: @OutSchema(...)
   public JSONArray getStrategies() throws WdkModelException {
     return StrategyFormatter.getStrategiesJson(getWdkModel().getStepFactory()
       .getStrategies(getPrivateRegisteredUser().getUserId(), false, false));
@@ -50,6 +53,8 @@ public class StrategyService extends UserService {
   @Path("strategies")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @InSchema("wdk.users.strategies.post-request")
+  @OutSchema("wdk.users.strategies.post-response")
   public Response createStrategy(JSONObject body)
       throws WdkModelException, DataValidationException {
     try {
@@ -78,7 +83,7 @@ public class StrategyService extends UserService {
   @Path("strategies/{strategyId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  // TODO: @InSchema(...)
+  @InSchema("wdk.users.strategy.patch-request")
   public void updateStrategy(@PathParam("strategyId") long strategyId,
       JSONObject body) throws WdkModelException {
     final StepFactory fac = getWdkModel().getStepFactory();
@@ -98,13 +103,14 @@ public class StrategyService extends UserService {
   @GET
   @Path("strategies/{strategyId}")
   @Produces(MediaType.APPLICATION_JSON)
+  // TODO: @OutSchema(...)
   public JSONObject getStrategy(@PathParam("strategyId") long strategyId)
       throws WdkModelException {
     return StrategyFormatter.getDetailedStrategyJson(
       getStrategyForCurrentUser(strategyId));
   }
 
-  protected Strategy getStrategyForCurrentUser(long strategyId) {
+  private Strategy getStrategyForCurrentUser(long strategyId) {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       // Whether the user owns this strategy or not is resolved in the getStepFactory method
@@ -118,7 +124,7 @@ public class StrategyService extends UserService {
 
       return strategy;
     }
-    catch (NumberFormatException | WdkModelException e) {
+    catch (WdkModelException e) {
       throw new NotFoundException(
         AbstractWdkService.formatNotFound(STRATEGY_RESOURCE + strategyId));
     }
@@ -157,7 +163,7 @@ public class StrategyService extends UserService {
     steps.stream()
       .map(Step::builder)
       .peek(step -> step.setStrategyId(strategy.getStrategyId()))
-      .forEach(step -> step.build(uc, /*TODO: Validation level*/, strategy.getStrategyId()));
+      .forEach(step -> step.build(uc, validationLevel, strategy.getStrategyId()));
 
     // Update those steps in the database with the strategyId
     stepFactory.setStrategyIdForThisAndUpstreamSteps(rootStep, strategy.getStrategyId());

@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.InSchema;
+import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.StepFormatter;
 import org.gusdb.wdk.service.request.exception.ConflictException;
@@ -51,7 +52,8 @@ public class StepService extends UserService {
   @Path("steps")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  @InSchema("wdk/users/steps/post-request")
+  @InSchema("wdk.users.steps.post-request")
+  @OutSchema("wdk.users.steps.post-response")
   public Response createStep(JSONObject jsonBody)
   throws WdkModelException, DataValidationException
   {
@@ -62,7 +64,8 @@ public class StepService extends UserService {
       Step step = getWdkModel().getStepFactory()
         .createStep(
           user, stepRequest.getAnswerSpec(), filters, filterOptions,
-          assignedWeight, false, stepRequest.getCustomName(), stepRequest.isCollapsible(), stepRequest.getCollapsedName(), strategy);
+          assignedWeight, false, stepRequest.getCustomName(),
+          stepRequest.isCollapsible(), stepRequest.getCollapsedName(), strategy);
 
       return Response.ok(new JSONObject().put(JsonKeys.ID, step.getStepId()))
           .location(getUriInfo().getAbsolutePathBuilder().build(step.getStepId()))
@@ -76,6 +79,7 @@ public class StepService extends UserService {
   @GET
   @Path("steps/{stepId}")
   @Produces(MediaType.APPLICATION_JSON)
+  @OutSchema("wdk.users.steps.id.get-response")
   public JSONObject getStep(
     @PathParam("stepId") long stepId,
     @QueryParam("validationLevel") String validationLevelStr
@@ -98,8 +102,9 @@ public class StepService extends UserService {
   @Path("steps/{stepId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @InSchema("wdk.users.steps.id.patch-request")
   public Response updateStepMeta(@PathParam("stepId") long stepId,
-      JSONObject body) throws WdkModelException, DataValidationException {
+      JSONObject body) throws WdkModelException {
 
     // Nothing to do.
     if (body.length() == 0)
@@ -113,9 +118,6 @@ public class StepService extends UserService {
 
       // return updated step
       return Response.ok(StepFormatter.getStepJsonWithEstimatedSize(step)).build();
-    }
-    catch (WdkUserException wue) {
-      throw new DataValidationException(wue);
     }
     catch (JSONException e) {
       throw new BadRequestException(e);
@@ -149,6 +151,7 @@ public class StepService extends UserService {
   @Path("steps/{stepId}/answer")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @InSchema("wdk.users.steps.answer.post-request")
   public Response createDefaultReporterAnswer(@PathParam("stepId") long stepId, String body)
       throws WdkModelException, RequestMisformatException, DataValidationException {
     return createAnswer(stepId, body, DEFAULT_REPORTER_PARSER);
@@ -171,12 +174,13 @@ public class StepService extends UserService {
       @PathParam("stepId") long stepId,
       ObjectNode body
   ) throws WdkModelException {
-    final Step step = getStepForCurrentUser(stepId, /* TODO: Validation level*/);
+    final Step step = getStepForCurrentUser(stepId, validationLevel);
     final AnswerSpecBuilder spec; // TODO: How to populate this from body?
 
     Step.builder(step)
       .setAnswerSpec(spec)
-      .build(new UserCache(getUserBundle(Access.PRIVATE).getSessionUser()), /* TODO: Validation level*/, step.getStrategy());
+      .build(new UserCache(getUserBundle(Access.PRIVATE).getSessionUser()),
+          validationLevel, step.getStrategy());
   }
 
   @GET
@@ -218,7 +222,6 @@ public class StepService extends UserService {
 
       // TODO: get result size from answer value, write it as estimated size, and update last_run
 
-
       return result.getSecond();
     }
     catch (JSONException e) {
@@ -254,9 +257,8 @@ public class StepService extends UserService {
 
       return step;
     }
-    catch (NumberFormatException | NoSuchElementException e) {
+    catch (NoSuchElementException e) {
       throw new NotFoundException(AbstractWdkService.formatNotFound(STEP_RESOURCE + stepId));
     }
   }
-
 }

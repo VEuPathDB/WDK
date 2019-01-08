@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.user.dataset;
 
 import static org.gusdb.fgputil.functional.Functions.fSwallow;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
-import static org.gusdb.fgputil.functional.Functions.toJavaFunction;
 import static org.gusdb.fgputil.functional.Functions.zipToList;
 
 import java.sql.Types;
@@ -34,7 +33,7 @@ public class UserDatasetFactory {
   /**
    * Return the dataset IDs the provided user can use in this website, i.e. that are installed and has access to (which can
    * include those owned by or shared with a user)
-   * 
+   *
    * @param userId user for whom to get installed dataset ids
    * @return set of IDs of installed datasets
    * @throws WdkModelException if error occurs querying
@@ -50,7 +49,7 @@ public class UserDatasetFactory {
         return datasetIds;
       });
   }
-  
+
   /**
    * Determine whether the dataset, given by its datasetId, is installed.
    * @param datasetId
@@ -65,14 +64,14 @@ public class UserDatasetFactory {
 
   /**
    * Adds (non-detailed) type-specific data to the passed user datasets.
-   * 
+   *
    * @param userDatasets
-   * @throws WdkModelException 
+   * @throws WdkModelException
    */
   public void addTypeSpecificData(WdkModel wdkModel, List<UserDatasetInfo> userDatasets, User user)
       throws WdkModelException{
     UserDatasetStore store = wdkModel.getUserDatasetStore();
-    Function<UserDatasetInfo,UserDatasetType> f = toJavaFunction(fSwallow(ud -> ud.getDataset().getType()));
+    Function<UserDatasetInfo,UserDatasetType> f = fSwallow(ud -> ud.getDataset().getType());
     Set<UserDatasetType> types = userDatasets.stream().map(f).collect(Collectors.toSet());
     for (UserDatasetType type : types) {
       List<UserDatasetInfo> typedUdis = userDatasets.stream().filter(ud -> type.equals(f.apply(ud))).collect(Collectors.toList());
