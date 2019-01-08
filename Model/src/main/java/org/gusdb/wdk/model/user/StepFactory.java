@@ -1008,7 +1008,8 @@ public class StepFactory {
    *         value of false indicates that the strategy has not been created in
    *         the database.
    */
-  public boolean updateStrategy(Connection con, Strategy strat) {
+  public boolean updateStrategy(Connection con, Strategy strat)
+      throws WdkModelException {
     final int boolType =_userDbPlatform.getBooleanType();
     final String sql = "UPDATE " + _userSchema + TABLE_STRATEGY + "\n" +
       "SET\n" +
@@ -1022,7 +1023,7 @@ public class StepFactory {
       "  " + COLUMN_IS_PUBLIC          + " = ?\n" +
       "WHERE " + COLUMN_STRATEGY_ID + " = ?";
 
-    return 0 < new SQLRunner(con, sql).executeUpdate(
+    final boolean stratUpdated = 0 < new SQLRunner(con, sql).executeUpdate(
       new Object[]{
         strat.getName(),
         strat.getRootStep().getStepId(),
@@ -1046,6 +1047,10 @@ public class StepFactory {
         Types.BIGINT     // STRATEGY_ID
       }
     );
+
+    this.updateSteps(strat.getAllSteps());
+
+    return stratUpdated;
   }
 
   // This function only updates the strategies table

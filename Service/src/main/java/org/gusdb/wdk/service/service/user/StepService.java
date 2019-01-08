@@ -8,18 +8,14 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
-import org.gusdb.wdk.model.user.NoSuchElementException;
-import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.*;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
-import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
@@ -136,15 +132,13 @@ public class StepService extends UserService {
 
     if (step.getStrategy() != null)
       throw new ConflictException(
-          "Steps that are part of strategies cannot be " +
-              "deleted.  Remove the step from strategy " +
-              step.getStrategyId() + " and try again.");
+        "Steps that are part of strategies cannot be deleted.  Remove the " +
+          "step from strategy " + step.getStrategyId() + " and try again.");
 
     getWdkModel().getStepFactory()
-        .updateStep(Step.builder(step)
-            .setDeleted(true)
-            .build(new UserCache(step.getUser()), ValidationLevel.NONE, null)
-        );
+      .updateStep(Step.builder(step)
+        .setDeleted(true)
+        .build(new UserCache(step.getUser()), ValidationLevel.NONE, null));
   }
 
   @POST
@@ -175,12 +169,28 @@ public class StepService extends UserService {
       ObjectNode body
   ) throws WdkModelException {
     final Step step = getStepForCurrentUser(stepId, validationLevel);
+    final Strategy strat = step.getStrategy();
+    final StepFactory fac = getWdkModel().getStepFactory();
     final AnswerSpecBuilder spec; // TODO: How to populate this from body?
 
-    Step.builder(step)
-      .setAnswerSpec(spec)
-      .build(new UserCache(getUserBundle(Access.PRIVATE).getSessionUser()),
+    final StepBuilder stepBuild = Step.builder(step)
+        .setAnswerSpec(spec);
+
+    if (strat == null) {
+      // TODO: Validate spec for homeless step
+
+      fac.updateStrategy(
+        stepBuild.build(getUserBundle(Access.PRIVATE).getSessionUser()),
           validationLevel, step.getStrategy());
+      return;
+    }
+
+    fac.updateStrategy(
+      Strategy.builder(strat)
+        .addStep(Step.builder().setAnswerSpec(spec))
+        .build(getUserBundle(Access.PRIVATE).getSessionUser(), validationLevel));
+
+    // TODO: Is setting estimate size for child steps a part of update strategy?
   }
 
   @GET

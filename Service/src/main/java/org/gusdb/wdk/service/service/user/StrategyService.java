@@ -31,6 +31,10 @@ import java.util.function.UnaryOperator;
 import static org.gusdb.fgputil.functional.Functions.not;
 
 public class StrategyService extends UserService {
+  public static final String BASE_PATH = "strategies";
+  public static final String ID_PARAM  = "strategyId";
+  public static final String ID_PATH   = BASE_PATH + "/{" + ID_PARAM + "}";
+
 
   public static final String STRATEGY_RESOURCE = "Strategy ID ";
 
@@ -50,7 +54,7 @@ public class StrategyService extends UserService {
   }
 
   @POST
-  @Path("strategies")
+  @Path(BASE_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.strategies.post-request")
@@ -80,11 +84,11 @@ public class StrategyService extends UserService {
   }
 
   @PATCH
-  @Path("strategies/{strategyId}")
+  @Path(ID_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.strategy.patch-request")
-  public void updateStrategy(@PathParam("strategyId") long strategyId,
+  public void updateStrategy(@PathParam(ID_PARAM) long strategyId,
       JSONObject body) throws WdkModelException {
     final StepFactory fac = getWdkModel().getStepFactory();
     final Strategy strat = fac.getStrategyById(strategyId)
@@ -101,13 +105,21 @@ public class StrategyService extends UserService {
   }
 
   @GET
-  @Path("strategies/{strategyId}")
+  @Path(ID_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   // TODO: @OutSchema(...)
-  public JSONObject getStrategy(@PathParam("strategyId") long strategyId)
+  public JSONObject getStrategy(@PathParam(ID_PARAM) long strategyId)
       throws WdkModelException {
     return StrategyFormatter.getDetailedStrategyJson(
       getStrategyForCurrentUser(strategyId));
+  }
+
+  @PUT
+  @Path(ID_PATH + "/stepTree")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public void replaceStepTree(@PathParam(ID_PARAM) long stratId, JSONObject body) {
+    // TODO: Spec me!
+    throw new InternalServerErrorException("Method not implemented");
   }
 
   private Strategy getStrategyForCurrentUser(long strategyId) {
@@ -205,7 +217,7 @@ public class StrategyService extends UserService {
     }
 
     return build.build(getUserBundle(Access.PRIVATE).getSessionUser(),
-        /*TODO: Validation level*/);
+        validationLevel);
   }
 
   /**
