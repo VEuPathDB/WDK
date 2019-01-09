@@ -224,7 +224,7 @@ public class StrategyLoader {
       return new SearchResult(builtStrategies, builtOrphanSteps);
     }
     catch (Exception e) {
-      return WdkModelException.unwrap(e, SearchResult.class);
+      return WdkModelException.unwrap(e);
     }
   }
 

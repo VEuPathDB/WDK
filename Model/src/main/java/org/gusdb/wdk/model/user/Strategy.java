@@ -268,7 +268,7 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
           new TwoTuple<Long,Step>(node.getContents().getStepId(), node.getContents()));
     }
     catch (Exception e) {
-      return WdkModelException.unwrap(e, Map.class);
+      return WdkModelException.unwrap(e);
     }
   }
 

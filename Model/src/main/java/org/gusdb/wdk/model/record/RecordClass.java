@@ -738,7 +738,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     catch (SQLRunnerException e) {
       // unwrap exception and rewrap as WdkModelException
-      return WdkModelException.unwrap(e, Long.class);
+      return WdkModelException.unwrap(e);
     }
   }
 

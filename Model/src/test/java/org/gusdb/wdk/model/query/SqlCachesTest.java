@@ -36,7 +36,7 @@ public class SqlCachesTest {
       return _countCache.getItem(countSql, "cached-count-sql");
     }
     catch (ValueProductionException e) {
-      return WdkModelException.unwrap(e, Long.class);
+      return WdkModelException.unwrap(e);
     }
   }
 
@@ -45,7 +45,7 @@ public class SqlCachesTest {
       return _resultCache.getItem(sql, "cached-query-sql");
     }
     catch (ValueProductionException e) {
-      return WdkModelException.unwrap(e, List.class);
+      return WdkModelException.unwrap(e);
     }
   }
 }

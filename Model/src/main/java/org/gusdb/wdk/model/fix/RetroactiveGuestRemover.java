@@ -108,7 +108,7 @@ public class RetroactiveGuestRemover extends BaseCLI {
       });
     }
     catch(SQLRunnerException se) {
-      return WdkModelException.unwrap(se, "Unable to obtain oldest guest first access.", Calendar.class);
+      return WdkModelException.unwrap(se, "Unable to obtain oldest guest first access.");
     }
   }
 
