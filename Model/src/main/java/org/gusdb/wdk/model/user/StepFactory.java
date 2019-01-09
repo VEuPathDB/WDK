@@ -67,6 +67,7 @@ import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.Utilities;
@@ -128,9 +129,30 @@ public class StepFactory {
     _userSchema = _wdkModel.getModelConfig().getUserDB().getUserSchema();
   }
 
+
+
+  public Step createStep(User user, SemanticallyValid<AnswerSpec> validSpec, String customName,
+      boolean isCollapsible, String collapsedName) throws WdkModelException {
+    AnswerSpec answerSpec = validSpec.getObject();
+    // TODO: merge/refactor relevant logic from this createStep and the deprecated one
+    //   so that only deprecated logic lives in the deprecated method
+    return createStep(user,
+        answerSpec.getQuestion(),
+        answerSpec.getQueryInstanceSpec().toMap(),
+        answerSpec.getLegacyFilter(),
+        answerSpec.getFilterOptions(),
+        answerSpec.getQueryInstanceSpec().getAssignedWeight(),
+        false, // not deleted
+        customName,
+        isCollapsible,
+        collapsedName,
+        null); // new steps from service do not have a strategy
+  }
+
   /**
    * Creates a step and adds to database
    */
+  @Deprecated
   public Step createStep(User user, Question question, Map<String, String> dependentValues,
       AnswerFilterInstance filter, FilterOptionList filterOptions, int assignedWeight, boolean deleted,
       String customName, boolean isCollapsible, String collapsedName, Strategy strategy) throws WdkModelException {
