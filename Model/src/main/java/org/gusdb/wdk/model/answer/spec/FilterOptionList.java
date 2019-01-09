@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.answer.spec.FilterOption.FilterOptionBuilder;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.Filter.FilterType;
 import org.gusdb.wdk.model.question.Question;
+import org.json.JSONObject;
 
 public class FilterOptionList implements Iterable<FilterOption>, Validateable<FilterOptionList> {
 
@@ -28,6 +29,11 @@ public class FilterOptionList implements Iterable<FilterOption>, Validateable<Fi
 
     public FilterOptionListBuilder addFilterOption(FilterOptionBuilder filter) {
       add(filter);
+      return this;
+    }
+
+    public FilterOptionListBuilder addFilterOption(String filterName, JSONObject filterValue) {
+      add(FilterOption.builder().setFilterName(filterName).setValue(filterValue));
       return this;
     }
 
