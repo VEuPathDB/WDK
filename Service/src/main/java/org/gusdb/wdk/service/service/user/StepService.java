@@ -37,6 +37,9 @@ import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.DEFAULT_
 import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.SPECIFIED_REPORTER_PARSER;
 
 public class StepService extends UserService {
+  private static final String BASE_PATH = "steps";
+  private static final String ID_PARAM = "stepId";
+  private static final String ID_PATH = BASE_PATH + "/{" + ID_PARAM + "}";
 
   public static final String STEP_RESOURCE = "Step ID ";
 
@@ -45,7 +48,7 @@ public class StepService extends UserService {
   }
 
   @POST
-  @Path("steps")
+  @Path(BASE_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.steps.post-request")
@@ -73,11 +76,11 @@ public class StepService extends UserService {
   }
 
   @GET
-  @Path("steps/{stepId}")
+  @Path(ID_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.users.steps.id.get-response")
   public JSONObject getStep(
-    @PathParam("stepId") long stepId,
+    @PathParam(ID_PARAM) long stepId,
     @QueryParam("validationLevel") String validationLevelStr
   ) throws WdkModelException {
     ValidationLevel validationLevel = Functions.defaultOnException(
@@ -95,11 +98,11 @@ public class StepService extends UserService {
    * @param body   Json body containing only updated fields for a step.
    */
   @PATCH
-  @Path("steps/{stepId}")
+  @Path(ID_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.steps.id.patch-request")
-  public Response updateStepMeta(@PathParam("stepId") long stepId,
+  public Response updateStepMeta(@PathParam(ID_PARAM) long stepId,
       JSONObject body) throws WdkModelException {
 
     // Nothing to do.
@@ -121,8 +124,8 @@ public class StepService extends UserService {
   }
 
   @DELETE
-  @Path("steps/{stepId}")
-  public void deleteStep(@PathParam("stepId") long stepId)
+  @Path(ID_PATH)
+  public void deleteStep(@PathParam(ID_PARAM) long stepId)
       throws WdkModelException, ConflictException {
 
     Step step = getStepForCurrentUser(stepId, ValidationLevel.NONE);
@@ -142,35 +145,36 @@ public class StepService extends UserService {
   }
 
   @POST
-  @Path("steps/{stepId}/answer")
+  @Path(ID_PATH + "/answer")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.steps.answer.post-request")
-  public Response createDefaultReporterAnswer(@PathParam("stepId") long stepId, String body)
+  public Response createDefaultReporterAnswer(@PathParam(ID_PARAM) long stepId, String body)
       throws WdkModelException, RequestMisformatException, DataValidationException {
     return createAnswer(stepId, body, DEFAULT_REPORTER_PARSER);
   }
 
   @POST
-  @Path("steps/{stepId}/answer/report")
+  @Path(ID_PATH + "/answer/report")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response createAnswer(@PathParam("stepId") long stepId, String body)
+  public Response createAnswer(@PathParam(ID_PARAM) long stepId, String body)
       throws WdkModelException, RequestMisformatException, DataValidationException {
     return createAnswer(stepId, body, SPECIFIED_REPORTER_PARSER);
   }
 
   @PUT
-  @Path("steps/{stepId}/answerSpec")
+  @Path(ID_PATH + "/answerSpec")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   // TODO: @InSchema(...)
   public void putAnswerSpec(
-      @PathParam("stepId") long stepId,
+      @PathParam(ID_PARAM) long stepId,
       ObjectNode body
   ) throws WdkModelException {
     final Step step = getStepForCurrentUser(stepId, validationLevel);
     final Strategy strat = step.getStrategy();
     final StepFactory fac = getWdkModel().getStepFactory();
+    final UserCache cache = new UserCache(getUserBundle(Access.PRIVATE).getSessionUser());
     final AnswerSpecBuilder spec; // TODO: How to populate this from body?
 
     final StepBuilder stepBuild = Step.builder(step)
@@ -179,25 +183,23 @@ public class StepService extends UserService {
     if (strat == null) {
       // TODO: Validate spec for homeless step
 
-      fac.updateStrategy(
-        stepBuild.build(getUserBundle(Access.PRIVATE).getSessionUser()),
-          validationLevel, step.getStrategy());
+      fac.updateStrategy(stepBuild.build(cache), validationLevel, strat);
       return;
     }
 
     fac.updateStrategy(
       Strategy.builder(strat)
-        .addStep(Step.builder().setAnswerSpec(spec))
-        .build(getUserBundle(Access.PRIVATE).getSessionUser(), validationLevel));
+        .addStep(Step.builder(step).setAnswerSpec(spec))
+        .build(cache, validationLevel));
 
     // TODO: Is setting estimate size for child steps a part of update strategy?
   }
 
   @GET
-  @Path("steps/{stepId}/answer/filter-summary/{filterName}")
+  @Path(ID_PATH + "/answer/filter-summary/{filterName}")
   @Produces(MediaType.APPLICATION_JSON)
   public JSONObject getFilterSummary(
-    @PathParam("stepId") long stepId,
+    @PathParam(ID_PATH) long stepId,
     @PathParam("filterName") String filterName
   ) throws WdkModelException, DataValidationException {
     return AnswerValueFactory.makeAnswer(
