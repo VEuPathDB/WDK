@@ -166,7 +166,7 @@ public class FavoriteFactory {
       );
     }
     catch(SQLRunnerException sre) {
-      return WdkModelException.unwrap(sre, List.class);
+      return WdkModelException.unwrap(sre);
     }
     catch(Exception e) {
       throw new WdkModelException("Unable to load favorites for user " + user.getUserId(), e);
@@ -243,7 +243,7 @@ public class FavoriteFactory {
       );
     }
     catch(SQLRunnerException sre) {
-      return WdkModelException.unwrap(sre, Favorite.class);
+      return WdkModelException.unwrap(sre);
     }
     catch(Exception e) {
       throw new WdkModelException(e);

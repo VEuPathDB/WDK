@@ -167,7 +167,7 @@ public class UserPreferenceFactory {
           });
     }
     catch (Exception e) {
-      return WdkModelException.unwrap(e, UserPreferences.class);
+      return WdkModelException.unwrap(e);
     }
   }
 }

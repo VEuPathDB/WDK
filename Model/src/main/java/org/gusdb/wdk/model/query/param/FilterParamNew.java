@@ -403,7 +403,7 @@ public class FilterParamNew extends AbstractDependentParam {
       return CacheMgr.get().getOntologyNewCache().getValue(fetcher.getCacheKey(), fetcher);
     }
     catch (ValueProductionException ex) {
-      return WdkModelException.unwrap(ex, Map.class);
+      return WdkModelException.unwrap(ex);
     }
   }
 

@@ -446,7 +446,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         });
     }
     catch (SQLRunnerException e) {
-      return WdkModelException.unwrap(e, List.class);
+      return WdkModelException.unwrap(e);
     }
   }
 
@@ -463,7 +463,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         });
     }
     catch (SQLRunnerException e) {
-      return WdkModelException.unwrap(e, List.class);
+      return WdkModelException.unwrap(e);
     }
   }
 
@@ -480,7 +480,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         });
     }
     catch (SQLRunnerException e) {
-      return WdkModelException.unwrap(e, List.class);
+      return WdkModelException.unwrap(e);
     }
   }
 
@@ -546,7 +546,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       return result;
     }
     catch (SQLRunnerException e) {
-      return WdkModelException.unwrap(e, Map.class);
+      return WdkModelException.unwrap(e);
     }
   }
 
@@ -589,7 +589,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       return true;
     }
     catch (SQLRunnerException e) {
-      return WdkModelException.unwrap(e, Boolean.class);
+      return WdkModelException.unwrap(e);
     }
     finally {
       CONTEXT_INSERTION_LOCK.unlock();
@@ -664,7 +664,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       return parseStatus((String)result.getResults().get(0).values().iterator().next(), contextHash);
     }
     catch (SQLRunnerException e) {
-      return WdkModelException.unwrap(e, ExecutionStatus.class);
+      return WdkModelException.unwrap(e);
     }
   }
 
@@ -695,7 +695,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       );
     }
     catch (SQLRunnerException e) {
-      return WdkModelException.unwrap(e, AnalysisResult.class);
+      return WdkModelException.unwrap(e);
     }
   }
 
@@ -716,7 +716,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       });
     }
     catch (SQLRunnerException e) {
-      return WdkModelException.unwrap(e, List.class);
+      return WdkModelException.unwrap(e);
     }
   }
 
@@ -751,7 +751,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         });
     }
     catch (SQLRunnerException e) {
-      return WdkModelException.unwrap(e, String.class);
+      return WdkModelException.unwrap(e);
     }
   }
 
