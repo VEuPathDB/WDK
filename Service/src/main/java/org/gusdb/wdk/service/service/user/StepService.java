@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
@@ -12,6 +13,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.user.*;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
@@ -54,20 +56,18 @@ public class StepService extends UserService {
   @InSchema("wdk.users.steps.post-request")
   @OutSchema("wdk.users.steps.post-response")
   public Response createStep(JSONObject jsonBody)
-  throws WdkModelException, DataValidationException
-  {
+      throws WdkModelException, DataValidationException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepRequest stepRequest = StepRequest.newStepFromJson(jsonBody, getWdkModel(), user);
-
-      Step step = getWdkModel().getStepFactory()
-        .createStep(
-          user, stepRequest.getAnswerSpec(), filters, filterOptions,
-          assignedWeight, false, stepRequest.getCustomName(),
-          stepRequest.isCollapsible(), stepRequest.getCollapsedName(), strategy);
-
-      return Response.ok(new JSONObject().put(JsonKeys.ID, step.getStepId()))
-          .location(getUriInfo().getAbsolutePathBuilder().build(step.getStepId()))
+      Step step = getWdkModel().getStepFactory().createStep(user,
+          stepRequest.getAnswerSpec().get(), // if invalid, would have thrown exception
+          stepRequest.getCustomName(), stepRequest.isCollapsible(), stepRequest.getCollapsedName());
+      return Response.ok(new JSONObject()
+          .put(JsonKeys.ID, step.getStepId()))
+          .location(getUriInfo()
+              .getAbsolutePathBuilder()
+              .build(step.getStepId()))
           .build();
     }
     catch (JSONException | RequestMisformatException e) {
