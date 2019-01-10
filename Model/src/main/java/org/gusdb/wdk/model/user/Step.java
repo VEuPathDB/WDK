@@ -462,7 +462,7 @@ public class Step implements StrategyElement, Validateable<Step> {
    * @return the real result size gained by running the step
    */
   public int getResultSize() throws WdkModelException {
-    return _estimatedSizeRefreshed ? _estimatedSize : !_answerSpec.isValid() ? 0 : recalculateResultSize();
+    return _estimatedSizeRefreshed ? _estimatedSize : !_answerSpec.isRunnable() ? 0 : recalculateResultSize();
   }
 
   private int recalculateResultSize() throws WdkModelException {

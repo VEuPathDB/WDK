@@ -1,6 +1,24 @@
 package org.gusdb.wdk.service.service.user;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.DEFAULT_REPORTER_PARSER;
+import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.SPECIFIED_REPORTER_PARSER;
+
+import java.util.Date;
+
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
@@ -14,10 +32,13 @@ import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
-import org.gusdb.wdk.model.user.*;
+import org.gusdb.wdk.model.user.NoSuchElementException;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
+import org.gusdb.wdk.model.user.Strategy;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
@@ -31,14 +52,8 @@ import org.gusdb.wdk.service.service.AnswerService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.DEFAULT_REPORTER_PARSER;
-import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.SPECIFIED_REPORTER_PARSER;
-
 public class StepService extends UserService {
+
   private static final String BASE_PATH = "steps";
   private static final String ID_PARAM = "stepId";
   private static final String ID_PATH = BASE_PATH + "/{" + ID_PARAM + "}";
@@ -60,9 +75,12 @@ public class StepService extends UserService {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepRequest stepRequest = StepRequest.newStepFromJson(jsonBody, getWdkModel(), user);
-      Step step = getWdkModel().getStepFactory().createStep(user,
+      Step step = getWdkModel().getStepFactory().createStep(
+          user,
           stepRequest.getAnswerSpec().get(), // if invalid, would have thrown exception
-          stepRequest.getCustomName(), stepRequest.isCollapsible(), stepRequest.getCollapsedName());
+          stepRequest.getCustomName(),
+          stepRequest.isCollapsible(),
+          stepRequest.getCollapsedName());
       return Response.ok(new JSONObject()
           .put(JsonKeys.ID, step.getStepId()))
           .location(getUriInfo()
@@ -85,41 +103,30 @@ public class StepService extends UserService {
   ) throws WdkModelException {
     ValidationLevel validationLevel = Functions.defaultOnException(
       () -> ValidationLevel.valueOf(validationLevelStr),
-      ValidationLevel.SEMANTIC);
-
-    return StepFormatter.getStepJsonWithEstimatedSize(getStepForCurrentUser(
+      ValidationLevel.RUNNABLE);
+    return StepFormatter.getStepJsonWithResultSize(getStepForCurrentUser(
         stepId, validationLevel));
   }
 
   /**
-   * TODO: Why does the patch endpoint have a response body?
-   *
-   * @param stepId Database ID of the step to update
-   * @param body   Json body containing only updated fields for a step.
+   * @param stepId ID of the step to update
+   * @param body JSON body containing only fields to update on the step
+   * @throws RequestMisformatException 
    */
   @PATCH
   @Path(ID_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.steps.id.patch-request")
-  public Response updateStepMeta(@PathParam(ID_PARAM) long stepId,
-      JSONObject body) throws WdkModelException {
-
-    // Nothing to do.
-    if (body.length() == 0)
-      return Response.ok().build();
-
-    try {
-      final Step step = updateStepMeta(getStepForCurrentUser(stepId, ValidationLevel.NONE), body);
-
-      getWdkModel().getStepFactory()
-          .updateStep(step);
-
-      // return updated step
-      return Response.ok(StepFormatter.getStepJsonWithEstimatedSize(step)).build();
-    }
-    catch (JSONException e) {
-      throw new BadRequestException(e);
+  public void updateStepMeta(@PathParam(ID_PARAM) long stepId,
+      JSONObject body) throws WdkModelException, RequestMisformatException {
+    if (body.length() != 0) {
+      try {
+        Step step = StepRequest.updateStepMeta(getStepForCurrentUser(stepId, ValidationLevel.NONE), body);
+        getWdkModel().getStepFactory().updateStep(step);
+      }
+      catch (JSONException e) {
+        throw new BadRequestException(e);
+      }
     }
   }
 
@@ -165,34 +172,39 @@ public class StepService extends UserService {
   @PUT
   @Path(ID_PATH + "/answerSpec")
   @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
   // TODO: @InSchema(...)
   public void putAnswerSpec(
       @PathParam(ID_PARAM) long stepId,
-      ObjectNode body
-  ) throws WdkModelException {
-    final Step step = getStepForCurrentUser(stepId, validationLevel);
-    final Strategy strat = step.getStrategy();
-    final StepFactory fac = getWdkModel().getStepFactory();
-    final UserCache cache = new UserCache(getUserBundle(Access.PRIVATE).getSessionUser());
-    final AnswerSpecBuilder spec; // TODO: How to populate this from body?
+      String body
+  ) throws WdkModelException, DataValidationException, RequestMisformatException {
+    try {
+      User user = getUserBundle(Access.PRIVATE).getSessionUser();
+      Step existingStep = getStepForCurrentUser(stepId, ValidationLevel.NONE);
+      SemanticallyValid<AnswerSpec> newSpec = StepRequest.getReplacementAnswerSpec(
+          existingStep, new JSONObject(body), getWdkModel(), user);
+      StepBuilder replacementBuilder = Step.builder(existingStep)
+          .setAnswerSpec(AnswerSpec.builder(newSpec));
 
-    final StepBuilder stepBuild = Step.builder(step)
-        .setAnswerSpec(spec);
-
-    if (strat == null) {
-      // TODO: Validate spec for homeless step
-
-      fac.updateStrategy(stepBuild.build(cache), validationLevel, strat);
-      return;
+      if (existingStep.hasStrategy()) {
+        // need to replace and update whole strategy to cover effects
+        getWdkModel().getStepFactory().updateStrategy(Strategy
+            .builder(existingStep.getStrategy())
+            .addStep(replacementBuilder)
+            .build(new UserCache(user), ValidationLevel.SEMANTIC)
+            .getSemanticallyValid()
+            .getOrThrow(strat -> new DataValidationException(
+                "The passed answer spec is not semantically valid."))
+            .getObject());
+      }
+      else {
+        // no strategy present; only need to update the step
+        getWdkModel().getStepFactory().updateStep(replacementBuilder.build(
+            new UserCache(user), ValidationLevel.SEMANTIC, null));
+      }
     }
-
-    fac.updateStrategy(
-      Strategy.builder(strat)
-        .addStep(Step.builder(step).setAnswerSpec(spec))
-        .build(cache, validationLevel));
-
-    // TODO: Is setting estimate size for child steps a part of update strategy?
+    catch (JSONException e) {
+      throw new RequestMisformatException(e.getMessage());
+    }
   }
 
   @GET
@@ -232,29 +244,19 @@ public class StepService extends UserService {
           formattingParser.createFromTopLevelObject(requestBody));
       TwoTuple<AnswerValue, Response> result = AnswerService.getAnswerResponse(user, request);
 
-      // TODO: get result size from answer value, write it as estimated size, and update last_run
+      // update the estimated size and last-run time on this step
+      stepFactory.updateStep(
+        Step.builder(runnableStep.getObject())
+          .setEstimatedSize(result.getFirst().getResultSizeFactory().getDisplayResultSize())
+          .setLastRunTime(new Date())
+          .build(new UserCache(runnableStep.getObject().getUser()),
+              ValidationLevel.NONE, runnableStep.getObject().getStrategy()));
 
       return result.getSecond();
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage());
     }
-  }
-
-  private Step updateStepMeta(Step step, JSONObject req)
-      throws WdkModelException {
-
-    StepBuilder newStep = Step.builder(step);
-
-    if(req.has(JsonKeys.CUSTOM_NAME))
-      newStep.setCustomName(req.getString(JsonKeys.CUSTOM_NAME));
-    if(req.has(JsonKeys.IS_COLLAPSIBLE))
-      newStep.setCollapsible(req.getBoolean(JsonKeys.IS_COLLAPSIBLE));
-    if(req.has(JsonKeys.COLLAPSED_NAME))
-      newStep.setCollapsedName(req.getString(JsonKeys.COLLAPSED_NAME));
-
-    return newStep.build(new UserCache(step.getUser()),
-        step.getValidationBundle().getLevel(), step.getStrategy());
   }
 
   private Step getStepForCurrentUser(long stepId, ValidationLevel level) throws WdkModelException {
