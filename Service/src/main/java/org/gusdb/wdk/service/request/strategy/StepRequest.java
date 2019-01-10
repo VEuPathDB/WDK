@@ -19,6 +19,8 @@ import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.Step.StepBuilder;
+import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -46,7 +48,7 @@ public class StepRequest {
     try {
       checkForInvalidProps(stepJson);
       SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(
-          stepJson, wdkModel, user, StepContainer.emptyContainer());
+          stepJson.getJSONObject(JsonKeys.ANSWER_SPEC), wdkModel, user, StepContainer.emptyContainer());
       AnswerSpec spec = validSpec.getObject();
 
       // Since this method is intended for new steps, the step can not yet be
@@ -68,10 +70,10 @@ public class StepRequest {
     }
   }
 
-  private static SemanticallyValid<AnswerSpec> parseAnswerSpec(JSONObject stepJson, WdkModel wdkModel, User user, StepContainer container)
+  private static SemanticallyValid<AnswerSpec> parseAnswerSpec(JSONObject answerSpecJson, WdkModel wdkModel, User user, StepContainer container)
       throws JSONException, RequestMisformatException, DataValidationException, WdkModelException {
     return AnswerSpecServiceFormat
-        .parse(stepJson.getJSONObject(JsonKeys.ANSWER_SPEC), wdkModel)
+        .parse(answerSpecJson, wdkModel)
         .build(user, container, ValidationLevel.SEMANTIC)
         .getSemanticallyValid()
         .getOrThrow(spec ->
@@ -79,57 +81,63 @@ public class StepRequest {
           new DataValidationException("Invalid answer spec: " + join(spec.getValidationBundle().getAllErrors(), NL)));
   }
 
-  public static StepRequest patchStepFromJson(Step step, JSONObject patchSet, WdkModel wdkModel, User user)
-      throws RequestMisformatException, DataValidationException, WdkModelException {
+  public static Step updateStepMeta(Step step, JSONObject patchSet)
+      throws WdkModelException, RequestMisformatException {
     try {
       checkForInvalidProps(patchSet);
-      Optional<SemanticallyValid<AnswerSpec>> answerSpec = getPatchAnswerSpec(step, patchSet, wdkModel, user);
-      String customName = getStringOrDefault(patchSet, JsonKeys.CUSTOM_NAME, step.getCustomName());
-      boolean isCollapsible = getBooleanOrDefault(patchSet, JsonKeys.IS_COLLAPSIBLE, step.isCollapsible());
-      String collapsedName = getStringOrDefault(patchSet, JsonKeys.COLLAPSED_NAME, step.getCollapsedName());
-      return new StepRequest(answerSpec, customName, isCollapsible, collapsedName);
+      if (patchSet.has(JsonKeys.ANSWER_SPEC)) {
+        throw new RequestMisformatException("Answer Spec can only be modified by executing a PUT against /steps/{id}/answerSpec");
+      }
+
+      StepBuilder newStep = Step.builder(step);
+
+      if(patchSet.has(JsonKeys.CUSTOM_NAME))
+        newStep.setCustomName(patchSet.getString(JsonKeys.CUSTOM_NAME));
+      if(patchSet.has(JsonKeys.IS_COLLAPSIBLE))
+        newStep.setCollapsible(patchSet.getBoolean(JsonKeys.IS_COLLAPSIBLE));
+      if(patchSet.has(JsonKeys.COLLAPSED_NAME))
+        newStep.setCollapsedName(patchSet.getString(JsonKeys.COLLAPSED_NAME));
+
+      return newStep.build(new UserCache(step.getUser()),
+          step.getValidationBundle().getLevel(), step.getStrategy());
     }
     catch (JSONException e) {
-      throw new RequestMisformatException("Invalid JSON in patch step request", e);
+      throw new RequestMisformatException(e.getMessage());
     }
   }
-  
-  private static Optional<SemanticallyValid<AnswerSpec>> getPatchAnswerSpec(Step step, JSONObject patchSet, WdkModel wdkModel, User user)
-      throws DataValidationException, RequestMisformatException, JSONException, WdkModelException {
-    if (patchSet.has(JsonKeys.ANSWER_SPEC)) {
-      SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(patchSet, wdkModel, user, step.getContainer());
-      AnswerSpec answerSpec = validSpec.getObject();
 
-      // user cannot change question of an existing step (since # of answer params may change)
-      if (!answerSpec.getQuestion().getFullName().equals(
-          step.getAnswerSpec().getQuestion().getFullName())) {
-        throw new DataValidationException("Question of an existing step cannot be changed.");
-      }
-      QueryInstanceSpec updateParams = answerSpec.getQueryInstanceSpec();
-      QueryInstanceSpec currentParams = step.getAnswerSpec().getQueryInstanceSpec();
-      DataValidationException illegalAnswerParamException =
-          new DataValidationException("Changes to the answer param values are not allowed.");
-      for (Param param : answerSpec.getQuestion().getQuery().getAnswerParams()) {
-        String updateParamValue = updateParams.get(param.getName());
-        if (step.getStrategy() == null) {
-          // incoming answer params must be "null" = empty strings
-          if (!updateParamValue.equals(AnswerParam.NULL_VALUE)) {
-            throw illegalAnswerParamException;
-          }
-        }
-        else {
-          // incoming answer params must match existing values
-          if (!updateParamValue.equals(currentParams.get(param.getName()))) {
-            throw illegalAnswerParamException;
-          }
-        }
-      }
-      return Optional.of(validSpec);
+  public static SemanticallyValid<AnswerSpec> getReplacementAnswerSpec(
+      Step existingStep, JSONObject answerSpecJson, WdkModel wdkModel, User user)
+      throws DataValidationException, RequestMisformatException, JSONException, WdkModelException {
+
+    SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(answerSpecJson, wdkModel, user, existingStep.getContainer());
+    AnswerSpec answerSpec = validSpec.getObject();
+
+    // user cannot change question of an existing step (since # of answer params may change)
+    if (!answerSpec.getQuestion().getFullName().equals(
+        existingStep.getAnswerSpec().getQuestion().getFullName())) {
+      throw new DataValidationException("Question of an existing step cannot be changed.");
     }
-    else {
-      // patch set did not include new answer spec; use spec from existing step
-      return Optional.empty();
+    QueryInstanceSpec updateParams = answerSpec.getQueryInstanceSpec();
+    QueryInstanceSpec currentParams = existingStep.getAnswerSpec().getQueryInstanceSpec();
+    DataValidationException illegalAnswerParamException =
+        new DataValidationException("Changes to the answer param values are not allowed.");
+    for (Param param : answerSpec.getQuestion().getQuery().getAnswerParams()) {
+      String updateParamValue = updateParams.get(param.getName());
+      if (existingStep.getStrategy() == null) {
+        // incoming answer params must be "null" = empty strings
+        if (!updateParamValue.equals(AnswerParam.NULL_VALUE)) {
+          throw illegalAnswerParamException;
+        }
+      }
+      else {
+        // incoming answer params must match existing values
+        if (!updateParamValue.equals(currentParams.get(param.getName()))) {
+          throw illegalAnswerParamException;
+        }
+      }
     }
+    return validSpec;
   }
 
   private static void checkForInvalidProps(JSONObject stepJson) throws RequestMisformatException {

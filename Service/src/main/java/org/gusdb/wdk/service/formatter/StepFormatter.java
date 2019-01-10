@@ -63,7 +63,7 @@ public class StepFormatter {
     }
   }
 
-  public static JSONObject getStepJsonWithCalculatedEstimateValue(Step step) throws WdkModelException {
+  public static JSONObject getStepJsonWithResultSize(Step step) throws WdkModelException {
     return getStepJson(step)
         .put(JsonKeys.ESTIMATED_SIZE, step.getResultSize());
   }
