@@ -239,7 +239,7 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
         throw new WdkModelException(identifier + " does not have the same project as its strategy, " + _strategyId);
       }
       Long stepStratId = step.getStrategyId();
-      if (stepStratId == null || _strategyId != stepStratId.longValue()) {
+      if (stepStratId == null || _strategyId != stepStratId) {
         throw new WdkModelException(identifier + " was given to strategy " + _strategyId + " but belongs to strategy " + stepStratId + " (i.e. SQL is broken).");
       }
     }
@@ -250,7 +250,7 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
     if (!stepMap.isEmpty()) {
       throw new WdkModelException("Strategy " + _strategyId + " has been " +
           "assigned the following steps which are not referenced in its tree: " +
-          join(stepMap.values().stream().map(step -> step.getStepId()), ", "));
+          join(stepMap.values().stream().map(StepBuilder::getStepId), ", "));
     }
 
     // Build StepBuilders from the bottom up into a tree of Steps, setting dirty
@@ -264,8 +264,8 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
             .setResultSizeDirty(thisOrAnyChildrenDirty(builder, mappedChildren))
             .build(userCache, validationLevel, thisStrategy))
               .addChildNodes(mappedChildren, node -> true)));
-      return getMapFromList(stepTree.findAll(node -> true), node ->
-          new TwoTuple<Long,Step>(node.getContents().getStepId(), node.getContents()));
+      return getMapFromList(stepTree.findAll(node -> true), node -> new TwoTuple<>(
+          node.getContents().getStepId(), node.getContents()));
     }
     catch (Exception e) {
       return WdkModelException.unwrap(e);
@@ -318,7 +318,7 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
           .map(param -> step.getParamValue(param.getName()))
           .collect(Collectors.toList())) {
         if (FormatUtil.isInteger(paramValue)) { // skip if non-numeric; param will fail validation
-          Long childStepId = Long.valueOf(paramValue);
+          long childStepId = Long.parseLong(paramValue);
           node.addChildNode(buildTree(steps, childStepId));
         }
       }

@@ -1,27 +1,10 @@
 package org.gusdb.wdk.model.user;
 
-import static org.gusdb.fgputil.functional.Functions.defaultOnException;
-import static org.gusdb.fgputil.functional.Functions.filterInPlace;
-import static org.gusdb.fgputil.functional.Functions.getMapFromList;
-import static org.gusdb.fgputil.functional.Functions.getNthOrNull;
-import static org.gusdb.wdk.model.user.StepContainer.parentOf;
-import static org.gusdb.wdk.model.user.StepContainer.withId;
-
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Stack;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.ValidationUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.validation.ValidObjectFactory;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
@@ -30,11 +13,7 @@ import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.events.StepRevisedEvent;
-import org.gusdb.wdk.model.MDCUtil;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.*;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
@@ -50,6 +29,12 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.*;
+
+import static org.gusdb.fgputil.functional.Functions.*;
+import static org.gusdb.wdk.model.user.StepContainer.parentOf;
+import static org.gusdb.wdk.model.user.StepContainer.withId;
 
 /**
  * @author Charles Treatman
@@ -196,8 +181,9 @@ public class Step implements StrategyElement, Validateable<Step> {
     }
 
     public Step build(UserCache userCache, ValidationLevel validationLevel, Strategy strategy) throws WdkModelException {
-      if (!((strategy == null && _strategyId == null) || (strategy != null && strategy.getStrategyId() == _strategyId))) {
-        throw new WdkRuntimeException("Strategy passed to build (ID=" + strategy.getStrategyId() +
+      if (!((strategy == null && _strategyId == null) || (strategy != null &&
+          strategy.getStrategyId().equals(_strategyId)))) {
+        throw new WdkRuntimeException("Strategy passed to build (ID=" + strategy.getStrategyId() + // FIXME: strategy could be null here, possible NPE
             ") does not match ID set on step builder (ID=" + _strategyId + ").");
       }
       if (_answerSpec == null) {
@@ -327,16 +313,17 @@ public class Step implements StrategyElement, Validateable<Step> {
   private final boolean _isResultSizeDirty;
 
   /**
-   * Creates a step object for given user and step ID. Note that this constructor lazy-loads the User object
-   * for the passed ID if one is required for processing after construction.
+   * Creates a step object for given user and step ID. Note that this
+   * constructor lazy-loads the User object for the passed ID if one is required
+   * for processing after construction.
    *
-   * @param stepFactory
-   *          step factory that generated this step
-   * @param userId
-   *          id of the owner of this step
-   * @param stepId
-   *          id of the step
-   * @throws WdkModelException
+   * @param user            Owner of this step
+   * @param strategy        Strategy this step belongs to
+   * @param builder         Step builder containing this step's property values
+   * @param validationLevel level to which this step should be validated
+   *
+   * @throws WdkModelException if this step does not pass the given validation
+   * level
    */
   private Step(User user, Strategy strategy, StepBuilder builder, ValidationLevel validationLevel) throws WdkModelException {
     _user = user;
@@ -345,10 +332,10 @@ public class Step implements StrategyElement, Validateable<Step> {
     _stepId = builder._stepId;
     _createdTime = builder._createdTime;
     _lastRunTime = builder._lastRunTime;
-    _customName = trimName(builder._customName);
+    _customName = checkName("customName", builder._customName);
     _isDeleted = builder._isDeleted;
     _isCollapsible = builder._isCollapsible;
-    _collapsedName = trimName(builder._collapsedName);
+    _collapsedName = checkName("collapsedName", builder._collapsedName);
     _projectId = builder._projectId;
     _projectVersion = builder._projectVersion;
     _estimatedSize = builder._estimatedSize;
@@ -368,14 +355,16 @@ public class Step implements StrategyElement, Validateable<Step> {
         throw new WdkModelException("Step " + _stepId + " does not have a strategy but has answer param values.");
       }
     }
-    else if ((getSecondaryInputStepParam() != null && getSecondaryInputStepId() == 0) ||
-             (getPrimaryInputStepParam() != null && getPrimaryInputStepId() == 0)) {
+    else if ((getSecondaryInputStepParam().isPresent() && getSecondaryInputStepId() == 0) ||
+             (getPrimaryInputStepParam().isPresent() && getPrimaryInputStepId() == 0)) {
       throw new WdkModelException("Step " + _stepId + " is part of a strategy but at least one answer param does not have a value.");
     }
   }
 
-  private static String trimName(String nameValue) {
-    return nameValue == null ? null : FormatUtil.shrinkUtf8String(nameValue, NAME_COLUMN_MAX_SIZE);
+  private static String checkName(String field, String val) throws WdkModelException {
+    return ValidationUtil.maxLength(val, NAME_COLUMN_MAX_SIZE, () ->
+        new WdkModelException(String.format("Step field '%s' cannot be longer" +
+            " than %d", field, NAME_COLUMN_MAX_SIZE)));
   }
 
   // TODO: remove this when we retire StepBean
@@ -406,26 +395,34 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   /**
-   * Finds this step's question's answer param at the passed ordinal (0 or 1 since a maximum of 2 answer
-   * params are supported), then finds that param's value in the answer spec and asks this step's step
-   * container (typically a strategy) to find that step by ID.  Returns null if step cannot be found.
+   * Finds this step's question's answer param at the passed ordinal (0 or 1
+   * since a maximum of 2 answer params are supported), then finds that param's
+   * value in the answer spec and asks this step's step container (typically a
+   * strategy) to find that step by ID.  Returns null if step cannot be found.
    *
-   * @param answerParamOrdinal index of the answer param whose value should be used to look up step
+   * @param answerParamOrdinal index of the answer param whose value should be
+   *                           used to look up step
+   *
    * @return the found step, or null if not found
    */
   private Optional<Step> findAnswerParamsStep(int answerParamOrdinal) {
     AnswerParam param = getNthOrNull(_answerSpec.getQuestion().getQuery().getAnswerParams(), answerParamOrdinal);
-    if (!_answerSpec.hasValidQuestion()) return null;
+
+    if (!_answerSpec.hasValidQuestion())
+      return Optional.empty();
+
     QueryInstanceSpec spec = _answerSpec.getQueryInstanceSpec();
-    String stableValue = spec.get(param.getName());
-    if (stableValue == null) return null;
-    long stepId = AnswerParam.toStepId(stableValue);
-    return getContainer().findFirstStep(withId(stepId));
+    String stableValue = spec.get(param.getName()); // FIXME: param comes from getNthOrNull which may return null, which would make this a possible NPE.
+
+    if (stableValue == null)
+      return Optional.empty();
+
+    return getContainer().findFirstStep(withId(AnswerParam.toStepId(stableValue)));
   }
 
   /**
-   * Basic getter than just returns the current value for this field without checks, lazy loading, or side
-   * effects (e.g., database updates)
+   * Basic getter than just returns the current value for this field without
+   * checks, lazy loading, or side effects (e.g., database updates)
    *
    * @return "current" estimate size as shown in DB
    */
@@ -441,7 +438,7 @@ public class Step implements StrategyElement, Validateable<Step> {
    */
   @Deprecated
   public int getCalculatedEstimateSize() {
-    return defaultOnException(() -> getResultSize(), 0);
+    return defaultOnException(this::getResultSize, 0);
   }
 
   /**
@@ -582,13 +579,9 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   /**
-   * @return Returns the customName. If no custom name set before, it will return the default name provided by
-   *         the underline AnswerValue - a combination of question's full name, parameter names and values.
-   * @throws WdkModelException
-   * @throws SQLException
-   * @throws JSONException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
+   * @return Returns the customName. If no custom name set before, it will
+   *         return the default name provided by the underline AnswerValue - a
+   *         combination of question's full name, parameter names and values.
    */
   public String getCustomName() {
     String name = _customName;
@@ -607,8 +600,8 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   /**
-   * @return Returns the custom name, if it is set. Otherwise, returns the short display name for the
-   *         underlying question.
+   * @return Returns the custom name, if it is set. Otherwise, returns the short
+   *         display name for the underlying question.
    */
   public String getShortDisplayName() {
     Question question = _answerSpec.getQuestion();
@@ -617,7 +610,8 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   public String getDisplayName() {
     Question question = _answerSpec.getQuestion();
-    return question == null ? (_customName != null ? _customName : _answerSpec.getQuestionName())
+    return question == null
+        ? (_customName != null ? _customName : _answerSpec.getQuestionName())
         : question.getDisplayName();
   }
 
@@ -632,7 +626,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   // FIXME: is this really how we should define this method; maybe should be dependent on # of AnswerParam
   public boolean isBoolean() {
     Question question = _answerSpec.getQuestion();
-    return question == null ? false : question.isBoolean();
+    return question != null && question.isBoolean();
   }
 
   /**
@@ -644,7 +638,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   // FIXME: is this really how we should define this method; maybe should be dependent on # of AnswerParam
   public boolean isCombined() {
     Question question = _answerSpec.getQuestion();
-    return question == null ? false : question.isCombined();
+    return question != null && question.isCombined();
   }
 
   /**
@@ -655,7 +649,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   // FIXME: is this really how we should define this method; maybe should be dependent on # of AnswerParam
   public boolean isTransform() {
     Question question = _answerSpec.getQuestion();
-    return question == null ? false : question.isTransform();
+    return question != null && question.isTransform();
   }
 
   // saves attributes of the step that do NOT impact results or parent steps
@@ -670,7 +664,9 @@ public class Step implements StrategyElement, Validateable<Step> {
   // saves param values AND filter values (AND step name and maybe other things)
   public void writeParamFiltersToDb() throws WdkModelException {
     // get Step as it is in the DB (FIXME: we should be tracking this in memory)
-    Step dbStep = _wdkModel.getStepFactory().getStepById(getStepId()).orElseThrow(() -> new WdkModelException());
+    Step dbStep = _wdkModel.getStepFactory()
+        .getStepById(getStepId())
+        .orElseThrow(WdkModelException::new);
     saveParamFilters(dbStep);
   }
 
@@ -696,13 +692,14 @@ public class Step implements StrategyElement, Validateable<Step> {
     List<Long> stepIds = stepFactory.getStepAndParents(getStepId());
     filterInPlace(stepIds, candidateStepId ->
         // keep unless id is for this step
-        getStepId() != candidateStepId.longValue());
+        getStepId() != candidateStepId);
 
     // alert listeners that this step has been revised and await results
     Events.triggerAndWait(new StepRevisedEvent(this, unmodifiedVersion),
         new WdkModelException("Unable to process all StepRevised events for revised step " + getStepId()));
 
-    // alert listeners that the step results have changed for these steps and wait for completion
+    // alert listeners that the step results have changed for these steps and
+    // wait for completion
     Events.triggerAndWait(new StepResultsModifiedEvent(stepIds),
         new WdkModelException("Unable to process all StepResultsModified events for step IDs: " +
             FormatUtil.arrayToString(stepIds.toArray())));
@@ -712,12 +709,12 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   /**
-   * Refreshes some key fields of this step with the current values in the DB. This is to support outside
-   * modification of the step by event listeners. If a listener modifies the step in response to a change we
-   * made, we will want to reflect these secondary changes in this current execution flow.
+   * Refreshes some key fields of this step with the current values in the DB.
+   * This is to support outside modification of the step by event listeners. If
+   * a listener modifies the step in response to a change we made, we will want
+   * to reflect these secondary changes in this current execution flow.
    *
-   * @throws WdkModelException
-   *           if unable to load updated step
+   * @throws WdkModelException if unable to load updated step
    */
   private void refreshAnswerSpec() throws WdkModelException {
     Step step = _wdkModel.getStepFactory().getStepById(getStepId())
@@ -741,7 +738,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     if (_isCollapsible)
       return true;
     // it is true if the step is a branch
-    return (getParentStep() != null && isCombined());
+    return (getParentStep().isPresent() && isCombined());
   }
 
   public String getCollapsedName() {
@@ -751,8 +748,10 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   public Map<String, String> getParamNames() {
-    return _answerSpec.getQuestion() == null ? new LinkedHashMap<String, String>()
-        : getMapFromList(_answerSpec.getQuestion().getQuery().getParamMap().values(),
+    return _answerSpec.getQuestion() == null
+        ? new LinkedHashMap<>()
+        : getMapFromList(
+            _answerSpec.getQuestion().getQuery().getParamMap().values(),
             param -> new TwoTuple<>(param.getName(), param.getPrompt()));
   }
 
@@ -765,20 +764,21 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   /* functions for navigating/manipulating step tree */
-  public Step getStep(int index) throws WdkModelException {
+  public Step getStep(int index) {
     List<Step> steps = getMainBranch();
     return steps.get(index);
   }
 
   /**
-   * Get all the previous steps in the strategy. This doesn't include any child steps.
+   * Get all the previous steps in the strategy. This doesn't include any child
+   * steps.
    *
-   * @return A list of the previous steps from the current one; the first step in the strategy will be the
-   *         first one in the list, and the direct previous step of the current one will be the last in the
-   *         list, in that order.
-   * @throws WdkModelException
+   * @return A list of the previous steps from the current one; the first step
+   *         in the strategy will be the first one in the list, and the direct
+   *         previous step of the current one will be the last in the list, in
+   *         that order.
    */
-  public List<Step> getMainBranch() throws WdkModelException {
+  public List<Step> getMainBranch() {
     LinkedList<Step> list = new LinkedList<>();
     list.add(this);
     Step previousStep = getPrimaryInputStep();
@@ -789,17 +789,17 @@ public class Step implements StrategyElement, Validateable<Step> {
     return list;
   }
 
-  public int getLength() throws WdkModelException {
+  public int getLength() {
     return getMainBranch().size();
   }
 
   /**
-   * Get all the descendants from the current step, including both previous steps and child steps.
+   * Get all the descendants from the current step, including both previous
+   * steps and child steps.
    *
    * @return
-   * @throws WdkModelException
    */
-  public List<Step> getNestedBranch() throws WdkModelException {
+  public List<Step> getNestedBranch() {
     List<Step> list = new ArrayList<>(); // a list to hold all descendants.
     Stack<Step> stack = new Stack<>();
     stack.push(this);
@@ -817,7 +817,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     return list;
   }
 
-  public Step getStepByPreviousId(int previousId) throws WdkModelException {
+  public Step getStepByPreviousId(int previousId) {
     LOG.debug("gettting step by prev id. current=" + this + ", input=" + previousId);
     Step target;
     if (getPrimaryInputStepId() == previousId) {
@@ -844,7 +844,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     return _answerSpec.hasValidQuestion() ? null : _answerSpec.getQuestion().getRecordClass();
   }
 
-  public int getIndexFromId(int stepId) throws WdkUserException, WdkModelException {
+  public int getIndexFromId(int stepId) throws WdkUserException {
     List<Step> steps = getMainBranch();
     for (int i = 0; i < steps.size(); ++i) {
       Step step = steps.get(i);
@@ -869,7 +869,8 @@ public class Step implements StrategyElement, Validateable<Step> {
     }
 
     AnswerFilterInstance defaultFilter = question.getRecordClass().getDefaultFilter();
-    return defaultFilter == null ? true : !defaultFilter.getName().equals(filter.getName());
+    return defaultFilter == null ||
+        !defaultFilter.getName().equals(filter.getName());
   }
 
   public String getFilterDisplayName() {
@@ -965,13 +966,11 @@ public class Step implements StrategyElement, Validateable<Step> {
   public Optional<AnswerParam> getPrimaryInputStepParam() {
     if (!hasValidQuestion())
       return Optional.empty();
-    Param[] params = _answerSpec.getQuestion().getParams();
-    for (Param param : params) {
-      if (param instanceof AnswerParam) {
-        return Optional.of((AnswerParam) param);
-      }
-    }
-    return Optional.empty();
+
+    return Arrays.stream(_answerSpec.getQuestion().getParams())
+        .filter(AnswerParam.class::isInstance)
+        .findFirst()
+        .map(AnswerParam.class::cast);
   }
 
   /**
@@ -1003,7 +1002,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     return getSecondaryInputStepParam().map(NamedObject::getName);
   }
 
-  public int getFrontId() throws WdkUserException, WdkModelException, SQLException, JSONException {
+  public int getFrontId() {
     int frontId;
     Step previousStep = getPrimaryInputStep();
     if (previousStep == null)
@@ -1054,10 +1053,10 @@ public class Step implements StrategyElement, Validateable<Step> {
    * WdkUserException will be thrown out
    *
    * @param previousStep
-   * @throws WdkModelException
    * @throws WdkUserException
    */
-  public void checkIfPassedStepAllowedAsPrimaryInput(Step previousStep) throws WdkModelException, WdkUserException {
+  public void checkIfPassedStepAllowedAsPrimaryInput(Step previousStep) throws
+      WdkUserException {
     // make sure the current step can take any previous step.
     if (!isCombined())
       throw new WdkUserException("The step #" + getStepId() + " cannot take any step as its previousStep.");
@@ -1077,9 +1076,8 @@ public class Step implements StrategyElement, Validateable<Step> {
    *
    * @param childStep
    * @throws WdkUserException
-   * @throws WdkModelException
    */
-  public void checkIfPassedStepAllowedAsSecondaryInput(Step childStep) throws WdkUserException, WdkModelException {
+  public void checkIfPassedStepAllowedAsSecondaryInput(Step childStep) throws WdkUserException {
     // check if the current step can take any child steps.
     if (!isCombined() || isTransform())
       throw new WdkUserException("The step #" + getStepId() + " cannot take any step as its childStep.");
@@ -1108,11 +1106,12 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   public boolean hasAnswerParams() {
-    return !hasValidQuestion() ? false : _answerSpec.getQuestion().getQuery().getAnswerParamCount() > 0;
+    return hasValidQuestion() &&
+        _answerSpec.getQuestion().getQuery().getAnswerParamCount() > 0;
   }
 
   public boolean isAnswerSpecComplete() {
-    return hasAnswerParams() ? _strategy != null : true;
+    return !hasAnswerParams() || _strategy != null;
   }
 
   @Override
