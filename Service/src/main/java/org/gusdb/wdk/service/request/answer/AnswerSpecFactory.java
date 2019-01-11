@@ -16,7 +16,6 @@ import org.gusdb.wdk.model.answer.spec.ParamValue;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.FilterOption;
 import org.gusdb.wdk.model.filter.FilterOptionList;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
@@ -81,12 +80,11 @@ public class AnswerSpecFactory {
    * @return answer request object constructed
    * @throws RequestMisformatException if JSON is malformed
    */
-  public static AnswerSpec createFromJson(JSONObject json, WdkModelBean modelBean, User user, boolean expectIncompleteSpec) throws DataValidationException, RequestMisformatException {
+  public static AnswerSpec createFromJson(JSONObject json, WdkModel model, User user, boolean expectIncompleteSpec) throws DataValidationException, RequestMisformatException {
     try {
       // get question name, validate, and create instance with valid Question
       String questionName = json.getString(JsonKeys.QUESTION_NAME);
-      modelBean.validateQuestionFullName(questionName);
-      WdkModel model = modelBean.getModel();
+      model.validateQuestionFullName(questionName);
       Question question = model.getQuestion(questionName);
       AnswerSpec request = new AnswerSpec(question);
       // params are required (empty array if no params)

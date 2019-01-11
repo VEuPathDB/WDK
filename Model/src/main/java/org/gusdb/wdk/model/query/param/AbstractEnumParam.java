@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.query.param;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -14,13 +15,14 @@ import java.util.Stack;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
+import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.wdk.model.FieldTree;
+import org.gusdb.wdk.model.SelectableItem;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -558,12 +560,34 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     //   ", countOnlyLeaves = " + getCountOnlyLeaves());
     if (_displayType != null && _displayType.equals(DISPLAY_TREEBOX) && getCountOnlyLeaves()) {
       EnumParamTermNode[] rootNodes = getVocabInstance(user, contextParamValues).getVocabTreeRoots();
-      FieldTree tree = EnumParamBean.getParamTree(getName(), rootNodes);
-      EnumParamBean.populateParamTree(tree, terms);
+      FieldTree tree = getParamTree(getName(), rootNodes);
+      populateParamTree(tree, terms);
       return tree.getSelectedLeaves().size();
     }
     // otherwise, just count up terms and compare to max
     return terms.length;
+  }
+
+  public static FieldTree getParamTree(String treeName, EnumParamTermNode[] rootNodes) {
+    FieldTree tree = new FieldTree(new SelectableItem(treeName, "top"));
+    TreeNode<SelectableItem> root = tree.getRoot();
+    for (EnumParamTermNode paramNode : rootNodes) {
+      if (paramNode.getChildren().length == 0) {
+        root.addChild(new SelectableItem(paramNode.getTerm(), paramNode.getDisplay(), paramNode.getDisplay()));
+      }
+      else {
+        root.addChildNode(paramNode.toFieldTree().getRoot());
+      }
+    }
+    return tree;
+  }
+
+  public static void populateParamTree(FieldTree tree, String[] values) {
+    if (values != null && values.length > 0) {
+      List<String> currentValueList = Arrays.asList(values);
+      tree.setSelectedLeaves(currentValueList);
+      tree.addDefaultLeaves(currentValueList);
+    }
   }
 
   /**

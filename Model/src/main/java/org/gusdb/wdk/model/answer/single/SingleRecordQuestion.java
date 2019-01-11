@@ -12,7 +12,6 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.question.DynamicAttributeSet;
@@ -48,7 +47,7 @@ public class SingleRecordQuestion extends Question {
           SINGLE_RECORD_QUESTION_NAME_PREFIX.length(),
           questionName.length() - SINGLE_RECORD_QUESTION_NAME_SUFFIX.length());
       try {
-        new WdkModelBean(wdkModel).validateRecordClassName(recordClassName);
+        wdkModel.validateRecordClassName(recordClassName);
         parts.recordClass = wdkModel.getRecordClass(recordClassName);
         parts.isValid = true;
       }

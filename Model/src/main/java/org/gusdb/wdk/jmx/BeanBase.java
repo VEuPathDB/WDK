@@ -2,8 +2,8 @@ package org.gusdb.wdk.jmx;
 
 import javax.servlet.ServletContext;
 
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * Parent abstract class for most WDK-related MBeans. Provides
@@ -11,17 +11,12 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  */
 public abstract class BeanBase {
 
-  private WdkModelBean _wdkModelBean;
+  private WdkModel _wdkModel;
   private ServletContext _context;
-
-  // matches value of org.gusdb.wdk.controller.CConstants.WDK_MODEL_KEY .
-  // Controller classes are not available until after Model is compiled;
-  // so, not available for import here.
-  public final static String WDK_MODEL_KEY = "wdkModel";
 
   protected BeanBase() {
     _context = ContextThreadLocal.get();
-    _wdkModelBean = (WdkModelBean)_context.getAttribute(WDK_MODEL_KEY);
+    _wdkModel = (WdkModel)_context.getAttribute(Utilities.WDK_MODEL_KEY);
   }
 
   public ServletContext getContext() {
@@ -29,10 +24,6 @@ public abstract class BeanBase {
   }
 
   public WdkModel getWdkModel() {
-    return _wdkModelBean.getModel();
-  }
-
-  public WdkModelBean getWdkModelBean() {
-    return _wdkModelBean;
+    return _wdkModel;
   }
 }

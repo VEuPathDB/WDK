@@ -69,7 +69,7 @@ public class StepService extends UserService {
   public Response createStep(@QueryParam("runStep") Boolean runStep, JSONObject jsonBody) throws WdkModelException, DataValidationException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      StepRequest stepRequest = StepRequest.newStepFromJson(jsonBody, getWdkModelBean(), user);
+      StepRequest stepRequest = StepRequest.newStepFromJson(jsonBody, getWdkModel(), user);
 
       // validate the step and throw a DataValidation exception if not valid
       // new step are, by definition, not part of a strategy
@@ -110,7 +110,7 @@ public class StepService extends UserService {
     try {
       Step step = getStepForCurrentUser(stepId);
       JSONObject patchJson = new JSONObject(body);
-      StepRequest stepRequest = StepRequest.patchStepFromJson(step, patchJson, getWdkModelBean(), getSessionUser());
+      StepRequest stepRequest = StepRequest.patchStepFromJson(step, patchJson, getWdkModel(), getSessionUser());
       StepChanges changes = updateStep(step, stepRequest);
 
       // save parts of step that changed

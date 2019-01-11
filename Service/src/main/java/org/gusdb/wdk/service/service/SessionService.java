@@ -20,14 +20,16 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.events.Events;
 import org.gusdb.wdk.core.api.JsonKeys;
+import org.gusdb.wdk.events.NewUserEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkCookie;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfig.AuthenticationMethod;
-import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
@@ -87,8 +89,8 @@ public class SessionService extends AbstractWdkService {
     String redirectUrl = isEmpty(originalUrl) ? appUrl : originalUrl;
 
     // Is the user already logged in?
-    User user = getSessionUser();
-    if (!user.isGuest()) {
+    User oldUser = getSessionUser();
+    if (!oldUser.isGuest()) {
       return createRedirectResponse(appUrl + ALREADY_LOGGED_IN_URL).build();
     }
 
@@ -114,14 +116,14 @@ public class SessionService extends AbstractWdkService {
 
       // Is there a matching user id for the auth code provided?
       long userId = client.getUserIdFromAuthCode(authCode, getContextUri());
-      user = userFactory.login(user, userId);
-      if (user == null) {
+      User newUser = userFactory.login(oldUser, userId);
+      if (newUser == null) {
         throw new WdkModelException("Unable to find user with ID " + userId +
             ", returned by OAuth service with auth code " + authCode);
       }
 
       // login successful; create redirect response
-      return getSuccessResponse(user, redirectUrl, true);
+      return getSuccessResponse(newUser, oldUser, redirectUrl, true);
     }
     catch (Exception ex) {
       LOG.error("Unsuccessful login attempt:  " + ex.getMessage(), ex);
@@ -151,14 +153,14 @@ public class SessionService extends AbstractWdkService {
       String redirectUrl = !isEmpty(originalUrl) ? originalUrl : !isEmpty(referrer) ? referrer : appUrl;
 
       // Is the user already logged in?
-      User user = getSessionUser();
-      if (!user.isGuest()) {
+      User oldUser = getSessionUser();
+      if (!oldUser.isGuest()) {
         return createRedirectResponse(appUrl + ALREADY_LOGGED_IN_URL).build();
       }
 
       // log in the user and return JSON response
-      user = wdkModel.getUserFactory().login(user, request.getEmail(), request.getPassword());
-      return getSuccessResponse(user, redirectUrl, false);
+      User newUser = wdkModel.getUserFactory().login(oldUser, request.getEmail(), request.getPassword());
+      return getSuccessResponse(newUser, oldUser, redirectUrl, false);
 
     }
     catch (JSONException e) {
@@ -173,21 +175,28 @@ public class SessionService extends AbstractWdkService {
   /**
    * Sets the passed user on the session and packages a successful login response with a login cookie
    *
-   * @param user newly logged in user
+   * @param newUser newly logged in user
+   * @param oldUser user previously on session, if any
    * @param redirectUrl incoming original page
    * @param isRedirectResponse whether to return redirect or JSON response
    * @return success response
    * @throws WdkModelException
    */
-  private Response getSuccessResponse(User user, String redirectUrl, boolean isRedirectResponse) throws WdkModelException {
-    getSession().setAttribute(Utilities.WDK_USER_KEY, new UserBean(user));
-    LoginCookieFactory baker = new LoginCookieFactory(getWdkModel().getModelConfig().getSecretKey());
-    Cookie loginCookie = baker.createLoginCookie(user.getEmail(), true);
-    redirectUrl = getSuccessRedirectUrl(redirectUrl, user, loginCookie);
-    return (isRedirectResponse ?
+  private Response getSuccessResponse(User newUser, User oldUser,
+      String redirectUrl, boolean isRedirectResponse) throws WdkModelException {
+    HttpSession session = getSession();
+    synchronized(session) {
+      session.setAttribute(Utilities.WDK_USER_KEY, newUser);
+      Events.triggerAndWait(new NewUserEvent(newUser, oldUser, session),
+          new WdkRuntimeException("Unable to complete WDK user assignement."));
+      LoginCookieFactory baker = new LoginCookieFactory(getWdkModel().getModelConfig().getSecretKey());
+      Cookie loginCookie = baker.createLoginCookie(newUser.getEmail(), true);
+      redirectUrl = getSuccessRedirectUrl(redirectUrl, newUser, loginCookie);
+      return (isRedirectResponse ?
         createRedirectResponse(redirectUrl) :
         createJsonResponse(true, null, redirectUrl)
-    ).cookie(CookieConverter.toJaxRsCookie(loginCookie)).build();
+      ).cookie(CookieConverter.toJaxRsCookie(loginCookie)).build();
+    }
   }
 
   /**
@@ -206,14 +215,18 @@ public class SessionService extends AbstractWdkService {
   @Path("logout")
   public Response processLogout() throws WdkModelException {
 
-    // invalidate any existing session, then add new guest user to session
+    // get the current session's user, then invalidate the session
+    User oldUser = getSessionUser();
+    getSession().invalidate();
+    
+    // get a new session and add new guest user to it
     HttpSession session = getSession();
-    if (session != null) {
-      session.invalidate();
-    }
-    session = getSession(true);
-    User user = getWdkModel().getUserFactory().createUnregistedUser(UnregisteredUserType.GUEST);
-    session.setAttribute(Utilities.WDK_USER_KEY, new UserBean(user));
+    User newUser = getWdkModel().getUserFactory().createUnregistedUser(UnregisteredUserType.GUEST);
+    session.setAttribute(Utilities.WDK_USER_KEY, newUser);
+
+    // throw new user event
+    Events.triggerAndWait(new NewUserEvent(newUser, oldUser, session), 
+        new WdkRuntimeException("Unable to complete WDK user assignement."));
 
     // create and append logout cookies to response
     Set<Cookie> logoutCookies = new HashSet<>();
