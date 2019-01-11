@@ -29,7 +29,7 @@ public interface StepContainer {
     return new StepContainer(){};
   }
 
-  public static class ListStepContainer extends ArrayList<Step> implements StepContainer {
+  class ListStepContainer extends ArrayList<Step> implements StepContainer {
     public ListStepContainer(Step... steps) {
       super(Arrays.asList(steps));
     }
@@ -61,5 +61,4 @@ public interface StepContainer {
     return findFirstStep(search).orElseThrow(() -> // throws exception with the proper message
         new NoSuchElementException("This container does not contain a step " + search.getDescription()));
   }
-
 }
