@@ -48,7 +48,7 @@ public class StrategyFormatter {
   protected static JSONObject getStepsJson(Step step) throws WdkModelException, JSONException {
     if(step == null) return new JSONObject();
     return StepFormatter.getStepJsonWithEstimatedSize(step)
-        .put(JsonKeys.LEFT_STEP, getStepsJson(step.getPrimaryInputStep()))
-        .put(JsonKeys.RIGHT_STEP, getStepsJson(step.getSecondaryInputStep()));
+        .put(JsonKeys.PRIMARY_INPUT_STEP, getStepsJson(step.getPrimaryInputStep()))
+        .put(JsonKeys.SECONDARY_INPUT_STEP, getStepsJson(step.getSecondaryInputStep()));
   }
 }

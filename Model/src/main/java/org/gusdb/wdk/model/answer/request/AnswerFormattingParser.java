@@ -15,7 +15,7 @@ public interface AnswerFormattingParser extends FunctionWithException<JSONObject
   @Override
   AnswerFormatting apply(JSONObject input) throws JSONException;
 
-  AnswerFormatting createFromTopLevelObject(String requestBody) throws JSONException;
+  AnswerFormatting createFromTopLevelObject(JSONObject requestBody) throws JSONException;
 
   AnswerFormattingParser SPECIFIED_REPORTER_PARSER = new AnswerFormattingParser() {
     @Override
@@ -26,10 +26,10 @@ public interface AnswerFormattingParser extends FunctionWithException<JSONObject
           JsonUtil.getJsonObjectOrDefault(formatting, FORMAT_CONFIG_KEY, null));
     }
     @Override
-    public AnswerFormatting createFromTopLevelObject(String requestBody) throws JSONException {
+    public AnswerFormatting createFromTopLevelObject(JSONObject requestBody) throws JSONException {
       // wrap input in an object wrapper, making the requestBody the value of the "formatting" property,
       // then pass to regular parser
-      return apply(new JSONObject().put(FORMATTING_KEY, new JSONObject(requestBody)));
+      return apply(new JSONObject().put(FORMATTING_KEY, requestBody));
     }
   };
 
@@ -41,10 +41,9 @@ public interface AnswerFormattingParser extends FunctionWithException<JSONObject
           JsonUtil.getJsonObjectOrDefault(input, FORMAT_CONFIG_KEY, null));
     }
     @Override
-    public AnswerFormatting createFromTopLevelObject(String requestBody) throws JSONException {
+    public AnswerFormatting createFromTopLevelObject(JSONObject requestBody) throws JSONException {
       return new AnswerFormatting(
-          DefaultJsonReporter.WDK_SERVICE_JSON_REPORTER_RESERVED_NAME,
-          (requestBody == null || requestBody.trim().isEmpty()) ? null : new JSONObject(requestBody));
+          DefaultJsonReporter.WDK_SERVICE_JSON_REPORTER_RESERVED_NAME, requestBody);
     }
   };
 }

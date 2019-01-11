@@ -66,6 +66,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -128,8 +129,6 @@ public class StepFactory {
     _userDbPlatform = userDb.getPlatform();
     _userSchema = _wdkModel.getModelConfig().getUserDB().getUserSchema();
   }
-
-
 
   public Step createStep(User user, SemanticallyValid<AnswerSpec> validSpec, String customName,
       boolean isCollapsible, String collapsedName) throws WdkModelException {
@@ -664,9 +663,12 @@ public class StepFactory {
 
     // create stub strategy- will not be saved to DB; used only to create and
     // validate steps
-    Strategy stratStub = Strategy.builder(user.getWdkModel(), user.getUserId(), 0)
-        .addSteps(stepBuilders)
-        .build(new UserCache(user), ValidationLevel.NONE);
+    Strategy stratStub = Functions.mapException(
+        () -> Strategy.builder(user.getWdkModel(), user.getUserId(), 0)
+          .addSteps(stepBuilders)
+          .build(new UserCache(user), ValidationLevel.NONE),
+          // tree structure should already have been validated when creating the passed in strategy
+          e -> new WdkModelException(e));
 
     // now that strategy is created (which will be returned), clean up steps for
     // saving to DB
@@ -709,7 +711,8 @@ public class StepFactory {
     Map<Long, StepBuilder> newStepMap = copyStepTree(user, oldStrategy.getRootStep()).toMap();
 
     // construct the new strategy
-    Strategy newStrategy = Strategy
+    Strategy newStrategy = Functions.mapException(() ->
+      Strategy
         .builder(wdkModel, user.getUserId(), strategyId)
         .setCreatedTime(new Date())
         .setDeleted(false)
@@ -724,7 +727,9 @@ public class StepFactory {
         .setSignature(signature)
         .setVersion(wdkModel.getVersion())
         .addSteps(newStepMap.values())
-        .build(new UserCache(user), ValidationLevel.RUNNABLE);
+        .build(new UserCache(user), ValidationLevel.RUNNABLE),
+      // tree structure should already have been validated when creating the passed in strategy
+      e -> new WdkModelException(e));
 
     // persist new strategy and all steps to the DB
     try (Connection conn = _userDbDs.getConnection()){
@@ -864,6 +869,15 @@ public class StepFactory {
       .forEach(batch::add);
 
     new SQLRunner(con, buildInsertStepSQL()).executeStatementBatch(batch);
+  }
+
+  public void insertStrategy(Strategy newStrategy) throws WdkModelException {
+    try(Connection conn = _userDbDs.getConnection()) {
+      insertStrategy(conn, newStrategy);
+    }
+    catch(SQLException e) {
+      throw new WdkModelException(e);
+    }
   }
 
   private void insertStrategy(Connection connection, Strategy newStrategy) {
@@ -1113,7 +1127,11 @@ public class StepFactory {
       throw new WdkUserException("The strategy #" + strategy.getStrategyId() +
           " of user " + user.getEmail() + " cannot be found.");
 
-    return builder.build(new UserCache(user), strategy.getRootStep().getValidationBundle().getLevel());
+    return Functions.mapException(() ->
+      builder.build(new UserCache(user), strategy.getValidationBundle().getLevel()),
+      // tree structure should already have been validated when creating the passed in strategy
+      e -> new WdkModelException(e));
+
   }
 
   public long getNewStrategyId() throws WdkModelException {
@@ -1131,7 +1149,7 @@ public class StepFactory {
   // object exists, all of this data is already in the db.
   public Strategy createStrategy(User user, Step root, String name,
       String savedName, boolean saved, String description, boolean hidden,
-      boolean isPublic) throws WdkModelException {
+      boolean isPublic) throws WdkModelException, InvalidStrategyStructureException {
     long strategyId = (root.getStrategyId() == null)
         ? getNewStrategyId()
         : root.getStrategyId();
@@ -1141,7 +1159,7 @@ public class StepFactory {
 
   Strategy createStrategy(User user, long strategyId, Step root, String newName,
       String savedName, boolean saved, String description, boolean hidden,
-      boolean isPublic) throws WdkModelException {
+      boolean isPublic) throws WdkModelException, InvalidStrategyStructureException {
 
     final String projectId = _wdkModel.getProjectId();
 

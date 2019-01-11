@@ -208,9 +208,8 @@ public class JsonKeys {
   public static final String IS_SAVED = "isSaved";
   public static final String IS_VALID = "isValid";
   public static final String INVALID_REASONS = "invalidReasons";
-  public static final String IS_HIDDEN = "isHidden";
   public static final String IS_DELETED = "isDeleted";
   public static final String ROOT_STEP = "root";
-  public static final String LEFT_STEP = "left";
-  public static final String RIGHT_STEP = "right";
+  public static final String PRIMARY_INPUT_STEP = "primaryInput";
+  public static final String SECONDARY_INPUT_STEP = "secondaryInput";
 }

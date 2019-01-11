@@ -58,24 +58,9 @@ public class StepRequestParser {
     }
   }
 
-  // these props are sent in a step response but are invalid in POST and PATCH
-  private static final String[] INVALID_EDIT_PROPS = {
-      JsonKeys.ID,
-      JsonKeys.DISPLAY_NAME,
-      JsonKeys.SHORT_DISPLAY_NAME,
-      JsonKeys.BASE_CUSTOM_NAME,
-      JsonKeys.DESCRIPTION,
-      JsonKeys.OWNER_ID,
-      JsonKeys.STRATEGY_ID,
-      JsonKeys.ESTIMATED_SIZE,
-      JsonKeys.HAS_COMPLETE_STEP_ANALYSES,
-      JsonKeys.RECORD_CLASS_NAME
-  };
-
   public static NewStepRequest newStepFromJson(JSONObject stepJson, WdkModel wdkModel, User user)
       throws RequestMisformatException, DataValidationException, WdkModelException {
     try {
-      checkForInvalidProps(stepJson);
       SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(
           stepJson.getJSONObject(JsonKeys.ANSWER_SPEC), wdkModel, user, StepContainer.emptyContainer());
       AnswerSpec spec = validSpec.getObject();
@@ -113,11 +98,6 @@ public class StepRequestParser {
   public static Step updateStepMeta(Step step, JSONObject patchSet)
       throws WdkModelException, RequestMisformatException {
     try {
-      checkForInvalidProps(patchSet);
-      if (patchSet.has(JsonKeys.ANSWER_SPEC)) {
-        throw new RequestMisformatException("Answer Spec can only be modified by executing a PUT against /steps/{id}/answerSpec");
-      }
-
       StepBuilder newStep = Step.builder(step);
 
       if(patchSet.has(JsonKeys.CUSTOM_NAME))
@@ -163,13 +143,5 @@ public class StepRequestParser {
       }
     }
     return validSpec;
-  }
-
-  private static void checkForInvalidProps(JSONObject stepJson) throws RequestMisformatException {
-    for (String badProp : INVALID_EDIT_PROPS) {
-      if (stepJson.has(badProp)) {
-        throw new RequestMisformatException("JSON property " + badProp + " is disallowed. Only the service can assign this value.");
-      }
-    }
   }
 }
