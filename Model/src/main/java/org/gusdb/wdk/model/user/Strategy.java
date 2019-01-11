@@ -171,7 +171,8 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
       return this;
     }
 
-    public Strategy build(UserCache userCache, ValidationLevel validationLevel) throws WdkModelException {
+    public Strategy build(UserCache userCache, ValidationLevel validationLevel)
+        throws WdkModelException, InvalidStrategyStructureException {
       return new Strategy(this, userCache.get(_userId), validationLevel);
     }
   }
@@ -203,7 +204,9 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
   private final Map<Long, Step> _stepMap;
   private final ValidationBundle _validationBundle;
 
-  private Strategy(StrategyBuilder strategyBuilder, User user, ValidationLevel validationLevel) throws WdkModelException {
+  private Strategy(StrategyBuilder strategyBuilder, User user,
+      ValidationLevel validationLevel)
+          throws WdkModelException, InvalidStrategyStructureException {
     _user = user;
     _wdkModel = strategyBuilder._wdkModel;
     _strategyId = strategyBuilder._strategyId;
@@ -227,28 +230,31 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
   }
 
   private Map<Long, Step> buildSteps(User user, long rootStepId, Map<Long, StepBuilder> steps,
-      ValidationLevel validationLevel) throws WdkModelException {
+      ValidationLevel validationLevel) throws InvalidStrategyStructureException, WdkModelException {
 
     // Confirm project and user id match across strat and all steps, and that steps were properly assigned
     for (StepBuilder step : steps.values()) {
       String identifier = "Step " + step.getStepId();
       if (_user.getUserId() != step.getUserId()) {
-        throw new WdkModelException(identifier + " does not have the same owner as its strategy, " + _strategyId);
+        throw new InvalidStrategyStructureException(identifier + " does not have the same owner as its strategy, " + _strategyId);
       }
       if (!_projectId.equals(step.getProjectId())) {
-        throw new WdkModelException(identifier + " does not have the same project as its strategy, " + _strategyId);
+        throw new InvalidStrategyStructureException(identifier + " does not have the same project as its strategy, " + _strategyId);
       }
       Long stepStratId = step.getStrategyId();
       if (stepStratId == null || _strategyId != stepStratId) {
-        throw new WdkModelException(identifier + " was given to strategy " + _strategyId + " but belongs to strategy " + stepStratId + " (i.e. SQL is broken).");
+        throw new InvalidStrategyStructureException(identifier + " was given to strategy " + _strategyId + " but belongs to strategy " + stepStratId + " (i.e. SQL is broken).");
       }
     }
 
     // temporarily build an actual tree of the steps from a copy of the step map
     Map<Long, StepBuilder> stepMap = new HashMap<>(steps); // make a copy since buildTree modifies
     TreeNode<StepBuilder> builderTree = buildTree(stepMap, rootStepId);
+    if (!builderTree.findCircularPaths().isEmpty()) {
+      throw new InvalidStrategyStructureException("Strategy " + _strategyId + "'s tree has at least one circular dependency.");
+    }
     if (!stepMap.isEmpty()) {
-      throw new WdkModelException("Strategy " + _strategyId + " has been " +
+      throw new InvalidStrategyStructureException("Strategy " + _strategyId + " has been " +
           "assigned the following steps which are not referenced in its tree: " +
           join(stepMap.values().stream().map(StepBuilder::getStepId), ", "));
     }
@@ -291,8 +297,9 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
   private TreeNode<StepBuilder> buildTree(Map<Long, StepBuilder> steps, long stepId) throws WdkModelException {
     StepBuilder step = steps.get(stepId);
     if (step == null) {
-      throw new WdkModelException("Step " + stepId + " is referenced in the" +
-          " tree of strategy " + _strategyId + " but has not been assigned to that strategy.");
+      throw new WdkModelException("Step " + stepId + ", referenced in the" +
+          " tree of strategy " + _strategyId + " has either not been assigned " +
+          " to that strategy or has been assigned more than once.");
     }
     // create a node for this step and remove from the map
     TreeNode<StepBuilder> node = new TreeNode<>(step);

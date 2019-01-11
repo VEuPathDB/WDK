@@ -121,13 +121,8 @@ public class StepService extends UserService {
   public void updateStepMeta(@PathParam(ID_PARAM) long stepId,
       JSONObject body) throws WdkModelException, RequestMisformatException {
     if (body.length() != 0) {
-      try {
-        Step step = StepRequestParser.updateStepMeta(getStepForCurrentUser(stepId, ValidationLevel.NONE), body);
-        getWdkModel().getStepFactory().updateStep(step);
-      }
-      catch (JSONException e) {
-        throw new BadRequestException(e);
-      }
+      Step step = StepRequestParser.updateStepMeta(getStepForCurrentUser(stepId, ValidationLevel.NONE), body);
+      getWdkModel().getStepFactory().updateStep(step);
     }
   }
 
@@ -157,7 +152,7 @@ public class StepService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.steps.answer.post-request")
-  public Response createDefaultReporterAnswer(@PathParam(ID_PARAM) long stepId, String body)
+  public Response createDefaultReporterAnswer(@PathParam(ID_PARAM) long stepId, JSONObject body)
       throws WdkModelException, RequestMisformatException, DataValidationException {
     return createAnswer(stepId, body, DEFAULT_REPORTER_PARSER);
   }
@@ -165,7 +160,7 @@ public class StepService extends UserService {
   @POST
   @Path(ID_PATH + "/answer/report")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response createAnswer(@PathParam(ID_PARAM) long stepId, String body)
+  public Response createAnswer(@PathParam(ID_PARAM) long stepId, JSONObject body)
       throws WdkModelException, RequestMisformatException, DataValidationException {
     return createAnswer(stepId, body, SPECIFIED_REPORTER_PARSER);
   }
@@ -176,35 +171,31 @@ public class StepService extends UserService {
   // TODO: @InSchema(...)
   public void putAnswerSpec(
       @PathParam(ID_PARAM) long stepId,
-      String body
+      JSONObject body
   ) throws WdkModelException, DataValidationException, RequestMisformatException {
-    try {
-      User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      Step existingStep = getStepForCurrentUser(stepId, ValidationLevel.NONE);
-      SemanticallyValid<AnswerSpec> newSpec = StepRequestParser.getReplacementAnswerSpec(
-          existingStep, new JSONObject(body), getWdkModel(), user);
-      StepBuilder replacementBuilder = Step.builder(existingStep)
-          .setAnswerSpec(AnswerSpec.builder(newSpec));
 
-      if (existingStep.hasStrategy()) {
-        // need to replace and update whole strategy to cover effects
-        getWdkModel().getStepFactory().updateStrategy(Strategy
-            .builder(existingStep.getStrategy())
-            .addStep(replacementBuilder)
-            .build(new UserCache(user), ValidationLevel.SEMANTIC)
-            .getSemanticallyValid()
-            .getOrThrow(strat -> new DataValidationException(
-                "The passed answer spec is not semantically valid."))
-            .getObject());
-      }
-      else {
-        // no strategy present; only need to update the step
-        getWdkModel().getStepFactory().updateStep(replacementBuilder.build(
-            new UserCache(user), ValidationLevel.SEMANTIC, null));
-      }
+    User user = getUserBundle(Access.PRIVATE).getSessionUser();
+    Step existingStep = getStepForCurrentUser(stepId, ValidationLevel.NONE);
+    SemanticallyValid<AnswerSpec> newSpec = StepRequestParser.getReplacementAnswerSpec(
+        existingStep, body, getWdkModel(), user);
+    StepBuilder replacementBuilder = Step.builder(existingStep)
+        .setAnswerSpec(AnswerSpec.builder(newSpec));
+
+    if (existingStep.hasStrategy()) {
+      // need to replace and update whole strategy to cover effects
+      getWdkModel().getStepFactory().updateStrategy(Strategy
+          .builder(existingStep.getStrategy())
+          .addStep(replacementBuilder)
+          .build(new UserCache(user), ValidationLevel.SEMANTIC)
+          .getSemanticallyValid()
+          .getOrThrow(strat -> new DataValidationException(
+              "The passed answer spec is not semantically valid."))
+          .getObject());
     }
-    catch (JSONException e) {
-      throw new RequestMisformatException(e.getMessage());
+    else {
+      // no strategy present; only need to update the step
+      getWdkModel().getStepFactory().updateStep(replacementBuilder.build(
+          new UserCache(user), ValidationLevel.SEMANTIC, null));
     }
   }
 
@@ -229,35 +220,31 @@ public class StepService extends UserService {
         "This step is not runnable for the following reasons: " + badStep.getValidationBundle().toString());
   }
 
-  private Response createAnswer(long stepId, String requestBody, AnswerFormattingParser formattingParser)
+  private Response createAnswer(long stepId, JSONObject requestBody, AnswerFormattingParser formattingParser)
       throws WdkModelException, RequestMisformatException, DataValidationException {
-    try {
-      User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      StepFactory stepFactory = new StepFactory(getWdkModel());
-      RunnableObj<Step> runnableStep = stepFactory
-          .getStepById(stepId, ValidationLevel.RUNNABLE)
-          .orElseThrow(NotFoundException::new)
-          .getRunnable()
-          .getOrThrow(StepService::getNotRunnableException);
 
-      AnswerRequest request = new AnswerRequest(
-          Step.getRunnableAnswerSpec(runnableStep),
-          formattingParser.createFromTopLevelObject(requestBody));
-      TwoTuple<AnswerValue, Response> result = AnswerService.getAnswerResponse(user, request);
+    User user = getUserBundle(Access.PRIVATE).getSessionUser();
+    StepFactory stepFactory = new StepFactory(getWdkModel());
+    RunnableObj<Step> runnableStep = stepFactory
+        .getStepById(stepId, ValidationLevel.RUNNABLE)
+        .orElseThrow(NotFoundException::new)
+        .getRunnable()
+        .getOrThrow(StepService::getNotRunnableException);
 
-      // update the estimated size and last-run time on this step
-      stepFactory.updateStep(
-        Step.builder(runnableStep.getObject())
-          .setEstimatedSize(result.getFirst().getResultSizeFactory().getDisplayResultSize())
-          .setLastRunTime(new Date())
-          .build(new UserCache(runnableStep.getObject().getUser()),
-              ValidationLevel.NONE, runnableStep.getObject().getStrategy()));
+    AnswerRequest request = new AnswerRequest(
+        Step.getRunnableAnswerSpec(runnableStep),
+        formattingParser.createFromTopLevelObject(requestBody));
+    TwoTuple<AnswerValue, Response> result = AnswerService.getAnswerResponse(user, request);
 
-      return result.getSecond();
-    }
-    catch (JSONException e) {
-      throw new RequestMisformatException(e.getMessage());
-    }
+    // update the estimated size and last-run time on this step
+    stepFactory.updateStep(
+      Step.builder(runnableStep.getObject())
+        .setEstimatedSize(result.getFirst().getResultSizeFactory().getDisplayResultSize())
+        .setLastRunTime(new Date())
+        .build(new UserCache(runnableStep.getObject().getUser()),
+            ValidationLevel.NONE, runnableStep.getObject().getStrategy()));
+
+    return result.getSecond();
   }
 
   private Step getStepForCurrentUser(long stepId, ValidationLevel level) throws WdkModelException {
