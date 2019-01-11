@@ -158,7 +158,7 @@ public class QuestionSummaryReporter extends BaseCLI {
   private static void loadQuestions(WdkModel wdkModel,
       Map<String, QuestionInfo> questionInfos) {
     String projectId = wdkModel.getProjectId();
-    for (QuestionSet questionSet : wdkModel.getQuestionSets().values()) {
+    for (QuestionSet questionSet : wdkModel.getQuestionSetsMap().values()) {
       for (Question question : questionSet.getQuestions()) {
         QuestionInfo questionInfo = questionInfos.get(question.getFullName());
         if (questionInfo == null) {

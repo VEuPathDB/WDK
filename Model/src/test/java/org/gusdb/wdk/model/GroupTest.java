@@ -2,11 +2,9 @@ package org.gusdb.wdk.model;
 
 import java.util.Map;
 
-import org.gusdb.wdk.model.jspwrap.GroupBean;
-import org.gusdb.wdk.model.jspwrap.ParamBean;
-import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.question.QuestionSet;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -94,13 +92,12 @@ public class GroupTest {
 
     @Test
     public void testGetParamGroups() throws Exception {
-        WdkModelBean wdkModelBean = new WdkModelBean(wdkModel);
-        for (QuestionSetBean questionSet : wdkModelBean.getQuestionSets()) {
-            for(QuestionBean question : questionSet.getQuestions()) {
-                Map<String, ParamBean<?>> params = question.getParamsMap();
+        for (QuestionSet questionSet : wdkModel.getQuestionSetsMap().values()) {
+            for(Question question : questionSet.getQuestions()) {
+                Map<String, Param> params = question.getParamMap();
                 if (params.size() == 0) continue;
                 
-                Map<GroupBean, Map<String, ParamBean<?>>> groups = question.getParamMapByGroups();
+                Map<Group, Map<String, Param>> groups = question.getParamMapByGroups();
                 Assert.assertTrue(groups.size() > 0); 
             }
         }

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
@@ -15,7 +12,6 @@ import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.ListDatasetParser;
-import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -244,8 +240,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
       Long sv = Long.valueOf(stableValue);
       logger.debug("User: " + user + ", sv: " + sv + "stable: " + stableValue);
       dataset = datasetFactory.getDataset(user, sv);
-      DatasetBean bean = new DatasetBean(dataset);
-      requestParams.setAttribute(_param.getName() + Param.RAW_VALUE_SUFFIX, bean);
+      requestParams.setAttribute(_param.getName() + Param.RAW_VALUE_SUFFIX, dataset);
     }
 
     // get data

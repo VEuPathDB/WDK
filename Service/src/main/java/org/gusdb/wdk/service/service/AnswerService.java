@@ -17,6 +17,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -24,7 +25,6 @@ import org.gusdb.wdk.model.answer.request.AnswerFormatting;
 import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 import org.gusdb.wdk.model.report.ReporterConfigException;
@@ -106,7 +106,7 @@ public class AnswerService extends AbstractWdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   // Produces an unknown media type; varies depending on reporter selected
   public Response buildResult(String body) throws WdkModelException, DataValidationException, RequestMisformatException {
-    AnswerRequest request = parseAnswerRequest(body, getWdkModelBean(), getSessionUser(), SPECIFIED_REPORTER_PARSER);
+    AnswerRequest request = parseAnswerRequest(body, getWdkModel(), getSessionUser(), SPECIFIED_REPORTER_PARSER);
     return getAnswerResponse(getSessionUser(), request);
   }
 
@@ -125,11 +125,11 @@ public class AnswerService extends AbstractWdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response buildDefaultReporterResult(String body) throws RequestMisformatException, WdkModelException, DataValidationException {
-    AnswerRequest request = parseAnswerRequest(body, getWdkModelBean(), getSessionUser(), DEFAULT_REPORTER_PARSER);
+    AnswerRequest request = parseAnswerRequest(body, getWdkModel(), getSessionUser(), DEFAULT_REPORTER_PARSER);
     return getAnswerResponse(getSessionUser(), request);
   }
 
-  public static AnswerRequest parseAnswerRequest(String requestBody, WdkModelBean wdkModel,
+  public static AnswerRequest parseAnswerRequest(String requestBody, WdkModel wdkModel,
       User sessionUser, AnswerFormattingParser formatParser)
       throws RequestMisformatException, DataValidationException {
     if (requestBody == null || requestBody.isEmpty()) {
@@ -187,7 +187,7 @@ public class AnswerService extends AbstractWdkService {
   public Response displayFilterResults(@PathParam("filterName") String filterName, String body) throws WdkModelException, WdkUserException, DataValidationException {
     JSONObject requestJson = new JSONObject(body);
     JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
-    AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, getWdkModelBean(), getSessionUser(), false);
+    AnswerSpec answerSpec = AnswerSpecFactory.createFromJson(answerSpecJson, getWdkModel(), getSessionUser(), false);
     AnswerValue answerValue = new AnswerValueFactory(getSessionUser()).createFromAnswerSpec(answerSpec);
     JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
     return Response.ok(filterSummaryJson.toString()).build();

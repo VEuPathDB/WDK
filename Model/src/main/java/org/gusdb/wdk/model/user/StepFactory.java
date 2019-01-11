@@ -1603,7 +1603,7 @@ public class StepFactory {
     }
   }
 
-  public int getStrategyCount(User user) throws WdkModelException {
+  public int getStrategyCount(long userId) throws WdkModelException {
     try {
       String sql =
         "SELECT st.question_name" +
@@ -1614,7 +1614,7 @@ public class StepFactory {
         " AND st." + COLUMN_STEP_ID + " = sr.root_step_id";
       Wrapper<Integer> result = new Wrapper<>();
       new SQLRunner(_userDbDs, sql, "wdk-step-factory-strategy-count").executeQuery(
-        new Object[]{ user.getUserId(), _wdkModel.getProjectId() },
+        new Object[]{ userId, _wdkModel.getProjectId() },
         new Integer[]{ Types.BIGINT, Types.VARCHAR },
         rs -> {
           int count = 0;

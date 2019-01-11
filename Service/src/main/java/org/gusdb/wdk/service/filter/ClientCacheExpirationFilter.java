@@ -13,19 +13,20 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
 
 @Priority(40)
 public class ClientCacheExpirationFilter implements ContainerRequestFilter {
 
   private static final String CLIENT_WDK_TIMESTAMP_HEADER = "x-client-wdk-timestamp";
   private static final String TIMESTAMP_CONFLICT_MESSAGE_ENTITY = "WDK-TIMESTAMP-MISMATCH";
-  
-  private WdkModelBean _wdkModelBean;
+
+  private WdkModel _wdkModel;
 
   @Context
   protected void setServletContext(ServletContext context) {
-    _wdkModelBean = ((WdkModelBean)context.getAttribute("wdkModel"));
+    _wdkModel = (WdkModel)context.getAttribute(Utilities.WDK_MODEL_KEY);
   }
 
   @Override
@@ -38,8 +39,8 @@ public class ClientCacheExpirationFilter implements ContainerRequestFilter {
     if (incomingTimestamp == null) return;
 
     // get current server timestamp of WDK model
-    String modelTimestamp = String.valueOf(_wdkModelBean.getModel().getStartupTime());
-    
+    String modelTimestamp = String.valueOf(_wdkModel.getStartupTime());
+
     if (!incomingTimestamp.equals(modelTimestamp)) {
       requestContext.abortWith(Response
           .status(Status.CONFLICT)
