@@ -3,6 +3,7 @@ package org.gusdb.wdk.service.formatter.param;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 import org.gusdb.fgputil.Named.NamedObject;
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -23,7 +24,7 @@ public class ParamFormatter<T extends Param> {
   /**
    * @throws WdkModelException if error occurs while collecting information 
    */
-  public JSONObject getJson(QueryInstanceSpec spec) throws WdkModelException {
+  public JSONObject getJson(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
     return getBaseJson(spec);
   }
 
@@ -35,7 +36,7 @@ public class ParamFormatter<T extends Param> {
    * @throws WdkModelException if system problem occurs
    * @throws WdkUserException if data in param is invalid for some reason
    */
-  protected JSONObject getBaseJson(QueryInstanceSpec spec) {
+  protected JSONObject getBaseJson(SemanticallyValid<QueryInstanceSpec> spec) {
     JSONObject pJson = new JSONObject();
     pJson.put(JsonKeys.NAME, _param.getName());
     pJson.put(JsonKeys.DISPLAY_NAME, _param.getPrompt());
@@ -47,7 +48,7 @@ public class ParamFormatter<T extends Param> {
     pJson.put(JsonKeys.DEPENDENT_PARAMS, new JSONArray(
         mapToList(_param.getDependentParams(), NamedObject::getName)));
     pJson.put(JsonKeys.DEFAULT_VALUE, _param.getXmlDefault());
-    pJson.put(JsonKeys.STABLE_VALUE, spec.get(_param.getName()));
+    pJson.put(JsonKeys.STABLE_VALUE, spec.getObject().get(_param.getName()));
     return pJson;
   }
 

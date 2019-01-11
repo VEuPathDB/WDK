@@ -54,6 +54,6 @@ public class TemporaryResultService extends AbstractWdkService {
       }
       throw new NotFoundException(formatNotFound("temporary result with ID '" + id + "'"));
     }
-    return AnswerService.getAnswerResponse(getSessionUser(), savedRequest);
+    return AnswerService.getAnswerResponse(getSessionUser(), savedRequest).getSecond();
   }
 }

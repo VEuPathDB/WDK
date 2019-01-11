@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
@@ -55,10 +56,10 @@ public class QuestionFormatter {
     return reduce(questions, (arr, next) -> arr.put(getQuestionJson(next)), new JSONArray());
   }
 
-  public static JSONObject getQuestionJsonWithParamValues(AnswerSpec spec)
+  public static JSONObject getQuestionJsonWithParamValues(SemanticallyValid<AnswerSpec> spec)
       throws JSONException, WdkModelException {
-    return getQuestionJson(spec.getQuestion())
-        .put(JsonKeys.PARAMETERS, getParamsJson(spec.getQueryInstanceSpec()));
+    return getQuestionJson(spec.getObject().getQuestion())
+        .put(JsonKeys.PARAMETERS, getParamsJson(AnswerSpec.getValidQueryInstanceSpec(spec)));
   }
 
   public static JSONObject getQuestionJson(Question q) {
@@ -98,14 +99,14 @@ public class QuestionFormatter {
     return answerParam.map(param -> new JSONArray(param.getAllowedRecordClasses().values())).orElse(null);
   }
 
-  public static JSONArray getParamsJson(QueryInstanceSpec spec) throws WdkModelException {
+  public static JSONArray getParamsJson(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
     return getParamsJson(spec, param -> true);
   }
 
-  public static JSONArray getParamsJson(QueryInstanceSpec spec,
+  public static JSONArray getParamsJson(SemanticallyValid<QueryInstanceSpec> spec,
       Predicate<Param> inclusionPredicate) throws WdkModelException {
     JSONArray paramsJson = new JSONArray();
-    for (Param param : spec.getQuery().getParams()) {
+    for (Param param : spec.getObject().getQuery().getParams()) {
       if (inclusionPredicate.test(param)) {
         paramsJson.put(ParamFormatterFactory.getFormatter(param).getJson(spec));
       }

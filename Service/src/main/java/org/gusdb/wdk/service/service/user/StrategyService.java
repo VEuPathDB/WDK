@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.*;
+import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
@@ -204,6 +206,7 @@ public class StrategyService extends UserService {
           break;
         case JsonKeys.SAVED_NAME:
           build.setSavedName(change.getString(key));
+          break;
         case JsonKeys.IS_SAVED:
           build.setSaved(change.getBoolean(key));
           break;
@@ -216,8 +219,8 @@ public class StrategyService extends UserService {
       }
     }
 
-    return build.build(getUserBundle(Access.PRIVATE).getSessionUser(),
-        validationLevel);
+    return build.build(new UserCache(getUserBundle(Access.PRIVATE).getSessionUser()),
+        ValidationLevel.NONE);
   }
 
   /**

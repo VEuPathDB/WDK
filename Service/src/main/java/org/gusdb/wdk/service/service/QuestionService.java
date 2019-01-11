@@ -27,6 +27,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
+import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -104,14 +105,17 @@ public class QuestionService extends AbstractWdkService {
   public Response getQuestionNew(
       @PathParam("questionName") String questionName)
           throws WdkModelException {
-    AnswerSpec spec = AnswerSpec.builder(getWdkModel())
+    SemanticallyValid<AnswerSpec> validSpec = AnswerSpec.builder(getWdkModel())
         .setQuestionName(getQuestionFromSegment(questionName).getFullName())
         .build(
             getSessionUser(), 
             StepContainer.emptyContainer(),
             ValidationLevel.SEMANTIC,
-            FillStrategy.FILL_PARAM_IF_MISSING);
-    return Response.ok(QuestionFormatter.getQuestionJsonWithParamValues(spec).toString()).build();
+            FillStrategy.FILL_PARAM_IF_MISSING)
+        .getSemanticallyValid()
+        .getOrThrow(spec -> new WdkModelException("Default values for question '" +
+            questionName + "' are not semantically valid."));
+    return Response.ok(QuestionFormatter.getQuestionJsonWithParamValues(validSpec).toString()).build();
   }
 
   /**
@@ -144,15 +148,17 @@ public class QuestionService extends AbstractWdkService {
       String body)
           throws WdkModelException, RequestMisformatException, DataValidationException {
     Question question = getQuestionFromSegment(questionName);
-    AnswerSpec spec = AnswerSpec.builder(getWdkModel())
+    SemanticallyValid<AnswerSpec> answerSpec = AnswerSpec.builder(getWdkModel())
         .setQuestionName(question.getFullName())
         .setParamValues(QuestionRequest.parse(body, question).getContextParamValues())
         .build(
             getSessionUser(), 
             StepContainer.emptyContainer(),
             ValidationLevel.SEMANTIC,
-            FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID);
-    return Response.ok(QuestionFormatter.getQuestionJsonWithParamValues(spec).toString()).build();
+            FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID)
+        .getSemanticallyValid()
+        .getOrThrow(spec -> new WdkModelException("Unable to produce a valid spec from incoming param values"));
+    return Response.ok(QuestionFormatter.getQuestionJsonWithParamValues(answerSpec).toString()).build();
   }
 
   /**
@@ -205,17 +211,20 @@ public class QuestionService extends AbstractWdkService {
 
     // Build an answer spec with the passed values but replace missing/invalid
     // values with defaults.  Will remove unaffected params below.
-    AnswerSpec answerSpec = AnswerSpec.builder(getWdkModel())
+    SemanticallyValid<AnswerSpec> answerSpec = AnswerSpec.builder(getWdkModel())
         .setQuestionName(question.getFullName())
         .setParamValues(contextParams)
         .build(
             getSessionUser(),
             StepContainer.emptyContainer(),
             ValidationLevel.SEMANTIC,
-            FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID);
+            FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID)
+        .getSemanticallyValid()
+        .getOrThrow(spec -> new WdkModelException("Unable to produce a valid spec from incoming param values"));
 
     // see if changed param value changed during build; if so, then invalid
-    if (!answerSpec.getQueryInstanceSpec().get(changedParam.getName()).equals(changedParamEntry.getValue())) {
+    if (!answerSpec.getObject().getQueryInstanceSpec()
+        .get(changedParam.getName()).equals(changedParamEntry.getValue())) {
       // means the build process determined the incoming changed param value to
       // be invalid and changed it to the default; this is disallowed, so throw
       // TODO: figure out an elegant way to tell the user WHY the value is invalid
@@ -225,12 +234,13 @@ public class QuestionService extends AbstractWdkService {
 
     // get stale params of the changed value; if any of these are invalid, also throw exception
     Set<Param> staleDependentParams = changedParam.getStaleDependentParams();
-    Map<String,List<String>> errors = answerSpec.getValidationBundle().getKeyedErrors();
+    ValidationBundle validation = answerSpec.getObject().getValidationBundle();
+    Map<String,List<String>> errors = validation.getKeyedErrors();
     if (!errors.isEmpty()) {
       for (Param param : staleDependentParams) {
         if (errors.containsKey(param.getName())) {
           throw new WdkModelException("Unable to generate valid values for question " +
-              question.getFullName() + FormatUtil.NL + answerSpec.getValidationBundle().toString());
+              question.getFullName() + FormatUtil.NL + validation.toString());
         }
       }
     }
@@ -239,7 +249,7 @@ public class QuestionService extends AbstractWdkService {
     // may have inadvertently changed (if incoming values were invalid) but the
     // client should only be modifying params that depend on the changed param
     List<String> paramsToOutput = mapToList(staleDependentParams, NamedObject::getName);
-    JSONArray output = QuestionFormatter.getParamsJson(answerSpec.getQueryInstanceSpec(),
+    JSONArray output = QuestionFormatter.getParamsJson(AnswerSpec.getValidQueryInstanceSpec(answerSpec),
         param -> paramsToOutput.contains(param.getName()));
     return Response.ok(output.toString()).build();
   }

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.OntologyItem;
@@ -27,7 +28,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
   }
 
   @Override
-  public JSONObject getJson(QueryInstanceSpec spec) throws WdkModelException {
+  public JSONObject getJson(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
     JSONObject pJson = getBaseJson(spec);
 
     pJson.put("filterDataTypeDisplayName", _filterParam.getFilterDataTypeDisplayName());
@@ -41,7 +42,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
     return pJson;
   }
 
-  public JSONArray getOntologyJson(QueryInstanceSpec spec) throws JSONException, WdkModelException {
+  public JSONArray getOntologyJson(SemanticallyValid<QueryInstanceSpec> spec) throws JSONException, WdkModelException {
     Map<String, OntologyItem> ontologyMap = _filterParam.getOntology(spec);
     JSONArray ontologyJson = new JSONArray();
     for (String term : ontologyMap.keySet()) {
@@ -61,7 +62,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
     return ontologyJson; 
   }
 
-  public JSONObject getValuesJson(QueryInstanceSpec spec) throws JSONException, WdkModelException {
+  public JSONObject getValuesJson(SemanticallyValid<QueryInstanceSpec> spec) throws JSONException, WdkModelException {
  
     Map<String, Set<String>>  valuesMap = _filterParam.getValuesMap(spec);
 
