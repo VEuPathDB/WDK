@@ -46,7 +46,8 @@ import org.gusdb.wdk.service.formatter.StepFormatter;
 import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
-import org.gusdb.wdk.service.request.strategy.StepRequest;
+import org.gusdb.wdk.service.request.strategy.StepRequestParser;
+import org.gusdb.wdk.service.request.strategy.StepRequestParser.NewStepRequest;
 import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.json.JSONException;
@@ -74,10 +75,10 @@ public class StepService extends UserService {
       throws WdkModelException, DataValidationException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      StepRequest stepRequest = StepRequest.newStepFromJson(jsonBody, getWdkModel(), user);
+      NewStepRequest stepRequest = StepRequestParser.newStepFromJson(jsonBody, getWdkModel(), user);
       Step step = getWdkModel().getStepFactory().createStep(
           user,
-          stepRequest.getAnswerSpec().get(), // if invalid, would have thrown exception
+          stepRequest.getAnswerSpec(),
           stepRequest.getCustomName(),
           stepRequest.isCollapsible(),
           stepRequest.getCollapsedName());
@@ -121,7 +122,7 @@ public class StepService extends UserService {
       JSONObject body) throws WdkModelException, RequestMisformatException {
     if (body.length() != 0) {
       try {
-        Step step = StepRequest.updateStepMeta(getStepForCurrentUser(stepId, ValidationLevel.NONE), body);
+        Step step = StepRequestParser.updateStepMeta(getStepForCurrentUser(stepId, ValidationLevel.NONE), body);
         getWdkModel().getStepFactory().updateStep(step);
       }
       catch (JSONException e) {
@@ -180,7 +181,7 @@ public class StepService extends UserService {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       Step existingStep = getStepForCurrentUser(stepId, ValidationLevel.NONE);
-      SemanticallyValid<AnswerSpec> newSpec = StepRequest.getReplacementAnswerSpec(
+      SemanticallyValid<AnswerSpec> newSpec = StepRequestParser.getReplacementAnswerSpec(
           existingStep, new JSONObject(body), getWdkModel(), user);
       StepBuilder replacementBuilder = Step.builder(existingStep)
           .setAnswerSpec(AnswerSpec.builder(newSpec));

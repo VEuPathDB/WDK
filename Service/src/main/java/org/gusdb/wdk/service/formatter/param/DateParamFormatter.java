@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.formatter.param;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.DateParam;
@@ -13,7 +14,7 @@ public class DateParamFormatter extends ParamFormatter<DateParam> {
   }
 
   @Override
-  public JSONObject getJson(QueryInstanceSpec spec) throws WdkModelException {
+  public JSONObject getJson(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
     return getBaseJson(spec)
         .put(JsonKeys.MIN_DATE, _param.getMinDate())
         .put(JsonKeys.MAX_DATE, _param.getMaxDate());

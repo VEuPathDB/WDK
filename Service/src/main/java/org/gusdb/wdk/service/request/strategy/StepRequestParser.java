@@ -5,8 +5,6 @@ import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.json.JsonUtil.getBooleanOrDefault;
 import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
 
-import java.util.Optional;
-
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -17,17 +15,48 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.StepContainer;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class StepRequest {
+public class StepRequestParser {
+
+  public static class NewStepRequest {
+
+    private final SemanticallyValid<AnswerSpec> _answerSpec;
+    private final String _customName;
+    private final boolean _isCollapsible;
+    private final String _collapsedName;
+
+    public NewStepRequest(SemanticallyValid<AnswerSpec> answerSpec, String customName, boolean isCollapsible, String collapsedName) {
+      _answerSpec = answerSpec;
+      _customName = customName;
+      _isCollapsible = isCollapsible;
+      _collapsedName = collapsedName;
+    }
+
+    public SemanticallyValid<AnswerSpec> getAnswerSpec() {
+      return _answerSpec;
+    }
+
+    public String getCustomName() {
+      return _customName;
+    }
+
+    public boolean isCollapsible() {
+      return _isCollapsible;
+    }
+
+    public String getCollapsedName() {
+      return _collapsedName;
+    }
+  }
 
   // these props are sent in a step response but are invalid in POST and PATCH
   private static final String[] INVALID_EDIT_PROPS = {
@@ -43,7 +72,7 @@ public class StepRequest {
       JsonKeys.RECORD_CLASS_NAME
   };
 
-  public static StepRequest newStepFromJson(JSONObject stepJson, WdkModel wdkModel, User user)
+  public static NewStepRequest newStepFromJson(JSONObject stepJson, WdkModel wdkModel, User user)
       throws RequestMisformatException, DataValidationException, WdkModelException {
     try {
       checkForInvalidProps(stepJson);
@@ -63,7 +92,7 @@ public class StepRequest {
       boolean isCollapsible = getBooleanOrDefault(stepJson, JsonKeys.IS_COLLAPSIBLE, false);
       String collapsedName = getStringOrDefault(stepJson, JsonKeys.COLLAPSED_NAME, customName);
 
-      return new StepRequest(Optional.of(validSpec), customName, isCollapsible, collapsedName);
+      return new NewStepRequest(validSpec, customName, isCollapsible, collapsedName);
     }
     catch (JSONException e) {
       throw new RequestMisformatException("Invalid JSON in step request", e);
@@ -110,31 +139,27 @@ public class StepRequest {
       Step existingStep, JSONObject answerSpecJson, WdkModel wdkModel, User user)
       throws DataValidationException, RequestMisformatException, JSONException, WdkModelException {
 
-    SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(answerSpecJson, wdkModel, user, existingStep.getContainer());
+    SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(
+        answerSpecJson, wdkModel, user, existingStep.getContainer());
     AnswerSpec answerSpec = validSpec.getObject();
 
-    // user cannot change question of an existing step (since # of answer params may change)
+    // user cannot change question of an existing step (since # and type of answer params may change);
+    //   we could check for validity of # and type of answer params in the future; no use case now
     if (!answerSpec.getQuestion().getFullName().equals(
         existingStep.getAnswerSpec().getQuestion().getFullName())) {
       throw new DataValidationException("Question of an existing step cannot be changed.");
     }
+
+    // ensure answer param values are not modified; the strategy service handles
+    //   modification of the strategy tree (i.e. answer param values)
     QueryInstanceSpec updateParams = answerSpec.getQueryInstanceSpec();
     QueryInstanceSpec currentParams = existingStep.getAnswerSpec().getQueryInstanceSpec();
     DataValidationException illegalAnswerParamException =
-        new DataValidationException("Changes to the answer param values are not allowed.");
+        new DataValidationException("Changes to answer param values are not allowed.");
     for (Param param : answerSpec.getQuestion().getQuery().getAnswerParams()) {
-      String updateParamValue = updateParams.get(param.getName());
-      if (existingStep.getStrategy() == null) {
-        // incoming answer params must be "null" = empty strings
-        if (!updateParamValue.equals(AnswerParam.NULL_VALUE)) {
-          throw illegalAnswerParamException;
-        }
-      }
-      else {
-        // incoming answer params must match existing values
-        if (!updateParamValue.equals(currentParams.get(param.getName()))) {
-          throw illegalAnswerParamException;
-        }
+      // incoming answer params must match existing values
+      if (!updateParams.get(param.getName()).equals(currentParams.get(param.getName()))) {
+        throw illegalAnswerParamException;
       }
     }
     return validSpec;
@@ -146,33 +171,5 @@ public class StepRequest {
         throw new RequestMisformatException("JSON property " + badProp + " is disallowed. Only the service can assign this value.");
       }
     }
-  }
-
-  private final Optional<SemanticallyValid<AnswerSpec>> _answerSpec;
-  private final String _customName;
-  private final boolean _isCollapsible;
-  private final String _collapsedName;
-
-  public StepRequest(Optional<SemanticallyValid<AnswerSpec>> answerSpec, String customName, boolean isCollapsible, String collapsedName) {
-    _answerSpec = answerSpec;
-    _customName = customName;
-    _isCollapsible = isCollapsible;
-    _collapsedName = collapsedName;
-  }
-
-  public Optional<SemanticallyValid<AnswerSpec>> getAnswerSpec() {
-    return _answerSpec;
-  }
-
-  public String getCustomName() {
-    return _customName;
-  }
-
-  public boolean isCollapsible() {
-    return _isCollapsible;
-  }
-
-  public String getCollapsedName() {
-    return _collapsedName;
   }
 }

@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.formatter.param;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
@@ -14,7 +15,7 @@ public class TypeAheadParamFormatter extends AbstractEnumParamFormatter {
   }
 
   @Override
-  public JSONObject getJson(QueryInstanceSpec spec) throws WdkModelException {
+  public JSONObject getJson(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
     EnumParamVocabInstance vocabInstance = _param.getVocabInstance(spec);
     return getBaseJson(spec)
         .put(JsonKeys.DEFAULT_VALUE, vocabInstance.getDefaultValue())

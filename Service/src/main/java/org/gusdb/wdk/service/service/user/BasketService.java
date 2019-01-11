@@ -220,7 +220,7 @@ public class BasketService extends UserService {
           .setQuestionName(recordClass.getRealtimeBasketQuestion().getFullName())
           .buildRunnable(getSessionUser(), StepContainer.emptyContainer());
       AnswerRequest request = new AnswerRequest(basketAnswerSpec, formattingParser.createFromTopLevelObject(requestBody));
-      return AnswerService.getAnswerResponse(user, request);
+      return AnswerService.getAnswerResponse(user, request).getSecond();
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.toString());

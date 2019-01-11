@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.SelectableItem;
 import org.gusdb.wdk.model.Utilities;
@@ -362,8 +363,8 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return getVocabInstance(user, contextParamValues).getSanityDefaultValue(sanitySelectMode, getMultiPick(), getSanityDefault());
   }
 
-  public EnumParamVocabInstance getVocabInstance(QueryInstanceSpec spec) {
-    return getVocabInstance(spec, null);
+  public EnumParamVocabInstance getVocabInstance(SemanticallyValid<QueryInstanceSpec> spec) {
+    return getVocabInstance(spec.getObject().getUser(), spec.getObject().toMap());
   }
 
   public String[] getVocab(User user) {
