@@ -1457,24 +1457,6 @@
     </element>
   </define>
 
-  <define name="plugin">
-    <element name="plugin">
-      <ref name="IncludeExclude" />
-      <attribute name="name" />
-      <attribute name="implementation" />
-      <attribute name="view" />
-      <optional>
-        <attribute name="display" />
-      </optional>
-      <optional>
-        <attribute name="description" />
-      </optional>
-      <zeroOrMore>
-        <ref name="property" />
-      </zeroOrMore>
-    </element>
-  </define>
-
   <!-- Schema subtype shared elements -->
   <define name="FieldBaseContents">
     <attribute name="name" />
@@ -1534,7 +1516,6 @@
     </optional>
     <zeroOrMore>
       <choice>
-        <ref name="plugin" />
         <ref name="reporterRef" />
         <element name="filter">
           <ref name="IncludeExclude" />
