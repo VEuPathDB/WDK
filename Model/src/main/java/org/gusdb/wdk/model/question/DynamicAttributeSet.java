@@ -15,8 +15,6 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
-import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
-import org.gusdb.wdk.model.record.attribute.plugin.HistogramAttributePlugin;
 import org.gusdb.wdk.model.report.AttributeReporterRef;
 import org.gusdb.wdk.model.report.reporter.HistogramAttributeReporter;
 
@@ -133,7 +131,7 @@ public class DynamicAttributeSet extends WdkModelBase {
           + "record the higher will be its weight.  To give a search "
           + "a weight, click \"Use Weights\" on the search page, and "
           + "provide the desired weight.");
-      // add an histogram reporter to the weight
+      // add an histogram plugin to the weight
       attribute.addReporterReference(getHistogramAttributeReporterRef());
       attribute.excludeResources(projectId);
       attributeFieldMap.put(Utilities.COLUMN_WEIGHT, attribute);
@@ -198,11 +196,11 @@ public class DynamicAttributeSet extends WdkModelBase {
 
   private AttributeReporterRef getHistogramAttributeReporterRef() {
     AttributeReporterRef reference = new AttributeReporterRef();
-    WdkModelText reporterDescription = new WdkModelText();
-    reporterDescription.setText("Display a histogram of weigh distribution");
+    WdkModelText description = new WdkModelText();
+    description.setText("Display a histogram of weight distribution");
     reference.setName("histogram");
     reference.setDisplayName("Histogram");
-    reference.setDescription(reporterDescription);
+    reference.setDescription(description);
     reference.setImplementation(HistogramAttributeReporter.class.getName());
     return reference;
   }

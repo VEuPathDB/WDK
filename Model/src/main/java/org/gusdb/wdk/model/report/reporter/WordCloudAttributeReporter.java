@@ -13,8 +13,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
-import org.gusdb.wdk.model.record.attribute.plugin.WordCloudAttributePlugin;
-import org.gusdb.wdk.model.record.attribute.plugin.WordTag;
 import org.gusdb.wdk.model.report.AbstractAttributeReporter;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -31,7 +29,7 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
   private static final String NUMBER_PATTERN = "^(\\-)?[\\d\\.]+";
   protected static final String[] COMMON_WORDS = { "and", "are", "was", "were", "the", "that" };
 
-  private static final Logger logger = Logger.getLogger(WordCloudAttributePlugin.class);
+  private static final Logger logger = Logger.getLogger(WordCloudAttributeReporter.class);
 
   private boolean propertiesResolved = false;
   private String splitPattern = "[^a-zA-Z0-9_:]+";

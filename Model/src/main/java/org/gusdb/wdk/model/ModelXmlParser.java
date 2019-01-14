@@ -109,7 +109,6 @@ import org.gusdb.wdk.model.record.attribute.LinkAttributeField;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
-import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.report.AttributeReporterRef;
 import org.gusdb.wdk.model.report.ReporterRef;
 import org.gusdb.wdk.model.user.FavoriteReference;
@@ -969,18 +968,15 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod(prefixIdAttr + "/text", "setText", 0);
     configureNode(digester, prefixIdAttr + "/display", WdkModelText.class, "addDisplay");
     digester.addCallMethod(prefixIdAttr + "/display", "setText", 0);
-    configureAttributePlugins(digester, "primaryKeyAttribute");
     configureAttributeReporters(digester, "primaryKeyAttribute");
 
     // pk column attributes
     configureNode(digester, "*/pkColumnAttribute", PkColumnAttributeField.class, "addAttributeField");
-    configureAttributePlugins(digester, "pkColumnAttribute");
     configureAttributeReporters(digester, "pkColumnAttribute");
 
     // column attributes
     configureNode(digester, "*/columnAttribute", QueryColumnAttributeField.class, "addAttributeField");
     configureNode(digester, "*/columnAttribute/filterRef", FilterReference.class, "addFilterReference");
-    configureAttributePlugins(digester, "columnAttribute");
     configureAttributeReporters(digester, "columnAttribute");
 
     // link attribute
@@ -989,7 +985,6 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod("*/linkAttribute/url", "setText", 0);
     configureNode(digester, "*/linkAttribute/displayText", WdkModelText.class, "addDisplayText");
     digester.addCallMethod("*/linkAttribute/displayText", "setText", 0);
-    configureAttributePlugins(digester, "linkAttribute");
     configureAttributeReporters(digester, "linkAttribute");
 
     // text attribute
@@ -998,17 +993,7 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod("*/textAttribute/text", "setText", 0);
     configureNode(digester, "*/textAttribute/display", WdkModelText.class, "addDisplay");
     digester.addCallMethod("*/textAttribute/display", "setText", 0);
-    configureAttributePlugins(digester, "textAttribute");
     configureAttributeReporters(digester, "textAttribute");
-  }
-
-  private static void configureAttributePlugins(Digester digester, String attribute) {
-    String prefix = "*/" + attribute + "/plugin";
-    // configure plugins for
-    configureNode(digester, prefix, AttributePluginReference.class, "addAttributePluginReference");
-    configureNode(digester, prefix + "/property", WdkModelText.class, "addProperty");
-    digester.addCallMethod(prefix + "/property", "setText", 0);
-
   }
 
   private static void configureAttributeReporters(Digester digester, String attribute) {
