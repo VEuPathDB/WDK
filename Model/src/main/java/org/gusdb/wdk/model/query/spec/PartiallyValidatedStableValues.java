@@ -7,8 +7,6 @@ import org.gusdb.wdk.model.user.User;
 
 public class PartiallyValidatedStableValues extends HashMap<String,String> {
 
-  private static final long serialVersionUID = 1L;
-
   public static class ParamValidity {
 
     private final boolean _isValid;
