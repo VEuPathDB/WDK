@@ -6,10 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelBase;
-import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.*;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -18,8 +15,8 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
-import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
-import org.gusdb.wdk.model.record.attribute.plugin.HistogramAttributePlugin;
+import org.gusdb.wdk.model.report.AttributeReporterRef;
+import org.gusdb.wdk.model.report.reporter.HistogramAttributeReporter;
 
 /**
  * An object representation of the {@code <question>/<dynamicAttributes>}. The
@@ -134,16 +131,8 @@ public class DynamicAttributeSet extends WdkModelBase {
           + "record the higher will be its weight.  To give a search "
           + "a weight, click \"Use Weights\" on the search page, and "
           + "provide the desired weight.");
-
       // add an histogram plugin to the weight
-      AttributePluginReference reference = new AttributePluginReference();
-      reference.setName("histogram");
-      reference.setDisplay("Histogram");
-      reference.setDescription("Display a histogram of weigh distribution");
-      reference.setImplementation(HistogramAttributePlugin.class.getName());
-      reference.setView("/wdk/jsp/results/histogram.jsp");
-      attribute.addAttributePluginReference(reference);
-
+      attribute.addReporterReference(getHistogramAttributeReporterRef());
       attribute.excludeResources(projectId);
       attributeFieldMap.put(Utilities.COLUMN_WEIGHT, attribute);
     }
@@ -203,5 +192,16 @@ public class DynamicAttributeSet extends WdkModelBase {
       }
       field.resolveReferences(wdkModel);
     }
+  }
+
+  private AttributeReporterRef getHistogramAttributeReporterRef() {
+    AttributeReporterRef reference = new AttributeReporterRef();
+    WdkModelText description = new WdkModelText();
+    description.setText("Display a histogram of weight distribution");
+    reference.setName("histogram");
+    reference.setDisplayName("Histogram");
+    reference.setDescription(description);
+    reference.setImplementation(HistogramAttributeReporter.class.getName());
+    return reference;
   }
 }
