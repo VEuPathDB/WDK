@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.record.attribute.plugin;
+package org.gusdb.wdk.model.report.reporter;
 
 import java.util.Comparator;
 import java.util.HashMap;

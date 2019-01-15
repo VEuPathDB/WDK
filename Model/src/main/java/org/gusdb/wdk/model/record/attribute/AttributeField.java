@@ -12,7 +12,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.report.AttributeReporterRef;
 import org.gusdb.wdk.model.report.ReporterRef;
 
@@ -43,9 +42,6 @@ public abstract class AttributeField extends Field implements Cloneable {
   private String _categoryName;
   protected AttributeFieldContainer _container;
 
-  private List<AttributePluginReference> _pluginList = new ArrayList<AttributePluginReference>();
-  private Map<String, AttributePluginReference> _pluginMap;
-  
   private List<AttributeReporterRef> _reporterList = new ArrayList<AttributeReporterRef>();
   private Map<String, AttributeReporterRef> _reporterMap;
 
@@ -151,18 +147,6 @@ public abstract class AttributeField extends Field implements Cloneable {
     return false;
   }
 
-  public void addAttributePluginReference(AttributePluginReference reference) {
-    reference.setAttributeField(this);
-    if (_pluginList != null)
-      _pluginList.add(reference);
-    else
-      _pluginMap.put(reference.getName(), reference);
-  }
-
-  public Map<String, AttributePluginReference> getAttributePlugins() {
-    return new LinkedHashMap<String, AttributePluginReference>(_pluginMap);
-  }
-
   public void addReporterReference(AttributeReporterRef reference) {
     reference.setAttributeField(this);
     if (_reporterList != null)
@@ -179,20 +163,6 @@ public abstract class AttributeField extends Field implements Cloneable {
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
 
-    // exclude attribute plugin references
-    _pluginMap = new LinkedHashMap<String, AttributePluginReference>();
-    for (AttributePluginReference plugin : _pluginList) {
-      if (plugin.include(projectId)) {
-        String name = plugin.getName();
-        if (_pluginMap.containsKey(name))
-          throw new WdkModelException("The plugin '" + name
-              + "' is duplicated in attribute " + _name);
-        plugin.excludeResources(projectId);
-        _pluginMap.put(name, plugin);
-      }
-    }
-    _pluginList = null;
-    
     // exclude reporter references
     _reporterMap = new LinkedHashMap<String, AttributeReporterRef>();
     for (AttributeReporterRef reporter : _reporterList) {
@@ -224,11 +194,6 @@ public abstract class AttributeField extends Field implements Cloneable {
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
 
-    // resolve plugin references
-    for (AttributePluginReference plugin : _pluginMap.values()) {
-      plugin.resolveReferences(wdkModel);
-    }
-    
     // resolve plugin references
     for (ReporterRef reporter : _reporterMap.values()) {
       reporter.resolveReferences(wdkModel);
