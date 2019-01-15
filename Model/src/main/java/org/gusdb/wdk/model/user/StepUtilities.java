@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -388,9 +389,9 @@ public class StepUtilities {
         "No strategy with ID " + strategyId + " exists for user " + user.getUserId()));
   }
 
-  public static Step getStep(User user, long stepId) throws WdkUserException, WdkModelException {
+  public static Step getStep(User user, long stepId, ValidationLevel validationLevel) throws WdkUserException, WdkModelException {
     return user.getWdkModel().getStepFactory()
-        .getStepById(stepId)
+        .getStepById(stepId, validationLevel)
         .filter(step -> step.getUser().getUserId() == user.getUserId())
         .orElseThrow(() -> new WdkUserException(
           "No step with ID " + stepId + " exists for user " + user.getUserId()));
