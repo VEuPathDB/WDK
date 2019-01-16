@@ -28,7 +28,9 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
 
   private static final String PROJECT_ID = "project_id";
   private static final String VOCAB_QUERY_REF_KEY = "vocabQueryRef";
+  private static final String QUERY_FULL_NAME_KEY = "queryFullName";
   private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
+  private static final String PARAM_FULL_NAME_KEY = "paramFullName";
   
   private final User _user;
   private final FlatVocabParam _param;
@@ -43,6 +45,8 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
   public String getCacheKey(Map<String, String> dependedParamValues) throws WdkModelException, JSONException {
     JSONObject cacheKeyJson = new JSONObject();
     cacheKeyJson.put(PROJECT_ID, _vocabQuery.getWdkModel().getProjectId());
+    cacheKeyJson.put(PARAM_FULL_NAME_KEY, _param.getFullName());
+    cacheKeyJson.put(QUERY_FULL_NAME_KEY, _param.getQuery().getFullName());
     cacheKeyJson.put(VOCAB_QUERY_REF_KEY, _vocabQuery.getFullName());
     cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY,
         AbstractDependentParam.getDependedParamValuesJson(dependedParamValues, _param.getDependedParams()));
