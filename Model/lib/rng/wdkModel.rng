@@ -954,6 +954,12 @@
           <data type="boolean" />
         </attribute>
       </optional>
+      <optional>
+        <attribute name="minDate" />
+      </optional>
+      <optional>
+        <attribute name="maxDate" />
+      </optional>
       <zeroOrMore>
         <element name="help">
           <ref name="IncludeExclude" />
