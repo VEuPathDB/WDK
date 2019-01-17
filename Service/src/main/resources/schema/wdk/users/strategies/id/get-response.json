@@ -42,17 +42,18 @@
       "type": "string"
     },
     "estimatedSize": {
-      "type": "integer"
+      "type": "string"
+    },
+    "rootStep": {
+      "$ref": "../../includes/full-step.json"
     }
   },
   "additionalProperties": false,
   "required": [
-    "strategyId",
     "latestStepId",
-    "isPublic",
+    "isDeleted",
     "isSaved",
     "isValid",
-    "isDeleted",
-    "estimatedSize"
+    "isPublic"
   ]
 }
