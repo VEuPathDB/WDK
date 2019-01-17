@@ -29,19 +29,21 @@ public class UserCreationScript {
     public boolean shouldWriteUser() { return getFirst(); }
     public String getEmail() { return getSecond(); }
     public Map<String,String> getOtherProps() { return getThird(); }
+    public String getAttributesString() { return getEmail() + ", " + FormatUtil.prettyPrint(getOtherProps()); }
 
     @Override
     public String toString() {
-      return shouldWriteUser() + ", " + getEmail() + ", " + FormatUtil.prettyPrint(getOtherProps());
+      return shouldWriteUser() + ", " + getAttributesString();
     }
   }
 
   public static void main(String[] args) throws WdkModelException, IOException {
-    if (args.length != 1) {
+    if (!(args.length == 1 || (args.length == 2 && args[1].equalsIgnoreCase("test")))) {
       System.err.println(NL + 
           "USAGE: fgpJava " + UserCreationScript.class.getName() + " <project_id>" + NL + NL +
           "This script will read tab-delimited user properties from stdin" + NL);
     }
+    boolean testOnly = args.length == 2;
     try (WdkModel model = WdkModel.construct(args[0], GusHome.getGusHome());
          BufferedReader in = new BufferedReader(new InputStreamReader(System.in))) {
       List<UserPropertyName> userProps = model.getModelConfig().getAccountDB().getUserPropertyNames();
@@ -49,10 +51,15 @@ public class UserCreationScript {
         UserLine parsedLine = parseLine(in.readLine(), userProps);
         if (parsedLine.shouldWriteUser()) {
           try {
-            User user = model.getUserFactory().createUser(
-                parsedLine.getEmail(), parsedLine.getOtherProps(),
-                Collections.emptyMap(), Collections.emptyMap(), false);
-            System.out.println(user.getUserId() + TAB + user.getEmail());
+            if (testOnly) {
+              System.out.println("Would create user: " + parsedLine.getAttributesString());
+            }
+            else { // create user
+              User user = model.getUserFactory().createUser(
+                  parsedLine.getEmail(), parsedLine.getOtherProps(),
+                  Collections.emptyMap(), Collections.emptyMap(), false);
+              System.out.println(user.getUserId() + TAB + user.getEmail());
+            }
           }
           catch (InvalidEmailException e) {
             System.err.println("Invalid email '" + parsedLine.getEmail() + "': " + e.getMessage());
