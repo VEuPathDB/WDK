@@ -292,7 +292,7 @@ public abstract class QueryInstance<T extends Query> {
     }
     if (errors != null) {
       WdkUserException ex = new ParamValuesInvalidException("In query " + _query.getFullName() + " some of the input parameters are invalid or missing.", errors);
-      LOG.error(ex);
+      LOG.error("At least one invalid param value", ex);
       throw ex;
     }
   }
