@@ -1,3 +1,4 @@
+#% RAML 1.0
 # User Strategy API
 
 get:
@@ -9,39 +10,7 @@ get:
     200:
       body:
         application/json:
-          type: array
-          items:
-            type: object
-            properties:
-              strategyId:
-                type: integer
-                format: int64
-              description:
-                type: string
-              name:
-                type: string
-              author:
-                type: string
-              latestStepId:
-                type: string
-              recordClassName:
-                type: string
-              signature:
-                type: string
-              lastModified:
-                type: string
-              isPublic:
-                type: boolean
-              isSaved:
-                type: boolean
-              isValid:
-                type: boolean
-              isDeleted:
-                type: boolean
-              organization:
-                type: string
-              estimatedSize:
-                type: integer
+          type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/get-response.json
 post:
   description: |
 
@@ -92,12 +61,12 @@ post:
         * Error document telling where and why request failed
   body:
     application/json:
-      type: !include ../../../../../src/main/resources/schema/wdk/users/strategy/post-request.json
+      type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/post-request.json
   responses:
     200:
       body:
         application/json:
-          type: !include ../../../../../src/main/resources/schema/wdk/users/strategy/post-response.json
+          type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/post-response.json
 
 patch:
   description: |
@@ -105,7 +74,7 @@ patch:
         * sets is_deleted flag to true/false in DB (enables undo like favorites)
   body:
     application/json:
-      type:  !include ../../../../../src/main/resources/schema/wdk/users/strategy/patch-request.json
+      type:  !include ../../../../../src/main/resources/schema/wdk/users/strategies/patch-request.json
 
 
 /branches:
