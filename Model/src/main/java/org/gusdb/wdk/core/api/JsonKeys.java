@@ -141,7 +141,7 @@ public class JsonKeys {
   public static final String LEGACY_FILTER_NAME = "legacyFilterName";
   public static final String FILTERS = "filters";
   public static final String VIEW_FILTERS = "viewFilters";
-  public static final String WDK_WEIGHT = "wdk_weight";
+  public static final String WDK_WEIGHT = "wdkWeight";
   public static final String IS_ANSWER_SPEC_COMPLETE = "isAnswerSpecComplete";
   public static final String CREATED_TIME = "createdTime";
   public static final String LAST_RUN_TIME = "lastRunTime";
