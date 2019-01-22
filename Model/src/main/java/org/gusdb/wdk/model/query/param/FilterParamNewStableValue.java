@@ -112,9 +112,9 @@ public class FilterParamNewStableValue {
 
     // run metadata query to find distinct values for each member field
     if (memberFilters.size() != 0) {
-      Set<String> relevantOntologyTerms = memberFilters.stream()
-          .map(FilterParamNewStableValue.MembersFilter::getField)
-          .collect(Collectors.toSet());
+      //Set<String> relevantOntologyTerms = memberFilters.stream()
+      //    .map(FilterParamNewStableValue.MembersFilter::getField)
+      //    .collect(Collectors.toSet());
       Map<String, Set<String>> metadataMembers = _param.getValuesMap(
           user, contextParamValues, null, ontology);
 
