@@ -63,6 +63,7 @@ public class StepAnalysisService extends UserService {
    * @throws NotFoundException if passed string is not an existing step analysis ID
    * @throws ForbiddenException if current user does not have access to this analysis
    */
+  @SuppressWarnings("unused") // should be used on step analysis branch
   private StepAnalysisContext getAnalysis(String analysisIdStr) throws WdkModelException {
     return getAnalysis(analysisIdStr, getUserBundle(Access.PRIVATE), null);
   }

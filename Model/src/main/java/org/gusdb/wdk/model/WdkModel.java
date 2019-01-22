@@ -266,11 +266,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     _modelConfig.getUserDB().checkSchema(this);
   }
 
-  @Deprecated // stand-in until JSPs are removed
-  public WdkModel getModel() {
-    return this;
-  }
-
   public static ModelConfig getModelConfig(String projectId, String gusHome) throws WdkModelException {
     try {
       ModelXmlParser parser = new ModelXmlParser(gusHome);

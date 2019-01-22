@@ -90,6 +90,10 @@ public class ParamReference extends Reference {
     Long interval = paramRef.getInterval();
     Integer depthExpanded = paramRef.getDepthExpanded();
     Boolean exposeAsAttribute = paramRef.isExposeAsAttribute();
+    String minDate = paramRef.getMinDate();
+    String maxDate = paramRef.getMaxDate();
+    Double min = paramRef.getMin();
+    Double max = paramRef.getMax();
     
     if (param instanceof AbstractEnumParam) {
       AbstractEnumParam enumParam = (AbstractEnumParam) param;
@@ -161,6 +165,7 @@ public class ParamReference extends Reference {
             + "'multiPick', 'displayType', 'quote',"
             + " 'selectMode', 'queryRef', 'depthExpanded' properties can only be "
             + "applied to paramRefs of flatVocabParams or " + "enumParams.");
+
       if (param instanceof StringParam) {
         // if quote is set, it overrides the value of the param
         if (number != null)
@@ -187,6 +192,32 @@ public class ParamReference extends Reference {
         throw new WdkModelException("The paramRef to '" + twoPartName
             + "' is not a answerParam.  The 'exposeAsAttribute' property can "
             + "only be applied to paramRefs of answerParam.");
+      }
+
+      if (param instanceof DateRangeParam) {
+        if (minDate != null) {
+          ((DateRangeParam)param).setMinDate(minDate);
+        }
+        if (maxDate != null) {
+          ((DateRangeParam)param).setMaxDate(maxDate);
+        }
+      } else if (minDate != null || maxDate != null) {
+        throw new WdkModelException("The paramRef to '" + twoPartName
+            + "' is not a dateRangeParam.  The 'minDate' and 'maxDate' properties can "
+            + "only be applied to paramRefs of dateRangeParam.");
+      }
+
+      if (param instanceof NumberRangeParam) {
+        if (min != null) {
+          ((NumberRangeParam)param).setMin(min);
+        }
+        if (max != null) {
+          ((NumberRangeParam)param).setMax(max);
+        }
+      } else if (min != null || max != null) {
+        throw new WdkModelException("The paramRef to '" + twoPartName
+            + "' is not a numberRangeParam.  The 'min' and 'max' properties can "
+            + "only be applied to paramRefs of numberRangeParam.");
       }
     }
 
@@ -221,6 +252,10 @@ public class ParamReference extends Reference {
   private String _prompt;
   private Integer _depthExpanded;
   private Boolean _exposeAsAttribute;
+  private String _minDate;
+  private String _maxDate;
+  private Double _min;
+  private Double _max;
 
   private List<WdkModelText> _helps = new ArrayList<WdkModelText>();
   private String _help;
@@ -431,6 +466,38 @@ public class ParamReference extends Reference {
 
   public void setExposeAsAttribute(Boolean exposeAsAttribute) {
     _exposeAsAttribute = exposeAsAttribute;
+  }
+
+  public String getMinDate() {
+    return _minDate;
+  }
+
+  public void setMinDate(String minDate) {
+    _minDate = minDate;
+  }
+
+  public String getMaxDate() {
+    return _maxDate;
+  }
+
+  public void setMaxDate(String maxDate) {
+    _maxDate = maxDate;
+  }
+
+  public Double getMin() {
+    return _min;
+  }
+
+  public void setMin(Double min) {
+    _min = min;
+  }
+
+  public Double getMax() {
+    return _max;
+  }
+
+  public void setMax(Double max) {
+    _max = max;
   }
 
   public Boolean getMultiPick() {

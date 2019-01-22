@@ -68,10 +68,6 @@ public class DateRangeParam extends Param {
     return _regex;
   }
 
-  public String getMinDate() {
-    return _minDate;
-  }
-
   @Override
   public String getDefault() throws WdkModelException {
     String defaultValue = super.getDefault();
@@ -85,6 +81,10 @@ public class DateRangeParam extends Param {
     catch (JSONException e) {
       throw new WdkModelException("Supplied default value (" + defaultValue + ") is not valid JSON.", e);
     }
+  }
+
+  public String getMinDate() {
+    return _minDate;
   }
 
   /**
@@ -156,7 +156,7 @@ public class DateRangeParam extends Param {
   }
 
   /**
-   * Insure that the value provided by the user conforms to the parameter's requirements
+   * Ensure that the value provided by the user conforms to the parameter's requirements
    * 
    * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
    */
@@ -164,14 +164,15 @@ public class DateRangeParam extends Param {
   protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
       throws WdkUserException, WdkModelException {
 
-    LocalDate values[] = new LocalDate[2];
     JSONObject stableValueJson = null;
+    LocalDate minValue;
+    LocalDate maxValue;
 
     // Insure that the JSON Object format is valid.
     try {
       stableValueJson = new JSONObject(stableValue);
-      values[0] = LocalDate.parse(stableValueJson.getString("min"), DateTimeFormatter.ISO_DATE);
-      values[1] = LocalDate.parse(stableValueJson.getString("max"), DateTimeFormatter.ISO_DATE);
+      minValue = LocalDate.parse(stableValueJson.getString("min"), DateTimeFormatter.ISO_DATE);
+      maxValue = LocalDate.parse(stableValueJson.getString("max"), DateTimeFormatter.ISO_DATE);
     }
     catch(JSONException je) {
       throw new WdkUserException("Could not parse '" + stableValue + "'. "
@@ -180,33 +181,33 @@ public class DateRangeParam extends Param {
 
     // Validate each value in the range against regex.  The regex could potentially be
     // more restrictive than LocalDate.
-    if(_regex != null) {
-     if(!stableValueJson.getString("min").matches(_regex)) {
+    if (_regex != null) {
+     if (!stableValueJson.getString("min").matches(_regex)) {
        throw new WdkUserException("value '" + stableValueJson.getString("min") + "' is invalid. " +
          "It must match the regular expression '" + _regex + "'");
      }
-     if(!stableValueJson.getString("max").matches(_regex)) {
+     if (!stableValueJson.getString("max").matches(_regex)) {
        throw new WdkUserException("value '" + stableValueJson.getString("max") + "' is invalid. " +
          "It must match the regular expression '" + _regex + "'");
       }
     }
 
     // Ensure that the minimum date does not come after the maximum date
-    if(values[0].isAfter(values[1])) {
-      throw new WdkUserException("The minimum date '" + values[0] + "' should " +
-          "come before, or equal, the maximum date '" + values[1] + "'");
+    if (minValue.isAfter(maxValue)) {
+      throw new WdkUserException("The minimum date '" + minValue + "' should " +
+          "come before, or equal, the maximum date '" + maxValue + "'");
     }
 
-    // Insure that the minimum date comes no earlier than the minimum allowed date
-    if(_minDate != null &&
-     values[0].isBefore(LocalDate.parse(_minDate, DateTimeFormatter.ISO_DATE))) {
-      throw new WdkUserException("The date '" + values[0] + "' should not be earlier than '" + _minDate + "'");
+    // Ensure that the minimum date comes no earlier than the minimum allowed date
+    if (_minDate != null &&
+        minValue.isBefore(LocalDate.parse(_minDate, DateTimeFormatter.ISO_DATE))) {
+      throw new WdkUserException("The date '" + minValue + "' should not be earlier than '" + _minDate + "'");
     }
-    
-    // Insure that the maximum data comes no earlier than the maximum allowed date
-    if(_maxDate != null && 
-     values[1].isAfter(LocalDate.parse(_maxDate, DateTimeFormatter.ISO_DATE))) {
-      throw new WdkUserException("The date '" + values[1] + "' should not be after '" + _maxDate + "'");
+
+    // Ensure that the maximum data comes no later than the maximum allowed date
+    if (_maxDate != null && 
+        maxValue.isAfter(LocalDate.parse(_maxDate, DateTimeFormatter.ISO_DATE))) {
+      throw new WdkUserException("The date '" + maxValue + "' should not be after '" + _maxDate + "'");
     }
     
   }
