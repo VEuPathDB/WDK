@@ -91,6 +91,11 @@ public class EuPathCategoriesFactory {
       { "Households", "DS_0ad509829eHouseholdRecordClasses.DS_0ad509829eHouseholdRecordClass" },
       { "Observations", "DS_0ad509829eObservationRecordClasses.DS_0ad509829eObservationRecordClass" },
       { "CDC Light Traps", "DS_0ad509829eLightTrapRecordClasses.DS_0ad509829eLightTrapRecordClass" },
+      //PRISM2
+      { "Participants", "DS_51b40fe2e2ParticipantRecordClasses.DS_51b40fe2e2ParticipantRecordClass" },
+      { "Households", "DS_51b40fe2e2HouseholdRecordClasses.DS_51b40fe2e2HouseholdRecordClass" },
+      { "Observations", "DS_51b40fe2e2ObservationRecordClasses.DS_51b40fe2e2ObservationRecordClass" },
+      { "CDC Light Traps", "DS_51b40fe2e2LightTrapRecordClasses.DS_51b40fe2e2LightTrapRecordClass" },
       //India longitudinal
       { "Participants", "DS_05ea525fd3ParticipantRecordClasses.DS_05ea525fd3ParticipantRecordClass" },
       { "Observations", "DS_05ea525fd3ObservationRecordClasses.DS_05ea525fd3ObservationRecordClass" },
@@ -99,7 +104,9 @@ public class EuPathCategoriesFactory {
       { "Participants", "DS_a5c969d5faParticipantRecordClasses.DS_a5c969d5faParticipantRecordClass" },
       { "Observations", "DS_a5c969d5faObservationRecordClasses.DS_a5c969d5faObservationRecordClass" },
       //      { "Households", "DS_a5c969d5faHouseholdRecordClasses.DS_a5c969d5faHouseholdRecordClass" },
-      //GEMs
+      //India Fever study
+      { "Participants", "DS_4902d9b7ecParticipantRecordClasses.DS_4902d9b7ecParticipantRecordClass" },
+      //GEMs 
       { "Participants", "DS_841a9f5259ParticipantRecordClasses.DS_841a9f5259ParticipantRecordClass" },
       //GEMs1a 
       { "Participants", "DS_2a6ace17a1ParticipantRecordClasses.DS_2a6ace17a1ParticipantRecordClass" },
