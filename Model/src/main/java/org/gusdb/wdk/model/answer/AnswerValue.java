@@ -868,4 +868,26 @@ public class AnswerValue {
     return filter.getSummaryJson(this, idSql);
   }
 
+  /**
+   * Returns one big string containing all IDs in this answer value's result in
+   * the following format: each '\n'-delimited line contains one record, whose
+   * primary keys are joined and delimited by a comma.
+   * 
+   * @return list of all record IDs
+   * @throws WdkModelException
+   * @throws WdkUserException
+   */
+  public String getAllIdsAsString() throws WdkModelException, WdkUserException {
+    List<String[]> pkValues = getAllIds();
+    StringBuilder buffer = new StringBuilder();
+    for (String[] pkValue : pkValues) {
+        if (buffer.length() > 0) buffer.append("\n");
+        for (int i = 0; i < pkValue.length; i++) {
+            if (i > 0) buffer.append(", ");
+            buffer.append(pkValue[i]);
+        }
+    }
+    return buffer.toString();
+  }
+
 }
