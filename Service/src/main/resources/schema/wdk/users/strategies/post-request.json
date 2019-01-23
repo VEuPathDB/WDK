@@ -1,54 +1,70 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema",
-  "type": "object",
-  "properties": {
-    "strategyId": {
-      "type": "integer"
+  "oneOf": [
+    {
+      "type": "object",
+      "description": "Strategy copy request",
+      "properties": {
+        "sourceSignature": {
+          "description": "signature of the source strategy to copy",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "sourceSignature"
+      ]
     },
-    "description": {
-      "type": "string"
-    },
-    "name": {
-      "type": "string"
-    },
-    "author": {
-      "type": "string"
-    },
-    "latestStepId": {
-      "type": "integer"
-    },
-    "recordClassName": {
-      "type": "string"
-    },
-    "signature": {
-      "type": "string"
-    },
-    "lastModified": {
-      "type": "string"
-    },
-    "isPublic": {
-      "type": "boolean"
-    },
-    "isSaved": {
-      "type": "boolean"
-    },
-    "isValid": {
-      "type": "boolean"
-    },
-    "isDeleted": {
-      "type": "boolean"
-    },
-    "organization": {
-      "type": "string"
+    {
+      "type": "object",
+      "description": "New strategy request",
+      "properties": {
+        "strategyId": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "recordClassName": {
+          "type": "string"
+        },
+        "signature": {
+          "type": "string"
+        },
+        "lastModified": {
+          "type": "string"
+        },
+        "isPublic": {
+          "type": "boolean"
+        },
+        "isSaved": {
+          "type": "boolean"
+        },
+        "isValid": {
+          "type": "boolean"
+        },
+        "isDeleted": {
+          "type": "boolean"
+        },
+        "organization": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "strategyId",
+        "latestStepId",
+        "isPublic",
+        "isSaved",
+        "isValid",
+        "isDeleted"
+      ]
     }
-  },
-  "additionalProperties": false,
-  "required": [
-    "strategyId",
-    "latestStepId",
-    "isPublic",
-    "isSaved",
-    "isValid",
-    "isDeleted"
   ]
 }

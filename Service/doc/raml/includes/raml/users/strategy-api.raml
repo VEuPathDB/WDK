@@ -92,6 +92,11 @@ patch:
               * POST /users/{user-id}/strategies
       * If the strategy was a single step, root step will be non-nested, otherwise the root of the new branch will be a nested step for incorporation into the "right" side of an existing strategy
       * In short, this endpoint tells the client how to incorporate a copy of an existing strategy into another strategy
+    body:
+      application/json:
+        type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/branch/post-request.json
+  responses:
+    # TODO: Spec out what this endpoint is supposed to return
 
 /{strategy-id}:
   get:
@@ -134,6 +139,7 @@ patch:
       200:
         body:
           application/json:
+
   patch:
     description: |
       * Input is like POST but only supporting mutable fields
