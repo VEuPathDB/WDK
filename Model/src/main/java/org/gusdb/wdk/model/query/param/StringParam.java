@@ -177,8 +177,9 @@ public class StringParam extends Param {
   }
 
   @Override
-  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
+  protected void validateValue(User user, Map<String, String> contextParamValues)
       throws WdkUserException, WdkModelException {
+    String stableValue = contextParamValues.get(getName());
     if (_isNumber) {
       try {
         // strip off the comma, if any

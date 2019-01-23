@@ -272,13 +272,13 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _help = help;
   }
 
-public void addVisibleHelp(WdkModelText visibleHelp) {
+  public void addVisibleHelp(WdkModelText visibleHelp) {
     _visibleHelps.add(visibleHelp);
   }
 
   public String getVisibleHelp() {
-		// if (visibleHelp == null)
-		// return getHelp(); //should return empty???
+    // if (visibleHelp == null)
+    // return getHelp(); //should return empty???
     return _visibleHelp;
   }
 
@@ -286,7 +286,13 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     _visibleHelp = visibleHelp;
   }
 
-  public void setDefault(String xmlDefaultValue) {
+  /**
+   * Sets and validates a default value assigned in the model XML
+   * 
+   * @param xmlDefaultValue incoming default value
+   * @throws WdkModelException if incoming value is invalid
+   */
+  public void setDefault(String xmlDefaultValue) throws WdkModelException {
     _xmlDefaultValue = xmlDefaultValue;
   }
 
