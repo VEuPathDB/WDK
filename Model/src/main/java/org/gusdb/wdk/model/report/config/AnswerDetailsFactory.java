@@ -6,23 +6,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-import org.gusdb.fgputil.SortDirection;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
+import org.gusdb.fgputil.SortDirection;
+import org.gusdb.fgputil.SortDirectionSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
-import org.gusdb.wdk.model.report.util.AttributeFieldSortSpec;
+import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class AnswerDetailsFactory {
-
-  private static final Logger LOG = Logger.getLogger(AnswerDetailsFactory.class);
 
   private static final String RETURN_ALL_ATTRIBUTES = "__ALL_ATTRIBUTES__";
   private static final String RETURN_DEFAULT_ATTRIBUTES = "__DEFAULT_ATTRIBUTES__";
@@ -40,7 +37,7 @@ public class AnswerDetailsFactory {
     // default offset and numRecords are set on declaration lines
     defaultSpecs.setAttributes(question.getSummaryAttributeFieldMap());
     defaultSpecs.setTables(Collections.EMPTY_MAP);
-    defaultSpecs.setSorting(getDefaultSorting(question, defaultSpecs.getAttributes()));
+    defaultSpecs.setSorting(getDefaultSorting(question));
     return defaultSpecs;
   }
 
@@ -110,11 +107,11 @@ public class AnswerDetailsFactory {
     if (specJson.has("sorting")) {
       JSONArray sortingJson = specJson.getJSONArray("sorting");
       specs.setSorting(sortingJson.length() == 0 ?
-          getDefaultSorting(question, specs.getAttributes()) :
-          ensureElements(parseSorting(sortingJson, specs.getAttributes()), question));
+          getDefaultSorting(question) :
+          getIdSortingIfEmpty(parseSorting(sortingJson, question.getAttributeFieldMap()), question));
     }
     else {
-      specs.setSorting(getDefaultSorting(question, specs.getAttributes()));
+      specs.setSorting(getDefaultSorting(question));
     }
 
     // set content disposition
@@ -176,35 +173,37 @@ public class AnswerDetailsFactory {
     }
   }
 
-  private static List<AttributeFieldSortSpec> ensureElements(List<AttributeFieldSortSpec> sorting, Question question) {
+  private static List<SortDirectionSpec<AttributeField>> getIdSortingIfEmpty(List<SortDirectionSpec<AttributeField>> sorting, Question question) {
     if (!sorting.isEmpty()) return sorting;
     AttributeField pkAttribute = question.getRecordClass().getIdAttributeField();
-    return AttributeFieldSortSpec.convertSorting(
+    return SortDirectionSpec.convertSorting(
         question.getRecordClass().getIdSortingAttributeMap(),
         new MapBuilder<String, AttributeField>(pkAttribute.getName(), pkAttribute).toMap());
   }
 
-  private static List<AttributeFieldSortSpec> getDefaultSorting(Question question, Map<String, AttributeField> attributes) {
+  private static List<SortDirectionSpec<AttributeField>> getDefaultSorting(Question question) {
     Map<String, Boolean> defaultSorting = question.getSortingAttributeMap();
-    List<AttributeFieldSortSpec> convertedSorting = AttributeFieldSortSpec.convertSorting(defaultSorting, attributes);
-    return ensureElements(convertedSorting, question);
+    List<SortDirectionSpec<AttributeField>> convertedSorting =
+        SortDirectionSpec.convertSorting(defaultSorting, question.getAttributeFieldMap());
+    return getIdSortingIfEmpty(convertedSorting, question);
   }
 
-  private static List<AttributeFieldSortSpec> parseSorting(JSONArray sortingJson, Map<String, AttributeField> attributes) throws ReporterConfigException {
-    List<AttributeFieldSortSpec> sorting = new ArrayList<>();
+  private static List<SortDirectionSpec<AttributeField>> parseSorting(JSONArray sortingJson, Map<String, AttributeField> allowedValues) throws ReporterConfigException {
+    List<SortDirectionSpec<AttributeField>> sorting = new ArrayList<>();
     for (int i = 0; i < sortingJson.length(); i++) {
       JSONObject obj = sortingJson.getJSONObject(i);
       String attributeName = obj.getString("attributeName");
       String directionStr = obj.getString("direction").toUpperCase();
-      if (!attributes.containsKey(attributeName)) {
-        LOG.warn("Attribute '" + attributeName + "' was listed in sorting but is not a returned attribute.  Skipping...");
+      if (!allowedValues.containsKey(attributeName)) {
+        throw new ReporterConfigException("Attribute '" + attributeName +
+            "' was listed in sorting but is not an attribute for this question.");
       }
       if (!SortDirection.isValidDirection(directionStr)) {
         throw new ReporterConfigException("Bad value: '" + directionStr +
             "' is not a direction. Only " + FormatUtil.join(SortDirection.values(), ", ") + " supported.");
       }
       // this entry passed; add sorting item
-      sorting.add(new AttributeFieldSortSpec(attributes.get(attributeName), SortDirection.valueOf(directionStr)));
+      sorting.add(new SortDirectionSpec<>(allowedValues.get(attributeName), SortDirection.valueOf(directionStr)));
     }
     return sorting;
   }
