@@ -1632,4 +1632,32 @@ public class StepFactory {
       throw new WdkModelException(ex);
     }
   }
+
+  /**
+   * Updates the step's state in the DB (and any dependents within its strategy). 
+   * 
+   * @param previous the previous version of the step (pre-modification)
+   * @param stepToSave the modified version of the step (in builder form)
+   * @param isDirtyChange whether the changes made change the step's result
+   * @param level validation level at which step and/or strategy should be built
+   * @throws WdkModelException if error occurs during validation
+   * @throws InvalidStrategyStructureException if answer value changes cause the
+   *         structure of the strategy to become invalid
+   * TODO: if validation fails, what to do?  Maybe throw exception?  Do we even
+   *       want to validate here?  In what cases should we validate? et.
+   */
+  public void updateStepAndDependents(Step previous, StepBuilder stepToSave, boolean isDirtyChange, ValidationLevel level)
+      throws WdkModelException, InvalidStrategyStructureException {
+    UserCache userCache = new UserCache(previous.getUser());
+    stepToSave.setResultSizeDirty(isDirtyChange);
+    if (previous.hasStrategy()) {
+      Strategy newStrategy = Strategy.builder(previous.getStrategy())
+          .addStep(stepToSave)
+          .build(userCache, level);
+      updateStrategy(newStrategy);
+    }
+    else {
+      updateStep(stepToSave.build(userCache, level, null));
+    }
+  }
 }
