@@ -5,8 +5,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.SortDirection;
+import org.gusdb.fgputil.SortDirectionSpec;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
@@ -84,6 +88,7 @@ public class QuestionFormatter {
       .put(JsonKeys.PARAMETERS, getParamsJson(params, expandParams, user, dependedParamValues))
       .put(JsonKeys.GROUPS, getGroupsJson(q.getParamMapByGroups()))
       .put(JsonKeys.DEFAULT_ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(q.getSummaryAttributeFieldMap().keySet()))
+      .put(JsonKeys.DEFAULT_SORTING, formatDefaultSorting(q))
       .put(JsonKeys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
           q.getDynamicAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, true))
       .put(JsonKeys.DEFAULT_SUMMARY_VIEW, q.getDefaultSummaryView().getName())
@@ -127,6 +132,16 @@ public class QuestionFormatter {
     groupJson.put(JsonKeys.DISPLAY_TYPE, group.getDisplayType());
     groupJson.put(JsonKeys.PARAMETERS, params);
     return groupJson;
+  }
+
+  private static JSONArray formatDefaultSorting(Question question) {
+    return new JSONArray(
+        SortDirectionSpec.convertSorting(question.getSortingAttributeMap(), question.getAttributeFieldMap())
+            .stream()
+            .map(spec -> new JSONObject()
+                .put("attributeName", spec.getItemName())
+                .put("direction", spec.getDirection()))
+            .collect(Collectors.toList()));
   }
 
   /*
