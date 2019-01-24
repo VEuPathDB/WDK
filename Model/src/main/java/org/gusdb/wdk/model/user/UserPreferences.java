@@ -19,7 +19,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
 public class UserPreferences {
 
   // represents the maximum number of sorts we apply to an answer
-  public static final int SORTING_LEVEL = 3;
+  public static final int MAX_NUM_SORTING_COLUMNS = 3;
 
   public final static String PREF_ITEMS_PER_PAGE = "preference_global_items_per_page";
 

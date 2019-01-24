@@ -1510,7 +1510,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     for (String attrName : defaultSortingMap.keySet()) {
       map.put(attrName, defaultSortingMap.get(attrName));
       count++;
-      if (count >= UserPreferences.SORTING_LEVEL)
+      if (count >= UserPreferences.MAX_NUM_SORTING_COLUMNS)
         break;
     }
 
