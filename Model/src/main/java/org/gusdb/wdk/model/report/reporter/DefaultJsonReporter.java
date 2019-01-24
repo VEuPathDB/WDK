@@ -9,7 +9,7 @@ import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
 
-import org.apache.log4j.Logger;
+import org.gusdb.fgputil.SortDirectionSpec;
 import org.gusdb.fgputil.json.JsonWriter;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
@@ -27,9 +27,9 @@ import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.gusdb.wdk.model.report.ReporterRef;
 import org.gusdb.wdk.model.report.config.AnswerDetails;
 import org.gusdb.wdk.model.report.config.AnswerDetailsFactory;
-import org.gusdb.wdk.model.report.util.AttributeFieldSortSpec;
 import org.gusdb.wdk.model.report.util.RecordFormatter;
 import org.json.JSONArray;
+import org.gusdb.wdk.model.user.UserPreferences;
 import org.json.JSONObject;
 
 /**
@@ -46,9 +46,6 @@ import org.json.JSONObject;
  * }
  */
 public class DefaultJsonReporter extends AbstractReporter {
-
-  @SuppressWarnings("unused")
-  private static final Logger LOG = Logger.getLogger(DefaultJsonReporter.class);
 
   public static final String WDK_SERVICE_JSON_REPORTER_RESERVED_NAME = "wdk-service-json";
 
@@ -82,7 +79,8 @@ public class DefaultJsonReporter extends AbstractReporter {
     int startIndex = config.getOffset() + 1;
     int endIndex = startIndex + config.getNumRecords() - 1;
     AnswerValue configuredAnswer = answerValue.cloneWithNewPaging(startIndex, endIndex);
-    Map<String, Boolean>  sorting = AttributeFieldSortSpec.convertSorting(config.getSorting());
+    Map<String, Boolean> sorting = SortDirectionSpec.convertSorting(
+        config.getSorting(), UserPreferences.MAX_NUM_SORTING_COLUMNS);
     configuredAnswer.setSortingMap(sorting);
     return configuredAnswer;
   }
