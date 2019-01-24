@@ -95,6 +95,7 @@ public class JsonKeys {
 
   // question plugin keys
   public static final String DEFAULT_SUMMARY_VIEW = "defaultSummaryView";
+  public static final String DEFAULT_SORTING = "defaultSorting";
   public static final String SUMMARY_VIEW_PLUGINS = "summaryViewPlugins";
   public static final String STEP_ANALYSIS_PLUGINS = "stepAnalysisPlugins";
 
@@ -206,4 +207,4 @@ public class JsonKeys {
   public static final String ROOT_STEP = "root";
   public static final String LEFT_STEP = "left";
   public static final String RIGHT_STEP = "right";
-}
+  }
