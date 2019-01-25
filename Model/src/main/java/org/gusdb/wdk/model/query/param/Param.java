@@ -33,43 +33,43 @@ import org.json.JSONObject;
 /**
  * The param is used by Query to provide inputs to the query. Each query holds a separate copy of each param,
  * since a param can be customized on query level, or even on question level, if the query is an ID query.
- * 
+ *
  * The param values will go through a life cycle in a following way. First, we gets the value from user input
  * as raw value; then it is transformed into reference value, which is used in URLs, and saved in user's
  * steps. Then when the value is used to execute a query, the user-dependent value will be transformed into
  * internal value, and is fed to the query instance.
- * 
+ *
  * If the noTranslation is set to true, the last stage of the transform will be disabled, and the
  * user-dependent value will be used as internal value.
- * 
+ *
  * You could provide your own java handler code to process the values in each stage of the life cycle of the
  * param values.
- * 
+ *
  * @author xingao
- * 
+ *
  *         There are four possible inputs to a param:
- * 
+ *
  *         raw data: the data retrieved by processQuestion action, which can be very long, and needs to be
  *         compressed.
- * 
+ *
  *         stable data: the data used in URLs and saved in user's steps.
- * 
+ *
  *         Internal data: the data used in the SQL.
- * 
+ *
  *         signature: the data used to generate checksum, which will be used to index a cache. The signature
  *         should not contain any user related information to make sure the cache can be shared between used.
- * 
+ *
  *         We define the following transformations between value types:
- * 
+ *
  *         raw -> stable
- * 
+ *
  *         stable -> raw
- * 
+ *
  *         stable -> internal
- * 
+ *
  *         stable -> signature
- * 
- * 
+ *
+ *
  */
 public abstract class Param extends WdkModelBase implements Cloneable, Comparable<Param>, NamedObject {
 
@@ -89,7 +89,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    * method should not throw an exception, but call contextParamValues.setInvalid() with its parameter name
    * and a reason for the failure. The only way to get a ParamValidity is by calling one of the setValid()
    * methods on contextParamValues.
-   * 
+   *
    * @param contextParamValues partially validated stable value set
    * @param level level of validation
    * @return proper param validity value
@@ -99,7 +99,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
       throws WdkModelException;
 
   /**
-   * TODO: probably want to remove this method, and methods that call it.  it seems to be consumed only by 
+   * TODO: probably want to remove this method, and methods that call it.  it seems to be consumed only by
    * StepBean (but no jsp or tags), and by the model cacher in fix package, which writes it to db, but never
    * reads it
    * @param jsParam
@@ -287,7 +287,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   /**
    * Sets and validates a default value assigned in the model XML
-   * 
+   *
    * @param xmlDefaultValue incoming default value
    * @throws WdkModelException if incoming value is invalid
    */
@@ -298,7 +298,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   /**
    * Determines a default value for this parameter given the passed stable values.  It can be assumed that
    * any depended param values required for this param have already been filled in and validated.
-   * 
+   *
    * @param stableValues depended values (guaranteed to be present and already valid)
    * @throws WdkModelException if unable to retrieve default value
    */
@@ -574,8 +574,8 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   /**
    * Returns list of parameters this parameter depends on.  AbstractDependentParam overrides this
    * method to return any depended params for dependent params.
-   * 
-   * @throws WdkModelException  
+   *
+   * @throws WdkModelException
    */
   public Set<Param> getDependedParams() throws WdkModelException {
     return Collections.EMPTY_SET;
@@ -596,7 +596,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   /**
    * Set the question where the param is used. The params in a question are always cloned when question is
    * initialized, therefore, each param object will refer to one question uniquely.
-   * 
+   *
    * @param question
    * @throws WdkModelException
    */
@@ -623,7 +623,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   /**
    * Transform raw param value into stable value.
-   * 
+   *
    * @param user
    * @param rawValue
    * @param contextParamValues
@@ -644,7 +644,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   /**
    * Transform stable param value back to raw value;
-   * 
+   *
    * @param user
    * @param stableValue
    * @param contextParamValues
@@ -660,7 +660,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   /**
    * Transform stable param value into internal value. The noTranslation and quote flags should be handled by
    * the plugin.
-   * 
+   *
    * @param queryInstanceSpec
    * @return internal value to be used to create query SQL
    * @throws WdkModelException
@@ -680,7 +680,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   /**
    * Creates and returns a signature representing the current value of this param
-   * 
+   *
    * @param spec context (used by some handler subclasses)
    * @return param value signature
    * @throws WdkModelException if unable to create signature
@@ -723,7 +723,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   }
 
   @Deprecated
-  public Set<String> getAllValues() {
+  public Set<String> getAllValues() throws WdkModelException {
     return Collections.emptySet();
   }
 
@@ -742,12 +742,12 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   /**
    * @param writer
    * @param indent
-   * @throws WdkModelException if unable to print dependency content 
+   * @throws WdkModelException if unable to print dependency content
    */
   protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
     // by default, print nothing
   }
-  
+
   public void addHandler(ParamHandlerReference handlerReference) {
     _handlerReferences.add(handlerReference);
   }
@@ -779,25 +779,25 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     }
     return answer;
   }
-  
+
   /**
    * By default, params are not dependent, and so do not become stale.  It must
    * be overridden by possibly dependent params.  The definition of stale is:
    * given a possible changes in values of the depended params provided on
    * input, this param is stale if a previous value for it might no longer be
    * valid, e.g. vocabulary of acceptable values has changed.
-   * 
+   *
    * This is more nuanced than simply asking if a depended param is in the
    * passed list. Sometimes declare a dependency on a param for reasons other
    * than vocabulary generation (e.g. internal value generation).
-   * 
+   *
    * @param staleDependedParamsFullNames
    * @return
    */
   public boolean isStale(Set<String> staleDependedParamsFullNames) {
     return false;
   }
-  
+
   public Set<Param> getStaleDependentParams() {
     Set<String> ss = new HashSet<String>();
     ss.add(getFullName());
@@ -805,11 +805,11 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   }
 
   /**
-   * 
+   *
    * given an input list of changed or stale params, return a list of (recursively) dependent params that
-   * are stale as a consequence. 
+   * are stale as a consequence.
    * @param staleDependedParamsFullNames the names of depended params whose value has changed, either directly or
-   * because they are stale.  
+   * because they are stale.
    * @return a list of stale dependent params
    */
   private Set<Param> getStaleDependentParams(Set<String> staleDependedParamsFullNames) {
