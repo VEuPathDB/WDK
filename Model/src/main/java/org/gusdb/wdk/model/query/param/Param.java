@@ -723,7 +723,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   }
 
   @Deprecated
-  public Set<String> getAllValues() throws WdkModelException {
+  public Set<String> getAllValues() {
     return Collections.emptySet();
   }
 

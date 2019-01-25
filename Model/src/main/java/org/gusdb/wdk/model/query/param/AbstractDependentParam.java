@@ -16,13 +16,12 @@ import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
 /**
- * functionality shared by params that might have depend on other parameters.
+ * Functionality shared by params that might depend on other parameters.
  *
  * @author steve
  *
@@ -33,9 +32,28 @@ public abstract class AbstractDependentParam extends Param {
 
   protected static final String PARAM_SERVED_QUERY = "ServedQuery";
 
+  // comma-delimited list of depended param names (found in XML)
   private String _dependedParamRef;
+
+  // parsed list of depended param names
   private Set<String> _dependedParamRefs;
+
+  // resoved list of depended Param objects
   private Set<Param> _dependedParams;
+
+  @Override
+  public abstract boolean isStale(Set<String> dependedParamsFullNames);
+
+  public abstract String getSanityDefault(User user, Map<String, String> contextParamValues,
+      SelectMode sanitySelectMode);
+
+  /**
+   * A list of the <query> objects used by this parameter.  
+   * @return
+   */
+  public abstract Set<String> getContainedQueryFullNames();
+
+  public abstract List<Query> getQueries();
 
   public AbstractDependentParam() {
     super();
@@ -48,7 +66,6 @@ public abstract class AbstractDependentParam extends Param {
     this._dependedParamRef = param._dependedParamRef;
     this._dependedParamRefs = new LinkedHashSet<>(param._dependedParamRefs);
   }
-
 
   // ///////////////////////////////////////////////////////////////////
   // /////////// Public properties ////////////////////////////////////
@@ -121,7 +138,7 @@ public abstract class AbstractDependentParam extends Param {
   }
 
   public void setDependedParamRef(String dependedParamRef) {
-    this._dependedParamRef = dependedParamRef;
+    _dependedParamRef = dependedParamRef;
   }
 
 
@@ -172,7 +189,6 @@ public abstract class AbstractDependentParam extends Param {
       writer.println(indent + "</dependedParams>");
     }
   }
-
 
   /**
    * resolve a query that might have depended params.  such a query will be declared by a dependent parameter, to provide
@@ -228,15 +244,6 @@ public abstract class AbstractDependentParam extends Param {
     return query;
   }
 
-  @Override
-  public abstract boolean isStale(Set<String> dependedParamsFullNames);
-
-  protected abstract DependentParamInstance createDependentParamInstance(User user, Map<String, String> dependedParamValues)
-      throws WdkModelException, WdkUserException;
-
-  public abstract String getSanityDefault(User user, Map<String, String> contextParamValues,
-      SelectMode sanitySelectMode);
-
   static JSONObject getDependedParamValuesJson(
       Map<String, String> dependedParamValues, Set<Param> dependedParams) {
     JSONObject dependedParamValuesJson = new JSONObject();
@@ -252,32 +259,22 @@ public abstract class AbstractDependentParam extends Param {
     return dependedParamValuesJson;
   }
 
-  /**
-   * A list of the <query> objects used by this parameter.
-   * @return
-   */
-  public abstract Set<String> getContainedQueryFullNames();
-
   public void checkParam(String queryFullName, String parentParamName, Map<String,Param> rootParamMap, List<String> ancestorParamNames) throws WdkModelException {
-	if(!rootParamMap.keySet().contains(getName())) {
-	  throw new WdkModelException("The param " + getFullName() + " is not found in the param map of the root query " + queryFullName + ".");
-	}
-	if(ancestorParamNames.contains(getFullName())) {
-	  throw new WdkModelException("The param " + getFullName() + " is a cyclic dependency in the root query " + queryFullName + ".");
-	}
-	ancestorParamNames.add(getFullName());
-	List<Query> queries = getQueries();
-	for(Query query : queries) {
-	  Map<String,Param> paramMap = query.getParamMap();
-	  for(Param param : paramMap.values()) {
-		if (param instanceof AbstractDependentParam) {
-		  ((AbstractDependentParam) param).checkParam(queryFullName, parentParamName, rootParamMap, new ArrayList<String>(ancestorParamNames));
-		}
-	  }
-	}
-
+    if(!rootParamMap.keySet().contains(getName())) {
+      throw new WdkModelException("The param " + getFullName() + " is not found in the param map of the root query " + queryFullName + ".");
+    }
+    if(ancestorParamNames.contains(getFullName())) {
+      throw new WdkModelException("The param " + getFullName() + " is a cyclic dependency in the root query " + queryFullName + ".");
+    }
+    ancestorParamNames.add(getFullName());
+    List<Query> queries = getQueries();
+    for(Query query : queries) {
+      Map<String,Param> paramMap = query.getParamMap();
+      for(Param param : paramMap.values()) {
+        if (param instanceof AbstractDependentParam) {
+          ((AbstractDependentParam) param).checkParam(queryFullName, parentParamName, rootParamMap, new ArrayList<String>(ancestorParamNames));
+        }
+      }
+    }
   }
-
-  public abstract List<Query> getQueries();
-
 }
