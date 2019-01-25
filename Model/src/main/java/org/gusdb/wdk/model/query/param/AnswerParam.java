@@ -1,47 +1,44 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepUtilities;
-import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * AnswerParam is used to take a previous step as input value. The answerParam is the building block of the
  * WDK Strategy system, as the answer param is used to connect one step to the next, to create strategies.
- * 
+ *
  * An answer param is typed, that is, the author needs to define a set of RecordClasses that can be accepted
  * as the types of the input steps.
- * 
+ *
  * The checksum in the value is needed to support in-place step editing, so that combined steps can generate
  * new cache when a child step is revised.
- * 
+ *
  * @author xingao
- * 
+ *
  *         raw value: a Step object
- * 
+ *
  *         stable value: step_id;
- * 
+ *
  *         signature: answer_checksum
- * 
+ *
  *         internal value: an sql that represents the cached result; if noTranslation is true, the value is
  *         step_id (no checksum appended to it).
- * 
+ *
  */
 public class AnswerParam extends Param {
 
@@ -53,8 +50,8 @@ public class AnswerParam extends Param {
   private boolean _exposeAsAttribute = false;
 
   public AnswerParam() {
-    recordClassRefs = new ArrayList<RecordClassReference>();
-    recordClasses = new LinkedHashMap<String, RecordClass>();
+    recordClassRefs = new ArrayList<>();
+    recordClasses = new LinkedHashMap<>();
 
     // register the handler
     setHandler(new AnswerParamHandler());
@@ -65,9 +62,9 @@ public class AnswerParam extends Param {
     super(param);
     _exposeAsAttribute = param._exposeAsAttribute;
     if (param.recordClassRefs != null)
-      this.recordClassRefs = new ArrayList<RecordClassReference>(param.recordClassRefs);
+      this.recordClassRefs = new ArrayList<>(param.recordClassRefs);
     if (param.recordClasses != null)
-      this.recordClasses = new LinkedHashMap<String, RecordClass>(param.recordClasses);
+      this.recordClasses = new LinkedHashMap<>(param.recordClasses);
   }
 
   /**
@@ -82,7 +79,7 @@ public class AnswerParam extends Param {
    * @return the recordClass
    */
   public Map<String, RecordClass> getAllowedRecordClasses() {
-    return new LinkedHashMap<String, RecordClass>(recordClasses);
+    return new LinkedHashMap<>(recordClasses);
   }
 
   @Override
@@ -105,32 +102,6 @@ public class AnswerParam extends Param {
     }
     this.recordClassRefs = null;
 
-    /* the test below is probably not needed.  it was introduced for 
-       span logic, but, since that hard codes its records, it is not
-       vulnerable.  it is problematic because some primary keys
-       might have redundant components, so a perfect match is not
-       always required.
-
-    // make sure all record classes has the same primary key definition
-    RecordClass recordClass = recordClasses.values().iterator().next();
-    String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-    Set<String> set = new HashSet<String>();
-    for (String column : columns) {
-      set.add(column);
-    }
-    for (RecordClass rc : recordClasses.values()) {
-      String message = "The recordClasses referred in answerParam " + getFullName() +
-          " doesn't have same primary key definitions.";
-      columns = rc.getPrimaryKeyAttributeField().getColumnRefs();
-      if (columns.length != set.size())
-        throw new WdkModelException(message);
-      for (String column : columns) {
-        if (!set.contains(column))
-          throw new WdkModelException(message);
-       }
-    }
-    */
-
     this._resolved = true;
   }
 
@@ -144,16 +115,28 @@ public class AnswerParam extends Param {
   }
 
   @Override
-  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
-    long stepId = Long.valueOf(stableValue);
-    Step step = StepUtilities.getStep(user, stepId);
+  protected ParamValidity validateValue(PartiallyValidatedStableValues ctxParamVals, ValidationLevel level)
+      throws WdkModelException {
+
+    final String name = getName();
+    final String rawVal = ctxParamVals.get(name);
+
+    long stepId = Long.valueOf(rawVal);
+    Step step;
+    try {
+      step = StepUtilities.getStep(ctxParamVals.getUser(), stepId, level);
+    }
+    catch (WdkUserException e) {
+      return ctxParamVals.setInvalid(name, e.getMessage());
+    }
 
     // make sure the input step is of the acceptable type
     String rcName = step.getRecordClass().getFullName();
     if (!recordClasses.containsKey(rcName))
-      throw new WdkUserException("The step of record type '" + rcName +
-          "' is not allowed in the answerParam " + this.getFullName());
+      return ctxParamVals.setInvalid(name, "The step of record type '" + rcName
+        + "' is not allowed in the answerParam " + this.getFullName());
+
+    return ctxParamVals.setValid(name);
   }
 
   @Override
@@ -189,12 +172,12 @@ public class AnswerParam extends Param {
 
   /**
    * AnswerParam doesn't allow empty values since we cannot define user-independent empty values in the model.
-   * 
+   *
    * Correction for b36(?): we do allow null values since that will be how combiner steps are constructed
    * prior to them being incorporated into a strategy.  However, once the step is incorporated into a
    * strategy, AnswerParams MUST be filled in and null would be invalid.  Hoping to guarantee this in other
    * ways.  For now, validation must pass null values in AnswerParams.
-   * 
+   *
    * @see org.gusdb.wdk.model.query.param.Param#isAllowEmpty()
    */
   @Override
@@ -215,7 +198,7 @@ public class AnswerParam extends Param {
     return params.stream()
         .filter(param -> param instanceof AnswerParam)
         .map(param -> (AnswerParam)param)
-        .filter(param -> param.isExposeAsAttribute())
+        .filter(AnswerParam::isExposeAsAttribute)
         .collect(Collectors.toList());
   }
 

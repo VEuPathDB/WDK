@@ -16,9 +16,9 @@ import org.json.JSONObject;
 
 /**
  * The enumParam represents a list of param values declared in the model that user can choose from.
- * 
+ *
  * @author jerric
- * 
+ *
  */
 public class EnumParam extends AbstractEnumParam {
 
@@ -28,7 +28,7 @@ public class EnumParam extends AbstractEnumParam {
   private EnumItemList _enumItemList;
 
   public EnumParam() {
-    _enumItemLists = new ArrayList<EnumItemList>();
+    _enumItemLists = new ArrayList<>();
   }
 
   public EnumParam(EnumParam param) {
@@ -93,7 +93,7 @@ public class EnumParam extends AbstractEnumParam {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.Param#excludeResources(java.lang.String)
    */
   @Override
@@ -128,7 +128,7 @@ public class EnumParam extends AbstractEnumParam {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
    */
   @Override
@@ -154,7 +154,7 @@ public class EnumParam extends AbstractEnumParam {
       setDefault(sb.toString());
     }
   }
-  
+
   /**
    * enum params can't get stale, because they can't actually be dependent (since they have no query)
    */
@@ -166,7 +166,7 @@ public class EnumParam extends AbstractEnumParam {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.Param#clone()
    */
   @Override
@@ -176,7 +176,7 @@ public class EnumParam extends AbstractEnumParam {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
    */
   @Override
@@ -187,16 +187,16 @@ public class EnumParam extends AbstractEnumParam {
     // because
     // of it.
   }
-  
+
   @Override
   public Set<String> getContainedQueryFullNames() {
-    Set<String> names = new HashSet<String>();
+    Set<String> names = new HashSet<>();
     return names;
   }
-  
+
   @Override
   public List<Query> getQueries() {
-	return new ArrayList<Query>();
+	return new ArrayList<>();
   }
 
 }

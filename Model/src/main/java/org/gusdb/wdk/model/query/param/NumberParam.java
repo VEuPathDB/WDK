@@ -1,31 +1,31 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * The NumberParam is used to accept numerical user inputs from a web service only.
- * 
+ *
  * The author can provide regex to limit the content of user's input. The input will be rejected if regex
  * match fails. Furthermore, you can also define a default regex in the model-config.xml, which will be used
  * by all NumberParams that don't have their own regex defined.
- * 
- * 
+ *
+ *
  *         raw value: a raw string;
- * 
+ *
  *         stable value: same as raw value;
- * 
+ *
  *         signature: a checksum of the stable value;
- * 
+ *
  *         internal value: The internal is a string representation of a parsed Double with
  *         exponentiation removed and rounding applied if needed;
  *         If noTranslation is true, the raw value is used without any
@@ -33,7 +33,7 @@ import org.json.JSONObject;
  */
 public class NumberParam extends Param {
 
-  private Integer _numDecimalPlaces = new Integer(1);
+  private Integer _numDecimalPlaces = 1;
   private Double _min;
   private Double _max;
   private Double _step;
@@ -43,7 +43,7 @@ public class NumberParam extends Param {
   private String _regex;
 
   public NumberParam() {
-    _regexes = new ArrayList<WdkModelText>();
+    _regexes = new ArrayList<>();
 
     // register handler
     setHandler(new NumberParamHandler());
@@ -52,9 +52,8 @@ public class NumberParam extends Param {
   public NumberParam(NumberParam param) {
     super(param);
     if (param._regexes != null)
-      _regexes = new ArrayList<WdkModelText>();
+      _regexes = new ArrayList<>();
     _regex = param._regex;
-    _numDecimalPlaces = param._numDecimalPlaces;
     _numDecimalPlaces = param._numDecimalPlaces == null ? _numDecimalPlaces : param._numDecimalPlaces;
     _isInteger = param._isInteger;
     _min = param._min;
@@ -110,47 +109,53 @@ public class NumberParam extends Param {
   }
 
   /**
-   * Insure that the value provided by the user conforms to the parameter's requirements
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
+   * @inheritDoc
    */
   @Override
-  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkUserException, WdkModelException {
+  protected ParamValidity validateValue(PartiallyValidatedStableValues contextParamValues, ValidationLevel level) {
 
-    Double numericalValue = null; 
+    final String name  = getName();
+    final String value = contextParamValues.get(name);
+    final Double numericalValue;
 
-	// Insure that the value provided can be converted into a proper number
+    // Insure that the value provided can be converted into a proper number
     try {
-      numericalValue = Double.valueOf(stableValue);
+      numericalValue = Double.valueOf(name);
     }
     catch (NumberFormatException ex) {
-      throw new WdkUserException("value must be numerical; '" + stableValue + "' is invalid.");
+      return contextParamValues.setInvalid(name, "value must be numerical; '" +
+          value + "' is invalid.");
     }
 
-    // Insure that the value provided matches the regular expression provided.  This could be
-    // more restrictive than the number test above.
-    if (_regex != null && !stableValue.matches(_regex)) {
-      throw new WdkUserException("value '" + stableValue + "' is invalid. "
-         + "It must match the regular expression '" + _regex + "'");
+    // Insure that the value provided matches the regular expression provided.
+    // This could be more restrictive than the number test above.
+    if (_regex != null && !value.matches(_regex)) {
+      return contextParamValues.setInvalid(name, "value '" + value
+          + "' is invalid. It must match the regular expression '"
+          + _regex + "'");
     }
 
     // Verify the value provided is an integer if that property is specified.
-    if(_isInteger && numericalValue.doubleValue() % 1 != 0) {
-      throw new WdkUserException("value '" + stableValue + "' must be an integer.");
+    if(_isInteger && numericalValue % 1 != 0) {
+      return contextParamValues.setInvalid(name, "value '" + value +
+          "' must be an integer.");
     }
 
     // Verify the value provided is greater than the minimum allowed value, if that property
     // is specified.
-    if(_min != null && numericalValue.doubleValue() < _min) {
-      throw new WdkUserException("value '" + stableValue + "' must be greater than or equal to '" + _min + "'" );
+    if(_min != null && numericalValue < _min) {
+      return contextParamValues.setInvalid(name, "value '" + value
+          + "' must be greater than or equal to '" + _min + "'" );
     }
 
     // Verify the value provided is no greater than the maximum allowed value, if that property
     // is specified.
-    if(_max != null && numericalValue.doubleValue() > _max) {
-      throw new WdkUserException("value '" + stableValue + "' must be less than or equal to '" + _max + "'" );
+    if(_max != null && numericalValue > _max) {
+      return contextParamValues.setInvalid(name, "value '" + value
+          + "' must be less than or equal to '" + _max + "'" );
     }
+
+    return contextParamValues.setValid(name);
   }
 
   @Override
@@ -178,7 +183,7 @@ public class NumberParam extends Param {
   }
 
   @Override
-  public String getBriefRawValue(Object rawValue, int truncateLength) throws WdkModelException {
+  public String getBriefRawValue(Object rawValue, int truncateLength) {
     return (String)rawValue;
   }
 
@@ -207,12 +212,11 @@ public class NumberParam extends Param {
   }
 
   @Override
-  public String getDefault() throws WdkModelException {
-    String defaultValue = super.getDefault();
-    if(defaultValue == null || defaultValue.isEmpty()) {
-      defaultValue = _min.toString();
-    }
-    return defaultValue;
+  public String getDefault(PartiallyValidatedStableValues stableValues) throws WdkModelException {
+    String defaultValue = super.getDefault(stableValues);
+    return defaultValue == null || defaultValue.isEmpty()
+        ? _min.toString()
+        : defaultValue;
   }
 
   public boolean isInteger() {
@@ -228,10 +232,9 @@ public class NumberParam extends Param {
   }
 
   public void setStep(Double step) {
-    if(step == null) {
-      step = _isInteger ? 1 : 0.01;
-    }
-    _step = step;
+    if(step == null)
+      _step = _isInteger ? 1 : 0.01;
+    else
+      _step = step;
   }
-
 }

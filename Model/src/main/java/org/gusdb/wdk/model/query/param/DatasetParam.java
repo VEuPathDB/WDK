@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
@@ -9,12 +6,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.DatasetParserReference;
 import org.gusdb.wdk.model.dataset.ListDatasetParser;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
@@ -25,20 +25,20 @@ import org.json.JSONObject;
 /**
  * Dataset param represents a list of user input ids. The list is readonly, and stored in persistence
  * instance, along with other user related data.
- * 
+ *
  * A dataset param is typed, and the author has to define a recordClass as the type of the input IDs. This
  * type is required as a function for getting a snapshot of user basket and make a step from it.
- * 
+ *
  * @author xingao
- * 
+ *
  *         raw value: Dataset object;
- * 
+ *
  *         stable value: dataset id;
- * 
+ *
  *         signature: content checksum;
- * 
+ *
  *         internal data: A SQL that represents the dataset values.
- * 
+ *
  */
 public class DatasetParam extends Param {
 
@@ -94,7 +94,7 @@ public class DatasetParam extends Param {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
    */
   @Override
@@ -120,12 +120,12 @@ public class DatasetParam extends Param {
     }
     for(DatasetParser p : parsers.values()) {
       p.setParam(this);
-    } 
+    }
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.Param#clone()
    */
   @Override
@@ -135,7 +135,7 @@ public class DatasetParam extends Param {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
    */
   @Override
@@ -147,16 +147,23 @@ public class DatasetParam extends Param {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.query.param.Param#validateValue(org.gusdb.wdk.model .user.User,
    * java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException {
+  protected ParamValidity validateValue(PartiallyValidatedStableValues ctxParamVals, ValidationLevel level) {
+    final String name = getName();
+    final int value = Integer.parseInt(ctxParamVals.get(name));
+
     // make sure the dataset exists
-    int datasetId = Integer.parseInt(stableValue);
-    _wdkModel.getDatasetFactory().getDataset(user, datasetId);
+    try {
+      _wdkModel.getDatasetFactory().getDataset(ctxParamVals.getUser(), value);
+    } catch (WdkModelException e) {
+      return ctxParamVals.setInvalid(name, e.getMessage());
+    }
+
+    return ctxParamVals.setValid(name);
   }
 
   /**
