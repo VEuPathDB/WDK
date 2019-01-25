@@ -23,6 +23,7 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -384,11 +385,11 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
     return _createdTime;
   }
 
-  public List<Step> getMainBranch() throws WdkModelException {
+  public List<Step> getMainBranch() {
     return getRootStep().getMainBranch();
   }
 
-  public int getLength() throws WdkModelException {
+  public int getLength() {
     return getRootStep().getLength();
   }
 
@@ -548,6 +549,10 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
   @Override
   public ValidationBundle getValidationBundle() {
     return _validationBundle;
+  }
+
+  public static Optional<RunnableObj<Step>> getRunnableStep(RunnableObj<Strategy> strategy, long stepId) {
+    return strategy.getObject().findFirstStep(withId(stepId)).map(step -> step.getRunnable().getLeft());
   }
 
 }

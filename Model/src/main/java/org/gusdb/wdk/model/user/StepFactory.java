@@ -597,7 +597,7 @@ public class StepFactory {
   }
 
   public List<Strategy> getPublicStrategies() throws WdkModelException {
-    return new StrategyLoader(_wdkModel, ValidationLevel.SYNTACTIC)
+    return new StrategyLoader(_wdkModel, ValidationLevel.RUNNABLE)
         .getPublicStrategies();
   }
 
@@ -637,8 +637,9 @@ public class StepFactory {
         .getPublicStrategies(), Strategy::isValid).size();
   }
 
-  public Optional<Strategy> getStrategyById(long strategyId) throws WdkModelException {
-    return new StrategyLoader(_wdkModel, ValidationLevel.SEMANTIC)
+  public Optional<Strategy> getStrategyById(long strategyId,
+      ValidationLevel validationLevel) throws WdkModelException {
+    return new StrategyLoader(_wdkModel, validationLevel)
         .getStrategyById(strategyId);
   }
 

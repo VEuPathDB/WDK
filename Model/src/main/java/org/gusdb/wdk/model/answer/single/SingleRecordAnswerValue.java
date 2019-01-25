@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.answer.single;
 
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
-import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +42,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
     SingleRecordQuestion question = (SingleRecordQuestion)validSpec.getObject().getQuestion();
     SingleRecordQuestionParam param = question.getParam();
     _recordClass = question.getRecordClass();
-    _pkMap = swallowAndGet(() -> param.parseParamValue(validSpec.getObject().getQueryInstanceSpec().get(param.getName())));
+    _pkMap = param.parseParamValue(validSpec.getObject().getQueryInstanceSpec().get(param.getName()));
     _resultSizeFactory = new SingleRecordResultSizeFactory(this);
   }
 
@@ -97,7 +96,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
   }
   
   @Override
-  public List<String[]> getAllIds() throws WdkModelException, WdkUserException {
+  public List<String[]> getAllIds() throws WdkModelException {
     String[] pkArray = new String[_pkMap.size()];
     String[] pkColNames = _recordClass.getPrimaryKeyDefinition().getColumnRefs();
     if (pkArray.length != pkColNames.length)

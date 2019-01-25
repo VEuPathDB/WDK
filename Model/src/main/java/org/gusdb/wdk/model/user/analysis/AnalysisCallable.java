@@ -5,7 +5,11 @@ import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.validation.OptionallyInvalid;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.analysis.StepAnalyzer;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.user.Step;
 
 public class AnalysisCallable implements Callable<ExecutionStatus> {
 
@@ -30,8 +34,17 @@ public class AnalysisCallable implements Callable<ExecutionStatus> {
 
       // create step analysis instance and run
       StepAnalyzer analyzer = StepAnalysisFactoryImpl.getConfiguredAnalyzer(_context, _fileStore);
+      OptionallyInvalid<Step, RunnableObj<Step>> stepOptions = _context.getStep().getRunnable();
+      if (stepOptions.isLeft()) {
+        // step is not runnable; cannot analyze unrunnable step
+        LOG.warn("Request made to analyze unrunnable step with ID " + _context.getStep().getStepId());
+        return ExecutionStatus.ERROR;
+      }
+
+      // otherwise, step is runnable
       ExecutionStatus status = analyzer.runAnalysis(
-          _context.getStep().getAnswerValue().cloneWithNewPaging(1, -1), new StatusLogger(contextHash, _dataStore));
+          AnswerValueFactory.makeAnswer(stepOptions.getLeft()).cloneWithNewPaging(1, -1),
+          new StatusLogger(contextHash, _dataStore));
 
       LOG.info("Analyzer returned without exception and with status: " + status);
 

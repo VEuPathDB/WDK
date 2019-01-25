@@ -219,7 +219,8 @@ public class BasketService extends UserService {
       RunnableObj<AnswerSpec> basketAnswerSpec = AnswerSpec.builder(getWdkModel())
           .setQuestionName(recordClass.getRealtimeBasketQuestion().getFullName())
           .buildRunnable(getSessionUser(), StepContainer.emptyContainer());
-      AnswerRequest request = new AnswerRequest(basketAnswerSpec, formattingParser.createFromTopLevelObject(requestBody));
+      AnswerRequest request = new AnswerRequest(basketAnswerSpec,
+          formattingParser.createFromTopLevelObject(new JSONObject(requestBody)));
       return AnswerService.getAnswerResponse(user, request).getSecond();
     }
     catch (JSONException e) {

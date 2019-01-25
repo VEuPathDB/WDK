@@ -88,7 +88,7 @@ public class StrategyFilter extends StepFilter {
 
   private Strategy getStrategy(AnswerValue answer, JSONObject jsValue) throws WdkModelException {
     int strategyId = jsValue.getInt(KEY_STRATEGY);
-    return answer.getWdkModel().getStepFactory().getStrategyById(strategyId)
+    return answer.getWdkModel().getStepFactory().getStrategyById(strategyId, ValidationLevel.SEMANTIC)
         .orElseThrow(() -> new WdkModelException("Passed ID (" + strategyId + ") does not correspond to a strategy."));
   }
 

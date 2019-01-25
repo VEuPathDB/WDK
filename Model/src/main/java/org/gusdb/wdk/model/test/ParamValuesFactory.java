@@ -168,7 +168,9 @@ public class ParamValuesFactory {
             defaultValue = param.getSanityDefault();
             if (defaultValue == null) {
               // need to pass context param values to get the default
-              defaultValue = dependentParam.getDefault(user, contextParamValues);
+              // FIXME: Broken; if we want to be serious about sanity testing, need to rework this code
+              //defaultValue = dependentParam.getDefault(user, contextParamValues);
+              defaultValue = dependentParam.getXmlDefault(); // put here just for compilation
             }
           }
 

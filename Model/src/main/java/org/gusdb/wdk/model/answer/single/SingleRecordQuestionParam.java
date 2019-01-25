@@ -4,11 +4,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.user.User;
 
 public class SingleRecordQuestionParam extends StringParam {
 
@@ -23,19 +24,25 @@ public class SingleRecordQuestionParam extends StringParam {
   }
 
   @Override
-  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkUserException, WdkModelException {
-    parseParamValue(stableValue);
+  protected ParamValidity validateValue(PartiallyValidatedStableValues stableValues, ValidationLevel level)
+      throws WdkModelException {
+    try {
+      parseParamValue(stableValues.get(getName()));
+      return stableValues.setValid(getName());
+    }
+    catch (IllegalArgumentException e) {
+      return stableValues.setInvalid(getName(), e.getMessage());
+    }
   }
 
-  public Map<String,Object> parseParamValue(String valueString) throws WdkUserException {
+  public Map<String,Object> parseParamValue(String valueString) throws IllegalArgumentException {
 
     // build valid PK value list
     String[] pkValues = valueString.split(",");
     String[] columnRefs =  _recordClass.getPrimaryKeyDefinition().getColumnRefs();
 
     if (columnRefs.length != pkValues.length) {
-      throw new WdkUserException("RecordClass '" + _recordClass.getFullName() +
+      throw new IllegalArgumentException("RecordClass '" + _recordClass.getFullName() +
           "' PK requires exactly " + columnRefs.length + " values " + FormatUtil.arrayToString(columnRefs));
     }
 
