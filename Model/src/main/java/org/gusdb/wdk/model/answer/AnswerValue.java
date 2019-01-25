@@ -773,9 +773,8 @@ public class AnswerValue {
    * This method is redundant with getPrimaryKeyValues(), consider deprecate either one of them.
    * 
    * @return
-   * @throws WdkUserException
    */
-  public List<String[]> getAllIds() throws WdkModelException, WdkUserException {
+  public List<String[]> getAllIds() throws WdkModelException {
     String idSql = getSortedIdSql();
     String[] pkColumns = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
     List<String[]> pkValues = new ArrayList<String[]>();

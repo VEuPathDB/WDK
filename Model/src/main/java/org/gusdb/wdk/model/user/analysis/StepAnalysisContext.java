@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -208,7 +209,8 @@ public class StepAnalysisContext {
   private static <T extends WdkException> Step loadStep(WdkModel wdkModel, long stepId,
       T wdkUserException) throws T {
     try {
-      return wdkModel.getStepFactory().getStepById(stepId).orElseThrow(() -> wdkUserException);
+      return wdkModel.getStepFactory().getStepById(stepId, ValidationLevel.RUNNABLE)
+          .orElseThrow(() -> wdkUserException);
     }
     catch (WdkModelException e) {
       throw wdkUserException;

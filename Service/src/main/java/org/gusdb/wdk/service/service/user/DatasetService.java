@@ -21,11 +21,14 @@ import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.dataset.AbstractDatasetParser;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
@@ -158,19 +161,29 @@ public class DatasetService extends UserService {
   }
 
   private static Dataset createFromStrategy(User user, JSONObject sourceConfig, DatasetFactory factory)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException, DataValidationException {
     WdkModel wdkModel = factory.getWdkModel();
     StepFactory stepFactory = wdkModel.getStepFactory();
     long strategyId = sourceConfig.getLong(JsonKeys.STRATEGY_ID);
-    Strategy strategy = stepFactory.getStrategyById(strategyId)
-        .orElseThrow(() -> new WdkUserException("Strategy with ID " + strategyId + " not found."));
-    AnswerValue answerValue = strategy.getRootStep().getAnswerValue();
+    RunnableObj<Strategy> strategy = stepFactory
+        .getStrategyById(strategyId, ValidationLevel.RUNNABLE)
+        .orElseThrow(() -> new DataValidationException("Strategy with ID " + strategyId + " not found."))
+        .getRunnable()
+        .getOrThrow(strat -> new DataValidationException("Strategy with ID " +
+            strategyId + " not valid. " + strat.getValidationBundle().toString()));
+    AnswerValue answerValue = AnswerValueFactory.makeAnswer(
+        Strategy.getRunnableStep(strategy, strategy.getObject().getRootStepId()).get());
     List<String[]> ids = answerValue.getAllIds();
     ListDatasetParser parser = new ListDatasetParser();
     String content = ids.stream()
         .map(idArray -> join(idArray, ListDatasetParser.DATASET_COLUMN_DIVIDER))
         .collect(Collectors.joining("\n"));
-    return factory.createOrGetDataset(user, parser, content, null);
+    try {
+      return factory.createOrGetDataset(user, parser, content, null);
+    }
+    catch (WdkUserException e) {
+      return WdkModelException.unwrap(e);
+    }
   }
 
   private static Dataset createFromTemporaryFile(User user, JSONObject sourceConfig, DatasetFactory factory, HttpSession session) throws WdkUserException, WdkModelException {

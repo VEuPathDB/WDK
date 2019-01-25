@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
@@ -72,7 +73,8 @@ public class UserSession {
     List<Strategy> strategies = new ArrayList<Strategy>();
     for (long id : ids) {
       try {
-        Strategy strategy = _user.getWdkModel().getStepFactory().getStrategyById(id).orElse(null);
+        Strategy strategy = _user.getWdkModel().getStepFactory()
+            .getStrategyById(id, ValidationLevel.RUNNABLE).orElse(null);
         if (strategy != null) {
           // only add to active if found
           strategies.add(strategy);

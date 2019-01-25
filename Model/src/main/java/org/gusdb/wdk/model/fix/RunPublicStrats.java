@@ -1,10 +1,11 @@
 package org.gusdb.wdk.model.fix;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -63,48 +64,40 @@ public class RunPublicStrats extends BaseCLI {
       LOG.info("\n**********  MODEL CONSTRUCTED : " + projectId + "**********");
       LOG.info("\n**********  MODEL CONSTRUCTED : running ALL Public Strategies**********");
 
-      List<Strategy> erroredStratIds = publicStrats(wdkModel);
-      if (!erroredStratIds.isEmpty()) {
+      List<Strategy> erroredStrategies = getInvalidPublicStrats(wdkModel);
+      if (!erroredStrategies.isEmpty()) {
         LOG.warn("At least one public strategy is invalid.  See below for list");
-        for (Strategy st : erroredStratIds) {
+        for (Strategy st : erroredStrategies) {
           LOG.info("{ strategyId: " + st.getStrategyId() + ", strategyName: " + st.getName() + ", owner: " + st.getUser().getEmail());
         }
       }
     }
   }
 
-  private static List<Strategy> publicStrats(WdkModel wdkModel) throws WdkModelException {
+  private static List<Strategy> getInvalidPublicStrats(WdkModel wdkModel) throws WdkModelException {
 
     StepFactory factory = wdkModel.getStepFactory();
     List<Strategy> publicStrategies = factory.getPublicStrategies();
-    int stratCount = 0;
-    List<Strategy> erroredPublicStrats = new ArrayList<>();
-    int allStratSize = publicStrategies.size();
-    LOG.info("\n\n\n********** WE HAVE " + allStratSize + " public strategies total *********");
+    List<Strategy> erroredPublicStrats = publicStrategies.stream()
+        .filter(strat -> strat.isValid()).collect(Collectors.toList());
+    LOG.info("\n\n\n********** WE HAVE " + publicStrategies.size() + " public strategies total *********");
 
-    for (int i = 0; i < allStratSize; i++) {
-      Strategy st = publicStrategies.get(i);
-
-      LOG.info("\n\n\n********** Found a Public Strat: " + st.getStrategyId() + " of user: " +
-          st.getUser().getEmail() + "  *********");
-
-      try {
-        // TEST STRAT
-        stratCount++;
-        // to get the proper number of bad strats, we must get the answer value;
-        //   this takes longer, but the alternative (getResultSize) masks bad
-        //   strategies because it can't tell whether the exception is due to a
-        //   bad strat or due to something else
-        st.getRootStep().getViewAnswerValue();
-      }
-      catch (Exception ex) {
-        // check if strategy is already invalid, ignore if user NOT eupathdb
-        LOG.error("Adding strategy " + st.getName() + " -belonging to user " + st.getUser().getEmail() + " created on " + st.getCreatedTime() + " and modified last on " + st.getLastModifiedTime() + "..... to list of errored strats.", ex);
-        erroredPublicStrats.add(st);
-      }
+    for (Strategy st : publicStrategies) {
+      LOG.info("\n\n\n********** Found a Public Strat: " + st.getStrategyId() +
+          " of user: " + st.getUser().getEmail() + "  *********");
     }
-    LOG.info("\n\n********** TESTED " + stratCount + " public strategies  *********\n");
+
+    for (Strategy st : erroredPublicStrats) {
+      LOG.error("Adding strategy " + st.getName() + " -belonging to user " +
+          st.getUser().getEmail() + " created on " + st.getCreatedTime() +
+          " and modified last on " + st.getLastModifiedTime() +
+          "..... to list of errored strats." + FormatUtil.NL +
+          st.getValidationBundle().toString());
+    }
+
+    LOG.info("\n\n********** TESTED " + publicStrategies.size() + " public strategies  *********\n");
     LOG.info("\n\n****** FOUND " + erroredPublicStrats.size() + " errored public strategies  *****\n");
+
     return erroredPublicStrats;
   }
 }
