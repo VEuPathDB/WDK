@@ -128,18 +128,10 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    */
   private boolean suppressNode = false;
 
-  private boolean skipValidation = false;
-
   private int depthExpanded = 0;
 
   protected abstract EnumParamVocabInstance createVocabInstance(User user, Map<String, String> dependedParamValues)
       throws WdkModelException, WdkUserException;
-
-  @Override
-  protected DependentParamInstance createDependentParamInstance (User user, Map<String, String> dependedParamValues)
-      throws WdkModelException, WdkUserException {
-    return createVocabInstance(user,  dependedParamValues);
-  }
 
   public AbstractEnumParam() {
     super();
@@ -171,14 +163,14 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    * @param contextParamValues
    * @return
    */
-  public EnumParamVocabInstance getVocabInstance(User user, Map<String, String> contextParamValues) {
+  public EnumParamVocabInstance getVocabInstance(PartiallyValidatedStableValues contextParamValues) {
 
     // make sure context is populated with values we need (our depended params)
-    contextParamValues = ensureRequiredContext(user, contextParamValues);
+    contextParamValues = ensureRequiredContext(contextParamValues);
 
     // now create the vocab instance, using that context
     try {
-      return createVocabInstance(user, contextParamValues);
+      return createVocabInstance(contextParamValues);
     }
     catch (WdkModelException | WdkUserException wme) {
       throw new WdkRuntimeException("Unable to create EnumParamVocabInstance for param " + getName() + " with " +
@@ -197,14 +189,6 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   public boolean getMultiPick() {
     return _multiPick;
-  }
-
-  public boolean isSkipValidation() {
-    return skipValidation;
-  }
-
-  public void setSkipValidation(boolean skipValidation) {
-    this.skipValidation = skipValidation;
   }
 
   public void setQuote(boolean quote) {
@@ -477,42 +461,37 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     final String name = getName();
     final String rawValue = ctxParamVals.get(name);
 
-    if (!isSkipValidation()) {
-      String[] terms = getTerms(ctxParamVals.getUser(), rawValue);
-      LOG.debug("param=" + getFullName() + " - validating: " + rawValue +
-          ", with contextParamValues=" + FormatUtil.prettyPrint(ctxParamVals));
+    String[] terms = getTerms(ctxParamVals.getUser(), rawValue);
+    LOG.debug("param=" + getFullName() + " - validating: " + rawValue +
+        ", with contextParamValues=" + FormatUtil.prettyPrint(ctxParamVals));
 
-      if (terms.length == 0 && !_allowEmpty)
-        return ctxParamVals.setInvalid(name, "At least one value for "
-          + getPrompt() + " must be selected.");
+    if (terms.length == 0 && !_allowEmpty)
+      return ctxParamVals.setInvalid(name, "At least one value for "
+        + getPrompt() + " must be selected.");
 
-      // verify that user did not select too few or too many values for this
-      // param
-      int numSelected = getNumSelected(ctxParamVals.getUser(), terms, ctxParamVals);
-      if ((maxSelectedCount > 0 && numSelected > maxSelectedCount) ||
-          (_minSelectedCount > 0 && numSelected < _minSelectedCount)) {
-        String range = (_minSelectedCount > 0 ? "[ " + _minSelectedCount : "( Inf") + ", " +
-            (maxSelectedCount > 0 ? maxSelectedCount + " ]" : "Inf )");
-        return ctxParamVals.setInvalid(name, "Number of selected values ("
-          + numSelected + ") was not in range " + range + " for parameter "
-          + getPrompt());
-      }
-
-      Map<String, String> map = getVocabMap(ctxParamVals.getUser(), ctxParamVals);
-      boolean error = false;
-      StringBuilder message = new StringBuilder();
-      for (String term : terms) {
-        if (!map.containsKey(term)) {
-          error = true;
-          message.append("Invalid term for param [" + getFullName() + "]: " + term + ". \n");
-        }
-      }
-      if (error)
-        return ctxParamVals.setInvalid(name, message.toString());
+    // verify that user did not select too few or too many values for this
+    // param
+    int numSelected = getNumSelected(ctxParamVals.getUser(), terms, ctxParamVals);
+    if ((maxSelectedCount > 0 && numSelected > maxSelectedCount) ||
+        (_minSelectedCount > 0 && numSelected < _minSelectedCount)) {
+      String range = (_minSelectedCount > 0 ? "[ " + _minSelectedCount : "( Inf") + ", " +
+          (maxSelectedCount > 0 ? maxSelectedCount + " ]" : "Inf )");
+      return ctxParamVals.setInvalid(name, "Number of selected values ("
+        + numSelected + ") was not in range " + range + " for parameter "
+        + getPrompt());
     }
-    else {
-      LOG.debug("param=" + getFullName() + " - skip validation");
+
+    Map<String, String> map = getVocabMap(ctxParamVals.getUser(), ctxParamVals);
+    boolean error = false;
+    StringBuilder message = new StringBuilder();
+    for (String term : terms) {
+      if (!map.containsKey(term)) {
+        error = true;
+        message.append("Invalid term for param [" + getFullName() + "]: " + term + ". \n");
+      }
     }
+    if (error)
+      return ctxParamVals.setInvalid(name, message.toString());
 
     return ctxParamVals.setValid(name);
   }
@@ -827,5 +806,24 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     }
     return jsParam;
   }
-
+  /**
+   * Determines and returns the sanity default for this param in the following way: if sanitySelectMode is not
+   * null, use it to choose params; if it is, use default (i.e. however param normally gets default)
+   * 
+   * @param sanitySelectMode
+   *          select mode form model (ParamValuesSet)
+   * @return default value for this param, based on cached vocab values
+   */
+  public String getSanityDefaultValue(EnumParamVocabInstance vocab,
+      SelectMode sanitySelectMode, boolean isMultiPick, String sanityDefaultNoSelectMode) {
+    LOG.info("Getting sanity default value with passed mode: " + sanitySelectMode);
+    if (sanitySelectMode != null) {
+      return getDefaultWithSelectMode(vocab.getTerms(), sanitySelectMode, isMultiPick,
+          vocab.getTermTreeListRef().isEmpty() ? null : vocab.getTermTreeListRef().get(0));
+    }
+    String defaultVal;
+    LOG.info("Sanity select mode is null; using sanity default (" + sanityDefaultNoSelectMode +
+        ") or default (" + getDefaultValue() + ")");
+    return (((defaultVal = sanityDefaultNoSelectMode) != null) ? defaultVal : getDefaultValue());
+  }
 }

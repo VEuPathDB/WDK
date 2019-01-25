@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
@@ -24,8 +23,7 @@ public class SingleRecordQuestionParam extends StringParam {
   }
 
   @Override
-  protected ParamValidity validateValue(PartiallyValidatedStableValues stableValues, ValidationLevel level)
-      throws WdkModelException {
+  protected ParamValidity validateValue(PartiallyValidatedStableValues stableValues, ValidationLevel level) {
     try {
       parseParamValue(stableValues.get(getName()));
       return stableValues.setValid(getName());
