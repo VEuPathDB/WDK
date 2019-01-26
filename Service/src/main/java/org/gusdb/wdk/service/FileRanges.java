@@ -12,6 +12,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.Range;
 import org.gusdb.fgputil.Wrapper;
@@ -30,8 +31,9 @@ public class FileRanges {
   private static final String RANGE_HEADER_VALUE_PREFIX = SIZE_UNITS + "=";
 
   public static Range<Long> parseRangeHeaderValue(String rangeStr) {
+    LOG.info("Incoming range string: " + rangeStr);
     if (rangeStr == null) {
-      return new Range<>(DEFAULT_RANGE_BEGIN, Range.empty());
+      return new Range<>(DEFAULT_RANGE_BEGIN, null);
     }
     if (!rangeStr.startsWith(RANGE_HEADER_VALUE_PREFIX)) {
       throw new BadRequestException("Endpoint does not support non-byte range requests.");
@@ -43,6 +45,7 @@ public class FileRanges {
     if (tokens.length > 2) {
       throw new BadRequestException("Currently only a single range is supported");
     }
+    LOG.info("Received tokens: " + FormatUtil.join(tokens, ","));
     if (isInteger(tokens[0]) && (tokens.length == 1 || isInteger(tokens[1]))) {
       Range<Long> range = new Range<>(Long.parseLong(tokens[0]),
           tokens.length == 1 ? null : Long.parseLong(tokens[1]));
