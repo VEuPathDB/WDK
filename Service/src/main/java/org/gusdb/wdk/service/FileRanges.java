@@ -45,15 +45,18 @@ public class FileRanges {
     if (tokens.length > 2) {
       throw new BadRequestException("Currently only a single range is supported");
     }
-    LOG.info("Received tokens: " + FormatUtil.join(tokens, ","));
+    LOG.info("Received " + tokens.length + " tokens [" + FormatUtil.join(tokens, ",") + "]");
     if (isInteger(tokens[0]) && (tokens.length == 1 || isInteger(tokens[1]))) {
       Range<Long> range = new Range<>(Long.parseLong(tokens[0]),
           tokens.length == 1 ? null : Long.parseLong(tokens[1]));
       if (range.getBegin() < 0 || range.getEnd() < 0) {
         throw new BadRequestException("Range values must be positive integers.");
       }
+      return range;
     }
-    throw new BadRequestException("Range header must be of the form '" + RANGE_HEADER_VALUE_PREFIX + "<min>-<max>'.");
+    else {
+      throw new BadRequestException("Range header must be of the form '" + RANGE_HEADER_VALUE_PREFIX + "<min>-<max>'.");
+    }
   }
 
   public static Response getFileChunkResponse(Path filePath, Range<Long> byteRange) throws WdkModelException {
@@ -91,8 +94,12 @@ public class FileRanges {
           return super.read();
         }
       };
-      fileIn.skip(byteRange.getBegin() - 1);
-
+      long bytesToSkip = byteRange.getBegin();
+      if (bytesToSkip > 0) {
+        LOG.info("Skipping the first " + bytesToSkip + " bytes in the file.");
+        long numSkipped = fileIn.skip(bytesToSkip);
+        LOG.info("Successfully skipped first " + numSkipped + " bytes.");
+      }
       return Response
           .ok(getStreamingOutput(fileIn))
           .type(MediaType.APPLICATION_OCTET_STREAM)
