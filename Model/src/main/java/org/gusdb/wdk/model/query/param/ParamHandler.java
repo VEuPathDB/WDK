@@ -85,7 +85,7 @@ public interface ParamHandler {
    */
   Object toRawValue(User user, String stableValue) throws WdkModelException;
 
-  String toInternalValue(SemanticallyValid<QueryInstanceSpec> contextParamValues) throws WdkModelException;
+  String toInternalValue(RunnableObj<QueryInstanceSpec> contextParamValues) throws WdkModelException;
 
   String toSignature(RunnableObj<QueryInstanceSpec> contextParamValues) throws WdkModelException;
 
