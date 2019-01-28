@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
@@ -153,8 +154,8 @@ class ActiveStrategyFactory {
             .orElseThrow(() -> new WdkModelException("Cannot find step with ID " + stepId))
             .getParentStep()
             .orElseThrow(() -> new WdkModelException("Step " + stepId + " does not have a parent (is a root step)."));
-        while (parent.getNextStep() != null) {
-            parent = parent.getNextStep();
+        while (parent.getParentStep().isPresent()) {
+            parent = parent.getParentStep().get();
         }
         // check if the parent is top level
         return parent.getParentStep() == null ?
@@ -163,7 +164,7 @@ class ActiveStrategyFactory {
     }
 
     private Strategy getStrategy(long strategyId) throws WdkModelException, WdkUserException {
-      return _user.getWdkModel().getStepFactory().getStrategyById(strategyId)
+      return _user.getWdkModel().getStepFactory().getStrategyById(strategyId, ValidationLevel.NONE)
           .orElseThrow(() -> new WdkUserException("No strategy exists with ID " + strategyId));
     }
 

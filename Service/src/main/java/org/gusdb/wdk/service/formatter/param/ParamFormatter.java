@@ -47,7 +47,6 @@ public class ParamFormatter<T extends Param> {
     pJson.put(JsonKeys.IS_READ_ONLY, _param.isReadonly());
     pJson.put(JsonKeys.DEPENDENT_PARAMS, new JSONArray(
         mapToList(_param.getDependentParams(), NamedObject::getName)));
-    pJson.put(JsonKeys.DEFAULT_VALUE, _param.getXmlDefault());
     pJson.put(JsonKeys.STABLE_VALUE, spec.getObject().get(_param.getName()));
     return pJson;
   }

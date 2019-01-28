@@ -105,7 +105,6 @@ public class JsonKeys {
 
   // param-related keys
   public static final String STABLE_VALUE = "stableValue";
-  public static final String DEFAULT_VALUE = "defaultValue";
   public static final String VOCABULARY = "vocabulary";
   public static final String DEPENDENT_PARAMS = "dependentParams";
 
