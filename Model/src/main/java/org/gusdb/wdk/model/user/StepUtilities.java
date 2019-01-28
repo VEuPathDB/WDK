@@ -23,8 +23,9 @@ import org.gusdb.wdk.model.record.RecordClassSet;
 
 public class StepUtilities {
 
-  private static Logger logger = Logger.getLogger(StepUtilities.class);
+  private static Logger LOG = Logger.getLogger(StepUtilities.class);
 
+  @Deprecated
   public static Step createStep(User user, Strategy strategy, Question question, Map<String, String> paramValues,
       String filterName, boolean deleted, int assignedWeight) throws WdkModelException {
     RecordClass recordClass = question.getRecordClass();
@@ -34,12 +35,14 @@ public class StepUtilities {
     return createStep(user, strategy, question, paramValues, filter, deleted, assignedWeight);
   }
 
+  @Deprecated
   public static Step createStep(User user, Strategy strategy, Question question, Map<String, String> paramValues,
       AnswerFilterInstance filter, boolean deleted, int assignedWeight)
       throws WdkModelException {
     return createStep(user, strategy, question, paramValues, filter, deleted, assignedWeight, null);
   }
 
+  @Deprecated
   public static Step createStep(User user, Strategy strategy, Question question,
       Map<String, String> paramValues, AnswerFilterInstance filter, boolean deleted, int assignedWeight,
       FilterOptionList filterOptions) throws WdkModelException {
@@ -63,28 +66,33 @@ public class StepUtilities {
 
   public static Strategy createStrategy(Step step, String name, String savedName, boolean saved, String description,
       boolean hidden, boolean isPublic) throws WdkModelException, WdkUserException {
-    User user = step.getUser();
-    Strategy strategy = user.getWdkModel().getStepFactory().createStrategy(
-        user, step, name, savedName, saved, description, hidden, isPublic);
-
-    // set the view to this one
-    ActiveStrategyFactory activeStrats = user.getSession().getActiveStrategyFactory();
-    String strategyKey = Long.toString(strategy.getStrategyId());
-    activeStrats.openActiveStrategy(strategyKey);
-    if (strategy.isValid()) {
-      activeStrats.setViewStrategyKey(strategyKey);
-      activeStrats.setViewStepId(step.getStepId());
+    try {
+      User user = step.getUser();
+      Strategy strategy = user.getWdkModel().getStepFactory().createStrategy(
+          user, step, name, savedName, saved, description, hidden, isPublic);
+  
+      // set the view to this one
+      ActiveStrategyFactory activeStrats = user.getSession().getActiveStrategyFactory();
+      String strategyKey = Long.toString(strategy.getStrategyId());
+      activeStrats.openActiveStrategy(strategyKey);
+      if (strategy.isValid()) {
+        activeStrats.setViewStrategyKey(strategyKey);
+        activeStrats.setViewStepId(step.getStepId());
+      }
+      return strategy;
     }
-    return strategy;
+    catch(InvalidStrategyStructureException e) {
+      throw new WdkModelException("Invalid structure while creating strategy", e);
+    }
   }
 
   public static Map<Long, Step> getStepsMap(User user) throws WdkModelException {
-    logger.debug("loading steps...");
+    LOG.debug("loading steps...");
     return user.getWdkModel().getStepFactory().getSteps(user.getUserId());
   }
 
   public static Map<Long, Strategy> getStrategiesMap(User user) throws WdkModelException {
-    logger.debug("loading strategies...");
+    LOG.debug("loading strategies...");
     Map<Long, Strategy> invalidStrategies = new LinkedHashMap<>();
     Map<Long, Strategy> strategies = user.getWdkModel().getStepFactory().getStrategies(user.getUserId(), invalidStrategies);
     return strategies;
@@ -244,11 +252,11 @@ public class StepUtilities {
     user.getWdkModel().getStepFactory().deleteStrategy(strategyId);
   }
 
-  public static void deleteStrategies(User user) throws WdkModelException {
+  public static void deleteStrategies(User user) {
     deleteStrategies(user, false);
   }
 
-  public static void deleteStrategies(User user, boolean allProjects) throws WdkModelException {
+  public static void deleteStrategies(User user, boolean allProjects) {
     user.getSession().getActiveStrategyFactory().clear();
     user.getWdkModel().getStepFactory().deleteStrategies(user, allProjects);
   }
@@ -266,10 +274,10 @@ public class StepUtilities {
    * @throws WdkUserException
    */
   public static Strategy importStrategy(User user, String strategyKey) throws WdkModelException, WdkUserException {
-    return importStrategy(user, getStrategyByStrategyKey(user.getWdkModel(), strategyKey), null);
+    return importStrategy(user, getStrategyByStrategyKey(user.getWdkModel(), strategyKey, ValidationLevel.NONE), null);
   }
 
-  public static Strategy getStrategyByStrategyKey(WdkModel wdkModel, String strategyKey)
+  public static Strategy getStrategyByStrategyKey(WdkModel wdkModel, String strategyKey, ValidationLevel level)
       throws WdkModelException, WdkUserException {
     Strategy oldStrategy;
     String[] parts = strategyKey.split(":");
@@ -287,7 +295,7 @@ public class StepUtilities {
       if (!FormatUtil.isInteger(strategyIdStr)) {
         throw new WdkUserException("Invalid strategy ID: " + strategyIdStr);
       }
-      oldStrategy = wdkModel.getStepFactory().getStrategyById(Long.parseLong(strategyIdStr)).orElse(null);
+      oldStrategy = wdkModel.getStepFactory().getStrategyById(Long.parseLong(strategyIdStr), level).orElse(null);
       if (oldStrategy == null || oldStrategy.getUser().getUserId() != owner.getUserId()) {
         throw new WdkUserException("Can not find strategy " + strategyIdStr + " for user " + owner.getUserId());
       }
@@ -360,7 +368,7 @@ public class StepUtilities {
     params.put(booleanQuery.getOperatorParam().getName(), operatorString);
     //    params.put(booleanQuery.getUseBooleanFilter().getName(), Boolean.toString(useBooleanFilter));
 
-    Step booleanStep = createStep(user, strategy, question, params, filter, false, 0).getObject();
+    Step booleanStep = createStep(user, strategy, question, params, filter, false, 0);
     booleanStep.setPreviousStep(leftStep);
     booleanStep.setChildStep(rightStep);
     return booleanStep;
@@ -371,7 +379,7 @@ public class StepUtilities {
     List<String> failedStratKeys = new ArrayList<>();
     for (String stratKey : stratKeys) {
       try {
-        Strategy strat = getStrategyByStrategyKey(wdkModel, stratKey);
+        Strategy strat = getStrategyByStrategyKey(wdkModel, stratKey, ValidationLevel.NONE);
         successfulStrats.add(strat);
       }
       catch (Exception e) {
@@ -381,15 +389,17 @@ public class StepUtilities {
     return new TwoTuple<>(successfulStrats, failedStratKeys);
   }
 
-  public static Strategy getStrategy(User user, long strategyId) throws WdkUserException, WdkModelException {
+  public static Strategy getStrategy(User user, long strategyId, ValidationLevel level)
+      throws WdkUserException, WdkModelException {
     return user.getWdkModel().getStepFactory()
-      .getStrategyById(strategyId)
+      .getStrategyById(strategyId, level)
       .filter(strategy -> strategy.getUser().getUserId() == user.getUserId())
       .orElseThrow(() -> new WdkUserException(
         "No strategy with ID " + strategyId + " exists for user " + user.getUserId()));
   }
 
-  public static Step getStep(User user, long stepId, ValidationLevel validationLevel) throws WdkUserException, WdkModelException {
+  public static Step getStep(User user, long stepId, ValidationLevel validationLevel)
+      throws WdkUserException, WdkModelException {
     return user.getWdkModel().getStepFactory()
         .getStepById(stepId, validationLevel)
         .filter(step -> step.getUser().getUserId() == user.getUserId())

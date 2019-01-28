@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
@@ -166,7 +167,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
       else if (type.equals("strategy")) {
         String strId = requestParams.getParam(datasetParam.getStrategySubParam());
         long strategyId = Long.valueOf(strId);
-        Strategy strategy = StepUtilities.getStrategy(user, strategyId);
+        Strategy strategy = StepUtilities.getStrategy(user, strategyId, ValidationLevel.RUNNABLE);
         Step step = strategy.getRootStep();
         List<RecordInstance> list = new ArrayList<>();
         try (RecordStream fullAnswer = step.getAnswerValue().getFullAnswer()) {
@@ -244,7 +245,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
     }
 
     // get data
-    String data = (dataset != null) ? dataset.getContent() : _param.getDefault();
+    String data = (dataset != null) ? dataset.getContent() : _param.getXmlDefault();
     requestParams.setParam(datasetParam.getDataSubParam(), data);
 
     if (dataset != null) {

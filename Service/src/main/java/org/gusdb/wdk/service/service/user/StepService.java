@@ -32,6 +32,7 @@ import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.user.InvalidStrategyStructureException;
 import org.gusdb.wdk.model.user.NoSuchElementException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
@@ -182,15 +183,20 @@ public class StepService extends UserService {
         .setAnswerSpec(AnswerSpec.builder(newSpec));
 
     if (existingStep.hasStrategy()) {
-      // need to replace and update whole strategy to cover effects
-      getWdkModel().getStepFactory().updateStrategy(Strategy
-          .builder(existingStep.getStrategy())
-          .addStep(replacementBuilder)
-          .build(new UserCache(user), ValidationLevel.SEMANTIC)
-          .getSemanticallyValid()
-          .getOrThrow(strat -> new DataValidationException(
-              "The passed answer spec is not semantically valid."))
-          .getObject());
+      try {
+        // need to replace and update whole strategy to cover effects
+        getWdkModel().getStepFactory().updateStrategy(Strategy
+            .builder(existingStep.getStrategy())
+            .addStep(replacementBuilder)
+            .build(new UserCache(user), ValidationLevel.SEMANTIC)
+            .getSemanticallyValid()
+            .getOrThrow(strat -> new DataValidationException(
+                "The passed answer spec is not semantically valid."))
+            .getObject());
+      }
+      catch (InvalidStrategyStructureException e) {
+        throw new DataValidationException("Invalid strategy structure passed. " + e.getMessage(), e);
+      }
     }
     else {
       // no strategy present; only need to update the step

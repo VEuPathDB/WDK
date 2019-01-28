@@ -22,6 +22,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -50,10 +51,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 public class StrategyService extends UserService {
+
   public static final String BASE_PATH = "strategies";
   public static final String ID_PARAM  = "strategyId";
   public static final String ID_PATH   = BASE_PATH + "/{" + ID_PARAM + "}";
-
 
   public static final String STRATEGY_RESOURCE = "Strategy ID ";
 
@@ -110,8 +111,8 @@ public class StrategyService extends UserService {
   public void updateStrategy(@PathParam(ID_PARAM) long strategyId,
       JSONObject body) throws WdkModelException {
     final StepFactory fac = getWdkModel().getStepFactory();
-    final Strategy strat = fac.getStrategyById(strategyId)
-      .orElseThrow(NotFoundException::new);
+    final Strategy strat = fac.getStrategyById(strategyId, ValidationLevel.SYNTACTIC)
+      .orElseThrow(() -> new NotFoundException(formatNotFound(STRATEGY_RESOURCE + strategyId)));
 
     if (strat.isSaved()) {
       validateSavedStratChange(body).ifPresent(err -> {
@@ -120,7 +121,11 @@ public class StrategyService extends UserService {
       });
     }
 
-    fac.updateStrategy(applyStrategyChange(strat, body));
+    try {
+      fac.updateStrategy(applyStrategyChange(strat, body));
+    }
+    catch (InvalidStrategyStructureException e) {
+      throw new DataValidationException("Invalid strategy structure; " + e.getMessage(), e);
   }
 
   @GET
@@ -130,7 +135,7 @@ public class StrategyService extends UserService {
   public JSONObject getStrategy(@PathParam(ID_PARAM) long strategyId)
       throws WdkModelException {
     return StrategyFormatter.getDetailedStrategyJson(
-      getStrategyForCurrentUser(strategyId));
+      getStrategyForCurrentUser(strategyId, ValidationLevel.RUNNABLE));
   }
 
   @PUT
@@ -141,12 +146,12 @@ public class StrategyService extends UserService {
     throw new InternalServerErrorException("Method not implemented");
   }
 
-  private Strategy getStrategyForCurrentUser(long strategyId) {
+  private Strategy getStrategyForCurrentUser(long strategyId, ValidationLevel level) {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       // Whether the user owns this strategy or not is resolved in the getStepFactory method
       Strategy strategy = getWdkModel().getStepFactory()
-        .getStrategyById(strategyId)
+        .getStrategyById(strategyId, level)
         .orElseThrow(() -> new NotFoundException(
           AbstractWdkService.formatNotFound(STRATEGY_RESOURCE + strategyId)));
 
@@ -172,7 +177,7 @@ public class StrategyService extends UserService {
 
   private Strategy createNewStrategy(User user, StepFactory stepFactory,
       JSONObject json)
-      throws WdkModelException, DataValidationException, WdkUserException, InvalidStrategyStructureException {
+      throws WdkModelException, DataValidationException, InvalidStrategyStructureException {
     StrategyRequest strategyRequest = StrategyRequest.createFromJson(json,
       stepFactory, user, getWdkModel().getProjectId());
     TreeNode<Step> stepTree = strategyRequest.getStepTree();
@@ -206,11 +211,12 @@ public class StrategyService extends UserService {
    * @param change JSON object containing change set to apply.
    *
    * @return New strategy instance with the given changes applied.
+   * @throws InvalidStrategyStructureException 
    */
   private Strategy applyStrategyChange(
     Strategy strat,
     JSONObject change
-  ) throws WdkModelException {
+  ) throws WdkModelException, InvalidStrategyStructureException {
     final Strategy.StrategyBuilder build = new Strategy.StrategyBuilder(strat);
 
     for(final String key : change.keySet()) {

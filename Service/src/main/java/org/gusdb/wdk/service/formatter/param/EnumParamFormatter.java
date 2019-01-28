@@ -18,7 +18,6 @@ public class EnumParamFormatter extends AbstractEnumParamFormatter {
   public JSONObject getJson(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
     EnumParamVocabInstance vocabInstance = _param.getVocabInstance(spec);
     return getBaseJson(spec)
-        .put(JsonKeys.DEFAULT_VALUE, vocabInstance.getDefaultValue())
         .put(JsonKeys.VOCABULARY, _param.getDisplayType().equals(AbstractEnumParam.DISPLAY_TREEBOX)
             ? getVocabTreeJson(vocabInstance)
             : getVocabArrayJson(vocabInstance));

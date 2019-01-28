@@ -18,7 +18,6 @@ public class TypeAheadParamFormatter extends AbstractEnumParamFormatter {
   public JSONObject getJson(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
     EnumParamVocabInstance vocabInstance = _param.getVocabInstance(spec);
     return getBaseJson(spec)
-        .put(JsonKeys.DEFAULT_VALUE, vocabInstance.getDefaultValue())
         .put(JsonKeys.VOCABULARY, getVocabArrayJson(vocabInstance));
   }
 }
