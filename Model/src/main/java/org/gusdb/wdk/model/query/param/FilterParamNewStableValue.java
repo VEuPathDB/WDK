@@ -20,6 +20,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -89,7 +90,7 @@ public class FilterParamNewStableValue {
    *
    * @return err message if any. null if valid
    */
-   String validateSyntaxAndSemantics(User user, Map<String, String> contextParamValues) throws WdkModelException {
+   String validateSyntaxAndSemantics(PartiallyValidatedStableValues contextParamValues) throws WdkModelException {
 
     // validate syntax
     String errmsg = validateSyntax();
@@ -99,7 +100,7 @@ public class FilterParamNewStableValue {
     List<String> errors = new ArrayList<String>();
 
     // validate fields against ontology; collect fields that are not isRange
-    Map<String, OntologyItem> ontology = _param.getOntology(user, contextParamValues);
+    Map<String, OntologyItem> ontology = _param.getOntology(contextParamValues.getUser(), contextParamValues);
     Set<MembersFilter> memberFilters = new HashSet<MembersFilter>();
     for (Filter filter : _filters) {
       String field = filter.getField();
@@ -116,7 +117,7 @@ public class FilterParamNewStableValue {
       //    .map(FilterParamNewStableValue.MembersFilter::getField)
       //    .collect(Collectors.toSet());
       Map<String, Set<String>> metadataMembers = _param.getValuesMap(
-          user, contextParamValues, null, ontology);
+          contextParamValues.getUser(), contextParamValues, null, ontology);
 
       // iterate through our member filters, validating the values of each
       for (MembersFilter mf : memberFilters) {

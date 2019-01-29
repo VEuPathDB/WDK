@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -145,21 +146,28 @@ public class DatasetParam extends Param {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.query.param.Param#validateValue(org.gusdb.wdk.model .user.User,
-   * java.lang.String)
-   */
   @Override
   protected ParamValidity validateValue(PartiallyValidatedStableValues ctxParamVals, ValidationLevel level) {
-    final String name = getName();
-    final int value = Integer.parseInt(ctxParamVals.get(name));
 
-    // make sure the dataset exists
+    final String name = getName();
+    final String stableValue = ctxParamVals.get(name);
+
+    // value must be either the empty string or an integer (representing a step ID)
+    if (!FormatUtil.isInteger(stableValue)) {
+      return ctxParamVals.setInvalid(name, "Param " + name +
+          "'s value must be a positive integer.");
+    }
+
+    // that's all the validation we perform if level is syntactic
+    if (level.equals(ValidationLevel.SYNTACTIC)) {
+      return ctxParamVals.setValid(name);
+    }
+
+    // otherwise, make sure the dataset exists
     try {
-      _wdkModel.getDatasetFactory().getDataset(ctxParamVals.getUser(), value);
-    } catch (WdkModelException e) {
+      _wdkModel.getDatasetFactory().getDataset(ctxParamVals.getUser(), Long.parseLong(stableValue));
+    }
+    catch (WdkModelException e) {
       return ctxParamVals.setInvalid(name, e.getMessage());
     }
 

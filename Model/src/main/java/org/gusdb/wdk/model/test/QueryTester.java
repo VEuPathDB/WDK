@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.test;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +66,7 @@ public class QueryTester {
   // /////////// protected methods //////////////////////////////////
   // ////////////////////////////////////////////////////////////////////
 
-  private void displayParams(Query query) {
+  private void displayParams(Query query) throws WdkModelException {
     String newline = System.getProperty("line.separator");
     System.out.println(newline + "Query: " + query.getFullName() + newline);
 
@@ -104,7 +105,8 @@ public class QueryTester {
     return h;
   }
 
-  private String formatParamPrompt(Param param) {
+  @Deprecated
+  private String formatParamPrompt(Param param) throws WdkModelException {
     String newline = System.getProperty("line.separator");
 
     String prompt = "  " + param.getPrompt();
@@ -115,7 +117,7 @@ public class QueryTester {
       if (enumParam.getMultiPick()) prompt += " or more";
       prompt += "):";
       // assume independent param
-      Map<String, String> vocabs = enumParam.getVocabMap(null);
+      Map<String, String> vocabs = enumParam.getVocabMap(user, new HashMap<>());
       for (String term : vocabs.keySet()) {
         String internal = vocabs.get(term);
         prompt += newline + "    " + term + " (" + internal + ")";

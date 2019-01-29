@@ -177,7 +177,8 @@ public class EnumParamHandler extends AbstractParamHandler {
       throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
     return inputStableValue;
   }
-  
+
+  @Deprecated
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
       throws WdkModelException, WdkUserException {

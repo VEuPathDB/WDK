@@ -1,22 +1,27 @@
 package org.gusdb.wdk.model.query.param;
 
+import static org.gusdb.wdk.model.user.StepContainer.withId;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.StepUtilities;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * AnswerParam is used to take a previous step as input value. The answerParam is the building block of the
@@ -119,22 +124,34 @@ public class AnswerParam extends Param {
       throws WdkModelException {
 
     final String name = getName();
-    final String rawVal = ctxParamVals.get(name);
+    final String stableValue = ctxParamVals.get(name);
 
-    long stepId = Long.valueOf(rawVal);
-    Step step;
-    try {
-      step = StepUtilities.getStep(ctxParamVals.getUser(), stepId, level);
+    // value must be either the empty string or an integer (representing a step ID)
+    if (!stableValue.equals(NULL_VALUE) && !FormatUtil.isInteger(stableValue)) {
+      return ctxParamVals.setInvalid(name, "Param " + name +
+          "'s value must be an empty string or a positive integer.");
     }
-    catch (WdkUserException e) {
-      return ctxParamVals.setInvalid(name, e.getMessage());
+
+    // that's all the validation we perform unless level is runnable
+    if (!level.equals(ValidationLevel.RUNNABLE)) {
+      return ctxParamVals.setValid(name);
+    }
+
+    // if level is runnable, check that the step is in our container and
+    // produces the correct record type 
+    long stepId = Long.valueOf(stableValue);
+    Step step = ctxParamVals.getStepContainer().findFirstStep(withId(stepId)).orElse(null);
+
+    if (step == null) {
+      return ctxParamVals.setInvalid(name, "Step ID value " + stepId + " does not correspond to an available step.");
     }
 
     // make sure the input step is of the acceptable type
     String rcName = step.getRecordClass().getFullName();
-    if (!recordClasses.containsKey(rcName))
+    if (!recordClasses.containsKey(rcName)) {
       return ctxParamVals.setInvalid(name, "The step of record type '" + rcName
         + "' is not allowed in the answerParam " + this.getFullName());
+    }
 
     return ctxParamVals.setValid(name);
   }

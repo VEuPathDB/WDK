@@ -12,7 +12,6 @@ import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
@@ -137,24 +136,14 @@ public class FlatVocabParam extends AbstractEnumParam {
     return query;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.Param#setResources(org.gusdb.wdk.model.WdkModel)
-   */
   @Override
   public void setResources(WdkModel model) throws WdkModelException {
     super.setResources(model);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#initVocabMap()
-   */
   @Override
-  protected EnumParamVocabInstance createVocabInstance(User user, Map<String, String> dependedParamValues)
-      throws WdkModelException, WdkUserException {
+  protected EnumParamVocabInstance getVocabInstance(User user, Map<String, String> dependedParamValues)
+      throws WdkModelException {
     try {
       FlatVocabularyFetcher fetcher = new FlatVocabularyFetcher(user, this);
       return (vocabQuery.getIsCacheable() ?

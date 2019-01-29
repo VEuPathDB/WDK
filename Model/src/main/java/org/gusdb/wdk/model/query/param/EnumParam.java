@@ -49,11 +49,11 @@ public class EnumParam extends AbstractEnumParam {
   // ///////////////////////////////////////////////////////////////////
 
   @Override
-  protected EnumParamVocabInstance createVocabInstance(User user, Map<String, String> dependedParamValues)
+  protected EnumParamVocabInstance getVocabInstance(User user, Map<String, String> dependedParamValues)
       throws WdkModelException {
     LOG.trace("Entering createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
     Set<Param> dependedParams = getDependedParams();
-    EnumParamVocabInstance cache = new EnumParamVocabInstance(dependedParamValues, this);
+    EnumParamVocabInstance cache = new EnumParamVocabInstance(dependedParamValues);
     EnumItem[] enumItems = _enumItemList.getEnumItems();
     for (EnumItem item : enumItems) {
       String term = item.getTerm();
@@ -86,16 +86,10 @@ public class EnumParam extends AbstractEnumParam {
       throw new WdkEmptyEnumListException("The EnumParam [" + getFullName() + "] doesn't have any values.");
 
     initTreeMap(cache);
-    applySelectMode(cache);
     LOG.trace("Leaving createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
     return cache;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.Param#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);

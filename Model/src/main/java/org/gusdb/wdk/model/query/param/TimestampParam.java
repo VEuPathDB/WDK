@@ -60,11 +60,6 @@ public class TimestampParam extends Param {
     this.interval = interval;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.query.param.Param#appendJSONContent(org.json.JSONObject )
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     if (extra) {
@@ -72,11 +67,6 @@ public class TimestampParam extends Param {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.query.param.Param#clone()
-   */
   @Override
   public Param clone() {
     return new TimestampParam(this);
