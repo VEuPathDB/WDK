@@ -1,7 +1,11 @@
 package org.gusdb.wdk.service.service.user;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.*;
 
 import javax.ws.rs.*;
@@ -11,6 +15,8 @@ import javax.ws.rs.core.Response;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
@@ -221,7 +227,7 @@ public class StepAnalysisService extends UserService {
     StepAnalysisInstance inst = fac.getSavedAnalysisInstance(analysisId);
     value.put(CONTEXT_HASH_KEY, inst.createHash())
         .put(ACCESS_TOKEN_KEY, inst.getAccessToken())
-        .put(DOWNLOAD_URL_BASE_KEY, getContextUri())
+        .put(DOWNLOAD_URL_BASE_KEY, getServiceUri())
         .put(PROPERTIES_URL_BASE_KEY, getServiceUri());
 
     return Response.ok(value).build();
@@ -261,6 +267,39 @@ public class StepAnalysisService extends UserService {
     } catch (WdkUserException e) {
       throw new NotFoundException(e);
     }
+  }
+
+  @GET
+  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}/resources")
+  public Response getStepAnalysisResource(
+    @PathParam("analysisId") long analysisId,
+    @QueryParam("path") String path
+  ) throws Exception {
+    StepAnalysisFactory stepAnalysisFactory = getWdkModel().getStepAnalysisFactory();
+    StepAnalysisInstance instance = StepAnalysisInstance.createFromId(
+      analysisId,
+      stepAnalysisFactory
+    );
+    java.nio.file.Path resourcePath = stepAnalysisFactory.getResourcePath(
+      instance,
+      path
+    );
+
+    File resourceFile = resourcePath.toFile();
+    if (resourceFile.exists() && resourceFile.isFile() && resourceFile.canRead()) {
+      InputStream resourceStream = new BufferedInputStream(new FileInputStream(resourceFile));
+      return Response.ok(getStreamingOutput(resourceStream))
+        .type(Files.probeContentType(resourcePath))
+        .header(
+          "Content-Disposition",
+          ContentDisposition.type("attachment").fileName(
+            resourceFile.getName()
+          ).build()
+        )
+        .build();
+    }
+
+    throw new NotFoundException("Could not find resource " + path + " for step analysis " + analysisId);
   }
 
   @GET
