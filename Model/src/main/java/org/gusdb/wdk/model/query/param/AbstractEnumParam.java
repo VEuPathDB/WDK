@@ -142,7 +142,10 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   private int depthExpanded = 0;
 
-  protected abstract EnumParamVocabInstance getVocabInstance(User user, Map<String,String> stableValues)
+  // FIXME: this method is public only to support WdkQueryPlugin.java, which is
+  //    due to be retired when ApiFed starts using the WDK service (or UniDB is
+  //    in use).  When either of these happens, change this back to protected.
+  public abstract EnumParamVocabInstance getVocabInstance(User user, Map<String,String> stableValues)
       throws WdkModelException;
 
   public AbstractEnumParam() {
@@ -297,7 +300,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   }
 
   @Override
-  public String getDefault(PartiallyValidatedStableValues stableVals) throws WdkModelException {
+  protected String getDefault(PartiallyValidatedStableValues stableVals) throws WdkModelException {
     LOG.debug("Default value requested for param " + getName() + " with context values " +
         FormatUtil.prettyPrint(stableVals, Style.SINGLE_LINE));
     String value = getDefault(getVocabInstance(stableVals));
@@ -506,7 +509,10 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   /**
    * Builds the default value (and sanity default value) of the "current" enum values
    */
-  private String getDefault(EnumParamVocabInstance cache) throws WdkModelException {
+  // FIXME: this method is public only to support WdkQueryPlugin.java, which is
+  //    due to be retired when ApiFed starts using the WDK service (or UniDB is
+  //    in use).  When either of these happens, change this back to private.
+  public String getDefault(EnumParamVocabInstance cache) throws WdkModelException {
     // logger.debug("applySelectMode(): select mode: '" + selectMode + "', default from model = " +
     //    super.getDefault());
     String defaultFromModel = super.getXmlDefault(); // TODO: Not sure if this is actually supposed to only read from the xml default
