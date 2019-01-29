@@ -110,7 +110,7 @@ public class QueryInstanceSpecBuilder extends ReadOnlyHashMap.Builder<String,Str
       tmpValues.put(userKey, Long.toString(user.getUserId()));
     }
 
-    PartiallyValidatedStableValues stableValues = new PartiallyValidatedStableValues(user, tmpValues);
+    PartiallyValidatedStableValues stableValues = new PartiallyValidatedStableValues(user, tmpValues, stepContainer);
     ValidationBundleBuilder validation = ValidationBundle.builder(validationLevel);
     for (Param param : query.getParams()) {
       ParamValidity result = param.validate(stableValues, validationLevel, fillStrategy);

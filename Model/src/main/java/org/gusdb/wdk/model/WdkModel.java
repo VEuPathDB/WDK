@@ -657,7 +657,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private void validateDependentParams() throws WdkModelException {
     
     // find names of all queries that are not owned by a parameter.  these are our "root" queries
-    Set<String> nonRootQueryNames = new HashSet<String>();
+    Set<String> nonRootQueryNames = new HashSet<>();
     for (ParamSet paramSet : paramSets.values()) {
       for (Param param : paramSet.getParams()) {
         if (param instanceof AbstractDependentParam) {
@@ -666,11 +666,14 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       }
     }
     
-    // gather all root queries (those that are not contained by a param).  
-    Set<Query> rootQueries = new HashSet<Query>();
-    Set<String> rootQueryNames = new HashSet<String>();
+    // gather all root queries (those that are not contained by a param);
+    // also gather all queries for dependent param resolution
+    List<Query> allQueries = new ArrayList<>();
+    Set<Query> rootQueries = new HashSet<>();
+    Set<String> rootQueryNames = new HashSet<>();
     for (QuerySet querySet : querySets.values()) {
       for (Query query : querySet.getQueries()) {
+        allQueries.add(query);
         if (!nonRootQueryNames.contains(query.getFullName())) {
         	rootQueries.add(query);
             rootQueryNames.add(query.getFullName());	
@@ -683,6 +686,13 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     // found in the context
     for (Query rootQuery : rootQueries) {
       rootQuery.validateDependentParams();	
+    }
+
+    // finally, resolve depended param refs in all queries' parameters
+    for (Query query : allQueries) {
+      for (Param param : query.getParams()) {
+        param.resolveDependedParamRefs();
+      }
     }
   }
 

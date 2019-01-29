@@ -369,8 +369,6 @@ public class StepUtilities {
     //    params.put(booleanQuery.getUseBooleanFilter().getName(), Boolean.toString(useBooleanFilter));
 
     Step booleanStep = createStep(user, strategy, question, params, filter, false, 0);
-    booleanStep.setPreviousStep(leftStep);
-    booleanStep.setChildStep(rightStep);
     return booleanStep;
   }
 

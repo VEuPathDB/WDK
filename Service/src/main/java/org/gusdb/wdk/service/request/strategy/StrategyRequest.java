@@ -149,7 +149,7 @@ public class StrategyRequest {
     return stepTree;
   }
   
-  protected static String validateStep(Step step, User user, String projectId) throws WdkModelException {
+  protected static String validateStep(Step step, User user, String projectId) {
 	StringBuilder errors = new StringBuilder();
     if(step.getStrategyId() != null) {
     	  errors.append("Step " + step.getStepId() + " is already embedded in strategy with id " + step.getStrategyId() + "." + System.lineSeparator());

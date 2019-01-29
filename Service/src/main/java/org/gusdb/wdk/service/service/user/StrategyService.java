@@ -22,7 +22,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -109,7 +108,7 @@ public class StrategyService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.strategy.patch-request")
   public void updateStrategy(@PathParam(ID_PARAM) long strategyId,
-      JSONObject body) throws WdkModelException {
+      JSONObject body) throws WdkModelException, DataValidationException {
     final StepFactory fac = getWdkModel().getStepFactory();
     final Strategy strat = fac.getStrategyById(strategyId, ValidationLevel.SYNTACTIC)
       .orElseThrow(() -> new NotFoundException(formatNotFound(STRATEGY_RESOURCE + strategyId)));
@@ -126,6 +125,7 @@ public class StrategyService extends UserService {
     }
     catch (InvalidStrategyStructureException e) {
       throw new DataValidationException("Invalid strategy structure; " + e.getMessage(), e);
+    }
   }
 
   @GET

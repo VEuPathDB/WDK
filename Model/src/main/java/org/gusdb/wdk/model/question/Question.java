@@ -680,6 +680,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
         for (Param param : _query.getParams()) {
           param.resolveReferences(model);
         }
+        // once param references are resolved, resolve dependent params
+        for (Param param : _query.getParams()) {
+          param.resolveDependedParamRefs();
+        }
       }
       _query.setContextQuestion(this);
 

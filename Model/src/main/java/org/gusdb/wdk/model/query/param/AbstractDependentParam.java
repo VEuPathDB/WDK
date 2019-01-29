@@ -38,14 +38,14 @@ public abstract class AbstractDependentParam extends Param {
   // parsed list of depended param names
   private Set<String> _dependedParamRefs;
 
-  // resoved list of depended Param objects
+  // resolved list of depended Param objects
   private Set<Param> _dependedParams;
 
   @Override
   public abstract boolean isStale(Set<String> dependedParamsFullNames);
 
   public abstract String getSanityDefault(User user, Map<String, String> contextParamValues,
-      SelectMode sanitySelectMode);
+      SelectMode sanitySelectMode) throws WdkModelException;
 
   /**
    * A list of the <query> objects used by this parameter.  
@@ -75,6 +75,11 @@ public abstract class AbstractDependentParam extends Param {
     return (_dependedParamRefs.size() > 0);
   }
 
+  @Override
+  public Set<Param> getDependedParams() {
+    return _dependedParams;
+  }
+
   /**
    * This method should be called only after the complete Resolve References phase is done.
    * Before then, we do not have the proper contexts.
@@ -88,40 +93,40 @@ public abstract class AbstractDependentParam extends Param {
    * @throws WdkModelException
    */
   @Override
-  public Set<Param> getDependedParams() throws WdkModelException {
-    if (!isDependentParam())
-      return null;
+  public void resolveDependedParamRefs() throws WdkModelException {
+    if (!isDependentParam()) return;
 
     if (!isResolved())
       throw new WdkModelException(
           "This method can't be called before the references for the object are resolved.");
 
-    if (_dependedParams == null) {
-      _dependedParams = new LinkedHashSet<>();
-      Map<String, Param> params = null;
+    _dependedParams = new LinkedHashSet<>();
+    Map<String, Param> params = null;
 
-      if (_contextQuestion != null) {
-        params = _contextQuestion.getParamMap();
+    if (_contextQuestion != null) {
+      params = _contextQuestion.getParamMap();
+    }
+    else if (_container != null) {
+      params = _container.getParamMap();
+    }
+    for (String paramRef : _dependedParamRefs) {
+
+      // find the best param available to fulfill the dependedParamRefs.
+      // first try the question context, then the query context, and finally the wdk model
+      String paramName = paramRef.split("\\.", 2)[1].trim();
+      Param param = null;
+      if (params != null)
+        param = params.get(paramName);
+      if (param == null)
+        param = (Param) _wdkModel.resolveReference(paramRef);
+      if (param != null) {
+        _dependedParams.add(param);
+        param.addDependentParam(this);
       }
-      else if (_container != null)
-        params = _container.getParamMap();
-
-      for (String paramRef : _dependedParamRefs) {
-
-        // find the best param available to fulfill the dependedParamRefs.
-        // first try the question context, then the query context, and finally the wdk model
-        String paramName = paramRef.split("\\.", 2)[1].trim();
-        Param param = null;
-        if (params != null) param = params.get(paramName);
-        if (param == null) param = (Param) _wdkModel.resolveReference(paramRef);
-        if (param != null) {
-          _dependedParams.add(param);
-          param.addDependentParam(this);
-        } else {
-          String message = "Dependent param " + getFullName() + " declares a depended param " + paramRef +
-              ", but that depended param does not exist";
-          throw new WdkModelException(message);
-        }
+      else {
+        String message = "Dependent param " + getFullName() + " declares a depended param " + paramRef +
+            ", but that depended param does not exist";
+        throw new WdkModelException(message);
       }
     }
     if (LOG.isTraceEnabled()) {
@@ -131,10 +136,9 @@ public abstract class AbstractDependentParam extends Param {
           Query query = ((FlatVocabParam) param).getQuery();
           vocab = (query != null) ? query.getFullName() : "N/A";
         }
-        LOG.trace("param " + getName() + " depends on " + param.getName() + "(" + vocab + ")");
+        LOG.trace("Param " + getName() + " depends on " + param.getName() + "(" + vocab + ")");
       }
     }
-    return _dependedParams;
   }
 
   public void setDependedParamRef(String dependedParamRef) {

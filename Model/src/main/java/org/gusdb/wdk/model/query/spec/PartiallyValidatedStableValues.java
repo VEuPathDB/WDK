@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.query.spec;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 public class PartiallyValidatedStableValues extends HashMap<String,String> {
@@ -22,15 +23,21 @@ public class PartiallyValidatedStableValues extends HashMap<String,String> {
   }
 
   private final User _user;
+  private final StepContainer _stepContainer;
   private final Map<String, ParamValidity> _validationStatusMap = new HashMap<>();
 
-  PartiallyValidatedStableValues(User user, Map<String,String> initialValues) {
+  PartiallyValidatedStableValues(User user, Map<String,String> initialValues, StepContainer stepContainer) {
     _user = user;
+    _stepContainer = stepContainer;
     putAll(initialValues);
   }
 
   public User getUser() {
     return _user;
+  }
+
+  public StepContainer getStepContainer() {
+    return _stepContainer;
   }
 
   public boolean hasParamBeenValidated(String paramName) {

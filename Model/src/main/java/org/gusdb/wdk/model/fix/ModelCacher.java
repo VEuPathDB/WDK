@@ -59,11 +59,6 @@ public class ModelCacher extends BaseCLI {
     super((command != null) ? command : "wdkCacheModel", "store model information into database");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.fgputil.BaseCLI#declareOptions()
-   */
   @Override
   protected void declareOptions() {
     addSingleValueOption(ARG_PROJECT_ID, true, null, "A comma-separated"
@@ -403,6 +398,7 @@ public class ModelCacher extends BaseCLI {
     }
   }
 
+  @Deprecated
   private void saveEnums(AbstractEnumParam param, long paramId, PreparedStatement psEnum)
       throws WdkModelException, SQLException {
     // need to handle dependent params
