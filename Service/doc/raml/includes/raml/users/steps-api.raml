@@ -192,6 +192,20 @@ post:
                application/json:
                   type: !include ../../../../../src/main/resources/schema/includes/string-array.json
 
+      /resources:
+        get:
+          description: >
+            Returns the resource file at the specified path
+          queryParameters:
+            path:
+              description: Path to the resource
+              type: string
+          responses:
+            200:
+              description: OK
+            404:
+              description: Not found
+
       /result:
         get:
           description: >
