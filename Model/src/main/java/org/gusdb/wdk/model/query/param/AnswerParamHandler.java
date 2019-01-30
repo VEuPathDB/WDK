@@ -3,9 +3,11 @@ package org.gusdb.wdk.model.query.param;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
@@ -13,7 +15,6 @@ import org.gusdb.wdk.model.user.User;
 
 /**
  * @author jerric
- *
  */
 public class AnswerParamHandler extends AbstractParamHandler {
 
@@ -30,51 +31,38 @@ public class AnswerParamHandler extends AbstractParamHandler {
 
   /**
    * the stable value is the step id;
-   *
-   * @throws WdkModelException
-   * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toStableValue(org.gusdb.wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toStableValue(User user, Object rawValue)
-      throws WdkModelException {
+  public String toStableValue(User user, Object rawValue) {
     Step step = (Step) rawValue;
     return Long.toString(step.getStepId());
   }
 
   /**
    * the raw value is a step object.
-   *
-   * @throws WdkModelException
-   *
-   * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toRawValue(org.gusdb.wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
    */
   @Override
   public Step toRawValue(User user, String stableValue)
       throws WdkModelException {
     long stepId = Long.valueOf(stableValue);
-    return StepUtilities.getStep(user, stepId);
+    return StepUtilities.getStep(user, stepId, validationLevel);
   }
 
   /**
    * The internal is an SQL that represent the result of the step. If noTranslation is true, it returns
    * step_id
-   *
-   * @throws WdkModelException
-   *
-   * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toInternalValue(org.gusdb.wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxVals)
       throws WdkModelException {
-    int stepId = Integer.parseInt(stableValue.split(":", 2)[0]);
+    final QueryInstanceSpec query = ctxVals.getObject();
+    final String stable = query.get(_param.getName());
+    final int stepId = Integer.parseInt(stable.split(":", 2)[0]);
 
     if (_param.isNoTranslation())
       return Integer.toString(stepId);
 
-    Step step = StepUtilities.getStep(user, stepId);
+    Step step = StepUtilities.getStep(query.getUser(), stepId, validationLevel);
     AnswerValue answerValue = step.getAnswerValue();
     return answerValue.getIdSql();
   }
@@ -82,46 +70,35 @@ public class AnswerParamHandler extends AbstractParamHandler {
   /**
    * the signature is the checksum of answer, which doesn't have any user related information, to make sure
    * the cache can be shared.
-   *
-   * @throws WdkModelException
-   *
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
-   *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
+  public String toSignature(RunnableObj<QueryInstanceSpec> ctxVals)
       throws WdkModelException {
-    long stepId = Long.valueOf(stableValue);
-    Step step = StepUtilities.getStep(user, stepId);
-    AnswerValue answerValue = step.getAnswerValue(false);
-    String checksum= answerValue.getChecksum();
+    final QueryInstanceSpec query = ctxVals.getObject();
+    final String stable = query.get(_param.getName());
+    final long stepId = Long.valueOf(stable);
+    final Step step = StepUtilities.getStep(query.getUser(), stepId, validationLevel);
+    final String checksum = step.getAnswerValue(false).getChecksum();
     LOG.debug("Signature for step#" + stepId + ": " + checksum);
     return checksum;
   }
 
   /**
    * The stable value is string representation step id.
-   *
-   * @throws WdkUserException
-   * @throws WdkModelException
-   *
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#getStableValue(org.gusdb.wdk.model.user.User,
-   *      org.gusdb.wdk.model.query.param.RequestParams)
    */
   @Override
-  public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
-      WdkModelException {
+  public String getStableValue(User user, RequestParams requestParams)
+      throws WdkUserException, WdkModelException {
     return validateStableValueSyntax(user, requestParams.getParam(_param.getName()));
   }
 
   @Override
-  public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException,
-  WdkModelException {
-    String stepId = inputStableValue;
-    if (stepId == null || stepId.isEmpty())
+  public String validateStableValueSyntax(User user, String inputStableValue)
+      throws WdkUserException, WdkModelException {
+    if (inputStableValue == null || inputStableValue.isEmpty())
       throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
     try {
-      Step step = StepUtilities.getStep(user, Long.valueOf(stepId));
+      Step step = StepUtilities.getStep(user, Long.valueOf(inputStableValue), validationLevel);
       return Long.toString(step.getStepId());
     }
     catch (NumberFormatException ex) {
@@ -144,7 +121,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
           int pos = strategyKey.indexOf("_");
           if (pos < 0) {
             long strategyId = Long.parseLong(strategyKey);
-            Strategy strategy = StepUtilities.getStrategy(user, strategyId);
+            Strategy strategy = StepUtilities.getStrategy(user, strategyId, validationLevel);
             stepId = Long.toString(strategy.getRootStepId());
           }
           else {
@@ -160,7 +137,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
     // if stable value is assigned, also prepare the raw value
     if (stableValue != null) {
       requestParams.setParam(_param.getName(), stableValue);
-      Step step = StepUtilities.getStep(user, Long.valueOf(stableValue));
+      Step step = StepUtilities.getStep(user, Long.valueOf(stableValue), validationLevel);
       requestParams.setAttribute(_param.getName() + Param.RAW_VALUE_SUFFIX, step);
     }
   }
@@ -171,7 +148,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException {
-    return toRawValue(user, stableValue).getCustomName();
+  public String getDisplayValue(QueryInstanceSpec ctxVals) throws WdkModelException {
+    return toRawValue(ctxVals.getUser(), ctxVals.get(_param.getName())).getCustomName();
   }
 }
