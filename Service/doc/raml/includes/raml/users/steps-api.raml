@@ -34,7 +34,7 @@ post:
       description: Success
       body:
         application/json:
-          type: !include ../../../../../src/main/resources/schema/wdk/users/steps/post-response.json
+          type: !include ../../../../../src/main/resources/schema/wdk/creation-post-response.json
 
 /{step-id}:
   uriParameters:
@@ -46,7 +46,7 @@ post:
     description: Delete step
     responses:
       204:
-        description: Success
+        description: No Content
 
   get:
     description: |
@@ -63,44 +63,48 @@ post:
               * isValid (always true here since params had to have validated)
               * Newly populated dates (creation, last_run)
               * Step ID
-
     responses:
       200:
         description: Success
         body:
           application/json:
-            type: !include ../../../../../src/main/resources/schema/wdk/users/steps/post-response.json
+            type: !include ../../../../../src/main/resources/schema/wdk/users/steps/get-response.json
 
   patch:
     description: |
       * Used to modify step (but not its placement within its strategy)
       * The only modifiable fields are:
-          * AnswerSpec (i.e. revise)
-              * Question can be changed, but RecordClasses of inputs/output can not, since doing so could invalidate parent steps (boolean/transform)
-              * AnswerParams cannot be modified and must contain their existing values or answer spec will not validate
-          * Name
-          * IsCollapsible
-          * CollapsedName
-      * New answer spec is validated
-          * if validation fails, 400/500 response is returned and step is not updated
-      * If answer spec sent and valid
-          * Estimate size is cleared for this and all downstream steps
-          * Step is not run
-
+          * name
+          * isCollapsible
+          * collapsedName
     body:
       application/json:
         type: !include ../../../../../src/main/resources/schema/wdk/users/steps/id/patch-request.json
     responses:
-      200:
-        description: Success
+      204:
+        description: No Content
+
+  /answerSpec:
+    put:
+      description: >
+        update the answer spec of a step
+          * AnswerSpec (i.e. revise)
+              * Question can be changed, but RecordClasses of inputs/output can not, since doing so could invalidate parent steps (boolean/transform)
+              * AnswerParams cannot be modified and must contain their existing values or answer spec will not validate
+          * New answer spec is validated
+              * if validation fails, 400/500 response is returned and step is not updated
+          * If answer spec sent and valid
+              * Estimate size is cleared for this and all downstream steps
+              * Step is not run
+      body:
+        application/json:
+          type: TODO
+          example: TODO
+      responses:
+        204:
+          description: No Content
 
   /answer:
-    get:
-      description: >
-        TODO: this endpoint does not appear in the step/strategy service doc
-      responses:
-        200:
-          description: Success
     post:
       description: |
         * Input JSON is identical to value of "formatting" property in answer service requests
@@ -109,36 +113,20 @@ post:
         * Output is same as answer service (i.e. all normal reporters are supported)
         * Step status fields (estimatedSize, isValid, last_run) are updated
         * Branch steps (i.e. >0 answer params) not part of a strategy will error as invalid answer spec (since answer params should have empty string values)
+      body:
+        application/json:
+          type: TODO
       responses:
         200:
-          Success
+          description: Success
 
-  /count:
+  /answer/filter-summary/{name}:
+    uriParameters:
+      name:
+        type: string
     get:
       description: >
-        TODO: this endpoint does not appear in the step/strategy service doc
-      responses:
-        200:
-          description: ???
-
-  /filter:
-    get:
-      description: >
-        filters available on this step
-        TODO: this endpoint does not appear in the step/strategy service doc
-    /{name}:
-      uriParameters:
-        name:
-          type: string
-      put:
-        description: >
-          add or update a filter on this step
-          TODO: this endpoint does not appear in the step/strategy service doc
-
-  /params:
-    get:
-      description: >
-        TODO: this endpoint does not appear in the step/strategy service doc
+        return data needed to display a filter's UI
       responses:
         200:
           description: Success
