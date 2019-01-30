@@ -36,7 +36,7 @@ public abstract class AbstractParamHandler implements ParamHandler {
   }
 
   @Override
-  public void setProperties(Map<String, String> properties) throws WdkModelException {
+  public void setProperties(Map<String, String> properties) {
     _properties = properties;
   }
 }

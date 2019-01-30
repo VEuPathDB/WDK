@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query.param;
 
 import java.util.Arrays;
@@ -11,13 +8,15 @@ import java.util.Set;
 
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
 
 /**
  * @author jerric
- * 
+ *
  */
 public class EnumParamHandler extends AbstractParamHandler {
 
@@ -32,9 +31,6 @@ public class EnumParamHandler extends AbstractParamHandler {
 
   /**
    * the raw value is a String[] of terms, and stable value is a string representation of term list.
-   * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toStoredValue(org.gusdb .wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
    */
   @Override
   public String toStableValue(User user, Object rawValue) {
@@ -53,9 +49,6 @@ public class EnumParamHandler extends AbstractParamHandler {
 
   /**
    * the raw value is String[] of terms, and comma separated list of terms in string representation.
-   * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toRawValue(org.gusdb .wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
    */
   @Override
   public String[] toRawValue(User user, String stableValue) {
@@ -72,22 +65,22 @@ public class EnumParamHandler extends AbstractParamHandler {
    * return a string representation of a list of the internals. If noTranslation is true, returns a string
    * representation of a list of terms instead. If quoted is true, each individual value will be quoted
    * properly.
-   * 
-   * @throws WdkModelException
-   * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#transform(org.gusdb. wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxParamVals)
       throws WdkModelException {
-    if (stableValue == null || stableValue.length() == 0)
-      return stableValue;
+    final String name = _param.getName();
+    final QueryInstanceSpec spec = ctxParamVals.getObject();
+    final String value = spec.get(name);
+
+    if (value == null || value.length() == 0)
+      return value;
 
     AbstractEnumParam enumParam = (AbstractEnumParam) _param;
-    EnumParamVocabInstance cache = enumParam.getVocabInstance(user, contextParamValues);
+    EnumParamVocabInstance cache = enumParam.getVocabInstance(spec.getUser(), ctxParamVals);
 
-    String[] terms = enumParam.convertToTerms(stableValue);
+    // TODO: This validation should be in the param, not the handler
+    String[] terms = enumParam.convertToTerms(value);
     Set<String> internals = new LinkedHashSet<>();
     for (String term : terms) {
       if (!cache.containsTerm(term))
@@ -97,7 +90,7 @@ public class EnumParamHandler extends AbstractParamHandler {
 
       if (enumParam.getQuote() && !(internal.startsWith("'") && internal.endsWith("'")))
         internal = "'" + internal.replaceAll("'", "''") + "'";
-      
+
       internals.add(internal);
     }
     DBPlatform platform = _wdkModel.getAppDb().getPlatform();
@@ -106,43 +99,26 @@ public class EnumParamHandler extends AbstractParamHandler {
 
   /**
    * the signature is a checksum of sorted stable value.
-   * 
-   * @throws WdkModelException
-   * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
-   *      java.lang.String, Map)
+   *
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException {
+  public String toSignature(RunnableObj<QueryInstanceSpec> ctxParamVals) {
+
     AbstractEnumParam enumParam = (AbstractEnumParam) _param;
     // EnumParamCache cache = enumParam.getValueCache(user, contextParamValues);
 
-    String[] terms = enumParam.convertToTerms(stableValue);
+    String[] terms = enumParam.convertToTerms(ctxParamVals.getObject().get(_param.getName()));
     // jerric - we should use terms to generate signature, not internal value. I don't remember
     // when and why we switched to internal values. I will revert it back to term.
     // Furthermore, I will skip validating the terms here, otherwise, it breaks the deep clone
     // of the steps, which prevents us from revising saved invalid strategies.
- 
-//    Set<String> internals = new LinkedHashSet<>();
-//    for (String term : terms) {
-//      if (!cache.containsTerm(term))
-//        throw new WdkUserException("The term '" + term + "' is invalid for param " + param.getPrompt());
 
-//     String internal = (param.isNoTranslation()) ? term : cache.getInternal(term);
-//      internals.add(internal);
-//    }
-//    String[] array = internals.toArray(new String[0]);
-    String[] array = terms;
-    Arrays.sort(array);
-    return EncryptionUtil.encrypt(Arrays.toString(array));
+    Arrays.sort(terms);
+    return EncryptionUtil.encrypt(Arrays.toString(terms));
   }
 
   /**
    * raw value is a String[] of terms
-   * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#getStableValue(org.gusdb.wdk.model.user.User,
-   *      org.gusdb.wdk.model.query.param.RequestParams)
    */
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
@@ -165,14 +141,14 @@ public class EnumParamHandler extends AbstractParamHandler {
     if (rawValue == null || rawValue.length == 0) {
       if (!_param.isAllowEmpty())
         throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
-      rawValue = _param.getDefault().split(",+");
+      rawValue = _param.getXmlDefault().split(",+");
     }
 
     return _param.toStableValue(user, rawValue);
   }
 
   @Override
-  public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException, WdkModelException {
+  public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException {
     if (inputStableValue == null && !_param.isAllowEmpty())
       throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
     return inputStableValue;
@@ -181,7 +157,7 @@ public class EnumParamHandler extends AbstractParamHandler {
   @Deprecated
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     AbstractEnumParam aeParam = (AbstractEnumParam) _param;
 
     // set labels
@@ -195,7 +171,7 @@ public class EnumParamHandler extends AbstractParamHandler {
     String stableValue = requestParams.getParam(_param.getName());
     Set<String> values = new HashSet<>();
     if (stableValue == null) { // stable value not set, use default
-      stableValue = aeParam.getDefault(user, contextParamValues);
+      stableValue = aeParam.getXmlDefault();
       if (stableValue != null) {
         // don't validate default, just use it as is.
         for (String term : stableValue.split(",+")) {
@@ -234,11 +210,11 @@ public class EnumParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public String getDisplayValue(QueryInstanceSpec ctxParamVals)
       throws WdkModelException {
     AbstractEnumParam aeParam = (AbstractEnumParam) _param;
-    Map<String, String> displays = aeParam.getDisplayMap(user, contextParamValues);
-    String[] terms = toRawValue(user, stableValue);
+    Map<String, String> displays = aeParam.getDisplayMap(ctxParamVals.getUser(), ctxParamVals.toMap());
+    String[] terms = toRawValue(ctxParamVals.getUser(), ctxParamVals.get(_param.getName()));
     StringBuilder buffer = new StringBuilder();
     for (String term : terms) {
       if (buffer.length() > 0) buffer.append(", ");

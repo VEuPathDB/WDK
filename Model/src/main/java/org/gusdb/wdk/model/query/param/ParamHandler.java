@@ -12,9 +12,9 @@ import org.gusdb.wdk.model.user.User;
 /**
  * A param handler can be used to process the internal param value before it is consumed by the query
  * instance.
- * 
+ *
  * @author jerric
- * 
+ *
  */
 public interface ParamHandler {
 
@@ -27,7 +27,7 @@ public interface ParamHandler {
   /**
    * get the stable value from the input request params; and if empty value is allowed, get the empty value if
    * no value is given by the user.
-   * 
+   *
    * @param user
    * @param requestParams
    * @return the raw value of a param
@@ -46,13 +46,13 @@ public interface ParamHandler {
    * @throws WdkModelException
    */
    String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException, WdkModelException;
-  
+
   /**
    * Prepare the display of the param in the question form.
-   * 
+   *
    * @param user
    * @param requestParams
-   * @param contextValues 
+   * @param contextValues
    * @throws WdkUserException
    * @throws WdkModelException
    */
@@ -62,10 +62,9 @@ public interface ParamHandler {
 
   /**
    * convert raw value into stable value.
-   * 
+   *
    * @param user
    * @param rawValue
-   * @param contextParamValues
    * @return
    * @throws WdkUserException
    * @throws WdkModelException
@@ -75,10 +74,9 @@ public interface ParamHandler {
 
   /**
    * convert
-   * 
+   *
    * @param user
    * @param stableValue
-   * @param contextParamValues
    * @return
    * @throws WdkModelException
    */

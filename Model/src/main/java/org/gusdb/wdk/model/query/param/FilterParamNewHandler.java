@@ -7,6 +7,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.MapBuilder;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -23,7 +24,6 @@ import org.json.JSONObject;
 
 /**
  * @author jerric
- *
  */
 public class FilterParamNewHandler extends AbstractParamHandler {
 
@@ -59,10 +59,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
   /**
    * the raw value is a JSON string, and same as the stable value.
-   *
-   * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toRawValue(org.gusdb .wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
-   *      This method is not relevant to service layer, since it only uses stable values, never raw values.
    */
   @Override
   public String toRawValue(User user, String stableValue) {
@@ -91,34 +87,34 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       AND mf.string_value       IN ('large')
    *
    * @throws WdkUserException
-   *
-   * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#transform(org.gusdb. wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValueString, Map<String, String> contextParamValues)
+  public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxParamVals)
       throws WdkModelException {
+
+    final String name = _param.getName();
+    final String value = ctxParamVals.getObject().get(name);
+    final User user = ctxParamVals.getObject().getUser();
 
     try {
       FilterParamNew fpn = (FilterParamNew) _param;
-      contextParamValues = fpn.ensureRequiredContext(user, contextParamValues);
-      FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, fpn);
-      String fvSql = fpn.getFilteredMetadataSql(user, stableValue, contextParamValues, fpn.getMetadataQuery(), null);
+      FilterParamNewStableValue stableValue = new FilterParamNewStableValue(value, fpn);
+      String fvSql = fpn.getFilteredMetadataSql(ctxParamVals, stableValue, fpn.getMetadataQuery(), null);
       String cachedSql = getCachedFilteredSql(user, fvSql, _param.getWdkModel());
-      return "select " + FilterParamNew.COLUMN_INTERNAL + " from (" + cachedSql + ")";
-      
+      return "SELECT " + FilterParamNew.COLUMN_INTERNAL + " FROM (" + cachedSql + ")";
+
     }
     catch (JSONException ex) {
       throw new WdkModelException(ex);
     }
   }
-   
+
   private String getCachedFilteredSql(User user, String filteredSql, WdkModel wdkModel) throws WdkModelException {
 
      try {
        // get an sqlquery so we can cache this internal value. it is parameterized by the sql itself
        SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel);
-       Map<String, String> paramValues = new MapBuilder<String, String>("sql", filteredSql).toMap();
+       Map<String, String> paramValues = new MapBuilder<>("sql", filteredSql).toMap();
        QueryInstance<?> instance = Query.makeQueryInstance(user, QueryInstanceSpec.builder()
            .putAll(paramValues).buildRunnable(sqlQuery, null));
        return instance.getSqlUnsorted(); // because isCacheable=true, we get the cached sql
@@ -153,17 +149,14 @@ public class FilterParamNewHandler extends AbstractParamHandler {
    * the signature is a checksum of sorted stable value.
    *
    * @throws WdkModelException
-   *
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
-   *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValueString, Map<String, String> contextParamValues) throws WdkModelException {
+  public String toSignature(RunnableObj<QueryInstanceSpec> ctxParamVals) throws WdkModelException {
     FilterParamNew param = (FilterParamNew)_param;
-    contextParamValues = param.ensureRequiredContext(user, contextParamValues);
+    QueryInstanceSpec spec = ctxParamVals.getObject();
 
-    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, param);
-    return EncryptionUtil.encrypt(stableValue.toSignatureString() + dependedParamsSignature(user, contextParamValues));
+    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(spec.get(_param.getName()), param);
+    return EncryptionUtil.encrypt(stableValue.toSignatureString() + dependedParamsSignature(spec.getUser(), spec.toMap()));
   }
 
   private String dependedParamsSignature(User user, Map<String, String> contextParamValues) throws WdkModelException {
@@ -183,9 +176,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
   /**
    * raw value is a String[] of terms
-   *
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#getStableValue(org.gusdb.wdk.model.user.User,
-   *      org.gusdb.wdk.model.query.param.RequestParams)
    */
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
@@ -250,7 +240,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     contextParamValues = param.ensureRequiredContext(user, contextParamValues);
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, param);
     return stableValue.getDisplayValue(user, contextParamValues);
-  } 
+  }
 
 }
 

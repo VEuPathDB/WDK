@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -13,6 +14,7 @@ import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.ListDatasetParser;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -23,7 +25,6 @@ import org.gusdb.wdk.model.user.User;
 
 /**
  * @author jerric
- * 
  */
 public class DatasetParamHandler extends AbstractParamHandler {
 
@@ -37,49 +38,38 @@ public class DatasetParamHandler extends AbstractParamHandler {
 
   /**
    * The raw value is Dataset object, and stable value is the dataset id.
-   * 
-   * @throws WdkUserException
-   * 
-   * @throws WdkModelException
-   * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#toStableValue(org.gusdb .wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
+   *
    */
   @Override
-  public String toStableValue(User user, Object rawValue)
-      throws WdkUserException, WdkModelException {
+  public String toStableValue(User user, Object rawValue) {
     Dataset dataset = (Dataset) rawValue;
     return Long.toString(dataset.getDatasetId());
   }
 
   /**
    * The stable value is dataset id, and raw value is Dataset object.
-   * 
-   * @throws WdkModelException
-   * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#toRawValue(org.gusdb.wdk.model .user.User,
-   *      java.lang.String, java.util.Map)
    */
   @Override
-  public Dataset toRawValue(User user, String stableValue)
-      throws WdkModelException {
+  public Dataset toRawValue(User user, String stableValue) throws WdkModelException {
     long datasetId = Long.valueOf(stableValue);
     return user.getWdkModel().getDatasetFactory().getDataset(user, datasetId);
   }
 
   /**
    * the internal value is an SQL that queries against the dataset values.
-   * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#toInternalValue(org.gusdb. wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues) {
-    if (_param.isNoTranslation())
-      return stableValue;
+  public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxParamVals) {
+    final String name  = _param.getName();
+    final String value = ctxParamVals.getObject().get(name);
 
-    long datasetId = Long.valueOf(stableValue);
-    DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
+    if (_param.isNoTranslation())
+      return value;
+
+    long datasetId = Long.valueOf(value);
+    DatasetFactory datasetFactory = ctxParamVals.getObject().getUser()
+        .getWdkModel()
+        .getDatasetFactory();
     String dvSql = datasetFactory.getDatasetValueSql(datasetId);
 
     RecordClass recordClass = ((DatasetParam) _param).getRecordClass();
@@ -90,34 +80,34 @@ public class DatasetParamHandler extends AbstractParamHandler {
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     StringBuilder sql = new StringBuilder("SELECT ");
     for (int i = 0; i < pkColumns.length; i++) {
-      sql.append("dv.data" + (i + 1) + " AS " + pkColumns[i] + ", ");
+      sql.append("dv.data")
+          .append(i + 1)
+          .append(" AS ")
+          .append(pkColumns[i])
+          .append(", ");
     }
     // return the remaining data columns
-    sql.append("dv.* FROM (" + dvSql + ") dv");
+    sql.append("dv.* FROM (").append(dvSql).append(") dv");
     return sql.toString();
   }
 
   /**
    * The signature is the the content check of the dataset.
-   * 
-   * @throws WdkModelException
-   * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk. model.user.User,
-   *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues)
+  public String toSignature(RunnableObj<QueryInstanceSpec> ctxParamVals)
       throws WdkModelException {
-    long datasetId = Long.valueOf(stableValue);
-    Dataset dataset = user.getWdkModel().getDatasetFactory().getDataset(user, datasetId);
+    final QueryInstanceSpec spec = ctxParamVals.getObject();
+    final String value = ctxParamVals.getObject().get(spec.get(_param.getName()));
+    long datasetId = Long.valueOf(value);
+    Dataset dataset = spec.getUser().getWdkModel()
+        .getDatasetFactory()
+        .getDataset(spec.getUser(), datasetId);
     return dataset.getChecksum();
   }
 
   /**
    * get the step value from the user input, and if empty value is allowed, use empty value as needed.
-   * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#getStableValue(org.gusdb.wdk.model.user.User,
-   *      org.gusdb.wdk.model.query.param.RequestParams)
    */
   @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
@@ -175,7 +165,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
             list.add(record);
           }
         }
-        records = list.toArray(new RecordInstance[list.size()]);
+        records = list.toArray(new RecordInstance[0]);
       }
       if (records != null)
         data = toString(records);
@@ -191,8 +181,6 @@ public class DatasetParamHandler extends AbstractParamHandler {
     if (data != null) {
       data = data.trim();
       // get parser and parse the content
-      if (parserName == null)
-        parserName = ListDatasetParser.NAME; // use default parser.
       DatasetParser parser = datasetParam.getParser(parserName);
       DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
       Dataset dataset = datasetFactory.createOrGetDataset(user, parser, data, uploadFile);
@@ -204,10 +192,10 @@ public class DatasetParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException, WdkModelException {
+  public String validateStableValueSyntax(User user, String inputStableValue) throws WdkModelException {
     DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
     Dataset dataset = datasetFactory.getDataset(user, Long.valueOf(inputStableValue));
-    return Long.toString(dataset.getDatasetId());    
+    return Long.toString(dataset.getDatasetId());
   }
 
   private String toString(RecordInstance[] records) {
@@ -229,7 +217,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
 
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     DatasetParam datasetParam = (DatasetParam) _param;
     // check if the stable value is available
     String stableValue = requestParams.getParam(_param.getName());
@@ -238,7 +226,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
     Dataset dataset = null;
     if (stableValue != null) {
       DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
-      Long sv = Long.valueOf(stableValue);
+      long sv = Long.parseLong(stableValue);
       logger.debug("User: " + user + ", sv: " + sv + "stable: " + stableValue);
       dataset = datasetFactory.getDataset(user, sv);
       requestParams.setAttribute(_param.getName() + Param.RAW_VALUE_SUFFIX, dataset);
@@ -261,8 +249,9 @@ public class DatasetParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues)
+  public String getDisplayValue(QueryInstanceSpec ctxParamVals)
       throws WdkModelException {
-    return toRawValue(user, stableValue).getContent();
+    return toRawValue(ctxParamVals.getUser(), ctxParamVals.get(_param.getName()))
+        .getContent();
   }
 }
