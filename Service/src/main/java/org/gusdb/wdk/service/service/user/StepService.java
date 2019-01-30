@@ -71,7 +71,7 @@ public class StepService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.steps.post-request")
-  @OutSchema("wdk.users.steps.post-response")
+  @OutSchema("wdk.creation-post-response")
   public Response createStep(JSONObject jsonBody)
       throws WdkModelException, DataValidationException {
     try {
