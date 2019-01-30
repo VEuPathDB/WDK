@@ -482,6 +482,20 @@ public class FilterParamNew extends AbstractDependentParam {
       OntologyItem ontologyItem, JSONObject appliedFilters, Class<T> ontologyItemClass)
           throws WdkModelException {
 
+<<<<<<< .working
+=======
+  ////////////////////////////////////////////
+  ////////////////////////////////////////////
+  /* Ontology Term Summary */
+  ////////////////////////////////////////////
+  ////////////////////////////////////////////
+  public <T> OntologyTermSummary<T> getOntologyTermSummary(User user,
+      Map<String, String> contextParamValues, OntologyItem ontologyItem, JSONObject appliedFilters,
+      Class<T> ontologyItemClass) throws WdkModelException {
+
+    contextParamValues = ensureRequiredContext(user, contextParamValues);
+
+>>>>>>> .merge-right.r23836
     ////////////////////////////////////////////
     /* GET UNFILTERED MAP AND POPULATE COUNTS */
     ////////////////////////////////////////////
@@ -493,12 +507,19 @@ public class FilterParamNew extends AbstractDependentParam {
     List<String> metadataCols = new ArrayList<>(OntologyItemType.getTypedValueColumnNames());
     metadataCols.add(_filterItemIdColumn);
     metadataCols.add(COLUMN_ONTOLOGY_ID);
+<<<<<<< .working
     String cols = String.join(", ", metadataCols);
     String unfilteredSqlPerOntologyId =
         "SELECT distinct " + cols +
         " FROM (" + bgdSql + ") mq" +
         " WHERE mq." + COLUMN_ONTOLOGY_ID + " = ?";
 
+=======
+    String cols = metadataCols.stream().collect(Collectors.joining(", "));
+    String unfilteredSqlPerOntologyId = "/* START unfilteredSqlPerOntologyId */ SELECT distinct " + cols + " FROM ( /* START bgdSql */ " + bgdSql + " /* END bgdSql */) mq WHERE mq." + COLUMN_ONTOLOGY_ID +
+        " = ? /* END unfilteredSqlPerOntologyId */ ";
+    
+>>>>>>> .merge-right.r23836
     // read into a map of filter_item_id -> value(s)
     Map<T, Long> unfiltered = countMetaDataForOntologyTerm(validSpec, ontologyItem,
         unfilteredSqlPerOntologyId, ontologyItemClass);
@@ -517,7 +538,7 @@ public class FilterParamNew extends AbstractDependentParam {
         " where " + COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId().replaceAll("'", "''") + "'");
 
     // use that set of ids to limit our ontology id's metadata
-    String andClause = " AND " + _filterItemIdColumn + " in ( select " + _filterItemIdColumn + " from (" + filteredFilterItemIdSql + "))";
+    String andClause = " /* START andClause */ AND " + _filterItemIdColumn + " in ( select " + _filterItemIdColumn + " from (" + filteredFilterItemIdSql + ")) /* END andClause */ ";
     String filteredSqlPerOntologyId = unfilteredSqlPerOntologyId + andClause;
 
     // read this filtered set into map of internal -> value(s)
@@ -651,8 +672,9 @@ public class FilterParamNew extends AbstractDependentParam {
 
     String valueColumnName = ontologyItem.getType().getMetadataQueryColumn();
 
-    String sql = "SELECT " + valueColumnName + ", count(*) as CNT FROM (" + metaDataSql + ") mq WHERE mq."
-    + COLUMN_ONTOLOGY_ID + " = ? GROUP BY " + valueColumnName;
+    String sql = "/* START countMetaDataForOntologyTerm */ SELECT " + valueColumnName + 
+        ", count(*) as CNT FROM (" + metaDataSql + ") mq WHERE mq."
+    + COLUMN_ONTOLOGY_ID + " = ? GROUP BY " + valueColumnName + "/* END countMetaDataForOntologyTerm */ ";
 
      Map<T, Long> metadata = new LinkedHashMap<>();
 
@@ -810,6 +832,7 @@ public class FilterParamNew extends AbstractDependentParam {
     return getFilteredIdsSql(validSpec, stableValue, metadataTableName, filterSelectSql, defaultFilterClause);
   }
 
+<<<<<<< .working
   /**
    * Apply provided filters to metadata sql, returning all three value columns
    */
@@ -824,6 +847,28 @@ public class FilterParamNew extends AbstractDependentParam {
     String filterSelectSql = "SELECT md." + selectCols + " FROM (" + metadataSql + ") " + metadataTableName;
     return getFilteredIdsSql(validSpec, stableValue, metadataTableName, filterSelectSql, defaultFilterClause);
   }
+=======
+     try {
+       // get sql that selects the full set of distinct internals from the metadata query
+       String metadataSql;
+       QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
+       metadataSql = instance.getSql();
+       String metadataTableName = "md";
+       String filterSelectSql = "/* START filterSelectSql */ SELECT distinct " + metadataTableName + "." + idColumn + " FROM ( /* START metadataSql */ " + metadataSql + " /* END metadataSql */ ) " + metadataTableName + " /* END filterSelectSql */";
+       
+       return getFilteredIdsSql(user, stableValue, contextParamValues, metadataTableName, filterSelectSql, defaultFilterClause);
+     }
+     catch (JSONException | WdkUserException ex) {
+       throw new WdkModelException(ex);
+     }
+   }
+   
+    /*
+     * Apply provided filters to metadata sql, returning all three value columns
+     */
+    String getFilteredMetadataSql(User user, FilterParamNewStableValue stableValue, Map<String, String> contextParamValues, Query metadataQuery, String defaultFilterClause)
+        throws WdkModelException {
+>>>>>>> .merge-right.r23836
 
   private String getFilteredIdsSql(SemanticallyValid<QueryInstanceSpec> validSpec,
       FilterParamNewStableValue stableValue, String metadataTableAbbrev,
@@ -842,6 +887,11 @@ public class FilterParamNew extends AbstractDependentParam {
       if (defaultFilterClause != null) {
         filteredSql += defaultFilterClause;
       }
+<<<<<<< .working
+=======
+      LOG.debug("filteredSql:\n" + filteredSql);
+      return " /* START filteredIdsSql */ " + filteredSql + " /* END filteredIdsSql */ ";
+>>>>>>> .merge-right.r23836
     }
 
     // otherwise apply the filters
