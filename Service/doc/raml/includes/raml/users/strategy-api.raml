@@ -11,6 +11,7 @@ get:
       body:
         application/json:
           type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/get-response.json
+
 post:
   description: |
 
@@ -66,7 +67,7 @@ post:
     200:
       body:
         application/json:
-          type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/post-response.json
+          type: !include ../../../../../src/main/resources/schema/wdk/creation-post-response.json
 
 patch:
   description: |
@@ -75,9 +76,11 @@ patch:
   body:
     application/json:
       type:  !include ../../../../../src/main/resources/schema/wdk/users/strategies/patch-request.json
+  responses:
+    204:
+      description: No Content
 
-
-/branches:
+/duplication-as-branch:
   uriParameters:
     class:
       type: string
@@ -144,28 +147,38 @@ patch:
     description: |
       * Input is like POST but only supporting mutable fields
       * Mutable fields include:
-          * "root": the tree of steps itself
-              * All steps submitted must already have this strat ID (in DB) or null
-              * Structure will go through rigorous validation
-                  * input recordclasses must be compatible with answer param specs
-              * Strategy cannot "steal" steps from another strat
-              * Any "independent" steps will be assigned this strat ID
-              * Steps removed from this strat (i.e. orphaned steps):
-                  * Strategy ID = null
-                  * Any AnswerParam values = null
-                  * estimate_size = null
-                  * last_run = null
-                  * In theory they could be reused, even by another strat
-                  * Will be purged later with other orphan steps
-          * Any UI fields listed above, including:
-              * name
-              * savedName
-              * description
-              * isSaved (TBD, change to isMutable?)
-              * isPublic
+        * name
+        * savedName
+        * description
+        * isSaved (TBD, change to isMutable?)
+        * isPublic
       * Root step is run; then any steps with null/-1 estimate size are updated
           * estimate size should then exist on every step
           * last_run updated on newly run steps
       * Last mod date is updated
       * Returns full strategy JSON (see GET below for format)
 
+  /step-tree
+    description: |
+      step tree of the strategy
+        * All steps submitted must already have this strat ID (in DB) or null
+        * Structure will go through rigorous validation
+            * input recordclasses must be compatible with answer param specs
+        * Strategy cannot "steal" steps from another strat
+        * Any "independent" steps will be assigned this strat ID
+        * Steps removed from this strat (i.e. orphaned steps):
+            * Strategy ID = null
+            * Any AnswerParam values = null
+            * estimate_size = null
+            * last_run = null
+            * In theory they could be reused, even by another strat
+            * Will be purged later with other orphan steps
+    put:
+      body:
+        application/json:
+          type: TODO
+      responses:
+        204:
+          description: No Content
+
+      
