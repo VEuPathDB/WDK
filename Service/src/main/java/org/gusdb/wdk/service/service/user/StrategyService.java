@@ -77,7 +77,7 @@ public class StrategyService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.strategies.post-request")
-  @OutSchema("wdk.users.strategies.post-response")
+  @OutSchema("wdk.creation-post-response")
   public Response createStrategy(JSONObject body)
       throws WdkModelException, DataValidationException {
     try {
