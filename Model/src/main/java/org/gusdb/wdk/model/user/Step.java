@@ -661,15 +661,6 @@ public class Step implements StrategyElement, Validateable<Step> {
     }
   }
 
-  // saves param values AND filter values (AND step name and maybe other things)
-  public void writeParamFiltersToDb() throws WdkModelException {
-    // get Step as it is in the DB (FIXME: we should be tracking this in memory)
-    Step dbStep = _wdkModel.getStepFactory()
-        .getStepById(getStepId())
-        .orElseThrow(WdkModelException::new);
-    saveParamFilters(dbStep);
-  }
-
 
   // FIXME: This method does some important things but is obsolete in the new
   //        order.  Note the compiler error in refreshAnswerSpec.  In the new
