@@ -75,6 +75,7 @@ public class TimestampParam extends Param {
   @Override
   protected ParamValidity validateValue(PartiallyValidatedStableValues contextParamValues, ValidationLevel level) {
     // nothing to validate. the value of timestamp can be any string
+    // TODO: is the above statement correct?
     return contextParamValues.setValid(getName());
   }
 

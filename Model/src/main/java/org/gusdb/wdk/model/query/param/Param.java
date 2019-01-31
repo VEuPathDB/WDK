@@ -636,12 +636,6 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     return _handler.toStableValue(user, rawValue);
   }
 
-  @Deprecated
-  public String getStableValue(User user, RequestParams requestParams)
-      throws WdkUserException, WdkModelException {
-    return _handler.getStableValue(user, requestParams);
-  }
-
   /**
    * Transform stable param value into internal value. The noTranslation and quote flags should be handled by
    * the plugin.
@@ -714,12 +708,6 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   @Deprecated
   public Set<String> getAllValues() throws WdkModelException {
     return Collections.emptySet();
-  }
-
-  @Deprecated
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String,String> contextValues)
-      throws WdkModelException, WdkUserException {
-    _handler.prepareDisplay(user, requestParams, contextValues);
   }
 
   public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
@@ -831,7 +819,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   }
 
   /**
-   * @throws WdkModelException if depended param refs cannot be resolved 
+   * @throws WdkModelException if depended param refs cannot be resolved
    */
   public void resolveDependedParamRefs() throws WdkModelException {
     // nothing to do for most params; overridden by AbstractDependentParam

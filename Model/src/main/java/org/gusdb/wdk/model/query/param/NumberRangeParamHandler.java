@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.query.param;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
@@ -11,7 +10,6 @@ import org.json.JSONObject;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.Map;
 
 public class NumberRangeParamHandler extends AbstractParamHandler {
 
@@ -84,34 +82,6 @@ public class NumberRangeParamHandler extends AbstractParamHandler {
     }
 
     return new JSONObject().put("min", new Double(values[0])).put("max", new Double(values[1])).toString();
-  }
-
-  @Override
-  public String getStableValue(User user, RequestParams requestParams) throws WdkUserException {
-    return validateStableValueSyntax(user, requestParams.getParam(_param.getName()));
-  }
-
-  @Override
-  public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException {
-    String stableValue = inputStableValue;
-    if (stableValue == null) {
-      if (!_param.isAllowEmpty())
-        throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required");
-      stableValue = _param.getEmptyValue();
-    }
-    if (stableValue != null)
-      stableValue = stableValue.trim();
-    return stableValue;
-  }
-
-  @Override
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues) {
-    String stableValue = requestParams.getParam(_param.getName());
-    if (stableValue == null) {
-      stableValue = _param.getXmlDefault();
-      if (stableValue != null)
-        requestParams.setParam(_param.getName(), stableValue);
-    }
   }
 
   @Override

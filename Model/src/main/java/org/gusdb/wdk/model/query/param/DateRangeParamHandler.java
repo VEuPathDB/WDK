@@ -2,11 +2,8 @@ package org.gusdb.wdk.model.query.param;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
-
-import java.util.Map;
 
 public class DateRangeParamHandler extends AbstractParamHandler {
 
@@ -46,32 +43,6 @@ public class DateRangeParamHandler extends AbstractParamHandler {
   @Override
   public String toSignature(RunnableObj<QueryInstanceSpec> ctxParamVals) {
     return ctxParamVals.getObject().get(_param.getName());
-  }
-
-  @Override
-  public String getStableValue(User user, RequestParams requestParams) throws WdkUserException {
-    return validateStableValueSyntax(user, requestParams.getParam(_param.getName()));
-  }
-
-  @Override
-  public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException {
-    String stableValue = inputStableValue;
-    if (inputStableValue == null) {
-      if (!_param.isAllowEmpty())
-        throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required");
-      stableValue = _param.getEmptyValue();
-    }
-    return stableValue;
-  }
-
-  @Override
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues) {
-    String stableValue = requestParams.getParam(_param.getName());
-    if (stableValue == null) {
-      stableValue = _param.getXmlDefault();
-      if (stableValue != null)
-        requestParams.setParam(_param.getName(), stableValue);
-    }
   }
 
   @Override

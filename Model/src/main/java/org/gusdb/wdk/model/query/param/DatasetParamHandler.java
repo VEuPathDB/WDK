@@ -110,7 +110,6 @@ public class DatasetParamHandler extends AbstractParamHandler {
   /**
    * get the step value from the user input, and if empty value is allowed, use empty value as needed.
    */
-  @Override
   public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
       WdkModelException {
 
@@ -192,7 +191,6 @@ public class DatasetParamHandler extends AbstractParamHandler {
       return null;
   }
 
-  @Override
   public String validateStableValueSyntax(User user, String inputStableValue) throws WdkModelException {
     DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
     Dataset dataset = datasetFactory.getDataset(user, Long.valueOf(inputStableValue));
@@ -214,36 +212,6 @@ public class DatasetParamHandler extends AbstractParamHandler {
       buffer.append("\n");
     }
     return buffer.toString();
-  }
-
-  @Override
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
-      throws WdkModelException {
-    DatasetParam datasetParam = (DatasetParam) _param;
-    // check if the stable value is available
-    String stableValue = requestParams.getParam(_param.getName());
-
-    // get dataset if possible
-    Dataset dataset = null;
-    if (stableValue != null) {
-      DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
-      long sv = Long.parseLong(stableValue);
-      logger.debug("User: " + user + ", sv: " + sv + "stable: " + stableValue);
-      dataset = datasetFactory.getDataset(user, sv);
-      requestParams.setAttribute(_param.getName() + Param.RAW_VALUE_SUFFIX, dataset);
-    }
-
-    // get data
-    String data = (dataset != null)
-      ? dataset.getContent()
-      : _param.getXmlDefault();
-    requestParams.setParam(datasetParam.getDataSubParam(), data);
-
-    if (dataset != null) {
-      String fileName = dataset.getUploadFile();
-      if (fileName != null)
-        requestParams.setParam(datasetParam.getFileSubParam(), fileName);
-    }
   }
 
   @Override

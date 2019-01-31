@@ -1,41 +1,27 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.Column;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QueryInstance;
-import org.gusdb.wdk.model.query.QuerySet;
-import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.*;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author jerric
  */
 public class FilterParamNewHandler extends AbstractParamHandler {
 
-  public static final String LABELS_SUFFIX = "-labels";
-  public static final String TERMS_SUFFIX = "-values";
-
-  public static final String TERMS_KEY = "values";
   public static final String FILTERS_KEY = "filters";
-  public static final String FILTERS_FIELD = "field";
-  public static final String FILTERS_VALUE = "value";
-  public static final String FILTERS_MIN = "min";
-  public static final String FILTERS_MAX = "max";
-  public static final String FILTERS_INCLUDE_UNKNOWN = "includeUnknown";
+
   public FilterParamNewHandler() {}
 
   public FilterParamNewHandler(FilterParamNewHandler handler, Param param) {
@@ -144,8 +130,9 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     FilterParamNew param = (FilterParamNew)_param;
     QueryInstanceSpec spec = ctxParamVals.getObject();
 
-    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(spec.get(_param.getName()), param);
-    return EncryptionUtil.encrypt(stableValue.toSignatureString() + dependedParamsSignature(spec.getUser(), spec.toMap()));
+    return EncryptionUtil.encrypt(
+      new FilterParamNewStableValue(spec.get(_param.getName()), param).toSignatureString()
+        + dependedParamsSignature(spec.getUser(), spec.toMap()));
   }
 
   private String dependedParamsSignature(User user, Map<String, String> contextParamValues) throws WdkModelException {
@@ -161,59 +148,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     }
 
     return sb.toString();
-  }
-
-  /**
-   * raw value is a String[] of terms
-   */
-  @Override
-  public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
-      WdkModelException {
-    return validateStableValueSyntax(user, requestParams.getParam(_param.getName()));
-  }
-
-  @Override
-  public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException, WdkModelException {
-    String stableValueString = inputStableValue;
-    if (stableValueString == null || stableValueString.length() == 0) {
-      // use empty value if needed
-      if (!_param.isAllowEmpty()) {
-        throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
-      }
-      stableValueString = _param.getXmlDefault();
-    }
-    FilterParamNew filterParam = (FilterParamNew) _param;
-    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, filterParam);
-    String err = stableValue.validateSyntax();
-    if (err != null) throw new WdkModelException(err);
-    return stableValueString;
-  }
-
-  @Override
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
-      throws WdkModelException {
-    String stableValue = requestParams.getParam(_param.getName());
-
-    // If the request doesn't include a stableValue for the param,
-    // we don't have to do anything.
-    if (stableValue == null) return;
-
-    // Validate stableValue. If there are errors, we will set a request
-    // attribute with the error string below.
-    FilterParamNewStableValue fpnStableValue = new FilterParamNewStableValue(stableValue, (FilterParamNew) _param);
-    String errors = fpnStableValue.validateSyntaxAndSemantics(user, contextParamValues);
-
-    // do nothing
-    if (errors == null) return;
-
-    // Since there is an error, set the stable and raw value on the request to
-    // an empty filters JSON, and set the errors string on the request.
-    String empty = new JSONObject().put("filters", new JSONArray()).toString();
-    requestParams.setParam(_param.getName(), empty);
-    requestParams.setAttribute(_param.getName(), empty);
-    requestParams.setAttribute(_param.getName() + Param.RAW_VALUE_SUFFIX, empty);
-    requestParams.setAttribute(_param.getName() + Param.INVALID_VALUE_SUFFIX, errors);
-
   }
 
   @Override
