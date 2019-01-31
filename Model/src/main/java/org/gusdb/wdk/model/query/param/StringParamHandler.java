@@ -54,7 +54,7 @@ public class StringParamHandler extends AbstractParamHandler {
    * properly applied; If noTranslation is true, the reference value is used without any change.
    */
   @Override
-  public String toInternalValue(SemanticallyValid<QueryInstanceSpec> ctxVals) {
+  public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxVals) {
     final String stable = ctxVals.getObject().get(_param.getName());
 
     if (_param.isNoTranslation())

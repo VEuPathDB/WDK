@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.query.param;
 
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
-import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
@@ -52,7 +51,7 @@ public class NumberParamHandler extends AbstractParamHandler {
    * Formats the stableValue into a value that can be applied to SQL statements.
    */
   @Override
-  public String toInternalValue(SemanticallyValid<QueryInstanceSpec> ctxVals) {
+  public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxVals) {
     final String stable = ctxVals.getObject().get(_param.getName());
 
     // Something to do with the portal - left this alone
