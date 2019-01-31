@@ -49,7 +49,7 @@ public class EnumParam extends AbstractEnumParam {
   // ///////////////////////////////////////////////////////////////////
 
   @Override
-  protected EnumParamVocabInstance getVocabInstance(User user, Map<String, String> dependedParamValues)
+  public EnumParamVocabInstance getVocabInstance(User user, Map<String, String> dependedParamValues)
       throws WdkModelException {
     LOG.trace("Entering createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
     Set<Param> dependedParams = getDependedParams();
