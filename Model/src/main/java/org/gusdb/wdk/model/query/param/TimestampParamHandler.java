@@ -40,7 +40,7 @@ public class TimestampParamHandler extends AbstractParamHandler {
    * The internal value is the same as stable value.
    */
   @Override
-  public String toInternalValue(SemanticallyValid<QueryInstanceSpec> ctxVals) {
+  public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxVals) {
     return ctxVals.getObject().get(_param.getName());
   }
 

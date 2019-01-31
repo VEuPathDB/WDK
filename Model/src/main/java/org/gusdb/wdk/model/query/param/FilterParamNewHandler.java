@@ -85,8 +85,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       FROM (${metadata_qc}) mf
       WHERE mf.ontology_term_id = 'size'
       AND mf.string_value       IN ('large')
-   *
-   * @throws WdkUserException
    */
   @Override
   public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxParamVals)
@@ -116,7 +114,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
        SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel);
        Map<String, String> paramValues = new MapBuilder<>("sql", filteredSql).toMap();
        QueryInstance<?> instance = Query.makeQueryInstance(user, QueryInstanceSpec.builder()
-           .putAll(paramValues).buildRunnable(sqlQuery, null));
+           .putAll(paramValues).buildRunnable(user, sqlQuery, null));
        return instance.getSqlUnsorted(); // because isCacheable=true, we get the cached sql
      }
      catch (WdkUserException e) {
@@ -147,8 +145,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
   /**
    * the signature is a checksum of sorted stable value.
-   *
-   * @throws WdkModelException
    */
   @Override
   public String toSignature(RunnableObj<QueryInstanceSpec> ctxParamVals) throws WdkModelException {
@@ -162,7 +158,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   private String dependedParamsSignature(User user, Map<String, String> contextParamValues) throws WdkModelException {
     FilterParamNew filterParam  = (FilterParamNew)_param;
     if (filterParam.getDependedParams() == null) return "";
-    List<Param> dependedParamsList = new ArrayList<Param>(filterParam.getDependedParams());
+    List<Param> dependedParamsList = new ArrayList<>(filterParam.getDependedParams());
     java.util.Collections.sort(dependedParamsList);
     StringBuilder sb = new StringBuilder();
     for (Param dependedParam : dependedParamsList)  {
@@ -191,7 +187,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       if (!_param.isAllowEmpty()) {
         throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
       }
-      stableValueString = _param.getDefault();
+      stableValueString = _param.getXmlDefault();
     }
     FilterParamNew filterParam = (FilterParamNew) _param;
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, filterParam);
@@ -202,7 +198,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
   @Override
   public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     String stableValue = requestParams.getParam(_param.getName());
 
     // If the request doesn't include a stableValue for the param,
@@ -233,13 +229,12 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValueString, Map<String, String> contextParamValues)
+  public String getDisplayValue(QueryInstanceSpec ctxParamVals)
       throws WdkModelException {
 
     FilterParamNew param = (FilterParamNew)_param;
-    contextParamValues = param.ensureRequiredContext(user, contextParamValues);
-    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(stableValueString, param);
-    return stableValue.getDisplayValue(user, contextParamValues);
+    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(ctxParamVals.get(param.getName()), param);
+    return stableValue.getDisplayValue(user, ctxParamVals);
   }
 
 }
