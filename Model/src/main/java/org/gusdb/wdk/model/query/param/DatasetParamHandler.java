@@ -38,12 +38,10 @@ public class DatasetParamHandler extends AbstractParamHandler {
 
   /**
    * The raw value is Dataset object, and stable value is the dataset id.
-   *
    */
   @Override
   public String toStableValue(User user, Object rawValue) {
-    Dataset dataset = (Dataset) rawValue;
-    return Long.toString(dataset.getDatasetId());
+    return Long.toString(((Dataset) rawValue).getDatasetId());
   }
 
   /**
@@ -51,8 +49,9 @@ public class DatasetParamHandler extends AbstractParamHandler {
    */
   @Override
   public Dataset toRawValue(User user, String stableValue) throws WdkModelException {
-    long datasetId = Long.valueOf(stableValue);
-    return user.getWdkModel().getDatasetFactory().getDataset(user, datasetId);
+    return user.getWdkModel()
+      .getDatasetFactory()
+      .getDataset(user, Long.valueOf(stableValue));
   }
 
   /**
@@ -66,11 +65,11 @@ public class DatasetParamHandler extends AbstractParamHandler {
     if (_param.isNoTranslation())
       return value;
 
-    long datasetId = Long.valueOf(value);
-    DatasetFactory datasetFactory = ctxParamVals.getObject().getUser()
-        .getWdkModel()
-        .getDatasetFactory();
-    String dvSql = datasetFactory.getDatasetValueSql(datasetId);
+    DatasetFactory datasetFactory = ctxParamVals.getObject()
+      .getUser()
+      .getWdkModel()
+      .getDatasetFactory();
+    String dvSql = datasetFactory.getDatasetValueSql(Long.valueOf(value));
 
     RecordClass recordClass = ((DatasetParam) _param).getRecordClass();
     if (recordClass == null)
@@ -81,10 +80,10 @@ public class DatasetParamHandler extends AbstractParamHandler {
     StringBuilder sql = new StringBuilder("SELECT ");
     for (int i = 0; i < pkColumns.length; i++) {
       sql.append("dv.data")
-          .append(i + 1)
-          .append(" AS ")
-          .append(pkColumns[i])
-          .append(", ");
+        .append(i + 1)
+        .append(" AS ")
+        .append(pkColumns[i])
+        .append(", ");
     }
     // return the remaining data columns
     sql.append("dv.* FROM (").append(dvSql).append(") dv");
@@ -98,11 +97,13 @@ public class DatasetParamHandler extends AbstractParamHandler {
   public String toSignature(RunnableObj<QueryInstanceSpec> ctxParamVals)
       throws WdkModelException {
     final QueryInstanceSpec spec = ctxParamVals.getObject();
-    final String value = ctxParamVals.getObject().get(spec.get(_param.getName()));
-    long datasetId = Long.valueOf(value);
-    Dataset dataset = spec.getUser().getWdkModel()
-        .getDatasetFactory()
-        .getDataset(spec.getUser(), datasetId);
+    Dataset dataset = spec.getUser()
+      .getWdkModel()
+      .getDatasetFactory()
+      .getDataset(
+        spec.getUser(),
+        Long.valueOf(ctxParamVals.getObject().get(spec.get(_param.getName())))
+      );
     return dataset.getChecksum();
   }
 
@@ -233,7 +234,9 @@ public class DatasetParamHandler extends AbstractParamHandler {
     }
 
     // get data
-    String data = (dataset != null) ? dataset.getContent() : _param.getXmlDefault();
+    String data = (dataset != null)
+      ? dataset.getContent()
+      : _param.getXmlDefault();
     requestParams.setParam(datasetParam.getDataSubParam(), data);
 
     if (dataset != null) {

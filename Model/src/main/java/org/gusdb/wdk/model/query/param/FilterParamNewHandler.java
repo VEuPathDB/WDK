@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
@@ -27,9 +26,6 @@ import org.json.JSONObject;
  */
 public class FilterParamNewHandler extends AbstractParamHandler {
 
-  @SuppressWarnings("unused")
-  private static final Logger LOG = Logger.getLogger(FilterParamNewHandler.class);
-
   public static final String LABELS_SUFFIX = "-labels";
   public static final String TERMS_SUFFIX = "-values";
 
@@ -47,7 +43,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   }
 
   /*
-   *
    * @see org.gusdb.wdk.model.query.param.ParamHandlerPlugin#toStoredValue(org.gusdb .wdk.model.user.User,
    *      java.lang.String, java.util.Map)
    *      This method is not relevant to service layer, since it only uses stable values, never raw values.
@@ -108,40 +103,38 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   }
 
   private String getCachedFilteredSql(User user, String filteredSql, WdkModel wdkModel) throws WdkModelException {
-
      try {
        // get an sqlquery so we can cache this internal value. it is parameterized by the sql itself
        SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel);
        Map<String, String> paramValues = new MapBuilder<>("sql", filteredSql).toMap();
-       QueryInstance<?> instance = Query.makeQueryInstance(user, QueryInstanceSpec.builder()
+       QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
            .putAll(paramValues).buildRunnable(user, sqlQuery, null));
        return instance.getSqlUnsorted(); // because isCacheable=true, we get the cached sql
      }
      catch (WdkUserException e) {
        throw new WdkModelException(e);
      }
+  }
 
-   }
-
-   private SqlQuery getSqlQueryForInternalValue(WdkModel wdkModel) throws WdkModelException {
-     SqlQuery sqlQuery = new SqlQuery();
-     sqlQuery.setName("InternalValue");
-     sqlQuery.setSql("select distinct " + FilterParamNew.COLUMN_INTERNAL + " from ( $$sql$$)");  // the sql will be provided by the sql param
-     Column column = new Column();
-     column.setName(FilterParamNew.COLUMN_INTERNAL);
-     sqlQuery.addColumn(column);
-     sqlQuery.setDoNotTest(true);
-     sqlQuery.setIsCacheable(true);
-     StringParam sqlParam = new StringParam();
-     sqlParam.setName("sql");
-     sqlParam.setNoTranslation(true);  // avoid quotes
-     sqlQuery.addParam(sqlParam);
-     sqlQuery.resolveReferences(wdkModel);
-     QuerySet querySet= new QuerySet();
-     querySet.setName("FilterParamNew");
-     sqlQuery.setQuerySet(querySet);
-     return sqlQuery;
-   }
+  private SqlQuery getSqlQueryForInternalValue(WdkModel wdkModel) throws WdkModelException {
+    SqlQuery sqlQuery = new SqlQuery();
+    sqlQuery.setName("InternalValue");
+    sqlQuery.setSql("select distinct " + FilterParamNew.COLUMN_INTERNAL + " from ( $$sql$$)");  // the sql will be provided by the sql param
+    Column column = new Column();
+    column.setName(FilterParamNew.COLUMN_INTERNAL);
+    sqlQuery.addColumn(column);
+    sqlQuery.setDoNotTest(true);
+    sqlQuery.setIsCacheable(true);
+    StringParam sqlParam = new StringParam();
+    sqlParam.setName("sql");
+    sqlParam.setNoTranslation(true);  // avoid quotes
+    sqlQuery.addParam(sqlParam);
+    sqlQuery.resolveReferences(wdkModel);
+    QuerySet querySet= new QuerySet();
+    querySet.setName("FilterParamNew");
+    sqlQuery.setQuerySet(querySet);
+    return sqlQuery;
+  }
 
   /**
    * the signature is a checksum of sorted stable value.
@@ -234,8 +227,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
     FilterParamNew param = (FilterParamNew)_param;
     FilterParamNewStableValue stableValue = new FilterParamNewStableValue(ctxParamVals.get(param.getName()), param);
-    return stableValue.getDisplayValue(user, ctxParamVals);
+    return stableValue.getDisplayValue(ctxParamVals.getUser(), ctxParamVals.toMap());
   }
-
 }
-

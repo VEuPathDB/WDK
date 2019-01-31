@@ -45,21 +45,24 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * The filter param is similar to a flatVocabParam in that it provides SQL suitable to embed in an IN clause.
- * The SQL returns a list of internal values, similar to flatVocabParam.
+ * The filter param is similar to a flatVocabParam in that it provides SQL
+ * suitable to embed in an IN clause. The SQL returns a list of internal values,
+ * similar to flatVocabParam.
  *
- * It is configured by two queries: ontologyQuery and metadataQuery. The former returns a tree of categories
- * and information describing them. The latter maps internal values to entries in the ontology (such as age)
- * and provides a value for the ontology entry (such as 18).
+ * It is configured by two queries: ontologyQuery and metadataQuery. The former
+ * returns a tree of categories and information describing them. The latter maps
+ * internal values to entries in the ontology (such as age) and provides a value
+ * for the ontology entry (such as 18).
  *
  * Both these queries can be dependent.
  *
- * The input from the user is in the form of a set of filters. each filter specifies an ontology entry and one
- * or more values for it. The param returns all internal values from the metadata query that match all
- * supplied filters (i.e. the filtering is done on the backend).
+ * The input from the user is in the form of a set of filters. each filter
+ * specifies an ontology entry and one or more values for it. The param returns
+ * all internal values from the metadata query that match all supplied filters
+ * (i.e. the filtering is done on the backend).
  *
- * the filter param also provides summary information to the client about the distribution of values for a
- * requested ontology entry.
+ * the filter param also provides summary information to the client about the
+ * distribution of values for a requested ontology entry.
  *
  * The values returned are:
  *
@@ -381,8 +384,8 @@ public class FilterParamNew extends AbstractDependentParam {
   }
 
   /**
-   * We cache this because typically ontologies are sensitive only to the grossest dependent param (e.g.
-   * dataset), so will be reused across users.
+   * We cache this because typically ontologies are sensitive only to the
+   * grossest dependent param (e.g. dataset), so will be reused across users.
    *
    * @return <propertyName, <infoKey, infoValue>>
    */
@@ -612,9 +615,8 @@ public class FilterParamNew extends AbstractDependentParam {
   }
 
   /**
-   * stuff counts per ontology term value into json structure. first pair position is unfiltered, second is
-   * filtered
-   *
+   * stuff counts per ontology term value into json structure. first pair
+   * position is unfiltered, second is filtered
    */
   private <T> void populateSummaryCounts(Map<T, Long> countsMap, Map<T, FilterParamSummaryCounts> summary,
       boolean filtered) {
