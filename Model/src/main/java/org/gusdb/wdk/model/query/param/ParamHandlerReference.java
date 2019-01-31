@@ -18,7 +18,7 @@ public class ParamHandlerReference extends WdkModelBase {
 
   public ParamHandlerReference() {
     propertyList = new ArrayList<>();
-    properties = new HashMap<String, String>();
+    properties = new HashMap<>();
   }
 
   public ParamHandlerReference(Param param, ParamHandlerReference reference) {
@@ -26,7 +26,7 @@ public class ParamHandlerReference extends WdkModelBase {
     this.param = param;
     this.implementation = reference.implementation;
     this.propertyList = (reference.propertyList != null)
-        ? new ArrayList<WdkModelText>(reference.propertyList) : null;
+        ? new ArrayList<>(reference.propertyList) : null;
     this.properties = new HashMap<>(reference.properties);
   }
 

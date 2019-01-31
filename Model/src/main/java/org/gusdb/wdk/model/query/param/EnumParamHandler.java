@@ -1,27 +1,21 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
 
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * @author jerric
- *
  */
 public class EnumParamHandler extends AbstractParamHandler {
-
-  public static final String LABELS_SUFFIX = "-labels";
-  public static final String TERMS_SUFFIX = "-values";
 
   public EnumParamHandler() {}
 
@@ -115,93 +109,6 @@ public class EnumParamHandler extends AbstractParamHandler {
 
     Arrays.sort(terms);
     return EncryptionUtil.encrypt(Arrays.toString(terms));
-  }
-
-  /**
-   * raw value is a String[] of terms
-   */
-  @Override
-  public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
-      WdkModelException {
-    String stableValue = requestParams.getParam(_param.getName());
-    if (stableValue != null)
-      return stableValue;
-
-    // stable value not assigned, get raw value first;
-    String[] rawValue = requestParams.getArray(_param.getName());
-
-    // get the single value, and convert it into array
-    if (rawValue == null || rawValue.length == 0) {
-      String value = requestParams.getParam(_param.getName());
-      if (value != null && value.length() > 0)
-        rawValue = new String[] { value };
-    }
-
-    // use empty value if needed
-    if (rawValue == null || rawValue.length == 0) {
-      if (!_param.isAllowEmpty())
-        throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
-      rawValue = _param.getXmlDefault().split(",+");
-    }
-
-    return _param.toStableValue(user, rawValue);
-  }
-
-  @Override
-  public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException {
-    if (inputStableValue == null && !_param.isAllowEmpty())
-      throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required.");
-    return inputStableValue;
-  }
-
-  @Deprecated
-  @Override
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
-      throws WdkModelException {
-    AbstractEnumParam aeParam = (AbstractEnumParam) _param;
-
-    // set labels
-    Map<String, String> displayMap = aeParam.getDisplayMap(user, contextParamValues);
-    String[] terms = displayMap.keySet().toArray(new String[0]);
-    String[] labels = displayMap.values().toArray(new String[0]);
-    requestParams.setArray(_param.getName() + LABELS_SUFFIX, labels);
-    requestParams.setArray(_param.getName() + TERMS_SUFFIX, terms);
-
-    // get the stable value
-    String stableValue = requestParams.getParam(_param.getName());
-    Set<String> values = new HashSet<>();
-    if (stableValue == null) { // stable value not set, use default
-      stableValue = aeParam.getXmlDefault();
-      if (stableValue != null) {
-        // don't validate default, just use it as is.
-        for (String term : stableValue.split(",+")) {
-          values.add(term.trim());
-        }
-      }
-    }
-    else { // stable value set, check if any of them are invalid
-      Set<String> invalidValues = new HashSet<>();
-      for (String term : stableValue.split(",+")) {
-        term = term.trim();
-        if (displayMap.containsKey(term))
-          values.add(term);
-        else
-          invalidValues.add(term);
-      }
-      // store the invalid values
-      String[] invalids = invalidValues.toArray(new String[0]);
-      Arrays.sort(invalids);
-      requestParams.setAttribute(_param.getName() + Param.INVALID_VALUE_SUFFIX, invalids);
-    }
-
-    // set the stable & raw value
-    if (stableValue != null)
-      requestParams.setParam(_param.getName(), stableValue);
-    if (values.size() > 0) {
-      String[] rawValue = values.toArray(new String[0]);
-      requestParams.setArray(_param.getName(), rawValue);
-      requestParams.setAttribute(_param.getName() + Param.RAW_VALUE_SUFFIX, rawValue);
-    }
   }
 
   @Override
