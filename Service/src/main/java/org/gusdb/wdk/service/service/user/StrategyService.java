@@ -142,7 +142,19 @@ public class StrategyService extends UserService {
   @Path(ID_PATH + "/stepTree")
   @Consumes(MediaType.APPLICATION_JSON)
   public void replaceStepTree(@PathParam(ID_PARAM) long stratId, JSONObject body) {
-    // TODO: Spec me!
+    /*
+     * spec:
+     * - look up strategy
+     * - save off list of steps in strat
+     * - create a new strategy builder from the orig
+     * - clear existing steps from the builder
+     * - look up and add steps specified in tree to the builder
+     *     - use the strategy itself to look for steps; if not there, then look up in DB (must be unattached!)
+     *     - need to set answer params to new values first
+     * - update strategy in DB
+     * - clear strategy from no-longer-used steps
+     * - update no-longer-used steps in DB
+     */
     throw new InternalServerErrorException("Method not implemented");
   }
 
