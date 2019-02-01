@@ -730,7 +730,7 @@ public class StepFactory {
         .addSteps(newStepMap.values())
         .build(new UserCache(user), ValidationLevel.RUNNABLE),
       // tree structure should already have been validated when creating the passed in strategy
-      e -> new WdkModelException(e));
+        WdkModelException::new);
 
     // persist new strategy and all steps to the DB
     try (Connection conn = _userDbDs.getConnection()){
@@ -1032,6 +1032,17 @@ public class StepFactory {
     }
   }
 
+  public void updateStrategies(Collection<Strategy> toUpdate) throws WdkModelException {
+    try(Connection con = _userDbDs.getConnection()) {
+      con.setAutoCommit(false);
+      for(Strategy strat : toUpdate)
+        updateStrategy(con, strat);
+      con.commit();
+    } catch (SQLException e) {
+      throw new WdkModelException(e);
+    }
+  }
+
   /**
    * Overwrite the given strategy in the strategies table.
    *
@@ -1131,7 +1142,7 @@ public class StepFactory {
     return Functions.mapException(() ->
       builder.build(new UserCache(user), strategy.getValidationBundle().getLevel()),
       // tree structure should already have been validated when creating the passed in strategy
-      e -> new WdkModelException(e));
+        WdkModelException::new);
 
   }
 
@@ -1635,8 +1646,8 @@ public class StepFactory {
   }
 
   /**
-   * Updates the step's state in the DB (and any dependents within its strategy). 
-   * 
+   * Updates the step's state in the DB (and any dependents within its strategy).
+   *
    * @param previous the previous version of the step (pre-modification)
    * @param stepToSave the modified version of the step (in builder form)
    * @param isDirtyChange whether the changes made change the step's result
