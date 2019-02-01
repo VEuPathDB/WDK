@@ -7,6 +7,7 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.json.JSONArray;
@@ -41,7 +42,8 @@ public class ParamFormatter<T extends Param> {
     pJson.put(JsonKeys.NAME, _param.getName());
     pJson.put(JsonKeys.DISPLAY_NAME, _param.getPrompt());
     pJson.put(JsonKeys.HELP, _param.getHelp());
-    pJson.put(JsonKeys.TYPE, _param.getClass().getSimpleName());
+    String type = _param instanceof AnswerParam? "StepParam" : _param.getClass().getSimpleName()
+    pJson.put(JsonKeys.TYPE, type);
     pJson.put(JsonKeys.IS_VISIBLE, _param.isVisible());
     pJson.put(JsonKeys.GROUP, _param.getGroup().getName());
     pJson.put(JsonKeys.IS_READ_ONLY, _param.isReadonly());
