@@ -1,39 +1,16 @@
 package org.gusdb.wdk.service.service.user;
 
-import static org.gusdb.fgputil.functional.Functions.not;
-
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Optional;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.GET;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.InvalidStrategyStructureException;
-import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.*;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
-import org.gusdb.wdk.model.user.Strategy;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
@@ -45,9 +22,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Optional;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+
+import static org.gusdb.fgputil.functional.Functions.not;
 
 public class StrategyService extends UserService {
 
@@ -64,12 +49,46 @@ public class StrategyService extends UserService {
   }
 
   @GET
-  @Path("strategies")
+  @Path(BASE_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   // TODO: @OutSchema(...)
   public JSONArray getStrategies() throws WdkModelException {
     return StrategyFormatter.getStrategiesJson(getWdkModel().getStepFactory()
       .getStrategies(getUserBundle(Access.PRIVATE).getSessionUser().getUserId(), false, false));
+  }
+
+  @PATCH
+  @Path(BASE_PATH)
+  @Consumes(MediaType.APPLICATION_JSON)
+  // TODO: @OutSchema(...)
+  public void deleteStrategies(JSONObject[] strats) // TODO: Find a better name for me
+      throws WdkModelException {
+
+    final StepFactory fac = getWdkModel().getStepFactory();
+    final User user = getSessionUser();
+    final UserCache uCache  = new UserCache(user);
+    final Collection<Strategy> toUpdate = new ArrayList<>(strats.length);
+
+    try {
+      for (JSONObject action : strats) {
+        final long id = action.getLong(JsonKeys.STRATEGY_ID);
+        final boolean del = action.getBoolean(JsonKeys.IS_DELETED);
+        final Strategy strat = fac.getStrategyById(id, ValidationLevel.NONE)
+            .orElseThrow(() -> new NotFoundException(
+                formatNotFound(STRATEGY_RESOURCE + id)));
+
+        if (strat.getUser().getUserId() != user.getUserId())
+          throw new ForbiddenException(PERMISSION_DENIED);
+
+        if (del != strat.isDeleted())
+          toUpdate.add(Strategy.builder(strat).setDeleted(del)
+              .build(uCache, ValidationLevel.NONE));
+      }
+    } catch (InvalidStrategyStructureException e) {
+      throw new WdkModelException(e);
+    }
+
+    fac.updateStrategies(toUpdate);
   }
 
   @POST
@@ -94,11 +113,8 @@ public class StrategyService extends UserService {
     catch (WdkModelException wme) {
       throw new WdkModelException("Unable to create the strategy.", wme);
     }
-    catch (WdkUserException wue) {
+    catch (WdkUserException | InvalidStrategyStructureException wue) {
       throw new DataValidationException(wue);
-    }
-    catch (InvalidStrategyStructureException e) {
-      throw new DataValidationException(e);
     }
   }
 
@@ -112,6 +128,8 @@ public class StrategyService extends UserService {
     final StepFactory fac = getWdkModel().getStepFactory();
     final Strategy strat = fac.getStrategyById(strategyId, ValidationLevel.SYNTACTIC)
       .orElseThrow(() -> new NotFoundException(formatNotFound(STRATEGY_RESOURCE + strategyId)));
+
+    // FIXME: No ownership check?
 
     if (strat.isSaved()) {
       validateSavedStratChange(body).ifPresent(err -> {
@@ -223,7 +241,7 @@ public class StrategyService extends UserService {
    * @param change JSON object containing change set to apply.
    *
    * @return New strategy instance with the given changes applied.
-   * @throws InvalidStrategyStructureException 
+   * @throws InvalidStrategyStructureException
    */
   private Strategy applyStrategyChange(
     Strategy strat,
