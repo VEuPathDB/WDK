@@ -17,9 +17,6 @@ import org.gusdb.wdk.model.dataset.ListDatasetParser;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.user.StepUtilities;
-import org.gusdb.wdk.model.user.Strategy;
-import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -218,26 +215,6 @@ public class DatasetParam extends Param {
     return parser;
   }
 
-  public String getTypeSubParam() {
-    return getName() + "_type";
-  }
-
-  public String getFileSubParam() {
-    return getName() + "_file";
-  }
-
-  public String getDataSubParam() {
-    return getName() + "_data";
-  }
-
-  public String getStrategySubParam() {
-    return getName() + "_strategy";
-  }
-
-  public String getParserSubParam() {
-    return getName() + "_parser";
-  }
-
   @Override
   public String getBriefRawValue(Object rawValue, int truncateLength) throws WdkModelException {
     Dataset dataset = (Dataset) rawValue;
@@ -245,19 +222,6 @@ public class DatasetParam extends Param {
     if (content.length() > truncateLength)
       content = content.substring(0, truncateLength) + "...";
     return content;
-  }
-
-  public Integer getBasketCount(User user) throws WdkModelException {
-    if (recordClass == null)
-      return null;
-    Map<RecordClass, Integer> counts = _wdkModel.getBasketFactory().getBasketCounts(user);
-    return counts.get(recordClass);
-  }
-
-  public Strategy[] getStrategies(User user) throws WdkModelException {
-    if (recordClass == null)
-      return null;
-    return StepUtilities.getStrategies(user, recordClass.getFullName());
   }
 
   public void addParserReference(DatasetParserReference reference) {

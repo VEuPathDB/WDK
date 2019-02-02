@@ -119,16 +119,9 @@ public class JsonKeys {
   public static final String PARSER = "parser";
 
   // dataset-related keys
+  public static final String DEFAULT_ID_LIST = "defaultIdList";
   public static final String SOURCE_TYPE = "sourceType";
   public static final String SOURCE_CONTENT = "sourceContent";
-  public static final String DEFAULT_ID_LIST = "defaultIdList";
-  public static final String ID_LIST = "idList";
-  public static final String IDS = "ids";
-  public static final String BASKET = "basket";
-  public static final String BASKET_NAME = "basketName";
-  public static final String FILE = "file";
-  public static final String TEMP_FILE_ID = "temporaryFileId";
-  public static final String STRATEGY = "strategy";
 
   // step- and strategy-specific keys
   public static final String CUSTOM_NAME = "customName";
