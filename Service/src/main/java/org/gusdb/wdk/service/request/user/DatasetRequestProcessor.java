@@ -126,7 +126,7 @@ public class DatasetRequestProcessor {
       case STRATEGY: return createFromStrategy(getStrategyId(value), user, factory);
       case FILE:     return createFromTemporaryFile(value.getString(), user, factory, session);
       default:
-        throw new DataValidationException("Unrecognized " + JsonKeys.SOURCE_TYPE + ": " + sourceType);
+        throw new DataValidationException("Unrecognized " + JsonKeys.SOURCE_TYPE + ": " + request.getSourceType());
     }
   }
 
