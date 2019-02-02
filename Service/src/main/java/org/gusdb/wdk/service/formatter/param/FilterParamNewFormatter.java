@@ -81,4 +81,9 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
     return valuesMapJson; 
   }
 
+  @Override
+  protected String getParamType() {
+    return "FilterParam";
+  }
+
 }

@@ -8,4 +8,9 @@ public class AnswerParamFormatter extends ParamFormatter<AnswerParam>{
     super(param);
   }
 
+  @Override
+  protected String getParamType() {
+    return "StepParam";
+  }
+
 }

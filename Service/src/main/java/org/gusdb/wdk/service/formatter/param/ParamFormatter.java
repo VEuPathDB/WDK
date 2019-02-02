@@ -7,14 +7,13 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ParamFormatter<T extends Param> {
+public abstract class ParamFormatter<T extends Param> {
 
   protected T _param;
 
@@ -30,6 +29,12 @@ public class ParamFormatter<T extends Param> {
   }
 
   /**
+   * @return the distinct parameter type as is relevant to a client application;
+   * for example, two Param subclasses that share an API may be the same type.
+   */
+  protected abstract String getParamType();
+
+  /**
    * Formats this param into JSON.
    * 
    * @return This param's data as JSON
@@ -42,8 +47,7 @@ public class ParamFormatter<T extends Param> {
     pJson.put(JsonKeys.NAME, _param.getName());
     pJson.put(JsonKeys.DISPLAY_NAME, _param.getPrompt());
     pJson.put(JsonKeys.HELP, _param.getHelp());
-    String type = _param instanceof AnswerParam? "StepParam" : _param.getClass().getSimpleName()
-    pJson.put(JsonKeys.TYPE, type);
+    pJson.put(JsonKeys.TYPE, getParamType());
     pJson.put(JsonKeys.IS_VISIBLE, _param.isVisible());
     pJson.put(JsonKeys.GROUP, _param.getGroup().getName());
     pJson.put(JsonKeys.IS_READ_ONLY, _param.isReadonly());

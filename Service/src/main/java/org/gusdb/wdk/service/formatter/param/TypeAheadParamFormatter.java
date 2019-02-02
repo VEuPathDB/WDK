@@ -20,4 +20,9 @@ public class TypeAheadParamFormatter extends AbstractEnumParamFormatter {
     return getBaseJson(spec)
         .put(JsonKeys.VOCABULARY, getVocabArrayJson(vocabInstance));
   }
+
+  @Override
+  protected String getParamType() {
+    return "TypeAheadParam";
+  }
 }

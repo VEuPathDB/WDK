@@ -31,4 +31,9 @@ public class DatasetParamFormatter extends ParamFormatter<DatasetParam> {
     return pJson;
   }
 
+  @Override
+  protected String getParamType() {
+    return "DatasetParam";
+  }
+
 }
