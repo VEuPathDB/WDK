@@ -31,10 +31,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * The param is used by Query to provide inputs to the query. Each query holds a separate copy of each param,
- * since a param can be customized on query level, or even on question level, if the query is an ID query.
+ * Params are used by Query objects and other ParamContainers to provide inputs
+ * to the container. Each container holds a separate copy of each param, since a
+ * param can be customized at the query/container level, or even at question
+ * level, if the query is an ID query.
  *
- * The param values will go through a life cycle in a following way. First, we gets the value from user input
+ * The param values will go through a life cycle in a following way. First, we get the value from user input
  * as raw value; then it is transformed into reference value, which is used in URLs, and saved in user's
  * steps. Then when the value is used to execute a query, the user-dependent value will be transformed into
  * internal value, and is fed to the query instance.
@@ -57,7 +59,7 @@ import org.json.JSONObject;
  *         Internal data: the data used in the SQL.
  *
  *         signature: the data used to generate checksum, which will be used to index a cache. The signature
- *         should not contain any user related information to make sure the cache can be shared between used.
+ *         should not contain any user related information to make sure the cache can be shared between users.
  *
  *         We define the following transformations between value types:
  *
