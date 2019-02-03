@@ -6,6 +6,8 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.gusdb.wdk.model.WdkUserException;
+
 public class FastaDatasetParser extends AbstractDatasetParser {
 
   private static final int SEQUENCE_LENGTH = 1999;
@@ -18,7 +20,7 @@ public class FastaDatasetParser extends AbstractDatasetParser {
   }
 
   @Override
-  public List<String[]> parse(String content) throws WdkDatasetException {
+  public List<String[]> parse(String content) throws WdkUserException {
     List<String[]> data = new ArrayList<>();
 
     BufferedReader reader = new BufferedReader(new StringReader(content));
@@ -46,7 +48,7 @@ public class FastaDatasetParser extends AbstractDatasetParser {
         data.add(row);
     }
     catch (IOException ex) {
-      throw new WdkDatasetException(ex);
+      throw new WdkUserException(ex);
     }
     return data;
   }
