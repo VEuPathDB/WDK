@@ -33,7 +33,7 @@ import org.gusdb.wdk.model.WdkRuntimeException;
  * date-uploaded is later than current time minus some threshold, and file still exists in wdk-tmp. If file is
  * no longer available but is still present, we should manually delete from tmp and session.
  */
-@Path("/temporary-file")
+@Path("/temporary-files")
 public class TemporaryFileService extends AbstractWdkService {
 
   public final static String TEMP_FILE_METADATA = "tempFileMetadata";  // for use in session
@@ -51,8 +51,10 @@ public class TemporaryFileService extends AbstractWdkService {
    */
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  public Response buildResultFromForm(@FormDataParam("file") InputStream fileInputStream, @FormDataParam("file") FormDataContentDisposition fileMetadata)
-      throws WdkModelException {
+  public Response buildResultFromForm(
+      @FormDataParam("file") InputStream fileInputStream,
+      @FormDataParam("file") FormDataContentDisposition fileMetadata)
+          throws WdkModelException {
 
     java.nio.file.Path tempDirPath = getWdkModel().getModelConfig().getWdkTempDir();
     java.nio.file.Path tempFilePath;

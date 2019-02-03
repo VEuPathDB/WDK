@@ -372,7 +372,7 @@ public class BasketFactory {
   }
 
   public List<RecordInstance> getBasket(User user, RecordClass recordClass)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     String sql = "SELECT * FROM " + _userSchema + TABLE_BASKET + " WHERE " + COLUMN_PROJECT_ID + " = ? AND " +
         COLUMN_USER_ID + " = ? AND " + COLUMN_RECORD_CLASS + " =?";
     DataSource ds = _wdkModel.getUserDb().getDataSource();
@@ -398,8 +398,15 @@ public class BasketFactory {
             Object columnValue = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
             pkValues.put(columns[i - 1], columnValue);
           }
-          RecordInstance record = new StaticRecordInstance(user, recordClass, recordClass, pkValues, true);
-          records.add(record);
+          try {
+            RecordInstance record = new StaticRecordInstance(user, recordClass, recordClass, pkValues, true);
+            records.add(record);
+          }
+          catch (WdkUserException e) {
+            // FIXME: thrown because pkValues mapped to more than one record;
+            // skip for now but probably want to convert to the multiple records
+            // and return all records in this result.
+          }
         }
         return records;
       }

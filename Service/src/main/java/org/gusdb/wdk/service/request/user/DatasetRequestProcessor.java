@@ -14,36 +14,29 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonType.ValueType;
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
-import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.dataset.AbstractDatasetParser;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.ListDatasetParser;
 import org.gusdb.wdk.model.query.param.DatasetParam;
-import org.gusdb.wdk.model.query.param.DatasetParamHandler;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.user.BasketFactory;
-import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.StepFactory;
-import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -53,8 +46,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class DatasetRequestProcessor {
-
-  private static final Logger logger = Logger.getLogger(DatasetParamHandler.class);
 
   public enum DatasetSourceType {
 
@@ -99,6 +90,7 @@ public class DatasetRequestProcessor {
     private final DatasetSourceType _sourceType;
     private final JsonType _configValue;
     private final Optional<String> _displayName;
+    private final Map<String,JsonType> _additionalConfig;
 
     public DatasetRequest(JSONObject input) throws RequestMisformatException {
       _sourceType = DatasetSourceType.getFromJsonKey(input.getString(JsonKeys.SOURCE_TYPE));
@@ -108,23 +100,29 @@ public class DatasetRequestProcessor {
         throw new RequestMisformatException("Value of '" +
             _sourceType.getConfigJsonKey() + "' must be a " + _sourceType.getConfigType());
       }
+      _additionalConfig = Functions.getMapFromKeys(
+          JsonUtil.getKeys(sourceContent).stream()
+            .filter(key -> !key.equals(_sourceType.getConfigJsonKey()))
+            .collect(Collectors.toSet()),
+          key -> new JsonType(sourceContent.get(key)));
       _displayName = Optional.ofNullable(JsonUtil.getStringOrDefault(input, JsonKeys.DISPLAY_NAME, null));
     }
 
     public DatasetSourceType getSourceType() { return _sourceType; }
     public JsonType getConfigValue() { return _configValue; }
     public Optional<String> getDisplayName() { return _displayName; }
+    public Map<String,JsonType> getAdditionalConfig() { return _additionalConfig; }
 
   }
 
   public static Dataset createFromRequest(DatasetRequest request, User user, DatasetFactory factory, HttpSession session)
-      throws WdkModelException, DataValidationException {
+      throws WdkModelException, DataValidationException, RequestMisformatException {
     JsonType value = request.getConfigValue();
     switch(request.getSourceType()) {
       case ID_LIST:  return createFromIdList(value.getJSONArray(), user, factory);
       case BASKET:   return createFromBasket(value.getString(), user, factory);
       case STRATEGY: return createFromStrategy(getStrategyId(value), user, factory);
-      case FILE:     return createFromTemporaryFile(value.getString(), user, factory, session);
+      case FILE:     return createFromTemporaryFile(value.getString(), user, factory, request.getAdditionalConfig(), session);
       default:
         throw new DataValidationException("Unrecognized " + JsonKeys.SOURCE_TYPE + ": " + request.getSourceType());
     }
@@ -138,7 +136,7 @@ public class DatasetRequestProcessor {
   }
 
   private static Dataset createFromIdList(JSONArray jsonIds, User user, DatasetFactory factory)
-      throws DataValidationException, WdkUserException, WdkModelException {
+      throws DataValidationException, WdkModelException {
     if (jsonIds.length() == 0) {
       throw new DataValidationException("At least 1 ID must be submitted");
     }
@@ -159,20 +157,23 @@ public class DatasetRequestProcessor {
         return "anonymous";
       }
     };
-    return factory.createOrGetDataset(user, parser, join(ids.toArray(), " "), "");
+    return createDataset(user, parser, join(ids.toArray(), " "), null, factory);
   }
 
-  public static Dataset createFromBasket(String recordClassName, User user, DatasetFactory factory)
-      throws WdkModelException, WdkUserException {
+  private static Dataset createFromBasket(String recordClassName, User user, DatasetFactory factory)
+      throws WdkModelException, DataValidationException {
     WdkModel wdkModel = factory.getWdkModel();
     RecordClass recordClass = wdkModel.getRecordClassByUrlSegment(recordClassName);
-    String questionName = BasketFactory.getSnapshotBasketQuestionName(recordClass);
-    Question question = wdkModel.getQuestion(questionName).get(); // basket question always present
-    DatasetParam param = (DatasetParam) question.getParamMap().get(BasketFactory.getDatasetParamName(recordClass));
-    
-    String datasetId = handler.getStableValue(user, new MapBasedRequestParams()
-        .setParam(param.getTypeSubParam(), DatasetParam.TYPE_BASKET));
-    return factory.getDataset(user, Long.parseLong(datasetId));
+    if (recordClass == null) {
+      throw new DataValidationException("No record class exists with name '" + recordClassName + "'.");
+    }
+
+    BasketFactory basketFactory = factory.getWdkModel().getBasketFactory();
+    List<String[]> ids = basketFactory.getBasket(user, recordClass).stream()
+        .map(ri -> ri.getPrimaryKey().getValues().values().toArray(new String[0]))
+        .collect(Collectors.toList());
+
+    return createDataset(user, new ListDatasetParser(), joinIds(ids), null, factory);
   }
 
   private static Dataset createFromStrategy(long strategyId, User user, DatasetFactory factory)
@@ -186,147 +187,91 @@ public class DatasetRequestProcessor {
     AnswerValue answerValue = AnswerValueFactory.makeAnswer(
         Strategy.getRunnableStep(strategy, strategy.getObject().getRootStepId()).get());
     List<String[]> ids = answerValue.getAllIds();
-    ListDatasetParser parser = new ListDatasetParser();
-    String content = ids.stream()
+    return createDataset(user, new ListDatasetParser(), joinIds(ids), null, factory);
+  }
+
+  private static String joinIds(List<String[]> ids) {
+    return ids.stream()
         .map(idArray -> join(idArray, ListDatasetParser.DATASET_COLUMN_DIVIDER))
         .collect(Collectors.joining("\n"));
+  }
+
+  private static Dataset createDataset(User user, DatasetParser parser,
+      String content, String uploadFileName, DatasetFactory factory)
+          throws WdkModelException, DataValidationException {
     try {
-      return factory.createOrGetDataset(user, parser, content, null);
+      return factory.createOrGetDataset(user, parser, content, uploadFileName);
     }
     catch (WdkUserException e) {
-      return WdkModelException.unwrap(e);
+      throw new DataValidationException(e.getMessage());
     }
   }
 
-  private static Dataset createFromTemporaryFile(User user, JSONObject sourceConfig, DatasetFactory factory, HttpSession session) throws WdkUserException, WdkModelException {
-    String tempFileId = sourceConfig.getString(JsonKeys.TEMP_FILE_ID);
-    String parserName = sourceConfig.getString(JsonKeys.PARSER);
-    String questionName = sourceConfig.getString(JsonKeys.QUESTION_NAME);
-    String parameterName = sourceConfig.getString(JsonKeys.PARAMETER_NAME);
+  private static Dataset createFromTemporaryFile(String tempFileId, User user, DatasetFactory factory,
+      Map<String, JsonType> additionalConfig, HttpSession session)
+          throws DataValidationException, WdkModelException, RequestMisformatException {
+    Optional<String> parserName = getStringOrFail(additionalConfig, JsonKeys.PARSER);
+    DatasetParser parser = parserName.isPresent() ?
+        findDatasetParser(parserName.get(), additionalConfig, factory.getWdkModel()) :
+        new ListDatasetParser();
 
-    Question question = factory.getWdkModel().getQuestion(questionName).orElseThrow(
-        () -> new WdkUserException(String.format("Could not find a question with the name `%s`.", questionName)));
+    Path tempFilePath = TemporaryFileService.getTempFileFactory(factory.getWdkModel(), session)
+      .apply(tempFileId)
+      .orElseThrow(() -> new DataValidationException("Temporary file with the ID '" + tempFileId + "' could not be found in this session."));
 
-    Param param = Optional.of(question.getParamMap().get(parameterName)).orElseThrow(() -> new WdkUserException(
-        String.format("Could not find the parameter `%s` with the question `%s`.", parameterName, questionName)));
+    try {
+      String contents = new String(Files.readAllBytes(tempFilePath));
+      return createDataset(user, parser, contents, tempFileId, factory);
+    }
+    catch (IOException e) {
+      throw new WdkModelException("Unable to read temporary file with ID '" + tempFileId + "'.", e);
+    }
+  }
+
+  private static DatasetParser findDatasetParser(String parserName,
+      Map<String, JsonType> additionalConfig, WdkModel model)
+          throws DataValidationException, RequestMisformatException, WdkModelException {
+
+    Optional<String> questionName = getStringOrFail(additionalConfig, JsonKeys.QUESTION_NAME);
+    Optional<String> parameterName = getStringOrFail(additionalConfig, JsonKeys.PARAMETER_NAME);
+
+    if (!questionName.isPresent() || !parameterName.isPresent()) {
+      throw new DataValidationException("If '" + JsonKeys.PARSER + "' property is specified, '" +
+          JsonKeys.QUESTION_NAME + "' and '" + JsonKeys.PARAMETER_NAME + "' must also be specified.");
+    }
+
+    Question question = model.getQuestion(questionName.get()).orElseThrow(
+        () -> new DataValidationException(String.format(
+            "Could not find question with name '%s'.", questionName.get())));
+
+    Param param = Optional.ofNullable(question.getParamMap().get(parameterName.get())).orElseThrow(
+        () -> new DataValidationException(String.format(
+            "Could not find parameter '%s' in question '%s'.", parameterName.get(), questionName.get())));
     
     if (!(param instanceof DatasetParam)) {
-      throw new WdkUserException(String.format("Expected % to be a DatasetParam, but instead got a %s.", parameterName,
-          param.getClass().getSimpleName()));
+      throw new DataValidationException(String.format(
+          "Parameter '%s' must be a DatasetParam, is a %s.", parameterName.get(), param.getClass().getSimpleName()));
     }
 
     DatasetParser parser = ((DatasetParam) param).getParser(parserName);
 
     if (parser == null) {
-      throw new WdkUserException(String.format("Could not find parser `%s` in parameter `%s` of question `%s`.",
-          parserName, parameterName, questionName));
+      throw new DataValidationException(String.format(
+          "Could not find parser '%s' in parameter '%s' of question '%s'.", parserName, parameterName.get(), questionName.get()));
     }
 
-    Path tempFilePath = TemporaryFileService.getTempFileFactory(factory.getWdkModel(), session)
-      .apply(tempFileId)
-      .orElseThrow(() -> new WdkUserException("TemporaryFile with the name \"" + tempFileId + "\" could not be found for the user."));
+    return parser;
 
-    try {
-      String contents = new String(Files.readAllBytes(tempFilePath));
-      return factory.createOrGetDataset(user, parser, contents, tempFileId);
-    } catch (IOException e) {
-      throw new RuntimeException("Unable to read Te)mporaryFile with name \"" + tempFileId + "\".", e);
-    }
   }
 
-  /**
-   * get the step value from the user input, and if empty value is allowed, use empty value as needed.
-   */
-  private String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
-      WdkModelException {
-
-
-    String data = null;
-    String uploadFile = "";
-    RecordClass recordClass = datasetParam.getRecordClass();
-    String parserName = requestParams.getParam(datasetParam.getParserSubParam());
-    if (parserName == null) // list parser is the default parser.
-      parserName = ListDatasetParser.NAME;
-
-    // retrieve data by type.
-    if (type.equalsIgnoreCase(DatasetParam.TYPE_DATA)) {
-      data = requestParams.getParam(datasetParam.getDataSubParam());
-      if (data == null || data.length() == 0)
-        throw new WdkUserException("Please input data for parameter '" + _param.getPrompt() + "'.");
-    }
-    else if (type.equalsIgnoreCase(DatasetParam.TYPE_FILE)) {
-      String fileParam = datasetParam.getFileSubParam();
-      uploadFile = requestParams.getParam(fileParam);
-      if (uploadFile == null || uploadFile.length() == 0)
-        throw new WdkUserException("Please select a file to upload for parameter '" + _param.getPrompt() +
-            "'.");
-      logger.debug("upload file: " + uploadFile);
-      data = requestParams.getUploadFileContent(fileParam);
-    }
-    else if (recordClass != null) {
-      RecordInstance[] records = null;
-      if (type.equalsIgnoreCase(DatasetParam.TYPE_BASKET)) {
-        BasketFactory basketFactory = user.getWdkModel().getBasketFactory();
-        List<RecordInstance> list = basketFactory.getBasket(user, recordClass);
-        records = list.toArray(new RecordInstance[0]);
+  private static Optional<String> getStringOrFail(Map<String, JsonType> map, String key) throws RequestMisformatException {
+    if (map.containsKey(key)) {
+      JsonType value = map.get(key);
+      if (value.getType().equals(ValueType.STRING)) {
+        return Optional.of(value.getString());
       }
-      else if (type.equals("strategy")) {
-        String strId = requestParams.getParam(datasetParam.getStrategySubParam());
-        long strategyId = Long.valueOf(strId);
-        Strategy strategy = StepUtilities.getStrategy(user, strategyId, ValidationLevel.RUNNABLE);
-        Step step = strategy.getRootStep();
-        List<RecordInstance> list = new ArrayList<>();
-        try (RecordStream fullAnswer = step.getAnswerValue().getFullAnswer()) {
-          for (RecordInstance record : fullAnswer) {
-            list.add(record);
-          }
-        }
-        records = list.toArray(new RecordInstance[0]);
-      }
-      if (records != null)
-        data = toString(records);
+      throw new RequestMisformatException("Property '" + key + "' must be a string.");
     }
-
-    logger.debug("DATASET.geStableValue: dataset parser: " + parserName + ", data: '" + data + "'");
-    if (data == null) {
-      if (!_param.isAllowEmpty())
-        throw new WdkUserException("The dataset param '" + _param.getPrompt() + "' does't allow empty value.");
-      data = _param.getEmptyValue();
-    }
-
-    if (data != null) {
-      data = data.trim();
-      // get parser and parse the content
-      DatasetParser parser = datasetParam.getParser(parserName);
-      DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
-      Dataset dataset = datasetFactory.createOrGetDataset(user, parser, data, uploadFile);
-      logger.info("User #" + user.getUserId() + " - dataset created: #" + dataset.getDatasetId());
-      return Long.toString(dataset.getDatasetId());
-    }
-    else
-      return null;
-  }
-
-  private String validateStableValueSyntax(User user, String inputStableValue) throws WdkModelException {
-    DatasetFactory datasetFactory = user.getWdkModel().getDatasetFactory();
-    Dataset dataset = datasetFactory.getDataset(user, Long.valueOf(inputStableValue));
-    return Long.toString(dataset.getDatasetId());
-  }
-
-  private String toString(RecordInstance[] records) {
-    StringBuilder buffer = new StringBuilder();
-    for (RecordInstance record : records) {
-      Map<String, String> primaryKey = record.getPrimaryKey().getValues();
-      boolean first = true;
-      for (String value : primaryKey.values()) {
-        if (first)
-          first = false;
-        else
-          buffer.append(ListDatasetParser.DATASET_COLUMN_DIVIDER);
-        buffer.append(value);
-      }
-      buffer.append("\n");
-    }
-    return buffer.toString();
+    return Optional.empty();
   }
 }
