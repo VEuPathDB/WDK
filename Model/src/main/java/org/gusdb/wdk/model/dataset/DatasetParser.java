@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.dataset;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 
 public interface DatasetParser {
@@ -23,5 +24,5 @@ public interface DatasetParser {
   
   void setProperties(Map<String, String> properties);
   
-  List<String[]> parse(String content) throws WdkDatasetException;
+  List<String[]> parse(String content) throws WdkUserException;
 }

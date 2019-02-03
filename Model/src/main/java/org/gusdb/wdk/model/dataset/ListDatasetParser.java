@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.dataset;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.WdkUserException;
 
 public class ListDatasetParser extends AbstractDatasetParser {
   
@@ -22,7 +23,7 @@ public class ListDatasetParser extends AbstractDatasetParser {
   }
 
   @Override
-  public List<String[]> parse(String rawValue) throws WdkDatasetException {
+  public List<String[]> parse(String rawValue) throws WdkUserException {
     //String rowDivider = getRowDivider(rawValue);
     // scrum Feb 2 2016: we allow all these characters as row dividers, do not expect columns
     String rowDivider = "[\\s,;]+";
@@ -42,7 +43,7 @@ public class ListDatasetParser extends AbstractDatasetParser {
       if (columnCount == 0)
         columnCount = columns.length;
       else if (columnCount != columns.length)
-        throw new WdkDatasetException("The input data for datasetParam has various columns at row #" +
+        throw new WdkUserException("The input data for datasetParam has various columns at row #" +
             records.size() + ". " + "The number of columns has to be the same for all the rows.");
       records.add(columns);
     }
