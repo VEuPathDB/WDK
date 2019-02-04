@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
+import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.param.ParamFormatter;
 import org.gusdb.wdk.service.formatter.param.ParamFormatterFactory;
@@ -88,7 +89,7 @@ public class QuestionFormatter {
       .put(JsonKeys.PARAMETERS, getParamsJson(params, expandParams, user, dependedParamValues))
       .put(JsonKeys.GROUPS, getGroupsJson(q.getParamMapByGroups()))
       .put(JsonKeys.DEFAULT_ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(q.getSummaryAttributeFieldMap().keySet()))
-      .put(JsonKeys.DEFAULT_SORTING, formatDefaultSorting(q))
+      .put(JsonKeys.DEFAULT_SORTING, DefaultJsonReporter.formatSorting(q.getSortingAttributeMap(), q.getAttributeFieldMap()))
       .put(JsonKeys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
           q.getDynamicAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, true))
       .put(JsonKeys.DEFAULT_SUMMARY_VIEW, q.getDefaultSummaryView().getName())
@@ -132,16 +133,6 @@ public class QuestionFormatter {
     groupJson.put(JsonKeys.DISPLAY_TYPE, group.getDisplayType());
     groupJson.put(JsonKeys.PARAMETERS, params);
     return groupJson;
-  }
-
-  private static JSONArray formatDefaultSorting(Question question) {
-    return new JSONArray(
-        SortDirectionSpec.convertSorting(question.getSortingAttributeMap(), question.getAttributeFieldMap())
-            .stream()
-            .map(spec -> new JSONObject()
-                .put("attributeName", spec.getItemName())
-                .put("direction", spec.getDirection()))
-            .collect(Collectors.toList()));
   }
 
   /*
