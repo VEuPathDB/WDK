@@ -217,7 +217,7 @@ public class UserDatasetService extends UserService {
    *    }
    */
   @PATCH
-  @Path("user-datasets/sharing")
+  @Path("user-dataset-sharing")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response manageShares(String body) throws WdkModelException, DataValidationException {
