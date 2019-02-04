@@ -914,7 +914,7 @@ public class StepFactory {
         });
   }
 
-  public MapBuilder<Long, StepBuilder> copyStepTree(User newUser, Step oldStep) throws WdkModelException {
+  private MapBuilder<Long, StepBuilder> copyStepTree(User newUser, Step oldStep) throws WdkModelException {
 
     StepBuilder newStep = Step.builder(oldStep)
         .setStepId(getNewStepId())
