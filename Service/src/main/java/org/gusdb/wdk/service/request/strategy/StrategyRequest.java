@@ -119,7 +119,8 @@ public class StrategyRequest {
     if(stepJson.has(JsonKeys.PRIMARY_INPUT_STEP)) {
     	  JSONObject leftStepJson = stepJson.getJSONObject(JsonKeys.PRIMARY_INPUT_STEP);
     	  if(leftStepJson != null && leftStepJson.has(JsonKeys.ID)) {
-    		Step leftStep = stepFactory.getStepById(leftStepJson.getLong(JsonKeys.ID));
+    		Step leftStep = stepFactory.getStepById(leftStepJson.getLong(JsonKeys.ID))
+    		    .orElseThrow(() -> new WdkUserException("No step found with ID " + leftStepJson.getLong(JsonKeys.ID)));
     		parentStep.setPreviousStep(leftStep);
     	    TreeNode<Step> leftTreeNode = new TreeNode<>(leftStep);
     	    if(leftStepJson.has(JsonKeys.PRIMARY_INPUT_STEP)) {
@@ -133,7 +134,8 @@ public class StrategyRequest {
     if(stepJson.has(JsonKeys.SECONDARY_INPUT_STEP)) {
   	  JSONObject rightStepJson = stepJson.getJSONObject(JsonKeys.SECONDARY_INPUT_STEP);
   	  if(rightStepJson != null && rightStepJson.has(JsonKeys.ID)) {
-  		Step rightStep = stepFactory.getStepById(rightStepJson.getLong(JsonKeys.ID));
+  		Step rightStep = stepFactory.getStepById(rightStepJson.getLong(JsonKeys.ID))
+            .orElseThrow(() -> new WdkUserException("No step found with ID " + rightStepJson.getLong(JsonKeys.ID)));
   		parentStep.setChildStep(rightStep);
   	    TreeNode<Step> rightTreeNode = new TreeNode<>(rightStep);
   	    if(rightStepJson.has(JsonKeys.SECONDARY_INPUT_STEP)) {
