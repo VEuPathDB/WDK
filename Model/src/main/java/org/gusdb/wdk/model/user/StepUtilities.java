@@ -50,20 +50,24 @@ public class StepUtilities {
         filter, filterOptions, assignedWeight, deleted, null, false, null, strategy);
   }
 
+  @Deprecated
   public static Strategy createStrategy(Step step, boolean saved) throws WdkModelException, WdkUserException {
     return createStrategy(step, null, null, saved, null, false, false);
   }
 
+  @Deprecated
   public static Strategy createStrategy(Step step, boolean saved, boolean hidden) throws WdkModelException, WdkUserException {
     return createStrategy(step, null, null, saved, null, hidden, false);
   }
 
   // Transitional method...how to handle savedName properly?
   // Probably by expecting it if a name is given?
+  @Deprecated
   public static Strategy createStrategy(Step step, boolean saved, String name) throws WdkModelException, WdkUserException {
     return createStrategy(step, name, null, saved, null, false, false);
   }
 
+  @Deprecated
   public static Strategy createStrategy(Step step, String name, String savedName, boolean saved, String description,
       boolean hidden, boolean isPublic) throws WdkModelException, WdkUserException {
     try {
@@ -314,6 +318,7 @@ public class StepUtilities {
     return newStrategy;
   }
 
+  @Deprecated
   public static Step createBooleanStep(User user, Strategy strategy, Step leftStep, Step rightStep, String booleanOperator,
       String filterName) throws WdkModelException {
     BooleanOperator operator = BooleanOperator.parse(booleanOperator);
@@ -332,6 +337,7 @@ public class StepUtilities {
     return createBooleanStep(user, strategy, leftStep, rightStep, operator, filter);
   }
 
+  @Deprecated
   public static Step createBooleanStep(User user, Strategy strategy, Step leftStep, Step rightStep, BooleanOperator operator,
       AnswerFilterInstance filter) throws WdkModelException {
     // make sure the left & right step belongs to the user

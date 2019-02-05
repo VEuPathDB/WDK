@@ -380,6 +380,7 @@ public class StepFactory {
         new WdkModelException("Could not find step with 'valid' ID: " + stepId));
   }
 
+  @Deprecated
   private void updateStepTree(Step step) throws WdkModelException {
     Question question = step.getAnswerSpec().getQuestion();
     Map<String, String> displayParams = step.getAnswerSpec()
@@ -445,6 +446,7 @@ public class StepFactory {
         .executeUpdate(new Object[]{ customName }, new Integer[]{ Types.VARCHAR });
   }
 
+  @Deprecated
   int dropDependency(long stepId, String column) throws WdkModelException {
     String sql = "UPDATE " + _userSchema + TABLE_STEP +"\n" +
         "SET " + column + " = null\n" +
@@ -1159,6 +1161,7 @@ public class StepFactory {
   // of answers
   // and steps tables is handled in other functions. Once the Step
   // object exists, all of this data is already in the db.
+  @Deprecated
   public Strategy createStrategy(User user, Step root, String name,
       String savedName, boolean saved, String description, boolean hidden,
       boolean isPublic) throws WdkModelException, InvalidStrategyStructureException {
@@ -1169,6 +1172,7 @@ public class StepFactory {
         description, hidden, isPublic);
   }
 
+  @Deprecated
   Strategy createStrategy(User user, long strategyId, Step root, String newName,
       String savedName, boolean saved, String description, boolean hidden,
       boolean isPublic) throws WdkModelException, InvalidStrategyStructureException {
