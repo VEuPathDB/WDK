@@ -173,7 +173,7 @@ public class AnswerService extends AbstractWdkService {
   }
 
   private static RunnableObj<AnswerSpec> parseAnswerSpec(JSONObject requestJson, WdkModel wdkModel, User sessionUser) throws RequestMisformatException, WdkModelException, DataValidationException {
-    JSONObject answerSpecJson = requestJson.getJSONObject(JsonKeys.ANSWER_SPEC);
+    JSONObject answerSpecJson = requestJson.getJSONObject(JsonKeys.SEARCH_CONFIG);
     AnswerSpecBuilder specBuilder = AnswerSpecServiceFormat.parse(answerSpecJson, wdkModel);
     StepContainer stepContainer = loadContainer(specBuilder, wdkModel, sessionUser);
     return specBuilder
