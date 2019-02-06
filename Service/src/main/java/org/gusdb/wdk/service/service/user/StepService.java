@@ -182,6 +182,9 @@ public class StepService extends UserService {
     StepBuilder replacementBuilder = Step.builder(existingStep)
         .setAnswerSpec(AnswerSpec.builder(newSpec));
 
+    // allows subclasses to apply follow-up modifications to the new version
+    applyAdditionalChanges(existingStep, replacementBuilder);
+
     if (existingStep.hasStrategy()) {
       try {
         // need to replace and update whole strategy to cover effects
@@ -203,6 +206,17 @@ public class StepService extends UserService {
       getWdkModel().getStepFactory().updateStep(replacementBuilder.build(
           new UserCache(user), ValidationLevel.SEMANTIC, null));
     }
+  }
+
+  /**
+   * Apply any desired changes based on the modifications made already
+   * 
+   * @param existingStep previous version of the step
+   * @param replacementBuilder a replacement builder with client-requested changes applied
+   * @throws WdkModelException if unable to make the appropriate changes
+   */
+  protected void applyAdditionalChanges(Step existingStep, StepBuilder replacementBuilder) throws WdkModelException {
+    // do nothing by default
   }
 
   @GET
