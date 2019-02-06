@@ -20,9 +20,10 @@ public class NumberParamFormatter extends ParamFormatter<NumberParam> {
         .put(JsonKeys.MAX_VALUE, this._param.getMax())
         .put(JsonKeys.STEP, this._param.getStep());
   }
-
+  
   @Override
-  protected String getParamType() {
-    return "NumberParam";
+  public String getTypeDisplayName() {
+    return JsonKeys.NUMBER_PARAM_TYPE;   
   }
+
 }

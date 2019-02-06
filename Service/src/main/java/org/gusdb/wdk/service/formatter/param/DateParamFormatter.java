@@ -19,9 +19,10 @@ public class DateParamFormatter extends ParamFormatter<DateParam> {
         .put(JsonKeys.MIN_DATE, _param.getMinDate())
         .put(JsonKeys.MAX_DATE, _param.getMaxDate());
   }
-
+  
   @Override
-  protected String getParamType() {
-    return "DateParam";
+  public String getTypeDisplayName() {
+    return JsonKeys.DATE_PARAM_TYPE;   
   }
+
 }

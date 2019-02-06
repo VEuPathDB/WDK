@@ -17,9 +17,10 @@ public class StringParamFormatter extends ParamFormatter<StringParam> {
   public JSONObject getJson(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
     return getBaseJson(spec).put(JsonKeys.LENGTH, _param.getLength());
   }
-
+  
   @Override
-  protected String getParamType() {
-    return "StringParam";
+  public String getTypeDisplayName() {
+    return JsonKeys.STRING_PARAM_TYPE;   
   }
+
 }

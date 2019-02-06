@@ -20,9 +20,10 @@ public class NumberRangeParamFormatter extends ParamFormatter<NumberRangeParam> 
         .put(JsonKeys.MAX_VALUE, _param.getMax())
         .put(JsonKeys.STEP, _param.getStep());
   }
-
+  
   @Override
-  protected String getParamType() {
-    return "NumberRangeParam";
+  public String getTypeDisplayName() {
+    return JsonKeys.NUMBER_RANGE_PARAM_TYPE;   
   }
+
 }

@@ -30,10 +30,11 @@ public class DatasetParamFormatter extends ParamFormatter<DatasetParam> {
     }
     return pJson;
   }
-
+  
   @Override
-  protected String getParamType() {
-    return "DatasetParam";
+  public String getTypeDisplayName() {
+    return JsonKeys.DATASET_PARAM_TYPE;   
   }
+
 
 }
