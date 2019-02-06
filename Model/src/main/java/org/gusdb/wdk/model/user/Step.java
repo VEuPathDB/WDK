@@ -1,19 +1,34 @@
 package org.gusdb.wdk.model.user;
 
+import static org.gusdb.fgputil.functional.Functions.getMapFromList;
+import static org.gusdb.fgputil.functional.Functions.getNthOrNull;
+import static org.gusdb.wdk.model.user.StepContainer.parentOf;
+import static org.gusdb.wdk.model.user.StepContainer.withId;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Stack;
+
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.ValidationUtil;
-import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.validation.ValidObjectFactory;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.wdk.events.StepResultsModifiedEvent;
-import org.gusdb.wdk.events.StepRevisedEvent;
-import org.gusdb.wdk.model.*;
+import org.gusdb.wdk.model.MDCUtil;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
@@ -29,12 +44,6 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.*;
-
-import static org.gusdb.fgputil.functional.Functions.*;
-import static org.gusdb.wdk.model.user.StepContainer.parentOf;
-import static org.gusdb.wdk.model.user.StepContainer.withId;
 
 /**
  * @author Charles Treatman
@@ -421,27 +430,6 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   /**
-   * Basic getter than just returns the current value for this field without
-   * checks, lazy loading, or side effects (e.g., database updates)
-   *
-   * @return "current" estimate size as shown in DB
-   */
-  @Deprecated
-  public int getRawEstimateSize() {
-    return getEstimatedSize();
-  }
-
-  /**
-   * Calculate the estimate size
-   *
-   * @return newly calculated estimate size
-   */
-  @Deprecated
-  public int getCalculatedEstimateSize() {
-    return defaultOnException(this::getResultSize, 0);
-  }
-
-  /**
    * Returns an estimate of the size of this step (number of records returned).
    * This may be the value of the estimate_size column in the steps table, or
    * if getResultSize() has been called, a refreshed value.
@@ -653,64 +641,13 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   // saves attributes of the step that do NOT impact results or parent steps
+  @Deprecated
   public void writeMetadataToDb(boolean setLastRunTime) throws WdkModelException {
     // HACK: don't update if this is an in-memory only Step
     // remove this once we refactor the world of summary views, so they don't need such Steps
     if (!_inMemoryOnly) {
       _wdkModel.getStepFactory().updateStep(getUser(), this, setLastRunTime);
     }
-  }
-
-
-  // FIXME: This method does some important things but is obsolete in the new
-  //        order.  Note the compiler error in refreshAnswerSpec.  In the new
-  //        world, either the entire strategy will be saved or if step is
-  //        unattached, resetEstimateSizeForThisAndDownstreamSteps() is not
-  //        necessary.  Some thinking must go in to how we will throw events
-  //        and refresh the steps if things change- probably will just have
-  //        to reload from DB.
-  public void saveParamFilters(Step unmodifiedVersion) throws WdkModelException {
-
-    StepFactory stepFactory = _wdkModel.getStepFactory();
-    stepFactory.saveStepParamFilters(this);
-    stepFactory.resetEstimateSizeForThisAndDownstreamSteps(this);
-
-    // Update the in-memory estimateSize with the reset flag in case other
-    // step operations are called on the step object.
-    _estimatedSize = RESET_SIZE_FLAG;
-
-    // get list of steps dependent on this one; all their results are now invalid
-    List<Long> stepIds = stepFactory.getStepAndParents(getStepId());
-    filterInPlace(stepIds, candidateStepId ->
-        // keep unless id is for this step
-        getStepId() != candidateStepId);
-
-    // alert listeners that this step has been revised and await results
-    Events.triggerAndWait(new StepRevisedEvent(this, unmodifiedVersion),
-        new WdkModelException("Unable to process all StepRevised events for revised step " + getStepId()));
-
-    // alert listeners that the step results have changed for these steps and
-    // wait for completion
-    Events.triggerAndWait(new StepResultsModifiedEvent(stepIds),
-        new WdkModelException("Unable to process all StepResultsModified events for step IDs: " +
-            FormatUtil.arrayToString(stepIds.toArray())));
-
-    // refresh in-memory step here in case listeners also modified it
-    refreshAnswerSpec();
-  }
-
-  /**
-   * Refreshes some key fields of this step with the current values in the DB.
-   * This is to support outside modification of the step by event listeners. If
-   * a listener modifies the step in response to a change we made, we will want
-   * to reflect these secondary changes in this current execution flow.
-   *
-   * @throws WdkModelException if unable to load updated step
-   */
-  private void refreshAnswerSpec() throws WdkModelException {
-    Step step = _wdkModel.getStepFactory().getStepById(getStepId())
-        .orElseThrow(() -> new WdkModelException("Cannot find step with ID " + getStepId()));
-    _answerSpec = step._answerSpec;
   }
 
   public String getDescription() {
