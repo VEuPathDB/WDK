@@ -10,7 +10,6 @@ import org.gusdb.wdk.model.query.param.NumberParam;
 import org.gusdb.wdk.model.query.param.NumberRangeParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
-import org.gusdb.wdk.model.query.param.TimestampParam;
 
 public class ParamFormatterFactory {
 
@@ -46,10 +45,8 @@ public class ParamFormatterFactory {
     if (param instanceof StringParam) {
       return new StringParamFormatter((StringParam)param);
     }
-    if (param instanceof TimestampParam) {
-      return new TimestampParamFormatter((TimestampParam)param);
-    }
 
-    throw new IllegalArgumentException("Param class '" + param.getClass().getName() + "' does not have a formatter.");
+    // basic formatter for TimestampParam and any other "simple" params
+    return new SimpleParamFormatter(param);
   }
 }

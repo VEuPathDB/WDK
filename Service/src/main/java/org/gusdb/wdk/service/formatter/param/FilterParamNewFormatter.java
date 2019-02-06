@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.OntologyItem;
@@ -80,10 +81,10 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
     }
     return valuesMapJson; 
   }
-
+  
   @Override
-  protected String getParamType() {
-    return "FilterParam";
+  public String getTypeDisplayName() {
+    return JsonKeys.FILTER_PARAM_TYPE;   
   }
 
 }
