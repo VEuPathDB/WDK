@@ -153,7 +153,7 @@ public class StrategyService extends UserService {
   public JSONObject getStrategy(@PathParam(ID_PARAM) long strategyId)
       throws WdkModelException {
     return StrategyFormatter.getDetailedStrategyJson(
-      getStrategyForCurrentUser(strategyId, ValidationLevel.RUNNABLE));
+      getStrategyForCurrentUser(strategyId, ValidationLevel.SEMANTIC));
   }
 
   @PUT
