@@ -58,18 +58,15 @@ import org.json.JSONObject;
  * <p>JSON input format:</p>
  * <pre>
  * {
- *   "answerSpec": {
+ *   "searchConfig": {
  *       see AnswerRequestFactory for details
  *   },
- *   formatting: {
- *     format: String, (reporter internal name, required)
- *     formatConfig: Object (sample for JSON, XML, etc. below)
- *   }
+ *   reportConfig: Object (sample for JSON, XML, etc. below)
  * }
  * </pre>
  * <p>Sample input for our standard reporters:</p>
  * <pre>
- * formatConfig: {
+ * reportConfig: {
  *   pagination: { offset: Number, numRecords: Number },   [only used by WDK standard JSON]
  *   attributes: [ attributeName: String ],
  *   tables: [ tableName: String ],
@@ -79,8 +76,18 @@ import org.json.JSONObject;
  * }
  * </pre>
  */
-@Path("/answer")
+@Path("/record-classes/{recordClassUrlSegment}/searches/{searchUrlSegment}/reports")
 public class AnswerService extends AbstractWdkService {
+  
+  protected static final String RECORD_CLASS_URL_SEGMENT_PARAM = "recordClassUrlSegment";
+  protected static final String SEARCH_URL_SEGMENT_PARAM = "searchUrlSegment";
+  private final String _recordClassUrlSegment;
+  private final String _searchUrlSegment;
+
+  protected AnswerService(@PathParam(RECORD_CLASS_URL_SEGMENT_PARAM) String recordClassUrlSegment, @PathParam(SEARCH_URL_SEGMENT_PARAM) String searchUrlSegment) {
+    _recordClassUrlSegment = recordClassUrlSegment;
+    _searchUrlSegment = searchUrlSegment;
+  }
 
   private static final Logger LOG = Logger.getLogger(AnswerService.class);
 
@@ -95,7 +102,7 @@ public class AnswerService extends AbstractWdkService {
    * @throws WdkModelException if an error occurs while processing the request
    */
   @POST
-  @Path("/report")
+  @Path("/reports/{reportName}")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response buildResultFromForm(@FormParam("data") String data) throws WdkModelException, DataValidationException, RequestMisformatException {
     // log this request's JSON here since filter will not log form data
@@ -118,7 +125,7 @@ public class AnswerService extends AbstractWdkService {
    * @throws WdkModelException if an error occurs while processing the request
    */
   @POST
-  @Path("/report")
+  @Path("/reports/{reportName}")
   @Consumes(MediaType.APPLICATION_JSON)
   // Produces an unknown media type; varies depending on reporter selected
   public Response buildResult(String body) throws WdkModelException, DataValidationException, RequestMisformatException {
@@ -128,7 +135,7 @@ public class AnswerService extends AbstractWdkService {
 
   /**
    * Special case answer provider that does not require a format.  The default reporter is used.  This
-   * exists so we can provide a concrete JSON schema for the response, since the /answer/report endpoint
+   * exists so we can provide a concrete JSON schema for the response, since the /reports/{reportName} endpoint
    * may not even return JSON, depending on which reporter is specified.
    * 
    * @param body JSON request body
@@ -138,6 +145,7 @@ public class AnswerService extends AbstractWdkService {
    * @throws WdkModelException if an error occurs while processing the request
    */
   @POST
+  @Path("/reports/standard")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response buildDefaultReporterResult(String body) throws RequestMisformatException, WdkModelException, DataValidationException {
