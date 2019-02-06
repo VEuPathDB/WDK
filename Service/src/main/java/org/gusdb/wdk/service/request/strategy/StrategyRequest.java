@@ -1,7 +1,7 @@
 package org.gusdb.wdk.service.request.strategy;
 
-import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
 import static org.gusdb.fgputil.json.JsonUtil.getBooleanOrDefault;
+import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
 
 import javax.ws.rs.ForbiddenException;
 
@@ -10,14 +10,11 @@ import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
-import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.service.AbstractWdkService;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public class StrategyRequest {
@@ -121,7 +118,7 @@ public class StrategyRequest {
     	  if(leftStepJson != null && leftStepJson.has(JsonKeys.ID)) {
     		Step leftStep = stepFactory.getStepById(leftStepJson.getLong(JsonKeys.ID))
     		    .orElseThrow(() -> new WdkUserException("No step found with ID " + leftStepJson.getLong(JsonKeys.ID)));
-    		parentStep.setPreviousStep(leftStep);
+    		//parentStep.setPreviousStep(leftStep);
     	    TreeNode<Step> leftTreeNode = new TreeNode<>(leftStep);
     	    if(leftStepJson.has(JsonKeys.PRIMARY_INPUT_STEP)) {
     	      stepTree.addChildNode(buildStepTree(leftTreeNode, leftStepJson.getJSONObject(JsonKeys.PRIMARY_INPUT_STEP), stepFactory, user, projectId, errors));
@@ -136,7 +133,7 @@ public class StrategyRequest {
   	  if(rightStepJson != null && rightStepJson.has(JsonKeys.ID)) {
   		Step rightStep = stepFactory.getStepById(rightStepJson.getLong(JsonKeys.ID))
             .orElseThrow(() -> new WdkUserException("No step found with ID " + rightStepJson.getLong(JsonKeys.ID)));
-  		parentStep.setChildStep(rightStep);
+  		//parentStep.setChildStep(rightStep);
   	    TreeNode<Step> rightTreeNode = new TreeNode<>(rightStep);
   	    if(rightStepJson.has(JsonKeys.SECONDARY_INPUT_STEP)) {
   	      stepTree.addChildNode(buildStepTree(rightTreeNode, rightStepJson.getJSONObject(JsonKeys.SECONDARY_INPUT_STEP), stepFactory, user, projectId, errors));

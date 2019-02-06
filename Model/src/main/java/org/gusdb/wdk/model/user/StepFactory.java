@@ -48,11 +48,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
@@ -63,6 +65,7 @@ import org.gusdb.fgputil.db.platform.PostgreSQL;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.BasicArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
@@ -71,6 +74,7 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.StepCopiedEvent;
+import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -440,7 +444,7 @@ public class StepFactory {
     }
     sql.append(" WHERE " + COLUMN_STEP_ID + " = " + step.getStepId());
 
-    step.setCustomName(customName);
+    //step.setCustomName(customName);
 
     new SQLRunner(_userDbDs, sql.toString(), "wdk-step-factory-update-step-tree")
         .executeUpdate(new Object[]{ customName }, new Integer[]{ Types.VARCHAR });
@@ -471,6 +475,7 @@ public class StepFactory {
    * @param setLastRunTime
    * @throws WdkModelException
    */
+  @Deprecated
   void updateStep(User user, Step step, boolean setLastRunTime)
       throws WdkModelException {
     LOG.debug("updateStep(): step #" + step.getStepId() +
@@ -521,7 +526,7 @@ public class StepFactory {
           " of user " + user.getEmail() + " cannot be found.");
 
     // update the last run stamp
-    step.setLastRunTime(lastRunTime);
+    //step.setLastRunTime(lastRunTime);
 
     // update dependencies
     if (step.isCombined())
@@ -1097,7 +1102,7 @@ public class StepFactory {
       }
     );
 
-    this.updateSteps(strat.getAllSteps());
+    updateSteps(strat.getAllSteps());
 
     return stratUpdated;
   }
@@ -1302,8 +1307,9 @@ public class StepFactory {
    *              update queries in a controlled connection such as a
    *              transaction.
    * @param steps The collection of steps that will be updated in the database.
+   * @throws WdkModelException 
    */
-  private void updateSteps(Connection con, Collection<Step> steps) {
+  private void updateSteps(Connection con, Collection<Step> steps) throws WdkModelException {
     final String sql = "UPDATE " + _userSchema + TABLE_STEP + "\n" +
         "SET\n" +
         "  " + COLUMN_PREVIOUS_STEP_ID + " = ?,\n" +
@@ -1371,7 +1377,24 @@ public class StepFactory {
       });
     }
 
-    new SQLRunner(con, sql).executeUpdateBatch(batch);
+    try {
+      new SQLRunner(con, sql).executeUpdateBatch(batch);
+    }
+    catch (SQLRunnerException e) {
+      WdkModelException.unwrap(e);
+    }
+
+    // get list of dirty steps; all their results are now invalid
+    List<Long> dirtyStepIds = steps.stream()
+        .filter(step -> step.isResultSizeDirty())
+        .map(step -> step.getStepId())
+        .collect(Collectors.toList());
+
+    // alert listeners that the step results have changed for these steps
+    Events.triggerAndWait(new StepResultsModifiedEvent(dirtyStepIds),
+        new WdkModelException("Unable to process all StepResultsModified events for step IDs: " +
+            FormatUtil.arrayToString(dirtyStepIds.toArray())));
+
   }
 
   private void updateStrategyId(long strategyId, Step rootStep) throws WdkModelException {
@@ -1660,7 +1683,7 @@ public class StepFactory {
    * @throws InvalidStrategyStructureException if answer value changes cause the
    *         structure of the strategy to become invalid
    * TODO: if validation fails, what to do?  Maybe throw exception?  Do we even
-   *       want to validate here?  In what cases should we validate? et.
+   *       want to validate here?  In what cases should we validate? etc.
    */
   public void updateStepAndDependents(Step previous, StepBuilder stepToSave, boolean isDirtyChange, ValidationLevel level)
       throws WdkModelException, InvalidStrategyStructureException {
