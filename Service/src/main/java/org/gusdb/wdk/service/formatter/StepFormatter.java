@@ -54,7 +54,7 @@ public class StepFormatter {
 
         // FIXME: call AnswerSpecFactory.createFromStep() and pass to formatter;
         //    to do so, must extract JSON formatting from Step and other classes
-        .put(JsonKeys.ANSWER_SPEC, AnswerSpecServiceFormat.format(step.getAnswerSpec()))
+        .put(JsonKeys.SEARCH_CONFIG, AnswerSpecServiceFormat.format(step.getAnswerSpec()))
         .put(JsonKeys.IS_VALID, step.isValid())
         .put(JsonKeys.INVALID_REASONS, new JSONArray(step.getValidationBundle().getAllErrors()))
         .put(JsonKeys.CREATED_TIME, step.getCreatedTime())

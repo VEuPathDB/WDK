@@ -62,7 +62,7 @@ public class StepRequestParser {
       throws RequestMisformatException, DataValidationException, WdkModelException {
     try {
       SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(
-          stepJson.getJSONObject(JsonKeys.ANSWER_SPEC), wdkModel, user, StepContainer.emptyContainer());
+          stepJson.getJSONObject(JsonKeys.SEARCH_CONFIG), wdkModel, user, StepContainer.emptyContainer());
       AnswerSpec spec = validSpec.getObject();
 
       // Since this method is intended for new steps, the step can not yet be

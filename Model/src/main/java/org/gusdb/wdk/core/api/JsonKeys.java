@@ -143,7 +143,8 @@ public class JsonKeys {
   public static final String STRATEGY_ID = "strategyId";
   public static final String ESTIMATED_SIZE = "estimatedSize";
   public static final String HAS_COMPLETE_STEP_ANALYSES = "hasCompleteStepAnalyses";
-  public static final String ANSWER_SPEC = "answerSpec";
+  public static final String SEARCH_CONFIG = "searchConfig";
+  public static final String REPORT_CONFIG = "reportConfig";
   public static final String FORMATTING = "formatting";
   public static final String FORMAT = "format";
   public static final String FORMAT_CONFIG = "formatConfig";
