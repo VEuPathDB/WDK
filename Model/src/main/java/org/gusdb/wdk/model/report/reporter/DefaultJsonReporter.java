@@ -158,6 +158,9 @@ public class DefaultJsonReporter extends AbstractReporter {
     meta.put(JsonKeys.RECORD_CLASS_NAME, answerValue.getQuestion().getRecordClass().getFullName());
     meta.put(JsonKeys.TOTAL_COUNT, answerValue.getResultSizeFactory().getResultSize());
     meta.put(JsonKeys.RESPONSE_COUNT, numRecordsReturned);
+    meta.put(JsonKeys.PAGINATION, new JSONObject()
+        .put(JsonKeys.OFFSET, answerValue.getStartIndex() - 1)
+        .put(JsonKeys.NUM_RECORDS, answerValue.getEndIndex() - (answerValue.getStartIndex() - 1)));
     meta.put(JsonKeys.ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(includedAttributes));
     meta.put(JsonKeys.TABLES, FormatUtil.stringCollectionToJsonArray(includedTables));
     meta.put(JsonKeys.SORTING, formatSorting(answerValue.getSortingMap(), answerValue.getQuestion().getAttributeFieldMap()));
