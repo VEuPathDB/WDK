@@ -172,6 +172,11 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
       return this;
     }
 
+    public StrategyBuilder clearSteps() {
+      _stepMap.clear();
+      return this;
+    }
+
     public Strategy build(UserCache userCache, ValidationLevel validationLevel)
         throws WdkModelException, InvalidStrategyStructureException {
       return new Strategy(this, userCache.get(_userId), validationLevel);

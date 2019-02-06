@@ -10,10 +10,12 @@ import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.*;
+import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
+import org.gusdb.wdk.service.formatter.StepFormatter;
 import org.gusdb.wdk.service.formatter.StrategyFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.strategy.StrategyRequest;
@@ -25,10 +27,7 @@ import org.json.JSONObject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -63,32 +62,23 @@ public class StrategyService extends UserService {
   // TODO: @OutSchema(...)
   public void deleteStrategies(JSONObject[] strats) // TODO: Find a better name for me
       throws WdkModelException {
-
-    final StepFactory fac = getWdkModel().getStepFactory();
-    final User user = getSessionUser();
-    final UserCache uCache  = new UserCache(user);
     final Collection<Strategy> toUpdate = new ArrayList<>(strats.length);
 
     try {
       for (JSONObject action : strats) {
         final long id = action.getLong(JsonKeys.STRATEGY_ID);
         final boolean del = action.getBoolean(JsonKeys.IS_DELETED);
-        final Strategy strat = fac.getStrategyById(id, ValidationLevel.NONE)
-            .orElseThrow(() -> new NotFoundException(
-                formatNotFound(STRATEGY_RESOURCE + id)));
-
-        if (strat.getUser().getUserId() != user.getUserId())
-          throw new ForbiddenException(PERMISSION_DENIED);
+        final Strategy strat = getStrategyForCurrentUser(id, ValidationLevel.NONE);
 
         if (del != strat.isDeleted())
           toUpdate.add(Strategy.builder(strat).setDeleted(del)
-              .build(uCache, ValidationLevel.NONE));
+              .build(new UserCache(strat.getUser()), ValidationLevel.NONE));
       }
     } catch (InvalidStrategyStructureException e) {
       throw new WdkModelException(e);
     }
 
-    fac.updateStrategies(toUpdate);
+    getWdkModel().getStepFactory().updateStrategies(toUpdate);
   }
 
   @POST
@@ -126,10 +116,7 @@ public class StrategyService extends UserService {
   public void updateStrategy(@PathParam(ID_PARAM) long strategyId,
       JSONObject body) throws WdkModelException, DataValidationException {
     final StepFactory fac = getWdkModel().getStepFactory();
-    final Strategy strat = fac.getStrategyById(strategyId, ValidationLevel.SYNTACTIC)
-      .orElseThrow(() -> new NotFoundException(formatNotFound(STRATEGY_RESOURCE + strategyId)));
-
-    // FIXME: No ownership check?
+    final Strategy strat = getStrategyForCurrentUser(strategyId, ValidationLevel.SYNTACTIC);
 
     if (strat.isSaved()) {
       validateSavedStratChange(body).ifPresent(err -> {
@@ -159,21 +146,49 @@ public class StrategyService extends UserService {
   @PUT
   @Path(ID_PATH + "/stepTree")
   @Consumes(MediaType.APPLICATION_JSON)
-  public void replaceStepTree(@PathParam(ID_PARAM) long stratId, JSONObject body) {
-    /*
-     * spec:
-     * - look up strategy
-     * - save off list of steps in strat
-     * - create a new strategy builder from the orig
-     * - clear existing steps from the builder
-     * - look up and add steps specified in tree to the builder
-     *     - use the strategy itself to look for steps; if not there, then look up in DB (must be unattached!)
-     *     - need to set answer params to new values first
-     * - update strategy in DB
-     * - clear strategy from no-longer-used steps
-     * - update no-longer-used steps in DB
-     */
-    throw new InternalServerErrorException("Method not implemented");
+  // TODO: @InSchema(...)
+  public void replaceStepTree(@PathParam(ID_PARAM) long stratId, JSONObject body)
+      throws WdkModelException, WdkUserException {
+    final Strategy strat = getStrategyForCurrentUser(stratId, validationLevel);
+    final StepFactory fac = getWdkModel().getStepFactory();
+    final Collection<StepBuilder> tree = StrategyRequest.treeToSteps(
+      body, fac, validationLevel).getSecond();
+
+    // Collect original steps
+    final Map<Long, Step> original = strat.getAllSteps()
+        .stream()
+        .collect(Collectors.toMap(s -> s.getStepId(), UnaryOperator.identity()));
+
+    // Update strategy
+    fac.updateStrategy(
+      new Strategy.StrategyBuilder(strat)
+        .clearSteps()
+        .addSteps(tree)
+        .build(new UserCache(strat.getUser()), validationLevel)
+    );
+
+    // Filter the list of original steps down to only steps that did not appear
+    // in the new tree
+    tree.forEach(s -> original.remove(s.getStepId()));
+
+    // Update remaining steps to reflect that they are now orphaned
+    fac.updateSteps(original.values());
+  }
+
+  @POST
+  @Path(BASE_PATH + "/duplicate-as-branch")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  // @InSchema(...) TODO
+  // @OutSchema(...) TODO
+  public JSONObject duplicateAsBranch(JSONObject body)
+      throws WdkModelException {
+    final StepFactory fac = getWdkModel().getStepFactory();
+
+    return StepFormatter.formatAsStepTree(fac.copyStrategyToBranch(
+      getSessionUser(),
+      fac.getStrategyById(body.getLong(JsonKeys.STRATEGY_ID), validationLevel)
+    ));
   }
 
   private Strategy getStrategyForCurrentUser(long strategyId, ValidationLevel level) {
@@ -209,7 +224,7 @@ public class StrategyService extends UserService {
       JSONObject json)
       throws WdkModelException, DataValidationException, InvalidStrategyStructureException {
     StrategyRequest strategyRequest = StrategyRequest.createFromJson(json,
-      stepFactory, user, getWdkModel().getProjectId());
+      stepFactory);
     TreeNode<Step> stepTree = strategyRequest.getStepTree();
     Step rootStep = stepTree.getContents();
 

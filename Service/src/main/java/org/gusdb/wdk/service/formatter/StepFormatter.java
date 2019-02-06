@@ -9,10 +9,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Optional;
+
 /**
  * Formats WDK Step objects.  Step JSON will have the following form:
  * {
- *   id: Number, 
+ *   id: Number,
  *   displayName: String,
  *   shortDisplayName: String,
  *   customName: String,
@@ -28,7 +30,7 @@ import org.json.JSONObject;
  *   answerSpecComplete: boolean (false for unattached steps)
  *   answerSpec: see AnswerRequest (input and output formats are the same)
  * }
- * 
+ *
  * @author rdoherty
  */
 public class StepFormatter {
@@ -73,4 +75,15 @@ public class StepFormatter {
         .put(JsonKeys.ESTIMATED_SIZE, step.getEstimatedSize());
   }
 
+  public static JSONObject formatAsStepTree(Step step) {
+    final JSONObject out = new JSONObject()
+      .put(JsonKeys.ID, step.getStepId());
+
+    Optional.ofNullable(step.getSecondaryInputStep())
+      .ifPresent(s -> out.put(JsonKeys.SECONDARY_INPUT_STEP, formatAsStepTree(s)));
+    Optional.ofNullable(step.getPrimaryInputStep())
+        .ifPresent(s -> out.put(JsonKeys.PRIMARY_INPUT_STEP, formatAsStepTree(s)));
+
+    return out;
+  }
 }
