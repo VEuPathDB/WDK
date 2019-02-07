@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -186,14 +187,14 @@ public class FavoriteFactory {
   private Favorite loadFavorite(User user, ResultSet resultSet)
       throws SQLException, WdkModelException {
     // Need to avoid showing favorite for defunct (per current wdk model) record class sets or record classes
-    RecordClass recordClass;
-    if ((recordClass = getRecordClassOrNull(resultSet.getString(COLUMN_RECORD_CLASS))) == null) {
+    Optional<RecordClass> recordClass = _wdkModel.getRecordClass(resultSet.getString(COLUMN_RECORD_CLASS));
+    if (!recordClass.isPresent()) {
       return null;
     }
-    Map<String,Object> primaryKeys = loadPrimaryKeys(recordClass, resultSet);
-    PrimaryKeyValue pkValue = new PrimaryKeyValue(recordClass.getPrimaryKeyDefinition(), primaryKeys);
+    Map<String,Object> primaryKeys = loadPrimaryKeys(recordClass.get(), resultSet);
+    PrimaryKeyValue pkValue = new PrimaryKeyValue(recordClass.get().getPrimaryKeyDefinition(), primaryKeys);
     Long id = resultSet.getLong(COLUMN_FAVORITE_ID);
-    Favorite favorite = new Favorite(user, recordClass, pkValue, id);
+    Favorite favorite = new Favorite(user, recordClass.get(), pkValue, id);
     favorite.setNote(resultSet.getString(COLUMN_RECORD_NOTE));
     favorite.setGroup(resultSet.getString(COLUMN_RECORD_GROUP));
     favorite.setDeleted(_userDb.getPlatform().getBooleanValue(resultSet, COLUMN_IS_DELETED, false));
@@ -208,15 +209,6 @@ public class FavoriteFactory {
       primaryKeys.put(pkColumns[i - 1], value);
     }
     return primaryKeys;
-}
-
-  private RecordClass getRecordClassOrNull(String recordClassReference) {
-    try {
-      return _wdkModel.getRecordClass(recordClassReference);
-    }
-    catch (WdkModelException e) {
-      return null;
-    }
   }
 
   /**

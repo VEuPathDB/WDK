@@ -24,8 +24,8 @@ public class EnumParamFormatter extends AbstractEnumParamFormatter {
   }
   
   @Override
-  public String getTypeDisplayName() {
-    return JsonKeys.VOCAB_PARAM_TYPE;   
+  public String getParamType() {
+    return JsonKeys.ENUM_PARAM_TYPE;
   }
 
 }

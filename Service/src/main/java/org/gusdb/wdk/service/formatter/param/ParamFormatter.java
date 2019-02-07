@@ -29,6 +29,12 @@ public abstract class ParamFormatter<T extends Param> {
   }
 
   /**
+   * @return the distinct parameter type as is relevant to a client application;
+   * for example, two Param subclasses that share an API may be the same type.
+   */
+  protected abstract String getParamType();
+
+  /**
    * Formats this param into JSON.
    * 
    * @return This param's data as JSON
@@ -41,7 +47,7 @@ public abstract class ParamFormatter<T extends Param> {
     pJson.put(JsonKeys.NAME, _param.getName());
     pJson.put(JsonKeys.DISPLAY_NAME, _param.getPrompt());
     pJson.put(JsonKeys.HELP, _param.getHelp());
-    pJson.put(JsonKeys.TYPE, getTypeDisplayName());
+    pJson.put(JsonKeys.TYPE, getParamType());
     pJson.put(JsonKeys.IS_VISIBLE, _param.isVisible());
     pJson.put(JsonKeys.GROUP, _param.getGroup().getName());
     pJson.put(JsonKeys.IS_READ_ONLY, _param.isReadonly());
@@ -50,7 +56,5 @@ public abstract class ParamFormatter<T extends Param> {
     pJson.put(JsonKeys.STABLE_VALUE, spec.getObject().get(_param.getName()));
     return pJson;
   }
-  
-  abstract  public String getTypeDisplayName();
 
 }

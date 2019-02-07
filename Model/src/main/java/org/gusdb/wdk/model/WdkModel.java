@@ -315,10 +315,15 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return array;
   }
 
-  public RecordClass getRecordClass(String recordClassReference) throws WdkModelException {
-    Reference r = new Reference(recordClassReference);
-    RecordClassSet rs = getRecordClassSet(r.getSetName());
-    return rs.getRecordClass(r.getElementName());
+  public Optional<RecordClass> getRecordClass(String recordClassReference) {
+    try {
+      Reference r = new Reference(recordClassReference);
+      RecordClassSet rs = getRecordClassSet(r.getSetName());
+      return Optional.ofNullable(rs.getRecordClass(r.getElementName()));
+    }
+    catch (WdkModelException e) {
+      return Optional.empty();
+    }
   }
 
   public ResultFactory getResultFactory() {
@@ -1527,20 +1532,13 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   /**
-   * Tries to find a configured recordclass, either by full name or URL segment
+   * Tries to find a configured recordclass by URL segment
    * 
-   * @param urlSegment or record class name
-   * @return record class or null if not found
+   * @param urlSegment of a record class
+   * @return optional containing record class if found, or empty optional if not
    */
-  public RecordClass getRecordClassByUrlSegment(String urlSegment) {
-    try {
-      String recordClassFullName = _recordClassUrlSegmentMap.get(urlSegment);
-      // if segment mapped to recordclass full name, use result; otherwise treat segment as rc name itself
-      return getRecordClass(recordClassFullName != null ? recordClassFullName : urlSegment);
-    }
-    catch (WdkModelException e) {
-      return null;
-    }
+  public Optional<RecordClass> getRecordClassByUrlSegment(String urlSegment) {
+    return Optional.ofNullable(_recordClassUrlSegmentMap.get(urlSegment)).map(name -> getRecordClass(name).get());
   }
 
   public void registerQuestionUrlSegment(String urlSegment, String questionFullName) throws WdkModelException {
@@ -1553,9 +1551,14 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     _questionUrlSegmentMap.put(urlSegment, questionFullName);
   }
 
+  /**
+   * Tries to find a configured question by URL segment
+   * 
+   * @param urlSegment of a question
+   * @return optional containing question if found, or empty optional if not
+   */
   public Optional<Question> getQuestionByUrlSegment(String urlSegment) {
-    String questionFullName = _questionUrlSegmentMap.get(urlSegment);
-    return (questionFullName == null ? Optional.empty() : getQuestion(questionFullName));
+    return Optional.ofNullable(_questionUrlSegmentMap.get(urlSegment)).map(name -> getQuestion(name).get());
   }
 
   public static AutoCloseableList<WdkModel> loadMultipleModels(String gusHome, String[] projects) throws WdkModelException {

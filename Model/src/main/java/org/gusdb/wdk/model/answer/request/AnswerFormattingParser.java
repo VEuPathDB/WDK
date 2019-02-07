@@ -37,13 +37,13 @@ public interface AnswerFormattingParser extends FunctionWithException<JSONObject
     @Override
     public AnswerFormatting apply(JSONObject input) throws JSONException {
       return new AnswerFormatting(
-          DefaultJsonReporter.WDK_SERVICE_JSON_REPORTER_RESERVED_NAME,
+          DefaultJsonReporter.RESERVED_NAME,
           JsonUtil.getJsonObjectOrDefault(input, FORMAT_CONFIG_KEY, null));
     }
     @Override
     public AnswerFormatting createFromTopLevelObject(JSONObject requestBody) throws JSONException {
       return new AnswerFormatting(
-          DefaultJsonReporter.WDK_SERVICE_JSON_REPORTER_RESERVED_NAME, requestBody);
+          DefaultJsonReporter.RESERVED_NAME, requestBody);
     }
   };
 }

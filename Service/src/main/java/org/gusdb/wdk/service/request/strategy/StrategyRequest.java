@@ -27,6 +27,7 @@ import org.json.JSONObject;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 public class StrategyRequest {
@@ -36,7 +37,8 @@ public class StrategyRequest {
   private String _description;
   private boolean _isSaved;
   private boolean _isPublic;
-  private StepBuilder _rootStep;
+  private long _rootStepId;
+  private List<StepBuilder> _steps;
 
   /**
    * Strategy Request JSON as follows:
@@ -73,13 +75,15 @@ public class StrategyRequest {
       String description,
       boolean isSaved,
       boolean isPublic,
-      StepBuilder rootStep) {
+      long rootStepId,
+      List<StepBuilder> steps) {
     _name = name;
     _savedName = savedName;
     _description = description;
     _isSaved = isSaved;
     _isPublic = isPublic;
-    _rootStep = rootStep;
+    _rootStepId = rootStepId;
+    _steps = steps;
   }
 
   public static StrategyRequest createFromJson(JSONObject json, StepFactory stepFactory)
@@ -91,16 +95,7 @@ public class StrategyRequest {
       boolean isSaved = getBooleanOrDefault(json, JsonKeys.IS_SAVED, false);
       boolean isPublic = getBooleanOrDefault(json, JsonKeys.IS_PUBLIC, false);
 
-      // RRD 1/11 FIXME notes: this doesn't look quite right to me, instead, should:
-      //    1. load the existing strategy
-      //    2. load any new steps not in that strategy
-      //    3. error if any newly added steps belong to another strat
-      //    4. Use strategy and step builders to build a replacement strat based on incoming tree
-      //    5. Validate the new strat (build with RUNNABLE)
-      //    6. Save the strat
-      //    7. Purge strategy ID and answer params from steps that were removed from strat, then save
-      //          Can do this easily with StepBuilder.removeStrategy()
-
+      TwoTuple<Long,>
       return new StrategyRequest(name, savedName, description, isSaved, isPublic,
           treeToSteps(json.getJSONObject(JsonKeys.ROOT_STEP), stepFactory, ValidationLevel.SEMANTIC).getFirst());
     }
@@ -129,14 +124,13 @@ public class StrategyRequest {
     return _isPublic;
   }
 
-  public StepBuilder getRootStep() {
-    return _rootStep;
+  public long getRootStepId() {
+    return _rootStepId;
   }
 
-  public static TwoTuple<StepBuilder, Collection<StepBuilder>> treeToSteps(
+  public static TwoTuple<Long, Collection<StepBuilder>> treeToSteps(
     JSONObject input,
-    StepFactory fac,
-    ValidationLevel chkLvl
+    StepFactory fac
   ) throws WdkModelException, WdkUserException, DataValidationException {
     final Queue<StepBuilder> all = new LinkedList<>();
     final Queue<JSONObject> next = new LinkedList<>();
@@ -145,7 +139,7 @@ public class StrategyRequest {
 
     while(!next.isEmpty()) {
       final JSONObject cur = next.poll();
-      final Step step = fac.getStepById(cur.getLong(JsonKeys.ID), chkLvl)
+      final Step step = fac.getStepById(cur.getLong(JsonKeys.ID), ValidationLevel.NONE)
         .orElseThrow(WdkUserException::new);
       final StepBuilder bul = Step.builder(step);
 
@@ -174,6 +168,6 @@ public class StrategyRequest {
       all.add(bul);
     }
 
-    return new TwoTuple<>(all.peek(), all);
+    return new TwoTuple<>(all.peek().getStepId(), all);
   }
 }

@@ -22,8 +22,8 @@ public class NumberRangeParamFormatter extends ParamFormatter<NumberRangeParam> 
   }
   
   @Override
-  public String getTypeDisplayName() {
-    return JsonKeys.NUMBER_RANGE_PARAM_TYPE;   
+  public String getParamType() {
+    return JsonKeys.NUMBER_RANGE_PARAM_TYPE;
   }
 
 }

@@ -1,10 +1,10 @@
 package org.gusdb.wdk.model.answer.single;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
@@ -41,10 +41,10 @@ public class SingleRecordQuestion extends Question {
           questionName.length() - SINGLE_RECORD_QUESTION_NAME_SUFFIX.length());
       try {
         wdkModel.validateRecordClassName(recordClassName);
-        parts.recordClass = wdkModel.getRecordClass(recordClassName);
+        parts.recordClass = wdkModel.getRecordClass(recordClassName).get();
         parts.isValid = true;
       }
-      catch (WdkUserException | WdkModelException e) {
+      catch (NoSuchElementException | WdkUserException e) {
         // do nothing; will fall through to failure case
       }
     }

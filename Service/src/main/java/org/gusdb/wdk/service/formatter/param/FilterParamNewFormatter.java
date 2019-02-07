@@ -81,10 +81,10 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
     }
     return valuesMapJson; 
   }
-  
+
   @Override
-  public String getTypeDisplayName() {
-    return JsonKeys.FILTER_PARAM_TYPE;   
+  public String getParamType() {
+    return JsonKeys.FILTER_PARAM_TYPE;
   }
 
 }

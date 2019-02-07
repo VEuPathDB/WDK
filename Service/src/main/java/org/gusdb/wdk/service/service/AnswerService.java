@@ -1,14 +1,12 @@
 package org.gusdb.wdk.service.service;
 
-import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.DEFAULT_REPORTER_PARSER;
-import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.SPECIFIED_REPORTER_PARSER;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -22,7 +20,6 @@ import javax.ws.rs.core.StreamingOutput;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -32,21 +29,22 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.request.AnswerFormatting;
-import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 import org.gusdb.wdk.model.report.ReporterConfigException;
+import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.model.report.util.ReporterFactory;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepContainer;
+import org.gusdb.wdk.model.user.StepContainer.ListStepContainer;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.StepContainer.ListStepContainer;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -76,20 +74,24 @@ import org.json.JSONObject;
  * }
  * </pre>
  */
-@Path("/record-classes/{recordClassUrlSegment}/searches/{searchUrlSegment}/reports")
+@Path("/record-classes/{" + AnswerService.RECORDCLASS_URL_SEGMENT + "}/searches/{" + AnswerService.SEARCH_URL_SEGMENT + "}")
 public class AnswerService extends AbstractWdkService {
-  
-  protected static final String RECORD_CLASS_URL_SEGMENT_PARAM = "recordClassUrlSegment";
-  protected static final String SEARCH_URL_SEGMENT_PARAM = "searchUrlSegment";
-  private final String _recordClassUrlSegment;
-  private final String _searchUrlSegment;
-
-  protected AnswerService(@PathParam(RECORD_CLASS_URL_SEGMENT_PARAM) String recordClassUrlSegment, @PathParam(SEARCH_URL_SEGMENT_PARAM) String searchUrlSegment) {
-    _recordClassUrlSegment = recordClassUrlSegment;
-    _searchUrlSegment = searchUrlSegment;
-  }
 
   private static final Logger LOG = Logger.getLogger(AnswerService.class);
+
+  static final String RECORDCLASS_URL_SEGMENT = "recordClassUrlSegment";
+  static final String SEARCH_URL_SEGMENT = "questionUrlSegment";
+  static final String REPORT_NAME_SEGMENT = "reportNameSegment";
+
+  private final String _recordClassUrlSegment;
+  private final String _questionUrlSegment;
+
+  public AnswerService(
+      @PathParam(RECORDCLASS_URL_SEGMENT) String recordClassUrlSegment,
+      @PathParam(SEARCH_URL_SEGMENT) String questionUrlSegment) {
+    _recordClassUrlSegment = recordClassUrlSegment;
+    _questionUrlSegment = questionUrlSegment;
+  }
 
   /**
    * This endpoint that takes a FORM input is used by the client to push the provided data
@@ -102,35 +104,22 @@ public class AnswerService extends AbstractWdkService {
    * @throws WdkModelException if an error occurs while processing the request
    */
   @POST
-  @Path("/reports/{reportName}")
+  @Path("reports/{" + REPORT_NAME_SEGMENT + "}")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  public Response buildResultFromForm(@FormParam("data") String data) throws WdkModelException, DataValidationException, RequestMisformatException {
+  public Response buildResultFromForm(
+      @PathParam("reportName") String reportName,
+      @FormParam("data") String data)
+          throws WdkModelException, DataValidationException, RequestMisformatException {
     // log this request's JSON here since filter will not log form data
     if (RequestLoggingFilter.isLogEnabled()) {
       RequestLoggingFilter.logRequest("POST", getUriInfo(),
           RequestLoggingFilter.formatJson(data));
     }
-    return buildResult(data);
-  }
-
-  /**
-   * Processes an answer request (answer spec + formatting information) by creating an answer from the
-   * answer spec, then calling the specified reporter, passing a configuration, and streaming back the
-   * reporter's result.
-   * 
-   * @param body request body containing answer spec, format string, format configuration
-   * @return generated report
-   * @throws RequestMisformatException if request body is not JSON or has incorrect JSON structure
-   * @throws DataValidationException if JSON structure is correct but values contained are invalid
-   * @throws WdkModelException if an error occurs while processing the request
-   */
-  @POST
-  @Path("/reports/{reportName}")
-  @Consumes(MediaType.APPLICATION_JSON)
-  // Produces an unknown media type; varies depending on reporter selected
-  public Response buildResult(String body) throws WdkModelException, DataValidationException, RequestMisformatException {
-    AnswerRequest request = parseAnswerRequest(body, getWdkModel(), getSessionUser(), SPECIFIED_REPORTER_PARSER);
-    return getAnswerResponse(getSessionUser(), request).getSecond();
+    if (data == null || data.isEmpty()) {
+      throw new RequestMisformatException("Request JSON cannot be empty. " +
+          "If submitting a form, include the 'data' input parameter.");
+    }
+    return buildResult(reportName, new JSONObject(data));
   }
 
   /**
@@ -145,44 +134,68 @@ public class AnswerService extends AbstractWdkService {
    * @throws WdkModelException if an error occurs while processing the request
    */
   @POST
-  @Path("/reports/standard")
+  @Path("reports/" + DefaultJsonReporter.RESERVED_NAME)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response buildDefaultReporterResult(String body) throws RequestMisformatException, WdkModelException, DataValidationException {
-    AnswerRequest request = parseAnswerRequest(body, getWdkModel(), getSessionUser(), DEFAULT_REPORTER_PARSER);
+  public Response buildDefaultReporterResult(JSONObject body)
+      throws RequestMisformatException, WdkModelException, DataValidationException {
+    return buildResult(DefaultJsonReporter.RESERVED_NAME, body);
+  }
+
+  /**
+   * Processes an answer request (answer spec + formatting information) by creating an answer from the
+   * answer spec, then calling the specified reporter, passing a configuration, and streaming back the
+   * reporter's result.
+   * 
+   * @param body request body containing answer spec, format string, format configuration
+   * @return generated report
+   * @throws RequestMisformatException if request body is not JSON or has incorrect JSON structure
+   * @throws DataValidationException if JSON structure is correct but values contained are invalid
+   * @throws WdkModelException if an error occurs while processing the request
+   */
+  @POST
+  @Path("reports/{" + REPORT_NAME_SEGMENT + "}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  // Produces an unknown media type; varies depending on reporter selected
+  public Response buildResult(
+      @PathParam("reportName") String reportName,
+      JSONObject body)
+          throws WdkModelException, DataValidationException, RequestMisformatException {
+    AnswerRequest request = parseAnswerRequest(getValidInputQuestion(), reportName,
+        body, getWdkModel(), getSessionUser());
     return getAnswerResponse(getSessionUser(), request).getSecond();
   }
 
-  public static AnswerRequest parseAnswerRequest(String requestBody, WdkModel wdkModel,
-      User sessionUser, AnswerFormattingParser formatParser)
-      throws RequestMisformatException, DataValidationException, WdkModelException {
-    if (requestBody == null || requestBody.isEmpty()) {
-      throw new RequestMisformatException("Request JSON cannot be empty. " +
-          "If submitting a form, include the 'data' input parameter.");
+  private Question getValidInputQuestion() {
+    RecordClass requestRecordClass = getRecordClassOrNotFound(_recordClassUrlSegment);
+    Question requestQuestion = getQuestionOrNotFound(_questionUrlSegment);
+    if (!requestQuestion.getRecordClassName().equals(requestRecordClass.getFullName())) {
+      throw new NotFoundException("Question " + requestQuestion.getName() +
+          " does not produce instances of " + requestRecordClass.getName());
     }
-    try {
-      // read request body into JSON object
-      JSONObject requestJson = new JSONObject(requestBody);
-
-      // parse answer spec (question, params, etc.)
-      RunnableObj<AnswerSpec> answerSpec = parseAnswerSpec(requestJson, wdkModel, sessionUser);
-
-      // parse formatting
-      AnswerFormatting formatting = Functions.mapException(
-          () -> formatParser.apply(requestJson),
-          e -> new RequestMisformatException(e.getMessage()));
-
-      // create request
-      return new AnswerRequest(answerSpec, formatting);
-    }
-    catch (JSONException e) {
-      throw new RequestMisformatException(e.getMessage());
-    }
+    return requestQuestion;
   }
 
-  private static RunnableObj<AnswerSpec> parseAnswerSpec(JSONObject requestJson, WdkModel wdkModel, User sessionUser) throws RequestMisformatException, WdkModelException, DataValidationException {
-    JSONObject answerSpecJson = requestJson.getJSONObject(JsonKeys.SEARCH_CONFIG);
-    AnswerSpecBuilder specBuilder = AnswerSpecServiceFormat.parse(answerSpecJson, wdkModel);
+  private static AnswerRequest parseAnswerRequest(Question question,
+      String reporterName, JSONObject requestBody, WdkModel wdkModel, User sessionUser)
+          throws RequestMisformatException, DataValidationException, WdkModelException {
+
+    // parse answer spec (question, params, etc.)
+    RunnableObj<AnswerSpec> answerSpec = parseAnswerSpec(question,
+        requestBody.getJSONObject(JsonKeys.SEARCH_CONFIG), wdkModel, sessionUser);
+
+    // parse formatting
+    AnswerFormatting formatting = new AnswerFormatting(reporterName,
+        requestBody.getJSONObject(JsonKeys.REPORT_CONFIG));
+
+    // create request
+    return new AnswerRequest(answerSpec, formatting);
+  }
+
+  private static RunnableObj<AnswerSpec> parseAnswerSpec(Question question,
+      JSONObject answerSpecJson, WdkModel wdkModel, User sessionUser)
+          throws RequestMisformatException, WdkModelException, DataValidationException {
+    AnswerSpecBuilder specBuilder = AnswerSpecServiceFormat.parse(question, answerSpecJson, wdkModel);
     StepContainer stepContainer = loadContainer(specBuilder, wdkModel, sessionUser);
     return specBuilder
         .build(sessionUser, stepContainer, ValidationLevel.RUNNABLE)
@@ -292,10 +305,10 @@ public class AnswerService extends AbstractWdkService {
   @Path("filter-summary/{filterName}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response displayFilterResults(@PathParam("filterName") String filterName, String body) throws WdkModelException, WdkUserException, DataValidationException {
-    JSONObject requestJson = new JSONObject(body);
-    JSONObject answerSpecJson = requestJson.getJSONObject("answerSpec");
-    RunnableObj<AnswerSpec> answerSpec = parseAnswerSpec(answerSpecJson, getWdkModel(), getSessionUser());
+  public Response displayFilterResults(@PathParam("filterName") String filterName, JSONObject requestJson)
+      throws WdkModelException, WdkUserException, DataValidationException {
+    RunnableObj<AnswerSpec> answerSpec = parseAnswerSpec(getValidInputQuestion(),
+        requestJson.getJSONObject(JsonKeys.SEARCH_CONFIG), getWdkModel(), getSessionUser());
     AnswerValue answerValue = AnswerValueFactory.makeAnswer(getSessionUser(), answerSpec);
     JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
     return Response.ok(filterSummaryJson.toString()).build();

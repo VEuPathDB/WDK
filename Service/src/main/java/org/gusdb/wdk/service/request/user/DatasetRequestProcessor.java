@@ -163,10 +163,9 @@ public class DatasetRequestProcessor {
   private static Dataset createFromBasket(String recordClassName, User user, DatasetFactory factory)
       throws WdkModelException, DataValidationException {
     WdkModel wdkModel = factory.getWdkModel();
-    RecordClass recordClass = wdkModel.getRecordClassByUrlSegment(recordClassName);
-    if (recordClass == null) {
-      throw new DataValidationException("No record class exists with name '" + recordClassName + "'.");
-    }
+    RecordClass recordClass = wdkModel.getRecordClassByUrlSegment(recordClassName)
+        .orElseThrow(() -> new DataValidationException(
+            "No record class exists with name '" + recordClassName + "'."));
 
     BasketFactory basketFactory = factory.getWdkModel().getBasketFactory();
     List<String[]> ids = basketFactory.getBasket(user, recordClass).stream()
