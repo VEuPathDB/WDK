@@ -32,9 +32,8 @@ public class DatasetParamFormatter extends ParamFormatter<DatasetParam> {
   }
   
   @Override
-  public String getTypeDisplayName() {
-    return JsonKeys.DATASET_PARAM_TYPE;   
+  public String getParamType() {
+    return JsonKeys.DATASET_PARAM_TYPE;
   }
-
 
 }

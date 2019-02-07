@@ -6,6 +6,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,7 +21,6 @@ public class AnswerSpecServiceFormat {
    * 
    * Input Format:
    * {
-   *   "questionName" : String,
    *   "parameters": Object (map from paramName -> paramValue),
    *   "legacyFilterName": (optional) String,
    *   "filters": (optional) [ {
@@ -37,11 +37,11 @@ public class AnswerSpecServiceFormat {
    * @return constructed answer spec builder
    * @throws RequestMisformatException if JSON is malformed
    */
-  public static AnswerSpecBuilder parse(JSONObject json, WdkModel wdkModel) throws RequestMisformatException {
+  public static AnswerSpecBuilder parse(Question question, JSONObject json, WdkModel wdkModel) throws RequestMisformatException {
     try {
       // get question name, validate, and create instance with valid Question
       AnswerSpecBuilder specBuilder = AnswerSpec.builder(wdkModel)
-          .setQuestionName(json.getString(JsonKeys.QUESTION_NAME))
+          .setQuestionName(question.getFullName())
           .setParamValues(JsonUtil.parseProperties(json.getJSONObject(JsonKeys.PARAMETERS)));
 
       // all filter fields and weight are optional
@@ -64,6 +64,14 @@ public class AnswerSpecServiceFormat {
     }
   }
 
+  /**
+   * Formats the passed answer spec into JSON.  Output format is the same as
+   * input format except for an additional property, "questionName", which is
+   * included when formatting an existing answer spec.
+   * 
+   * @param answerSpec answer spec to format
+   * @return passed answer spec in JSON format
+   */
   public static JSONObject format(AnswerSpec answerSpec) {
     return new JSONObject()
         .put(JsonKeys.QUESTION_NAME, answerSpec.getQuestionName())

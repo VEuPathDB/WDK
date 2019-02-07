@@ -93,7 +93,8 @@ public class FavoriteRequests {
       throws RequestMisformatException, DataValidationException {
     try {
       String recordClassName = json.getString(JsonKeys.RECORD_CLASS_NAME);
-      RecordClass recordClass = wdkModel.getRecordClass(recordClassName);
+      RecordClass recordClass = wdkModel.getRecordClass(recordClassName).orElseThrow(
+          () -> new DataValidationException("No record class exists with name '" + recordClassName + "'."));
       JSONArray pkArray = json.getJSONArray(JsonKeys.PRIMARY_KEY);
       PrimaryKeyValue primaryKey = RecordRequest.parsePrimaryKey(pkArray, recordClass);
       String note = getStringOrDefault(json, JsonKeys.DESCRIPTION, null);

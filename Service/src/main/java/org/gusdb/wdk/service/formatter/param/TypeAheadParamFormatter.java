@@ -22,8 +22,8 @@ public class TypeAheadParamFormatter extends AbstractEnumParamFormatter {
   }
   
   @Override
-  public String getTypeDisplayName() {
-    return JsonKeys.VOCAB_PARAM_TYPE;   
+  public String getParamType() {
+    return JsonKeys.TYPEAHEAD_PARAM_TYPE;
   }
 
 }

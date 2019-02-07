@@ -47,7 +47,7 @@ import org.json.JSONObject;
  */
 public class DefaultJsonReporter extends AbstractReporter {
 
-  public static final String WDK_SERVICE_JSON_REPORTER_RESERVED_NAME = "wdk-service-json";
+  public static final String RESERVED_NAME = "standard";
 
   private Map<String,AttributeField> _attributes;
   private Map<String,TableField> _tables;
@@ -163,7 +163,7 @@ public class DefaultJsonReporter extends AbstractReporter {
 
   public static ReporterRef createReference() {
     ReporterRef ref = new ReporterRef();
-    ref.setName(WDK_SERVICE_JSON_REPORTER_RESERVED_NAME);
+    ref.setName(RESERVED_NAME);
     ref.setDisplayName("Standard JSON");
     ref.setDescription(new WdkModelText(null, "Converts your result to the standard JSON used by the web service."));
     ref.setImplementation(DefaultJsonReporter.class.getName());

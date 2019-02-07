@@ -10,8 +10,8 @@ public class AnswerParamFormatter extends ParamFormatter<AnswerParam>{
   }
 
   @Override
-  public String getTypeDisplayName() {
-    return JsonKeys.STEP_PARAM_TYPE;   
+  public String getParamType() {
+    return JsonKeys.STEP_PARAM_TYPE;
   }
 
 }

@@ -33,6 +33,8 @@ import org.gusdb.wdk.events.ErrorEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 
@@ -266,5 +268,21 @@ public abstract class AbstractWdkService {
     catch (NumberFormatException e) {
       throw new NotFoundException(formatNotFound(resourceType + ": " + idString));
     }
+  }
+
+  protected Question getQuestionOrNotFound(String questionUrlSegment) {
+    return getWdkModel().getQuestionByUrlSegment(questionUrlSegment)
+      .orElseGet(() -> getWdkModel().getQuestion(questionUrlSegment)
+        .orElseThrow(() ->
+          // question of the name provided cannot be found
+          new NotFoundException(formatNotFound("question: " + questionUrlSegment))));
+  }
+
+  protected RecordClass getRecordClassOrNotFound(String recordClassUrlSegment) {
+    return getWdkModel().getRecordClassByUrlSegment(recordClassUrlSegment)
+      .orElseGet(() -> getWdkModel().getRecordClass(recordClassUrlSegment)
+        .orElseThrow(() ->
+          // record class of the name provided cannot be found
+          new NotFoundException(formatNotFound("record class: " + recordClassUrlSegment))));
   }
 }

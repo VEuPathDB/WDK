@@ -102,7 +102,8 @@ public class AnswerParam extends Param {
     // resolve recordClass ref
     for (RecordClassReference reference : recordClassRefs) {
       String rcName = reference.getRef();
-      RecordClass recordClass = model.getRecordClass(rcName);
+      RecordClass recordClass = model.getRecordClass(rcName)
+          .orElseThrow(() -> new WdkModelException("RecordClass " + rcName + " could not be found."));
       this.recordClasses.put(rcName, recordClass);
     }
     this.recordClassRefs = null;

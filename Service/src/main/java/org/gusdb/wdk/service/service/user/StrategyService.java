@@ -143,16 +143,25 @@ public class StrategyService extends UserService {
       getStrategyForCurrentUser(strategyId, ValidationLevel.SEMANTIC));
   }
 
+  // RRD 1/11 FIXME notes: this doesn't look quite right to me, instead, should:
+  //    1. load the existing strategy
+  //    2. load any new steps not in that strategy
+  //    3. error if any newly added steps belong to another strat
+  //    4. Use strategy and step builders to build a replacement strat based on incoming tree
+  //    5. Validate the new strat (build with RUNNABLE)
+  //    6. Save the strat
+  //    7. Purge strategy ID and answer params from steps that were removed from strat, then save
+  //          Can do this easily with StepBuilder.removeStrategy()
   @PUT
   @Path(ID_PATH + "/stepTree")
   @Consumes(MediaType.APPLICATION_JSON)
   // TODO: @InSchema(...)
   public void replaceStepTree(@PathParam(ID_PARAM) long stratId, JSONObject body)
       throws WdkModelException, WdkUserException {
-    final Strategy strat = getStrategyForCurrentUser(stratId, validationLevel);
+    final Strategy strat = getStrategyForCurrentUser(stratId, ValidationLevel.NONE);
     final StepFactory fac = getWdkModel().getStepFactory();
     final Collection<StepBuilder> tree = StrategyRequest.treeToSteps(
-      body, fac, validationLevel).getSecond();
+      body, fac).getSecond();
 
     // Collect original steps
     final Map<Long, Step> original = strat.getAllSteps()

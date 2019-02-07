@@ -264,7 +264,9 @@ public abstract class User {
     WdkModel wdkModel = getWdkModel();
 
     for (String rcName : activeStrats.keySet()) {
-      RecordClass recordClass = wdkModel.getRecordClass(rcName);
+      RecordClass recordClass = wdkModel.getRecordClass(rcName).orElse(null);
+      if (recordClass == null)
+        continue;
       String category = recordClass.getDisplayName();
       List<Strategy> strategies = activeStrats.get(rcName);
       if (strategies.size() == 0)
@@ -276,7 +278,9 @@ public abstract class User {
     }
 
     for (String rcName : savedStrats.keySet()) {
-      RecordClass recordClass = wdkModel.getRecordClass(rcName);
+      RecordClass recordClass = wdkModel.getRecordClass(rcName).orElse(null);
+      if (recordClass == null)
+        continue;
       String category = recordClass.getDisplayName();
       List<Strategy> strategies = savedStrats.get(rcName);
       if (strategies.size() == 0)
@@ -291,7 +295,9 @@ public abstract class User {
     }
 
     for (String rcName : recentStrats.keySet()) {
-      RecordClass recordClass = wdkModel.getRecordClass(rcName);
+      RecordClass recordClass = wdkModel.getRecordClass(rcName).orElse(null);
+      if (recordClass == null)
+        continue;
       String category = recordClass.getDisplayName();
       List<Strategy> strategies = recentStrats.get(rcName);
       if (strategies.size() == 0)

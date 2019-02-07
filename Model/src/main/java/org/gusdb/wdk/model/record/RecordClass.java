@@ -1137,7 +1137,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     // first add the default reporter; XML may want to override
     ReporterRef defaultReporterRef = DefaultJsonReporter.createReference();
     defaultReporterRef.excludeResources(projectId);
-    reporterMap.put(DefaultJsonReporter.WDK_SERVICE_JSON_REPORTER_RESERVED_NAME, defaultReporterRef);
+    reporterMap.put(DefaultJsonReporter.RESERVED_NAME, defaultReporterRef);
 
     // exclude reporters
     boolean defaultOverridden = false;
@@ -1146,10 +1146,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         reporter.excludeResources(projectId);
         String reporterName = reporter.getName();
         if (reporterMap.containsKey(reporterName)) {
-          if (reporterName.equals(DefaultJsonReporter.WDK_SERVICE_JSON_REPORTER_RESERVED_NAME) && !defaultOverridden) {
+          if (reporterName.equals(DefaultJsonReporter.RESERVED_NAME) && !defaultOverridden) {
             LOG.warn("A reporter in recordClass " + getFullName() +
                 " is overriding the default WDK reporter by using the name '" +
-                DefaultJsonReporter.WDK_SERVICE_JSON_REPORTER_RESERVED_NAME + "'.");
+                DefaultJsonReporter.RESERVED_NAME + "'.");
             defaultOverridden = true;
           }
           // disallow duplicate definition

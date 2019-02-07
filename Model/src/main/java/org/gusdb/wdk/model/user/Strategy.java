@@ -11,9 +11,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
@@ -229,13 +231,13 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
     _signature = strategyBuilder._signature;
     _isPublic = strategyBuilder._isPublic;
     _rootStepId = strategyBuilder._rootStepId;
-    _stepMap = buildSteps(user, _rootStepId, strategyBuilder._stepMap, validationLevel);
+    _stepMap = buildSteps(strategyBuilder._stepMap, validationLevel);
     _validationBundle = ValidationBundle.builder(validationLevel)
         .aggregateStatus(_stepMap.values().toArray(new Step[0]))
         .build();
   }
 
-  private Map<Long, Step> buildSteps(User user, long rootStepId, Map<Long, StepBuilder> steps,
+  private Map<Long, Step> buildSteps(Map<Long, StepBuilder> steps,
       ValidationLevel validationLevel) throws InvalidStrategyStructureException, WdkModelException {
 
     // Confirm project and user id match across strat and all steps, and that steps were properly assigned
@@ -253,9 +255,12 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
       }
     }
 
+    // try to find the root step ID if not set
+    _rootStepId = findRootStepId();
+
     // temporarily build an actual tree of the steps from a copy of the step map
     Map<Long, StepBuilder> stepMap = new HashMap<>(steps); // make a copy since buildTree modifies
-    TreeNode<StepBuilder> builderTree = buildTree(stepMap, rootStepId);
+    TreeNode<StepBuilder> builderTree = buildTree(stepMap, _rootStepId);
     if (!builderTree.findCircularPaths().isEmpty()) {
       throw new InvalidStrategyStructureException("Strategy " + _strategyId + "'s tree has at least one circular dependency.");
     }
@@ -267,7 +272,7 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
 
     // Build StepBuilders from the bottom up into a tree of Steps, setting dirty
     // bits on steps downstream from dirty steps as it builds the tree.
-    UserCache userCache = new UserCache(user);
+    UserCache userCache = new UserCache(_user);
     Strategy thisStrategy = this;
     try {
       TreeNode<Step> stepTree = builderTree.mapStructure((builder, mappedChildren) ->
@@ -281,6 +286,18 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
     }
     catch (Exception e) {
       return WdkModelException.unwrap(e);
+    }
+  }
+
+  private long findRootStepId() {
+    // see if value was set to non-zero in 
+    if (_rootStepId != 0) return _rootStepId;
+    
+      _rootStepId = findR
+      Set<Long> childSteps = new HashSet<>(steps.keySet());
+      for (StepBuilder step : steps.values()) {
+        
+      }
     }
   }
 

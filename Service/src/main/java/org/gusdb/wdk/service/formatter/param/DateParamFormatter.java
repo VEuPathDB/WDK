@@ -21,8 +21,8 @@ public class DateParamFormatter extends ParamFormatter<DateParam> {
   }
   
   @Override
-  public String getTypeDisplayName() {
-    return JsonKeys.DATE_PARAM_TYPE;   
+  public String getParamType() {
+    return JsonKeys.DATE_PARAM_TYPE;
   }
 
 }

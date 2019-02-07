@@ -36,7 +36,6 @@ import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.BasketRequests.BasketActions;
 import org.gusdb.wdk.service.service.AnswerService;
-import org.gusdb.wdk.service.service.RecordService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -106,7 +105,7 @@ public class BasketService extends UserService {
       throws WdkModelException, DataValidationException, RequestMisformatException {
     try {
       User user = getPrivateRegisteredUser();
-      RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
+      RecordClass recordClass = getRecordClassOrNotFound(basketName);
       BasketActions actions = new BasketActions(new JSONObject(body), recordClass);
       RevisedRequest<BasketActions> revisedRequest = translatePatchRequest(recordClass, actions);
       BasketFactory factory = getWdkModel().getBasketFactory();
@@ -132,7 +131,7 @@ public class BasketService extends UserService {
   @Path(NAMED_BASKET_PATH)
   public Response clearBasket(@PathParam(BASKET_NAME_PARAM) String basketName) throws WdkModelException {
     User user = getPrivateRegisteredUser();
-    RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
+    RecordClass recordClass = getRecordClassOrNotFound(basketName);
     getWdkModel().getBasketFactory().clearBasket(user, recordClass);
     return Response.noContent().build();
   }
@@ -166,7 +165,7 @@ public class BasketService extends UserService {
       throws WdkModelException, RequestMisformatException, DataValidationException {
     try {
       User user = getPrivateRegisteredUser();
-      RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
+      RecordClass recordClass = getRecordClassOrNotFound(basketName);
       JSONArray inputArray = new JSONArray(body);
       List<PrimaryKeyValue> pksToQuery = new ArrayList<>();
       for (JsonType pkArray : JsonIterators.arrayIterable(inputArray)) {
@@ -215,7 +214,7 @@ public class BasketService extends UserService {
       throws WdkModelException, RequestMisformatException, DataValidationException {
     try {
       User user = getPrivateRegisteredUser();
-      RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
+      RecordClass recordClass = getRecordClassOrNotFound(basketName);
       RunnableObj<AnswerSpec> basketAnswerSpec = AnswerSpec.builder(getWdkModel())
           .setQuestionName(recordClass.getRealtimeBasketQuestion().getFullName())
           .buildRunnable(getSessionUser(), StepContainer.emptyContainer());
