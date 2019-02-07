@@ -119,6 +119,8 @@ public class EuPathCategoriesFactory {
       // amazonia peru
       { "Participants", "DS_897fe55e6fParticipantRecordClasses.DS_897fe55e6fParticipantRecordClass" },
       { "Observations", "DS_897fe55e6fObservationRecordClasses.DS_897fe55e6fObservationRecordClass" },
+      //SCORE
+      { "Participants", "DS_d6a1141fbfParticipantRecordClasses.DS_d6a1141fbfParticipantRecordClass" },
   };
 
   // record classes whose individuals all have both scope website and menu
