@@ -5,12 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.SortDirection;
-import org.gusdb.fgputil.SortDirectionSpec;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
@@ -46,7 +42,7 @@ import org.json.JSONObject;
  *   defaultAttributes: [ String ],
  *   dynamicAttributes: [ see AttributeFieldFormatter ],
  *   defaultSummaryView: String,
- *   summaryViewPlugins: [ String ],
+ *   summaryViewPlugins: [ see SummaryViewPluginFormatter ],
  *   stepAnalysisPlugins: [ String ]
  * }
  *
@@ -93,7 +89,7 @@ public class QuestionFormatter {
       .put(JsonKeys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
           q.getDynamicAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, true))
       .put(JsonKeys.DEFAULT_SUMMARY_VIEW, q.getDefaultSummaryView().getName())
-      .put(JsonKeys.SUMMARY_VIEW_PLUGINS, FormatUtil.stringCollectionToJsonArray(q.getSummaryViews().keySet()))
+      .put(JsonKeys.SUMMARY_VIEW_PLUGINS, SummaryViewPluginFormatter.getSummaryViewPluginsJson(q.getSummaryViews().values()))
       .put(JsonKeys.STEP_ANALYSIS_PLUGINS, FormatUtil.stringCollectionToJsonArray(q.getStepAnalyses().keySet()))
       .put(JsonKeys.PROPERTIES, q.getPropertyLists());
   }
