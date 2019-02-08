@@ -41,7 +41,7 @@ public class SingleRecordQuestion extends Question {
           questionName.length() - SINGLE_RECORD_QUESTION_NAME_SUFFIX.length());
       try {
         wdkModel.validateRecordClassName(recordClassName);
-        parts.recordClass = wdkModel.getRecordClass(recordClassName).get();
+        parts.recordClass = wdkModel.getRecordClassByName(recordClassName).get();
         parts.isValid = true;
       }
       catch (NoSuchElementException | WdkUserException e) {

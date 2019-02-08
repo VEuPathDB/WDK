@@ -1,7 +1,8 @@
 package org.gusdb.wdk.service.service.user;
 
-import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.DEFAULT_REPORTER_PARSER;
-import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.SPECIFIED_REPORTER_PARSER;
+import static org.gusdb.wdk.service.service.AnswerService.CUSTOM_REPORT_ENDPOINT;
+import static org.gusdb.wdk.service.service.AnswerService.REPORT_NAME_PATH_PARAM;
+import static org.gusdb.wdk.service.service.AnswerService.STANDARD_REPORT_ENDPOINT;
 
 import java.util.Date;
 
@@ -29,9 +30,10 @@ import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
-import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
+import org.gusdb.wdk.model.answer.request.AnswerFormatting;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.model.user.InvalidStrategyStructureException;
 import org.gusdb.wdk.model.user.NoSuchElementException;
 import org.gusdb.wdk.model.user.Step;
@@ -149,25 +151,52 @@ public class StepService extends UserService {
   }
 
   @POST
-  @Path(ID_PATH + "/answer")
+  @Path(ID_PATH + "/" + STANDARD_REPORT_ENDPOINT)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.steps.answer.post-request")
-  public Response createDefaultReporterAnswer(@PathParam(ID_PARAM) long stepId, JSONObject body)
-      throws WdkModelException, RequestMisformatException, DataValidationException {
-    return createAnswer(stepId, body, DEFAULT_REPORTER_PARSER);
+  public Response createDefaultReporterAnswer(
+      @PathParam(ID_PARAM) long stepId, JSONObject requestJson)
+          throws WdkModelException, RequestMisformatException, DataValidationException {
+    return createAnswer(stepId, DefaultJsonReporter.RESERVED_NAME, requestJson);
   }
 
   @POST
-  @Path(ID_PATH + "/answer/report")
+  @Path(ID_PATH + "/" + CUSTOM_REPORT_ENDPOINT)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response createAnswer(@PathParam(ID_PARAM) long stepId, JSONObject body)
-      throws WdkModelException, RequestMisformatException, DataValidationException {
-    return createAnswer(stepId, body, SPECIFIED_REPORTER_PARSER);
+  // Produces an unknown media type; varies depending on reporter selected
+  public Response createAnswer(
+      @PathParam(ID_PARAM) long stepId,
+      @PathParam(REPORT_NAME_PATH_PARAM) String reporterName,
+      JSONObject requestJson)
+          throws WdkModelException, RequestMisformatException, DataValidationException {
+    User user = getUserBundle(Access.PRIVATE).getSessionUser();
+    StepFactory stepFactory = getWdkModel().getStepFactory();
+    RunnableObj<Step> runnableStep = stepFactory
+        .getStepById(stepId, ValidationLevel.RUNNABLE)
+        .orElseThrow(() -> new NotFoundException(formatNotFound(STEP_RESOURCE + stepId)))
+        .getRunnable()
+        .getOrThrow(StepService::getNotRunnableException);
+
+    AnswerRequest request = new AnswerRequest(
+        Step.getRunnableAnswerSpec(runnableStep),
+        new AnswerFormatting(reporterName, requestJson));
+
+    TwoTuple<AnswerValue, Response> result = AnswerService.getAnswerResponse(user, request);
+
+    // update the estimated size and last-run time on this step
+    stepFactory.updateStep(
+        Step.builder(runnableStep.getObject())
+        .setEstimatedSize(result.getFirst().getResultSizeFactory().getDisplayResultSize())
+        .setLastRunTime(new Date())
+        .build(new UserCache(runnableStep.getObject().getUser()),
+            ValidationLevel.NONE, runnableStep.getObject().getStrategy()));
+
+    return result.getSecond();
   }
 
   @PUT
-  @Path(ID_PATH + "/answerSpec")
+  @Path(ID_PATH + "/searchConfig")
   @Consumes(MediaType.APPLICATION_JSON)
   // TODO: @InSchema(...)
   public void putAnswerSpec(
@@ -238,33 +267,6 @@ public class StepService extends UserService {
   private static DataValidationException getNotRunnableException(Step badStep) {
     return new DataValidationException(
         "This step is not runnable for the following reasons: " + badStep.getValidationBundle().toString());
-  }
-
-  private Response createAnswer(long stepId, JSONObject requestBody, AnswerFormattingParser formattingParser)
-      throws WdkModelException, RequestMisformatException, DataValidationException {
-
-    User user = getUserBundle(Access.PRIVATE).getSessionUser();
-    StepFactory stepFactory = new StepFactory(getWdkModel());
-    RunnableObj<Step> runnableStep = stepFactory
-        .getStepById(stepId, ValidationLevel.RUNNABLE)
-        .orElseThrow(NotFoundException::new)
-        .getRunnable()
-        .getOrThrow(StepService::getNotRunnableException);
-
-    AnswerRequest request = new AnswerRequest(
-        Step.getRunnableAnswerSpec(runnableStep),
-        formattingParser.createFromTopLevelObject(requestBody));
-    TwoTuple<AnswerValue, Response> result = AnswerService.getAnswerResponse(user, request);
-
-    // update the estimated size and last-run time on this step
-    stepFactory.updateStep(
-      Step.builder(runnableStep.getObject())
-        .setEstimatedSize(result.getFirst().getResultSizeFactory().getDisplayResultSize())
-        .setLastRunTime(new Date())
-        .build(new UserCache(runnableStep.getObject().getUser()),
-            ValidationLevel.NONE, runnableStep.getObject().getStrategy()));
-
-    return result.getSecond();
   }
 
   private Step getStepForCurrentUser(long stepId, ValidationLevel level) throws WdkModelException {

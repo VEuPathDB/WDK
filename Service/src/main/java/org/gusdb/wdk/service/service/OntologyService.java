@@ -3,7 +3,6 @@ package org.gusdb.wdk.service.service;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -60,23 +59,18 @@ public class OntologyService extends AbstractWdkService {
   @Path("{ontologyName}/path")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getPathsToMatchingNodes(@PathParam("ontologyName") String ontologyName, String body) throws WdkModelException {
+  public Response getPathsToMatchingNodes(@PathParam("ontologyName") String ontologyName, JSONObject criteriaJson) throws WdkModelException {
     Ontology ontology = getOntology(ontologyName);
-    if (ontology == null)
+    if (ontology == null) {
       throw new NotFoundException(AbstractWdkService.formatNotFound(ONTOLOGY_RESOURCE + ontologyName));
-    try {
-      JSONObject criteriaJson = new JSONObject(body);
-      Map<String,String> criteria = new HashMap<String,String>();
-      for (String key : JsonUtil.getKeys(criteriaJson)) {
-        criteria.put(key, criteriaJson.getString(key));
-      }
-      JSONArray pathsList = OntologyFormatter.pathsToJson(
-          ontology.getAllPaths(new PropertyPredicate(criteria)));
-      return Response.ok(pathsList.toString()).build();
     }
-    catch (JSONException e) {
-      throw new BadRequestException(e);
+    Map<String,String> criteria = new HashMap<String,String>();
+    for (String key : JsonUtil.getKeys(criteriaJson)) {
+      criteria.put(key, criteriaJson.getString(key));
     }
+    JSONArray pathsList = OntologyFormatter.pathsToJson(
+        ontology.getAllPaths(new PropertyPredicate(criteria)));
+    return Response.ok(pathsList.toString()).build();
   }
 
   private Ontology getOntology(String ontologyName) throws WdkModelException {

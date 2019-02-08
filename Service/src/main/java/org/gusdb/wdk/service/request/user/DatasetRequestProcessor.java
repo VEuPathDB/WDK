@@ -231,15 +231,15 @@ public class DatasetRequestProcessor {
       Map<String, JsonType> additionalConfig, WdkModel model)
           throws DataValidationException, RequestMisformatException, WdkModelException {
 
-    Optional<String> questionName = getStringOrFail(additionalConfig, JsonKeys.QUESTION_NAME);
+    Optional<String> questionName = getStringOrFail(additionalConfig, JsonKeys.SEARCH_NAME);
     Optional<String> parameterName = getStringOrFail(additionalConfig, JsonKeys.PARAMETER_NAME);
 
     if (!questionName.isPresent() || !parameterName.isPresent()) {
       throw new DataValidationException("If '" + JsonKeys.PARSER + "' property is specified, '" +
-          JsonKeys.QUESTION_NAME + "' and '" + JsonKeys.PARAMETER_NAME + "' must also be specified.");
+          JsonKeys.SEARCH_NAME + "' and '" + JsonKeys.PARAMETER_NAME + "' must also be specified.");
     }
 
-    Question question = model.getQuestion(questionName.get()).orElseThrow(
+    Question question = model.getQuestionByName(questionName.get()).orElseThrow(
         () -> new DataValidationException(String.format(
             "Could not find question with name '%s'.", questionName.get())));
 

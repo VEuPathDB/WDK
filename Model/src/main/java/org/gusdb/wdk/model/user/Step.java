@@ -1030,16 +1030,11 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   public void setAnswerValuePaging(int start, int end) {
     _answerValueCache.setPaging(start, end);
-
   }
 
   public boolean hasAnswerParams() {
     return hasValidQuestion() &&
         _answerSpec.getQuestion().getQuery().getAnswerParamCount() > 0;
-  }
-
-  public boolean isAnswerSpecComplete() {
-    return !hasAnswerParams() || _strategy != null;
   }
 
   @Override

@@ -1,8 +1,9 @@
 package org.gusdb.wdk.service.service.user;
 
 import static org.gusdb.fgputil.functional.Functions.reduce;
-import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.DEFAULT_REPORTER_PARSER;
-import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.SPECIFIED_REPORTER_PARSER;
+import static org.gusdb.wdk.service.service.AnswerService.CUSTOM_REPORT_ENDPOINT;
+import static org.gusdb.wdk.service.service.AnswerService.REPORT_NAME_PATH_PARAM;
+import static org.gusdb.wdk.service.service.AnswerService.STANDARD_REPORT_ENDPOINT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,11 +23,12 @@ import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
+import org.gusdb.wdk.model.answer.request.AnswerFormatting;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
@@ -194,36 +196,32 @@ public class BasketService extends UserService {
   }
 
   @POST
-  @Path(NAMED_BASKET_PATH + "/answer")
+  @Path(NAMED_BASKET_PATH + "/" + STANDARD_REPORT_ENDPOINT)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getDefaultReporterBasketAnswer(@PathParam(BASKET_NAME_PARAM) String basketName, String body)
-      throws WdkModelException, RequestMisformatException, DataValidationException {
-    return getBasketAnswer(basketName, body, DEFAULT_REPORTER_PARSER);
+  // TODO: @InSchema(...)
+  public Response getDefaultReporterBasketAnswer(
+      @PathParam(BASKET_NAME_PARAM) String basketName,
+      JSONObject requestJson)
+          throws WdkModelException, RequestMisformatException, DataValidationException {
+    return getBasketAnswer(basketName, DefaultJsonReporter.RESERVED_NAME, requestJson);
   }
 
   @POST
-  @Path(NAMED_BASKET_PATH + "/answer/report")
+  @Path(NAMED_BASKET_PATH + "/" + CUSTOM_REPORT_ENDPOINT)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response getBasketAnswer(@PathParam(BASKET_NAME_PARAM) String basketName, String body)
-      throws WdkModelException, RequestMisformatException, DataValidationException {
-    return getBasketAnswer(basketName, body, SPECIFIED_REPORTER_PARSER);
-  }
-
-  private Response getBasketAnswer(String basketName, String requestBody, AnswerFormattingParser formattingParser)
-      throws WdkModelException, RequestMisformatException, DataValidationException {
-    try {
-      User user = getPrivateRegisteredUser();
-      RecordClass recordClass = getRecordClassOrNotFound(basketName);
-      RunnableObj<AnswerSpec> basketAnswerSpec = AnswerSpec.builder(getWdkModel())
-          .setQuestionName(recordClass.getRealtimeBasketQuestion().getFullName())
-          .buildRunnable(getSessionUser(), StepContainer.emptyContainer());
-      AnswerRequest request = new AnswerRequest(basketAnswerSpec,
-          formattingParser.createFromTopLevelObject(new JSONObject(requestBody)));
-      return AnswerService.getAnswerResponse(user, request).getSecond();
-    }
-    catch (JSONException e) {
-      throw new RequestMisformatException(e.toString());
-    }
+  // Produces an unknown media type; varies depending on reporter selected
+  public Response getBasketAnswer(
+      @PathParam(BASKET_NAME_PARAM) String basketName,
+      @PathParam(REPORT_NAME_PATH_PARAM) String reportName,
+      JSONObject requestJson)
+          throws WdkModelException, RequestMisformatException, DataValidationException {
+    User user = getPrivateRegisteredUser();
+    RecordClass recordClass = getRecordClassOrNotFound(basketName);
+    RunnableObj<AnswerSpec> basketAnswerSpec = AnswerSpec.builder(getWdkModel())
+      .setQuestionName(recordClass.getRealtimeBasketQuestion().getFullName())
+      .buildRunnable(getSessionUser(), StepContainer.emptyContainer());
+    AnswerRequest request = new AnswerRequest(basketAnswerSpec, new AnswerFormatting(reportName, requestJson));
+    return AnswerService.getAnswerResponse(user, request).getSecond();
   }
 }

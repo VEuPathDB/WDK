@@ -18,7 +18,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
-import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -31,7 +30,6 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.RecordInstanceFormatter;
 import org.gusdb.wdk.model.record.ResultProperty;
@@ -87,17 +85,14 @@ public class SummaryTester {
     }
 
     // variable never used
-    Reference ref = new Reference(questionFullName);
-    String questionSetName = ref.getSetName();
-    String questionName = ref.getElementName();
     String modelName = cmdLine.getOptionValue("model");
     String gusHome = GusHome.getGusHome();
     try (WdkModel wdkModel = WdkModel.construct(modelName, gusHome)) {
 
       User user = wdkModel.getSystemUser();
 
-      QuestionSet questionSet = wdkModel.getQuestionSet(questionSetName);
-      Question question = questionSet.getQuestion(questionName);
+      Question question = wdkModel.getQuestionByName(questionFullName)
+          .orElseThrow(() -> new WdkModelException("Question " + questionFullName + " does not exist."));
       Query query = question.getQuery();
 
       Map<String, String> paramValues = new LinkedHashMap<String, String>();

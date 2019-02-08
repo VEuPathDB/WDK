@@ -81,7 +81,10 @@ public class AnswerService extends AbstractWdkService {
 
   static final String RECORDCLASS_URL_SEGMENT = "recordClassUrlSegment";
   static final String SEARCH_URL_SEGMENT = "questionUrlSegment";
-  static final String REPORT_NAME_SEGMENT = "reportNameSegment";
+
+  public static final String REPORT_NAME_PATH_PARAM = "reportNameSegment";
+  public static final String STANDARD_REPORT_ENDPOINT = "reports/" + DefaultJsonReporter.RESERVED_NAME;
+  public static final String CUSTOM_REPORT_ENDPOINT = "reports/{" + REPORT_NAME_PATH_PARAM + "}";
 
   private final String _recordClassUrlSegment;
   private final String _questionUrlSegment;
@@ -104,10 +107,10 @@ public class AnswerService extends AbstractWdkService {
    * @throws WdkModelException if an error occurs while processing the request
    */
   @POST
-  @Path("reports/{" + REPORT_NAME_SEGMENT + "}")
+  @Path(CUSTOM_REPORT_ENDPOINT)
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response buildResultFromForm(
-      @PathParam("reportName") String reportName,
+      @PathParam(REPORT_NAME_PATH_PARAM) String reportName,
       @FormParam("data") String data)
           throws WdkModelException, DataValidationException, RequestMisformatException {
     // log this request's JSON here since filter will not log form data
@@ -134,7 +137,7 @@ public class AnswerService extends AbstractWdkService {
    * @throws WdkModelException if an error occurs while processing the request
    */
   @POST
-  @Path("reports/" + DefaultJsonReporter.RESERVED_NAME)
+  @Path(STANDARD_REPORT_ENDPOINT)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response buildDefaultReporterResult(JSONObject body)
@@ -154,7 +157,7 @@ public class AnswerService extends AbstractWdkService {
    * @throws WdkModelException if an error occurs while processing the request
    */
   @POST
-  @Path("reports/{" + REPORT_NAME_SEGMENT + "}")
+  @Path(CUSTOM_REPORT_ENDPOINT)
   @Consumes(MediaType.APPLICATION_JSON)
   // Produces an unknown media type; varies depending on reporter selected
   public Response buildResult(
@@ -176,7 +179,7 @@ public class AnswerService extends AbstractWdkService {
     return requestQuestion;
   }
 
-  private static AnswerRequest parseAnswerRequest(Question question,
+  static AnswerRequest parseAnswerRequest(Question question,
       String reporterName, JSONObject requestBody, WdkModel wdkModel, User sessionUser)
           throws RequestMisformatException, DataValidationException, WdkModelException {
 
@@ -210,7 +213,7 @@ public class AnswerService extends AbstractWdkService {
     // to allow a user to use steps from an existing strategy, need to get the
     // strategy they want to use as a step container to look up those steps;
     // can't do that without knowing if the question is valid
-    Optional<Question> question = wdkModel.getQuestion(specBuilder.getQuestionName());
+    Optional<Question> question = wdkModel.getQuestionByName(specBuilder.getQuestionName());
 
     if (!question.isPresent() || question.get().getQuery().getAnswerParamCount() == 0) {
       // question will fail validation or is valid but does not contain answer params; no need for lookup
