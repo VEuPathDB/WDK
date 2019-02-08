@@ -171,7 +171,7 @@ public class AnswerSpecBuilder {
   }
 
   public AnswerSpecBuilder nullifyAnswerParams() {
-    List<AnswerParam> answerParams = _wdkModel.getQuestion(_questionName)
+    List<AnswerParam> answerParams = _wdkModel.getQuestionByName(_questionName)
         .map(q -> q.getQuery().getAnswerParams()).orElse(null);
     // if question name not set, do nothing
     if (answerParams != null) {

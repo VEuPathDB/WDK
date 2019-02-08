@@ -152,7 +152,7 @@ public class UserPreferences {
 
   public Map<String, Boolean> getSortingAttributes(
       String questionFullName, String keySuffix) throws WdkModelException {
-    Question question = _wdkModel.getQuestionOrFail(questionFullName);
+    Question question = getQuestionOrFail(questionFullName);
     Map<String, AttributeField> attributes = question.getAttributeFieldMap();
 
     String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX + keySuffix;
@@ -181,7 +181,7 @@ public class UserPreferences {
   public String addSortingAttribute(String questionFullName, String attrName,
       boolean ascending, String keySuffix) throws WdkModelException {
     // make sure the attribute exists in the question
-    Question question = _wdkModel.getQuestionOrFail(questionFullName);
+    Question question = getQuestionOrFail(questionFullName);
     if (!question.getAttributeFieldMap().containsKey(attrName))
       throw new WdkModelException("Cannot sort by attribute '" + attrName +
           "' since it doesn't belong the question " + questionFullName);
@@ -213,7 +213,7 @@ public class UserPreferences {
   }
 
   public String[] getSummaryAttributes(String questionFullName, String keySuffix) throws WdkModelException {
-    Question question = _wdkModel.getQuestionOrFail(questionFullName);
+    Question question = getQuestionOrFail(questionFullName);
     Map<String, AttributeField> attributes = question.getAttributeFieldMap();
 
     String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX + keySuffix;
@@ -298,7 +298,7 @@ public class UserPreferences {
   }
 
   public RecordView getCurrentRecordView(String rcName) throws WdkUserException, WdkModelException {
-    return getCurrentRecordView(_wdkModel.getRecordClass(rcName).orElseThrow(
+    return getCurrentRecordView(_wdkModel.getRecordClassByName(rcName).orElseThrow(
         () -> new WdkModelException("No record class exists with name '" + rcName + "'.")));
   }
 
@@ -324,5 +324,10 @@ public class UserPreferences {
       String viewName = recordView.getName();
       saveProjectPreference(key, viewName);
     }
+  }
+
+  public Question getQuestionOrFail(String questionFullName) throws WdkModelException {
+    return _wdkModel.getQuestionByName(questionFullName).orElseThrow(
+        () -> new WdkModelException("Question with name " + questionFullName + " cannot be found."));
   }
 }

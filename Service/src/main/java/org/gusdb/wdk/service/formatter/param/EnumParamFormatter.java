@@ -22,10 +22,5 @@ public class EnumParamFormatter extends AbstractEnumParamFormatter {
             ? getVocabTreeJson(vocabInstance)
             : getVocabArrayJson(vocabInstance));
   }
-  
-  @Override
-  public String getParamType() {
-    return JsonKeys.VOCAB_PARAM_TYPE;
-  }
 
 }

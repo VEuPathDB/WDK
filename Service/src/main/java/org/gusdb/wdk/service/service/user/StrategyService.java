@@ -1,17 +1,44 @@
 package org.gusdb.wdk.service.service.user;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.gusdb.fgputil.functional.TreeNode;
+import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.gusdb.fgputil.functional.Functions.fSwallow;
+import static org.gusdb.fgputil.functional.Functions.not;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.*;
+import org.gusdb.wdk.model.user.InvalidStrategyStructureException;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
+import org.gusdb.wdk.model.user.Strategy;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
@@ -19,19 +46,13 @@ import org.gusdb.wdk.service.formatter.StepFormatter;
 import org.gusdb.wdk.service.formatter.StrategyFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.strategy.StrategyRequest;
-import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.util.*;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-
-import static org.gusdb.fgputil.functional.Functions.not;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 public class StrategyService extends UserService {
 
@@ -157,31 +178,45 @@ public class StrategyService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   // TODO: @InSchema(...)
   public void replaceStepTree(@PathParam(ID_PARAM) long stratId, JSONObject body)
-      throws WdkModelException, WdkUserException {
-    final Strategy strat = getStrategyForCurrentUser(stratId, ValidationLevel.NONE);
-    final StepFactory fac = getWdkModel().getStepFactory();
-    final Collection<StepBuilder> tree = StrategyRequest.treeToSteps(
-      body, fac).getSecond();
+      throws WdkModelException, DataValidationException {
 
-    // Collect original steps
-    final Map<Long, Step> original = strat.getAllSteps()
-        .stream()
-        .collect(Collectors.toMap(s -> s.getStepId(), UnaryOperator.identity()));
+    final Strategy oldStrat = getStrategyForCurrentUser(stratId, ValidationLevel.NONE);
+    final StepFactory stepFactory = getWdkModel().getStepFactory();
+    final TwoTuple<Long, Collection<StepBuilder>> parsedTree =
+        StrategyRequest.treeToSteps(oldStrat.getStrategyId(), body, stepFactory);
+    try {
 
-    // Update strategy
-    fac.updateStrategy(
-      new Strategy.StrategyBuilder(strat)
+      // build and validate modified strategy
+      Strategy newStrat = Strategy.builder(oldStrat)
         .clearSteps()
-        .addSteps(tree)
-        .build(new UserCache(strat.getUser()), validationLevel)
-    );
+        .setRootStepId(parsedTree.getFirst())
+        .addSteps(parsedTree.getSecond())
+        .build(new UserCache(oldStrat.getUser()), ValidationLevel.RUNNABLE);
 
-    // Filter the list of original steps down to only steps that did not appear
-    // in the new tree
-    tree.forEach(s -> original.remove(s.getStepId()));
+      if (!newStrat.isValid()) {
+        throw new DataValidationException(
+            "Invalid strategy produced by passed tree. Reasons follow: " + NL +
+            newStrat.getValidationBundle().toString());
+      }
+  
+      // filter the list of original steps down to only steps that do not appear
+      // in the new tree
+      Set<Long> retainedStepIds = newStrat.getAllSteps().stream().map(st -> st.getStepId()).collect(Collectors.toSet());
+      List<Step> orphanedSteps = oldStrat.getAllSteps().stream()
+          // only put in orphaned if not used in new strategy
+          .filter(step -> !retainedStepIds.contains(step.getStepId()))
+          // remove strategy and answer param values from each step
+          .map(fSwallow(orphan -> Step.builder(orphan).removeStrategy().build(
+              new UserCache(oldStrat.getUser()), ValidationLevel.NONE, null)))
+          .collect(Collectors.toList());
 
-    // Update remaining steps to reflect that they are now orphaned
-    fac.updateSteps(original.values());
+      // update strategy and newly orphaned steps
+      stepFactory.updateStrategyAndOtherSteps(newStrat, orphanedSteps);
+
+    }
+    catch (InvalidStrategyStructureException e) {
+      throw new DataValidationException(e.getMessage());
+    }
   }
 
   @POST
@@ -192,11 +227,10 @@ public class StrategyService extends UserService {
   // @OutSchema(...) TODO
   public JSONObject duplicateAsBranch(JSONObject body)
       throws WdkModelException {
-    final StepFactory fac = getWdkModel().getStepFactory();
-
-    return StepFormatter.formatAsStepTree(fac.copyStrategyToBranch(
-      getSessionUser(),
-      fac.getStrategyById(body.getLong(JsonKeys.STRATEGY_ID), validationLevel)
+    return StepFormatter.formatAsStepTree(
+        getWdkModel().getStepFactory().copyStrategyToBranch(
+            getSessionUser(),
+            getStrategyForCurrentUser(body.getLong(JsonKeys.STRATEGY_ID), ValidationLevel.NONE)
     ));
   }
 
@@ -207,16 +241,15 @@ public class StrategyService extends UserService {
       Strategy strategy = getWdkModel().getStepFactory()
         .getStrategyById(strategyId, level)
         .orElseThrow(() -> new NotFoundException(
-          AbstractWdkService.formatNotFound(STRATEGY_RESOURCE + strategyId)));
+            formatNotFound(STRATEGY_RESOURCE + strategyId)));
 
       if (strategy.getUser().getUserId() != user.getUserId())
-        throw new ForbiddenException(AbstractWdkService.PERMISSION_DENIED);
+        throw new ForbiddenException(PERMISSION_DENIED);
 
       return strategy;
     }
     catch (WdkModelException e) {
-      throw new NotFoundException(
-        AbstractWdkService.formatNotFound(STRATEGY_RESOURCE + strategyId));
+      throw new NotFoundException(formatNotFound(STRATEGY_RESOURCE + strategyId));
     }
   }
 
@@ -229,20 +262,13 @@ public class StrategyService extends UserService {
     return stepFactory.copyStrategy(user, sourceStrategy, new LinkedHashMap<>());
   }
 
-  private Strategy createNewStrategy(User user, StepFactory stepFactory,
-      JSONObject json)
+  private Strategy createNewStrategy(User user, StepFactory stepFactory, JSONObject json)
       throws WdkModelException, DataValidationException, InvalidStrategyStructureException {
-    StrategyRequest strategyRequest = StrategyRequest.createFromJson(json,
-      stepFactory);
-    TreeNode<Step> stepTree = strategyRequest.getStepTree();
-    Step rootStep = stepTree.getContents();
-
-    // Pull all the steps out of the tree
-    Collection<Step> steps = stepTree.flatten();
+    StrategyRequest strategyRequest = StrategyRequest.createFromJson(null, json, stepFactory);
 
     RunnableObj<Strategy> strategy = Strategy.builder(getWdkModel(), user.getUserId(), stepFactory.getNewStrategyId())
-      .addSteps(steps.stream().map(Step::builder).collect(Collectors.toList()))
-      .setRootStepId(rootStep.getId())
+      .addSteps(strategyRequest.getSteps())
+      .setRootStepId(strategyRequest.getRootStepId())
       .setName(strategyRequest.getName())
       .setSavedName(strategyRequest.getSavedName())
       .setSaved(strategyRequest.isSaved())
@@ -271,7 +297,7 @@ public class StrategyService extends UserService {
     Strategy strat,
     JSONObject change
   ) throws WdkModelException, InvalidStrategyStructureException {
-    final Strategy.StrategyBuilder build = new Strategy.StrategyBuilder(strat);
+    final Strategy.StrategyBuilder build = Strategy.builder(strat);
 
     for(final String key : change.keySet()) {
       switch (key) {

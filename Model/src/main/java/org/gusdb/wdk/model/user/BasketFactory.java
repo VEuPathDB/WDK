@@ -432,7 +432,7 @@ public class BasketFactory {
   public void createSnapshotBasketQuestion(RecordClass recordClass) throws WdkModelException {
     // check if the basket question already exists
     String qname = recordClass.getFullName().replace('.', '_') + SNAPSHOT_BASKET_QUESTION_SUFFIX;
-    QuestionSet questionSet = _wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
+    QuestionSet questionSet = _wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET).get();
     if (questionSet.contains(qname))
       return;
 
@@ -521,7 +521,7 @@ public class BasketFactory {
   public void createRealtimeBasketQuestion(RecordClass recordClass) throws WdkModelException {
     // check if the basket question already exists
     String qname = recordClass.getFullName().replace('.', '_') + REALTIME_BASKET_QUESTION_SUFFIX;
-    QuestionSet questionSet = _wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
+    QuestionSet questionSet = _wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET).get();
     if (questionSet.contains(qname))
       return;
 

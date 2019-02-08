@@ -271,18 +271,16 @@ public abstract class AbstractWdkService {
   }
 
   protected Question getQuestionOrNotFound(String questionUrlSegment) {
-    return getWdkModel().getQuestionByUrlSegment(questionUrlSegment)
-      .orElseGet(() -> getWdkModel().getQuestion(questionUrlSegment)
-        .orElseThrow(() ->
-          // question of the name provided cannot be found
-          new NotFoundException(formatNotFound("question: " + questionUrlSegment))));
+    return getWdkModel().getQuestionByNameOrUrlSegment(questionUrlSegment)
+      .orElseThrow(() ->
+        // question of the name provided cannot be found
+        new NotFoundException(formatNotFound("question: " + questionUrlSegment)));
   }
 
   protected RecordClass getRecordClassOrNotFound(String recordClassUrlSegment) {
-    return getWdkModel().getRecordClassByUrlSegment(recordClassUrlSegment)
-      .orElseGet(() -> getWdkModel().getRecordClass(recordClassUrlSegment)
-        .orElseThrow(() ->
-          // record class of the name provided cannot be found
-          new NotFoundException(formatNotFound("record class: " + recordClassUrlSegment))));
+    return getWdkModel().getRecordClassByNameOrUrlSegment(recordClassUrlSegment)
+      .orElseThrow(() ->
+        // record class of the name provided cannot be found
+        new NotFoundException(formatNotFound("record class: " + recordClassUrlSegment)));
   }
 }

@@ -187,7 +187,7 @@ public class FavoriteFactory {
   private Favorite loadFavorite(User user, ResultSet resultSet)
       throws SQLException, WdkModelException {
     // Need to avoid showing favorite for defunct (per current wdk model) record class sets or record classes
-    Optional<RecordClass> recordClass = _wdkModel.getRecordClass(resultSet.getString(COLUMN_RECORD_CLASS));
+    Optional<RecordClass> recordClass = _wdkModel.getRecordClassByName(resultSet.getString(COLUMN_RECORD_CLASS));
     if (!recordClass.isPresent()) {
       return null;
     }
@@ -344,23 +344,20 @@ public class FavoriteFactory {
   }
 
   private int setDeletedFlag(User user, List<Long> favoriteIds, boolean isDeletedValue) throws WdkModelException {
-    Connection conn = null;
-    try {
-      conn = _userDb.getDataSource().getConnection();
-      Connection finalConn = conn;
+    try(Connection connection =_userDb.getDataSource().getConnection()) {
       Wrapper<Integer> updateCountWrapper = new Wrapper<>();
       String sql = SET_IS_DELETED_BY_ID_SQL
           .replace(USER_SCHEMA_MACRO, _userSchema)
           .replace(IS_DELETED_SETTER_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isDeletedValue).toString())
           .replace(IS_DELETED_CONDITIONAL_VALUE_MACRO, _userDb.getPlatform().convertBoolean(!isDeletedValue).toString());
-      SqlUtils.performInTransaction(conn, () -> {
+      SqlUtils.performInTransaction(connection, conn -> {
         BasicArgumentBatch batch = new BasicArgumentBatch();
         batch.setBatchSize(BATCH_SIZE);
         batch.setParameterTypes(new Integer[]{ Types.BIGINT, Types.BIGINT, Types.VARCHAR });
         for (Long favoriteId : favoriteIds) {
           batch.add(new Object[] { favoriteId, user.getUserId(), _wdkModel.getProjectId() });
         }
-        updateCountWrapper.set(new SQLRunner(finalConn, sql, "delete-favorites-by-id").executeUpdateBatch(batch));
+        updateCountWrapper.set(new SQLRunner(conn, sql, "delete-favorites-by-id").executeUpdateBatch(batch));
       });
       return updateCountWrapper.get();
     }
@@ -369,9 +366,6 @@ public class FavoriteFactory {
     }
     catch(Exception ex) {
       throw new WdkModelException(ex);
-    }
-    finally {
-      SqlUtils.closeQuietly(conn);
     }
   }
 

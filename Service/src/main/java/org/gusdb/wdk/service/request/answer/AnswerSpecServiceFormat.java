@@ -17,7 +17,8 @@ public class AnswerSpecServiceFormat {
    * Creates an AnswerSpecBuilder object using the passed JSON.  "questionName"
    * and "parameters" are the only required properties; legacy and modern
    * filters are optional; omission means no filters will be applied.  Weight is
-   * optional and defaults to 0.
+   * optional and defaults to 0.  Question name will be specified separately
+   * and thus is passed in.
    * 
    * Input Format:
    * {
@@ -74,7 +75,6 @@ public class AnswerSpecServiceFormat {
    */
   public static JSONObject format(AnswerSpec answerSpec) {
     return new JSONObject()
-        .put(JsonKeys.QUESTION_NAME, answerSpec.getQuestionName())
         // params and filters are sent with the same format as in the DB
         .put(JsonKeys.PARAMETERS, ParamFiltersClobFormat.formatParams(answerSpec.getQueryInstanceSpec()))
         .put(JsonKeys.FILTERS, ParamFiltersClobFormat.formatFilters(answerSpec.getFilterOptions()))

@@ -66,4 +66,9 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
         .put("children", new JSONArray(Arrays.stream(node.getChildren()).map(this::nodeToJson).toArray()));
   }
 
+  @Override
+  public String getParamType() {
+    return JsonKeys.VOCAB_PARAM_TYPE;
+  }
+
 }

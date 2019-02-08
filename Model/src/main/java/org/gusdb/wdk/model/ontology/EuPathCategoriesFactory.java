@@ -145,7 +145,7 @@ public class EuPathCategoriesFactory {
       for (CategoryQuestionRef ref : category.getQuestionRefs()) {
         try {
           ref.setQuestionDisplayName(model
-              .getQuestion(ref.getQuestionFullName())
+              .getQuestionByName(ref.getQuestionFullName())
               .orElseThrow(() -> new WdkModelException("Categories ontology contains invalid question name ref '" + ref.getQuestionFullName() + "'."))
               .getDisplayName());
         }
@@ -332,7 +332,7 @@ public class EuPathCategoriesFactory {
           node.get("targetType").contains("search") &&
           node.containsKey("recordClassName") &&
           node.get("recordClassName").contains(recordClass) &&
-          model.getQuestion(node.get("name").get(0)).isPresent() &&
+          model.getQuestionByName(node.get("name").get(0)).isPresent() &&
           hasScope;
     }
   }

@@ -1,15 +1,15 @@
 package org.gusdb.wdk.service.formatter;
 
+import java.util.Optional;
+
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.Optional;
 
 /**
  * Formats WDK Step objects.  Step JSON will have the following form:
@@ -27,8 +27,22 @@ import java.util.Optional;
  *   estimatedSize: Number (last known number of results),
  *   hasCompleteStepAnalyses: Boolean,
  *   recordClass: String (RecordClass full name),
- *   answerSpecComplete: boolean (false for unattached steps)
- *   answerSpec: see AnswerRequest (input and output formats are the same)
+ *   searchName: String (Question's full name),
+ *   searchConfig: {
+ *     parameters: Object,
+ *     filters: Array,
+ *     viewFilters: Array,
+ *     legacyFilter: String,
+ *     wdkWeight: Number
+ *   },
+ *   validation: {
+ *     level: enum[ValidationLevel],
+ *     isValid: boolean,
+ *     errors: {
+ *       general: Array<String>,
+ *       byKey: Object
+ *     }
+ *   }
  * }
  *
  * @author rdoherty
@@ -50,19 +64,29 @@ public class StepFormatter {
         .put(JsonKeys.STRATEGY_ID, JsonUtil.convertNulls(step.getStrategyId()))
         .put(JsonKeys.HAS_COMPLETE_STEP_ANALYSES, step.getHasCompleteAnalyses())
         .put(JsonKeys.RECORD_CLASS_NAME, step.getType())
-        .put(JsonKeys.IS_ANSWER_SPEC_COMPLETE, step.isAnswerSpecComplete())
-
-        // FIXME: call AnswerSpecFactory.createFromStep() and pass to formatter;
-        //    to do so, must extract JSON formatting from Step and other classes
+        .put(JsonKeys.SEARCH_NAME, step.getAnswerSpec().getQuestionName())
         .put(JsonKeys.SEARCH_CONFIG, AnswerSpecServiceFormat.format(step.getAnswerSpec()))
-        .put(JsonKeys.IS_VALID, step.isValid())
-        .put(JsonKeys.INVALID_REASONS, new JSONArray(step.getValidationBundle().getAllErrors()))
+        .put(JsonKeys.VALIDATION, getValidationBundleJson(step.getValidationBundle()))
         .put(JsonKeys.CREATED_TIME, step.getCreatedTime())
         .put(JsonKeys.LAST_RUN_TIME, step.getLastRunTime());
     }
     catch (JSONException e) {
       throw new WdkModelException("Unable to convert Step to service JSON", e);
     }
+  }
+
+  private static JSONObject getValidationBundleJson(ValidationBundle validationBundle) {
+    boolean isValid = validationBundle.getStatus().isValid();
+    JSONObject json = new JSONObject()
+        .put(JsonKeys.LEVEL, validationBundle.getLevel())
+        .put(JsonKeys.IS_VALID, isValid);
+    if (!isValid) {
+      json.put(JsonKeys.ERRORS,
+        new JSONObject()
+          .put(JsonKeys.GENERAL, validationBundle.getUnkeyedErrors())
+          .put(JsonKeys.BY_KEY, validationBundle.getKeyedErrors()));
+    }
+    return json;
   }
 
   public static JSONObject getStepJsonWithResultSize(Step step) throws WdkModelException {
@@ -79,10 +103,10 @@ public class StepFormatter {
     final JSONObject out = new JSONObject()
       .put(JsonKeys.ID, step.getStepId());
 
+    Optional.ofNullable(step.getPrimaryInputStep())
+      .ifPresent(s -> out.put(JsonKeys.PRIMARY_INPUT_STEP, formatAsStepTree(s)));
     Optional.ofNullable(step.getSecondaryInputStep())
       .ifPresent(s -> out.put(JsonKeys.SECONDARY_INPUT_STEP, formatAsStepTree(s)));
-    Optional.ofNullable(step.getPrimaryInputStep())
-        .ifPresent(s -> out.put(JsonKeys.PRIMARY_INPUT_STEP, formatAsStepTree(s)));
 
     return out;
   }

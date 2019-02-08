@@ -11,11 +11,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
@@ -73,7 +71,7 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
       _strategyId = strategyId;
     }
 
-    public StrategyBuilder(Strategy strategy) {
+    private StrategyBuilder(Strategy strategy) {
       _wdkModel = strategy._wdkModel;
       _userId = strategy.getUser().getUserId();
       _strategyId = strategy._strategyId;
@@ -174,8 +172,15 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
       return this;
     }
 
+    /**
+     * Removes any existing StepBuilders from this builder and resets
+     * the root step ID to 0.
+     * 
+     * @return this builder
+     */
     public StrategyBuilder clearSteps() {
       _stepMap.clear();
+      _rootStepId = 0;
       return this;
     }
 
@@ -255,9 +260,6 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
       }
     }
 
-    // try to find the root step ID if not set
-    _rootStepId = findRootStepId();
-
     // temporarily build an actual tree of the steps from a copy of the step map
     Map<Long, StepBuilder> stepMap = new HashMap<>(steps); // make a copy since buildTree modifies
     TreeNode<StepBuilder> builderTree = buildTree(stepMap, _rootStepId);
@@ -286,18 +288,6 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
     }
     catch (Exception e) {
       return WdkModelException.unwrap(e);
-    }
-  }
-
-  private long findRootStepId() {
-    // see if value was set to non-zero in 
-    if (_rootStepId != 0) return _rootStepId;
-    
-      _rootStepId = findR
-      Set<Long> childSteps = new HashSet<>(steps.keySet());
-      for (StepBuilder step : steps.values()) {
-        
-      }
     }
   }
 
@@ -330,7 +320,7 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
 
     // check for answer params; if not present or undeterminable (bad question name), simply return
     String questionName = step.getAnswerSpec().getQuestionName();
-    Optional<List<AnswerParam>> answerParams = _wdkModel.getQuestion(questionName)
+    Optional<List<AnswerParam>> answerParams = _wdkModel.getQuestionByName(questionName)
         .map(question -> question.getQuery().getAnswerParams());
 
     // Check if answer params are present.  If not present in optional, then

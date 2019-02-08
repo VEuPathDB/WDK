@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.gusdb.wdk.model.ModelSetI;
 import org.gusdb.wdk.model.WdkModel;
@@ -32,12 +33,8 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI<RecordClas
     return _name;
   }
 
-  public RecordClass getRecordClass(String name) throws WdkModelException {
-    RecordClass s = _recordClassMap.get(name);
-    if (s == null)
-      throw new WdkModelException("RecordClass Set " + getName()
-          + " does not include recordClass " + name);
-    return s;
+  public Optional<RecordClass> getRecordClass(String name) {
+    return Optional.ofNullable(_recordClassMap.get(name));
   }
 
   @Override

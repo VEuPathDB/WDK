@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepContainer;
@@ -61,8 +62,13 @@ public class StepRequestParser {
   public static NewStepRequest newStepFromJson(JSONObject stepJson, WdkModel wdkModel, User user)
       throws RequestMisformatException, DataValidationException, WdkModelException {
     try {
-      SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(
-          stepJson.getJSONObject(JsonKeys.SEARCH_CONFIG), wdkModel, user, StepContainer.emptyContainer());
+      String questionName = stepJson.getString(JsonKeys.SEARCH_NAME);
+      Question question = wdkModel.getQuestionByName(questionName)
+          .orElseThrow(() -> new DataValidationException(
+              questionName + " is not a valid search name."));
+      SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(question,
+          stepJson.getJSONObject(JsonKeys.SEARCH_CONFIG), wdkModel,
+          user, StepContainer.emptyContainer());
       AnswerSpec spec = validSpec.getObject();
 
       // Since this method is intended for new steps, the step can not yet be
@@ -84,15 +90,15 @@ public class StepRequestParser {
     }
   }
 
-  private static SemanticallyValid<AnswerSpec> parseAnswerSpec(JSONObject answerSpecJson, WdkModel wdkModel, User user, StepContainer container)
+  private static SemanticallyValid<AnswerSpec> parseAnswerSpec(Question question, JSONObject answerSpecJson, WdkModel wdkModel, User user, StepContainer container)
       throws JSONException, RequestMisformatException, DataValidationException, WdkModelException {
     return AnswerSpecServiceFormat
-        .parse(answerSpecJson, wdkModel)
+        .parse(question, answerSpecJson, wdkModel)
         .build(user, container, ValidationLevel.SEMANTIC)
         .getSemanticallyValid()
         .getOrThrow(spec ->
           // incoming answer spec not semantically valid
-          new DataValidationException("Invalid answer spec: " + join(spec.getValidationBundle().getAllErrors(), NL)));
+          new DataValidationException("Invalid search config: " + join(spec.getValidationBundle().getAllErrors(), NL)));
   }
 
   public static Step updateStepMeta(Step step, JSONObject patchSet)
@@ -120,11 +126,14 @@ public class StepRequestParser {
       throws DataValidationException, RequestMisformatException, JSONException, WdkModelException {
 
     SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(
+        existingStep.getAnswerSpec().getQuestion(),
         answerSpecJson, wdkModel, user, existingStep.getContainer());
     AnswerSpec answerSpec = validSpec.getObject();
 
     // user cannot change question of an existing step (since # and type of answer params may change);
     //   we could check for validity of # and type of answer params in the future; no use case now
+    // NOTE: since answer spec JSON no longer contains question, this is a non-issue, but keeping
+    //       code in case anyone thinks it's a good idea to allow a question change in the future.
     if (!answerSpec.getQuestion().getFullName().equals(
         existingStep.getAnswerSpec().getQuestion().getFullName())) {
       throw new DataValidationException("Question of an existing step cannot be changed.");

@@ -687,8 +687,9 @@ public class StepFactory {
     }
 
     // write orphan steps to the DB to be used by caller
-    try (Connection conn = _userDbDs.getConnection()){
-      SqlUtils.performInTransaction(conn, () -> insertSteps(conn, orphanSteps));
+    try (Connection connection = _userDbDs.getConnection()){
+      SqlUtils.performInTransaction(connection,
+          conn -> insertSteps(conn, orphanSteps));
     }
     catch (Exception e) {
       throw new WdkModelException("Unable to insert strategy or update steps.");
@@ -740,10 +741,10 @@ public class StepFactory {
         WdkModelException::new);
 
     // persist new strategy and all steps to the DB
-    try (Connection conn = _userDbDs.getConnection()){
-      SqlUtils.performInTransaction(conn,
-        () -> insertStrategy(conn, newStrategy),
-        () -> insertSteps(conn, newStrategy.getAllSteps())
+    try (Connection connection = _userDbDs.getConnection()){
+      SqlUtils.performInTransaction(connection,
+        conn -> insertStrategy(conn, newStrategy),
+        conn -> insertSteps(conn, newStrategy.getAllSteps())
       );
     }
     catch (Exception e) {
@@ -880,10 +881,13 @@ public class StepFactory {
   }
 
   public void insertStrategy(Strategy newStrategy) throws WdkModelException {
-    try(Connection conn = _userDbDs.getConnection()) {
-      insertStrategy(conn, newStrategy);
+    try(Connection connection = _userDbDs.getConnection()) {
+      SqlUtils.performInTransaction(connection, conn -> {
+        insertStrategy(conn, newStrategy);
+        updateSteps(conn, newStrategy.getAllSteps());
+      });
     }
-    catch(SQLException e) {
+    catch(Exception e) {
       throw new WdkModelException(e);
     }
   }
@@ -1120,7 +1124,7 @@ public class StepFactory {
           "create a copy and update it, or set overwrite flag to true.");
 
     User user = strategy.getUser();
-    Strategy.StrategyBuilder builder = new Strategy.StrategyBuilder(strategy);
+    Strategy.StrategyBuilder builder = Strategy.builder(strategy);
 
     if (overwrite) {
       Optional<TwoTuple<Long,String>> opSaved = getOverwriteStrategy(
@@ -1697,6 +1701,18 @@ public class StepFactory {
     }
     else {
       updateStep(stepToSave.build(userCache, level, null));
+    }
+  }
+
+  public void updateStrategyAndOtherSteps(Strategy newStrat, List<Step> orphanedSteps) throws WdkModelException {
+    try(Connection connection = _userDbDs.getConnection()) {
+      SqlUtils.performInTransaction(connection, conn -> {
+        updateStrategy(conn, newStrat);
+        updateSteps(conn, orphanedSteps);
+      });
+    }
+    catch (Exception e) {
+      throw new WdkModelException("Could not update strategy and steps", e);
     }
   }
 }

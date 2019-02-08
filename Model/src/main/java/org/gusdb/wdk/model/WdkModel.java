@@ -281,24 +281,34 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
    * @param questionFullName question's full name (two-part name)
    * @return question with the passed name
    */
-  public Optional<Question> getQuestion(String questionFullName) {
+  public Optional<Question> getQuestionByName(String questionFullName) {
     // special case to fetch a single record of a recordClass (by primary keys)
     if (SingleRecordQuestion.isSingleQuestionName(questionFullName, this)){
       return Optional.of(new SingleRecordQuestion(questionFullName, this));
     }
     try {
       Reference r = new Reference(questionFullName);
-      QuestionSet ss = getQuestionSet(r.getSetName());
-      return Optional.of(ss.getQuestion(r.getElementName()));
+      return Optional.ofNullable(questionSets.get(r.getSetName()))
+          .flatMap(set -> set.getQuestion(r.getElementName()));
     }
     catch (WdkModelException e) {
       return Optional.empty();
     }
   }
 
-  public Question getQuestionOrFail(String questionFullName) throws WdkModelException {
-    return getQuestion(questionFullName).orElseThrow(
-        () -> new WdkModelException("Question with name " + questionFullName + " cannot be found."));
+  /**
+   * Tries to find a configured question by URL segment
+   * 
+   * @param urlSegment of a question
+   * @return optional containing question if found, or empty optional if not
+   */
+  public Optional<Question> getQuestionByUrlSegment(String urlSegment) {
+    return Optional.ofNullable(_questionUrlSegmentMap.get(urlSegment)).map(name -> getQuestionByName(name).get());
+  }
+
+  public Optional<Question> getQuestionByNameOrUrlSegment(String nameOrSegment) {
+    Optional<Question> q = getQuestionByUrlSegment(nameOrSegment);
+    return q.isPresent() ? q : getQuestionByName(nameOrSegment);
   }
 
   public Question[] getQuestions(RecordClass recordClass) {
@@ -315,15 +325,30 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return array;
   }
 
-  public Optional<RecordClass> getRecordClass(String recordClassReference) {
+  public Optional<RecordClass> getRecordClassByName(String recordClassReference) {
     try {
       Reference r = new Reference(recordClassReference);
-      RecordClassSet rs = getRecordClassSet(r.getSetName());
-      return Optional.ofNullable(rs.getRecordClass(r.getElementName()));
+      return Optional.ofNullable(recordClassSets.get(r.getSetName()))
+          .flatMap(set -> set.getRecordClass(r.getElementName()));
     }
     catch (WdkModelException e) {
       return Optional.empty();
     }
+  }
+
+  /**
+   * Tries to find a configured recordclass by URL segment
+   * 
+   * @param urlSegment of a record class
+   * @return optional containing record class if found, or empty optional if not
+   */
+  public Optional<RecordClass> getRecordClassByUrlSegment(String urlSegment) {
+    return Optional.ofNullable(_recordClassUrlSegmentMap.get(urlSegment)).map(name -> getRecordClassByName(name).get());
+  }
+
+  public Optional<RecordClass> getRecordClassByNameOrUrlSegment(String nameOrSegment) {
+    Optional<RecordClass> rc = getRecordClassByUrlSegment(nameOrSegment);
+    return rc.isPresent() ? rc : getRecordClassByName(nameOrSegment);
   }
 
   public ResultFactory getResultFactory() {
@@ -398,29 +423,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   // RecordClass Sets
 
-  public RecordClassSet getRecordClassSet(String recordClassSetName) throws WdkModelException {
-
-    if (!recordClassSets.containsKey(recordClassSetName)) {
-      String err = "WDK Model " + _projectId + " does not contain a recordClass set with name " +
-          recordClassSetName;
-      throw new WdkModelException(err);
-    }
-    return recordClassSets.get(recordClassSetName);
-  }
-
-  // Start CWL 29JUN2016
-  /**
-   * Used to determine whether a record class set exists for the given reference
-   * @param recordClassReference
-   * @return - true if the record class set exists and false otherwise.
-   * @throws WdkModelException
-   */
-  public boolean isExistsRecordClassSet(String recordClassReference) throws WdkModelException {
-    Reference r = new Reference(recordClassReference);
-    return recordClassSets.containsKey(r.getSetName());
-  }
-  // End CWL 29JUN2016
-
   public RecordClassSet[] getAllRecordClassSets() {
     RecordClassSet sets[] = new RecordClassSet[recordClassSets.size()];
     recordClassSets.values().toArray(sets);
@@ -454,12 +456,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   // Question Sets
-  public QuestionSet getQuestionSet(String setName) throws WdkModelException {
-    if (!questionSets.containsKey(setName)) {
-      String err = "WDK Model " + _projectId + " does not contain a Question set with name " + setName;
-      throw new WdkModelException(err);
-    }
-    return questionSets.get(setName);
+  public Optional<QuestionSet> getQuestionSet(String setName) {
+    return Optional.ofNullable(questionSets.get(setName));
   }
 
   public boolean hasQuestionSet(String setName) {
@@ -517,25 +515,22 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public Question getBooleanQuestion(RecordClass recordClass) throws WdkModelException {
     // check if the boolean question already exists
     String qname = Question.BOOLEAN_QUESTION_PREFIX + recordClass.getFullName().replace('.', '_');
-    QuestionSet internalSet = getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
+    QuestionSet internalSet = getQuestionSet(Utilities.INTERNAL_QUESTION_SET).get();
 
-    Question booleanQuestion;
-    if (internalSet.contains(qname)) {
-      booleanQuestion = internalSet.getQuestion(qname);
+    Optional<Question> booleanQuestionOpt = internalSet.getQuestion(qname);
+    if (booleanQuestionOpt.isPresent()) {
+      return booleanQuestionOpt.get();
     }
-    else {
-      booleanQuestion = new Question();
-      booleanQuestion.setName(qname);
-      booleanQuestion.setDisplayName("Combine " + recordClass.getDisplayName() + " results");
-      booleanQuestion.setRecordClassRef(recordClass.getFullName());
-      BooleanQuery booleanQuery = getBooleanQuery(recordClass);
-      booleanQuestion.setQueryRef(booleanQuery.getFullName());
-      booleanQuestion.excludeResources(_projectId);
-      booleanQuestion.resolveReferences(this);
-
-      internalSet.addQuestion(booleanQuestion);
-    }
-    return booleanQuestion;
+    Question question = new Question();
+    question.setName(qname);
+    question.setDisplayName("Combine " + recordClass.getDisplayName() + " results");
+    question.setRecordClassRef(recordClass.getFullName());
+    BooleanQuery booleanQuery = getBooleanQuery(recordClass);
+    question.setQueryRef(booleanQuery.getFullName());
+    question.excludeResources(_projectId);
+    question.resolveReferences(this);
+    internalSet.addQuestion(question);
+    return question;
   }
 
   public BooleanQuery getBooleanQuery(RecordClass recordClass) throws WdkModelException {
@@ -1531,16 +1526,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     _recordClassUrlSegmentMap.put(urlSegment, rcFullName);
   }
 
-  /**
-   * Tries to find a configured recordclass by URL segment
-   * 
-   * @param urlSegment of a record class
-   * @return optional containing record class if found, or empty optional if not
-   */
-  public Optional<RecordClass> getRecordClassByUrlSegment(String urlSegment) {
-    return Optional.ofNullable(_recordClassUrlSegmentMap.get(urlSegment)).map(name -> getRecordClass(name).get());
-  }
-
   public void registerQuestionUrlSegment(String urlSegment, String questionFullName) throws WdkModelException {
     if (_questionUrlSegmentMap.containsKey(urlSegment) &&
         !_questionUrlSegmentMap.get(urlSegment).equals(questionFullName)) { // protects from duplicate identical calls
@@ -1549,16 +1534,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
           "two questions with the same name in different Question Sets.");
     }
     _questionUrlSegmentMap.put(urlSegment, questionFullName);
-  }
-
-  /**
-   * Tries to find a configured question by URL segment
-   * 
-   * @param urlSegment of a question
-   * @return optional containing question if found, or empty optional if not
-   */
-  public Optional<Question> getQuestionByUrlSegment(String urlSegment) {
-    return Optional.ofNullable(_questionUrlSegmentMap.get(urlSegment)).map(name -> getQuestion(name).get());
   }
 
   public static AutoCloseableList<WdkModel> loadMultipleModels(String gusHome, String[] projects) throws WdkModelException {
@@ -1627,7 +1602,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     String message = "The search '" + qFullName + "' is not or is no longer available.";
     try {
       // First check to see if this is a 'regular' question; if not, check XML questions
-      if (qFullName == null || getQuestion(qFullName) == null) {
+      if (qFullName == null || getQuestionByName(qFullName) == null) {
         throw new WdkModelException("Question name is null or resulting question is null");
       }
     }
@@ -1661,7 +1636,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     String message = "The record type '" + recordClassName + "' is not or is no longer available.";
     try {
       // First check to see if this is a 'regular' record class; if not, check XML record classes
-      if (recordClassName == null || getRecordClass(recordClassName) == null) {
+      if (recordClassName == null || getRecordClassByName(recordClassName) == null) {
         throw new WdkModelException("RecordClass name is null or resulting RecordClass is null");
       }
     }
