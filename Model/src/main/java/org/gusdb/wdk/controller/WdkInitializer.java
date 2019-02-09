@@ -6,7 +6,6 @@ import javax.servlet.ServletContext;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.runtime.GusHome;
-import org.gusdb.wdk.controller.wizard.Wizard;
 import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.ThreadMonitor;
 import org.gusdb.wdk.model.Utilities;
@@ -47,9 +46,9 @@ public class WdkInitializer {
       assignInitParamToAttribute(servletContext, Utilities.WDK_SERVICE_ENDPOINT_KEY);
 
       // load wizard
-      LOG.info("Loading wizard configuration.");
-      Wizard wizard = Wizard.loadWizard(gusHome, wdkModel);
-      servletContext.setAttribute(WDK_WIZARD_KEY, wizard);
+      //LOG.info("Loading wizard configuration.");
+      //Wizard wizard = Wizard.loadWizard(gusHome, wdkModel);
+      //servletContext.setAttribute(WDK_WIZARD_KEY, wizard);
 
       // start up thread monitor
       ThreadMonitor.start(getThreadMonitorConfig(wdkModel));
