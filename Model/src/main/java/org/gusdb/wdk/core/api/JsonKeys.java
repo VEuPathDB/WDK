@@ -34,7 +34,7 @@ public class JsonKeys {
   public static final String TOTAL_COUNT = "totalCount";
   public static final String RESPONSE_COUNT = "responseCount";
   public static final String RECORD_CLASS_NAME = "recordClassName";
-  public static final String QUESTION_NAME = "questionName";
+  public static final String SEARCH_NAME = "searchName";
   public static final String PARAMETER_NAME = "parameterName";
 
   // UI-related keys
@@ -115,7 +115,6 @@ public class JsonKeys {
   public static final String NUMBER_PARAM_TYPE = "number";
   public static final String NUMBER_RANGE_PARAM_TYPE = "number-range";
   public static final String VOCAB_PARAM_TYPE = "vocabulary";
-  public static final String TYPEAHEAD_PARAM_TYPE = "type-ahead";
   public static final String STEP_PARAM_TYPE = "input-step";
   public static final String DATASET_PARAM_TYPE = "input-dataset";
   public static final String FILTER_PARAM_TYPE = "filter";
@@ -146,6 +145,7 @@ public class JsonKeys {
   public static final String ESTIMATED_SIZE = "estimatedSize";
   public static final String HAS_COMPLETE_STEP_ANALYSES = "hasCompleteStepAnalyses";
   public static final String SEARCH_CONFIG = "searchConfig";
+  public static final String REPORT_NAME = "reportName";
   public static final String REPORT_CONFIG = "reportConfig";
   public static final String FORMATTING = "formatting";
   public static final String FORMAT = "format";
@@ -212,10 +212,15 @@ public class JsonKeys {
   public static final String SAVED_NAME = "savedName";
   public static final String LAST_MODIFIED = "lastModified";
   public static final String IS_SAVED = "isSaved";
-  public static final String IS_VALID = "isValid";
-  public static final String INVALID_REASONS = "invalidReasons";
   public static final String IS_DELETED = "isDeleted";
   public static final String ROOT_STEP = "root";
   public static final String PRIMARY_INPUT_STEP = "primaryInput";
   public static final String SECONDARY_INPUT_STEP = "secondaryInput";
+
+  // validation-related keys
+  public static final String VALIDATION = "validation";
+  public static final String LEVEL = "level";
+  public static final String IS_VALID = "isValid";
+  public static final String GENERAL = "general";
+  public static final String BY_KEY = "byKey";
 }
