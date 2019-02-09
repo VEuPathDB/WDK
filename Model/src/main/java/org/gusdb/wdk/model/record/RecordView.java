@@ -19,7 +19,6 @@ public class RecordView extends WdkView {
         RecordView view = new RecordView();
         view.setName("_default");
         view.setDisplay("Overview");
-        view.setJsp("/wdk/jsp/records/default.jsp");
         return view;
     }
 

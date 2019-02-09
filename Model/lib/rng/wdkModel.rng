@@ -1893,15 +1893,11 @@
   <define name="ViewBaseContent">
     <attribute name="name" />
     <attribute name="display" />
-    <attribute name="jsp" />
     <ref name="IncludeExclude" />
     <optional>
       <attribute name="default">
         <data type="boolean" />
       </attribute>
-    </optional>
-    <optional>
-      <attribute name="handlerClass" />
     </optional>
     <zeroOrMore>
       <element name="description">
