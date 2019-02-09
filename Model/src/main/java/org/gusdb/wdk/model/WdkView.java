@@ -7,7 +7,6 @@ public abstract class WdkView extends WdkModelBase {
 
     private String _name;
     private String _display;
-    private String _jsp;
     private boolean _default;
 
     private List<WdkModelText> _descriptions;
@@ -46,21 +45,6 @@ public abstract class WdkView extends WdkModelBase {
      */
     public void setDisplay(String display) {
         _display = display;
-    }
-
-    /**
-     * @return the jsp
-     */
-    public String getJsp() {
-        return _jsp;
-    }
-
-    /**
-     * @param jsp
-     *            the jsp to set
-     */
-    public void setJsp(String jsp) {
-        _jsp = jsp;
     }
 
     /**
