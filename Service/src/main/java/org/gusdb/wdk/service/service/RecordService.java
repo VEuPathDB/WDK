@@ -2,7 +2,6 @@ package org.gusdb.wdk.service.service;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,6 +22,7 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -30,16 +30,18 @@ import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.report.util.RecordFormatter;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
+import org.gusdb.wdk.service.formatter.QuestionFormatter;
 import org.gusdb.wdk.service.formatter.RecordClassFormatter;
 import org.gusdb.wdk.service.formatter.TableFieldFormatter;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.statustype.MultipleChoicesStatusType;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@Path("/records")
+@Path("/record-classes")
 public class RecordService extends AbstractWdkService {
 
   @SuppressWarnings("unused")
@@ -51,13 +53,23 @@ public class RecordService extends AbstractWdkService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.records.get")
-  public Collection<Object> getRecordClassList(@QueryParam("format") String format) {
-    final boolean tmp = Optional.ofNullable(format)
+  public JSONObject getRecordClassList(@QueryParam("format") String format) {
+    JSONObject jsonResponse = new JSONObject();
+    
+    
+    final boolean expand = Optional.ofNullable(format)
         .map(f -> f.equals("expanded"))
         .orElse(false);
 
-    return RecordClassFormatter.getRecordClassesJson(
-        getWdkModel().getAllRecordClassSets(), tmp);
+    JSONArray recordClassesJson = new JSONArray(RecordClassFormatter.getRecordClassesJson(
+        getWdkModel().getAllRecordClassSets(), expand));
+    
+    List<Question> allQuestions = getWdkModel().getAllQuestions();
+    JSONArray questionsJson = QuestionFormatter.getQuestionsJsonWithoutParams(allQuestions);
+
+    jsonResponse.put(JsonKeys.RECORD_TYPES, recordClassesJson);
+    if (expand) jsonResponse.put(JsonKeys.SEARCHES, questionsJson);
+    return jsonResponse;
   }
 
   @GET
@@ -122,8 +134,9 @@ public class RecordService extends AbstractWdkService {
     return getTableResponse(recordClassName, tableName, expandTableAttributes, true);
   }
 
+  
   @GET
-  @Path("{recordClassName}/answer-format")
+  @Path("{recordClassName}/reports")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAnswerFormats(@PathParam("recordClassName") String recordClassName) {
     return Response.ok(
@@ -146,8 +159,9 @@ public class RecordService extends AbstractWdkService {
     return Response.ok(json.toString()).build();
   }
 
+  // TODO: replace this with a GET (using the path to encode the primary key)
   @POST
-  @Path("{recordClassName}/instance")
+  @Path("{recordClassName}/records")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response buildResult(@PathParam("recordClassName") String recordClassName, String body)

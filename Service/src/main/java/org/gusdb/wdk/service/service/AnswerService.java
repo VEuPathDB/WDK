@@ -6,7 +6,6 @@ import java.util.Optional;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -34,7 +33,6 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 import org.gusdb.wdk.model.report.ReporterConfigException;
@@ -164,20 +162,11 @@ public class AnswerService extends AbstractWdkService {
       @PathParam("reportName") String reportName,
       JSONObject body)
           throws WdkModelException, DataValidationException, RequestMisformatException {
-    AnswerRequest request = parseAnswerRequest(getValidInputQuestion(), reportName,
+    AnswerRequest request = parseAnswerRequest(getQuestionOrNotFound(_recordClassUrlSegment, _questionUrlSegment), reportName,
         body, getWdkModel(), getSessionUser());
     return getAnswerResponse(getSessionUser(), request).getSecond();
   }
 
-  private Question getValidInputQuestion() {
-    RecordClass requestRecordClass = getRecordClassOrNotFound(_recordClassUrlSegment);
-    Question requestQuestion = getQuestionOrNotFound(_questionUrlSegment);
-    if (!requestQuestion.getRecordClassName().equals(requestRecordClass.getFullName())) {
-      throw new NotFoundException("Question " + requestQuestion.getName() +
-          " does not produce instances of " + requestRecordClass.getName());
-    }
-    return requestQuestion;
-  }
 
   static AnswerRequest parseAnswerRequest(Question question,
       String reporterName, JSONObject requestBody, WdkModel wdkModel, User sessionUser)
@@ -310,7 +299,7 @@ public class AnswerService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response displayFilterResults(@PathParam("filterName") String filterName, JSONObject requestJson)
       throws WdkModelException, WdkUserException, DataValidationException {
-    RunnableObj<AnswerSpec> answerSpec = parseAnswerSpec(getValidInputQuestion(),
+    RunnableObj<AnswerSpec> answerSpec = parseAnswerSpec(getQuestionOrNotFound(_recordClassUrlSegment, _questionUrlSegment),
         requestJson.getJSONObject(JsonKeys.SEARCH_CONFIG), getWdkModel(), getSessionUser());
     AnswerValue answerValue = AnswerValueFactory.makeAnswer(getSessionUser(), answerSpec);
     JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
