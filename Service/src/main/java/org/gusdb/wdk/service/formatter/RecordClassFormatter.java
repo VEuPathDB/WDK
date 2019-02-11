@@ -43,7 +43,7 @@ public class RecordClassFormatter {
     for (RecordClassSet rcSet : recordClassSets) {
       for (RecordClass rc : rcSet.getRecordClasses()) {
         out.add(expand ? getRecordClassJson(rc, true, true, true) :
-              rc.getFullName());
+              rc.getUrlSegment());
       }
     }
     return out;
