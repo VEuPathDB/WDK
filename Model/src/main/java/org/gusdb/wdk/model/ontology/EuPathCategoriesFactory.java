@@ -116,6 +116,8 @@ public class EuPathCategoriesFactory {
       { "Observations", "DS_897fe55e6fObservationRecordClasses.DS_897fe55e6fObservationRecordClass" },
       //SCORE
       { "Participants", "DS_d6a1141fbfParticipantRecordClasses.DS_d6a1141fbfParticipantRecordClass" },
+      //Southern Africa
+      { "Participants", "DS_a83d9defbbParticipantRecordClasses.DS_a83d9defbbParticipantRecordClass" },
   };
 
   // record classes whose individuals all have both scope website and menu
