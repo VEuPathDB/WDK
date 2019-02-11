@@ -1,11 +1,14 @@
 displayName: Answer
 
 post:
-  description: >
+  description: |
     GET by POST.  Submit question values (question name, params, filters,
     columns, plus optionally offset, numRecords, sortBy, reverseSort).
     Validates, and returns results.  Client specifies format (xml, json).
     Response includes meta data, such as count.
+    * Ownership of the following param values will be verified:
+      * AnswerParam: child steps must be owned by requester
+      * DatasetParam: datasets must be owned by requester
   body:
     application/json:
       type: !include ../../../../src/main/resources/schema/wdk/answer/post-request.json

@@ -49,8 +49,10 @@ baseUri: //{siteUrl}/{webApp}/service
 
 /oauth: !include ./includes/raml/oauth-api.raml
 /ontologies: !include ./includes/raml/ontologies-api.raml
-/question: !include ./includes/raml/question-api.raml
-/records: !include ./includes/raml/record-api.raml
+/record-types: !include ./includes/raml/record-types-api.raml
+/record-types/{record-type}/searches: !include ./includes/raml/searches-api.raml
+/record-types/{record-type}/searches/{search-name}/reports: !include ./includes/raml/reports-api.raml
+
 /strategy: !include ./includes/raml/strategy-api.raml
 /strategy-list: !include ./includes/raml/strategy-list-api.raml
 /system: !include ./includes/raml/system-api.raml
