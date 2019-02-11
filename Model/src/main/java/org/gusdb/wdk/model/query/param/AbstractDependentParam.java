@@ -16,6 +16,7 @@ import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
@@ -63,8 +64,8 @@ public abstract class AbstractDependentParam extends Param {
   public AbstractDependentParam(AbstractDependentParam param) {
     super(param);
 
-    this._dependedParamRef = param._dependedParamRef;
-    this._dependedParamRefs = new LinkedHashSet<>(param._dependedParamRefs);
+    _dependedParamRef = param._dependedParamRef;
+    _dependedParamRefs = new LinkedHashSet<>(param._dependedParamRefs);
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -77,6 +78,16 @@ public abstract class AbstractDependentParam extends Param {
 
   @Override
   public Set<Param> getDependedParams() {
+    // FIXME: RRD this shouldn't need to happen but I screwed things up and now
+    //        params don't have this value
+    if (_dependedParams == null) {
+      try {
+        resolveDependedParamRefs();
+      }
+      catch (WdkModelException e) {
+        throw new WdkRuntimeException(e);
+      }
+     }
     return _dependedParams;
   }
 
