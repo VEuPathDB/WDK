@@ -80,7 +80,7 @@ public class QuestionFormatter {
       .put(JsonKeys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
           q.getDynamicAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, true))
       .put(JsonKeys.DEFAULT_SUMMARY_VIEW, q.getDefaultSummaryView().getName())
-      .put(JsonKeys.SUMMARY_VIEW_PLUGINS, new JSONArray(q.getSummaryViews().keySet()))
+      .put(JsonKeys.SUMMARY_VIEW_PLUGINS, SummaryViewPluginFormatter.getSummaryViewPluginsJson(q.getSummaryViews().values()))
       .put(JsonKeys.STEP_ANALYSIS_PLUGINS, new JSONArray(q.getStepAnalyses().keySet()))
       // NOTE: if null returned by getAllowedRecordClasses, property will be omitted in returned JSON
       .put(JsonKeys.ALLOWED_PRIMARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getPrimaryAnswerParam()))
