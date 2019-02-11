@@ -16,6 +16,9 @@ public class JsonKeys {
   // container keys
   public static final String META = "meta";
   public static final String RECORDS = "records";
+  public static final String RECORD_TYPES = "recordTypes";
+  public static final String SEARCHES = "searches";
+  public static final String REPORTS = "reports";
 
   // identifying keys
   public static final String ID = "id";
