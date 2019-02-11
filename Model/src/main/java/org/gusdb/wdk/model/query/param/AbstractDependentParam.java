@@ -94,7 +94,11 @@ public abstract class AbstractDependentParam extends Param {
    */
   @Override
   public void resolveDependedParamRefs() throws WdkModelException {
-    if (!isDependentParam()) return;
+
+    if (!isDependentParam()) {
+      _dependedParams = Collections.EMPTY_SET;
+      return;
+    }
 
     if (!isResolved())
       throw new WdkModelException(
