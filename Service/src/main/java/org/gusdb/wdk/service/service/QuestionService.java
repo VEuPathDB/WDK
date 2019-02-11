@@ -3,15 +3,12 @@ package org.gusdb.wdk.service.service;
 import static org.gusdb.fgputil.functional.Functions.f0Swallow;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -40,6 +37,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.service.formatter.QuestionFormatter;
 import org.gusdb.wdk.service.request.QuestionRequest;
@@ -57,33 +55,37 @@ import org.json.JSONObject;
  *
  * @author rdoherty
  */
-@Path("/questions")
+@Path("record-classes/{recordClassUrlSegment}/searches")
 @Produces(MediaType.APPLICATION_JSON)
 public class QuestionService extends AbstractWdkService {
 
+  private static final String QUESTION_RESOURCE = "search: ";
   private static final String FILTER_PARAM_RESOURCE = "filter parameter: ";
+  
+  protected static final String RECORD_CLASS_URL_SEGMENT_PARAM = "recordClassUrlSegment";
+  private final String _recordClassUrlSegment;
+
+  protected QuestionService(@PathParam(RECORD_CLASS_URL_SEGMENT_PARAM) String recordClassUrlSegment) {
+    _recordClassUrlSegment = recordClassUrlSegment;
+  }
 
   /**
    * Returns an array of questions in this site's model.  Caller can filter by
-   * output RecordClass and/or by question name.  Filter arguments must be
+   * output search names.  Filter arguments must be
    * comma-delimited full names.  Each question's parameter information is
    * omitted at this level; call individual question endpoints for that.
    * 
-   * @param recordClasses optional; only questions with the passed RecordClasses will be returned
    * @param questionNames optional; only questions with the passed name will be returned 
    * @return question json
    */
   @GET
   public JSONArray getQuestions(
-      @QueryParam("outputRecordClass") String recordClasses,
-      @QueryParam("questionNames") String questionNames) {
+      @QueryParam("searchNames") String questionNames) {
     WdkModel model = getWdkModel();
+    RecordClass requestRecordClass = getRecordClassOrNotFound(_recordClassUrlSegment);
     List<Question> allQuestions = model.getAllQuestions();
-    Predicate<String> recordClassFilter = stringListFilter(recordClasses, model.getAllRecordClasses());
-    Predicate<String> questionNameFilter = stringListFilter(questionNames, allQuestions);
     List<Question> questions = allQuestions.stream()
-        .filter(q -> questionNameFilter.test(q.getFullName()))
-        .filter(q -> recordClassFilter.test(q.getRecordClass().getFullName()))
+        .filter(q -> q.getRecordClass().getFullName().equals(requestRecordClass.getFullName()))
         .collect(Collectors.toList());
     return QuestionFormatter.getQuestionsJsonWithoutParams(questions);
   }
@@ -105,7 +107,7 @@ public class QuestionService extends AbstractWdkService {
       @PathParam("questionName") String questionName)
           throws WdkModelException {
     SemanticallyValid<AnswerSpec> validSpec = AnswerSpec.builder(getWdkModel())
-        .setQuestionName(getQuestionOrNotFound(questionName).getFullName())
+        .setQuestionName(getQuestionFromSegment(questionName).getFullName())
         .build(
             getSessionUser(), 
             StepContainer.emptyContainer(),
@@ -146,7 +148,7 @@ public class QuestionService extends AbstractWdkService {
       @PathParam("questionName") String questionName,
       String body)
           throws WdkModelException, RequestMisformatException, DataValidationException {
-    Question question = getQuestionOrNotFound(questionName);
+    Question question = getQuestionFromSegment(questionName);
     SemanticallyValid<AnswerSpec> answerSpec = AnswerSpec.builder(getWdkModel())
         .setQuestionName(question.getFullName())
         .setParamValues(QuestionRequest.parse(body, question).getContextParamValues())
@@ -191,7 +193,7 @@ public class QuestionService extends AbstractWdkService {
           throws WdkUserException, WdkModelException, DataValidationException {
 
     // get requested question and throw not found if invalid
-    Question question = getQuestionOrNotFound(questionName);
+    Question question = getQuestionFromSegment(questionName);
 
     // parse incoming JSON into existing and changed values
     QuestionRequest request = QuestionRequest.parse(body, question);
@@ -284,7 +286,7 @@ public class QuestionService extends AbstractWdkService {
           throws WdkModelException, DataValidationException, RequestMisformatException {
 
     // parse elements of the request
-    Question question = getQuestionOrNotFound(questionName);
+    Question question = getQuestionFromSegment(questionName);
     FilterParamNew filterParam = getFilterParam(question, paramName);
     Map<String, String> contextParamValues = QuestionRequest.parse(body, question).getContextParamValues();
     JSONObject jsonBody = new JSONObject(body);
@@ -346,7 +348,7 @@ public class QuestionService extends AbstractWdkService {
           throws WdkModelException, RequestMisformatException, DataValidationException {
 
     // parse elements of the request
-    Question question = getQuestionOrNotFound(questionName);
+    Question question = getQuestionFromSegment(questionName);
     FilterParamNew filterParam = getFilterParam(question, paramName);
     Map<String, String> contextParamValues = QuestionRequest.parse(body, question).getContextParamValues();
     JSONObject jsonBody = new JSONObject(body);
@@ -369,19 +371,12 @@ public class QuestionService extends AbstractWdkService {
 
   }
 
-  private static <T extends NamedObject> Predicate<String> stringListFilter(
-      String commaDelimitedStrs, List<T> validValues) {
-    if (commaDelimitedStrs == null || commaDelimitedStrs.trim().isEmpty()) {
-      return str -> true;
-    }
-    List<String> strs = Arrays.asList(commaDelimitedStrs.trim().split(","));
-    List<String> validStrs = mapToList(validValues, NamedObject::getFullName);
-    for (String str : strs) {
-      if (!validStrs.contains(str)) {
-        throw new BadRequestException("Specified filter value '" + str + "' is not valid.");
-      }
-    }
-    return str -> strs.contains(str);
+  private Question getQuestionFromSegment(String questionName) {
+    return getWdkModel().getQuestionByUrlSegment(questionName)
+      .orElseGet(() -> getWdkModel().getQuestionByName(questionName)
+        .orElseThrow(() ->
+          // A WDK Model Exception here implies that a question of the name provided cannot be found.
+          new NotFoundException(formatNotFound(QUESTION_RESOURCE + questionName))));
   }
 
   private static FilterParamNew getFilterParam(Question question, String paramName) {

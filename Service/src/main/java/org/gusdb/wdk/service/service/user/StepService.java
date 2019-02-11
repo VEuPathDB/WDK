@@ -196,7 +196,7 @@ public class StepService extends UserService {
   }
 
   @PUT
-  @Path(ID_PATH + "/searchConfig")
+  @Path(ID_PATH + "/search-config")
   @Consumes(MediaType.APPLICATION_JSON)
   // TODO: @InSchema(...)
   public void putAnswerSpec(
@@ -249,7 +249,7 @@ public class StepService extends UserService {
   }
 
   @GET
-  @Path(ID_PATH + "/answer/filter-summary/{filterName}")
+  @Path(ID_PATH + "/reports/filter-summary/{filterName}")
   @Produces(MediaType.APPLICATION_JSON)
   public JSONObject getFilterSummary(
     @PathParam(ID_PATH) long stepId,
