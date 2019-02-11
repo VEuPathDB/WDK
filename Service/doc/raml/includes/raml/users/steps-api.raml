@@ -2,21 +2,26 @@
 
 post:
   description: |
-    * Creates a new step (including transforms/booleans!)
-    * AnswerParams must have empty string values (handled by /strategy)
-    * Strategy ID cannot be specified and is not assigned (handled by /strategy)
-    * If question has AnswerParams:
-        * Their values must be set to an empty string
-        * Other parameters are validated as much as possible
-        * answerSpecComplete set to false since AnswerParams not populated
-    * If question does not have AnswerParams
-        * Validates the answer spec
-        * answerSpecComplete set to true since this is a runnable answer spec
-    * If validation of non-answer params fails, no step is created and a 400/500 HTTP response will be returned
-    * Inputs: JSON containing AnswerSpec, name (optional- pulled from question if absent)
-        * Also, optional query param flag for whether to try to run step
-            * If answerSpecComplete = false and flag true, throw error 40x?
-            * If answerSpecComplete = true and flag true, run step and populate estimatedSize, last_run
+    * Creates a new search strategy step.  (See the strategy/ endpoint)
+      * A Step is always created on its own, as yet unattached to a strategy.  (Adding a step to a strategy is handled by strategy/.  At that point, the step will be assigned its strategy ID.)
+      * Creating a step for a search that has one or more parameters of type "input-step" (e.g., a transform search or combiner search) is handled specially.
+    * If the associated search does not have input-step parameters
+        * All parameters are validated.
+        * If all are valid, the searchConfigComplete flag is set to true indicating that this is a runnable step
+	* If validation of any param fails, no step is created and a 400/500 HTTP response will be returned
+    * If the associated search does have input-step parameters:
+        * In the request body, input-step parameter values must be set to an empty string, else will fail validation. (Input-step parameters are exclusively handled by /strategy)
+        * The other parameters will be validated as usual.  
+	* If validation of a param fails, no step is created and a 400/500 HTTP response will be returned
+        * In the response, the searchConfigComplete flag will be set to false since input-step parameters are not populated, and the step is therefore not runnable.
+    * Inputs:
+      * query parameters:
+         * an optional 'runStep' flag:
+            * If searchConfigComplete == false and runStep=true, throw error 40x?
+            * If searchConfigComplete == true and runStep=true, run the step and populate estimatedSize, last_run
+      * JSON body includes:
+        * a name for this step (optional- pulled from the search name if absent)
+        * a searchConfig (specifies how to run the search)
     * Outputs:
         * JSON containing step ID + Location header with URL, OR
         * Error document telling where and why request failed
@@ -43,7 +48,7 @@ post:
       format: int64
 
   delete:
-    description: Delete step
+    description: Delete step.  Only allowed for steps that are not yet attached to a strategy.  Otherwise use strategy/ service.
     responses:
       204:
         description: No Content
@@ -51,10 +56,10 @@ post:
   get:
     description: |
       * Returns full JSON of the step
-          * This is to support revise question form and display of step's answer spec
-          * /answer service will still check validity of:
-              * step ownership (child steps must be owned by requester)
-              * dataset ownership (dataset params must be owned by requester)
+          * This is to support the revise-a-search form (to fill in default values) and any display of the step's search configuration.
+	  * The following are only validated when the step is run, so are not guaranteed to be valid at the time of this GET:
+              * steps provided in input-step parameters are owned by the requester
+              * datasets provided in input-dataset parameters are owned by the requester
           * Includes:
               * Name populated with default name if not sent in
               * Strategy ID (always null)
@@ -68,11 +73,11 @@ post:
         description: Success
         body:
           application/json:
-            type: !include ../../../../../src/main/resources/schema/wdk/users/steps/get-response.json
+            type: !include ../../../../../src/main/resources/schema/wdk/users/steps/id/get-response.json
 
   patch:
     description: |
-      * Used to modify step (but not its placement within its strategy)
+      * Used to modify the step (but not its searchConfig or placement within its strategy)
       * The only modifiable fields are:
           * name
           * isCollapsible
@@ -86,16 +91,16 @@ post:
 
   /answerSpec:
     put:
-      description: >
-        update the answer spec of a step
-          * AnswerSpec (i.e. revise)
-              * Question can be changed, but RecordClasses of inputs/output can not, since doing so could invalidate parent steps (boolean/transform)
-              * AnswerParams cannot be modified and must contain their existing values or answer spec will not validate
-          * New answer spec is validated
+      description: |
+        TODO: rename to /search-config
+        update the searchConfig of a step (but do not re-run the step)
+          * Any part of the searchConfig may be changed (to revise the step), except the following, which will cause validation failure:
+              * The search name
+              * input-step parameter values
+          * The new searchConfig is validated
               * if validation fails, 400/500 response is returned and step is not updated
-          * If answer spec sent and valid
-              * Estimate size is cleared for this and all downstream steps
-              * Step is not run
+              * If validation passes:
+                * estimatedSize is cleared for this and all downstream steps
       body:
         application/json:
           type: TODO
@@ -107,15 +112,16 @@ post:
   /answer:
     post:
       description: |
-        * Input JSON is identical to value of "formatting" property in answer service requests
-            * If body is empty, defaults are used; same as answer service
-        * Answer spec of the step is used to create answer
-        * Output is same as answer service (i.e. all normal reporters are supported)
+        GET by POST.  Get the formatted result of this step.
+        * Input JSON is identical to value of the "formatting" property in answer service requests
+            * If the body is empty, defaults are used, same as answer service
+        * Preexisting answer spec of the step is used to create the answer
+        * The output is same as the answer service (i.e. all normal reporters are supported)
         * Step status fields (estimatedSize, isValid, last_run) are updated
-        * Branch steps (i.e. >0 answer params) not part of a strategy will error as invalid answer spec (since answer params should have empty string values)
+        * Steps having one or more input-step parameters but not having a strategy ID will  not part of a strategy will error as invalid answer spec (since answer params should have empty string values)
       body:
         application/json:
-          type: TODO
+	  type: !include ../../../../../src/main/resources/schema/wdk/includes/answer-formatConfig-json-request.json
       responses:
         200:
           description: Success

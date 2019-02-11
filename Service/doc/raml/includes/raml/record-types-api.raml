@@ -1,24 +1,28 @@
-displayName: Record
+displayName: Record Types
 
 get:
   description: >
-    a list of record classes in the model, including options for detailed info
+  Get a listing of supported record types, either in summary or detail.
+
+  A Record Type describes a type of record.  Each Record Type has a set of records of that type, and a set of searches that return specified sets of records of the type.  The sets of records and searches are available in sub-endpoints.  Record types, and their records and searches, are the primary means of accessing data through this API.
+
+  Individual records serve their data through "attributes," which are single-valued (e.g. "age") and "tables," which are multi-valued (e.g. "friends").
 
   queryParameters:
-    expandAttributes:
-    expandRecordClasses:
-    expandTableAttributes:
-    expandTables:
+    expand: if false, just return an array of record type names (url segments).  if true return full details of each record type, as well as full details of all searches.  This is the only endpoint that offers a full listing of both record types and searches.
 
-/{recordClassName}:
+/{recordType}:
   uriParameters: 
-    recordClassName: 
+    recordType: 
       type: string
   get:
-    description: properties of a class, eg, is displayable, attributes, tables
+    description: >
+    Get a detailed description of the specified record type.  This includes properties of the type, eg, whether it is displayable, and the attributes and tables that each record of this type will have.
 
+  # TODO: this endpoint will be removed
   /answer-format:
 
+  # TODO: this endpoint will be removed
   /attributes:
     get:
       responses:
@@ -26,7 +30,8 @@ get:
           description: Success
           body:
             application/json:
-  
+
+  # TODO: do we need this endpoint?  this info can be gotten from the searches endpoint. (do we need a built-in search for ALL Records?)
   /count:
     get:
       responses: 
@@ -35,8 +40,8 @@ get:
           body: 
             application/json:
                           
-
-  /instance:
+  # TODO: this endpoint will be changed to a GET
+  /records:
     post:
       description: >
         (GET by POST) get the attributes and tables of a record instance.  If
@@ -63,6 +68,7 @@ get:
           body: 
             application/json:
 
+  # TODO: do we need this endpoint? it is not in the java yet
   /{record-id}/section:
     uriParameters: 
       record-id: 
@@ -74,6 +80,7 @@ get:
           type: array
           items: string
 
+    # TODO: do we need this endpoint?
     /{name}:
       uriParameters: 
         name: 
@@ -81,6 +88,7 @@ get:
       get:
         description: data for a section or sections of a record page
 
+  # TODO: do we need this endpoint?
   /columns:
     get:
       description: >
@@ -89,6 +97,7 @@ get:
         context:
           description: [resultList|reportMaker|etc]
 
+  # TODO: do we need this endpoint?
   /columnsAndTables:
     get:
       description: Same as above, but returns both columns and tables
@@ -96,10 +105,12 @@ get:
         context:
           description: [resultList|reportMaker|etc]
 
+    # TODO: do we need this endpoint?
     /filters:
       get:
         description: filters available for results of this record class
 
+  # TODO: do we need this endpoint?
   /tables:
     get:
       responses:
@@ -107,7 +118,7 @@ get:
           description: Success
           body:
             application/json:
-
+    # TODO: do we need this endpoint?
     /{tableName}:
       uriParameters: 
         tableName: 
@@ -119,6 +130,7 @@ get:
             body: 
               application/json:
 
+      # TODO: do we need this endpoint?
       /attributes:
         get:
           responses:
