@@ -124,14 +124,14 @@ public class StrategyLoader {
   // to find strategies
   private static final String FIND_STRATEGIES_SQL =
       "select " + STEP_COLUMNS + ", " + VALUED_STRAT_COLUMNS +
-      "from " + USER_SCHEMA_MACRO + TABLE_STRATEGY + " sr," +
-      "     " + USER_SCHEMA_MACRO + TABLE_STEP + " st" +
-      "where st." + COLUMN_STRATEGY_ID + " = sr." + COLUMN_STRATEGY_ID +
-      "  and sr." + COLUMN_PROJECT_ID + " = '" + PROJECT_ID_MACRO + "'" +
-      "  and sr." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
-      "  and st." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
-      "  " + SEARCH_CONDITIONS_MACRO +
-      "order by " + COLUMN_STRATEGY_ID;
+      "  from " + USER_SCHEMA_MACRO + TABLE_STRATEGY + " sr," +
+      "       " + USER_SCHEMA_MACRO + TABLE_STEP + " st" +
+      "  where st." + COLUMN_STRATEGY_ID + " = sr." + COLUMN_STRATEGY_ID +
+      "    and sr." + COLUMN_PROJECT_ID + " = '" + PROJECT_ID_MACRO + "'" +
+      "    and sr." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
+      "    and st." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
+      "    " + SEARCH_CONDITIONS_MACRO +
+      "  order by " + COLUMN_STRATEGY_ID;
 
   private static final Comparator<? super Step> STEP_COMPARATOR_LAST_RUN_TIME_DESC =
       (s1, s2) -> (int)(s2.getLastRunTime().getTime() - s1.getLastRunTime().getTime());
