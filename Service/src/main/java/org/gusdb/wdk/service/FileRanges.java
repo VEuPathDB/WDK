@@ -94,14 +94,13 @@ public class FileRanges {
       }
 
       // create an input stream that will only read to the end of the specified range
-      long responseSize = byteRange.getEnd() - byteRange.getBegin() + 1; // inclusive range
       fileIn = new FileChunkInputStream(filePath, byteRange);
       return Response
           .ok(getStreamingOutput(fileIn))
           .type(MediaType.APPLICATION_OCTET_STREAM)
           .status(new PartialContentStatusType())
           .header(CONTENT_RANGE_HEADER, SIZE_UNITS + " " +
-              byteRange.getBegin() + "-" + byteRange.getEnd() + "/" + responseSize)
+              byteRange.getBegin() + "-" + byteRange.getEnd() + "/" + fileSize)
           .build();
     }
     catch(IOException e) {
