@@ -226,4 +226,8 @@ public class JsonKeys {
   public static final String IS_VALID = "isValid";
   public static final String GENERAL = "general";
   public static final String BY_KEY = "byKey";
+
+  public static final String COLUMN_SELECTION = "columnSelection";
+  public static final String SORT_COLUMNS     = "sortColumns";
+  public static final String DISPLAY_PREFS    = "displayPrefs";
 }

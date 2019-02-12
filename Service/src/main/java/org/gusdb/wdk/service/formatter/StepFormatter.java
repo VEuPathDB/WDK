@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 /**
  * Formats WDK Step objects.  Step JSON will have the following form:
+ * <pre>
  * {
  *   id: Number,
  *   displayName: String,
@@ -39,11 +40,18 @@ import org.json.JSONObject;
  *     level: enum[ValidationLevel],
  *     isValid: boolean,
  *     errors: {
- *       general: Array<String>,
+ *       general: Array&lt;String&gt;,
  *       byKey: Object
+ *     }
+ *   },
+ *   displayPrefs: {
+ *     columnSelection: Array&lt;String&gt;,
+ *     sortColumns: {
+ *       [String]: enum[SortDirection]
  *     }
  *   }
  * }
+ * </pre>
  *
  * @author rdoherty
  */
@@ -68,9 +76,10 @@ public class StepFormatter {
         .put(JsonKeys.SEARCH_CONFIG, AnswerSpecServiceFormat.format(step.getAnswerSpec()))
         .put(JsonKeys.VALIDATION, getValidationBundleJson(step.getValidationBundle()))
         .put(JsonKeys.CREATED_TIME, step.getCreatedTime())
-        .put(JsonKeys.LAST_RUN_TIME, step.getLastRunTime());
-    }
-    catch (JSONException e) {
+        .put(JsonKeys.LAST_RUN_TIME, step.getLastRunTime())
+        .put(JsonKeys.DISPLAY_PREFS, JsonUtil.toJSONObject(step.getDisplayPrefs())
+            .valueOrElseThrow(e -> new WdkModelException(e)));
+    } catch (JSONException e) {
       throw new WdkModelException("Unable to convert Step to service JSON", e);
     }
   }

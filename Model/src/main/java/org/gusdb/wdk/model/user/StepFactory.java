@@ -3,37 +3,7 @@ package org.gusdb.wdk.model.user;
 import static org.gusdb.fgputil.functional.Functions.filter;
 import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
 import static org.gusdb.wdk.model.user.StepContainer.withId;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ANSWER_FILTER;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ASSIGNED_WEIGHT;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_CHILD_STEP_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_COLLAPSED_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_CREATE_TIME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_CUSTOM_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_DESCRIPTION;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_DISPLAY_PARAMS;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ESTIMATE_SIZE;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_COLLAPSIBLE;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_DELETED;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_PUBLIC;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_SAVED;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_VALID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_MODIFIED_TIME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_RUN_TIME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_VIEWED_TIME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_PREVIOUS_STEP_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_PROJECT_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_PROJECT_VERSION;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_QUESTION_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ROOT_STEP_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_SAVED_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_SIGNATURE;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_STEP_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_STRATEGY_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_USER_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_VERSION;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.TABLE_STEP;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.TABLE_STRATEGY;
+import static org.gusdb.wdk.model.user.StepFactoryHelpers.*;
 
 import java.io.StringReader;
 import java.sql.Connection;
@@ -69,7 +39,9 @@ import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.fgputil.functional.Either;
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -492,11 +464,13 @@ public class StepFactory {
         "  " + COLUMN_IS_COLLAPSIBLE  + " = ?,\n" +
         "  " + COLUMN_COLLAPSED_NAME  + " = ?,\n" +
         "  " + COLUMN_ESTIMATE_SIZE   + " = ?,\n" +
-        "  " + COLUMN_ASSIGNED_WEIGHT + " = ?\n"  +
+        "  " + COLUMN_ASSIGNED_WEIGHT + " = ?,\n" +
+        "  " + COLUMN_DISPLAY_PREFS   + " = ?\n"  +
         "WHERE\n" +
         "  " + COLUMN_STEP_ID + " = ?";
 
     final int boolType = _userDbPlatform.getBooleanType();
+    final Either<Exception, String> displayPrefs = JsonUtil.toJsonString(step.getDisplayPrefs());
 
     final int result = new SQLRunner(_userDbDs, sql).executeUpdate(
         new Object[]{
@@ -507,6 +481,8 @@ public class StepFactory {
             step.getCollapsedName(),
             step.getEstimatedSize(),
             step.getAnswerSpec().getQueryInstanceSpec().getAssignedWeight(),
+            JsonUtil.toJsonString(step.getDisplayPrefs())
+                .valueOrElseThrow(e -> new WdkModelException(displayPrefs.getLeft())),
             step.getStepId()
         },
         new Integer[]{
@@ -517,6 +493,7 @@ public class StepFactory {
             Types.VARCHAR,   // COLLAPSED_NAME
             Types.BIGINT,    // ESTIMATE_SIZE
             Types.BIGINT,    // ASSIGNED_WEIGHT
+            Types.CLOB,      // DISPLAY_PREFS
             Types.BIGINT     // STEP_ID
         }
     );
@@ -791,7 +768,8 @@ public class StepFactory {
       "  " + COLUMN_IS_COLLAPSIBLE  + ",\n" +
       "  " + COLUMN_STRATEGY_ID     + ",\n" +
       "  " + COLUMN_DISPLAY_PARAMS  + ",\n" +
-      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      "  " + COLUMN_DISPLAY_PREFS   + ",\n" +
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
   }
 
   /**
@@ -820,6 +798,7 @@ public class StepFactory {
       boolType,        // IS_COLLAPSIBLE
       Types.BIGINT,    // STRATEGY_ID
       Types.CLOB,      // DISPLAY_PARAMS
+      Types.CLOB       // DISPLAY_PREFS
     };
   }
 
@@ -851,7 +830,8 @@ public class StepFactory {
       _userDbPlatform.convertBoolean(step.isDeleted()),
       _userDbPlatform.convertBoolean(step.isCollapsible()),
       step.getStrategyId(),
-      new StringReader(ParamFiltersClobFormat.formatParamFilters(spec).toString())
+      new StringReader(ParamFiltersClobFormat.formatParamFilters(spec).toString()),
+      new StringReader(JsonUtil.toJsonString(step.getDisplayPrefs()).getValue())
     };
   }
 
@@ -1311,7 +1291,7 @@ public class StepFactory {
    *              update queries in a controlled connection such as a
    *              transaction.
    * @param steps The collection of steps that will be updated in the database.
-   * @throws WdkModelException 
+   * @throws WdkModelException
    */
   private void updateSteps(Connection con, Collection<Step> steps) throws WdkModelException {
     final String sql = "UPDATE " + _userSchema + TABLE_STEP + "\n" +
@@ -1331,7 +1311,8 @@ public class StepFactory {
         "  " + COLUMN_PROJECT_VERSION  + " = ?,\n" +
         "  " + COLUMN_QUESTION_NAME    + " = ?,\n" +
         "  " + COLUMN_STRATEGY_ID      + " = ?,\n" +
-        "  " + COLUMN_DISPLAY_PARAMS   + " = ?\n"  +
+        "  " + COLUMN_DISPLAY_PARAMS   + " = ?,\n" +
+        "  " + COLUMN_DISPLAY_PREFS    + " = ?\n"  +
         "WHERE\n" +
         "  " + COLUMN_STEP_ID + " = ?";
 
@@ -1354,6 +1335,7 @@ public class StepFactory {
         Types.VARCHAR,   // QUESTION_NAME
         Types.BIGINT,    // STRATEGY_ID
         Types.CLOB,      // DISPLAY_PARAMS
+        Types.CLOB,      // DISPLAY_PREFS
         Types.BIGINT     // STEP_ID
     });
 
@@ -1377,6 +1359,7 @@ public class StepFactory {
           spec.getQuestionName(),
           step.getStrategyId(),
           ParamFiltersClobFormat.formatParamFilters(spec),
+          JsonUtil.toJsonString(step.getDisplayPrefs()).getValue(),
           step.getStepId()
       });
     }

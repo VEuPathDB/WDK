@@ -31,6 +31,7 @@ public class StepFactoryHelpers {
   static final String COLUMN_PROJECT_VERSION = "project_version";
   static final String COLUMN_QUESTION_NAME = "question_name";
   static final String COLUMN_DISPLAY_PARAMS = "display_params";
+  static final String COLUMN_DISPLAY_PREFS  = "display_prefs";
 
   static final String[] STEP_TABLE_COLUMNS = {
       COLUMN_USER_ID, COLUMN_STRATEGY_ID, COLUMN_PROJECT_ID, COLUMN_CREATE_TIME, COLUMN_IS_DELETED,
@@ -70,7 +71,7 @@ public class StepFactoryHelpers {
 
     /**
      * Creates a user cache with an initial value.
-     * 
+     *
      * @param user a user to place in the cache.
      */
     public UserCache(User user) {

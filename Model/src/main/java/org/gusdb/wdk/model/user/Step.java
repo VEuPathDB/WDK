@@ -5,15 +5,7 @@ import static org.gusdb.fgputil.functional.Functions.getNthOrNull;
 import static org.gusdb.wdk.model.user.StepContainer.parentOf;
 import static org.gusdb.wdk.model.user.StepContainer.withId;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Stack;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Named.NamedObject;
@@ -41,6 +33,7 @@ import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.user.StepDisplayPreference.StepDisplayPreferenceBuilder;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -74,6 +67,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     private AnswerSpecBuilder _answerSpec; // cannot be null; must be set
     private boolean _inMemoryOnly = false;
     private boolean _isResultSizeDirty = false;
+    private StepDisplayPreferenceBuilder _displayPrefs;
 
     private StepBuilder(WdkModel wdkModel, long userId, long stepId) {
       _wdkModel = wdkModel;
@@ -81,6 +75,7 @@ public class Step implements StrategyElement, Validateable<Step> {
       _projectVersion = wdkModel.getVersion();
       _userId = userId;
       _stepId = stepId;
+      _displayPrefs = new StepDisplayPreferenceBuilder();
     }
 
     /**
@@ -104,6 +99,7 @@ public class Step implements StrategyElement, Validateable<Step> {
       _estimatedSize = step._estimatedSize;
       _inMemoryOnly = step._inMemoryOnly;
       _answerSpec = AnswerSpec.builder(step._answerSpec);
+      _displayPrefs = StepDisplayPreference.builder(step.getDisplayPrefs());
     }
 
     public long getStepId() {
@@ -187,6 +183,15 @@ public class Step implements StrategyElement, Validateable<Step> {
     public StepBuilder setResultSizeDirty(boolean isResultSizeDirty) {
       _isResultSizeDirty = isResultSizeDirty;
       return this;
+    }
+
+    public StepBuilder setDisplayPrefs(StepDisplayPreferenceBuilder prefs) {
+      _displayPrefs = prefs;
+      return this;
+    }
+
+    public StepDisplayPreferenceBuilder getDisplayPrefs() {
+      return _displayPrefs;
     }
 
     public Step build(UserCache userCache, ValidationLevel validationLevel, Strategy strategy) throws WdkModelException {
@@ -321,6 +326,8 @@ public class Step implements StrategyElement, Validateable<Step> {
   // they are out of date.
   private final boolean _isResultSizeDirty;
 
+  private final StepDisplayPreference _displayPrefs;
+
   /**
    * Creates a step object for given user and step ID. Note that this
    * constructor lazy-loads the User object for the passed ID if one is required
@@ -350,6 +357,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     _estimatedSize = builder._estimatedSize;
     _inMemoryOnly = builder._inMemoryOnly;
     _answerSpec = builder._answerSpec.build(user, getContainer(), validationLevel);
+    _displayPrefs = builder._displayPrefs.build(validationLevel);
 
     // set estimated size appropriately if this step set dirty
     _isResultSizeDirty = builder._isResultSizeDirty;
@@ -1075,4 +1083,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     return _strategy != null;
   }
 
+  public StepDisplayPreference getDisplayPrefs() {
+    return _displayPrefs;
+  }
 }

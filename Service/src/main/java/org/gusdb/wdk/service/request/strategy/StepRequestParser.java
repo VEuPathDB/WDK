@@ -1,10 +1,6 @@
 package org.gusdb.wdk.service.request.strategy;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.gusdb.fgputil.FormatUtil.join;
-import static org.gusdb.fgputil.json.JsonUtil.getBooleanOrDefault;
-import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
-
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -18,6 +14,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepContainer;
+import org.gusdb.wdk.model.user.StepDisplayPreference.StepDisplayPreferenceBuilder;
 import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
@@ -25,6 +22,11 @@ import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.gusdb.fgputil.FormatUtil.join;
+import static org.gusdb.fgputil.json.JsonUtil.getBooleanOrDefault;
+import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
 
 public class StepRequestParser {
 
@@ -35,7 +37,8 @@ public class StepRequestParser {
     private final boolean _isCollapsible;
     private final String _collapsedName;
 
-    public NewStepRequest(SemanticallyValid<AnswerSpec> answerSpec, String customName, boolean isCollapsible, String collapsedName) {
+    public NewStepRequest(SemanticallyValid<AnswerSpec> answerSpec,
+        String customName, boolean isCollapsible, String collapsedName) {
       _answerSpec = answerSpec;
       _customName = customName;
       _isCollapsible = isCollapsible;
@@ -106,12 +109,18 @@ public class StepRequestParser {
     try {
       StepBuilder newStep = Step.builder(step);
 
-      if(patchSet.has(JsonKeys.CUSTOM_NAME))
+      if (patchSet.has(JsonKeys.CUSTOM_NAME))
         newStep.setCustomName(patchSet.getString(JsonKeys.CUSTOM_NAME));
-      if(patchSet.has(JsonKeys.IS_COLLAPSIBLE))
+      if (patchSet.has(JsonKeys.IS_COLLAPSIBLE))
         newStep.setCollapsible(patchSet.getBoolean(JsonKeys.IS_COLLAPSIBLE));
-      if(patchSet.has(JsonKeys.COLLAPSED_NAME))
+      if (patchSet.has(JsonKeys.COLLAPSED_NAME))
         newStep.setCollapsedName(patchSet.getString(JsonKeys.COLLAPSED_NAME));
+      if (patchSet.has(JsonKeys.DISPLAY_PREFS)) {
+        newStep.setDisplayPrefs(JsonUtil.jsonToPojo(
+          patchSet.getJSONObject(JsonKeys.DISPLAY_PREFS),
+          StepDisplayPreferenceBuilder.class
+        ).getValue());
+      }
 
       return newStep.build(new UserCache(step.getUser()),
           step.getValidationBundle().getLevel(), step.getStrategy());
