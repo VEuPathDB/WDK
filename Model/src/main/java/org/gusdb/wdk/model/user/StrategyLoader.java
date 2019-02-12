@@ -285,13 +285,13 @@ public class StrategyLoader {
 
   public Optional<Strategy> getStrategyById(long strategyId) throws WdkModelException {
     String sql = prepareSql(FIND_STRATEGIES_SQL
-        .replace(SEARCH_CONDITIONS_MACRO, "and sr." + toStratCol(COLUMN_STRATEGY_ID) + " = " + strategyId));
+        .replace(SEARCH_CONDITIONS_MACRO, "and sr." + COLUMN_STRATEGY_ID + " = " + strategyId));
     return doSearch(sql).getOnlyStrategy("with strategy ID = " + strategyId);
   }
 
   List<Strategy> getPublicStrategies() throws WdkModelException {
     String sql = prepareSql(FIND_STRATEGIES_SQL
-        .replace(SEARCH_CONDITIONS_MACRO, "and sr." + toStratCol(COLUMN_IS_PUBLIC) + " = " + sqlBoolean(true)));
+        .replace(SEARCH_CONDITIONS_MACRO, "and sr." + COLUMN_IS_PUBLIC + " = " + sqlBoolean(true)));
     return descModTimeSort(doSearch(sql).getStrategies());
   }
 
@@ -319,14 +319,14 @@ public class StrategyLoader {
       throws WdkModelException {
     String baseSql = prepareSql(FIND_STRATEGIES_SQL);
     String baseConditions =
-        "and sr." + toStratCol(COLUMN_USER_ID) + " = " + userId +
-        " and sr." + toStratCol(COLUMN_IS_SAVED) + " = " + _userDbPlatform.convertBoolean(saved);
+        "and sr." + COLUMN_USER_ID + " = " + userId +
+        " and sr." + COLUMN_IS_SAVED + " = " + _userDbPlatform.convertBoolean(saved);
     List<Strategy> strategies = (recent ?
 
         // search using recently viewed condition and related statement param
         doSearch(
             baseSql.replace(SEARCH_CONDITIONS_MACRO, baseConditions +
-                " and sr." + toStratCol(COLUMN_LAST_VIEWED_TIME) + " >= ?"),
+                " and sr." + COLUMN_LAST_VIEWED_TIME + " >= ?"),
             new Object[] { getRecentTimestamp() }, new Integer[] { Types.TIMESTAMP }) :
 
         // search using only user id and is-saved conditions
@@ -340,7 +340,7 @@ public class StrategyLoader {
 
   Map<Long, Strategy> getStrategies(long userId, Map<Long, Strategy> invalidStrategies) throws WdkModelException {
     String sql = prepareSql(FIND_STRATEGIES_SQL
-        .replace(SEARCH_CONDITIONS_MACRO, "and sr." + toStratCol(COLUMN_USER_ID) + " = " + userId));
+        .replace(SEARCH_CONDITIONS_MACRO, "and sr." + COLUMN_USER_ID + " = " + userId));
     List<Strategy> strategies = descModTimeSort(doSearch(sql).getStrategies());
     invalidStrategies.putAll(toStrategyMap(filter(strategies, strat -> !strat.isValid())));
     return toStrategyMap(strategies);
@@ -348,7 +348,7 @@ public class StrategyLoader {
 
   Optional<Strategy> getStrategyBySignature(String strategySignature) throws WdkModelException {
     String sql = prepareSql(FIND_STRATEGIES_SQL
-        .replace(SEARCH_CONDITIONS_MACRO, "and sr." + toStratCol(COLUMN_SIGNATURE) + " = ?"));
+        .replace(SEARCH_CONDITIONS_MACRO, "and sr." + COLUMN_SIGNATURE + " = ?"));
     return doSearch(sql, new Object[]{ strategySignature }, new Integer[]{ Types.VARCHAR })
         .getOnlyStrategy("with strategy signature = " + strategySignature);
 
