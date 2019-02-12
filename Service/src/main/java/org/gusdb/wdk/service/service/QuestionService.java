@@ -16,7 +16,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -70,17 +69,12 @@ public class QuestionService extends AbstractWdkService {
   }
 
   /**
-   * Returns an array of questions in this site's model.  Caller can filter by
-   * output search names.  Filter arguments must be
-   * comma-delimited full names.  Each question's parameter information is
+   * Returns an array of questions in this site's model.  Each question's parameter information is
    * omitted at this level; call individual question endpoints for that.
-   * 
-   * @param questionNames optional; only questions with the passed name will be returned 
    * @return question json
    */
   @GET
-  public JSONArray getQuestions(
-      @QueryParam("searchNames") String questionNames) {
+  public JSONArray getQuestions() {
     WdkModel model = getWdkModel();
     RecordClass requestRecordClass = getRecordClassOrNotFound(_recordClassUrlSegment);
     List<Question> allQuestions = model.getAllQuestions();
@@ -96,18 +90,18 @@ public class QuestionService extends AbstractWdkService {
    * This endpoint is typically used to render a "new" question page (i.e.
    * filled with default parameter values).
    * 
-   * @param questionName name of the question being requested
+   * @param questionUrlSegment name of the question being requested
    * @return question json
    * @throws WdkModelException if unable to generate param information
    */
   @GET
-  @Path("/{questionName}")
+  @Path("/{questionUrlSegment}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getQuestionNew(
-      @PathParam("questionName") String questionName)
+      @PathParam("questionUrlSegment") String questionUrlSegment)
           throws WdkModelException {
     SemanticallyValid<AnswerSpec> validSpec = AnswerSpec.builder(getWdkModel())
-        .setQuestionName(getQuestionFromSegment(questionName).getFullName())
+        .setQuestionName(getQuestionFromSegment(questionUrlSegment).getFullName())
         .build(
             getSessionUser(), 
             StepContainer.emptyContainer(),
@@ -115,7 +109,7 @@ public class QuestionService extends AbstractWdkService {
             FillStrategy.FILL_PARAM_IF_MISSING)
         .getSemanticallyValid()
         .getOrThrow(spec -> new WdkModelException("Default values for question '" +
-            questionName + "' are not semantically valid."));
+            questionUrlSegment + "' are not semantically valid."));
     return Response.ok(QuestionFormatter.getQuestionJsonWithParamValues(validSpec).toString()).build();
   }
 
@@ -123,7 +117,8 @@ public class QuestionService extends AbstractWdkService {
    * Returns information about a single question, given a set of parameter
    * values.  Any missing or invalid parameters are replaced with valid values
    * and the associated vocabularies.  Response includes parameter information,
-   * including vocabularies and metadata based on the incoming values. This
+   * including vocabularies and metadata based on the incoming values, and error messages
+   * for any parameter values that were invalid. This
    * endpoint is typically used to render a revise question page.  Input JSON
    * should have the following form:
    *
@@ -133,7 +128,7 @@ public class QuestionService extends AbstractWdkService {
    *   }
    * }
    * 
-   * @param questionName name of the question being requested
+   * @param questionUrlSegment name of the question being requested
    * @param body body of request (see JSON above)
    * @return question json
    * @throws WdkModelException if unable to generate param information
@@ -141,14 +136,15 @@ public class QuestionService extends AbstractWdkService {
    * @throws RequestMisformatException 
    */
   @POST
-  @Path("/{questionName}")
+  @Path("/{questionUrlSegment}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  // TODO:  pass back error messages about invalid parameters
   public Response getQuestionRevise(
-      @PathParam("questionName") String questionName,
+      @PathParam("questionUrlSegment") String questionUrlSegment,
       String body)
           throws WdkModelException, RequestMisformatException, DataValidationException {
-    Question question = getQuestionFromSegment(questionName);
+    Question question = getQuestionFromSegment(questionUrlSegment);
     SemanticallyValid<AnswerSpec> answerSpec = AnswerSpec.builder(getWdkModel())
         .setQuestionName(question.getFullName())
         .setParamValues(QuestionRequest.parse(body, question).getContextParamValues())
@@ -175,10 +171,10 @@ public class QuestionService extends AbstractWdkService {
    *
    * {
    *   "changedParam" : { "name": "height", "value": "12" },
-   *   "contextParamValues" : [see /{questionName} endpoint]
+   *   "contextParamValues" : [see /{questionUrlSegment} endpoint]
    * }
    *
-   * @param questionName
+   * @param questionUrlSegment
    * @param body
    * @return
    * @throws WdkUserException
@@ -186,14 +182,14 @@ public class QuestionService extends AbstractWdkService {
    * @throws DataValidationException 
    */
   @POST
-  @Path("/{questionName}/refreshed-dependent-params")
+  @Path("/{questionUrlSegment}/refreshed-dependent-params")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getQuestionChange(@PathParam("questionName") String questionName, String body)
+  public Response getQuestionChange(@PathParam("questionUrlSegment") String questionUrlSegment, String body)
           throws WdkUserException, WdkModelException, DataValidationException {
 
     // get requested question and throw not found if invalid
-    Question question = getQuestionFromSegment(questionName);
+    Question question = getQuestionFromSegment(questionUrlSegment);
 
     // parse incoming JSON into existing and changed values
     QuestionRequest request = QuestionRequest.parse(body, question);
@@ -264,10 +260,10 @@ public class QuestionService extends AbstractWdkService {
    * {
    *   "ontologyId" : string
    *   "filters" : [ see raw value for FilterParamHandler ]
-   *   "contextParamValues" : [see /{questionName} endpoint]
+   *   "contextParamValues" : [see /{questionUrlSegment} endpoint]
    * }
    *
-   * @param questionName
+   * @param questionUrlSegment
    * @param paramName
    * @param body
    * @return
@@ -276,17 +272,17 @@ public class QuestionService extends AbstractWdkService {
    * @throws RequestMisformatException 
    */
   @POST
-  @Path("/{questionName}/{paramName}/ontology-term-summary")
+  @Path("/{questionUrlSegment}/{paramName}/ontology-term-summary")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFilterParamOntologyTermSummary(
-      @PathParam("questionName") String questionName,
+      @PathParam("questionUrlSegment") String questionUrlSegment,
       @PathParam("paramName") String paramName,
       String body)
           throws WdkModelException, DataValidationException, RequestMisformatException {
 
     // parse elements of the request
-    Question question = getQuestionFromSegment(questionName);
+    Question question = getQuestionFromSegment(questionUrlSegment);
     FilterParamNew filterParam = getFilterParam(question, paramName);
     Map<String, String> contextParamValues = QuestionRequest.parse(body, question).getContextParamValues();
     JSONObject jsonBody = new JSONObject(body);
@@ -325,10 +321,10 @@ public class QuestionService extends AbstractWdkService {
    *
    * {
    *   "filters" : [ see raw value for FilterParamHandler ]
-   *   "contextParamValues" : [see /{questionName} endpoint]
+   *   "contextParamValues" : [see /{questionUrlSegment} endpoint]
    * }
    *
-   * @param questionName
+   * @param questionUrlSegment
    * @param paramName
    * @param body
    * @return
@@ -338,17 +334,17 @@ public class QuestionService extends AbstractWdkService {
    * @throws RequestMisformatException 
    */
   @POST
-  @Path("/{questionName}/{paramName}/summary-counts")
+  @Path("/{questionUrlSegment}/{paramName}/summary-counts")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFilterParamSummaryCounts(
-      @PathParam("questionName") String questionName,
+      @PathParam("questionUrlSegment") String questionUrlSegment,
       @PathParam("paramName") String paramName,
       String body)
           throws WdkModelException, RequestMisformatException, DataValidationException {
 
     // parse elements of the request
-    Question question = getQuestionFromSegment(questionName);
+    Question question = getQuestionFromSegment(questionUrlSegment);
     FilterParamNew filterParam = getFilterParam(question, paramName);
     Map<String, String> contextParamValues = QuestionRequest.parse(body, question).getContextParamValues();
     JSONObject jsonBody = new JSONObject(body);
@@ -371,12 +367,12 @@ public class QuestionService extends AbstractWdkService {
 
   }
 
-  private Question getQuestionFromSegment(String questionName) {
-    return getWdkModel().getQuestionByUrlSegment(questionName)
-      .orElseGet(() -> getWdkModel().getQuestionByName(questionName)
+  private Question getQuestionFromSegment(String questionUrlSegment) {
+    return getWdkModel().getQuestionByUrlSegment(questionUrlSegment)
+      .orElseGet(() -> getWdkModel().getQuestionByName(questionUrlSegment)
         .orElseThrow(() ->
           // A WDK Model Exception here implies that a question of the name provided cannot be found.
-          new NotFoundException(formatNotFound(QUESTION_RESOURCE + questionName))));
+          new NotFoundException(formatNotFound(QUESTION_RESOURCE + questionUrlSegment))));
   }
 
   private static FilterParamNew getFilterParam(Question question, String paramName) {

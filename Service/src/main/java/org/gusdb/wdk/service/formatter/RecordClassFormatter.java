@@ -72,6 +72,7 @@ public class RecordClassFormatter {
       .put(JsonKeys.CATEGORIES, getAttributeCategoriesJson(recordClass));
   }
 
+  // TODO:  add a new field containing the JSON schema for the request
   public static JSONArray getAnswerFormatsJson(Collection<? extends ReporterRef> reporters, FieldScope scope) {
     JSONArray array = new JSONArray();
     for (ReporterRef reporter : reporters) {
