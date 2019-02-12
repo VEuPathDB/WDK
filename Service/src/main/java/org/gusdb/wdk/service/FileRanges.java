@@ -31,7 +31,7 @@ public class FileRanges {
   private static final String RANGE_HEADER_VALUE_PREFIX = SIZE_UNITS + "=";
 
   public static Range<Long> parseRangeHeaderValue(String rangeStr) {
-    LOG.info("Incoming range string: " + rangeStr);
+    LOG.debug("Incoming range string: " + rangeStr);
     if (rangeStr == null) {
       return new Range<>(DEFAULT_RANGE_BEGIN, null);
     }
@@ -46,7 +46,7 @@ public class FileRanges {
     if (tokens.length > 2) {
       throw new BadRequestException("Currently only a single range is supported");
     }
-    LOG.info("Received " + tokens.length + " tokens [" + join(tokens, ",") + "]");
+    LOG.debug("Received " + tokens.length + " tokens [" + join(tokens, ",") + "]");
     if (isInteger(tokens[0]) && (tokens.length == 1 || isInteger(tokens[1]))) {
       try {
         Range<Long> range = new Range<>(Long.parseLong(tokens[0]),
