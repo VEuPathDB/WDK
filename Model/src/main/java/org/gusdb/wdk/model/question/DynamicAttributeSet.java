@@ -1,12 +1,18 @@
 package org.gusdb.wdk.model.question;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.gusdb.wdk.model.*;
+import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelBase;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -51,12 +57,11 @@ public class DynamicAttributeSet extends WdkModelBase {
 
   @Override
   public String toString() {
-    String newline = System.getProperty("line.separator");
-    StringBuffer buf = new StringBuffer();
-    buf.append("  dynamicAttributes:" + newline);
+    StringBuilder buf = new StringBuilder();
+    buf.append("  dynamicAttributes:" + NL);
 
     for (String attrName : attributeFieldMap.keySet()) {
-      buf.append("    " + attrName + newline);
+      buf.append("    " + attrName + NL);
     }
     return buf.toString();
   }
