@@ -66,7 +66,7 @@ public class RecordService extends AbstractWdkService {
     
     List<Question> allQuestions = getWdkModel().getAllQuestions();
     JSONArray questionsJson = QuestionFormatter.getQuestionsJsonWithoutParams(allQuestions);
-
+    
     jsonResponse.put(JsonKeys.RECORD_TYPES, recordClassesJson);
     if (expand) jsonResponse.put(JsonKeys.SEARCHES, questionsJson);
     return jsonResponse;
@@ -134,19 +134,7 @@ public class RecordService extends AbstractWdkService {
     return getTableResponse(recordClassName, tableName, expandTableAttributes, true);
   }
 
-  
-  @GET
-  @Path("{recordClassName}/reports")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getAnswerFormats(@PathParam("recordClassName") String recordClassName) {
-    return Response.ok(
-        RecordClassFormatter.getAnswerFormatsJson(
-            getRecordClassOrNotFound(recordClassName).getReporterMap().values(),
-            FieldScope.ALL).toString()
-    ).build();
-  }
-
-  @GET
+    @GET
   @Path("{recordClassName}/count")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getRecordCount(@PathParam("recordClassName") String recordClassName) throws WdkModelException {
