@@ -83,11 +83,10 @@ public class StrategyLoader {
   private static final List<String> STRAT_COLUMNS =
       asList(STRATEGY_TABLE_COLUMNS).stream()
       .filter(col -> !COLUMN_STRATEGY_ID.equals(col))
-      .map(col -> toStratCol(col))
       .collect(toList());
 
-  private static final String VALUED_STRAT_COLUMNS = mappedColumnSelection(STRAT_COLUMNS, col -> "sr." + col);
-  private static final String NULLED_STRAT_COLUMNS = mappedColumnSelection(STRAT_COLUMNS, col -> "NULL as " + col);
+  private static final String VALUED_STRAT_COLUMNS = mappedColumnSelection(STRAT_COLUMNS, col -> "sr." + col + " as " + toStratCol(col));
+  private static final String NULLED_STRAT_COLUMNS = mappedColumnSelection(STRAT_COLUMNS, col -> "NULL as " + toStratCol(col));
 
   // macros to fill in searches
   private static final String USER_SCHEMA_MACRO = "$$USER_SCHEMA$$";
