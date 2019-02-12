@@ -16,8 +16,9 @@ public class UserCliUtils {
   public static void main(String[] args) throws WdkModelException {
 
     if (args.length != 3) {
-      System.err.println("USAGE: fgpJava " + UserCliUtils.class.getName() +
-          " <projectId> <userEmail> <operation>" + NL + NL + "Use 'help' operation for more info.");
+      System.err.println(NL + "USAGE: fgpJava " + UserCliUtils.class.getName() +
+          " <projectId> <userEmail> <operation>" + NL + NL + "Use 'help' operation for more info." + NL);
+      System.exit(1);
     }
     String projectId = args[0];
     String userEmail = args[1];
