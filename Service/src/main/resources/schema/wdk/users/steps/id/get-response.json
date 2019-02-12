@@ -51,6 +51,9 @@
     },
     "lastRunTime": {
       "type": "string"
+    },
+    "displayPrefs": {
+      "$ref": "/schema/wdk/users/steps/includes/display-prefs.json"
     }
   },
   "additionalProperties": false,

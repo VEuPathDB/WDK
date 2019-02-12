@@ -33,6 +33,9 @@
           "value"
         ]
       }
+    },
+    "displayPrefs": {
+      "$ref": "/schema/wdk/users/steps/includes/display-prefs.json"
     }
   },
   "required": [

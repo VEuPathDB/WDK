@@ -1,9 +1,7 @@
 package org.gusdb.wdk.service.provider;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchema;
@@ -28,6 +26,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static org.gusdb.fgputil.json.JsonUtil.Jackson;
+
 @Provider
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -36,8 +36,6 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
 
   private static final String SCHEMA_PATH = "resource:/schema";
   private static final JsonSchemaFactory SCHEMA_FAC = JsonSchemaFactory.byDefault();
-  private static final ObjectMapper MAPPER = new ObjectMapper()
-      .registerModule(new JsonOrgModule());
 
   @Context
   private ResourceInfo ri;
@@ -65,7 +63,7 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
       Annotation[] annotations, MediaType mediaType,
       MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
       throws IOException, WebApplicationException {
-    final JsonNode node = MAPPER.convertValue(o, JsonNode.class);
+    final JsonNode node = Jackson.convertValue(o, JsonNode.class);
 
     final String schema = findOutAnnotation()
         .map(OutSchema::value)
@@ -80,14 +78,14 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
       }
     }
 
-    MAPPER.writeValue(entityStream, node);
+    Jackson.writeValue(entityStream, node);
   }
 
   @Override
   public Object readFrom(Class<Object> cls, Type type, Annotation[] anns,
       MediaType media, MultivaluedMap<String,String> headers, InputStream stream)
       throws IOException, WebApplicationException {
-    final JsonNode node = Optional.ofNullable(MAPPER.readTree(stream))
+    final JsonNode node = Optional.ofNullable(Jackson.readTree(stream))
         .orElseGet(NullNode::getInstance);
 
     final String schema = findInAnnotation()
@@ -103,7 +101,7 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
       }
     }
 
-    return MAPPER.convertValue(node, cls);
+    return Jackson.convertValue(node, cls);
   }
 
   private ProcessingReport validate(final String path, final JsonNode node)
