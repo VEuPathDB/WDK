@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.user;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
+import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.db.SqlUtils.fetchNullableBoolean;
 import static org.gusdb.fgputil.db.SqlUtils.fetchNullableInteger;
@@ -56,6 +57,7 @@ import java.util.function.Predicate;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -223,16 +225,17 @@ public class StrategyLoader {
       return new SearchResult(builtStrategies, builtOrphanSteps);
     }
     catch (Exception e) {
+      LOG.error("Unable to execute search with SQL: " + NL + sql + NL + "and params [" + FormatUtil.join(paramValues, ",") + "].");
       return WdkModelException.unwrap(e);
     }
   }
 
   private StrategyBuilder readStrategy(ResultSet rs) throws SQLException {
 
-    long strategyId = rs.getLong(toStratCol(COLUMN_STRATEGY_ID));
+    long strategyId = rs.getLong(COLUMN_STRATEGY_ID);
     long userId = rs.getLong(toStratCol(COLUMN_USER_ID));
 
-    return Strategy.builder(_wdkModel, userId, strategyId)
+    StrategyBuilder strat = Strategy.builder(_wdkModel, userId, strategyId)
         .setProjectId(rs.getString(toStratCol(COLUMN_PROJECT_ID)))
         .setVersion(rs.getString(toStratCol(COLUMN_VERSION)))
         .setCreatedTime(rs.getTimestamp(toStratCol(COLUMN_CREATE_TIME)))
@@ -247,6 +250,7 @@ public class StrategyLoader {
         .setSavedName(rs.getString(toStratCol(COLUMN_SAVED_NAME)))
         .setIsPublic(fetchNullableBoolean(rs, toStratCol(COLUMN_IS_PUBLIC), false)); // null = false (not public)
 
+    return strat.addStep(readStep(rs));
   }
 
   private StepBuilder readStep(ResultSet rs) throws SQLException {

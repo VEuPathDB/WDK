@@ -107,7 +107,8 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
     }
 
     public StrategyBuilder setName(String name) {
-      _name = FormatUtil.shrinkUtf8String(name, StepFactory.COLUMN_NAME_LIMIT);
+      _name = name == null ? null :
+        FormatUtil.shrinkUtf8String(name, StepFactory.COLUMN_NAME_LIMIT);
       return this;
     }
 
@@ -122,7 +123,8 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
     }
 
     public StrategyBuilder setSavedName(String savedName) {
-      _savedName = FormatUtil.shrinkUtf8String(savedName, StepFactory.COLUMN_NAME_LIMIT);
+      _savedName = savedName == null ? null :
+        FormatUtil.shrinkUtf8String(savedName, StepFactory.COLUMN_NAME_LIMIT);
       return this;
     }
 
@@ -263,9 +265,10 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
     // temporarily build an actual tree of the steps from a copy of the step map
     Map<Long, StepBuilder> stepMap = new HashMap<>(steps); // make a copy since buildTree modifies
     TreeNode<StepBuilder> builderTree = buildTree(stepMap, _rootStepId);
-    if (!builderTree.findCircularPaths().isEmpty()) {
-      throw new InvalidStrategyStructureException("Strategy " + _strategyId + "'s tree has at least one circular dependency.");
-    }
+    // FIXME: uncomment when findCircularPaths is implemented
+    //if (!builderTree.findCircularPaths().isEmpty()) {
+    //  throw new InvalidStrategyStructureException("Strategy " + _strategyId + "'s tree has at least one circular dependency.");
+    //}
     if (!stepMap.isEmpty()) {
       throw new InvalidStrategyStructureException("Strategy " + _strategyId + " has been " +
           "assigned the following steps which are not referenced in its tree: " +
