@@ -33,6 +33,7 @@ public class JsonKeys {
   public static final String PROPERTIES = "properties";
   public static final String TOTAL_COUNT = "totalCount";
   public static final String RESPONSE_COUNT = "responseCount";
+  public static final String DISPLAY_TOTAL_COUNT = "displayTotalCount";
   public static final String RECORD_CLASS_NAME = "recordClassName";
   public static final String QUESTION_NAME = "questionName";
   public static final String PARAMETER_NAME = "parameterName";
@@ -45,6 +46,10 @@ public class JsonKeys {
   public static final String DISPLAY_NAME_PLURAL = "displayNamePlural";
   public static final String SHORT_DISPLAY_NAME = "shortDisplayName";
   public static final String SHORT_DISPLAY_NAME_PLURAL = "shortDisplayNamePlural";
+  public static final String NATIVE_DISPLAY_NAME = "nativeDisplayName";
+  public static final String NATIVE_DISPLAY_NAME_PLURAL = "nativeDisplayNamePlural";
+  public static final String NATIVE_SHORT_DISPLAY_NAME = "nativeShortDisplayName";
+  public static final String NATIVE_SHORT_DISPLAY_NAME_PLURAL = "nativeShortDisplayNamePlural";
   public static final String URL = "url";
   public static final String ICON_NAME = "iconName";
   public static final String DISPLAY_TEXT = "displayText";
