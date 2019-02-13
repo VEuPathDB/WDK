@@ -379,9 +379,10 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   private static String checkName(String field, String val) throws WdkModelException {
-    return ValidationUtil.maxLength(val, NAME_COLUMN_MAX_SIZE, () ->
-        new WdkModelException(String.format("Step field '%s' cannot be longer" +
-            " than %d", field, NAME_COLUMN_MAX_SIZE)));
+    return val == null ? null :
+      ValidationUtil.maxLength(val, NAME_COLUMN_MAX_SIZE, () ->
+          new WdkModelException(String.format("Step field '%s' cannot be longer" +
+              " than %d", field, NAME_COLUMN_MAX_SIZE)));
   }
 
   // TODO: remove this when we retire StepBean

@@ -98,7 +98,7 @@ public class QueryInstanceSpecBuilder extends ReadOnlyHashMap.Builder<String,Str
     Map<String,String> tmpValues = new HashMap<>(toMap());
 
     // trim off any values supplied that don't apply to this query
-    for (String name : tmpValues.keySet()) {
+    for (String name : tmpValues.keySet().toArray(new String[0])) {
       if (!query.getParamMap().keySet().contains(name)) {
         tmpValues.remove(name);
       }
