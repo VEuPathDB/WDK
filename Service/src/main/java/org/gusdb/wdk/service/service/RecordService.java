@@ -41,7 +41,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@Path("/record-classes")
+@Path("/record-types")
 public class RecordService extends AbstractWdkService {
 
   @SuppressWarnings("unused")
