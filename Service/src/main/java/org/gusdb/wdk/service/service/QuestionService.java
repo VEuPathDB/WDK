@@ -54,7 +54,7 @@ import org.json.JSONObject;
  *
  * @author rdoherty
  */
-@Path("record-classes/{recordClassUrlSegment}/searches")
+@Path("record-types/{recordClassUrlSegment}/searches")
 @Produces(MediaType.APPLICATION_JSON)
 public class QuestionService extends AbstractWdkService {
 
