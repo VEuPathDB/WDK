@@ -241,7 +241,7 @@ public class EuPathCategoriesFactory {
     }
 
     @Override
-    public SearchCategory map(OntologyNode nodeContents, List<SearchCategory> mappedChildren) {
+    public SearchCategory apply(OntologyNode nodeContents, List<SearchCategory> mappedChildren) {
 
       // make new search category
       SearchCategory category = new SearchCategory();

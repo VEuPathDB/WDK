@@ -22,7 +22,7 @@ public class OntologyFormatter {
 
   private static class TreeToJsonMapper implements StructureMapper<OntologyNode, JSONObject> {
     @Override
-    public JSONObject map(OntologyNode contents, List<JSONObject> mappedChildren) {
+    public JSONObject apply(OntologyNode contents, List<JSONObject> mappedChildren) {
       JSONObject nodeJson = new JSONObject();
       nodeJson.put(JsonKeys.PROPERTIES, contents.toJson());
       nodeJson.put(JsonKeys.CHILDREN, mappedChildren);

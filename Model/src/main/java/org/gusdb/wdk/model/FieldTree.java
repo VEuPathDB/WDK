@@ -105,7 +105,7 @@ public class FieldTree {
   public JSONObject toJson(TreeNode<SelectableItem> node) {
     return node.mapStructure(new StructureMapper<SelectableItem, JSONObject>() {
       @Override
-      public JSONObject map(SelectableItem item, List<JSONObject> mappedChildren) {
+      public JSONObject apply(SelectableItem item, List<JSONObject> mappedChildren) {
         JSONObject json = new JSONObject();
         json.put("name", item.getName());
         json.put("displayName", item.getDisplayName());

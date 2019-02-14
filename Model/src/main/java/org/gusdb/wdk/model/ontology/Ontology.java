@@ -95,7 +95,7 @@ public class Ontology extends TreeNode<OntologyNode> {
     return root.mapStructure(new StructureMapper<OntologyNode, TreeNode<OntologyNode>>() {
 
       @Override
-      public TreeNode<OntologyNode> map(OntologyNode obj, List<TreeNode<OntologyNode>> mappedChildren) {
+      public TreeNode<OntologyNode> apply(OntologyNode obj, List<TreeNode<OntologyNode>> mappedChildren) {
 
         // trim null children to get an accurate list
 	       trimNulls(mappedChildren);

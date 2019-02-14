@@ -8,38 +8,37 @@ import static org.gusdb.fgputil.db.SqlUtils.fetchNullableBoolean;
 import static org.gusdb.fgputil.db.SqlUtils.fetchNullableInteger;
 import static org.gusdb.fgputil.db.SqlUtils.fetchNullableLong;
 import static org.gusdb.fgputil.functional.Functions.fSwallow;
-import static org.gusdb.fgputil.functional.Functions.filter;
 import static org.gusdb.fgputil.functional.Functions.getMapFromList;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ANSWER_FILTER;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ASSIGNED_WEIGHT;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_COLLAPSED_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_CREATE_TIME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_CUSTOM_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_DESCRIPTION;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_DISPLAY_PARAMS;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ESTIMATE_SIZE;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_COLLAPSIBLE;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_DELETED;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_PUBLIC;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_IS_SAVED;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_MODIFIED_TIME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_RUN_TIME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_LAST_VIEWED_TIME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_PROJECT_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_PROJECT_VERSION;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_QUESTION_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_ROOT_STEP_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_SAVED_NAME;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_SIGNATURE;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_STEP_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_STRATEGY_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_USER_ID;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.COLUMN_VERSION;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.STEP_TABLE_COLUMNS;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.STRATEGY_TABLE_COLUMNS;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.TABLE_STEP;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.TABLE_STRATEGY;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ANSWER_FILTER;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ASSIGNED_WEIGHT;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_COLLAPSED_NAME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_CREATE_TIME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_CUSTOM_NAME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_DESCRIPTION;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_DISPLAY_PARAMS;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ESTIMATE_SIZE;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_IS_COLLAPSIBLE;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_IS_DELETED;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_IS_PUBLIC;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_IS_SAVED;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_LAST_MODIFIED_TIME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_LAST_RUN_TIME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_LAST_VIEWED_TIME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_NAME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_PROJECT_ID;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_PROJECT_VERSION;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_QUESTION_NAME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ROOT_STEP_ID;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_SAVED_NAME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_SIGNATURE;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_STEP_ID;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_STRATEGY_ID;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_USER_ID;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_VERSION;
+import static org.gusdb.wdk.model.user.StepFactory.STEP_TABLE_COLUMNS;
+import static org.gusdb.wdk.model.user.StepFactory.STRATEGY_TABLE_COLUMNS;
+import static org.gusdb.wdk.model.user.StepFactory.TABLE_STEP;
+import static org.gusdb.wdk.model.user.StepFactory.TABLE_STRATEGY;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -68,13 +67,11 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
-import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.gusdb.wdk.model.user.Strategy.StrategyBuilder;
 import org.json.JSONObject;
 
 public class StrategyLoader {
 
-  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(StrategyLoader.class);
 
   private static final String STEP_COLUMNS = join(
@@ -217,12 +214,20 @@ public class StrategyLoader {
       });
       // all data loaded; build steps and strats at the specified validation level
       UserCache userCache = new UserCache(_userFactory);
-      List<Strategy> builtStrategies = Functions.mapToList(strategies,
-          fSwallow(builder -> builder.build(userCache, _validationLevel)));
+      List<Strategy> builtStrategies = new ArrayList<>();
+      MalformedStrategyList malstructuredStrategies = new MalformedStrategyList();
+      for (StrategyBuilder stratBuilder : strategies) {
+        try {
+          builtStrategies.add(stratBuilder.build(userCache, _validationLevel));
+        }
+        catch (InvalidStrategyStructureException e) {
+          malstructuredStrategies.add(new TwoTuple<>(stratBuilder, e));
+        }
+      }
       // only build orphan steps; attached steps will be built by their strategy
       List<Step> builtOrphanSteps = Functions.mapToList(orphanSteps,
           fSwallow(builder -> builder.build(userCache, _validationLevel, null)));
-      return new SearchResult(builtStrategies, builtOrphanSteps);
+      return new SearchResult(builtStrategies, builtOrphanSteps, malstructuredStrategies);
     }
     catch (Exception e) {
       LOG.error("Unable to execute search with SQL: " + NL + sql + NL + "and params [" + FormatUtil.join(paramValues, ",") + "].");
@@ -342,12 +347,23 @@ public class StrategyLoader {
     return descModTimeSort(strategies);
   }
 
-  Map<Long, Strategy> getStrategies(long userId, Map<Long, Strategy> invalidStrategies) throws WdkModelException {
-    String sql = prepareSql(FIND_STRATEGIES_SQL
-        .replace(SEARCH_CONDITIONS_MACRO, "and sr." + COLUMN_USER_ID + " = " + userId));
-    List<Strategy> strategies = descModTimeSort(doSearch(sql).getStrategies());
-    invalidStrategies.putAll(toStrategyMap(filter(strategies, strat -> !strat.isValid())));
-    return toStrategyMap(strategies);
+  Map<Long, Strategy> getAllStrategies(MalformedStrategyList malformedStrategies) throws WdkModelException {
+    return getStrategies(
+        prepareSql(FIND_STRATEGIES_SQL.replace(SEARCH_CONDITIONS_MACRO, "")),
+        malformedStrategies);
+  }
+
+  Map<Long, Strategy> getStrategies(long userId, MalformedStrategyList malformedStrategies) throws WdkModelException {
+    return getStrategies(
+        prepareSql(FIND_STRATEGIES_SQL.replace(SEARCH_CONDITIONS_MACRO, "and sr." + COLUMN_USER_ID + " = " + userId)),
+        malformedStrategies);
+  }
+
+  private Map<Long, Strategy> getStrategies(String searchSql,
+      MalformedStrategyList malformedStrategies) throws WdkModelException {
+    SearchResult result = doSearch(searchSql);
+    malformedStrategies.addAll(result.getMalformedStrategies());
+    return toStrategyMap(descModTimeSort(result.getStrategies()));
   }
 
   Optional<Strategy> getStrategyBySignature(String strategySignature) throws WdkModelException {
@@ -386,14 +402,22 @@ public class StrategyLoader {
     return strategies;
   }
 
+  public static class MalformedStrategyList extends
+    ArrayList<TwoTuple<StrategyBuilder, InvalidStrategyStructureException>> {}
+
   private static class SearchResult {
 
     private final List<Strategy> _strategies;
     private final List<Step> _orphanSteps;
+    private final MalformedStrategyList _malformedStrategies;
 
-    public SearchResult(List<Strategy> strategies, List<Step> orphanSteps) {
+    public SearchResult(
+        List<Strategy> strategies,
+        List<Step> orphanSteps,
+        MalformedStrategyList malformedStrategies) {
       _strategies = strategies;
       _orphanSteps = orphanSteps;
+      _malformedStrategies = malformedStrategies;
     }
 
     public List<Step> findAllSteps(Predicate<Step> pred) {
@@ -411,6 +435,10 @@ public class StrategyLoader {
 
     public List<Step> findOrphanSteps(Predicate<Step> pred) {
       return _orphanSteps.stream().filter(pred).collect(toList());
+    }
+
+    public MalformedStrategyList getMalformedStrategies() {
+      return _malformedStrategies;
     }
 
     public List<Strategy> getStrategies() {

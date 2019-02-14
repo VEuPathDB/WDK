@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -97,9 +98,7 @@ public class StepUtilities {
 
   public static Map<Long, Strategy> getStrategiesMap(User user) throws WdkModelException {
     LOG.debug("loading strategies...");
-    Map<Long, Strategy> invalidStrategies = new LinkedHashMap<>();
-    Map<Long, Strategy> strategies = user.getWdkModel().getStepFactory().getStrategies(user.getUserId(), invalidStrategies);
-    return strategies;
+    return user.getWdkModel().getStepFactory().getStrategies(user.getUserId());
   }
 
   public static Map<String, List<Step>> getStepsByCategory(User user) throws WdkModelException {
@@ -125,18 +124,9 @@ public class StepUtilities {
   }
 
   public static Strategy[] getInvalidStrategies(User user) throws WdkModelException {
-    try {
-      Map<Long, Strategy> strategies = new LinkedHashMap<>();
-      user.getWdkModel().getStepFactory().getStrategies(user.getUserId(), strategies);
-
-      Strategy[] array = new Strategy[strategies.size()];
-      strategies.values().toArray(array);
-      return array;
-    }
-    catch (WdkModelException ex) {
-      System.out.println(ex);
-      throw ex;
-    }
+    return Functions.filter(
+        user.getWdkModel().getStepFactory().getStrategies(user.getUserId()).values(),
+        strat -> !strat.isValid()).toArray(new Strategy[0]);
   }
 
   public static Strategy[] getStrategies(User user) throws WdkModelException {

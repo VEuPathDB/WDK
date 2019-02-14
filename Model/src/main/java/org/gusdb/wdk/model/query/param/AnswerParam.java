@@ -227,7 +227,7 @@ public class AnswerParam extends Param {
 
   public static long toStepId(String stableValue) {
     if (FormatUtil.isInteger(stableValue)) {
-      return Integer.parseInt(stableValue);
+      return Long.parseLong(stableValue);
     }
     throw new WdkRuntimeException("AnswerParam value '" + stableValue + "' is not an integer.");
   }

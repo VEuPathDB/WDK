@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.user;
 import static org.gusdb.fgputil.functional.Functions.filter;
 import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
 import static org.gusdb.wdk.model.user.StepContainer.withId;
-import static org.gusdb.wdk.model.user.StepFactoryHelpers.*;
 
 import java.io.StringReader;
 import java.sql.Connection;
@@ -69,8 +68,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
-import org.gusdb.wdk.model.user.StepFactoryHelpers.NameCheckInfo;
-import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
+import org.gusdb.wdk.model.user.StrategyLoader.MalformedStrategyList;
 
 /**
  * Provides interface to the database to find, read, and write Step and Strategy
@@ -81,6 +79,57 @@ import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 public class StepFactory {
 
   private static final Logger LOG = Logger.getLogger(StepFactory.class);
+
+  // columns shared between steps and strategies tables
+  static final String COLUMN_USER_ID = Utilities.COLUMN_USER_ID;
+  static final String COLUMN_STRATEGY_ID = "strategy_id";
+  static final String COLUMN_PROJECT_ID = "project_id";
+  static final String COLUMN_CREATE_TIME = "create_time";
+  static final String COLUMN_IS_DELETED = "is_deleted";
+
+  // steps table and columns
+  static final String TABLE_STEP = "steps";
+  static final String COLUMN_STEP_ID = "step_id";
+  static final String COLUMN_PREVIOUS_STEP_ID = "left_child_id";
+  static final String COLUMN_CHILD_STEP_ID = "right_child_id";
+  static final String COLUMN_LAST_RUN_TIME = "last_run_time";
+  static final String COLUMN_ESTIMATE_SIZE = "estimate_size";
+  static final String COLUMN_ANSWER_FILTER = "answer_filter";
+  static final String COLUMN_CUSTOM_NAME = "custom_name";
+  static final String COLUMN_IS_VALID = "is_valid";
+  static final String COLUMN_COLLAPSED_NAME = "collapsed_name";
+  static final String COLUMN_IS_COLLAPSIBLE = "is_collapsible";
+  static final String COLUMN_ASSIGNED_WEIGHT = "assigned_weight";
+  static final String COLUMN_PROJECT_VERSION = "project_version";
+  static final String COLUMN_QUESTION_NAME = "question_name";
+  static final String COLUMN_DISPLAY_PARAMS = "display_params";
+  static final String COLUMN_DISPLAY_PREFS  = "display_prefs";
+
+  static final String[] STEP_TABLE_COLUMNS = {
+      COLUMN_USER_ID, COLUMN_STRATEGY_ID, COLUMN_PROJECT_ID, COLUMN_CREATE_TIME, COLUMN_IS_DELETED,
+      COLUMN_STEP_ID, COLUMN_PREVIOUS_STEP_ID, COLUMN_CHILD_STEP_ID, COLUMN_LAST_RUN_TIME, COLUMN_ESTIMATE_SIZE,
+      COLUMN_ANSWER_FILTER, COLUMN_CUSTOM_NAME, COLUMN_IS_VALID, COLUMN_COLLAPSED_NAME, COLUMN_IS_COLLAPSIBLE,
+      COLUMN_ASSIGNED_WEIGHT, COLUMN_PROJECT_VERSION, COLUMN_QUESTION_NAME, COLUMN_DISPLAY_PARAMS
+  };
+
+  // strategies table and columns
+  static final String TABLE_STRATEGY = "strategies";
+  static final String COLUMN_ROOT_STEP_ID = "root_step_id";
+  static final String COLUMN_VERSION = "version";
+  static final String COLUMN_IS_SAVED = "is_saved";
+  static final String COLUMN_LAST_VIEWED_TIME = "last_view_time";
+  static final String COLUMN_LAST_MODIFIED_TIME = "last_modify_time";
+  static final String COLUMN_DESCRIPTION = "description";
+  static final String COLUMN_SIGNATURE = "signature";
+  static final String COLUMN_NAME = "name";
+  static final String COLUMN_SAVED_NAME = "saved_name";
+  static final String COLUMN_IS_PUBLIC = "is_public";
+
+  static final String[] STRATEGY_TABLE_COLUMNS = {
+      COLUMN_USER_ID, COLUMN_STRATEGY_ID, COLUMN_PROJECT_ID, COLUMN_CREATE_TIME, COLUMN_IS_DELETED,
+      COLUMN_ROOT_STEP_ID, COLUMN_VERSION, COLUMN_IS_SAVED, COLUMN_LAST_VIEWED_TIME, COLUMN_LAST_MODIFIED_TIME,
+      COLUMN_DESCRIPTION, COLUMN_SIGNATURE, COLUMN_NAME, COLUMN_SAVED_NAME, COLUMN_IS_PUBLIC
+  };
 
   public static final int COLUMN_NAME_LIMIT = 200;
   public static final int UNKNOWN_SIZE = -1;
@@ -557,12 +606,21 @@ public class StepFactory {
           step.getStepId()));
   }
 
-  public Map<Long, Strategy> getStrategies(long userId,
-      Map<Long, Strategy> invalidStrategies) throws WdkModelException {
-    return new StrategyLoader(_wdkModel, ValidationLevel.SYNTACTIC)
-        .getStrategies(userId, invalidStrategies);
+  public Map<Long, Strategy> getStrategies(long userId) throws WdkModelException {
+    return getStrategies(userId, ValidationLevel.SYNTACTIC, new MalformedStrategyList());
   }
 
+  public Map<Long, Strategy> getStrategies(long userId, ValidationLevel validationLevel,
+      MalformedStrategyList malformedStrategies) throws WdkModelException {
+    return new StrategyLoader(_wdkModel, validationLevel)
+        .getStrategies(userId, malformedStrategies);
+  }
+
+  public Map<Long, Strategy> getAllStrategies(ValidationLevel validationLevel,
+      MalformedStrategyList malformedStrategies) throws WdkModelException {
+    return new StrategyLoader(_wdkModel, validationLevel)
+        .getAllStrategies(malformedStrategies);
+  }
   /**
    * Find strategies matching the given criteria.
    *
