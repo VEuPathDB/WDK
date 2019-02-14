@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.ValidationUtil;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.Validateable;
@@ -34,7 +35,6 @@ import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.StepDisplayPreference.StepDisplayPreferenceBuilder;
-import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -242,6 +242,13 @@ public class Step implements StrategyElement, Validateable<Step> {
 
     public boolean isResultSizeDirty() {
       return _isResultSizeDirty;
+    }
+
+    @Override
+    public String toString() {
+      return JsonUtil.serialize(new JSONObject()
+          .put("id", _stepId)
+          .put("question", _answerSpec.getQuestionName()));
     }
   }
 

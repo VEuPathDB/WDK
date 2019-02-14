@@ -2,9 +2,7 @@ package org.gusdb.wdk.model.user;
 
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.defaultOnException;
-import static org.gusdb.fgputil.functional.Functions.getMapFromList;
 import static org.gusdb.fgputil.functional.Functions.reduce;
-import static org.gusdb.fgputil.functional.Functions.wrapException;
 import static org.gusdb.wdk.model.user.StepContainer.withId;
 
 import java.util.ArrayList;
@@ -22,6 +20,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.fgputil.functional.TreeNode.StructureMapper;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.Validateable;
@@ -34,7 +33,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
-import org.gusdb.wdk.model.user.StepFactoryHelpers.UserCache;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -187,8 +185,12 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
     }
 
     public Strategy build(UserCache userCache, ValidationLevel validationLevel)
-        throws WdkModelException, InvalidStrategyStructureException {
+        throws InvalidStrategyStructureException {
       return new Strategy(this, userCache.get(_userId), validationLevel);
+    }
+
+    public long getNumSteps() {
+      return _stepMap.size();
     }
   }
 
@@ -221,7 +223,7 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
 
   private Strategy(StrategyBuilder strategyBuilder, User user,
       ValidationLevel validationLevel)
-          throws WdkModelException, InvalidStrategyStructureException {
+          throws InvalidStrategyStructureException {
     _user = user;
     _wdkModel = strategyBuilder._wdkModel;
     _strategyId = strategyBuilder._strategyId;
@@ -238,14 +240,16 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
     _signature = strategyBuilder._signature;
     _isPublic = strategyBuilder._isPublic;
     _rootStepId = strategyBuilder._rootStepId;
-    _stepMap = buildSteps(strategyBuilder._stepMap, validationLevel);
+    _stepMap = new HashMap<>();
+    // populates _stepMap
+    buildSteps(strategyBuilder._stepMap, validationLevel);
     _validationBundle = ValidationBundle.builder(validationLevel)
         .aggregateStatus(_stepMap.values().toArray(new Step[0]))
         .build();
   }
 
-  private Map<Long, Step> buildSteps(Map<Long, StepBuilder> steps,
-      ValidationLevel validationLevel) throws InvalidStrategyStructureException, WdkModelException {
+  private void buildSteps(Map<Long, StepBuilder> steps,
+      ValidationLevel validationLevel) throws InvalidStrategyStructureException {
 
     // Confirm project and user id match across strat and all steps, and that steps were properly assigned
     for (StepBuilder step : steps.values()) {
@@ -262,8 +266,8 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
       }
     }
 
-    // temporarily build an actual tree of the steps from a copy of the step map
-    Map<Long, StepBuilder> stepMap = new HashMap<>(steps); // make a copy since buildTree modifies
+    // temporarily build an actual tree of the steps from a copy of the step builder map
+    Map<Long, StepBuilder> stepMap = new HashMap<>(steps); // make a copy since buildTree modifies it
     TreeNode<StepBuilder> builderTree = buildTree(stepMap, _rootStepId);
     // FIXME: uncomment when findCircularPaths is implemented
     //if (!builderTree.findCircularPaths().isEmpty()) {
@@ -275,31 +279,44 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
           join(stepMap.values().stream().map(StepBuilder::getStepId), ", "));
     }
 
+    LOG.debug("Generated the following tree of steps for strategy " +
+        _strategyId + ":" + FormatUtil.NL + builderTree.toMultiLineString("  "));
+    
     // Build StepBuilders from the bottom up into a tree of Steps, setting dirty
     // bits on steps downstream from dirty steps as it builds the tree.
     UserCache userCache = new UserCache(_user);
     Strategy thisStrategy = this;
-    try {
-      TreeNode<Step> stepTree = builderTree.mapStructure((builder, mappedChildren) ->
-        wrapException(() -> new TreeNode<>(
-          builder
-            .setResultSizeDirty(thisOrAnyChildrenDirty(builder, mappedChildren))
-            .build(userCache, validationLevel, thisStrategy))
-              .addChildNodes(mappedChildren, node -> true)));
-      return getMapFromList(stepTree.findAll(node -> true), node -> new TwoTuple<>(
-          node.getContents().getStepId(), node.getContents()));
-    }
-    catch (Exception e) {
-      return WdkModelException.unwrap(e);
-    }
-  }
 
-  private boolean thisOrAnyChildrenDirty(StepBuilder builder, List<TreeNode<Step>> mappedChildren) {
-    return builder.isResultSizeDirty() ||
-        reduce(
-          mappedChildren,
-          (isDirty, childNode) -> isDirty || childNode.getContents().isResultSizeDirty(),
-          false);
+    // map structure into a TreeNode<Step> so branches have access to the
+    //   built children below them (need to assign dirty bit)
+    builderTree.mapStructure(new StructureMapper<StepBuilder, TreeNode<Step>>() {
+      @Override
+      public TreeNode<Step> apply(StepBuilder builder, List<TreeNode<Step>> mappedChildren) {
+        try {
+          // figure out if dirty bit should be set (if this or any children dirty)
+          boolean isDirty = builder.isResultSizeDirty() || reduce(
+            mappedChildren,
+            (dirtySoFar, childNode) -> dirtySoFar || childNode.getContents().isResultSizeDirty(),
+            false);
+
+          // build the step
+          Step step = builder
+            .setResultSizeDirty(isDirty)
+            .build(userCache, validationLevel, thisStrategy);
+  
+          // add to strategy
+          thisStrategy._stepMap.put(step.getStepId(), step);
+  
+          // build a node around the step and add children (builds tree of Steps)
+          TreeNode<Step> node = new TreeNode<>(step);
+          node.addChildNodes(mappedChildren, node2 -> true);
+          return node;
+        }
+        catch (WdkModelException e) {
+          throw new WdkRuntimeException(e);
+        }
+      }
+    });
   }
 
   /**
@@ -308,13 +325,13 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
    * @param steps map of step builders to put in tree
    * @param stepId step being added to the tree in the current recursive call
    * @return tree of steps whose root has the passed stepId
-   * @throws WdkModelException if step ID referenced that does not exist in map
+   * @throws InvalidStrategyStructureException if step ID referenced that does not exist in map
    */
-  private TreeNode<StepBuilder> buildTree(Map<Long, StepBuilder> steps, long stepId) throws WdkModelException {
+  private TreeNode<StepBuilder> buildTree(Map<Long, StepBuilder> steps, long stepId) throws InvalidStrategyStructureException {
     StepBuilder step = steps.get(stepId);
     if (step == null) {
-      throw new WdkModelException("Step " + stepId + ", referenced in the" +
-          " tree of strategy " + _strategyId + " has either not been assigned " +
+      throw new InvalidStrategyStructureException("Step " + stepId + ", referenced in the" +
+          " tree of strategy " + _strategyId + " has either not been assigned" +
           " to that strategy or has been assigned more than once.");
     }
     // create a node for this step and remove from the map
@@ -332,14 +349,13 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
     // irretrieveable and will result in a WdkModelException since extra steps
     // will be found in this strategy.  This is probably ok since we don't
     // change boolean/transform question names very often.  If it's NOT ok,
-    // we'll have to reintroduce the child/previous DB cols back into this code,
-    // OR ignore strats with extra (non-referenced) steps and not throw an
-    // exception when that case is found.
+    // we'll have to reintroduce the child/previous DB cols back into this code.
     if (answerParams.isPresent()) {
       // answer params are present; find child steps
-      for (String paramValue : answerParams.get().stream()
+      List<String> answerParamValues = answerParams.get().stream()
           .map(param -> step.getParamValue(param.getName()))
-          .collect(Collectors.toList())) {
+          .collect(Collectors.toList());
+      for (String paramValue : answerParamValues) {
         if (FormatUtil.isInteger(paramValue)) { // skip if non-numeric; param will fail validation
           long childStepId = Long.parseLong(paramValue);
           node.addChildNode(buildTree(steps, childStepId));
