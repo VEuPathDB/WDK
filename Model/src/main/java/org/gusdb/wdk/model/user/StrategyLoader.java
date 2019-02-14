@@ -132,9 +132,9 @@ public class StrategyLoader {
       "  order by " + COLUMN_STRATEGY_ID;
 
   private static final Comparator<? super Step> STEP_COMPARATOR_LAST_RUN_TIME_DESC =
-      (s1, s2) -> (int)(s2.getLastRunTime().getTime() - s1.getLastRunTime().getTime());
+      (s1, s2) -> s2.getLastRunTime().compareTo(s1.getLastRunTime());
   private static final Comparator<? super Strategy> STRATEGY_COMPARATOR_LAST_MOD_TIME_DESC =
-      (s1, s2) -> (int)(s2.getLastModifiedTime().getTime() - s1.getLastModifiedTime().getTime());
+      (s1, s2) -> s2.getLastModifiedTime().compareTo(s1.getLastModifiedTime());
 
   private final WdkModel _wdkModel;
   private final DataSource _userDbDs;

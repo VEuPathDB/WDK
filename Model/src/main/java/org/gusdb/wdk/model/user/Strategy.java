@@ -515,7 +515,7 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
    * @return the lastModifiedTime
    */
   public Date getLastModifiedTime() {
-    return _lastModifiedTime;
+    return _lastModifiedTime != null ? _lastModifiedTime : _createdTime;
   }
 
   /**

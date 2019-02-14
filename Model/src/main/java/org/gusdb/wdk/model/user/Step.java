@@ -624,7 +624,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   public Date getLastRunTime() {
-    return _lastRunTime;
+    return _lastRunTime != null ? _lastRunTime : _createdTime;
   }
 
   // FIXME: is this really how we should define this method; maybe should be dependent on # of AnswerParam
