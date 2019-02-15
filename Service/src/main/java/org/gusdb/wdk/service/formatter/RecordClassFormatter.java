@@ -2,10 +2,12 @@ package org.gusdb.wdk.service.formatter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
@@ -37,20 +39,47 @@ import org.json.JSONObject;
  */
 public class RecordClassFormatter {
 
-  public static Collection<Object> getRecordClassesJson(RecordClassSet[] recordClassSets,
-      boolean expand) {
+  public static Collection<Object> getRecordClassesJson(RecordClassSet[] recordClassSets) {
+    
     final Collection<Object> out = new ArrayList<>();
     for (RecordClassSet rcSet : recordClassSets) {
-      for (RecordClass rc : rcSet.getRecordClasses()) {
-        out.add(expand ? getRecordClassJson(rc, true, true, true) :
-              rc.getUrlSegment());
+      for (RecordClass rc : rcSet.getRecordClasses()) {        
+        out.add(rc.getUrlSegment());
       }
     }
     return out;
   }
+  
+  public static Collection<Object> getExpandedRecordClassesJson(RecordClassSet[] recordClassSets, List<Question>
+ allQuestions) {
+    
+    Map<RecordClass, List<Question>> rcQuestionMap = getRecordClassQuestionMap(recordClassSets, allQuestions);
+    final Collection<Object> out = new ArrayList<>();
+    for (RecordClassSet rcSet : recordClassSets) {
+      for (RecordClass rc : rcSet.getRecordClasses()) {
+        List<Question> rcQuestions = rcQuestionMap.get(rc);
+        JSONArray questionsJson = QuestionFormatter.getQuestionsJsonWithoutParams(rcQuestions);
+        out.add(getRecordClassJson(rc, true, true, true).put(JsonKeys.SEARCHES, questionsJson));
+      }
+    }
+    return out;
+  }
+  
+  private static Map<RecordClass, List<Question>> getRecordClassQuestionMap(RecordClassSet[] recordClassSets, List<Question>
+  allQuestions) {
+    Map<RecordClass, List<Question>> recordClassQuestionMap = new HashMap<RecordClass, List<Question>>();
+    for (Question q : allQuestions) {
+      if (!recordClassQuestionMap.containsKey(q.getRecordClass())) 
+        recordClassQuestionMap.put(q.getRecordClass(), new ArrayList<Question>());     
+      recordClassQuestionMap.get(q.getRecordClass()).add(q);     
+    }
+    return recordClassQuestionMap;
+  }
 
   public static JSONObject getRecordClassJson(RecordClass recordClass,
       boolean expandAttributes, boolean expandTables, boolean expandTableAttributes) {
+    
+
     return new JSONObject()
       .put(JsonKeys.NAME, recordClass.getFullName())
       .put(JsonKeys.DISPLAY_NAME, recordClass.getDisplayName())

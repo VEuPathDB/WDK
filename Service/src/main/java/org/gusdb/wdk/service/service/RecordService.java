@@ -19,20 +19,13 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
-import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.report.util.RecordFormatter;
 import org.gusdb.wdk.service.annotation.OutSchema;
-import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
-import org.gusdb.wdk.service.formatter.QuestionFormatter;
 import org.gusdb.wdk.service.formatter.RecordClassFormatter;
-import org.gusdb.wdk.service.formatter.TableFieldFormatter;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -48,28 +41,21 @@ public class RecordService extends AbstractWdkService {
   private static final Logger LOG = Logger.getLogger(RecordService.class);
 
   private static final String RECORDCLASS_RESOURCE = "RecordClass with name ";
-  private static final String TABLE_RESOURCE = "Table with name ";
-
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.records.get")
-  public JSONObject getRecordClassList(@QueryParam("format") String format) {
-    JSONObject jsonResponse = new JSONObject();
-    
+  public JSONArray getRecordClassList(@QueryParam("format") String format) {     
     
     final boolean expand = Optional.ofNullable(format)
         .map(f -> f.equals("expanded"))
         .orElse(false);
 
-    JSONArray recordClassesJson = new JSONArray(RecordClassFormatter.getRecordClassesJson(
-        getWdkModel().getAllRecordClassSets(), expand));
-    
-    List<Question> allQuestions = getWdkModel().getAllQuestions();
-    JSONArray questionsJson = QuestionFormatter.getQuestionsJsonWithoutParams(allQuestions);
-    
-    jsonResponse.put(JsonKeys.RECORD_TYPES, recordClassesJson);
-    if (expand) jsonResponse.put(JsonKeys.SEARCHES, questionsJson);
-    return jsonResponse;
+    if (expand) 
+      return new JSONArray(RecordClassFormatter.getExpandedRecordClassesJson(
+        getWdkModel().getAllRecordClassSets(), getWdkModel().getAllQuestions()));
+    else 
+      return new JSONArray(RecordClassFormatter.getRecordClassesJson(
+        getWdkModel().getAllRecordClassSets()));
   }
 
   @GET
@@ -87,65 +73,6 @@ public class RecordService extends AbstractWdkService {
     ).build();
   }
 
-  @GET
-  @Path("{recordClassName}/attributes")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getAttributesInfo(
-      @PathParam("recordClassName") String recordClassName,
-      @QueryParam("expandAttributes") Boolean expandAttributes) {
-    return Response.ok(
-        AttributeFieldFormatter.getAttributesJson(
-            getRecordClassOrNotFound(recordClassName).getAttributeFieldMap().values(),
-            FieldScope.ALL, getFlag(expandAttributes)).toString()
-    ).build();
-  }
-
-  @GET
-  @Path("{recordClassName}/tables")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getTablesInfo(
-      @PathParam("recordClassName") String recordClassName,
-      @QueryParam("expandTables") Boolean expandTables,
-      @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
-    return Response.ok(
-        TableFieldFormatter.getTablesJson(
-            getRecordClassOrNotFound(recordClassName).getTableFieldMap().values(),
-            FieldScope.ALL, getFlag(expandTables), getFlag(expandTableAttributes)).toString()
-    ).build();
-  }
-
-  @GET
-  @Path("{recordClassName}/tables/{tableName}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getTableInfo(
-      @PathParam("recordClassName") String recordClassName,
-      @PathParam("tableName") String tableName,
-      @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
-    return getTableResponse(recordClassName, tableName, expandTableAttributes, false);
-  }
-
-  @GET
-  @Path("{recordClassName}/tables/{tableName}/attributes")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getTableAttributesInfo(
-      @PathParam("recordClassName") String recordClassName,
-      @PathParam("tableName") String tableName,
-      @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
-    return getTableResponse(recordClassName, tableName, expandTableAttributes, true);
-  }
-
-    @GET
-  @Path("{recordClassName}/count")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getRecordCount(@PathParam("recordClassName") String recordClassName) throws WdkModelException {
-    RecordClass recordClass = getRecordClassOrNotFound(recordClassName);
-    if (!recordClass.hasAllRecordsQuery()) {
-      throw new NotFoundException(formatNotFound(RECORDCLASS_RESOURCE + recordClassName + "/count"));
-    }
-    long count = recordClass.getAllRecordsCount(getSessionUser());
-    JSONObject json = new JSONObject().put(JsonKeys.TOTAL_COUNT, count);
-    return Response.ok(json.toString()).build();
-  }
 
   // TODO: replace this with a GET (using the path to encode the primary key)
   @POST
@@ -194,20 +121,5 @@ public class RecordService extends AbstractWdkService {
       // due to checks above during request parsing, this should not happen
       throw new WdkModelException(e);
     }
-  }
-
-  private Response getTableResponse(String recordClassName, String tableName,
-      Boolean expandTableAttributes, boolean attributesOnly) {
-    RecordClass rc = getRecordClassOrNotFound(recordClassName);
-    TableField table = rc.getTableFieldMap().get(tableName);
-    boolean expandAttributes = getFlag(expandTableAttributes);
-    if (table == null) {
-      throw new NotFoundException(formatNotFound(RECORDCLASS_RESOURCE + recordClassName + ", " + TABLE_RESOURCE + tableName));
-    }
-    return Response.ok((attributesOnly ?
-        AttributeFieldFormatter.getAttributesJson(
-            table.getAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, expandAttributes) :
-        TableFieldFormatter.getTableJson(table, expandAttributes)
-    ).toString()).build();
   }
 }
