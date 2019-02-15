@@ -85,6 +85,7 @@ public class JsonKeys {
   public static final String REMOVE = "remove";
   public static final String DELETE = "delete";
   public static final String UNDELETE = "undelete";
+  public static final String ADD_FROM_STEP_ID = "addFromStepId";
 
   // keys for what and how data is being referenced
   public static final String TREE = "tree";
