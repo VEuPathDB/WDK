@@ -28,7 +28,7 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
 
   private static final String PROJECT_ID = "project_id";
   private static final String VOCAB_QUERY_REF_KEY = "vocabQueryRef";
-  private static final String QUERY_FULL_NAME_KEY = "queryFullName";
+  private static final String CONTEXT_QUESTION_FULL_NAME_KEY = "contextQuestionFullName";
   private static final String DEPENDED_PARAM_VALUES_KEY = "dependedParamValues";
   private static final String PARAM_FULL_NAME_KEY = "paramFullName";
   
@@ -40,13 +40,15 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
     _user = user;
     _param = param;
     _vocabQuery = param.getQuery();
+    logger.debug("constructor: fetcher created for param: " + _param.getFullName() );
   }
 
   public String getCacheKey(Map<String, String> dependedParamValues) throws WdkModelException, JSONException {
     JSONObject cacheKeyJson = new JSONObject();
+    logger.debug("IN FETCHER, getting cache key for:" + _param.getFullName());
     cacheKeyJson.put(PROJECT_ID, _vocabQuery.getWdkModel().getProjectId());
     cacheKeyJson.put(PARAM_FULL_NAME_KEY, _param.getFullName());
-    cacheKeyJson.put(QUERY_FULL_NAME_KEY, _param.getQuery().getFullName());
+    cacheKeyJson.put(CONTEXT_QUESTION_FULL_NAME_KEY, _param.getContextQuestion() == null ? null : _param.getContextQuestion().getFullName());
     cacheKeyJson.put(VOCAB_QUERY_REF_KEY, _vocabQuery.getFullName());
     cacheKeyJson.put(DEPENDED_PARAM_VALUES_KEY,
         AbstractDependentParam.getDependedParamValuesJson(dependedParamValues, _param.getDependedParams()));
@@ -62,17 +64,20 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
   @Override
   public EnumParamVocabInstance getNewValue(String cacheKey) throws ValueProductionException {
     JSONObject cacheKeyJson = new JSONObject(cacheKey);
-    logger.debug("Fetching vocab instance for key: " + cacheKeyJson.toString(2));
+    logger.debug("IN FETCHER: getNewValue: ");
+    logger.debug("getNewValue: Fetching vocab instance for cache key: " + cacheKeyJson.toString(2));
     JSONObject dependedParamValuesJson = cacheKeyJson.getJSONObject(DEPENDED_PARAM_VALUES_KEY);
     Map<String, String> dependedParamValues = new HashMap<String, String>();
     for (String paramName : JsonUtil.getKeys(dependedParamValuesJson)) {
       dependedParamValues.put(paramName, dependedParamValuesJson.getString(paramName));
     }
+    logger.debug("getNewValue: fetch vocabInstance in fetchItem()");
     return fetchItem(dependedParamValues);
   }
 
   public EnumParamVocabInstance fetchItem(Map<String, String> dependedParamValues) throws ValueProductionException {
     // create and populate vocab instance
+    logger.debug("fetchItem(): (when new or not cacheable)");
     EnumParamVocabInstance vocabInstance = new EnumParamVocabInstance(dependedParamValues, _param);
     populateVocabInstance(vocabInstance);
     return vocabInstance;
@@ -80,6 +85,7 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
 
   private void populateVocabInstance(EnumParamVocabInstance vocabInstance) throws ValueProductionException {
     try {
+      logger.debug("IN populateVocabInstance()");
       // check if the query has "display" column
       boolean hasDisplay = _vocabQuery.getColumnMap().containsKey(FlatVocabParam.COLUMN_DISPLAY);
       boolean hasParent = _vocabQuery.getColumnMap().containsKey(FlatVocabParam.COLUMN_PARENT_TERM);
@@ -106,6 +112,7 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
         }
       }
 
+      //logger.debug("IN populateVocabInstance(): get param context question: " +   _param.getContextQuestion() );
       Question contextQuestion = _param.getContextQuestion();
       ParameterContainer contextQuery = _param.getContainer();
       Map<String, String> context = new LinkedHashMap<String, String>();
@@ -157,14 +164,16 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
             "] of FlatVocabParam [" + _param.getFullName() + "].");
       }
       else {
-        logger.debug("Query [" + _vocabQuery.getFullName() + "] returned " + vocabInstance.getNumTerms() +
+        logger.debug("FlatVocab Query [" + _vocabQuery.getFullName() + "] returned " + vocabInstance.getNumTerms() +
             " of FlatVocabParam [" + _param.getFullName() + "].");
       }
 
       _param.initTreeMap(vocabInstance);
+
+      logger.debug("IN populateVocabInstance(): to applySelectMode (default value or selectMode): ");
       _param.applySelectMode(vocabInstance);
 
-      logger.debug("Leaving populateVocabInstance(" + FormatUtil.prettyPrint(values) + ")");
+      logger.debug("Leaving populateVocabInstance: " + FormatUtil.prettyPrint(values) + ")");
       logger.debug("Returning instance with default value '" + vocabInstance.getDefaultValue() +
           "' out of possible terms: " + FormatUtil.arrayToString(vocabInstance.getTerms().toArray()));
     }
