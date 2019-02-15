@@ -1,14 +1,14 @@
-displayName: Answer
+displayName: Reports
 
-post:
+get:
+  description >
+  Get a listing of available reports, and their request details.  NOT IMPLEMENTED YET.
+
+/standard:
+  post:
   description: |
-    GET by POST.  Submit question values (question name, params, filters,
-    columns, plus optionally offset, numRecords, sortBy, reverseSort).
-    Validates, and returns results.  Client specifies format (xml, json).
-    Response includes meta data, such as count.
-    * Ownership of the following param values will be verified:
-      * AnswerParam: child steps must be owned by requester
-      * DatasetParam: datasets must be owned by requester
+    GET by POST.  Run a search and get a standard JSON report as a response.
+    Request includes a search configuration and a report configuration. Step and dataset parameters, if any, must have values owned by the requester.
   body:
     application/json:
       type: !include ../../../../src/main/resources/schema/wdk/answer/post-request.json
@@ -20,6 +20,17 @@ post:
       body:
         application/json:
           type: !include ../../../../src/main/resources/schema/wdk/answer/post-response.json
+
+/{reportName}:
+  post:
+  description: |
+    GET by POST.  Run a search and get the specified report as a response.
+    Request includes a search configuration and a report configuration. Step and dataset parameters, if any, must have values owned by the requester.
+
+    See the parent GET endpoint for a list of available reports and their request details.
+  responses:
+    200:
+      description: success
 
 /filter-summary:
   /{filterName}:
