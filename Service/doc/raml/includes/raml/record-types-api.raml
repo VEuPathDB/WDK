@@ -19,27 +19,6 @@ get:
     description: >
     Get a detailed description of the specified record type.  This includes properties of the type, eg, whether it is displayable, and the attributes and tables that each record of this type will have.
 
-  # TODO: this endpoint will be removed
-  /answer-format:
-
-  # TODO: this endpoint will be removed
-  /attributes:
-    get:
-      responses:
-        200:
-          description: Success
-          body:
-            application/json:
-
-  # TODO: do we need this endpoint?  this info can be gotten from the searches endpoint. (do we need a built-in search for ALL Records?)
-  /count:
-    get:
-      responses: 
-        200:
-          description: Success
-          body: 
-            application/json:
-                          
   # TODO: this endpoint will be changed to a GET
   /records:
     post:
@@ -68,74 +47,4 @@ get:
           body: 
             application/json:
 
-  # TODO: do we need this endpoint? it is not in the java yet
-  /{record-id}/section:
-    uriParameters: 
-      record-id: 
-    get:
-      description: data for a section or sections of a record page
-      queryParameters:
-        names:
-          description: names of sections
-          type: array
-          items: string
-
-    # TODO: do we need this endpoint?
-    /{name}:
-      uriParameters: 
-        name: 
-          description: name of section
-      get:
-        description: data for a section or sections of a record page
-
-  # TODO: do we need this endpoint?
-  /columns:
-    get:
-      description: >
-        data for the columns this record can display (in different contexts)
-      queryParameters:
-        context:
-          description: [resultList|reportMaker|etc]
-
-  # TODO: do we need this endpoint?
-  /columnsAndTables:
-    get:
-      description: Same as above, but returns both columns and tables
-      queryParameters:
-        context:
-          description: [resultList|reportMaker|etc]
-
-    # TODO: do we need this endpoint?
-    /filters:
-      get:
-        description: filters available for results of this record class
-
-  # TODO: do we need this endpoint?
-  /tables:
-    get:
-      responses:
-        200:
-          description: Success
-          body:
-            application/json:
-    # TODO: do we need this endpoint?
-    /{tableName}:
-      uriParameters: 
-        tableName: 
-          type: string
-      get:
-        responses: 
-          200:
-            description: Success
-            body: 
-              application/json:
-
-      # TODO: do we need this endpoint?
-      /attributes:
-        get:
-          responses:
-            200:
-              description: Success
-              body:
-                application/json:
 
