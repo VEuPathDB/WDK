@@ -82,8 +82,8 @@ public class BasketRequests {
     }
 
     private List<PrimaryKeyValue> parseStepIds(JSONObject json, String key, StepFactory stepFactory) throws WdkModelException, WdkUserException {
-      if (!json.has(ADD_FROM_STEP_ID)) return new LinkedList<>();
-      Long stepId = json.getLong(ADD_FROM_STEP_ID);
+      if (!json.has(key)) return new LinkedList<>();
+      Long stepId = json.getLong(key);
       Step step = stepFactory.getStepById(stepId).orElseThrow(() -> new WdkUserException("Could not load step with step id " + stepId));
       PrimaryKeyDefinition pkDef = step.getRecordClass().getPrimaryKeyDefinition();
       return step.getAnswerValue().getAllIds()
