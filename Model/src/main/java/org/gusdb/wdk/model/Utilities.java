@@ -251,8 +251,7 @@ public class Utilities {
       message.setFrom(replyAddresses[0]);
       message.setReplyTo(replyAddresses);
       message.setRecipients(Message.RecipientType.TO,
-				//  InternetAddress.parse(sendTos));
-        InternetAddress.parse("aurreco@yahoo.com"));
+				InternetAddress.parse(sendTos));
       
       // add Cc addresses
       if (ccAddresses != null && !ccAddresses.isEmpty()) {
