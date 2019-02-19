@@ -224,12 +224,19 @@ public class Utilities {
     return result;
   }
 
-  public static void sendEmail(String smtpServer, String sendTos, String reply,
-      String subject, String content, String ccAddresses,
+   public static void sendEmail(String smtpServer, String sendTos, String reply,
+		 String subject, String content, String ccAddresses,
+     Attachment[] attachments) throws WdkModelException {
+		 sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, null,
+       attachments);
+	 }
+
+   public static void sendEmail(String smtpServer, String sendTos, String reply,
+			String subject, String content, String ccAddresses, String bccAddresses,
       Attachment[] attachments) throws WdkModelException {
 
-    logger.debug("Sending message to: " + sendTos + ", reply: " + reply
-        + ", using SMPT: " + smtpServer);
+    logger.debug("Sending message to: " + sendTos + ", bcc to: " + bccAddresses + 
+      ",reply: " + reply + ", using SMPT: " + smtpServer);
 
     // create properties and get the session
     Properties props = new Properties();
@@ -244,12 +251,18 @@ public class Utilities {
       message.setFrom(replyAddresses[0]);
       message.setReplyTo(replyAddresses);
       message.setRecipients(Message.RecipientType.TO,
-          InternetAddress.parse(sendTos));
+				//  InternetAddress.parse(sendTos));
+        InternetAddress.parse("aurreco@yahoo.com"));
       
       // add Cc addresses
       if (ccAddresses != null && !ccAddresses.isEmpty()) {
         message.setRecipients(Message.RecipientType.CC,
             InternetAddress.parse(ccAddresses));
+      }
+      // add bcc addresses
+      if (bccAddresses != null && !bccAddresses.isEmpty()) {
+        message.setRecipients(Message.RecipientType.BCC,
+            InternetAddress.parse(bccAddresses));
       }
       message.setSubject(subject);
       message.setSentDate(new Date());
