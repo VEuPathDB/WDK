@@ -129,14 +129,6 @@ public class BasketService extends UserService {
     return new RevisedRequest<>(recordClass, actions);
   }
 
-  @DELETE
-  @Path(NAMED_BASKET_PATH)
-  public Response clearBasket(@PathParam(BASKET_NAME_PARAM) String basketName) throws WdkModelException {
-    User user = getPrivateRegisteredUser();
-    RecordClass recordClass = getRecordClassOrNotFound(basketName);
-    getWdkModel().getBasketFactory().clearBasket(user, recordClass);
-    return Response.noContent().build();
-  }
 
   /**
    * Input is a array of record primary keys
