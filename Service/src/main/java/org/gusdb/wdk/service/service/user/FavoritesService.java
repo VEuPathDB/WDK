@@ -99,18 +99,6 @@ public class FavoritesService extends UserService {
     return Response.ok(FavoritesFormatter.getCountsJson(numDeleted, numUndeleted).toString()).build();
   }
 
-  /**
-   * Delete all of the user's favorites
-   * @return - no response for successful execution
-   * @throws WdkModelException
-   */
-  @DELETE
-  @Path("favorites")
-  public Response deleteAllFavorites() throws WdkModelException {
-    User user = getPrivateRegisteredUser();
-    int count = getWdkModel().getFavoriteFactory().deleteAllFavorites(user);
-    return Response.ok(FavoritesFormatter.getCountJson(count).toString()).build();
-  }
 
   /**
    * Creates a new favorite for the given user.  If a favorite already exists for this record, it is returned.
