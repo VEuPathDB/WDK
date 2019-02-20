@@ -55,8 +55,9 @@ public class OntologyService extends AbstractWdkService {
     return Response.ok(OntologyFormatter.getOntologyJson(ontology).toString()).build();
   }
 
+  // TODO: this should be a GET
   @POST
-  @Path("{ontologyName}/path")
+  @Path("{ontologyName}/filteredOntologyTerms")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getPathsToMatchingNodes(@PathParam("ontologyName") String ontologyName, JSONObject criteriaJson) throws WdkModelException {

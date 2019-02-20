@@ -8,6 +8,7 @@ delete:
       body:
         application/json:
           type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/delete-response.json
+	  
 get:
   description: Returns array of user's favorites (takes rc param to filter)
   responses:

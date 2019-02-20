@@ -17,14 +17,15 @@ public class BasketRequests {
 
   public static class BasketActions extends PatchMap<PrimaryKeyValue> {
 
+    private static final long serialVersionUID = -2153394019262064680L;
     private static final List<String> ACTION_TYPES = Arrays.asList(ADD, REMOVE);
 
     /**
      * Creates set of actions, each associated with a list of basket records
      * Input Format:
      * {
-     *   create: [PrimaryKey, PrimaryKey, ...],
-     *   delete: [PrimaryKey, PrimaryKey, ...]
+     *   add: [PrimaryKey, PrimaryKey, ...],
+     *   remove: [PrimaryKey, PrimaryKey, ...]
      * }
      * Where PrimaryKey is [ { name: String, value: String } ].
      * 
