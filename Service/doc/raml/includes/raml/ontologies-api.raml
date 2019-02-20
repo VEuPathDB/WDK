@@ -1,6 +1,8 @@
 displayName: Ontologies
 
 get:
+  description: >
+  Get a listing of ontology names.
   responses:
     200:
       description: Success
@@ -14,14 +16,16 @@ get:
     ontologyName:
       type: string
   get:
+    description: Get the details of the specified ontology.
     responses:
       200:
         description: Sucess
         body:
           application/json:
 
-  /path:
+  /filteredOntologyTerms:
     post:
+      description:  (This should be changed to a GET.)  Get a report of ontology terms, each shown as a path indicating the term's place in the ontology tree.  The filters are key-value pairs that are applied to the Properties of each term.  Terms that match the provided filters exactly are returned.
       body:
         application/json:
       responses:

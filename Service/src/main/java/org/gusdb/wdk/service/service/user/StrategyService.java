@@ -77,31 +77,6 @@ public class StrategyService extends UserService {
       .getStrategies(getUserBundle(Access.PRIVATE).getSessionUser().getUserId(), false, false));
   }
 
-  @PATCH
-  @Path(BASE_PATH)
-  @Consumes(MediaType.APPLICATION_JSON)
-  // TODO: @OutSchema(...)
-  public void deleteStrategies(JSONObject[] strats) // TODO: Find a better name for me
-      throws WdkModelException {
-    final Collection<Strategy> toUpdate = new ArrayList<>(strats.length);
-
-    try {
-      for (JSONObject action : strats) {
-        final long id = action.getLong(JsonKeys.STRATEGY_ID);
-        final boolean del = action.getBoolean(JsonKeys.IS_DELETED);
-        final Strategy strat = getStrategyForCurrentUser(id, ValidationLevel.NONE);
-
-        if (del != strat.isDeleted())
-          toUpdate.add(Strategy.builder(strat).setDeleted(del)
-              .build(new UserCache(strat.getUser()), ValidationLevel.NONE));
-      }
-    } catch (InvalidStrategyStructureException e) {
-      throw new WdkModelException(e);
-    }
-
-    getWdkModel().getStepFactory().updateStrategies(toUpdate);
-  }
-
   @POST
   @Path(BASE_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
@@ -127,6 +102,41 @@ public class StrategyService extends UserService {
     catch (WdkUserException | InvalidStrategyStructureException wue) {
       throw new DataValidationException(wue);
     }
+  }
+  
+  @PATCH
+  @Path(BASE_PATH)
+  @Consumes(MediaType.APPLICATION_JSON)
+  // TODO: @OutSchema(...)
+  public void deleteStrategies(JSONObject[] strats) // TODO: Find a better name for me
+      throws WdkModelException {
+    final Collection<Strategy> toUpdate = new ArrayList<>(strats.length);
+
+    try {
+      for (JSONObject action : strats) {
+        final long id = action.getLong(JsonKeys.STRATEGY_ID);
+        final boolean del = action.getBoolean(JsonKeys.IS_DELETED);
+        final Strategy strat = getStrategyForCurrentUser(id, ValidationLevel.NONE);
+
+        if (del != strat.isDeleted())
+          toUpdate.add(Strategy.builder(strat).setDeleted(del)
+              .build(new UserCache(strat.getUser()), ValidationLevel.NONE));
+      }
+    } catch (InvalidStrategyStructureException e) {
+      throw new WdkModelException(e);
+    }
+
+    getWdkModel().getStepFactory().updateStrategies(toUpdate);
+  }
+
+  @GET
+  @Path(ID_PATH)
+  @Produces(MediaType.APPLICATION_JSON)
+  // TODO: @OutSchema(...)
+  public JSONObject getStrategy(@PathParam(ID_PARAM) long strategyId)
+      throws WdkModelException {
+    return StrategyFormatter.getDetailedStrategyJson(
+      getStrategyForCurrentUser(strategyId, ValidationLevel.SEMANTIC));
   }
 
   @PATCH
@@ -154,16 +164,6 @@ public class StrategyService extends UserService {
     }
   }
 
-  @GET
-  @Path(ID_PATH)
-  @Produces(MediaType.APPLICATION_JSON)
-  // TODO: @OutSchema(...)
-  public JSONObject getStrategy(@PathParam(ID_PARAM) long strategyId)
-      throws WdkModelException {
-    return StrategyFormatter.getDetailedStrategyJson(
-      getStrategyForCurrentUser(strategyId, ValidationLevel.SEMANTIC));
-  }
-
   // RRD 1/11 FIXME notes: this doesn't look quite right to me, instead, should:
   //    1. load the existing strategy
   //    2. load any new steps not in that strategy
@@ -174,7 +174,7 @@ public class StrategyService extends UserService {
   //    7. Purge strategy ID and answer params from steps that were removed from strat, then save
   //          Can do this easily with StepBuilder.removeStrategy()
   @PUT
-  @Path(ID_PATH + "/stepTree")
+  @Path(ID_PATH + "/step-tree")
   @Consumes(MediaType.APPLICATION_JSON)
   // TODO: @InSchema(...)
   public void replaceStepTree(@PathParam(ID_PARAM) long stratId, JSONObject body)
@@ -220,7 +220,7 @@ public class StrategyService extends UserService {
   }
 
   @POST
-  @Path(BASE_PATH + "/duplicate-as-branch")
+  @Path(BASE_PATH + "/duplicate-step-tree")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   // @InSchema(...) TODO

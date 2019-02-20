@@ -36,6 +36,8 @@ import org.json.JSONObject;
  */
 public class PatchMap<T> extends HashMap<String,List<T>> {
 
+
+  private static final long serialVersionUID = 1816301924384878961L;
   private final List<String> _validActions;
 
   public interface ValueConverter<T> extends FunctionWithException<JsonType, T> {
@@ -79,7 +81,7 @@ public class PatchMap<T> extends HashMap<String,List<T>> {
     // add empty ID lists if not supplied in request
     for (String action : _validActions) {
       if (!containsKey(action)) {
-        put(action, Collections.EMPTY_LIST);
+        put(action, Collections.emptyList());
       }
     }
   }

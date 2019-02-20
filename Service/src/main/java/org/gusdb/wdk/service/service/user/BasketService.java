@@ -71,8 +71,8 @@ import org.json.JSONObject;
 public class BasketService extends UserService {
 
   private static final String BASKET_NAME_PARAM = "basketName";
-  private static final String BASE_BASKET_PATH = "baskets";
-  private static final String NAMED_BASKET_PATH = BASE_BASKET_PATH + "/{" + BASKET_NAME_PARAM + "}";
+  private static final String BASE_BASKETS_PATH = "baskets";
+  private static final String NAMED_BASKET_PATH = BASE_BASKETS_PATH + "/{" + BASKET_NAME_PARAM + "}";
 
   protected static class RevisedRequest<T> extends TwoTuple<RecordClass, T> {
     public RevisedRequest(RecordClass recordClass, T object) {
@@ -87,7 +87,7 @@ public class BasketService extends UserService {
   }
 
   @GET
-  @Path(BASE_BASKET_PATH)
+  @Path(BASE_BASKETS_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getBaskets() throws WdkModelException {
     return Response.ok(

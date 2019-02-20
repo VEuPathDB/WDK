@@ -77,6 +77,72 @@ public class FavoritesService extends UserService {
     return Response.ok(FavoritesFormatter.getFavoritesJson(favorites).toString()).build();
   }
 
+
+  /**
+   * Remove multiple favorites using a json array of favorite ids in the body of the request
+   *
+   * @param body - json array of favorite ids
+   * @return no response for successful execution
+   * @throws WdkModelException
+   * @throws DataValidationException
+   */
+  @PATCH
+  @Path("favorites")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response batchDeleteFavoritesByFavoriteIds(String body) throws WdkModelException, DataValidationException {
+    User user = getPrivateRegisteredUser();
+    FavoriteFactory factory = getWdkModel().getFavoriteFactory();
+    JSONObject json = new JSONObject(body);
+    FavoriteActions actions = new FavoriteActions(json);
+    int numDeleted = factory.deleteFavorites(user, actions.getIdsToDelete());
+    int numUndeleted = factory.undeleteFavorites(user, actions.getIdsToUndelete());
+    return Response.ok(FavoritesFormatter.getCountsJson(numDeleted, numUndeleted).toString()).build();
+  }
+
+  /**
+   * Delete all of the user's favorites
+   * @return - no response for successful execution
+   * @throws WdkModelException
+   */
+  @DELETE
+  @Path("favorites")
+  public Response deleteAllFavorites() throws WdkModelException {
+    User user = getPrivateRegisteredUser();
+    int count = getWdkModel().getFavoriteFactory().deleteAllFavorites(user);
+    return Response.ok(FavoritesFormatter.getCountJson(count).toString()).build();
+  }
+
+  /**
+   * Creates a new favorite for the given user.  If a favorite already exists for this record, it is returned.
+   * If a favorite previously existed but was deleted, the original is undeleted and returned.
+   *
+   * @param body
+   * @return
+   * @throws WdkModelException
+   * @throws DataValidationException
+   */
+  @POST
+  @Path("favorites")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response addToFavorites(String body) throws WdkModelException, DataValidationException {
+    User user = getPrivateRegisteredUser();
+    JSONObject json = new JSONObject(body);
+    try {
+      FavoriteEdit newFavorite = FavoriteRequests.createFromJson(json, getWdkModel());
+      RecordIdentity identity = newFavorite.getIdentity();
+      FavoriteFactory factory = getWdkModel().getFavoriteFactory();
+      Favorite favorite;
+      if ((favorite = factory.getFavorite(user, identity.getRecordClass(), identity.getPrimaryKey().getRawValues())) == null) {
+        favorite = factory.addToFavorites(user, identity.getRecordClass(), identity.getPrimaryKey().getRawValues());
+      }
+      return Response.ok(new JSONObject().put(JsonKeys.ID, favorite.getFavoriteId())).build();
+    }
+    catch(WdkUserException e) {
+      throw new BadRequestException(e);
+    }
+  }
+
   /**
    * Get the favorite, for favorite id, if it belongs to the given user.
    * @param favoriteId
@@ -143,71 +209,6 @@ public class FavoritesService extends UserService {
     favoriteIds.add(favoriteId);
     getWdkModel().getFavoriteFactory().deleteFavorites(user,favoriteIds);
     return Response.noContent().build();
-  }
-
-  /**
-   * Remove multiple favorites using a json array of favorite ids in the body of the request
-   *
-   * @param body - json array of favorite ids
-   * @return no response for successful execution
-   * @throws WdkModelException
-   * @throws DataValidationException
-   */
-  @PATCH
-  @Path("favorites")
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Response batchDeleteFavoritesByFavoriteIds(String body) throws WdkModelException, DataValidationException {
-    User user = getPrivateRegisteredUser();
-    FavoriteFactory factory = getWdkModel().getFavoriteFactory();
-    JSONObject json = new JSONObject(body);
-    FavoriteActions actions = new FavoriteActions(json);
-    int numDeleted = factory.deleteFavorites(user, actions.getIdsToDelete());
-    int numUndeleted = factory.undeleteFavorites(user, actions.getIdsToUndelete());
-    return Response.ok(FavoritesFormatter.getCountsJson(numDeleted, numUndeleted).toString()).build();
-  }
-
-  /**
-   * Delete all of the user's favorites
-   * @return - no response for successful execution
-   * @throws WdkModelException
-   */
-  @DELETE
-  @Path("favorites")
-  public Response deleteAllFavorites() throws WdkModelException {
-    User user = getPrivateRegisteredUser();
-    int count = getWdkModel().getFavoriteFactory().deleteAllFavorites(user);
-    return Response.ok(FavoritesFormatter.getCountJson(count).toString()).build();
-  }
-
-  /**
-   * Creates a new favorite for the given user.  If a favorite already exists for this record, it is returned.
-   * If a favorite previously existed but was deleted, the original is undeleted and returned.
-   *
-   * @param body
-   * @return
-   * @throws WdkModelException
-   * @throws DataValidationException
-   */
-  @POST
-  @Path("favorites")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response addToFavorites(String body) throws WdkModelException, DataValidationException {
-    User user = getPrivateRegisteredUser();
-    JSONObject json = new JSONObject(body);
-    try {
-      FavoriteEdit newFavorite = FavoriteRequests.createFromJson(json, getWdkModel());
-      RecordIdentity identity = newFavorite.getIdentity();
-      FavoriteFactory factory = getWdkModel().getFavoriteFactory();
-      Favorite favorite;
-      if ((favorite = factory.getFavorite(user, identity.getRecordClass(), identity.getPrimaryKey().getRawValues())) == null) {
-        favorite = factory.addToFavorites(user, identity.getRecordClass(), identity.getPrimaryKey().getRawValues());
-      }
-      return Response.ok(new JSONObject().put(JsonKeys.ID, favorite.getFavoriteId())).build();
-    }
-    catch(WdkUserException e) {
-      throw new BadRequestException(e);
-    }
   }
 
   /**
