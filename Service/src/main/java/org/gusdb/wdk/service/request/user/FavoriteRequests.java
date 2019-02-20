@@ -45,6 +45,7 @@ public class FavoriteRequests {
 
   public static class FavoriteActions extends PatchMap<Long> {
 
+    private static final long serialVersionUID = 933506194679822539L;
     private static final List<String> ACTION_TYPES = Arrays.asList(DELETE, UNDELETE);
 
     /**
@@ -124,11 +125,13 @@ public class FavoriteRequests {
    * @throws RequestMisformatException
    * @throws DataValidationException 
    */
-  public static NoteAndGroup createNoteAndGroupFromJson(JSONObject json)
+  public static NoteAndGroup createNoteAndGroupFromJson(JSONObject json, String oldNote, String oldGroup)
       throws RequestMisformatException, DataValidationException {
+    String note = oldNote;
+    String group = oldGroup;
     try {
-      String note = getValidatedInputString(json, JsonKeys.DESCRIPTION, 200);
-      String group = getValidatedInputString(json, JsonKeys.GROUP, 50);
+      if (json.has(JsonKeys.DESCRIPTION)) note = getValidatedInputString(json, JsonKeys.DESCRIPTION, 200);
+      if (json.has(JsonKeys.GROUP)) group = getValidatedInputString(json, JsonKeys.GROUP, 50);
       return new NoteAndGroupImpl(note, group);
     }
     catch (JSONException e) {

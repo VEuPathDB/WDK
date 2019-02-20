@@ -9,7 +9,6 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -155,8 +154,7 @@ public class FavoritesService extends UserService {
   }
 
   /**
-   * Updates an existing favorite found by its favorite id (if belonging to the given user) with a
-   * new favorite.  The body need only contain note and group (both required but can be empty strings).
+   * Updates the note and/or group (both required but can be empty strings).
    * Note that once created, a user cannot alter the recordClass or primarykey data of a favorite.
    *
    * @param favoriteId
@@ -165,7 +163,7 @@ public class FavoritesService extends UserService {
    * @throws WdkModelException
    * @throws DataValidationException
    */
-  @PUT
+  @PATCH
   @Path("favorites/{favoriteId}")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response editFavoriteByFavoriteId(@PathParam(FAVORITE_ID_PATH_PARAM) Long favoriteId, String body)
@@ -173,8 +171,9 @@ public class FavoritesService extends UserService {
     User user = getPrivateRegisteredUser();
     JSONObject json = new JSONObject(body);
     try {
-      NoteAndGroup noteAndGroup = FavoriteRequests.createNoteAndGroupFromJson(json);
       FavoriteFactory factory = getWdkModel().getFavoriteFactory();
+      Favorite fav = factory.getFavorite(user, favoriteId);
+      NoteAndGroup noteAndGroup = FavoriteRequests.createNoteAndGroupFromJson(json, fav.getNote(), fav.getGroup());
       factory.editFavorite(user, favoriteId, noteAndGroup.getNote(), noteAndGroup.getGroup());
       return Response.noContent().build();
     }
