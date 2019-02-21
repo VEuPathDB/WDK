@@ -1,17 +1,24 @@
 package org.gusdb.wdk.model.user;
 
-import java.util.Map;
-
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.SortDirection;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Manages AnswerValues for the Step class
- * 
+ *
  * @author rdoherty
  */
 public class AnswerValueCache {
@@ -92,19 +99,31 @@ public class AnswerValueCache {
   private static int[] getDefaultPageRange(User user) {
     return new int[]{ 1, user.getPreferences().getItemsPerPage() };
   }
-  
+
   private static AnswerValue makeAnswerValue(Step step, int[] range, boolean validate, boolean applyViewFilters)
       throws WdkModelException, WdkUserException {
     Question question = step.getQuestion();
     User user = step.getUser();
-    Map<String, Boolean> sortingMap = user.getPreferences().getSortingAttributes(
-        question.getFullName(), UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+    JSONObject obj = step.getDisplayPrefs();
+
+    Map<String, Boolean> sortingMap = hasSortingMap(obj)
+      ? parseSortingMap(obj, question.getAttributeFieldMap())
+      : user.getPreferences().getSortingAttributes(question.getFullName(),
+        UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+
     AnswerValue answerValue = question.makeAnswerValue(user, step.getParamValues(), range[0],
         range[1], sortingMap, step.getFilter(), validate, step.getAssignedWeight());
     answerValue.setFilterOptions(step.getFilterOptions());
     if (applyViewFilters) {
       answerValue.setViewFilterOptions(step.getViewFilterOptions());
     }
+
+    if (hasColumnSelection(obj)) {
+      answerValue.getAttributes()
+        .overrideSummaryAttributeFieldMap(parseSummaryMap(obj,
+          question.getAttributeFieldMap()));
+    }
+
     try {
       int displayResultSize = answerValue.getResultSizeFactory().getDisplayResultSize();
       if (!applyViewFilters) {
@@ -114,10 +133,6 @@ public class AnswerValueCache {
       }
     }
     catch (WdkModelException | WdkUserException ex) {
-     /* if(step.isValid()) {
-          LOG.info("invalidating a step based on invalid param values, step: " + step.getStepId() + " question: " + step.getQuestionName());
-          step.invalidateStep();
-      } */
       // if validate is false, the error will be ignored to allow the process to continue.
       if (validate)
         throw ex;
@@ -125,5 +140,63 @@ public class AnswerValueCache {
         LOG.warn(ex);
     }
     return answerValue;
+  }
+
+  private static boolean hasSortingMap(JSONObject obj) {
+    return Objects.nonNull(obj) && obj.has("sortColumns");
+  }
+
+  private static boolean hasColumnSelection(JSONObject obj) {
+    return Objects.nonNull(obj) && obj.has("columnSelection");
+  }
+
+  private static Map<String, Boolean> parseSortingMap(JSONObject obj, Map<String, ?> valid) {
+    final Map<String, Boolean> out = new LinkedHashMap<>();
+
+    if (obj == null || !obj.has("sortColumns"))
+      return out;
+
+    JSONArray arr = obj.getJSONArray("sortColumns");
+    for (int i = 0; i < arr.length(); i++) {
+      final JSONObject col = arr.getJSONObject(i);
+      // Invalid sort column, exclude from output
+      if (col.length() != 1)
+        continue;
+
+      for (final String key : col.keySet()) {
+        // Invalid column name, exclude from output
+        if (!valid.containsKey(key))
+          continue;
+
+        final String dir = col.getString(key);
+
+        // Sort direction is not valid, exclude from output
+        if (!SortDirection.isValidDirection(dir))
+          continue;
+
+        out.put(key, SortDirection.valueOf(dir).isAscending());
+      }
+    }
+
+    return out;
+  }
+
+  private static Map<String, AttributeField> parseSummaryMap(JSONObject obj,
+      Map<String, AttributeField> fields) {
+    final Map<String, AttributeField> out = new LinkedHashMap<>();
+
+    if (obj == null || !obj.has("columnSelection"))
+      return out;
+
+    final JSONArray arr = obj.getJSONArray("columnSelection");
+    for (int i = 0; i < arr.length(); i++) {
+      final String field = arr.getString(i);
+      if (!fields.containsKey(field))
+        continue;
+
+      out.put(field, fields.get(field));
+    }
+
+    return out;
   }
 }
