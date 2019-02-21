@@ -1287,6 +1287,7 @@ public class StepFactory {
     newStep.setCollapsible(oldStep.isCollapsible());
     newStep.setCustomName(oldStep.getBaseCustomName());
     newStep.setValid(oldStep.isValid());
+    newStep.setDisplayPrefs(oldStep.getDisplayPrefs());
 
     // update properties on disk
     newStep.update(false);
