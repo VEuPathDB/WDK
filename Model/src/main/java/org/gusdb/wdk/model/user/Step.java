@@ -243,6 +243,7 @@ public class Step {
     _strategyId = step._strategyId;
     _inMemoryOnly = step._inMemoryOnly;
     _objectCreationDate = step._objectCreationDate;
+    _displayPrefs = step._displayPrefs;
 
     // answer value cache copy is NOT shallow- if caller wants a new step, they are
     // probably going to modify it to get a different answer value
