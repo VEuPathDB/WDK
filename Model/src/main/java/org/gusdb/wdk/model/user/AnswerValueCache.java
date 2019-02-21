@@ -1,5 +1,9 @@
 package org.gusdb.wdk.model.user;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.SortDirection;
 import org.gusdb.fgputil.Tuples.TwoTuple;
@@ -10,11 +14,6 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * Manages AnswerValues for the Step class
@@ -146,7 +145,7 @@ public class AnswerValueCache {
     return Objects.nonNull(obj) && obj.has("sortColumns");
   }
 
-  private static boolean hasColumnSelection(JSONObject obj) {
+  public static boolean hasColumnSelection(JSONObject obj) {
     return Objects.nonNull(obj) && obj.has("columnSelection");
   }
 
@@ -181,7 +180,7 @@ public class AnswerValueCache {
     return out;
   }
 
-  private static Map<String, AttributeField> parseSummaryMap(JSONObject obj,
+  public static Map<String, AttributeField> parseSummaryMap(JSONObject obj,
       Map<String, AttributeField> fields) {
     final Map<String, AttributeField> out = new LinkedHashMap<>();
 
