@@ -1,7 +1,5 @@
 displayName: User API
-
-get:
-  description: list of all users (probably won’t implement)
+  
 post:
   description: >
     register a new, unverified user, and return input JSON (but now id is
@@ -13,8 +11,7 @@ post:
       description: either the id of the user or the string "current"
       type: string
       pattern: ^[0-9]+|current$
-  delete:
-    description: delete the user (i.e. mark as deleted in DB)
+
   get:
     description: >
       user details (name, email, etc) of user with {user-id} or current user
@@ -24,6 +21,7 @@ post:
           application/json:
             type: !include ../../../../src/main/resources/schema/wdk/users/id/get.json
             example: !include ../example/users/get-user-200.json
+
   patch:
     description: >
       update user details, input JSON can be partially completed, unspecified
@@ -34,6 +32,7 @@ post:
       200:
         body:
           application/json:
+
   put:
     description: >
       replace user attributes with those in the object (delete missing
@@ -42,10 +41,17 @@ post:
       application/json:
     responses:
 
+  delete:
+    description: delete the user (i.e. mark as deleted in DB)
 
   /baskets: !include ./users/basket-api.raml
+  /datasets: !include ./users/basket-api.raml
   /favorites: !include ./users/favorites-api.raml
   /preference: !include ./users/preference-api.raml
   /steps: !include ./users/steps-api.raml
+  /steps/{stepId}/analyses: !include ./users/step-analyses-api.raml
+  /steps/{stepId}/analysis-types: !include ./users/step-analysis-types-api.raml
   /strategy: !include ./users/strategy-api.raml
   /user-datasets: !include ./users/user-datasets.raml
+
+

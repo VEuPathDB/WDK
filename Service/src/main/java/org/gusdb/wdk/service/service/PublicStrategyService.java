@@ -21,6 +21,7 @@ import org.json.JSONException;
 /**
  * Provides list of public strategies
  * 
+ * TODO: rename this class to StrategyListsService, after merge into trunk
  */
 @Path("/strategy-lists/public")
 @Produces(MediaType.APPLICATION_JSON)
