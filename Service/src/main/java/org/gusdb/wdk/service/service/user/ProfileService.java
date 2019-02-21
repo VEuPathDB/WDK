@@ -34,6 +34,9 @@ import org.gusdb.wdk.session.LoginCookieFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/*
+ * TODO: rename this to UsersService when this branch is merged to trunk
+ */
 @Path("/users/{id}")
 public class ProfileService extends UserService {
 

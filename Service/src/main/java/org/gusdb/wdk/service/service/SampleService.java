@@ -30,6 +30,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/*
+ * TODO: remove this file when this branch is merged to trunk
+ */
 @Path("/sample")
 public class SampleService {
 

@@ -10,6 +10,9 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.service.AbstractWdkService;
 
+/*
+ * TODO: rename this AbstractUserService when this branch is merged into trunk
+ */
 @Path("/users/{id}")
 public abstract class UserService extends AbstractWdkService {
 
