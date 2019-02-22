@@ -16,8 +16,6 @@ baseUri: //{siteUrl}/{webApp}/service
 
 /answer: !include ./includes/raml/answer-api.raml
 
-/api: !include ./includes/raml/api-api.raml
-
 /client-errors: !include ./includes/raml/client-errors-api.raml
 
 # /cpu-test:
@@ -72,7 +70,7 @@ baseUri: //{siteUrl}/{webApp}/service
   post:
     description: |
       Accepts an array of email addresses and attempts to locate the user ids
-      (if any) associated with them.  Retuns an array of objects containing a
+      (if any) associated with them.  Returns an array of objects containing a
       single email as a key mapped to the matching user id.
 
       If an email address is not in the system, it will be excluded from the

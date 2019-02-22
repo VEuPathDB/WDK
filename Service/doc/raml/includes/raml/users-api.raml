@@ -2,30 +2,34 @@ displayName: User API
   
 post:
   description: >
-    register a new, unverified user, and return input JSON (but now id is
-    populated)
+    Register a new, unverified user, and return the user's new ID.
+  body:
+    application/json:
+    responses:
+      200:
+        body:
+          application/json:
+            type: !include ../../../../src/main/resources/schema/includes/standard-post-response.json
 
 /{user-id}:
   uriParameters:
     user-id:
-      description: either the id of the user or the string "current"
+      description: Either the ID of a user or the string "current" for the current user.
       type: string
       pattern: ^[0-9]+|current$
 
   get:
     description: >
-      user details (name, email, etc) of user with {user-id} or current user
+      Get the details of the current user or a user by ID.
     responses:
       200:
         body:
           application/json:
             type: !include ../../../../src/main/resources/schema/wdk/users/id/get.json
-            example: !include ../example/users/get-user-200.json
 
   patch:
     description: >
-      update user details, input JSON can be partially completed, unspecified
-      attributes are unchanged (obviously, user cannot change id)
+      Update one or more details about a user.  Only supplied fields are updated.
     body:
       application/json:
     responses:
@@ -35,14 +39,13 @@ post:
 
   put:
     description: >
-      replace user attributes with those in the object (delete missing
-      attributes)
+      Replace all user details with those provided. 
     body:
       application/json:
     responses:
 
   delete:
-    description: delete the user (i.e. mark as deleted in DB)
+    description: Delete this user.
 
   /baskets: !include ./users/basket-api.raml
   /datasets: !include ./users/basket-api.raml
