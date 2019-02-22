@@ -2053,12 +2053,13 @@ public class StepFactory {
     step.saveParamFilters();
   }
 
+  @SuppressWarnings("cast") // will not compile without cast - maybe fixed in Java 11?
   private static JSONObject buildStepDisplayPrefs(User user,
       String questionName) throws WdkModelException {
     return new JSONObject()
       .put(
         "sortColumns",
-        user.getPreferences()
+        (JSONArray) user.getPreferences()
           .getSortingAttributes(questionName, DEFAULT_SUMMARY_VIEW_PREF_SUFFIX)
           .entrySet()
           .stream()
@@ -2068,7 +2069,7 @@ public class StepFactory {
       )
       .put(
         "columnSelection",
-        Arrays.stream(user.getPreferences()
+        (JSONArray) Arrays.stream(user.getPreferences()
           .getSummaryAttributes(questionName, DEFAULT_SUMMARY_VIEW_PREF_SUFFIX))
           .collect(JSONArray::new, JSONArray::put, (a, b) -> b.forEach(a::put))
       );
