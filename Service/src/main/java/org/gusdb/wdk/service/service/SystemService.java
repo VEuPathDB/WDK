@@ -44,6 +44,7 @@ public class SystemService extends AbstractWdkService {
   @Path("caches")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getInMemoryCacheSnapshot() {
+    assertAdmin();
     JSONArray array = new JSONArray();
     for (Entry<String, InMemoryCache<?,?>> entry : CacheMgr.get().getAllCaches().entrySet()) {
       InMemoryCache<?,?> cache = entry.getValue();

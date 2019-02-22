@@ -1,5 +1,8 @@
 package org.gusdb.wdk.service.service;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
@@ -23,6 +26,12 @@ public class ProjectService extends AbstractWdkService {
   public Response getServiceApi() {
     String serviceEndpoint = getUriInfo().getBaseUri().toString().replaceAll("\\/$", "");
     return Response.ok(ProjectFormatter.getWdkProjectInfo(getWdkModel(), serviceEndpoint).toString()).build();
+  }
+
+  @GET
+  @Path("api")
+  public Response redirectToRamlApiDoc() throws URISyntaxException {
+    return Response.seeOther(new URI("../../service-api.html")).build();
   }
 
   @GET
