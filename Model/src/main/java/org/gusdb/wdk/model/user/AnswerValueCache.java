@@ -15,6 +15,8 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import static java.lang.Math.min;
+
 /**
  * Manages AnswerValues for the Step class
  *
@@ -152,11 +154,11 @@ public class AnswerValueCache {
   private static Map<String, Boolean> parseSortingMap(JSONObject obj, Map<String, ?> valid) {
     final Map<String, Boolean> out = new LinkedHashMap<>();
 
-    if (obj == null || !obj.has("sortColumns"))
+    if (!hasSortingMap(obj))
       return out;
 
     JSONArray arr = obj.getJSONArray("sortColumns");
-    for (int i = 0; i < arr.length(); i++) {
+    for (int i = 0; i < min(arr.length(), UserPreferences.MAX_NUM_SORTING_COLUMNS); i++) {
       final JSONObject col = arr.getJSONObject(i);
       // Invalid sort column, exclude from output
       if (col.length() != 1)
@@ -184,7 +186,7 @@ public class AnswerValueCache {
       Map<String, AttributeField> fields) {
     final Map<String, AttributeField> out = new LinkedHashMap<>();
 
-    if (obj == null || !obj.has("columnSelection"))
+    if (!hasColumnSelection(obj))
       return out;
 
     final JSONArray arr = obj.getJSONArray("columnSelection");
