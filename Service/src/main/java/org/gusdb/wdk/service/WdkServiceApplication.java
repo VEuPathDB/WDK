@@ -15,8 +15,30 @@ import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.provider.ExceptionMapper;
 import org.gusdb.wdk.service.provider.JsonSchemaProvider;
 import org.gusdb.wdk.service.provider.LoggingWriterInterceptor;
-import org.gusdb.wdk.service.service.*;
-import org.gusdb.wdk.service.service.user.*;
+import org.gusdb.wdk.service.service.AnswerService;
+import org.gusdb.wdk.service.service.ClientErrorReportingService;
+import org.gusdb.wdk.service.service.OAuthService;
+import org.gusdb.wdk.service.service.OntologyService;
+import org.gusdb.wdk.service.service.ProjectService;
+import org.gusdb.wdk.service.service.PublicStrategyService;
+import org.gusdb.wdk.service.service.QuestionService;
+import org.gusdb.wdk.service.service.RecordService;
+import org.gusdb.wdk.service.service.SampleService;
+import org.gusdb.wdk.service.service.SessionService;
+import org.gusdb.wdk.service.service.SystemService;
+import org.gusdb.wdk.service.service.TemporaryFileService;
+import org.gusdb.wdk.service.service.TemporaryResultService;
+import org.gusdb.wdk.service.service.XmlAnswerService;
+import org.gusdb.wdk.service.service.user.BasketService;
+import org.gusdb.wdk.service.service.user.DatasetService;
+import org.gusdb.wdk.service.service.user.FavoritesService;
+import org.gusdb.wdk.service.service.user.PreferenceService;
+import org.gusdb.wdk.service.service.user.ProfileService;
+import org.gusdb.wdk.service.service.user.StepAnalysisService;
+import org.gusdb.wdk.service.service.user.StepService;
+import org.gusdb.wdk.service.service.user.StrategyService;
+import org.gusdb.wdk.service.service.user.UserDatasetService;
+import org.gusdb.wdk.service.service.user.UserUtilityServices;
 
 public class WdkServiceApplication extends Application {
 
@@ -50,7 +72,6 @@ public class WdkServiceApplication extends Application {
 
     // add service classes
     .add(ProjectService.class)
-    .add(ApiService.class)
     .add(SystemService.class)
     .add(OAuthService.class)
     .add(ProfileService.class)
