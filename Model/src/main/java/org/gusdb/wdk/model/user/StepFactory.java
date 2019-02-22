@@ -2058,7 +2058,7 @@ public class StepFactory {
     return new JSONObject()
       .put(
         "sortColumns",
-        (JSONArray) user.getPreferences()
+        user.getPreferences()
           .getSortingAttributes(questionName, DEFAULT_SUMMARY_VIEW_PREF_SUFFIX)
           .entrySet()
           .stream()
@@ -2068,7 +2068,7 @@ public class StepFactory {
       )
       .put(
         "columnSelection",
-        (JSONArray) Arrays.stream(user.getPreferences()
+        Arrays.stream(user.getPreferences()
           .getSummaryAttributes(questionName, DEFAULT_SUMMARY_VIEW_PREF_SUFFIX))
           .collect(JSONArray::new, JSONArray::put, (a, b) -> b.forEach(a::put))
       );
