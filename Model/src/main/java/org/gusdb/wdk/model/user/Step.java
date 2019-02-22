@@ -1564,15 +1564,12 @@ public class Step {
   }
 
   ////// Trunk Port of Step Column Persistence REMOVE ME ->
-  @Deprecated
   private JSONObject _displayPrefs;
 
-  @Deprecated
   public JSONObject getDisplayPrefs() {
     return _displayPrefs;
   }
 
-  @Deprecated
   public void setDisplayPrefs(JSONObject prefs) {
     _displayPrefs = prefs;
   }
