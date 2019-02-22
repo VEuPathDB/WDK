@@ -14,6 +14,9 @@ import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.formatter.ProjectFormatter;
 import org.json.JSONObject;
 
+/*
+ * TODO: delete this file when this branch is merged to the trunk
+ */
 @Path("/api")
 public class ApiService extends AbstractWdkService {
 
