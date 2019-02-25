@@ -80,7 +80,9 @@ public class JsonKeys {
   public static final String REMOVE = "remove";
   public static final String DELETE = "delete";
   public static final String UNDELETE = "undelete";
-
+  public static final String ACTION = "action";
+  public static final String UPDATES = "updates";
+  
   // keys for what and how data is being referenced
   public static final String TREE = "tree";
   public static final String CHILDREN = "children";
