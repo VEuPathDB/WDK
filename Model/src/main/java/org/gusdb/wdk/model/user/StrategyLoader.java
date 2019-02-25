@@ -9,36 +9,7 @@ import static org.gusdb.fgputil.db.SqlUtils.fetchNullableInteger;
 import static org.gusdb.fgputil.db.SqlUtils.fetchNullableLong;
 import static org.gusdb.fgputil.functional.Functions.fSwallow;
 import static org.gusdb.fgputil.functional.Functions.getMapFromList;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ANSWER_FILTER;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ASSIGNED_WEIGHT;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_COLLAPSED_NAME;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_CREATE_TIME;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_CUSTOM_NAME;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_DESCRIPTION;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_DISPLAY_PARAMS;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ESTIMATE_SIZE;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_IS_COLLAPSIBLE;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_IS_DELETED;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_IS_PUBLIC;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_IS_SAVED;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_LAST_MODIFIED_TIME;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_LAST_RUN_TIME;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_LAST_VIEWED_TIME;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_NAME;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_PROJECT_ID;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_PROJECT_VERSION;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_QUESTION_NAME;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ROOT_STEP_ID;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_SAVED_NAME;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_SIGNATURE;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_STEP_ID;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_STRATEGY_ID;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_USER_ID;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_VERSION;
-import static org.gusdb.wdk.model.user.StepFactory.STEP_TABLE_COLUMNS;
-import static org.gusdb.wdk.model.user.StepFactory.STRATEGY_TABLE_COLUMNS;
-import static org.gusdb.wdk.model.user.StepFactory.TABLE_STEP;
-import static org.gusdb.wdk.model.user.StepFactory.TABLE_STRATEGY;
+import static org.gusdb.wdk.model.user.StepFactory.*;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -283,7 +254,8 @@ public class StrategyLoader {
             .setLegacyFilterName(rs.getString(COLUMN_ANSWER_FILTER))
             .setAssignedWeight(fetchNullableInteger(rs, COLUMN_ASSIGNED_WEIGHT, 0))
             .setDbParamFiltersJson(new JSONObject(_userDbPlatform.getClobData(rs, COLUMN_DISPLAY_PARAMS)))
-        );
+        )
+        .setDisplayPrefs(new JSONObject(rs.getString(COLUMN_DISPLAY_PREFS)));
   }
 
   public Optional<Step> getStepById(long stepId) throws WdkModelException {

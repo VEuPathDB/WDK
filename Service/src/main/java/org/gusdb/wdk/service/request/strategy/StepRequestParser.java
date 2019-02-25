@@ -1,6 +1,5 @@
 package org.gusdb.wdk.service.request.strategy;
 
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -14,7 +13,6 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepContainer;
-import org.gusdb.wdk.model.user.StepDisplayPreference.StepDisplayPreferenceBuilder;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserCache;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
@@ -115,12 +113,8 @@ public class StepRequestParser {
         newStep.setCollapsible(patchSet.getBoolean(JsonKeys.IS_COLLAPSIBLE));
       if (patchSet.has(JsonKeys.COLLAPSED_NAME))
         newStep.setCollapsedName(patchSet.getString(JsonKeys.COLLAPSED_NAME));
-      if (patchSet.has(JsonKeys.DISPLAY_PREFS)) {
-        newStep.setDisplayPrefs(JsonUtil.jsonToPojo(
-          patchSet.getJSONObject(JsonKeys.DISPLAY_PREFS),
-          StepDisplayPreferenceBuilder.class
-        ).getValue());
-      }
+      if (patchSet.has(JsonKeys.DISPLAY_PREFS))
+        newStep.setDisplayPrefs(patchSet.getJSONObject(JsonKeys.DISPLAY_PREFS));
 
       return newStep.build(new UserCache(step.getUser()),
           step.getValidationBundle().getLevel(), step.getStrategy());
