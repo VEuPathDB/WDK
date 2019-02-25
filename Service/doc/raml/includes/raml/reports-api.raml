@@ -2,7 +2,7 @@ displayName: Reports
 
 get:
   description >
-  Get a listing of available reports, and their request details.  NOT IMPLEMENTED YET.
+    Get a listing of available reports, and their request details.  NOT IMPLEMENTED YET.
 
 /standard:
   post:
@@ -12,9 +12,7 @@ get:
   body:
     application/json:
       type: !include ../../../../src/main/resources/schema/wdk/answer/post-request.json
-      example: !include ../example/post-answer-input.json
     application/x-www-form-urlencoded:
-      example: !include ../example/post-answer-input.txt
   responses:
     200:
       body:
@@ -26,7 +24,7 @@ get:
   description: |
     GET by POST.  Run a search and get the specified report as a response.
     Request includes a search configuration and a report configuration. Step and dataset parameters, if any, must have values owned by the requester.
-
+    
     See the parent GET endpoint for a list of available reports and their request details.
   responses:
     200:

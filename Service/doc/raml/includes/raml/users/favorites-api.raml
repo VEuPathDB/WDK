@@ -8,7 +8,6 @@ get:
       body:
         application/json:
           type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/get-response.json
-          example: !include ../../example/users/favorites/get-favorites-200.json
 
 patch:
   description: Accepts instructions for editing/deleting multiple favorites
@@ -41,14 +40,12 @@ post:
         body:
           application/json:
             type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/get-response.json
-            example: !include ../../example/users/favorites/get-favorite-200.json
 
   patch:
     description: Replaces the specified favorite with the passed one
     body:
       application/json:
         type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/id/put-request.json
-        example: !include ../../example/users/favorites/put-favorite-input.json
     responses:
       204:
         description: No content
@@ -62,5 +59,4 @@ post:
 /query:
   post:
     description: >
-      Takes array of {RC+PKs} objects as JSON and returns object containing an
-      array of {RC+PKs} objects found
+      Takes array of {record-type + primary keys} objects as JSON and returns object containing the subset of those that are favorites.
