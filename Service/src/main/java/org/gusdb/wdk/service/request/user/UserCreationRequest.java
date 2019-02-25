@@ -12,7 +12,8 @@ import org.json.JSONObject;
 public class UserCreationRequest {
 
   private final UserProfileRequest _profileRequest;
-  private final UserPreferencesRequest _preferencesRequest;
+  private final UserPreferencesRequest _globalPreferencesRequest;
+  private final UserPreferencesRequest _projectPreferencesRequest;
 
   public static UserCreationRequest createFromJson(JSONObject requestJson, List<UserPropertyName> configuredProps)
       throws RequestMisformatException, DataValidationException {
@@ -21,23 +22,29 @@ public class UserCreationRequest {
       JSONObject preferenceRequest = requestJson.getJSONObject(JsonKeys.PREFERENCES);
       return new UserCreationRequest(
           UserProfileRequest.createFromJson(userRequest, configuredProps, true),
-          UserPreferencesRequest.createFromJson(preferenceRequest));
+          UserPreferencesRequest.createFromJson(preferenceRequest.getJSONObject(JsonKeys.GLOBAL)),
+          UserPreferencesRequest.createFromJson(preferenceRequest.getJSONObject(JsonKeys.PROJECT)));
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage(), e);
     }
   }
 
-  public UserCreationRequest(UserProfileRequest profileRequest, UserPreferencesRequest preferencesRequest) {
+  public UserCreationRequest(UserProfileRequest profileRequest, UserPreferencesRequest globalPreferencesRequest, UserPreferencesRequest projectPreferencesRequest) {
     _profileRequest = profileRequest;
-    _preferencesRequest = preferencesRequest;
+    _globalPreferencesRequest = globalPreferencesRequest;
+    _projectPreferencesRequest = projectPreferencesRequest;
+
   }
 
   public UserProfileRequest getProfileRequest() {
     return _profileRequest;
   }
 
-  public UserPreferencesRequest getPreferencesRequest() {
-    return _preferencesRequest;
+  public UserPreferencesRequest getGlobalPreferencesRequest() {
+    return _globalPreferencesRequest;
+  }
+  public UserPreferencesRequest getProjectPreferencesRequest() {
+    return _projectPreferencesRequest;
   }
 }

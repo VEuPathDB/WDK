@@ -60,8 +60,8 @@ public class UserUtilityServices extends AbstractWdkService {
       User newUser = getWdkModel().getUserFactory().createUser(
           request.getProfileRequest().getEmail(),
           request.getProfileRequest().getProfileMap(),
-          request.getPreferencesRequest().getGlobalPreferenceMods(),
-          request.getPreferencesRequest().getProjectPreferenceMods());
+          request.getGlobalPreferencesRequest().getPreferenceUpdates(),
+          request.getProjectPreferencesRequest().getPreferenceUpdates());
 
       return Response.ok(new JSONObject().put(JsonKeys.ID, newUser.getUserId()))
           .location(getUriInfo().getAbsolutePathBuilder().build(newUser.getUserId()))
