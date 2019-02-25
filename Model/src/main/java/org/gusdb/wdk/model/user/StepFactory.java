@@ -109,7 +109,7 @@ public class StepFactory {
       COLUMN_USER_ID, COLUMN_STRATEGY_ID, COLUMN_PROJECT_ID, COLUMN_CREATE_TIME, COLUMN_IS_DELETED,
       COLUMN_STEP_ID, COLUMN_PREVIOUS_STEP_ID, COLUMN_CHILD_STEP_ID, COLUMN_LAST_RUN_TIME, COLUMN_ESTIMATE_SIZE,
       COLUMN_ANSWER_FILTER, COLUMN_CUSTOM_NAME, COLUMN_IS_VALID, COLUMN_COLLAPSED_NAME, COLUMN_IS_COLLAPSIBLE,
-      COLUMN_ASSIGNED_WEIGHT, COLUMN_PROJECT_VERSION, COLUMN_QUESTION_NAME, COLUMN_DISPLAY_PARAMS
+      COLUMN_ASSIGNED_WEIGHT, COLUMN_PROJECT_VERSION, COLUMN_QUESTION_NAME, COLUMN_DISPLAY_PARAMS, COLUMN_DISPLAY_PREFS
   };
 
   // strategies table and columns
@@ -519,7 +519,6 @@ public class StepFactory {
         "  " + COLUMN_STEP_ID + " = ?";
 
     final int boolType = _userDbPlatform.getBooleanType();
-    final Either<Exception, String> displayPrefs = JsonUtil.toJsonString(step.getDisplayPrefs());
 
     final int result = new SQLRunner(_userDbDs, sql).executeUpdate(
         new Object[]{
@@ -530,8 +529,7 @@ public class StepFactory {
             step.getCollapsedName(),
             step.getEstimatedSize(),
             step.getAnswerSpec().getQueryInstanceSpec().getAssignedWeight(),
-            JsonUtil.toJsonString(step.getDisplayPrefs())
-                .valueOrElseThrow(e -> new WdkModelException(displayPrefs.getLeft())),
+            step.getDisplayPrefs().toString(),
             step.getStepId()
         },
         new Integer[]{
@@ -889,7 +887,7 @@ public class StepFactory {
       _userDbPlatform.convertBoolean(step.isCollapsible()),
       step.getStrategyId(),
       new StringReader(ParamFiltersClobFormat.formatParamFilters(spec).toString()),
-      new StringReader(JsonUtil.toJsonString(step.getDisplayPrefs()).getValue())
+      new StringReader(step.getDisplayPrefs().toString())
     };
   }
 
@@ -1401,24 +1399,24 @@ public class StepFactory {
       final AnswerSpec spec = step.getAnswerSpec();
 
       batch.add(new Object[]{
-          step.getPrimaryInputStepId() == 0 ? null : step.getPrimaryInputStepId(),
-          step.getSecondaryInputStepId() == 0 ? null : step.getSecondaryInputStepId(),
-          step.getLastRunTime(),
-          step.getEstimatedSize(),
-          spec.getLegacyFilterName(),
-          step.getCustomName(),
-          _userDbPlatform.convertBoolean(step.isDeleted()),
-          _userDbPlatform.convertBoolean(step.isValid()),
-          step.getCollapsedName(),
-          _userDbPlatform.convertBoolean(step.isCollapsible()),
-          spec.getQueryInstanceSpec().getAssignedWeight(),
-          step.getProjectId(),
-          step.getProjectVersion(),
-          spec.getQuestionName(),
-          step.getStrategyId(),
-          ParamFiltersClobFormat.formatParamFilters(spec),
-          JsonUtil.toJsonString(step.getDisplayPrefs()).getValue(),
-          step.getStepId()
+        step.getPrimaryInputStepId() == 0 ? null : step.getPrimaryInputStepId(),
+        step.getSecondaryInputStepId() == 0 ? null : step.getSecondaryInputStepId(),
+        step.getLastRunTime(),
+        step.getEstimatedSize(),
+        spec.getLegacyFilterName(),
+        step.getCustomName(),
+        _userDbPlatform.convertBoolean(step.isDeleted()),
+        _userDbPlatform.convertBoolean(step.isValid()),
+        step.getCollapsedName(),
+        _userDbPlatform.convertBoolean(step.isCollapsible()),
+        spec.getQueryInstanceSpec().getAssignedWeight(),
+        step.getProjectId(),
+        step.getProjectVersion(),
+        spec.getQuestionName(),
+        step.getStrategyId(),
+        ParamFiltersClobFormat.formatParamFilters(spec),
+        step.getDisplayPrefs().toString(),
+        step.getStepId()
       });
     }
 

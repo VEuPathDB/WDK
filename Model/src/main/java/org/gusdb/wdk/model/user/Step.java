@@ -34,7 +34,6 @@ import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.user.StepDisplayPreference.StepDisplayPreferenceBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -67,7 +66,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     private AnswerSpecBuilder _answerSpec; // cannot be null; must be set
     private boolean _inMemoryOnly = false;
     private boolean _isResultSizeDirty = false;
-    private StepDisplayPreferenceBuilder _displayPrefs;
+    private JSONObject _displayPrefs;
 
     private StepBuilder(WdkModel wdkModel, long userId, long stepId) {
       _wdkModel = wdkModel;
@@ -75,7 +74,7 @@ public class Step implements StrategyElement, Validateable<Step> {
       _projectVersion = wdkModel.getVersion();
       _userId = userId;
       _stepId = stepId;
-      _displayPrefs = new StepDisplayPreferenceBuilder();
+      _displayPrefs = new JSONObject();
     }
 
     /**
@@ -99,7 +98,7 @@ public class Step implements StrategyElement, Validateable<Step> {
       _estimatedSize = step._estimatedSize;
       _inMemoryOnly = step._inMemoryOnly;
       _answerSpec = AnswerSpec.builder(step._answerSpec);
-      _displayPrefs = StepDisplayPreference.builder(step.getDisplayPrefs());
+      _displayPrefs = new JSONObject(step.getDisplayPrefs().toString());
     }
 
     public long getStepId() {
@@ -185,12 +184,12 @@ public class Step implements StrategyElement, Validateable<Step> {
       return this;
     }
 
-    public StepBuilder setDisplayPrefs(StepDisplayPreferenceBuilder prefs) {
+    public StepBuilder setDisplayPrefs(JSONObject prefs) {
       _displayPrefs = prefs;
       return this;
     }
 
-    public StepDisplayPreferenceBuilder getDisplayPrefs() {
+    public JSONObject getDisplayPrefs() {
       return _displayPrefs;
     }
 
@@ -333,7 +332,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   // they are out of date.
   private final boolean _isResultSizeDirty;
 
-  private final StepDisplayPreference _displayPrefs;
+  private final JSONObject _displayPrefs;
 
   /**
    * Creates a step object for given user and step ID. Note that this
@@ -364,7 +363,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     _estimatedSize = builder._estimatedSize;
     _inMemoryOnly = builder._inMemoryOnly;
     _answerSpec = builder._answerSpec.build(user, getContainer(), validationLevel);
-    _displayPrefs = builder._displayPrefs.build(validationLevel);
+    _displayPrefs = new JSONObject(builder._displayPrefs.toString());
 
     // set estimated size appropriately if this step set dirty
     _isResultSizeDirty = builder._isResultSizeDirty;
@@ -1091,7 +1090,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     return _strategy != null;
   }
 
-  public StepDisplayPreference getDisplayPrefs() {
+  public JSONObject getDisplayPrefs() {
     return _displayPrefs;
   }
 }
