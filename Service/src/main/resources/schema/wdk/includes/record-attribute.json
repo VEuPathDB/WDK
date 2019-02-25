@@ -6,7 +6,7 @@
       "type": "boolean"
     },
     "formats": {
-      "$ref": "/schema/wdk/includes/record-reporter-array.json"
+      "$ref": "./record-reporter-array.json"
     },
     "truncateTo": {
       "type": "integer"
@@ -30,10 +30,10 @@
       "type": "object",
       "properties": {
         "specificAttribution": {
-          "$ref": "/schema/includes/string-array.json"
+          "$ref": "../../includes/string-array.json"
         },
         "organisms": {
-          "$ref": "/schema/includes/string-array.json"
+          "$ref": "../../includes/string-array.json"
         }
       }
     }

@@ -7,7 +7,7 @@
       "type": "string"
     },
     "parameters": {
-      "$ref": "/schema/includes/string-string-map.json"
+      "$ref": "../../includes/string-string-map.json"
     },
     "legacyFilterName": {
       "type": "string"
@@ -18,13 +18,13 @@
     "filters": {
       "type": "array",
       "items": {
-        "$ref": "/schema/wdk/includes/name-value.json"
+        "$ref": "./name-value.json"
       }
     },
     "viewFilters": {
       "type": "array",
       "items": {
-        "$ref": "/schema/wdk/includes/name-value.json"
+        "$ref": "./name-value.json"
       }
     }
   }

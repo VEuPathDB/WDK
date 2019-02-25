@@ -13,10 +13,10 @@
       "type": "string"
     },
     "displayPrefs": {
-      "$ref": "/schema/wdk/users/steps/includes/display-prefs.json"
+      "$ref": "../includes/display-prefs.json"
     },
     "answerSpec": {
-      "$ref": "/schema/wdk/includes/answer-spec-request.json"
+      "$ref": "../../../includes/answer-spec-request.json"
     }
   }
 }

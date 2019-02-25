@@ -34,7 +34,7 @@
           }
         },
         "sorting": {
-	    "$ref": "/schema/wdk/includes/sorting-spec.json"
+	    "$ref": "./sorting-spec.json"
         }
       }
     }
