@@ -3,25 +3,17 @@
 description: Key value store
 
 get:
-  description: Object of user preferences
+  description: Get a listing of this user's preferences.  (For preferences associated with a specific search strategy step, see the /step endpoints).  Returns a JSON map of user preference name to user preference value.
   responses:
     200:
       body:
         application/json:
           type: !include ../../../../../src/main/resources/schema/wdk/users/preferences/get-response.json
+	  
 patch:
   description: >
     Update preferences passed (missing prefs are unaffected)
+    
 put:
   description: >
     Replace all user preferences with those passed in (delete missing prefs)
-
-/record/{class}:
-  get:
-    description: "TBD: the user's configuration of this record class"
-    uriParameters:
-      class:
-        type: string
-
-  /sections:
-    description: TBD: configuration of the sections for this record class

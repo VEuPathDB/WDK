@@ -78,13 +78,11 @@ baseUri: //{siteUrl}/{webApp}/service
     body:
       application/json:
         type: !include ../../src/main/resources/schema/wdk/user-id-query/post-request.json
-        example: !include ./includes/example/post-user-id-query-input.json
     responses:
       200:
         body:
           application/json:
             type: !include ../../src/main/resources/schema/wdk/user-id-query/post-response.json
-            example: !include ./includes/example/post-user-id-query-200.json
 
 /user-password-reset:
   displayName: User Password Reset
@@ -93,7 +91,6 @@ baseUri: //{siteUrl}/{webApp}/service
     body:
       application/json:
         type: !include ../../src/main/resources/schema/wdk/user-password-reset/post-request.json
-        example: !include ./includes/example/post-user-password-reset-input.json
     responses:
       204:
 
@@ -105,7 +102,6 @@ baseUri: //{siteUrl}/{webApp}/service
         description: Success
         body:
           application/json:
-            example: !include ./includes/example/get-user-datasets-config-200.json
 
 /users: !include ./includes/raml/users-api.raml
 

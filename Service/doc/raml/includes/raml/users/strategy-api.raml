@@ -12,7 +12,7 @@ get:
 
 post:
   description: |
-   Create a new strategy either from a provided tree of steps, or by duplicating an existing strategy.  In the former case, the provide the tree of steps in the 'stepsTree' property, and do not provide the 'sourceStrategy' property.  
+    Create a new strategy either from a provided tree of steps, or by duplicating an existing strategy.  In the former case, provide the tree of steps in the 'stepsTree' property, and do not provide the 'sourceStrategy' property.  
     **Without Source Strategy**
 
     * Used to create a strategy from >0 independent steps
@@ -25,7 +25,7 @@ post:
     {
       name: String,
       ...other_UI_properties_above,
-      root: {
+      stepTree: {
         id: 1234,
         left: {
           id: 2345,
@@ -51,7 +51,7 @@ post:
     **With Source Strategy**
 
     * This is to support import
-    * Input JSON same as regular post but instead of root property, include:
+    * Input JSON same as regular post but instead of stepTree property, include:
         * sourceStrategy: {strategy-signature}
     * Looks up another user's strategy by signature
     * Makes copy of strategy, assigning new step IDs and new strategy ID
@@ -117,7 +117,7 @@ patch:
         creationDate: String (date formatted),
         lastViewDate: String (date formatted),
         lastModDate: String (date formatted),
-        root: {
+        stepTree: {
           id: 1234,
           step: <step_json_above>,
           left: {
