@@ -22,7 +22,7 @@
 	    "type": "string"
 	},
 	"lastModified": {
-	    "$ref": "/schema/includes/date-string-1.json"
+	    "$ref": "../../includes/date-string-1.json"
 	},
 	"isPublic" : {
 	    "type": "boolean"

@@ -1,4 +1,4 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema",
-    "$ref": "/schema/wdk/includes/answer-response.json"
+    "$ref": "../../../wdk/includes/answer-response.json"
 }

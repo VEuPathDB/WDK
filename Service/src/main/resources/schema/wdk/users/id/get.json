@@ -29,10 +29,10 @@
       "type": "object",
       "properties": {
         "global": {
-          "$ref": "/schema/includes/string-string-map.json"
+          "$ref": "../../../includes/string-string-map.json"
         },
         "project": {
-          "$ref": "/schema/includes/string-string-map.json"
+          "$ref": "../../../includes/string-string-map.json"
         }
       },
       "required": [

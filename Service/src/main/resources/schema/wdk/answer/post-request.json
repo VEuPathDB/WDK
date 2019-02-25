@@ -3,15 +3,15 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
-	"answerSpec" : {
-	    "$ref": "/schema/wdk/includes/answer-spec-request.json"
+	"searchConfig" : {
+	    "$ref": "../includes/answer-spec-request.json"
 
 	},
-	"formatConfig": {
-	    "$ref": "/schema/wdk/includes/answer-formatConfig-json-request.json"
+	"reportConfig": {
+	    "$ref": "../includes/answer-formatConfig-json-request.json"
 	}
     },
     "required" : [
-	"answerSpec"
+	"searchConfig"
     ]
 }
