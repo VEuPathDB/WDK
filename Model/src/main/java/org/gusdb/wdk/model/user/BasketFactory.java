@@ -5,10 +5,7 @@ import static org.gusdb.fgputil.functional.Functions.reduce;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.sql.DataSource;
 
@@ -77,7 +74,7 @@ public class BasketFactory {
     addToBasket(user, recordClass, pkValues);
   }
 
-  public void addPksToBasket(User user, RecordClass recordClass, List<PrimaryKeyValue> recordsToAdd)
+  public void addPksToBasket(User user, RecordClass recordClass, Collection<PrimaryKeyValue> recordsToAdd)
       throws WdkModelException {
     addToBasket(user, recordClass, PrimaryKeyValue.toStringArrays(recordsToAdd));
   }
@@ -88,7 +85,7 @@ public class BasketFactory {
    * @param pkValues a list of primary key values. the inner map is a primary-key column-value map
    * @throws WdkModelException
    */
-  public void addToBasket(User user, RecordClass recordClass, List<String[]> pkValues)
+  public void addToBasket(User user, RecordClass recordClass, Collection<String[]> pkValues)
       throws WdkModelException {
     long userId = user.getUserId();
     String projectId = _wdkModel.getProjectId();
@@ -180,7 +177,7 @@ public class BasketFactory {
     removeFromBasket(user, recordClass, pkValues);
   }
 
-  public void removePksFromBasket(User user, RecordClass recordClass, List<PrimaryKeyValue> recordsToDelete)
+  public void removePksFromBasket(User user, RecordClass recordClass, Collection<PrimaryKeyValue> recordsToDelete)
       throws WdkModelException {
     removeFromBasket(user, recordClass, PrimaryKeyValue.toStringArrays(recordsToDelete));
   }
@@ -426,7 +423,7 @@ public class BasketFactory {
 
   /**
    * the method has to be called before the recordClasses are resolved.
-   * 
+   *
    * @param recordClass
    */
   public void createSnapshotBasketQuestion(RecordClass recordClass) throws WdkModelException {
@@ -515,7 +512,7 @@ public class BasketFactory {
 
   /**
    * the method has to be called before the recordClasses are resolved.
-   * 
+   *
    * @param recordClass
    */
   public void createRealtimeBasketQuestion(RecordClass recordClass) throws WdkModelException {
@@ -586,7 +583,7 @@ public class BasketFactory {
 
   /**
    * the method has to be called before the recordClasses are resolved.
-   * 
+   *
    * @param recordClass
    * @return
    */
@@ -649,7 +646,7 @@ public class BasketFactory {
 
   /**
    * this method has to be called before resolving the model
-   * 
+   *
    * @param recordClass
    */
   public void createAttributeQueryRef(RecordClass recordClass) throws WdkModelException {
