@@ -3,9 +3,6 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "questionName": {
-      "type": "string"
-    },
     "parameters": {
       "$ref": "../../includes/string-string-map.json"
     },

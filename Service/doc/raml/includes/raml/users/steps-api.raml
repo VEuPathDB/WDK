@@ -16,7 +16,7 @@ post:
       description: Success
       body:
         application/json:
-          type: !include ../../../../../src/main/resources/schema/wdk/creation-post-response.json
+          type: !include ../../../../../src/main/resources/schema/includes/standard-post-response.json
 
 /{step-id}:
   uriParameters:
@@ -100,8 +100,7 @@ post:
                 * estimatedSize is cleared for this and all downstream steps
       body:
         application/json:
-          type: TODO
-          example: TODO
+	  type: !include ../../../../../src/main/resources/schema/wdk/includes/answer-spec-request.json
       responses:
         204:
           description: No Content
