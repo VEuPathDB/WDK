@@ -12,13 +12,13 @@ get:
 
 post:
   description: |
-    Create a new strategy either from a provided tree of steps, or by duplicating an existing strategy.  In the former case, provide the tree of steps in the 'stepsTree' property, and do not provide the 'sourceStrategy' property.  
-    **Without Source Strategy**
-
-    * Used to create a strategy from >0 independent steps
-    * Cannot "steal" steps from another strat
-        * Error thrown if any submitted step IDs already have strategy (in DB)
-    * Other validation: steps must have same owner, same project
+    Create a new strategy either from a provided tree of steps, or by duplicating an existing strategy.  In the former case, provide the tree of steps in the 'stepsTree' property, and do not provide the 'sourceStrategy' property. In the latter case, do the opposite. 
+    **Using the stepsTree property**
+    * Create a strategy from one or more steps.  The stepTree structure can have just one step, or a tree of steps.
+    * Submitted steps must:
+      * have the same owner and project as this strategy
+      * not already belong to a strategy (ie, have an assigned strategy ID).
+    * To nest a preexisting strategy, use the strategies/{other-id}/duplicated-step-tree endpoint to get a valid step tree for use in the stepTree property.  (Copy other properties as desired.)
     * Tree of steps submitted as a data structure, e.g.
 
     ```json
@@ -40,14 +40,6 @@ post:
     }
     ```
 
-    * Strategy ID is generated and assigned to all steps in tree
-    * Root step is run; then any steps with null/-1 estimated size are updated
-        * estimated size should then exist on every step
-        * last_run updated on newly run steps
-    * Signature, dates, and identifying information also generated and assigned
-    * Returns JSON with ID + Location header containing URL, OR
-        * Error document telling where and why request failed
-
     **With Source Strategy**
 
     * This is to support import
@@ -65,7 +57,7 @@ post:
     200:
       body:
         application/json:
-          type: !include ../../../../../src/main/resources/schema/wdk/creation-post-response.json
+          type: !include ../../../../../src/main/resources/schema/includes/standard-post-response.json
 
 patch:
   description: >
@@ -77,32 +69,11 @@ patch:
     204:
       description: No Content
 
-/duplication-as-branch:
-  uriParameters:
-    class:
-      type: string
-  post:
-    description: |
-      * This is to support adding a separate strategy as a step in an existing strategy
-      * Input is JSON { sourceStrategy: {strategy-id} }
-      * Looks up another strategy by signature
-      * Makes copies of all steps in the strategy, assigning new step IDs but removing strategy ID, estimate_size, and values of AnswerParams
-      * Returns strategy structure JSON with new IDs
-          * This will look like the value of the "root" property in the endpoint:
-              * POST /users/{user-id}/strategies
-      * If the strategy was a single step, root step will be non-nested, otherwise the root of the new branch will be a nested step for incorporation into the "right" side of an existing strategy
-      * In short, this endpoint tells the client how to incorporate a copy of an existing strategy into another strategy
-    body:
-      application/json:
-        type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/branch/post-request.json
-  responses:
-    # TODO: Spec out what this endpoint is supposed to return
-
 /{strategy-id}:
   get:
     description: |
-      * Will return full JSON for a strategy, including step JSON for every step in the strategy
-      * Any steps that have null/-1 estimate size will be run and updated
+      * Returns the full JSON for a strategy, including step JSON for every step in the strategy
+      * Any steps that have null/-1 estimatedSize will be run and updated
       * An example based on the POST /strategies JSON above:
 
       ```json
@@ -149,8 +120,8 @@ patch:
         * description
         * isSaved (TBD, change to isMutable?)
         * isPublic
-      * Root step is run; then any steps with null/-1 estimate size are updated
-          * estimate size should then exist on every step
+      * Root step is run; then any steps with null/-1 estimatedSize are updated
+          * estimatedSize should then exist on every step
           * last_run updated on newly run steps
       * Last mod date is updated
       * Returns full strategy JSON (see GET below for format)
@@ -178,4 +149,17 @@ patch:
         204:
           description: No Content
 
+  /duplicated-step-tree:
+    post:
+      description: |
+        * Creates a duplicate of this strategy's step tree, populated with new steps.
+	* Used to add a copy of this strategy as a nested step in another strategy.
+        * Input JSON is empty
+        * Makes copies of all steps in the strategy, assigning new step IDs but removing strategy ID, estimatedSize, and values of step params
+        * Returned step tree will look like the value of the "step-tree" property in the endpoint POST /users/{user-id}/strategies
+      body:
+        application/json:
+          type: !include ../../../../../src/main/resources/schema/includes/empty-post-request.json
+    responses:
+      # TODO: Spec out what this endpoint is supposed to return
       

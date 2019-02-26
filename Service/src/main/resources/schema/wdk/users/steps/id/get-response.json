@@ -30,9 +30,6 @@
     "recordClassName": {
       "type": "string"
     },
-    "isAnswerSpecComplete": {
-      "type": "boolean"
-    },
     "strategyId": {
       "description": "Strategy ID (always null)",
       "type": "null"
@@ -61,7 +58,6 @@
     "id",
     "isCollapsible",
     "hasCompleteStepAnalysis",
-    "isAnswerSpecComplete",
     "isValid"
   ]
 }

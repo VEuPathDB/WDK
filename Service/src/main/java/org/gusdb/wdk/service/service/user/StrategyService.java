@@ -220,17 +220,17 @@ public class StrategyService extends UserService {
   }
 
   @POST
-  @Path(BASE_PATH + "/duplicate-step-tree")
+  @Path(ID_PATH + "/duplicated-step-tree")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   // @InSchema(...) TODO
   // @OutSchema(...) TODO
-  public JSONObject duplicateAsBranch(JSONObject body)
+  public JSONObject duplicateAsBranch(@PathParam(ID_PARAM) long stratId, JSONObject body)
       throws WdkModelException {
     return StepFormatter.formatAsStepTree(
         getWdkModel().getStepFactory().copyStrategyToBranch(
             getSessionUser(),
-            getStrategyForCurrentUser(body.getLong(JsonKeys.STRATEGY_ID), ValidationLevel.NONE)
+            getStrategyForCurrentUser(stratId, ValidationLevel.NONE)
     ));
   }
 

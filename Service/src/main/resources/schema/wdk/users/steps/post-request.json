@@ -12,7 +12,7 @@
     "collapsedName": {
       "type": "string"
     },
-    "answerSpec": {
+    "searchConfig": {
       "$ref": "../../includes/answer-spec-request.json"
     },
     "viewFilters": {
@@ -39,6 +39,6 @@
     }
   },
   "required": [
-    "answerSpec"
+    "searchConfig"
   ]
 }
