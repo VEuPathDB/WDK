@@ -88,13 +88,27 @@ public class FavoritesService extends UserService {
   @PATCH
   @Path("favorites")
   @Consumes(MediaType.APPLICATION_JSON)
+  // TODO: @InSchema(...)
   public Response batchDeleteFavoritesByFavoriteIds(String body) throws WdkModelException, DataValidationException {
     User user = getPrivateRegisteredUser();
     FavoriteFactory factory = getWdkModel().getFavoriteFactory();
     JSONObject json = new JSONObject(body);
     FavoriteActions actions = new FavoriteActions(json);
-    int numDeleted = factory.deleteFavorites(user, actions.getIdsToDelete());
-    int numUndeleted = factory.undeleteFavorites(user, actions.getIdsToUndelete());
+
+    int numDeleted = 0, numUndeleted = 0;
+
+    switch (actions.getAction()) {
+      case DELETE:
+        numDeleted = factory.deleteFavorites(user, actions.getIdentifiers());
+        break;
+      case UNDELETE:
+        numUndeleted = factory.undeleteFavorites(user, actions.getIdentifiers());
+        break;
+      case DELETE_ALL:
+        numDeleted = factory.deleteAllFavorites(user);
+        break;
+    }
+
     return Response.ok(FavoritesFormatter.getCountsJson(numDeleted, numUndeleted).toString()).build();
   }
 

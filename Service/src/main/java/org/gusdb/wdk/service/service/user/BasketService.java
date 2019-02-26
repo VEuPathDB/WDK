@@ -43,26 +43,31 @@ import org.json.JSONObject;
 
 /**
  * Use cases this service supports:
- * 
- * - Get list of baskets/RCs with record counts (1)
- * - Add/Remove one record in basket (2)
- * - Add/Remove multiple records in basket (2)
- * - Clear an entire basket (3)
- * - Check whether set of records are in a basket (4)
- * - Get single basket as a step result (i.e. answer) (5)
- * 
+ * <ul>
+ *   <li>Get list of baskets/RCs with record counts (1)
+ *   <li>Add/Remove one record in basket (2)
+ *   <li>Add/Remove multiple records in basket (2)
+ *   <li>Clear an entire basket (3)
+ *   <li>Check whether set of records are in a basket (4)
+ *   <li>Get single basket as a step result (i.e. answer) (5)
+ * </ul>
+ * <p>
  * Unsupported (supported by other resources):
- * 
- * - Create a new step/strategy that returns the IDs in a basket
- * 
- * Thus, this service provides the following service endpoints (all behind /user/{id}):
- * 
+ * <ul>
+ *   <li>Create a new step/strategy that returns the IDs in a basket
+ * </ul>
+ * <p>
+ * Thus, this service provides the following service endpoints
+ * (all behind /user/{id}):
+ *
+ * <pre>
  * 1. GET    /baskets                                  returns list of baskets (record classes) and record count in each basket
  * 2. PATCH  /baskets/{recordClassOrUrlSegment}        add or remove multiple records from a basket
  * 3. DELETE /baskets/{recordClassOrUrlSegment}        clears all records from a basket
  * 4. POST   /baskets/{recordClassOrUrlSegment}/query  queries basket status (presence) of multiple records at one time
  * 5. POST   /baskets/{recordClassOrUrlSegment}/answer same API as "format" property of answer service
- * 
+ * </pre>
+ *//*
  * TODO #1: Need to add option in POST /dataset endpoint to create from basket (i.e. basket snapshot)
  *            (Also- change RecordsByBasketSnapshot question to take dataset ID, maybe generalize to GenesByDataset, etc)
  * TODO #2: Disallow answer service access to basket questions (supported by /basket/{id}/answer)
@@ -102,16 +107,30 @@ public class BasketService extends UserService {
   @Path(NAMED_BASKET_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response patchBasket(@PathParam(BASKET_NAME_PARAM) String basketName, String body)
+  // TODO @InSchema(...)
+  public Response patchBasket(@PathParam(BASKET_NAME_PARAM) String basketName, JSONObject body)
       throws WdkModelException, DataValidationException, RequestMisformatException {
     try {
       User user = getPrivateRegisteredUser();
       RecordClass recordClass = getRecordClassOrNotFound(basketName);
-      BasketActions actions = new BasketActions(new JSONObject(body), recordClass);
-      RevisedRequest<BasketActions> revisedRequest = translatePatchRequest(recordClass, actions);
+      RevisedRequest<BasketActions> revisedRequest = translatePatchRequest(
+          recordClass, new BasketActions(body, recordClass));
       BasketFactory factory = getWdkModel().getBasketFactory();
-      factory.addPksToBasket(user, revisedRequest.getRecordClass(), revisedRequest.getObject().getRecordsToAdd());
-      factory.removePksFromBasket(user, revisedRequest.getRecordClass(), revisedRequest.getObject().getRecordsToRemove());
+
+      switch (revisedRequest.getObject().getAction()) {
+        case ADD:
+          factory.addPksToBasket(user, revisedRequest.getRecordClass(),
+              revisedRequest.getObject().getIdentifiers());
+          break;
+        case REMOVE:
+          factory.removePksFromBasket(user, revisedRequest.getRecordClass(),
+              revisedRequest.getObject().getIdentifiers());
+          break;
+        case REMOVE_ALL:
+          factory.clearBasket(user, revisedRequest.getRecordClass());
+          break;
+      }
+
       return Response.noContent().build();
     }
     catch (JSONException e) {
@@ -124,13 +143,15 @@ public class BasketService extends UserService {
    * @throws WdkModelException
    */
   protected RevisedRequest<BasketActions> translatePatchRequest(
-      RecordClass recordClass, BasketActions actions) throws WdkModelException {
+      RecordClass recordClass, BasketActions actions) throws WdkModelException,
+      DataValidationException {
     return new RevisedRequest<>(recordClass, actions);
   }
 
 
   /**
    * Input is a array of record primary keys
+   * <pre>
    * [
    *   [
    *     { name: pk_col_1_name, value: pk_col_1_value },
@@ -138,17 +159,18 @@ public class BasketService extends UserService {
    *     ...
    *   ]
    * ]
-   * 
+   * </pre>
+   * <p>
    * Output is a boolean array of identical size representing whether
    * each ID is present in the requested basket.  Ordering is the same
    * as the incoming array (i.e. output element at index N is the status
    * of incoming primary key at index N).
-   * 
+   *
    * @param body
    * @return
    * @throws WdkModelException
    * @throws RequestMisformatException
-   * @throws DataValidationException 
+   * @throws DataValidationException
    */
   @POST
   @Path(NAMED_BASKET_PATH + "/query")

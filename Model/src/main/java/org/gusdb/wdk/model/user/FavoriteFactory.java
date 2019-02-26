@@ -14,15 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import javax.sql.DataSource;
 
@@ -326,7 +318,7 @@ public class FavoriteFactory {
    * @return number of favorites affected
    * @throws WdkModelException
    */
-  public int deleteFavorites(User user, List<Long> favoriteIds) throws WdkModelException {
+  public int deleteFavorites(User user, Collection<Long> favoriteIds) throws WdkModelException {
     return setDeletedFlag(user, favoriteIds, true);
   }
 
@@ -339,11 +331,11 @@ public class FavoriteFactory {
    * @return number of favorites affected
    * @throws WdkModelException
    */
-  public int undeleteFavorites(User user, List<Long> favoriteIds) throws WdkModelException {
+  public int undeleteFavorites(User user, Collection<Long> favoriteIds) throws WdkModelException {
     return setDeletedFlag(user, favoriteIds, false);
   }
 
-  private int setDeletedFlag(User user, List<Long> favoriteIds, boolean isDeletedValue) throws WdkModelException {
+  private int setDeletedFlag(User user, Collection<Long> favoriteIds, boolean isDeletedValue) throws WdkModelException {
     try(Connection connection =_userDb.getDataSource().getConnection()) {
       Wrapper<Integer> updateCountWrapper = new Wrapper<>();
       String sql = SET_IS_DELETED_BY_ID_SQL

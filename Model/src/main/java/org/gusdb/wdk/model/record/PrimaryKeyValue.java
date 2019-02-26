@@ -4,11 +4,7 @@ import static java.util.Arrays.asList;
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.Utilities;
@@ -101,7 +97,8 @@ public class PrimaryKeyValue {
     return FormatUtil.join(getValues().values().toArray(), "/");
   }
 
-  public static List<String[]> toStringArrays(List<PrimaryKeyValue> recordPks) {
+  public static List<String[]> toStringArrays(
+      Collection<PrimaryKeyValue> recordPks) {
     return mapToList(recordPks, pkValue ->
         mapToList(asList(pkValue._pkDef.getColumnRefs()),
             colName -> pkValue.getValues().get(colName)

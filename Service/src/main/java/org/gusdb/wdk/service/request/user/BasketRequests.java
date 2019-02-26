@@ -1,11 +1,9 @@
 package org.gusdb.wdk.service.request.user;
 
-import static org.gusdb.wdk.core.api.JsonKeys.ADD;
-import static org.gusdb.wdk.core.api.JsonKeys.REMOVE;
+import java.util.Collection;
+import java.util.Optional;
 
-import java.util.Arrays;
-import java.util.List;
-
+import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -13,43 +11,77 @@ import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.json.JSONObject;
 
+import static java.util.Arrays.stream;
+
 public class BasketRequests {
 
-  public static class BasketActions extends PatchMap<PrimaryKeyValue> {
+  public enum ActionType {
+    ADD("add"),
+    REMOVE("remove"),
+    REMOVE_ALL("removeAll");
 
-    private static final long serialVersionUID = -2153394019262064680L;
-    private static final List<String> ACTION_TYPES = Arrays.asList(ADD, REMOVE);
+    public final String value;
+
+    ActionType(String s) {
+      value = s;
+    }
+
+    public static Optional<ActionType> fromString(String s) {
+      return stream(values()).filter(v -> v.value.equals(s)).findFirst();
+    }
+
+    @Override
+    public String toString() {
+      return value;
+    }
+  }
+
+  public static class BasketActions extends PatchMap<ActionType, PrimaryKeyValue> {
+
+    private final RecordClass _recordClass;
 
     /**
      * Creates set of actions, each associated with a list of basket records
+     * <p>
      * Input Format:
+     * <pre>
      * {
-     *   add: [PrimaryKey, PrimaryKey, ...],
-     *   remove: [PrimaryKey, PrimaryKey, ...]
+     *   action: add|remove|removeAll,
+     *   primaryKeys?: PrimaryKey[]
      * }
-     * Where PrimaryKey is [ { name: String, value: String } ].
-     * 
+     * </pre>
+     * Where PrimaryKey is <code>[ { name: String, value: String } ]</code>.
+     *
      * @param json input object
      * @return parsed actions to perform on IDs
-     * @throws WdkModelException 
-     * @throws DataValidationException 
+     * @throws WdkModelException
+     * @throws DataValidationException
      */
     public BasketActions(JSONObject json, RecordClass recordClass)
         throws DataValidationException, WdkModelException {
-      super(json, ACTION_TYPES, idJson -> RecordRequest.parsePrimaryKey(idJson.getJSONArray(), recordClass));
-      removeSharedIds(ADD, REMOVE);
+      super(json, ActionType.values());
+      _recordClass = recordClass;
     }
 
-    public BasketActions(List<PrimaryKeyValue> recordsToAdd, List<PrimaryKeyValue> recordsToRemove) {
-      super(ACTION_TYPES);
-      put(ADD, recordsToAdd);
-      put(REMOVE, recordsToRemove);
-      removeSharedIds(ADD, REMOVE);
+    public BasketActions(ActionType action, Collection<PrimaryKeyValue> records)
+        throws DataValidationException {
+      super(ActionType.values());
+      _recordClass = null;
+      setAction(action);
+      setIdentifiers(records);
     }
 
-    public List<PrimaryKeyValue> getRecordsToAdd() { return get(ADD); }
-    public List<PrimaryKeyValue> getRecordsToRemove() { return get(REMOVE); }
+    @Override
+    protected ActionType parseAction(Object obj) throws DataValidationException {
+      return ActionType.fromString(obj.toString())
+          .orElseThrow(DataValidationException::new);
+    }
 
+    @Override
+    protected PrimaryKeyValue parsePrimaryKey(JsonType obj)
+        throws DataValidationException, WdkModelException {
+      return RecordRequest.parsePrimaryKey(obj.getJSONArray(), _recordClass);
+    }
   }
 
 }
