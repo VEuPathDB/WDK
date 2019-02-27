@@ -42,9 +42,10 @@ post:
     description: |
       * Used to modify the step (but not its searchConfig or placement within its strategy)
       * The only modifiable fields are:
-          * name
+          * customName
           * isCollapsible
           * collapsedName
+	  * displayPrefs
     body:
       application/json:
         type: !include ../../../../../src/main/resources/schema/wdk/users/steps/id/patch-request.json
@@ -53,7 +54,7 @@ post:
         description: No Content
 
   delete:
-    description: Delete step.  Only allowed for steps that are not yet attached to a strategy.  Otherwise use strategy/ service.
+    description: Delete the step.  Only allowed for steps that are not yet attached to a strategy.  Otherwise use the strategy/ service.
     responses:
       204:
         description: No Content
@@ -64,7 +65,7 @@ post:
         GET by POST.  Get the result of this step as a report. 
         * Input JSON is the same as the "reportConfig" property in searches/{searchName}/reports/standard requests
             * If the body is empty, defaults are used
-        * Step status fields (estimatedSize, isValid, last_run) are updated
+        * Step status fields (estimatedSize, isValid, lastRunTime) are updated
         * If the step has one or more step parameters but no strategy ID (i.e. is not yet part of a strategy) the request will fail.
       body:
         application/json:
@@ -78,7 +79,7 @@ post:
       description: |
         GET by POST.  Get the result of this step as a report. 
         * Use the GET step/{stepId}/reports endpoint to get a listing of available reports and their request details (NOT IMPLEMENTED YET).
-        * Step status fields (estimatedSize, isValid, last_run) are updated
+        * Step status fields (estimatedSize, isValid, lastRunTime) are updated
         * If the step has one or more step parameters but no strategy ID (i.e. is not yet part of a strategy) the request will fail.
       body:
         application/json:
@@ -91,13 +92,11 @@ post:
     put:
       description: |
         update the searchConfig of a step (but do not re-run the step)
-          * Any part of the searchConfig may be changed (to revise the step), except the following, which will cause validation failure:
-              * The search name
-              * step parameter values
+          * Any part of the searchConfig may be changed (to revise the step), except step parameter values, which will cause validation failure
           * The new searchConfig is validated
               * if validation fails, 400/500 response is returned and step is not updated
               * If validation passes:
-                * estimatedSize is cleared for this and all downstream steps
+                * estimatedSize is cleared for this and, if this step is part of a strategy, all downstream steps
       body:
         application/json:
 	  type: !include ../../../../../src/main/resources/schema/wdk/includes/answer-spec-request.json
@@ -105,7 +104,7 @@ post:
         204:
           description: No Content
 
-  /reports/filter-summary/{name}:
+  /reports/filter-summary/{filterName}:
     uriParameters:
       name:
         type: string
