@@ -35,7 +35,7 @@
       }
     },
     "displayPrefs": {
-      "$ref": "./includes/display-prefs.json"
+      "$ref": "includes/display-prefs.json"
     }
   },
   "required": [
