@@ -6,7 +6,7 @@
     "id": {
       "type": "array",
       "items": {
-        "$ref": "./name-stringValue.json"
+        "$ref": "name-stringValue.json"
       }
     },
     "displayName": {
@@ -18,7 +18,7 @@
     "attributes": {
       "type": "array",
       "items": {
-        "$ref": "./attribute_value-response.json"
+        "$ref": "attribute_value-response.json"
       }
     },
     "tables": {
@@ -34,7 +34,7 @@
                 "type": "object",
                 "patternProperties": {
                   "^.+$": {
-                    "$ref": "./attribute_value-response.json"
+                    "$ref": "attribute_value-response.json"
                   }
                 }
               }

@@ -7,7 +7,7 @@
     {
       "type": "array",
       "items": {
-        "$ref": "./name/get.json"
+        "$ref": "name/get.json"
       }
     }
   ]

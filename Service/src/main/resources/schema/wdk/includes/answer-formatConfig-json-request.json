@@ -34,7 +34,7 @@
           }
         },
         "sorting": {
-	    "$ref": "./sorting-spec.json"
+	    "$ref": "sorting-spec.json"
         }
       }
     }
