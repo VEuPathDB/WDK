@@ -3,11 +3,15 @@ package org.gusdb.wdk.model.question;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Group;
@@ -161,6 +165,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   private String _reviseBuild;
   
   private final Map<String, Filter> _filters = new LinkedHashMap<>();
+
+  /**
+   * Filters to on associated record class to ignore for this Question.
+   */
+  private final Set<String> _ignoredFiltersFromRecordClass = new HashSet<>();
   
   
   private List<QuestionSuggestion> _suggestions = new ArrayList<>();
@@ -213,6 +222,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
       _sqlMacroList = new ArrayList<>(question._sqlMacroList);
     _sqlMacroMap = new LinkedHashMap<>(question._sqlMacroMap);
     _filters.putAll(new LinkedHashMap<>(question._filters));
+    _ignoredFiltersFromRecordClass.addAll(new HashSet<>(question._ignoredFiltersFromRecordClass));
   }
 
   public String getNewBuild() {
@@ -1226,6 +1236,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     _filters.put(filter.getKey(), filter);
   }
 
+  public void addIgnoredFilterFromRecordClass(String filterKey) {
+    LOG.info("QUESTION: ADDING FILTER TO IGNORE LIST: " + filterKey + " for question " + getFullName() + "\n");
+    _ignoredFiltersFromRecordClass.add(filterKey);
+  }
+
   /**
    * Returns a set of filters (by name) for this question.  Only non-view-only
    * filters are included in this list.  View-only filters are available via
@@ -1234,7 +1249,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
    * @return map of all non-view-only filters, from filter name to filter
    */
   public Map<String, Filter> getFilters() {
-    LOG.debug("QUESTION: GETTING ALL FILTERs");
+    LOG.info("QUESTION: GETTING ALL FILTERs");
     return getExclusiveFilterMap(false);
   }
 
@@ -1249,14 +1264,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   }
 
   private Map<String, Filter> getExclusiveFilterMap(boolean viewOnly) {
-    Map<String, Filter> map = new LinkedHashMap<>(_recordClass.getFilters());
-    for (Entry<String, Filter> filter : _filters.entrySet()) {
-      if (viewOnly == filter.getValue().getIsViewOnly()) {
-        LOG.debug("question: adding one more filter:  name: " + filter.getKey());
-        map.put(filter.getKey(), filter.getValue());
-      }
-    }
-    return map;
+    return Stream.concat(
+        _recordClass.getFilters().values().stream()
+            .filter(filter -> !_ignoredFiltersFromRecordClass.contains(filter.getKey())),
+        _filters.values().stream()
+            .filter(filter -> viewOnly == filter.getIsViewOnly())
+    ).collect(Collectors.toMap(Filter::getKey, Function.identity()));
   }
 
   public Filter getFilter(String filterName) throws WdkModelException {
@@ -1266,6 +1279,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   }
   
   public Filter getFilterOrNull(String filterName) throws WdkModelException {
+    if (_ignoredFiltersFromRecordClass.contains(filterName)) return null;
     Filter filter = _filters.get(filterName);
     if (filter == null) filter = _recordClass.getFilter(filterName); 
     return filter;
