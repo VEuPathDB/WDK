@@ -170,14 +170,20 @@ public class StepService extends UserService {
       @PathParam(REPORT_NAME_PATH_PARAM) String reporterName,
       JSONObject requestJson)
           throws WdkModelException, RequestMisformatException, DataValidationException {
+    
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
     StepFactory stepFactory = getWdkModel().getStepFactory();
+    Step step = stepFactory
+        .getStepById(stepId, ValidationLevel.NONE)
+        .orElseThrow(() -> new NotFoundException(formatNotFound(STEP_RESOURCE + stepId)));
+    if (!step.hasStrategy()) throw new DataValidationException("Step " + step.getId() + " is not part of a strategy, so cannot run."); 
+
     RunnableObj<Step> runnableStep = stepFactory
         .getStepById(stepId, ValidationLevel.RUNNABLE)
         .orElseThrow(() -> new NotFoundException(formatNotFound(STEP_RESOURCE + stepId)))
         .getRunnable()
         .getOrThrow(StepService::getNotRunnableException);
-
+      
     AnswerRequest request = new AnswerRequest(
         Step.getRunnableAnswerSpec(runnableStep),
         new AnswerFormatting(reporterName, requestJson));
