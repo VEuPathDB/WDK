@@ -19,6 +19,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
@@ -101,7 +103,7 @@ public class StepAnalysisContext {
     ctx._wdkModel = user.getWdkModel();
     ctx._step = loadStep(ctx._wdkModel, stepId, new WdkUserException("No step " +
         "bean exists with id " + stepId + " for user " + user.getUserId()));
-    ctx._answerValueHash = ctx._step.getAnswerValue().getChecksum();
+    ctx._answerValueHash = getAnswerValueHash(ctx._step);
     
     Question question = ctx._step.getAnswerSpec().getQuestion();
     ctx._stepAnalysis = question.getStepAnalyses().get(analysisName);
@@ -119,6 +121,11 @@ public class StepAnalysisContext {
     ctx._status = ExecutionStatus.CREATED;
     
     return ctx;
+  }
+
+  private static String getAnswerValueHash(Step step) throws WdkModelException {
+    return !step.isRunnable() ? "" :
+        AnswerValueFactory.makeAnswer(step.getRunnable().getLeft()).getChecksum();
   }
 
   public static StepAnalysisContext createFromForm(Map<String,String[]> params, StepAnalysisFactory analysisMgr)
@@ -156,7 +163,7 @@ public class StepAnalysisContext {
       JSONObject json = new JSONObject(serializedContext);
       ctx._step = loadStep(ctx._wdkModel, stepId, new WdkModelException("Unable " +
           "to find step (ID=" + stepId + ") defined in step analysis context (ID=" + analysisId + ")"));
-      ctx._answerValueHash = ctx._step.getAnswerValue().getChecksum();
+      ctx._answerValueHash = getAnswerValueHash(ctx._step);
       Question question = ctx._step.getAnswerSpec().getQuestion();
       ctx._stepAnalysis = question.getStepAnalysis(json.getString(JsonKey.analysisName.name()));
 
@@ -419,5 +426,12 @@ public String getUserNotes() {
    */
   public String getAccessToken() throws WdkModelException {
     return EncryptionUtil.encrypt("__" + _analysisId + _step.getStepId() + _wdkModel.getModelConfig().getSecretKey(), true);
+  }
+
+  public AnswerValue getAnswerValue() throws WdkUserException, WdkModelException {
+    if (!getStep().isRunnable()) {
+      throw new WdkUserException("Cannot execute an analysis on an unrunnable step.");
+    }
+    return AnswerValueFactory.makeAnswer(getStep().getRunnable().getLeft());
   }
 }

@@ -5,7 +5,11 @@ import static org.gusdb.fgputil.functional.Functions.reduce;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -14,11 +18,13 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
@@ -64,19 +70,22 @@ public class BasketFactory {
     _userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
   }
 
-  public void addToBasket(User user, Step step) throws WdkModelException {
-
-    LOG.debug("adding to basket from step...");
-
-    AnswerValue answerValue = step.getAnswerValue();
-    RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
-    List<String[]> pkValues = answerValue.getAllIds();
-    addToBasket(user, recordClass, pkValues);
+  public void addEntireResultToBasket(User user, RunnableObj<AnswerSpec> spec) throws WdkModelException {
+    List<String[]> pkValues = AnswerValueFactory.makeAnswer(user, spec).getAllIds();
+    addToBasket(user, spec.getObject().getQuestion().getRecordClass(), pkValues);
   }
 
-  public void addPksToBasket(User user, RecordClass recordClass, Collection<PrimaryKeyValue> recordsToAdd)
-      throws WdkModelException {
+  public void removeEntireResultFromBasket(User user, RunnableObj<AnswerSpec> spec) throws WdkModelException {
+    List<String[]> pkValues = AnswerValueFactory.makeAnswer(user, spec).getAllIds();
+    removeFromBasket(user, spec.getObject().getQuestion().getRecordClass(), pkValues);
+  }
+
+  public void addPksToBasket(User user, RecordClass recordClass, Collection<PrimaryKeyValue> recordsToAdd) throws WdkModelException {
     addToBasket(user, recordClass, PrimaryKeyValue.toStringArrays(recordsToAdd));
+  }
+
+  public void removePksFromBasket(User user, RecordClass recordClass, Collection<PrimaryKeyValue> recordsToDelete) throws WdkModelException {
+    removeFromBasket(user, recordClass, PrimaryKeyValue.toStringArrays(recordsToDelete));
   }
 
   /**
@@ -168,18 +177,6 @@ public class BasketFactory {
       SqlUtils.closeStatement(psInsert);
       SqlUtils.closeStatement(psCount);
     }
-  }
-
-  public void removeFromBasket(User user, Step step) throws WdkModelException {
-    AnswerValue answerValue = step.getAnswerValue();
-    RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
-    List<String[]> pkValues = answerValue.getAllIds();
-    removeFromBasket(user, recordClass, pkValues);
-  }
-
-  public void removePksFromBasket(User user, RecordClass recordClass, Collection<PrimaryKeyValue> recordsToDelete)
-      throws WdkModelException {
-    removeFromBasket(user, recordClass, PrimaryKeyValue.toStringArrays(recordsToDelete));
   }
 
   public void removeFromBasket(User user, RecordClass recordClass, List<String[]> pkValues)

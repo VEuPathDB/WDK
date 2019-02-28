@@ -140,11 +140,13 @@ public class BasketService extends UserService {
 
   /**
    * Present so subclasses can override if desired
-   * @throws WdkModelException
+   * 
+   * @throws DataValidationException if input actions are not compatible with subclass's translation
+   * @throws WdkModelException if error occurs while producing revised request
    */
   protected RevisedRequest<BasketActions> translatePatchRequest(
-      RecordClass recordClass, BasketActions actions) throws WdkModelException,
-      DataValidationException {
+      RecordClass recordClass, BasketActions actions)
+          throws WdkModelException, DataValidationException {
     return new RevisedRequest<>(recordClass, actions);
   }
 

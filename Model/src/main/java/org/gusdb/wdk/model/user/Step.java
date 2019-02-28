@@ -5,7 +5,15 @@ import static org.gusdb.fgputil.functional.Functions.getNthOrNull;
 import static org.gusdb.wdk.model.user.StepContainer.parentOf;
 import static org.gusdb.wdk.model.user.StepContainer.withId;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Named.NamedObject;
@@ -23,7 +31,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
@@ -264,8 +272,6 @@ public class Step implements StrategyElement, Validateable<Step> {
     return runnableStep.getObject().getAnswerSpec().getRunnable().getLeft();
   }
 
-  // TODO: Find the use cases for the modifiable fields below and fix; goal is for Step instance to be immutable
-
   // set during Step object creation
   private final WdkModel _wdkModel;
   // set during build() from ID in DB
@@ -314,9 +320,6 @@ public class Step implements StrategyElement, Validateable<Step> {
    * steps are rerun (i.e. value of -1 means step is "dirty" (modified but not run))
    */
   private boolean _estimatedSizeRefreshed = false;
-
-  // stores answer values for this step object and manages reuse of those objects
-  private AnswerValueCache _answerValueCache;
 
   // Set if exception occurs during step loading (but we don't want to bubble the exception up)
   // This allows the UI to show a "broken" step but not hose the whole strategy
@@ -391,11 +394,6 @@ public class Step implements StrategyElement, Validateable<Step> {
               " than %d", field, NAME_COLUMN_MAX_SIZE)));
   }
 
-  // TODO: remove this when we retire StepBean
-  public StepFactory getStepFactory() {
-    return _wdkModel.getStepFactory();
-  }
-
   public Optional<Step> getParentStep() {
     return getContainer().findFirstStep(parentOf(_stepId));
   }
@@ -430,16 +428,22 @@ public class Step implements StrategyElement, Validateable<Step> {
    * @return the found step, or null if not found
    */
   private Optional<Step> findAnswerParamsStep(int answerParamOrdinal) {
-    AnswerParam param = getNthOrNull(_answerSpec.getQuestion().getQuery().getAnswerParams(), answerParamOrdinal);
 
-    if (!_answerSpec.hasValidQuestion())
+    if (!_answerSpec.hasValidQuestion()) {
       return Optional.empty();
+    }
+
+    AnswerParam param = getNthOrNull(_answerSpec.getQuestion().getQuery().getAnswerParams(), answerParamOrdinal);
+    if (param == null) {
+      return Optional.empty();
+    }
 
     QueryInstanceSpec spec = _answerSpec.getQueryInstanceSpec();
-    String stableValue = spec.get(param.getName()); // FIXME: param comes from getNthOrNull which may return null, which would make this a possible NPE.
+    String stableValue = spec.get(param.getName());
 
-    if (stableValue == null)
+    if (stableValue == null) {
       return Optional.empty();
+    }
 
     return getContainer().findFirstStep(withId(AnswerParam.toStepId(stableValue)));
   }
@@ -462,11 +466,13 @@ public class Step implements StrategyElement, Validateable<Step> {
    * @return the real result size gained by running the step
    */
   public int getResultSize() throws WdkModelException {
-    return _estimatedSizeRefreshed ? _estimatedSize : !_answerSpec.isRunnable() ? 0 : recalculateResultSize();
+    return _estimatedSizeRefreshed ? _estimatedSize :
+           !_answerSpec.isRunnable() ? 0 :
+           recalculateResultSize(_answerSpec.getRunnable().getLeft());
   }
 
-  private int recalculateResultSize() throws WdkModelException {
-    _estimatedSize = getAnswerValue().getResultSizeFactory().getDisplayResultSize();
+  private int recalculateResultSize(RunnableObj<AnswerSpec> answerSpec) throws WdkModelException {
+    _estimatedSize = AnswerValueFactory.makeAnswer(_user, answerSpec).getResultSizeFactory().getDisplayResultSize();
     _estimatedSizeRefreshed = true;
     writeMetadataToDb(true);
     return _estimatedSize;
@@ -564,9 +570,8 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 */
 
-  // FIXME: this is just straight wrong; if no previous step param, just means this could be any leaf
   public boolean isFirstStep() {
-    return !getPrimaryInputStepParam().isPresent();
+    return hasStrategy() ? _strategy.getFirstStep().getStepId() == _stepId : false;
   }
 
   public User getUser() {
@@ -880,26 +885,6 @@ public class Step implements StrategyElement, Validateable<Step> {
     return jsStep;
   }
 
-  @Deprecated
-  public AnswerValue getAnswerValue() throws WdkModelException {
-    return _answerValueCache.getAnswerValue(true);
-  }
-
-  @Deprecated
-  public AnswerValue getViewAnswerValue() throws WdkModelException {
-    return _answerValueCache.getViewAnswerValue(true);
-  }
-
-  @Deprecated
-  public AnswerValue getAnswerValue(boolean validate) throws WdkModelException {
-    return _answerValueCache.getAnswerValue(validate);
-  }
-
-  @Deprecated
-  public void resetAnswerValue() {
-    _answerValueCache.invalidateAll();
-  }
-
   /**
    * Get the answerParam that take the previousStep as input, which is the first answerParam in the param
    * list.
@@ -1041,10 +1026,6 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   public Strategy getStrategy() {
     return _strategy;
-  }
-
-  public void setAnswerValuePaging(int start, int end) {
-    _answerValueCache.setPaging(start, end);
   }
 
   public boolean hasAnswerParams() {

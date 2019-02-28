@@ -44,8 +44,8 @@ public class RecordService extends AbstractWdkService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.records.get")
-  public JSONArray getRecordClassList(@QueryParam("format") String format) {     
-    
+  public JSONArray getRecordClassList(@QueryParam("format") String format) {
+
     final boolean expand = Optional.ofNullable(format)
         .map(f -> f.equals("expanded"))
         .orElse(false);
@@ -54,7 +54,7 @@ public class RecordService extends AbstractWdkService {
       return new JSONArray(RecordClassFormatter.getExpandedRecordClassesJson(
         getWdkModel().getAllRecordClassSets(), getWdkModel().getAllQuestions()));
     else 
-      return new JSONArray(RecordClassFormatter.getRecordClassesJson(
+      return new JSONArray(RecordClassFormatter.getRecordClassNames(
         getWdkModel().getAllRecordClassSets()));
   }
 

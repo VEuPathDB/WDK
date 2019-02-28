@@ -1,16 +1,19 @@
 package org.gusdb.wdk.model.query.param;
 
+import static org.gusdb.wdk.model.user.StepContainer.withId;
+
+import java.util.Optional;
+
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.User;
-
-import java.util.Optional;
 
 /**
  * @author jerric
@@ -52,21 +55,11 @@ public class AnswerParamHandler extends AbstractParamHandler {
    * step_id
    */
   @Override
-  public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxVals)
+  public String toInternalValue(RunnableObj<QueryInstanceSpec> runnableSpec)
       throws WdkModelException {
-    final QueryInstanceSpec query = ctxVals.getObject();
-    final String stable = query.get(_param.getName());
-    final int stepId = Integer.parseInt(stable.split(":", 2)[0]);
-
-    if (_param.isNoTranslation())
-      return Integer.toString(stepId);
-
-    return ctxVals.getObject()
-        .getStepContainer()
-        .findFirstStep(StepContainer.withId(stepId))
-        .orElseThrow(WdkModelException::new)
-        .getAnswerValue()
-        .getIdSql();
+    return _param.isNoTranslation() ?
+           Long.toString(getStepIdFromStableValue(runnableSpec)) :
+           getAnswerFromStepParam(runnableSpec).getIdSql();
   }
 
   /**
@@ -74,17 +67,26 @@ public class AnswerParamHandler extends AbstractParamHandler {
    * the cache can be shared.
    */
   @Override
-  public String toSignature(RunnableObj<QueryInstanceSpec> ctxVals)
+  public String toSignature(RunnableObj<QueryInstanceSpec> runnableSpec)
       throws WdkModelException {
-    final QueryInstanceSpec query = ctxVals.getObject();
-    final String stable = query.get(_param.getName());
-    final long stepId = Long.valueOf(stable);
-    return ctxVals.getObject()
+    return getAnswerFromStepParam(runnableSpec).getChecksum();
+  }
+
+  private AnswerValue getAnswerFromStepParam(RunnableObj<QueryInstanceSpec> qiSpec) throws WdkModelException {
+    return AnswerValueFactory.makeAnswer(
+      qiSpec
+        .getObject()
         .getStepContainer()
-        .findFirstStep(StepContainer.withId(stepId))
+        .findFirstStep(withId(getStepIdFromStableValue(qiSpec)))
         .orElseThrow(WdkModelException::new)
-        .getAnswerValue(false)
-        .getChecksum();
+        .getRunnable()
+        .getLeft());
+  }
+
+  private long getStepIdFromStableValue(RunnableObj<QueryInstanceSpec> qiSpec) {
+    String stableValue = qiSpec.getObject().get(_param.getName());
+    // TODO: figure out why this split?  AnswerParam stable values are just step IDs
+    return Long.parseLong(stableValue.split(":", 2)[0]);
   }
 
   @Override
