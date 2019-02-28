@@ -303,7 +303,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   private void checkStepForValidity(StepAnalysisContext context)
       throws WdkModelException, IllegalAnswerValueException, WdkUserException {
     // ensure this is a valid step to analyze
-    AnswerValue answer = context.getStep().getAnswerValue();
+    AnswerValue answer = context.getAnswerValue();
     if (answer.getResultSizeFactory().getResultSize() == 0) {
       throw new IllegalAnswerValueException("You cannot analyze a Step with zero results.");
     }
@@ -441,11 +441,11 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   static StepAnalyzer getConfiguredAnalyzer(StepAnalysisContext context,
-      StepAnalysisFileStore fileStore) throws WdkModelException {
+      StepAnalysisFileStore fileStore) throws WdkModelException, WdkUserException {
     StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
     analyzer.setStorageDirectory(fileStore.getStorageDirPath(context.createHash()));
     analyzer.setFormParams(context.getFormParams());
-    analyzer.setAnswerValue(context.getStep().getAnswerValue());
+    analyzer.setAnswerValue(context.getAnswerValue());
     return analyzer;
   }
 

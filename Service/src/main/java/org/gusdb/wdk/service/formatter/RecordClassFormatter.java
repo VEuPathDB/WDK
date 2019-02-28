@@ -39,25 +39,24 @@ import org.json.JSONObject;
  */
 public class RecordClassFormatter {
 
-  public static Collection<Object> getRecordClassesJson(RecordClassSet[] recordClassSets) {
-    
-    final Collection<Object> out = new ArrayList<>();
+  public static List<String> getRecordClassNames(RecordClassSet[] recordClassSets) {
+    final List<String> out = new ArrayList<>();
     for (RecordClassSet rcSet : recordClassSets) {
-      for (RecordClass rc : rcSet.getRecordClasses()) {        
+      for (RecordClass rc : rcSet.getRecordClasses()) {
         out.add(rc.getUrlSegment());
       }
     }
     return out;
   }
-  
-  public static Collection<Object> getExpandedRecordClassesJson(RecordClassSet[] recordClassSets, List<Question>
- allQuestions) {
+
+  public static Collection<Object> getExpandedRecordClassesJson(
+      RecordClassSet[] recordClassSets, List<Question> allQuestions) {
     
-    Map<RecordClass, List<Question>> rcQuestionMap = getRecordClassQuestionMap(recordClassSets, allQuestions);
+    Map<String, List<Question>> rcQuestionMap = getRecordClassQuestionMap(allQuestions);
     final Collection<Object> out = new ArrayList<>();
     for (RecordClassSet rcSet : recordClassSets) {
       for (RecordClass rc : rcSet.getRecordClasses()) {
-        List<Question> rcQuestions = rcQuestionMap.get(rc);
+        List<Question> rcQuestions = rcQuestionMap.get(rc.getFullName());
         JSONArray questionsJson = QuestionFormatter.getQuestionsJsonWithoutParams(rcQuestions);
         out.add(getRecordClassJson(rc, true, true, true).put(JsonKeys.SEARCHES, questionsJson));
       }
@@ -65,13 +64,13 @@ public class RecordClassFormatter {
     return out;
   }
   
-  private static Map<RecordClass, List<Question>> getRecordClassQuestionMap(RecordClassSet[] recordClassSets, List<Question>
-  allQuestions) {
-    Map<RecordClass, List<Question>> recordClassQuestionMap = new HashMap<RecordClass, List<Question>>();
+  private static Map<String, List<Question>> getRecordClassQuestionMap(List<Question> allQuestions) {
+    Map<String, List<Question>> recordClassQuestionMap = new HashMap<>();
     for (Question q : allQuestions) {
-      if (!recordClassQuestionMap.containsKey(q.getRecordClass())) 
-        recordClassQuestionMap.put(q.getRecordClass(), new ArrayList<Question>());     
-      recordClassQuestionMap.get(q.getRecordClass()).add(q);     
+      String rcName = q.getRecordClass().getFullName();
+      if (!recordClassQuestionMap.containsKey(rcName)) 
+        recordClassQuestionMap.put(rcName, new ArrayList<>());
+      recordClassQuestionMap.get(rcName).add(q);
     }
     return recordClassQuestionMap;
   }

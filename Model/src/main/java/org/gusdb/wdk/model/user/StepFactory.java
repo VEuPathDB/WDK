@@ -38,9 +38,7 @@ import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
-import org.gusdb.fgputil.functional.Either;
 import org.gusdb.fgputil.functional.Functions;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -253,7 +251,7 @@ public class StepFactory {
     }
   }
 
-  private long getNewStepId() throws WdkModelException {
+  public long getNewStepId() throws WdkModelException {
     try {
       return _userDbPlatform.getNextId(_userDbDs, _userSchema, TABLE_STEP);
     }

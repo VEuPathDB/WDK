@@ -225,7 +225,7 @@ public class StrategyService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   // @InSchema(...) TODO
   // @OutSchema(...) TODO
-  public JSONObject duplicateAsBranch(@PathParam(ID_PARAM) long stratId, JSONObject body)
+  public JSONObject duplicateAsBranch(@PathParam(ID_PARAM) long stratId)
       throws WdkModelException {
     return StepFormatter.formatAsStepTree(
         getWdkModel().getStepFactory().copyStrategyToBranch(

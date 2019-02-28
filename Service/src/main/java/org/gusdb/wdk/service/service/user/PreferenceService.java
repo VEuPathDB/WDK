@@ -24,15 +24,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class PreferenceService extends UserService {
-  
-  private enum Scope { GLOBAL, PROJECT };
-  private enum Action { CLEAR, UPDATE } ;
+
+  private enum Scope { GLOBAL, PROJECT }
+  private enum Action { CLEAR, UPDATE }
 
   public PreferenceService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
   }
 
-  // JsonUtil.toJsonObject(user.getPreferences().getGlobalPreferences())
   @GET
   @Path("preferences")
   @Produces(MediaType.APPLICATION_JSON)
