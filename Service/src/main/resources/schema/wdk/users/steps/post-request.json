@@ -12,6 +12,9 @@
     "collapsedName": {
       "type": "string"
     },
+      "searchName": {
+	  "type": "string"
+    },
     "searchConfig": {
       "$ref": "../../includes/answer-spec-request.json"
     },
