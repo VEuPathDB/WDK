@@ -6,7 +6,7 @@
     "records": {
       "type": "array",
       "items": {
-        "$ref": "./record_instance-response.json"
+        "$ref": "record_instance-response.json"
       }
     },
     "meta": {

@@ -3,6 +3,6 @@
   "description": "List of reporters",
   "type": "array",
   "items": {
-    "$ref": "./record-reporter.json"
+    "$ref": "record-reporter.json"
   }
 }

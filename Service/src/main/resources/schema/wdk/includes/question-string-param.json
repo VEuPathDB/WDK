@@ -3,7 +3,7 @@
   "additionalProperties": false,
   "allOf": [
     {
-      "$ref": "./question-base-param.json"
+      "$ref": "question-base-param.json"
     },
     {
       "type": "object",
