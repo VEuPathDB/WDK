@@ -12,9 +12,6 @@ baseUri: //{siteUrl}/{webApp}/service
         body:
           application/json:
             type: !include ../../src/main/resources/schema/wdk/get-response.json
-            example: !include ./includes/example/get-service-200.json
-
-/answer: !include ./includes/raml/answer-api.raml
 
 /client-errors: !include ./includes/raml/client-errors-api.raml
 
