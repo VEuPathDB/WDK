@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.Param;
@@ -91,6 +93,7 @@ public class QuestionFormatter {
       .put(JsonKeys.DEFAULT_SUMMARY_VIEW, q.getDefaultSummaryView().getName())
       .put(JsonKeys.SUMMARY_VIEW_PLUGINS, SummaryViewPluginFormatter.getSummaryViewPluginsJson(q.getSummaryViews().values()))
       .put(JsonKeys.STEP_ANALYSIS_PLUGINS, FormatUtil.stringCollectionToJsonArray(q.getStepAnalyses().keySet()))
+      .put("filters", getFiltersJson(q.getFilters()))
       .put(JsonKeys.PROPERTIES, q.getPropertyLists());
   }
 
@@ -129,6 +132,16 @@ public class QuestionFormatter {
     groupJson.put(JsonKeys.DISPLAY_TYPE, group.getDisplayType());
     groupJson.put(JsonKeys.PARAMETERS, params);
     return groupJson;
+  }
+
+  private static JSONArray getFiltersJson(Map<String, Filter> filtersMap) {
+    return new JSONArray(filtersMap.values().stream()
+      .map(filter -> new JSONObject()
+        .put(JsonKeys.NAME, filter.getKey())
+        .put(JsonKeys.DISPLAY_NAME, filter.getDisplay())
+        .put(JsonKeys.DESCRIPTION, filter.getDescription())
+        .put("isViewOnly", filter.getIsViewOnly())
+      ).collect(Collectors.toList()));
   }
 
   /*
