@@ -47,7 +47,7 @@ CREATE TABLE userlogins5.user_roles
   migration_id  NUMERIC(12),
   CONSTRAINT "user_roles_pk" PRIMARY KEY (user_id, user_role),
   CONSTRAINT "user_roles_fk01" FOREIGN KEY (user_id)
-      REFERENCES userlogins5.users (user_id) 
+      REFERENCES userlogins5.users (user_id)
 );
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.user_roles TO COMM_WDK_W;
@@ -63,7 +63,7 @@ CREATE TABLE userlogins5.preferences
   migration_id      NUMERIC(12),
   CONSTRAINT "preferences_pk" PRIMARY KEY (user_id, project_id, preference_name),
   CONSTRAINT "preferences_fk01" FOREIGN KEY (user_id)
-      REFERENCES userlogins5.users (user_id) 
+      REFERENCES userlogins5.users (user_id)
 );
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.preferences TO COMM_WDK_W;
@@ -220,6 +220,7 @@ CREATE TABLE userlogins5.steps (
   result_message   TEXT,
   prev_step_id     NUMERIC(12),
   migration_id     NUMERIC(12),
+  display_prefs    TEXT DEFAULT '{}',
   CONSTRAINT "steps_pk" PRIMARY KEY (step_id),
   CONSTRAINT "steps_fk01" FOREIGN KEY (user_id)
       REFERENCES userlogins5.users (user_id)
@@ -275,7 +276,7 @@ CREATE TABLE userlogins5.step_analysis (
   analysis_id          NUMERIC(12) NOT NULL,
   step_id              NUMERIC(12) NOT NULL,
   display_name         VARCHAR(1024),
-  user_notes           VARCHAR(4000),	
+  user_notes           VARCHAR(4000),
   is_new               BOOLEAN,
   has_params           BOOLEAN,
   invalid_step_reason  VARCHAR(1024),
@@ -292,7 +293,7 @@ CREATE INDEX step_analysis_idx01 ON userlogins5.step_analysis (step_id);
 GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.step_analysis TO COMM_WDK_W;
 
 --==============================================================================
--- create sequences -- not necessary if using foreign data wrappers 
+-- create sequences -- not necessary if using foreign data wrappers
 -- as sequences will never be used; foreign schema will require local versions
 --==============================================================================
 

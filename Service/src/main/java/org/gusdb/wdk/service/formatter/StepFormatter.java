@@ -11,7 +11,7 @@ import org.json.JSONObject;
 /**
  * Formats WDK Step objects.  Step JSON will have the following form:
  * {
- *   id: Number, 
+ *   id: Number,
  *   displayName: String,
  *   shortDisplayName: String,
  *   customName: String,
@@ -27,7 +27,7 @@ import org.json.JSONObject;
  *   answerSpecComplete: boolean (false for unattached steps)
  *   answerSpec: see AnswerRequest (input and output formats are the same)
  * }
- * 
+ *
  * @author rdoherty
  */
 public class StepFormatter {
@@ -53,7 +53,11 @@ public class StepFormatter {
         .put(JsonKeys.ANSWER_SPEC, createAnswerSpec(step))
         .put(JsonKeys.IS_VALID, step.isValid())
         .put(JsonKeys.CREATED_TIME, step.getCreatedTime())
-        .put(JsonKeys.LAST_RUN_TIME, step.getLastRunTime());
+        .put(JsonKeys.LAST_RUN_TIME, step.getLastRunTime())
+
+        // DISPLAY PREFS
+        .put("displayPrefs", step.getDisplayPrefs());
+
     }
     catch (JSONException e) {
       throw new WdkModelException("Unable to convert Step to service JSON", e);
