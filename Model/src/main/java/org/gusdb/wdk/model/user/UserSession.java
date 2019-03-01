@@ -158,15 +158,16 @@ public class UserSession {
     logger.debug("Merging user #" + guestUser.getUserId() + " into user #" + _user.getUserId() + "...");
 
     // first of all we import all the strategies
+    StepFactory stepFactory = guestUser.getWdkModel().getStepFactory();
     Set<Long> importedSteps = new LinkedHashSet<>();
     Map<Long, Long> strategiesMap = new LinkedHashMap<>();
     Map<Long, Long> stepsMap = new LinkedHashMap<>();
-    for (Strategy strategy : StepUtilities.getStrategies(guestUser)) {
+    for (Strategy strategy : stepFactory.getStrategies(guestUser.getUserId(), ValidationLevel.NONE).values()) {
       // the root step is considered as imported
       Step rootStep = strategy.getRootStep();
 
       // import the strategy
-      Strategy newStrategy = StepUtilities.importStrategy(_user, strategy, stepsMap);
+      Strategy newStrategy = stepFactory.copyStrategy(_user, strategy, stepsMap);
 
       importedSteps.add(rootStep.getStepId());
       strategiesMap.put(strategy.getStrategyId(), newStrategy.getStrategyId());

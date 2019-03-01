@@ -75,9 +75,8 @@ public abstract class AbstractFilter implements Filter {
   }
 
   @Override
-  public JSONObject getSummaryJson(AnswerValue answer, String idSql)
-      throws WdkModelException {
-    return null;
+  public JSONObject getSummaryJson(AnswerValue answer, String idSql) throws WdkModelException {
+    return new JSONObject();
   }
 
 }

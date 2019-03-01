@@ -2,19 +2,21 @@ package org.gusdb.wdk.model.filter;
 
 import java.util.Map;
 
-public class ListColumnFilterSummary implements FilterSummary {
+import org.json.JSONObject;
+
+public class ListColumnFilterSummary {
 
   private final Map<String, Integer> _counts;
   private final int _maxCount;
 
   public ListColumnFilterSummary(Map<String, Integer> counts) {
-    this._counts = counts;
+    _counts = counts;
     int max = Integer.MIN_VALUE;
     for (int count : counts.values()) {
       if (count > max)
         max = count;
     }
-    this._maxCount = max;
+    _maxCount = max;
   }
 
   public Map<String, Integer> getCounts() {
@@ -23,5 +25,9 @@ public class ListColumnFilterSummary implements FilterSummary {
 
   public int getMaxCount() {
     return _maxCount;
+  }
+
+  public JSONObject toJson() {
+    return new JSONObject().put("maxCount", _maxCount).put("counts", _counts);
   }
 }

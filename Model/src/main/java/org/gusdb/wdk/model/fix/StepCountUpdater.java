@@ -23,11 +23,11 @@ import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.fgputil.runtime.ThreadUtil;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -231,7 +231,8 @@ public class StepCountUpdater extends BaseCLI {
     }
 
     private void updateSteps(User user) throws WdkModelException {
-      Map<Long, Step> steps = StepUtilities.getStepsMap(user);
+      Map<Long, Step> steps = user.getWdkModel().getStepFactory()
+          .getStepsByUserId(user.getUserId(), ValidationLevel.RUNNABLE);
       for (Step step : steps.values()) {
         long stepId = step.getStepId();
         if (_sharedData.isCompleted(stepId))
@@ -243,11 +244,7 @@ public class StepCountUpdater extends BaseCLI {
             step.getResultSize();
           }
           catch (Exception ex) {
-            // don't need to update DB here since updating in finally
-            //step.setValidFlag(false); // RRD 7/23/18, all validity is runtime checked now...
-          }
-          finally {
-            step.writeMetadataToDb(false);
+            // skip this step on exception
           }
         }
         _sharedData.recordStep(stepId);

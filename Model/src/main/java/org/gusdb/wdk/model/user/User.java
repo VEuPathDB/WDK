@@ -11,7 +11,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
 
 /**
@@ -216,18 +215,6 @@ public abstract class User {
     return getPreferences().getItemsPerPage();
   }
 
-  public Map<String, List<Strategy>> getSavedStrategiesByCategory() throws WdkModelException {
-    Map<String, List<Strategy>> strategies = StepUtilities.getSavedStrategiesByCategory(this);
-    logFoundStrategies(strategies, "saved");
-    return convertMap(strategies);
-  }
-
-  public Map<String, List<Strategy>> getUnsavedStrategiesByCategory() throws WdkModelException {
-    Map<String, List<Strategy>> strategies = StepUtilities.getUnsavedStrategiesByCategory(this);
-    logFoundStrategies(strategies, "unsaved");
-    return convertMap(strategies);
-  }
-
   public void logFoundStrategies(Map<String, List<Strategy>> strategies, String condition) {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Loaded map of " + strategies.size() + " " + condition + " strategy categories:");
@@ -238,79 +225,6 @@ public abstract class User {
       }
       LOG.debug("   Total: " + total);
     }
-  }
-
-  public Map<String, List<Strategy>> getRecentStrategiesByCategory() throws WdkModelException {
-    Map<String, List<Strategy>> strategies = StepUtilities.getRecentStrategiesByCategory(this);
-    return convertMap(strategies);
-  }
-
-  public Map<String, List<Strategy>> getActiveStrategiesByCategory() {
-    Map<String, List<Strategy>> strategies = StepUtilities.getActiveStrategiesByCategory(this);
-    return convertMap(strategies);
-  }
-
-  /**
-   * @return { category/(type name)->{ activity->strategyBean } }
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public Map<String, Map<String, List<Strategy>>> getStrategiesByCategoryActivity()
-      throws WdkModelException, WdkUserException {
-    Map<String, List<Strategy>> activeStrats = getActiveStrategiesByCategory();
-    Map<String, List<Strategy>> savedStrats = getSavedStrategiesByCategory();
-    Map<String, List<Strategy>> recentStrats = getRecentStrategiesByCategory();
-    Map<String, Map<String, List<Strategy>>> categories = new LinkedHashMap<>();
-    WdkModel wdkModel = getWdkModel();
-
-    for (String rcName : activeStrats.keySet()) {
-      RecordClass recordClass = wdkModel.getRecordClassByName(rcName).orElse(null);
-      if (recordClass == null)
-        continue;
-      String category = recordClass.getDisplayName();
-      List<Strategy> strategies = activeStrats.get(rcName);
-      if (strategies.size() == 0)
-        continue;
-
-      Map<String, List<Strategy>> activities = new LinkedHashMap<>();
-      activities.put("Opened", strategies);
-      categories.put(category, activities);
-    }
-
-    for (String rcName : savedStrats.keySet()) {
-      RecordClass recordClass = wdkModel.getRecordClassByName(rcName).orElse(null);
-      if (recordClass == null)
-        continue;
-      String category = recordClass.getDisplayName();
-      List<Strategy> strategies = savedStrats.get(rcName);
-      if (strategies.size() == 0)
-        continue;
-
-      Map<String, List<Strategy>> activities = categories.get(category);
-      if (activities == null) {
-        activities = new LinkedHashMap<>();
-        categories.put(category, activities);
-      }
-      activities.put("Saved", strategies);
-    }
-
-    for (String rcName : recentStrats.keySet()) {
-      RecordClass recordClass = wdkModel.getRecordClassByName(rcName).orElse(null);
-      if (recordClass == null)
-        continue;
-      String category = recordClass.getDisplayName();
-      List<Strategy> strategies = recentStrats.get(rcName);
-      if (strategies.size() == 0)
-        continue;
-
-      Map<String, List<Strategy>> activities = categories.get(category);
-      if (activities == null) {
-        activities = new LinkedHashMap<>();
-        categories.put(category, activities);
-      }
-      activities.put("Recent", strategies);
-    }
-    return categories;
   }
 
   public String getViewStrategyId() {

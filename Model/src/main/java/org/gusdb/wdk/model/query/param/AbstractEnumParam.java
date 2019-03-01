@@ -323,7 +323,6 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return getVocabInstance(user, contextParamValues).getVocabMap();
   }
 
-  @Deprecated
   public Map<String, String> getDisplayMap(User user, Map<String, String> contextParamValues) throws WdkModelException {
     return getVocabInstance(user, contextParamValues).getDisplayMap();
   }

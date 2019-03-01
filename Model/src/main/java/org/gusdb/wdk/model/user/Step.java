@@ -460,7 +460,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   /**
-   * Returns the real result size of this step (numbe of records returned); once
+   * Returns the real result size of this step (number of records returned); once
    * this method is called, getEstimateSize() will also return this value.
    *
    * @return the real result size gained by running the step
@@ -472,9 +472,13 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   private int recalculateResultSize(RunnableObj<AnswerSpec> answerSpec) throws WdkModelException {
+    int oldEstimatedSize = _estimatedSize;
     _estimatedSize = AnswerValueFactory.makeAnswer(_user, answerSpec).getResultSizeFactory().getDisplayResultSize();
     _estimatedSizeRefreshed = true;
-    writeMetadataToDb(true);
+    if (oldEstimatedSize != _estimatedSize) {
+      // update value in database
+      _wdkModel.getStepFactory().updateStep(this);
+    }
     return _estimatedSize;
   }
 
