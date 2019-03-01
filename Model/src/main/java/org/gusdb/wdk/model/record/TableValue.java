@@ -106,12 +106,6 @@ public class TableValue implements Iterable<Map<String, AttributeValue>> {
     _rows.add(row);
   }
 
-  // TODO: remove once JSPs are retired (used in (at least) questionDescription.tag)
-  @Deprecated
-  public Iterator<Map<String, AttributeValue>> getIterator() {
-    return iterator();
-  }
-
   @Override
   public Iterator<Map<String, AttributeValue>> iterator() {
     return _rows.iterator();

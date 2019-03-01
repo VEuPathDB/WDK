@@ -9,7 +9,6 @@ import java.util.Date;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -35,7 +34,6 @@ import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.model.user.InvalidStrategyStructureException;
-import org.gusdb.wdk.model.user.NoSuchElementException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepFactory;
@@ -174,7 +172,7 @@ public class StepService extends UserService {
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
     StepFactory stepFactory = getWdkModel().getStepFactory();
     Step step = stepFactory
-        .getStepById(stepId, ValidationLevel.NONE)
+        .getStepByIdAndUserId(stepId, user.getUserId(), ValidationLevel.NONE)
         .orElseThrow(() -> new NotFoundException(formatNotFound(STEP_RESOURCE + stepId)));
     if (!step.hasStrategy()) throw new DataValidationException("Step " + step.getId() + " is not part of a strategy, so cannot run."); 
 
@@ -276,19 +274,13 @@ public class StepService extends UserService {
   }
 
   private Step getStepForCurrentUser(long stepId, ValidationLevel level) throws WdkModelException {
-    try {
-      User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      Step step = getWdkModel().getStepFactory()
-          .getStepById(stepId, level)
-          .orElseThrow(() -> new NoSuchElementException("Cannot find step with ID " + stepId));
-
-      if (step.getUser().getUserId() != user.getUserId())
-        throw new ForbiddenException(AbstractWdkService.PERMISSION_DENIED);
-
-      return step;
-    }
-    catch (NoSuchElementException e) {
-      throw new NotFoundException(AbstractWdkService.formatNotFound(STEP_RESOURCE + stepId));
-    }
+    return getWdkModel()
+        .getStepFactory()
+        .getStepByIdAndUserId(
+            stepId,
+            getUserBundle(Access.PRIVATE).getSessionUser().getUserId(),
+            level)
+        .orElseThrow(
+            () -> new NotFoundException(formatNotFound(STEP_RESOURCE + stepId)));
   }
 }

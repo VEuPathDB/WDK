@@ -492,88 +492,6 @@ public class Step implements StrategyElement, Validateable<Step> {
     return _answerSpec.getQueryInstanceSpec().get(operator.getName());
   }
 
-  /*
-  @Deprecated
-  public void setParentStep(Step parentStep) throws WdkModelException {
-    // check if this is a no-op
-    if (parentStep.getStepId() == getParentStep().map(step -> step.getStepId()).orElse(-1L)) {
-      return;
-    }
-    verifySameOwnerAndProject(this, parentStep);
-    parentStep.setChildStep(this);
-    _strategy.appendStep(parentStep);
-    _parentStepId = parentStep.getStepId();
-    if (parentStep != null) {
-      parentStep._childStep = this;
-      parentStep._childStepId = _stepId;
-    }
-  }
-
-  @Deprecated
-  public void setChildStep(Step childStep) throws WdkModelException {
-    verifySameOwnerAndProject(this, childStep);
-    _childStep = childStep;
-    if (childStep != null) {
-      childStep._parentStep = this;
-      _childStepId = childStep.getStepId();
-      updateAnswerParamValue(getChildStepParamName(), _childStepId);
-    }
-    else
-      _childStepId = 0;
-  }
-
-  @Deprecated
-  public void setNextStep(Step nextStep) throws WdkModelException {
-    verifySameOwnerAndProject(this, nextStep);
-    _nextStep = nextStep;
-    if (nextStep != null) {
-      nextStep._previousStepId = _stepId;
-    }
-  }
-
-  @Deprecated
-  public void setPreviousStep(Step previousStep) throws WdkModelException {
-    verifySameOwnerAndProject(this, previousStep);
-    _previousStep = previousStep;
-    if (previousStep != null) {
-      previousStep._nextStep = this;
-      _previousStepId = previousStep.getStepId();
-      updateAnswerParamValue(getPreviousStepParamName(), _previousStepId);
-    }
-    else
-      _previousStepId = 0;
-  }
-
-  @Deprecated
-  private void updateAnswerParamValue(String paramName, long stepId) {
-    _answerSpec = AnswerSpec.builder(_answerSpec)
-        .setParamValue(paramName, Long.toString(stepId))
-        .build(_answerSpec.getValidationBundle().getLevel());
-  }
-
-  public void addStep(Step step) throws WdkModelException {
-    step.setPreviousStep(this);
-    this.setNextStep(step);
-  }
-
-  public void patchAnswerParams() throws WdkModelException {
-    Param[] params = _answerSpec.getQuestion().getParams();
-    boolean leftParamEmpty = true;
-    for (Param param : params) {
-      if (param instanceof AnswerParam) {
-        if (leftParamEmpty) {
-          updateAnswerParamValue(param.getName(), getPreviousStepId());
-          leftParamEmpty = false;
-        }
-        else {
-          updateAnswerParamValue(param.getName(), getChildStepId());
-        }
-      }
-    }
-    saveParamFilters();
-  }
-*/
-
   public boolean isFirstStep() {
     return hasStrategy() ? _strategy.getFirstStep().getStepId() == _stepId : false;
   }
@@ -662,16 +580,6 @@ public class Step implements StrategyElement, Validateable<Step> {
   public boolean isTransform() {
     Question question = _answerSpec.getQuestion();
     return question != null && question.isTransform();
-  }
-
-  // saves attributes of the step that do NOT impact results or parent steps
-  @Deprecated
-  public void writeMetadataToDb(boolean setLastRunTime) throws WdkModelException {
-    // HACK: don't update if this is an in-memory only Step
-    // remove this once we refactor the world of summary views, so they don't need such Steps
-    if (!_inMemoryOnly) {
-      _wdkModel.getStepFactory().updateStep(getUser(), this, setLastRunTime);
-    }
   }
 
   public String getDescription() {

@@ -703,15 +703,6 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _handler.setWdkModel(wdkModel);
   }
 
-  /**
-   * @return all possible values for this param (only applies to some param types)
-   * @throws WdkModelException if unable to generate values
-   */
-  @Deprecated
-  public Set<String> getAllValues() throws WdkModelException {
-    return Collections.emptySet();
-  }
-
   public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
     writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getFullName() + "\">");
     printDependencyContent(writer, indent + WdkModel.INDENT);

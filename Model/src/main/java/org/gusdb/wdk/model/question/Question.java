@@ -124,12 +124,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   private boolean _noSummaryOnSingleRecord = false;
 
   /**
-   * TODO - Not sure if it's used anywhere.
-   */
-  @Deprecated
-  private boolean _ignoreSubType = false;
-
-  /**
    * the default short name used in the step box in strategy workspace.
    */
   private String _shortDisplayName;
@@ -788,28 +782,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     return map;
   }
 
-  /**
-   * @return the ignoreSubType
-   */
-  @Deprecated
-  public boolean isIgnoreSubType() {
-    return _ignoreSubType;
-  }
-
-  /**
-   * @param ignoreSubType
-   *          the ignoreSubType to set
-   */
-  @Deprecated
-  public void setIgnoreSubType(boolean ignoreSubType) {
-    _ignoreSubType = ignoreSubType;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);

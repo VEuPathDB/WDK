@@ -183,7 +183,7 @@ public class StrategyService extends UserService {
     final Strategy oldStrat = getStrategyForCurrentUser(stratId, ValidationLevel.NONE);
     final StepFactory stepFactory = getWdkModel().getStepFactory();
     final TwoTuple<Long, Collection<StepBuilder>> parsedTree =
-        StrategyRequest.treeToSteps(oldStrat.getStrategyId(), body, stepFactory);
+        StrategyRequest.treeToSteps(Optional.of(oldStrat), body, stepFactory);
     try {
 
       // build and validate modified strategy
@@ -264,7 +264,7 @@ public class StrategyService extends UserService {
 
   private Strategy createNewStrategy(User user, StepFactory stepFactory, JSONObject json)
       throws WdkModelException, DataValidationException, InvalidStrategyStructureException {
-    StrategyRequest strategyRequest = StrategyRequest.createFromJson(null, json, stepFactory);
+    StrategyRequest strategyRequest = StrategyRequest.createFromJson(Optional.empty(), json, stepFactory);
 
     RunnableObj<Strategy> strategy = Strategy.builder(getWdkModel(), user.getUserId(), stepFactory.getNewStrategyId())
       .addSteps(strategyRequest.getSteps())
