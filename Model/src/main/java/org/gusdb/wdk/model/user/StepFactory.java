@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,6 +26,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.SortDirection;
 import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -59,8 +61,11 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static org.gusdb.wdk.model.user.UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX;
 
 /**
  * @author xingao
@@ -304,9 +309,10 @@ public class StepFactory {
     sqlInsertStep.append(COLUMN_DISPLAY_PARAMS).append(", ");
     sqlInsertStep.append(COLUMN_CUSTOM_NAME).append(", ");
     sqlInsertStep.append(COLUMN_IS_COLLAPSIBLE).append(", ");
-    sqlInsertStep.append(COLUMN_COLLAPSED_NAME).append(") ");
+    sqlInsertStep.append(COLUMN_COLLAPSED_NAME).append(", ");
+    sqlInsertStep.append("display_prefs)");
 
-    sqlInsertStep.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    sqlInsertStep.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     // Create the Step sans Answer
     Date createTime = new Date();
@@ -321,6 +327,8 @@ public class StepFactory {
     catch (SQLException e) {
       throw new WdkModelException(e);
     }
+
+    final JSONObject displayPrefs = buildStepDisplayPrefs(user, questionName);
 
     // create the Step
     Step step = new Step(this, user, stepId);
@@ -340,6 +348,7 @@ public class StepFactory {
     step.setCustomName(customName);
     step.setCollapsible(isCollapsible);
     step.setCollapsedName(collapsedName);
+    step.setDisplayPrefs(displayPrefs);
 
     PreparedStatement psInsertStep = null;
     try {
@@ -362,6 +371,7 @@ public class StepFactory {
       psInsertStep.setString(14,  customName);
       psInsertStep.setBoolean(15, isCollapsible);
       psInsertStep.setString(16, collapsedName);
+      _userDb.getPlatform().setClobData(psInsertStep, 17, displayPrefs.toString(), false);
       psInsertStep.executeUpdate();
     }
     catch (SQLException | JSONException ex) {
@@ -383,7 +393,7 @@ public class StepFactory {
     // get summary list and sorting list
     String questionName = question.getFullName();
     Map<String, Boolean> sortingAttributes = user.getPreferences().getSortingAttributes(
-        questionName, UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+        questionName, DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
 
     // prepare the values to be inserted.
     long userId = user.getUserId();
@@ -409,6 +419,8 @@ public class StepFactory {
       exception = ex;
     }
 
+    final JSONObject displayPrefs = buildStepDisplayPrefs(user, questionName);
+
     // prepare SQLs
     String userIdColumn = Utilities.COLUMN_USER_ID;
 
@@ -426,8 +438,9 @@ public class StepFactory {
     sqlInsertStep.append(COLUMN_PROJECT_VERSION).append(", ");
     sqlInsertStep.append(COLUMN_QUESTION_NAME).append(", ");
     sqlInsertStep.append(COLUMN_STRATEGY_ID).append(", ");
-    sqlInsertStep.append(COLUMN_DISPLAY_PARAMS).append(") ");
-    sqlInsertStep.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    sqlInsertStep.append(COLUMN_DISPLAY_PARAMS).append(", ");
+    sqlInsertStep.append("display_prefs)");
+    sqlInsertStep.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     // Now that we have the Answer, create the Step
     Date createTime = new Date();
@@ -457,6 +470,7 @@ public class StepFactory {
     step.setException(exception);
     step.setProjectId(_wdkModel.getProjectId());
     step.setProjectVersion(_wdkModel.getVersion());
+    step.setDisplayPrefs(displayPrefs);
 
     PreparedStatement psInsertStep = null;
     try {
@@ -476,6 +490,7 @@ public class StepFactory {
       psInsertStep.setString(11, questionName);
       psInsertStep.setObject(12, strategyId);
       _userDb.getPlatform().setClobData(psInsertStep, 13, JsonUtil.serialize(jsParamFilters), false);
+      _userDb.getPlatform().setClobData(psInsertStep, 14, displayPrefs.toString(), false);
       psInsertStep.executeUpdate();
     }
     catch (SQLException | JSONException ex) {
@@ -784,6 +799,7 @@ public class StepFactory {
       step.setAssignedWeight(rsStep.getInt(COLUMN_ASSIGNED_WEIGHT));
     if (rsStep.getObject(COLUMN_STRATEGY_ID) != null)
       step.setStrategyId(rsStep.getLong(COLUMN_STRATEGY_ID));
+    step.setDisplayPrefs(new JSONObject(rsStep.getString("display_prefs")));
 
     // load left and right child
     if (rsStep.getObject(COLUMN_LEFT_CHILD_ID) != null) {
@@ -922,7 +938,7 @@ public class StepFactory {
     String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_CUSTOM_NAME + " = ?, " +
         COLUMN_LAST_RUN_TIME + " = ?, " + COLUMN_IS_DELETED + " = ?, " + COLUMN_IS_COLLAPSIBLE + " = ?, " +
         COLUMN_COLLAPSED_NAME + " = ?, " + COLUMN_ESTIMATE_SIZE + " = ?, " + COLUMN_IS_VALID + " = ?, " +
-        COLUMN_ASSIGNED_WEIGHT + " = ? WHERE " + COLUMN_STEP_ID + " = ?";
+        COLUMN_ASSIGNED_WEIGHT + " = ?, display_prefs = ? WHERE " + COLUMN_STEP_ID + " = ?";
     try {
       long start = System.currentTimeMillis();
       psStep = SqlUtils.getPreparedStatement(_userDbDs, sql);
@@ -934,7 +950,8 @@ public class StepFactory {
       psStep.setInt(6, estimateSize);
       psStep.setBoolean(7, step.isValid());
       psStep.setInt(8, step.getAssignedWeight());
-      psStep.setLong(9, step.getStepId());
+      _userDb.getPlatform().setClobData(psStep, 9, step.getDisplayPrefs().toString(), false);
+      psStep.setLong(10, step.getStepId());
       int result = psStep.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-update-step", start);
       if (result == 0)
@@ -1275,6 +1292,7 @@ public class StepFactory {
     newStep.setCollapsible(oldStep.isCollapsible());
     newStep.setCustomName(oldStep.getBaseCustomName());
     newStep.setValid(oldStep.isValid());
+    newStep.setDisplayPrefs(oldStep.getDisplayPrefs());
 
     // update properties on disk
     newStep.update(false);
@@ -2038,5 +2056,27 @@ public class StepFactory {
       }
     }
     step.saveParamFilters();
+  }
+
+  @SuppressWarnings("cast") // will not compile without cast - maybe fixed in Java 11?
+  private static JSONObject buildStepDisplayPrefs(User user,
+      String questionName) throws WdkModelException {
+    return new JSONObject()
+      .put(
+        "sortColumns",
+        (JSONArray) user.getPreferences()
+          .getSortingAttributes(questionName, DEFAULT_SUMMARY_VIEW_PREF_SUFFIX)
+          .entrySet()
+          .stream()
+          .map(e -> new JSONObject()
+              .put(e.getKey(), SortDirection.getFromIsAscending(e.getValue()).toString()))
+          .collect(JSONArray::new, JSONArray::put, (a, b) -> b.forEach(a::put))
+      )
+      .put(
+        "columnSelection",
+        (JSONArray) Arrays.stream(user.getPreferences()
+          .getSummaryAttributes(questionName, DEFAULT_SUMMARY_VIEW_PREF_SUFFIX))
+          .collect(JSONArray::new, JSONArray::put, (a, b) -> b.forEach(a::put))
+      );
   }
 }

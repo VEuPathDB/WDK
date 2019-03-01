@@ -58,7 +58,7 @@ CREATE TABLE userlogins5.user_roles
   migration_id  NUMBER(12),
   CONSTRAINT "user_roles_pk" PRIMARY KEY (user_id, user_role),
   CONSTRAINT "user_roles_fk01" FOREIGN KEY (user_id)
-      REFERENCES userlogins5.users (user_id) 
+      REFERENCES userlogins5.users (user_id)
 );
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.user_roles TO COMM_WDK_W;
@@ -74,7 +74,7 @@ CREATE TABLE userlogins5.preferences
   migration_id      NUMBER(12),
   CONSTRAINT "preferences_pk" PRIMARY KEY (user_id, project_id, preference_name),
   CONSTRAINT "preferences_fk01" FOREIGN KEY (user_id)
-      REFERENCES userlogins5.users (user_id) 
+      REFERENCES userlogins5.users (user_id)
 );
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.preferences TO COMM_WDK_W;
@@ -231,6 +231,7 @@ CREATE TABLE userlogins5.steps (
   result_message   CLOB,
   prev_step_id     NUMBER(12),
   migration_id     NUMBER(12),
+  display_prefs    CLOB DEFAULT '{}',
   CONSTRAINT "steps_pk" PRIMARY KEY (step_id),
   CONSTRAINT "steps_fk01" FOREIGN KEY (user_id)
       REFERENCES userlogins5.users (user_id)

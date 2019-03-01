@@ -14,6 +14,8 @@ import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.IdAttributeField;
+import org.gusdb.wdk.model.user.AnswerValueCache;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferences;
 
@@ -107,7 +109,7 @@ public class AnswerValueAttributes {
   public Map<String, AttributeField> getSummaryAttributeFieldMap() throws WdkModelException {
     if (_summaryAttributeMap == null) {
       IdAttributeField pkField = _question.getRecordClass().getIdAttributeField();
-      _summaryAttributeMap = buildSummaryAttributeFieldMap(_user, _question, UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX, new AttributeField[]{ pkField });
+      _summaryAttributeMap = buildSummaryAttributeFieldMap(_user, _question, UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX, new AttributeField[]{ pkField }, null);
     }
     //LOG.debug("Returning summary field map with keys: " +
     FormatUtil.arrayToString(_summaryAttributeMap.keySet().toArray());
@@ -115,17 +117,24 @@ public class AnswerValueAttributes {
   }
 
   public static Map<String, AttributeField> buildSummaryAttributeFieldMap(
-      User user, Question question, String keySuffix, AttributeField[] leftmostFields) throws WdkModelException {
-    // get preferred attribs from user and initialize map
-    String[] userPrefAttributes = user.getPreferences().getSummaryAttributes(question.getFullName(), keySuffix);
-    Map<String, AttributeField> summaryFields = new LinkedHashMap<String, AttributeField>();
+      User user, Question question, String keySuffix, AttributeField[] leftmostFields, Step step) throws WdkModelException {
+
+    Map<String, AttributeField> allFields = question.getAttributeFieldMap();
+    String[] userPrefAttributes;
+    if (step != null && step.getDisplayPrefs() != null && AnswerValueCache.hasColumnSelection(step.getDisplayPrefs())) {
+      userPrefAttributes = AnswerValueCache.parseSummaryMap(step.getDisplayPrefs(), allFields).keySet().toArray(new String[0]);
+    }
+    else {
+      // get preferred attribs from user and initialize map
+      userPrefAttributes = user.getPreferences().getSummaryAttributes(question.getFullName(), keySuffix);
+    }
 
     // always put the primary key (all leftmostFields) as the first attribute
+    Map<String, AttributeField> summaryFields = new LinkedHashMap<String, AttributeField>();
     for(AttributeField a : leftmostFields) {
       summaryFields.put(a.getName(), a);
     }
     // add remainder of attributes to map and return
-    Map<String, AttributeField> allFields = question.getAttributeFieldMap();
     for (String attributeName : userPrefAttributes) {
       AttributeField field = allFields.get(attributeName);
       if (field != null)
