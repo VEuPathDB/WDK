@@ -372,8 +372,8 @@ public class StepFactory {
     }
   }
 
-  public Map<Long, Step> getSteps(long userId) throws WdkModelException {
-    return new StrategyLoader(_wdkModel, ValidationLevel.SYNTACTIC).getSteps(userId);
+  public Map<Long, Step> getStepsByUserId(long userId, ValidationLevel level) throws WdkModelException {
+    return new StrategyLoader(_wdkModel, level).getSteps(userId);
   }
 
   /**
@@ -602,8 +602,9 @@ public class StepFactory {
           step.getStepId()));
   }
 
-  public Map<Long, Strategy> getStrategies(long userId) throws WdkModelException {
-    return getStrategies(userId, ValidationLevel.SYNTACTIC, new MalformedStrategyList());
+  public Map<Long, Strategy> getStrategies(long userId, ValidationLevel validationLevel)
+      throws WdkModelException {
+    return getStrategies(userId, validationLevel, new MalformedStrategyList());
   }
 
   public Map<Long, Strategy> getStrategies(long userId, ValidationLevel validationLevel,
@@ -1173,8 +1174,9 @@ public class StepFactory {
         builder.setSignature(saved.getSecond());
         builder.setSavedName(strategy.getName());
         // only delete the strategy if it's a different one
-        if (!strategy.getStrategyId().equals(saved.getFirst()))
-          StepUtilities.deleteStrategy(user, saved.getFirst());
+        if (!strategy.getStrategyId().equals(saved.getFirst())) {
+          deleteStrategy(saved.getFirst());
+        }
       }
     }
 
@@ -1198,118 +1200,6 @@ public class StepFactory {
     catch (SQLException ex) {
       throw new WdkModelException(ex);
     }
-  }
-
-  // Note: this function only adds the necessary row in strategies; updating
-  // of answers
-  // and steps tables is handled in other functions. Once the Step
-  // object exists, all of this data is already in the db.
-  @Deprecated
-  public Strategy createStrategy(User user, Step root, String name,
-      String savedName, boolean saved, String description, boolean hidden,
-      boolean isPublic) throws WdkModelException, InvalidStrategyStructureException {
-    long strategyId = (root.getStrategyId() == null)
-        ? getNewStrategyId()
-        : root.getStrategyId();
-    return createStrategy(user, strategyId, root, name, savedName, saved,
-        description, hidden, isPublic);
-  }
-
-  @Deprecated
-  Strategy createStrategy(User user, long strategyId, Step root, String newName,
-      String savedName, boolean saved, String description, boolean hidden,
-      boolean isPublic) throws WdkModelException, InvalidStrategyStructureException {
-
-    final String projectId = _wdkModel.getProjectId();
-
-    LOG.debug("creating strategy, saved=" + saved);
-
-    long userId = user.getUserId();
-
-    String userIdColumn = Utilities.COLUMN_USER_ID;
-
-    final int boolType = _userDbPlatform.getBooleanType();
-    final String sql =
-        "SELECT " + COLUMN_STRATEGY_ID + "\n" +
-        "FROM " + _userSchema + TABLE_STRATEGY + "\n" +
-        "WHERE " + userIdColumn      + " = ?\n" +
-        "  AND " + COLUMN_PROJECT_ID + " = ?\n" +
-        "  AND " + COLUMN_NAME       + " = ?\n" +
-        "  AND " + COLUMN_IS_SAVED   + "= ?\n" +
-        "  AND " + COLUMN_IS_DELETED + "= ?";
-
-    // If newName is not null, check if strategy exists.  if so, just load it
-    // and return.  don't create a new one.
-    if (newName != null) {
-      if (newName.length() > COLUMN_NAME_LIMIT) {
-        newName = newName.substring(0, COLUMN_NAME_LIMIT - 1);
-      }
-      Optional<Long> stratId = new SQLRunner(_userDbDs, sql)
-        .executeQuery(
-          new Object[]{
-            userId,
-            projectId,
-            newName,
-            _userDbPlatform.convertBoolean(saved),
-            _userDbPlatform.convertBoolean(hidden)
-          },
-          new Integer[]{
-            Types.BIGINT,
-            Types.VARCHAR,
-            Types.VARCHAR,
-            boolType,
-            boolType
-          },
-          rs -> rs.next() ?
-            Optional.of(rs.getLong(COLUMN_STRATEGY_ID)) :
-            Optional.empty()
-        );
-
-      if (stratId.isPresent()) {
-        Optional<Strategy> strategy = new StrategyLoader(_wdkModel,
-            ValidationLevel.SEMANTIC).getStrategyById(stratId.get());
-        if (strategy.isPresent())
-          return strategy.get();
-      }
-
-      throw  new WdkModelException("Newly created strategy could not be found.");
-    } else {
-      // if newName is null, generate default name from root step (by
-      // adding/incrementing numeric suffix)
-      newName = addSuffixToStratNameIfNeeded(user, root.getCustomName(), saved);
-    }
-
-    String signature = getStrategySignature(projectId, user.getUserId(),
-        strategyId);
-
-    Strategy outStrat = new Strategy.StrategyBuilder(_wdkModel, userId, strategyId)
-      .setRootStepId(root.getStepId())
-      .setSaved(saved)
-      .setName(newName)
-      .setSavedName(savedName)
-      .setProjectId(projectId)
-      .setDeleted(false)
-      .setSignature(signature)
-      .setDescription(description)
-      .setVersion(_wdkModel.getVersion())
-      .setIsPublic(isPublic)
-      .addStep(Step.builder(root))
-      .build(new UserCache(root.getUser()), root.getValidationBundle().getLevel());
-
-    try(final Connection con = _userDbDs.getConnection()) {
-      insertStrategy(con, outStrat);
-    } catch (SQLException e) {
-      throw new WdkModelException(e);
-    }
-
-    // check if we need to update the strategy id on the step;
-    if (root.getStrategyId() == null || root.getStrategyId() != strategyId)
-      updateStrategyId(strategyId, root);
-
-    // FIXME: once this method is refactored to create an in-memory strategy
-    //        before insertion, just use that one; do not load from the DB again
-    Optional<Strategy> strategy = new StrategyLoader(_wdkModel, ValidationLevel.SEMANTIC).getStrategyById(strategyId);
-    return strategy.orElseThrow(() -> new WdkModelException("Newly created strategy could not be found."));
   }
 
   /**
@@ -1436,14 +1326,6 @@ public class StepFactory {
         new WdkModelException("Unable to process all StepResultsModified events for step IDs: " +
             FormatUtil.arrayToString(dirtyStepIds.toArray())));
 
-  }
-
-  private void updateStrategyId(long strategyId, Step rootStep) throws WdkModelException {
-    String stepIdSql = selectStepAndChildren(rootStep.getStepId());
-    String sql = "UPDATE " + _userSchema + TABLE_STEP + "\n" +
-        "SET " + COLUMN_STRATEGY_ID + " = " + strategyId + "\n" +
-        "WHERE step_id IN (" + stepIdSql + ")";
-    new SQLRunner(_userDbDs, sql, "wdk-update-strategy-on-steps").executeUpdate();
   }
 
   public int getStrategyCount(long userId) throws WdkModelException {
@@ -1751,5 +1633,15 @@ public class StepFactory {
     catch (Exception e) {
       throw new WdkModelException("Could not update strategy and steps", e);
     }
+  }
+
+  public Optional<Step> getStepByIdAndUserId(long stepId, long userId,
+      ValidationLevel validationLevel) throws WdkModelException {
+    Optional<Step> step = getStepById(stepId, validationLevel);
+    if (step.isPresent() && step.get().getUser().getUserId() != userId) {
+      return Optional.empty();
+    }
+    return step;
+    
   }
 }

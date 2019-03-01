@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.filter;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -12,9 +13,8 @@ import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
-import org.gusdb.wdk.model.user.User;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class StrategyFilter extends StepFilter {
@@ -38,16 +38,28 @@ public class StrategyFilter extends StepFilter {
     return FILTER_NAME;
   }
 
-  /**
-   * @throws WdkModelException 
-   * @see org.gusdb.wdk.model.filter.Filter#getSummary(org.gusdb.wdk.model.answer.AnswerValue)
-   */
   @Override
-  public FilterSummary getSummary(AnswerValue answer, String idSql) throws WdkModelException {
-    User user = answer.getUser();
+  public JSONObject getSummaryJson(AnswerValue answer, String idSql) throws WdkModelException {
     String rcName = answer.getAnswerSpec().getQuestion().getRecordClass().getFullName();
-    Collection<Strategy> strategies = StepUtilities.getStrategiesMap(user, rcName).values();
-    return new StrategyFilterSummary(strategies);
+    List<Strategy> strategies = answer.getWdkModel().getStepFactory()
+        .getStrategies(answer.getUser().getUserId(), ValidationLevel.SYNTACTIC)
+        .values()
+        .stream()
+        .filter(strategy -> strategy.getRecordClass().getFullName().equals(rcName))
+        .collect(Collectors.toList());
+    return getStrategiesJson(strategies);
+  }
+
+  public JSONObject getStrategiesJson(List<Strategy> strategies) {
+    JSONArray arr = new JSONArray();
+    for (Strategy strat : strategies) {
+      arr.put(new JSONObject()
+        .put("id", strat.getStrategyId())
+        .put("name", strat.getName())
+        .put("size", strat.getEstimatedSize())
+        .put("recordClass", strat.getRecordClass().getFullName()));
+    }
+    return new JSONObject().put("strategies", arr);
   }
 
   /**

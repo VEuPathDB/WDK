@@ -41,12 +41,6 @@ public class AnswerSpecFilter extends StepFilter {
   }
 
   @Override
-  public FilterSummary getSummary(AnswerValue answer, String idSql)
-      throws WdkModelException {
-    return new FilterSummary() { /* no UI for now; service only */ };
-  }
-
-  @Override
   public String getSql(AnswerValue answer, String idSql, JSONObject jsValue)
       throws WdkModelException {
     // TODO: parse answer spec and write SQL for this filter;

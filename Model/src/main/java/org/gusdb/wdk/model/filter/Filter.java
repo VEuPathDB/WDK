@@ -97,20 +97,6 @@ public interface Filter {
   String getDisplayValue(AnswerValue answer, JSONObject jsValue) throws WdkModelException;
 
   /**
-   * Get the summary model for the filter display. The summary model contains information that will be
-   * rendered on the filter interface.
-   * 
-   * @param answer
-   *          the AnswerValue that the filter will be applied on.
-   * @param idSql
-   *          the ID SQL from the answerValue, with all the not-view-only filters, except the current one, applied.
-   * @return
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  FilterSummary getSummary(AnswerValue answer, String idSql) throws WdkModelException;
-
-  /**
    * Get a JSON formatted version of the summary model for the filter display.
    * @param answer
    * @param idSql

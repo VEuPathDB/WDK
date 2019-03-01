@@ -7,12 +7,10 @@ import java.util.Optional;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -40,14 +38,10 @@ public class AnswerParamHandler extends AbstractParamHandler {
    */
   @Override
   public Optional<Step> toRawValue(User user, String stableValue) throws WdkModelException {
-    try {
-      return AnswerParam.NULL_VALUE.equals(stableValue)
-          ? Optional.empty()
-          : Optional.of(StepUtilities.getStep(user, Long.valueOf(stableValue), ValidationLevel.NONE));
-    }
-    catch (WdkUserException e) {
-      return WdkModelException.unwrap(e);
-    }
+    return AnswerParam.NULL_VALUE.equals(stableValue)
+        ? Optional.empty()
+        : user.getWdkModel().getStepFactory().getStepByIdAndUserId(
+            user.getUserId(), Long.valueOf(stableValue), ValidationLevel.NONE);
   }
 
   /**

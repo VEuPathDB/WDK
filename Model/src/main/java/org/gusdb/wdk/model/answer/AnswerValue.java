@@ -37,7 +37,6 @@ import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.filter.Filter;
-import org.gusdb.wdk.model.filter.FilterSummary;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -813,14 +812,6 @@ public class AnswerValue {
     reset();
   }
 
-  public FilterSummary getFilterSummary(String filterName) throws WdkModelException {
-    // need to exclude the given filter from the idSql, so that the selection of the current filter won't
-    // affect the background;
-    String idSql = getIdSql(filterName, false);
-    Filter filter = _answerSpec.getQuestion().getFilter(filterName);
-    return filter.getSummary(this, idSql);
-  }
-  
   public JSONObject getFilterSummaryJson(String filterName) throws WdkModelException {
     String idSql = getIdSql(filterName, false);
     Filter filter = _answerSpec.getQuestion().getFilter(filterName);
