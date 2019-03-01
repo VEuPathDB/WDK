@@ -42,6 +42,7 @@
     }
   },
   "required": [
-    "searchConfig"
+      "searchConfig",
+    "searchName"
   ]
 }
