@@ -31,9 +31,11 @@ public class JsonKeys {
   public static final String LENGTH = "length";
   public static final String VALUE = "value";
   public static final String PROPERTIES = "properties";
-  public static final String TOTAL_COUNT = "totalCount";
   public static final String RESPONSE_COUNT = "responseCount";
+  public static final String TOTAL_COUNT = "totalCount";
+  public static final String VIEW_TOTAL_COUNT = "viewTotalCount";
   public static final String DISPLAY_TOTAL_COUNT = "displayTotalCount";
+  public static final String DISPLAY_VIEW_TOTAL_COUNT = "displayViewTotalCount";
   public static final String RECORD_CLASS_NAME = "recordClassName";
   public static final String QUESTION_NAME = "questionName";
   public static final String PARAMETER_NAME = "parameterName";
