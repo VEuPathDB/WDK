@@ -2,9 +2,7 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,10 +16,8 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.SelectableItem;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
@@ -70,49 +66,6 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   private static final Logger LOG = Logger.getLogger(AbstractEnumParam.class);
 
   private static final boolean INVALID_DEFAULT_IS_FATAL = true;
-
-  /**
-   * @author jerric
-   *
-   *         The ParamValueMap is used to eliminate duplicate value tuplets.
-   */
-  private static class ParamValueMap extends LinkedHashMap<String, String> {
-
-    private static final long serialVersionUID = 8058527840525499401L;
-
-    public ParamValueMap() {
-      super();
-    }
-
-    public ParamValueMap(Map<? extends String, ? extends String> m) {
-      super(m);
-    }
-
-    @Override
-    public int hashCode() {
-      return Utilities.createHashFromValueMap(this);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (o instanceof ParamValueMap) {
-        ParamValueMap map = (ParamValueMap) o;
-        if (size() == map.size()) {
-          for (String key : keySet()) {
-            if (!map.containsKey(key))
-              return false;
-            if (!map.get(key).equals(get(key)))
-              return false;
-          }
-          return true;
-        }
-        else
-          return false;
-      }
-      else
-        return false;
-    }
-  }
 
   public static final String DISPLAY_SELECT = "select";
   public static final String DISPLAY_LISTBOX = "listBox"; // deprecated; use select
@@ -316,11 +269,6 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   public EnumParamVocabInstance getVocabInstance(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
     return getVocabInstance(spec.getObject().getUser(), spec.getObject().toMap());
-  }
-
-  @Deprecated
-  public Map<String, String> getVocabMap(User user, Map<String, String> contextParamValues) throws WdkModelException {
-    return getVocabInstance(user, contextParamValues).getVocabMap();
   }
 
   public Map<String, String> getDisplayMap(User user, Map<String, String> contextParamValues) throws WdkModelException {
@@ -642,49 +590,6 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
           "'] in context query ['" + contextQueryName + "']: " +
           "TreeBox display type cannot be selected when multiPick is false.");
     }
-  }
-
-  @Override
-  @Deprecated
-  public Set<String> getAllValues() throws WdkModelException {
-    User user = _wdkModel.getSystemUser();
-    Set<String> values = new LinkedHashSet<>();
-    if (isDependentParam()) {
-      // dependent param, need to get all the combinations of the depended
-      // param values.
-      Set<Param> dependedParams = getDependedParams();
-      Set<ParamValueMap> dependedValues = new LinkedHashSet<>();
-      dependedValues.add(new ParamValueMap());
-      for (Param dependedParam : dependedParams) {
-        Set<String> subValues = dependedParam.getAllValues();
-        Set<ParamValueMap> newDependedValues = new LinkedHashSet<>();
-        for (String subValue : subValues) {
-          for (ParamValueMap dependedValue : dependedValues) {
-            dependedValue = new ParamValueMap(dependedValue);
-            dependedValue.put(dependedParam.getName(), subValue);
-            newDependedValues.add(dependedValue);
-          }
-        }
-        dependedValues = newDependedValues;
-      }
-      // now for each dependedValue tuplet, get the possible values
-      for (Map<String, String> dependedValue : dependedValues) {
-        try {
-          values.addAll(getVocabMap(user, dependedValue).keySet());
-        }
-        catch (WdkRuntimeException ex) {
-          // if (ex.getMessage().startsWith("No item returned by")) {
-          // the enum param doeesn't return any row, ignore it.
-          continue;
-          // } else
-          // throw ex;
-        }
-      }
-    }
-    else {
-      values.addAll(getVocabMap(user, new HashMap<>()).keySet());
-    }
-    return values;
   }
 
   @Override

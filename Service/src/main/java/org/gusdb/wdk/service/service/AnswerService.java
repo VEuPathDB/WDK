@@ -220,7 +220,8 @@ public class AnswerService extends AbstractWdkService {
       long stepId = Long.parseLong(stableValue);
       if (strategy == null) {
         // have not selected a strategy yet
-        Step step = wdkModel.getStepFactory().getStepById(stepId, ValidationLevel.RUNNABLE)
+        Step step = wdkModel.getStepFactory().getStepByIdAndUserId(
+            stepId, sessionUser.getUserId(), ValidationLevel.RUNNABLE)
             .orElseThrow(() -> new DataValidationException(notFoundMessage));
         if (step.getStrategy() == null) {
           stepsForLookup.add(step); // stand-alone step; add it

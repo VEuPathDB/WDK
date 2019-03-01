@@ -432,27 +432,4 @@ public class UserFactory {
     _accountManager.updatePassword(userId, newPassword);
   }
 
-  @Deprecated // check of old password and matching of two new passwords should be done by caller
-  public void changePassword(String email, String oldPassword, String newPassword,
-      String confirmPassword) throws WdkUserException {
-    // standardize email
-
-    // make sure new password is not empty
-    if (newPassword == null || newPassword.trim().isEmpty())
-      throw new WdkUserException("The new password cannot be empty.");
-
-    // check if the new password matches the confirm input
-    if (!newPassword.equals(confirmPassword))
-      throw new WdkUserException("The new password doesn't match, "
-          + "please type them again. It's case sensitive.");
-
-    // make sure email/password combo matches a current user
-    UserProfile profile = _accountManager.getUserProfile(email.trim().toLowerCase(), oldPassword);
-    if (profile == null) {
-      throw new WdkUserException("The current password is incorrect.");
-    }
-
-    // update the password
-    changePassword(profile.getUserId(), newPassword);
-  }
 }

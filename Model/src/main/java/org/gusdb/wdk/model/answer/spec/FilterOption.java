@@ -1,8 +1,5 @@
 package org.gusdb.wdk.model.answer.spec;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.json.JsonUtil;
@@ -10,8 +7,6 @@ import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.question.Question;
 import org.json.JSONObject;
@@ -136,36 +131,6 @@ public class FilterOption implements Validateable<FilterOption>, NamedObject {
   @Override
   public ValidationBundle getValidationBundle() {
     return _validationBundle;
-  }
-
-  @Deprecated
-  public String getDisplayValue(AnswerValue answerValue) throws WdkModelException {
-    return _filter == null ? "" : _filter.getDisplayValue(answerValue, _value);
-  }
-
-  // FIXME: this is a total hack to support the JSP calling
-  //   getDisplayValue(AnswerValue) with an argument.  It should be removed
-  //   once we move filter displays from JSP to the new service architecture.
-  @Deprecated
-  public interface AnswerValueProvider {
-      AnswerValue getAnswerValue();
-  }
-  @Deprecated
-  public Map<AnswerValueProvider, String> getDisplayValueMap() {
-    return new HashMap<AnswerValueProvider, String>() {
-      @Override
-      public String get(Object answerValue) {
-        if (answerValue instanceof AnswerValueProvider) {
-          try {
-            return getDisplayValue(((AnswerValueProvider)answerValue).getAnswerValue());
-          }
-          catch (WdkModelException e) {
-            throw new WdkRuntimeException(e);
-          }
-        }
-        throw new IllegalArgumentException("Argument must be a AnswerValueProvider.");
-      }
-    };
   }
 
   @Override

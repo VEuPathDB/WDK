@@ -2,9 +2,11 @@ package org.gusdb.wdk.service.request.strategy;
 
 import static org.gusdb.fgputil.json.JsonUtil.getBooleanOrDefault;
 import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
+import static org.gusdb.wdk.model.user.StepContainer.withId;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.Queue;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
@@ -14,6 +16,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.json.JSONObject;
 
@@ -73,7 +76,7 @@ public class StrategyRequest {
     _steps = steps;
   }
 
-  public static StrategyRequest createFromJson(Long existingStrategyId,
+  public static StrategyRequest createFromJson(Optional<Strategy> existingStrategy,
       JSONObject json, StepFactory stepFactory)
       throws WdkModelException, DataValidationException {
     String name = json.getString(JsonKeys.NAME);
@@ -83,7 +86,7 @@ public class StrategyRequest {
     boolean isPublic = getBooleanOrDefault(json, JsonKeys.IS_PUBLIC, false);
 
     TwoTuple<Long, Collection<StepBuilder>> treeInput =
-        treeToSteps(existingStrategyId, json.getJSONObject(JsonKeys.ROOT_STEP), stepFactory);
+        treeToSteps(existingStrategy, json.getJSONObject(JsonKeys.ROOT_STEP), stepFactory);
     return new StrategyRequest(name, savedName, description, isSaved,
         isPublic, treeInput.getFirst(), treeInput.getSecond());
   }
@@ -117,25 +120,32 @@ public class StrategyRequest {
   }
 
   public static TwoTuple<Long, Collection<StepBuilder>> treeToSteps(
-    Long existingStrategyId,
+    Optional<Strategy> existingStrategy,
     JSONObject input,
     StepFactory factory
   ) throws WdkModelException, DataValidationException {
 
-    final Queue<StepBuilder> all = new LinkedList<>();
+    final Queue<StepBuilder> allBuilders = new LinkedList<>();
     final Queue<JSONObject> next = new LinkedList<>();
 
     next.add(input);
 
     while(!next.isEmpty()) {
+
       final JSONObject cur = next.poll();
       final long stepId = cur.getLong(JsonKeys.ID);
 
-      // FIXME: looking up every step in the DB here; don't need to do that for the PUT endpoint
-      final Step step = factory.getStepById(stepId, ValidationLevel.NONE)
-        .orElseThrow(() -> new DataValidationException(stepId + " is not a valid step ID."));
+      // try to find step in the existing strategy if present
+      Optional<Step> stepOpt = existingStrategy
+        .flatMap(strat -> strat.findFirstStep(withId(stepId)));
+
+      // if not there, look up in DB
+      Step step = stepOpt.isPresent() ? stepOpt.get() :
+        factory.getStepById(stepId, ValidationLevel.NONE)
+          .orElseThrow(() -> new DataValidationException(stepId + " is not a valid step ID."));
 
       // check that the step either already lives in the existing strategy or is unattached
+      Long existingStrategyId = existingStrategy.map(str -> str.getId()).orElse(null);
       if (step.getStrategyId() != null &&
           existingStrategyId != null &&
           !step.getStrategyId().equals(existingStrategyId)) {
@@ -144,11 +154,11 @@ public class StrategyRequest {
           " so cannot be assigned to strategy " + existingStrategyId);
       }
 
-      final StepBuilder bul = Step.builder(step).removeStrategy();
+      final StepBuilder builder = Step.builder(step).removeStrategy();
 
       if (cur.has(JsonKeys.PRIMARY_INPUT_STEP)) {
         final JSONObject prim = cur.getJSONObject(JsonKeys.PRIMARY_INPUT_STEP);
-        bul.getAnswerSpec()
+        builder.getAnswerSpec()
           .setParamValue(
             step.getPrimaryInputStepParamName()
               .orElseThrow(() -> new DataValidationException(
@@ -160,7 +170,7 @@ public class StrategyRequest {
 
       if (cur.has(JsonKeys.SECONDARY_INPUT_STEP)) {
         final JSONObject sec = cur.getJSONObject(JsonKeys.SECONDARY_INPUT_STEP);
-        bul.getAnswerSpec()
+        builder.getAnswerSpec()
           .setParamValue(
             step.getSecondaryInputStepParamName()
               .orElseThrow(() -> new DataValidationException(
@@ -170,9 +180,9 @@ public class StrategyRequest {
         next.add(sec);
       }
 
-      all.add(bul);
+      allBuilders.add(builder);
     }
 
-    return new TwoTuple<>(all.peek().getStepId(), all);
+    return new TwoTuple<>(allBuilders.peek().getStepId(), allBuilders);
   }
 }

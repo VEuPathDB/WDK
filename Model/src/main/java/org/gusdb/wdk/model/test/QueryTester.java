@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.test;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,10 +24,8 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
-import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
-import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
@@ -66,16 +63,13 @@ public class QueryTester {
   // /////////// protected methods //////////////////////////////////
   // ////////////////////////////////////////////////////////////////////
 
-  private void displayParams(Query query) throws WdkModelException {
+  private void displayParams(Query query) {
     String newline = System.getProperty("line.separator");
     System.out.println(newline + "Query: " + query.getFullName() + newline);
 
     System.out.println("Parameters");
-
-    Param[] params = query.getParams();
-
-    for (int i = 0; i < params.length; i++) {
-      System.out.println(formatParamPrompt(params[i]));
+    for (Param param : query.getParams()) {
+      System.out.println("  " + param.getName() + ": " + param.getClass().getSimpleName());
     }
     System.out.println("");
   }
@@ -103,37 +97,6 @@ public class QueryTester {
       }
     }
     return h;
-  }
-
-  @Deprecated
-  private String formatParamPrompt(Param param) throws WdkModelException {
-    String newline = System.getProperty("line.separator");
-
-    String prompt = "  " + param.getPrompt();
-
-    if (param instanceof FlatVocabParam) {
-      FlatVocabParam enumParam = (FlatVocabParam) param;
-      prompt += " (choose one";
-      if (enumParam.getMultiPick()) prompt += " or more";
-      prompt += "):";
-      // assume independent param
-      Map<String, String> vocabs = enumParam.getVocabMap(user, new HashMap<>());
-      for (String term : vocabs.keySet()) {
-        String internal = vocabs.get(term);
-        prompt += newline + "    " + term + " (" + internal + ")";
-      }
-    } else if (param instanceof StringParam) {
-      StringParam stringParam = (StringParam) param;
-      if (stringParam.getPrompt() != null)
-        prompt += " (" + stringParam.getPrompt() + ")";
-      prompt += ":";
-    }
-
-    else {
-      prompt = param.getPrompt() + ":";
-    }
-
-    return prompt;
   }
 
   // ////////////////////////////////////////////////////////////////////

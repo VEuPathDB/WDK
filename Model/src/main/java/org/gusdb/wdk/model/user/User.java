@@ -272,26 +272,6 @@ public abstract class User {
     return total;
   }
 
-  @Deprecated
-  public Map<RecordClass, List<Favorite>> getFavorites() throws WdkModelException {
-    Map<RecordClass, List<Favorite>> favorites = getWdkModel().getFavoriteFactory().getFavorites(this);
-    Map<RecordClass, List<Favorite>> beans = new LinkedHashMap<>();
-    for (RecordClass recordClass : favorites.keySet()) {
-      List<Favorite> beanList = new ArrayList<>();
-      List<Favorite> list = favorites.get(recordClass);
-      for (Favorite favorite : list) {
-        beanList.add(favorite);
-      }
-      beans.put(recordClass, beanList);
-    }
-    return beans;
-  }
-
-  @Deprecated
-  public String[] getFavoriteGroups() throws WdkModelException {
-    return getWdkModel().getFavoriteFactory().getGroups(this);
-  }
-
   static <T> Map<String, T> exposeAsMap(FunctionWithException<String,T> getter) {
     return new HashMap<String, T>() {
       @Override

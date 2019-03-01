@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +30,7 @@ import org.gusdb.wdk.model.question.QuestionSet;
  * 
  *         The code load model info into local tables, and will be used to validate steps.
  */
+@Deprecated
 public class ModelCacher extends BaseCLI {
 
 	// option to keep the apicomm local question/params cache that is used to check for invalid steps
@@ -398,11 +400,19 @@ public class ModelCacher extends BaseCLI {
     }
   }
 
+  /**
+   * 
+   * @param param
+   * @param paramId
+   * @param psEnum
+   * @throws WdkModelException
+   * @throws SQLException
+   */
   @Deprecated
   private void saveEnums(AbstractEnumParam param, long paramId, PreparedStatement psEnum)
       throws WdkModelException, SQLException {
     // need to handle dependent params
-    Set<String> paramValues = param.getAllValues();
+    Set<String> paramValues = Collections.emptySet(); //.getAllValues();
     for (String paramValue : paramValues) {
       psEnum.setLong(1, paramId);
       psEnum.setString(2, paramValue);

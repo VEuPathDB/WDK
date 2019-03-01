@@ -10,15 +10,17 @@ import static org.gusdb.wdk.model.Utilities.COLUMN_PK_PREFIX;
 import static org.gusdb.wdk.model.user.UserFactory.USER_SCHEMA_MACRO;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -26,7 +28,6 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.BasicArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
-import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -38,8 +39,6 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 
 public class FavoriteFactory {
-
-  private static final Logger logger = Logger.getLogger(FavoriteFactory.class);
 
   private static final String TABLE_FAVORITES = "favorites";
   private static final String COLUMN_FAVORITE_ID = "favorite_id";
@@ -472,285 +471,4 @@ public class FavoriteFactory {
     return note;
   }
 
-  /**
-   * @param user
-   * @param recordClass
-   * @param recordIds
-   *          a list of primary key values. the inner map is a primary-key
-   *          column-value map.
-   * @throws WdkUserException
-   */
-  @Deprecated // pending struts removal
-  public void addToFavorite(User user, RecordClass recordClass,
-      List<Map<String, Object>> recordIds) throws WdkModelException, WdkUserException {
-    for (Map<String,Object> pkSet : recordIds) {
-      // this is not very efficient but will do since only going for backward compatibility; all
-      // actual operations should be performed by the service now
-      addToFavorites(user, recordClass, pkSet);
-    }
-  }
-
-  @Deprecated // pending struts removal
-  public void removeFromFavorite(User user, RecordClass recordClass,
-      List<Map<String, Object>> recordIds) throws WdkModelException {
-    long userId = user.getUserId();
-    String projectId = _wdkModel.getProjectId();
-    String rcName = recordClass.getFullName();
-    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
-    String sqlDelete = "DELETE FROM " + _userSchema + TABLE_FAVORITES + " WHERE "
-        + COLUMN_USER_ID + "= ? AND " + COLUMN_PROJECT_ID + " = ? AND "
-        + COLUMN_RECORD_CLASS + " = ?";
-    for (int i = 1; i <= pkColumns.length; i++) {
-      sqlDelete += " AND " + COLUMN_PK_PREFIX + i + " = ?";
-    }
-
-    DataSource dataSource = _wdkModel.getUserDb().getDataSource();
-    PreparedStatement psDelete = null;
-    try {
-      psDelete = SqlUtils.getPreparedStatement(dataSource, sqlDelete);
-      int count = 0;
-      for (Map<String, Object> recordId : recordIds) {
-        setParams(psDelete, userId, projectId, rcName, pkColumns, recordId, 1);
-        psDelete.addBatch();
-        count++;
-        if (count % 100 == 0) {
-          long start = System.currentTimeMillis();
-          psDelete.executeBatch();
-          QueryLogger.logEndStatementExecution(sqlDelete,
-              "wdk-favorite-delete", start);
-        }
-      }
-      if (count % 100 != 0) {
-        long start = System.currentTimeMillis();
-        psDelete.executeBatch();
-        QueryLogger.logEndStatementExecution(sqlDelete, "wdk-favorite-delete",
-            -start);
-      }
-    } catch (SQLException e) {
-      throw new WdkModelException("Could not remove favorite(s) for user "
-          + user.getUserId(), e);
-    } finally {
-      SqlUtils.closeStatement(psDelete);
-    }
-  }
-
-  @Deprecated // pending struts removal
-  public int getFavoriteCounts(User user) throws WdkModelException {
-    // load the unique counts
-    String sql = "SELECT count(*) AS fav_size FROM " + _userSchema + TABLE_FAVORITES +
-        " WHERE " + COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_IS_DELETED +
-        " = " + _userDb.getPlatform().convertBoolean(false);
-    DataSource ds = _userDb.getDataSource();
-    PreparedStatement ps = null;
-    ResultSet rs = null;
-    int count = 0;
-    try {
-      long start = System.currentTimeMillis();
-      ps = SqlUtils.getPreparedStatement(ds, sql);
-      ps.setLong(1, user.getUserId());
-      ps.setString(2, _wdkModel.getProjectId());
-      rs = ps.executeQuery();
-      QueryLogger.logEndStatementExecution(sql, "wdk-favorite-count", start);
-      if (rs.next()) {
-        count = rs.getInt("fav_size");
-      }
-    }
-    catch (SQLException e) {
-      throw new WdkModelException("Could not get favorite counts for user "
-          + user.getUserId(), e);
-    }
-    finally {
-      SqlUtils.closeResultSetAndStatement(rs, ps);
-    }
-    return count;
-  }
-
-  @Deprecated // pending struts removal
-  public int getFavoriteCount(User user, List<Map<String, Object>> records, RecordClass recordClass) {
-    int count = 0;
-    for (Map<String, Object> item : records) {
-      boolean inFavs = isInFavorite(user, recordClass, item);
-      if (logger.isDebugEnabled()) {
-        logger.debug("Is " + convert(item) + " in favorites? " + inFavs);
-      }
-      if (inFavs) {
-        count++;
-      }
-    }
-    return count;
-  }
-
-  private static String convert(Map<String, Object> item) {
-    StringBuilder sb = new StringBuilder("Map { ");
-    for (String s : item.keySet()) {
-      sb.append("{ ").append(s).append(", ").append(item.get(s)).append(" },");
-    }
-    sb.append(" }");
-    return sb.toString();
-  }
-
-  @Deprecated // pending struts removal
-  public Map<RecordClass, List<Favorite>> getFavorites(User user) throws WdkModelException {
-    List<Favorite> favorites = getAllFavorites(user);
-    // sort into map
-    Map<RecordClass, List<Favorite>> map = new HashMap<>();
-    for (Favorite fav : favorites) {
-      RecordClass rc = fav.getRecordClass();
-      List<Favorite> list = map.get(rc);
-      if (list == null) {
-        list = new ArrayList<>();
-        map.put(rc, list);
-      }
-      list.add(fav);
-    }
-    return map;
-  }
-
-  @Deprecated // pending struts removal
-  public boolean isInFavorite(User user, RecordClass recordClass,
-      Map<String, Object> recordId) {
-    return getFavorite(user, recordClass, recordId, false) != null;
-  }
-
-  @Deprecated // pending struts removal
-  public void setNotes(User user, RecordClass recordClass,
-      List<Map<String, Object>> recordIds, String note)
-      throws WdkModelException {
-    long userId = user.getUserId();
-    String projectId = _wdkModel.getProjectId();
-    String rcName = recordClass.getFullName();
-    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
-    String sql = "UPDATE " + _userSchema + TABLE_FAVORITES + " SET "
-        + COLUMN_RECORD_NOTE + " = ? WHERE " + COLUMN_USER_ID + "= ? AND "
-        + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_RECORD_CLASS + " = ?";
-    for (int i = 1; i <= pkColumns.length; i++) {
-      sql += " AND " + COLUMN_PK_PREFIX + i + " = ?";
-    }
-    DataSource dataSource = _wdkModel.getUserDb().getDataSource();
-    PreparedStatement psUpdate = null;
-    try {
-      psUpdate = SqlUtils.getPreparedStatement(dataSource, sql);
-
-      int count = 0;
-      for (Map<String, Object> recordId : recordIds) {
-        // check if the record already exists.
-        psUpdate.setString(1, note);
-        setParams(psUpdate, userId, projectId, rcName, pkColumns, recordId, 2);
-        psUpdate.addBatch();
-        count++;
-        if (count % 100 == 0) {
-          long start = System.currentTimeMillis();
-          psUpdate.executeBatch();
-          QueryLogger.logEndStatementExecution(sql, "wdk-favorite-update-note",
-              start);
-        }
-      }
-      if (count % 100 != 0) {
-        long start = System.currentTimeMillis();
-        psUpdate.executeBatch();
-        QueryLogger.logEndStatementExecution(sql, "wdk-favorite-update-note",
-            -start);
-      }
-    } catch (SQLException e) {
-      throw new WdkModelException("Could not set favorite note for user "
-          + user.getUserId(), e);
-    } finally {
-      SqlUtils.closeStatement(psUpdate);
-    }
-  }
-
-  @Deprecated // pending struts removal
-  public void setGroups(User user, RecordClass recordClass,
-      List<Map<String, Object>> recordIds, String group)
-      throws WdkModelException {
-    long userId = user.getUserId();
-    String projectId = _wdkModel.getProjectId();
-    String rcName = recordClass.getFullName();
-    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
-    String sql = "UPDATE " + _userSchema + TABLE_FAVORITES + " SET "
-        + COLUMN_RECORD_GROUP + " = ? WHERE " + COLUMN_USER_ID + "= ? AND "
-        + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_RECORD_CLASS + " = ?";
-    for (int i = 1; i <= pkColumns.length; i++) {
-      sql += " AND " + COLUMN_PK_PREFIX + i + " = ?";
-    }
-    DataSource dataSource = _wdkModel.getUserDb().getDataSource();
-    PreparedStatement psUpdate = null;
-    try {
-      psUpdate = SqlUtils.getPreparedStatement(dataSource, sql);
-
-      int count = 0;
-      for (Map<String, Object> recordId : recordIds) {
-        // check if the record already exists.
-        psUpdate.setString(1, group);
-        setParams(psUpdate, userId, projectId, rcName, pkColumns, recordId, 2);
-        psUpdate.addBatch();
-        count++;
-        if (count % 100 == 0) {
-          long start = System.currentTimeMillis();
-          psUpdate.executeBatch();
-          QueryLogger.logEndStatementExecution(sql,
-              "wdk-favorite-update-group", start);
-        }
-      }
-      if (count % 100 != 0) {
-        long start = System.currentTimeMillis();
-        psUpdate.executeBatch();
-        QueryLogger.logEndStatementExecution(sql, "wdk-favorite-update-group",
-            -start);
-      }
-    } catch (SQLException e) {
-      throw new WdkModelException("Could not set favorite group for user "
-          + user.getUserId(), e);
-    } finally {
-      SqlUtils.closeStatement(psUpdate);
-    }
-  }
-
-  @Deprecated // pending struts removal
-  public String[] getGroups(User user) throws WdkModelException {
-    String sql = "SELECT " + COLUMN_RECORD_GROUP + " FROM " + _userSchema
-        + TABLE_FAVORITES + " WHERE " + COLUMN_USER_ID + "= ? AND "
-        + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_IS_DELETED  + " = " +
-        _userDb.getPlatform().convertBoolean(false);
-    DataSource dataSource = _wdkModel.getUserDb().getDataSource();
-    PreparedStatement psSelect = null;
-    ResultSet resultSet = null;
-    try {
-      psSelect = SqlUtils.getPreparedStatement(dataSource, sql);
-      psSelect.setLong(1, user.getUserId());
-      psSelect.setString(2, _wdkModel.getProjectId());
-
-      long start = System.currentTimeMillis();
-      resultSet = psSelect.executeQuery();
-      QueryLogger.logStartResultsProcessing(sql, "wdk-favorite-select-group",
-          start, resultSet);
-      Set<String> groups = new HashSet<String>();
-      while (resultSet.next()) {
-        String group = resultSet.getString(COLUMN_RECORD_GROUP);
-        if (group == null || group.trim().length() == 0) continue;
-        group = group.trim();
-        groups.add(group);
-      }
-      String[] array = new String[groups.size()];
-      groups.toArray(array);
-      Arrays.sort(array);
-      return array;
-    } catch (SQLException e) {
-      throw new WdkModelException("Could not set favorite groups for user "
-          + user.getUserId(), e);
-    } finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, psSelect);
-    }
-  }
-
-  private void setParams(PreparedStatement ps, long userId, String projectId,
-      String rcName, String[] pkColumns, Map<String, Object> recordId, int index)
-      throws SQLException {
-    ps.setLong(index++, userId);
-    ps.setString(index++, projectId);
-    ps.setString(index++, rcName);
-    for (String column : pkColumns) {
-      ps.setObject(index++, recordId.get(column));
-    }
-  }
 }
