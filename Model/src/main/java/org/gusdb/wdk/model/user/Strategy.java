@@ -583,7 +583,7 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
   }
 
   public static Optional<RunnableObj<Step>> getRunnableStep(RunnableObj<Strategy> strategy, long stepId) {
-    return strategy.getObject().findFirstStep(withId(stepId)).map(step -> step.getRunnable().getLeft());
+    return strategy.get().findFirstStep(withId(stepId)).map(step -> step.getRunnable().getLeft());
   }
 
 }

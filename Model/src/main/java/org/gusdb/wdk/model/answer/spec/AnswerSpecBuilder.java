@@ -51,7 +51,7 @@ public class AnswerSpecBuilder {
     //      that if a user changes one of them, the others don't need to be revalidated; for
     //      now, however, just pull the spec out <- means we will completely revalidate even
     //      for just a filter addition
-    this(validAnswerSpec.getObject());
+    this(validAnswerSpec.get());
   }
 
   public AnswerSpecBuilder setDbParamFiltersJson(JSONObject paramFiltersJson) {

@@ -120,7 +120,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       // the last column.
       Map<String, Column> columns = _query.getColumnMap();
       if (!columns.containsKey(Utilities.COLUMN_WEIGHT)) {
-        buffer.append(", " + _spec.getObject().getAssignedWeight() + " AS " + Utilities.COLUMN_WEIGHT);
+        buffer.append(", " + _spec.get().getAssignedWeight() + " AS " + Utilities.COLUMN_WEIGHT);
       }
     }
     buffer.append(" FROM (" + sql + ") o");

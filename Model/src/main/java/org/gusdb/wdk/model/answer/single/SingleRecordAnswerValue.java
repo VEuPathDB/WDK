@@ -39,10 +39,10 @@ public class SingleRecordAnswerValue extends AnswerValue {
 
   public SingleRecordAnswerValue(User user, RunnableObj<AnswerSpec> validSpec) throws WdkModelException {
     super(user, validSpec, 1, 1, Collections.EMPTY_MAP);
-    SingleRecordQuestion question = (SingleRecordQuestion)validSpec.getObject().getQuestion();
+    SingleRecordQuestion question = (SingleRecordQuestion)validSpec.get().getQuestion();
     SingleRecordQuestionParam param = question.getParam();
     _recordClass = question.getRecordClass();
-    _pkMap = param.parseParamValue(validSpec.getObject().getQueryInstanceSpec().get(param.getName()));
+    _pkMap = param.parseParamValue(validSpec.get().getQueryInstanceSpec().get(param.getName()));
     _resultSizeFactory = new SingleRecordResultSizeFactory(this);
   }
 

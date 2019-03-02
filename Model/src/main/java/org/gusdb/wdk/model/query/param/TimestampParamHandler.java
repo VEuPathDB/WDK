@@ -37,7 +37,7 @@ public class TimestampParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxVals) {
-    return ctxVals.getObject().get(_param.getName());
+    return ctxVals.get().get(_param.getName());
   }
 
   /**
@@ -45,7 +45,7 @@ public class TimestampParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toSignature(RunnableObj<QueryInstanceSpec> ctxVals) {
-    return ctxVals.getObject().get(_param.getName());
+    return ctxVals.get().get(_param.getName());
   }
 
   @Override

@@ -185,7 +185,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
 
     // insert weight to the last column, if doesn't exist
     if (_query.isHasWeight() && !columnNames.contains(weightColumn))
-      sql.append(", ").append(_spec.getObject().getAssignedWeight());
+      sql.append(", ").append(_spec.get().getAssignedWeight());
 
     return sql.append(")").toString();
   }

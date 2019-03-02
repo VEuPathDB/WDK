@@ -98,7 +98,7 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   public static QueryInstance<?> makeQueryInstance(RunnableObj<QueryInstanceSpec> validSpec)
       throws WdkModelException {
     // unwrap the spec and use to create an instance of the proper type
-    QueryInstanceSpec spec = validSpec.getObject();
+    QueryInstanceSpec spec = validSpec.get();
     return spec.getQuery().makeInstance(validSpec);
   }
 

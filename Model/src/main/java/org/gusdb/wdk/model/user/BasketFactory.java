@@ -72,12 +72,12 @@ public class BasketFactory {
 
   public void addEntireResultToBasket(User user, RunnableObj<AnswerSpec> spec) throws WdkModelException {
     List<String[]> pkValues = AnswerValueFactory.makeAnswer(user, spec).getAllIds();
-    addToBasket(user, spec.getObject().getQuestion().getRecordClass(), pkValues);
+    addToBasket(user, spec.get().getQuestion().getRecordClass(), pkValues);
   }
 
   public void removeEntireResultFromBasket(User user, RunnableObj<AnswerSpec> spec) throws WdkModelException {
     List<String[]> pkValues = AnswerValueFactory.makeAnswer(user, spec).getAllIds();
-    removeFromBasket(user, spec.getObject().getQuestion().getRecordClass(), pkValues);
+    removeFromBasket(user, spec.get().getQuestion().getRecordClass(), pkValues);
   }
 
   public void addPksToBasket(User user, RecordClass recordClass, Collection<PrimaryKeyValue> recordsToAdd) throws WdkModelException {

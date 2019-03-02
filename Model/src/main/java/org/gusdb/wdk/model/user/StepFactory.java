@@ -26,7 +26,6 @@ import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
-import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -49,12 +48,10 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
-import org.gusdb.wdk.model.answer.spec.FilterOptionList;
 import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
@@ -62,8 +59,6 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
-import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StrategyLoader.MalformedStrategyList;
 
@@ -152,33 +147,8 @@ public class StepFactory {
     _userSchema = _wdkModel.getModelConfig().getUserDB().getUserSchema();
   }
 
-  public Step createStep(User user, SemanticallyValid<AnswerSpec> validSpec, String customName,
+  public SemanticallyValid<Step> createStep(User user, SemanticallyValid<AnswerSpec> validSpec, String customName,
       boolean isCollapsible, String collapsedName) throws WdkModelException {
-    AnswerSpec answerSpec = validSpec.getObject();
-    // TODO: merge/refactor relevant logic from this createStep and the deprecated one
-    //   so that only deprecated logic lives in the deprecated method
-    return createStep(user,
-        answerSpec.getQuestion(),
-        answerSpec.getQueryInstanceSpec().toMap(),
-        answerSpec.getLegacyFilter(),
-        answerSpec.getFilterOptions(),
-        answerSpec.getQueryInstanceSpec().getAssignedWeight(),
-        false, // not deleted
-        customName,
-        isCollapsible,
-        collapsedName,
-        null); // new steps from service do not have a strategy
-  }
-
-  /**
-   * Creates a step and adds to database
-   */
-  @Deprecated
-  public Step createStep(User user, Question question, Map<String, String> dependentValues,
-      Optional<AnswerFilterInstance> filter, FilterOptionList filterOptions, int assignedWeight, boolean deleted,
-      String customName, boolean isCollapsible, String collapsedName, Strategy strategy) throws WdkModelException {
-
-    LOG.debug("Creating step!");
 
     // define creation time
     Date createTime = new Date();
@@ -190,20 +160,15 @@ public class StepFactory {
         .builder(_wdkModel, user.getUserId(), getNewStepId())
         .setCreatedTime(createTime)
         .setLastRunTime(lastRunTime)
-        .setDeleted(deleted)
+        .setDeleted(false)
         .setProjectId(_wdkModel.getProjectId())
         .setProjectVersion(_wdkModel.getVersion())
         .setCustomName(customName)
         .setCollapsible(isCollapsible)
         .setCollapsedName(collapsedName)
-        .setStrategyId(strategy == null ? null : strategy.getStrategyId())
-        .setAnswerSpec(AnswerSpec.builder(_wdkModel)
-            .setQuestionName(question.getFullName())
-            .setQueryInstanceSpec(QueryInstanceSpec.builder().putAll(dependentValues))
-            .setLegacyFilterName(filter.map(NamedObject::getName))
-            .setFilterOptions(FilterOptionList.builder().fromFilterOptionList(filterOptions))
-            .setAssignedWeight(assignedWeight))
-        .build(new UserCache(user), ValidationLevel.RUNNABLE, strategy);
+        .setStrategyId(null) // new steps do not belong to a strategy
+        .setAnswerSpec(AnswerSpec.builder(validSpec.get()))
+        .build(new UserCache(user), ValidationLevel.SEMANTIC, null);
 
     if (step.isRunnable()) {
       TwoTuple<Integer,Exception> runStatus = tryEstimateSize(step.getRunnable().getLeft());
@@ -214,7 +179,7 @@ public class StepFactory {
     // insert step into the database
     insertStep(step);
 
-    return step;
+    return step.getSemanticallyValid().getLeft();
   }
 
   private static TwoTuple<Integer, Exception> tryEstimateSize(RunnableObj<Step> runnableStep) {
@@ -224,7 +189,7 @@ public class StepFactory {
       //  want to know if we should put an 'X' on a step in the middle of a strat.  Children may or may not
       //  be valid, but if semantically valid, then no 'X' needed on a boolean.  So yes, there is a difference.
       //  TODO: need to be able to "upgrade" steps I think...  ugh
-      Step step = runnableStep.getObject();
+      Step step = runnableStep.get();
       User user = step.getUser();
       String questionName = step.getAnswerSpec().getQuestion().getFullName();
       Map<String, Boolean> sortingAttributes = user.getPreferences().getSortingAttributes(
@@ -251,22 +216,6 @@ public class StepFactory {
     }
     catch (SQLException e) {
       throw new WdkModelException(e);
-    }
-  }
-
-  @Deprecated // only orphan remover should be deleting steps
-  public void deleteStep(long stepId) throws WdkModelException {
-    String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_IS_DELETED + " = " +
-        _userDbPlatform.convertBoolean(true) + " WHERE " + COLUMN_STEP_ID + " = ?";
-    try {
-      int result = new SQLRunner(_userDbDs, sql, "wdk-step-factory-delete-step")
-          .executeUpdate(new Object[]{ stepId }, new Integer[]{ Types.BIGINT });
-      if (result == 0) {
-        throw new WdkModelException("The Step #" + stepId + " cannot be found.");
-      }
-    }
-    catch (Exception e) {
-      WdkModelException.unwrap(e, "Could not delete step " + stepId);
     }
   }
 
@@ -372,17 +321,6 @@ public class StepFactory {
 
   /**
    * @param stepId step ID for which to retrieve step
-   * @return step by step ID
-   * @throws WdkModelException if step not found or problem occurs
-   */
-  @Deprecated
-  public Optional<Step> getStepById(long stepId) throws WdkModelException {
-    LOG.debug("Loading step#" + stepId + "....");
-    return getStepById(stepId, ValidationLevel.SEMANTIC);
-  }
-
-  /**
-   * @param stepId step ID for which to retrieve step
    * @param validationLevel level with which to validate step
    * @return step by step ID
    * @throws WdkModelException if step not found or problem occurs
@@ -392,8 +330,8 @@ public class StepFactory {
     return new StrategyLoader(_wdkModel, validationLevel).getStepById(stepId);
   }
 
-  public Step getStepByValidId(long stepId) throws WdkModelException {
-    return getStepById(stepId).orElseThrow(() ->
+  public Step getStepByValidId(long stepId, ValidationLevel validationLevel) throws WdkModelException {
+    return getStepById(stepId, validationLevel).orElseThrow(() ->
         new WdkModelException("Could not find step with 'valid' ID: " + stepId));
   }
 

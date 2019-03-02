@@ -216,8 +216,7 @@ public class StepAnalysisContext {
   private static <T extends WdkException> Step loadStep(WdkModel wdkModel, long stepId,
       T wdkUserException) throws T {
     try {
-      return wdkModel.getStepFactory().getStepById(stepId, ValidationLevel.RUNNABLE)
-          .orElseThrow(() -> wdkUserException);
+      return wdkModel.getStepFactory().getStepByValidId(stepId, ValidationLevel.RUNNABLE);
     }
     catch (WdkModelException e) {
       throw wdkUserException;

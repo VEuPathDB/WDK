@@ -43,12 +43,12 @@ public class DatasetParamHandler extends AbstractParamHandler {
   @Override
   public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxParamVals) {
     final String name  = _param.getName();
-    final String value = ctxParamVals.getObject().get(name);
+    final String value = ctxParamVals.get().get(name);
 
     if (_param.isNoTranslation())
       return value;
 
-    DatasetFactory datasetFactory = ctxParamVals.getObject()
+    DatasetFactory datasetFactory = ctxParamVals.get()
       .getUser()
       .getWdkModel()
       .getDatasetFactory();
@@ -79,13 +79,13 @@ public class DatasetParamHandler extends AbstractParamHandler {
   @Override
   public String toSignature(RunnableObj<QueryInstanceSpec> ctxParamVals)
       throws WdkModelException {
-    final QueryInstanceSpec spec = ctxParamVals.getObject();
+    final QueryInstanceSpec spec = ctxParamVals.get();
     Dataset dataset = spec.getUser()
       .getWdkModel()
       .getDatasetFactory()
       .getDataset(
         spec.getUser(),
-        Long.valueOf(ctxParamVals.getObject().get(spec.get(_param.getName())))
+        Long.valueOf(ctxParamVals.get().get(spec.get(_param.getName())))
       );
     return dataset.getChecksum();
   }

@@ -70,7 +70,7 @@ public class StepRequestParser {
       SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(question,
           stepJson.getJSONObject(JsonKeys.SEARCH_CONFIG), wdkModel,
           user, StepContainer.emptyContainer());
-      AnswerSpec spec = validSpec.getObject();
+      AnswerSpec spec = validSpec.get();
 
       // Since this method is intended for new steps, the step can not yet be
       // part of a strategy and so any answer params it has should be null (empty string).
@@ -131,7 +131,7 @@ public class StepRequestParser {
     SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(
         existingStep.getAnswerSpec().getQuestion(),
         answerSpecJson, wdkModel, user, existingStep.getContainer());
-    AnswerSpec answerSpec = validSpec.getObject();
+    AnswerSpec answerSpec = validSpec.get();
 
     // user cannot change question of an existing step (since # and type of answer params may change);
     //   we could check for validity of # and type of answer params in the future; no use case now

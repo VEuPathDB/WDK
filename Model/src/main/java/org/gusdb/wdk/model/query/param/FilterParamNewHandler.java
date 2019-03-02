@@ -72,8 +72,8 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       throws WdkModelException {
 
     final String name = _param.getName();
-    final String value = ctxParamVals.getObject().get(name);
-    final User user = ctxParamVals.getObject().getUser();
+    final String value = ctxParamVals.get().get(name);
+    final User user = ctxParamVals.get().getUser();
 
     try {
       FilterParamNew fpn = (FilterParamNew) _param;
@@ -128,7 +128,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   @Override
   public String toSignature(RunnableObj<QueryInstanceSpec> ctxParamVals) throws WdkModelException {
     FilterParamNew param = (FilterParamNew)_param;
-    QueryInstanceSpec spec = ctxParamVals.getObject();
+    QueryInstanceSpec spec = ctxParamVals.get();
 
     return EncryptionUtil.encrypt(
       new FilterParamNewStableValue(spec.get(_param.getName()), param).toSignatureString()
@@ -142,7 +142,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     java.util.Collections.sort(dependedParamsList);
     StringBuilder sb = new StringBuilder();
     for (Param dependedParam : dependedParamsList)  {
-      String stableValue = contextParamValues.getObject().get(dependedParam.getName());
+      String stableValue = contextParamValues.get().get(dependedParam.getName());
       if (stableValue == null) throw new WdkModelException("can't find value for param " + dependedParam.getName());
       sb.append(dependedParam.getParamHandler().toSignature(contextParamValues));
     }

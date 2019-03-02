@@ -58,7 +58,7 @@ public class QuestionFormatter {
 
   public static JSONObject getQuestionJsonWithParamValues(SemanticallyValid<AnswerSpec> spec)
       throws JSONException, WdkModelException {
-    return getQuestionJson(spec.getObject().getQuestion())
+    return getQuestionJson(spec.get().getQuestion())
         .put(JsonKeys.PARAMETERS, getParamsJson(AnswerSpec.getValidQueryInstanceSpec(spec)));
   }
 
@@ -106,7 +106,7 @@ public class QuestionFormatter {
   public static JSONArray getParamsJson(SemanticallyValid<QueryInstanceSpec> spec,
       Predicate<Param> inclusionPredicate) throws WdkModelException {
     JSONArray paramsJson = new JSONArray();
-    for (Param param : spec.getObject().getQuery().getParams()) {
+    for (Param param : spec.get().getQuery().getParams()) {
       if (inclusionPredicate.test(param)) {
         paramsJson.put(ParamFormatterFactory.getFormatter(param).getJson(spec));
       }

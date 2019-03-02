@@ -649,7 +649,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   // TODO: using SemanticallyValid instead of Runnable here because of AnswerFilterInstance; change when we retire legacy filters
   public String getInternalValue(RunnableObj<QueryInstanceSpec> queryInstanceSpec)
       throws WdkModelException {
-    String stableValue = queryInstanceSpec.getObject().get(getName());
+    String stableValue = queryInstanceSpec.get().get(getName());
     if ((stableValue == null || stableValue.length() == 0) && isAllowEmpty()) {
       // FIXME: RRD: need to determine if getEmptyValue really returns a stable value or internal.  In another
       //   place (forget where- maybe QueryInstance?) we seem to be popping the empty value in at the last
@@ -668,7 +668,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    */
   public String getSignature(RunnableObj<QueryInstanceSpec> spec)
       throws WdkModelException {
-    String stableValue = spec.getObject().get(getName());
+    String stableValue = spec.get().get(getName());
     return stableValue == null ? "" : _handler.toSignature(spec);
   }
 
