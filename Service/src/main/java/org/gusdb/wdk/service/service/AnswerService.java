@@ -223,11 +223,11 @@ public class AnswerService extends AbstractWdkService {
         Step step = wdkModel.getStepFactory().getStepByIdAndUserId(
             stepId, sessionUser.getUserId(), ValidationLevel.RUNNABLE)
             .orElseThrow(() -> new DataValidationException(notFoundMessage));
-        if (step.getStrategy() == null) {
+        if (!step.getStrategy().isPresent()) {
           stepsForLookup.add(step); // stand-alone step; add it
         }
         else {
-          strategy = step.getStrategy(); // this becomes our one and only strategy
+          strategy = step.getStrategy().get(); // this becomes our one and only strategy
         }
       }
       else {
@@ -250,11 +250,11 @@ public class AnswerService extends AbstractWdkService {
 
     // make sure all referred steps are owned by the session user
     if (strategy != null && strategy.getUser().getUserId() != sessionUser.getUserId()) {
-      throw new DataValidationException("You do not have permission to use the steps in strategy with ID " + strategy.getId() + "'.");
+      throw new DataValidationException("You do not have permission to use the steps in strategy with ID " + strategy.getStrategyId() + "'.");
     }
     for (Step step : stepsForLookup) {
       if (step.getUser().getUserId() != sessionUser.getUserId()) {
-        throw new DataValidationException("You do not have permission to use step '" + step.getId() + "'.");
+        throw new DataValidationException("You do not have permission to use step '" + step.getStepId() + "'.");
       }
     }
 

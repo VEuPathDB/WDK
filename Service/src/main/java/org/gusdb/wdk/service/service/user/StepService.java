@@ -5,6 +5,7 @@ import static org.gusdb.wdk.service.service.AnswerService.REPORT_NAME_PATH_PARAM
 import static org.gusdb.wdk.service.service.AnswerService.STANDARD_REPORT_ENDPOINT;
 
 import java.util.Date;
+import java.util.Optional;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -145,7 +146,7 @@ public class StepService extends UserService {
     getWdkModel().getStepFactory()
       .updateStep(Step.builder(step)
         .setDeleted(true)
-        .build(new UserCache(step.getUser()), ValidationLevel.NONE, null));
+        .build(new UserCache(step.getUser()), ValidationLevel.NONE, Optional.empty()));
   }
 
   @POST
@@ -174,7 +175,9 @@ public class StepService extends UserService {
     Step step = stepFactory
         .getStepByIdAndUserId(stepId, user.getUserId(), ValidationLevel.NONE)
         .orElseThrow(() -> new NotFoundException(formatNotFound(STEP_RESOURCE + stepId)));
-    if (!step.hasStrategy()) throw new DataValidationException("Step " + step.getId() + " is not part of a strategy, so cannot run."); 
+    if (!step.getStrategy().isPresent()) {
+      throw new DataValidationException("Step " + step.getStepId() + " is not part of a strategy, so cannot run."); 
+    }
 
     RunnableObj<Step> runnableStep = stepFactory
         .getStepById(stepId, ValidationLevel.RUNNABLE)
@@ -218,11 +221,11 @@ public class StepService extends UserService {
     // allows subclasses to apply follow-up modifications to the new version
     applyAdditionalChanges(existingStep, replacementBuilder);
 
-    if (existingStep.hasStrategy()) {
+    if (existingStep.getStrategy().isPresent()) {
       try {
         // need to replace and update whole strategy to cover effects
         getWdkModel().getStepFactory().updateStrategy(Strategy
-            .builder(existingStep.getStrategy())
+            .builder(existingStep.getStrategy().get())
             .addStep(replacementBuilder)
             .build(new UserCache(user), ValidationLevel.SEMANTIC)
             .getSemanticallyValid()
@@ -237,7 +240,7 @@ public class StepService extends UserService {
     else {
       // no strategy present; only need to update the step
       getWdkModel().getStepFactory().updateStep(replacementBuilder.build(
-          new UserCache(user), ValidationLevel.SEMANTIC, null));
+          new UserCache(user), ValidationLevel.SEMANTIC, Optional.empty()));
     }
   }
 
