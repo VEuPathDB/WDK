@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
@@ -265,8 +266,8 @@ public class AnswerValue {
       jsContent.put("query-checksum", _idsQueryInstance.getChecksum());
 
       // add the legacy filter into the content
-      if (_answerSpec.getLegacyFilter() != null) {
-        jsContent.put("legacy-filter", _answerSpec.getLegacyFilter().getName());
+      if (_answerSpec.getLegacyFilter().isPresent()) {
+        jsContent.put("legacy-filter", _answerSpec.getLegacyFilter().get().getName());
       }
 
       // if filters have been applied, get the content for it
@@ -544,8 +545,8 @@ public class AnswerValue {
     String innerSql = getBaseIdSql();
 
     // apply old-style answer filter
-    if (_answerSpec.getLegacyFilter() != null) {
-      innerSql = _answerSpec.getLegacyFilter().applyFilter(_user, innerSql, _idsQueryInstance.getAssignedWeight());
+    if (_answerSpec.getLegacyFilter().isPresent()) {
+      innerSql = _answerSpec.getLegacyFilter().get().applyFilter(_user, innerSql, _idsQueryInstance.getAssignedWeight());
       innerSql = " /* old filter applied on id query */ " + innerSql;
     }
 
@@ -744,8 +745,11 @@ public class AnswerValue {
     String[] columns = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
     List<Object[]> buffer = new ArrayList<Object[]>();
 
-    try (ResultList resultList = (_answerSpec.getLegacyFilter() == null ?
-        _idsQueryInstance.getResults() : _answerSpec.getLegacyFilter().getResults(this))) {
+    Optional<AnswerFilterInstance> legacyFilter = _answerSpec.getLegacyFilter();
+    try (ResultList resultList =
+          legacyFilter.isPresent() ?
+          legacyFilter.get().getResults(this) :
+          _idsQueryInstance.getResults()) {
       while (resultList.next()) {
         Object[] pkValues = new String[columns.length];
         for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {

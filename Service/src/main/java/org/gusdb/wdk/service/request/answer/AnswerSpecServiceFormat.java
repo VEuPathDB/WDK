@@ -1,5 +1,7 @@
 package org.gusdb.wdk.service.request.answer;
 
+import java.util.Optional;
+
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
@@ -47,7 +49,7 @@ public class AnswerSpecServiceFormat {
 
       // all filter fields and weight are optional
       if (json.has(JsonKeys.LEGACY_FILTER_NAME)) {
-        specBuilder.setLegacyFilterName(json.getString(JsonKeys.LEGACY_FILTER_NAME));
+        specBuilder.setLegacyFilterName(Optional.of(json.getString(JsonKeys.LEGACY_FILTER_NAME)));
       }
       if (json.has(JsonKeys.FILTERS)) {
         specBuilder.setFilterOptions(ParamFiltersClobFormat.parseFiltersJson(json, JsonKeys.FILTERS));

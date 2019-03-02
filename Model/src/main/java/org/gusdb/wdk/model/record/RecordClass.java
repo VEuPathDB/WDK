@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -1399,17 +1400,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return instances;
   }
 
-  public AnswerFilterInstance getFilterInstance(String filterName) {
-    if (filterName == null)
-      return null;
-    AnswerFilterInstance instance = filterMap.get(filterName);
-
-    // ignore the invalid filter name
-    // if (instance == null)
-    // throw new WdkModelException("The name [" + filterName
-    // + "] does not " + "match any filter instance of type "
-    // + getFullName());
-    return instance;
+  public Optional<AnswerFilterInstance> getFilterInstance(String filterName) {
+    return filterName == null ? Optional.empty() :
+      Optional.ofNullable(filterMap.get(filterName));
   }
 
   public void addFilterLayout(AnswerFilterLayout layout) {
@@ -1435,8 +1428,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return layout;
   }
 
-  public AnswerFilterInstance getDefaultFilter() {
-    return defaultFilter;
+  public Optional<AnswerFilterInstance> getDefaultFilter() {
+    return Optional.ofNullable(defaultFilter);
   }
 
   /**

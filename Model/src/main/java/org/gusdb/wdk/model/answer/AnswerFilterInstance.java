@@ -12,6 +12,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -44,7 +45,7 @@ import org.gusdb.wdk.model.user.User;
  * @author xingao
  * 
  */
-public class AnswerFilterInstance extends WdkModelBase {
+public class AnswerFilterInstance extends WdkModelBase implements NamedObject {
 
   private String _name;
   private boolean _isDefault;
@@ -72,6 +73,7 @@ public class AnswerFilterInstance extends WdkModelBase {
   /**
    * @return the name
    */
+  @Override
   public String getName() {
     return _name;
   }

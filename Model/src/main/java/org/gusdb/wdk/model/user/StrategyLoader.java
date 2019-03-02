@@ -251,7 +251,7 @@ public class StrategyLoader {
         .setAnswerSpec(
             AnswerSpec.builder(_wdkModel)
             .setQuestionName(rs.getString(COLUMN_QUESTION_NAME))
-            .setLegacyFilterName(rs.getString(COLUMN_ANSWER_FILTER))
+            .setLegacyFilterName(Optional.ofNullable(rs.getString(COLUMN_ANSWER_FILTER)))
             .setAssignedWeight(fetchNullableInteger(rs, COLUMN_ASSIGNED_WEIGHT, 0))
             .setDbParamFiltersJson(new JSONObject(_userDbPlatform.getClobData(rs, COLUMN_DISPLAY_PARAMS)))
         )
