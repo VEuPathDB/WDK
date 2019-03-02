@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.answer.spec;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory;
@@ -25,7 +26,7 @@ public class AnswerSpecBuilder {
 
   private final WdkModel _wdkModel;
   private String _questionName = "";
-  private String _legacyFilterName;
+  private Optional<String> _legacyFilterName = Optional.empty();
   private int _assignedWeight = 0; // will be reconciled with one in _queryInstanceSpec
   private QueryInstanceSpecBuilder _queryInstanceSpec = QueryInstanceSpec.builder();
   private FilterOptionListBuilder _filters = FilterOptionList.builder();
@@ -96,7 +97,7 @@ public class AnswerSpecBuilder {
     return _questionName;
   }
 
-  public AnswerSpecBuilder setLegacyFilterName(String legacyFilterName) {
+  public AnswerSpecBuilder setLegacyFilterName(Optional<String> legacyFilterName) {
     _legacyFilterName = legacyFilterName;
     return this;
   }

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -82,7 +83,7 @@ public class ResultSizeFactory {
       _resultSizesByProject = new LinkedHashMap<String, Integer>();
       Question question = _answerValue.getAnswerSpec().getQuestion();
       QueryInstance<?> queryInstance = _answerValue.getIdsQueryInstance();
-      AnswerFilterInstance filter = _answerValue.getAnswerSpec().getLegacyFilter();
+      Optional<AnswerFilterInstance> filter = _answerValue.getAnswerSpec().getLegacyFilter();
 
       // make sure the project_id is defined in the record
       PrimaryKeyDefinition primaryKey = question.getRecordClass().getPrimaryKeyDefinition();
@@ -94,7 +95,7 @@ public class ResultSizeFactory {
       else {
         // need to run the query first for portal
         String message = queryInstance.getResultMessage();
-        try (ResultList resultList = (filter == null ? queryInstance.getResults() : filter.getResults(_answerValue))){
+        try (ResultList resultList = (filter.isPresent() ? filter.get().getResults(_answerValue) : queryInstance.getResults())){
           boolean hasMessage = (message != null && message.length() > 0);
           if (hasMessage) {
             String[] sizes = message.split(",");
@@ -214,7 +215,7 @@ public class ResultSizeFactory {
     // create a copy of this AnswerValue, overriding current AnswerFilter with one passed in
     AnswerValue modifiedAnswer = AnswerValueFactory.makeAnswer(_answerValue,
         AnswerSpec.builder(_answerValue.getAnswerSpec())
-        .setLegacyFilterName(filterName)
+        .setLegacyFilterName(Optional.of(filterName))
         .buildRunnable(_answerValue.getUser(), _answerValue.getAnswerSpec().getStepContainer()));
     String idSql = modifiedAnswer.getIdSql();
 

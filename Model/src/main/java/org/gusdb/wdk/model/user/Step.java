@@ -717,25 +717,29 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   public boolean isFiltered() throws WdkModelException {
-    // first check if new filter has been applied
-    if (_answerSpec.getFilterOptions() != null &&
-        _answerSpec.getFilterOptions().isFiltered(_answerSpec.toSimpleAnswerSpec()))
-      return true;
 
-    AnswerFilterInstance filter = _answerSpec.getLegacyFilter();
-    Question question = _answerSpec.getQuestion();
-    if (filter == null || question == null) {
+    // check if answer spec's question is valid
+    if (!_answerSpec.hasValidQuestion()) {
       return false;
     }
 
-    AnswerFilterInstance defaultFilter = question.getRecordClass().getDefaultFilter();
-    return defaultFilter == null ||
-        !defaultFilter.getName().equals(filter.getName());
+    // check if new-style filter has been applied
+    if (_answerSpec.getFilterOptions().isFiltered(_answerSpec.toSimpleAnswerSpec()))
+      return true;
+
+    // check if old-style filter has been applied
+    Optional<AnswerFilterInstance> filter = _answerSpec.getLegacyFilter();
+    Optional<AnswerFilterInstance> defaultFilter = _answerSpec.getQuestion().getRecordClass().getDefaultFilter();
+    return filter.isPresent() &&
+        (!defaultFilter.isPresent() ||
+         !defaultFilter.get().getName().equals(filter.get().getName()));
   }
 
   public String getFilterDisplayName() {
-    AnswerFilterInstance filter = _answerSpec.getLegacyFilter();
-    return (filter != null) ? filter.getDisplayName() : _answerSpec.getLegacyFilterName();
+    return _answerSpec.getLegacyFilter()
+        .map(filter -> filter.getDisplayName())
+        .orElse(_answerSpec.getLegacyFilterName()
+        .orElse("None"));
   }
 
   public void updateEstimatedSize(int checkedSize) {

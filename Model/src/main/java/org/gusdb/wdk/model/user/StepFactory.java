@@ -26,6 +26,7 @@ import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -174,7 +175,7 @@ public class StepFactory {
    */
   @Deprecated
   public Step createStep(User user, Question question, Map<String, String> dependentValues,
-      AnswerFilterInstance filter, FilterOptionList filterOptions, int assignedWeight, boolean deleted,
+      Optional<AnswerFilterInstance> filter, FilterOptionList filterOptions, int assignedWeight, boolean deleted,
       String customName, boolean isCollapsible, String collapsedName, Strategy strategy) throws WdkModelException {
 
     LOG.debug("Creating step!");
@@ -199,7 +200,7 @@ public class StepFactory {
         .setAnswerSpec(AnswerSpec.builder(_wdkModel)
             .setQuestionName(question.getFullName())
             .setQueryInstanceSpec(QueryInstanceSpec.builder().putAll(dependentValues))
-            .setLegacyFilterName(filter.getName())
+            .setLegacyFilterName(filter.map(NamedObject::getName))
             .setFilterOptions(FilterOptionList.builder().fromFilterOptionList(filterOptions))
             .setAssignedWeight(assignedWeight))
         .build(new UserCache(user), ValidationLevel.RUNNABLE, strategy);
