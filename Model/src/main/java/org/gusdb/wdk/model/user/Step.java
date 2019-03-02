@@ -48,7 +48,7 @@ import org.json.JSONObject;
 /**
  * @author Charles Treatman
  */
-public class Step implements StrategyElement, Validateable<Step> {
+public class Step implements Validateable<Step> {
 
   private static final Logger LOG = Logger.getLogger(Step.class);
 
@@ -63,7 +63,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     private long _stepId;
     private String _projectId;
     private String _projectVersion;
-    private Long _strategyId = null;
+    private Optional<Long> _strategyId = Optional.empty();
     private Date _createdTime = new Date();
     private Date _lastRunTime = new Date();
     private String _customName = null;
@@ -93,7 +93,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     private StepBuilder(Step step) {
       _wdkModel = step._wdkModel;
       _userId = step._user.getUserId();
-      _strategyId = step.getStrategy() == null ? null : step.getStrategy().getId();
+      _strategyId = step.getStrategy().map(Strategy::getStrategyId);
       _stepId = step._stepId;
       _createdTime = step._createdTime;
       _lastRunTime = step._lastRunTime;
@@ -119,7 +119,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     }
 
     public StepBuilder setStrategyId(Long strategyId) {
-      _strategyId = strategyId;
+      _strategyId = Optional.ofNullable(strategyId);
       return this;
     }
 
@@ -201,11 +201,12 @@ public class Step implements StrategyElement, Validateable<Step> {
       return _displayPrefs;
     }
 
-    public Step build(UserCache userCache, ValidationLevel validationLevel, Strategy strategy) throws WdkModelException {
-      if (!((strategy == null && _strategyId == null) || (strategy != null &&
-          strategy.getStrategyId().equals(_strategyId)))) {
-        throw new WdkRuntimeException("Strategy passed to build (ID=" + strategy.getStrategyId() + // FIXME: strategy could be null here, possible NPE
-            ") does not match ID set on step builder (ID=" + _strategyId + ").");
+    public Step build(UserCache userCache, ValidationLevel validationLevel, Optional<Strategy> strategy) throws WdkModelException {
+      if (_strategyId.isPresent() &&
+          (!strategy.isPresent() || !_strategyId.get().equals(strategy.get().getStrategyId()))) {
+        throw new WdkRuntimeException("Strategy passed to build method (ID=" +
+            strategy.map(Strategy::getStrategyId).orElse(null) +
+            ") does not match strategy ID set on step builder (ID=" + _strategyId.get() + ").");
       }
       if (_answerSpec == null) {
         throw new WdkRuntimeException("Cannot build a step without an answer spec.");
@@ -221,7 +222,7 @@ public class Step implements StrategyElement, Validateable<Step> {
      * @return a runnable step
      * @throws WdkModelException if unable to validate step
      */
-    public RunnableObj<Step> buildRunnable(UserCache userCache, Strategy strategy) throws WdkModelException {
+    public RunnableObj<Step> buildRunnable(UserCache userCache, Optional<Strategy> strategy) throws WdkModelException {
       return ValidObjectFactory.getRunnable(build(userCache, ValidationLevel.RUNNABLE, strategy));
     }
 
@@ -233,7 +234,7 @@ public class Step implements StrategyElement, Validateable<Step> {
       return _projectId;
     }
 
-    public Long getStrategyId() {
+    public Optional<Long> getStrategyId() {
       return _strategyId;
     }
 
@@ -242,7 +243,7 @@ public class Step implements StrategyElement, Validateable<Step> {
     }
 
     public StepBuilder removeStrategy() {
-      _strategyId = null;
+      _strategyId = Optional.empty();
       _answerSpec.nullifyAnswerParams();
       return this;
     }
@@ -276,8 +277,8 @@ public class Step implements StrategyElement, Validateable<Step> {
   private final WdkModel _wdkModel;
   // set during build() from ID in DB
   private final User _user;
-  // set during build() from ID in DB (may be null if orphan step)
-  private final Strategy _strategy;
+  // set during build() from ID in DB (may be empty if orphan step)
+  private final Optional<Strategy> _strategy;
   // in DB, Primary key
   private final long _stepId;
   // in DB, set during step creation
@@ -350,7 +351,7 @@ public class Step implements StrategyElement, Validateable<Step> {
    * @throws WdkModelException if this step does not pass the given validation
    * level
    */
-  private Step(User user, Strategy strategy, StepBuilder builder, ValidationLevel validationLevel) throws WdkModelException {
+  private Step(User user, Optional<Strategy> strategy, StepBuilder builder, ValidationLevel validationLevel) throws WdkModelException {
     _user = user;
     _strategy = strategy;
     _wdkModel = builder._wdkModel;
@@ -493,7 +494,7 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   public boolean isFirstStep() {
-    return hasStrategy() ? _strategy.getFirstStep().getStepId() == _stepId : false;
+    return _strategy.isPresent() ? _strategy.get().getFirstStep().getStepId() == _stepId : false;
   }
 
   public User getUser() {
@@ -935,23 +936,17 @@ public class Step implements StrategyElement, Validateable<Step> {
           " is not compatible with the parent step#" + getStepId());
   }
 
-  @Override
-  public Long getStrategyId() {
-    return _strategy == null ? null : _strategy.getStrategyId();
+  public Optional<Long> getStrategyId() {
+    return _strategy.map(Strategy::getStrategyId);
   }
 
-  public Strategy getStrategy() {
+  public Optional<Strategy> getStrategy() {
     return _strategy;
   }
 
   public boolean hasAnswerParams() {
     return hasValidQuestion() &&
         _answerSpec.getQuestion().getQuery().getAnswerParamCount() > 0;
-  }
-
-  @Override
-  public long getId() {
-    return getStepId();
   }
 
   static String getVerificationPrefix() {
@@ -972,19 +967,17 @@ public class Step implements StrategyElement, Validateable<Step> {
   }
 
   public StepContainer getContainer() {
-    return _strategy == null ? StepContainer.emptyContainer() : _strategy;
+    return _strategy
+        .map(str -> (StepContainer)str)
+        .orElse(StepContainer.emptyContainer());
   }
 
   public boolean isMutable() {
-    return !hasStrategy() || !getStrategy().isSaved();
+    return !getStrategy().isPresent() || !getStrategy().get().isSaved();
   }
 
   public boolean isResultSizeDirty() {
     return _isResultSizeDirty;
-  }
-
-  public boolean hasStrategy() {
-    return _strategy != null;
   }
 
   public JSONObject getDisplayPrefs() {

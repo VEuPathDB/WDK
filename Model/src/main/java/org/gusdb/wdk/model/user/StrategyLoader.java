@@ -197,7 +197,7 @@ public class StrategyLoader {
       }
       // only build orphan steps; attached steps will be built by their strategy
       List<Step> builtOrphanSteps = Functions.mapToList(orphanSteps,
-          fSwallow(builder -> builder.build(userCache, _validationLevel, null)));
+          fSwallow(builder -> builder.build(userCache, _validationLevel, Optional.empty())));
       return new SearchResult(builtStrategies, builtOrphanSteps, malstructuredStrategies);
     }
     catch (Exception e) {

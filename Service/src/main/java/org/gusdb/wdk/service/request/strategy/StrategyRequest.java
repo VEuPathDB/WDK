@@ -145,10 +145,10 @@ public class StrategyRequest {
           .orElseThrow(() -> new DataValidationException(stepId + " is not a valid step ID."));
 
       // check that the step either already lives in the existing strategy or is unattached
-      Long existingStrategyId = existingStrategy.map(str -> str.getId()).orElse(null);
-      if (step.getStrategyId() != null &&
-          existingStrategyId != null &&
-          !step.getStrategyId().equals(existingStrategyId)) {
+      Optional<Long> existingStrategyId = existingStrategy.map(Strategy::getStrategyId);
+      if (step.getStrategyId().isPresent() &&
+          existingStrategyId.isPresent() &&
+          !step.getStrategyId().get().equals(existingStrategyId.get())) {
         throw new DataValidationException("Step " + step.getStepId() +
           " belongs to strategy " + step.getStrategyId() +
           " so cannot be assigned to strategy " + existingStrategyId);

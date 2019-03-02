@@ -36,7 +36,7 @@ import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Strategy implements StrategyElement, StepContainer, Validateable<Strategy> {
+public class Strategy implements StepContainer, Validateable<Strategy> {
 
   private static final Logger LOG = Logger.getLogger(Strategy.class);
 
@@ -260,9 +260,9 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
       if (!_projectId.equals(step.getProjectId())) {
         throw new InvalidStrategyStructureException(identifier + " does not have the same project as its strategy, " + _strategyId);
       }
-      Long stepStratId = step.getStrategyId();
-      if (stepStratId == null || _strategyId != stepStratId) {
-        throw new InvalidStrategyStructureException(identifier + " was given to strategy " + _strategyId + " but belongs to strategy " + stepStratId + " (i.e. SQL is broken).");
+      Optional<Long> stepStratId = step.getStrategyId();
+      if (stepStratId.isPresent() && !stepStratId.get().equals(_strategyId)) {
+        throw new InvalidStrategyStructureException(identifier + " was given to strategy " + _strategyId + " but belongs to strategy " + stepStratId.get());
       }
     }
 
@@ -302,7 +302,7 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
           // build the step
           Step step = builder
             .setResultSizeDirty(isDirty)
-            .build(userCache, validationLevel, thisStrategy);
+            .build(userCache, validationLevel, Optional.of(thisStrategy));
   
           // add to strategy
           thisStrategy._stepMap.put(step.getStepId(), step);
@@ -404,7 +404,6 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
         () -> new WdkRuntimeException("Root step ID " + _rootStepId + " no longer present in strategy."));
   }
 
-  @Override
   public Long getStrategyId() {
     return _strategyId;
   }
@@ -546,11 +545,6 @@ public class Strategy implements StrategyElement, StepContainer, Validateable<St
     // FIXME: could root step really be null?  I think if root step is deleted, strategy id deleted?
     int latestStepEstimateSize = getRootStep() == null ? 0 : getRootStep().getEstimatedSize();
     return (latestStepEstimateSize == Step.RESET_SIZE_FLAG ? "Unknown" : String.valueOf(latestStepEstimateSize));
-  }
-
-  @Override
-  public long getId() {
-    return getStrategyId();
   }
 
   public int getNumSteps() {

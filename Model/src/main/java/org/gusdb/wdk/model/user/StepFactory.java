@@ -168,7 +168,7 @@ public class StepFactory {
         .setCollapsedName(collapsedName)
         .setStrategyId(null) // new steps do not belong to a strategy
         .setAnswerSpec(AnswerSpec.builder(validSpec.get()))
-        .build(new UserCache(user), ValidationLevel.SEMANTIC, null);
+        .build(new UserCache(user), ValidationLevel.SEMANTIC, Optional.empty());
 
     if (step.isRunnable()) {
       TwoTuple<Integer,Exception> runStatus = tryEstimateSize(step.getRunnable().getLeft());
@@ -448,7 +448,7 @@ public class StepFactory {
     List<Step> orphanSteps = new ArrayList<>();
     for (StepBuilder step : stepBuilders) {
       step.removeStrategy();
-      orphanSteps.add(step.build(new UserCache(user), ValidationLevel.NONE, null));
+      orphanSteps.add(step.build(new UserCache(user), ValidationLevel.NONE, Optional.empty()));
     }
 
     // write orphan steps to the DB to be used by caller
@@ -1325,34 +1325,6 @@ public class StepFactory {
     }
     catch (SQLException ex) {
       throw new WdkModelException(ex);
-    }
-  }
-
-  /**
-   * Updates the step's state in the DB (and any dependents within its strategy).
-   *
-   * @param previous the previous version of the step (pre-modification)
-   * @param stepToSave the modified version of the step (in builder form)
-   * @param isDirtyChange whether the changes made change the step's result
-   * @param level validation level at which step and/or strategy should be built
-   * @throws WdkModelException if error occurs during validation
-   * @throws InvalidStrategyStructureException if answer value changes cause the
-   *         structure of the strategy to become invalid
-   * TODO: if validation fails, what to do?  Maybe throw exception?  Do we even
-   *       want to validate here?  In what cases should we validate? etc.
-   */
-  public void updateStepAndDependents(Step previous, StepBuilder stepToSave, boolean isDirtyChange, ValidationLevel level)
-      throws WdkModelException, InvalidStrategyStructureException {
-    UserCache userCache = new UserCache(previous.getUser());
-    stepToSave.setResultSizeDirty(isDirtyChange);
-    if (previous.hasStrategy()) {
-      Strategy newStrategy = Strategy.builder(previous.getStrategy())
-          .addStep(stepToSave)
-          .build(userCache, level);
-      updateStrategy(newStrategy);
-    }
-    else {
-      updateStep(stepToSave.build(userCache, level, null));
     }
   }
 

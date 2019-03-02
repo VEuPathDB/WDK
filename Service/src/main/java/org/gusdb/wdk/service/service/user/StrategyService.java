@@ -207,7 +207,7 @@ public class StrategyService extends UserService {
           .filter(step -> !retainedStepIds.contains(step.getStepId()))
           // remove strategy and answer param values from each step
           .map(fSwallow(orphan -> Step.builder(orphan).removeStrategy().build(
-              new UserCache(oldStrat.getUser()), ValidationLevel.NONE, null)))
+              new UserCache(oldStrat.getUser()), ValidationLevel.NONE, Optional.empty())))
           .collect(Collectors.toList());
 
       // update strategy and newly orphaned steps
