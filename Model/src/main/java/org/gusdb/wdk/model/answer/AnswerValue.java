@@ -162,7 +162,7 @@ public class AnswerValue {
       int endIndex, Map<String, Boolean> sortingMap) throws WdkModelException {
     _user = user;
     _validAnswerSpec = validAnswerSpec;
-    _answerSpec = validAnswerSpec.getObject();
+    _answerSpec = validAnswerSpec.get();
     _wdkModel = _answerSpec.getWdkModel();
     _idsQueryInstance = Query.makeQueryInstance(_answerSpec.getQueryInstanceSpec().getRunnable().getLeft());
     Question question = _answerSpec.getQuestion();

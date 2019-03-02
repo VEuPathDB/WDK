@@ -278,9 +278,9 @@ public class StrategyService extends UserService {
       .getRunnable()
       .getOrThrow(strat -> new DataValidationException(strat.getValidationBundle().toString()));
 
-    stepFactory.insertStrategy(strategy.getObject());
+    stepFactory.insertStrategy(strategy.get());
 
-    return strategy.getObject();
+    return strategy.get();
   }
 
   /**

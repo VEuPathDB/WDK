@@ -82,7 +82,7 @@ public class StepService extends UserService {
           stepRequest.getAnswerSpec(),
           stepRequest.getCustomName(),
           stepRequest.isCollapsible(),
-          stepRequest.getCollapsedName());
+          stepRequest.getCollapsedName()).get();
       return Response.ok(new JSONObject()
           .put(JsonKeys.ID, step.getStepId()))
           .location(getUriInfo()
@@ -190,11 +190,11 @@ public class StepService extends UserService {
 
     // update the estimated size and last-run time on this step
     stepFactory.updateStep(
-        Step.builder(runnableStep.getObject())
+        Step.builder(runnableStep.get())
         .setEstimatedSize(result.getFirst().getResultSizeFactory().getDisplayResultSize())
         .setLastRunTime(new Date())
-        .build(new UserCache(runnableStep.getObject().getUser()),
-            ValidationLevel.NONE, runnableStep.getObject().getStrategy()));
+        .build(new UserCache(runnableStep.get().getUser()),
+            ValidationLevel.NONE, runnableStep.get().getStrategy()));
 
     return result.getSecond();
   }
@@ -228,7 +228,7 @@ public class StepService extends UserService {
             .getSemanticallyValid()
             .getOrThrow(strat -> new DataValidationException(
                 "The passed answer spec is not semantically valid."))
-            .getObject());
+            .get());
       }
       catch (InvalidStrategyStructureException e) {
         throw new DataValidationException("Invalid strategy structure passed. " + e.getMessage(), e);

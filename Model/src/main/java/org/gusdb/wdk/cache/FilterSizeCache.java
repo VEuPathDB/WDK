@@ -14,6 +14,7 @@ import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.events.Event;
 import org.gusdb.fgputil.events.EventListener;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.events.StepRevisedEvent;
 import org.gusdb.wdk.model.WdkModel;
@@ -67,7 +68,7 @@ public class FilterSizeCache {
     public FilterSizeGroup getUpdatedValue(Long id, FilterSizeGroup previousVersion)
         throws ValueProductionException {
       try {
-        Step step = _wdkModel.getStepFactory().getStepByValidId(id);
+        Step step = _wdkModel.getStepFactory().getStepByValidId(id, ValidationLevel.RUNNABLE);
         int size = !step.isRunnable() ? 0 :
           AnswerValueFactory
             .makeAnswer(step.getUser(), step.getAnswerSpec().getRunnable().getLeft())
@@ -106,7 +107,7 @@ public class FilterSizeCache {
     public FilterSizeGroup getUpdatedValue(Long id, FilterSizeGroup previousVersion)
         throws ValueProductionException {
       try {
-        Step step = _wdkModel.getStepFactory().getStepByValidId(id);
+        Step step = _wdkModel.getStepFactory().getStepByValidId(id, ValidationLevel.RUNNABLE);
         Map<String, Integer> sizes = step.isRunnable() ?
             // if runnable, load filters from result size factory
             AnswerValueFactory

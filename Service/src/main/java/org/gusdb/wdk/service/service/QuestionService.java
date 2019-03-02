@@ -220,7 +220,7 @@ public class QuestionService extends AbstractWdkService {
         .getOrThrow(spec -> new WdkModelException("Unable to produce a valid spec from incoming param values"));
 
     // see if changed param value changed during build; if so, then invalid
-    if (!answerSpec.getObject().getQueryInstanceSpec()
+    if (!answerSpec.get().getQueryInstanceSpec()
         .get(changedParam.getName()).equals(changedParamEntry.getValue())) {
       // means the build process determined the incoming changed param value to
       // be invalid and changed it to the default; this is disallowed, so throw
@@ -231,7 +231,7 @@ public class QuestionService extends AbstractWdkService {
 
     // get stale params of the changed value; if any of these are invalid, also throw exception
     Set<Param> staleDependentParams = changedParam.getStaleDependentParams();
-    ValidationBundle validation = answerSpec.getObject().getValidationBundle();
+    ValidationBundle validation = answerSpec.get().getValidationBundle();
     Map<String,List<String>> errors = validation.getKeyedErrors();
     if (!errors.isEmpty()) {
       for (Param param : staleDependentParams) {
@@ -301,7 +301,7 @@ public class QuestionService extends AbstractWdkService {
         .getOrThrow(spec -> new DataValidationException(spec.getValidationBundle().toString()));
 
     // try to look up ontology term with this ID
-    QueryInstanceSpec spec = validSpec.getObject();
+    QueryInstanceSpec spec = validSpec.get();
     OntologyItem ontologyItem = filterParam.getOntology(spec.getUser(), spec.toMap()).get(ontologyId);
     if (ontologyItem == null) {
       throw new DataValidationException("Requested ontology item '" + ontologyId + "' does not exist for this parameter (" + paramName + ").");

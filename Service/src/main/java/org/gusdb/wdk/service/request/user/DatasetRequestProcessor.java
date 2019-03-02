@@ -184,7 +184,7 @@ public class DatasetRequestProcessor {
         .getOrThrow(strat -> new DataValidationException("Strategy with ID " +
             strategyId + " not valid. " + strat.getValidationBundle().toString()));
     AnswerValue answerValue = AnswerValueFactory.makeAnswer(
-        Strategy.getRunnableStep(strategy, strategy.getObject().getRootStepId()).get());
+        Strategy.getRunnableStep(strategy, strategy.get().getRootStepId()).get());
     List<String[]> ids = answerValue.getAllIds();
     return createDataset(user, new ListDatasetParser(), joinIds(ids), null, factory);
   }

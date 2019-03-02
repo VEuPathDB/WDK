@@ -39,7 +39,7 @@ public class StringParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toSignature(RunnableObj<QueryInstanceSpec> ctxVals) {
-    final String stable = ctxVals.getObject().get(_param.getName());
+    final String stable = ctxVals.get().get(_param.getName());
     return stable == null || stable.length() == 0
         ? ""
         : EncryptionUtil.encrypt(stable);
@@ -51,7 +51,7 @@ public class StringParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxVals) throws WdkModelException {
-    final String stable = ctxVals.getObject().get(_param.getName());
+    final String stable = ctxVals.get().get(_param.getName());
 
     if (_param.isNoTranslation())
       return stable;

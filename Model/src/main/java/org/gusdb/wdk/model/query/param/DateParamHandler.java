@@ -34,7 +34,7 @@ public class DateParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxParamVals) {
-    return "date '" + ctxParamVals.getObject().get(_param.getName()) + "'";
+    return "date '" + ctxParamVals.get().get(_param.getName()) + "'";
   }
 
   /**
@@ -42,7 +42,7 @@ public class DateParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toSignature(RunnableObj<QueryInstanceSpec> ctxParamVals) {
-    return ctxParamVals.getObject().get(_param.getName());
+    return ctxParamVals.get().get(_param.getName());
   }
 
   @Override

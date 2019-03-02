@@ -40,7 +40,7 @@ public class NumberRangeParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toSignature(RunnableObj<QueryInstanceSpec> ctxVals) {
-    final String stable = ctxVals.getObject().get(_param.getName());
+    final String stable = ctxVals.get().get(_param.getName());
     return stable == null || stable.length() == 0
         ? ""
         : EncryptionUtil.encrypt(stable);
@@ -51,7 +51,7 @@ public class NumberRangeParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxVals) {
-    final String stable = ctxVals.getObject().get(_param.getName());
+    final String stable = ctxVals.get().get(_param.getName());
 
     /* Something to do with the portal - left this alone */
     if(_param.isNoTranslation())

@@ -41,7 +41,7 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
 
   public static SemanticallyValid<QueryInstanceSpec> getValidQueryInstanceSpec(SemanticallyValid<AnswerSpec> validSpec) {
     // we know we can simply return the answer spec because the step is runnable
-    return validSpec.getObject().getQueryInstanceSpec().getRunnable().getLeft();
+    return validSpec.get().getQueryInstanceSpec().getRunnable().getLeft();
   }
 
   private final WdkModel _wdkModel;

@@ -408,7 +408,6 @@ public class ModelCacher extends BaseCLI {
    * @throws WdkModelException
    * @throws SQLException
    */
-  @Deprecated
   private void saveEnums(AbstractEnumParam param, long paramId, PreparedStatement psEnum)
       throws WdkModelException, SQLException {
     // need to handle dependent params

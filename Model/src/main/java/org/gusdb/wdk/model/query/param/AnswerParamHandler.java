@@ -69,7 +69,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
   private AnswerValue getAnswerFromStepParam(RunnableObj<QueryInstanceSpec> qiSpec) throws WdkModelException {
     return AnswerValueFactory.makeAnswer(
       qiSpec
-        .getObject()
+        .get()
         .getStepContainer()
         .findFirstStep(withId(getStepIdFromStableValue(qiSpec)))
         .orElseThrow(WdkModelException::new)
@@ -78,7 +78,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
   }
 
   private long getStepIdFromStableValue(RunnableObj<QueryInstanceSpec> qiSpec) {
-    String stableValue = qiSpec.getObject().get(_param.getName());
+    String stableValue = qiSpec.get().get(_param.getName());
     // TODO: figure out why this split?  AnswerParam stable values are just step IDs
     return Long.parseLong(stableValue.split(":", 2)[0]);
   }

@@ -64,7 +64,7 @@ public class EnumParamHandler extends AbstractParamHandler {
   public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxParamVals)
       throws WdkModelException {
     final String name = _param.getName();
-    final QueryInstanceSpec spec = ctxParamVals.getObject();
+    final QueryInstanceSpec spec = ctxParamVals.get();
     final String value = spec.get(name);
 
     if (value == null || value.length() == 0)
@@ -101,7 +101,7 @@ public class EnumParamHandler extends AbstractParamHandler {
     AbstractEnumParam enumParam = (AbstractEnumParam) _param;
     // EnumParamCache cache = enumParam.getValueCache(user, contextParamValues);
 
-    String[] terms = enumParam.convertToTerms(ctxParamVals.getObject().get(_param.getName()));
+    String[] terms = enumParam.convertToTerms(ctxParamVals.get().get(_param.getName()));
     // jerric - we should use terms to generate signature, not internal value. I don't remember
     // when and why we switched to internal values. I will revert it back to term.
     // Furthermore, I will skip validating the terms here, otherwise, it breaks the deep clone

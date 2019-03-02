@@ -83,8 +83,8 @@ public abstract class QueryInstance<T extends Query> {
   @SuppressWarnings("unchecked")
   protected QueryInstance(RunnableObj<QueryInstanceSpec> spec) {
     // can cast here since the only way to get to the instance subclass is via the query subclass
-    _query = (T)spec.getObject().getQuery();
-    _user = spec.getObject().getUser();
+    _query = (T)spec.get().getQuery();
+    _user = spec.get().getUser();
     _wdkModel = _query.getWdkModel();
     _spec = spec;
     _context = createContext();
@@ -149,7 +149,7 @@ public abstract class QueryInstance<T extends Query> {
       jsInstance.put("queryChecksum", _query.getChecksum());
 
       jsInstance.put("params", getParamSignatures());
-      jsInstance.put("assignedWeight", _spec.getObject().getAssignedWeight());
+      jsInstance.put("assignedWeight", _spec.get().getAssignedWeight());
 
       // include extra info from child
       appendJSONContent(jsInstance);
@@ -178,7 +178,7 @@ public abstract class QueryInstance<T extends Query> {
     // build JSON from signatures; slightly different than new JSONObject(map)
     try {
       JSONObject jsParams = new JSONObject();
-      for (String paramName : _spec.getObject().getQuery().getParamMap().keySet()) {
+      for (String paramName : _spec.get().getQuery().getParamMap().keySet()) {
         String value = signatures.get(paramName);
         if (value != null && value.length() > 0)
           jsParams.put(paramName, value);
@@ -219,7 +219,7 @@ public abstract class QueryInstance<T extends Query> {
   }
 
   public ReadOnlyMap<String, String> getParamStableValues() {
-    return new ReadOnlyHashMap<String,String>(_spec.getObject().toMap());
+    return new ReadOnlyHashMap<String,String>(_spec.get().toMap());
   }
 
   private ResultList getCachedResults(boolean performSorting) throws WdkModelException {
@@ -265,6 +265,6 @@ public abstract class QueryInstance<T extends Query> {
   }
 
   public int getAssignedWeight() {
-    return _spec.getObject().getAssignedWeight();
+    return _spec.get().getAssignedWeight();
   }
 }

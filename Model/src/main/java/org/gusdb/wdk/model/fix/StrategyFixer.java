@@ -11,8 +11,6 @@ import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.StepFactory;
 
 /**
  * @author xingao
@@ -148,54 +146,6 @@ public class StrategyFixer extends BaseCLI {
       SqlUtils.closeResultSetAndStatement(rsChildren, psChildren);
       SqlUtils.closeResultSetAndStatement(rsRoots, null);
       SqlUtils.closeStatement(psUpdate);
-    }
-
-  }
-
-  /**
-   * This method is no longer needed, since all new strategies will have a signature generated on creation
-   * time, and all existing ones are already patched.
-   * 
-   * @param wdkModel
-   * @throws SQLException
-   * @throws WdkModelException
-   */
-  @Deprecated
-  @SuppressWarnings("unused")
-  private void generateSignatures(WdkModel wdkModel) throws SQLException, WdkModelException {
-    String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
-
-    StringBuffer sqlSelect = new StringBuffer("SELECT strategy_id, user_id ");
-    sqlSelect.append("FROM ").append(schema).append("strategies ");
-    sqlSelect.append("WHERE signature IS NULL AND project_id = ?");
-
-    StringBuffer sqlUpdate = new StringBuffer("UPDATE ");
-    sqlUpdate.append(schema).append("strategies SET signature = ? ");
-    sqlUpdate.append("WHERE strategy_id = ?");
-
-    StepFactory factory = wdkModel.getStepFactory();
-    ResultSet resultSet = null;
-    PreparedStatement psSelect = null, psUpdate = null;
-    DataSource src = wdkModel.getUserDb().getDataSource();
-    try {
-      psSelect = SqlUtils.getPreparedStatement(src, sqlSelect.toString());
-      psUpdate = SqlUtils.getPreparedStatement(src, sqlUpdate.toString());
-
-      psSelect.setString(1, wdkModel.getProjectId());
-      resultSet = psSelect.executeQuery();
-      while (resultSet.next()) {
-        int strategyId = resultSet.getInt("strategy_id");
-        int userId = resultSet.getInt("user_id");
-        String sig = StepFactory.getStrategySignature(wdkModel.getProjectId(), userId, strategyId);
-
-        psUpdate.setString(1, sig);
-        psUpdate.setInt(2, strategyId);
-        psUpdate.executeUpdate();
-      }
-    }
-    finally {
-      SqlUtils.closeStatement(psUpdate);
-      SqlUtils.closeResultSetAndStatement(resultSet, psSelect);
     }
   }
 }

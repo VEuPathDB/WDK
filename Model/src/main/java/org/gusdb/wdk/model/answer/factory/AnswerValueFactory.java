@@ -21,7 +21,7 @@ public class AnswerValueFactory {
    */
   public static AnswerValue makeAnswer(RunnableObj<Step> validStep)
       throws WdkModelException {
-    return makeAnswer(validStep.getObject().getUser(),
+    return makeAnswer(validStep.get().getUser(),
         Step.getRunnableAnswerSpec(validStep));
   }
 
@@ -30,7 +30,7 @@ public class AnswerValueFactory {
    */
   public static AnswerValue makeAnswer(User user, RunnableObj<AnswerSpec> validSpec)
       throws WdkModelException {
-    Question question = validSpec.getObject().getQuestion();
+    Question question = validSpec.get().getQuestion();
     int pageStart = 1;
     int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
     Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>(question.getSortingAttributeMap());
@@ -45,7 +45,7 @@ public class AnswerValueFactory {
 
   public static AnswerValue makeAnswer(User user, RunnableObj<AnswerSpec> validSpec,
       int startIndex, int endIndex, Map<String, Boolean> sortingMap) throws WdkModelException {
-    Question question = validSpec.getObject().getQuestion();
+    Question question = validSpec.get().getQuestion();
     if (question instanceof SingleRecordQuestion) {
       return new SingleRecordAnswerValue(user, validSpec);
     }

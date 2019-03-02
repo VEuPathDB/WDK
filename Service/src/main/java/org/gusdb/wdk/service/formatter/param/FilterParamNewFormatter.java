@@ -44,7 +44,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
   }
 
   public JSONArray getOntologyJson(SemanticallyValid<QueryInstanceSpec> validSpec) throws JSONException, WdkModelException {
-    QueryInstanceSpec spec = validSpec.getObject();
+    QueryInstanceSpec spec = validSpec.get();
     Map<String, OntologyItem> ontologyMap = _filterParam.getOntology(spec.getUser(), spec.toMap());
     JSONArray ontologyJson = new JSONArray();
     for (String term : ontologyMap.keySet()) {
@@ -66,7 +66,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
 
   public JSONObject getValuesJson(SemanticallyValid<QueryInstanceSpec> validSpec) throws JSONException, WdkModelException {
 
-    QueryInstanceSpec spec = validSpec.getObject();
+    QueryInstanceSpec spec = validSpec.get();
     Map<String, Set<String>> valuesMap = _filterParam.getValuesMap(spec.getUser(), spec.toMap());
 
     // TODO: remove this when values map is required

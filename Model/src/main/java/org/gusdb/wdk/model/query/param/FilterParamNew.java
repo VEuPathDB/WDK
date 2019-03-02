@@ -415,7 +415,7 @@ public class FilterParamNew extends AbstractDependentParam {
     /* GET UNFILTERED (BACKGROUND) COUNTS */
     ////////////////////////////////////////
 
-    QueryInstanceSpec spec = validSpec.getObject();
+    QueryInstanceSpec spec = validSpec.get();
     String bgdSql = getInternalQuerySql(spec.getUser(), spec.toMap(), _backgroundQuery);
 
     // Set up counts store
@@ -494,7 +494,7 @@ public class FilterParamNew extends AbstractDependentParam {
     /* GET UNFILTERED MAP AND POPULATE COUNTS */
     ////////////////////////////////////////////
 
-    QueryInstanceSpec spec = validSpec.getObject();
+    QueryInstanceSpec spec = validSpec.get();
     String bgdSql = getInternalQuerySql(spec.getUser(), spec.toMap(), _backgroundQuery);
 
     // limit it to our ontology_id
@@ -814,7 +814,7 @@ public class FilterParamNew extends AbstractDependentParam {
       String idColumn, String defaultFilterClause)
           throws WdkModelException {
     // get sql that selects the full set of distinct internals from the metadata query                                                                                                          
-    QueryInstanceSpec spec = validSpec.getObject();
+    QueryInstanceSpec spec = validSpec.get();
     String metadataSql = getInternalQuerySql(spec.getUser(), spec.toMap(), metadataQuery);
 
     String metadataTableName = "md";
@@ -833,7 +833,7 @@ public class FilterParamNew extends AbstractDependentParam {
       FilterParamNewStableValue stableValue, Query metadataQuery, String defaultFilterClause)
           throws WdkModelException {
     // get sql that selects the full set of distinct internals from the metadata query
-    QueryInstanceSpec spec = validSpec.getObject();
+    QueryInstanceSpec spec = validSpec.get();
     String metadataSql = getInternalQuerySql(spec.getUser(), spec.toMap(), metadataQuery);
 
     String metadataTableName = "md";
@@ -849,7 +849,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // get the applied filters and the ontology
     List<FilterParamNewStableValue.Filter> filters = stableValue.getFilters();
-    QueryInstanceSpec spec = validSpec.getObject();
+    QueryInstanceSpec spec = validSpec.get();
     Map<String, OntologyItem> ontology = getOntology(spec.getUser(), spec.toMap());
 
     // if no filters, return sql for the full set of internals
@@ -881,7 +881,7 @@ public class FilterParamNew extends AbstractDependentParam {
     try {
       // create json for the ontology
       JSONObject jsOntology = new JSONObject();
-      QueryInstanceSpec spec = validSpec.getObject();
+      QueryInstanceSpec spec = validSpec.get();
       Map<String, OntologyItem> ontologyMap = getOntology(spec.getUser(), spec.toMap());
       for (String itemName : ontologyMap.keySet()) {
         OntologyItem item = ontologyMap.get(itemName);

@@ -52,7 +52,7 @@ public class CountQueryPlugin implements CountPlugin {
   @Override
   public int count(RunnableObj<Step> runnableStep) throws WdkModelException, WdkUserException {
     // prepare params, which has only one answerParam
-    Step step = runnableStep.getObject();
+    Step step = runnableStep.get();
     Param[] params = _query.getParams();
     Map<String, String> paramValues = new HashMap<>();
     paramValues.put(params[0].getName(), Long.toString(step.getStepId()));

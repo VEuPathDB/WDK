@@ -249,7 +249,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   public EnumParamVocabInstance getVocabInstance(User user, SemanticallyValid<QueryInstanceSpec> context)
       throws WdkModelException {
-    return getVocabInstance(user, context.getObject().toMap());
+    return getVocabInstance(user, context.get().toMap());
   }
 
   @Override
@@ -268,7 +268,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   }
 
   public EnumParamVocabInstance getVocabInstance(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
-    return getVocabInstance(spec.getObject().getUser(), spec.getObject().toMap());
+    return getVocabInstance(spec.get().getUser(), spec.get().toMap());
   }
 
   public Map<String, String> getDisplayMap(User user, Map<String, String> contextParamValues) throws WdkModelException {

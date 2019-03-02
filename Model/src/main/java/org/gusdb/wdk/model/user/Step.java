@@ -269,7 +269,7 @@ public class Step implements StrategyElement, Validateable<Step> {
 
   public static RunnableObj<AnswerSpec> getRunnableAnswerSpec(RunnableObj<Step> runnableStep) {
     // we know we can simply return the answer spec because the step is runnable
-    return runnableStep.getObject().getAnswerSpec().getRunnable().getLeft();
+    return runnableStep.get().getAnswerSpec().getRunnable().getLeft();
   }
 
   // set during Step object creation
