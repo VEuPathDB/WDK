@@ -2064,7 +2064,8 @@ public class StepFactory {
           .entrySet()
           .stream()
           .map(e -> new JSONObject()
-              .put(e.getKey(), SortDirection.getFromIsAscending(e.getValue()).toString()))
+              .put("name", e.getKey())
+              .put("direction", SortDirection.getFromIsAscending(e.getValue()).toString()))
           .collect(JSONArray::new, JSONArray::put, (a, b) -> b.forEach(a::put))
       )
       .put(
