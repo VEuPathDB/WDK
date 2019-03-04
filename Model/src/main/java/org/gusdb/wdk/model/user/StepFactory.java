@@ -166,7 +166,7 @@ public class StepFactory {
         .setCustomName(customName)
         .setCollapsible(isCollapsible)
         .setCollapsedName(collapsedName)
-        .setStrategyId(null) // new steps do not belong to a strategy
+        .setStrategyId(Optional.empty()) // new steps do not belong to a strategy
         .setAnswerSpec(AnswerSpec.builder(validSpec.get()))
         .build(new UserCache(user), ValidationLevel.SEMANTIC, Optional.empty());
 
@@ -698,7 +698,7 @@ public class StepFactory {
     StepBuilder newStep = Step.builder(oldStep)
         .setStepId(getNewStepId())
         .setUserId(newUser.getUserId())
-        .setStrategyId(null);
+        .setStrategyId(Optional.empty());
 
     // recursively copy AnswerParams (aka child steps) and DatasetParams
     //   (we want a fresh copy per step because we don't track which steps are using a dataset param)
