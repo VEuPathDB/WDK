@@ -118,8 +118,8 @@ public class Step implements Validateable<Step> {
       return this;
     }
 
-    public StepBuilder setStrategyId(Long strategyId) {
-      _strategyId = Optional.ofNullable(strategyId);
+    public StepBuilder setStrategyId(Optional<Long> strategyId) {
+      _strategyId = strategyId;
       return this;
     }
 

@@ -79,7 +79,7 @@ public class StrategyLoader {
       "    and st." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
       "    " + SEARCH_CONDITIONS_MACRO +
       ")" +
-      " union " +
+      " union all" +
       "(" +
       "  select " + STEP_COLUMNS + ", " + NULLED_STRAT_COLUMNS +
       "  from " + USER_SCHEMA_MACRO + TABLE_STEP + " st" +
@@ -235,7 +235,7 @@ public class StrategyLoader {
     long userId = rs.getLong(COLUMN_USER_ID);
 
     return Step.builder(_wdkModel, userId, stepId)
-        .setStrategyId(fetchNullableLong(rs, COLUMN_STRATEGY_ID, null))
+        .setStrategyId(Optional.ofNullable(fetchNullableLong(rs, COLUMN_STRATEGY_ID, null)))
         .setProjectId(rs.getString(COLUMN_PROJECT_ID))
         .setProjectVersion(rs.getString(COLUMN_PROJECT_VERSION))
         .setCreatedTime(rs.getTimestamp(COLUMN_CREATE_TIME))
