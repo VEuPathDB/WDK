@@ -160,23 +160,23 @@ public class AnswerValueCache {
     JSONArray arr = obj.getJSONArray("sortColumns");
     for (int i = 0; i < min(arr.length(), UserPreferences.MAX_NUM_SORTING_COLUMNS); i++) {
       final JSONObject col = arr.getJSONObject(i);
-      // Invalid sort column, exclude from output
-      if (col.length() != 1)
+
+      // Invalid format, exclude from output
+      if (!col.has("name") || !col.has("direction"))
         continue;
 
-      for (final String key : col.keySet()) {
-        // Invalid column name, exclude from output
-        if (!valid.containsKey(key))
-          continue;
+      final String key = col.getString("name");
+      final String dir = col.getString("direction");
 
-        final String dir = col.getString(key);
+      // Invalid column name, exclude from output
+      if (!valid.containsKey(key))
+        continue;
 
-        // Sort direction is not valid, exclude from output
-        if (!SortDirection.isValidDirection(dir))
-          continue;
+      // Sort direction is not valid, exclude from output
+      if (!SortDirection.isValidDirection(dir))
+        continue;
 
-        out.put(key, SortDirection.valueOf(dir).isAscending());
-      }
+      out.put(key, SortDirection.valueOf(dir).isAscending());
     }
 
     return out;
