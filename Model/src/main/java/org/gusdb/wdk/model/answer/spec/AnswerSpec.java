@@ -117,6 +117,7 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
   }
 
   private Optional<AnswerFilterInstance> getAssignedLegacyFilter(ValidationBundleBuilder validation) {
+    if (!_legacyFilterName.isPresent()) return Optional.empty();
     Function<String,Optional<AnswerFilterInstance>> blah = name -> _question.getRecordClass().getFilterInstance(name);
     Optional<AnswerFilterInstance> filterInstance = _legacyFilterName.flatMap(blah);
     if (!filterInstance.isPresent()) {

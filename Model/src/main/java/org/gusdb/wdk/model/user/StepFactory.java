@@ -556,7 +556,7 @@ public class StepFactory {
       "  " + COLUMN_IS_COLLAPSIBLE  + ",\n" +
       "  " + COLUMN_STRATEGY_ID     + ",\n" +
       "  " + COLUMN_DISPLAY_PARAMS  + ",\n" +
-      "  " + COLUMN_DISPLAY_PREFS   + ",\n" +
+      "  " + COLUMN_DISPLAY_PREFS   + ")\n" +
       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
   }
 
@@ -608,7 +608,7 @@ public class StepFactory {
       new Timestamp(step.getCreatedTime().getTime()),
       new Timestamp(step.getLastRunTime().getTime()),
       step.getEstimatedSize(),
-      spec.getLegacyFilterName(),
+      spec.getLegacyFilterName().orElse(null),
       spec.getQueryInstanceSpec().getAssignedWeight(),
       _wdkModel.getProjectId(),
       _wdkModel.getVersion(),
@@ -617,7 +617,7 @@ public class StepFactory {
       step.getCollapsedName(),
       _userDbPlatform.convertBoolean(step.isDeleted()),
       _userDbPlatform.convertBoolean(step.isCollapsible()),
-      step.getStrategyId(),
+      step.getStrategyId().orElse(null),
       new StringReader(ParamFiltersClobFormat.formatParamFilters(spec).toString()),
       new StringReader(step.getDisplayPrefs().toString())
     };
