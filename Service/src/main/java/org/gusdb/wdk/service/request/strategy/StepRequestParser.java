@@ -63,10 +63,10 @@ public class StepRequestParser {
   public static NewStepRequest newStepFromJson(JSONObject stepJson, WdkModel wdkModel, User user)
       throws RequestMisformatException, DataValidationException, WdkModelException {
     try {
-      String questionName = stepJson.getString(JsonKeys.SEARCH_NAME);
-      Question question = wdkModel.getQuestionByName(questionName)
+      String questionUrlSegment = stepJson.getString(JsonKeys.SEARCH_NAME);
+      Question question = wdkModel.getQuestionByUrlSegment(questionUrlSegment)
           .orElseThrow(() -> new DataValidationException(
-              questionName + " is not a valid search name."));
+              questionUrlSegment + " is not a valid search name."));
       SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(question,
           stepJson.getJSONObject(JsonKeys.SEARCH_CONFIG), wdkModel,
           user, StepContainer.emptyContainer());
