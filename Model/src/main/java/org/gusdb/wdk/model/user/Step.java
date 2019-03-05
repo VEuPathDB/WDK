@@ -93,7 +93,7 @@ public class Step implements Validateable<Step> {
     private StepBuilder(Step step) {
       _wdkModel = step._wdkModel;
       _userId = step._user.getUserId();
-      _strategyId = step.getStrategy().map(Strategy::getStrategyId);
+      _strategyId = step.getStrategyId();
       _stepId = step._stepId;
       _createdTime = step._createdTime;
       _lastRunTime = step._lastRunTime;

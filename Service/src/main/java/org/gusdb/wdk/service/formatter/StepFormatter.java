@@ -69,7 +69,7 @@ public class StepFormatter {
         .put(JsonKeys.COLLAPSED_NAME, step.getCollapsedName())
         .put(JsonKeys.DESCRIPTION, step.getDescription())
         .put(JsonKeys.OWNER_ID, step.getUser().getUserId())
-        .put(JsonKeys.STRATEGY_ID, JsonUtil.convertNulls(step.getStrategyId()))
+        .put(JsonKeys.STRATEGY_ID, JsonUtil.convertNulls(step.getStrategyId().orElse(null)))
         .put(JsonKeys.HAS_COMPLETE_STEP_ANALYSES, step.getHasCompleteAnalyses())
         .put(JsonKeys.RECORD_CLASS_NAME, step.getType())
         .put(JsonKeys.SEARCH_NAME, step.getAnswerSpec().getQuestionName())

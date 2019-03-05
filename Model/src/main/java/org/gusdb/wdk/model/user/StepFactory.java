@@ -1034,7 +1034,7 @@ public class StepFactory {
         step.getProjectId(),
         step.getProjectVersion(),
         spec.getQuestionName(),
-        step.getStrategyId(),
+        step.getStrategyId().orElse(null),
         ParamFiltersClobFormat.formatParamFilters(spec),
         step.getDisplayPrefs().toString(),
         step.getStepId()
