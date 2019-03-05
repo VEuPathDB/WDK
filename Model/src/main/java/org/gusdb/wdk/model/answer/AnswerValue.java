@@ -267,7 +267,7 @@ public class AnswerValue {
 
       // add the legacy filter into the content
       if (_answerSpec.getLegacyFilter().isPresent()) {
-        jsContent.put("legacy-filter", _answerSpec.getLegacyFilter().get().getName());
+        jsContent.put("legacy-filter", _answerSpec.getLegacyFilterName().get());
       }
 
       // if filters have been applied, get the content for it

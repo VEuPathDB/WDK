@@ -93,7 +93,7 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
       // invalid question name; cannot validate other data
       validation.addError("Question '" + questionName + "' is not supported.");
       _question = null;
-      _legacyFilter = null;
+      _legacyFilter = Optional.empty();
       _queryInstanceSpec = queryInstanceSpec.buildInvalid();
       _filters = filters.buildInvalid();
       _viewFilters = viewFilters.buildInvalid();

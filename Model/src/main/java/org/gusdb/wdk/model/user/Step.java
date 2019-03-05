@@ -767,7 +767,7 @@ public class Step implements Validateable<Step> {
       jsStep.put("customName", _customName);
       jsStep.put("question", _answerSpec.getQuestion());
       jsStep.put("projectVersion", _projectVersion);
-      jsStep.put("filter", _answerSpec.getLegacyFilterName());
+      jsStep.put("filter", _answerSpec.getLegacyFilterName().orElse(null));
       jsStep.put("collapsed", this.isCollapsible());
       jsStep.put("collapsedName", this.getCollapsedName());
       jsStep.put("deleted", _isDeleted);
