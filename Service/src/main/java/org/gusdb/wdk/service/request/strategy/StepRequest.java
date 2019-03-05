@@ -1,11 +1,13 @@
 package org.gusdb.wdk.service.request.strategy;
 
 import static org.gusdb.fgputil.json.JsonUtil.getBooleanOrDefault;
+import static org.gusdb.fgputil.json.JsonUtil.getJsonObjectOrDefault;
 import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
 
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -47,9 +49,10 @@ public class StepRequest {
       String customName = getStringOrDefault(newStep, JsonKeys.CUSTOM_NAME, answerSpec.getQuestion().getName());
       boolean isCollapsible = getBooleanOrDefault(newStep, JsonKeys.IS_COLLAPSIBLE, false);
       String collapsedName = getStringOrDefault(newStep, JsonKeys.COLLAPSED_NAME, customName);
+      JSONObject displayPrefs = getJsonObjectOrDefault(newStep, JsonKeys.DISPLAY_PREFS, null);
       // DB field length for collapsedName is 200
       collapsedName = collapsedName == null ? collapsedName : collapsedName.substring(0, Math.min(collapsedName.length(),200));
-      return new StepRequest(answerSpec, customName, isCollapsible, collapsedName);
+      return new StepRequest(answerSpec, customName, isCollapsible, collapsedName, displayPrefs);
     }
     catch (JSONException e) {
       throw new RequestMisformatException("Invalid JSON in step request", e);
@@ -64,9 +67,10 @@ public class StepRequest {
       String customName = getStringOrDefault(patchSet, JsonKeys.CUSTOM_NAME, step.getCustomName());
       boolean isCollapsible = Boolean.getBoolean(getStringOrDefault(patchSet, JsonKeys.IS_COLLAPSIBLE, String.valueOf(step.isCollapsible())));
       String collapsedName = getStringOrDefault(patchSet, JsonKeys.COLLAPSED_NAME, step.getCollapsedName());
+      JSONObject displayPrefs = getJsonObjectOrDefault(patchSet, JsonKeys.DISPLAY_PREFS, null);
       // DB field length for collapsedName is 200
       collapsedName = collapsedName == null ? collapsedName : collapsedName.substring(0, 200);
-      return new StepRequest(answerSpec, customName, isCollapsible, collapsedName);
+      return new StepRequest(answerSpec, customName, isCollapsible, collapsedName, displayPrefs);
     }
     catch (JSONException e) {
       throw new RequestMisformatException("Invalid JSON in patch step request", e);
@@ -116,12 +120,14 @@ public class StepRequest {
   private final String _customName;
   private final boolean _isCollapsible;
   private final String _collapsedName;
+  private final JSONObject _displayPrefs;
 
-  public StepRequest(AnswerSpec answerSpec, String customName, boolean isCollapsible, String collapsedName) {
+  public StepRequest(AnswerSpec answerSpec, String customName, boolean isCollapsible, String collapsedName, JSONObject displayPrefs) {
     _answerSpec = answerSpec;
     _customName = customName;
     _isCollapsible = isCollapsible;
     _collapsedName = collapsedName;
+    _displayPrefs = displayPrefs;
   }
 
   public AnswerSpec getAnswerSpec() {
@@ -138,5 +144,9 @@ public class StepRequest {
 
   public String getCollapsedName() {
     return _collapsedName;
+  }
+
+  public JSONObject getDisplayPrefs() {
+    return _displayPrefs;
   }
 }
