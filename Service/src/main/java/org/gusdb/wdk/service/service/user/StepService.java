@@ -138,10 +138,10 @@ public class StepService extends UserService {
       throw new NotFoundException(
           AbstractWdkService.formatNotFound(STEP_RESOURCE + stepId));
 
-    if (step.getStrategy() != null)
+    if (step.getStrategy().isPresent())
       throw new ConflictException(
         "Steps that are part of strategies cannot be deleted.  Remove the " +
-          "step from strategy " + step.getStrategyId() + " and try again.");
+          "step from strategy " + step.getStrategyId().get() + " and try again.");
 
     getWdkModel().getStepFactory()
       .updateStep(Step.builder(step)
