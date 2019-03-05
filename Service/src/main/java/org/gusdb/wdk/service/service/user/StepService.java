@@ -1,6 +1,7 @@
 package org.gusdb.wdk.service.service.user;
 
 import static org.gusdb.fgputil.TestUtil.nullSafeEquals;
+import static org.gusdb.fgputil.json.JsonUtil.serialize;
 import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.DEFAULT_REPORTER_PARSER;
 import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.SPECIFIED_REPORTER_PARSER;
 
@@ -21,6 +22,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -228,6 +230,11 @@ public class StepService extends UserService {
     step.setCollapsible(stepRequest.isCollapsible());
     if (nullSafeEquals(step.getCollapsedName(), stepRequest.getCollapsedName())) metadataChanged = true;
     step.setCollapsedName(stepRequest.getCollapsedName());
+    if (nullSafeEquals(
+        step.getDisplayPrefs() == null ? null : serialize(step.getDisplayPrefs()),
+        stepRequest.getDisplayPrefs() == null ? null : serialize(stepRequest.getDisplayPrefs())
+    )) metadataChanged = true;
+    step.setDisplayPrefs(stepRequest.getDisplayPrefs());
 
     return new StepChanges(paramFiltersChanged, metadataChanged);
   }

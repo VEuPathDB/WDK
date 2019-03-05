@@ -157,6 +157,7 @@ public class JsonKeys {
   public static final String IS_ANSWER_SPEC_COMPLETE = "isAnswerSpecComplete";
   public static final String CREATED_TIME = "createdTime";
   public static final String LAST_RUN_TIME = "lastRunTime";
+  public static final String DISPLAY_PREFS = "displayPrefs";
 
   // site-level keys
   public static final String PROJECT_ID = "projectId";
@@ -218,4 +219,4 @@ public class JsonKeys {
   public static final String ROOT_STEP = "root";
   public static final String LEFT_STEP = "left";
   public static final String RIGHT_STEP = "right";
-  }
+}
