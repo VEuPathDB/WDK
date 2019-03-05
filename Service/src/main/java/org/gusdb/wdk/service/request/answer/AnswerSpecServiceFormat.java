@@ -82,7 +82,7 @@ public class AnswerSpecServiceFormat {
         .put(JsonKeys.FILTERS, ParamFiltersClobFormat.formatFilters(answerSpec.getFilterOptions()))
         .put(JsonKeys.VIEW_FILTERS, ParamFiltersClobFormat.formatFilters(answerSpec.getViewFilterOptions()))
         .put(JsonKeys.WDK_WEIGHT, answerSpec.getQueryInstanceSpec().getAssignedWeight())
-        .put(JsonKeys.LEGACY_FILTER_NAME, answerSpec.getLegacyFilterName());
+        .put(JsonKeys.LEGACY_FILTER_NAME, answerSpec.getLegacyFilterName().orElse(null));
   }
 
 }

@@ -1024,7 +1024,7 @@ public class StepFactory {
         step.getSecondaryInputStepId() == 0 ? null : step.getSecondaryInputStepId(),
         step.getLastRunTime(),
         step.getEstimatedSize(),
-        spec.getLegacyFilterName(),
+        spec.getLegacyFilterName().orElse(null),
         step.getCustomName(),
         _userDbPlatform.convertBoolean(step.isDeleted()),
         _userDbPlatform.convertBoolean(step.isValid()),
