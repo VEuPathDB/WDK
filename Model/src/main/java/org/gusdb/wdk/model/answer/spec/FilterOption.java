@@ -84,7 +84,7 @@ public class FilterOption implements Validateable<FilterOption>, NamedObject {
     _value = value;
     _isDisabled = isDisabled;
     if (validationLevel.isNone()) {
-      _question = null;
+      _question = question;
       _filter = null;
       _validationBundle = ValidationBundle.builder(validationLevel).build();
     }
