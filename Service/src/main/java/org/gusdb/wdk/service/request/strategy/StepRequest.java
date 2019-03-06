@@ -67,7 +67,7 @@ public class StepRequest {
       String customName = getStringOrDefault(patchSet, JsonKeys.CUSTOM_NAME, step.getCustomName());
       boolean isCollapsible = Boolean.getBoolean(getStringOrDefault(patchSet, JsonKeys.IS_COLLAPSIBLE, String.valueOf(step.isCollapsible())));
       String collapsedName = getStringOrDefault(patchSet, JsonKeys.COLLAPSED_NAME, step.getCollapsedName());
-      JSONObject displayPrefs = getJsonObjectOrDefault(patchSet, JsonKeys.DISPLAY_PREFS, null);
+      JSONObject displayPrefs = getJsonObjectOrDefault(patchSet, JsonKeys.DISPLAY_PREFS, step.getDisplayPrefs());
       // DB field length for collapsedName is 200
       collapsedName = collapsedName == null ? collapsedName : collapsedName.substring(0, 200);
       return new StepRequest(answerSpec, customName, isCollapsible, collapsedName, displayPrefs);
