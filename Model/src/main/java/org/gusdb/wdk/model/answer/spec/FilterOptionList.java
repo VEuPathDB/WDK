@@ -68,14 +68,19 @@ public class FilterOptionList implements Iterable<FilterOption>, Validateable<Fi
       List<FilterOption> options = new ArrayList<>();
       for (FilterOptionBuilder filterBuilder : this) {
         FilterOption filterOption = filterBuilder.buildValidated(question, level);
-        Filter filter = filterOption.getFilter();
-        if (filter != null && !containerType.containerSupports(filter.getFilterType())) {
-          validation.addError("Filter with name '" + filter.getKey() + "' was declared " +
-              filter.getFilterType() + " but was found in the " + containerType + " filter list.");
+        if (!filterOption.isValid()) {
+          validation.aggregateStatus(filterOption);
+        }
+        else {
+          // filter option valid against question; is it the correct type?
+          Filter filter = filterOption.getFilter();
+          if (!containerType.containerSupports(filter.getFilterType())) {
+            validation.addError("Filter with name '" + filter.getKey() + "' was declared " +
+                filter.getFilterType() + " but was found in the " + containerType + " filter list.");
+          }
         }
         options.add(filterOption);
       }
-      validation.aggregateStatus(options.toArray(new FilterOption[options.size()]));
       return new FilterOptionList(options, validation.build());
       
     }
