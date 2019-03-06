@@ -1386,9 +1386,6 @@
       <attribute name="queryRef" />
       <ref name="IncludeExclude" />
       <optional>
-        <attribute name="urlName" />
-      </optional>
-      <optional>
         <attribute name="shortDisplayName" />
       </optional>
       <optional>
