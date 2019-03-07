@@ -15,13 +15,13 @@
     "filters": {
       "type": "array",
       "items": {
-        "$ref": "name-value.json"
+        "$ref": "filter-spec.json"
       }
     },
     "viewFilters": {
       "type": "array",
       "items": {
-        "$ref": "name-value.json"
+        "$ref": "filter-spec.json"
       }
     }
   }
