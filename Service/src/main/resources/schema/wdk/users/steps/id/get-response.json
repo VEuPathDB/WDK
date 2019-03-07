@@ -52,10 +52,10 @@
       "type": "integer"
     },
     "createdTime": {
-      "type": "integer"
+      "type": "string"
     },
     "lastRunTime": {
-      "type": "integer"
+      "type": "string"
     },
     "displayPrefs": {
       "$ref": "../includes/display-prefs.json"

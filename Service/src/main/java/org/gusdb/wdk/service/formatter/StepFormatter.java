@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.formatter;
 
 import java.util.Optional;
 
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -75,8 +76,8 @@ public class StepFormatter {
         .put(JsonKeys.SEARCH_NAME, step.getAnswerSpec().getQuestionName())
         .put(JsonKeys.SEARCH_CONFIG, AnswerSpecServiceFormat.format(step.getAnswerSpec()))
         .put(JsonKeys.VALIDATION, getValidationBundleJson(step.getValidationBundle()))
-        .put(JsonKeys.CREATED_TIME, step.getCreatedTime())
-        .put(JsonKeys.LAST_RUN_TIME, step.getLastRunTime())
+        .put(JsonKeys.CREATED_TIME, FormatUtil.formatDateTime(step.getCreatedTime()))
+        .put(JsonKeys.LAST_RUN_TIME, FormatUtil.formatDateTime(step.getLastRunTime()))
         .put(JsonKeys.DISPLAY_PREFS, JsonUtil.toJSONObject(step.getDisplayPrefs())
             .valueOrElseThrow(e -> new WdkModelException(e)));
     } catch (JSONException e) {
