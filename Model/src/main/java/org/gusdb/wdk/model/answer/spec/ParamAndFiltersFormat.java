@@ -10,7 +10,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ParamFiltersClobFormat {
+/** Represents a JSON Clob that contains the configurations of the paramters and step filters in a search
+ * 
+ *
+ */
+public class ParamAndFiltersFormat {
 
   // top level json keys
   public static final String KEY_PARAMS = "params";

@@ -16,7 +16,7 @@ import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
+import org.gusdb.wdk.model.answer.spec.ParamAndFiltersFormat;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
 import org.gusdb.wdk.model.user.StepContainer;
@@ -74,7 +74,7 @@ public class Migrator_b18_b19 implements Migrator {
         // update params
         String paramContent = platform.getClobData(rsSteps, "display_params");
         
-        QueryInstanceSpecBuilder params = ParamFiltersClobFormat.parseParamsJson(new JSONObject(paramContent));
+        QueryInstanceSpecBuilder params = ParamAndFiltersFormat.parseParamsJson(new JSONObject(paramContent));
         Map<String,String> newParams = updateParams(stepId, params.toMap(), leftChildId, rightChildId);
         AnswerSpec answerSpec = AnswerSpec.builder(wdkModel)
           .setQuestionName(questionName)
@@ -82,7 +82,7 @@ public class Migrator_b18_b19 implements Migrator {
           .setQueryInstanceSpec(QueryInstanceSpec.builder().putAll(newParams))
           .build(wdkModel.getSystemUser(), StepContainer.emptyContainer(), ValidationLevel.SYNTACTIC);
 
-        paramContent = ParamFiltersClobFormat.formatParamFilters(answerSpec).toString();
+        paramContent = ParamAndFiltersFormat.formatParamFilters(answerSpec).toString();
 
         // save changes
         platform.setClobData(psUpdate, 1, paramContent, false);
