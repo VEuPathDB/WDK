@@ -292,6 +292,7 @@ public class AnswerValue {
   }
 
   // FIXME!!!  Look at how this is called- we should not be using PagedAnswerRecordStream!
+  // seems to be called in XmlQuestion.java, XmlAnswerService.java and DatasetParamHandler.java
   /**
    * Iterate through all the records of the answer
    * 
@@ -310,6 +311,8 @@ public class AnswerValue {
    * @throws WdkUserException
    */
   public String getPagedAttributeSql(Query attributeQuery, boolean sortPage) throws WdkModelException, WdkUserException {
+    LOG.debug("AnswerValue: getPagedAttributeSql(): " + attributeQuery.getFullName() + " --boolean sortPage: " + sortPage);
+
     // get the paged SQL of id query
     String idSql = getPagedIdSql();
 
@@ -333,11 +336,14 @@ public class AnswerValue {
       // sort by underlying idq row_index if requested
       sql.append(" ORDER BY pidq.row_index");
     }
+    LOG.debug("AnswerValue: getPagedAttributeSql(): " + sql.toString());
     return sql.toString();
   }
 
   public ResultList getTableFieldResultList(TableField tableField) throws WdkModelException {
+
     WdkModel wdkModel = _answerSpec.getQuestion().getWdkModel();
+
     // has to get a clean copy of the attribute query, without pk params appended
     Query tableQuery = tableField.getUnwrappedQuery();
 
@@ -347,13 +353,14 @@ public class AnswerValue {
     }
     */
     // get and run the paged table query sql
+    LOG.debug("AnswerValue: getTableFieldResultList(): going to getPagedTableSql()");
     String sql = getPagedTableSql(tableQuery);
-
+    LOG.debug("AnswerValue: getTableFieldResultList(): back from getPagedTableSql()");
     DatabaseInstance platform = wdkModel.getAppDb();
     DataSource dataSource = platform.getDataSource();
     ResultSet resultSet = null;
     try {
-      LOG.debug("SQL for TableField '" + tableField.getName() + "': " + sql);
+      LOG.debug("AnswerValue: getTableFieldResultList(): returning SQL for TableField '" + tableField.getName() + "': \n" + sql);
       resultSet = SqlUtils.executeQuery(dataSource, sql, tableQuery.getFullName() + "_table-paged");
     }
     catch (SQLException e) {
@@ -392,6 +399,7 @@ public class AnswerValue {
     sql.append(" ORDER BY pidq.row_index, tqi.row_index");
 
     // replace the id_sql macro.  this sql must include filters (but not view filters)
+    //LOG.debug("AnswerValue: getPagedTableSql: adding filters to idsql" );
     String sqlWithIdSql = sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true, true));
     return sqlWithIdSql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, "(" + getNoFiltersIdSql() + ")");
   }
@@ -438,7 +446,7 @@ public class AnswerValue {
   }
 
   private String getSortedIdSql(boolean excludeViewFilters) throws WdkModelException {
-
+    LOG.debug("AnswerValue: getSortedIdSql()");
     String[] pkColumns = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
 
     // get id sql
@@ -501,7 +509,7 @@ public class AnswerValue {
     }
 
     String outputSql = sql.toString();
-    LOG.debug("Constructed the following sorted ID SQL: " + NL + outputSql);
+    LOG.debug("AnswerValue: getSortedIdSql(): Constructed the following sorted ID SQL: " + outputSql);
     return outputSql;
   }
 
@@ -517,7 +525,7 @@ public class AnswerValue {
     // add comments to the sql
     sql = " /* a page of sorted ids */ " + sql;
 
-    LOG.debug("paged id sql constructed.");
+    LOG.debug("AnswerValue: getPagedIdSql() : paged id sql constructed: " + sql);
 
     return sql;
   }
@@ -563,7 +571,7 @@ public class AnswerValue {
     }
 
     innerSql = "(" + innerSql + ")";
-    LOG.debug("AnswerValue: ID SQL constructed with all filters:\n" + innerSql);
+    LOG.debug("AnswerValue: getIdSql(): ID SQL constructed with all filters:\n" + innerSql);
 
     return innerSql;
 
@@ -609,7 +617,7 @@ public class AnswerValue {
     Map<String, String> queryNames = new LinkedHashMap<String, String>();
     Map<String, String> orderClauses = new LinkedHashMap<String, String>();
     WdkModel wdkModel = _answerSpec.getQuestion().getWdkModel();
-    LOG.debug("sorting map: " + _sortingMap);
+    LOG.debug("AnswerValue: prepareSortingSqls(): sorting map: " + _sortingMap); //e.g.: {primary_key=true}
     final String idQueryNameStub = "answer_id_query";
     queryNames.put(idQueryNameStub, "idq");
     for (String fieldName : _sortingMap.keySet()) {
@@ -688,6 +696,8 @@ public class AnswerValue {
 
   public int getPageSize() throws WdkModelException {
     int resultSize = _resultSizeFactory.getResultSize();
+    int n = (_endIndex == UNBOUNDED_END_PAGE_INDEX ? resultSize : Math.min(_endIndex, resultSize)) - _startIndex + 1;
+    LOG.debug("AnswerValue: getPageSize(): " + n);
     return (_endIndex == UNBOUNDED_END_PAGE_INDEX ? resultSize : Math.min(_endIndex, resultSize)) - _startIndex + 1;
   }
 
@@ -722,7 +732,7 @@ public class AnswerValue {
         // WdkModelException("the assigned sorting attribute ["
         // + attributeName + "] doesn't exist in the answer of "
         // + "question " + question.getFullName());
-        LOG.debug("Invalid sorting attribute: User #" + _user.getUserId() + ", question: '" +
+        LOG.debug("AnswerValue: setSortingMap(): Invalid sorting attribute: User #" + _user.getUserId() + ", question: '" +
             _answerSpec.getQuestion().getFullName() + "', attribute: '" + attributeName + "'");
       }
       else {
@@ -815,6 +825,7 @@ public class AnswerValue {
     _endIndex = UNBOUNDED_END_PAGE_INDEX;
     reset();
   }
+
 
   public JSONObject getFilterSummaryJson(String filterName) throws WdkModelException {
     String idSql = getIdSql(filterName, false);
