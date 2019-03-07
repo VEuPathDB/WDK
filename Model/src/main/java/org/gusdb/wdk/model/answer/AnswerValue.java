@@ -31,7 +31,7 @@ import org.gusdb.wdk.model.answer.factory.DynamicRecordInstanceList;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.FilterOption;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList;
-import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
+import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersFormat;
 import org.gusdb.wdk.model.answer.stream.PagedAnswerRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.dbms.ResultList;
@@ -270,7 +270,7 @@ public class AnswerValue {
       }
 
       // if filters have been applied, get the content for it
-      jsContent.put("filters", ParamFiltersClobFormat.formatFilters(_answerSpec.getFilterOptions()));
+      jsContent.put("filters", ParamsAndFiltersFormat.formatFilters(_answerSpec.getFilterOptions()));
       // FIXME: decide whether view filters should also be added to checksum here
 
       // encrypt the content to make step-independent checksum

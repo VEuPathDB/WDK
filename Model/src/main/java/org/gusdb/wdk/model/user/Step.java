@@ -34,7 +34,7 @@ import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
-import org.gusdb.wdk.model.answer.spec.ParamFiltersClobFormat;
+import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersFormat;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -771,10 +771,10 @@ public class Step implements Validateable<Step> {
       jsStep.put("collapsed", this.isCollapsible());
       jsStep.put("collapsedName", this.getCollapsedName());
       jsStep.put("deleted", _isDeleted);
-      jsStep.put(ParamFiltersClobFormat.KEY_PARAMS,
-          ParamFiltersClobFormat.formatParams(_answerSpec.getQueryInstanceSpec()));
-      jsStep.put(ParamFiltersClobFormat.KEY_FILTERS,
-          ParamFiltersClobFormat.formatFilters(_answerSpec.getFilterOptions()));
+      jsStep.put(ParamsAndFiltersFormat.KEY_PARAMS,
+          ParamsAndFiltersFormat.formatParams(_answerSpec.getQueryInstanceSpec()));
+      jsStep.put(ParamsAndFiltersFormat.KEY_FILTERS,
+          ParamsAndFiltersFormat.formatFilters(_answerSpec.getFilterOptions()));
 
       Step childStep = getSecondaryInputStep();
       if (childStep != null) {
