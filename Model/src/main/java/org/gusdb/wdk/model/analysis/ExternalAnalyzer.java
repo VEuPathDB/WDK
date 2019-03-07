@@ -12,7 +12,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -124,8 +123,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
 
     // all files will be written to plugin instance's storage directory
     String storageDir = getStorageDirectory().toAbsolutePath().toString();
-    writeContentToFile(storageDir, LAST_RUN_FILE_NAME,
-        new SimpleDateFormat(FormatUtil.STANDARD_TIMESTAMP_FORMAT).format(new Date()) + NL);
+    writeContentToFile(storageDir, LAST_RUN_FILE_NAME, FormatUtil.formatDateTime(new Date()) + NL);
 
     // if dumpModelProp is set to true, dump model properties to disk
     if (determineBooleanProperty(DUMP_MODEL_PROPS_PROP_KEY, DUMP_MODEL_PROPS_BY_DEFAULT)) {
