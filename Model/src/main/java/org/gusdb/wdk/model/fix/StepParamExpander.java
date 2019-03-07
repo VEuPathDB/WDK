@@ -26,7 +26,7 @@ import org.gusdb.fgputil.json.JsonType.ValueType;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersFormat;
+import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersDbColumnFormat;
 import org.gusdb.wdk.model.fix.table.TableRowUpdater;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -244,9 +244,9 @@ public class StepParamExpander extends BaseCLI {
   }
 
   public static Map<String, Set<String>> parseDisplayParams(int stepId, JSONObject displayParams) {
-    return parseParams(stepId, displayParams.has(ParamsAndFiltersFormat.KEY_PARAMS) ?
+    return parseParams(stepId, displayParams.has(ParamsAndFiltersDbColumnFormat.KEY_PARAMS) ?
         // new displayParams format, fetch params object from params property
-        displayParams.getJSONObject(ParamsAndFiltersFormat.KEY_PARAMS) :
+        displayParams.getJSONObject(ParamsAndFiltersDbColumnFormat.KEY_PARAMS) :
         // old format, entire object is the params
         displayParams);
   }

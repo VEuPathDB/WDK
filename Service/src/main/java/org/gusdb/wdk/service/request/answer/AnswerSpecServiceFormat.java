@@ -7,7 +7,7 @@ import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
-import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersFormat;
+import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersDbColumnFormat;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
@@ -52,10 +52,10 @@ public class AnswerSpecServiceFormat {
         specBuilder.setLegacyFilterName(Optional.of(json.getString(JsonKeys.LEGACY_FILTER_NAME)));
       }
       if (json.has(JsonKeys.FILTERS)) {
-        specBuilder.setFilterOptions(ParamsAndFiltersFormat.parseFiltersJson(json, JsonKeys.FILTERS));
+        specBuilder.setFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.FILTERS));
       }
       if (json.has(JsonKeys.VIEW_FILTERS)) {
-        specBuilder.setViewFilterOptions(ParamsAndFiltersFormat.parseFiltersJson(json, JsonKeys.VIEW_FILTERS));
+        specBuilder.setViewFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.VIEW_FILTERS));
       }
       if (json.has(JsonKeys.WDK_WEIGHT)) {
         specBuilder.setAssignedWeight(json.getInt(JsonKeys.WDK_WEIGHT));
@@ -78,9 +78,9 @@ public class AnswerSpecServiceFormat {
   public static JSONObject format(AnswerSpec answerSpec) {
     return new JSONObject()
         // params and filters are sent with the same format as in the DB
-        .put(JsonKeys.PARAMETERS, ParamsAndFiltersFormat.formatParams(answerSpec.getQueryInstanceSpec()))
-        .put(JsonKeys.FILTERS, ParamsAndFiltersFormat.formatFilters(answerSpec.getFilterOptions()))
-        .put(JsonKeys.VIEW_FILTERS, ParamsAndFiltersFormat.formatFilters(answerSpec.getViewFilterOptions()))
+        .put(JsonKeys.PARAMETERS, ParamsAndFiltersDbColumnFormat.formatParams(answerSpec.getQueryInstanceSpec()))
+        .put(JsonKeys.FILTERS, ParamsAndFiltersDbColumnFormat.formatFilters(answerSpec.getFilterOptions()))
+        .put(JsonKeys.VIEW_FILTERS, ParamsAndFiltersDbColumnFormat.formatFilters(answerSpec.getViewFilterOptions()))
         .put(JsonKeys.WDK_WEIGHT, answerSpec.getQueryInstanceSpec().getAssignedWeight())
         .put(JsonKeys.LEGACY_FILTER_NAME, answerSpec.getLegacyFilterName().orElse(null));
   }

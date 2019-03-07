@@ -55,9 +55,9 @@ public class AnswerSpecBuilder {
   }
 
   public AnswerSpecBuilder setDbParamFiltersJson(JSONObject paramFiltersJson) {
-    setQueryInstanceSpec(ParamsAndFiltersFormat.parseParamsJson(paramFiltersJson));
-    setFilterOptions(ParamsAndFiltersFormat.parseFiltersJson(paramFiltersJson));
-    setViewFilterOptions(ParamsAndFiltersFormat.parseViewFiltersJson(paramFiltersJson));
+    setQueryInstanceSpec(ParamsAndFiltersDbColumnFormat.parseParamsJson(paramFiltersJson));
+    setFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(paramFiltersJson));
+    setViewFilterOptions(ParamsAndFiltersDbColumnFormat.parseViewFiltersJson(paramFiltersJson));
     // caller may have already called setAssignedWeight on answer spec builder
     _queryInstanceSpec.setAssignedWeight(_assignedWeight);
     return this;

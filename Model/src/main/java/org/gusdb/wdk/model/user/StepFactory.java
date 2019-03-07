@@ -52,7 +52,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
-import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersFormat;
+import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersDbColumnFormat;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -618,7 +618,7 @@ public class StepFactory {
       _userDbPlatform.convertBoolean(step.isDeleted()),
       _userDbPlatform.convertBoolean(step.isCollapsible()),
       step.getStrategyId().orElse(null),
-      new StringReader(ParamsAndFiltersFormat.formatParamFilters(spec).toString()),
+      new StringReader(ParamsAndFiltersDbColumnFormat.formatParamFilters(spec).toString()),
       new StringReader(step.getDisplayPrefs().toString())
     };
   }
@@ -1035,7 +1035,7 @@ public class StepFactory {
         step.getProjectVersion(),
         spec.getQuestionName(),
         step.getStrategyId().orElse(null),
-        ParamsAndFiltersFormat.formatParamFilters(spec),
+        ParamsAndFiltersDbColumnFormat.formatParamFilters(spec),
         step.getDisplayPrefs().toString(),
         step.getStepId()
       });
