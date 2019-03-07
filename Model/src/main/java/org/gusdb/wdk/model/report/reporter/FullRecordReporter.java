@@ -117,13 +117,14 @@ public class FullRecordReporter extends StandardReporter {
     boolean includeEmptyTables, TableCache tableCache)
         throws SQLException, WdkModelException, WdkUserException {
     PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+    LOG.debug("FullRecordReporter: formatRecord2Text(): looping through records calling formatAttributes and formatTables for each");
     try {
       if (tableCache != null) {
         tableCache.open();
       }
       int recordCount = 0;
       for (RecordInstance record : records) {
-
+        //LOG.debug("formatRecord2Text() - looping on records: one record: ");
         // print out attributes of the record first
         formatAttributes(record, selectedAttributes, writer);
 
@@ -138,10 +139,10 @@ public class FullRecordReporter extends StandardReporter {
         // count the records processed so far
         recordCount++;
         if (recordCount % 100 == 0) {
-          LOG.info(recordCount + " records dumped so far");
+          LOG.info("FullRecordReporter: formatRecord2Text(): " + recordCount + " records dumped so far");
         }
       }
-      LOG.info("Totally " + recordCount + " records dumped");
+      LOG.info("FullRecordReporter: formatRecord2Text(): Totally: " + recordCount + " records dumped");
     }
     finally {
       if (tableCache != null) {
@@ -160,6 +161,7 @@ public class FullRecordReporter extends StandardReporter {
     // print out attributes of the record first
     writer.println();
     writer.flush();
+    //LOG.debug("FullRecordReporter: formatAttributes(): ------- done one more record");
   }
 
   /**
@@ -190,6 +192,7 @@ public class FullRecordReporter extends StandardReporter {
         }
         sb.append(NL);
       }
+      //LOG.debug("FullRecordReporter: formatTable(): tableSize: " + tableSize);
       return new TwoTuple<Integer, String>(tableSize, sb.toString());
     }
     catch (WdkModelException | WdkUserException e) {

@@ -336,11 +336,12 @@ public class EuPathCategoriesFactory {
             model.getQuestion(node.get("name").get(0)) != null && hasScope;
       }
       catch (WdkModelException e) {
-        LOG.debug("Error attempting to resolve ontology node with model entity.");
-        LOG.debug(e.getMessage());
+        //no need to dump hundreds of mismatches due to includeProjects
+        //LOG.debug("Error attempting to resolve ontology node with model entity.");
+        //LOG.debug(e.getMessage());
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
-        LOG.debug(sw.toString());
+        //LOG.debug(sw.toString());
         return false;
       }
     }
