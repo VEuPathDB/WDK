@@ -5,11 +5,17 @@
     "id": {
       "type": "integer"
     },
+    "ownerId": {
+      "type": "integer"
+    },
     "displayName": {
       "description": "Name populated with default name if not sent in",
       "type": "string"
     },
     "shortDisplayName": {
+      "type": "string"
+    },
+    "description": {
       "type": "string"
     },
     "customName": {
@@ -18,36 +24,38 @@
     "baseCustomName": {
       "type": "string"
     },
+    "searchName": {
+	  "type": "string"
+    },
+    "searchConfig": {
+      "$ref": "../../../includes/answer-spec-request.json"
+    },
+      "validation": {
+        "$ref": "../../../includes/validation-bundle.json"
+      },
     "isCollapsible": {
       "type": "boolean"
     },
     "collapsedName": {
       "type": "string"
     },
-    "hasCompleteStepAnalysis": {
+    "hasCompleteStepAnalyses": {
       "type": "boolean"
     },
     "recordClassName": {
       "type": "string"
     },
     "strategyId": {
-      "description": "Strategy ID (always null)",
-      "type": "null"
+      "type": ["integer", "null"]
     },
     "estimatedSize": {
-      "description": "unpopulated since step has not yet run",
-      "type": "null"
+      "type": "integer"
     },
-    "isValid": {
-      "description": "always true here since params had to have validated",
-      "type": "boolean",
-      "enum": ["true"]
-    },
-    "createdDate": {
-      "type": "string"
+    "createdTime": {
+      "type": "integer"
     },
     "lastRunTime": {
-      "type": "string"
+      "type": "integer"
     },
     "displayPrefs": {
       "$ref": "../includes/display-prefs.json"
@@ -55,9 +63,14 @@
   },
   "additionalProperties": false,
   "required": [
-    "id",
-    "isCollapsible",
-    "hasCompleteStepAnalysis",
-    "isValid"
+      "id",
+      "ownerId",
+      "validation",
+      "isCollapsible",
+      "hasCompleteStepAnalyses",
+      "searchName",
+      "searchConfig",
+      "createdTime",
+      "lastRunTime"
   ]
 }

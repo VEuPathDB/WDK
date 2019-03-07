@@ -9,7 +9,7 @@
     "legacyFilterName": {
       "type": "string"
     },
-    "wdk_weight": {
+    "wdkWeight": {
       "type": "integer"
     },
     "filters": {
