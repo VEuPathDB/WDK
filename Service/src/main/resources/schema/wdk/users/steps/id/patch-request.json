@@ -15,8 +15,5 @@
     "displayPrefs": {
       "$ref": "../includes/display-prefs.json"
     },
-    "answerSpec": {
-      "$ref": "../../../includes/answer-spec-request.json"
-    }
   }
 }
