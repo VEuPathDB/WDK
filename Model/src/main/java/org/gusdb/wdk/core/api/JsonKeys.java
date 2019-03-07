@@ -39,6 +39,7 @@ public class JsonKeys {
   public static final String RECORD_CLASS_NAME = "recordClassName";
   public static final String SEARCH_NAME = "searchName";
   public static final String PARAMETER_NAME = "parameterName";
+  public static final String DISABLED = "disabled";
 
   // UI-related keys
   public static final String DISPLAY_NAME = "displayName";
