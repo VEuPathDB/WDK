@@ -19,7 +19,7 @@ import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersFormat;
+import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersDbColumnFormat;
 import org.json.JSONObject;
 
 /**
@@ -288,7 +288,7 @@ public class SharedStepsResolver extends BaseCLI {
 
   private String updateContent(String content, Map<Long, Long> ids) {
     JSONObject jsContent = new JSONObject(content);
-    JSONObject params = jsContent.has(ParamsAndFiltersFormat.KEY_PARAMS) ? jsContent.getJSONObject(ParamsAndFiltersFormat.KEY_PARAMS) : jsContent;
+    JSONObject params = jsContent.has(ParamsAndFiltersDbColumnFormat.KEY_PARAMS) ? jsContent.getJSONObject(ParamsAndFiltersDbColumnFormat.KEY_PARAMS) : jsContent;
     // RRD: Crazy. When migrating steps we just changed param values if the value was an old ID.
     //      This means if there was a string param (number) with value of an ID, we would change to new ID.
     //      I am simply replicating that logic below since this code will likely never run again.
