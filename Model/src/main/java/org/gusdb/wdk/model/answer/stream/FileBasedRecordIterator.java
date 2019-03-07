@@ -166,6 +166,7 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
           entry.getValue().getSecond(), CsvResultList.TAB, CsvResultList.QUOTE, CsvResultList.ESCAPE);
 
       // Create a SingleTableRecordInstanceStream object, passing in the table field and the CSV result list created above.
+			
       SingleTableRecordStream singleTableRecordInstanceStream = new SingleTableRecordStream(
           answerValue, entry.getValue().getFirst(), tableResultList);
 
