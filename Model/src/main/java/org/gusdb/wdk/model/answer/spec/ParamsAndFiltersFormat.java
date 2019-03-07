@@ -20,7 +20,7 @@ import org.json.JSONObject;
  * 
  * @rdoherty
  */
-public class ParamFiltersClobFormat {
+public class ParamsAndFiltersFormat {
 
   // top level json keys
   public static final String KEY_PARAMS = "params";
