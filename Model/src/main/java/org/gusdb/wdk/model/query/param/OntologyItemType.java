@@ -6,7 +6,6 @@ import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -30,8 +29,6 @@ public enum OntologyItemType {
 
   private static class BranchNode{}
   private static class MultiFilter{}
-
-  private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat(FormatUtil.STANDARD_DATE_FORMAT_DASH);
 
   private final String _identifier;
   private final String _metadataQueryColumn;
@@ -134,8 +131,7 @@ public enum OntologyItemType {
   }
 
   private static String formatDate(Date dateValue) {
-    if (dateValue == null) return null;
-    synchronized (DATE_FORMATTER) { return DATE_FORMATTER.format(dateValue); }
+    return dateValue == null ? null : FormatUtil.formatDate(dateValue);
   }
 
 }

@@ -2,8 +2,8 @@ package org.gusdb.wdk.model.fix;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 import javax.sql.DataSource;
 
@@ -69,25 +69,24 @@ public class RetroactiveGuestRemover extends BaseCLI {
    * @return
    * @throws WdkModelException
    */
-  public static String deriveCutoffDate(DataSource dataSource, String userSchema, String oldestNumberOfDays) throws WdkModelException {
-	int dayCount = 14;  
-	try {  
-	  dayCount = Integer.parseInt(oldestNumberOfDays);
-	}
-	catch(NumberFormatException nfe) {
-      throw new WdkModelException("The oldest number of days argument, '" + oldestNumberOfDays + "', must be an integer.");
-	}
-    SimpleDateFormat formatter = new SimpleDateFormat(FormatUtil.STANDARD_DATE_FORMAT_SLASH);
-	Calendar oneMonthPriorToNowCal = Calendar.getInstance();
-	oneMonthPriorToNowCal.add(Calendar.MONTH, -1);
-	Calendar cutoffCal = findOldestGuestUserRegistry(dataSource, userSchema);
-	cutoffCal.add(Calendar.DATE, dayCount);
-    if(cutoffCal.getTimeInMillis() >= oneMonthPriorToNowCal.getTimeInMillis()) {
-      return formatter.format(oneMonthPriorToNowCal.getTime());
+  public static Date deriveCutoffDate(DataSource dataSource, String userSchema, String oldestNumberOfDays) throws WdkModelException {
+    int dayCount = 14;  
+    try {  
+      dayCount = Integer.parseInt(oldestNumberOfDays);
     }
-    return formatter.format(cutoffCal.getTime());
+    catch(NumberFormatException nfe) {
+      throw new WdkModelException("The oldest number of days argument, '" + oldestNumberOfDays + "', must be an integer.");
+    }
+    Calendar oneMonthPriorToNowCal = Calendar.getInstance();
+    oneMonthPriorToNowCal.add(Calendar.MONTH, -1);
+    Calendar cutoffCal = findOldestGuestUserRegistry(dataSource, userSchema);
+    cutoffCal.add(Calendar.DATE, dayCount);
+    if(cutoffCal.getTimeInMillis() >= oneMonthPriorToNowCal.getTimeInMillis()) {
+      oneMonthPriorToNowCal.getTime();
+    }
+    return cutoffCal.getTime();
   }
-  
+
   /**
    * Runs a sql query against users table to find the oldest wdk guest user and returns the registry date
    * for that user.
@@ -149,7 +148,7 @@ public class RetroactiveGuestRemover extends BaseCLI {
     addSingleValueOption(ARG_CUTOFF_DATE, false, null, "Any guest user "
         + "created BEFORE this date, and the user's data, will be removed "
         + "from the live schema defined in the model-config.xml. "
-        + "The data should be in this format: yyyy/mm/dd");
+        + "The date should be in this format: yyyy-mm-dd");
     
     addSingleValueOption(ARG_OLDEST_DAY_COUNT, false, null, "Finds the "
     	+ "oldest registry for a guest user and counts up the number of "
@@ -163,17 +162,17 @@ public class RetroactiveGuestRemover extends BaseCLI {
 
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
-    String cutoffDate = (String) getOptionValue(ARG_CUTOFF_DATE);
+    String cutoffDateStr = (String) getOptionValue(ARG_CUTOFF_DATE);
     String oldestDayCount = (String) getOptionValue(ARG_OLDEST_DAY_COUNT);
     
     try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
       DatabaseInstance userDb = wdkModel.getUserDb();
       String userSchema = DBPlatform.normalizeSchema(wdkModel.getModelConfig().getUserDB().getUserSchema());
-  
-      if((cutoffDate == null || cutoffDate.isEmpty()) &&
-    	 (oldestDayCount != null && !oldestDayCount.isEmpty())) {
-        cutoffDate = deriveCutoffDate(userDb.getDataSource(), userSchema, oldestDayCount);
-      }
+
+      Date cutoffDate = (cutoffDateStr == null || cutoffDateStr.isEmpty()) &&
+                          (oldestDayCount != null && !oldestDayCount.isEmpty()) ?
+                        deriveCutoffDate(userDb.getDataSource(), userSchema, oldestDayCount) :
+                        FormatUtil.parseDate(cutoffDateStr);
       
       LOG.info("********** Cutoff Date: " + cutoffDate + " **********");
       
@@ -198,7 +197,7 @@ public class RetroactiveGuestRemover extends BaseCLI {
    * @throws SQLException
    * @throws DBStateException
    */
-  private String lookupGuests(DatabaseInstance userDb, String userSchema, String cutoffDate) throws DBStateException, SQLException {
+  private String lookupGuests(DatabaseInstance userDb, String userSchema, Date cutoffDate) throws DBStateException, SQLException {
     // check if the guest table exists
     DBPlatform platform = userDb.getPlatform();
     DataSource dataSource = userDb.getDataSource();
@@ -209,12 +208,11 @@ public class RetroactiveGuestRemover extends BaseCLI {
     }
     // create a new guest table with the guests created before the cutoff date
     SqlUtils.executeUpdate(dataSource, "CREATE TABLE " + GUEST_TABLE + " AS SELECT user_id FROM " +
-        userSchema + "users " + " WHERE is_guest = 1 AND first_access < to_date('" + cutoffDate +
-        "', 'yyyy/mm/dd')", "backup-create-guest-table");
+        userSchema + "users " + " WHERE is_guest = 1 AND first_access < to_date('" + FormatUtil.formatDate(cutoffDate) +
+        "', 'yyyy-mm-dd')", "backup-create-guest-table");
     SqlUtils.executeUpdate(dataSource, "CREATE UNIQUE INDEX " + GUEST_TABLE + "_ix01 ON " + GUEST_TABLE +
         " (user_id)", "create-guest-index");
-    //return "SELECT user_id FROM " + GUEST_TABLE;
-		return "SELECT '1' FROM " + GUEST_TABLE + " g WHERE g.user_id = t.user_id";
+    return "SELECT '1' FROM " + GUEST_TABLE + " g WHERE g.user_id = t.user_id";
   }
 
   private void removeGuests(DatabaseInstance userDb, String userSchema, String guestSql) throws SQLException {
@@ -233,10 +231,10 @@ public class RetroactiveGuestRemover extends BaseCLI {
     deleteByBatch(dataSource, userSchema + "step_analysis", " step_id IN (SELECT step_id FROM " + userSchema +
         "steps t WHERE " + userClause + ")");
     deleteByBatch(dataSource, userSchema + "steps t", userClause);
-								//	" AND step_id NOT IN (SELECT root_step_id FROM " + userSchema + "strategies)");
+    //	" AND step_id NOT IN (SELECT root_step_id FROM " + userSchema + "strategies)");
     deleteByBatch(dataSource, userSchema + "user_roles t", userClause);
     deleteByBatch(dataSource, userSchema + "users t", userClause);
-									// " AND user_id NOT IN (SELECT user_id FROM " + userSchema + "steps)");
+    // " AND user_id NOT IN (SELECT user_id FROM " + userSchema + "steps)");
   }
 
   private void removeGBrowseGuests(DataSource dataSource) throws SQLException {

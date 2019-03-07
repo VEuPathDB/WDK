@@ -1,5 +1,12 @@
 package org.gusdb.wdk.model.query.param;
 
+import static org.gusdb.fgputil.FormatUtil.STANDARD_DATE_FORMAT;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -8,12 +15,6 @@ import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * The DateParam is strictly a web service parameter
@@ -73,7 +74,7 @@ public class DateParam extends Param {
   public void setMinDate(String minDate) throws WdkModelException {
     if(_maxDate != null) {
       try {
-        LocalDate.parse(minDate, DateTimeFormatter.ISO_DATE);
+        LocalDate.parse(minDate, STANDARD_DATE_FORMAT);
       }
       catch(DateTimeParseException dtpe) {
         throw new WdkModelException(dtpe);
@@ -98,7 +99,7 @@ public class DateParam extends Param {
   public void setMaxDate(String maxDate) throws WdkModelException {
     if(_minDate != null) {
       try {
-        LocalDate.parse(_minDate, DateTimeFormatter.ISO_DATE);
+        LocalDate.parse(_minDate, STANDARD_DATE_FORMAT);
       }
       catch(DateTimeParseException dtpe) {
         throw new WdkModelException(dtpe);
@@ -150,7 +151,7 @@ public class DateParam extends Param {
 
     // Insure that the value provided is formatted as a proper iso1806 date.
     try {
-      dateValue = LocalDate.parse(value, DateTimeFormatter.ISO_DATE);
+      dateValue = LocalDate.parse(value, STANDARD_DATE_FORMAT);
     }
     catch(DateTimeParseException dtpe) {
       return contextParamValues.setInvalid(name, "value '" + value + "' cannot "
@@ -168,14 +169,14 @@ public class DateParam extends Param {
 
     // Check minimum allowed date
     if(_minDate != null &&
-        dateValue.isBefore(LocalDate.parse(_minDate, DateTimeFormatter.ISO_DATE))) {
+        dateValue.isBefore(LocalDate.parse(_minDate, STANDARD_DATE_FORMAT))) {
       return contextParamValues.setInvalid(name, "The date '" + value
           + "' should not be earlier than '" + _minDate + "'");
     }
 
     // Check maximum allowed date
     if(_maxDate != null &&
-     dateValue.isAfter(LocalDate.parse(_maxDate, DateTimeFormatter.ISO_DATE))) {
+     dateValue.isAfter(LocalDate.parse(_maxDate, STANDARD_DATE_FORMAT))) {
       return contextParamValues.setInvalid(name, "The date '" + value
           + "' should not be after '" + _maxDate + "'");
     }

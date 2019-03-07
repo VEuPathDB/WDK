@@ -1,7 +1,8 @@
 package org.gusdb.wdk.model.query.param;
 
+import static org.gusdb.fgputil.FormatUtil.STANDARD_DATE_FORMAT;
+
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ import org.json.JSONObject;
  *
  *
  *         raw value: a stringified json object containing a min and a max date,
- *         both in iso1806 format (yyyy-mm-dd);
+ *         both in iso-1806 format (yyyy-mm-dd);
  *
  *         stable value: same as raw value;
  *
@@ -95,7 +96,7 @@ public class DateRangeParam extends Param {
    */
   public void setMinDate(String minDate) throws WdkModelException {
     try {
-      LocalDate.parse(minDate, DateTimeFormatter.ISO_DATE);
+      LocalDate.parse(minDate, STANDARD_DATE_FORMAT);
     }
     catch(DateTimeParseException dtpe) {
       throw new WdkModelException(dtpe);
@@ -115,7 +116,7 @@ public class DateRangeParam extends Param {
    */
   public void setMaxDate(String maxDate) throws WdkModelException {
     try {
-      LocalDate.parse(maxDate, DateTimeFormatter.ISO_DATE);
+      LocalDate.parse(maxDate, STANDARD_DATE_FORMAT);
     }
     catch(DateTimeParseException dtpe) {
       throw new WdkModelException(dtpe);
@@ -169,8 +170,8 @@ public class DateRangeParam extends Param {
     // Insure that the JSON Object format is valid.
     try {
       jsonVal = new JSONObject(rawVal);
-      minValue = LocalDate.parse(jsonVal.getString("min"), DateTimeFormatter.ISO_DATE);
-      maxValue = LocalDate.parse(jsonVal.getString("max"), DateTimeFormatter.ISO_DATE);
+      minValue = LocalDate.parse(jsonVal.getString("min"), STANDARD_DATE_FORMAT);
+      maxValue = LocalDate.parse(jsonVal.getString("max"), STANDARD_DATE_FORMAT);
     }
     catch(JSONException je) {
       return ctxParamVals.setInvalid(name, "Could not parse '" + rawVal + "'. "
@@ -198,14 +199,14 @@ public class DateRangeParam extends Param {
 
     // Ensure that the minimum date comes no earlier than the minimum allowed date
     if (_minDate != null &&
-        minValue.isBefore(LocalDate.parse(_minDate, DateTimeFormatter.ISO_DATE))) {
+        minValue.isBefore(LocalDate.parse(_minDate, STANDARD_DATE_FORMAT))) {
       return ctxParamVals.setInvalid(name, "The date '" + minValue
         + "' should not be earlier than '" + _minDate + "'");
     }
 
     // Ensure that the maximum data comes no later than the maximum allowed date
     if (_maxDate != null &&
-        maxValue.isAfter(LocalDate.parse(_maxDate, DateTimeFormatter.ISO_DATE))) {
+        maxValue.isAfter(LocalDate.parse(_maxDate, STANDARD_DATE_FORMAT))) {
       return ctxParamVals.setInvalid(name, "The date '" + maxValue
         + "' should not be after '" + _maxDate + "'");
     }
@@ -223,8 +224,8 @@ public class DateRangeParam extends Param {
   public String replaceSql(String sql, String internalValue) {
     JSONObject valueJson = new JSONObject(internalValue);
     LocalDate values[] = new LocalDate[2];
-    values[0] = LocalDate.parse(valueJson.getString("min"), DateTimeFormatter.ISO_DATE);
-    values[1] = LocalDate.parse(valueJson.getString("max"), DateTimeFormatter.ISO_DATE);
+    values[0] = LocalDate.parse(valueJson.getString("min"), STANDARD_DATE_FORMAT);
+    values[1] = LocalDate.parse(valueJson.getString("max"), STANDARD_DATE_FORMAT);
     String regex = "\\$\\$" + _name + ".min\\$\\$";
     String replacedSql = sql.replaceAll(regex, Matcher.quoteReplacement("date '"  + values[0].toString() + "'"));
     regex = "\\$\\$" + _name + ".max\\$\\$";
