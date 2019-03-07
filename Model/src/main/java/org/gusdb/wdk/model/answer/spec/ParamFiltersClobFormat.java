@@ -10,11 +10,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/** Represents a JSON Clob that contains the configurations of the paramters and step filters in a search
+/**
+ * Handles conversion back and forth from the JSON contained in the
+ * param_filters CLOB column of the STEPS table (in user DB) to the aggregate
+ * parts of an answer spec (param values, filter values, view filter values).
  * 
- *
+ * Note there are subtle differences between this JSON format and the one
+ * handled by AnswerSpecServiceFormat (in WDK/Service).
+ * 
+ * @rdoherty
  */
-public class ParamAndFiltersFormat {
+public class ParamFiltersClobFormat {
 
   // top level json keys
   public static final String KEY_PARAMS = "params";
