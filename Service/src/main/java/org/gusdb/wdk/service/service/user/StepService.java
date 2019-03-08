@@ -205,7 +205,7 @@ public class StepService extends UserService {
   @PUT
   @Path(ID_PATH + "/search-config")
   @Consumes(MediaType.APPLICATION_JSON)
-  // TODO: @InSchema(...)
+  @InSchema("wdk.includes.answer-spec-request")
   public void putAnswerSpec(
       @PathParam(ID_PARAM) long stepId,
       JSONObject body
