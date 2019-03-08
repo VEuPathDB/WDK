@@ -9,9 +9,9 @@ public interface RecordStream extends Iterable<RecordInstance>, AutoCloseable {
 
   // no additional methods; just want to quantify the requirements for a RecordStream
   @Override
-  public void close();
+  void close();
 
-  public default Stream<RecordInstance> stream() {
+  default Stream<RecordInstance> stream() {
     return StreamSupport.stream(spliterator(), false);
   }
 }

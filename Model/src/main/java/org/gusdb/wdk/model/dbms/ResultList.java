@@ -7,12 +7,12 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public interface ResultList extends AutoCloseable {
 
-    public boolean next() throws WdkModelException;
+  boolean next() throws WdkModelException;
 
-    public Object get(String columnName) throws WdkModelException;
+  Object get(String columnName) throws WdkModelException;
 
-    public boolean contains(String columnName) throws WdkModelException;
+  boolean contains(String columnName) throws WdkModelException;
 
-    @Override
-    public void close() throws WdkModelException;
+  @Override
+  void close() throws WdkModelException;
 }

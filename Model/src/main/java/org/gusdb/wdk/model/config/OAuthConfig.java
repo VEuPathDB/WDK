@@ -5,25 +5,25 @@ public interface OAuthConfig {
   /**
    * @return base URL of OAuth2 server to use for authentication
    */
-  public String getOauthUrl();
+  String getOauthUrl();
 
   /**
    * @return OAuth2 client ID to use for authentication
    */
-  public String getOauthClientId();
+  String getOauthClientId();
 
   /**
    * @return OAuth2 client secret to use for authentication
    */
-  public String getOauthClientSecret();
+  String getOauthClientSecret();
 
   /**
    * @return key store file containing acceptable SSL hosts/certs
    */
-  public String getKeyStoreFile();
+  String getKeyStoreFile();
 
   /**
    * @return pass phrase needed to access key store
    */
-  public String getKeyStorePassPhrase();
+  String getKeyStorePassPhrase();
 }
