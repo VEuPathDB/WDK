@@ -107,7 +107,7 @@ public class StepService extends UserService {
     ValidationLevel validationLevel = Functions.defaultOnException(
       () -> ValidationLevel.valueOf(validationLevelStr),
       ValidationLevel.RUNNABLE);
-    return StepFormatter.getStepJsonWithResultSize(getStepForCurrentUser(
+    return StepFormatter.getStepJsonWithEstimatedSize(getStepForCurrentUser(
         stepId, validationLevel));
   }
 
