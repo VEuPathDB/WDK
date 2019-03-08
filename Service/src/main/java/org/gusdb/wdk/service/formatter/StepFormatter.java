@@ -105,8 +105,9 @@ public class StepFormatter {
   }
 
   public static JSONObject getStepJsonWithEstimatedSize(Step step) throws WdkModelException {
+    Integer estSz = step.getEstimatedSize();
     return getStepJson(step)
-        .put(JsonKeys.ESTIMATED_SIZE, step.getEstimatedSize());
+        .put(JsonKeys.ESTIMATED_SIZE, estSz == -1? null : estSz);
   }
 
   public static JSONObject formatAsStepTree(Step step) {
