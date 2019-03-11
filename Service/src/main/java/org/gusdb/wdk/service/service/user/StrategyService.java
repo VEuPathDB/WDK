@@ -71,7 +71,7 @@ public class StrategyService extends UserService {
   @GET
   @Path(BASE_PATH)
   @Produces(MediaType.APPLICATION_JSON)
-  // TODO: @OutSchema(...)
+  @OutSchema("wdk.users.strategies.get-response")
   public JSONArray getStrategies() throws WdkModelException {
     return StrategyFormatter.getStrategiesJson(getWdkModel().getStepFactory()
       .getStrategies(getUserBundle(Access.PRIVATE).getSessionUser().getUserId(), false, false));
