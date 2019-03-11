@@ -3,7 +3,7 @@
 
 get:
   description: |
-    Returns an array of strategies, ordered by strategy ID.  Does not run steps or update their estimated size.  This endpoint is fast, to support a strategies listing display.
+    Returns an array of strategies, ordered by strategy ID.  Does not run steps or update their estimated size.  This endpoint is fast, to support a strategies listing display.  estimatedSize is absent if not known.
   responses:
     200:
       body:
