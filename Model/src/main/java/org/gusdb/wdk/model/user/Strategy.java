@@ -541,10 +541,10 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     return (getRootStep() == null ? 0 : defaultOnException(() -> getRootStep().getResultSize(), 0));
   }
 
-  public String getEstimatedSize() {
+  public Integer getEstimatedSize() {
     // FIXME: could root step really be null?  I think if root step is deleted, strategy id deleted?
     int latestStepEstimateSize = getRootStep() == null ? 0 : getRootStep().getEstimatedSize();
-    return (latestStepEstimateSize == Step.RESET_SIZE_FLAG ? "Unknown" : String.valueOf(latestStepEstimateSize));
+    return (latestStepEstimateSize == Step.RESET_SIZE_FLAG ? null : latestStepEstimateSize);
   }
 
   public int getNumSteps() {
