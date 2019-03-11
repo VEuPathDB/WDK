@@ -159,7 +159,7 @@ public class AnswerService extends AbstractWdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   // Produces an unknown media type; varies depending on reporter selected
   public Response buildResult(
-      @PathParam("reportName") String reportName,
+      @PathParam(REPORT_NAME_PATH_PARAM) String reportName,
       JSONObject body)
           throws WdkModelException, DataValidationException, RequestMisformatException {
     AnswerRequest request = parseAnswerRequest(getQuestionOrNotFound(_recordClassUrlSegment, _questionUrlSegment), reportName,
