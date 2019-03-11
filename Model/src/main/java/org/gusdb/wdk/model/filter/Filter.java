@@ -11,13 +11,13 @@ import org.json.JSONObject;
 
 /**
  * Filter is an interface for step-based or column-based result filter.
- * 
+ *
  * @author Jerric Gao
  *
  */
 public interface Filter {
 
-  public static enum FilterType {
+  enum FilterType {
     STANDARD,  // can be used as a regular or view filter
     VIEW_ONLY; // can only be used as a view filter (typically uses >1 rows to do filtering)
 
@@ -75,7 +75,7 @@ public interface Filter {
 
   /**
    * get the display value of the filter. The value will be displayed on the applied filter list.
-   * 
+   *
    * @param answer
    *          the answerValue on which the filter has been applied.
    * @param jsValue
@@ -85,15 +85,15 @@ public interface Filter {
    * @throws WdkUserException
    */
   void setDefaultValue(JSONObject defaultValue);
-  
+
   /**
    * Returns the default value of this filter given the question and params in simpleSpec
-   * 
+   *
    * @param simpleSpec the question and parameters of a step to be filtered
    * @return default value of this filter, or null if by default this filter should not be applied
    */
   JSONObject getDefaultValue(SimpleAnswerSpec simpleSpec);
-  
+
   String getDisplayValue(AnswerValue answer, JSONObject jsValue) throws WdkModelException;
 
   /**
@@ -105,10 +105,10 @@ public interface Filter {
    * @throws WdkUserException
    */
   JSONObject getSummaryJson(AnswerValue answer, String idSql) throws WdkModelException;
-  
+
   /**
    * Get the wrapped ID SQL from the filter, with the filter value applied to the SQL as where clauses.
-   * 
+   *
    * @param answer
    * @param idSql
    *          the ID SQL from answerValue, with the previous filters (in the order of the filters being
@@ -119,22 +119,23 @@ public interface Filter {
    * @throws WdkModelException
    */
   String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException;
-  
+
   /**
    * return true if supplied value equals default value for the given step.  return false if no default value.
    * @param value
    * @return
    */
-  public boolean defaultValueEquals(SimpleAnswerSpec simpleAnswerSpec, JSONObject value) throws WdkModelException;
+  boolean defaultValueEquals(SimpleAnswerSpec simpleAnswerSpec,
+      JSONObject value) throws WdkModelException;
 
   /**
    * Validates the passed value the best it can without access to the AnswerValue it will be applied to
-   * 
+   *
    * @param question question of the answer spec this filter will be applied to
    * @param value potential JSON value for this filter
    * @param validationLevel level of validation to perform
    * @return bundle of information describing validity of the passed value for this filter
    */
-  public ValidationBundle validate(Question question, JSONObject value, ValidationLevel validationLevel);
-
+  ValidationBundle validate(Question question, JSONObject value,
+      ValidationLevel validationLevel);
 }
