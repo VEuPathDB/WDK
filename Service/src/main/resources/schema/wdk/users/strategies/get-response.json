@@ -44,7 +44,7 @@
         "type": "string"
       },
       "estimatedSize": {
-        "type": "string"
+        "type": "integer"
       }
     },
     "additionalProperties": false,
