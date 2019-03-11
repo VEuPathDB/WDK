@@ -420,7 +420,7 @@ public class AnswerValue {
       // TODO: decide if construction of this validated spec should be moved elsewhere?
       RunnableObj<QueryInstanceSpec> attrQuerySpec = QueryInstanceSpec.builder()
           .buildValidated(_user, attributeQuery, StepContainer.emptyContainer(),
-              ValidationLevel.SEMANTIC, FillStrategy.NO_FILL)
+              ValidationLevel.RUNNABLE, FillStrategy.NO_FILL)
           .getRunnable()
           .getOrThrow(spec -> new WdkModelException(
               "Attribute query spec found invalid: " + spec.getValidationBundle().toString()));
