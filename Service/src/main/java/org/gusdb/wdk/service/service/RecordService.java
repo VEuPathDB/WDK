@@ -41,6 +41,7 @@ public class RecordService extends AbstractWdkService {
   private static final Logger LOG = Logger.getLogger(RecordService.class);
 
   private static final String RECORDCLASS_RESOURCE = "RecordClass with name ";
+  
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.records.get")
@@ -61,15 +62,13 @@ public class RecordService extends AbstractWdkService {
   @GET
   @Path("{recordClassName}")
   @Produces(MediaType.APPLICATION_JSON)
+  @OutSchema("wdk.records.name.get")
   public Response getRecordClassInfo(
-      @PathParam("recordClassName") String recordClassName,
-      @QueryParam("expandAttributes") Boolean expandAttributes,
-      @QueryParam("expandTables") Boolean expandTables,
-      @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
+      @PathParam("recordClassName") String recordClassName) {
     return Response.ok(
         RecordClassFormatter.getRecordClassJson(
-            getRecordClassOrNotFound(recordClassName), getFlag(expandAttributes),
-            getFlag(expandTables), getFlag(expandTableAttributes)).toString()
+            getRecordClassOrNotFound(recordClassName), true,
+            true, true).toString()
     ).build();
   }
 

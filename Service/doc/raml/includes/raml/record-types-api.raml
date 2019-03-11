@@ -22,6 +22,10 @@ get:
   get:
     description: >
       Get a detailed description of the specified record type.  This includes properties of the type, eg, whether it is displayable, and the attributes and tables that each record of this type will have.
+  body:
+    application/json:
+      type: !include ../../../../src/main/resources/schema/wdk/records/name/get.json
+
 
   # TODO: this endpoint will be changed to a GET
   /records:
