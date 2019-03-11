@@ -2,8 +2,6 @@
     "$schema": "http://json-schema.org/draft-04/schema",
     "type": "object",
     "additionalProperties": false,
-    "properties": {
-      "type": "object",
       "properties": {
         "pagination": {
           "type": "object",
@@ -38,4 +36,4 @@
         }
       }
     }
-}
+

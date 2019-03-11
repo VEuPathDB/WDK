@@ -43,6 +43,8 @@ import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.StepContainer.ListStepContainer;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.service.annotation.InSchema;
+import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -94,37 +96,9 @@ public class AnswerService extends AbstractWdkService {
     _questionUrlSegment = questionUrlSegment;
   }
 
-  /**
-   * This endpoint that takes a FORM input is used by the client to push the provided data
-   * to a new http target (ie, a tab), for example, a download report
-   * 
-   * @param data JSON data representing an answer request, passed in the 'data' form param
-   * @return generated report
-   * @throws RequestMisformatException if request body is not JSON or has incorrect JSON structure
-   * @throws DataValidationException if JSON structure is correct but values contained are invalid
-   * @throws WdkModelException if an error occurs while processing the request
-   */
-  @POST
-  @Path(CUSTOM_REPORT_ENDPOINT)
-  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  public Response buildResultFromForm(
-      @PathParam(REPORT_NAME_PATH_PARAM) String reportName,
-      @FormParam("data") String data)
-          throws WdkModelException, DataValidationException, RequestMisformatException {
-    // log this request's JSON here since filter will not log form data
-    if (RequestLoggingFilter.isLogEnabled()) {
-      RequestLoggingFilter.logRequest("POST", getUriInfo(),
-          RequestLoggingFilter.formatJson(data));
-    }
-    if (data == null || data.isEmpty()) {
-      throw new RequestMisformatException("Request JSON cannot be empty. " +
-          "If submitting a form, include the 'data' input parameter.");
-    }
-    return buildResult(reportName, new JSONObject(data));
-  }
 
   /**
-   * Special case answer provider that does not require a format.  The default reporter is used.  This
+   * This endpoint
    * exists so we can provide a concrete JSON schema for the response, since the /reports/{reportName} endpoint
    * may not even return JSON, depending on which reporter is specified.
    * 
@@ -138,6 +112,9 @@ public class AnswerService extends AbstractWdkService {
   @Path(STANDARD_REPORT_ENDPOINT)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @InSchema("wdk.answer.post-request")
+  @OutSchema("wdk.answer.post-response")
+
   public Response buildDefaultReporterResult(JSONObject body)
       throws RequestMisformatException, WdkModelException, DataValidationException {
     return buildResult(DefaultJsonReporter.RESERVED_NAME, body);
@@ -167,7 +144,36 @@ public class AnswerService extends AbstractWdkService {
     return getAnswerResponse(getSessionUser(), request).getSecond();
   }
 
-
+  /**
+   * Similar to the custom report endpoint that takes JSON, but gets its data from a form instead of JSON.
+   * It is used by the client to push the provided data
+   * to a new http target (ie, a tab), for example, a download report
+   * 
+   * @param data JSON data representing an answer request, passed in the 'data' form param
+   * @return generated report
+   * @throws RequestMisformatException if request body is not JSON or has incorrect JSON structure
+   * @throws DataValidationException if JSON structure is correct but values contained are invalid
+   * @throws WdkModelException if an error occurs while processing the request
+   */
+  @POST
+  @Path(CUSTOM_REPORT_ENDPOINT)
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  public Response buildResultFromForm(
+      @PathParam(REPORT_NAME_PATH_PARAM) String reportName,
+      @FormParam("data") String data)
+          throws WdkModelException, DataValidationException, RequestMisformatException {
+    // log this request's JSON here since filter will not log form data
+    if (RequestLoggingFilter.isLogEnabled()) {
+      RequestLoggingFilter.logRequest("POST", getUriInfo(),
+          RequestLoggingFilter.formatJson(data));
+    }
+    if (data == null || data.isEmpty()) {
+      throw new RequestMisformatException("Request JSON cannot be empty. " +
+          "If submitting a form, include the 'data' input parameter.");
+    }
+    return buildResult(reportName, new JSONObject(data));
+  }
+  
   static AnswerRequest parseAnswerRequest(Question question,
       String reporterName, JSONObject requestBody, WdkModel wdkModel, User sessionUser)
           throws RequestMisformatException, DataValidationException, WdkModelException {
@@ -319,23 +325,24 @@ public class AnswerService extends AbstractWdkService {
    */
   private static Reporter getConfiguredReporter(AnswerValue answerValue, AnswerFormatting formatting)
       throws RequestMisformatException, WdkModelException, DataValidationException {
-    String format = formatting.getFormat();
+    
+    String formatName = formatting.getFormat();
     try {
 
       // check to make sure format name is valid for this recordclass
-      if (!answerValue.getAnswerSpec().getQuestion().getReporterMap().containsKey(format)) {
-        throw new DataValidationException("Request for an invalid answer format: " + format);
+      if (!answerValue.getAnswerSpec().getQuestion().getReporterMap().containsKey(formatName)) {
+        throw new DataValidationException("Request for an invalid answer format: " + formatName);
       }
 
       // configure reporter requested
-      LOG.debug("Creating and configuring reporter for format '" + format + "'");
-      return ReporterFactory.getReporter(answerValue, format, formatting.getFormatConfig());
+      LOG.debug("Creating and configuring reporter for format '" + formatName + "'");
+      return ReporterFactory.getReporter(answerValue, formatName, formatting.getFormatConfig());
     }
     catch (JSONException e) {
       throw new RequestMisformatException("Invalid JSON structure: " + e.getMessage());
     }
     catch (ReporterConfigException e) {
-      throw new RequestMisformatException("Could not configure reporter '" + format + "' with passed formatConfig. " + e.getMessage());
+      throw new RequestMisformatException("Could not configure reporter '" + formatName + "' with passed formatConfig. " + e.getMessage());
     }
   }
 
