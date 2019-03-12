@@ -79,7 +79,14 @@
     },
     "categories": {
       "$ref": "#/definitions/categories"
+    },
+      "searches": {
+      "type": "array",
+      "items": {
+        "$ref": "../../questions/name/get.json"
+      }
     }
+
   },
   "required": [
     "urlSegment",
@@ -95,7 +102,8 @@
     "name",
     "attributes",
     "primaryKeyColumnRefs",
-    "categories"
+    "categories",
+      "searches"
   ],
   "additionalProperties": false
 }
