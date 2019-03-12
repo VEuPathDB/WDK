@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.question.Question;
@@ -39,6 +40,7 @@ import org.json.JSONObject;
  */
 public class RecordClassFormatter {
 
+
   public static List<String> getRecordClassNames(RecordClassSet[] recordClassSets) {
     final List<String> out = new ArrayList<>();
     for (RecordClassSet rcSet : recordClassSets) {
@@ -65,7 +67,7 @@ public class RecordClassFormatter {
   }
   
   private static Map<String, List<Question>> getRecordClassQuestionMap(List<Question> allQuestions) {
-    Map<String, List<Question>> recordClassQuestionMap = new HashMap<>();
+    Map<String, List<Question>> recordClassQuestionMap = new HashMap<String, List<Question>>();
     for (Question q : allQuestions) {
       String rcName = q.getRecordClass().getFullName();
       if (!recordClassQuestionMap.containsKey(rcName)) 
