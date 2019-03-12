@@ -96,7 +96,7 @@ public class QuestionFormatter {
    * @return array of allowed names or null if no param present
    */
   private static JSONArray getAllowedRecordClasses(Optional<AnswerParam> answerParam) {
-    return answerParam.map(param -> new JSONArray(param.getAllowedRecordClasses().values())).orElse(null);
+    return answerParam.map(param -> new JSONArray(param.getAllowedRecordClasses().keySet())).orElse(null);
   }
 
   public static JSONArray getParamsJson(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
