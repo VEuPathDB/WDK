@@ -7,17 +7,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "specificAttribution": {
-          "type": "array"
-        },
-        "organisms": {
-          "$ref": "../../../includes/string-array.json"
-        }
-      },
-      "required": [
-        "specificAttribution",
-        "organisms"
-      ]
+      }
     }
   },
   "properties": {
@@ -32,6 +22,21 @@
     },
     "displayName": {
       "type": "string"
+    },
+    "newBuild": {
+      "type": "string"
+    },
+    "allowedPrimaryInputRecordClassNames": {
+      "type": "array",
+      "items": {
+         "type": "string"
+      }
+    },
+    "allowedSecondaryInputRecordClassNames": {
+      "type": "array",
+      "items": {
+         "type": "string"
+      }
     },
     "dynamicAttributes": {
       "type": "array",
@@ -155,7 +160,7 @@
     "properties": {
       "$ref": "#/definitions/properties"
     },
-    "recordClassName": {
+    "outputRecordClassName": {
       "type": "string"
     },
     "shortDisplayName": {
@@ -169,28 +174,20 @@
       "type": "string"
     },
     "summaryViewPlugins": {
-      "description": "TODO: Determine possible values to make this more strict.",
-      "$ref": "../../../includes/string-array.json"
+       "type": "array"
     },
     "urlSegment": {
       "type": "string"
     }
   },
   "required": [
-    "description",
-    "defaultAttributes",
-    "defaultSummaryView",
     "displayName",
     "dynamicAttributes",
     "groups",
     "name",
-    "parameters",
     "properties",
-    "recordClassName",
+    "outputRecordClassName",
     "shortDisplayName",
-    "stepAnalysisPlugins",
-    "summary",
-    "summaryViewPlugins",
     "urlSegment"
   ]
 }
