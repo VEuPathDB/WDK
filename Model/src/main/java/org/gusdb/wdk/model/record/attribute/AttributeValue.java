@@ -20,7 +20,7 @@ public abstract class AttributeValue implements NamedObject {
 
   protected AttributeField _field;
 
-  public abstract Object getValue() throws WdkModelException, WdkUserException;
+  public abstract String getValue() throws WdkModelException, WdkUserException;
 
   public AttributeValue(AttributeField field) {
     _field = field;

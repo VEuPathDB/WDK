@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.record.attribute.LinkAttributeValue;
+import org.gusdb.wdk.model.record.attribute.TextAttributeValue;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -116,11 +117,11 @@ public class RecordFormatter {
         .put(JsonKeys.DISPLAY_TEXT, displayText);
     }
 
-    else {
-      // TODO: figure out what kinds of values might be returned here and
-      //     make sure they look pretty in JSON
-      Object value = attr.getValue();
-      return value == null ? JSONObject.NULL : value;
+    if (attr instanceof TextAttributeValue){
+      return attr.getDisplay();
     }
+
+    String value = attr.getValue();
+    return value == null ? JSONObject.NULL : value;
   }
 }
