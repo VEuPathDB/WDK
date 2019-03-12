@@ -3,6 +3,8 @@ package org.gusdb.wdk.service.provider;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
+import com.github.fge.jsonschema.core.load.Dereferencing;
+import com.github.fge.jsonschema.core.load.configuration.LoadingConfiguration;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchema;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
@@ -35,7 +37,16 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
     MessageBodyWriter<Object> {
 
   private static final String SCHEMA_PATH = "resource:/schema";
-  private static final JsonSchemaFactory SCHEMA_FAC = JsonSchemaFactory.byDefault();
+  private static final JsonSchemaFactory SCHEMA_FAC;
+
+  static {
+    SCHEMA_FAC = JsonSchemaFactory.newBuilder()
+      .setLoadingConfiguration(LoadingConfiguration.newBuilder()
+        .dereferencing(Dereferencing.INLINE)
+        .freeze())
+      .freeze();
+  }
+
 
   @Context
   private ResourceInfo ri;
