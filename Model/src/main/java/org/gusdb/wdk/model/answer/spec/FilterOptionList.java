@@ -82,7 +82,6 @@ public class FilterOptionList implements Iterable<FilterOption>, Validateable<Fi
         options.add(filterOption);
       }
       return new FilterOptionList(options, validation.build());
-      
     }
 
     public boolean hasFilter(String name) {
