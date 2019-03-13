@@ -151,7 +151,7 @@ public class StepService extends UserService {
   }
 
   @POST
-  @Path(ID_PATH + "/" + STANDARD_REPORT_ENDPOINT)
+  @Path(ID_PATH + "/reports/standard")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.steps.answer.post-request")
@@ -162,7 +162,7 @@ public class StepService extends UserService {
   }
 
   @POST
-  @Path(ID_PATH + "/" + CUSTOM_REPORT_ENDPOINT)
+  @Path(ID_PATH + "/reports" + REPORT_NAME_PATH_PARAM)
   @Consumes(MediaType.APPLICATION_JSON)
   // Produces an unknown media type; varies depending on reporter selected
   public Response createAnswer(
