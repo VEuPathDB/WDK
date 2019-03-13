@@ -137,7 +137,6 @@
       "type": "string"
     },
     "parameters": {
-        {
           "type": "array",
           "items": [
             {
@@ -153,7 +152,6 @@
               "$ref": "../../includes/question-string-param.json"
             }
           ]
-        }
     },
     "properties": {
       "$ref": "#/definitions/properties"
