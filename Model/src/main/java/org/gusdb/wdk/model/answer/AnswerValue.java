@@ -594,16 +594,9 @@ public class AnswerValue {
 
   private String applyFilters(String innerSql, FilterOptionList filterOptions, String excludeFilter)
       throws WdkModelException {
-
-    if (filterOptions != null) {
-      for (FilterOption filterOption : filterOptions) {
-        //logger.debug("applying FilterOption:" + filterOption.getJSON().toString(2));
-        if (excludeFilter == null || !filterOption.getKey().equals(excludeFilter)) {
-          if (!filterOption.isDisabled()) {
-            Filter filter = _answerSpec.getQuestion().getFilter(filterOption.getKey());
-            innerSql = filter.getSql(this, innerSql, filterOption.getValue());
-          }
-        }
+    for (FilterOption filterOption : filterOptions) {
+      if ((excludeFilter == null || !filterOption.getKey().equals(excludeFilter)) && !filterOption.isDisabled()) {
+        innerSql = filterOption.getFilter().getSql(this, innerSql, filterOption.getValue());
       }
     }
     return innerSql;
@@ -826,10 +819,16 @@ public class AnswerValue {
   }
 
 
-  public JSONObject getFilterSummaryJson(String filterName) throws WdkModelException {
+  public JSONObject getFilterSummaryJson(String filterName) throws WdkUserException, WdkModelException {
     String idSql = getIdSql(filterName, false);
-    Filter filter = _answerSpec.getQuestion().getFilter(filterName);
-    return filter.getSummaryJson(this, idSql);
+    Optional<Filter> filter = _answerSpec.getQuestion().getFilter(filterName);
+    if (filter.isPresent()) {
+      return filter.get().getSummaryJson(this, idSql);
+    }
+    else {
+      throw new WdkUserException("Filter name '" + filterName +
+          "' is not a valid filter on question " + _answerSpec.getQuestion().getName());
+    }
   }
 
   /**

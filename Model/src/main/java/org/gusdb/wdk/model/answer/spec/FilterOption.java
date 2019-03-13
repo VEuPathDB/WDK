@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.answer.spec;
 
+import java.util.Optional;
+
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.json.JsonUtil;
@@ -91,19 +93,21 @@ public class FilterOption implements Validateable<FilterOption>, NamedObject {
     else {
       // attempt to validate the filter name and value
       _question = question;
-      _filter = question.getFilterOrNull(filterName);
-      if (_filter == null) {
-        // not a valid filter name for this question; no need to validate further
-        _validationBundle = ValidationBundle.builder(validationLevel)
-            .addError("Filter name '" + filterName + "' is not valid for question '" + question.getFullName() + "'.")
-            .build();
-      }
-      else {
+      Optional<Filter> filterOpt = question.getFilter(filterName);
+      if (filterOpt.isPresent()) {
         // filter valid; validate the value using it
+        _filter = filterOpt.get();
         _validationBundle = _filter.validate(_question, _value, validationLevel);
         LOG.debug("FilterOption created for filter '" + _filterName +  "' on question '" +
             _question.getFullName()  + "', valid? " + _validationBundle.getStatus().isValid() +
             ", isDisabled? " + isDisabled );
+      }
+      else { 
+        // not a valid filter name for this question; no need to validate further
+        _filter = null;
+        _validationBundle = ValidationBundle.builder(validationLevel)
+            .addError("Filter name '" + filterName + "' is not valid for search '" + question.getName() + "'.")
+            .build();
       }
     }
   }

@@ -239,7 +239,7 @@ public class DatasetRequestProcessor {
           JsonKeys.SEARCH_NAME + "' and '" + JsonKeys.PARAMETER_NAME + "' must also be specified.");
     }
 
-    Question question = model.getQuestionByName(questionName.get()).orElseThrow(
+    Question question = model.getQuestionByFullName(questionName.get()).orElseThrow(
         () -> new DataValidationException(String.format(
             "Could not find question with name '%s'.", questionName.get())));
 

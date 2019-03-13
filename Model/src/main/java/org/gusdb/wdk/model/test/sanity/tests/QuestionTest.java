@@ -55,7 +55,7 @@ public class QuestionTest implements ElementTest {
     _question.getQuery().setIsCacheable(false);
     AnswerValue answerValue = AnswerValueFactory.makeAnswer(_user,
         AnswerSpec.builder(_question.getWdkModel())
-        .setQuestionName(_question.getFullName())
+        .setQuestionFullName(_question.getFullName())
         .setParamValues(_paramValuesSet.getParamValues())
         .buildRunnable(_user, StepContainer.emptyContainer()));
     int resultSize = answerValue.getResultSizeFactory().getResultSize();

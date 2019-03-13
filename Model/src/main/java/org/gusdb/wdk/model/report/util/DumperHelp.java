@@ -56,7 +56,7 @@ public class DumperHelp {
       Map<String, String> emptyConfig = new LinkedHashMap<String, String>();
   
       AnswerValue answer = AnswerValueFactory.makeAnswer(user, AnswerSpec.builder(wdkModel)
-          .setQuestionName(questionName).setParamValues(params).buildRunnable(user, StepContainer.emptyContainer()));
+          .setQuestionFullName(questionName).setParamValues(params).buildRunnable(user, StepContainer.emptyContainer()));
       Reporter reporter = ReporterFactory.getReporter(answer, reporterName, emptyConfig);
   
       System.out.println("Help for reporter: " + reporterName + NL);

@@ -64,7 +64,8 @@ public class QuestionFormatter {
 
   public static JSONObject getQuestionJson(Question q) {
     return new JSONObject()
-      .put(JsonKeys.NAME, q.getFullName())
+      .put(JsonKeys.NAME, q.getName())
+      .put(JsonKeys.FULL_NAME, q.getFullName())
       .put(JsonKeys.DISPLAY_NAME, q.getDisplayName())
       .put(JsonKeys.SHORT_DISPLAY_NAME, q.getShortDisplayName())
       .put(JsonKeys.DESCRIPTION, q.getDescription())
@@ -73,7 +74,6 @@ public class QuestionFormatter {
       .put(JsonKeys.HELP, q.getHelp())
       .put(JsonKeys.NEW_BUILD, q.getNewBuild())
       .put(JsonKeys.REVISE_BUILD, q.getReviseBuild())
-      .put(JsonKeys.URL_SEGMENT,  q.getUrlSegment())
       .put(JsonKeys.OUTPUT_RECORD_CLASS_NAME, q.getRecordClass().getFullName())
       .put(JsonKeys.GROUPS, getGroupsJson(q.getParamMapByGroups()))
       .put(JsonKeys.DEFAULT_ATTRIBUTES, new JSONArray(q.getSummaryAttributeFieldMap().keySet()))

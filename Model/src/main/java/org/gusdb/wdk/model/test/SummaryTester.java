@@ -93,7 +93,7 @@ public class SummaryTester {
 
       User user = wdkModel.getSystemUser();
 
-      Question question = wdkModel.getQuestionByName(questionFullName)
+      Question question = wdkModel.getQuestionByFullName(questionFullName)
           .orElseThrow(() -> new WdkModelException("Question " + questionFullName + " does not exist."));
       Query query = question.getQuery();
 
@@ -127,7 +127,7 @@ public class SummaryTester {
         int nextEndRowIndex = Integer.parseInt(rows[i + 1]);
 
         RunnableObj<AnswerSpec> validSpec = AnswerSpec.builder(wdkModel)
-            .setQuestionName(question.getFullName())
+            .setQuestionFullName(question.getFullName())
             .setParamValues(paramValues)
             .setLegacyFilterName(filter.map(NamedObject::getName))
             .buildRunnable(user, StepContainer.emptyContainer());
@@ -207,7 +207,7 @@ public class SummaryTester {
       String xmlFile, Optional<AnswerFilterInstance> filter) throws WdkModelException, WdkUserException, IOException, JSONException {
 
     RunnableObj<AnswerSpec> answerSpec = AnswerSpec.builder(question.getWdkModel())
-        .setQuestionName(question.getFullName())
+        .setQuestionFullName(question.getFullName())
         .setParamValues(paramValues)
         .setLegacyFilterName(filter.map(NamedObject::getName))
         .buildRunnable(user, StepContainer.emptyContainer());

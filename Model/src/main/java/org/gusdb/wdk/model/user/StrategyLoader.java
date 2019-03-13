@@ -250,7 +250,7 @@ public class StrategyLoader {
         .setCollapsible(rs.getBoolean(COLUMN_IS_COLLAPSIBLE))
         .setAnswerSpec(
             AnswerSpec.builder(_wdkModel)
-            .setQuestionName(rs.getString(COLUMN_QUESTION_NAME))
+            .setQuestionFullName(rs.getString(COLUMN_QUESTION_NAME))
             .setLegacyFilterName(Optional.ofNullable(rs.getString(COLUMN_ANSWER_FILTER)))
             .setAssignedWeight(fetchNullableInteger(rs, COLUMN_ASSIGNED_WEIGHT, 0))
             .setDbParamFiltersJson(new JSONObject(_userDbPlatform.getClobData(rs, COLUMN_DISPLAY_PARAMS)))

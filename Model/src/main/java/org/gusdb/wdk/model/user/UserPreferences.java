@@ -268,7 +268,7 @@ public class UserPreferences {
   }
 
   public SummaryView getCurrentSummaryView(Question question) {
-    String key = SUMMARY_VIEW_PREFIX + question.getFullName(); //+ question.getRecordClassName();
+    String key = SUMMARY_VIEW_PREFIX + question.getFullName();
     String viewName = _projectPreferences.get(key);
     SummaryView view;
     if (viewName == null) { // no summary view set, use the default one
@@ -287,7 +287,7 @@ public class UserPreferences {
   }
 
   public void setCurrentSummaryView(Question question, SummaryView summaryView) throws WdkModelException {
-    String key = SUMMARY_VIEW_PREFIX + question.getFullName(); //+ question.getRecordClassName();
+    String key = SUMMARY_VIEW_PREFIX + question.getFullName();
     if (summaryView == null) { // remove the current summary view
       deleteAndSaveProjectPreference(key);
     }
@@ -327,7 +327,7 @@ public class UserPreferences {
   }
 
   public Question getQuestionOrFail(String questionFullName) throws WdkModelException {
-    return _wdkModel.getQuestionByName(questionFullName).orElseThrow(
+    return _wdkModel.getQuestionByFullName(questionFullName).orElseThrow(
         () -> new WdkModelException("Question with name " + questionFullName + " cannot be found."));
   }
 }
