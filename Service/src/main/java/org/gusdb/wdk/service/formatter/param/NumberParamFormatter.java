@@ -16,9 +16,9 @@ public class NumberParamFormatter extends ParamFormatter<NumberParam> {
   @Override
   public JSONObject getJson(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
     return getBaseJson(spec)
-        .put(JsonKeys.MIN_VALUE, this._param.getMin())
-        .put(JsonKeys.MAX_VALUE, this._param.getMax())
-        .put(JsonKeys.INCREMENT, this._param.getIncrement());  // aka the increment
+        .put(JsonKeys.MIN_VALUE, _param.getMin())
+        .put(JsonKeys.MAX_VALUE, _param.getMax())
+        .put(JsonKeys.INCREMENT, _param.getIncrement());
   }
   
   @Override

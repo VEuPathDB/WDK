@@ -36,7 +36,7 @@ public class NumberParam extends Param {
   private Integer _numDecimalPlaces = 1;
   private Double _min;
   private Double _max;
-  private Double _step;
+  private Double _increment;
   private boolean _isInteger;
 
   private List<WdkModelText> _regexes;
@@ -51,14 +51,15 @@ public class NumberParam extends Param {
 
   public NumberParam(NumberParam param) {
     super(param);
-    if (param._regexes != null)
+    if (param._regexes != null) {
       _regexes = new ArrayList<>();
+    }
     _regex = param._regex;
     _numDecimalPlaces = param._numDecimalPlaces == null ? _numDecimalPlaces : param._numDecimalPlaces;
     _isInteger = param._isInteger;
     _min = param._min;
     _max = param._max;
-    this.setStep(param._step);
+    setIncrement(param._increment);
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -227,14 +228,14 @@ public class NumberParam extends Param {
     _isInteger = integer;
   }
 
-  public Double getStep() {
-    return _step;
+  public Double getIncrement() {
+    return _increment;
   }
 
-  public void setStep(Double step) {
-    if(step == null)
-      _step = _isInteger ? 1 : 0.01;
+  public void setIncrement(Double increment) {
+    if(increment == null)
+      _increment = _isInteger ? 1 : 0.01;
     else
-      _step = step;
+      _increment = increment;
   }
 }

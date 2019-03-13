@@ -375,7 +375,7 @@
         <data type="double" />
       </attribute>
       <optional>
-        <attribute name="step">
+        <attribute name="increment">
           <data type="double" />
         </attribute>
       </optional>
@@ -417,7 +417,7 @@
         <data type="double" />
       </attribute>
       <optional>
-        <attribute name="step">
+        <attribute name="increment">
           <data type="double" />
         </attribute>
       </optional>  
