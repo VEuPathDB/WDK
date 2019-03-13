@@ -74,7 +74,7 @@ import org.json.JSONObject;
  * }
  * </pre>
  */
-@Path("/record-types/{" + AnswerService.RECORDCLASS_URL_SEGMENT + "}/searches/{" + AnswerService.SEARCH_URL_SEGMENT + "}")
+@Path("/record-types/{" + AnswerService.RECORDCLASS_URL_SEGMENT + "}/searches/{" + AnswerService.SEARCH_URL_SEGMENT + "}/reports")
 public class AnswerService extends AbstractWdkService {
 
   private static final Logger LOG = Logger.getLogger(AnswerService.class);
@@ -83,8 +83,8 @@ public class AnswerService extends AbstractWdkService {
   static final String SEARCH_URL_SEGMENT = "questionUrlSegment";
 
   public static final String REPORT_NAME_PATH_PARAM = "reportNameSegment";
-  public static final String STANDARD_REPORT_ENDPOINT = "reports/" + DefaultJsonReporter.RESERVED_NAME;
-  public static final String CUSTOM_REPORT_ENDPOINT = "reports/{" + REPORT_NAME_PATH_PARAM + "}";
+  public static final String STANDARD_REPORT_ENDPOINT = "/" + DefaultJsonReporter.RESERVED_NAME;
+  public static final String CUSTOM_REPORT_ENDPOINT = "/{" + REPORT_NAME_PATH_PARAM + "}";
 
   private final String _recordClassUrlSegment;
   private final String _questionUrlSegment;
@@ -299,7 +299,7 @@ public class AnswerService extends AbstractWdkService {
     return new TwoTuple<>(answerValue, applyDisposition(
         builder, reporter.getContentDisposition(), reporter.getDownloadFileName()).build());
   }
-
+  /*
   @POST
   @Path("filter-summary/{filterName}")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -312,6 +312,7 @@ public class AnswerService extends AbstractWdkService {
     JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
     return Response.ok(filterSummaryJson.toString()).build();
   }
+  */
 
   /**
    * Returns configured reporter based on passed answer value and formatting JSON

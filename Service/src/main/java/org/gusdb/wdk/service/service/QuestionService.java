@@ -42,6 +42,7 @@ import org.gusdb.wdk.service.formatter.QuestionFormatter;
 import org.gusdb.wdk.service.request.QuestionRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
+import org.gusdb.wdk.service.annotation.OutSchema;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -97,6 +98,7 @@ public class QuestionService extends AbstractWdkService {
   @GET
   @Path("/{questionUrlSegment}")
   @Produces(MediaType.APPLICATION_JSON)
+  @OutSchema("wdk.questions.name.get")
   public Response getQuestionNew(
       @PathParam("questionUrlSegment") String questionUrlSegment)
           throws WdkModelException {
