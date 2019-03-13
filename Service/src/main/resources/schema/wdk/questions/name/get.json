@@ -137,13 +137,12 @@
       "type": "string"
     },
     "parameters": {
-      "oneOf": [
-        {
-          "$ref": "../../../includes/string-array.json"
-        },
         {
           "type": "array",
           "items": [
+            {
+              "$ref": "../../includes/params/filter-param.json"
+            },
             {
               "$ref": "../../includes/question-answer-param.json"
             },
@@ -155,7 +154,6 @@
             }
           ]
         }
-      ]
     },
     "properties": {
       "$ref": "#/definitions/properties"

@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "allOf": [
+    { "$ref": "question-base-param.json"},
+    {
+      "type": "object",
+      "properties": {
+        "countOnlyLeaves": {
+          "type": "boolean"
+        },
+	  "filterDataTypeDisplayName": {
+	      "type": "string"
+	  },
+	  "hideEmptyOntologyNodes": {
+	      "type": "boolean"
+	  },
+	  "minSelectedCount": {
+	      "type": "integer"
+	  },
+	  "ontology": {
+	      "type": "array",
+	      "items": {
+		  "type": "object",
+		  "properties": {
+		      "term": {
+			  "type": "string"
+		      },
+		      "parent": {
+			  "type": "string"
+		      },
+		      "display": {
+			  "type": "string"
+		      },
+		      "description": {
+			  "type": "string"
+		      },
+		      "type": {
+			  "type": "string"
+		      },
+		      "units": {
+			  "type": "string"
+		      },
+		      "isRange": {
+			  "type": "boolean"
+		      },
+		      "precision": {
+			  "type": "integer"
+		      }
+		  }
+	      }
+	  },
+	  "values": {
+	      "type": "object",
+              "patternProperties": {
+		  "^.+$": {
+		      "type": "array",
+		      "items": {
+			  "type": "string"
+		      }
+		  }
+	      }
+	  }	  
+      }
+    }
+  ]
+}

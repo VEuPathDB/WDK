@@ -47,9 +47,8 @@ post:
         * sourceStrategy: {strategy-signature}
     * Looks up another user's strategy by signature
     * Makes copy of strategy, assigning new step IDs and new strategy ID
-    * Should not need to run the strat since all estimate_size values should be populated
-    * Returns JSON with ID + Location header containing URL, OR
-        * Error document telling where and why request failed
+    * Should not need to run the strat since all estimatedSizes should be populated
+
   body:
     application/json:
       type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/post-request.json
@@ -73,7 +72,7 @@ patch:
   get:
     description: |
       * Returns the full JSON for a strategy, including step JSON for every step in the strategy
-      * Any steps that have null/-1 estimatedSize will be run and updated
+      * Any steps that have null estimatedSize will be run and updated
       * An example based on the POST /strategies JSON above:
 
       ```json
