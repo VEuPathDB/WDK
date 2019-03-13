@@ -460,17 +460,13 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   //    due to be retired when ApiFed starts using the WDK service (or UniDB is
   //    in use).  When either of these happens, change this back to private.
   public String getDefault(EnumParamVocabInstance cache) throws WdkModelException {
-    // logger.debug("applySelectMode(): select mode: '" + selectMode + "', default from model = " +
-    //    super.getDefault());
-    String defaultFromModel = super.getXmlDefault(); // TODO: Not sure if this is actually supposed to only read from the xml default
-
-    String errorMessage = "The default value from model, '" + defaultFromModel +
-        "', is not a valid term for param " + getFullName() + ", please double check this default value.";
+    String defaultFromModel = getXmlDefault();
+    LOG.debug("applySelectMode(): select mode: '" + selectMode + "', default from model = " + defaultFromModel);
     if (defaultFromModel != null) {
-      // default defined in the model, validate default values, and set it
-      // to the cache.
-      String[] defaults = getMultiPick() ? defaultFromModel.split("\\s*,\\s*")
-          : new String[] { defaultFromModel };
+      // default defined in the model, validate default values before returning
+      String[] defaults = getMultiPick() ?
+          defaultFromModel.split("\\s*,\\s*") :
+          new String[] { defaultFromModel };
       List<String> trimmedDefaults = new ArrayList<>();
       for (String def : defaults) {
         if (cache.getTerms().contains(def)) {
@@ -478,11 +474,13 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
         }
         else {
           // the given default doesn't match any term
+          String errorMessage = "The default value from model, '" +
+              defaultFromModel + "', is not a valid term for param " +
+              getFullName() + ", please double check this default value.";
           if (isDependentParam()) {
-            // need to investigate and make sure the default is as
-            // intended.
-            // Cannot throws exception here, since the default might
-            // not be valid for a different depended value.
+            // Need to investigate and make sure the default is as intended;
+            // cannot throw exception here, since the default might not be valid
+            // for a different depended value.
             LOG.warn(errorMessage);
           }
           else {
@@ -555,7 +553,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       }
       return builder.toString();
     }
-    return null;
+    return "";
   }
 
   @Override
@@ -589,6 +587,15 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       throw new WdkModelException("Param ['" + getFullName() +
           "'] in context query ['" + contextQueryName + "']: " +
           "TreeBox display type cannot be selected when multiPick is false.");
+    }
+
+    // make sure empty param value is either valid or does not happen
+    String defaultFromModel = getXmlDefault();
+    if ((defaultFromModel == null || defaultFromModel.isEmpty()) &&
+        SelectMode.NONE.equals(selectMode) && !_allowEmpty) {
+      throw new WdkModelException("Default value for param '" + getFullName() +
+          "' in question '" + getContainer().getFullName() + "' cannot be " +
+          "valid since the default must be empty but allowEmpty is false.");
     }
   }
 
