@@ -18,7 +18,7 @@ public class NumberRangeParamFormatter extends ParamFormatter<NumberRangeParam> 
     return getBaseJson(spec)
         .put(JsonKeys.MIN_VALUE, _param.getMin())
         .put(JsonKeys.MAX_VALUE, _param.getMax())
-        .put(JsonKeys.STEP, _param.getStep());
+        .put(JsonKeys.INCREMENT, _param.getIncrement());
   }
   
   @Override
