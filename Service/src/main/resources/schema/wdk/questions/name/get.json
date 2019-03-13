@@ -143,13 +143,28 @@
               "$ref": "../../includes/params/filter-param.json"
             },
             {
-              "$ref": "../../includes/question-answer-param.json"
+              "$ref": "../../includes/params/answer-param.json"
             },
             {
-              "$ref": "../../includes/question-enum-param.json"
+              "$ref": "../../includes/params/enum-param.json"
             },
             {
-              "$ref": "../../includes/question-string-param.json"
+              "$ref": "../../includes/params/string-param.json"
+            },
+            {
+              "$ref": "../../includes/params/number-param.json"
+            },
+            {
+              "$ref": "../../includes/params/date-param.json"
+            },
+            {
+              "$ref": "../../includes/params/dataset-param.json"
+            },
+            {
+              "$ref": "../../includes/params/filter-param.json"
+            },	      
+            {
+              "$ref": "../../includes/params/string-param.json"
             }
           ]
     },

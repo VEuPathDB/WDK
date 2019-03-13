@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "allOf": [
+    { "$ref": "base-param.json"},
+    {
+      "type": "object",
+	"properties": {
+	    "minDate": {
+	      "type": "string"
+	    },
+	    "maxDate": {
+	      "type": "string"
+	    }
+      }
+    }
+  ]
+}

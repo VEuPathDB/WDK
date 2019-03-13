@@ -18,7 +18,7 @@ public class NumberParamFormatter extends ParamFormatter<NumberParam> {
     return getBaseJson(spec)
         .put(JsonKeys.MIN_VALUE, this._param.getMin())
         .put(JsonKeys.MAX_VALUE, this._param.getMax())
-        .put(JsonKeys.STEP, this._param.getStep());
+        .put(JsonKeys.INCREMENT, this._param.getIncrement());  // aka the increment
   }
   
   @Override
