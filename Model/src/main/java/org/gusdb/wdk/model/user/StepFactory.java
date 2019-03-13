@@ -191,16 +191,16 @@ public class StepFactory {
       //  TODO: need to be able to "upgrade" steps I think...  ugh
       Step step = runnableStep.get();
       User user = step.getUser();
-      String questionName = step.getAnswerSpec().getQuestion().getFullName();
+      String questionFullName = step.getAnswerSpec().getQuestion().getFullName();
       Map<String, Boolean> sortingAttributes = user.getPreferences().getSortingAttributes(
-          questionName, UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+          questionFullName, UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
       AnswerValue answerValue = AnswerValueFactory.makeAnswer(user, step.getAnswerSpec().getRunnable().getLeft(),
           0, AnswerValue.UNBOUNDED_END_PAGE_INDEX, sortingAttributes);
 
       QueryInstance<?> qi = answerValue.getIdsQueryInstance();
       LOG.debug("id query name  :" + (qi == null ? "<no_query_specified>" : qi.getQuery().getFullName()));
       LOG.debug("answer checksum:" + answerValue.getChecksum());
-      LOG.debug("question name:  " + questionName);
+      LOG.debug("question name:  " + questionFullName);
       int estimateSize = answerValue.getResultSizeFactory().getDisplayResultSize();
       return new TwoTuple<>(estimateSize, null);
     }

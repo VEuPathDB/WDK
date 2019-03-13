@@ -340,7 +340,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
 
     // check for answer params; if not present or undeterminable (bad question name), simply return
     String questionName = step.getAnswerSpec().getQuestionName();
-    Optional<List<AnswerParam>> answerParams = _wdkModel.getQuestionByName(questionName)
+    Optional<List<AnswerParam>> answerParams = _wdkModel.getQuestionByFullName(questionName)
         .map(question -> question.getQuery().getAnswerParams());
 
     // Check if answer params are present.  If not present in optional, then

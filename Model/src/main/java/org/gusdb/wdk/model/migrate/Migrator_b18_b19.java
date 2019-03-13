@@ -77,7 +77,7 @@ public class Migrator_b18_b19 implements Migrator {
         QueryInstanceSpecBuilder params = ParamsAndFiltersDbColumnFormat.parseParamsJson(new JSONObject(paramContent));
         Map<String,String> newParams = updateParams(stepId, params.toMap(), leftChildId, rightChildId);
         AnswerSpec answerSpec = AnswerSpec.builder(wdkModel)
-          .setQuestionName(questionName)
+          .setQuestionFullName(questionName)
           .setDbParamFiltersJson(new JSONObject(paramContent))
           .setQueryInstanceSpec(QueryInstanceSpec.builder().putAll(newParams))
           .build(wdkModel.getSystemUser(), StepContainer.emptyContainer(), ValidationLevel.SYNTACTIC);

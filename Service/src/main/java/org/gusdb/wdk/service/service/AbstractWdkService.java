@@ -271,28 +271,27 @@ public abstract class AbstractWdkService {
   }
 
   protected RecordClass getRecordClassOrNotFound(String recordClassUrlSegment) {
-    return getWdkModel().getRecordClassByNameOrUrlSegment(recordClassUrlSegment)
+    return getWdkModel().getRecordClassByUrlSegment(recordClassUrlSegment)
       .orElseThrow(() ->
         // record class of the name provided cannot be found
-        new NotFoundException(formatNotFound("record class: " + recordClassUrlSegment)));
+        new NotFoundException(formatNotFound("record type: " + recordClassUrlSegment)));
   }
   
   protected Question getQuestionOrNotFound(String questionUrlSegment) {
-    return getWdkModel().getQuestionByNameOrUrlSegment(questionUrlSegment)
+    return getWdkModel().getQuestionByName(questionUrlSegment)
       .orElseThrow(() ->
         // question of the name provided cannot be found
-        new NotFoundException(formatNotFound("question: " + questionUrlSegment)));
+        new NotFoundException(formatNotFound("search: " + questionUrlSegment)));
   }
 
   protected Question getQuestionOrNotFound(String recordClassUrlSegment, String questionUrlSegment)  {
     RecordClass requestRecordClass = getRecordClassOrNotFound(recordClassUrlSegment);
     Question requestQuestion = getQuestionOrNotFound(questionUrlSegment);
     if (!requestQuestion.getRecordClassName().equals(requestRecordClass.getFullName())) {
-      throw new NotFoundException("Question " + requestQuestion.getName() +
-          " does not produce instances of " + requestRecordClass.getName());
+      throw new NotFoundException("Search " + requestQuestion.getName() +
+          " does not belong to record type " + requestRecordClass.getName());
     }
     return requestQuestion;
   }
-
 
 }

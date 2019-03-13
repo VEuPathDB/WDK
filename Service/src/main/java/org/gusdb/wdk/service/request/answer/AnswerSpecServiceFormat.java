@@ -44,7 +44,7 @@ public class AnswerSpecServiceFormat {
     try {
       // get question name, validate, and create instance with valid Question
       AnswerSpecBuilder specBuilder = AnswerSpec.builder(wdkModel)
-          .setQuestionName(question.getFullName())
+          .setQuestionFullName(question.getFullName())
           .setParamValues(JsonUtil.parseProperties(json.getJSONObject(JsonKeys.PARAMETERS)));
 
       // all filter fields and weight are optional

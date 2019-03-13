@@ -89,7 +89,7 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
     _legacyFilterName = legacyFilterName;
     _stepContainer = stepContainer;
     ValidationBundleBuilder validation = ValidationBundle.builder(validationLevel);
-    if (!wdkModel.getQuestionByName(questionName).isPresent()) {
+    if (!wdkModel.getQuestionByFullName(questionName).isPresent()) {
       // invalid question name; cannot validate other data
       validation.addError("Question '" + questionName + "' is not supported.");
       _question = null;
@@ -99,7 +99,7 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
       _viewFilters = viewFilters.buildInvalid();
     }
     else {
-      _question = wdkModel.getQuestionByName(questionName).get(); // we know this will not throw
+      _question = wdkModel.getQuestionByFullName(questionName).get(); // we know this will not throw
       _queryInstanceSpec = queryInstanceSpec.buildValidated(user, _question.getQuery(),
           stepContainer, validationLevel, fillStrategy);
       if (_queryInstanceSpec.isValid()) {

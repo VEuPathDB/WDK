@@ -88,7 +88,7 @@ public class AnswerSpecBuilder {
     return ValidObjectFactory.getRunnable(build(user, stepContainer, ValidationLevel.RUNNABLE));
   }
 
-  public AnswerSpecBuilder setQuestionName(String questionName) {
+  public AnswerSpecBuilder setQuestionFullName(String questionName) {
     _questionName = questionName;
     return this;
   }
@@ -172,7 +172,7 @@ public class AnswerSpecBuilder {
   }
 
   public AnswerSpecBuilder nullifyAnswerParams() {
-    List<AnswerParam> answerParams = _wdkModel.getQuestionByName(_questionName)
+    List<AnswerParam> answerParams = _wdkModel.getQuestionByFullName(_questionName)
         .map(q -> q.getQuery().getAnswerParams()).orElse(null);
     // if question name not set, do nothing
     if (answerParams != null) {

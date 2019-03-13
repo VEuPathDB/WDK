@@ -55,13 +55,12 @@ import org.json.JSONObject;
  *
  * @author rdoherty
  */
-@Path("record-types/{recordClassUrlSegment}/searches")
+@Path("/record-types/{recordClassUrlSegment}/searches")
 @Produces(MediaType.APPLICATION_JSON)
 public class QuestionService extends AbstractWdkService {
 
-  private static final String QUESTION_RESOURCE = "search: ";
   private static final String FILTER_PARAM_RESOURCE = "filter parameter: ";
-  
+
   protected static final String RECORD_CLASS_URL_SEGMENT_PARAM = "recordClassUrlSegment";
   private final String _recordClassUrlSegment;
 
@@ -103,7 +102,7 @@ public class QuestionService extends AbstractWdkService {
       @PathParam("questionUrlSegment") String questionUrlSegment)
           throws WdkModelException {
     SemanticallyValid<AnswerSpec> validSpec = AnswerSpec.builder(getWdkModel())
-        .setQuestionName(getQuestionFromSegment(questionUrlSegment).getFullName())
+        .setQuestionFullName(getQuestionOrNotFound(questionUrlSegment).getFullName())
         .build(
             getSessionUser(), 
             StepContainer.emptyContainer(),
@@ -146,9 +145,9 @@ public class QuestionService extends AbstractWdkService {
       @PathParam("questionUrlSegment") String questionUrlSegment,
       String body)
           throws WdkModelException, RequestMisformatException, DataValidationException {
-    Question question = getQuestionFromSegment(questionUrlSegment);
+    Question question = getQuestionOrNotFound(questionUrlSegment);
     SemanticallyValid<AnswerSpec> answerSpec = AnswerSpec.builder(getWdkModel())
-        .setQuestionName(question.getFullName())
+        .setQuestionFullName(question.getFullName())
         .setParamValues(QuestionRequest.parse(body, question).getContextParamValues())
         .build(
             getSessionUser(), 
@@ -191,7 +190,7 @@ public class QuestionService extends AbstractWdkService {
           throws WdkUserException, WdkModelException, DataValidationException {
 
     // get requested question and throw not found if invalid
-    Question question = getQuestionFromSegment(questionUrlSegment);
+    Question question = getQuestionOrNotFound(questionUrlSegment);
 
     // parse incoming JSON into existing and changed values
     QuestionRequest request = QuestionRequest.parse(body, question);
@@ -211,7 +210,7 @@ public class QuestionService extends AbstractWdkService {
     // Build an answer spec with the passed values but replace missing/invalid
     // values with defaults.  Will remove unaffected params below.
     SemanticallyValid<AnswerSpec> answerSpec = AnswerSpec.builder(getWdkModel())
-        .setQuestionName(question.getFullName())
+        .setQuestionFullName(question.getFullName())
         .setParamValues(contextParams)
         .build(
             getSessionUser(),
@@ -284,7 +283,7 @@ public class QuestionService extends AbstractWdkService {
           throws WdkModelException, DataValidationException, RequestMisformatException {
 
     // parse elements of the request
-    Question question = getQuestionFromSegment(questionUrlSegment);
+    Question question = getQuestionOrNotFound(questionUrlSegment);
     FilterParamNew filterParam = getFilterParam(question, paramName);
     Map<String, String> contextParamValues = QuestionRequest.parse(body, question).getContextParamValues();
     JSONObject jsonBody = new JSONObject(body);
@@ -346,7 +345,7 @@ public class QuestionService extends AbstractWdkService {
           throws WdkModelException, RequestMisformatException, DataValidationException {
 
     // parse elements of the request
-    Question question = getQuestionFromSegment(questionUrlSegment);
+    Question question = getQuestionOrNotFound(questionUrlSegment);
     FilterParamNew filterParam = getFilterParam(question, paramName);
     Map<String, String> contextParamValues = QuestionRequest.parse(body, question).getContextParamValues();
     JSONObject jsonBody = new JSONObject(body);
@@ -367,14 +366,6 @@ public class QuestionService extends AbstractWdkService {
     JSONObject result = QuestionFormatter.getFilterParamSummaryJson(counts);
     return Response.ok(result.toString()).build();
 
-  }
-
-  private Question getQuestionFromSegment(String questionUrlSegment) {
-    return getWdkModel().getQuestionByUrlSegment(questionUrlSegment)
-      .orElseGet(() -> getWdkModel().getQuestionByName(questionUrlSegment)
-        .orElseThrow(() ->
-          // A WDK Model Exception here implies that a question of the name provided cannot be found.
-          new NotFoundException(formatNotFound(QUESTION_RESOURCE + questionUrlSegment))));
   }
 
   private static FilterParamNew getFilterParam(Question question, String paramName) {

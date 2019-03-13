@@ -114,7 +114,6 @@ public class AnswerService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.answer.post-request")
   @OutSchema("wdk.answer.post-response")
-
   public Response buildDefaultReporterResult(JSONObject body)
       throws RequestMisformatException, WdkModelException, DataValidationException {
     return buildResult(DefaultJsonReporter.RESERVED_NAME, body);
@@ -208,7 +207,7 @@ public class AnswerService extends AbstractWdkService {
     // to allow a user to use steps from an existing strategy, need to get the
     // strategy they want to use as a step container to look up those steps;
     // can't do that without knowing if the question is valid
-    Optional<Question> question = wdkModel.getQuestionByName(specBuilder.getQuestionName());
+    Optional<Question> question = wdkModel.getQuestionByFullName(specBuilder.getQuestionName());
 
     if (!question.isPresent() || question.get().getQuery().getAnswerParamCount() == 0) {
       // question will fail validation or is valid but does not contain answer params; no need for lookup

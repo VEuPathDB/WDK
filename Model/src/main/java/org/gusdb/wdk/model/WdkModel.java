@@ -146,9 +146,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private List<FilterSet> filterSetList = new ArrayList<>();
   private Map<String, FilterSet> filterSets = new LinkedHashMap<>();
 
-  private Map<String, String> _questionUrlSegmentMap = new HashMap<>();
   private Map<String, String> _recordClassUrlSegmentMap = new HashMap<>();
-  
+
   private List<WdkModelName> wdkModelNames = new ArrayList<WdkModelName>();
   private String displayName;
   private String version; // use default version
@@ -281,11 +280,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
    * @param questionFullName question's full name (two-part name)
    * @return question with the passed name
    */
-  public Optional<Question> getQuestionByName(String questionFullName) {
-    // special case to fetch a single record of a recordClass (by primary keys)
-    if (SingleRecordQuestion.isSingleQuestionName(questionFullName, this)){
-      return Optional.of(new SingleRecordQuestion(questionFullName, this));
-    }
+  public Optional<Question> getQuestionByFullName(String questionFullName) {
     try {
       Reference r = new Reference(questionFullName);
       return Optional.ofNullable(questionSets.get(r.getSetName()))
@@ -296,19 +291,15 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     }
   }
 
-  /**
-   * Tries to find a configured question by URL segment
-   * 
-   * @param urlSegment of a question
-   * @return optional containing question if found, or empty optional if not
-   */
-  public Optional<Question> getQuestionByUrlSegment(String urlSegment) {
-    return Optional.ofNullable(_questionUrlSegmentMap.get(urlSegment)).map(name -> getQuestionByName(name).get());
-  }
-
-  public Optional<Question> getQuestionByNameOrUrlSegment(String nameOrSegment) {
-    Optional<Question> q = getQuestionByUrlSegment(nameOrSegment);
-    return q.isPresent() ? q : getQuestionByName(nameOrSegment);
+  public Optional<Question> getQuestionByName(String name) {
+    for (QuestionSet questionSet : questionSets.values()) {
+      for (Question question : questionSet.getQuestions()) {
+        if (question.getName().equals(name)) {
+          return Optional.of(question);
+        }
+      }
+    }
+    return Optional.empty();
   }
 
   public Question[] getQuestions(RecordClass recordClass) {
@@ -512,20 +503,21 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return filterSet;
   }
 
-  public Question getBooleanQuestion(RecordClass recordClass) throws WdkModelException {
+  public Question addBooleanQuestion(RecordClass recordClass) throws WdkModelException {
     // check if the boolean question already exists
     String qname = Question.BOOLEAN_QUESTION_PREFIX + recordClass.getFullName().replace('.', '_');
     QuestionSet internalSet = getQuestionSet(Utilities.INTERNAL_QUESTION_SET).get();
 
     Optional<Question> booleanQuestionOpt = internalSet.getQuestion(qname);
     if (booleanQuestionOpt.isPresent()) {
-      return booleanQuestionOpt.get();
+      throw new WdkModelException("Boolean questions should be created only once.");
     }
+
     Question question = new Question();
     question.setName(qname);
     question.setDisplayName("Combine " + recordClass.getDisplayName() + " results");
     question.setRecordClassRef(recordClass.getFullName());
-    BooleanQuery booleanQuery = getBooleanQuery(recordClass);
+    BooleanQuery booleanQuery = addBooleanQuery(recordClass);
     question.setQueryRef(booleanQuery.getFullName());
     question.excludeResources(_projectId);
     question.resolveReferences(this);
@@ -533,7 +525,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return question;
   }
 
-  public BooleanQuery getBooleanQuery(RecordClass recordClass) throws WdkModelException {
+  private BooleanQuery addBooleanQuery(RecordClass recordClass) throws WdkModelException {
     // check if the boolean query already exists
     String queryName = BooleanQuery.getQueryName(recordClass);
     QuerySet internalQuerySet = getQuerySet(Utilities.INTERNAL_QUERY_SET);
@@ -556,6 +548,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       booleanQuery.setIsCacheable(true); // cache the boolean query
     }
     return booleanQuery;
+  }
+
+  private Question addSingleRecordQuestion(RecordClass recordClass) {
+    Question question = new SingleRecordQuestion(recordClass);
+    getQuestionSet(Utilities.INTERNAL_QUESTION_SET).get().addQuestion(question);
+    return question;
   }
 
   // ModelSetI's
@@ -640,8 +638,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     // resolve references in the model objects
     resolveReferences();
 
-    // create boolean questions
-    createBooleanQuestions();
+    // create generated questions (boolean and single-record)
+    createGeneratedQuestions();
    
     validateDependentParams();
 
@@ -826,6 +824,16 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       category.resolveReferences(this);
       if (category.getParent() == null)
         rootCategoryMap.put(category.getName(), category);
+    }
+
+    // ensure question names are not duplicated
+    Set<String> names = new HashSet<>();
+    for (QuestionSet questionSet : questionSets.values()) {
+      for (Question question : questionSet.getQuestions()) {
+        if (!names.add(question.getName())) {
+          throw new WdkModelException("Duplicate question name '" + question.getName() + "' found in model XML.");
+        }
+      }
     }
 
     LOG.info("Loading ontology...");
@@ -1111,10 +1119,11 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     }
   }
 
-  private void createBooleanQuestions() throws WdkModelException {
+  private void createGeneratedQuestions() throws WdkModelException {
     for (RecordClassSet recordClassSet : getAllRecordClassSets()) {
       for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
-        getBooleanQuestion(recordClass);
+        addBooleanQuestion(recordClass);
+        addSingleRecordQuestion(recordClass);
       }
     }
   }
@@ -1526,16 +1535,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     _recordClassUrlSegmentMap.put(urlSegment, rcFullName);
   }
 
-  public void registerQuestionUrlSegment(String urlSegment, String questionFullName) throws WdkModelException {
-    if (_questionUrlSegmentMap.containsKey(urlSegment) &&
-        !_questionUrlSegmentMap.get(urlSegment).equals(questionFullName)) { // protects from duplicate identical calls
-      throw new WdkModelException("Duplicate Question URL segment specified [" + urlSegment +
-          "]. You may need to specify a custom URL segment if you use have " +
-          "two questions with the same name in different Question Sets.");
-    }
-    _questionUrlSegmentMap.put(urlSegment, questionFullName);
-  }
-
   public static AutoCloseableList<WdkModel> loadMultipleModels(String gusHome, String[] projects) throws WdkModelException {
     AutoCloseableList<WdkModel> models = new AutoCloseableList<>();
     try {
@@ -1602,7 +1601,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     String message = "The search '" + qFullName + "' is not or is no longer available.";
     try {
       // First check to see if this is a 'regular' question; if not, check XML questions
-      if (qFullName == null || getQuestionByName(qFullName) == null) {
+      if (qFullName == null || getQuestionByFullName(qFullName) == null) {
         throw new WdkModelException("Question name is null or resulting question is null");
       }
     }

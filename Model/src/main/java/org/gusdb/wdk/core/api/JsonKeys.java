@@ -23,6 +23,7 @@ public class JsonKeys {
   // identifying keys
   public static final String ID = "id";
   public static final String NAME = "name";
+  public static final String FULL_NAME = "fullName";
   public static final String PRIMARY_KEY = "primaryKey";
   public static final String URL_SEGMENT = "urlSegment";
   public static final String RECORD_ID_ATTRIBUTE_NAME = "recordIdAttributeName";

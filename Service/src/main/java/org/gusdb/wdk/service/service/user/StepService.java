@@ -28,6 +28,7 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.request.AnswerFormatting;
@@ -261,7 +262,7 @@ public class StepService extends UserService {
   public JSONObject getFilterSummary(
     @PathParam(ID_PATH) long stepId,
     @PathParam("filterName") String filterName
-  ) throws WdkModelException, DataValidationException {
+  ) throws WdkModelException, DataValidationException, WdkUserException {
     return AnswerValueFactory.makeAnswer(
         getUserBundle(Access.PRIVATE).getSessionUser(),
         Step.getRunnableAnswerSpec(
