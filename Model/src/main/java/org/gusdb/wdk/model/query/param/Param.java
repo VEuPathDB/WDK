@@ -553,10 +553,17 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     if (stableValues.get(getName()) == null) {
       if (fillStrategy.shouldFillWhenMissing()) {
         // fill in default value; value will still be validated below (cheap because vocabs are cached)
-        stableValues.put(getName(), getDefault(stableValues));
+        String defaultValue = getDefault(stableValues);
+        stableValues.put(getName(), defaultValue);
+        // make sure to set invalid if default is missing or empty but allowEmpty is false
+        if ((defaultValue == null || defaultValue.isEmpty()) && !isAllowEmpty()) {
+          return stableValues.setInvalid(getName(), "Parameter '" +
+              getName() + "' cannot be empty, but no default value exists.");
+        }
       }
       else {
-        return stableValues.setInvalid(getName(), "Parameter '" + getName() + "' cannot be empty.");
+        return stableValues.setInvalid(getName(), "Parameter '" +
+            getName() + "' cannot be empty.");
       }
     }
 
