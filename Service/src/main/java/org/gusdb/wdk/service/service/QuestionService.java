@@ -110,7 +110,8 @@ public class QuestionService extends AbstractWdkService {
             FillStrategy.FILL_PARAM_IF_MISSING)
         .getSemanticallyValid()
         .getOrThrow(spec -> new WdkModelException("Default values for question '" +
-            questionUrlSegment + "' are not semantically valid."));
+            questionUrlSegment + "' are not semantically valid. Validation " +
+            "details: " + spec.getValidationBundle().toString(2)));
     return Response.ok(QuestionFormatter.getQuestionJsonWithParamValues(validSpec).toString()).build();
   }
 
