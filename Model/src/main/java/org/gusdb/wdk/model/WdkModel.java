@@ -92,7 +92,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public static final String DB_INSTANCE_APP = "APP";
   public static final String DB_INSTANCE_USER = "USER";
   public static final String DB_INSTANCE_ACCOUNT = "ACCT";
-  
+
   public static final String UD_ENABLED = "UD_ENABLED";
   public static final String UD_DISABLED = "UD_DISABLED";
   public static final String UD_BROKEN = "UD_BROKEN";
@@ -101,7 +101,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   /**
    * Convenience method for constructing a model from the configuration information.
-   * 
+   *
    * @throws WdkModelException
    *           if unable to construct model
    */
@@ -134,7 +134,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   private Map<String, ModelSetI<? extends WdkModelBase>> allModelSets = new LinkedHashMap<>();
 
-  private List<GroupSet> groupSetList = new ArrayList<GroupSet>();
+  private List<GroupSet> groupSetList = new ArrayList<>();
   private Map<String, GroupSet> groupSets = new LinkedHashMap<>();
 
   private List<XmlQuestionSet> xmlQuestionSetList = new ArrayList<>();
@@ -148,18 +148,18 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   private Map<String, String> _recordClassUrlSegmentMap = new HashMap<>();
 
-  private List<WdkModelName> wdkModelNames = new ArrayList<WdkModelName>();
+  private List<WdkModelName> wdkModelNames = new ArrayList<>();
   private String displayName;
   private String version; // use default version
   private String releaseDate;
 
-  private List<WdkModelText> introductions = new ArrayList<WdkModelText>();
+  private List<WdkModelText> introductions = new ArrayList<>();
   private String _introduction;
 
-  private List<MacroDeclaration> macroList = new ArrayList<MacroDeclaration>();
-  private Set<String> modelMacroSet = new LinkedHashSet<String>();
-  private Set<String> jspMacroSet = new LinkedHashSet<String>();
-  private Set<String> perlMacroSet = new LinkedHashSet<String>();
+  private List<MacroDeclaration> macroList = new ArrayList<>();
+  private Set<String> modelMacroSet = new LinkedHashSet<>();
+  private Set<String> jspMacroSet = new LinkedHashSet<>();
+  private Set<String> perlMacroSet = new LinkedHashSet<>();
 
   private ResultFactory resultFactory;
 
@@ -186,12 +186,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private StepAnalysisFactory stepAnalysisFactory;
   private UserDatasetFactory userDatasetFactory;
 
-  private List<PropertyList> defaultPropertyLists = new ArrayList<PropertyList>();
-  private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<String, String[]>();
+  private List<PropertyList> defaultPropertyLists = new ArrayList<>();
+  private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<>();
 
-  private List<SearchCategory> categoryList = new ArrayList<SearchCategory>();
-  private Map<String, SearchCategory> categoryMap = new LinkedHashMap<String, SearchCategory>();
-  private Map<String, SearchCategory> rootCategoryMap = new LinkedHashMap<String, SearchCategory>();
+  private List<SearchCategory> categoryList = new ArrayList<>();
+  private Map<String, SearchCategory> categoryMap = new LinkedHashMap<>();
+  private Map<String, SearchCategory> rootCategoryMap = new LinkedHashMap<>();
 
   private List<OntologyFactoryImpl> ontologyFactoryList = new ArrayList<>();
   private Map<String, OntologyFactory> ontologyFactoryMap = new LinkedHashMap<>();
@@ -304,7 +304,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   public Question[] getQuestions(RecordClass recordClass) {
     String rcName = recordClass.getFullName();
-    List<Question> questions = new ArrayList<Question>();
+    List<Question> questions = new ArrayList<>();
     for (QuestionSet questionSet : questionSets.values()) {
       for (Question question : questionSet.getQuestions()) {
         if (question.getRecordClass().getFullName().equals(rcName))
@@ -329,7 +329,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   /**
    * Tries to find a configured recordclass by URL segment
-   * 
+   *
    * @param urlSegment of a record class
    * @return optional containing record class if found, or empty optional if not
    */
@@ -456,7 +456,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   public Map<String, QuestionSet> getQuestionSetsMap() {
-    Map<String, QuestionSet> sets = new LinkedHashMap<String, QuestionSet>();
+    Map<String, QuestionSet> sets = new LinkedHashMap<>();
     for (String setName : questionSets.keySet()) {
       sets.put(setName, questionSets.get(setName));
     }
@@ -640,7 +640,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
     // create generated questions (boolean and single-record)
     createGeneratedQuestions();
-   
+
     validateDependentParams();
 
     // create step analysis factory - wait until the end since it spawns a thread
@@ -653,7 +653,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   private void validateDependentParams() throws WdkModelException {
-    
+
     // find names of all queries that are not owned by a parameter.  these are our "root" queries
     Set<String> nonRootQueryNames = new HashSet<>();
     for (ParamSet paramSet : paramSets.values()) {
@@ -663,7 +663,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
         }
       }
     }
-    
+
     // gather all root queries (those that are not contained by a param);
     // also gather all queries for dependent param resolution
     List<Query> allQueries = new ArrayList<>();
@@ -674,16 +674,16 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
         allQueries.add(query);
         if (!nonRootQueryNames.contains(query.getFullName())) {
         	rootQueries.add(query);
-            rootQueryNames.add(query.getFullName());	
+            rootQueryNames.add(query.getFullName());
         }
       }
     }
-    
+
     // for each root query, put the names of its immediate parameters into a "context"
     // then recurse down through its param-query tree, and validate that all queries use only params
     // found in the context
     for (Query rootQuery : rootQueries) {
-      rootQuery.validateDependentParams();	
+      rootQuery.validateDependentParams();
     }
 
     // finally, resolve depended param refs in all queries' parameters
@@ -1033,7 +1033,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       }
     }
     ontologyFactoryList = null;
-    
+
     // exclude categories
     for (MacroDeclaration macro : macroList) {
       if (macro.include(_projectId)) {
@@ -1259,7 +1259,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public File getXmlDataDir() {
     return xmlDataDir;
   }
-  
+
   public UserDatasetStore getUserDatasetStore() {
     return userDatasetStore;
   }
@@ -1274,7 +1274,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   /**
    * This method is supposed to be called by the digester
-   * 
+   *
    * @param propertyList
    */
   public void addDefaultPropertyList(PropertyList propertyList) {
@@ -1283,7 +1283,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   /**
    * if the property list of the given name doesn't exist, an empty string array will be returned.
-   * 
+   *
    * @param propertyListName
    * @return
    */
@@ -1294,7 +1294,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   public Map<String, String[]> getDefaultPropertyLists() {
-    Map<String, String[]> propLists = new LinkedHashMap<String, String[]>();
+    Map<String, String[]> propLists = new LinkedHashMap<>();
     for (String plName : defaultPropertyListMap.keySet()) {
       String[] values = defaultPropertyListMap.get(plName);
       propLists.put(plName, Arrays.copyOf(values, values.length));
@@ -1331,8 +1331,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     if (eupathCategoriesFactory != null) {
       return eupathCategoriesFactory.getRootCategories(usedBy);
     }
-    
-    Map<String, SearchCategory> roots = new LinkedHashMap<String, SearchCategory>();
+
+    Map<String, SearchCategory> roots = new LinkedHashMap<>();
     for (SearchCategory root : rootCategoryMap.values()) {
       String cusedBy = root.getUsedBy();
       if (root.isUsedBy(cusedBy))
@@ -1548,7 +1548,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       throw e;
     }
   }
-  
+
   /**
    * Identifies and returns an xml question by its full name.
    * @param xmlQuestionFullName
@@ -1563,7 +1563,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     if(xmlQuestion == null) throw new WdkModelException("Cannot find xml question with the name " + xmlQuestionFullName);
     return xmlQuestion;
   }
-  
+
   public String getUserDatasetStoreStatus() {
     return _userDatasetStoreStatus;
   }
@@ -1593,7 +1593,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
    * place but not another and if so, then we want to know about it.  If we
    * mask this mistake with a WdkUserException, we might see bad consequences
    * down the line.
-   * 
+   *
    * @param qFullName potential question name
    * @throws WdkUserException if name is not in format *.*
    */
@@ -1627,7 +1627,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
    * in one place but not another and if so, then we want to know about it.
    * If we mask this mistake with a WdkUserException, we might see bad
    * consequences down the line.
-   * 
+   *
    * @param recordClassName potential record class name
    * @throws WdkUserException if name is not in format *.*
    */
