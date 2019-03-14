@@ -593,9 +593,12 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     String defaultFromModel = getXmlDefault();
     if ((defaultFromModel == null || defaultFromModel.isEmpty()) &&
         SelectMode.NONE.equals(selectMode) && !_allowEmpty) {
-      throw new WdkModelException("Default value for param '" + getFullName() +
-          "' in question '" + getContainer().getFullName() + "' cannot be " +
-          "valid since the default must be empty but allowEmpty is false.");
+      String containerName = getContainer() == null ? "unknown" : getContainer().getFullName();
+      String msg = "Default value for param '" + getFullName() +
+          "' in question '" + containerName + "' cannot be valid " +
+          "since the default must be empty but allowEmpty is false.";
+      LOG.warn(msg);
+      //throw new WdkModelException(msg);
     }
   }
 
