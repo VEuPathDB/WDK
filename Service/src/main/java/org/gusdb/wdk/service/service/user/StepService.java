@@ -1,8 +1,6 @@
 package org.gusdb.wdk.service.service.user;
 
-import static org.gusdb.wdk.service.service.AnswerService.CUSTOM_REPORT_ENDPOINT;
 import static org.gusdb.wdk.service.service.AnswerService.REPORT_NAME_PATH_PARAM;
-import static org.gusdb.wdk.service.service.AnswerService.STANDARD_REPORT_ENDPOINT;
 
 import java.util.Date;
 import java.util.Optional;
