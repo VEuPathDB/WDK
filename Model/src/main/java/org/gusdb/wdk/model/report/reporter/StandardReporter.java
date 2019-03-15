@@ -73,7 +73,7 @@ public abstract class StandardReporter extends AbstractReporter {
 
   @Override
   public Reporter configure(Map<String, String> config) throws ReporterConfigException {
-    LOG.info(getClass().getName() + " instantiated and configured with: " +
+    LOG.info("StandardReporter: configure() with Map: " + getClass().getName() + " instantiated and configured with: " +
         FormatUtil.prettyPrint(config, Style.MULTI_LINE));
     _standardConfig = new StandardConfig(getQuestion()).configure(config);
     loadValidatedFields();
@@ -82,7 +82,7 @@ public abstract class StandardReporter extends AbstractReporter {
 
   @Override
   public Reporter configure(JSONObject config) throws ReporterConfigException {
-    LOG.info(getClass().getName() + " instantiated and configured with: " + config.toString(2));
+    LOG.info("StandardReporter: configure() with json: " +getClass().getName() + " instantiated and configured with: " + config.toString(2));
     _standardConfig = new StandardConfig(getQuestion()).configure(config);
     loadValidatedFields();
     return this;
@@ -109,8 +109,7 @@ public abstract class StandardReporter extends AbstractReporter {
         if (_properties.containsKey(PROPERTY_PAGE_SIZE)) {
           try {
             pageSize = Integer.valueOf(_properties.get(PROPERTY_PAGE_SIZE));
-          }
-          catch (NumberFormatException e) {
+          }          catch (NumberFormatException e) {
             throw new WdkModelException("Reporter property '" + PROPERTY_PAGE_SIZE + "' must be a positive integer.");
           }
         }
@@ -213,10 +212,10 @@ public abstract class StandardReporter extends AbstractReporter {
       boolean includeEmptyTables, PrintWriter writer, TableCache tableCache,
       Function<TableValue, TwoTuple<Integer,String>> formatTableFunction)
           throws WdkModelException, SQLException, WdkUserException {
-
+    //LOG.debug("StandardReporter: formatTables(): starting on a record");
     // print out tables of the record
     for (TableField table : tables) {
-
+      //LOG.debug("StandardReporter: formatTables(): looping through tables..");
       TwoTuple<Integer,String> tableData;
 
       // if not caching then simply format and return
@@ -224,6 +223,7 @@ public abstract class StandardReporter extends AbstractReporter {
         tableData = formatTableFunction.apply(record.getTableValue(table.getName()));
       }
       else {
+        LOG.debug("StandardReporter: formatTables(): caching table data");
         // check if the record has been cached
         tableData = tableCache.getCachedTableValue(record, table.getName());
         if (tableData == null) {

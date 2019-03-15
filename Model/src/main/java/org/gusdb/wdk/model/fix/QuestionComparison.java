@@ -29,7 +29,7 @@ import org.json.JSONObject;
 public class QuestionComparison {
   public static String NL = System.getProperty("line.separator");
   private final String QUESTION_SERVICE_URL = "/service/questions";
-  private final String ANSWER_SERVICE_URL = "/service/answer";
+  private final String ANSWER_SERVICE_URL = "/service/answer/report";
   private final String ORGANISM_QUESTION = "OrganismQuestions.GenomeDataTypes";
   private ComparisonBean questionNameComparison = null;
   private ComparisonBean organismComparison = null;
@@ -409,24 +409,24 @@ public class QuestionComparison {
 	  
       // Create maps of parameters to a listing of parameter values from the JSONObjects returned by the service calls.
       Map<String, List<ParameterValue>> qaParameterMap = createParameterValueMap(question, qaParameters, dependentParamList);
-	  Map<String, List<ParameterValue>> prodParameterMap = createParameterValueMap(question, prodParameters, dependentParamList);
+	    Map<String, List<ParameterValue>> prodParameterMap = createParameterValueMap(question, prodParameters, dependentParamList);
 	  
-	  // Iterate over the question parameters common to both sites.  Can use the key set of either site mapping because
-	  // both maps were already limited to the parameters the sites have in common.
-	  for(String parameter : qaParameterMap.keySet()) {
-		  
-		// This exception should not occur unless somehow, a parameter with a name common to both sites is of
-		// a different type in both sites.
-		if(!prodParameterMap.containsKey(parameter)) {
-		  throw new RuntimeException("Should only be dealing with common parameters - could be a change in parameter type for " + parameter + " in question " + question);
-		}
+	    // Iterate over the question parameters common to both sites.  Can use the key set of either site mapping because
+	    // both maps were already limited to the parameters the sites have in common.
+	    for(String parameter : qaParameterMap.keySet()) {
+		    System.out.println("New parameter: " + parameter);
+		    // This exception should not occur unless somehow, a parameter with a name common to both sites is of
+		    // a different type in both sites.
+		    if(!prodParameterMap.containsKey(parameter)) {
+		      throw new RuntimeException("Should only be dealing with common parameters - could be a change in parameter type for " + parameter + " in question " + question);
+		    }
 		
-		// Pull the string values out of the ParameterValue objects for comparison.
-		List<String> qaParameterValues = qaParameterMap.get(parameter).stream().map(v -> v.getValue()).collect(Collectors.toList());
-		List<String> prodParameterValues = prodParameterMap.get(parameter).stream().map(v -> v.getValue()).collect(Collectors.toList());
+		    // Pull the string values out of the ParameterValue objects for comparison.
+		    List<String> qaParameterValues = qaParameterMap.get(parameter).stream().map(v -> v.getValue()).collect(Collectors.toList());
+		    List<String> prodParameterValues = prodParameterMap.get(parameter).stream().map(v -> v.getValue()).collect(Collectors.toList());
 		
-		// Contains qa parameter values not in prod
-		List<String> newParameterValueList = new ArrayList<>(qaParameterValues);
+		    // Contains qa parameter values not in prod
+		    List<String> newParameterValueList = new ArrayList<>(qaParameterValues);
         newParameterValueList.removeAll(prodParameterValues);
 	      
         // Contains prod parameter values not in qa
