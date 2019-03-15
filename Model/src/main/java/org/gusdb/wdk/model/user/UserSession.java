@@ -53,9 +53,7 @@ public class UserSession {
   }
 
   public void setFrontStrategy(long frontStrategy) {
-    System.out.println("Setting frontStrategy.");
     this._frontStrategy = Long.valueOf(frontStrategy);
-    System.out.println("Done.");
   }
 
   public void setFrontStep(long frontStep) {

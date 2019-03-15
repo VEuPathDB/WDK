@@ -51,7 +51,6 @@ public final class ParameterFilter implements Filter {
       for (String parameterName : requestParameterNames) {
         if (!parameterName.matches(regex)) {
           finalParameterNames.add(parameterName);
-          System.out.println("Param : " + parameterName);
         }
       }
       return Collections.enumeration(finalParameterNames);
