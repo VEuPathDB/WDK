@@ -59,7 +59,7 @@ public class NumberParam extends Param {
     _isInteger = param._isInteger;
     _min = param._min;
     _max = param._max;
-    setIncrement(param._increment);
+    setStep(param._increment);
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -228,11 +228,11 @@ public class NumberParam extends Param {
     _isInteger = integer;
   }
 
-  public Double getIncrement() {
+  public Double getStep() {
     return _increment;
   }
 
-  public void setIncrement(Double increment) {
+  public void setStep(Double increment) {
     if(increment == null)
       _increment = _isInteger ? 1 : 0.01;
     else
