@@ -22,6 +22,7 @@ import javax.ws.rs.core.Response;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Named.NamedObject;
+import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -101,16 +102,16 @@ public class QuestionService extends AbstractWdkService {
   public Response getQuestionNew(
       @PathParam("questionUrlSegment") String questionUrlSegment)
           throws WdkModelException {
-    SemanticallyValid<AnswerSpec> validSpec = AnswerSpec.builder(getWdkModel())
+    DisplayablyValid<AnswerSpec> validSpec = AnswerSpec.builder(getWdkModel())
         .setQuestionFullName(getQuestionOrNotFound(questionUrlSegment).getFullName())
         .build(
             getSessionUser(), 
             StepContainer.emptyContainer(),
-            ValidationLevel.SEMANTIC,
+            ValidationLevel.DISPLAYABLE,
             FillStrategy.FILL_PARAM_IF_MISSING)
-        .getSemanticallyValid()
+        .getDisplayablyValid()
         .getOrThrow(spec -> new WdkModelException("Default values for question '" +
-            questionUrlSegment + "' are not semantically valid. Validation " +
+            questionUrlSegment + "' are not displayable. Validation " +
             "details: " + spec.getValidationBundle().toString(2)));
     return Response.ok(QuestionFormatter.getQuestionJsonWithParamValues(validSpec).toString()).build();
   }

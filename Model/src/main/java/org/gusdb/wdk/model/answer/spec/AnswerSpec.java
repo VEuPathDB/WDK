@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -40,8 +41,13 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
   }
 
   public static SemanticallyValid<QueryInstanceSpec> getValidQueryInstanceSpec(SemanticallyValid<AnswerSpec> validSpec) {
-    // we know we can simply return the answer spec because the step is runnable
-    return validSpec.get().getQueryInstanceSpec().getRunnable().getLeft();
+    // we know we can simply return the query instance spec because the answer spec is valid
+    return validSpec.get().getQueryInstanceSpec().getSemanticallyValid().getLeft();
+  }
+
+  public static DisplayablyValid<QueryInstanceSpec> getValidQueryInstanceSpec(DisplayablyValid<AnswerSpec> validSpec) {
+    // we know we can simply return the query instance spec because the answer spec is valid
+    return validSpec.get().getQueryInstanceSpec().getDisplayablyValid().getLeft();
   }
 
   private final WdkModel _wdkModel;

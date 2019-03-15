@@ -1,9 +1,10 @@
 package org.gusdb.wdk.service.service.user;
 
 import static org.gusdb.fgputil.functional.Functions.reduce;
-import static org.gusdb.wdk.service.service.AnswerService.CUSTOM_REPORT_ENDPOINT;
+import static org.gusdb.wdk.service.service.AnswerService.CUSTOM_REPORT_URL_SEGMENT;
+import static org.gusdb.wdk.service.service.AnswerService.REPORTS_URL_SEGMENT;
 import static org.gusdb.wdk.service.service.AnswerService.REPORT_NAME_PATH_PARAM;
-import static org.gusdb.wdk.service.service.AnswerService.STANDARD_REPORT_ENDPOINT;
+import static org.gusdb.wdk.service.service.AnswerService.STANDARD_REPORT_URL_SEGMENT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,7 @@ import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -211,10 +213,10 @@ public class BasketService extends UserService {
   }
 
   @POST
-  @Path(NAMED_BASKET_PATH + "/" + STANDARD_REPORT_ENDPOINT)
+  @Path(NAMED_BASKET_PATH + REPORTS_URL_SEGMENT + STANDARD_REPORT_URL_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  // TODO: @InSchema(...)
+  @OutSchema("wdk.answer.post-response")
   public Response getDefaultReporterBasketAnswer(
       @PathParam(BASKET_NAME_PARAM) String basketName,
       JSONObject requestJson)
@@ -223,7 +225,7 @@ public class BasketService extends UserService {
   }
 
   @POST
-  @Path(NAMED_BASKET_PATH + "/" + CUSTOM_REPORT_ENDPOINT)
+  @Path(NAMED_BASKET_PATH + REPORTS_URL_SEGMENT + CUSTOM_REPORT_URL_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
   // Produces an unknown media type; varies depending on reporter selected
   public Response getBasketAnswer(

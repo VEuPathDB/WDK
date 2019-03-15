@@ -1,6 +1,9 @@
 package org.gusdb.wdk.service.service.user;
 
+import static org.gusdb.wdk.service.service.AnswerService.CUSTOM_REPORT_URL_SEGMENT;
+import static org.gusdb.wdk.service.service.AnswerService.REPORTS_URL_SEGMENT;
 import static org.gusdb.wdk.service.service.AnswerService.REPORT_NAME_PATH_PARAM;
+import static org.gusdb.wdk.service.service.AnswerService.STANDARD_REPORT_URL_SEGMENT;
 
 import java.util.Date;
 import java.util.Optional;
@@ -149,10 +152,11 @@ public class StepService extends UserService {
   }
 
   @POST
-  @Path(ID_PATH + "/reports/standard")
+  @Path(ID_PATH + REPORTS_URL_SEGMENT + STANDARD_REPORT_URL_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.steps.answer.post-request")
+  @OutSchema("wdk.answer.post-response")
   public Response createDefaultReporterAnswer(
       @PathParam(ID_PARAM) long stepId, JSONObject requestJson)
           throws WdkModelException, RequestMisformatException, DataValidationException {
@@ -160,7 +164,7 @@ public class StepService extends UserService {
   }
 
   @POST
-  @Path(ID_PATH + "/reports" + REPORT_NAME_PATH_PARAM)
+  @Path(ID_PATH + REPORTS_URL_SEGMENT + CUSTOM_REPORT_URL_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
   // Produces an unknown media type; varies depending on reporter selected
   public Response createAnswer(
@@ -255,8 +259,9 @@ public class StepService extends UserService {
   }
 
   @GET
-  @Path(ID_PATH + "/reports/filter-summary/{filterName}")
+  @Path(ID_PATH + REPORTS_URL_SEGMENT + "/filter-summary/{filterName}")
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public JSONObject getFilterSummary(
     @PathParam(ID_PATH) long stepId,
     @PathParam("filterName") String filterName

@@ -34,7 +34,7 @@ public class AnalysisCallable implements Callable<ExecutionStatus> {
 
       // create step analysis instance and run
       StepAnalyzer analyzer = StepAnalysisFactoryImpl.getConfiguredAnalyzer(_context, _fileStore);
-      OptionallyInvalid<Step, RunnableObj<Step>> stepOptions = _context.getStep().getRunnable();
+      OptionallyInvalid<RunnableObj<Step>, Step> stepOptions = _context.getStep().getRunnable();
       if (stepOptions.isLeft()) {
         // step is not runnable; cannot analyze unrunnable step
         LOG.warn("Request made to analyze unrunnable step with ID " + _context.getStep().getStepId());

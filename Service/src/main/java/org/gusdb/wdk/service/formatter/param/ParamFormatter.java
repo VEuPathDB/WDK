@@ -3,7 +3,7 @@ package org.gusdb.wdk.service.formatter.param;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 import org.gusdb.fgputil.Named.NamedObject;
-import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
+import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -24,7 +24,7 @@ public abstract class ParamFormatter<T extends Param> {
   /**
    * @throws WdkModelException if error occurs while collecting information 
    */
-  public JSONObject getJson(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
+  public JSONObject getJson(DisplayablyValid<QueryInstanceSpec> spec) throws WdkModelException {
     return getBaseJson(spec);
   }
 
@@ -42,7 +42,7 @@ public abstract class ParamFormatter<T extends Param> {
    * @throws WdkModelException if system problem occurs
    * @throws WdkUserException if data in param is invalid for some reason
    */
-  protected JSONObject getBaseJson(SemanticallyValid<QueryInstanceSpec> spec) {
+  protected JSONObject getBaseJson(DisplayablyValid<QueryInstanceSpec> spec) {
     JSONObject pJson = new JSONObject();
     pJson.put(JsonKeys.NAME, _param.getName());
     pJson.put(JsonKeys.DISPLAY_NAME, _param.getPrompt());
