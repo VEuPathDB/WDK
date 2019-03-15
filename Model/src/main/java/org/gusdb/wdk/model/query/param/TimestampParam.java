@@ -93,7 +93,6 @@ public class TimestampParam extends Param {
   public String getDefault(PartiallyValidatedStableValues contextParamValues) {
     long time = System.currentTimeMillis();
     String value = Long.toString(time / (1000 * interval));
-    System.out.println(time + " - " + value);
     return value;
   }
 

@@ -1,5 +1,7 @@
 package org.gusdb.wdk.service.service;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +26,7 @@ import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
@@ -352,7 +355,10 @@ public class AnswerService extends AbstractWdkService {
       try {
         reporter.report(stream);
       }
-      catch (WdkModelException e) {
+      catch (WdkModelException | WdkRuntimeException e) {
+        stream.write((" *** ERROR *** " + NL + "We're sorry, but an error occurred " +
+            "while streaming your result and your request cannot be completed.  " +
+            "Please contact us with a description of your download.").getBytes());
         throw new WebApplicationException(e);
       }
     };
