@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
 import org.json.JSONArray;
@@ -22,13 +23,17 @@ public class StrategyFormatter {
   }
 
   public static JSONObject getListingStrategyJson(Strategy strategy) throws JSONException {
+    Step rootStep = strategy.getRootStep();
+    RecordClass rc = rootStep.getRecordClass();
+    boolean isValid = (rc == null)? false : strategy.isValid();
+    String rcName = (rc == null)? "unknown" : rc.getDisplayName();
     return new JSONObject()
         .put(JsonKeys.STRATEGY_ID, strategy.getStrategyId())
         .put(JsonKeys.DESCRIPTION, strategy.getDescription())
         .put(JsonKeys.NAME, strategy.getName())
         .put(JsonKeys.AUTHOR, strategy.getUser().getDisplayName())
         .put(JsonKeys.LATEST_STEP_ID, strategy.getRootStepId())
-        .put(JsonKeys.RECORD_CLASS_NAME, strategy.getRootStep().getRecordClass().getFullName())
+        .put(JsonKeys.RECORD_CLASS_NAME, rcName)
         .put(JsonKeys.SIGNATURE, strategy.getSignature())
         .put(JsonKeys.LAST_MODIFIED, strategy.getLastModifiedTime())
         .put(JsonKeys.IS_PUBLIC, strategy.isPublic())
