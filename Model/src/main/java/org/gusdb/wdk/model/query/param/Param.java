@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Named.NamedObject;
@@ -847,7 +848,9 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
       String containerName = getContainer() == null ? "unknown" : getContainer().getFullName();
       String msg = "Default value for param '" + getFullName() +
           "' in question '" + containerName + "' cannot be valid " +
-          "since the default must be empty but allowEmpty is false.";
+          "since the default value is empty but allowEmpty is false and " +
+          "the param is depended on by " + getDependentParams().stream()
+          .map(NamedObject::getName).collect(Collectors.joining(", "));
       if (EMPTY_DESPITE_ALLOWEMPTY_FALSE_IS_FATAL) {
         throw new WdkModelException(msg);
       }
