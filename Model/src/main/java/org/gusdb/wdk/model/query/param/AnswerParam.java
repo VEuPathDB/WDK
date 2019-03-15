@@ -146,6 +146,10 @@ public class AnswerParam extends Param {
     if (step == null) {
       return ctxParamVals.setInvalid(name, "Step ID value " + stepId + " does not correspond to an available step.");
     }
+    
+    if (!step.hasValidQuestion()) {
+      return ctxParamVals.setInvalid(name, "Step ID value " + stepId + " is not associated with a valid search");
+    }
 
     // make sure the input step is of the acceptable type
     String rcName = step.getRecordClass().getFullName();
