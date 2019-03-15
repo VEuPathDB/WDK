@@ -148,7 +148,12 @@ public class AnswerParam extends Param {
     }
     
     if (!step.hasValidQuestion()) {
-      return ctxParamVals.setInvalid(name, "Step ID value " + stepId + " is not associated with a valid search");
+      return ctxParamVals.setInvalid(name, "Step " + stepId + " is not associated with a valid search");
+    }
+
+    if (step.getRecordClass() == null) {
+      return ctxParamVals.setInvalid(name, "Step " + stepId + " is associated with search "
+    + step.getAnswerSpec().getQuestionName() + ", but that search has no record class");
     }
 
     // make sure the input step is of the acceptable type
