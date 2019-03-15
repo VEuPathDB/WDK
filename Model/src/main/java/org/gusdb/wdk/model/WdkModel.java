@@ -673,8 +673,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       for (Query query : querySet.getQueries()) {
         allQueries.add(query);
         if (!nonRootQueryNames.contains(query.getFullName())) {
-        	rootQueries.add(query);
-            rootQueryNames.add(query.getFullName());
+          rootQueries.add(query);
+          rootQueryNames.add(query.getFullName());
         }
       }
     }

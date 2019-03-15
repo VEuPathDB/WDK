@@ -540,30 +540,35 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
       return stableValues.setInvalid(getName(), "At least one parameter '" + getName() + "' depends on is invalid or missing.");
     }
 
-    // all parents passed validation; handle case where empty value allowed
+    // all parents passed validation; handle case where empty value is always allowed (per flag)
     String value = stableValues.get(getName());
-    if ((value == null || value.isEmpty()) && isAllowEmpty() && !fillStrategy.shouldFillWhenMissing()) {
+    if ((value == null || value.isEmpty()) &&
+        isAllowEmpty() &&
+        !fillStrategy.shouldFillWhenMissing()) {
       // make sure entry present (might have been missing);
       //  empty value will be filled in at query execution time (internal value conversion)
-      stableValues.put(getName(), null);
       return stableValues.setValid(getName());
     }
 
-    // empty value not allowed; fill with default value if requested, otherwise fail on missing
-    if (stableValues.get(getName()) == null) {
-      if (fillStrategy.shouldFillWhenMissing()) {
-        // fill in default value; value will still be validated below (cheap because vocabs are cached)
-        String defaultValue = getDefault(stableValues);
-        stableValues.put(getName(), defaultValue);
-        // make sure to set invalid if default is missing or empty but allowEmpty is false
-        if ((defaultValue == null || defaultValue.isEmpty()) && !isAllowEmpty()) {
-          return stableValues.setInvalid(getName(), "Parameter '" +
-              getName() + "' cannot be empty, but no default value exists.");
-        }
+    // empty value not generally allowed; fill with default value if requested
+    boolean defaultUsed = false;
+    if (stableValues.get(getName()) == null && fillStrategy.shouldFillWhenMissing()) {
+      // fill in default value; value will still be validated below (cheap because vocabs are cached)
+      String defaultValue = getDefault(stableValues);
+      stableValues.put(getName(), defaultValue);
+      defaultUsed = true;
+    }
+
+    // handle cases where value is still empty after possibly being populated by a default
+    value = stableValues.get(getName()); // refresh local var
+    if (value == null || value.isEmpty()) {
+      // empty value is still allowed if param is not depended on and validation level is displayable or less
+      if (level.isLessThanOrEqualTo(ValidationLevel.DISPLAYABLE) && getDependentParams().isEmpty()) {
+        return stableValues.setValid(getName());
       }
-      else {
-        return stableValues.setInvalid(getName(), "Parameter '" +
-            getName() + "' cannot be empty.");
+      if (!isAllowEmpty()) {
+        return stableValues.setInvalid(getName(), "Parameter '" + getName() + "' cannot be empty" +
+            (defaultUsed ? ", but no default value exists." : "."));
       }
     }
 
@@ -823,6 +828,23 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    */
   public void resolveDependedParamRefs() throws WdkModelException {
     // nothing to do for most params; overridden by AbstractDependentParam
+  }
+
+  /**
+   * @throws WdkModelException if is depended and default value conflicts with
+   *                           allowEmpty setting
+   */
+  public void checkAllowEmptyVsEmptyDefault() throws WdkModelException {
+    // make sure empty param value is either valid or does not happen
+    if (!getDependentParams().isEmpty() &&
+        (_xmlDefaultValue == null || _xmlDefaultValue.isEmpty()) &&
+        !_allowEmpty) {
+      String containerName = getContainer() == null ? "unknown" : getContainer().getFullName();
+      String msg = "Default value for param '" + getFullName() +
+          "' in question '" + containerName + "' cannot be valid " +
+          "since the default must be empty but allowEmpty is false.";
+      throw new WdkModelException(msg);
+    }
   }
 
 }

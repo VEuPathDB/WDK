@@ -71,7 +71,7 @@ public class EnumParamHandler extends AbstractParamHandler {
       return value;
 
     AbstractEnumParam enumParam = (AbstractEnumParam) _param;
-    EnumParamVocabInstance cache = enumParam.getVocabInstance(spec.getUser(), ctxParamVals);
+    EnumParamVocabInstance cache = enumParam.getVocabInstance(ctxParamVals);
 
     // TODO: This validation should be in the param, not the handler
     String[] terms = enumParam.convertToTerms(value);

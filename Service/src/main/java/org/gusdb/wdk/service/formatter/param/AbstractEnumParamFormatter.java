@@ -3,7 +3,7 @@ package org.gusdb.wdk.service.formatter.param;
 import java.util.Arrays;
 import java.util.List;
 
-import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
+import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
@@ -20,7 +20,7 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
   }
 
   @Override
-  public JSONObject getJson(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
+  public JSONObject getJson(DisplayablyValid<QueryInstanceSpec> spec) throws WdkModelException {
     return getBaseJson(spec)
         .put(JsonKeys.COUNT_ONLY_LEAVES, _param.getCountOnlyLeaves())
         .put(JsonKeys.MAX_SELECTED_COUNT, _param.getMaxSelectedCount())

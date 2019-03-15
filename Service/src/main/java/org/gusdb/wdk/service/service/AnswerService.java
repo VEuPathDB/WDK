@@ -24,6 +24,7 @@ import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.request.AnswerFormatting;
@@ -73,7 +74,7 @@ import org.json.JSONObject;
  * }
  * </pre>
  */
-@Path("/record-types/{" + AnswerService.RECORDCLASS_URL_SEGMENT + "}/searches/{" + AnswerService.SEARCH_URL_SEGMENT + "}/reports")
+@Path("/record-types/{" + AnswerService.RECORDCLASS_URL_SEGMENT + "}/searches/{" + AnswerService.SEARCH_URL_SEGMENT + "}" + AnswerService.REPORTS_URL_SEGMENT)
 public class AnswerService extends AbstractWdkService {
 
   private static final Logger LOG = Logger.getLogger(AnswerService.class);
@@ -81,9 +82,10 @@ public class AnswerService extends AbstractWdkService {
   static final String RECORDCLASS_URL_SEGMENT = "recordClassUrlSegment";
   static final String SEARCH_URL_SEGMENT = "questionUrlSegment";
 
+  public static final String REPORTS_URL_SEGMENT = "/reports";
   public static final String REPORT_NAME_PATH_PARAM = "reportNameSegment";
-  public static final String STANDARD_REPORT_ENDPOINT = "/" + DefaultJsonReporter.RESERVED_NAME;
-  public static final String CUSTOM_REPORT_ENDPOINT = "/{" + REPORT_NAME_PATH_PARAM + "}";
+  public static final String STANDARD_REPORT_URL_SEGMENT = "/" + DefaultJsonReporter.RESERVED_NAME;
+  public static final String CUSTOM_REPORT_URL_SEGMENT = "/{" + REPORT_NAME_PATH_PARAM + "}";
 
   private final String _recordClassUrlSegment;
   private final String _questionUrlSegment;
@@ -108,7 +110,7 @@ public class AnswerService extends AbstractWdkService {
    * @throws WdkModelException if an error occurs while processing the request
    */
   @POST
-  @Path(STANDARD_REPORT_ENDPOINT)
+  @Path(STANDARD_REPORT_URL_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.answer.post-request")
@@ -130,7 +132,7 @@ public class AnswerService extends AbstractWdkService {
    * @throws WdkModelException if an error occurs while processing the request
    */
   @POST
-  @Path(CUSTOM_REPORT_ENDPOINT)
+  @Path(CUSTOM_REPORT_URL_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
   // Produces an unknown media type; varies depending on reporter selected
   public Response buildResult(
@@ -154,7 +156,7 @@ public class AnswerService extends AbstractWdkService {
    * @throws WdkModelException if an error occurs while processing the request
    */
   @POST
-  @Path(CUSTOM_REPORT_ENDPOINT)
+  @Path(CUSTOM_REPORT_URL_SEGMENT)
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response buildResultFromForm(
       @PathParam(REPORT_NAME_PATH_PARAM) String reportName,
@@ -297,11 +299,12 @@ public class AnswerService extends AbstractWdkService {
     return new TwoTuple<>(answerValue, applyDisposition(
         builder, reporter.getContentDisposition(), reporter.getDownloadFileName()).build());
   }
-  /*
+
   @POST
   @Path("filter-summary/{filterName}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
   public Response displayFilterResults(@PathParam("filterName") String filterName, JSONObject requestJson)
       throws WdkModelException, WdkUserException, DataValidationException {
     RunnableObj<AnswerSpec> answerSpec = parseAnswerSpec(getQuestionOrNotFound(_recordClassUrlSegment, _questionUrlSegment),
@@ -310,7 +313,6 @@ public class AnswerService extends AbstractWdkService {
     JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
     return Response.ok(filterSummaryJson.toString()).build();
   }
-  */
 
   /**
    * Returns configured reporter based on passed answer value and formatting JSON

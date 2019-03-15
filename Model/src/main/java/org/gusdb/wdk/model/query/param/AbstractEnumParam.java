@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.functional.TreeNode;
-import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
+import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.SelectableItem;
@@ -247,9 +247,9 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return getVocabInstance(context.getUser(), context);
   }
 
-  public EnumParamVocabInstance getVocabInstance(User user, SemanticallyValid<QueryInstanceSpec> context)
+  public EnumParamVocabInstance getVocabInstance(DisplayablyValid<QueryInstanceSpec> spec)
       throws WdkModelException {
-    return getVocabInstance(user, context.get().toMap());
+    return getVocabInstance(spec.get().getUser(), spec.get().toMap());
   }
 
   @Override
@@ -265,10 +265,6 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   public String getSanityDefault(User user, Map<String, String> contextParamValues,
       SelectMode sanitySelectMode) throws WdkModelException {
     return getSanityDefaultValue(getVocabInstance(user, contextParamValues), sanitySelectMode, getMultiPick(), getSanityDefault());
-  }
-
-  public EnumParamVocabInstance getVocabInstance(SemanticallyValid<QueryInstanceSpec> spec) throws WdkModelException {
-    return getVocabInstance(spec.get().getUser(), spec.get().toMap());
   }
 
   public Map<String, String> getDisplayMap(User user, Map<String, String> contextParamValues) throws WdkModelException {
@@ -588,20 +584,30 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
           "'] in context query ['" + contextQueryName + "']: " +
           "TreeBox display type cannot be selected when multiPick is false.");
     }
+  }
 
+  /**
+   * Override version in param to consider selectMode when deciding if default
+   * conflicts with allowEmpty setting.
+   * 
+   * @throws WdkModelException if is depended and default value conflicts with
+   *                           allowEmpty setting
+   */
+  @Override
+  public void checkAllowEmptyVsEmptyDefault() throws WdkModelException {
     // make sure empty param value is either valid or does not happen
-    String defaultFromModel = getXmlDefault();
-    if ((defaultFromModel == null || defaultFromModel.isEmpty()) &&
-        SelectMode.NONE.equals(selectMode) && !_allowEmpty) {
+    if (!getDependentParams().isEmpty() &&
+        (_xmlDefaultValue == null || _xmlDefaultValue.isEmpty()) &&
+        SelectMode.NONE.equals(selectMode) &&
+        !_allowEmpty) {
       String containerName = getContainer() == null ? "unknown" : getContainer().getFullName();
       String msg = "Default value for param '" + getFullName() +
           "' in question '" + containerName + "' cannot be valid " +
           "since the default must be empty but allowEmpty is false.";
-      LOG.warn(msg);
-      //throw new WdkModelException(msg);
+      throw new WdkModelException(msg);
     }
   }
-
+  
   @Override
   public String getBriefRawValue(Object rawValue, int truncateLength) {
     String[] terms = (String[]) rawValue;
