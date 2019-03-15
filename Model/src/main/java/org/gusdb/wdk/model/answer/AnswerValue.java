@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.answer;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 

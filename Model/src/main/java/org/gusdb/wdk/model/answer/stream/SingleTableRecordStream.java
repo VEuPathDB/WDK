@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.iterator.ReadOnlyIterator;
 import org.gusdb.wdk.model.WdkModelException;
@@ -24,6 +23,7 @@ import org.gusdb.wdk.model.record.TableValue;
 
 public class SingleTableRecordStream implements RecordStream {
 
+  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(SingleTableRecordStream.class);
 
   private AnswerValue _answerValue;
@@ -89,23 +89,18 @@ public class SingleTableRecordStream implements RecordStream {
   
             // add the row from the last call to next and clear lastPkValues
             tableValue.initializeRow(_resultList);
-            int rows = 1;
             _lastPkValues.set(null); // will reset if there is another record after this one
 
             // loop through the ResultList's rows and add to table until PK values differ
             while (_resultList.next()) {
               Map<String,Object> rowPkValues = _pkDef.getPrimaryKeyFromResultList(_resultList).getRawValues();
-              //LOG.debug("RecordInstance Iterator(): Will compare previous with " + FormatUtil.prettyPrint(rowPkValues));
               if (rawValuesDiffer(currentRecordPkValues, rowPkValues)) {
                 // save off next record's primary keys and return this record
-                //LOG.debug("RecordInstance Iterator(): New record's table; save off new record PKs and return record having table of size " + rows);
                 _lastPkValues.set(rowPkValues);
                 return record;
               }
               // otherwise add row to table value
               tableValue.initializeRow(_resultList);
-              rows++;
-              //LOG.debug("RecordInstance Iterator(): Added row to current record's table.  Now " + rows + " rows.");
             }
   
             // if didn't already return, then this was the last record
