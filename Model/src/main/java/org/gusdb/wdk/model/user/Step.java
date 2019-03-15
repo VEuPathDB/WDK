@@ -430,7 +430,7 @@ public class Step implements Validateable<Step> {
    */
   private Optional<Step> findAnswerParamsStep(int answerParamOrdinal) {
 
-    if (!_answerSpec.hasValidQuestion()) {
+    if (!hasValidQuestion()) {
       return Optional.empty();
     }
 
@@ -702,7 +702,7 @@ public class Step implements Validateable<Step> {
   }
 
   public RecordClass getRecordClass() {
-    return _answerSpec.hasValidQuestion() ? null : _answerSpec.getQuestion().getRecordClass();
+    return hasValidQuestion() ? null : _answerSpec.getQuestion().getRecordClass();
   }
 
   public int getIndexFromId(int stepId) throws WdkUserException {
@@ -720,7 +720,7 @@ public class Step implements Validateable<Step> {
   public boolean isFiltered() throws WdkModelException {
 
     // check if answer spec's question is valid
-    if (!_answerSpec.hasValidQuestion()) {
+    if (!hasValidQuestion()) {
       return false;
     }
 
