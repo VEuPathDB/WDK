@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -75,8 +76,12 @@ import org.json.JSONObject;
  */
 public abstract class Param extends WdkModelBase implements Cloneable, Comparable<Param>, NamedObject {
 
+  private static final Logger LOG = Logger.getLogger(Param.class);
+
   public static final String RAW_VALUE_SUFFIX = "_raw";
   public static final String INVALID_VALUE_SUFFIX = "_invalid";
+
+  protected static final boolean EMPTY_DESPITE_ALLOWEMPTY_FALSE_IS_FATAL = false;
 
   @Override
   public abstract Param clone();
@@ -843,7 +848,12 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
       String msg = "Default value for param '" + getFullName() +
           "' in question '" + containerName + "' cannot be valid " +
           "since the default must be empty but allowEmpty is false.";
-      throw new WdkModelException(msg);
+      if (EMPTY_DESPITE_ALLOWEMPTY_FALSE_IS_FATAL) {
+        throw new WdkModelException(msg);
+      }
+      else {
+        LOG.warn(msg);
+      }
     }
   }
 

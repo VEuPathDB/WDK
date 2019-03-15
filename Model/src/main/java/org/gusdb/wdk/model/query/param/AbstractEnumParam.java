@@ -604,7 +604,12 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       String msg = "Default value for param '" + getFullName() +
           "' in question '" + containerName + "' cannot be valid " +
           "since the default must be empty but allowEmpty is false.";
-      throw new WdkModelException(msg);
+      if (EMPTY_DESPITE_ALLOWEMPTY_FALSE_IS_FATAL) {
+        throw new WdkModelException(msg);
+      }
+      else {
+        LOG.warn(msg);
+      }
     }
   }
   
