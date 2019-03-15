@@ -107,7 +107,7 @@ public class StrategyService extends UserService {
   @PATCH
   @Path(BASE_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
-  // TODO: @OutSchema(...)
+  @InSchema("wdk.users.strategy.patch-request")
   public void deleteStrategies(JSONObject[] strats) // TODO: Find a better name for me
       throws WdkModelException {
     final Collection<Strategy> toUpdate = new ArrayList<>(strats.length);
@@ -132,7 +132,8 @@ public class StrategyService extends UserService {
   @GET
   @Path(ID_PATH)
   @Produces(MediaType.APPLICATION_JSON)
-  // TODO: @OutSchema(...)
+  @OutSchema("wdk.users.strategies.id.get-response")
+
   public JSONObject getStrategy(@PathParam(ID_PARAM) long strategyId)
       throws WdkModelException {
     return StrategyFormatter.getDetailedStrategyJson(
@@ -143,7 +144,6 @@ public class StrategyService extends UserService {
   @Path(ID_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  @InSchema("wdk.users.strategy.patch-request")
   public void updateStrategy(@PathParam(ID_PARAM) long strategyId,
       JSONObject body) throws WdkModelException, DataValidationException {
     final StepFactory fac = getWdkModel().getStepFactory();
