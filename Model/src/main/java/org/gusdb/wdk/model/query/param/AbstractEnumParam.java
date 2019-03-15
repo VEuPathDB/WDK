@@ -7,10 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -603,7 +605,9 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       String containerName = getContainer() == null ? "unknown" : getContainer().getFullName();
       String msg = "Default value for param '" + getFullName() +
           "' in question '" + containerName + "' cannot be valid " +
-          "since the default must be empty but allowEmpty is false.";
+          "since the default value is empty but allowEmpty is false and " +
+          "the param is depended on by " + getDependentParams().stream()
+          .map(NamedObject::getName).collect(Collectors.joining(", "));
       if (EMPTY_DESPITE_ALLOWEMPTY_FALSE_IS_FATAL) {
         throw new WdkModelException(msg);
       }
