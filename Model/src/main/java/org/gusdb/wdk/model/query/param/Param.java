@@ -82,7 +82,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   public static final String RAW_VALUE_SUFFIX = "_raw";
   public static final String INVALID_VALUE_SUFFIX = "_invalid";
 
-  protected static final boolean EMPTY_DESPITE_ALLOWEMPTY_FALSE_IS_FATAL = false;
+  protected static final boolean EMPTY_DESPITE_ALLOWEMPTY_FALSE_IS_FATAL = true;
 
   @Override
   public abstract Param clone();
