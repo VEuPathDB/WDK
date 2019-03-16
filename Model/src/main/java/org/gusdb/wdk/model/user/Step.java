@@ -701,8 +701,10 @@ public class Step implements Validateable<Step> {
     return null;
   }
 
-  public RecordClass getRecordClass() {
-    return hasValidQuestion() ? null : _answerSpec.getQuestion().getRecordClass();
+  public Optional<RecordClass> getRecordClass() {
+    return hasValidQuestion() ?
+        Optional.of(_answerSpec.getQuestion().getRecordClass()) :
+        Optional.empty();
   }
 
   public int getIndexFromId(int stepId) throws WdkUserException {
@@ -886,54 +888,6 @@ public class Step implements Validateable<Step> {
 
   public boolean getHasCompleteAnalyses() throws WdkModelException {
     return _wdkModel.getStepAnalysisFactory().hasCompleteAnalyses(this);
-  }
-
-  public String getType() {
-    RecordClass recordClass = getRecordClass();
-    return recordClass == null ? null : getRecordClass().getFullName();
-  }
-
-  /**
-   * Check id the given step can be assigned as the previous step of the current one. If it's not allowed, a
-   * WdkUserException will be thrown out
-   *
-   * @param previousStep
-   * @throws WdkUserException
-   */
-  public void checkIfPassedStepAllowedAsPrimaryInput(Step previousStep) throws
-      WdkUserException {
-    // make sure the current step can take any previous step.
-    if (!isCombined())
-      throw new WdkUserException("The step #" + getStepId() + " cannot take any step as its previousStep.");
-
-    // make sure the current step can take the newStep as previousStep
-    String type = previousStep.getType();
-    AnswerParam param = getPrimaryInputStepParam()
-        .orElseThrow(() -> new WdkUserException("Cannot assign a previous step to step " + getStepId()));
-    if (!param.allowRecordClass(type))
-      throw new WdkUserException("The new step#" + previousStep.getStepId() + " of type " + type +
-          " is not compatible with the next step#" + getStepId());
-  }
-
-  /**
-   * Check id the given step can be assigned as the child step of the current one. If it's not allowed, a
-   * WdkUserException will be thrown out.
-   *
-   * @param childStep
-   * @throws WdkUserException
-   */
-  public void checkIfPassedStepAllowedAsSecondaryInput(Step childStep) throws WdkUserException {
-    // check if the current step can take any child steps.
-    if (!isCombined() || isTransform())
-      throw new WdkUserException("The step #" + getStepId() + " cannot take any step as its childStep.");
-
-    // make sure the current step can take the newStep as childStep
-    String type = childStep.getType();
-    AnswerParam param = getSecondaryInputStepParam()
-        .orElseThrow(() -> new WdkUserException("Cannot assign a child step to step " + getStepId()));
-    if (!param.allowRecordClass(type))
-      throw new WdkUserException("The new step#" + childStep.getStepId() + " of type " + type +
-          " is not compatible with the parent step#" + getStepId());
   }
 
   public Optional<Long> getStrategyId() {
