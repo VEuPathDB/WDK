@@ -462,7 +462,8 @@ public class Step implements Validateable<Step> {
 
   /**
    * Returns the real result size of this step (number of records returned); once
-   * this method is called, getEstimateSize() will also return this value.
+   * this method is called, getEstimateSize() will also return this value, and
+   * the estimate_size column in the database will also be updated.
    *
    * @return the real result size gained by running the step
    */
