@@ -19,7 +19,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
@@ -39,11 +38,11 @@ import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.StepContainer;
+import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.formatter.QuestionFormatter;
 import org.gusdb.wdk.service.request.QuestionRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
-import org.gusdb.wdk.service.annotation.OutSchema;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -113,7 +112,8 @@ public class QuestionService extends AbstractWdkService {
         .getOrThrow(spec -> new WdkModelException("Default values for question '" +
             questionUrlSegment + "' are not displayable. Validation " +
             "details: " + spec.getValidationBundle().toString(2)));
-    return Response.ok(QuestionFormatter.getQuestionJsonWithParamValues(validSpec).toString()).build();
+    return Response.ok(QuestionFormatter.getQuestionJsonWithParamValues(validSpec,
+        validSpec.get().getValidationBundle()).toString()).build();
   }
 
   /**
@@ -148,17 +148,34 @@ public class QuestionService extends AbstractWdkService {
       String body)
           throws WdkModelException, RequestMisformatException, DataValidationException {
     Question question = getQuestionOrNotFound(questionUrlSegment);
-    SemanticallyValid<AnswerSpec> answerSpec = AnswerSpec.builder(getWdkModel())
+    QuestionRequest request = QuestionRequest.parse(body, question);
+    AnswerSpec answerSpec = AnswerSpec.builder(getWdkModel())
         .setQuestionFullName(question.getFullName())
-        .setParamValues(QuestionRequest.parse(body, question).getContextParamValues())
+        .setParamValues(request.getContextParamValues())
         .build(
             getSessionUser(), 
             StepContainer.emptyContainer(),
             ValidationLevel.SEMANTIC,
-            FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID)
-        .getSemanticallyValid()
-        .getOrThrow(spec -> new WdkModelException("Unable to produce a valid spec from incoming param values"));
-    return Response.ok(QuestionFormatter.getQuestionJsonWithParamValues(answerSpec).toString()).build();
+            FillStrategy.NO_FILL);
+    // save off the validation (including errors) of the answer spec representing the passed-in values
+    ValidationBundle validation = answerSpec.getValidationBundle();
+    DisplayablyValid<AnswerSpec> displayableSpec =
+        answerSpec.isValid() ?
+        answerSpec.getDisplayablyValid().getLeft() :
+        // need to generate a new, displayable answer spec so revise form can be shown
+        AnswerSpec.builder(getWdkModel())
+            .setQuestionFullName(question.getFullName())
+            .setParamValues(request.getContextParamValues())
+            .build(
+                getSessionUser(), 
+                StepContainer.emptyContainer(),
+                ValidationLevel.DISPLAYABLE,
+                FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID)
+            .getDisplayablyValid()
+            .getOrThrow(spec -> new WdkModelException("Default values for question '" +
+                questionUrlSegment + "' are not displayable. Validation " +
+                "details: " + spec.getValidationBundle().toString(2)));
+    return Response.ok(QuestionFormatter.getQuestionJsonWithParamValues(displayableSpec, validation).toString()).build();
   }
 
   /**
@@ -197,43 +214,43 @@ public class QuestionService extends AbstractWdkService {
     // parse incoming JSON into existing and changed values
     QuestionRequest request = QuestionRequest.parse(body, question);
 
-    if (!request.getChangedParam().isPresent()) {
-      throw new RequestMisformatException("'changedParam' property is required at this endpoint");
-    }
-
     // find the param object for the changed param
-    Entry<String,String> changedParamEntry = request.getChangedParam().get();
+    Entry<String,String> changedParamEntry = request.getChangedParam()
+        .orElseThrow(() -> new RequestMisformatException("'changedParam' property is required at this endpoint"));
     Param changedParam = question.getParamMap().get(changedParamEntry.getKey());
 
-    // make sure incoming values reflect changed value
+    // set incoming values to reflect changed value
     Map<String,String> contextParams = new MapBuilder<String,String>(
         request.getContextParamValues()).put(changedParamEntry).toMap();
 
     // Build an answer spec with the passed values but replace missing/invalid
     // values with defaults.  Will remove unaffected params below.
-    SemanticallyValid<AnswerSpec> answerSpec = AnswerSpec.builder(getWdkModel())
+    DisplayablyValid<AnswerSpec> answerSpec = AnswerSpec.builder(getWdkModel())
         .setQuestionFullName(question.getFullName())
         .setParamValues(contextParams)
         .build(
             getSessionUser(),
             StepContainer.emptyContainer(),
-            ValidationLevel.SEMANTIC,
+            ValidationLevel.DISPLAYABLE,
             FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID)
-        .getSemanticallyValid()
+        .getDisplayablyValid()
         .getOrThrow(spec -> new WdkModelException("Unable to produce a valid spec from incoming param values"));
 
-    // see if changed param value changed during build; if so, then invalid
+    // see if changed param value changed during build; if so, then it was invalid
     if (!answerSpec.get().getQueryInstanceSpec()
         .get(changedParam.getName()).equals(changedParamEntry.getValue())) {
       // means the build process determined the incoming changed param value to
       // be invalid and changed it to the default; this is disallowed, so throw
-      // TODO: figure out an elegant way to tell the user WHY the value is invalid
+      // TODO: figure out an elegant way to tell the user WHY the value they entered is invalid
       throw new DataValidationException("The passed changed param value '" + 
           changedParamEntry.getValue() + "' is invalid.");
     }
 
-    // get stale params of the changed value; if any of these are invalid, also throw exception
+    // get stale params of the changed value
     Set<Param> staleDependentParams = changedParam.getStaleDependentParams();
+
+    /* RRD 3/15/19 Not sure we need this check any more; comment for now and maybe remove later
+    // if any stale params are invalid, also throw exception
     ValidationBundle validation = answerSpec.get().getValidationBundle();
     Map<String,List<String>> errors = validation.getKeyedErrors();
     if (!errors.isEmpty()) {
@@ -243,13 +260,14 @@ public class QuestionService extends AbstractWdkService {
               question.getFullName() + FormatUtil.NL + validation.toString());
         }
       }
-    }
+    }*/
 
     // output JSON but tell formatter to skip non-stale params; their values
     // may have inadvertently changed (if incoming values were invalid) but the
-    // client should only be modifying params that depend on the changed param
+    // client is only interested in params that depend on the changed value
     List<String> paramsToOutput = mapToList(staleDependentParams, NamedObject::getName);
-    JSONArray output = QuestionFormatter.getParamsJson(AnswerSpec.getValidQueryInstanceSpec(answerSpec),
+    JSONArray output = QuestionFormatter.getParamsJson(
+        AnswerSpec.getValidQueryInstanceSpec(answerSpec),
         param -> paramsToOutput.contains(param.getName()));
     return Response.ok(output.toString()).build();
   }

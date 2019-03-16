@@ -64,7 +64,6 @@ public class JsonKeys {
   public static final String SCOPES = "scopes";
   public static final String CLIENT_SORT_SPEC = "clientSortSpec";
 
-
   // scoping-related keys
   public static final String CATEGORIES = "categories";
   public static final String CATEGORY = "category";
@@ -96,6 +95,7 @@ public class JsonKeys {
   public static final String DIRECTION = "direction";
 
   // question specific keys
+  public static final String SEARCH_DATA = "searchData";
   public static final String OUTPUT_RECORD_CLASS_NAME = "outputRecordClassName";
   public static final String ALLOWED_PRIMARY_INPUT_RECORD_CLASS_NAMES = "allowedPrimaryInputRecordClassNames";
   public static final String ALLOWED_SECONDARY_INPUT_RECORD_CLASS_NAMES = "allowedSecondaryInputRecordClassNames";

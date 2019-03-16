@@ -1,11 +1,12 @@
 package org.gusdb.wdk.service.formatter;
 
+import static org.gusdb.wdk.service.formatter.ValidationFormatter.getValidationBundleJson;
+
 import java.util.Optional;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Step;
@@ -84,20 +85,6 @@ public class StepFormatter {
     } catch (JSONException e) {
       throw new WdkModelException("Unable to convert Step to service JSON", e);
     }
-  }
-
-  private static JSONObject getValidationBundleJson(ValidationBundle validationBundle) {
-    boolean isValid = validationBundle.getStatus().isValid();
-    JSONObject json = new JSONObject()
-        .put(JsonKeys.LEVEL, validationBundle.getLevel())
-        .put(JsonKeys.IS_VALID, isValid);
-    if (!isValid) {
-      json.put(JsonKeys.ERRORS,
-        new JSONObject()
-          .put(JsonKeys.GENERAL, validationBundle.getUnkeyedErrors())
-          .put(JsonKeys.BY_KEY, validationBundle.getKeyedErrors()));
-    }
-    return json;
   }
 
   public static JSONObject getStepJsonWithResultSize(Step step) throws WdkModelException {
