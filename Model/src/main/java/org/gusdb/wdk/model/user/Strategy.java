@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
@@ -439,7 +440,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     return _wdkModel.getStepFactory().updateStrategy(this, overwrite);
   }
 
-  public RecordClass getRecordClass() {
+  public Optional<RecordClass> getRecordClass() {
     return getRootStep().getRecordClass();
   }
 
@@ -481,7 +482,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
       jsStrategy.put("description", _description);
       jsStrategy.put("saved", _isSaved);
       jsStrategy.put("deleted", _isDeleted);
-      jsStrategy.put("type", getRecordClass().getFullName());
+      jsStrategy.put("type", getRecordClass().map(NamedObject::getFullName).orElse(null));
 
       if (!forChecksum) {
         jsStrategy.put("valid", isValid());

@@ -42,22 +42,22 @@ public class StrategyFilter extends StepFilter {
   public JSONObject getSummaryJson(AnswerValue answer, String idSql) throws WdkModelException {
     String rcName = answer.getAnswerSpec().getQuestion().getRecordClass().getFullName();
     List<Strategy> strategies = answer.getWdkModel().getStepFactory()
-        .getStrategies(answer.getUser().getUserId(), ValidationLevel.SYNTACTIC)
+        .getStrategies(answer.getUser().getUserId(), ValidationLevel.RUNNABLE)
         .values()
         .stream()
-        .filter(strategy -> strategy.getRecordClass().getFullName().equals(rcName))
+        .filter(strategy -> strategy.isValid() && strategy.getRecordClass().get().getFullName().equals(rcName))
         .collect(Collectors.toList());
     return getStrategiesJson(strategies);
   }
 
-  public JSONObject getStrategiesJson(List<Strategy> strategies) {
+  private JSONObject getStrategiesJson(List<Strategy> strategies) {
     JSONArray arr = new JSONArray();
     for (Strategy strat : strategies) {
       arr.put(new JSONObject()
         .put("id", strat.getStrategyId())
         .put("name", strat.getName())
         .put("size", strat.getEstimatedSize())
-        .put("recordClass", strat.getRecordClass().getFullName()));
+        .put("recordClass", strat.getRecordClass().get().getFullName()));
     }
     return new JSONObject().put("strategies", arr);
   }

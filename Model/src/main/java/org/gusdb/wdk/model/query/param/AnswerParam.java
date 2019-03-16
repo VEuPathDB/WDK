@@ -151,16 +151,11 @@ public class AnswerParam extends Param {
       return ctxParamVals.setInvalid(name, "Step " + stepId + " is not associated with a valid search (" + step.getAnswerSpec().getQuestionName() + ")");
     }
     
-    if (step.getRecordClass() == null) {
-      return ctxParamVals.setInvalid(name, "Step " + stepId + " is associated with search "
-    + step.getAnswerSpec().getQuestionName() + ", but that search has no record class");
-    }
-
     // make sure the input step is of the acceptable type
-    String rcName = step.getRecordClass().getFullName();
+    String rcName = step.getRecordClass().get().getFullName();
     if (!recordClasses.containsKey(rcName)) {
       return ctxParamVals.setInvalid(name, "The step of record type '" + rcName
-        + "' is not allowed in the answerParam " + this.getFullName());
+        + "' is not allowed in the answerParam " + getFullName());
     }
 
     return ctxParamVals.setValid(name);
