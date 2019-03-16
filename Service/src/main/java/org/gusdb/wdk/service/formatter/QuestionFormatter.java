@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
+import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
@@ -56,10 +57,13 @@ public class QuestionFormatter {
     return reduce(questions, (arr, next) -> arr.put(getQuestionJson(next)), new JSONArray());
   }
 
-  public static JSONObject getQuestionJsonWithParamValues(DisplayablyValid<AnswerSpec> spec)
+  public static JSONObject getQuestionJsonWithParamValues(DisplayablyValid<AnswerSpec> spec, ValidationBundle validation)
       throws JSONException, WdkModelException {
-    return getQuestionJson(spec.get().getQuestion())
-        .put(JsonKeys.PARAMETERS, getParamsJson(AnswerSpec.getValidQueryInstanceSpec(spec)));
+    return new JSONObject()
+        .put(JsonKeys.SEARCH_DATA,
+            getQuestionJson(spec.get().getQuestion())
+              .put(JsonKeys.PARAMETERS, getParamsJson(AnswerSpec.getValidQueryInstanceSpec(spec))))
+        .put(JsonKeys.VALIDATION, ValidationFormatter.getValidationBundleJson(validation));
   }
 
   public static JSONObject getQuestionJson(Question q) {
