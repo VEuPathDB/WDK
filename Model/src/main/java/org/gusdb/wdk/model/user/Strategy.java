@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.user;
 
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.defaultOnException;
+import static org.gusdb.fgputil.functional.Functions.filter;
 import static org.gusdb.fgputil.functional.Functions.reduce;
 import static org.gusdb.wdk.model.user.StepContainer.withId;
 
@@ -579,6 +580,15 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
 
   public static Optional<RunnableObj<Step>> getRunnableStep(RunnableObj<Strategy> strategy, long stepId) {
     return strategy.get().findFirstStep(withId(stepId)).map(step -> step.getRunnable().getLeft());
+  }
+
+  public void updateStaleResultSizesOnRunnableSteps() throws WdkModelException {
+    List<Step> stepsToRun = filter(getAllSteps(),
+        step -> step.isRunnable() && step.getEstimatedSize() == Step.RESET_SIZE_FLAG);
+    for (Step step : stepsToRun) {
+      // getResultSize() will update the size in the step and write the size to the DB
+      step.getResultSize();
+    }
   }
 
 }

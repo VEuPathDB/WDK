@@ -103,7 +103,7 @@ public class StrategyService extends UserService {
       throw new DataValidationException(wue);
     }
   }
-  
+
   @PATCH
   @Path(BASE_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
@@ -133,11 +133,12 @@ public class StrategyService extends UserService {
   @Path(ID_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.users.strategies.id.get-response")
-
   public JSONObject getStrategy(@PathParam(ID_PARAM) long strategyId)
       throws WdkModelException {
-    return StrategyFormatter.getDetailedStrategyJson(
-      getStrategyForCurrentUser(strategyId, ValidationLevel.SEMANTIC));
+    Strategy strategy = getStrategyForCurrentUser(strategyId, ValidationLevel.RUNNABLE);
+    // update result sizes for all runnable steps that need refreshing
+    strategy.updateStaleResultSizesOnRunnableSteps();
+    return StrategyFormatter.getDetailedStrategyJson(strategy);
   }
 
   @PATCH
@@ -147,7 +148,7 @@ public class StrategyService extends UserService {
   public void updateStrategy(@PathParam(ID_PARAM) long strategyId,
       JSONObject body) throws WdkModelException, DataValidationException {
     final StepFactory fac = getWdkModel().getStepFactory();
-    final Strategy strat = getStrategyForCurrentUser(strategyId, ValidationLevel.SYNTACTIC);
+    final Strategy strat = getStrategyForCurrentUser(strategyId, ValidationLevel.NONE);
 
     if (strat.isSaved()) {
       validateSavedStratChange(body).ifPresent(err -> {
@@ -237,7 +238,7 @@ public class StrategyService extends UserService {
   private Strategy getStrategyForCurrentUser(long strategyId, ValidationLevel level) {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      // Whether the user owns this strategy or not is resolved in the getStepFactory method
+
       Strategy strategy = getWdkModel().getStepFactory()
         .getStrategyById(strategyId, level)
         .orElseThrow(() -> new NotFoundException(
