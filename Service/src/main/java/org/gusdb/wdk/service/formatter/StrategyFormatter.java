@@ -42,7 +42,7 @@ public class StrategyFormatter {
 
   public static JSONObject getDetailedStrategyJson(Strategy strategy) throws WdkModelException, JSONException {
     return getListingStrategyJson(strategy)
-        .put(JsonKeys.ROOT_STEP, getStepsJson(strategy.getRootStep()))
+        .put(JsonKeys.STEP_TREE, getStepsJson(strategy.getRootStep()))
         .put(JsonKeys.ESTIMATED_SIZE, strategy.getResultSize()); // overwrite with real size
   }
 

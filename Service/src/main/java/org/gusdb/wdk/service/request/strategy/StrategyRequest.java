@@ -86,7 +86,7 @@ public class StrategyRequest {
     boolean isPublic = getBooleanOrDefault(json, JsonKeys.IS_PUBLIC, false);
 
     TwoTuple<Long, Collection<StepBuilder>> treeInput =
-        treeToSteps(existingStrategy, json.getJSONObject(JsonKeys.ROOT_STEP), stepFactory);
+        treeToSteps(existingStrategy, json.getJSONObject(JsonKeys.STEP_TREE), stepFactory);
     return new StrategyRequest(name, savedName, description, isSaved,
         isPublic, treeInput.getFirst(), treeInput.getSecond());
   }

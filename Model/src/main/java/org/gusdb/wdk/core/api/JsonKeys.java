@@ -109,7 +109,7 @@ public class JsonKeys {
   public static final String STEP_ANALYSIS_PLUGINS = "stepAnalysisPlugins";
 
   // param-related keys
-  public static final String STABLE_VALUE = "stableValue";
+  public static final String INITIAL_DISPLAY_VALUE = "initialDisplayValue"; // aka "default"
   public static final String VOCABULARY = "vocabulary";
   public static final String DEPENDENT_PARAMS = "dependentParams";
 
@@ -218,7 +218,7 @@ public class JsonKeys {
   public static final String LAST_MODIFIED = "lastModified";
   public static final String IS_SAVED = "isSaved";
   public static final String IS_DELETED = "isDeleted";
-  public static final String ROOT_STEP = "stepTree";
+  public static final String STEP_TREE = "stepTree";
   public static final String PRIMARY_INPUT_STEP = "primaryInput";
   public static final String SECONDARY_INPUT_STEP = "secondaryInput";
 
