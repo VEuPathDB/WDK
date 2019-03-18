@@ -36,6 +36,7 @@ import org.apache.log4j.Logger;
  */
 public class EuPathCategoriesFactory {
 
+  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(EuPathCategoriesFactory.class);
 
   // maps to collect the categories we make

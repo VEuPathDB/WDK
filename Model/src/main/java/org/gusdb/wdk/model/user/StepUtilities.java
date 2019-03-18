@@ -121,18 +121,13 @@ public class StepUtilities {
   }
 
   public static Strategy[] getInvalidStrategies(User user) throws WdkModelException {
-    try {
-      Map<Long, Strategy> strategies = new LinkedHashMap<>();
-      user.getWdkModel().getStepFactory().loadStrategies(user, strategies);
 
-      Strategy[] array = new Strategy[strategies.size()];
-      strategies.values().toArray(array);
-      return array;
-    }
-    catch (WdkModelException ex) {
-      System.out.println(ex);
-      throw ex;
-    }
+    Map<Long, Strategy> strategies = new LinkedHashMap<>();
+    user.getWdkModel().getStepFactory().loadStrategies(user, strategies);
+
+    Strategy[] array = new Strategy[strategies.size()];
+    strategies.values().toArray(array);
+    return array;
   }
 
   public static Strategy[] getStrategies(User user) throws WdkModelException {

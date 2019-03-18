@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.service;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.DEFAULT_REPORTER_PARSER;
 import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.SPECIFIED_REPORTER_PARSER;
 
@@ -19,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.request.AnswerFormatting;
@@ -230,7 +232,12 @@ public class AnswerService extends AbstractWdkService {
       try {
         reporter.report(stream);
       }
-      catch (WdkModelException e) {
+      catch (WdkModelException | WdkRuntimeException e) {
+        stream.write((" ********************************************* " + NL + 
+            " ********************************************* " + NL + 
+            " *************** ERROR **************** " + NL + 
+            "We're sorry, but an error occurred while streaming your result and your request cannot be completed.  " + NL + 
+            "Please contact us with a description of your download." + NL + NL).getBytes());
         throw new WebApplicationException(e);
       }
     };

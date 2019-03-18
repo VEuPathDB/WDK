@@ -26,7 +26,7 @@ public class WdkSqlScriptRunner {
 
   public static void main(String[] args) {
     if (args.length != 3 && args.length != 5) {
-      System.out.println("USAGE: fgpJava " + WdkSqlScriptRunner.class.getName() + " <project_id> [APP|USER|ACCT] <sql_file> [<auto_commit> <stopOnError>]");
+      System.err.println("USAGE: fgpJava " + WdkSqlScriptRunner.class.getName() + " <project_id> [APP|USER|ACCT] <sql_file> [<auto_commit> <stopOnError>]");
       System.exit(1);
     }
     BufferedReader sqlReader = null;
