@@ -37,9 +37,9 @@ public class FilterOptionList implements Iterable<FilterOption>, Validateable<Fi
       return this;
     }
 
-    public FilterOptionListBuilder fromFilterOptionList(FilterOptionList filters) {
+    public FilterOptionListBuilder addAllFilters(FilterOptionList filters) {
       for (FilterOption filter : filters) {
-        add(FilterOption.builder().fromFilterOption(filter));
+        add(FilterOption.builder(filter));
       }
       return this;
     }
