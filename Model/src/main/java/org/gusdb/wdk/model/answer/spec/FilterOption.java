@@ -29,11 +29,10 @@ public class FilterOption implements Validateable<FilterOption>, NamedObject {
 
     private FilterOptionBuilder() {}
 
-    public FilterOptionBuilder fromFilterOption(FilterOption filterOption) {
+    private FilterOptionBuilder(FilterOption filterOption) {
       _filterName = filterOption.getKey();
       _value = JsonUtil.clone(filterOption.getValue());
       _isDisabled = filterOption.isDisabled();
-      return this;
     }
 
     public String getFilterName() {
@@ -66,6 +65,10 @@ public class FilterOption implements Validateable<FilterOption>, NamedObject {
 
   public static FilterOptionBuilder builder() {
     return new FilterOptionBuilder();
+  }
+
+  public static FilterOptionBuilder builder(FilterOption filterOption) {
+    return new FilterOptionBuilder(filterOption);
   }
 
   // basic information about this filter option

@@ -198,7 +198,7 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
       }
     }
     // now add back any original incoming filters
-    newFilters.fromFilterOptionList(incomingFilters.buildInvalid());
+    newFilters.addAllFilters(incomingFilters.buildInvalid());
     return newFilters;
   }
 

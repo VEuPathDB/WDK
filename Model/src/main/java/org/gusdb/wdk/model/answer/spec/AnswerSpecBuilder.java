@@ -42,8 +42,8 @@ public class AnswerSpecBuilder {
     _queryInstanceSpec = QueryInstanceSpec.builder().fromQueryInstanceSpec(answerSpec.getQueryInstanceSpec());
     _assignedWeight = _queryInstanceSpec.getAssignedWeight();
     _legacyFilterName = answerSpec.getLegacyFilterName();
-    _filters = FilterOptionList.builder().fromFilterOptionList(answerSpec.getFilterOptions());
-    _viewFilters = FilterOptionList.builder().fromFilterOptionList(answerSpec.getViewFilterOptions());
+    _filters = FilterOptionList.builder().addAllFilters(answerSpec.getFilterOptions());
+    _viewFilters = FilterOptionList.builder().addAllFilters(answerSpec.getViewFilterOptions());
   }
 
   public AnswerSpecBuilder(SemanticallyValid<AnswerSpec> validAnswerSpec) {
