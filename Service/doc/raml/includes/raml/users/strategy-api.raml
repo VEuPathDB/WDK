@@ -124,7 +124,13 @@ patch:
           * estimatedSize should then exist on every step
           * last_run updated on newly run steps
       * Last mod date is updated
-      * Returns full strategy JSON (see GET below for format)
+
+    responses:
+      200:
+        body:
+          application/json:
+	    type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/id/get-response.json
+
 
   /step-tree
     description: |
@@ -144,7 +150,7 @@ patch:
     put:
       body:
         application/json:
-          type: TODO
+          type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/id/put-request.json
       responses:
         204:
           description: No Content

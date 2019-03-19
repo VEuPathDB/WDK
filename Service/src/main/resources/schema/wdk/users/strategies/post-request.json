@@ -19,51 +19,32 @@
       "type": "object",
       "description": "New strategy request",
       "properties": {
-        "strategyId": {
-          "type": "integer"
-        },
         "description": {
           "type": "string"
         },
         "name": {
           "type": "string"
         },
-        "author": {
+        "savedName": {
           "type": "string"
-        },
-        "recordClassName": {
-          "type": "string"
-        },
-        "signature": {
-          "type": "string"
-        },
-        "lastModified": {
-          "type": "string"
-        },
-        "isPublic": {
-          "type": "boolean"
         },
         "isSaved": {
           "type": "boolean"
         },
-        "isValid": {
+        "isPublic": {
           "type": "boolean"
         },
-        "isDeleted": {
-          "type": "boolean"
-        },
-        "organization": {
-          "type": "string"
+        "stepTree": {
+	  "$ref": "../../includes/step-tree.json"
         }
       },
       "additionalProperties": false,
       "required": [
-        "strategyId",
-        "latestStepId",
-        "isPublic",
-        "isSaved",
-        "isValid",
-        "isDeleted"
+          "name",
+	  "savedName",
+	  "isSaved",
+	  "isPublic",
+	  "stepTree"
       ]
     }
   ]

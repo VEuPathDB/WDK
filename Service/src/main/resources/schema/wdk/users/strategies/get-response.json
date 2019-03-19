@@ -1,59 +1,8 @@
-{
+{  
   "$schema": "http://json-schema.org/draft-04/schema",
   "type": "array",
   "items": {
-    "type": "object",
-    "properties": {
-      "strategyId": {
-        "type": "integer"
-      },
-      "description": {
-        "type": "string"
-      },
-      "name": {
-        "type": "string"
-      },
-      "author": {
-        "type": "string"
-      },
-      "latestStepId": {
-        "type": "integer"
-      },
-      "recordClassName": {
-        "type": "string"
-      },
-      "signature": {
-        "type": "string"
-      },
-      "lastModified": {
-        "type": "string"
-      },
-      "isPublic": {
-        "type": "boolean"
-      },
-      "isSaved": {
-        "type": "boolean"
-      },
-      "isValid": {
-        "type": "boolean"
-      },
-      "isDeleted": {
-        "type": "boolean"
-      },
-      "organization": {
-        "type": "string"
-      },
-      "estimatedSize": {
-        "type": "integer"
-      }
-    },
+    "$ref": "../../includes/strategy-no-step-tree.json",
     "additionalProperties": false,
-    "required": [
-      "latestStepId",
-      "isDeleted",
-      "isSaved",
-      "isValid",
-      "isPublic"
-    ]
   }
 }
