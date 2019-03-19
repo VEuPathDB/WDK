@@ -356,9 +356,11 @@ public class AnswerService extends AbstractWdkService {
         reporter.report(stream);
       }
       catch (WdkModelException | WdkRuntimeException e) {
-        stream.write((" *** ERROR *** " + NL + "We're sorry, but an error occurred " +
-            "while streaming your result and your request cannot be completed.  " +
-            "Please contact us with a description of your download.").getBytes());
+        stream.write((" ********************************************* " + NL + 
+            " ********************************************* " + NL + 
+            " *************** ERROR **************** " + NL + 
+            "We're sorry, but an error occurred while streaming your result and your request cannot be completed.  " + NL + 
+            "Please contact us with a description of your download." + NL + NL).getBytes());
         throw new WebApplicationException(e);
       }
     };
