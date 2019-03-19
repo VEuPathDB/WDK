@@ -13,35 +13,16 @@ get:
 post:
   description: |
     Create a new strategy either from a provided tree of steps, or by duplicating an existing strategy.  In the former case, provide the tree of steps in the 'stepsTree' property, and do not provide the 'sourceStrategy' property. In the latter case, do the opposite. 
+
     **Using the stepsTree property**
     * Create a strategy from one or more steps.  The stepTree structure can have just one step, or a tree of steps.
     * Submitted steps must:
       * have the same owner and project as this strategy
       * not already belong to a strategy (ie, have an assigned strategy ID).
-    * To nest a preexisting strategy, use the strategies/{other-id}/duplicated-step-tree endpoint to get a valid step tree for use in the stepTree property.  (Copy other properties as desired.)
-    * Tree of steps submitted as a data structure, e.g.
-
-    ```json
-    {
-      name: String,
-      ...other_UI_properties_above,
-      stepTree: {
-        id: 1234,
-        left: {
-          id: 2345,
-          left: { id: 3456 },
-          right: { id: 4567 }
-        },
-        right: {
-          id: 5678,
-          left: { id: 6789 }
-        }
-      }
-    }
-    ```
+      * have only null as values for all step parameters
+    * To add an existing strategy as a subtree in the step tree, use the strategies/{other-id}/duplicated-step-tree endpoint to get a valid step tree for use in the stepTree property. 
 
     **With Source Strategy**
-
     * This is to support import
     * Input JSON same as regular post but instead of stepTree property, include:
         * sourceStrategy: {strategy-signature}
@@ -73,37 +54,6 @@ patch:
     description: |
       * Returns the full JSON for a strategy, including step JSON for every step in the strategy
       * Any steps that have null estimatedSize will be run and updated
-      * An example based on the POST /strategies JSON above:
-
-      ```json
-      {
-        id: Integer,
-        name: String,
-        savedName: String,
-        description: String,
-        isSaved: Boolean, // TBD change to isMutable?
-        isPublic: Boolean,
-        signature: String,
-        creationDate: String (date formatted),
-        lastViewDate: String (date formatted),
-        lastModDate: String (date formatted),
-        stepTree: {
-          id: 1234,
-          step: <step_json_above>,
-          left: {
-            id: 2345,
-            step: <step_json_above>,
-            left: { id: 3456, step: <step_json_above> },
-            right: { id: 4567, step: <step_json_above> }
-          },
-          right: {
-            id: 5678,
-            step: <step_json_above>,
-            left: { id: 6789, step: <step_json_above> }
-          }
-        }
-      }
-      ```
 
     responses:
       200:
@@ -112,42 +62,28 @@ patch:
 	    type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/id/get-response.json
 
   patch:
-    description: |
-      * Input is like POST but only supporting mutable fields
-      * Mutable fields include:
-        * name
-        * savedName
-        * description
-        * isSaved (TBD, change to isMutable?)
-        * isPublic
-      * Root step is run; then any steps with null/-1 estimatedSize are updated
-          * estimatedSize should then exist on every step
-          * last_run updated on newly run steps
-      * Last mod date is updated
-
+    description: Update "soft" properties of the strategy
     responses:
       200:
         body:
           application/json:
-	    type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/id/get-response.json
-
+	    type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/id/patch-request.json
 
   /step-tree
-    description: |
-      step tree of the strategy
-        * All steps submitted must already have this strat ID (in DB) or null
-        * Structure will go through rigorous validation
-            * input recordclasses must be compatible with answer param specs
-        * Strategy cannot "steal" steps from another strat
-        * Any "independent" steps will be assigned this strat ID
-        * Steps removed from this strat (i.e. orphaned steps):
-            * Strategy ID = null
-            * Any AnswerParam values = null
-            * estimate_size = null
-            * last_run = null
-            * In theory they could be reused, even by another strat
-            * Will be purged later with other orphan steps
     put:
+      description: |
+        Change the step tree of the strategy.  The strategy's step tree is replaced in its entirety with the submitted step tree.
+          * All steps submitted must either already belong to this strategy, or belong to no strategy. Steps belonging to another strategy will cause an error.  Steps that do not already belong to this strategy will be assigned to it.
+	  * All steps in the tree will be (re)assigned to this strategy, and their step parameters will be (re)set according to the shape of the step tree.
+          * The step tree must be valid with respect to the record type of all input and output step parameters.
+          * Steps that did belong to this strategy, but that are excluded from the provided step tree are removed from the strategy.
+	    * The following properties will be set to null in these steps:
+              * Strategy ID
+              * Step parameter values
+              * estimatedSize
+              * lastRunTime
+            * In theory any of these steps could be reused, even by another strat
+            * If they are not reused, they will eventually be purged from the database (as "orphan" steps).
       body:
         application/json:
           type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/id/put-request.json
@@ -158,14 +94,17 @@ patch:
   /duplicated-step-tree:
     post:
       description: |
-        * Creates a duplicate of this strategy's step tree, populated with new steps.
-	* Used to add a copy of this strategy as a nested step in another strategy.
-        * Input JSON is empty
-        * Makes copies of all steps in the strategy, assigning new step IDs but removing strategy ID, estimatedSize, and values of step params
-        * Returned step tree will look like the value of the "step-tree" property in the endpoint POST /users/{user-id}/strategies
+        * Create a duplicate of this strategy's step tree, populated with new steps.
+	* Use this endpoint to add this strategy's step tree as a subtree to another strategy (using a POST or PUT to that strategy).
+	* Each of the new steps:
+	  * is a duplicate of a step in the original tree (but with a new Step ID).
+	  * does not yet have a strategy ID, estimatedSize or values set in its step params
       body:
         application/json:
           type: !include ../../../../../src/main/resources/schema/includes/empty-post-request.json
     responses:
-      # TODO: Spec out what this endpoint is supposed to return
+      200:
+        body:
+          application/json:
+	    type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/id/get-response.json
       
