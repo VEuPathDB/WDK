@@ -3,7 +3,9 @@ package org.gusdb.wdk.service.formatter;
 import static org.gusdb.fgputil.functional.Functions.rSwallow;
 import static org.gusdb.fgputil.functional.Functions.reduce;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -41,15 +43,15 @@ public class StrategyFormatter {
   }
 
   public static JSONObject getDetailedStrategyJson(Strategy strategy) throws WdkModelException, JSONException {
+    Set<Step> stepsInTree = new HashSet<Step>(); // accumulate the steps found in the tree
+    JSONObject stepTreeJson = StepFormatter.formatAsStepTree(strategy.getRootStep(), stepsInTree);
+    JSONObject stepDetailsMap = new JSONObject();
+    for (Step step : stepsInTree) stepDetailsMap.put(Long.toString(step.getStepId()), StepFormatter.getStepJsonWithEstimatedSize(step));
+    
     return getListingStrategyJson(strategy)
-        .put(JsonKeys.STEP_TREE, getStepsJson(strategy.getRootStep()))
+        .put(JsonKeys.STEP_TREE, stepTreeJson)
+        .put(JsonKeys.STEPS_IN_TREE, stepDetailsMap)
         .put(JsonKeys.ESTIMATED_SIZE, strategy.getResultSize()); // overwrite with real size
   }
 
-  protected static JSONObject getStepsJson(Step step) throws WdkModelException, JSONException {
-    if(step == null) return new JSONObject();
-    return StepFormatter.getStepJsonWithEstimatedSize(step)
-        .put(JsonKeys.PRIMARY_INPUT_STEP, getStepsJson(step.getPrimaryInputStep()))
-        .put(JsonKeys.SECONDARY_INPUT_STEP, getStepsJson(step.getSecondaryInputStep()));
-  }
 }

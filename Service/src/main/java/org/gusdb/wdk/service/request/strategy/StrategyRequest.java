@@ -119,6 +119,20 @@ public class StrategyRequest {
     return _steps;
   }
 
+  /*
+   *    id: 1234,
+        primaryInput: {
+          id: 2345,
+          primaryInput: { id: 3456 },
+          seconaryInput: { id: 4567 }
+        },
+        seconaryInput: {
+          id: 5678,
+          primaryInput: { id: 6789 }
+        }
+      }
+
+   */
   public static TwoTuple<Long, Collection<StepBuilder>> treeToSteps(
     Optional<Strategy> existingStrategy,
     JSONObject input,

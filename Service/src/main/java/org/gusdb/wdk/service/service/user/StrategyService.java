@@ -6,6 +6,7 @@ import static org.gusdb.fgputil.functional.Functions.not;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -82,7 +83,7 @@ public class StrategyService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.strategies.post-request")
-  @OutSchema("wdk.creation-post-response")
+  @OutSchema("includes.standard-post-response")
   public Response createStrategy(JSONObject body)
       throws WdkModelException, DataValidationException {
     try {
@@ -145,6 +146,7 @@ public class StrategyService extends UserService {
   @Path(ID_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @OutSchema("wdk.users.strategies.id.patch-request")
   public void updateStrategy(@PathParam(ID_PARAM) long strategyId,
       JSONObject body) throws WdkModelException, DataValidationException {
     final StepFactory fac = getWdkModel().getStepFactory();
@@ -177,7 +179,7 @@ public class StrategyService extends UserService {
   @PUT
   @Path(ID_PATH + "/step-tree")
   @Consumes(MediaType.APPLICATION_JSON)
-  // TODO: @InSchema(...)
+  @InSchema("wdk.users.strategies.id.put-request")
   public void replaceStepTree(@PathParam(ID_PARAM) long stratId, JSONObject body)
       throws WdkModelException, DataValidationException {
 
@@ -220,11 +222,18 @@ public class StrategyService extends UserService {
     }
   }
 
+  /**
+   * duplicate a strategies step tree by recreating the tree structure, but with new copies of the steps.
+   *  Used to add a copy of this strategy as a nested step in another strategy.
+   * @param stratId
+   * @return
+   * @throws WdkModelException
+   */
   @POST
   @Path(ID_PATH + "/duplicated-step-tree")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  // @InSchema(...) TODO
+  @InSchema("includes.empty-post-request") 
   // @OutSchema(...) TODO
   public JSONObject duplicateAsBranch(@PathParam(ID_PARAM) long stratId)
       throws WdkModelException {
@@ -232,7 +241,8 @@ public class StrategyService extends UserService {
         getWdkModel().getStepFactory().copyStrategyToBranch(
             getSessionUser(),
             getStrategyForCurrentUser(stratId, ValidationLevel.NONE)
-    ));
+    ),
+        new HashSet<Step>());  // we don't need to consume the list of step IDs found in the tree
   }
 
   private Strategy getStrategyForCurrentUser(long strategyId, ValidationLevel level) {

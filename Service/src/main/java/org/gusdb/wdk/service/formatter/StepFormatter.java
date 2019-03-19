@@ -3,6 +3,7 @@ package org.gusdb.wdk.service.formatter;
 import static org.gusdb.wdk.service.formatter.ValidationFormatter.getValidationBundleJson;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Named.NamedObject;
@@ -98,14 +99,21 @@ public class StepFormatter {
         .put(JsonKeys.ESTIMATED_SIZE, estSz == -1? null : estSz);
   }
 
-  public static JSONObject formatAsStepTree(Step step) {
+  /**
+   * recursively build a step tree (IDs only) based on the provided step
+   * @param step include this step and its children in the tree
+   * @param accumulatedSteps a set to accumulate Steps included in the tree.  in initial call, should be empty
+   * @return
+   */
+  public static JSONObject formatAsStepTree(Step step, Set<Step> accumulatedSteps) {
+    accumulatedSteps.add(step);
     final JSONObject out = new JSONObject()
       .put(JsonKeys.ID, step.getStepId());
 
     Optional.ofNullable(step.getPrimaryInputStep())
-      .ifPresent(s -> out.put(JsonKeys.PRIMARY_INPUT_STEP, formatAsStepTree(s)));
+      .ifPresent(s -> out.put(JsonKeys.PRIMARY_INPUT_STEP, formatAsStepTree(s, accumulatedSteps)));
     Optional.ofNullable(step.getSecondaryInputStep())
-      .ifPresent(s -> out.put(JsonKeys.SECONDARY_INPUT_STEP, formatAsStepTree(s)));
+      .ifPresent(s -> out.put(JsonKeys.SECONDARY_INPUT_STEP, formatAsStepTree(s, accumulatedSteps)));
 
     return out;
   }
