@@ -89,7 +89,7 @@ public class StrategyService extends UserService {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepFactory stepFactory = getWdkModel().getStepFactory();
-      Strategy strategy = body.has(JsonKeys.SOURCE_SIGNATURE)
+      Strategy strategy = body.has(JsonKeys.SOURCE_STRATEGY_SIGNATURE)
         ? copyStrategy(user, stepFactory, body)
         : createNewStrategy(user, stepFactory, body);
 
@@ -266,7 +266,7 @@ public class StrategyService extends UserService {
 
   private Strategy copyStrategy(User user, StepFactory stepFactory, JSONObject json)
       throws WdkModelException, WdkUserException, JSONException {
-    String signature = json.getString(JsonKeys.SOURCE_SIGNATURE);
+    String signature = json.getString(JsonKeys.SOURCE_STRATEGY_SIGNATURE);
     Strategy sourceStrategy = stepFactory.getStrategyBySignature(signature)
       .orElseThrow(() -> new WdkUserException(
         "No strategy exists with signature " + signature));
