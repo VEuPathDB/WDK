@@ -15,7 +15,7 @@ post:
     Create a new strategy either from a provided tree of steps, or by duplicating an existing strategy.  In the former case, provide the tree of steps in the 'stepsTree' property, and do not provide the 'sourceStrategy' property. In the latter case, do the opposite. 
 
     **Using the stepsTree property**
-    * Create a strategy from one or more steps.  The stepTree structure may have a single step, or a tree of steps.
+    * Create a strategy from one or more steps.  The stepTree structure may have a single step, or a tree of steps.  (Use the steps endpoint to first create the steps that will be in the strategy. Use the PUT strategies/{id} endpoint to revise the tree after you create the strategy using this endpoint.)
     * Submitted steps must:
       * have the same owner and project as this strategy
       * not already belong to a strategy (ie, must not have an assigned strategy ID).
@@ -70,7 +70,7 @@ patch:
   /step-tree
     put:
       description: |
-        Change the step tree of the strategy.  The strategy's step tree is replaced in its entirety with the submitted step tree.
+        Update the step tree of the strategy.  The strategy's step tree is replaced in its entirety with the submitted step tree.  (A typical use of this endpoint is to iteratively build up a strategy with new steps or subtrees as requested by an end user.) 
           * All steps submitted must either already belong to this strategy, or belong to no strategy. Steps belonging to another strategy will cause an error.  Steps that do not already belong to this strategy will be assigned to it.
 	  * All steps in the tree will be (re)assigned to this strategy, and their step parameters will be (re)set according to the shape of the step tree.
           * The step tree must be valid with respect to the record type of all input and output step parameters.
