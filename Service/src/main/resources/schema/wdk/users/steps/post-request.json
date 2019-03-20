@@ -37,7 +37,7 @@
         ]
       }
     },
-    "displayPrefs": {
+    "displayPreferences": {
       "$ref": "includes/display-prefs.json"
     }
   },
