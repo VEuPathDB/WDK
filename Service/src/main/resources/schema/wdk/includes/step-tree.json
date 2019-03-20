@@ -8,21 +8,13 @@
           "type": "integer"
         },
         "primaryInput": {
-          "type": [
-            "$ref": "#/definitions/step",
-            "null"
-          ]
+          "$ref": "#/definitions/step"
         },
         "secondaryInput": {
-          "type": [
-            "$ref": "#/definitions/step",
-            "null"
-          ]
+          "$ref": "#/definitions/step"
         },
 	"required": [
-          "id",
-          "primaryInput",
-          "secondaryInput"
+          "id"
 	],
         "additionalProperties": false
       }
