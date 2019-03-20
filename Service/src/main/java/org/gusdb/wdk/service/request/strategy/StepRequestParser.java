@@ -113,8 +113,8 @@ public class StepRequestParser {
         newStep.setCollapsible(patchSet.getBoolean(JsonKeys.IS_COLLAPSIBLE));
       if (patchSet.has(JsonKeys.COLLAPSED_NAME))
         newStep.setCollapsedName(patchSet.getString(JsonKeys.COLLAPSED_NAME));
-      if (patchSet.has(JsonKeys.DISPLAY_PREFS))
-        newStep.setDisplayPrefs(patchSet.getJSONObject(JsonKeys.DISPLAY_PREFS));
+      if (patchSet.has(JsonKeys.DISPLAY_PREFERENCES))
+        newStep.setDisplayPrefs(patchSet.getJSONObject(JsonKeys.DISPLAY_PREFERENCES));
 
       return newStep.build(new UserCache(step.getUser()),
           step.getValidationBundle().getLevel(), step.getStrategy());

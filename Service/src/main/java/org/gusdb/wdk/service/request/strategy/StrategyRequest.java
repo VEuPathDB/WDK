@@ -124,9 +124,9 @@ public class StrategyRequest {
         primaryInput: {
           id: 2345,
           primaryInput: { id: 3456 },
-          seconaryInput: { id: 4567 }
+          secondaryInput: { id: 4567 }
         },
-        seconaryInput: {
+        secondaryInput: {
           id: 5678,
           primaryInput: { id: 6789 }
         }
