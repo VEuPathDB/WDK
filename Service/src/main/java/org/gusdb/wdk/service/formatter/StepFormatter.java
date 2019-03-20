@@ -81,7 +81,7 @@ public class StepFormatter {
         .put(JsonKeys.VALIDATION, getValidationBundleJson(step.getValidationBundle()))
         .put(JsonKeys.CREATED_TIME, FormatUtil.formatDateTime(step.getCreatedTime()))
         .put(JsonKeys.LAST_RUN_TIME, FormatUtil.formatDateTime(step.getLastRunTime()))
-        .put(JsonKeys.DISPLAY_PREFS, JsonUtil.toJSONObject(step.getDisplayPrefs())
+        .put(JsonKeys.DISPLAY_PREFERENCES, JsonUtil.toJSONObject(step.getDisplayPrefs())
             .valueOrElseThrow(e -> new WdkModelException(e)));
     } catch (JSONException e) {
       throw new WdkModelException("Unable to convert Step to service JSON", e);
