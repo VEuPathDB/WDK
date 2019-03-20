@@ -5,14 +5,14 @@
       "type": "object",
       "description": "Strategy copy request",
       "properties": {
-        "sourceSignature": {
+        "sourceStrategySignature": {
           "description": "signature of the source strategy to copy",
           "type": "string"
         }
       },
       "additionalProperties": false,
       "required": [
-        "sourceSignature"
+        "sourceStrategySignature"
       ]
     },
     {

@@ -1,9 +1,31 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema",
-  "type": "object",
-  "properties": {
-    "strategyId": {
-      "type": "integer"
-    },
+  "definitions": {
+    "step": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "primaryInput": {
+          "type": [
+            "$ref": "#/definitions/step",
+            "null"
+          ]
+        },
+        "secondaryInput": {
+          "type": [
+            "$ref": "#/definitions/step",
+            "null"
+          ]
+        },
+	"required": [
+          "id",
+          "primaryInput",
+          "secondaryInput"
+	],
+        "additionalProperties": false
+      }
+    }
   }
 }

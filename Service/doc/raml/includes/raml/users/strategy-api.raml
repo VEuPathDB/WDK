@@ -15,20 +15,18 @@ post:
     Create a new strategy either from a provided tree of steps, or by duplicating an existing strategy.  In the former case, provide the tree of steps in the 'stepsTree' property, and do not provide the 'sourceStrategy' property. In the latter case, do the opposite. 
 
     **Using the stepsTree property**
-    * Create a strategy from one or more steps.  The stepTree structure can have just one step, or a tree of steps.
+    * Create a strategy from one or more steps.  The stepTree structure may have a single step, or a tree of steps.
     * Submitted steps must:
       * have the same owner and project as this strategy
-      * not already belong to a strategy (ie, have an assigned strategy ID).
+      * not already belong to a strategy (ie, must not have an assigned strategy ID).
       * have only null as values for all step parameters
-    * To add an existing strategy as a subtree in the step tree, use the strategies/{other-id}/duplicated-step-tree endpoint to get a valid step tree for use in the stepTree property. 
+    * To add an existing strategy as a subtree in this step tree, use the strategies/{other-id}/duplicated-step-tree endpoint to get a valid step tree for use in the stepTree property. 
 
     **With Source Strategy**
-    * This is to support import
-    * Input JSON same as regular post but instead of stepTree property, include:
-        * sourceStrategy: {strategy-signature}
-    * Looks up another user's strategy by signature
-    * Makes copy of strategy, assigning new step IDs and new strategy ID
-    * Should not need to run the strat since all estimatedSizes should be populated
+    * This is to support importing another user's strategy as a new strategy for this user.
+    * Input JSON is the same as when using the stepsTree property, but instead of the stepTree property, include the sourceStrategySignature property
+    * Makes a copy of the strategy with the specified signature.  It will contain exact copies of each step (but with new step IDs) and a new strategy ID.
+    * estimatedSize of each new step will be set as found in the orignal step
 
   body:
     application/json:
@@ -41,7 +39,7 @@ post:
 
 patch:
   description: >
-    Update the isDeleted status of one or more strategies.  Setting the flag to true deletes the strategy;  setting it to false restores it.
+    Update the isDeleted status of one or more strategies.  Setting the flag to true deletes the strategy; setting it to false restores it.
   body:
     application/json:
       type:  !include ../../../../../src/main/resources/schema/wdk/users/strategies/patch-request.json
@@ -62,7 +60,7 @@ patch:
 	    type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/id/get-response.json
 
   patch:
-    description: Update "soft" properties of the strategy
+    description: Update properties of the strategy other than those that impact the step's result.
     responses:
       200:
         body:
@@ -106,5 +104,5 @@ patch:
       200:
         body:
           application/json:
-	    type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/id/get-response.json
+	    type: !include ../../../../../src/main/resources/schema/wdk/includes/step-tree.json
       
