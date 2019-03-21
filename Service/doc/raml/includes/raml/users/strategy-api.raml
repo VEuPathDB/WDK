@@ -39,7 +39,7 @@ post:
 
 patch:
   description: >
-    Update the isDeleted status of one or more strategies.  Setting the flag to true deletes the strategy; setting it to false restores it.  Deleted strategies are eventually purged, after which restoring will no longer be possible.
+    Update the isDeleted status of one or more strategies.  Setting the flag to true deletes the strategy; setting it to false restores it.  See DELETE strategies/{id} for a description of the semantics of delete.
   body:
     application/json:
       type:  !include ../../../../../src/main/resources/schema/wdk/users/strategies/patch-request.json
@@ -68,7 +68,7 @@ patch:
 	    type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/id/patch-request.json
 
   delete:
-    description: Delete this strategy.  (Use PATCH /strategies to undo the delete)
+    description: Delete this strategy.  (Use PATCH /strategies for bulk deletes and to undo deletes).  Deleted strategies can be restored, but only before they are eventually be purged from the database.  Deleting a strategy does not delete its steps.  But they cannot be reused unless the strategy is restored, and they are removed from it.  When the strategy is purged, they will be as well. 
     responses:
       200:
 
