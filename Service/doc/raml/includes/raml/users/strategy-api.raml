@@ -39,7 +39,7 @@ post:
 
 patch:
   description: >
-    Update the isDeleted status of one or more strategies.  Setting the flag to true deletes the strategy; setting it to false restores it.
+    Update the isDeleted status of one or more strategies.  Setting the flag to true deletes the strategy; setting it to false restores it.  Deleted strategies are eventually purged, after which restoring will no longer be possible.
   body:
     application/json:
       type:  !include ../../../../../src/main/resources/schema/wdk/users/strategies/patch-request.json
@@ -66,6 +66,11 @@ patch:
         body:
           application/json:
 	    type: !include ../../../../../src/main/resources/schema/wdk/users/strategies/id/patch-request.json
+
+  delete:
+    description: Delete this strategy.  (Use PATCH /strategies to undo the delete)
+    responses:
+      200:
 
   /step-tree
     put:
