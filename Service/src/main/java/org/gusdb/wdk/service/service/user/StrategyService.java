@@ -174,19 +174,16 @@ public class StrategyService extends UserService {
   public void deleteStrategy(@PathParam(ID_PARAM) long strategyId)
       throws WdkModelException, ConflictException {
 
-    final Strategy strat = getNotDeletedStrategyForCurrentUser(strategyId, ValidationLevel.NONE);
-
     try {
-
-        if (!strat.isDeleted())
-          Strategy.builder(strat).setDeleted(true)
+      Strategy strat = getNotDeletedStrategyForCurrentUser(strategyId, ValidationLevel.NONE); // confirm not already deleted
+      strat = Strategy.builder(strat).setDeleted(true)
               .build(new UserCache(strat.getUser()), ValidationLevel.NONE);
       
+      getWdkModel().getStepFactory().updateStrategy(strat);
     } catch (InvalidStrategyStructureException e) {
       throw new WdkModelException(e);
     }
 
-    getWdkModel().getStepFactory().updateStrategy(strat);
 
   }
 
@@ -274,7 +271,7 @@ public class StrategyService extends UserService {
 
   // get a strategy, but throw not found if it is already deleted.
   private Strategy getNotDeletedStrategyForCurrentUser(long strategyId, ValidationLevel level) {
-    Strategy strat = getStrategyForCurrentUser(strategyId, ValidationLevel.NONE);
+    Strategy strat = getStrategyForCurrentUser(strategyId, level);
     if (strat.isDeleted()) throw new NotFoundException(formatNotFound(STRATEGY_RESOURCE + strategyId));
     return strat;
   }
