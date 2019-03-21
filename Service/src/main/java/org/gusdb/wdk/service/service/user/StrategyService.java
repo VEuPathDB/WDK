@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -45,8 +46,10 @@ import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.StepFormatter;
 import org.gusdb.wdk.service.formatter.StrategyFormatter;
+import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.strategy.StrategyRequest;
+import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -165,6 +168,26 @@ public class StrategyService extends UserService {
     catch (InvalidStrategyStructureException e) {
       throw new DataValidationException("Invalid strategy structure; " + e.getMessage(), e);
     }
+  }
+  
+  @DELETE
+  @Path(ID_PATH)
+  public void deleteStrategy(@PathParam(ID_PARAM) long strategyId)
+      throws WdkModelException, ConflictException {
+
+    final Strategy strat = getStrategyForCurrentUser(strategyId, ValidationLevel.NONE);
+    try {
+
+        if (!strat.isDeleted())
+          Strategy.builder(strat).setDeleted(true)
+              .build(new UserCache(strat.getUser()), ValidationLevel.NONE);
+      
+    } catch (InvalidStrategyStructureException e) {
+      throw new WdkModelException(e);
+    }
+
+    getWdkModel().getStepFactory().updateStrategy(strat);
+
   }
 
   // RRD 1/11 FIXME notes: this doesn't look quite right to me, instead, should:
