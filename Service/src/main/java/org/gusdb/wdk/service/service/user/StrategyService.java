@@ -49,7 +49,6 @@ import org.gusdb.wdk.service.formatter.StrategyFormatter;
 import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.strategy.StrategyRequest;
-import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -153,8 +152,8 @@ public class StrategyService extends UserService {
   public void updateStrategy(@PathParam(ID_PARAM) long strategyId,
       JSONObject body) throws WdkModelException, DataValidationException {
     final StepFactory fac = getWdkModel().getStepFactory();
-    final Strategy strat = getStrategyForCurrentUser(strategyId, ValidationLevel.NONE);
-
+    final Strategy strat = getNotDeletedStrategyForCurrentUser(strategyId, ValidationLevel.NONE);
+    
     if (strat.isSaved()) {
       validateSavedStratChange(body).ifPresent(err -> {
         throw new BadRequestException(
@@ -175,7 +174,8 @@ public class StrategyService extends UserService {
   public void deleteStrategy(@PathParam(ID_PARAM) long strategyId)
       throws WdkModelException, ConflictException {
 
-    final Strategy strat = getStrategyForCurrentUser(strategyId, ValidationLevel.NONE);
+    final Strategy strat = getNotDeletedStrategyForCurrentUser(strategyId, ValidationLevel.NONE);
+
     try {
 
         if (!strat.isDeleted())
@@ -206,7 +206,8 @@ public class StrategyService extends UserService {
   public void replaceStepTree(@PathParam(ID_PARAM) long stratId, JSONObject body)
       throws WdkModelException, DataValidationException {
 
-    final Strategy oldStrat = getStrategyForCurrentUser(stratId, ValidationLevel.NONE);
+    final Strategy oldStrat = getNotDeletedStrategyForCurrentUser(stratId, ValidationLevel.NONE);
+
     final StepFactory stepFactory = getWdkModel().getStepFactory();
     final TwoTuple<Long, Collection<StepBuilder>> parsedTree =
         StrategyRequest.treeToSteps(Optional.of(oldStrat), body, stepFactory);
@@ -260,6 +261,9 @@ public class StrategyService extends UserService {
   @OutSchema("wdk.users.strategies.id.duplicated-step-tree-request")
   public JSONObject duplicateAsBranch(@PathParam(ID_PARAM) long stratId)
       throws WdkModelException {
+    
+    getNotDeletedStrategyForCurrentUser(stratId, ValidationLevel.NONE); // confirm it is not deleted
+
     return StepFormatter.formatAsStepTree(
         getWdkModel().getStepFactory().copyStrategyToBranch(
             getSessionUser(),
@@ -268,6 +272,13 @@ public class StrategyService extends UserService {
         new HashSet<Step>());  // we don't need to consume the list of step IDs found in the tree
   }
 
+  // get a strategy, but throw not found if it is already deleted.
+  private Strategy getNotDeletedStrategyForCurrentUser(long strategyId, ValidationLevel level) {
+    Strategy strat = getStrategyForCurrentUser(strategyId, ValidationLevel.NONE);
+    if (strat.isDeleted()) throw new NotFoundException(formatNotFound(STRATEGY_RESOURCE + strategyId));
+    return strat;
+  }
+  
   private Strategy getStrategyForCurrentUser(long strategyId, ValidationLevel level) {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
