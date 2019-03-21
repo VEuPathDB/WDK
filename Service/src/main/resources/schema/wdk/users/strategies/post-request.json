@@ -41,7 +41,6 @@
       "additionalProperties": false,
       "required": [
           "name",
-	  "savedName",
 	  "isSaved",
 	  "isPublic",
 	  "stepTree"

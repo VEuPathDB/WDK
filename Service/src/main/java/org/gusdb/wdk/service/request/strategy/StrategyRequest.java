@@ -147,7 +147,7 @@ public class StrategyRequest {
     while(!next.isEmpty()) {
 
       final JSONObject cur = next.poll();
-      final long stepId = cur.getLong(JsonKeys.ID);
+      final long stepId = cur.getLong(JsonKeys.STEP_ID);
 
       // try to find step in the existing strategy if present
       Optional<Step> stepOpt = existingStrategy
