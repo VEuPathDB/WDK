@@ -4,7 +4,7 @@
     "step": {
       "type": "object",
       "properties": {
-        "id": {
+        "stepId": {
           "type": "integer"
         },
         "primaryInput": {
@@ -12,12 +12,13 @@
         },
         "secondaryInput": {
           "$ref": "#/definitions/step"
-        },
+        }
+},
 	"required": [
-          "id"
+          "stepId"
 	],
         "additionalProperties": false
       }
     }
   }
-}
+
