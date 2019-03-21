@@ -847,7 +847,8 @@ public class StepFactory {
       "  " + COLUMN_DESCRIPTION        + " = ?,\n" +
       "  " + COLUMN_LAST_MODIFIED_TIME + " = ?,\n" +
       "  " + COLUMN_SIGNATURE          + " = ?,\n" +
-      "  " + COLUMN_IS_PUBLIC          + " = ?\n" +
+      "  " + COLUMN_IS_PUBLIC          + " = ?,\n" +
+      "  " + COLUMN_IS_DELETED         + " = ?\n" +
       "WHERE " + COLUMN_STRATEGY_ID + " = ?";
 
     final boolean stratUpdated = 0 < new SQLRunner(con, sql).executeUpdate(
@@ -860,6 +861,7 @@ public class StepFactory {
         new Timestamp(strat.getLastModifiedTime().getTime()),
         strat.getSignature(),
         _userDbPlatform.convertBoolean(strat.isPublic()),
+        _userDbPlatform.convertBoolean(strat.isDeleted()),
         strat.getStrategyId()
       },
       new Integer[]{
@@ -871,6 +873,7 @@ public class StepFactory {
         Types.TIMESTAMP, // LAST_MODIFY_TIME
         Types.VARCHAR,   // SIGNATURE
         boolType,        // IS_PUBLIC
+        boolType,        // IS_DELETED
         Types.BIGINT     // STRATEGY_ID
       }
     );
