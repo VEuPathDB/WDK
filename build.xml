@@ -191,6 +191,17 @@
       <arg line="${targetDir}"/>
     </exec>
     <ant target="runRaml2Html"/>
+    <ant target="createSchemaJar"/>
+  </target>
+
+  <target name="createSchemaJar">
+    <echo message="Creating JSON schema jar file at ${targetDir}/lib/java/wdk-service-schema.jar"/>
+    <exec dir="${targetDir}/doc/WDK/Service"
+          executable="jar"
+          failonerror="true"
+          failifexecutionfails="true">
+      <arg line="cf ${targetDir}/lib/java/wdk-service-schema.jar schema"/>
+    </exec>
   </target>
 
   <!-- raml2html is installed in the install project (see install/package.json). -->
