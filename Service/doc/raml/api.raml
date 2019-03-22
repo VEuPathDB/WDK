@@ -11,7 +11,7 @@ baseUri: //{siteUrl}/{webApp}/service
         description: success response
         body:
           application/json:
-            type: !include ../../src/main/resources/schema/wdk/get-response.json
+            type: !include ../schema/wdk/get-response.json
 
 /client-errors: !include ./includes/raml/client-errors-api.raml
 
@@ -74,12 +74,12 @@ baseUri: //{siteUrl}/{webApp}/service
       output list.
     body:
       application/json:
-        type: !include ../../src/main/resources/schema/wdk/user-id-query/post-request.json
+        type: !include ../schema/wdk/user-id-query/post-request.json
     responses:
       200:
         body:
           application/json:
-            type: !include ../../src/main/resources/schema/wdk/user-id-query/post-response.json
+            type: !include ../schema/wdk/user-id-query/post-response.json
 
 /user-password-reset:
   displayName: User Password Reset
@@ -87,7 +87,7 @@ baseUri: //{siteUrl}/{webApp}/service
     description: Reset a user's password.
     body:
       application/json:
-        type: !include ../../src/main/resources/schema/wdk/user-password-reset/post-request.json
+        type: !include ../schema/wdk/user-password-reset/post-request.json
     responses:
       204:
 

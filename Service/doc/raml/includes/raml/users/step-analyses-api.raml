@@ -4,7 +4,7 @@ get:
     200:
       body:
         application/json:
-          type: !include ../../../../../src/main/resources/schema/wdk/users/steps/analyses/get-response.json
+          type: !include ../../../../schema/wdk/users/steps/analyses/get-response.json
           example: !include ../../example/users/steps/get-analyses-200.json
 	  
 post:
@@ -16,7 +16,7 @@ post:
     200:
       body:
         application/json:
-          type: !include ../../../../../src/main/resources/schema/wdk/users/steps/analyses/post-response.json
+          type: !include ../../../../schema/wdk/users/steps/analyses/post-response.json
           example: !include ../../example/StepAnalysisInstanceSummary.example.json
 
 /{analysis-id}:
@@ -42,7 +42,7 @@ post:
         description: Unprocessable entry
         body:
            application/json:
-              type: !include ../../../../../src/main/resources/schema/includes/string-array.json
+              type: !include ../../../../schema/includes/string-array.json
 
   /result:
     get:
@@ -99,4 +99,4 @@ post:
               ```
             body:
               application/json:
-                type: !include ../../../../../src/main/resources/schema/wdk/users/steps/analyses/result/status/get-response.json
+                type: !include ../../../../schema/wdk/users/steps/analyses/result/status/get-response.json

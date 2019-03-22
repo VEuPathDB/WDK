@@ -12,7 +12,7 @@ get:
     expand: if false, just return an array of record type names (url segments).  If true return full details of each record type, as well as full details of all searches, and available reports.  This is the only endpoint that offers a full listing of  record types, searches and reports.
   body:
     application/json:
-      type: !include ../../../../src/main/resources/schema/wdk/records/get.json
+      type: !include ../../../schema/wdk/records/get.json
 
 
 /{recordType}:
@@ -24,7 +24,7 @@ get:
       Get a detailed description of the specified record type.  This includes properties of the type, eg, whether it is displayable, and the attributes and tables that each record of this type will have.
   body:
     application/json:
-      type: !include ../../../../src/main/resources/schema/wdk/records/name/get.json
+      type: !include ../../../schema/wdk/records/name/get.json
 
 
   # TODO: this endpoint will be changed to a GET
