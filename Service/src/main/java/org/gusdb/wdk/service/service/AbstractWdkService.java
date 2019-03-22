@@ -51,7 +51,7 @@ import org.gusdb.wdk.service.UserBundle;
 public abstract class AbstractWdkService {
 
   public static final String PERMISSION_DENIED = "Permission Denied.  You do not have access to this resource.";
-  public static final String NOT_FOUND = "Resource specified [%s] does not exist.";
+  public static final String NOT_FOUND = "Resource '%s' does not exist.";
 
   /**
    * Composes a proper Not Found exception message using the supplied resource.
