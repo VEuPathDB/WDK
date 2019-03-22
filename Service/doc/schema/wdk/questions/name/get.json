@@ -5,8 +5,8 @@
   "definitions": {
     "properties": {
       "type": "object",
-      "additionalProperties": false,
-      "properties": {
+      "additionalProperties": {
+        "$ref": "../../../includes/string-array.json"       
       }
     }
   },
@@ -21,6 +21,9 @@
       "type": "string"
     },
     "displayName": {
+      "type": "string"
+    },
+    "fullName": {
       "type": "string"
     },
     "newBuild": {
@@ -133,9 +136,6 @@
         ]
       }
     },
-    "name": {
-      "type": "string"
-    },
     "parameters": {
           "type": "array",
           "items": [
@@ -192,10 +192,10 @@
     }
   },
   "required": [
+    "fullName",
     "displayName",
     "dynamicAttributes",
     "groups",
-    "name",
     "properties",
     "outputRecordClassName",
     "shortDisplayName",
