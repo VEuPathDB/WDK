@@ -34,7 +34,7 @@ public class StrategyFormatter {
         .put(JsonKeys.LATEST_STEP_ID, strategy.getRootStepId())
         .put(JsonKeys.RECORD_CLASS_NAME, strategy.getRecordClass().map(NamedObject::getFullName).orElse(null))
         .put(JsonKeys.SIGNATURE, strategy.getSignature())
-      .put(JsonKeys.LAST_MODIFIED, FormatUtil.formatDate(strategy.getLastModifiedTime()))
+      .put(JsonKeys.LAST_MODIFIED, FormatUtil.formatDateTime(strategy.getLastModifiedTime()))
         .put(JsonKeys.IS_PUBLIC, strategy.isPublic())
         .put(JsonKeys.IS_SAVED, strategy.isSaved())
         .put(JsonKeys.IS_VALID, strategy.isValid())
