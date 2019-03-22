@@ -87,7 +87,7 @@ public class ParamsAndFiltersDbColumnFormat {
 
   public static FilterOptionListBuilder parseFiltersJson(JSONObject paramFiltersJson, String filtersKey) {
     FilterOptionListBuilder builder = FilterOptionList.builder();
-    if (paramFiltersJson == null || !paramFiltersJson.has(KEY_PARAMS) || !paramFiltersJson.has(filtersKey)) {
+    if (paramFiltersJson == null || !paramFiltersJson.has(filtersKey)) {
       return builder;
     }
     JSONArray source = paramFiltersJson.getJSONArray(filtersKey);
