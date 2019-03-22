@@ -9,7 +9,7 @@ post:
       200:
         body:
           application/json:
-            type: !include ../../../../src/main/resources/schema/includes/standard-post-response.json
+            type: !include ../../../schema/includes/standard-post-response.json
 
 /{user-id}:
   uriParameters:
@@ -25,7 +25,7 @@ post:
       200:
         body:
           application/json:
-            type: !include ../../../../src/main/resources/schema/wdk/users/id/get.json
+            type: !include ../../../schema/wdk/users/id/get.json
 
   patch:
     description: >

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 'use strict';
 
 var fs = require('fs')
@@ -13,7 +14,7 @@ if (process.argv.length != 4) {
 var inputFile = process.argv[2];
 var outputFile = process.argv[3];
 
-console.log("Input file: " + inputFile + "\nOutput file: " + outputFile);
+//console.log("Input file: " + inputFile + "\nOutput file: " + outputFile);
 
 function filterSchemaProps(obj, level) {
   level++;
@@ -26,20 +27,28 @@ function filterSchemaProps(obj, level) {
   else {
     Object.keys(obj).forEach(function(key) {
       obj[key] = (level == 1 || key != "$schema") ?
-	filterSchemaProps(obj[key], level) : undefined;
+        filterSchemaProps(obj[key], level) : undefined;
     });
     return obj;
   }
 }
 
-refParser.dereference(inputFile)
+refParser.dereference(inputFile, { dereference: { circular: "ignore" } })
   .then(function(schema) {
     var mergedSchema = mergeAllOf(schema);
     mergedSchema = filterSchemaProps(mergedSchema, 0);
     fs.writeFile(outputFile,
       JSON.stringify(mergedSchema, null, 2),
-      function() { console.log("Done."); });
+      function(err) {
+        if (err) {
+          console.error(err);
+          process.exit(1);
+        }
+        //console.log("Done.");
+      }
+    );
   })
   .catch(function(err) {
     console.error(err);
+    process.exit(1);
   });

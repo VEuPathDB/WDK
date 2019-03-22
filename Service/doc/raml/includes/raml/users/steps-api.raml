@@ -10,13 +10,13 @@ post:
     * If validation of any param fails, no step is created and a 400/500 HTTP response will be returned
   body:
     application/json:
-      type: !include ../../../../../src/main/resources/schema/wdk/users/steps/post-request.json
+      type: !include ../../../../schema/wdk/users/steps/post-request.json
   responses:
     200:
       description: Success
       body:
         application/json:
-          type: !include ../../../../../src/main/resources/schema/includes/standard-post-response.json
+          type: !include ../../../../schema/includes/standard-post-response.json
 
 /{step-id}:
   uriParameters:
@@ -36,7 +36,7 @@ post:
         description: Success
         body:
           application/json:
-            type: !include ../../../../../src/main/resources/schema/wdk/users/steps/id/get-response.json
+            type: !include ../../../../schema/wdk/users/steps/id/get-response.json
 
   patch:
     description: |
@@ -48,7 +48,7 @@ post:
 	  * displayPrefs
     body:
       application/json:
-        type: !include ../../../../../src/main/resources/schema/wdk/users/steps/id/patch-request.json
+        type: !include ../../../../schema/wdk/users/steps/id/patch-request.json
     responses:
       204:
         description: No Content
@@ -69,7 +69,7 @@ post:
         * If the step has no strategy ID (i.e. is not yet part of a strategy) the request will fail.
       body:
         application/json:
-	  type: !include ../../../../../src/main/resources/schema/wdk/includes/answer-formatConfig-json-request.json
+	  type: !include ../../../../schema/wdk/includes/answer-formatConfig-json-request.json
       responses:
         200:
           description: Success
@@ -83,7 +83,7 @@ post:
         * If the step has one or more step parameters but no strategy ID (i.e. is not yet part of a strategy) the request will fail.
       body:
         application/json:
-	  type: !include ../../../../../src/main/resources/schema/wdk/includes/answer-formatConfig-json-request.json
+	  type: !include ../../../../schema/wdk/includes/answer-formatConfig-json-request.json
       responses:
         200:
           description: Success
@@ -99,7 +99,7 @@ post:
                 * estimatedSize is cleared for this and, if this step is part of a strategy, all downstream steps
       body:
         application/json:
-	  type: !include ../../../../../src/main/resources/schema/wdk/includes/answer-spec-request.json
+	  type: !include ../../../../schema/wdk/includes/answer-spec-request.json
       responses:
         204:
           description: No Content

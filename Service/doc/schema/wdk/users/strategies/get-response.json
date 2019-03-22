@@ -3,6 +3,6 @@
   "type": "array",
   "items": {
     "$ref": "../../includes/strategy-no-step-tree.json",
-    "additionalProperties": false,
+    "additionalProperties": false
   }
 }

@@ -11,13 +11,13 @@ get:
     Request includes a search configuration and a report configuration. Step and dataset parameters, if any, must have values owned by the requester.
   body:
     application/json:
-      type: !include ../../../../src/main/resources/schema/wdk/answer/post-request.json
+      type: !include ../../../schema/wdk/answer/post-request.json
     application/x-www-form-urlencoded:
   responses:
     200:
       body:
         application/json:
-          type: !include ../../../../src/main/resources/schema/wdk/answer/post-response.json
+          type: !include ../../../schema/wdk/answer/post-response.json
 
 /{reportName}:
   post:

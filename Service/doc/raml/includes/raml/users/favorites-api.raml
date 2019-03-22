@@ -7,19 +7,19 @@ get:
       description: Success
       body:
         application/json:
-          type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/get-response.json
+          type: !include ../../../../schema/wdk/users/favorites/get-response.json
 
 patch:
   description: Accepts instructions for editing/deleting multiple favorites
   body:
     application/json:
-      type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/patch-request.json
+      type: !include ../../../../schema/wdk/users/favorites/patch-request.json
   responses:
     200:
       description: Success
       body:
         application/json:
-          type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/patch-response.json
+          type: !include ../../../../schema/wdk/users/favorites/patch-response.json
 
 post:
   description: >
@@ -39,13 +39,13 @@ post:
         description: Success
         body:
           application/json:
-            type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/get-response.json
+            type: !include ../../../../schema/wdk/users/favorites/get-response.json
 
   patch:
     description: Replaces the specified favorite with the passed one
     body:
       application/json:
-        type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/id/put-request.json
+        type: !include ../../../../schema/wdk/users/favorites/id/put-request.json
     responses:
       204:
         description: No content
