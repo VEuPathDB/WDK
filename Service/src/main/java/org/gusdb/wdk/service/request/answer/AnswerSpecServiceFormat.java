@@ -51,12 +51,12 @@ public class AnswerSpecServiceFormat {
       if (json.has(JsonKeys.LEGACY_FILTER_NAME)) {
         specBuilder.setLegacyFilterName(Optional.of(json.getString(JsonKeys.LEGACY_FILTER_NAME)));
       }
-      if (json.has(JsonKeys.FILTERS)) {
-        specBuilder.setFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.FILTERS));
-      }
-      if (json.has(JsonKeys.VIEW_FILTERS)) {
-        specBuilder.setViewFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.VIEW_FILTERS));
-      }
+
+      // apply filter and view filter options if present
+      specBuilder.setFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.FILTERS));
+      specBuilder.setViewFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.VIEW_FILTERS));
+
+      // apply weight if present
       if (json.has(JsonKeys.WDK_WEIGHT)) {
         specBuilder.setAssignedWeight(json.getInt(JsonKeys.WDK_WEIGHT));
       }
