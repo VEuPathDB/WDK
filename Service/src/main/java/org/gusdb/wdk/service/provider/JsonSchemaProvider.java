@@ -1,24 +1,7 @@
 package org.gusdb.wdk.service.provider;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
-import com.github.fge.jsonschema.core.load.Dereferencing;
-import com.github.fge.jsonschema.core.load.configuration.LoadingConfiguration;
-import com.github.fge.jsonschema.core.report.ProcessingReport;
-import com.github.fge.jsonschema.main.JsonSchema;
-import com.github.fge.jsonschema.main.JsonSchemaFactory;
-import org.gusdb.wdk.service.annotation.InSchema;
-import org.gusdb.wdk.service.annotation.OutSchema;
+import static org.gusdb.fgputil.json.JsonUtil.Jackson;
 
-import javax.ws.rs.*;
-import javax.ws.rs.container.ResourceInfo;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyReader;
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,7 +11,31 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static org.gusdb.fgputil.json.JsonUtil.Jackson;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.container.ResourceInfo;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.MessageBodyWriter;
+import javax.ws.rs.ext.Provider;
+
+import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.wdk.service.annotation.InSchema;
+import org.gusdb.wdk.service.annotation.OutSchema;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.github.fge.jsonschema.core.exceptions.ProcessingException;
+import com.github.fge.jsonschema.core.load.Dereferencing;
+import com.github.fge.jsonschema.core.load.configuration.LoadingConfiguration;
+import com.github.fge.jsonschema.core.report.ProcessingReport;
+import com.github.fge.jsonschema.main.JsonSchema;
+import com.github.fge.jsonschema.main.JsonSchemaFactory;
 
 @Provider
 @Consumes(MediaType.APPLICATION_JSON)
@@ -46,7 +53,6 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
         .freeze())
       .freeze();
   }
-
 
   @Context
   private ResourceInfo ri;
@@ -96,8 +102,10 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
   public Object readFrom(Class<Object> cls, Type type, Annotation[] anns,
       MediaType media, MultivaluedMap<String,String> headers, InputStream stream)
       throws IOException, WebApplicationException {
-    final JsonNode node = Optional.ofNullable(Jackson.readTree(stream))
-        .orElseGet(NullNode::getInstance);
+    final JsonNode node = Functions.mapException(() ->
+      Optional.ofNullable(Jackson.readTree(stream))
+        .orElseGet(NullNode::getInstance),
+      parseException -> new BadRequestException(parseException.getMessage()));
 
     final String schema = findInAnnotation()
         .map(InSchema::value)
