@@ -233,6 +233,6 @@ public class JsonKeys {
 
   public static final String COLUMN_SELECTION = "columnSelection";
   public static final String SORT_COLUMNS     = "sortColumns";
-  public static final String DISPLAY_PREFERENCES    = "displayPreferencess";
+  public static final String DISPLAY_PREFERENCES    = "displayPreferences";
   public static final String PRIMARY_KEYS = "primaryKeys";
 }
