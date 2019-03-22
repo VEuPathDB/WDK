@@ -36,6 +36,7 @@ import org.apache.log4j.Logger;
  */
 public class EuPathCategoriesFactory {
 
+  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(EuPathCategoriesFactory.class);
 
   // maps to collect the categories we make
@@ -119,6 +120,10 @@ public class EuPathCategoriesFactory {
       // amazonia peru
       { "Participants", "DS_897fe55e6fParticipantRecordClasses.DS_897fe55e6fParticipantRecordClass" },
       { "Observations", "DS_897fe55e6fObservationRecordClasses.DS_897fe55e6fObservationRecordClass" },
+      //SCORE
+      { "Participants", "DS_d6a1141fbfParticipantRecordClasses.DS_d6a1141fbfParticipantRecordClass" },
+      //Southern Africa
+      { "Participants", "DS_a83d9defbbParticipantRecordClasses.DS_a83d9defbbParticipantRecordClass" },
   };
 
   // record classes whose individuals all have both scope website and menu
@@ -332,11 +337,12 @@ public class EuPathCategoriesFactory {
             model.getQuestion(node.get("name").get(0)) != null && hasScope;
       }
       catch (WdkModelException e) {
-        LOG.debug("Error attempting to resolve ontology node with model entity.");
-        LOG.debug(e.getMessage());
+        //no need to dump hundreds of mismatches due to includeProjects
+        //LOG.debug("Error attempting to resolve ontology node with model entity.");
+        //LOG.debug(e.getMessage());
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
-        LOG.debug(sw.toString());
+        //LOG.debug(sw.toString());
         return false;
       }
     }

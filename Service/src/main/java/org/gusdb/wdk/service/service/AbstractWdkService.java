@@ -213,7 +213,7 @@ public abstract class AbstractWdkService {
    * @param content data to be streamed to the client
    * @return streaming output object that will stream content to the client
    */
-  protected StreamingOutput getStreamingOutput(InputStream content) {
+  public static StreamingOutput getStreamingOutput(InputStream content) {
     return outputStream -> {
       try {
         IoUtil.transferStream(outputStream, content);

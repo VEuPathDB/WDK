@@ -37,7 +37,6 @@ import au.com.bytecode.opencsv.CSVWriter;
  */
 public abstract class AbstractTabularReporter extends StandardReporter {
 
-  @SuppressWarnings("unused")
   private static Logger LOG = Logger.getLogger(AbstractTabularReporter.class);
 
   public static final String FIELD_HAS_HEADER = "includeHeader";
@@ -157,6 +156,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
       }
       try (RecordStream records = getRecords()) {
         for (RecordInstance record : records) {
+          LOG.debug("format2CSV() - looping on records: one record: ");
           for (List<Object> row : getRowsProvider(record)) {
             writer.writeNext(Functions.mapToList(row, obj -> String.valueOf(obj)).toArray(new String[colNames.size()]));
           }
@@ -277,6 +277,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
 
     try (RecordStream records = getRecords()) {
       for (RecordInstance record : records) {
+        LOG.debug("format2Excel() - looping on records: one record: ");
         for (List<Object> row : getRowsProvider(record)) {
           writer.println("<tr>");
           count += 5;
