@@ -49,7 +49,7 @@ public class FileBasedRecordStream implements RecordStream {
   public static final int BUFFER_SIZE = 32768;
 
   /** Determines whether temporary directory and containing files are deleted on close */
-  private static final boolean DELETE_TEMPORARY_FILES = true;
+  private static final boolean DELETE_TEMPORARY_FILES = false;
 
   /**
    * Suffix for temporary CSV files constructed from table queries. Done in part to avoid conflicts with
@@ -107,7 +107,7 @@ public class FileBasedRecordStream implements RecordStream {
 
     // throw if files already populated
     if (_filesPopulated) {
-      LOG.warn("Multiple calls to populateFiles() on open stream.  This method need only be called once.  Ignoring...");
+      LOG.warn("populateFiles(): Multiple calls to populateFiles() on open stream.  This method need only be called once.  Ignoring...");
       return;
     }
 
@@ -119,6 +119,7 @@ public class FileBasedRecordStream implements RecordStream {
     _tableFileMap = assembleTableFiles(_answerValue, _temporaryDirectory, _tables);
 
     _filesPopulated = true;
+    LOG.debug("populateFiles(): done with files");
   }
 
   /**
@@ -246,10 +247,10 @@ public class FileBasedRecordStream implements RecordStream {
       return pathMap;
     }
     Timer t = new Timer();
-    LOG.info("Starting attribute file assembly...");
+    LOG.debug("assembleAttributeFiles(): Starting attribute file assembly...");
     Collection<TwoTuple<Query,List<QueryColumnAttributeField>>> requiredQueries =
         getAttributeQueryMap(getRequiredColumnAttributeFields(attributes, true));
-    LOG.info("Assembled required queries: " + t.getElapsedString());
+    LOG.debug("assembleAttributeFiles(): Assembled required queries: " + t.getElapsedString());
 
     // Iterate over all the queries needed to return all the requested attributes
     for (TwoTuple<Query,List<QueryColumnAttributeField>> queryData : requiredQueries) {
@@ -257,7 +258,7 @@ public class FileBasedRecordStream implements RecordStream {
           queryData.getSecond(), tempDir), queryData.getSecond());
     }
 
-    LOG.info("Attribute file assembly complete");
+    LOG.debug("assembleAttributeFiles(): Attribute file assembly complete: " + pathMap);
     return pathMap;
   }
 
@@ -281,7 +282,7 @@ public class FileBasedRecordStream implements RecordStream {
     SqlResultList resultList = null;
     try {
       Timer t = new Timer();
-      LOG.info("Starting query " + query.getName());
+      LOG.debug("writeAttributeFile(): Starting query " + query.getName());
 
       // Getting the paged attribute SQL but in fact, getting a SQL statement requesting with all records.
       String sql = answerValue.getPagedAttributeSql(query, true);
@@ -297,9 +298,9 @@ public class FileBasedRecordStream implements RecordStream {
           .toList();
 
       // Transfer the result list content to the CSV file provided
-      LOG.info("Starting iteration over result list for query " + query.getName() + ": " + t.getElapsedString());
+      LOG.debug("writeAttributeFile(): Starting iteration over result list for query " + query.getName() + ": " + t.getElapsedString());
       assembleCsvFile(filePath, columnsToTransfer, resultList);
-      LOG.info("Finished iteration over result list for query " + query.getName() + ": " + t.getElapsedString());
+      LOG.debug("writeAttributeFile(): Finished iteration over result list for query " + query.getName() + ": " + t.getElapsedString());
 
       // open file permissions and return the path to the temporary CSV file
       filePath.toFile().setWritable(true, false);
@@ -332,14 +333,14 @@ public class FileBasedRecordStream implements RecordStream {
     if (tables == null || tables.isEmpty()) {
       return pathMap;
     }
-    LOG.info("Starting table file assembly...");
+    LOG.debug("assembleTableFiles(): Starting table file assembly...");
 
     // Iterate over all the tables requested
     for (TableField table : tables) {
       TwoTuple<Path,List<String>> fileInfo = writeTableFile(answerValue, tempDir, table);
       pathMap.put(fileInfo.getFirst(), new TwoTuple<TableField, List<String>>(table, fileInfo.getSecond()));
     }
-    LOG.info("Table file assembly complete");
+    LOG.debug("assembleTableFiles(): Table file assembly complete:" + pathMap);
     return pathMap;
   }
 
@@ -355,7 +356,7 @@ public class FileBasedRecordStream implements RecordStream {
    */
   private static TwoTuple<Path,List<String>> writeTableFile(AnswerValue answerValue, Path tempDir, TableField table) throws WdkModelException {
     Timer t = new Timer();
-    LOG.info("Starting table: " + table.getName() + "(query: " + table.getWrappedQuery().getName() + ")");
+    LOG.debug("writeTableFile(): Starting table: " + table.getName() + "(query: " + table.getWrappedQuery().getName() + ")");
 
     // Appending table designation to query name for file to more easily distinguish
     // these files from those supporting attribute queries and to avoid name collisions.
@@ -368,9 +369,9 @@ public class FileBasedRecordStream implements RecordStream {
       resultList = answerValue.getTableFieldResultList(table);
 
       // Transfer the result list content to the CSV file provided.
-      LOG.info("Starting iteration over result list for query " + table.getWrappedQuery().getName() + ": " + t.getElapsedString());
+      LOG.debug("writeTableFile(): Starting iteration over result list for query " + table.getWrappedQuery().getName() + ": " + t.getElapsedString());
       assembleCsvFile(filePath, columnNames, resultList);
-      LOG.info("Finished iteration over result list for query " + table.getWrappedQuery().getName() + ": " + t.getElapsedString());
+      LOG.debug("writeTableFile(): Finished iteration over result list for query " + table.getWrappedQuery().getName() + ": " + t.getElapsedString());
 
       // open file permissions and return the path to the temporary CSV file
       filePath.toFile().setWritable(true, false);

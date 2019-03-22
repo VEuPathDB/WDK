@@ -92,6 +92,8 @@ public class ParamReference extends Reference {
     Boolean exposeAsAttribute = paramRef.isExposeAsAttribute();
     String minDate = paramRef.getMinDate();
     String maxDate = paramRef.getMaxDate();
+    Double min = paramRef.getMin();
+    Double max = paramRef.getMax();
     
     if (param instanceof AbstractEnumParam) {
       AbstractEnumParam enumParam = (AbstractEnumParam) param;
@@ -204,6 +206,19 @@ public class ParamReference extends Reference {
             + "' is not a dateRangeParam.  The 'minDate' and 'maxDate' properties can "
             + "only be applied to paramRefs of dateRangeParam.");
       }
+
+      if (param instanceof NumberRangeParam) {
+        if (min != null) {
+          ((NumberRangeParam)param).setMin(min);
+        }
+        if (max != null) {
+          ((NumberRangeParam)param).setMax(max);
+        }
+      } else if (min != null || max != null) {
+        throw new WdkModelException("The paramRef to '" + twoPartName
+            + "' is not a numberRangeParam.  The 'min' and 'max' properties can "
+            + "only be applied to paramRefs of numberRangeParam.");
+      }
     }
 
     // resolve the group reference
@@ -239,6 +254,8 @@ public class ParamReference extends Reference {
   private Boolean _exposeAsAttribute;
   private String _minDate;
   private String _maxDate;
+  private Double _min;
+  private Double _max;
 
   private List<WdkModelText> _helps = new ArrayList<WdkModelText>();
   private String _help;
@@ -465,6 +482,22 @@ public class ParamReference extends Reference {
 
   public void setMaxDate(String maxDate) {
     _maxDate = maxDate;
+  }
+
+  public Double getMin() {
+    return _min;
+  }
+
+  public void setMin(Double min) {
+    _min = min;
+  }
+
+  public Double getMax() {
+    return _max;
+  }
+
+  public void setMax(Double max) {
+    _max = max;
   }
 
   public Boolean getMultiPick() {

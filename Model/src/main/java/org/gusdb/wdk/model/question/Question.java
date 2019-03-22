@@ -826,7 +826,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
     for (String attrName : _defaultSortingMap.keySet()) {
       map.put(attrName, _defaultSortingMap.get(attrName));
-      if (map.size() >= UserPreferences.SORTING_LEVEL)
+      if (map.size() >= UserPreferences.MAX_NUM_SORTING_COLUMNS)
         break;
     }
 

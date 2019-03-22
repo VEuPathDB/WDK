@@ -6,17 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,6 +14,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.SortDirection;
 import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -58,8 +49,11 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static org.gusdb.wdk.model.user.UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX;
 
 /**
  * @author xingao
@@ -184,15 +178,15 @@ public class StepFactory {
     modTimeSortSql = new StringBuilder(" ORDER BY sr.").append(COLUMN_LAST_MODIFIED_TIME).append(" DESC").toString();
 
     // estimate validity of strategies by executing subquery against steps in the strategy
-    invalidStratSubquerySql = "( SELECT sr." + COLUMN_STRATEGY_ID + ", min(CAST(" + 
+    invalidStratSubquerySql = "( SELECT sr." + COLUMN_STRATEGY_ID + ", min(CAST(" +
     	_userDb.getPlatform().getNvlFunctionName() + "(" + COLUMN_IS_VALID +
         ", " + _userDb.getPlatform().convertBoolean(true) + ") AS INTEGER)) AS " + COLUMN_IS_VALID + " FROM " + _userSchema + TABLE_STRATEGY + " sr, " + _userSchema +
         TABLE_STEP + " sp WHERE sp." + COLUMN_STRATEGY_ID + " = sr." + COLUMN_STRATEGY_ID + " GROUP BY sr." +
         COLUMN_STRATEGY_ID + " )";
-    
+
     // basic select with required joins
     basicStratsSql = "SELECT sr.*, sp." + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", sp." +
-        COLUMN_QUESTION_NAME + ", sv." + COLUMN_IS_VALID + " AS " + COLUMN_IS_ALL_STEPS_VALID + " FROM " + 
+        COLUMN_QUESTION_NAME + ", sv." + COLUMN_IS_VALID + " AS " + COLUMN_IS_ALL_STEPS_VALID + " FROM " +
         _userSchema + TABLE_STRATEGY + " sr, " + _userSchema + TABLE_STEP + " sp, " + invalidStratSubquerySql +
         " sv WHERE sr." + COLUMN_ROOT_STEP_ID + " = sp." + COLUMN_STEP_ID + " AND sr." + COLUMN_USER_ID +
         " = sp." + COLUMN_USER_ID + " AND sr." + COLUMN_PROJECT_ID + " = sp." + COLUMN_PROJECT_ID + " AND sr." +
@@ -255,9 +249,9 @@ public class StepFactory {
   WdkModel getWdkModel() {
     return _wdkModel;
   }
-  
+
   /**
-   * Creates a step using new step service concept.  
+   * Creates a step using new step service concept.
    * @param user
    * @param question
    * @param dependentValues
@@ -282,14 +276,13 @@ public class StepFactory {
     LOG.debug("Creating step!");
 
     String questionName = question.getFullName();
-   
+
     // prepare the values to be inserted.
     long userId = user.getUserId();
 
     String filterName = null;
-   
+
     Exception exception = null;
-   
 
     // prepare SQLs
     String userIdColumn = Utilities.COLUMN_USER_ID;
@@ -311,9 +304,10 @@ public class StepFactory {
     sqlInsertStep.append(COLUMN_DISPLAY_PARAMS).append(", ");
     sqlInsertStep.append(COLUMN_CUSTOM_NAME).append(", ");
     sqlInsertStep.append(COLUMN_IS_COLLAPSIBLE).append(", ");
-    sqlInsertStep.append(COLUMN_COLLAPSED_NAME).append(") ");
-    
-    sqlInsertStep.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    sqlInsertStep.append(COLUMN_COLLAPSED_NAME).append(", ");
+    sqlInsertStep.append("display_prefs)");
+
+    sqlInsertStep.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     // Create the Step sans Answer
     Date createTime = new Date();
@@ -328,6 +322,8 @@ public class StepFactory {
     catch (SQLException e) {
       throw new WdkModelException(e);
     }
+
+    final JSONObject displayPrefs = buildStepDisplayPrefs(user, questionName);
 
     // create the Step
     Step step = new Step(this, user, stepId);
@@ -347,6 +343,7 @@ public class StepFactory {
     step.setCustomName(customName);
     step.setCollapsible(isCollapsible);
     step.setCollapsedName(collapsedName);
+    step.setDisplayPrefs(displayPrefs);
 
     PreparedStatement psInsertStep = null;
     try {
@@ -369,6 +366,7 @@ public class StepFactory {
       psInsertStep.setString(14,  customName);
       psInsertStep.setBoolean(15, isCollapsible);
       psInsertStep.setString(16, collapsedName);
+      _userDb.getPlatform().setClobData(psInsertStep, 17, displayPrefs.toString(), false);
       psInsertStep.executeUpdate();
     }
     catch (SQLException | JSONException ex) {
@@ -390,7 +388,7 @@ public class StepFactory {
     // get summary list and sorting list
     String questionName = question.getFullName();
     Map<String, Boolean> sortingAttributes = user.getPreferences().getSortingAttributes(
-        questionName, UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
+        questionName, DEFAULT_SUMMARY_VIEW_PREF_SUFFIX);
 
     // prepare the values to be inserted.
     long userId = user.getUserId();
@@ -416,6 +414,8 @@ public class StepFactory {
       exception = ex;
     }
 
+    final JSONObject displayPrefs = buildStepDisplayPrefs(user, questionName);
+
     // prepare SQLs
     String userIdColumn = Utilities.COLUMN_USER_ID;
 
@@ -433,8 +433,9 @@ public class StepFactory {
     sqlInsertStep.append(COLUMN_PROJECT_VERSION).append(", ");
     sqlInsertStep.append(COLUMN_QUESTION_NAME).append(", ");
     sqlInsertStep.append(COLUMN_STRATEGY_ID).append(", ");
-    sqlInsertStep.append(COLUMN_DISPLAY_PARAMS).append(") ");
-    sqlInsertStep.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    sqlInsertStep.append(COLUMN_DISPLAY_PARAMS).append(", ");
+    sqlInsertStep.append("display_prefs)");
+    sqlInsertStep.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     // Now that we have the Answer, create the Step
     Date createTime = new Date();
@@ -464,6 +465,7 @@ public class StepFactory {
     step.setException(exception);
     step.setProjectId(_wdkModel.getProjectId());
     step.setProjectVersion(_wdkModel.getVersion());
+    step.setDisplayPrefs(displayPrefs);
 
     PreparedStatement psInsertStep = null;
     try {
@@ -483,6 +485,7 @@ public class StepFactory {
       psInsertStep.setString(11, questionName);
       psInsertStep.setObject(12, strategyId);
       _userDb.getPlatform().setClobData(psInsertStep, 13, JsonUtil.serialize(jsParamFilters), false);
+      _userDb.getPlatform().setClobData(psInsertStep, 14, displayPrefs.toString(), false);
       psInsertStep.executeUpdate();
     }
     catch (SQLException | JSONException ex) {
@@ -791,6 +794,7 @@ public class StepFactory {
       step.setAssignedWeight(rsStep.getInt(COLUMN_ASSIGNED_WEIGHT));
     if (rsStep.getObject(COLUMN_STRATEGY_ID) != null)
       step.setStrategyId(rsStep.getLong(COLUMN_STRATEGY_ID));
+    step.setDisplayPrefs(new JSONObject(rsStep.getString("display_prefs")));
 
     // load left and right child
     if (rsStep.getObject(COLUMN_LEFT_CHILD_ID) != null) {
@@ -911,7 +915,7 @@ public class StepFactory {
   /**
    * This method updates the custom name, the time stamp of last running, isDeleted, isCollapsible, and
    * collapsed name
-   * 
+   *
    * @param user
    * @param step
    * @throws WdkUserException
@@ -929,7 +933,7 @@ public class StepFactory {
     String sql = "UPDATE " + _userSchema + TABLE_STEP + " SET " + COLUMN_CUSTOM_NAME + " = ?, " +
         COLUMN_LAST_RUN_TIME + " = ?, " + COLUMN_IS_DELETED + " = ?, " + COLUMN_IS_COLLAPSIBLE + " = ?, " +
         COLUMN_COLLAPSED_NAME + " = ?, " + COLUMN_ESTIMATE_SIZE + " = ?, " + COLUMN_IS_VALID + " = ?, " +
-        COLUMN_ASSIGNED_WEIGHT + " = ? WHERE " + COLUMN_STEP_ID + " = ?";
+        COLUMN_ASSIGNED_WEIGHT + " = ?, display_prefs = ? WHERE " + COLUMN_STEP_ID + " = ?";
     try {
       long start = System.currentTimeMillis();
       psStep = SqlUtils.getPreparedStatement(_userDbDs, sql);
@@ -941,7 +945,8 @@ public class StepFactory {
       psStep.setInt(6, estimateSize);
       psStep.setBoolean(7, step.isValid());
       psStep.setInt(8, step.getAssignedWeight());
-      psStep.setLong(9, step.getStepId());
+      _userDb.getPlatform().setClobData(psStep, 9, step.getDisplayPrefs().toString(), false);
+      psStep.setLong(10, step.getStepId());
       int result = psStep.executeUpdate();
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-update-step", start);
       if (result == 0)
@@ -1221,9 +1226,9 @@ public class StepFactory {
   /**
    * Make a copy of the strategy, and if the original strategy's name is not ended with ", Copy of", then that
    * suffix will be appended to it. The copy will be unsaved.
-   * 
+   *
    * The steps of the strategy will be cloned, and an id map will be filled during the cloning.
-   * 
+   *
    * @param strategy
    * @param stepIdMap
    *          the mapping from ids of old steps to those of newly cloned ones will be put into this provided
@@ -1241,11 +1246,11 @@ public class StepFactory {
   }
 
   /**
-   * 
+   *
    * @param user
    * @param oldStrategy
    * @param stepIdsMap An output map of old to new step IDs. Steps recursively encountered in the copy are added by the copy
-   * @param baseName The name to use as a basis for the new name.  If the user does not already have this name, 
+   * @param baseName The name to use as a basis for the new name.  If the user does not already have this name,
    * then use it.  Otherwise, add a numeric suffix to it.  If it already has a suffix, increment it
    * @return
    * @throws WdkModelException
@@ -1269,7 +1274,7 @@ public class StepFactory {
       throws WdkModelException {
 
     Map<String, String> paramValues = new HashMap<String, String>(oldStep.getParamValues());
-    
+
     // recursively copy AnswerParams (aka child steps)
     // also copy Datasetparams (we want a fresh copy per step because we don't track what steps are using a dataset param.  A 1-1 is easiest to manage)
     copyAnswerAndDatasetParams(paramValues, newUser, newStrategyId, oldStep, stepIdsMap);
@@ -1282,18 +1287,19 @@ public class StepFactory {
     newStep.setCollapsible(oldStep.isCollapsible());
     newStep.setCustomName(oldStep.getBaseCustomName());
     newStep.setValid(oldStep.isValid());
-    
+    newStep.setDisplayPrefs(oldStep.getDisplayPrefs());
+
     // update properties on disk
     newStep.update(false);
-    
+
     stepIdsMap.put(oldStep.getStepId(), newStep.getStepId());
-    
+
     Events.triggerAndWait(new StepCopiedEvent(oldStep, newStep), new WdkModelException(
         "Unable to execute all operations subsequent to step copy."));
 
     return newStep;
   }
-  
+
   private void copyAnswerAndDatasetParams(Map<String, String> paramValues, User newUser, long newStrategyId,
       Step oldStep, Map<Long, Long> stepIdsMap) throws WdkModelException {
     for (String paramName : paramValues.keySet()) {
@@ -1315,7 +1321,7 @@ public class StepFactory {
     Step newChildStep = copyStepTree(newUser, newStrategyId, oldChildStep, stepIdsMap);
     return Long.toString(newChildStep.getStepId());
   }
-  
+
   private String copyDatasetParam(User newUser, String paramValue, User oldUser) throws WdkModelException {
     DatasetFactory datasetFactory = _wdkModel.getDatasetFactory();
     int oldUserDatasetId = Integer.parseInt(paramValue);
@@ -1541,7 +1547,7 @@ public class StepFactory {
         if (rsCheckName.next())
           return loadStrategy(user, rsCheckName.getInt(COLUMN_STRATEGY_ID), false);
       }
-      
+
       // if newName is null, generate default name from root step (by adding/incrementing numeric suffix)
       else {
         newName = addSuffixToStratNameIfNeeded(user, root.getCustomName(), saved);
@@ -1701,7 +1707,7 @@ public class StepFactory {
       while (rsNames.next())
         names.add(rsNames.getString(COLUMN_NAME));
 
-      // randomly find the first name that matches oldName (\d+).  
+      // randomly find the first name that matches oldName (\d+).
       // increment that numeric suffix, and continue looping until the incremented guys is not found.
       // that's our new name.
       String name = oldName;
@@ -1846,7 +1852,7 @@ public class StepFactory {
 
   /**
    * This method will reset the estimate size of the step and all other steps that depends on it.
-   * 
+   *
    * @param fromStep
    * @return
    * @throws WdkModelException
@@ -1866,7 +1872,7 @@ public class StepFactory {
 
   /**
    * Generates an SQL that will return the step and all the steps along the path back to the root.
-   * 
+   *
    * @param stepId
    * @return an SQL that returns a step_id column.
    * @throws WdkModelException
@@ -1897,7 +1903,7 @@ public class StepFactory {
 
   /**
    * TODO - consider refactor this code into platform.
-   * 
+   *
    * @param stepId
    * @return
    * @throws WdkModelException
@@ -2045,5 +2051,28 @@ public class StepFactory {
       }
     }
     step.saveParamFilters();
+  }
+
+  @SuppressWarnings("cast") // will not compile without cast - maybe fixed in Java 11?
+  private static JSONObject buildStepDisplayPrefs(User user,
+      String questionName) throws WdkModelException {
+    return new JSONObject()
+      .put(
+        "sortColumns",
+        (JSONArray) user.getPreferences()
+          .getSortingAttributes(questionName, DEFAULT_SUMMARY_VIEW_PREF_SUFFIX)
+          .entrySet()
+          .stream()
+          .map(e -> new JSONObject()
+              .put("name", e.getKey())
+              .put("direction", SortDirection.getFromIsAscending(e.getValue()).toString()))
+          .collect(JSONArray::new, JSONArray::put, (a, b) -> b.forEach(a::put))
+      )
+      .put(
+        "columnSelection",
+        (JSONArray) Arrays.stream(user.getPreferences()
+          .getSummaryAttributes(questionName, DEFAULT_SUMMARY_VIEW_PREF_SUFFIX))
+          .collect(JSONArray::new, JSONArray::put, (a, b) -> b.forEach(a::put))
+      );
   }
 }
