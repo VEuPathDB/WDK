@@ -68,7 +68,7 @@ public class QuestionFormatter {
 
   public static JSONObject getQuestionJson(Question q) {
     return new JSONObject()
-      .put(JsonKeys.NAME, q.getName())
+      .put(JsonKeys.URL_SEGMENT, q.getName())
       .put(JsonKeys.FULL_NAME, q.getFullName())
       .put(JsonKeys.DISPLAY_NAME, q.getDisplayName())
       .put(JsonKeys.SHORT_DISPLAY_NAME, q.getShortDisplayName())
