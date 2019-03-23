@@ -50,7 +50,9 @@
           "align": {
             "type": "string",
             "enum": [
-              "center"
+              "center",
+              "left",
+              "right"
             ]
           },
           "displayName": {
