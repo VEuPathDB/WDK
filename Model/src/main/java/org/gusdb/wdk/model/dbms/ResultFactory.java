@@ -43,17 +43,11 @@ public class ResultFactory {
 
   private DatabaseInstance database;
   private DBPlatform platform;
-  private CacheFactory cacheFactory;
 
   public ResultFactory(WdkModel wdkModel) {
     this.database = wdkModel.getAppDb();
     this.platform = database.getPlatform();
-    this.cacheFactory = new CacheFactory(wdkModel, database);
     this.instanceInfoFetcher = new InstanceInfoFetcher(this); 
-  }
-
-  public CacheFactory getCacheFactory() {
-    return cacheFactory;
   }
 
   public String getResultMessage(QueryInstance<?> queryInstance) throws WdkModelException {

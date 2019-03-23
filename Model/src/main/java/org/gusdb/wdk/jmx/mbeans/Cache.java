@@ -114,7 +114,7 @@ public class Cache extends BeanBase implements CacheMBean {
   @Override
   public void resetWdkCache() {
     try {
-      CacheFactory factory = getWdkModel().getResultFactory().getCacheFactory();
+      CacheFactory factory = new CacheFactory(getWdkModel());
       factory.resetCache(true, true);
     } catch (Exception e) {
         // TODO: something
