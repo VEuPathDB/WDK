@@ -45,7 +45,6 @@ import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
 import org.gusdb.wdk.model.config.QueryMonitor;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
-import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.filter.FilterSet;
 import org.gusdb.wdk.model.ontology.EuPathCategoriesFactory;
 import org.gusdb.wdk.model.ontology.Ontology;
@@ -160,8 +159,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private Set<String> modelMacroSet = new LinkedHashSet<>();
   private Set<String> jspMacroSet = new LinkedHashSet<>();
   private Set<String> perlMacroSet = new LinkedHashSet<>();
-
-  private ResultFactory resultFactory;
 
   private Map<String, String> properties;
 
@@ -340,10 +337,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public Optional<RecordClass> getRecordClassByNameOrUrlSegment(String nameOrSegment) {
     Optional<RecordClass> rc = getRecordClassByUrlSegment(nameOrSegment);
     return rc.isPresent() ? rc : getRecordClassByName(nameOrSegment);
-  }
-
-  public ResultFactory getResultFactory() {
-    return resultFactory;
   }
 
   public void addWdkModelName(WdkModelName wdkModelName) {
@@ -617,7 +610,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       _userDatasetStoreStatus = UD_DISABLED;
     }
 
-    resultFactory = new ResultFactory(this);
     userFactory = new UserFactory(this);
     stepFactory = new StepFactory(this);
     datasetFactory = new DatasetFactory(this);

@@ -10,7 +10,6 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
-import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -30,16 +29,16 @@ public class CacheFactory {
   static final String COLUMN_PARAMS = "params";
   static final String COLUMN_RESULT_MESSAGE = "result_message";
 
-  private static Logger logger = Logger.getLogger(CacheFactory.class);
+  private static Logger LOG = Logger.getLogger(CacheFactory.class);
 
-  private WdkModel wdkModel;
-  private DBPlatform platform;
-  private DataSource dataSource;
+  private WdkModel _wdkModel;
+  private DBPlatform _platform;
+  private DataSource _dataSource;
 
-  public CacheFactory(WdkModel wdkModel, DatabaseInstance database) {
-    this.wdkModel = wdkModel;
-    this.platform = database.getPlatform();
-    this.dataSource = database.getDataSource();
+  public CacheFactory(WdkModel wdkModel) {
+    _wdkModel = wdkModel;
+    _platform = wdkModel.getAppDb().getPlatform();
+    _dataSource = wdkModel.getAppDb().getDataSource();
   }
 
   public void createCache() throws WdkModelException {
@@ -49,11 +48,11 @@ public class CacheFactory {
     // create the id sequence for the query & instance index
     String sequenceName = TABLE_INSTANCE + DBPlatform.ID_SEQUENCE_SUFFIX;
     try {
-      platform.createSequence(dataSource, sequenceName, 1, 1);
+      _platform.createSequence(_dataSource, sequenceName, 1, 1);
     }
     catch (SQLException ex) {
       String message = "Cannot create sequence [" + sequenceName + "]. ";
-      logger.error(message + ex.getMessage());
+      LOG.error(message + ex.getMessage());
       throw new WdkModelException(message, ex);
     }
 
@@ -80,17 +79,17 @@ public class CacheFactory {
     dropCacheTables(purge, forceDrop);
 
     try {
-      platform.dropTable(dataSource, null, TABLE_INSTANCE, purge);
+      _platform.dropTable(_dataSource, null, TABLE_INSTANCE, purge);
     }
     catch (Exception ex) {
-      logger.error("Cannot drop table [" + TABLE_INSTANCE + "]. " + ex.getMessage());
+      LOG.error("Cannot drop table [" + TABLE_INSTANCE + "]. " + ex.getMessage());
     }
     String instanceSeq = TABLE_INSTANCE + DBPlatform.ID_SEQUENCE_SUFFIX;
     try {
-      SqlUtils.executeUpdate(dataSource, "DROP SEQUENCE " + instanceSeq, "wdk-cache-drop-instance-seq");
+      SqlUtils.executeUpdate(_dataSource, "DROP SEQUENCE " + instanceSeq, "wdk-cache-drop-instance-seq");
     }
     catch (Exception ex) {
-      logger.error("Cannot drop sequence [" + instanceSeq + "]. " + ex.getMessage());
+      LOG.error("Cannot drop sequence [" + instanceSeq + "]. " + ex.getMessage());
     }
     
     // drop step analysis results cache
@@ -102,19 +101,19 @@ public class CacheFactory {
     // delete the instance index
     String sql = "DELETE FROM " + TABLE_INSTANCE + " WHERE " + COLUMN_INSTANCE_ID + " = " + instanceId;
     try {
-      SqlUtils.executeUpdate(dataSource, sql, "wdk_cache_delete_instance_index");
+      SqlUtils.executeUpdate(_dataSource, sql, "wdk_cache_delete_instance_index");
     }
     catch (Exception ex) {
-      logger.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. ", ex);
+      LOG.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. ", ex);
     }
 
     // drop result table
     String cacheTable = ResultFactory.getCacheTableName(instanceId);
     try {
-      platform.dropTable(dataSource, null, cacheTable, purge);
+      _platform.dropTable(_dataSource, null, cacheTable, purge);
     }
     catch (Exception ex) {
-      logger.error("Cannot crop table " + cacheTable, ex);
+      LOG.error("Cannot crop table " + cacheTable, ex);
     }
   }
 
@@ -140,7 +139,7 @@ public class CacheFactory {
     sqlInstance.append(" q.").append(COLUMN_TABLE_NAME);
     ResultSet resultSet = null;
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sqlInstance.toString(), "wdk-cache-instance-summary");
+      resultSet = SqlUtils.executeQuery(_dataSource, sqlInstance.toString(), "wdk-cache-instance-summary");
       System.err.println("========================= Cache Stattistics =========================");
       int queryCount = 0;
       while (resultSet.next()) {
@@ -150,7 +149,7 @@ public class CacheFactory {
         int instanceCount = resultSet.getInt("instances");
   
         String sqlSize = "SELECT count(*) FROM " + cacheTable;
-        Object objSize = SqlUtils.executeScalar(dataSource, sqlSize, "wdk-cache-query-size");
+        Object objSize = SqlUtils.executeScalar(_dataSource, sqlSize, "wdk-cache-query-size");
         int size = Integer.parseInt(objSize.toString());
   
         System.err.println("CACHE [" + queryId + "] " + queryName + ": " + instanceCount +
@@ -173,28 +172,28 @@ public class CacheFactory {
 
     // define columns
     sql.append(COLUMN_INSTANCE_ID).append(" ");
-    sql.append(platform.getNumberDataType(12)).append(" NOT NULL, ");
+    sql.append(_platform.getNumberDataType(12)).append(" NOT NULL, ");
     sql.append(COLUMN_QUERY_NAME).append(" ");
-    sql.append(platform.getStringDataType(200)).append(" NOT NULL, ");
+    sql.append(_platform.getStringDataType(200)).append(" NOT NULL, ");
     sql.append(COLUMN_TABLE_NAME).append(" ");
-    sql.append(platform.getStringDataType(30)).append(" NOT NULL, ");
+    sql.append(_platform.getStringDataType(30)).append(" NOT NULL, ");
     sql.append(COLUMN_INSTANCE_CHECKSUM).append(" ");
-    sql.append(platform.getStringDataType(40)).append(" NOT NULL, ");
+    sql.append(_platform.getStringDataType(40)).append(" NOT NULL, ");
     sql.append(COLUMN_PARAMS).append(" ");
-    sql.append(platform.getClobDataType()).append(", ");
+    sql.append(_platform.getClobDataType()).append(", ");
     sql.append(COLUMN_RESULT_MESSAGE).append(" ");
-    sql.append(platform.getClobDataType());
+    sql.append(_platform.getClobDataType());
 
     // define primary key
     sql.append(", CONSTRAINT PK_").append(COLUMN_INSTANCE_ID);
     sql.append(" PRIMARY KEY (").append(COLUMN_INSTANCE_ID).append(")) ");
 
     try {
-      SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk-cache-create-instance");
+      SqlUtils.executeUpdate(_dataSource, sql.toString(), "wdk-cache-create-instance");
     }
     catch (SQLException ex) {
       String message = "Cannot create table [" + TABLE_INSTANCE + "]. ";
-      logger.error(message + ex.getMessage());
+      LOG.error(message + ex.getMessage());
       throw new WdkModelException(message, ex);
     }
   }
@@ -213,13 +212,13 @@ public class CacheFactory {
     ResultSet resultSet = null;
     Set<String> cacheTables = new LinkedHashSet<String>();
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql.toString(), "wdk-cache-select-cache-table");
+      resultSet = SqlUtils.executeQuery(_dataSource, sql.toString(), "wdk-cache-select-cache-table");
       while (resultSet.next()) {
         cacheTables.add(resultSet.getString(COLUMN_TABLE_NAME));
       }
     }
     catch (Exception ex) {
-      logger.error("Cannot query on table [" + TABLE_INSTANCE + "]. " + ex.getMessage());
+      LOG.error("Cannot query on table [" + TABLE_INSTANCE + "]. " + ex.getMessage());
     }
     finally {
       SqlUtils.closeResultSetAndStatement(resultSet, null);
@@ -227,63 +226,63 @@ public class CacheFactory {
 
     // delete rows from cache index table
     try {
-      SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TABLE_INSTANCE + " " + whereClause, "wdk-cache-delete-instances");
+      SqlUtils.executeUpdate(_dataSource, "DELETE FROM " + TABLE_INSTANCE + " " + whereClause, "wdk-cache-delete-instances");
     }
     catch (Exception ex) {
-      logger.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. " + ex.getMessage());
+      LOG.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. " + ex.getMessage());
     }
 
     // drop the cache tables
     for (String cacheTable : cacheTables) {
       try {
-        platform.dropTable(dataSource, null, cacheTable, purge);
+        _platform.dropTable(_dataSource, null, cacheTable, purge);
       }
       catch (Exception ex) {
-        logger.error("Cannot drop table [" + cacheTable + "]. " + ex.getMessage());
+        LOG.error("Cannot drop table [" + cacheTable + "]. " + ex.getMessage());
       }
     }
   }
 
   private void dropDanglingTables(boolean purge) {
-    String schema = wdkModel.getModelConfig().getAppDB().getLogin();
+    String schema = _wdkModel.getModelConfig().getAppDB().getLogin();
     try {
-      String[] tables = platform.queryTableNames(dataSource, schema, CACHE_TABLE_PREFIX + "%");
-      logger.info("Dropping " + tables.length + " dangling tables...");
-      for (String table : tables)  platform.dropTable(dataSource, null, table, purge);
+      String[] tables = _platform.queryTableNames(_dataSource, schema, CACHE_TABLE_PREFIX + "%");
+      LOG.info("Dropping " + tables.length + " dangling tables...");
+      for (String table : tables)  _platform.dropTable(_dataSource, null, table, purge);
     }
     catch (Exception ex) {
-      logger.error(ex.getMessage());
+      LOG.error(ex.getMessage());
     }
   }
  
   private void createStepAnalysisCache() throws WdkModelException {
     try {
-      logger.info("Creating step analysis results cache.");
-      wdkModel.getStepAnalysisFactory().createResultsTable();
+      LOG.info("Creating step analysis results cache.");
+      _wdkModel.getStepAnalysisFactory().createResultsTable();
     }
     catch (WdkModelException ex) {
-      logger.error("Unable to create step analysis results cache. " + ex.getMessage());
+      LOG.error("Unable to create step analysis results cache. " + ex.getMessage());
       throw ex;
     }
   }
 
   private void clearStepAnalysisCache() {
     try {
-      logger.info("Clearing step analysis results cache.");
-      wdkModel.getStepAnalysisFactory().clearResultsTable();
+      LOG.info("Clearing step analysis results cache.");
+      _wdkModel.getStepAnalysisFactory().clearResultsTable();
     }
     catch (Exception ex) {
-      logger.error("Unable to clear step analysis results cache. " + ex.getMessage());
+      LOG.error("Unable to clear step analysis results cache. " + ex.getMessage());
     }
   }
 
   private void dropStepAnalysisCache(boolean purge) {
     try {
-      logger.info("Dropping step analysis results cache (purge = " + purge + ").");
-      wdkModel.getStepAnalysisFactory().dropResultsTable(purge);
+      LOG.info("Dropping step analysis results cache (purge = " + purge + ").");
+      _wdkModel.getStepAnalysisFactory().dropResultsTable(purge);
     }
     catch (Exception ex) {
-      logger.error("Unable to drop step analysis results cache (purge = " + purge + "). " + ex.getMessage());
+      LOG.error("Unable to drop step analysis results cache (purge = " + purge + "). " + ex.getMessage());
     }
   }
 

@@ -121,6 +121,11 @@ public abstract class QueryInstance<T extends Query> {
     _instanceId = instanceId;
   }
 
+  protected void setResultMessage(String resultMessage) {
+    _resultMessage = resultMessage;
+    _resultMessageSet = true;
+  }
+
   public String getResultMessage() throws WdkModelException {
     if (!_resultMessageSet) {
       _resultMessage = new ResultFactory(_wdkModel).getResultMessage(this);
@@ -223,12 +228,12 @@ public abstract class QueryInstance<T extends Query> {
   }
 
   private ResultList getCachedResults(boolean performSorting) throws WdkModelException {
-    ResultFactory factory = _wdkModel.getResultFactory();
+    ResultFactory factory = new ResultFactory(_wdkModel);
     return factory.getCachedResults(this, performSorting);
   }
 
   protected String getCachedSql(boolean performSorting) throws WdkModelException {
-    ResultFactory resultFactory = _wdkModel.getResultFactory();
+    ResultFactory resultFactory = new ResultFactory(_wdkModel);
     return resultFactory.getCachedSql(this, performSorting);
   }
 

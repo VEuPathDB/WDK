@@ -135,16 +135,18 @@ public class ModelCacher extends BaseCLI {
   }
 
   public int expand(WdkModel wdkModel, String schema, boolean keepCache, boolean skipParams) throws SQLException, WdkModelException {
+
+    CacheFactory cacheFactory = new CacheFactory(wdkModel);
+
     // need to reset the cache first
-    wdkModel.getResultFactory().getCacheFactory().resetCache(false, true);
+    cacheFactory.resetCache(false, true);
 
     // recreate the cache for the queries
-    CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
     cacheFactory.recreateCache(true, true);
 
     DatabaseInstance database = wdkModel.getUserDb();
     DataSource dataSource = database.getDataSource();
-    
+
     if (schema.length() == 0)
       schema = database.getDefaultSchema();
 

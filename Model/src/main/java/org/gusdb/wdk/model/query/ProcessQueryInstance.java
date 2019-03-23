@@ -76,7 +76,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
       int batchSize = _query.getCacheInsertBatchSize();
       ProcessQueryResponseListener listener = new ProcessQueryResponseListener(columns, psInsert, batchSize);
       invokeWsf(listener);
-      _resultMessage = listener.getMessage();
+      setResultMessage(listener.getMessage());
       // currently, the attachments from the WSF are ignored.
 
       // finish up the last batch
