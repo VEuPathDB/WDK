@@ -80,7 +80,7 @@
     "categories": {
       "$ref": "#/definitions/categories"
     },
-      "searches": {
+    "searches": {
       "type": "array",
       "items": {
         "$ref": "../../questions/name/get.json"
