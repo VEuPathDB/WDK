@@ -46,7 +46,6 @@ import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.StepFormatter;
 import org.gusdb.wdk.service.formatter.StrategyFormatter;
-import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.strategy.StrategyRequest;
 import org.json.JSONArray;
@@ -172,30 +171,19 @@ public class StrategyService extends UserService {
   @DELETE
   @Path(ID_PATH)
   public void deleteStrategy(@PathParam(ID_PARAM) long strategyId)
-      throws WdkModelException, ConflictException {
-
+      throws WdkModelException {
     try {
       Strategy strat = getNotDeletedStrategyForCurrentUser(strategyId, ValidationLevel.NONE); // confirm not already deleted
       strat = Strategy.builder(strat).setDeleted(true)
               .build(new UserCache(strat.getUser()), ValidationLevel.NONE);
       
       getWdkModel().getStepFactory().updateStrategy(strat);
-    } catch (InvalidStrategyStructureException e) {
+    }
+    catch (InvalidStrategyStructureException e) {
       throw new WdkModelException(e);
     }
-
-
   }
 
-  // RRD 1/11 FIXME notes: this doesn't look quite right to me, instead, should:
-  //    1. load the existing strategy
-  //    2. load any new steps not in that strategy
-  //    3. error if any newly added steps belong to another strat
-  //    4. Use strategy and step builders to build a replacement strat based on incoming tree
-  //    5. Validate the new strat (build with RUNNABLE)
-  //    6. Save the strat
-  //    7. Purge strategy ID and answer params from steps that were removed from strat, then save
-  //          Can do this easily with StepBuilder.removeStrategy()
   @PUT
   @Path(ID_PATH + "/step-tree")
   @Consumes(MediaType.APPLICATION_JSON)
