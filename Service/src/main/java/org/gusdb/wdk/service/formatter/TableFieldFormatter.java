@@ -42,18 +42,18 @@ public class TableFieldFormatter {
 
   public static JSONObject getTableJson(TableField table, boolean expandAttributes) {
     return new JSONObject()
+        .put(JsonKeys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
+            table.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
+//        .put(JsonKeys.CATEGORY, table.getAttributeCategory())
+        .put(JsonKeys.CLIENT_SORT_SPEC, getClientSortSpecJson(table))
+        .put(JsonKeys.DESCRIPTION, table.getDescription())
+        .put(JsonKeys.DISPLAY_NAME, table.getDisplayName())
+        .put(JsonKeys.HELP, table.getHelp())
+        .put(JsonKeys.IS_DISPLAYABLE, FieldScope.NON_INTERNAL.isFieldInScope(table))
+        .put(JsonKeys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(table))
       .put(JsonKeys.NAME, table.getName())
-      .put(JsonKeys.DISPLAY_NAME, table.getDisplayName())
-      .put(JsonKeys.HELP, table.getHelp())
-      .put(JsonKeys.TYPE, table.getType())
-      .put(JsonKeys.CATEGORY, table.getAttributeCategory())
-      .put(JsonKeys.DESCRIPTION, table.getDescription())
-      .put(JsonKeys.IS_DISPLAYABLE, FieldScope.NON_INTERNAL.isFieldInScope(table))
-      .put(JsonKeys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(table))
       .put(JsonKeys.PROPERTIES, table.getPropertyLists())
-      .put(JsonKeys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
-          table.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
-      .put(JsonKeys.CLIENT_SORT_SPEC, getClientSortSpecJson(table));
+      .put(JsonKeys.TYPE, table.getType());
   }
 
   private static JSONArray getClientSortSpecJson(TableField tableField) {

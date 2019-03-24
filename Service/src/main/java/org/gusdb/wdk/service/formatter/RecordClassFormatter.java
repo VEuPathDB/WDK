@@ -99,7 +99,8 @@ public class RecordClassFormatter {
         recordClass.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
       .put(JsonKeys.TABLES, TableFieldFormatter.getTablesJson(recordClass.getTableFieldMap().values(),
         FieldScope.ALL, expandTables, expandTableAttributes))
-      .put(JsonKeys.CATEGORIES, getAttributeCategoriesJson(recordClass));
+ //     .put(JsonKeys.CATEGORIES, getAttributeCategoriesJson(recordClass))
+      ;
   }
 
   // TODO:  add a new field containing the JSON schema for the request

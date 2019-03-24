@@ -44,18 +44,19 @@ public class AttributeFieldFormatter {
 
   public static JSONObject getAttributeJson(AttributeField attribute) {
     return new JSONObject()
-      .put(JsonKeys.NAME, attribute.getName())
-      .put(JsonKeys.DISPLAY_NAME, attribute.getDisplayName())
-      .put(JsonKeys.HELP, attribute.getHelp())
       .put(JsonKeys.ALIGN, attribute.getAlign())
-      .put(JsonKeys.IS_SORTABLE, attribute.isSortable())
-      .put(JsonKeys.IS_REMOVABLE, attribute.isRemovable())
-      .put(JsonKeys.TYPE, attribute.getType())
-      .put(JsonKeys.CATEGORY, attribute.getAttributeCategory())
-      .put(JsonKeys.TRUNCATE_TO, attribute.getTruncateTo())
+//      .put(JsonKeys.CATEGORY, attribute.getAttributeCategory())
+      .put(JsonKeys.DISPLAY_NAME, attribute.getDisplayName())
+      .put(JsonKeys.FORMATS, RecordClassFormatter.getAnswerFormatsJson(attribute.getReporters().values(), FieldScope.ALL))
+      .put(JsonKeys.HELP, attribute.getHelp())
       .put(JsonKeys.IS_DISPLAYABLE, FieldScope.NON_INTERNAL.isFieldInScope(attribute))
       .put(JsonKeys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(attribute))
+      .put(JsonKeys.IS_REMOVABLE, attribute.isRemovable())
+      .put(JsonKeys.IS_SORTABLE, attribute.isSortable())
+      .put(JsonKeys.NAME, attribute.getName())
       .put(JsonKeys.PROPERTIES, attribute.getPropertyLists())
-      .put(JsonKeys.FORMATS, RecordClassFormatter.getAnswerFormatsJson(attribute.getReporters().values(), FieldScope.ALL));
+      .put(JsonKeys.TRUNCATE_TO, attribute.getTruncateTo())
+      .put(JsonKeys.TYPE, attribute.getType());
+
   }
 }
