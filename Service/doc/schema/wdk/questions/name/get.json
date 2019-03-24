@@ -44,60 +44,7 @@
     "dynamicAttributes": {
       "type": "array",
       "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "align": {
-            "type": "string",
-            "enum": [
-              "center",
-              "left",
-              "right"
-            ]
-          },
-          "displayName": {
-            "type": "string"
-          },
-          "formats": {
-            "type": "array"
-          },
-          "help": {
-            "description": "Optional help text",
-            "type": "string"
-          },
-          "isDisplayable": {
-            "type": "boolean"
-          },
-          "isInReport": {
-            "type": "boolean"
-          },
-          "isRemovable": {
-            "type": "boolean"
-          },
-          "isSortable": {
-            "type": "boolean"
-          },
-          "name": {
-            "type": "string"
-          },
-          "properties": {
-            "$ref": "#/definitions/properties"
-          },
-          "truncateTo": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "displayName",
-          "formats",
-          "isDisplayable",
-          "isInReport",
-          "isRemovable",
-          "isSortable",
-          "name",
-          "properties",
-          "truncateTo"
-        ]
+        "$ref": "../../includes/record-attribute.json"
       }
     },
     "groups": {
@@ -195,7 +142,7 @@
   },
   "required": [
     "fullName",
-    "displayName",
+    "displayName", 
     "dynamicAttributes",
     "groups",
     "properties",
