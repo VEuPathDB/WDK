@@ -4,11 +4,6 @@
   "properties": {
     "align": {
       "type": "string"
-      "enum": [
-        "center",
-        "left",
-        "right"
-      ]
     },
     "category": {
       "type": "string"
