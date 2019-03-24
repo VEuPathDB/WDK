@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "align": {
-      "type": "string"
+      "type": "string",
       "enum": [
         "center",
         "left",
@@ -38,14 +38,8 @@
       "type": "string"
     },
     "properties": {
-      "type": "object",
-      "properties": {
-        "specificAttribution": {
-          "$ref": "../../includes/string-array.json"
-        },
-        "organisms": {
-          "$ref": "../../includes/string-array.json"
-        }
+      "additionalProperties": {
+        "$ref": "../../includes/string-array.json"       
       }
     },
     "truncateTo": {
@@ -56,7 +50,6 @@
     }
   },
   "required": [
-    "name",
-    "type",
+    "name"
   ]
 }
