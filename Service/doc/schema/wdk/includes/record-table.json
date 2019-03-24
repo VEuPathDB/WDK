@@ -2,17 +2,8 @@
   "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",
   "properties": {
-    "align": {
-      "type": "string"
-    },
-    "category": {
-      "type": "string"
-    },
     "displayName": {
       "type": "string"
-    },
-    "formats": {
-      "$ref": "record-reporter-array.json"
     },
     "help": {
       "type": "string"
@@ -23,28 +14,19 @@
     "isInReport": {
       "type": "boolean"
     },
-    "isRemovable": {
-      "type": "boolean"
-    },
-    "isSortable": {
-      "type": "boolean"
-    },
     "name": {
       "type": "string"
     },
-    "properties": {
-      "type": "object",
-      "properties": {
-        "specificAttribution": {
-          "$ref": "../../includes/string-array.json"
-        },
-        "organisms": {
-          "$ref": "../../includes/string-array.json"
-        }
+    "attributes": {
+      "type": "array",
+      "items": {
+        "$ref": "record-attribute.json"
       }
     },
-    "truncateTo": {
-      "type": "integer"
+    "properties": {
+      "additionalProperties": {
+        "$ref": "../../includes/string-array.json"       
+      }
     },
     "type": {
       "type": "string"
@@ -52,6 +34,6 @@
   },
   "required": [
     "name",
-    "type",
+    "attributes"
   ]
 }

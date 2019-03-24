@@ -1,33 +1,5 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema",
-  "definitions": {
-    "category": {
-      "type": "object",
-      "properties": {
-        "displayName": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "categories": {
-          "$ref": "#/definitions/categories"
-        }
-      },
-      "required": [
-        "displayName",
-        "name",
-        "categories"
-      ],
-      "additionalProperties": false
-    },
-    "categories": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/category"
-      }
-    }
-  },
   "type": "object",
   "properties": {
     "urlSegment": {
@@ -58,7 +30,10 @@
       "type": "string"
     },
     "tables": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "$ref": "../../includes/record-table.json"
+      }
     },
     "displayNamePlural": {
       "type": "string"
@@ -72,13 +47,11 @@
     "attributes": {
       "type": "array",
       "items": {
+        "$ref": "../../includes/record-attribute.json"
       }
     },
     "primaryKeyColumnRefs": {
       "$ref": "../../../includes/string-array.json"
-    },
-    "categories": {
-      "$ref": "#/definitions/categories"
     },
     "searches": {
       "type": "array",
@@ -102,8 +75,7 @@
     "name",
     "attributes",
     "primaryKeyColumnRefs",
-    "categories",
-      "searches"
+    "searches"
   ],
   "additionalProperties": false
 }
