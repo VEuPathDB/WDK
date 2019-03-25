@@ -25,7 +25,7 @@ import org.gusdb.wdk.model.config.ModelConfig;
  * this could signal that threads are locked (stuck) in the blocked state.
  * 
  * the JVM does provide enough information to create a genuine "stuck threads" report.  
- * if a thread's blocked count (ie, how many times in its lifetime it has blocked) has not changed 
+ * if a thread is blocked and its blocked count (ie, how many times in its lifetime it has blocked) has not changed 
  * since we last looked, then it is likely stuck.  a future iteration of this report could do so
  *
  */
