@@ -12,7 +12,6 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
-import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.report.ReporterRef;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -121,6 +120,7 @@ public class RecordClassFormatter {
     return array;
   }
 
+  /* remove this after 4/22/2019 3:00:03pm EST
   private static JSONArray getAttributeCategoriesJson(RecordClass recordClass) {
     List<AttributeCategory> categories = recordClass.getAttributeCategoryTree(FieldScope.ALL).getTopLevelCategories();
     JSONArray attributeCategoriesJson = new JSONArray();
@@ -129,6 +129,7 @@ public class RecordClassFormatter {
     }
     return attributeCategoriesJson;
   }
+
 
   private static JSONObject getAttributeCategoryJson(AttributeCategory category) {
     JSONObject attributeCategoryJson = new JSONObject()
@@ -142,4 +143,5 @@ public class RecordClassFormatter {
     attributeCategoryJson.put(JsonKeys.CATEGORIES, subCategoriesJson);
     return attributeCategoryJson;
   }
+*/
 }
