@@ -54,7 +54,7 @@ public abstract class QueryInstance<T extends Query> {
    * @param tableName name of table
    * @param instanceId id of query cache table
    */
-  public abstract void insertToCache(String tableName, long instanceId) throws WdkModelException, WdkUserException;
+  protected abstract void insertToCache(String tableName, long instanceId) throws WdkModelException, WdkUserException;
 
   public abstract String getSql() throws WdkModelException;
 
