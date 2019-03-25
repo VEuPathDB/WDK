@@ -18,8 +18,8 @@ public class InstanceInfoFetcher implements ValueFactory<String, InstanceInfo> {
 
   private final ResultFactory _resultFactory;
 
-  public InstanceInfoFetcher(ResultFactory cacheFactory) {
-    _resultFactory = cacheFactory;
+  public InstanceInfoFetcher(ResultFactory resultFactory) {
+    _resultFactory = resultFactory;
   }
 
   @Override
@@ -40,7 +40,8 @@ public class InstanceInfoFetcher implements ValueFactory<String, InstanceInfo> {
 
   @Override
   public boolean valueNeedsUpdating(InstanceInfo item) {
-    return item.instanceId == ResultFactory.UNKNOWN_INSTANCE_ID || (new Date().getTime() - item.creationDate) >= (EXPIRATION_SECS * 1000);
+    return item.getInstanceId() == ResultFactory.UNKNOWN_INSTANCE_ID ||
+        (new Date().getTime() - item.getCreationDate()) >= (EXPIRATION_SECS * 1000);
   }
 
 }
