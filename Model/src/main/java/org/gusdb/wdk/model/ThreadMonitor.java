@@ -16,6 +16,19 @@ import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.runtime.ThreadUtil;
 import org.gusdb.wdk.model.config.ModelConfig;
 
+/**
+ * This monitor reports on the state of the threads in the pool.  A "blocked" thread is just a thread
+ * that is in a synchronized block, waiting for another thread.  It may be doing so fleetingly, and normally, or
+ * it might be stuck.  This report does not distinguish those cases.  It takes the simple
+ * approach that, if the number of threads that the JVM tells us are blocked is over a threshold, and 
+ * was also over the threshold a while ago when we last checked (SLEEP_INTERVAL * MIN_BLOCKED CYLES), then
+ * this could signal that threads are locked (stuck) in the blocked state.
+ * 
+ * the JVM does provide enough information to create a genuine "stuck threads" report.  
+ * if a thread's blocked count (ie, how many times in its lifetime it has blocked) has not changed 
+ * since we last looked, then it is likely stuck.  a future iteration of this report could do so
+ *
+ */
 public class ThreadMonitor implements Runnable {
 
   private static final Logger LOG = Logger.getLogger(ThreadMonitor.class);
