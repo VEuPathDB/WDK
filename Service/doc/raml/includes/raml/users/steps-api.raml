@@ -1,5 +1,8 @@
 # Users Steps API
+#
+# @path /users/{id}/steps
 
+# Methods
 post:
   description: |
     * Creates a new step (including transforms/booleans!)
@@ -188,6 +191,20 @@ post:
             body:
                application/json:
                   type: !include ../../../../../src/main/resources/schema/includes/string-array.json
+
+      /resources:
+        get:
+          description: >
+            Returns the resource file at the specified path
+          queryParameters:
+            path:
+              description: Path to the resource
+              type: string
+          responses:
+            200:
+              description: OK
+            404:
+              description: Not found
 
       /result:
         get:

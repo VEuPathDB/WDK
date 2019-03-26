@@ -3,17 +3,13 @@ package org.gusdb.wdk.model.user.analysis;
 import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 
@@ -93,7 +89,7 @@ public abstract class StepAnalysisDataStore {
   public abstract void setState(long analysisId, StepAnalysisState state) throws WdkModelException;
   public abstract void setHasParams(long analysisId, boolean hasParams) throws WdkModelException;
   public abstract void setInvalidStepReason(long analysisId, String invalidStepReason) throws WdkModelException;
-  public abstract void updateContext(long analysisId, String contextHash, String serializedContext) throws WdkModelException;
+  public abstract void updateInstance(long analysisId, String contextHash, String serializedContext) throws WdkModelException;
   public abstract InputStream getProperties(long analysisId) throws WdkModelException;
   public abstract boolean setProperties(long analysisId, InputStream propertiesStream) throws WdkModelException;
   protected abstract List<Long> getAnalysisIdsByHash(String contextHash) throws WdkModelException;
@@ -105,6 +101,19 @@ public abstract class StepAnalysisDataStore {
   // abstract methods to manage result/status information
   public abstract void createExecutionTable() throws WdkModelException;
   public abstract void deleteExecutionTable(boolean purge) throws WdkModelException;
+
+  /**
+   * Inserts a step analysis results record for the given analysis hash if one
+   * does not already exist.
+   *
+   * @param contextHash Step Analysis Instance hash used for matching or for the
+   *                    creation of a new record
+   * @param status      Execution status, used if a new record is created
+   * @param startDate   Execution start date, used if a new record is created
+   *
+   * @return <code>false</code> if a record matching the given hash already
+   * existed, <code>true</code> if a new record was created.
+   */
   public abstract boolean insertExecution(String contextHash, ExecutionStatus status, Date startDate) throws WdkModelException;  
   public abstract void updateExecution(String contextHash, ExecutionStatus status, Date updateDate, String charData, byte[] binData) throws WdkModelException;
   public abstract void resetStartDate(String contextHash, Date startDate) throws WdkModelException;
@@ -134,54 +143,57 @@ public abstract class StepAnalysisDataStore {
     updateExecution(contextHash, status, newStartDate, null, null);
   }
 
-  public StepAnalysisContext getAnalysisById(long analysisId, StepAnalysisFileStore fileStore) throws WdkModelException {
+  public StepAnalysisInstance getAnalysisById(long analysisId, StepAnalysisFileStore fileStore) throws WdkModelException, WdkUserException {
     Map<Long, AnalysisInfoPlusStatus> rawValues = getAnalysisInfoForIds(Arrays.asList(new Long[]{ analysisId }));
-    if (rawValues.get(analysisId).analysisInfo == null) throw new WdkModelException("Did not find exactly" +
+    if (!rawValues.containsKey(analysisId))
+      throw new WdkUserException("No analysis exists with id: " + analysisId);
+    if (rawValues.get(analysisId).analysisInfo == null)
+      throw new WdkModelException("Did not find exactly" +
         " one record for analysis ID " + analysisId + "; found " + rawValues.size());
     return getContexts(rawValues, fileStore).iterator().next();
   }
 
-  public List<StepAnalysisContext> getContextsByHash(String contextHash, StepAnalysisFileStore fileStore) throws WdkModelException {
+  public List<StepAnalysisInstance> getContextsByHash(String contextHash, StepAnalysisFileStore fileStore) throws WdkModelException {
     return getContexts(getAnalysisInfoForIds(getAnalysisIdsByHash(contextHash)), fileStore);
   }
 
-  public Map<Long, StepAnalysisContext> getAnalysesByStepId(long stepId,
+  public Map<Long, StepAnalysisInstance> getAnalysesByStepId(long stepId,
       StepAnalysisFileStore fileStore) throws WdkModelException {
-    List<StepAnalysisContext> values = getContexts(
+    List<StepAnalysisInstance> values = getContexts(
         getAnalysisInfoForIds(getAnalysisIdsByStepId(stepId)), fileStore);
-    Map<Long,StepAnalysisContext> contextMap = new LinkedHashMap<>();
-    for (StepAnalysisContext context : values) {
+    Map<Long,StepAnalysisInstance> contextMap = new LinkedHashMap<>();
+    for (StepAnalysisInstance context : values) {
       contextMap.put(context.getAnalysisId(), context);
     }
     return contextMap;
   }
 
-  public List<StepAnalysisContext> getAllAnalyses(StepAnalysisFileStore fileStore)
+  public List<StepAnalysisInstance> getAllAnalyses(StepAnalysisFileStore fileStore)
       throws WdkModelException {
     return getContexts(getAnalysisInfoForIds(getAllAnalysisIds()), fileStore);
   }
 
-  private List<StepAnalysisContext> getContexts(Map<Long, AnalysisInfoPlusStatus> dataMap, 
+  private List<StepAnalysisInstance> getContexts(Map<Long, AnalysisInfoPlusStatus> dataMap, 
       StepAnalysisFileStore fileStore) throws WdkModelException {
-    List<StepAnalysisContext> contextList = new ArrayList<StepAnalysisContext>();
+    List<StepAnalysisInstance> contextList = new ArrayList<>();
     for (Entry<Long, AnalysisInfoPlusStatus> entry : dataMap.entrySet()) {
       if (entry.getValue().analysisInfo == null) {
         throw new WdkModelException("Unable to find record for analysis ID: " + entry.getKey());
       }
-      StepAnalysisContext context = convertToContext(entry.getValue(), fileStore);
+      StepAnalysisInstance context = convertToContext(entry.getValue(), fileStore);
       // skip null contexts
       if (context != null) contextList.add(context);
     }
     return contextList;
   }
 
-  private StepAnalysisContext convertToContext(AnalysisInfoPlusStatus data,
+  private StepAnalysisInstance convertToContext(AnalysisInfoPlusStatus data,
       StepAnalysisFileStore fileStore) throws WdkModelException {
 
     AnalysisInfo info = data.analysisInfo;
-    StepAnalysisContext context;
+    StepAnalysisInstance context;
     try {
-      context = StepAnalysisContext.createFromStoredData(
+      context = StepAnalysisInstance.createFromStoredData(
           _wdkModel, info.analysisId, info.stepId, info.state, info.hasParams,
           info.invalidStepReason, info.displayName, info.userNotes, info.serializedContext);
     }
@@ -243,7 +255,7 @@ public abstract class StepAnalysisDataStore {
   // returns null if unable to find analysis record for this hash
   private String getAnalysisNameForHash(String contextHash, StepAnalysisFileStore fileStore)
       throws WdkModelException {
-    List<StepAnalysisContext> contextList = getContextsByHash(contextHash, fileStore);
+    List<StepAnalysisInstance> contextList = getContextsByHash(contextHash, fileStore);
     if (contextList.isEmpty()) return null;
     return contextList.iterator().next().getStepAnalysis().getName();
   }

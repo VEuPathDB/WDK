@@ -1,0 +1,27 @@
+# Analysis Type API
+#
+# @path /users/{id}/steps/{id}/analysis-types
+
+# Methods
+get:
+  description: Get names, display names, and icons of available tools.
+  responses:
+    200:
+      body:
+        application/json:
+          type: !include ../../../../../../src/main/resources/schema/wdk/users/steps/analysis-types/get-response.json
+
+# Child endpoints
+/{analysis-type-name}:
+  uriParameters:
+    analysis-type-name:
+      type: string
+  get:
+    description: >
+      Get (possibly dynamic) form creation information + default
+      values.
+    responses:
+      200:
+        body:
+          application/json:
+            type: !include ../../../../../../src/main/resources/schema/wdk/users/steps/analysis-types/name/get-response.json

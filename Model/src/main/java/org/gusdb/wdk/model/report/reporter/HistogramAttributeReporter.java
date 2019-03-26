@@ -44,7 +44,7 @@ public class HistogramAttributeReporter extends AbstractAttributeReporter {
 
     // load the data.
     Map<String, Integer> data = loadData(answerValue);
- 
+
     // compose the result
     JSONObject result = new JSONObject();
     result.put(ATTR_DATA, data);
@@ -59,7 +59,7 @@ public class HistogramAttributeReporter extends AbstractAttributeReporter {
 
     return result;
   }
-  
+
 
   private String getType(Map<String, Integer> data) {
     String type = _properties.get(PROP_TYPE);

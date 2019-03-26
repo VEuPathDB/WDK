@@ -245,8 +245,8 @@ public class StepUtilities {
     return array;
   }
 
-  public static Step getStep(User user, long stepID) throws WdkModelException {
-    return user.getWdkModel().getStepFactory().loadStep(user, stepID);
+  public static Step getStepByValidStepId(User user, long stepID) throws WdkModelException {
+    return user.getWdkModel().getStepFactory().loadStepFromValidStepId(user, stepID);
   }
 
   public static Strategy getStrategy(User user, long strategyId) throws WdkModelException, WdkUserException {

@@ -1,0 +1,17 @@
+# Step Filter API
+#
+# @path /users/{id}/steps/{id}/filter
+
+
+# Methods
+get:
+  description: filters available on this step
+
+
+# Child Endpoints
+/{name}:
+  uriParameters:
+    name:
+      type: string
+  put:
+    description: add or update a filter on this step
