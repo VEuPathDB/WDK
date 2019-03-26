@@ -121,7 +121,7 @@ public class Strategy {
 
   public Step getLatestStep() throws WdkModelException {
     if (latestStep == null && latestStepId != 0)
-      setLatestStep(stepFactory.loadStep(user, latestStepId));
+      setLatestStep(stepFactory.loadStepFromValidStepId(user, latestStepId));
     return latestStep;
   }
 

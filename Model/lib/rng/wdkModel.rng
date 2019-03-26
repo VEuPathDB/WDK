@@ -1967,6 +1967,9 @@
       <attribute name="name" />
       <attribute name="analyzerClass" />
       <attribute name="releaseVersion" />
+      <zeroOrMore>
+        <ref name="paramRef" />
+      </zeroOrMore>
       <optional>
         <attribute name="hasParameters">
           <data type="boolean"/>

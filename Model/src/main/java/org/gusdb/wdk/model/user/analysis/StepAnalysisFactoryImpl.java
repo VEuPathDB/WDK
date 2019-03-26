@@ -45,11 +45,11 @@ import org.gusdb.wdk.model.user.analysis.FutureCleaner.RunningAnalysis;
  *   StepAnalyzer: interface for worker class
  *
  * StepAnalysisFactory maintains:
- *   - StepAnalysisContexts in UserDB
+ *   - StepAnalysisInstances in UserDB
  *   - Threadpool for executions
  *   - Results cache
  *
- * StepAnalysisContext:
+ * StepAnalysisInstance:
  *
  * Things to maintain:
  *   - valid step + analysis name + version + props + params = def to execution
@@ -105,46 +105,46 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
 
   private void invalidateResults(long stepId) throws WdkModelException, WdkUserException {
     LOG.debug("Request made to reassess analyses of step " + stepId);
-    Map<Long, StepAnalysisContext> contexts = _dataStore.getAnalysesByStepId(stepId, _fileStore);
-    for (StepAnalysisContext context : contexts.values()) {
-      LOG.info("Reassessing step analysis with ID " + context.getAnalysisId());
-      LOG.trace("TRACE: " + context.getInstanceJson());
+    Map<Long, StepAnalysisInstance> instances = _dataStore.getAnalysesByStepId(stepId, _fileStore);
+    for (StepAnalysisInstance instance : instances.values()) {
+      LOG.info("Reassessing step analysis with ID " + instance.getAnalysisId());
+      LOG.trace("TRACE: " + instance.getJsonSummary());
 
       // non-new steps that have been revised have invalid results until run again
-      if (!(context.getState().equals(StepAnalysisState.NO_RESULTS) ||
-            context.getState().equals(StepAnalysisState.INVALID_RESULTS))) {
-        context.setState(StepAnalysisState.INVALID_RESULTS);
-        _dataStore.setState(context.getAnalysisId(), StepAnalysisState.INVALID_RESULTS);
+      if (!(instance.getState().equals(StepAnalysisState.NO_RESULTS) ||
+            instance.getState().equals(StepAnalysisState.INVALID_RESULTS))) {
+        instance.setState(StepAnalysisState.INVALID_RESULTS);
+        _dataStore.setState(instance.getAnalysisId(), StepAnalysisState.INVALID_RESULTS);
       }
 
       // check revised step for validity and update if newly invalid
       try {
-        checkStepForValidity(context);
-        context.setIsValidStep(true);
+        checkStepForValidity(instance);
+        instance.setIsValidStep(true);
       }
       catch (IllegalAnswerValueException e) {
         // if answer value of toStep is not valid for the given analysis, mark as
         // such and save; user will not be shown form and will be unable to run analysis
-        context.setIsValidStep(false, e.getMessage());
-        _dataStore.setInvalidStepReason(context.getAnalysisId(), context.getInvalidStepReason());
+        instance.setIsValidStep(false, e.getMessage());
+        _dataStore.setInvalidStepReason(instance.getAnalysisId(), instance.getInvalidStepReason());
       }
     }
   }
 
   @Override
-  public List<StepAnalysisContext> getAllAnalyses() throws WdkModelException {
+  public List<StepAnalysisInstance> getAllAnalyses() throws WdkModelException {
     return _dataStore.getAllAnalyses(_fileStore);
   }
 
   @Override
-  public Map<Long, StepAnalysisContext> getAppliedAnalyses(Step step) throws WdkModelException {
+  public Map<Long, StepAnalysisInstance> getAppliedAnalyses(Step step) throws WdkModelException {
     return _dataStore.getAnalysesByStepId(step.getStepId(), _fileStore);
   }
 
   @Override
   public boolean hasCompleteAnalyses(Step step) throws WdkModelException {
-    for (StepAnalysisContext context : getAppliedAnalyses(step).values()) {
-      if (context.getStatus().equals(ExecutionStatus.COMPLETE)) {
+    for (StepAnalysisInstance instance : getAppliedAnalyses(step).values()) {
+      if (instance.getStatus().equals(ExecutionStatus.COMPLETE)) {
         return true;
       }
     }
@@ -152,17 +152,18 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   @Override
-  public Object getFormViewModel(StepAnalysisContext context) throws WdkModelException, WdkUserException {
-    return getConfiguredAnalyzer(context, _fileStore).getFormViewModel();
+  public Object getFormViewModel(StepAnalysisInstance instance) throws WdkModelException, WdkUserException {
+    return getConfiguredAnalyzer(instance, _fileStore).getFormViewModel();
   }
 
   @Override
-  public List<String> validateFormParams(StepAnalysisContext context) throws WdkModelException, WdkUserException {
-    List<String> errorList = new ArrayList<String>();
+  public List<String> validateFormParams(StepAnalysisInstance instance)
+      throws WdkModelException, WdkUserException {
+    List<String> errorList = new ArrayList<>();
 
     // this is a unique configuration; validate parameters
-    ValidationErrors errors = getConfiguredAnalyzer(context, _fileStore)
-        .validateFormParams(context.getFormParams());
+    ValidationErrors errors = getConfiguredAnalyzer(instance, _fileStore)
+        .validateFormParamValues(instance.getFormParams());
 
     // if no errors present; return empty error list
     if (errors == null || errors.isEmpty()) return errorList;
@@ -176,74 +177,73 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       }
     }
 
-    // validation failed; errors present.  Set state to NO_RESULTS so old results are hidden from user
-    if (!context.getState().equals(StepAnalysisState.NO_RESULTS)) {
-      context.setState(StepAnalysisState.NO_RESULTS);
-      _dataStore.setState(context.getAnalysisId(), StepAnalysisState.NO_RESULTS);
-    }
-    
     return errorList;
   }
 
   @Override
-  public void createAnalysis(StepAnalysisContext context)
+  public StepAnalysisInstance createAnalysisInstance(Step step, StepAnalysis stepAnalysis, String answerValueChecksum)
       throws WdkModelException, IllegalAnswerValueException, WdkUserException {
 
+    StepAnalysisInstance stepAnalysisInstance = StepAnalysisInstance.createNewInstance(step, stepAnalysis, answerValueChecksum);
+
     // ensure this is a valid step to analyze
-    checkStepForValidity(context);
+    checkStepForValidity(stepAnalysisInstance);
 
     // analysis valid; write analysis to DB
-    writeNewAnalysisContext(context, true);
+    writeNewAnalysisInstance(stepAnalysisInstance, true);
+
+    return stepAnalysisInstance;
   }
 
   @Override
-  public StepAnalysisContext copyContext(StepAnalysisContext context)
+  public StepAnalysisInstance copyAnalysisInstance(StepAnalysisInstance instance)
       throws WdkModelException {
-    StepAnalysisContext copy = StepAnalysisContext.createCopy(context);
+    StepAnalysisInstance copy = StepAnalysisInstance.createCopy(instance);
     copy.setStatus(ExecutionStatus.CREATED);
     copy.setState(StepAnalysisState.NO_RESULTS);
-    writeNewAnalysisContext(copy, true);
-    copyProperties(context, copy);
+    writeNewAnalysisInstance(copy, true);
+    copyProperties(instance, copy);
     return copy;
   }
 
   private void copyAnalysisInstances(Step fromStep, Step toStep)
       throws WdkModelException, WdkUserException {
     LOG.info("Request made to copy analysis instances from step " + fromStep.getStepId() + " to " + toStep.getStepId());
-    Map<Long, StepAnalysisContext> fromContexts = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
-    for (StepAnalysisContext fromContext : fromContexts.values()) {
-      LOG.info("Copying step analysis with ID " + fromContext.getAnalysisId());
-      LOG.trace("TRACE: " + fromContext.getInstanceJson());
-      StepAnalysisContext toContext = StepAnalysisContext.createCopy(fromContext);
-      toContext.setStep(toStep);
+    Map<Long, StepAnalysisInstance> fromInstances = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
+    for (StepAnalysisInstance fromInstance : fromInstances.values()) {
+      LOG.info("Copying step analysis with ID " + fromInstance.getAnalysisId());
+      LOG.trace("TRACE: " + fromInstance.getJsonSummary());
+      StepAnalysisInstance toInstance = StepAnalysisInstance.createCopy(fromInstance);
+      toInstance.setStep(toStep);
       // non-new steps copied during revise have invalid results until run again
       // non-new steps copied during import should always have no_results
-      toContext.setState(StepAnalysisState.NO_RESULTS);
+      toInstance.setState(StepAnalysisState.NO_RESULTS);
       try {
-        checkStepForValidity(toContext);
-        toContext.setIsValidStep(true);
+        checkStepForValidity(toInstance);
+        toInstance.setIsValidStep(true);
       }
       catch (IllegalAnswerValueException e) {
         // if answer value of toStep is not valid for the given analysis, mark as
         // such and save; user will not be shown form and will be unable to run analysis
-        toContext.setIsValidStep(false, e.getMessage());
+        toInstance.setIsValidStep(false, e.getMessage());
       }
-      writeNewAnalysisContext(toContext, false);
-      LOG.info("Wrote new duplicate context with ID " + toContext.getAnalysisId() +
-          " for revised step " + toContext.getStep().getStepId() + ".  Copying properties...");
-      copyProperties(fromContext, toContext);
+      writeNewAnalysisInstance(toInstance, false);
+      LOG.info("Wrote new duplicate context with ID " + toInstance.getAnalysisId() +
+          " for revised step " + toInstance.getStep().getStepId() + ".  Copying properties...");
+      // copy properties of old context to new and make sure to close- not closing is a connection leak!
+      copyProperties(fromInstance, toInstance);
     }
     LOG.info("Completed copy.");
   }
 
-  private void copyProperties(StepAnalysisContext fromContext, StepAnalysisContext toContext)
+  private void copyProperties(StepAnalysisInstance fromInstance, StepAnalysisInstance toInstance)
       throws WdkModelException {
     // copy properties of old context to new and make sure to close- not closing is a connection leak!
     InputStream propertyStream = null;
     try {
-      propertyStream = getProperties(fromContext.getAnalysisId());
+      propertyStream = getProperties(fromInstance.getAnalysisId());
       if (propertyStream != null) {
-        setProperties(toContext.getAnalysisId(), propertyStream);
+        setProperties(toInstance.getAnalysisId(), propertyStream);
         LOG.info("Properties copied.");
       }
     }
@@ -256,42 +256,42 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     }
   }
 
-  private void writeNewAnalysisContext(StepAnalysisContext context, boolean adjustDisplayName)
+  private void writeNewAnalysisInstance(StepAnalysisInstance instance, boolean adjustDisplayName)
       throws WdkModelException {
     // try to help user differentiate between tabs if requested
     if (adjustDisplayName) {
-      context.setDisplayName(getAdjustedDisplayName(context));
+      instance.setDisplayName(getAdjustedDisplayName(instance));
     }
 
     // create new execution instance
     long saId = _dataStore.getNextId();
-    _dataStore.insertAnalysis(saId, context.getStep().getStepId(), context.getDisplayName(),
-        context.getState(), context.hasParams(), context.getInvalidStepReason(), context.createHash(), context.serializeContext(), context.getUserNotes());
+    _dataStore.insertAnalysis(saId, instance.getStep().getStepId(), instance.getDisplayName(),
+        instance.getState(), instance.hasParams(), instance.getInvalidStepReason(), instance.createHash(), instance.serializeInstance(), instance.getUserNotes());
 
     // override any previous value for id
-    context.setAnalysisId(saId);
+    instance.setAnalysisId(saId);
   }
 
-  private String getAdjustedDisplayName(StepAnalysisContext context) throws WdkModelException {
-    Collection<StepAnalysisContext> stepContexts =
-        _dataStore.getAnalysesByStepId(context.getStep().getStepId(), _fileStore).values();
-    if (stepContexts.isEmpty()) return context.getDisplayName();
-    String displayNameToAttempt = context.getDisplayName();
+  private String getAdjustedDisplayName(StepAnalysisInstance instance) throws WdkModelException {
+    Collection<StepAnalysisInstance> stepInstances =
+        _dataStore.getAnalysesByStepId(instance.getStep().getStepId(), _fileStore).values();
+    if (stepInstances.isEmpty()) return instance.getDisplayName();
+    String displayNameToAttempt = instance.getDisplayName();
     boolean displayNameUnique = false;
     int index = 1;
     while (!displayNameUnique) {
       displayNameUnique = true;
       LOG.info("Attempting name: " + displayNameToAttempt);
-      for (StepAnalysisContext otherContext : stepContexts) {
+      for (StepAnalysisInstance otherInstance : stepInstances) {
         LOG.info("Comparing candidate name '" + displayNameToAttempt +
-            "' for context " + context.getAnalysisId() + " to analysis " +
-            otherContext.getAnalysisId() + " with name " +
-            otherContext.getDisplayName());
-        if (otherContext.getDisplayName().equals(displayNameToAttempt)) {
-          LOG.info("Found context " + otherContext.getAnalysisId() + " that already has name: " + displayNameToAttempt);
+            "' for instance " + instance.getAnalysisId() + " to analysis " +
+            otherInstance.getAnalysisId() + " with name " +
+            otherInstance.getDisplayName());
+        if (otherInstance.getDisplayName().equals(displayNameToAttempt)) {
+          LOG.info("Found instance " + otherInstance.getAnalysisId() + " that already has name: " + displayNameToAttempt);
           displayNameUnique = false;
           index++;
-          displayNameToAttempt = context.getDisplayName() + " (" + index + ")";
+          displayNameToAttempt = instance.getDisplayName() + " (" + index + ")";
           break;
         }
       }
@@ -300,52 +300,42 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     return displayNameToAttempt;
   }
 
-  private void checkStepForValidity(StepAnalysisContext context)
+  private void checkStepForValidity(StepAnalysisInstance instance)
       throws WdkModelException, IllegalAnswerValueException, WdkUserException {
     // ensure this is a valid step to analyze
-    AnswerValue answer = context.getStep().getAnswerValue();
+    AnswerValue answer = instance.getStep().getAnswerValue();
     if (answer.getResultSizeFactory().getResultSize() == 0) {
       throw new IllegalAnswerValueException("You cannot analyze a Step with zero results.");
     }
-    getConfiguredAnalyzer(context, _fileStore).validateAnswerValue(answer);
+    getConfiguredAnalyzer(instance, _fileStore).validateAnswerValue(answer);
   }
 
   @Override
-  public StepAnalysisContext runAnalysis(StepAnalysisContext context)
+  public StepAnalysisInstance runAnalysis(StepAnalysisInstance instance)
       throws WdkModelException {
     ExecutionStatus initialStatus = ExecutionStatus.PENDING;
-    String hash = context.createHash();
+    String hash = instance.createHash();
     boolean newlyCreated = _dataStore.insertExecution(hash, initialStatus, new Date());
-    boolean contextModified = false;
+    boolean instanceModified = false;
 
     // now that user has run this analysis, set 'not new' if still new
-    if (!context.getState().equals(StepAnalysisState.SHOW_RESULTS)) {
-      _dataStore.setState(context.getAnalysisId(), StepAnalysisState.SHOW_RESULTS);
-      context.setState(StepAnalysisState.SHOW_RESULTS);
-      contextModified = true;
+    if (!instance.getState().equals(StepAnalysisState.SHOW_RESULTS)) {
+      _dataStore.setState(instance.getAnalysisId(), StepAnalysisState.SHOW_RESULTS);
+      instance.setState(StepAnalysisState.SHOW_RESULTS);
+      instanceModified = true;
     }
 
-    // now that this analysis has params, set 'has params' if not yet set
-    if (!context.hasParams()) {
-      _dataStore.setHasParams(context.getAnalysisId(), true);
-      context.setHasParams(true);
-      contextModified = true;
-    }
-
-    // if context was modified, recheck status
+    // if instance was modified, recheck status
     //   TODO: fix logic here to be less ugly/costly
-    if (contextModified) {
+    if (instanceModified) {
       try {
-        StepAnalysisContext statusContext = getSavedContext(context.getAnalysisId());
-        context.setStatus(statusContext.getStatus());
+        StepAnalysisInstance statusInstance = getSavedAnalysisInstance(instance.getAnalysisId());
+        instance.setStatus(statusInstance.getStatus());
       }
       catch (WdkUserException e) {
         throw new WdkModelException("Step Analysis was deleted mid-request!", e);
       }
     }
-
-    // update stored context with param values (must do even if using cached results)
-    _dataStore.updateContext(context.getAnalysisId(), hash, context.serializeContext());
 
     // Run analysis plugin under the following conditions:
     //   1. if new execution was created (i.e. none existed before or cache was cleared)
@@ -355,8 +345,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     // NOTE: There is a race condition here in between the check of the store and the creation
     //       (first line inside if).  Use combination of lock and createNewFile() to fix.
     LOG.info("Checking whether to run vs. use previous result. hash = " + hash +
-        ", newlyCreated = " + newlyCreated + ", status = " + context.getStatus());
-    if (newlyCreated || context.getStatus().requiresRerun()) {
+        ", newlyCreated = " + newlyCreated + ", status = " + instance.getStatus());
+    if (newlyCreated || instance.getStatus().requiresRerun()) {
 
       // ensure empty data and file stores and create dir
       _fileStore.recreateStore(hash);
@@ -364,23 +354,23 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
         _dataStore.resetExecution(hash, initialStatus);
       }
 
-      // set initial status on in-memory context
-      context.setStatus(initialStatus);
+      // set initial status on in-memory instance
+      instance.setStatus(initialStatus);
 
       // run the analysis
-      return executeAnalysis(context);
+      return executeAnalysis(instance);
     }
 
     // otherwise, no need to run since result already generated or plugin currently running;
-    LOG.info("Attempt made to run analysis, but it was unnecessary.  Here's the context at that time:\n" + context.getInstanceJson());
-    return context;
+    LOG.info("Attempt made to run analysis, but it was unnecessary.  Here's the instance at that time:\n" + instance.getJsonSummary());
+    return instance;
   }
 
-  private StepAnalysisContext executeAnalysis(StepAnalysisContext context) throws WdkModelException {
+  private StepAnalysisInstance executeAnalysis(StepAnalysisInstance instance) throws WdkModelException {
     try {
-      _threadResults.add(new RunningAnalysis(context.getAnalysisId(),
-          _threadPool.submit(new AnalysisCallable(context, _dataStore, _fileStore))));
-      return context;
+      _threadResults.add(new RunningAnalysis(instance.getAnalysisId(),
+          _threadPool.submit(new AnalysisCallable(instance, _dataStore, _fileStore))));
+      return instance;
     }
     catch (RejectedExecutionException e) {
       throw new WdkModelException("Unable to create new step analysis execution.  Thread pool exhausted?", e);
@@ -390,62 +380,65 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   /**
    * Collects the data associated with a result and returns the aggregating
    * object.  This method is only to be called when a "recent" call to
-   * getSavedContext() has status COMPLETE.  No checks are done to ensure that
+   * getSavedInstance() has status COMPLETE.  No checks are done to ensure that
    * persistent storage mechanisms have not been cleared.
-   * 
-   * @param context context for this result
+   *
+   * TODO: Refactor this method... what are its responsibilities and does it have more than one?
+   *
+   * @param instance instance for this result
    * @return result
    * @throws WdkModelException if inconsistent data is found or other error occurs
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
   @Override
-  public AnalysisResult getAnalysisResult(StepAnalysisContext context) throws WdkModelException, WdkUserException {
-    String hash = context.createHash();
+  public AnalysisResult getAnalysisResult(StepAnalysisInstance instance) throws WdkModelException, WdkUserException {
+    String hash = instance.createHash();
     AnalysisResult result = _dataStore.getRawAnalysisResult(hash);
     if (result == null) {
-      throw new WdkModelException("Result record not found for context-generated hash: " + hash);
+      throw new WdkModelException("Result record not found for instance-generated hash: " + hash);
     }
 
     LOG.info("Got result back from data store: " + result.getStatus() + ", with results:\n" + result.getStoredString());
-    StepAnalyzer analyzer = getConfiguredAnalyzer(context, _fileStore);
+    StepAnalyzer analyzer = getConfiguredAnalyzer(instance, _fileStore);
     analyzer.setPersistentCharData(result.getStoredString());
     analyzer.setPersistentBinaryData(result.getStoredBytes());
     result.setResultViewModel(analyzer.getResultViewModel());
+    result.setResultViewModelJson(analyzer.getResultViewModelJson());
     result.clearStoredData(); // only care about the view model
     return result;
   }
 
   @Override
-  public StepAnalysisContext deleteAnalysis(StepAnalysisContext context) throws WdkModelException {
-    _dataStore.deleteAnalysis(context.getAnalysisId());
-    return context;
+  public StepAnalysisInstance deleteAnalysis(StepAnalysisInstance instance) throws WdkModelException {
+    _dataStore.deleteAnalysis(instance.getAnalysisId());
+    return instance;
   }
 
   @Override
-  public void renameContext(StepAnalysisContext context) throws WdkModelException {
-    _dataStore.renameAnalysis(context.getAnalysisId(), context.getDisplayName());
+  public void renameInstance(StepAnalysisInstance instance) throws WdkModelException {
+    _dataStore.renameAnalysis(instance.getAnalysisId(), instance.getDisplayName());
   }
 
  @Override
-  public void setUserNotesContext(StepAnalysisContext context) throws WdkModelException {
-    _dataStore.setUserNotes(context.getAnalysisId(), context.getUserNotes());
+  public void setUserNotesContext(StepAnalysisInstance instance) throws WdkModelException {
+    _dataStore.setUserNotes(instance.getAnalysisId(), instance.getUserNotes());
   }
 
   @Override
-  public StepAnalysisContext getSavedContext(long analysisId) throws WdkUserException, WdkModelException {
-    StepAnalysisContext context = _dataStore.getAnalysisById(analysisId, _fileStore);
-    if (context == null) {
+  public StepAnalysisInstance getSavedAnalysisInstance(long analysisId) throws WdkUserException, WdkModelException {
+    StepAnalysisInstance instance = _dataStore.getAnalysisById(analysisId, _fileStore);
+    if (instance == null) {
       throw new WdkUserException("No analysis exists with id: " + analysisId);
     }
-    return context;
+    return instance;
   }
 
-  static StepAnalyzer getConfiguredAnalyzer(StepAnalysisContext context,
+  static StepAnalyzer getConfiguredAnalyzer(StepAnalysisInstance instance,
       StepAnalysisFileStore fileStore) throws WdkModelException, WdkUserException {
-    StepAnalyzer analyzer = context.getStepAnalysis().getAnalyzerInstance();
-    analyzer.setStorageDirectory(fileStore.getStorageDirPath(context.createHash()));
-    analyzer.setFormParams(context.getFormParams());
-    analyzer.setAnswerValue(context.getStep().getAnswerValue());
+    StepAnalyzer analyzer = instance.getStepAnalysis().getAnalyzerInstance();
+    analyzer.setStorageDirectory(fileStore.getStorageDirPath(instance.createHash()));
+    analyzer.setFormParamValues(instance.getFormParams());
+    analyzer.setAnswerValue(instance.getStep().getAnswerValue());
     return analyzer;
   }
 
@@ -471,11 +464,11 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   @Override
-  public Path getResourcePath(StepAnalysisContext context, String relativePath) {
+  public Path getResourcePath(StepAnalysisInstance instance, String relativePath) {
     if (relativePath.startsWith(System.getProperty("file.separator"))) {
       relativePath = relativePath.substring(1);
     }
-    return Paths.get(_fileStore.getStorageDirPath(context.createHash()).toString(), relativePath);
+    return Paths.get(_fileStore.getStorageDirPath(instance.createHash()).toString(), relativePath);
   }
 
   private void startThreadPool() {
@@ -533,7 +526,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   public static boolean isRunExpired(StepAnalysis analysis, long currentTime, Date startTime) {
-    long expirationDuration = (long)analysis.getExpirationMinutes() * 60 * 1000;
+    long expirationDuration = (long)analysis.getExecutionTimeoutThresholdInMinutes() * 60 * 1000;
     long currentDuration = currentTime - startTime.getTime();
     return (currentDuration > expirationDuration);
   }
@@ -575,5 +568,17 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     if (!_dataStore.setProperties(analysisId, propertyStream)) {
       throw new WdkUserException("No analysis found with ID " + analysisId);
     }
+  }
+
+  @Override
+  public void setFormParams(StepAnalysisInstance instance)
+      throws WdkModelException {
+    if (!instance.hasParams()) {
+      _dataStore.setHasParams(instance.getAnalysisId(), true);
+      instance.setHasParams(true);
+    }
+
+    _dataStore.updateInstance(instance.getAnalysisId(), instance.createHash(),
+        instance.serializeInstance());
   }
 }

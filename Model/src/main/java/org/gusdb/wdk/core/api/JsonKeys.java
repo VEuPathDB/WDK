@@ -31,17 +31,27 @@ public class JsonKeys {
   public static final String LENGTH = "length";
   public static final String VALUE = "value";
   public static final String PROPERTIES = "properties";
-  public static final String TOTAL_COUNT = "totalCount";
   public static final String RESPONSE_COUNT = "responseCount";
+  public static final String TOTAL_COUNT = "totalCount";
+  public static final String VIEW_TOTAL_COUNT = "viewTotalCount";
+  public static final String DISPLAY_TOTAL_COUNT = "displayTotalCount";
+  public static final String DISPLAY_VIEW_TOTAL_COUNT = "displayViewTotalCount";
   public static final String RECORD_CLASS_NAME = "recordClassName";
   public static final String QUESTION_NAME = "questionName";
   public static final String PARAMETER_NAME = "parameterName";
+  public static final String PAGINATION = "pagination";
+  public static final String OFFSET = "offset";
+  public static final String NUM_RECORDS = "numRecords";
 
   // UI-related keys
   public static final String DISPLAY_NAME = "displayName";
   public static final String DISPLAY_NAME_PLURAL = "displayNamePlural";
   public static final String SHORT_DISPLAY_NAME = "shortDisplayName";
   public static final String SHORT_DISPLAY_NAME_PLURAL = "shortDisplayNamePlural";
+  public static final String NATIVE_DISPLAY_NAME = "nativeDisplayName";
+  public static final String NATIVE_DISPLAY_NAME_PLURAL = "nativeDisplayNamePlural";
+  public static final String NATIVE_SHORT_DISPLAY_NAME = "nativeShortDisplayName";
+  public static final String NATIVE_SHORT_DISPLAY_NAME_PLURAL = "nativeShortDisplayNamePlural";
   public static final String URL = "url";
   public static final String ICON_NAME = "iconName";
   public static final String DISPLAY_TEXT = "displayText";
@@ -77,6 +87,7 @@ public class JsonKeys {
   public static final String REMOVE = "remove";
   public static final String DELETE = "delete";
   public static final String UNDELETE = "undelete";
+  public static final String ADD_FROM_STEP_ID = "addFromStepId";
 
   // keys for what and how data is being referenced
   public static final String TREE = "tree";
@@ -95,6 +106,7 @@ public class JsonKeys {
 
   // question plugin keys
   public static final String DEFAULT_SUMMARY_VIEW = "defaultSummaryView";
+  public static final String DEFAULT_SORTING = "defaultSorting";
   public static final String SUMMARY_VIEW_PLUGINS = "summaryViewPlugins";
   public static final String STEP_ANALYSIS_PLUGINS = "stepAnalysisPlugins";
 
@@ -145,6 +157,7 @@ public class JsonKeys {
   public static final String IS_ANSWER_SPEC_COMPLETE = "isAnswerSpecComplete";
   public static final String CREATED_TIME = "createdTime";
   public static final String LAST_RUN_TIME = "lastRunTime";
+  public static final String DISPLAY_PREFS = "displayPrefs";
 
   // site-level keys
   public static final String PROJECT_ID = "projectId";

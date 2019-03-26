@@ -6,7 +6,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,7 +28,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.SortDirection;
 import org.gusdb.fgputil.Wrapper;
-import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.platform.Oracle;
@@ -27,6 +38,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.wdk.events.StepImportedEvent;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.MDCUtil;
@@ -95,8 +107,6 @@ public class StepFactory {
   private static final String COLUMN_VERSION = "version";
   private static final String COLUMN_IS_PUBLIC = "is_public";
 
-  private static final boolean USE_CACHE = false;
-
   static final int COLUMN_NAME_LIMIT = 200;
 
   private static final int UNKNOWN_SIZE = -1;
@@ -133,8 +143,6 @@ public class StepFactory {
   private DatabaseInstance _userDb;
   private DataSource _userDbDs;
 
-  private StepFetcherProvider _stepFetcherProvider;
-
   // define SQL snippet "constants" to avoid building SQL each time
   private String modTimeSortSql;
   private String invalidStratSubquerySql;
@@ -169,10 +177,6 @@ public class StepFactory {
 
     ModelConfigUserDB userDbConfig = _wdkModel.getModelConfig().getUserDB();
     _userSchema = userDbConfig.getUserSchema();
-
-    _stepFetcherProvider = new StepFetcherProvider(this);
-
-    /* define "static" SQL statements dependent only on schema name */
 
     // sort options
     modTimeSortSql = new StringBuilder(" ORDER BY sr.").append(COLUMN_LAST_MODIFIED_TIME).append(" DESC").toString();
@@ -283,6 +287,7 @@ public class StepFactory {
     String filterName = null;
 
     Exception exception = null;
+
 
     // prepare SQLs
     String userIdColumn = Utilities.COLUMN_USER_ID;
@@ -719,28 +724,31 @@ public class StepFactory {
   }
 
   /**
-   * @param stepId step ID for which to retrieve step
-   * @return step by step ID
-   * @throws WdkModelException if step not found or problem occurs
+   * Get a step for the provided step id, if the step exists.
+   * @param stepId step ID for which to retrieve step.  This step ID has been not previously validated, so there might not be a corresponding step.
+   * @return Optional step (not present if the step was not found in the database)
+   * @throws WdkModelException system problem occurred
    */
-  public Step getStepById(long stepId) throws WdkModelException {
+  public Optional<Step> getStepById(long stepId) throws WdkModelException {
     return loadStep(null, stepId);
   }
 
-  // get left child id, right child id in here
-  Step loadStep(User user, long stepId) throws WdkModelException {
-    if (USE_CACHE) {
-      try {
-        return CacheMgr.get().getStepCache().getValue(stepId, _stepFetcherProvider.getFetcher(user));
-      }
-      catch (ValueProductionException e) {
-        throw (WdkModelException)e.getCause();
-      }
-    }
-    return loadStepNoCache(user, stepId);
+  /**
+   * @param validStepId a previously validated step id
+   * @throws WdkModelException if no step found for this ID, or if system problem occurred
+   */
+
+  public Step getStepByValidId(long validStepId)throws WdkModelException {
+    return loadStep(null, validStepId).orElseThrow(() -> new WdkModelException("Failed retrieving step from valid ID " + validStepId));
   }
 
-  Step loadStepNoCache(User user, long stepId) throws WdkModelException {
+  Step loadStepFromValidStepId(User user, long stepId) throws WdkModelException {
+    return loadStep(user, stepId).orElseThrow(() -> new WdkModelException("Can't find step with ID: " + stepId));
+  }
+
+  // TODO: fix this so that it doesn't take a possibly NULL User
+  // get left child id, right child id in here
+  private Optional<Step> loadStep(User user, long stepId) throws WdkModelException {
     LOG.debug("Loading step#" + stepId + "....");
     PreparedStatement psStep = null;
     ResultSet rsStep = null;
@@ -753,13 +761,10 @@ public class StepFactory {
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-load-step", start);
 
       LOG.debug("SELECT step#" + stepId + " SQL finished execution, now creating step object...");
-      if (!rsStep.next())
-        throw new WdkModelException("The Step #" + stepId + " of user " +
-            (user == null ? "unspecified" : user.getEmail()) + " doesn't exist.");
-
+      if (!rsStep.next()) return Optional.empty();
       Step step = loadStep(user, rsStep);
       LOG.debug("Step#" + stepId + " object loaded.");
-      return step;
+      return Optional.of(step);
     }
     catch (SQLException | JSONException ex) {
       throw new WdkModelException("Unable to load step.", ex);
@@ -1317,7 +1322,7 @@ public class StepFactory {
 
   private String copyAnswerParam(User newUser, long newStrategyId, String paramValue, User oldUser, Map<Long, Long> stepIdsMap) throws WdkModelException {
     int oldStepId = Integer.parseInt(paramValue);
-    Step oldChildStep = StepUtilities.getStep(oldUser, oldStepId);
+    Step oldChildStep = StepUtilities.getStepByValidStepId(oldUser, oldStepId);
     Step newChildStep = copyStepTree(newUser, newStrategyId, oldChildStep, stepIdsMap);
     return Long.toString(newChildStep.getStepId());
   }
@@ -1813,7 +1818,7 @@ public class StepFactory {
       return;
     Step step2;
     try {
-      step2 = getStepById(step2Id);
+      step2 = getStepByValidId(step2Id);
     }
     catch (Exception e) {
       throw new WdkIllegalArgumentException(getVerificationPrefix() + "Unable to load step with ID " +

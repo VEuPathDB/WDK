@@ -1,0 +1,29 @@
+# Step By ID Endpoint
+#
+# @path /users/{id}/steps/{id}
+
+
+# URI Parameters
+uriParameters:
+  step-id:
+    type: integer
+
+
+# Methods
+delete:
+  description: delete
+
+get:
+  description: custom name, collapsible, collapsed
+
+patch:
+  description: rename, sort, revise, nest
+
+
+# Child Endpoints
+/analyses: !include analyses.raml
+/analysis-types: !include analysis-types.raml
+/answer:
+/count:
+/filter: !include filter.raml
+/params:
