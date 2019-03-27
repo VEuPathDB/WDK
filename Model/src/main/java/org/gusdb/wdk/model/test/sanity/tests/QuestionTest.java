@@ -5,6 +5,7 @@ import java.util.Map;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -52,7 +53,9 @@ public class QuestionTest implements ElementTest {
     TestResult result = new TestResult(this);
     result.setExpected("Expect [" + sanityMin + " - " + sanityMax + "] rows" +
         ((sanityMin != 1 || sanityMax != ParamValuesSet.MAXROWS) ? "" : " (default)"));
-    _question.getQuery().setIsCacheable(false);
+    if (_question.getQuery() instanceof SqlQuery) {
+      ((SqlQuery)_question.getQuery()).setIsCacheable(false);
+    }
     AnswerValue answerValue = AnswerValueFactory.makeAnswer(_user,
         AnswerSpec.builder(_question.getWdkModel())
         .setQuestionFullName(_question.getFullName())

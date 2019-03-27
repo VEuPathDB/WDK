@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
@@ -21,7 +22,9 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.InstanceInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
+import org.gusdb.wdk.model.dbms.ResultFactory.CacheTableCreator;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
@@ -40,21 +43,9 @@ import org.json.JSONObject;
  * 
  * @author Jerric Gao
  */
-public abstract class QueryInstance<T extends Query> {
+public abstract class QueryInstance<T extends Query> implements CacheTableCreator {
 
   private static final Logger LOG = Logger.getLogger(QueryInstance.class);
-
-  /**
-   * @param tableName name of table
-   * @param instanceId id of query cache table
-   */
-  public abstract void createCache(String tableName, long instanceId) throws WdkModelException;
-
-  /**
-   * @param tableName name of table
-   * @param instanceId id of query cache table
-   */
-  protected abstract void insertToCache(String tableName, long instanceId) throws WdkModelException, WdkUserException;
 
   public abstract String getSql() throws WdkModelException;
 
@@ -62,20 +53,20 @@ public abstract class QueryInstance<T extends Query> {
 
   protected abstract void appendJSONContent(JSONObject jsInstance) throws JSONException;
 
-  protected abstract ResultList getUncachedResults() throws WdkModelException;
+  protected abstract ResultList getResults(boolean performSorting) throws WdkModelException;
 
+
+  // fields created by the constructor
   protected final User _user;
   protected final T _query;
   protected final WdkModel _wdkModel;
   protected final RunnableObj<QueryInstanceSpec> _spec;
   protected final ReadOnlyMap<String, String> _context;
 
+  // fields lazily loaded post-construction
   private Map<String, String> _paramInternalValues;
-  private long _instanceId;
-  protected String _resultMessage;
-  private boolean _resultMessageSet = false;
-
   private String _checksum;
+  private InstanceInfo _instanceInfo;
 
   /**
    * @param spec query instance spec
@@ -106,36 +97,41 @@ public abstract class QueryInstance<T extends Query> {
     return _query;
   }
 
-  /**
-   * @return the instanceId
-   */
-  public long getInstanceId() {
-    return _instanceId;
+  @Override
+  public String getQueryName() {
+    return _query.getFullName();
   }
 
-  /**
-   * @param instanceId
-   *          the instanceId to set
-   */
-  public void setInstanceId(long instanceId) {
-    _instanceId = instanceId;
+  @Override
+  public String[] getCacheTableIndexColumns() {
+    return _query.getIndexColumns();
   }
 
-  protected void setResultMessage(String resultMessage) {
-    _resultMessage = resultMessage;
-    _resultMessageSet = true;
+  public ReadOnlyMap<String, String> getParamStableValues() {
+    return new ReadOnlyHashMap<String,String>(_spec.get().toMap());
   }
 
-  public String getResultMessage() throws WdkModelException {
-    if (!_resultMessageSet) {
-      _resultMessage = new ResultFactory(_wdkModel).getResultMessage(this);
-      _resultMessageSet = true;
+  public int getAssignedWeight() {
+    return _spec.get().getAssignedWeight();
+  }
+
+  public long getInstanceId() throws WdkModelException {
+    return getInstanceInfo().getInstanceId();
+  }
+
+  public Optional<String> getResultMessage() throws WdkModelException {
+    return getInstanceInfo().getResultMessage();
+  }
+
+  public String getCacheTableName() throws WdkModelException {
+    return getInstanceInfo().getTableName();
+  }
+
+  private InstanceInfo getInstanceInfo() throws WdkModelException {
+    if (_instanceInfo == null) {
+      _instanceInfo = new ResultFactory(_wdkModel.getAppDb()).cacheResults(getChecksum(), this);
     }
-    return _resultMessage;
-  }
-
-  public boolean getIsCacheable() {
-    return _query.getIsCacheable();
+    return _instanceInfo;
   }
 
   public String getChecksum() throws WdkModelException {
@@ -203,19 +199,13 @@ public abstract class QueryInstance<T extends Query> {
     return getResults(false);
   }
 
-  private ResultList getResults(boolean performSorting) throws WdkModelException {
-    return (getIsCacheable()) ? getCachedResults(performSorting) : getUncachedResults();
-  }
-
   public int getResultSize() throws WdkModelException {
     try {
-      //logger.debug("start getting query size");
-      StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
+      StringBuilder sql = new StringBuilder("SELECT count(*) FROM (");
       sql.append(getSql()).append(") f");
       DataSource dataSource = _wdkModel.getAppDb().getDataSource();
       Object objSize = SqlUtils.executeScalar(dataSource, sql.toString(), _query.getFullName() + "__count");
       int resultSize = Integer.parseInt(objSize.toString());
-      //logger.debug("end getting query size");
       return resultSize;
     }
     catch (SQLException e) {
@@ -223,18 +213,20 @@ public abstract class QueryInstance<T extends Query> {
     }
   }
 
-  public ReadOnlyMap<String, String> getParamStableValues() {
-    return new ReadOnlyHashMap<String,String>(_spec.get().toMap());
-  }
-
-  private ResultList getCachedResults(boolean performSorting) throws WdkModelException {
-    ResultFactory factory = new ResultFactory(_wdkModel);
-    return factory.getCachedResults(this, performSorting);
+  protected ResultList getCachedResults(boolean performSorting) throws WdkModelException {
+    ResultFactory factory = new ResultFactory(_wdkModel.getAppDb());
+    long instanceId = getInstanceInfo().getInstanceId();
+    return performSorting ?
+        factory.getCachedSortedResults(instanceId, _query.getSortingMap()) :
+        factory.getCachedResults(instanceId);
   }
 
   protected String getCachedSql(boolean performSorting) throws WdkModelException {
-    ResultFactory resultFactory = new ResultFactory(_wdkModel);
-    return resultFactory.getCachedSql(this, performSorting);
+    ResultFactory factory = new ResultFactory(_wdkModel.getAppDb());
+    long instanceId = getInstanceInfo().getInstanceId();
+    return performSorting ?
+        factory.getCachedSortedSql(instanceId, _query.getSortingMap()) :
+        factory.getCachedSql(instanceId);
   }
 
   protected Map<String, String> getParamInternalValues() throws WdkModelException {
@@ -246,7 +238,7 @@ public abstract class QueryInstance<T extends Query> {
     }
     return Collections.unmodifiableMap(_paramInternalValues);
   }
-  
+
   protected void executePostCacheUpdateSql(String tableName, long instanceId) throws WdkModelException {
     List<PostCacheUpdateSql> list = _query.getPostCacheUpdateSqls() != null ? _query.getPostCacheUpdateSqls()
         : _query.getQuerySet().getPostCacheUpdateSqls();
@@ -260,16 +252,11 @@ public abstract class QueryInstance<T extends Query> {
       // get results and time process();
       DataSource dataSource = _wdkModel.getAppDb().getDataSource();
       try {
-        SqlUtils.executeUpdate(dataSource, sql, _query.getQuerySet().getName() + "__postCacheUpdateSql",
-            false);
+        SqlUtils.executeUpdate(dataSource, sql, _query.getQuerySet().getName() + "__postCacheUpdateSql", false);
       }
       catch (SQLException ex) {
         throw new WdkModelException("Unable to run postCacheinsertSql:  " + sql, ex);
       }
     }
-  }
-
-  public int getAssignedWeight() {
-    return _spec.get().getAssignedWeight();
   }
 }

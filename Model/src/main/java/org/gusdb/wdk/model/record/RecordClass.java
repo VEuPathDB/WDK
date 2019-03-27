@@ -138,11 +138,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    * @return
    * @throws WdkModelException
    */
-  public static Query prepareQuery(WdkModel wdkModel, Query query, String[] paramNames)
+  public static SqlQuery prepareQuery(WdkModel wdkModel, SqlQuery query, String[] paramNames)
       throws WdkModelException {
     Map<String, Column> columns = query.getColumnMap();
     Map<String, Param> originalParams = query.getParamMap();
-    Query newQuery = query.clone();
+    SqlQuery newQuery = query.clone();
     // do not cache the single-line query
     newQuery.setIsCacheable(false);
 
@@ -178,9 +178,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     // if the new query is SqlQuery, modify the sql
-    if (newQuery instanceof SqlQuery && newParams.size() > 0) {
+    if (newParams.size() > 0) {
       StringBuilder builder = new StringBuilder("SELECT f.* FROM (");
-      builder.append(((SqlQuery) newQuery).getSql());
+      builder.append(newQuery.getSql());
       builder.append(") f WHERE ");
       boolean firstColumn = true;
       for (String columnName : newParams) {
@@ -210,7 +210,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       sql = sql.replace(Utilities.MACRO_ID_SQL, idSql);
       sql = sql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, idSql);
 
-      ((SqlQuery) newQuery).setSql(sql);
+      newQuery.setSql(sql);
     }
     return newQuery;
   }
@@ -922,7 +922,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     List<String> pkColumnList = Arrays.asList(pkColumns);
     for (AttributeQueryReference reference : attributesQueryRefList) {
       // validate attribute query
-      Query query = (Query) wdkModel.resolveReference(reference.getTwoPartName());
+      SqlQuery query = (SqlQuery) wdkModel.resolveReference(reference.getTwoPartName());
       validateBulkQuery(query);
       
       // resolving dynamic column attribute fields
@@ -963,8 +963,19 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         attributeFieldsMap.put(fieldName, field);
       }
 
-      Query attributeQuery = RecordClass.prepareQuery(wdkModel, query, pkColumns);
+      SqlQuery attributeQuery = prepareQuery(wdkModel, query, pkColumns);
       attributeQueries.put(query.getFullName(), attributeQuery);
+
+      // run resolved attribute query to get back column types and assign types to attributes
+
+      // define ID sql by selecting a join of "'' as pkColName" + appDb.platform.getDummyTable()
+      //String idSql = "select " + primaryKeyDefinition.getColumnRefs()... etc. 
+      
+      //PreparedStatement ps = wdkModel.getAppDb().getDataSource().getConnection().prepareStatement(sql);
+      
+      //for (Column column : attributeQuery.getColumns()) {
+      //  if (field instanceof QueryColumnAttributeField)
+      //}
     }
   }
 
@@ -975,9 +986,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     for (TableField tableField : tableFieldsMap.values()) {
       tableField.resolveReferences(wdkModel);
 
-      Query query = tableField.getUnwrappedQuery();
+      SqlQuery query = tableField.getUnwrappedQuery();
 
-      Query tableQuery = RecordClass.prepareQuery(wdkModel, query, paramNames);
+      SqlQuery tableQuery = RecordClass.prepareQuery(wdkModel, query, paramNames);
       tableQueries.put(query.getFullName(), tableQuery);
     }
 

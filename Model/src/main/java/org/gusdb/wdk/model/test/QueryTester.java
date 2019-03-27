@@ -55,8 +55,7 @@ public class QueryTester {
       throws WdkModelException {
     QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
         .putAll(paramHash).buildRunnable(user, query, StepContainer.emptyContainer()));
-    long instanceId = instance.getInstanceId();
-    return "QueryResult" + instanceId;
+    return instance.getCacheTableName();
   }
 
   // ////////////////////////////////////////////////////////////////////

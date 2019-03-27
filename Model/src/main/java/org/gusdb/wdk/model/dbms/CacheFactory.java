@@ -48,7 +48,7 @@ public class CacheFactory {
   static final String CACHE_TABLE_PREFIX = "QueryResult";
 
   // columns of the QueryResultX tables
-  //   includes wdk_instance_id + all columns returned by the Query
+  //   includes wdk_instance_id, wdk_row_id (next line), and all columns returned by the Query
   public static final String COLUMN_ROW_ID = "wdk_row_id";
 
   private final DatabaseInstance _appDb;

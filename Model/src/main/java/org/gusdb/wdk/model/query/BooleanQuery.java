@@ -196,7 +196,7 @@ public class BooleanQuery extends SqlQuery {
   }
 
   @Override
-  public Query clone() {
+  public BooleanQuery clone() {
     return new BooleanQuery(this);
   }
 

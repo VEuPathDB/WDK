@@ -52,6 +52,11 @@ public class ProcessQuery extends Query {
     return new ProcessQueryInstance(spec);
   }
 
+  @Override
+  public boolean getIsCacheable() {
+    return true;
+  }
+
   /**
    * @return the name of the WSF plugin that will be invoked by the service.
    */
@@ -84,6 +89,7 @@ public class ProcessQuery extends Query {
   public int getCacheInsertBatchSize() {
     return cacheInsertBatchSize;
   }
+
   public void setCacheInsertBatchSize(int cacheInsertBatchSize) {
     this.cacheInsertBatchSize = cacheInsertBatchSize;
   }
@@ -134,13 +140,5 @@ public class ProcessQuery extends Query {
   @Override
   public Query clone() {
     return new ProcessQuery(this);
-  }
-
-  /**
-   * Process Query is always cached.
-   */
-  @Override
-  public boolean getIsCacheable() {
-    return true;
   }
 }

@@ -160,7 +160,7 @@ public class PrimaryKeyDefinition extends WdkModelBase {
    */
   private void resolveAliasQuery(WdkModel wdkModel) throws WdkModelException {
     if (_aliasQueryRef != null) {
-      Query query = (SqlQuery) wdkModel.resolveReference(_aliasQueryRef);
+      SqlQuery query = (SqlQuery) wdkModel.resolveReference(_aliasQueryRef);
 
       _recordClass.validateBulkQuery(query);
 

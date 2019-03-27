@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
@@ -37,8 +38,8 @@ public class TableField extends Field implements AttributeFieldContainer {
 
   private String _queryTwoPartName;
   private String _attributeMetaQueryTwoPartName;
-  private Query _unwrappedQuery;
-  private Query _wrappedQuery;
+  private SqlQuery _unwrappedQuery;
+  private SqlQuery _wrappedQuery;
   private List<AttributeField> _attributeFieldList = new ArrayList<AttributeField>();
   private Map<String, AttributeField> _attributeFieldMap = new LinkedHashMap<String, AttributeField>();
 
@@ -56,7 +57,7 @@ public class TableField extends Field implements AttributeFieldContainer {
     _recordClass = recordClass;
   }
 
-  public Query getUnwrappedQuery() {
+  public SqlQuery getUnwrappedQuery() {
     return _unwrappedQuery;
   }
 
@@ -159,7 +160,7 @@ public class TableField extends Field implements AttributeFieldContainer {
     super.resolveReferences(wdkModel);
 
     // resolve Query
-    _unwrappedQuery = (Query) wdkModel.resolveReference(_queryTwoPartName);
+    _unwrappedQuery = (SqlQuery) wdkModel.resolveReference(_queryTwoPartName);
 
     // validate the table query
     _recordClass.validateBulkQuery(_unwrappedQuery);
