@@ -7,8 +7,8 @@ var refParser = require('json-schema-ref-parser');
 var mergeAllOf = require('json-schema-merge-allof');
 
 if (process.argv.length != 4) {
-    console.log("\nUSAGE: schemaBuilder.js <inputDir> <outputDir>\n");
-    process.exit();
+    console.error("\nUSAGE: schemaBuilder.js <inputDir> <outputDir>\n");
+    process.exit(1);
 }
 
 var inputFile = process.argv[2];
@@ -44,7 +44,6 @@ refParser.dereference(inputFile, { dereference: { circular: "ignore" } })
           console.error(err);
           process.exit(1);
         }
-        //console.log("Done.");
       }
     );
   })
