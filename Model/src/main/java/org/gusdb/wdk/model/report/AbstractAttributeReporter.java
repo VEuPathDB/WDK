@@ -113,7 +113,7 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
 
     return sql.toString();
   }
-  
+
   private String formatColumn(AnswerValue answerValue, AttributeField attribute,
       Map<String, String> queries) throws WdkModelException {
 
@@ -169,7 +169,7 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
   /**
    * @return the values of the associated attribute. the key of the map is the
    *         primary key of a record instance.
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
   protected Map<PrimaryKeyValue, Object> getAttributeValues(AnswerValue answerValue)
       throws WdkModelException, SQLException, WdkUserException {

@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -17,20 +19,19 @@ import org.gusdb.wdk.model.record.RecordClass;
 /**
  * Represent the tree structure of the attributes in a {@link RecordClass}. you can
  * access the top level categories from this class.
- * 
+ *
  * @author jerric
- * 
+ *
  */
 public class AttributeCategoryTree extends WdkModelBase implements Iterable<AttributeCategory> {
 
-  private static String newline = System.getProperty("line.separator");
+  private final List<AttributeCategory> topLevelCategories = new ArrayList<>();
 
-  private List<AttributeCategory> topLevelCategories = new ArrayList<AttributeCategory>();
-  private List<AttributeField> topLevelAttributes = new ArrayList<AttributeField>();
+  private final List<AttributeField> topLevelAttributes = new ArrayList<>();
 
   // map from category name to Category (for easy lookup when placing
   // attributes)
-  private Map<String, AttributeCategory> categoryMap = new HashMap<String, AttributeCategory>();
+  private final Map<String, AttributeCategory> categoryMap = new HashMap<>();
 
   public void addAttributeCategory(AttributeCategory category) {
     topLevelCategories.add(category);
@@ -64,7 +65,7 @@ public class AttributeCategoryTree extends WdkModelBase implements Iterable<Attr
    * Creates and returns a copy of this tree with only attributes valid under
    * the given scope. Also recursively trims categories that do not have
    * attributes.
-   * 
+   *
    * @param scope
    *          scope in which attributes must be valid
    * @return copy of tree, trimmed for scope and empty categories
@@ -109,7 +110,7 @@ public class AttributeCategoryTree extends WdkModelBase implements Iterable<Attr
   /**
    * Recursively adds the passed category and all subcategories to the category
    * map
-   * 
+   *
    * @param cat
    *          category to add
    * @throws WdkModelException if any categories' names are duplicated
@@ -128,7 +129,7 @@ public class AttributeCategoryTree extends WdkModelBase implements Iterable<Attr
   @Override
   public String toString() {
     StringBuilder str = new StringBuilder().append("uncategorized (").append(
-        topLevelAttributes.size()).append(")").append(newline);
+        topLevelAttributes.size()).append(")").append(FormatUtil.NL);
     for (AttributeCategory cat : topLevelCategories) {
       cat.appendToStringBuffer("", str);
     }
@@ -138,7 +139,7 @@ public class AttributeCategoryTree extends WdkModelBase implements Iterable<Attr
   public FieldTree toFieldTree(String rootName, String rootDisplayName) {
     return AttributeCategory.toFieldTree(rootName, rootDisplayName, topLevelCategories, topLevelAttributes);
   }
-  
+
   @Override
   public Iterator<AttributeCategory> iterator() {
     return new AttributeCategoryTreeIterator(this);
@@ -147,7 +148,7 @@ public class AttributeCategoryTree extends WdkModelBase implements Iterable<Attr
 
   private static class AttributeCategoryTreeIterator implements Iterator<AttributeCategory> {
 
-    private LinkedList<AttributeCategory> items = new LinkedList<AttributeCategory>();
+    private final LinkedList<AttributeCategory> items = new LinkedList<>();
 
     public AttributeCategoryTreeIterator(AttributeCategoryTree attributeCategoryTree) {
       items.addAll(attributeCategoryTree.getTopLevelCategories());
@@ -155,7 +156,7 @@ public class AttributeCategoryTree extends WdkModelBase implements Iterable<Attr
 
     @Override
     public boolean hasNext() {
-      return items.size() > 0;
+      return !items.isEmpty();
     }
 
     @Override

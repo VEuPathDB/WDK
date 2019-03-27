@@ -1,14 +1,11 @@
-/**
- * 
- */
 package org.gusdb.wdk.model;
 
 /**
  * This class is a super class for any classes that represents a tag in the WDK
  * model file, and that tag can have CDATA text in it.
- * 
+ *
  * @author Jerric
- * 
+ *
  */
 public class WdkModelText extends WdkModelBase {
 
@@ -55,19 +52,19 @@ public class WdkModelText extends WdkModelBase {
   }
 
   /**
-   * A temporary fix on model parsing. It sets the value into text, and should be deprecated/removed after 
+   * A temporary fix on model parsing. It sets the value into text, and should be deprecated/removed after
    * the model is unified to use setText() only.
    *
    * @param value
    *
-   */ 
+   */
   public void setValue(String value) {
     this.text = value;
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
    */
   @Override
@@ -77,7 +74,7 @@ public class WdkModelText extends WdkModelBase {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
    * .WdkModel)
    */
