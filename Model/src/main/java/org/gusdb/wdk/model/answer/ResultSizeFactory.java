@@ -65,10 +65,11 @@ public class ResultSizeFactory {
 
   public int getResultSize() throws WdkModelException {
     QueryInstance<?> idsQueryInstance = _answerValue.getIdsQueryInstance();
-    if (_resultSize == null || !idsQueryInstance.getIsCacheable()) {
+    boolean isCacheable = idsQueryInstance.getQuery().getIsCacheable();
+    if (_resultSize == null || !isCacheable) {
       _resultSize = new DefaultResultSizePlugin().getResultSize(_answerValue);
     }
-    LOG.debug("getting result size: cache=" + _resultSize + ", isCacheable=" + idsQueryInstance.getIsCacheable());
+    LOG.debug("getting result size: cache=" + _resultSize + ", isCacheable=" + isCacheable);
     return _resultSize;
   }
 
@@ -94,11 +95,11 @@ public class ResultSizeFactory {
       }
       else {
         // need to run the query first for portal
-        String message = queryInstance.getResultMessage();
+        Optional<String> message = queryInstance.getResultMessage();
         try (ResultList resultList = (filter.isPresent() ? filter.get().getResults(_answerValue) : queryInstance.getResults())){
-          boolean hasMessage = (message != null && message.length() > 0);
+          boolean hasMessage = (message.isPresent() && message.get().length() > 0);
           if (hasMessage) {
-            String[] sizes = message.split(",");
+            String[] sizes = message.get().split(",");
             for (String size : sizes) {
               String[] parts = size.split(":");
               if (parts.length > 1 && parts[1].matches("^\\d++$")) {
@@ -208,7 +209,7 @@ public class ResultSizeFactory {
       throws WdkModelException {
     FilterSizeType sizeType = useDisplay ? FilterSizeType.DISPLAY : FilterSizeType.STANDARD;
     Integer size = _resultSizesByFilter.get(sizeType).get(filterName);
-    if (size != null && _answerValue.getIdsQueryInstance().getIsCacheable()) {
+    if (size != null && _answerValue.getIdsQueryInstance().getQuery().getIsCacheable()) {
       return size;
     }
 

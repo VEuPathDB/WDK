@@ -103,12 +103,6 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   }
 
   private String name;
-  protected boolean isCacheable = false;
-
-  /**
-   * A flag to check if the cached has been set. if not set, the value from parent querySet will be used.
-   */
-  private boolean setCache = false;
 
   // temp list, will be discarded after resolve references
   private List<Column> columnList;
@@ -144,6 +138,8 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   @Override
   public abstract Query clone();
 
+  public abstract boolean getIsCacheable();
+
   public abstract void resolveQueryReferences(WdkModel wdkModel) throws WdkModelException;
 
   // =========================================================================
@@ -167,8 +163,6 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
 
     // logger.debug("clone query: " + query.getFullName());
     this.name = query.name;
-    this.isCacheable = query.isCacheable;
-    this.setCache = query.setCache;
     if (query.columnList != null)
       this.columnList = new ArrayList<>(query.columnList);
     this.columnMap = new LinkedHashMap<String, Column>();
@@ -187,25 +181,6 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
       column.setQuery(this);
       columnMap.put(columnName, column);
     }
-  }
-
-  /**
-   * @return the cached
-   */
-  public boolean getIsCacheable() {
-    // first check if global caching is turned off, if off, then return false; otherwise, use query's own 
-    // settings.
-    if (!_wdkModel.getModelConfig().isCaching()) return false;
-    return this.isCacheable;
-  }
-
-  /**
-   * @param isCacheable
-   *          the cached to set
-   */
-  public void setIsCacheable(boolean isCacheable) {
-    this.isCacheable = isCacheable;
-    setCache = true;
   }
 
   public Param getContextParam() {
@@ -409,10 +384,6 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
 
     super.resolveReferences(wdkModel);
 
-    // check if we need to use querySet's cache flag
-    if (!setCache)
-      isCacheable = getQuerySet().isCacheable();
-
     // FIXME - this cause problems with some params, need to investigate.
     // comment out temporarily
     // apply the default values to depended params
@@ -508,7 +479,6 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
       buffer.append(column.getName());
     }
     buffer.append("}");
-    buffer.append(System.lineSeparator() + "isCacheable: " + getIsCacheable() + System.lineSeparator());
     return buffer.toString();
   }
 

@@ -54,6 +54,12 @@ public class SqlQuery extends Query {
   private boolean clobRow;
   private boolean _useDBLink = false;
 
+  /**
+   * A flag to check if the cached has been set. if not set, the value from parent querySet will be used.
+   */
+  private boolean setCache = false;
+  private boolean isCacheable = false;
+  
   private String _attributeMetaQueryRef;
   private List<WdkModelText> dependentTableList;
   private Map<String, String> dependentTableMap;
@@ -74,6 +80,8 @@ public class SqlQuery extends Query {
     this._sql = query._sql;
     this.isCacheable = query.isCacheable;
     this._useDBLink = query._useDBLink;
+    this.isCacheable = query.isCacheable;
+    this.setCache = query.setCache;
 
     if (query.sqlList != null) this.sqlList = new ArrayList<>(query.sqlList);
     if (query.sqlMacroMap != null)
@@ -114,7 +122,29 @@ public class SqlQuery extends Query {
   public void setUseDBLink(boolean useDBLink) {
     _useDBLink = useDBLink;
   }
-  
+
+  /**
+   * @return whether this query should be cached
+   */
+  @Override
+  public boolean getIsCacheable() {
+    // check if global caching is turned off, if off, then return false
+    if (!_wdkModel.getModelConfig().isCaching()) return false;
+    // check if this query's value has been set; if not, use QuerySet's value
+    if (!setCache) return getQuerySet().isCacheable();
+    // otherwise, use value assigned to this query
+    return isCacheable;
+  }
+
+  /**
+   * @param isCacheable
+   *          the cached to set
+   */
+  public void setIsCacheable(boolean isCacheable) {
+    this.isCacheable = isCacheable;
+    setCache = true;
+  }
+
   /**
    * Sets an optional reference to a meta columns query
    * @param meta columns query ref of the form "set.element"
@@ -230,13 +260,8 @@ public class SqlQuery extends Query {
     return sql;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#clone()
-   */
   @Override
-  public Query clone() {
+  public SqlQuery clone() {
     return new SqlQuery(this);
   }
 

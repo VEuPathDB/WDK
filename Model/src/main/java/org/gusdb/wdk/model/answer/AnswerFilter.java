@@ -97,7 +97,7 @@ public class AnswerFilter extends WdkModelBase {
       return;
     // resolve the reference to the filter query
     SqlQuery query = (SqlQuery) wdkModel.resolveReference(queryRef);
-    query = (SqlQuery) query.clone();
+    query = query.clone();
 
     // all the filter query should has a weight column
     query.setHasWeight(true);

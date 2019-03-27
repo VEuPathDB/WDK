@@ -4,6 +4,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
@@ -24,7 +25,7 @@ public class TableQueryTest extends QueryTest {
   @Override
   protected int runQuery(User user, Query query, ParamValuesSet paramValuesSet,
       TestResult result) throws Exception {
-    query = RecordClass.prepareQuery(query.getWdkModel(), query, getPkParamNames(query));
+    query = RecordClass.prepareQuery(query.getWdkModel(), (SqlQuery)query, getPkParamNames(query));
     result.restartTimer();
     return super.runQuery(user, query, paramValuesSet, result);
   }

@@ -61,13 +61,6 @@ public class AttributeQueryReference extends Reference {
 
   public AttributeQueryReference() {}
 
-  /**
-   * @param twoPartName
-   */
-  public AttributeQueryReference(String twoPartName) throws WdkModelException {
-    super(twoPartName);
-  }
-
   public void setRecordClass(RecordClass recordClass) {
     for (AttributeField field : attributeFieldList) {
       field.setContainer(recordClass);
