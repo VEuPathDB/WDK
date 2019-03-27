@@ -2,11 +2,7 @@ package org.gusdb.wdk.service.service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
@@ -38,13 +34,18 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 
+import static java.lang.String.format;
+
 /**
- * This class serves as a superclass for WDK JAX-RS services.  It provides a number of methods that provide
- * access to the session and current user, the WdkModel, URI information, cookies, etc.  It does this by
- * annotating some private fields for JAX-RS dependency injection.  It also provides convenience methods to
- * help WDK services standardize their responses in common conditions, e.g. return a permission denied if the
- * user is not an administrator, etc.  WDK service classes do not have to subclass WdkService, but it is
- * recommended for these reasons.  Since it provides no services of its own is has been made abstract.
+ * This class serves as a superclass for WDK JAX-RS services.  It provides a
+ * number of methods that provide access to the session and current user, the
+ * WdkModel, URI information, cookies, etc.  It does this by annotating some
+ * private fields for JAX-RS dependency injection.  It also provides convenience
+ * methods to help WDK services standardize their responses in common
+ * conditions, e.g. return a permission denied if the user is not an
+ * administrator, etc.  WDK service classes do not have to subclass WdkService,
+ * but it is recommended for these reasons.  Since it provides no services of
+ * its own is has been made abstract.
  *
  * @author rdoherty
  */
@@ -55,11 +56,11 @@ public abstract class AbstractWdkService {
 
   /**
    * Composes a proper Not Found exception message using the supplied resource.
-   * @param resource
+   *
    * @return - Not Found message with resource embedded.
    */
   public static String formatNotFound(String resource) {
-    return String.format(NOT_FOUND, resource);
+    return format(NOT_FOUND, resource);
   }
 
   @Context
@@ -115,7 +116,7 @@ public abstract class AbstractWdkService {
     return _request.getCookies();
   }
 
-  protected Map<String,List<String>> getHeaders() {
+  protected Map<String, List<String>> getHeaders() {
     Map<String, List<String>> headers = new HashMap<>();
     Enumeration<String> headerNames = _request.getHeaderNames();
     while (headerNames.hasMoreElements()) {
@@ -135,7 +136,7 @@ public abstract class AbstractWdkService {
   }
 
   protected User getSessionUser() {
-    return (User)_request.getSession().getAttribute(Utilities.WDK_USER_KEY);
+    return (User) _request.getSession().getAttribute(Utilities.WDK_USER_KEY);
   }
 
   protected boolean isSessionUserAdmin() {
@@ -152,7 +153,7 @@ public abstract class AbstractWdkService {
   @Context
   protected void setServletContext(ServletContext context) {
     _servletContext = context;
-    _wdkModel = (WdkModel)context.getAttribute(Utilities.WDK_MODEL_KEY);
+    _wdkModel = (WdkModel) context.getAttribute(Utilities.WDK_MODEL_KEY);
     _serviceEndpoint = context.getContextPath() + context.getInitParameter(Utilities.WDK_SERVICE_ENDPOINT_KEY);
   }
 
@@ -168,8 +169,9 @@ public abstract class AbstractWdkService {
   }
 
   /**
-   * Triggers error events for errors caught during the processing of a service request.  This is for
-   * non-fatal errors that admins nevertheless may want to be alerted to.
+   * Triggers error events for errors caught during the processing of a service
+   * request.  This is for non-fatal errors that admins nevertheless may want to
+   * be alerted to.
    *
    * @param errors list of errors for which to trigger error events
    */
@@ -209,8 +211,8 @@ public abstract class AbstractWdkService {
   }
 
   /**
-   * Creates a JAX/RS StreamingOutput object based on incoming data
-   * content from a file, database, or other data producer
+   * Creates a JAX/RS StreamingOutput object based on incoming data content from
+   * a file, database, or other data producer
    *
    * @param content data to be streamed to the client
    * @return streaming output object that will stream content to the client
@@ -230,8 +232,8 @@ public abstract class AbstractWdkService {
   }
 
   /**
-   * Returns an unboxed version of the passed value or the default
-   * boolean flag value (false) if the passed value is null.
+   * Returns an unboxed version of the passed value or the default boolean flag
+   * value (false) if the passed value is null.
    *
    * @param boolValue flag value passed to service
    * @return unboxed value or false if null
@@ -241,8 +243,8 @@ public abstract class AbstractWdkService {
   }
 
   /**
-   * Returns an unboxed version of the passed value or the default
-   * boolean flag value if the passed value is null.
+   * Returns an unboxed version of the passed value or the default boolean flag
+   * value if the passed value is null.
    *
    * @param boolValue flag value passed to service
    * @param defaultValue default value if boolValue is null
@@ -276,22 +278,31 @@ public abstract class AbstractWdkService {
         // record class of the name provided cannot be found
         new NotFoundException(formatNotFound("record type: " + recordClassUrlSegment)));
   }
-  
+
   protected Question getQuestionOrNotFound(String questionUrlSegment) {
     return getWdkModel().getQuestionByName(questionUrlSegment)
       .orElseThrow(() ->
-        // question of the name provided cannot be found
-        new NotFoundException(formatNotFound("search: " + questionUrlSegment)));
+      // question of the name provided cannot be found
+      new NotFoundException(formatNotFound("search: " + questionUrlSegment)));
   }
 
-  protected Question getQuestionOrNotFound(String recordClassUrlSegment, String questionUrlSegment)  {
-    RecordClass requestRecordClass = getRecordClassOrNotFound(recordClassUrlSegment);
-    Question requestQuestion = getQuestionOrNotFound(questionUrlSegment);
-    if (!requestQuestion.getRecordClassName().equals(requestRecordClass.getFullName())) {
-      throw new NotFoundException("Search " + requestQuestion.getName() +
-          " does not belong to record type " + requestRecordClass.getName());
-    }
-    return requestQuestion;
+  protected Question getQuestionOrNotFound(String recordClassUrlSegment,
+    String questionUrlSegment) {
+    return getQuestionOrNotFound(
+      getRecordClassOrNotFound(recordClassUrlSegment),
+      questionUrlSegment
+    );
+  }
+
+  protected Question getQuestionOrNotFound(RecordClass record, String searchName) {
+    Question question = getQuestionOrNotFound(searchName);
+    if (!question.getRecordClassName().equals(record.getFullName()))
+      throw new NotFoundException(format(
+        "Search \"%s\" does not belong to record type \"%s\"",
+        question.getName(),
+        record.getName()
+      ));
+    return question;
   }
 
 }

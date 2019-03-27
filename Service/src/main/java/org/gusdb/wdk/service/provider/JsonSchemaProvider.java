@@ -101,7 +101,7 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
   @Override
   public Object readFrom(Class<Object> cls, Type type, Annotation[] anns,
       MediaType media, MultivaluedMap<String,String> headers, InputStream stream)
-      throws IOException, WebApplicationException {
+      throws WebApplicationException {
     final JsonNode node = Functions.mapException(() ->
       Optional.ofNullable(Jackson.readTree(stream))
         .orElseGet(NullNode::getInstance),
