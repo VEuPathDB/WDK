@@ -17,16 +17,16 @@ import org.gusdb.wdk.model.record.RecordClass;
  * the the content in @{code <displayText>} will be rendered as display inside
  * of {@code <a></a>}.
  * </p>
- * 
+ *
  * <p>
  * The link attribute is usually embedded with {@link ColumnAttributeField}s to
  * provide record specific links, and the {@link LinkAttributeField#_displayText}
  * and {@link LinkAttributeField#_url} can embed {@link ColumnAttributeField}s
  * from the same {@link RecordClass}.
  * </p>
- * 
+ *
  * @author jerric
- * 
+ *
  */
 public class LinkAttributeField extends DerivedAttributeField {
 
@@ -55,7 +55,7 @@ public class LinkAttributeField extends DerivedAttributeField {
 
   /**
    * if true, clicking on the link will open a new window; default false.
-   * 
+   *
    * @return
    */
   public boolean isNewWindow() {

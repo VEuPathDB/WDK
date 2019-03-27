@@ -48,17 +48,17 @@ import org.gusdb.wdk.model.user.UserPreferences;
 /**
  * A class representing a binding between a RecordClass and a Query. On the
  * website, a question is displayed in categories, and are called searches.
- * 
+ *
  * A question can override some parts of the underlying query: paramRef,
  * paramValue/sqlMacro. However, a question shouldn't introduce new paramRef or
  * paramValue that is not defined in the query.
- * 
+ *
  * A question can override some parts of referenced recordClass: it can define
  * dynamicAttributes to introduce new attributes; it can define summaryView to
  * add views (or override views of the same name) to the record type.
- * 
+ *
  * Created: Fri June 4 11:19:30 2004 EDT
- * 
+ *
  * @author David Barkan
  * @version $Revision$ $Date: 2007-01-10 14:54:53 -0500 (Wed, 10 Jan
  *          2007) $ $Author$
@@ -72,7 +72,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   private static final String DYNAMIC_QUERY_SUFFIX = "_dynamic";
 
   protected static final Logger LOG = Logger.getLogger(Question.class);
-  
+
   private String _recordClassRef;
 
   private String _idQueryRef;
@@ -80,7 +80,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   private String _name;
 
   private String _displayName;
-  
+
   private String _iconName;
 
   private List<WdkModelText> _descriptions = new ArrayList<WdkModelText>();
@@ -142,7 +142,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   private List<SummaryView> _summaryViewList = new ArrayList<>();
   private Map<String, SummaryView> _summaryViewMap = new LinkedHashMap<>();
-  
+
   private List<StepAnalysisXml> _stepAnalysisList = new ArrayList<>();
   private Map<String, StepAnalysis> _stepAnalysisMap = new LinkedHashMap<>();
 
@@ -155,10 +155,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
    * revise build flag on what build this question is revised.
    */
   private String _reviseBuild;
-  
+
   private final Map<String, Filter> _filters = new LinkedHashMap<>();
-  
-  
+
+
   private List<QuestionSuggestion> _suggestions = new ArrayList<>();
 
   // /////////////////////////////////////////////////////////////////////
@@ -172,7 +172,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   /**
    * copy constructor
-   * 
+   *
    * @param question
    */
   public Question(Question question) {
@@ -245,7 +245,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     else
       return (currentBuild.equals(_reviseBuild));
   }
-  
+
   public void addSuggestion(QuestionSuggestion suggestion) {
     _suggestions.add(suggestion);
   }
@@ -484,7 +484,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   /**
    * A indicator to the controller whether this question should make answers
    * that contains all records in one page or not.
-   * 
+   *
    * @return the fullAnswer
    */
   public boolean isFullAnswer() {
@@ -494,7 +494,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   /**
    * Set the indicator to the controller that suggests this question to make
    * answers containing all records in one page, or not.
-   * 
+   *
    * @param fullAnswer
    *          the fullAnswer to set
    */
@@ -505,7 +505,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   /**
    * if true, when the result has only one record, we will skip the results
    * page and redirect user to the record page.
-   * 
+   *
    * @return the noSummaryOnSingleRecord
    */
   public boolean isNoSummaryOnSingleRecord() {
@@ -535,7 +535,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
    * meanwhile this method returns the configured list if it is configured,
    * otherwise it only return a limited number of attribtue fields for display
    * purpose.
-   * 
+   *
    * @return
    */
   public Map<String, AttributeField> getSummaryAttributeFieldMap() {
@@ -590,7 +590,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   public Map<String, AttributeField> getDynamicAttributeFieldMap(FieldScope scope) {
     return _dynamicAttributeSet.getAttributeFieldMap(scope);
   }
-  
+
   public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope)
       throws WdkModelException {
 
@@ -704,7 +704,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
       for (SummaryView summaryView : _summaryViewMap.values()) {
         summaryView.resolveReferences(model);
       }
-      
+
       // resolve step analysis refs
       for (StepAnalysis stepAnalysisRef : _stepAnalysisMap.values()) {
         StepAnalysisXml stepAnalysisXml = (StepAnalysisXml)stepAnalysisRef;
@@ -890,7 +890,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
       }
     }
     _summaryViewList = null;
-    
+
     // exclude step analyses
     for (StepAnalysisXml analysis : _stepAnalysisList) {
       if (analysis.include(projectId)) {
@@ -904,7 +904,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
       }
     }
     _stepAnalysisList = null;
-    
+
     // excluding suggestions
     for (QuestionSuggestion suggestion : _suggestions) {
       if (suggestion.include(projectId)) {
@@ -918,7 +918,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   /**
    * If dynamic attributes are defined, a new attribute query will be created
    * which includes all the dynamic attributes.
-   * 
+   *
    * @param wdkModel
    * @return
    */
@@ -1105,7 +1105,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     writer.println(indent + "<question name=\"" + getName() + "\" recordClass=\"" + _recordClass.getFullName() + "\">");
     String indent1 = indent + WdkModel.INDENT;
     String indent2 = indent1 + WdkModel.INDENT;
-    
+
     // print dynamic attributes
     if (_dynamicAttributeSet != null) {
       Map<String, AttributeField> attributes = _dynamicAttributeSet.getAttributeFieldMap();
@@ -1117,12 +1117,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
       }
       writer.println(indent1 + "</dynamicAttributes>");
     }
-    
+
     // print query
     _query.printDependency(writer, indent);
     writer.print(indent + "</question>");
   }
-  
+
   // used to set question specific filters
   public void addFilter(Filter filter) {
     LOG.debug("QUESTION: ADDING FILTER: " + filter.getKey() + " for question: " + getFullName() + "\n");
@@ -1133,7 +1133,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
    * Returns a set of filters (by name) for this question.  Only non-view-only
    * filters are included in this list.  View-only filters are available via
    * getViewFilters() or by name.
-   * 
+   *
    * @return map of all non-view-only filters, from filter name to filter
    */
   public Map<String, Filter> getFilters() {
@@ -1143,7 +1143,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   /**
    * Returns a set of view filters (by name) for this question.
-   * 
+   *
    * @return map of all view-only filters, from filter name to filter
    */
   public Map<String, Filter> getViewFilters() {
@@ -1168,7 +1168,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     }
     Filter filter = _filters.get(filterName);
     if (filter == null) {
-      filter = _recordClass.getFilter(filterName); 
+      filter = _recordClass.getFilter(filterName);
     }
     return Optional.ofNullable(filter);
   }

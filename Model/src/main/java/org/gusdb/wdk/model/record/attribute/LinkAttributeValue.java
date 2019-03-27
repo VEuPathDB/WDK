@@ -4,20 +4,16 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
 /**
- * <p>
- * A value of a {@link LinkedAttributeField} that represents a hyperlink in the
+ * A value of a {@link LinkAttributeField} that represents a hyperlink in the
  * web page. The values of the embedded {@link AttributeField}s will be
- * substituted into the {@link LinkAttributeField#_displayText} and
- * {@link LinkAttributeField#_url}.
- * </p>
- * 
+ * substituted into the {@link LinkAttributeField#_displayText} and {@link
+ * LinkAttributeField#_url}.
  * <p>
  * The front end is responsible for rendering the url correctly using the values
- * from {@link LinkAttributeField#getDisplayText} and
- * {@link LinkAttributeField#getUrl}. the overridden
- * {@link LinkAttribute#getValue} will just return a text representation of the
- * url, which is only useful when downloading the url data in download report.
- * </p>
+ * from {@link LinkAttributeField#getDisplayText} and {@link
+ * LinkAttributeField#getUrl}. the overridden {@link LinkAttributeValue#getValue}
+ * will just return a text representation of the url, which is only useful when
+ * downloading the url data in download report.
  */
 public class LinkAttributeValue extends DerivedAttributeValue {
 
@@ -37,7 +33,7 @@ public class LinkAttributeValue extends DerivedAttributeValue {
 
   public String getUrl() throws WdkModelException, WdkUserException {
     if (_url == null) {
-      _url = populateMacros(((LinkAttributeField)_field).getUrl());
+      _url = populateMacros(((LinkAttributeField) _field).getUrl());
     }
     return _url;
   }

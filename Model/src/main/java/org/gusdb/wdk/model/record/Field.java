@@ -12,9 +12,9 @@ import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * A field defines a property of a {@link RecordClass}.
- * 
+ *
  * @author Jerric
- * @created Jan 17, 2006
+ * @since Jan 17, 2006
  */
 public abstract class Field extends WdkModelBase implements ScopedField, NamedObject {
 
@@ -64,7 +64,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
   }
 
   /**
-   * @param _displayName
+   * @param longDisplayName
    *          The displayName to set.
    */
   @RngOptional
@@ -90,7 +90,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
 
   /**
    * if true, a field is available on download; default true.
-   * 
+   *
    * @return Returns the inReportMaker.
    */
   @Override
@@ -109,7 +109,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
 
   /**
    * if true, a field is unavailable in the summary configuration. default false.
-   * 
+   *
    * @return Returns the internal.
    */
   @Override
@@ -184,7 +184,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
    * Poorly named method that prints "dependency information" of fields.  Really seems to just
    * print general information about the field that is different than the string representation.
    * See ModelXmlParser's main method for the top-level call that trickles down to this method.
-   * 
+   *
    * @param writer where to write data
    * @param indent how much to indent
    * @throws WdkModelException if unable to get nested dependency information
@@ -197,7 +197,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
 
   /**
    * Prints the dependency tree of this attribute field.
-   * 
+   *
    * @param writer where to write
    * @param indent current indentation
    * @throws WdkModelException if unable to resolve dependencies
