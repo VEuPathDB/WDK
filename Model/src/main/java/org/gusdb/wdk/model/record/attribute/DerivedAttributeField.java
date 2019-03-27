@@ -24,7 +24,7 @@ import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * A derived attribute field is one whose value depends on the values of other attribute fields
- * 
+ *
  * @author rdoherty
  */
 public abstract class DerivedAttributeField extends AttributeField {
@@ -83,7 +83,7 @@ public abstract class DerivedAttributeField extends AttributeField {
   /**
    * Several kinds of fields can embed other fields in their properties. This method
    * parses out the embedded fields from the text.
-   * 
+   *
    * @param text to parse for attribute name macros
    * @return map of attribute fields this field depends on
    */
@@ -123,7 +123,7 @@ public abstract class DerivedAttributeField extends AttributeField {
   /**
    * Make sure the attribute doesn't embed other attributes that may cause
    * cross-dependency.
-   * 
+   *
    * @param attribute the attribute to be checked
    * @param path the path from root to the attribute (attribute is not included)
    */
@@ -172,7 +172,7 @@ public abstract class DerivedAttributeField extends AttributeField {
 
   public static String replaceMacrosWithAttributeValues(String text, AttributeValueContainer container, String label)
       throws WdkModelException, WdkUserException {
-    Map<String, Object> values = new LinkedHashMap<String, Object>();
+    Map<String, Object> values = new LinkedHashMap<>();
     Map<String, AttributeField> fields = container.getAttributeFieldMap();
 
     Matcher matcher = MACRO_PATTERN.matcher(text);

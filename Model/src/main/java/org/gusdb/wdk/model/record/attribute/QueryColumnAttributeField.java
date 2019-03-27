@@ -19,7 +19,7 @@ import org.gusdb.wdk.model.query.Query;
 /**
  * This is an {@link AttributeField} that maps an underlying {@link Column} from an attribute or table
  * {@link Query}.
- * 
+ *
  * @author jerric
  */
 public class QueryColumnAttributeField extends ColumnAttributeField {
@@ -74,8 +74,8 @@ public class QueryColumnAttributeField extends ColumnAttributeField {
 
     // verify the name
     if (!_name.equals(_column.getName())) {
-      throw new WdkModelException("The name of the ColumnAttributeField" + " '" + _name +
-          "' does not match the column name '" + _column.getName() + "'");
+      throw new WdkModelException("The name of the ColumnAttributeField '" +
+        _name + "' does not match the column name '" + _column.getName() + "'");
     }
 
     // resolve the column filters

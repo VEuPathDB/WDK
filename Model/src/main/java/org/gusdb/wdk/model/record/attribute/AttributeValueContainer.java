@@ -25,10 +25,10 @@ import org.gusdb.wdk.model.WdkUserException;
  * corresponding {@link AttributeValue} will use the container to resolve the
  * values of those embedded {@link AttributeField}s.
  * </p>
- * 
+ *
  * @author xingao
  * @author rdoherty
- * 
+ *
  */
 public abstract class AttributeValueContainer extends LinkedHashMap<String, AttributeValue> implements AttributeValueMap {
 
