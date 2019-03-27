@@ -34,14 +34,19 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@Path("/record-types")
+@Path(RecordService.BASE_PATH)
 public class RecordService extends AbstractWdkService {
+
+  public static final String BASE_PATH = "/record-types";
+  public static final String ID_VAR = "recordClassName";
+  public static final String ID_PARAM = "{" + ID_VAR + "}";
+  public static final String ID_PATH = BASE_PATH + "/" + ID_PARAM;
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(RecordService.class);
 
   private static final String RECORDCLASS_RESOURCE = "RecordClass with name ";
-  
+
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.records.get")
@@ -51,20 +56,20 @@ public class RecordService extends AbstractWdkService {
         .map(f -> f.equals("expanded"))
         .orElse(false);
 
-    if (expand) 
+    if (expand)
       return new JSONArray(RecordClassFormatter.getExpandedRecordClassesJson(
         getWdkModel().getAllRecordClassSets(), getWdkModel().getAllQuestions()));
-    else 
+    else
       return new JSONArray(RecordClassFormatter.getRecordClassNames(
         getWdkModel().getAllRecordClassSets()));
   }
 
   @GET
-  @Path("{recordClassName}")
+  @Path(ID_PARAM)
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.records.name.get")
   public Response getRecordClassInfo(
-      @PathParam("recordClassName") String recordClassName) {
+      @PathParam(ID_VAR) String recordClassName) {
     return Response.ok(
         RecordClassFormatter.getRecordClassJson(
             getRecordClassOrNotFound(recordClassName), true,
@@ -75,10 +80,10 @@ public class RecordService extends AbstractWdkService {
 
   // TODO: replace this with a GET (using the path to encode the primary key)
   @POST
-  @Path("{recordClassName}/records")
+  @Path(ID_PARAM + "/records")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response buildResult(@PathParam("recordClassName") String recordClassName, String body)
+  public Response buildResult(@PathParam(ID_VAR) String recordClassName, String body)
       throws WdkModelException, DataValidationException, RequestMisformatException {
     try {
       // get and parse request information
