@@ -35,7 +35,7 @@ function filterSchemaProps(obj, level) {
 
 refParser.dereference(inputFile, { dereference: { circular: "ignore" } })
   .then(function(schema) {
-    var mergedSchema = mergeAllOf(schema);
+    var mergedSchema = mergeAllOf(schema, {ignoreAdditionalProperties: true});
     mergedSchema = filterSchemaProps(mergedSchema, 0);
     fs.writeFile(outputFile,
       JSON.stringify(mergedSchema, null, 2),
