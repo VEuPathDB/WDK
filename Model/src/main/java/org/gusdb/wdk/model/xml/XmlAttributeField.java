@@ -2,7 +2,9 @@ package org.gusdb.wdk.model.xml;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
+import org.gusdb.fgputil.db.SqlColumnType;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
@@ -18,11 +20,6 @@ public class XmlAttributeField extends AttributeField {
         super();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         String classnm = this.getClass().getName();
@@ -37,21 +34,11 @@ public class XmlAttributeField extends AttributeField {
         return buf.toString();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-     */
     @Override
     public void excludeResources(String projectId) {
     // do nothing
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
-     */
     @Override
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     // do nothing
@@ -60,5 +47,10 @@ public class XmlAttributeField extends AttributeField {
     @Override
     public Map<String, ColumnAttributeField> getColumnAttributeFields() throws WdkModelException {
       return Collections.EMPTY_MAP;
+    }
+
+    @Override
+    public Optional<SqlColumnType> getSqlColumnType() {
+      return Optional.empty();
     }
 }

@@ -5,7 +5,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import org.gusdb.fgputil.db.SqlColumnType;
 import org.gusdb.wdk.model.RngAnnotations.RngOptional;
 import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.WdkModel;
@@ -46,6 +48,8 @@ public abstract class AttributeField extends Field implements Cloneable {
   private Map<String, AttributeReporterRef> _reporterMap;
 
   public abstract Map<String, ColumnAttributeField> getColumnAttributeFields() throws WdkModelException;
+
+  public abstract Optional<SqlColumnType> getSqlColumnType();
 
   @Override
   public AttributeField clone() {
