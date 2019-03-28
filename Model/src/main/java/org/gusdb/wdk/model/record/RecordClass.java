@@ -4,6 +4,10 @@ import static org.gusdb.fgputil.functional.Functions.fSwallow;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,11 +23,15 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.Named.NamedObject;
+import org.gusdb.fgputil.db.SqlColumnType;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -52,6 +60,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.AttributeList;
 import org.gusdb.wdk.model.question.CategoryList;
@@ -61,6 +70,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
+import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
@@ -966,16 +976,46 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       SqlQuery attributeQuery = prepareQuery(wdkModel, query, pkColumns);
       attributeQueries.put(query.getFullName(), attributeQuery);
 
-      // run resolved attribute query to get back column types and assign types to attributes
+      assignSqlColumnTypes(wdkModel, query); // intentionally using unprepared query
+    }
+  }
 
-      // define ID sql by selecting a join of "'' as pkColName" + appDb.platform.getDummyTable()
-      //String idSql = "select " + primaryKeyDefinition.getColumnRefs()... etc. 
-      
-      //PreparedStatement ps = wdkModel.getAppDb().getDataSource().getConnection().prepareStatement(sql);
-      
-      //for (Column column : attributeQuery.getColumns()) {
-      //  if (field instanceof QueryColumnAttributeField)
-      //}
+  private void assignSqlColumnTypes(WdkModel wdkModel, SqlQuery query) throws WdkModelException {
+    // run resolved attribute query to get back column types and assign types to attributes
+    RunnableObj<QueryInstanceSpec> querySpec = QueryInstanceSpec.builder()
+        .buildValidated(_wdkModel.getSystemUser(), query,
+            StepContainer.emptyContainer(), ValidationLevel.RUNNABLE, FillStrategy.NO_FILL)
+        .getRunnable()
+        .getOrThrow(invalidSpec -> new WdkModelException("Cannot run raw attribute query '" +
+            query.getFullName() + "': " + invalidSpec.getValidationBundle().toString(2)));
+
+    String sql = Query.makeQueryInstance(querySpec).getSql();
+
+    PreparedStatement ps = null;
+    ResultSetMetaData meta = null;
+    try (Connection conn = wdkModel.getAppDb().getDataSource().getConnection()) {
+      ps = conn.prepareStatement(sql);
+      meta = ps.getMetaData();
+      for (int i = 1; i <= meta.getColumnCount(); i++) {
+        String columnName = meta.getColumnName(i);
+        AttributeField field = attributeFieldsMap.get(columnName);
+        if (field == null) {
+          throw new WdkModelException("Attribute query column '" + columnName +
+              "' does not have a corresponding attribute field.");
+        }
+        else if (!(field instanceof ColumnAttributeField)) {
+          throw new WdkModelException("Attribute query column '" + columnName +
+              "'s corresponding field is not a column attributeField.");
+        }
+        SqlColumnType type = SqlColumnType.getFromSqlType(meta.getColumnType(i));
+        ((ColumnAttributeField)field).setSqlColumnType(type);
+      }
+    }
+    catch (SQLException e) {
+      throw new WdkModelException("Unable to determine attribute query column types", e);
+    }
+    finally {
+      SqlUtils.closeQuietly(meta, ps);
     }
   }
 
@@ -1101,8 +1141,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     Map<String, Column> columnMap = query.getColumnMap();
     for (String column : primaryKeyDefinition.getColumnRefs()) {
       if (!columnMap.containsKey(column))
-        throw new WdkModelException("The query " + query.getFullName() + " of " + getFullName() +
-            " doesn't return the " + "required primary key column " + column);
+        throw new WdkModelException("The query " + query.getFullName() + " of " +
+            getFullName() + " doesn't return the required primary key column " + column);
     }
   }
 

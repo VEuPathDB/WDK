@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -16,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.SortDirection;
+import org.gusdb.fgputil.db.SqlColumnType;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -54,6 +56,11 @@ public abstract class DerivedAttributeField extends AttributeField {
       leaves.putAll(dependent.getColumnAttributeFields());
     }
     return leaves;
+  }
+
+  @Override
+  public Optional<SqlColumnType> getSqlColumnType() {
+    return Optional.of(SqlColumnType.STRING);
   }
 
   protected String excludeModelText(List<WdkModelText> texts, String projectId,
