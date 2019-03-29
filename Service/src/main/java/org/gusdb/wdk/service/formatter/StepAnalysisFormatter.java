@@ -9,9 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class StepAnalysisFormatter {
-  private static final String ANALYSIS_ID_KEY = StepAnalysisInstance.JsonKey.analysisId.name();
-  private static final String ANALYSIS_DISPLAY_NAME_KEY = StepAnalysisInstance.JsonKey.displayName.name();
-
 
   public static JSONObject getStepAnalysisJson(StepAnalysisInstance instance) {
     return instance.getJsonSummary();
@@ -34,11 +31,6 @@ public class StepAnalysisFormatter {
     analysisJson.put("releaseVersion", analysis.getReleaseVersion());
     analysisJson.put("customThumbnail", analysis.getCustomThumbnail());
     analysisJson.put("hasParameters", analysis.getHasParameters());
-    return analysisJson;
-  }
-
-  private static JSONObject getStepAnalysisTypeDetailsJson(StepAnalysis analysis) {
-    JSONObject analysisJson = getStepAnalysisTypeSummaryJson(analysis);
     return analysisJson;
   }
 

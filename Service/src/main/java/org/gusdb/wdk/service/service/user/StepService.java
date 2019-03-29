@@ -22,7 +22,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -34,8 +33,8 @@ import org.gusdb.wdk.model.answer.spec.ParamValue;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.annotation.InSchema;
+import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.factory.AnswerValueFactory;
 import org.gusdb.wdk.service.formatter.StepFormatter;
 import org.gusdb.wdk.service.request.answer.AnswerSpecFactory;

@@ -81,6 +81,7 @@ public interface StepAnalyzer {
    * analyzer's internal expectations.
    *
    * @param params params from XML analyzer definition.
+   * @throws WdkModelException if unable to validate params
    */
   default void validateParams(Map <String, Param> params)
       throws WdkModelException {}
@@ -88,6 +89,7 @@ public interface StepAnalyzer {
   /**
    * Validate that this analysis plugin has been assigned to a valid Question.
    * 
+   * @param question question to validate
    * @throws WdkModelException if question is inappropriate to this plugin
    */
   default void validateQuestion(Question question) throws WdkModelException {
@@ -107,12 +109,12 @@ public interface StepAnalyzer {
    *
    * @param formParams form parameter values to be validated
    * @return an object encapsulating the errors, or null if no errors occurred
-   * @throws WdkUserException
+   * @throws WdkModelException if unable to validate values
    * @deprecated use wdk param validation.
    */
   @Deprecated
   default ValidationErrors validateFormParamValues(Map<String,String[]> formParams)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     return null;
   }
 

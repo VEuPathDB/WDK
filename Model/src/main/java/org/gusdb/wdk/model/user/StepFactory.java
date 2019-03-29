@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.user;
 
+import static org.gusdb.wdk.model.user.UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX;
+
 import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -38,8 +40,6 @@ import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.wdk.events.StepImportedEvent;
-import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.Utilities;
@@ -64,8 +64,6 @@ import org.gusdb.wdk.model.question.Question;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import static org.gusdb.wdk.model.user.UserPreferences.DEFAULT_SUMMARY_VIEW_PREF_SUFFIX;
 
 /**
  * @author xingao
