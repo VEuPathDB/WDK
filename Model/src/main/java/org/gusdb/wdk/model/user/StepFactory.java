@@ -61,6 +61,7 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StrategyLoader.MalformedStrategyList;
+import org.json.JSONObject;
 
 /**
  * Provides interface to the database to find, read, and write Step and Strategy
@@ -148,7 +149,7 @@ public class StepFactory {
   }
 
   public SemanticallyValid<Step> createStep(User user, SemanticallyValid<AnswerSpec> validSpec, String customName,
-      boolean isCollapsible, String collapsedName) throws WdkModelException {
+      boolean isCollapsible, String collapsedName, JSONObject displayPrefs) throws WdkModelException {
 
     // define creation time
     Date createTime = new Date();
@@ -166,6 +167,7 @@ public class StepFactory {
         .setCustomName(customName)
         .setCollapsible(isCollapsible)
         .setCollapsedName(collapsedName)
+        .setDisplayPrefs(displayPrefs)
         .setStrategyId(Optional.empty()) // new steps do not belong to a strategy
         .setAnswerSpec(AnswerSpec.builder(validSpec.get()))
         .build(new UserCache(user), ValidationLevel.SEMANTIC, Optional.empty());
@@ -619,7 +621,8 @@ public class StepFactory {
       _userDbPlatform.convertBoolean(step.isCollapsible()),
       step.getStrategyId().orElse(null),
       new StringReader(ParamsAndFiltersDbColumnFormat.formatParamFilters(spec).toString()),
-      new StringReader(step.getDisplayPrefs().toString())
+      step.getDisplayPrefs() == null ? null :
+        new StringReader(step.getDisplayPrefs().toString())
     };
   }
 

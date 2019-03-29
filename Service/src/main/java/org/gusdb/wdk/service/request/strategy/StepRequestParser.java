@@ -1,5 +1,11 @@
 package org.gusdb.wdk.service.request.strategy;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.gusdb.fgputil.FormatUtil.join;
+import static org.gusdb.fgputil.json.JsonUtil.getBooleanOrDefault;
+import static org.gusdb.fgputil.json.JsonUtil.getJsonObjectOrDefault;
+import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
+
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -21,11 +27,6 @@ import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.gusdb.fgputil.FormatUtil.join;
-import static org.gusdb.fgputil.json.JsonUtil.getBooleanOrDefault;
-import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
-
 public class StepRequestParser {
 
   public static class NewStepRequest {
@@ -34,13 +35,16 @@ public class StepRequestParser {
     private final String _customName;
     private final boolean _isCollapsible;
     private final String _collapsedName;
+    private final JSONObject _displayPrefs;
 
     public NewStepRequest(SemanticallyValid<AnswerSpec> answerSpec,
-        String customName, boolean isCollapsible, String collapsedName) {
+        String customName, boolean isCollapsible, String collapsedName,
+        JSONObject displayPrefs) {
       _answerSpec = answerSpec;
       _customName = customName;
       _isCollapsible = isCollapsible;
       _collapsedName = collapsedName;
+      _displayPrefs = displayPrefs;
     }
 
     public SemanticallyValid<AnswerSpec> getAnswerSpec() {
@@ -57,6 +61,10 @@ public class StepRequestParser {
 
     public String getCollapsedName() {
       return _collapsedName;
+    }
+
+    public JSONObject getDisplayPrefs() {
+      return _displayPrefs;
     }
   }
 
@@ -82,9 +90,10 @@ public class StepRequestParser {
 
       String customName = getStringOrDefault(stepJson, JsonKeys.CUSTOM_NAME, spec.getQuestion().getName());
       boolean isCollapsible = getBooleanOrDefault(stepJson, JsonKeys.IS_COLLAPSIBLE, false);
-      String collapsedName = getStringOrDefault(stepJson, JsonKeys.COLLAPSED_NAME, customName);
+      String collapsedName = getStringOrDefault(stepJson, JsonKeys.COLLAPSED_NAME, customName); 
+      JSONObject displayPrefs = getJsonObjectOrDefault(stepJson, JsonKeys.DISPLAY_PREFS, null);
 
-      return new NewStepRequest(validSpec, customName, isCollapsible, collapsedName);
+      return new NewStepRequest(validSpec, customName, isCollapsible, collapsedName, displayPrefs);
     }
     catch (JSONException e) {
       throw new RequestMisformatException("Invalid JSON in step request", e);

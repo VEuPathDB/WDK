@@ -83,7 +83,8 @@ public class StepService extends UserService {
           stepRequest.getAnswerSpec(),
           stepRequest.getCustomName(),
           stepRequest.isCollapsible(),
-          stepRequest.getCollapsedName()).get();
+          stepRequest.getCollapsedName(),
+          stepRequest.getDisplayPrefs()).get();
       return Response.ok(new JSONObject()
           .put(JsonKeys.ID, step.getStepId()))
           .location(getUriInfo()
