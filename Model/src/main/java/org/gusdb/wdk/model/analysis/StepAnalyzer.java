@@ -82,7 +82,7 @@ public interface StepAnalyzer {
    * analyzer's internal expectations.
    *
    * @param params params from XML analyzer definition.
-   * @throws WdkModelException if params are inappropriate to this plugin
+   * @throws WdkModelException if unable to validate params
    */
   default void validateParams(Map <String, Param> params)
       throws WdkModelException {}
@@ -90,6 +90,7 @@ public interface StepAnalyzer {
   /**
    * Validate that this analysis plugin has been assigned to a valid Question.
    *
+   * @param question question to validate
    * @param question question to validate
    * @throws WdkModelException if question is inappropriate to this plugin
    */
@@ -110,7 +111,7 @@ public interface StepAnalyzer {
    *
    * @param formParams form parameter values to be validated
    * @return an object encapsulating the errors
-   * @throws WdkModelException
+   * @throws WdkModelException if unable to validate values
    * @deprecated use wdk param validation
    */
   @Deprecated // should use WDK param validation in the future
@@ -146,9 +147,8 @@ public interface StepAnalyzer {
    * @param log logger mechanism; this will be for diagnostic purposes or may be exposed to the user
    * @return completion status of this run.  Typically this value is COMPLETE, INTERRUPTED, or ERROR
    * @throws WdkModelException if an unexpected error occurs.  This is a slightly messier equivalent of returning ERROR
-   * @throws WdkUserException
    */
-  ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log) throws WdkModelException, WdkUserException;
+  ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log) throws WdkModelException;
 
   /**
    * Sets the storage directory for this analyzer.  Usage of this directory is

@@ -149,7 +149,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
 
   @Override
   public ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
 
     // all files will be written to plugin instance's storage directory
     String storageDir = getStorageDirectory().toAbsolutePath().toString();
@@ -168,20 +168,26 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
       dumpHeaderDisplayMap(answerValue.getAnswerSpec().getQuestion().getRecordClass(), storageDir);
     }
 
-    // configure tabular reporter if attributes requested in config
-    List<String> attributes = getConfiguredFields(EXTRACTED_ATTRIBS_PROP_KEY);
-    if (!attributes.isEmpty()) {
-      Reporter reporter = new AttributesTabularReporter(answerValue);
-      reporter.configure(getConfig(StandardConfig.SELECTED_FIELDS, join(attributes, ","), hasHeader));
-      writeReport(reporter, Paths.get(storageDir, ATTRIBUTES_FILE_NAME));
+    try {
+      // configure tabular reporter if attributes requested in config
+      List<String> attributes = getConfiguredFields(EXTRACTED_ATTRIBS_PROP_KEY);
+      if (!attributes.isEmpty()) {
+        Reporter reporter = new AttributesTabularReporter(answerValue);
+        reporter.configure(getConfig(StandardConfig.SELECTED_FIELDS, join(attributes, ","), hasHeader));
+        writeReport(reporter, Paths.get(storageDir, ATTRIBUTES_FILE_NAME));
+      }
+  
+      // get array of requested tables
+      List<String> tables = getConfiguredFields(EXTRACTED_TABLES_PROP_KEY);
+      for (String table : tables) {
+        Reporter reporter = new TableTabularReporter(answerValue);
+        reporter.configure(getConfig(StandardConfig.SELECTED_TABLES, table, hasHeader));
+        writeReport(reporter, Paths.get(storageDir, table + FILE_NAME_SUFFIX));
+      }
     }
-
-    // get array of requested tables
-    List<String> tables = getConfiguredFields(EXTRACTED_TABLES_PROP_KEY);
-    for (String table : tables) {
-      Reporter reporter = new TableTabularReporter(answerValue);
-      reporter.configure(getConfig(StandardConfig.SELECTED_TABLES, table, hasHeader));
-      writeReport(reporter, Paths.get(storageDir, table + FILE_NAME_SUFFIX));
+    catch (WdkUserException e) {
+      // means attributes and tables defined in XML are invalid; should already have been checked
+      throw new WdkModelException(e);
     }
 
     return ExecutionStatus.COMPLETE;

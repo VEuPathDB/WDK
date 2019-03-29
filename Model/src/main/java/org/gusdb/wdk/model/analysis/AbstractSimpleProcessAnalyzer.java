@@ -44,7 +44,7 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
   
   @Override
   public ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     InputStream providedInput = null;
     Process process = null;
     try {
