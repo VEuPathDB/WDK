@@ -15,7 +15,7 @@ import org.gusdb.wdk.service.service.AbstractWdkService;
 /*
  * TODO: rename this AbstractUserService when this branch is merged into trunk
  */
-@Path("/users/{id}")
+@Path(UserService.USER_PATH)
 public abstract class UserService extends AbstractWdkService {
 
   private static final String NOT_LOGGED_IN = "You must log in to use this functionality.";
@@ -26,7 +26,9 @@ public abstract class UserService extends AbstractWdkService {
   protected static final String USER_RESOURCE = "User ID ";
   protected static final String STEP_RESOURCE = "Step ID ";
 
-  protected static enum Access { PUBLIC, PRIVATE, ADMIN; }
+  protected static final String USER_PATH = "/users/{"+USER_ID_PATH_PARAM+"}";
+
+  protected enum Access { PUBLIC, PRIVATE, ADMIN; }
 
   private final String _userIdStr;
 
