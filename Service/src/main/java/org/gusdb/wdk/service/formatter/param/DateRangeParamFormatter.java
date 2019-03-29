@@ -4,7 +4,7 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.DateRangeParam;
-import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.json.JSONObject;
 
 public class DateRangeParamFormatter extends ParamFormatter<DateRangeParam> {
@@ -14,7 +14,7 @@ public class DateRangeParamFormatter extends ParamFormatter<DateRangeParam> {
   }
 
   @Override
-  public JSONObject getJson(DisplayablyValid<QueryInstanceSpec> spec) throws WdkModelException {
+  public <S extends ParameterContainerInstanceSpec<S>> JSONObject getJson(DisplayablyValid<S> spec) throws WdkModelException {
     return getBaseJson(spec)
         .put(JsonKeys.MIN_DATE, _param.getMinDate())
         .put(JsonKeys.MAX_DATE, _param.getMaxDate());

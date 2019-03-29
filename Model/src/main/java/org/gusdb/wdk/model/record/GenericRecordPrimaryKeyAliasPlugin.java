@@ -15,10 +15,10 @@ import org.gusdb.wdk.model.user.User;
  * an issue will result in a 500 to the client.  In some cases, there is no way to access
  * the validity of a primary key.  In those cases, we need a simple plugin that simply
  * returns the primary key given by the client.
+ * 
  * @author crisl-adm
- *
  */
-public class GenericRecordPrimaryKeyAliasPlugin implements org.gusdb.wdk.model.record.PrimaryKeyAliasPlugin {
+public class GenericRecordPrimaryKeyAliasPlugin implements PrimaryKeyAliasPlugin {
 
   @Override
   public List<Map<String, Object>> getPrimaryKey(User user, Map<String, Object> inputPkValues)

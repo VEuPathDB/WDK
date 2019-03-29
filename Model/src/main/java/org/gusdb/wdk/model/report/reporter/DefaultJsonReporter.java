@@ -6,16 +6,21 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MediaType;
 
 import org.gusdb.fgputil.SortDirectionSpec;
 import org.gusdb.fgputil.json.JsonWriter;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.answer.spec.FilterOptionList;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStreamFactory;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -28,8 +33,8 @@ import org.gusdb.wdk.model.report.ReporterRef;
 import org.gusdb.wdk.model.report.config.AnswerDetails;
 import org.gusdb.wdk.model.report.config.AnswerDetailsFactory;
 import org.gusdb.wdk.model.report.util.RecordFormatter;
-import org.json.JSONArray;
 import org.gusdb.wdk.model.user.UserPreferences;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -152,13 +157,43 @@ public class DefaultJsonReporter extends AbstractReporter {
   private static JSONObject getMetaData(AnswerValue answerValue,
       Set<String> includedAttributes, Set<String> includedTables, int numRecordsReturned)
       throws WdkModelException {
+    AnswerValue answerValueWithoutViewFilters = getAnswerValueWithoutViewFilters(answerValue);
     JSONObject meta = new JSONObject();
     meta.put(JsonKeys.RECORD_CLASS_NAME, answerValue.getAnswerSpec().getQuestion().getRecordClass().getFullName());
-    meta.put(JsonKeys.TOTAL_COUNT, answerValue.getResultSizeFactory().getResultSize());
+    meta.put(JsonKeys.TOTAL_COUNT, answerValueWithoutViewFilters.getResultSizeFactory().getResultSize());
+    meta.put(JsonKeys.DISPLAY_TOTAL_COUNT, answerValueWithoutViewFilters.getResultSizeFactory().getDisplayResultSize());
+    meta.put(JsonKeys.VIEW_TOTAL_COUNT, answerValue.getResultSizeFactory().getResultSize());
+    meta.put(JsonKeys.DISPLAY_VIEW_TOTAL_COUNT, answerValue.getResultSizeFactory().getDisplayResultSize());
     meta.put(JsonKeys.RESPONSE_COUNT, numRecordsReturned);
+    meta.put(JsonKeys.PAGINATION, new JSONObject()
+        .put(JsonKeys.OFFSET, answerValue.getStartIndex() - 1)
+        .put(JsonKeys.NUM_RECORDS, answerValue.getEndIndex() - (answerValue.getStartIndex() - 1)));
     meta.put(JsonKeys.ATTRIBUTES, new JSONArray(includedAttributes));
     meta.put(JsonKeys.TABLES, new JSONArray(includedTables));
+    meta.put(JsonKeys.SORTING, formatSorting(answerValue.getSortingMap(),
+        answerValue.getAnswerSpec().getQuestion().getAttributeFieldMap()));
     return meta;
+  }
+
+  private static AnswerValue getAnswerValueWithoutViewFilters(AnswerValue answerValue) throws WdkModelException {
+    if (answerValue.getAnswerSpec().getViewFilterOptions().isEmpty()) return answerValue;
+    // answer spec without view filters should also be valid since it was valid with them
+    AnswerSpec origSpec = answerValue.getAnswerSpec();
+    return AnswerValueFactory.makeAnswer(answerValue, AnswerSpec.builder(origSpec)
+          .setViewFilterOptions(FilterOptionList.builder())
+          .build(answerValue.getUser(), origSpec.getStepContainer(), ValidationLevel.RUNNABLE)
+          .getRunnable()
+          .getLeft());
+  }
+
+  public static JSONArray formatSorting(Map<String, Boolean> sortingAttributeMap, Map<String, AttributeField> allowedValues) {
+    return new JSONArray(
+        SortDirectionSpec.convertSorting(sortingAttributeMap, allowedValues)
+            .stream()
+            .map(spec -> new JSONObject()
+                .put("attributeName", spec.getItemName())
+                .put("direction", spec.getDirection()))
+            .collect(Collectors.toList()));
   }
 
   public static ReporterRef createReference() {

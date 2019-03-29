@@ -4,7 +4,7 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.NumberParam;
-import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.json.JSONObject;
 
 public class NumberParamFormatter extends ParamFormatter<NumberParam> {
@@ -14,7 +14,7 @@ public class NumberParamFormatter extends ParamFormatter<NumberParam> {
   }
 
   @Override
-  public JSONObject getJson(DisplayablyValid<QueryInstanceSpec> spec) throws WdkModelException {
+  public <S extends ParameterContainerInstanceSpec<S>> JSONObject getJson(DisplayablyValid<S> spec) throws WdkModelException {
     return getBaseJson(spec)
 
         .put(JsonKeys.MIN_VALUE, _param.getMin())

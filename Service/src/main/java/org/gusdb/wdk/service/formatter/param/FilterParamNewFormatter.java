@@ -5,47 +5,40 @@ import static org.gusdb.wdk.core.api.JsonKeys.MIN_SELECTED_COUNT;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.OntologyItem;
-import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
 
-  @SuppressWarnings("unused")
-  private static final Logger LOG = Logger.getLogger(FilterParamNewFormatter.class);
-
-  protected FilterParamNew _filterParam; 
-
   FilterParamNewFormatter(FilterParamNew param) {
     super(param);
-    _filterParam = param;
   }
 
   @Override
-  public JSONObject getJson(DisplayablyValid<QueryInstanceSpec> spec) throws WdkModelException {
+  public <S extends ParameterContainerInstanceSpec<S>> JSONObject getJson(DisplayablyValid<S> spec) throws WdkModelException {
     JSONObject pJson = getBaseJson(spec);
 
-    pJson.put("filterDataTypeDisplayName", _filterParam.getFilterDataTypeDisplayName());
+    pJson.put("filterDataTypeDisplayName", _param.getFilterDataTypeDisplayName());
     pJson.put("ontology", getOntologyJson(spec));
     JSONObject valuesMap = getValuesJson(spec);
     //TODO: remove the null test when val map query becomes required
     if (valuesMap != null) pJson.put("values", valuesMap);
-    pJson.put("hideEmptyOntologyNodes", _filterParam.getTrimMetadataTerms());
-    pJson.put("countPredictsAnswerCount", _filterParam.getCountPredictsAnswerCount());
-    pJson.put(MIN_SELECTED_COUNT, _filterParam.getMinSelectedCount());
+    pJson.put("hideEmptyOntologyNodes", _param.getTrimMetadataTerms());
+    pJson.put("countPredictsAnswerCount", _param.getCountPredictsAnswerCount());
+    pJson.put(MIN_SELECTED_COUNT, _param.getMinSelectedCount());
     return pJson;
   }
 
-  public JSONArray getOntologyJson(DisplayablyValid<QueryInstanceSpec> validSpec) throws JSONException, WdkModelException {
-    QueryInstanceSpec spec = validSpec.get();
-    Map<String, OntologyItem> ontologyMap = _filterParam.getOntology(spec.getUser(), spec.toMap());
+  public <S extends ParameterContainerInstanceSpec<S>> JSONArray getOntologyJson(DisplayablyValid<S> validSpec) throws JSONException, WdkModelException {
+    ParameterContainerInstanceSpec<?> spec = validSpec.get();
+    Map<String, OntologyItem> ontologyMap = _param.getOntology(spec.getUser(), spec.toMap());
     JSONArray ontologyJson = new JSONArray();
     for (String term : ontologyMap.keySet()) {
       JSONObject itemJson = new JSONObject();
@@ -58,20 +51,19 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
       itemJson.put("units", item.getUnits());
       itemJson.put("precision", item.getPrecision());
       itemJson.put("isRange", item.getIsRange());
-      
+
       ontologyJson.put(itemJson);
     }
-    return ontologyJson; 
+    return ontologyJson;
   }
 
-  public JSONObject getValuesJson(DisplayablyValid<QueryInstanceSpec> validSpec) throws JSONException, WdkModelException {
-
-    QueryInstanceSpec spec = validSpec.get();
-    Map<String, Set<String>> valuesMap = _filterParam.getValuesMap(spec.getUser(), spec.toMap());
+  public <S extends ParameterContainerInstanceSpec<S>> JSONObject getValuesJson(DisplayablyValid<S> validSpec) throws JSONException, WdkModelException {
+    ParameterContainerInstanceSpec<?> spec = validSpec.get();
+    Map<String, Set<String>> valuesMap = _param.getValuesMap(spec.getUser(), spec.toMap());
 
     // TODO: remove this when values map is required
     if (valuesMap == null) return null;
- 
+
     JSONObject valuesMapJson = new JSONObject();
     for (String term : valuesMap.keySet()) {
       JSONArray valuesArrayJson = new JSONArray();
@@ -79,7 +71,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
       for (String value : values) valuesArrayJson.put(value);
       valuesMapJson.put(term, valuesArrayJson);
     }
-    return valuesMapJson; 
+    return valuesMapJson;
   }
 
   @Override

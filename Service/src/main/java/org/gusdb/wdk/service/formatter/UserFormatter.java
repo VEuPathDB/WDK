@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.accountdb.UserPropertyName;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferences;
@@ -59,8 +58,8 @@ public class UserFormatter {
 
   public static JSONObject getPreferencesJson(UserPreferences prefs) {
     JSONObject prefsJson = new JSONObject();
-    prefsJson.put(JsonKeys.GLOBAL, JsonUtil.toJsonObject(prefs.getGlobalPreferences()));
-    prefsJson.put(JsonKeys.PROJECT, JsonUtil.toJsonObject(prefs.getProjectPreferences()));
+    prefsJson.put(JsonKeys.GLOBAL, new JSONObject(prefs.getGlobalPreferences()));
+    prefsJson.put(JsonKeys.PROJECT, new JSONObject(prefs.getProjectPreferences()));
     return prefsJson;
   }
 

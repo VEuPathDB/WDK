@@ -1,0 +1,23 @@
+# Step Analysis Resources API
+#
+# @path /users/{id}/steps/{id}/analyses/{id}/resources
+
+
+# Query Params
+
+queryParameters:
+  path:
+    description: Path to the resource
+    type: string
+
+
+# Methods
+
+get:
+  description: >
+    Returns the resource file at the specified path
+  responses:
+    200:
+      description: OK
+    404:
+      description: Not found

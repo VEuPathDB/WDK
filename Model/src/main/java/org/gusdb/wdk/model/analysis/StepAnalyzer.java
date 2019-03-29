@@ -4,14 +4,17 @@ import java.nio.file.Path;
 import java.util.Map;
 
 import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
+import org.json.JSONObject;
 
 /**
  * Interface to be implemented by Step Analysis Plugins.
@@ -37,6 +40,13 @@ public interface StepAnalyzer {
   Object getFormViewModel() throws WdkModelException, WdkUserException;
 
   /**
+   * Get JSON containing the information needed to render a result of this StepAnalyzer
+   * @return
+   * @throws WdkModelException
+   */
+  JSONObject getResultViewModelJson() throws WdkModelException;
+
+  /**
    * A MVC model object to be made available to the JSP rendering the results for
    * this plugin.  It we be available to your JSP page as requestScope.viewModel.
    *
@@ -44,6 +54,13 @@ public interface StepAnalyzer {
    * @throws WdkModelException
    */
   Object getResultViewModel() throws WdkModelException;
+
+  /**
+   * Get JSON containing the information needed to render a parameter input form for this StepAnalyzer
+   * @return
+   * @throws WdkModelException
+   */
+  JSONObject getFormViewModelJson() throws WdkModelException;
 
   /**
    * Sets a property as passed in from the WDK Model
@@ -58,32 +75,49 @@ public interface StepAnalyzer {
    *
    * @throws WdkModelException if properties set are invalid
    */
-  void validateProperties() throws WdkModelException;
+  default void validateProperties() throws WdkModelException {}
+
+  /**
+   * Validate the XML definition of this analyzer's params against the
+   * analyzer's internal expectations.
+   *
+   * @param params params from XML analyzer definition.
+   * @throws WdkModelException if params are inappropriate to this plugin
+   */
+  default void validateParams(Map <String, Param> params)
+      throws WdkModelException {}
 
   /**
    * Validate that this analysis plugin has been assigned to a valid Question.
    *
+   * @param question question to validate
    * @throws WdkModelException if question is inappropriate to this plugin
    */
-  void validateQuestion(Question question) throws WdkModelException;
+  default void validateQuestion(Question question) throws WdkModelException {
+    // any question is fine by default; to be overridden by subclass
+  }
 
   /**
    * Sets form params retrieved from the submission of this plugin's form
    *
    * @param formParams name->values map of submitted form parameters
    */
-  void setFormParams(Map<String, String[]> formParams);
+  void setFormParamValues(Map<String,String[]> formParams);
 
   /**
    * Validates that form parameters are valid.  Note this method will be called
-   * before params are passed in via <code>setFormParams()</code>.
+   * before params are passed in via <code>setFormParamValues()</code>.
    *
    * @param formParams form parameter values to be validated
    * @return an object encapsulating the errors
-   * @throws WdkUserException
+   * @throws WdkModelException
+   * @deprecated use wdk param validation
    */
-  ValidationBundle validateFormParams(Map<String, String[]> formParams)
-      throws WdkModelException, WdkUserException;
+  @Deprecated // should use WDK param validation in the future
+  default ValidationBundle validateFormParamValues(Map<String,String[]> formParams)
+      throws WdkModelException {
+    return ValidationBundle.builder(ValidationLevel.RUNNABLE).build();
+  }
 
   /**
    * Sets answer value retrieved from the step being analyzed
@@ -101,8 +135,8 @@ public interface StepAnalyzer {
    * @throws WdkModelException if error occurs while determining validity of answer
    * @throws WdkUserException
    */
-  void validateAnswerValue(AnswerValue answerValue)
-      throws IllegalAnswerValueException, WdkModelException, WdkUserException;
+  default void validateAnswerValue(AnswerValue answerValue)
+      throws IllegalAnswerValueException, WdkModelException, WdkUserException {}
 
   /**
    * Runs an analysis of the passed AnswerValue.  In-process logging can be
@@ -141,7 +175,7 @@ public interface StepAnalyzer {
    * data string was stored, this method will still be called but passed a null
    * value.
    *
-   * @param dataString persistently stored character data
+   * @param data persistently stored character data
    */
   void setPersistentCharData(String data);
 

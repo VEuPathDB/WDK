@@ -8,7 +8,7 @@ import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,7 +24,7 @@ public abstract class ParamFormatter<T extends Param> {
   /**
    * @throws WdkModelException if error occurs while collecting information 
    */
-  public JSONObject getJson(DisplayablyValid<QueryInstanceSpec> spec) throws WdkModelException {
+  public <S extends ParameterContainerInstanceSpec<S>> JSONObject getJson(DisplayablyValid<S> spec) throws WdkModelException {
     return getBaseJson(spec);
   }
 
@@ -42,7 +42,7 @@ public abstract class ParamFormatter<T extends Param> {
    * @throws WdkModelException if system problem occurs
    * @throws WdkUserException if data in param is invalid for some reason
    */
-  protected JSONObject getBaseJson(DisplayablyValid<QueryInstanceSpec> spec) {
+  protected <S extends ParameterContainerInstanceSpec<S>> JSONObject getBaseJson(DisplayablyValid<S> spec) {
     JSONObject pJson = new JSONObject();
     pJson.put(JsonKeys.NAME, _param.getName());
     pJson.put(JsonKeys.DISPLAY_NAME, _param.getPrompt());

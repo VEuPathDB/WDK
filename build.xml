@@ -24,7 +24,7 @@
     </ant>
   </target>
 
-    
+
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo    Update    oooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
@@ -62,12 +62,12 @@
   <target name="WDK-Installation-postprocess">
     <echo message="Postprocessing the WDK installation"/>
 
-    <replace dir="${targetDir}/bin" 
-             propertyFile="${targetDir}/config/replacements.prop" > 
+    <replace dir="${targetDir}/bin"
+             propertyFile="${targetDir}/config/replacements.prop" >
       <include name="**/*" />
       <replacefilter token="@perl@" property="perl"/>
-    </replace> 
-    
+    </replace>
+
   </target>
 
   <!-- ooooooooooooooooooooooo  Install Components  ooooooooooooooooooooooo -->
@@ -80,7 +80,7 @@
       <property name="project" value="WDK"/>
       <property name="component" value="Model"/>
     </ant>
-  </target>  
+  </target>
 
   <target name="handleOracleDriver">
 
@@ -258,7 +258,7 @@
   </target>
 
   <target name="configLink" unless="configLinkExists">
-    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model"/>    
+    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model"/>
     <symlink link="${webappTargetDir}/WEB-INF/wdk-model/config" resource="${targetDir}/config"/>
   </target>
 
@@ -271,12 +271,12 @@
   </target>
 
   <target name="rngLink" unless="rngLinkExists">
-    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib"/>    
+    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib"/>
     <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/rng" resource="${targetDir}/lib/rng"/>
   </target>
 
   <target name="perlLink" unless="perlLinkExists">
-    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib"/>    
+    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib"/>
     <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/perl" resource="${targetDir}/lib/perl"/>
   </target>
 
@@ -293,11 +293,11 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="WDK-Release">
-    
+
     <ant target="defaultProjectRelease">
       <property name="cvsroot" value=":ext:cvs.sanger.ac.uk:/cvsroot/GUS"/>
     </ant>
-  </target>  
+  </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Distributable  ooooooooooooooooooooooooo -->
@@ -309,8 +309,8 @@
       <fileset dir="${projectsDir}" >
         <exclude name="**/CVS/*" />
       </fileset>
-    </copy>  
-  </target>  
+    </copy>
+  </target>
 
 </project>
 

@@ -1,4 +1,11 @@
 # User Basket API
+#
+# This RAML doc is a draft.  The details below are pulled from the google doc
+# do not necessarily reflect the actual implementation.
+#
+# @path /users/{id}/baskets
+
+# Methods
 get:
   description: Get a list of the user's baskets.  Returns a JSON object mapping basket name to the number of records in that basket.  For now only one basket is supported per record-type, for those record-types that allow baskets.  All allowed baskets, including empty ones, are returned in this listing.
   responses:
@@ -8,6 +15,7 @@ get:
         application/json:
           type: !include ../../../../schema/wdk/users/baskets/get-response.json
 
+# Child Endpoints
 /{basketName}:
   get:
     description: Returns detailed information for the basket of the specified name.

@@ -20,9 +20,9 @@ import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.SelectableItem;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
-import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -249,7 +249,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return getVocabInstance(context.getUser(), context);
   }
 
-  public EnumParamVocabInstance getVocabInstance(DisplayablyValid<QueryInstanceSpec> spec)
+  public <T extends ParameterContainerInstanceSpec<T>> EnumParamVocabInstance getVocabInstance(DisplayablyValid<T> spec)
       throws WdkModelException {
     return getVocabInstance(spec.get().getUser(), spec.get().toMap());
   }

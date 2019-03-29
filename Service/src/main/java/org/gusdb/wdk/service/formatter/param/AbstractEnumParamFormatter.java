@@ -9,7 +9,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
-import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -20,7 +20,7 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
   }
 
   @Override
-  public JSONObject getJson(DisplayablyValid<QueryInstanceSpec> spec) throws WdkModelException {
+  public <S extends ParameterContainerInstanceSpec<S>> JSONObject getJson(DisplayablyValid<S> spec) throws WdkModelException {
     return getBaseJson(spec)
         .put(JsonKeys.COUNT_ONLY_LEAVES, _param.getCountOnlyLeaves())
         .put(JsonKeys.MAX_SELECTED_COUNT, _param.getMaxSelectedCount())

@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -16,13 +17,15 @@ import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
 import org.gusdb.wdk.model.query.param.FilterParamNew.OntologyTermSummary;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
+import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.service.formatter.param.ParamFormatterFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,7 +48,7 @@ import org.json.JSONObject;
  *   defaultAttributes: [ String ],
  *   dynamicAttributes: [ see AttributeFieldFormatter ],
  *   defaultSummaryView: String,
- *   summaryViewPlugins: [ String ],
+ *   summaryViewPlugins: [ see SummaryViewPluginFormatter ],
  *   stepAnalysisPlugins: [ String ]
  * }
  *
@@ -81,6 +84,7 @@ public class QuestionFormatter {
       .put(JsonKeys.OUTPUT_RECORD_CLASS_NAME, q.getRecordClass().getFullName())
       .put(JsonKeys.GROUPS, getGroupsJson(q.getParamMapByGroups()))
       .put(JsonKeys.DEFAULT_ATTRIBUTES, new JSONArray(q.getSummaryAttributeFieldMap().keySet()))
+      .put(JsonKeys.DEFAULT_SORTING, DefaultJsonReporter.formatSorting(q.getSortingAttributeMap(), q.getAttributeFieldMap()))
       .put(JsonKeys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
           q.getDynamicAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, true))
       .put(JsonKeys.DEFAULT_SUMMARY_VIEW, q.getDefaultSummaryView().getName())
@@ -89,6 +93,7 @@ public class QuestionFormatter {
       // NOTE: if null returned by getAllowedRecordClasses, property will be omitted in returned JSON
       .put(JsonKeys.ALLOWED_PRIMARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getPrimaryAnswerParam()))
       .put(JsonKeys.ALLOWED_SECONDARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getSecondaryAnswerParam()))
+      .put(JsonKeys.FILTERS, getFiltersJson(q.getFilters()))
       .put(JsonKeys.PROPERTIES, q.getPropertyLists());
   }
 
@@ -103,14 +108,15 @@ public class QuestionFormatter {
     return answerParam.map(param -> new JSONArray(param.getAllowedRecordClasses().keySet())).orElse(null);
   }
 
-  public static JSONArray getParamsJson(DisplayablyValid<QueryInstanceSpec> spec) throws WdkModelException {
+  public static <T extends ParameterContainerInstanceSpec<T>> JSONArray getParamsJson(
+      DisplayablyValid<T> spec) throws WdkModelException {
     return getParamsJson(spec, param -> true);
   }
 
-  public static JSONArray getParamsJson(DisplayablyValid<QueryInstanceSpec> spec,
-      Predicate<Param> inclusionPredicate) throws WdkModelException {
+  public static <T extends ParameterContainerInstanceSpec<T>> JSONArray getParamsJson(
+      DisplayablyValid<T> spec, Predicate<Param> inclusionPredicate) throws WdkModelException {
     JSONArray paramsJson = new JSONArray();
-    for (Param param : spec.get().getQuery().getParams()) {
+    for (Param param : spec.get().getParameterContainer().getParams()) {
       if (inclusionPredicate.test(param)) {
         paramsJson.put(ParamFormatterFactory.getFormatter(param).getJson(spec));
       }
@@ -136,6 +142,16 @@ public class QuestionFormatter {
     groupJson.put(JsonKeys.DISPLAY_TYPE, group.getDisplayType());
     groupJson.put(JsonKeys.PARAMETERS, params);
     return groupJson;
+  }
+
+  private static JSONArray getFiltersJson(Map<String, Filter> filtersMap) {
+    return new JSONArray(filtersMap.values().stream()
+      .map(filter -> new JSONObject()
+        .put(JsonKeys.NAME, filter.getKey())
+        .put(JsonKeys.DISPLAY_NAME, filter.getDisplay())
+        .put(JsonKeys.DESCRIPTION, filter.getDescription())
+        .put(JsonKeys.IS_VIEW_ONLY, filter.getFilterType().isViewOnly())
+      ).collect(Collectors.toList()));
   }
 
   /*
