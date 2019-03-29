@@ -63,8 +63,6 @@ public class StepService extends UserService {
   private static final String ID_PARAM = "stepId";
   private static final String ID_PATH = BASE_PATH + "/{" + ID_PARAM + "}";
 
-  public static final String STEP_RESOURCE = "Step ID ";
-
   public StepService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
   }
@@ -280,14 +278,4 @@ public class StepService extends UserService {
         "This step is not runnable for the following reasons: " + badStep.getValidationBundle().toString());
   }
 
-  private Step getStepForCurrentUser(long stepId, ValidationLevel level) throws WdkModelException {
-    return getWdkModel()
-        .getStepFactory()
-        .getStepByIdAndUserId(
-            stepId,
-            getUserBundle(Access.PRIVATE).getSessionUser().getUserId(),
-            level)
-        .orElseThrow(
-            () -> new NotFoundException(formatNotFound(STEP_RESOURCE + stepId)));
-  }
 }

@@ -1,5 +1,7 @@
 package org.gusdb.wdk.service.request.user;
 
+import static java.util.Arrays.stream;
+
 import java.util.Collection;
 import java.util.Optional;
 
@@ -10,8 +12,6 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.json.JSONObject;
-
-import static java.util.Arrays.stream;
 
 public class BasketRequests {
 

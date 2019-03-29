@@ -9,7 +9,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
@@ -45,7 +44,7 @@ public class PreferenceService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getGlobalUserPrefs() throws WdkModelException {
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
-    return Response.ok(JsonUtil.toJsonObject(user.getPreferences().getGlobalPreferences()).toString()).build();
+    return Response.ok(new JSONObject(user.getPreferences().getGlobalPreferences()).toString()).build();
   }
  
   @GET
@@ -53,7 +52,7 @@ public class PreferenceService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getProjectUserPrefs() throws WdkModelException {
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
-    return Response.ok(JsonUtil.toJsonObject(user.getPreferences().getProjectPreferences()).toString()).build();
+    return Response.ok(new JSONObject(user.getPreferences().getProjectPreferences()).toString()).build();
   }
 
   /**

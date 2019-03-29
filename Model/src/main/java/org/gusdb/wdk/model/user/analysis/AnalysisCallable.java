@@ -15,11 +15,11 @@ public class AnalysisCallable implements Callable<ExecutionStatus> {
 
   private static final Logger LOG = Logger.getLogger(AnalysisCallable.class);
 
-  private final StepAnalysisContext _context;
+  private final StepAnalysisInstance _context;
   private final StepAnalysisDataStore _dataStore;
   private final StepAnalysisFileStore _fileStore;
 
-  public AnalysisCallable(StepAnalysisContext context, StepAnalysisDataStore dataStore, StepAnalysisFileStore fileStore) {
+  public AnalysisCallable(StepAnalysisInstance context, StepAnalysisDataStore dataStore, StepAnalysisFileStore fileStore) {
     _context = context;
     _dataStore = dataStore;
     _fileStore = fileStore;
@@ -49,7 +49,7 @@ public class AnalysisCallable implements Callable<ExecutionStatus> {
       LOG.info("Analyzer returned without exception and with status: " + status);
 
       // check to see if DB status changed out from under us (via monitor thread)
-      StepAnalysisContext currentContext = _dataStore.getAnalysisById(_context.getAnalysisId(), _fileStore);
+      StepAnalysisInstance currentContext = _dataStore.getAnalysisById(_context.getAnalysisId(), _fileStore);
       if (currentContext.getStatus().equals(ExecutionStatus.EXPIRED)) {
         // this context was marked expired before it completed running (possibly by another server);
         // must ignore results and go with that determination

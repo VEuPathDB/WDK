@@ -5,7 +5,9 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.service.AbstractWdkService;
@@ -22,6 +24,7 @@ public abstract class UserService extends AbstractWdkService {
   protected static final String USER_ID_PATH_PARAM = "id";
 
   protected static final String USER_RESOURCE = "User ID ";
+  protected static final String STEP_RESOURCE = "Step ID ";
 
   protected static enum Access { PUBLIC, PRIVATE, ADMIN; }
 
@@ -64,5 +67,16 @@ public abstract class UserService extends AbstractWdkService {
       throw new ForbiddenException(NOT_LOGGED_IN);
     }
     return user;
+  }
+
+  protected Step getStepForCurrentUser(long stepId, ValidationLevel level) throws WdkModelException {
+    return getWdkModel()
+        .getStepFactory()
+        .getStepByIdAndUserId(
+            stepId,
+            getUserBundle(Access.PRIVATE).getSessionUser().getUserId(),
+            level)
+        .orElseThrow(
+            () -> new NotFoundException(formatNotFound(STEP_RESOURCE + stepId)));
   }
 }

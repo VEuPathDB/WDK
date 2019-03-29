@@ -13,10 +13,7 @@ import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 
 public abstract class AbstractStepAnalyzer implements StepAnalyzer {
 
@@ -42,6 +39,7 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   protected AnswerValue getAnswerValue() {
     return _answerValue;
   }
+
   @Override
   public void setAnswerValue(AnswerValue answerValue) {
     _answerValue = answerValue;
@@ -50,6 +48,7 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   protected Path getStorageDirectory() {
     return _storageDirectory;
   }
+
   @Override
   public void setStorageDirectory(Path storageDirectory) {
     _storageDirectory = storageDirectory;
@@ -59,6 +58,7 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   public String getPersistentCharData() {
     return _charData;
   }
+
   @Override
   public void setPersistentCharData(String data) {
     _charData = data;
@@ -68,6 +68,7 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   public byte[] getPersistentBinaryData() {
     return _binaryData;
   }
+
   @Override
   public void setPersistentBinaryData(byte[] data) {
     _binaryData = data;
@@ -82,6 +83,7 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
       throw new WdkModelException("Unable to deserialize object.", e);
     }
   }
+
   protected void setPersistentObject(Serializable obj) throws WdkModelException {
     try {
       _binaryData = IoUtil.serialize(obj);
@@ -94,54 +96,37 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   protected String getProperty(String key) {
     return _properties.get(key);
   }
+
   @Override
   public void setProperty(String key, String value) {
     _properties.put(key, value);
-  }
-  @Override
-  public void validateProperties() throws WdkModelException {
-    // no required properties
-  }
-
-  @Override
-  public void validateQuestion(Question question) throws WdkModelException {
-    // any question is fine by default; to be overridden by subclass
   }
 
   protected Map<String,String[]> getFormParams() {
     return _formParams;
   }
+
   @Override
-  public void setFormParams(Map<String, String[]> formParams) {
+  public void setFormParamValues(Map<String,String[]> formParams) {
     _formParams = formParams;
   }
+
   @Override
-  public ValidationBundle validateFormParams(Map<String, String[]> formParams)
-      throws WdkModelException, WdkUserException {
+  public ValidationBundle validateFormParamValues(Map<String, String[]> formParams)
+      throws WdkModelException {
     // no validation
     return ValidationBundle.builder(ValidationLevel.NONE).build();
-  }
-
-  /**
-   * Return an arbitrary object that the parameter form will have access to.  This is the "model" that the form will render.  It can contain info about parameters, such as terms for vocabulary parameters.  Typically you would create an inner class in your plugin for this.
-   */
-  @Override
-  public Object getFormViewModel() throws WdkModelException, WdkUserException {
-    return null;
-  }
-
-  @Override
-  public void validateAnswerValue(AnswerValue answerValue)
-      throws IllegalAnswerValueException, WdkModelException, WdkUserException {
-    // do nothing
   }
 
   /*%%%%%%%%%%%%%% Helper functions for Property validation %%%%%%%%%%%%%%*/
 
   protected void checkPropertyExistence(String propName) throws WdkModelException {
     if (getProperty(propName) == null) {
-      throw new WdkModelException("Missing required property '" + propName +
-          "' in instanc of Step Analysis Plugin '" + getClass().getName() + "'");
+      throw new WdkModelException(String.format(
+        "Missing required property '%s' in instance of Step Analysis Plugin '%s'",
+        propName,
+        getClass().getName()
+      ));
     }
   }
 

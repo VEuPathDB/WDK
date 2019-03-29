@@ -59,16 +59,16 @@ public class FilterSizeCache {
     }
 
     @Override
-    public FilterSizeGroup getNewValue(Long id) throws ValueProductionException {
+    public FilterSizeGroup getNewValue(Long stepId) throws ValueProductionException {
       FilterSizeGroup emptyGroup = new FilterSizeGroup();
-      return getUpdatedValue(id, emptyGroup);
+      return getUpdatedValue(stepId, emptyGroup);
     }
 
     @Override
-    public FilterSizeGroup getUpdatedValue(Long id, FilterSizeGroup previousVersion)
+    public FilterSizeGroup getUpdatedValue(Long stepId, FilterSizeGroup previousVersion)
         throws ValueProductionException {
       try {
-        Step step = _wdkModel.getStepFactory().getStepByValidId(id, ValidationLevel.RUNNABLE);
+        Step step = _wdkModel.getStepFactory().getStepByValidId(stepId, ValidationLevel.RUNNABLE);
         int size = !step.isRunnable() ? 0 :
           AnswerValueFactory
             .makeAnswer(step.getUser(), step.getAnswerSpec().getRunnable().getLeft())
@@ -98,16 +98,16 @@ public class FilterSizeCache {
     }
 
     @Override
-    public FilterSizeGroup getNewValue(Long id) throws ValueProductionException {
+    public FilterSizeGroup getNewValue(Long stepId) throws ValueProductionException {
       FilterSizeGroup emptyGroup = new FilterSizeGroup();
-      return getUpdatedValue(id, emptyGroup);
+      return getUpdatedValue(stepId, emptyGroup);
     }
 
     @Override
-    public FilterSizeGroup getUpdatedValue(Long id, FilterSizeGroup previousVersion)
+    public FilterSizeGroup getUpdatedValue(Long stepId, FilterSizeGroup previousVersion)
         throws ValueProductionException {
       try {
-        Step step = _wdkModel.getStepFactory().getStepByValidId(id, ValidationLevel.RUNNABLE);
+        Step step = _wdkModel.getStepFactory().getStepByValidId(stepId, ValidationLevel.RUNNABLE);
         Map<String, Integer> sizes = step.isRunnable() ?
             // if runnable, load filters from result size factory
             AnswerValueFactory
