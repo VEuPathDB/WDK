@@ -766,11 +766,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     // resolve primary key references
     primaryKeyDefinition.resolveReferences(model);
 
-    // resolve the references for attribute queries
-    resolveAttributeQueryReferences(model);
-
     // create column attribute fields for primary key columns if they don't already exist
     createPrimaryKeySubFields(model.getProjectId());
+
+    // resolve the references for attribute queries
+    resolveAttributeQueryReferences(model);
 
     // resolve references for the attribute fields
     for (AttributeField field : attributeFieldsMap.values()) {
@@ -981,6 +981,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   private void assignSqlColumnTypes(WdkModel wdkModel, SqlQuery query) throws WdkModelException {
+
+    LOG.info("Assigning column types for attribute query " + query.getFullName() + " in record class " + getFullName());
+
     // run resolved attribute query to get back column types and assign types to attributes
     RunnableObj<QueryInstanceSpec> querySpec = QueryInstanceSpec.builder()
         .buildValidated(_wdkModel.getSystemUser(), query,
@@ -993,19 +996,27 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
     PreparedStatement ps = null;
     ResultSetMetaData meta = null;
+    Set<String> definedColumnNames = query.getColumnMap().keySet();
     try (Connection conn = wdkModel.getAppDb().getDataSource().getConnection()) {
       ps = conn.prepareStatement(sql);
       meta = ps.getMetaData();
       for (int i = 1; i <= meta.getColumnCount(); i++) {
-        String columnName = meta.getColumnName(i);
+        String columnName = meta.getColumnName(i).toLowerCase();
+        // Some attribute queries return columns that are undefined in the model; ignore these
+        if (!definedColumnNames.contains(columnName)) {
+          continue; // is likely excluded in the model
+        }
         AttributeField field = attributeFieldsMap.get(columnName);
         if (field == null) {
-          throw new WdkModelException("Attribute query column '" + columnName +
+          LOG.warn("In record class '" + getFullName() + "'," +
+              " attribute query column '" + columnName +
               "' does not have a corresponding attribute field.");
+          continue;
         }
         else if (!(field instanceof ColumnAttributeField)) {
-          throw new WdkModelException("Attribute query column '" + columnName +
-              "'s corresponding field is not a column attributeField.");
+          throw new WdkModelException("In record class '" + getFullName() + "'," +
+              " attribute query column '" + columnName +
+              "'s corresponding attribute field is not a column attributeField.");
         }
         SqlColumnType type = SqlColumnType.getFromSqlType(meta.getColumnType(i));
         ((ColumnAttributeField)field).setSqlColumnType(type);
@@ -1518,7 +1529,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       field.setInternal(true);
       field.setContainer(this);
       field.excludeResources(projectId);
-      LOG.debug("Adding PkColumnAttributeField '" + pkColumnName + "' to attributeFieldsMap of '" + getFullName() + "'.");
+      LOG.info("Adding PkColumnAttributeField '" + pkColumnName + "' to '" + getFullName() + "'.");
       attributeFieldsMap.put(pkColumnName, field);
     }
   }
