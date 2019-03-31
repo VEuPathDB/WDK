@@ -429,10 +429,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public void setUrlSegment(String urlSegment) {
-    this._urlSegment = urlSegment;
+    _urlSegment = urlSegment;
   }
   public String getUrlSegment() {
-    return this._urlSegment;
+    return _urlSegment;
   }
 
   private static String getPlural(String recordClassName) {
