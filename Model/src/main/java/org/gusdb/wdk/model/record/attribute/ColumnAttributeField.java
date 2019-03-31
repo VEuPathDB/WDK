@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.db.SqlColumnType;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 
 public abstract class ColumnAttributeField extends AttributeField {
 
@@ -26,6 +27,7 @@ public abstract class ColumnAttributeField extends AttributeField {
   }
 
   @Override
+  @RngUndefined
   public Optional<SqlColumnType> getSqlColumnType() {
     return _sqlType;
   }
