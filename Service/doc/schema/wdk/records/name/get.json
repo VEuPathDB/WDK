@@ -41,7 +41,7 @@
     "recordIdAttributeName": {
       "type": "string"
     },
-    "name": {
+    "fullName": {
       "type": "string"
     },
     "attributes": {
@@ -72,7 +72,7 @@
     "shortDisplayNamePlural",
     "tables",
     "displayNamePlural",
-    "name",
+    "fullName",
     "attributes",
     "primaryKeyColumnRefs",
     "searches"

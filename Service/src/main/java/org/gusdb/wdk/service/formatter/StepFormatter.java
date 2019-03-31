@@ -31,7 +31,7 @@ import org.json.JSONObject;
  *   strategyId: Number (ID of containing strategy),
  *   estimatedSize: Number (last known number of results),
  *   hasCompleteStepAnalyses: Boolean,
- *   recordClass: String (RecordClass full name),
+ *   recordClassName: String (RecordClass full name),
  *   searchName: String (Question's full name),
  *   searchConfig: {
  *     parameters: Object,

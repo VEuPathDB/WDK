@@ -18,7 +18,7 @@ import org.json.JSONObject;
 /**
  * Formats WDK RecordClass objects into the following form:
  * {
- *   name: String,
+ *   fullName: String,
  *   displayName: String,
  *   displayNamePlural: String,
  *   shortDisplayName: String,
@@ -80,7 +80,7 @@ public class RecordClassFormatter {
     
 
     return new JSONObject()
-      .put(JsonKeys.NAME, recordClass.getFullName())
+      .put(JsonKeys.FULL_NAME, recordClass.getFullName())
       .put(JsonKeys.DISPLAY_NAME, recordClass.getDisplayName())
       .put(JsonKeys.DISPLAY_NAME_PLURAL, recordClass.getDisplayNamePlural())
       .put(JsonKeys.SHORT_DISPLAY_NAME, recordClass.getShortDisplayName())
