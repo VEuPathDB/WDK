@@ -17,6 +17,7 @@ public abstract class ColumnAttributeField extends AttributeField {
     return new MapBuilder<String, ColumnAttributeField>(_name, this).toMap();
   }
 
+  @RngUndefined
   public void setSqlColumnType(SqlColumnType type) throws WdkModelException {
     if (_sqlType.isPresent() && !_sqlType.get().equals(type)) {
       throw new WdkModelException("Each field can only be assigned a single " +
@@ -27,7 +28,6 @@ public abstract class ColumnAttributeField extends AttributeField {
   }
 
   @Override
-  @RngUndefined
   public Optional<SqlColumnType> getSqlColumnType() {
     return _sqlType;
   }
