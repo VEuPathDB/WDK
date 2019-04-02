@@ -29,7 +29,7 @@ public class InstanceInfoFetcher implements ValueFactory<String, Optional<Instan
   @Override
   public Optional<InstanceInfo> getNewValue(String id) throws ValueProductionException {
     try {
-      LOG.info("Fetching instance info item with ID: " + id);
+      LOG.debug("Fetching instance info item with ID: " + id);
       return getInstanceInfo(_appDb, id);
     }
     catch(WdkModelException e) {

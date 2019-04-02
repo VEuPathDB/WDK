@@ -1133,12 +1133,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   // used to set question specific filters
   public void addFilter(Filter filter) {
-    LOG.debug("QUESTION: ADDING FILTER: " + filter.getKey() + " for question: " + getFullName() + "\n");
     _filters.put(filter.getKey(), filter);
   }
 
   public void addIgnoredFilterFromRecordClass(String filterKey) {
-    LOG.info("QUESTION: ADDING FILTER TO IGNORE LIST: " + filterKey + " for question " + getFullName() + "\n");
+    LOG.info("Adding filter '" + filterKey + "' to ignore list for question '" + getFullName() + "'.");
     _ignoredFiltersFromRecordClass.add(filterKey);
   }
 
@@ -1150,7 +1149,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
    * @return map of all non-view-only filters, from filter name to filter
    */
   public Map<String, Filter> getFilters() {
-    LOG.info("QUESTION: GETTING ALL FILTERs");
     return getExclusiveFilterMap(false);
   }
 
@@ -1160,7 +1158,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
    * @return map of all view-only filters, from filter name to filter
    */
   public Map<String, Filter> getViewFilters() {
-    LOG.debug("QUESTION: GETTING VIEW FILTERs");
     return getExclusiveFilterMap(true);
   }
 
