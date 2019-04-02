@@ -51,30 +51,29 @@ public class RecordService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.records.get")
   public JSONArray getRecordClassList(@QueryParam("format") String format) {
-
-    final boolean expand = Optional.ofNullable(format)
-        .map(f -> f.equals("expanded"))
-        .orElse(false);
-
-    if (expand)
-      return new JSONArray(RecordClassFormatter.getExpandedRecordClassesJson(
-        getWdkModel().getAllRecordClassSets(), getWdkModel().getAllQuestions()));
-    else
-      return new JSONArray(RecordClassFormatter.getRecordClassNames(
-        getWdkModel().getAllRecordClassSets()));
+    List<RecordClass> allRecordClasses = getWdkModel().getAllRecordClasses();
+    return isExpandedFormat(format, false) ?
+        RecordClassFormatter.getExpandedRecordClassesJson(allRecordClasses, getWdkModel().getRecordClassQuestionMap()) :
+        RecordClassFormatter.getRecordClassNamesJson(allRecordClasses);
   }
 
   @GET
   @Path(ID_PARAM)
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.records.name.get")
-  public Response getRecordClassInfo(
-      @PathParam(ID_VAR) String recordClassName) {
-    return Response.ok(
-        RecordClassFormatter.getRecordClassJson(
-            getRecordClassOrNotFound(recordClassName), true,
-            true, true).toString()
-    ).build();
+  public JSONObject getRecordClassInfo(
+      @PathParam(ID_VAR) String recordClassName,
+      @QueryParam("format") String format) {
+    RecordClass rc = getRecordClassOrNotFound(recordClassName);
+    return isExpandedFormat(format, true) ?
+        RecordClassFormatter.getExpandedRecordClassJson(rc, getWdkModel().getRecordClassQuestionMap()) :
+        RecordClassFormatter.getRecordClassJson(rc, true, true, true);
+  }
+
+  private static boolean isExpandedFormat(String format, boolean defaultValue) {
+    return Optional.ofNullable(format)
+        .map(f -> f.equals("expanded"))
+        .orElse(defaultValue);
   }
 
 

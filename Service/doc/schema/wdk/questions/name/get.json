@@ -6,7 +6,70 @@
     "properties": {
       "type": "object",
       "additionalProperties": {
-        "$ref": "../../../includes/string-array.json"       
+        "$ref": "../../../includes/string-array.json"
+      }
+    },
+    "filter-def-array": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "isViewOnly": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "displayName",
+          "description",
+          "isViewOnly"
+        ]
+      }
+    },
+    "step-analysis-def-array": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "shortDescription": {
+            "type": "string"
+          },
+          "releaseVersion": {
+            "type": "number"
+          },
+          "customThumbnail": {
+            "type": "string"
+          },
+          "hasParameters": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "displayName",
+          "description",
+          "shortDescription",
+          "releaseVersion",
+          "hasParameters"
+        ]
       }
     }
   },
@@ -114,7 +177,7 @@
             },
             {
               "$ref": "../../includes/params/filter-param.json"
-            },	      
+            },
             {
               "$ref": "../../includes/params/string-param.json"
             }
@@ -130,8 +193,7 @@
       "type": "string"
     },
     "stepAnalysisPlugins": {
-      "type": "array",
-      "description": "TODO: what is this array of?"
+      "$ref": "#/definitions/step-analysis-def-array"
     },
     "summary": {
       "type": "string"
@@ -141,6 +203,21 @@
     },
     "urlSegment": {
       "type": "string"
+    },
+    "iconName": {
+      "type": "string"
+    },
+    "help": {
+      "type": "string"
+    },
+    "reviseBuild": {
+      "type": "string"
+    },
+    "defaultSorting": {
+      "$ref": "../../includes/sorting-spec.json"
+    },
+    "filters": {
+      "$ref": "#/definitions/filter-def-array"
     }
   },
   "required": [
