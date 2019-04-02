@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
@@ -992,7 +993,15 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         .getOrThrow(invalidSpec -> new WdkModelException("Cannot run raw attribute query '" +
             query.getFullName() + "': " + invalidSpec.getValidationBundle().toString(2)));
 
-    String sql = Query.makeQueryInstance(querySpec).getSql();
+    // get raw SQL from attribute query and replace id sql macros with dummy id sql
+    String idSql = "( SELECT " + Arrays.stream(primaryKeyDefinition.getColumnRefs())
+        .map(pkColName -> "'' as " + pkColName)
+        .collect(Collectors.joining(", ")) + " " +
+        wdkModel.getAppDb().getPlatform().getDummyTable() + " )";
+
+    String sql = Query.makeQueryInstance(querySpec).getSql()
+        .replace(Utilities.MACRO_ID_SQL, idSql)
+        .replace(Utilities.MACRO_ID_SQL_NO_FILTERS, idSql);
 
     PreparedStatement ps = null;
     ResultSetMetaData meta = null;
@@ -1023,7 +1032,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       }
     }
     catch (SQLException e) {
-      throw new WdkModelException("Unable to determine attribute query column types", e);
+      LOG.warn("Unable to determine attribute query column types from query " + query.getFullName(), e);
     }
     finally {
       SqlUtils.closeQuietly(meta, ps);
