@@ -4,7 +4,7 @@
     "items": {
         "type": "object",
         "properties": {
-            "columnName": {
+            "attributeName": {
                 "type": "string"
             },
             "direction": {
@@ -16,7 +16,7 @@
             }
         },
         "required": [
-            "columnName",
+            "attributeName",
             "direction"
         ],
         "additionalProperties": false

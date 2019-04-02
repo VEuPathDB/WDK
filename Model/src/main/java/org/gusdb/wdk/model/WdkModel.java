@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
@@ -1569,11 +1570,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   public List<RecordClass> getAllRecordClasses() {
-    List<RecordClass> recordClasses = new ArrayList<>();
-    for (RecordClassSet rcSet : getAllRecordClassSets()) {
-      recordClasses.addAll(Arrays.asList(rcSet.getRecordClasses()));
-    }
-    return recordClasses;
+    return Arrays.stream(getAllRecordClassSets())
+        .flatMap(rcs -> Arrays.stream(rcs.getRecordClasses()))
+        .collect(Collectors.toList());
   }
 
   /**
@@ -1642,5 +1641,18 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
         throw new WdkUserException(message, e2);
       }
     }
+  }
+
+  // TODO: cache at model creation time
+  public Map<String, List<Question>> getRecordClassQuestionMap() {
+    Map<String, List<Question>> recordClassQuestionMap = new HashMap<String, List<Question>>();
+    for (Question q : getAllQuestions()) {
+      String rcName = q.getRecordClass().getFullName();
+      if (!recordClassQuestionMap.containsKey(rcName)) {
+        recordClassQuestionMap.put(rcName, new ArrayList<>());
+      }
+      recordClassQuestionMap.get(rcName).add(q);
+    }
+    return recordClassQuestionMap;
   }
 }

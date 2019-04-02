@@ -2,6 +2,33 @@
   "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",
   "properties": {
+    "fullName": {
+      "type": "string"
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "displayNamePlural": {
+      "type": "string"
+    },
+    "shortDisplayName": {
+      "type": "string"
+    },
+    "shortDisplayNamePlural": {
+      "type": "string"
+    },
+    "nativeDisplayName": {
+      "type": "string"
+    },
+    "nativeDisplayNamePlural": {
+      "type": "string"
+    },
+    "nativeShortDisplayName": {
+      "type": "string"
+    },
+    "nativeShortDisplayNamePlural": {
+      "type": "string"
+    },
     "urlSegment": {
       "type": "string"
     },
@@ -11,37 +38,19 @@
     "useBasket": {
       "type": "boolean"
     },
+    "description": {
+      "type": "string"
+    },
     "formats": {
       "$ref": "../../includes/record-reporter-array.json"
     },
     "hasAllRecordsQuery": {
       "type": "boolean"
     },
-    "displayName": {
-      "type": "string"
-    },
-    "description": {
-      "type": "string"
-    },
-    "shortDisplayName": {
-      "type": "string"
-    },
-    "shortDisplayNamePlural": {
-      "type": "string"
-    },
-    "tables": {
-      "type": "array",
-      "items": {
-        "$ref": "../../includes/record-table.json"
-      }
-    },
-    "displayNamePlural": {
-      "type": "string"
+    "primaryKeyColumnRefs": {
+      "$ref": "../../../includes/string-array.json"
     },
     "recordIdAttributeName": {
-      "type": "string"
-    },
-    "fullName": {
       "type": "string"
     },
     "attributes": {
@@ -50,8 +59,11 @@
         "$ref": "../../includes/record-attribute.json"
       }
     },
-    "primaryKeyColumnRefs": {
-      "$ref": "../../../includes/string-array.json"
+    "tables": {
+      "type": "array",
+      "items": {
+        "$ref": "../../includes/record-table.json"
+      }
     },
     "searches": {
       "type": "array",

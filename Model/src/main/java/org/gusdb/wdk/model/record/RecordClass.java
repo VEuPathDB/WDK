@@ -260,6 +260,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private String nativeDisplayNamePlural;
   private String nativeShortDisplayName;
   private String nativeShortDisplayNamePlural;
+
   private String displayName;
   private String description;
   private String displayNamePlural;
