@@ -29,6 +29,9 @@
     "newBuild": {
       "type": "string"
     },
+    "filters": {
+      "$ref": "../../../includes/string-array.json"
+    },
     "allowedPrimaryInputRecordClassNames": {
       "type": "array",
       "items": {

@@ -51,7 +51,7 @@ public class StrategyFormatter {
     
     return getListingStrategyJson(strategy)
         .put(JsonKeys.STEP_TREE, stepTreeJson)
-        .put(JsonKeys.STEPS_IN_TREE, stepDetailsMap)
+        .put(JsonKeys.STEPS, stepDetailsMap)
         .put(JsonKeys.ESTIMATED_SIZE, strategy.getResultSize()); // overwrite with real size
   }
 

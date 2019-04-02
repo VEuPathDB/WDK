@@ -108,7 +108,7 @@ public class StepFormatter {
   public static JSONObject formatAsStepTree(Step step, Set<Step> accumulatedSteps) {
     accumulatedSteps.add(step);
     final JSONObject out = new JSONObject()
-      .put(JsonKeys.ID, step.getStepId());
+      .put(JsonKeys.STEP_ID, step.getStepId());
 
     Optional.ofNullable(step.getPrimaryInputStep())
       .ifPresent(s -> out.put(JsonKeys.PRIMARY_INPUT_STEP, formatAsStepTree(s, accumulatedSteps)));

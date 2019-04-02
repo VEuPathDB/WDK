@@ -83,6 +83,7 @@ public class QuestionFormatter {
       .put(JsonKeys.REVISE_BUILD, q.getReviseBuild())
       .put(JsonKeys.OUTPUT_RECORD_CLASS_NAME, q.getRecordClass().getFullName())
       .put(JsonKeys.GROUPS, getGroupsJson(q.getParamMapByGroups()))
+      .put(JsonKeys.FILTERS, new JSONArray(q.getFilters().keySet()))
       .put(JsonKeys.DEFAULT_ATTRIBUTES, new JSONArray(q.getSummaryAttributeFieldMap().keySet()))
       .put(JsonKeys.DEFAULT_SORTING, DefaultJsonReporter.formatSorting(q.getSortingAttributeMap(), q.getAttributeFieldMap()))
       .put(JsonKeys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
