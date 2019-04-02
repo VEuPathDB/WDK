@@ -51,7 +51,7 @@
             "type": "string"
           },
           "releaseVersion": {
-            "type": "number"
+            "type": "string"
           },
           "customThumbnail": {
             "type": "string"
