@@ -269,8 +269,7 @@ public class StepAnalysisService extends UserService {
   @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}/result/status")
   @Produces(MediaType.APPLICATION_JSON)
   public JSONObject getStepAnalysisResultStatus(
-    @PathParam("analysisId") long analysisId,
-    @QueryParam("accessToken") String accessToken
+    @PathParam("analysisId") long analysisId
   ) throws WdkModelException {
     try {
       return new JSONObject().put(
