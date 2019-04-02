@@ -13,12 +13,13 @@
         "secondaryInput": {
           "$ref": "#/definitions/step"
         }
-},
+      },
 	"required": [
           "stepId"
 	],
         "additionalProperties": false
       }
-    }
-  }
+    },
+  "$ref": "#/definitions/step"
+}
 
