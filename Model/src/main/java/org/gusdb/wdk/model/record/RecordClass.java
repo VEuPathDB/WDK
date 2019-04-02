@@ -984,7 +984,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   private void assignSqlColumnTypes(WdkModel wdkModel, SqlQuery query) throws WdkModelException {
 
-    LOG.info("Assigning column types for attribute query " + query.getFullName() + " in record class " + getFullName());
+    LOG.debug("Assigning column types for attribute query " + query.getFullName() + " in record class " + getFullName());
 
     // run resolved attribute query to get back column types and assign types to attributes
     RunnableObj<QueryInstanceSpec> querySpec = QueryInstanceSpec.builder()
@@ -1539,7 +1539,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       field.setInternal(true);
       field.setContainer(this);
       field.excludeResources(projectId);
-      LOG.info("Adding PkColumnAttributeField '" + pkColumnName + "' to '" + getFullName() + "'.");
+      LOG.debug("Adding PkColumnAttributeField '" + pkColumnName + "' to '" + getFullName() + "'.");
       attributeFieldsMap.put(pkColumnName, field);
     }
   }
