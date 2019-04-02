@@ -29,8 +29,6 @@
         },
         "required": [
           "name",
-          "displayName",
-          "description",
           "isViewOnly"
         ]
       }
