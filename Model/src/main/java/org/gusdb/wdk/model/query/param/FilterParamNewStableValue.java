@@ -512,7 +512,8 @@ public class FilterParamNewStableValue {
       String membersSig = sortedMembers == null
           ? "NULL"
           : FormatUtil.join(sortedMembers, ",");
-      return membersSig + " --" + includeUnknowns;
+      return field + ":" + membersSig + " --" + includeUnknowns;
+
     }
 
     abstract void setMembers(JSONArray jsArray) throws JSONException;
