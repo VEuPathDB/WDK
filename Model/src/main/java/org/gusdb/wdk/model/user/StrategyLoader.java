@@ -233,6 +233,7 @@ public class StrategyLoader {
 
     long stepId = rs.getLong(COLUMN_STEP_ID);
     long userId = rs.getLong(COLUMN_USER_ID);
+    String displayPrefs = rs.getString(COLUMN_DISPLAY_PREFS);
 
     return Step.builder(_wdkModel, userId, stepId)
         .setStrategyId(Optional.ofNullable(fetchNullableLong(rs, COLUMN_STRATEGY_ID, null)))
@@ -255,7 +256,7 @@ public class StrategyLoader {
             .setAssignedWeight(fetchNullableInteger(rs, COLUMN_ASSIGNED_WEIGHT, 0))
             .setDbParamFiltersJson(new JSONObject(_userDbPlatform.getClobData(rs, COLUMN_DISPLAY_PARAMS)))
         )
-        .setDisplayPrefs(new JSONObject(rs.getString(COLUMN_DISPLAY_PREFS)));
+        .setDisplayPrefs(displayPrefs == null ? new JSONObject() : new JSONObject(displayPrefs));
   }
 
   public Optional<Step> getStepById(long stepId) throws WdkModelException {
