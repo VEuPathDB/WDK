@@ -91,7 +91,7 @@ public class StepRequestParser {
       String customName = getStringOrDefault(stepJson, JsonKeys.CUSTOM_NAME, spec.getQuestion().getName());
       boolean isCollapsible = getBooleanOrDefault(stepJson, JsonKeys.IS_COLLAPSIBLE, false);
       String collapsedName = getStringOrDefault(stepJson, JsonKeys.COLLAPSED_NAME, customName); 
-      JSONObject displayPrefs = getJsonObjectOrDefault(stepJson, JsonKeys.DISPLAY_PREFS, null);
+      JSONObject displayPrefs = getJsonObjectOrDefault(stepJson, JsonKeys.DISPLAY_PREFS, new JSONObject());
 
       return new NewStepRequest(validSpec, customName, isCollapsible, collapsedName, displayPrefs);
     }

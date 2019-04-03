@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Stack;
 
@@ -193,7 +194,7 @@ public class Step implements Validateable<Step> {
     }
 
     public StepBuilder setDisplayPrefs(JSONObject prefs) {
-      _displayPrefs = prefs;
+      _displayPrefs = Objects.requireNonNull(prefs);
       return this;
     }
 
