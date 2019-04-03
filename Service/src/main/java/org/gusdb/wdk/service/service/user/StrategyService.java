@@ -84,7 +84,7 @@ public class StrategyService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.strategies.post-request")
-  @OutSchema("includes.standard-post-response")
+  @OutSchema("wdk.standard-post-response")
   public Response createStrategy(JSONObject body)
       throws WdkModelException, DataValidationException {
     try {
@@ -242,7 +242,7 @@ public class StrategyService extends UserService {
   @Path(ID_PATH + "/duplicated-step-tree")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  @InSchema("includes.empty-post-request") 
+  @InSchema("wdk.empty-post-request") 
   @OutSchema("wdk.users.strategies.id.duplicated-step-tree-request")
   public JSONObject duplicateAsBranch(@PathParam(ID_PARAM) long stratId)
       throws WdkModelException {

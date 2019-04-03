@@ -72,7 +72,7 @@ public class StepService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.steps.post-request")
-  @OutSchema("includes.standard-post-response")
+  @OutSchema("wdk.standard-post-response")
   public Response createStep(JSONObject jsonBody)
       throws WdkModelException, DataValidationException {
     try {
@@ -207,7 +207,7 @@ public class StepService extends UserService {
   @PUT
   @Path(ID_PATH + "/search-config")
   @Consumes(MediaType.APPLICATION_JSON)
-  @InSchema("wdk.includes.answer-spec-request")
+  @InSchema("wdk.answer.answer-spec-request")
   public void putAnswerSpec(
       @PathParam(ID_PARAM) long stepId,
       JSONObject body
