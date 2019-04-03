@@ -543,7 +543,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     }
     if (!allParentsPassValidation) {
       // this param fails validation because its parents failed
-      return stableValues.setInvalid(getName(), "At least one parameter '" + getName() + "' depends on is invalid or missing.");
+      return stableValues.setInvalid(getName(), "At least one parameter that '" + getName() + "' depends on is invalid or missing.");
     }
 
     // all parents passed validation; handle case where empty value is always allowed (per flag)
