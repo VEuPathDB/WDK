@@ -28,7 +28,7 @@
 	  "type": "string"
     },
     "searchConfig": {
-      "$ref": "../../../includes/answer-spec-request.json"
+      "$ref": "../../../answer/answer-spec-request.json"
     },
       "validation": {
         "$ref": "../../../includes/validation-bundle.json"
