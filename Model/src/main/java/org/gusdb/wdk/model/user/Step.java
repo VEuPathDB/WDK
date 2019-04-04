@@ -377,7 +377,7 @@ public class Step implements Validateable<Step> {
     }
 
     // sanity checks regarding answer param values vs strategy present
-    if (_strategy == null) {
+    if (!_strategy.isPresent()) {
       // Confirm left and right child null if strategyId = null
       if (getSecondaryInputStepId() != 0 || getPrimaryInputStepId() != 0) {
         throw new WdkModelException("Step " + _stepId + " does not have a strategy but has answer param values.");
