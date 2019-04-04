@@ -83,7 +83,7 @@ public class StepRequestParser {
       // Since this method is intended for new steps, the step can not yet be
       // part of a strategy and so any answer params it has should be null (empty string).
       for (AnswerParam param : spec.getQuestion().getQuery().getAnswerParams()) {
-        if (!spec.getQueryInstanceSpec().get(param.getName()).equals(AnswerParam.NULL_VALUE)) {
+        if (!AnswerParam.NULL_VALUE.equals(spec.getQueryInstanceSpec().get(param.getName()))) {
           throw new DataValidationException("Answer Params in new steps must have the null value (empty string).");
         }
       }
