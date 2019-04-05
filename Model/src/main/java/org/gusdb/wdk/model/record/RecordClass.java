@@ -24,7 +24,6 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.Named.NamedObject;
-import org.gusdb.fgputil.db.DbColumnType;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.runner.SQLRunner;
@@ -70,6 +69,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
+import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.IdAttributeField;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
@@ -1027,8 +1027,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
               " attribute query column '" + columnName +
               "'s corresponding attribute field is not a column attributeField.");
         }
-        DbColumnType type = DbColumnType.getFromSqlType(meta.getColumnType(i));
-        ((ColumnAttributeField)field).setSqlColumnType(type);
+        AttributeFieldDataType type = AttributeFieldDataType.getFromSqlType(meta.getColumnType(i));
+        ((ColumnAttributeField)field).setDataType(type);
       }
     }
     catch (SQLException e) {

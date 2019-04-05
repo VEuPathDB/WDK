@@ -4,13 +4,12 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.gusdb.fgputil.MapBuilder;
-import org.gusdb.fgputil.db.DbColumnType;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
+import org.gusdb.wdk.model.WdkModelException;
 
 public abstract class ColumnAttributeField extends AttributeField {
 
-  private Optional<DbColumnType> _sqlType = Optional.empty();
+  private Optional<AttributeFieldDataType> _dataType = Optional.empty();
 
   @Override
   public Map<String, ColumnAttributeField> getColumnAttributeFields() {
@@ -18,17 +17,17 @@ public abstract class ColumnAttributeField extends AttributeField {
   }
 
   @RngUndefined
-  public void setSqlColumnType(DbColumnType type) throws WdkModelException {
-    if (_sqlType.isPresent() && !_sqlType.get().equals(type)) {
+  public void setDataType(AttributeFieldDataType type) throws WdkModelException {
+    if (_dataType.isPresent() && !_dataType.get().equals(type)) {
       throw new WdkModelException("Each field can only be assigned a single " +
-          "SQL column type.  This method was called with " + _sqlType.get() +
+          "SQL column type.  This method was called with " + _dataType.get() +
           " and called again with " + type);
     }
-    _sqlType = Optional.of(type);
+    _dataType = Optional.of(type);
   }
 
   @Override
-  public Optional<DbColumnType> getSqlColumnType() {
-    return _sqlType;
+  public Optional<AttributeFieldDataType> getDataType() {
+    return _dataType;
   }
 }
