@@ -660,29 +660,30 @@ public class StepFactory {
         .setUserId(newUser.getUserId())
         .setStrategyId(Optional.empty());
 
-    // recursively copy AnswerParams (aka child steps) and DatasetParams
-    //   (we want a fresh copy per step because we don't track which steps are using a dataset param)
-    MapBuilder<Long,StepBuilder> childSteps = copyAnswerAndDatasetParams(
+    
+    MapBuilder<Long,StepBuilder> childSteps = assignParamValues(
         oldStep.getUser(), oldStep.getAnswerSpec(), newUser, newStep.getAnswerSpec());
 
     return childSteps.put(oldStep.getStepId(), newStep);
   }
 
-  private MapBuilder<Long, StepBuilder> copyAnswerAndDatasetParams(User oldUser, AnswerSpec oldSpec, User newUser,
+  private MapBuilder<Long, StepBuilder> assignParamValues(User oldUser, AnswerSpec oldSpec, User newUser,
       AnswerSpecBuilder newSpec) throws WdkModelException {
     MapBuilder<Long,StepBuilder> newStepMap = new MapBuilder<>();
     for (Param param : oldSpec.getQuestion().getParams()) {
       String oldStableValue = oldSpec.getQueryInstanceSpec().get(param.getName());
-      String replacementValue = param instanceof AnswerParam
+      String replacementValue =
+          param instanceof AnswerParam
           ? cloneAnswerParam(oldSpec, oldStableValue, newUser, newStepMap)
           : param instanceof DatasetParam
-              ? cloneDatasetParam(oldUser, oldStableValue, newUser)
-              : oldStableValue; // otherwise use original value
+            ? cloneDatasetParam(oldUser, oldStableValue, newUser)
+            : oldStableValue; // otherwise use original stable value
       newSpec.setParamValue(param.getName(), replacementValue);
     }
     return newStepMap;
   }
 
+  // recursively copy AnswerParams (aka child steps) as child trees
   private String cloneAnswerParam(AnswerSpec oldSpec, String oldStableValue,
       User newUser, MapBuilder<Long, StepBuilder> stepIdsMap)
       throws WdkModelException {
@@ -693,6 +694,7 @@ public class StepFactory {
     return Long.toString(stepIdsMap.get(oldStepValue.getStepId()).getStepId());
   }
 
+  // clone DatasetParams (we want a fresh copy per step because we don't track which steps are using a dataset param)
   private String cloneDatasetParam(User oldUser, String oldStableValue,
       User newUser) throws WdkModelException {
     long oldDatasetId = Long.parseLong(oldStableValue);
