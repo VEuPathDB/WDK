@@ -152,11 +152,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   @Override
-  public Object getFormViewModel(StepAnalysisInstance instance) throws WdkModelException, WdkUserException {
-    return getConfiguredAnalyzer(instance, _fileStore).getFormViewModel();
-  }
-
-  @Override
   public List<String> validateFormParams(StepAnalysisInstance instance)
       throws WdkModelException, WdkUserException {
     List<String> errorList = new ArrayList<>();
@@ -402,7 +397,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     StepAnalyzer analyzer = getConfiguredAnalyzer(instance, _fileStore);
     analyzer.setPersistentCharData(result.getStoredString());
     analyzer.setPersistentBinaryData(result.getStoredBytes());
-    result.setResultViewModel(analyzer.getResultViewModel());
     result.setResultViewModelJson(analyzer.getResultViewModelJson());
     result.clearStoredData(); // only care about the view model
     return result;
