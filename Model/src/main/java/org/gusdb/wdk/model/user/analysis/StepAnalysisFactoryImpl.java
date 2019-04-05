@@ -384,8 +384,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     StepAnalyzer analyzer = getConfiguredAnalyzer(instance, _fileStore);
     analyzer.setPersistentCharData(result.getStoredString());
     analyzer.setPersistentBinaryData(result.getStoredBytes());
-    result.setResultViewModel(analyzer.getResultViewModel());
-    result.setResultViewModelJson(analyzer.getResultViewModelJson());
     result.clearStoredData(); // only care about the view model
     return result;
   }
