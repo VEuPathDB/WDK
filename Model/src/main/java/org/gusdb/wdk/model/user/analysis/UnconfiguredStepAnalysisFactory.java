@@ -133,11 +133,6 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
-  public Object getFormViewModel(StepAnalysisInstance instance) throws WdkModelException {
-    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
-  }
-
-  @Override
   public void shutDown() {
     // nothing to shut down
   }

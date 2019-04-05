@@ -12,7 +12,6 @@ public class AnalysisResult {
   private String _storedString;
   private byte[] _storedBytes;
   private String _statusLog;
-  private Object _resultViewModel;
   private JSONObject _resultViewModelJson;
 
   public AnalysisResult(ExecutionStatus status, Date startDate, Date updateDate,
@@ -76,14 +75,6 @@ public class AnalysisResult {
 
   public void setStatusLog(String statusLog) {
     _statusLog = statusLog;
-  }
-
-  public Object getResultViewModel() {
-    return _resultViewModel;
-  }
-
-  public void setResultViewModel(Object resultViewModel) {
-    _resultViewModel = resultViewModel;
   }
 
   public void setResultViewModelJson(JSONObject resultViewModelJson) {

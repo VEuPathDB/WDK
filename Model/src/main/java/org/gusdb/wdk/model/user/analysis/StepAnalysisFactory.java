@@ -18,8 +18,6 @@ public interface StepAnalysisFactory {
 
   boolean hasCompleteAnalyses(Step step) throws WdkModelException;
 
-  Object getFormViewModel(StepAnalysisInstance instance) throws WdkModelException, WdkUserException;
-
   /**
    * Validates the form params for a given Step Analysis Instance and returns
    * a list of validation errors.
