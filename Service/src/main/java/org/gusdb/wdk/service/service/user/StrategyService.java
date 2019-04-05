@@ -194,9 +194,10 @@ public class StrategyService extends UserService {
 
     final Strategy oldStrat = getNotDeletedStrategyForCurrentUser(stratId, ValidationLevel.NONE);
 
-    final StepFactory stepFactory = getWdkModel().getStepFactory();
+    JSONObject stepTree = body.getJSONObject(JsonKeys.STEP_TREE);
+     final StepFactory stepFactory = getWdkModel().getStepFactory();
     final TwoTuple<Long, Collection<StepBuilder>> parsedTree =
-        StrategyRequest.treeToSteps(Optional.of(oldStrat), body, stepFactory);
+        StrategyRequest.treeToSteps(Optional.of(oldStrat), stepTree, stepFactory);
     try {
 
       // build and validate modified strategy
@@ -250,12 +251,14 @@ public class StrategyService extends UserService {
     
     getNotDeletedStrategyForCurrentUser(stratId, ValidationLevel.NONE); // confirm it is not deleted
 
-    return StepFormatter.formatAsStepTree(
+    JSONObject json = new JSONObject();
+    json.put("StepTree", StepFormatter.formatAsStepTree(
         getWdkModel().getStepFactory().copyStrategyToBranch(
             getSessionUser(),
             getStrategyForCurrentUser(stratId, ValidationLevel.NONE)
     ),
-        new HashSet<Step>());  // we don't need to consume the list of step IDs found in the tree
+        new HashSet<Step>()));  // we don't need to consume the list of step IDs found in the tree
+    return json;
   }
 
   // get a strategy, but throw not found if it is already deleted.
