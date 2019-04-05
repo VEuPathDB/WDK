@@ -162,13 +162,16 @@ public class StrategyRequest {
       // check that the step either already lives in the existing strategy or is unattached
       Optional<Long> existingStrategyId = existingStrategy.map(Strategy::getStrategyId);
       if (step.getStrategyId().isPresent() &&
-          existingStrategyId.isPresent() &&
-          !step.getStrategyId().get().equals(existingStrategyId.get())) {
+          (!existingStrategyId.isPresent() ||
+           existingStrategyId.isPresent() &&
+           !step.getStrategyId().get().equals(existingStrategyId.get()))) {
         throw new DataValidationException("Step " + step.getStepId() +
           " belongs to strategy " + step.getStrategyId() +
-          " so cannot be assigned to strategy " + existingStrategyId);
+          " so cannot be assigned to " + (existingStrategyId.isPresent() ?
+              "strategy " + existingStrategyId.get() : "a new strategy"));
       }
 
+      // now that we know strategy IDs of incoming steps are missing or valid, clear for insertion into strat builder
       final StepBuilder builder = Step.builder(step).removeStrategy();
 
       if (currentStepJson.has(JsonKeys.PRIMARY_INPUT_STEP)) {
