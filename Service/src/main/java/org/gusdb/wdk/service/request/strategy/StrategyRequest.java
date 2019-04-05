@@ -166,7 +166,7 @@ public class StrategyRequest {
            existingStrategyId.isPresent() &&
            !step.getStrategyId().get().equals(existingStrategyId.get()))) {
         throw new DataValidationException("Step " + step.getStepId() +
-          " belongs to strategy " + step.getStrategyId() +
+          " belongs to strategy " + step.getStrategyId().get() +
           " so cannot be assigned to " + (existingStrategyId.isPresent() ?
               "strategy " + existingStrategyId.get() : "a new strategy"));
       }
