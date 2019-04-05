@@ -1,24 +1,17 @@
 package org.gusdb.wdk.model.user;
 
-import static org.gusdb.fgputil.functional.Functions.getMapFromList;
 import static org.gusdb.fgputil.functional.Functions.getNthOrNull;
 import static org.gusdb.wdk.model.user.StepContainer.parentOf;
 import static org.gusdb.wdk.model.user.StepContainer.withId;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Stack;
+import java.util.stream.Collectors;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Named.NamedObject;
-import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.ValidationUtil;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory;
@@ -26,20 +19,15 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersDbColumnFormat;
-import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -48,10 +36,9 @@ import org.json.JSONObject;
 
 /**
  * @author Charles Treatman
+ * @author Ryan Doherty
  */
 public class Step implements Validateable<Step> {
-
-  private static final Logger LOG = Logger.getLogger(Step.class);
 
   public static final int RESET_SIZE_FLAG = -1;
 
@@ -323,10 +310,6 @@ public class Step implements Validateable<Step> {
    */
   private boolean _estimatedSizeRefreshed = false;
 
-  // Set if exception occurs during step loading (but we don't want to bubble the exception up)
-  // This allows the UI to show a "broken" step but not hose the whole strategy
-  private Exception _exception;
-
   // Set this if this step should not be written to /read from db. A hack in support of
   // summary views, until they are refactored using service.
   private final boolean _inMemoryOnly;
@@ -377,16 +360,22 @@ public class Step implements Validateable<Step> {
     }
 
     // sanity checks regarding answer param values vs strategy present
-    if (!_strategy.isPresent()) {
+    for (String answerParamName : getAnswerParamNames()) {
+      String paramValue = _answerSpec.getQueryInstanceSpec().get(answerParamName);
       // Confirm left and right child null if strategyId = null
-      if (getSecondaryInputStepId() != 0 || getPrimaryInputStepId() != 0) {
-        throw new WdkModelException("Step " + _stepId + " does not have a strategy but has answer param values.");
+      if (!_strategy.isPresent() && !AnswerParam.NULL_VALUE.equals(paramValue)) {
+        throw new WdkModelException("Step " + _stepId + " does not have a strategy but answer param " + answerParamName + " has a value.");
+      }
+      if (_strategy.isPresent() && AnswerParam.NULL_VALUE.equals(paramValue)) {
+        throw new WdkModelException("Step " + _stepId + " is part of a strategy but answer param " + answerParamName + " does not have a value.");
       }
     }
-    else if ((getSecondaryInputStepParam().isPresent() && getSecondaryInputStepId() == 0) ||
-             (getPrimaryInputStepParam().isPresent() && getPrimaryInputStepId() == 0)) {
-      throw new WdkModelException("Step " + _stepId + " is part of a strategy but at least one answer param does not have a value.");
-    }
+  }
+
+  private List<String> getAnswerParamNames() {
+    return !_answerSpec.hasValidQuestion() ? Collections.emptyList() :
+      _answerSpec.getQuestion().getQuery().getAnswerParams().stream()
+        .map(NamedObject::getName).collect(Collectors.toList());
   }
 
   private static String checkName(String field, String val) throws WdkModelException {
@@ -400,22 +389,17 @@ public class Step implements Validateable<Step> {
     return getContainer().findFirstStep(parentOf(_stepId));
   }
 
-  public long getPrimaryInputStepId() {
-    Step step = getPrimaryInputStep();
-    return step == null ? 0 : step.getStepId();
+  /**
+   * @return optional containing primary input step.  If this step's question
+   * does not have a primary input or if the step is not part of a strategy
+   * (i.e. answer params have null value), an empty optional is returned.
+   */
+  public Optional<Step> getPrimaryInputStep() {
+    return findAnswerParamsStep(0);
   }
 
-  public long getSecondaryInputStepId() {
-    Step step = getSecondaryInputStep();
-    return step == null ? 0 : step.getStepId();
-  }
-
-  public Step getPrimaryInputStep() {
-    return findAnswerParamsStep(0).orElse(null);
-  }
-
-  public Step getSecondaryInputStep() {
-    return findAnswerParamsStep(1).orElse(null);
+  public Optional<Step> getSecondaryInputStep() {
+    return findAnswerParamsStep(1);
   }
 
   /**
@@ -431,29 +415,40 @@ public class Step implements Validateable<Step> {
    */
   private Optional<Step> findAnswerParamsStep(int answerParamOrdinal) {
 
-    if (!hasValidQuestion()) {
-      return Optional.empty();
-    }
-
-    AnswerParam param = getNthOrNull(_answerSpec.getQuestion().getQuery().getAnswerParams(), answerParamOrdinal);
-    if (param == null) {
+    Optional<AnswerParam> answerParam = findAnswerParam(answerParamOrdinal);
+    if (!answerParam.isPresent()) {
       return Optional.empty();
     }
 
     QueryInstanceSpec spec = _answerSpec.getQueryInstanceSpec();
-    String stableValue = spec.get(param.getName());
+    String stableValue = spec.get(answerParam.get().getName());
 
-    if (stableValue == null) {
+    if (AnswerParam.NULL_VALUE.equals(stableValue)) {
       return Optional.empty();
     }
 
-    return getContainer().findFirstStep(withId(AnswerParam.toStepId(stableValue)));
+    Optional<Step> foundStep = getContainer().findFirstStep(withId(AnswerParam.toStepId(stableValue)));
+    if (!foundStep.isPresent()) {
+      throw new WdkRuntimeException("Value of AnswerParam " + answerParam.get().getName() +
+          " in step " + getStepId() + " is " + stableValue + ", which does not" +
+          " refer to a step in this step's strategy (id=" + getStrategyId() + ").");
+    }
+    return foundStep;
+  }
+
+  private Optional<AnswerParam> findAnswerParam(int answerParamOrdinal) {
+    if (!hasValidQuestion()) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(getNthOrNull(
+        _answerSpec.getQuestion().getQuery().getAnswerParams(), answerParamOrdinal));
   }
 
   /**
    * Returns an estimate of the size of this step (number of records returned).
    * This may be the value of the estimate_size column in the steps table, or
-   * if getResultSize() has been called, a refreshed value.
+   * if getResultSize() has been called, a refreshed value.  Returns 0 if this
+   * step has been found to be invalid.
    *
    * @return estimate of this step's result size
    */
@@ -483,20 +478,6 @@ public class Step implements Validateable<Step> {
       _wdkModel.getStepFactory().updateStep(this);
     }
     return _estimatedSize;
-  }
-
-  // Needs to be updated for transforms
-  public String getOperation() {
-    if (isFirstStep()) {
-      throw new IllegalStateException("getOperation cannot be called on the first Step.");
-    }
-    BooleanQuery query = (BooleanQuery) _answerSpec.getQuestion().getQuery();
-    StringParam operator = query.getOperatorParam();
-    return _answerSpec.getQueryInstanceSpec().get(operator.getName());
-  }
-
-  public boolean isFirstStep() {
-    return _strategy.isPresent() ? _strategy.get().getFirstStep().getStepId() == _stepId : false;
   }
 
   public User getUser() {
@@ -556,33 +537,9 @@ public class Step implements Validateable<Step> {
     return _lastRunTime != null ? _lastRunTime : _createdTime;
   }
 
-  // FIXME: is this really how we should define this method; maybe should be dependent on # of AnswerParam
-  public boolean isBoolean() {
+  public boolean hasBooleanQuestion() {
     Question question = _answerSpec.getQuestion();
     return question != null && question.isBoolean();
-  }
-
-  /**
-   * A combined step can take one or more steps as input. a Transform is a special case of combined step, and
-   * a boolean is another special case.
-   *
-   * @return a flag to determine if a step can take other step(s) as input.
-   */
-  // FIXME: is this really how we should define this method; maybe should be dependent on # of AnswerParam
-  public boolean isCombined() {
-    Question question = _answerSpec.getQuestion();
-    return question != null && question.isCombined();
-  }
-
-  /**
-   * A transform step can take exactly one step as input.
-   *
-   * @return Returns whether this Step is a transform
-   */
-  // FIXME: is this really how we should define this method; maybe should be dependent on # of AnswerParam
-  public boolean isTransform() {
-    Question question = _answerSpec.getQuestion();
-    return question != null && question.isTransform();
   }
 
   public String getDescription() {
@@ -598,24 +555,13 @@ public class Step implements Validateable<Step> {
   }
 
   public boolean isCollapsible() {
-    if (_isCollapsible)
-      return true;
-    // it is true if the step is a branch
-    return (getParentStep().isPresent() && isCombined());
+    return _isCollapsible;
   }
 
   public String getCollapsedName() {
     if (_collapsedName == null && isCollapsible())
       return getCustomName();
     return _collapsedName;
-  }
-
-  public Map<String, String> getParamNames() {
-    return _answerSpec.getQuestion() == null
-        ? new LinkedHashMap<>()
-        : getMapFromList(
-            _answerSpec.getQuestion().getQuery().getParamMap().values(),
-            param -> new TwoTuple<>(param.getName(), param.getPrompt()));
   }
 
   public String getProjectId() {
@@ -626,99 +572,10 @@ public class Step implements Validateable<Step> {
     return _projectVersion;
   }
 
-  /* functions for navigating/manipulating step tree */
-  public Step getStep(int index) {
-    List<Step> steps = getMainBranch();
-    return steps.get(index);
-  }
-
-  /**
-   * Get all the previous steps in the strategy. This doesn't include any child
-   * steps.
-   *
-   * @return A list of the previous steps from the current one; the first step
-   *         in the strategy will be the first one in the list, and the direct
-   *         previous step of the current one will be the last in the list, in
-   *         that order.
-   */
-  public List<Step> getMainBranch() {
-    LinkedList<Step> list = new LinkedList<>();
-    list.add(this);
-    Step previousStep = getPrimaryInputStep();
-    while (previousStep != null) {
-      list.offerFirst(previousStep);
-      previousStep = previousStep.getPrimaryInputStep();
-    }
-    return list;
-  }
-
-  public int getLength() {
-    return getMainBranch().size();
-  }
-
-  /**
-   * Get all the descendants from the current step, including both previous
-   * steps and child steps.
-   *
-   * @return
-   */
-  public List<Step> getNestedBranch() {
-    List<Step> list = new ArrayList<>(); // a list to hold all descendants.
-    Stack<Step> stack = new Stack<>();
-    stack.push(this);
-    while (!stack.isEmpty()) {
-      Step step = stack.pop();
-      list.add(step);
-      Step previousStep = step.getPrimaryInputStep(), childStep = step.getSecondaryInputStep();
-      if (previousStep != null) {
-        stack.push(previousStep);
-      }
-      if (childStep != null) {
-        stack.push(childStep);
-      }
-    }
-    return list;
-  }
-
-  public Step getStepByPreviousId(int previousId) {
-    LOG.debug("gettting step by prev id. current=" + this + ", input=" + previousId);
-    Step target;
-    if (getPrimaryInputStepId() == previousId) {
-      return this;
-    }
-    Step childStep = getSecondaryInputStep();
-    if (childStep != null) {
-      target = childStep.getStepByPreviousId(previousId);
-      if (target != null) {
-        return target;
-      }
-    }
-    Step prevStep = getPrimaryInputStep();
-    if (prevStep != null) {
-      target = prevStep.getStepByPreviousId(previousId);
-      if (target != null) {
-        return target;
-      }
-    }
-    return null;
-  }
-
   public Optional<RecordClass> getRecordClass() {
     return hasValidQuestion() ?
         Optional.of(_answerSpec.getQuestion().getRecordClass()) :
         Optional.empty();
-  }
-
-  public int getIndexFromId(int stepId) throws WdkUserException {
-    List<Step> steps = getMainBranch();
-    for (int i = 0; i < steps.size(); ++i) {
-      Step step = steps.get(i);
-      if (step.getStepId() == stepId ||
-          (step.getSecondaryInputStep() != null && step.getSecondaryInputStep().getStepId() == stepId)) {
-        return i;
-      }
-    }
-    throw new WdkUserException("Id not found!");
   }
 
   public boolean isFiltered() throws WdkModelException {
@@ -740,13 +597,6 @@ public class Step implements Validateable<Step> {
          !defaultFilter.get().getName().equals(filter.get().getName()));
   }
 
-  public String getFilterDisplayName() {
-    return _answerSpec.getLegacyFilter()
-        .map(filter -> filter.getDisplayName())
-        .orElse(_answerSpec.getLegacyFilterName()
-        .orElse("None"));
-  }
-
   public void updateEstimatedSize(int checkedSize) {
     _estimatedSize = checkedSize;
     _estimatedSizeRefreshed = true;
@@ -755,7 +605,6 @@ public class Step implements Validateable<Step> {
   public void resetEstimatedSize() {
     _estimatedSize = RESET_SIZE_FLAG;
     _estimatedSizeRefreshed = false;
-
   }
 
   public JSONObject getJSONContent(int strategyId) throws WdkModelException {
@@ -780,14 +629,14 @@ public class Step implements Validateable<Step> {
       jsStep.put(ParamsAndFiltersDbColumnFormat.KEY_FILTERS,
           ParamsAndFiltersDbColumnFormat.formatFilters(_answerSpec.getFilterOptions()));
 
-      Step childStep = getSecondaryInputStep();
-      if (childStep != null) {
-        jsStep.put("child", childStep.getJSONContent(strategyId, forChecksum));
+      Optional<Step> childStep = getSecondaryInputStep();
+      if (childStep.isPresent()) {
+        jsStep.put("child", childStep.get().getJSONContent(strategyId, forChecksum));
       }
 
-      Step prevStep = getPrimaryInputStep();
-      if (prevStep != null) {
-        jsStep.put("previous", prevStep.getJSONContent(strategyId, forChecksum));
+      Optional<Step> prevStep = getPrimaryInputStep();
+      if (prevStep.isPresent()) {
+        jsStep.put("previous", prevStep.get().getJSONContent(strategyId, forChecksum));
       }
 
       if (!forChecksum) {
@@ -807,85 +656,21 @@ public class Step implements Validateable<Step> {
   }
 
   /**
-   * Get the answerParam that take the previousStep as input, which is the first answerParam in the param
-   * list.
-   *
-   * @return an AnswerParam
+   * Get the answerParam that take the previousStep as input, which is the first
+   * answerParam in the param list.  Returns an empty optional if this step
+   * does not have any answer params.
    */
   public Optional<AnswerParam> getPrimaryInputStepParam() {
-    if (!hasValidQuestion())
-      return Optional.empty();
-
-    return Arrays.stream(_answerSpec.getQuestion().getParams())
-        .filter(AnswerParam.class::isInstance)
-        .findFirst()
-        .map(AnswerParam.class::cast);
+    return findAnswerParam(0);
   }
 
   /**
-   * The previous step param is always the first answerParam.
+   * Get the answerParam that take the childStep as input, which is the second
+   * answerParam in the param list.  Returns an empty optional if this step
+   * does not have a second answer param.
    */
-  public Optional<String> getPrimaryInputStepParamName() {
-    return getPrimaryInputStepParam().map(NamedObject::getName);
-  }
-
   public Optional<AnswerParam> getSecondaryInputStepParam() {
-    if (!hasValidQuestion())
-      return Optional.empty();
-    Param[] params = _answerSpec.getQuestion().getParams();
-    int index = 0;
-    for (Param param : params) {
-      if (param instanceof AnswerParam) {
-        index++;
-        if (index == 2)
-          return Optional.of((AnswerParam) param);
-      }
-    }
-    return Optional.empty();
-  }
-
-  /**
-   * the child step param is always the second answerParam
-   */
-  public Optional<String> getSecondaryInputStepParamName() {
-    return getSecondaryInputStepParam().map(NamedObject::getName);
-  }
-
-  public int getFrontId() {
-    int frontId;
-    Step previousStep = getPrimaryInputStep();
-    if (previousStep == null)
-      frontId = 1;
-    else {
-      frontId = previousStep.getFrontId();
-      frontId++;
-    }
-    return frontId;
-  }
-
-  @Override
-  public String toString() {
-    return _stepId + " (" + getPrimaryInputStepId() + ", " + getSecondaryInputStepId() + ")";
-  }
-
-  public boolean isUncollapsible() {
-    // if the step hasn't been collapsed, it cannot be uncollapsed.
-    if (!_isCollapsible)
-      return false;
-
-    // if the step is a combined step, it cannot be uncollapsed
-    if (isCombined())
-      return false;
-
-    return true;
-  }
-
-  public Exception getException() {
-    return _exception;
-  }
-
-  public void setException(Exception ex) {
-    _exception = ex;
+    return findAnswerParam(1);
   }
 
   public boolean getHasCompleteAnalyses() throws WdkModelException {
@@ -900,17 +685,8 @@ public class Step implements Validateable<Step> {
     return _strategy;
   }
 
-  public boolean hasAnswerParams() {
-    return hasValidQuestion() &&
-        _answerSpec.getQuestion().getQuery().getAnswerParamCount() > 0;
-  }
-
-  static String getVerificationPrefix() {
-    return "[IP " + MDCUtil.getIpAddress() + " requested page from " + MDCUtil.getRequestedDomain() + "] ";
-  }
-
   public boolean hasValidQuestion() {
-    return _answerSpec.getQuestion() != null;
+    return _answerSpec.hasValidQuestion();
   }
 
   public AnswerSpec getAnswerSpec() {
@@ -924,6 +700,7 @@ public class Step implements Validateable<Step> {
 
   public StepContainer getContainer() {
     return _strategy
+        // must cast to send empty container as default
         .map(str -> (StepContainer)str)
         .orElse(StepContainer.emptyContainer());
   }

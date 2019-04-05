@@ -31,7 +31,6 @@ import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
@@ -406,7 +405,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
         () -> new WdkRuntimeException("Root step ID " + _rootStepId + " no longer present in strategy."));
   }
 
-  public Long getStrategyId() {
+  public long getStrategyId() {
     return _strategyId;
   }
 
@@ -417,40 +416,19 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     return _createdTime;
   }
 
-  public List<Step> getMainBranch() {
-    return getRootStep().getMainBranch();
-  }
-
-  public int getLength() {
-    return getRootStep().getLength();
+  public long getLeafAndTransformStepCount() {
+    return getAllSteps().stream()
+        .filter(step -> step.hasValidQuestion() &&
+            step.getAnswerSpec().getQuestion().getQuery().getAnswerParamCount() < 2)
+        .collect(Collectors.counting());
   }
 
   public long getRootStepId() {
     return _rootStepId;
   }
 
-  /**
-   * @param overwrite
-   *          if true, it will overwrite the strategy even if it's already saved; if false, we will create a
-   *          new unsaved copy if the strategy is already saved.
-   *
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public Strategy update(boolean overwrite) throws WdkModelException, WdkUserException {
-    return _wdkModel.getStepFactory().updateStrategy(this, overwrite);
-  }
-
   public Optional<RecordClass> getRecordClass() {
     return getRootStep().getRecordClass();
-  }
-
-  public Step getFirstStep() {
-    Step step = getRootStep();
-    while (step.getPrimaryInputStep() != null) {
-      step = step.getPrimaryInputStep();
-    }
-    return step;
   }
 
   /**
@@ -537,20 +515,12 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     return _description;
   }
 
-
   public int getResultSize() {
-    // FIXME: could root step really be null?  I think if root step is deleted, strategy id deleted?
-    return (getRootStep() == null ? 0 : defaultOnException(() -> getRootStep().getResultSize(), 0));
+    return defaultOnException(() -> getRootStep().getResultSize(), 0);
   }
 
-  public Integer getEstimatedSize() {
-    // FIXME: could root step really be null?  I think if root step is deleted, strategy id deleted?
-    int latestStepEstimateSize = getRootStep() == null ? 0 : getRootStep().getEstimatedSize();
-    return (latestStepEstimateSize == Step.RESET_SIZE_FLAG ? null : latestStepEstimateSize);
-  }
-
-  public int getNumSteps() {
-    return _stepMap.size();
+  public int getEstimatedSize() {
+    return getRootStep().getEstimatedSize();
   }
 
   /**
@@ -591,4 +561,8 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     }
   }
 
+  public static String createSignature(String projectId, long userId, long strategyId) {
+    String content = projectId + "_" + userId + "_" + strategyId + "_6276406938881110742";
+    return EncryptionUtil.encrypt(content, true);
+  }
 }

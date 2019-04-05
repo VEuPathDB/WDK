@@ -42,6 +42,9 @@
     "hasCompleteStepAnalyses": {
       "type": "boolean"
     },
+    "isFiltered": {
+      "type": "boolean"
+    },
     "recordClassName": {
       "type": "string"
     },

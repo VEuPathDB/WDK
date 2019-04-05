@@ -96,7 +96,7 @@ public class StrategyAnalysis {
   private static String getStrategyText(Collection<Strategy> strategies) {
     StringBuilder sb = new StringBuilder();
     for (Strategy strat : strategies) {
-      sb.append(strat.getStrategyId() + " has " + strat.getNumSteps() + " steps.");
+      sb.append(strat.getStrategyId() + " has " + strat.getAllSteps().size() + " steps.");
       if (!strat.isValid()) {
         sb.append(" Invalid because:").append(NL);
         for (Step step : strat.getAllSteps()) {

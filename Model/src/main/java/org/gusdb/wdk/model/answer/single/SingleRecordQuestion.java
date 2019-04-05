@@ -41,16 +41,6 @@ public class SingleRecordQuestion extends Question {
   }
 
   @Override
-  public boolean isTransform() {
-    return false;
-  }
-
-  @Override
-  public boolean isCombined() {
-    return false;
-  }
-
-  @Override
   public boolean isBoolean() {
     return false;
   }

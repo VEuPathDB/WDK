@@ -24,7 +24,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.Named.NamedObject;
-import org.gusdb.fgputil.db.SqlColumnType;
+import org.gusdb.fgputil.db.DbColumnType;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.runner.SQLRunner;
@@ -66,7 +66,6 @@ import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.AttributeList;
 import org.gusdb.wdk.model.question.CategoryList;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
@@ -1028,7 +1027,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
               " attribute query column '" + columnName +
               "'s corresponding attribute field is not a column attributeField.");
         }
-        SqlColumnType type = SqlColumnType.getFromSqlType(meta.getColumnType(i));
+        DbColumnType type = DbColumnType.getFromSqlType(meta.getColumnType(i));
         ((ColumnAttributeField)field).setSqlColumnType(type);
       }
     }
@@ -1643,24 +1642,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     questionName += getFullName().replace('.', '_');
     questionName += BasketFactory.SNAPSHOT_BASKET_QUESTION_SUFFIX;
     return (Question) _wdkModel.resolveReference(questionName);
-  }
-
-  public Question[] getTransformQuestions(boolean allowTypeChange) {
-    List<Question> list = new ArrayList<Question>();
-    for (QuestionSet questionSet : _wdkModel.getAllQuestionSets()) {
-      for (Question question : questionSet.getQuestions()) {
-        if (!question.getQuery().isTransform())
-          continue;
-        if (question.getTransformParams(this).length == 0)
-          continue;
-        String outType = question.getRecordClass().getFullName();
-        if (allowTypeChange || this.getFullName().equals(outType))
-          list.add(question);
-      }
-    }
-    Question[] array = new Question[list.size()];
-    list.toArray(array);
-    return array;
   }
 
   /**

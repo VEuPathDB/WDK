@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.SortDirection;
-import org.gusdb.fgputil.db.SqlColumnType;
+import org.gusdb.fgputil.db.DbColumnType;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -59,8 +59,8 @@ public abstract class DerivedAttributeField extends AttributeField {
   }
 
   @Override
-  public Optional<SqlColumnType> getSqlColumnType() {
-    return Optional.of(SqlColumnType.STRING);
+  public Optional<DbColumnType> getSqlColumnType() {
+    return Optional.of(DbColumnType.STRING);
   }
 
   protected String excludeModelText(List<WdkModelText> texts, String projectId,
