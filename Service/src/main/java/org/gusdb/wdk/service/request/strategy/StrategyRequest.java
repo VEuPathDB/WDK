@@ -182,7 +182,7 @@ public class StrategyRequest {
               .map(NamedObject::getName)
               .orElseThrow(() -> new DataValidationException(
                   "Step " + stepId + " does not allow a primary input step.")),
-            prim.getString(JsonKeys.ID)
+            Long.toString(prim.getLong(JsonKeys.STEP_ID))
           );
         next.add(prim);
       }
@@ -195,8 +195,8 @@ public class StrategyRequest {
               .map(NamedObject::getName)
               .orElseThrow(() -> new DataValidationException(
                 "Step " + stepId + " does not allow a secondary input step.")),
-            sec.getString(JsonKeys.ID)
-          );
+            Long.toString(sec.getLong(JsonKeys.STEP_ID))
+           );
         next.add(sec);
       }
 

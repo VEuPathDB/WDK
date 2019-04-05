@@ -1,6 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema",
-  "definitions": {
+  "type": "object",
+  "additionalProperties": false,
+  "definitions": { 
     "step": {
       "type": "object",
       "properties": {
@@ -14,12 +16,19 @@
           "$ref": "#/definitions/step"
         }
       },
-	"required": [
-          "stepId"
-	],
-        "additionalProperties": false
-      }
-    },
-  "additionalProperties": false,
-  "$ref": "#/definitions/step"
+      "required": [
+        "stepId"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "stepTree": {
+      "$ref": "#/definitions/step"
+    }
+  },
+  "required": [
+    "stepTree"
+  ]
 }
+
