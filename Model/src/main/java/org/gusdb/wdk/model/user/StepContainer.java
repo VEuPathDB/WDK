@@ -22,7 +22,10 @@ public interface StepContainer {
   }
 
   static StepSearch parentOf(long stepId) {
-    return new StepSearch(step -> step.getSecondaryInputStepId() == stepId || step.getPrimaryInputStepId() == stepId, " that is the parent of " + stepId);
+    return new StepSearch(
+        step -> step.getPrimaryInputStep().map(Step::getStepId).filter(id -> id == stepId).isPresent() ||
+                step.getSecondaryInputStep().map(Step::getStepId).filter(id -> id == stepId).isPresent(),
+        " that is the parent of " + stepId);
   }
 
   static StepContainer emptyContainer() {

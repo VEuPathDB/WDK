@@ -4,13 +4,13 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.gusdb.fgputil.MapBuilder;
-import org.gusdb.fgputil.db.SqlColumnType;
+import org.gusdb.fgputil.db.DbColumnType;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 
 public abstract class ColumnAttributeField extends AttributeField {
 
-  private Optional<SqlColumnType> _sqlType = Optional.empty();
+  private Optional<DbColumnType> _sqlType = Optional.empty();
 
   @Override
   public Map<String, ColumnAttributeField> getColumnAttributeFields() {
@@ -18,7 +18,7 @@ public abstract class ColumnAttributeField extends AttributeField {
   }
 
   @RngUndefined
-  public void setSqlColumnType(SqlColumnType type) throws WdkModelException {
+  public void setSqlColumnType(DbColumnType type) throws WdkModelException {
     if (_sqlType.isPresent() && !_sqlType.get().equals(type)) {
       throw new WdkModelException("Each field can only be assigned a single " +
           "SQL column type.  This method was called with " + _sqlType.get() +
@@ -28,7 +28,7 @@ public abstract class ColumnAttributeField extends AttributeField {
   }
 
   @Override
-  public Optional<SqlColumnType> getSqlColumnType() {
+  public Optional<DbColumnType> getSqlColumnType() {
     return _sqlType;
   }
 }

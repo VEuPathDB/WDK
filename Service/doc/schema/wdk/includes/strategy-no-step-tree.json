@@ -44,6 +44,9 @@
     },
     "estimatedSize": {
       "type": "integer"
+    },
+    "leafAndTransformStepCount": {
+      "type": "integer"
     }
   },
   "required": [

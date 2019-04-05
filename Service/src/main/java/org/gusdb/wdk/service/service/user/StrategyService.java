@@ -76,7 +76,8 @@ public class StrategyService extends UserService {
   @OutSchema("wdk.users.strategies.get-response")
   public JSONArray getStrategies() throws WdkModelException {
     return StrategyFormatter.getStrategiesJson(getWdkModel().getStepFactory()
-      .getStrategies(getUserBundle(Access.PRIVATE).getSessionUser().getUserId(), false, false));
+      .getStrategies(getUserBundle(Access.PRIVATE).getSessionUser().getUserId(),
+          ValidationLevel.SYNTACTIC).values());
   }
 
   @POST
@@ -295,8 +296,10 @@ public class StrategyService extends UserService {
   private Strategy createNewStrategy(User user, StepFactory stepFactory, JSONObject json)
       throws WdkModelException, DataValidationException, InvalidStrategyStructureException {
     StrategyRequest strategyRequest = StrategyRequest.createFromJson(Optional.empty(), json, stepFactory);
+    long strategyId = stepFactory.getNewStrategyId();
+    String signature = Strategy.createSignature(getWdkModel().getProjectId(), user.getUserId(), strategyId);
 
-    RunnableObj<Strategy> strategy = Strategy.builder(getWdkModel(), user.getUserId(), stepFactory.getNewStrategyId())
+    RunnableObj<Strategy> strategy = Strategy.builder(getWdkModel(), user.getUserId(), strategyId)
       .addSteps(strategyRequest.getSteps())
       .setRootStepId(strategyRequest.getRootStepId())
       .setName(strategyRequest.getName())
@@ -304,6 +307,7 @@ public class StrategyService extends UserService {
       .setSaved(strategyRequest.isSaved())
       .setDescription(strategyRequest.getDescription())
       .setIsPublic(strategyRequest.isPublic())
+      .setSignature(signature)
       .build(new UserCache(user), ValidationLevel.RUNNABLE)
       .getRunnable()
       .getOrThrow(strat -> new DataValidationException(strat.getValidationBundle().toString()));

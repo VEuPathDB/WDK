@@ -177,6 +177,8 @@ public class JsonKeys {
   public static final String CREATED_TIME = "createdTime";
   public static final String LAST_RUN_TIME = "lastRunTime";
   public static final String DISPLAY_PREFS = "displayPrefs";
+  public static final String IS_FILTERED = "isFiltered";
+  public static final String LEAF_AND_TRANSFORM_STEP_COUNT = "leafAndTransformStepCount";
 
   // step analysis keys
   public static final String ANALYSIS_ID = "analysisId"; // TODO convert to simply ID

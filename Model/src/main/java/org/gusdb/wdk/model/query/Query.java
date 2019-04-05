@@ -378,17 +378,10 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
 
-    if (_resolved)
-      return;
+    if (_resolved) return;
     _resolved = true;
 
     super.resolveReferences(wdkModel);
-
-    // FIXME - this cause problems with some params, need to investigate.
-    // comment out temporarily
-    // apply the default values to depended params
-    // Map<String, String> valueStub = new LinkedHashMap<String, String>();
-    // resolveDependedParams(valueStub)
 
     // resolve columns
     for (Column column : columnMap.values()) {
@@ -403,7 +396,7 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
 
     // if the query is a transform, it has to return weight column.
     // this applies to both explicit transform and filter queries.
-    if (isTransform()) {
+    if (getAnswerParamCount() == 1) {
       if (!columnMap.containsKey(Utilities.COLUMN_WEIGHT))
         throw new WdkModelException("Transform query [" + getFullName() + "] doesn't define the required " +
             Utilities.COLUMN_WEIGHT + " column.");
@@ -430,19 +423,8 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     }
   }
 
-  /**
-   * @return the combined
-   */
-  public boolean isCombined() {
-    return (getAnswerParamCount() > 0);
-  }
-
   public boolean isBoolean() {
     return (this instanceof BooleanQuery);
-  }
-
-  public boolean isTransform() {
-    return (getAnswerParamCount() == 1);
   }
 
   public int getAnswerParamCount() {

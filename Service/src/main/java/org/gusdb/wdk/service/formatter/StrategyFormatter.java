@@ -3,12 +3,12 @@ package org.gusdb.wdk.service.formatter;
 import static org.gusdb.fgputil.functional.Functions.rSwallow;
 import static org.gusdb.fgputil.functional.Functions.reduce;
 
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Step;
@@ -19,7 +19,7 @@ import org.json.JSONObject;
 
 public class StrategyFormatter {
 
-  public static JSONArray getStrategiesJson(List<Strategy> strategies) {
+  public static JSONArray getStrategiesJson(Collection<Strategy> strategies) {
     return reduce(strategies, rSwallow(
         (strategiesJson, strategy) -> strategiesJson.put(getListingStrategyJson(strategy))
     ), new JSONArray());
@@ -34,13 +34,14 @@ public class StrategyFormatter {
         .put(JsonKeys.LATEST_STEP_ID, strategy.getRootStepId())
         .put(JsonKeys.RECORD_CLASS_NAME, strategy.getRecordClass().map(NamedObject::getFullName).orElse(null))
         .put(JsonKeys.SIGNATURE, strategy.getSignature())
-      .put(JsonKeys.LAST_MODIFIED, FormatUtil.formatDateTime(strategy.getLastModifiedTime()))
+        .put(JsonKeys.LAST_MODIFIED, FormatUtil.formatDateTime(strategy.getLastModifiedTime()))
         .put(JsonKeys.IS_PUBLIC, strategy.isPublic())
         .put(JsonKeys.IS_SAVED, strategy.isSaved())
         .put(JsonKeys.IS_VALID, strategy.isValid())
         .put(JsonKeys.IS_DELETED, strategy.isDeleted())
         .put(JsonKeys.ORGANIZATION, strategy.getUser().getProfileProperties().get("organization"))
-        .put(JsonKeys.ESTIMATED_SIZE, strategy.getEstimatedSize());
+        .put(JsonKeys.ESTIMATED_SIZE, strategy.getEstimatedSize())
+        .put(JsonKeys.LEAF_AND_TRANSFORM_STEP_COUNT, strategy.getLeafAndTransformStepCount());
   }
 
   public static JSONObject getDetailedStrategyJson(Strategy strategy) throws WdkModelException, JSONException {

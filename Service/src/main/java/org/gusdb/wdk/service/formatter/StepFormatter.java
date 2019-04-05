@@ -2,7 +2,6 @@ package org.gusdb.wdk.service.formatter;
 
 import static org.gusdb.wdk.service.formatter.ValidationFormatter.getValidationBundleJson;
 
-import java.util.Optional;
 import java.util.Set;
 
 import org.gusdb.fgputil.FormatUtil;
@@ -71,6 +70,7 @@ public class StepFormatter {
         .put(JsonKeys.BASE_CUSTOM_NAME, step.getBaseCustomName())
         .put(JsonKeys.IS_COLLAPSIBLE, step.isCollapsible())
         .put(JsonKeys.COLLAPSED_NAME, step.getCollapsedName())
+        .put(JsonKeys.IS_FILTERED, step.isFiltered())
         .put(JsonKeys.DESCRIPTION, step.getDescription())
         .put(JsonKeys.OWNER_ID, step.getUser().getUserId())
         .put(JsonKeys.STRATEGY_ID, JsonUtil.convertNulls(step.getStrategyId().orElse(null)))
@@ -110,9 +110,9 @@ public class StepFormatter {
     final JSONObject out = new JSONObject()
       .put(JsonKeys.STEP_ID, step.getStepId());
 
-    Optional.ofNullable(step.getPrimaryInputStep())
+    step.getPrimaryInputStep()
       .ifPresent(s -> out.put(JsonKeys.PRIMARY_INPUT_STEP, formatAsStepTree(s, accumulatedSteps)));
-    Optional.ofNullable(step.getSecondaryInputStep())
+    step.getSecondaryInputStep()
       .ifPresent(s -> out.put(JsonKeys.SECONDARY_INPUT_STEP, formatAsStepTree(s, accumulatedSteps)));
 
     return out;

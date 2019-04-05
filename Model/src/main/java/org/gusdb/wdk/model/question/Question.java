@@ -991,22 +991,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     return (_shortDisplayName == null) ? getDisplayName() : _shortDisplayName;
   }
 
-  public AnswerParam[] getTransformParams(RecordClass recordClass) {
-    List<AnswerParam> list = new ArrayList<AnswerParam>();
-    String rcName = recordClass.getFullName();
-    for (Param param : _query.getParams()) {
-      if (param instanceof AnswerParam) {
-        AnswerParam answerParam = (AnswerParam) param;
-        Map<String, RecordClass> recordClasses = answerParam.getAllowedRecordClasses();
-        if (recordClasses.containsKey(rcName))
-          list.add(answerParam);
-      }
-    }
-    AnswerParam[] array = new AnswerParam[list.size()];
-    list.toArray(array);
-    return array;
-  }
-
   public void addParamRef(ParamReference paramRef) {
     _paramRefs.add(paramRef);
   }
@@ -1188,14 +1172,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
    */
   public void setDefaultSummaryAttributeNames(String[] names) {
     _defaultSummaryAttributeNames = names;
-  }
-
-  public boolean isTransform() {
-    return getQuery().isTransform();
-  }
-
-  public boolean isCombined() {
-    return getQuery().isCombined();
   }
 
   public boolean isBoolean() {

@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Queue;
 
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -146,8 +147,8 @@ public class StrategyRequest {
 
     while(!next.isEmpty()) {
 
-      final JSONObject cur = next.poll();
-      final long stepId = cur.getLong(JsonKeys.STEP_ID);
+      final JSONObject currentStepJson = next.poll();
+      final long stepId = currentStepJson.getLong(JsonKeys.STEP_ID);
 
       // try to find step in the existing strategy if present
       Optional<Step> stepOpt = existingStrategy
@@ -170,11 +171,12 @@ public class StrategyRequest {
 
       final StepBuilder builder = Step.builder(step).removeStrategy();
 
-      if (cur.has(JsonKeys.PRIMARY_INPUT_STEP)) {
-        final JSONObject prim = cur.getJSONObject(JsonKeys.PRIMARY_INPUT_STEP);
+      if (currentStepJson.has(JsonKeys.PRIMARY_INPUT_STEP)) {
+        final JSONObject prim = currentStepJson.getJSONObject(JsonKeys.PRIMARY_INPUT_STEP);
         builder.getAnswerSpec()
           .setParamValue(
-            step.getPrimaryInputStepParamName()
+            step.getPrimaryInputStepParam()
+              .map(NamedObject::getName)
               .orElseThrow(() -> new DataValidationException(
                   "Step " + stepId + " does not allow a primary input step.")),
             prim.getString(JsonKeys.ID)
@@ -182,11 +184,12 @@ public class StrategyRequest {
         next.add(prim);
       }
 
-      if (cur.has(JsonKeys.SECONDARY_INPUT_STEP)) {
-        final JSONObject sec = cur.getJSONObject(JsonKeys.SECONDARY_INPUT_STEP);
+      if (currentStepJson.has(JsonKeys.SECONDARY_INPUT_STEP)) {
+        final JSONObject sec = currentStepJson.getJSONObject(JsonKeys.SECONDARY_INPUT_STEP);
         builder.getAnswerSpec()
           .setParamValue(
-            step.getSecondaryInputStepParamName()
+            step.getSecondaryInputStepParam()
+              .map(NamedObject::getName)
               .orElseThrow(() -> new DataValidationException(
                 "Step " + stepId + " does not allow a secondary input step.")),
             sec.getString(JsonKeys.ID)
