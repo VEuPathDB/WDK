@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-import org.gusdb.fgputil.db.DbColumnType;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 
 /**
@@ -50,7 +50,7 @@ public class XmlAttributeField extends AttributeField {
     }
 
     @Override
-    public Optional<DbColumnType> getSqlColumnType() {
+    public Optional<AttributeFieldDataType> getDataType() {
       return Optional.empty();
     }
 }
