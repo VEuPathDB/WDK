@@ -114,11 +114,6 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     checkPositiveIntegerIfPresent(IFRAME_LENGTH_PROP_KEY);
     checkBooleanIfPresent(ADD_HEADER_PROP_KEY);
   }
-
-  @Override
-  public Object getResultViewModel() throws WdkModelException {
-    return createResultViewModel();
-  }
   
   @Override
   public JSONObject getResultViewModelJson() throws WdkModelException {
@@ -130,11 +125,6 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
         getProperty(EXTERNAL_APP_URL_PROP_KEY),
         chooseSize(IFRAME_WIDTH_PROP_KEY, DEFAULT_IFRAME_WIDTH_PX),
         chooseSize(IFRAME_LENGTH_PROP_KEY, DEFAULT_IFRAME_HEIGHT_PX));
-  }
-  
-  @Override
-  public Object getFormViewModel() throws WdkModelException, WdkUserException {
-    return null;
   }
    
   @Override

@@ -31,29 +31,11 @@ public interface StepAnalyzer {
   void setWdkModel(WdkModel wdkModel);
 
   /**
-   * A MVC model object to be made available to the JSP rendering the form for
-   * this plugin.  It we be available to your JSP page as requestScope.viewModel.
-   *
-   * @return model object for form rendering
-   * @throws WdkUserException
-   */
-  Object getFormViewModel() throws WdkModelException, WdkUserException;
-
-  /**
    * Get JSON containing the information needed to render a result of this StepAnalyzer
    * @return
    * @throws WdkModelException
    */
   JSONObject getResultViewModelJson() throws WdkModelException;
-
-  /**
-   * A MVC model object to be made available to the JSP rendering the results for
-   * this plugin.  It we be available to your JSP page as requestScope.viewModel.
-   *
-   * @return model object for results rendering
-   * @throws WdkModelException
-   */
-  Object getResultViewModel() throws WdkModelException;
 
   /**
    * Get JSON containing the information needed to render a parameter input form for this StepAnalyzer
