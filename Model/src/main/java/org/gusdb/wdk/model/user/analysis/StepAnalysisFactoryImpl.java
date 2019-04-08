@@ -150,11 +150,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   @Override
-  public Object getFormViewModel(StepAnalysisInstance instance) throws WdkModelException, WdkUserException {
-    return getConfiguredAnalyzer(instance, _fileStore).getFormViewModel();
-  }
-
-  @Override
   public ValidationBundle validateFormParams(StepAnalysisInstance instance)
       throws WdkModelException, WdkUserException {
     // this is a unique configuration; validate parameters
