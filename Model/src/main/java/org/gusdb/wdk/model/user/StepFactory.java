@@ -28,8 +28,6 @@ import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
-import org.gusdb.fgputil.db.platform.Oracle;
-import org.gusdb.fgputil.db.platform.PostgreSQL;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.BasicArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner;
@@ -1134,57 +1132,6 @@ public class StepFactory {
         Types.BIGINT
       }
     );
-  }
-
-  /**
-   * Generates an SQL that will return the step and all the steps along the path
-   * back to the root.
-   *
-   * @param stepId ID of the step to select.
-   *
-   * @return an SQL that returns a step_id column.
-   */
-  private String selectStepAndParents(long stepId) throws WdkModelException {
-    String sql;
-    String stepTable = _userSchema + "steps";
-    // TODO: move these SQLs to DBPlatform
-    if (_userDbPlatform instanceof Oracle) {
-      sql = "SELECT step_id FROM " + stepTable + " START WITH step_id = " + stepId +
-          "  CONNECT BY (PRIOR step_id = left_child_id OR PRIOR step_id = right_child_id)";
-    }
-    else if (_userDbPlatform instanceof PostgreSQL) {
-      sql = "WITH RECURSIVE parent_steps (step_id, left_child_id, right_child_id) AS (" +
-          "      SELECT step_id, left_child_id, right_child_id FROM   " + stepTable +
-          "      WHERE step_id = " + stepId +
-          "    UNION ALL                                                                    " +
-          "      SELECT s.step_id, s.left_child_id, s.right_child_id                        " +
-          "      FROM " + stepTable + " s, parent_steps ps " +
-          "      WHERE s.left_child_id = ps.step_id OR s.right_child_id = ps.step_id)" +
-          "  SELECT step_id FROM parent_steps";
-    }
-    else {
-      throw new WdkModelException("Unsupported platform type: " + _userDbPlatform.getClass().getName());
-    }
-    return sql;
-  }
-
-  /**
-   * Given a step, identify it and all downstream steps and set the estimate
-   * size of each to -1.
-   *
-   * @param step step to start from
-   */
-  public int resetEstimateSizeForThisAndDownstreamSteps(Step step)
-      throws WdkModelException {
-    String sql = "UPDATE " + _userSchema + TABLE_STEP + "\n" +
-        "SET " + COLUMN_ESTIMATE_SIZE + " = " + UNKNOWN_SIZE + "\n" +
-        "WHERE step_id IN (" + selectStepAndParents(step.getStepId()) + ")";
-
-    try {
-      return SqlUtils.executeUpdate(_userDbDs, sql, "wdk-update-estimate-size-on-steps");
-    } catch (SQLException ex) {
-      throw new WdkModelException(ex);
-    }
   }
 
   public void updateStrategyAndOtherSteps(Strategy newStrat, List<Step> orphanedSteps) throws WdkModelException {
