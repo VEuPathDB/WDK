@@ -21,13 +21,13 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
-import org.gusdb.fgputil.db.DatabaseResultStream;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
+import org.gusdb.fgputil.db.stream.BlobValueInputStream;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -397,7 +397,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
       rs = stmt.executeQuery();
       if (rs.next()) {
         // successfully retrieved properties; underlying connection will be closed by caller
-        return new DatabaseResultStream(conn, stmt, rs, "PROPERTIES");
+        return new BlobValueInputStream(conn, stmt, rs, "PROPERTIES");
       }
       // could not find row for this analysis ID; close resources and return null
       SqlUtils.closeQuietly(rs, stmt, conn);
