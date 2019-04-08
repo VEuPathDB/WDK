@@ -14,7 +14,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
-import org.json.JSONObject;
 
 /**
  * Use this as a super class if your analysis runs as a stand-alone unix command.
