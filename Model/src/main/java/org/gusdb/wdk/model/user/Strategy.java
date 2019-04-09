@@ -187,6 +187,9 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
 
     public Strategy build(UserCache userCache, ValidationLevel validationLevel)
         throws InvalidStrategyStructureException {
+      if (_rootStepId == 0) {
+        throw new InvalidStrategyStructureException("Root step ID is required but has not been set.");
+      }
       return new Strategy(this, userCache.get(_userId), validationLevel);
     }
 
