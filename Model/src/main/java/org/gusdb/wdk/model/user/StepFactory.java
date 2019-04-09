@@ -387,14 +387,14 @@ public class StepFactory {
       throws WdkModelException {
 
     // copy the step tree
-    Collection<StepBuilder> stepBuilders = copyStepTree(user,
-        strategy.getRootStep()).toMap().values();
+    Map<Long,StepBuilder> stepBuilders = copyStepTree(user, strategy.getRootStep()).toMap();
 
     // create stub strategy- will not be saved to DB; used only to create and
     // validate steps
     Strategy stratStub = Functions.mapException(
         () -> Strategy.builder(user.getWdkModel(), user.getUserId(), 0)
-          .addSteps(stepBuilders)
+          .setRootStepId(stepBuilders.get(strategy.getRootStepId()).getStepId())
+          .addSteps(stepBuilders.values())
           .build(new UserCache(user), ValidationLevel.NONE),
           // tree structure should already have been validated when creating the passed in strategy
           e -> new WdkModelException(e));
@@ -402,7 +402,7 @@ public class StepFactory {
     // now that strategy is created (which will be returned), clean up steps for
     // saving to DB
     List<Step> orphanSteps = new ArrayList<>();
-    for (StepBuilder step : stepBuilders) {
+    for (StepBuilder step : stepBuilders.values()) {
       step.removeStrategy();
       orphanSteps.add(step.build(new UserCache(user), ValidationLevel.NONE, Optional.empty()));
     }
@@ -444,6 +444,7 @@ public class StepFactory {
     Strategy newStrategy = Functions.mapException(() ->
       Strategy
         .builder(wdkModel, user.getUserId(), strategyId)
+        .setRootStepId(newStepMap.get(oldStrategy.getRootStepId()).getStepId())
         .setCreatedTime(new Date())
         .setDeleted(false)
         .setDescription(oldStrategy.getDescription())
