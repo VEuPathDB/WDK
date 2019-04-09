@@ -248,17 +248,18 @@ public class StrategyService extends UserService {
   @OutSchema("wdk.users.strategies.id.duplicated-step-tree-request")
   public JSONObject duplicateAsBranch(@PathParam(ID_PARAM) long stratId)
       throws WdkModelException {
-    
+
     getNotDeletedStrategyForCurrentUser(stratId, ValidationLevel.NONE); // confirm it is not deleted
 
-    JSONObject json = new JSONObject();
-    json.put("StepTree", StepFormatter.formatAsStepTree(
+    return new JSONObject().put(JsonKeys.STEP_TREE,
+      StepFormatter.formatAsStepTree(
         getWdkModel().getStepFactory().copyStrategyToBranch(
-            getSessionUser(),
-            getStrategyForCurrentUser(stratId, ValidationLevel.NONE)
-    ),
-        new HashSet<Step>()));  // we don't need to consume the list of step IDs found in the tree
-    return json;
+          getSessionUser(),
+          getStrategyForCurrentUser(stratId, ValidationLevel.NONE)
+        ),
+        new HashSet<Step>() // we don't need to consume the list of step IDs found in the tree
+      )
+    );
   }
 
   // get a strategy, but throw not found if it is already deleted.
