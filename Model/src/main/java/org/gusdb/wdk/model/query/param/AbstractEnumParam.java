@@ -67,7 +67,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   private static final Logger LOG = Logger.getLogger(AbstractEnumParam.class);
 
-  private static final boolean INVALID_DEFAULT_IS_FATAL = true;
+  private static final boolean INVALID_DEFAULT_IS_FATAL = false;
 
   public static final String DISPLAY_SELECT = "select";
   public static final String DISPLAY_LISTBOX = "listBox"; // deprecated; use select
