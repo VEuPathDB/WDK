@@ -1056,7 +1056,7 @@ public class StepFactory {
         "  AND " + COLUMN_NAME       + " LIKE ?\n" +
         "  AND " + COLUMN_IS_SAVED   + "= ?\n" +
         "  AND " + COLUMN_IS_DELETED + "= ?\n" +
-        "ORDER BY COLUMN_NAME DESC";
+        "ORDER BY " + COLUMN_NAME + " DESC";
 
     final int boolType = _userDbPlatform.getBooleanType();
 
