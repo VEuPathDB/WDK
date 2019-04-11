@@ -45,6 +45,7 @@ import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
@@ -1076,16 +1077,17 @@ public class StepFactory {
             boolType
         },
         rs -> {
-          int index = 1;
+          int greatestIndex = 1;
           while (rs.next()) {
-            int res = parseStrategyNameIndex(rs.getString(COLUMN_NAME), oldName)
+            int parsedIndex = parseStrategyNameIndex(rs.getString(COLUMN_NAME), oldName)
                 .orElse(0);
-            if (res > index)
-              index = res;
+            if (parsedIndex > greatestIndex) {
+              greatestIndex = parsedIndex;
+            }
           }
 
-          return index > 1
-              ? String.format("%s (%d)", oldName, index)
+          return greatestIndex > 1
+              ? String.format("%s (%d)", oldName, greatestIndex)
               : oldName;
         }
     );
@@ -1097,19 +1099,36 @@ public class StepFactory {
    * @param test    String to check for appended counter
    * @param against Original strategy name
    *
-   * @return If a counter value is present, an option wrapping that int.
-   *         If no counter is present, an option of none.
+   * @return If a counter value is present and in the correct format, an option wrapping that int.
+   *         If no counter is present or is misformatted, an option of none.
+   * @throws  
    */
-  static Optional<Integer> parseStrategyNameIndex(String test, String against) {
-    final int len = against.trim().length();
-    final String clean = test.trim();
-
-    try {
-      return Optional.of(Integer.parseInt(clean.substring(len + 1,
-          clean.length() - 2)));
-    } catch (NumberFormatException e) {
+  private static Optional<Integer> parseStrategyNameIndex(String test, String against) {
+    test = test.trim();
+    against = against.trim();
+    if (!test.startsWith(against)) {
+      // bad SQL above
+      throw new WdkRuntimeException("Incoming name '" + test +
+          "' does not start with original strategy name '" + against + "'.");
+    }
+    if (test.length() == against.length()) {
+      // same string
       return Optional.empty();
     }
+    test = test.substring(against.length()).trim();
+
+    // see if remaining string has parens in the right place
+    if (test.startsWith("(") && test.endsWith(")")) {
+      test = test.substring(1, test.length() - 1).trim();
+      try {
+        return Optional.of(Integer.parseInt(test));
+      }
+      catch (NumberFormatException e) {
+        return Optional.empty();
+      }
+    }
+    // unable to parse number
+    return Optional.empty();
   }
 
   void updateStrategyViewTime(int strategyId) {
