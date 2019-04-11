@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -262,7 +263,9 @@ public class StrategyLoader {
   public Optional<Step> getStepById(long stepId) throws WdkModelException {
     String sql = prepareSql(FIND_STEPS_SQL
         .replace(SEARCH_CONDITIONS_MACRO, "and st." + COLUMN_STEP_ID + " = " + stepId));
-    return doSearch(sql).findFirstOverallStep(st -> st.getStepId() == stepId);
+    SearchResult result = doSearch(sql);
+    LOG.info("Found following result searching for step with ID " + stepId + ": " + result);
+    return result.findFirstOverallStep(st -> st.getStepId() == stepId);
   }
 
   public Optional<Strategy> getStrategyById(long strategyId) throws WdkModelException {
@@ -430,5 +433,22 @@ public class StrategyLoader {
       }
     }
 
+    @Override
+    public String toString() {
+      return new JSONObject()
+          .put("orphanSteps", _orphanSteps.stream()
+              .map(Step::getStepId)
+              .collect(Collectors.toList()))
+          .put("strategies", _strategies.stream()
+              .map(strat -> new JSONObject()
+                  .put("id", strat.getStrategyId())
+                  .put("stepIds", strat.getAllSteps().stream()
+                      .map(Step::getStepId)
+                      .collect(Collectors.toList()))))
+          .put("malformedStrategies", _malformedStrategies.stream()
+              .map(tup -> tup.getFirst().getStrategyId())
+              .collect(Collectors.toList()))
+          .toString(2);
+    }
   }
 }
