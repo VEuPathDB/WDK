@@ -19,6 +19,7 @@ import org.gusdb.wdk.errors.ServerErrorBundle;
 import org.gusdb.wdk.errors.ErrorContext.ErrorLocation;
 import org.gusdb.wdk.errors.ErrorContext;
 import org.gusdb.wdk.events.ErrorEvent;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.service.request.exception.ConflictException;
@@ -81,7 +82,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
 
     // Some other exception that must be handled by the application; send error event
     catch (Exception other) {
-      WdkModel wdkModel = (WdkModel)context.getAttribute("wdkModel");
+      WdkModel wdkModel = (WdkModel)context.getAttribute(Utilities.WDK_MODEL_KEY);
       ErrorContext errorContext = AbstractWdkService.getErrorContext(context, req, wdkModel, ErrorLocation.WDK_SERVICE);
       LOG.error("log4j marker: " + errorContext.getLogMarker());
       Events.trigger(new ErrorEvent(new ServerErrorBundle(other), errorContext));
