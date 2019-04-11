@@ -70,24 +70,26 @@ public class StrategyLoader {
       "(" +
       "  select " + STEP_COLUMNS + ", " + VALUED_STRAT_COLUMNS +
       "  from " + USER_SCHEMA_MACRO + TABLE_STRATEGY + " sr," +
-      "       " + USER_SCHEMA_MACRO + TABLE_STEP + " st_find," +
       "       " + USER_SCHEMA_MACRO + TABLE_STEP + " st" +
-      "  where st_find." + COLUMN_STRATEGY_ID + " is not null" +
-      "    and sr." + COLUMN_STRATEGY_ID + " = st_find." + COLUMN_STRATEGY_ID +
-      "    and st." + COLUMN_STRATEGY_ID + " = st_find." + COLUMN_STRATEGY_ID +
-      "    and sr." + COLUMN_PROJECT_ID + " = '" + PROJECT_ID_MACRO + "'" +
-      "    and sr." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
-      "    and st." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
+      "  where st." + COLUMN_STRATEGY_ID + " in (" +
+      "    select distinct " + COLUMN_STRATEGY_ID +
+      "    from " + USER_SCHEMA_MACRO + TABLE_STEP + " st" +
+      "    where st." + COLUMN_STRATEGY_ID + " is not null" +
       "    " + SEARCH_CONDITIONS_MACRO +
+      "  )" +
+      "  and sr." + COLUMN_STRATEGY_ID + " = st." + COLUMN_STRATEGY_ID +
+      "  and sr." + COLUMN_PROJECT_ID + " = '" + PROJECT_ID_MACRO + "'" +
+      "  and sr." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
+      "  and st." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
       ")" +
       " union all" +
       "(" +
       "  select " + STEP_COLUMNS + ", " + NULLED_STRAT_COLUMNS +
       "  from " + USER_SCHEMA_MACRO + TABLE_STEP + " st" +
       "  where st." + COLUMN_STRATEGY_ID + " is null" +
-      "    and st." + COLUMN_PROJECT_ID + " = '" + PROJECT_ID_MACRO + "'" +
-      "    and st." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
-      "    " + SEARCH_CONDITIONS_MACRO +
+      "  and st." + COLUMN_PROJECT_ID + " = '" + PROJECT_ID_MACRO + "'" +
+      "  and st." + COLUMN_IS_DELETED + " = " + IS_DELETED_VALUE_MACRO +
+      "  " + SEARCH_CONDITIONS_MACRO +
       ")" +
       " order by " + COLUMN_STRATEGY_ID;
 
@@ -263,9 +265,7 @@ public class StrategyLoader {
   public Optional<Step> getStepById(long stepId) throws WdkModelException {
     String sql = prepareSql(FIND_STEPS_SQL
         .replace(SEARCH_CONDITIONS_MACRO, "and st." + COLUMN_STEP_ID + " = " + stepId));
-    SearchResult result = doSearch(sql);
-    LOG.info("Found following result searching for step with ID " + stepId + ": " + result);
-    return result.findFirstOverallStep(st -> st.getStepId() == stepId);
+    return doSearch(sql).findFirstOverallStep(st -> st.getStepId() == stepId);
   }
 
   public Optional<Strategy> getStrategyById(long strategyId) throws WdkModelException {
@@ -447,7 +447,9 @@ public class StrategyLoader {
                       .collect(Collectors.toList())))
               .collect(Collectors.toList()))
           .put("malformedStrategies", _malformedStrategies.stream()
-              .map(tup -> tup.getFirst().getStrategyId())
+              .map(tup -> new JSONObject()
+                  .put("id", tup.getFirst().getStrategyId())
+                  .put("problem", tup.getSecond().getMessage()))
               .collect(Collectors.toList()))
           .toString(2);
     }
