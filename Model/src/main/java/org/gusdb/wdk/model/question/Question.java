@@ -1236,7 +1236,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   }
 
   public void addIgnoredFilterFromRecordClass(String filterKey) {
-    LOG.info("QUESTION: ADDING FILTER TO IGNORE LIST: " + filterKey + " for question " + getFullName() + "\n");
+    LOG.debug("QUESTION: ADDING FILTER TO IGNORE LIST: " + filterKey + " for question " + getFullName() + "\n");
     _ignoredFiltersFromRecordClass.add(filterKey);
   }
 
@@ -1248,7 +1248,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
    * @return map of all non-view-only filters, from filter name to filter
    */
   public Map<String, Filter> getFilters() {
-    LOG.info("QUESTION: GETTING ALL FILTERs");
+    LOG.debug("QUESTION: GETTING ALL FILTERs");
     return getExclusiveFilterMap(false);
   }
 
