@@ -112,7 +112,7 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
         // replace passed filter lists with new ones that have always-on filters applied
         SimpleAnswerSpec simpleSpec = new SimpleAnswerSpec(_question, _queryInstanceSpec);
         filters = applyAlwaysOnFilters(filters, _question.getFilters(), simpleSpec);
-        viewFilters = applyAlwaysOnFilters(viewFilters, _question.getViewFilters(), simpleSpec);
+        // note: view filters unaffected; filters cannot be view-only and always-on
       }
       _legacyFilter = getAssignedLegacyFilter(validation);
       _filters = filters.buildValidated(_question, Filter.FilterType.STANDARD, validationLevel);
