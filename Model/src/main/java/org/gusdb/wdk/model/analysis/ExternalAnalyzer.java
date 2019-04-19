@@ -70,8 +70,6 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   protected static final String MODEL_XML_PROPS_FILE_NAME = "modelXml.prop";
   protected static final String LAST_RUN_FILE_NAME = "last_run";
 
-  protected static final int DEFAULT_IFRAME_WIDTH_PX = 900;
-  protected static final int DEFAULT_IFRAME_HEIGHT_PX = 450;
   protected static final boolean ADD_HEADER_BY_DEFAULT = true;
   protected static final boolean DUMP_MODEL_PROPS_BY_DEFAULT = false;
   protected static final boolean DUMP_HEADER_DISPLAY_MAP_BY_DEFAULT = false;
@@ -79,10 +77,10 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   public static class ViewModel {
 
     private String _iframeBaseUrl;
-    private final int _iframeWidth;
-    private final int _iframeHeight;
+    private final Integer _iframeWidth;
+    private final Integer _iframeHeight;
 
-    public ViewModel(String iframeBaseUrl, int width, int height) {
+    public ViewModel(String iframeBaseUrl, Integer width, Integer height) {
       _iframeBaseUrl = iframeBaseUrl;
       _iframeWidth = width;
       _iframeHeight = height;
@@ -119,12 +117,12 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   public JSONObject getResultViewModelJson() throws WdkModelException {
     return createResultViewModel().toJson();
   }
-  
+
   private ViewModel createResultViewModel() {
     return new ViewModel(
         getProperty(EXTERNAL_APP_URL_PROP_KEY),
-        chooseSize(IFRAME_WIDTH_PROP_KEY, DEFAULT_IFRAME_WIDTH_PX),
-        chooseSize(IFRAME_LENGTH_PROP_KEY, DEFAULT_IFRAME_HEIGHT_PX));
+        getPropertyAsInt(IFRAME_WIDTH_PROP_KEY),
+        getPropertyAsInt(IFRAME_LENGTH_PROP_KEY));
   }
    
   @Override
@@ -132,9 +130,10 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     return null;
   }
 
-  protected int chooseSize(String propName, int defaultValue) {
-    String prop = getProperty(propName);
-    return (prop != null && !prop.isEmpty()) ? Integer.parseInt(prop) : defaultValue;
+  protected Integer getPropertyAsInt(String propertyName) {
+    String propertyValue = getProperty(propertyName);
+    if (propertyValue == null || propertyValue.isEmpty()) return null;
+    return Integer.parseInt(propertyValue);
   }
 
   @Override
