@@ -49,7 +49,7 @@ public class QuestionComparison {
    */
   public static void main(String[] args) {
     if (args.length < 2 || args.length > 3) {
-      System.err.println("Usage: questionComparison <qa url> <prod url> <new | invalid>");
+      System.err.println("Usage: questionComparison <qa url> <prod url> <new | invalid>\nExample: questionComparison https://qa.plasmodb.org/plasmo https://plasmodb.org/plasmo invalid");
       System.exit(1);
     }
     try {
