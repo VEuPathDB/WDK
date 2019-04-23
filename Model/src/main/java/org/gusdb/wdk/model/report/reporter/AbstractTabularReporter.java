@@ -173,7 +173,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
     // print the header
     if (_includeHeader) {
       for (String title : getHeader()) {
-        writer.print("[" + title + "]");
+        writer.print(title);
         writer.print(_divider);
       }
       writer.println();
