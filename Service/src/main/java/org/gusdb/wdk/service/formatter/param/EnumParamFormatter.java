@@ -17,7 +17,7 @@ public class EnumParamFormatter extends AbstractEnumParamFormatter {
   @Override
   public <S extends ParameterContainerInstanceSpec<S>> JSONObject getJson(DisplayablyValid<S> spec) throws WdkModelException {
     EnumParamVocabInstance vocabInstance = _param.getVocabInstance(spec);
-    return getBaseJson(spec)
+    return super.getJson(spec)
         .put(JsonKeys.VOCABULARY, _param.getDisplayType().equals(AbstractEnumParam.DISPLAY_TREEBOX)
             ? getVocabTreeJson(vocabInstance)
             : getVocabArrayJson(vocabInstance));
