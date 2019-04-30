@@ -86,12 +86,13 @@ public class FileRanges {
       }
 
       // resolve end and check that it is not greater than file length
-      if (!byteRange.hasEnd()) {
+      if (!byteRange.hasEnd() || byteRange.getEnd() > fileSize - 1) {
         byteRange.setEnd(fileSize - 1);
       }
+      /* per HTTP spec, range end values greater than size of the file are fine
       else if (fileSize - 1 < byteRange.getEnd()) {
         throw new BadRequestException("End of range must be <= " + (fileSize - 1) + " for this resource.");
-      }
+      }*/
 
       // create an input stream that will only read to the end of the specified range
       fileIn = new FileChunkInputStream(filePath, byteRange);
