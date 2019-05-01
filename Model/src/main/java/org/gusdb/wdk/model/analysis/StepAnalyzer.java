@@ -92,9 +92,7 @@ public interface StepAnalyzer {
    * @param formParams form parameter values to be validated
    * @return an object encapsulating the errors, or null if no errors occurred
    * @throws WdkModelException if unable to validate values
-   * @deprecated use wdk param validation.
    */
-  @Deprecated
   default ValidationErrors validateFormParamValues(Map<String,String[]> formParams)
       throws WdkModelException {
     return null;
