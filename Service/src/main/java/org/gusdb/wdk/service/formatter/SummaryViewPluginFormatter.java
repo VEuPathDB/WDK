@@ -1,6 +1,6 @@
 package org.gusdb.wdk.service.formatter;
 
-import java.util.Collection;
+import java.util.List;
 
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.answer.SummaryView;
@@ -19,7 +19,7 @@ import org.json.JSONObject;
  */
 public class SummaryViewPluginFormatter {
 
-  public static JSONArray getSummaryViewPluginsJson(Collection<SummaryView> summaryViews) {
+  public static JSONArray getSummaryViewPluginsJson(List<SummaryView> summaryViews) {
     JSONArray summaryViewPluginsJson = new JSONArray();
     for (SummaryView summaryView : summaryViews) {
       summaryViewPluginsJson.put(getSummaryViewPluginJson(summaryView));

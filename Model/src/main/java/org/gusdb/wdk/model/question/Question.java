@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -144,7 +145,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   private Map<String, String> _sqlMacroMap = new LinkedHashMap<String, String>();
 
   private List<SummaryView> _summaryViewList = new ArrayList<>();
-  private Map<String, SummaryView> _summaryViewMap = new LinkedHashMap<>();
+  private LinkedHashMap<String, SummaryView> _summaryViewMap = new LinkedHashMap<>();
 
   private List<StepAnalysisXml> _stepAnalysisList = new ArrayList<>();
   private Map<String, StepAnalysis> _stepAnalysisMap = new LinkedHashMap<>();
@@ -999,19 +1000,48 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     _sqlMacroList.add(sqlMacro);
   }
 
-  public Map<String, SummaryView> getSummaryViews() {
-    Map<String, SummaryView> map = new LinkedHashMap<>(_summaryViewMap);
-    // get views from record
-    Map<String, SummaryView> recordMap = _recordClass.getSummaryViews();
+  private static Optional<SummaryView> findFirstDefault(Map<String,SummaryView> map) {
+    return map.values().stream().filter(SummaryView::isDefault).findFirst();
+  }
 
-    // don't override the views defined in the question
-    for (String name : recordMap.keySet()) {
-      if (!map.containsKey(name)) {
-        map.put(name, recordMap.get(name));
+  private static Iterable<Entry<String,SummaryView>> getTrimmedViews(
+      Optional<SummaryView> defaultView, Map<String,SummaryView> allViews) {
+    return () ->
+      allViews.entrySet().stream().filter(view ->
+        !defaultView.isPresent() ||
+        !defaultView.get().getName().equals(view.getKey())
+      ).iterator();
+  }
+
+  public List<SummaryView> getOrderedSummaryViews() {
+
+    // get view maps from question and parent record class
+    Map<String, SummaryView> questionViews = _summaryViewMap;
+    Map<String, SummaryView> recordClassViews = _recordClass.getSummaryViews();
+
+    // find first summary view specified as default; look in question, then recordclass
+    Optional<SummaryView> first = findFirstDefault(questionViews);
+    if (!first.isPresent()) first = findFirstDefault(recordClassViews);
+
+    // add default summary view as first element; if no default specified, first summary view will be selected
+    List<SummaryView> viewsToReturn = new ArrayList<>();
+    if (first.isPresent()) {
+      viewsToReturn.add(first.get());
+    }
+
+    // add remaining question views first
+    for (Entry<String, SummaryView> entry : getTrimmedViews(first, questionViews)) {
+      viewsToReturn.add(entry.getValue());
+    }
+
+    // add remaining record class views, careful not to override question views with the same name
+    for (Entry<String, SummaryView> entry : getTrimmedViews(first, recordClassViews)) {
+      if (!questionViews.containsKey(entry.getKey())) {
+        viewsToReturn.add(entry.getValue());
       }
     }
 
-    return map;
+    return viewsToReturn;
   }
 
   public SummaryView getSummaryView(String viewName) throws WdkUserException {
