@@ -87,7 +87,7 @@ public class UserCreationScript {
     }
   }
 
-  private static UserLine parseLine(
+  static UserLine parseLine(
       String line, List<UserPropertyName> userProps) {
     String[] tokens = line.split(TAB);
     if (tokens.length == 0 || tokens[0].trim().isEmpty()) {
