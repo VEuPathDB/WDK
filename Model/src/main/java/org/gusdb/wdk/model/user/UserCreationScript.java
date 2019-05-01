@@ -57,7 +57,7 @@ public class UserCreationScript {
       System.err.println(NL + 
           "USAGE: fgpJava " + UserCreationScript.class.getName() + " <project_id> [test]" + NL + NL +
           "This script will read tab-delimited user properties from stdin" + NL +
-          "Passed project_id value is used only to look up user-db and account-db access information" + NL +
+          "Passed project_id value is used only to look up account-db access information in gus_home" + NL +
           "If 'test' is specified as a second argument, no records will be written to the DB; " +
           "instead diagnostics will be printed to stdout" + NL);
     }
