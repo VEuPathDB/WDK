@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -70,14 +71,36 @@ public class UserCreationScript {
         UserLine parsedLine = parseLine(in.readLine(), userProps);
         if (parsedLine.shouldWriteUser()) {
           try {
-            if (testOnly) {
-              System.out.println("Would create user: " + parsedLine.getAttributesString());
+            // create or edit user
+            User user = model.getUserFactory().getUserByEmail(parsedLine.getEmail());
+            if (user == null) {
+              if (testOnly) {
+                System.out.println("Would create user: " + parsedLine.getAttributesString());
+              }
+              else {
+                // create new user and assign preferences
+                user = model.getUserFactory().createUser(
+                    parsedLine.getEmail(), parsedLine.getUserProperties(),
+                    parsedLine.getGlobalUserPrefs(), Collections.emptyMap(), false, false);
+                System.out.println("Created user with ID " + user.getUserId() + " and email " + user.getEmail());
+              }
             }
-            else { // create user
-              User user = model.getUserFactory().createUser(
-                  parsedLine.getEmail(), parsedLine.getUserProperties(),
-                  parsedLine.getGlobalUserPrefs(), Collections.emptyMap(), false, false);
-              System.out.println(user.getUserId() + TAB + user.getEmail());
+            else {
+              String message = "User with email " + user.getEmail() +
+                  " exists; %s preferences " + FormatUtil.prettyPrint(parsedLine.getGlobalUserPrefs());
+              if (testOnly) {
+                System.out.println(String.format(message, "would add"));
+              }
+              else {
+                // user exists already; simply add preferences
+                UserPreferences userPrefs = user.getPreferences();
+                for (Entry<String,String> newPref : parsedLine.getGlobalUserPrefs().entrySet()) {
+                  userPrefs.setGlobalPreference(newPref.getKey(), newPref.getValue());
+                }
+                user.setPreferences(userPrefs);
+                model.getUserFactory().savePreferences(user);
+                System.out.println(String.format(message, "adding"));
+              }
             }
           }
           catch (InvalidEmailException e) {
