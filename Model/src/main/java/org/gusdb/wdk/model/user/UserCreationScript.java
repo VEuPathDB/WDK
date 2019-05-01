@@ -6,13 +6,15 @@ import static org.gusdb.fgputil.FormatUtil.TAB;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
@@ -20,16 +22,29 @@ import org.gusdb.wdk.model.WdkModelException;
 
 public class UserCreationScript {
 
-  public static class UserLine extends ThreeTuple<Boolean, String, Map<String,String>> {
+  public static class UserLine {
 
-    public UserLine(Boolean shouldWriteUser, String email, Map<String, String> otherProps) {
-      super(shouldWriteUser, email, otherProps);
+    private final boolean _shouldWriteUser;
+    private final String _email;
+    private final Map<String,String> _globalUserPrefs;
+    private final Map<String,String> _userProperties;
+    
+    public UserLine(boolean shouldWriteUser, String email,
+        Map<String,String> globalUserPrefs, Map<String, String> userProperties) {
+      _shouldWriteUser = shouldWriteUser;
+      _email = email;
+      _globalUserPrefs = globalUserPrefs;
+      _userProperties = userProperties;
     }
 
-    public boolean shouldWriteUser() { return getFirst(); }
-    public String getEmail() { return getSecond(); }
-    public Map<String,String> getOtherProps() { return getThird(); }
-    public String getAttributesString() { return getEmail() + ", " + FormatUtil.prettyPrint(getOtherProps()); }
+    public boolean shouldWriteUser() { return _shouldWriteUser; }
+    public String getEmail() { return _email; }
+    public Map<String,String> getGlobalUserPrefs() { return _globalUserPrefs; }
+    public Map<String,String> getUserProperties() { return _userProperties; }
+
+    public String getAttributesString() { return getEmail() + ", " +
+        FormatUtil.prettyPrint(_userProperties) + ", " +
+        FormatUtil.prettyPrint(_globalUserPrefs); }
 
     @Override
     public String toString() {
@@ -40,8 +55,11 @@ public class UserCreationScript {
   public static void main(String[] args) throws WdkModelException, IOException {
     if (!(args.length == 1 || (args.length == 2 && args[1].equalsIgnoreCase("test")))) {
       System.err.println(NL + 
-          "USAGE: fgpJava " + UserCreationScript.class.getName() + " <project_id>" + NL + NL +
-          "This script will read tab-delimited user properties from stdin" + NL);
+          "USAGE: fgpJava " + UserCreationScript.class.getName() + " <project_id> [test]" + NL + NL +
+          "This script will read tab-delimited user properties from stdin" + NL +
+          "Passed project_id value is used only to look up user-db and account-db access information" + NL +
+          "If 'test' is specified as a second argument, no records will be written to the DB; " +
+          "instead diagnostics will be printed to stdout" + NL);
     }
     boolean testOnly = args.length == 2;
     try (WdkModel model = WdkModel.construct(args[0], GusHome.getGusHome());
@@ -56,8 +74,8 @@ public class UserCreationScript {
             }
             else { // create user
               User user = model.getUserFactory().createUser(
-                  parsedLine.getEmail(), parsedLine.getOtherProps(),
-                  Collections.emptyMap(), Collections.emptyMap(), false);
+                  parsedLine.getEmail(), parsedLine.getUserProperties(),
+                  parsedLine.getGlobalUserPrefs(), Collections.emptyMap(), false);
               System.out.println(user.getUserId() + TAB + user.getEmail());
             }
           }
@@ -69,26 +87,41 @@ public class UserCreationScript {
     }
   }
 
-  static UserLine parseLine(
+  private static UserLine parseLine(
       String line, List<UserPropertyName> userProps) {
     String[] tokens = line.split(TAB);
     if (tokens.length == 0 || tokens[0].trim().isEmpty()) {
       System.err.println("Required value [email] missing on line: " + line);
-      return new UserLine(false, null, null);
+      return new UserLine(false, null, null, null);
     }
     String email = tokens[0];
-    Map<String,String> propertyMap = new LinkedHashMap<>();
+
+    // next token is project_ids user wants emails from
+    Map<String,String> globalUserPrefs = (tokens.length > 1 ?
+        getEmailPrefsFromProjectIds(tokens[1]) : Collections.emptyMap());
+
     boolean valid = true;
+    Map<String,String> propertyMap = new LinkedHashMap<>();
     for (int i = 0; i < userProps.size(); i++) {
       UserPropertyName propName = userProps.get(i);
       // split will trim off trailing empty tokens, so backfill
-      String nextValue = tokens.length > i + 1 ? tokens[i + 1].trim() : "";
+      String nextValue = tokens.length > i + 2 ? tokens[i + 2].trim() : "";
       if (propName.isRequired() && nextValue.isEmpty()) {
         System.err.println("Required value [" + propName.getName() + "] missing on line: " + line);
         valid = false;
       }
       propertyMap.put(userProps.get(i).getName(), nextValue);
     }
-    return new UserLine(valid, email, propertyMap);
+    return new UserLine(valid, email, globalUserPrefs, propertyMap);
+  }
+
+  private static Map<String, String> getEmailPrefsFromProjectIds(String commaDelimitedListOfProjectIds) {
+    String[] projectIds = commaDelimitedListOfProjectIds.trim().isEmpty() ?
+        new String[0] : commaDelimitedListOfProjectIds.split(",");
+    return Arrays.stream(projectIds)
+        .filter(projectId -> !projectId.trim().isEmpty())
+        .map(projectId -> "preference_global_email_" + projectId.trim().toLowerCase())
+        .collect(Collectors.toMap(Function.identity(), val -> "on"));
+    
   }
 }
