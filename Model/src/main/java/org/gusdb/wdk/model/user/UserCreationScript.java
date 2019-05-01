@@ -60,6 +60,7 @@ public class UserCreationScript {
           "Passed project_id value is used only to look up account-db access information in gus_home" + NL +
           "If 'test' is specified as a second argument, no records will be written to the DB; " +
           "instead diagnostics will be printed to stdout" + NL);
+      System.exit(1);
     }
     boolean testOnly = args.length == 2;
     try (WdkModel model = WdkModel.construct(args[0], GusHome.getGusHome());
