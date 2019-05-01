@@ -116,14 +116,14 @@ public class UserFactory {
           throws WdkModelException, InvalidEmailException {
     String dontEmailProp = _wdkModel.getProperties().get("DONT_EMAIL_NEW_USER");
     boolean sendWelcomeEmail = (dontEmailProp == null || !dontEmailProp.equals("true"));
-    return createUser(email, profileProperties, globalPreferences, projectPreferences, sendWelcomeEmail);
+    return createUser(email, profileProperties, globalPreferences, projectPreferences, true, sendWelcomeEmail);
   }
 
   public User createUser(String email,
       Map<String, String> profileProperties,
       Map<String, String> globalPreferences,
       Map<String, String> projectPreferences,
-      boolean sendWelcomeEmail)
+      boolean addUserDbReference, boolean sendWelcomeEmail)
           throws WdkModelException, InvalidEmailException {
     try {
       // check email for uniqueness and format
@@ -136,7 +136,9 @@ public class UserFactory {
       UserProfile profile = _accountManager.createAccount(email, password, profileProperties);
 
       // add user to this user DB (will be added to other user DBs as needed during login)
-      addUserReference(profile.getUserId(), false);
+      if (addUserDbReference) {
+        addUserReference(profile.getUserId(), false);
+      }
 
       // create new user object and add profile properties
       RegisteredUser user = new RegisteredUser(_wdkModel, profile.getUserId(),

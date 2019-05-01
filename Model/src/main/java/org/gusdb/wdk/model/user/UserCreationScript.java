@@ -75,7 +75,7 @@ public class UserCreationScript {
             else { // create user
               User user = model.getUserFactory().createUser(
                   parsedLine.getEmail(), parsedLine.getUserProperties(),
-                  parsedLine.getGlobalUserPrefs(), Collections.emptyMap(), false);
+                  parsedLine.getGlobalUserPrefs(), Collections.emptyMap(), false, false);
               System.out.println(user.getUserId() + TAB + user.getEmail());
             }
           }
