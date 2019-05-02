@@ -84,7 +84,7 @@ public class UserCreationScript {
                 // create new user and assign preferences
                 user = model.getUserFactory().createUser(
                     parsedLine.getEmail(), parsedLine.getUserProperties(),
-                    parsedLine.getGlobalUserPrefs(), Collections.emptyMap(), false, false);
+                    parsedLine.getGlobalUserPrefs(), Collections.emptyMap(), true, false);
                 System.out.println("Created user with ID " + user.getUserId() + " and email " + user.getEmail());
               }
             }
