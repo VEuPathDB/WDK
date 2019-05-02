@@ -67,8 +67,7 @@ public class UserCreationScript {
     try (WdkModel model = WdkModel.construct(args[0], GusHome.getGusHome());
          BufferedReader in = new BufferedReader(new InputStreamReader(System.in))) {
       List<UserPropertyName> userProps = model.getModelConfig().getAccountDB().getUserPropertyNames();
-      int i=0;
-      int j=0;
+      int newUserCount = 0, modifiedUserCount = 0, invalidLineCount = 0;
       while (in.ready()) {
         UserLine parsedLine = parseLine(in.readLine(), userProps);
         if (parsedLine.shouldWriteUser()) {
@@ -76,7 +75,7 @@ public class UserCreationScript {
             // create or edit user
             User user = model.getUserFactory().getUserByEmail(parsedLine.getEmail());
             if (user == null) {
-              i++;
+              newUserCount++;
               if (testOnly) {
                 System.out.println("Would create user: " + parsedLine.getAttributesString());
               }
@@ -89,7 +88,7 @@ public class UserCreationScript {
               }
             }
             else {
-              j++;
+              modifiedUserCount++;
               String message = "User with email " + user.getEmail() +
                   " exists; %s preferences " + FormatUtil.prettyPrint(parsedLine.getGlobalUserPrefs());
               if (testOnly) {
@@ -105,15 +104,20 @@ public class UserCreationScript {
                 model.getUserFactory().savePreferences(user);
                 System.out.println(String.format(message, "adding"));
               }
-					  }
-            System.out.println("Number of new users: " + i);
-            System.out.println("Number of existing users we added preferences to (could be more than one project): " + j);
+            }
           }
           catch (InvalidEmailException e) {
             System.err.println("Invalid email '" + parsedLine.getEmail() + "': " + e.getMessage());
+            invalidLineCount++;
           }
         }
+        else {
+          invalidLineCount++;
+        }
       }
+      System.out.println("Number of new users: " + newUserCount);
+      System.out.println("Number of existing users we added preferences to (could be more than one project): " + modifiedUserCount);
+      System.out.println("Number of lines with invalid input: " + invalidLineCount);
     }
   }
 
