@@ -47,16 +47,16 @@ public class StepAnalysisService extends UserService {
   private static final String STATUS_KEY = "status";
   private static final String CONTEXT_HASH_KEY = "contextHash";
   private static final String ACCESS_TOKEN_KEY = "accessToken";
-  private static final String DOWNLOAD_URL_BASE_KEY = "downloadUrlBase";
-  private static final String PROPERTIES_URL_BASE_KEY = "propertiesUrlBase";
+  private static final String DOWNLOAD_URL_KEY = "downloadUrl";
+  private static final String PROPERTIES_URL_KEY = "propertiesUrl";
 
-  private final long stepId;
+  private final long _stepId;
 
   protected StepAnalysisService(
       @PathParam(USER_ID_PATH_PARAM) String uid,
       @PathParam(STEP_ID_PATH_PARAM) long stepId) {
     super(uid);
-    this.stepId = stepId;
+    _stepId = stepId;
   }
 
   @GET
@@ -65,7 +65,7 @@ public class StepAnalysisService extends UserService {
   public String getStepAnalysisTypes() throws WdkModelException {
 
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
-    Step step = getStepByIdAndCheckItsUser(user, stepId);
+    Step step = getStepByIdAndCheckItsUser(user, _stepId);
     Map<String, StepAnalysis> stepAnalyses = step.getQuestion().getStepAnalyses();
 
     return StepAnalysisFormatter.getStepAnalysisTypesJson(stepAnalyses).toString();
@@ -85,7 +85,7 @@ public class StepAnalysisService extends UserService {
       throws WdkModelException, DataValidationException, WdkUserException {
 
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
-    Step step = getStepByIdAndCheckItsUser(user, stepId);
+    Step step = getStepByIdAndCheckItsUser(user, _stepId);
 
     Map<String, Param> paramMap = getStepAnalysisFromQuestion(step.getQuestion(), analysisName).getParamMap();
     Map<String,String> context = Collections.emptyMap();
@@ -118,7 +118,7 @@ public class StepAnalysisService extends UserService {
   public String createStepAnalysis(String body) throws WdkModelException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      Step step = getStepByIdAndCheckItsUser(user, stepId);
+      Step step = getStepByIdAndCheckItsUser(user, _stepId);
 
       JSONObject json = new JSONObject(body);
       String analysisName = json.getString(ANALYSIS_NAME_KEY);
@@ -147,7 +147,7 @@ public class StepAnalysisService extends UserService {
     final User user = getUserBundle(Access.PRIVATE).getSessionUser();
     final Map<Long, StepAnalysisInstance> analyses = getWdkModel()
         .getStepAnalysisFactory()
-        .getAppliedAnalyses(getStepByIdAndCheckItsUser(user, stepId));
+        .getAppliedAnalyses(getStepByIdAndCheckItsUser(user, _stepId));
 
     return StepAnalysisFormatter.getStepAnalysisInstancesJson(analyses);
   }
@@ -225,12 +225,19 @@ public class StepAnalysisService extends UserService {
 
     // This should be moved upstream.
     StepAnalysisInstance inst = fac.getSavedAnalysisInstance(analysisId);
+    String analysisUrl = getAnalysisUrl(inst);
     value.put(CONTEXT_HASH_KEY, inst.createHash())
         .put(ACCESS_TOKEN_KEY, inst.getAccessToken())
-        .put(DOWNLOAD_URL_BASE_KEY, getServiceUri())
-        .put(PROPERTIES_URL_BASE_KEY, getServiceUri());
+        .put(DOWNLOAD_URL_KEY, analysisUrl + "/resources")
+        .put(PROPERTIES_URL_KEY, analysisUrl + "/properties");
 
     return Response.ok(value).build();
+  }
+
+  private String getAnalysisUrl(StepAnalysisInstance inst) throws WdkModelException {
+    return String.format("%s/users/%d/steps/%d/analyses/%d",
+        getServiceUri(), inst.getStep().getUser().getUserId(),
+        inst.getStep().getStepId(), inst.getAnalysisId());
   }
 
   @POST
@@ -377,12 +384,12 @@ public class StepAnalysisService extends UserService {
     // Step cannot be found under the current user id path.
     if (targetUser != step.getUser().getUserId())
       throw new NotFoundException(String.format("User %d does not own step %d",
-          targetUser, stepId));
+          targetUser, _stepId));
 
     // Analysis cannot be found under the current step id path.
-    if (stepId != step.getStepId())
+    if (_stepId != step.getStepId())
       throw new NotFoundException(String.format(
-        "Step %d does not contain analysis %d", stepId, analysisId));
+        "Step %d does not contain analysis %d", _stepId, analysisId));
 
     return instance;
   }
