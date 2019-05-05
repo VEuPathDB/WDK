@@ -63,8 +63,8 @@ public class StepAnalysisService extends UserService {
   private static final String STATUS_KEY = "status";
   private static final String CONTEXT_HASH_KEY = "contextHash";
   private static final String ACCESS_TOKEN_KEY = "accessToken";
-  private static final String DOWNLOAD_URL_BASE_KEY = "downloadUrlBase";
-  private static final String PROPERTIES_URL_BASE_KEY = "propertiesUrlBase";
+  private static final String DOWNLOAD_URL_KEY = "downloadUrl";
+  private static final String PROPERTIES_URL_KEY = "propertiesUrl";
 
   private final long _stepId;
 
@@ -99,7 +99,6 @@ public class StepAnalysisService extends UserService {
 
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
     RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
-
     StepAnalysis analysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), analysisName);
     Map<String, Param> paramMap = analysis.getParamMap();
     Map<String,String> context = new HashMap<>();
@@ -163,7 +162,6 @@ public class StepAnalysisService extends UserService {
     final Map<Long, StepAnalysisInstance> analyses = getWdkModel()
         .getStepAnalysisFactory()
         .getAppliedAnalyses(getRunnableStepForCurrentUser(_stepId).get());
-
     return StepAnalysisFormatter.getStepAnalysisInstancesJson(analyses);
   }
 
@@ -241,12 +239,19 @@ public class StepAnalysisService extends UserService {
 
     // This should be moved upstream.
     StepAnalysisInstance inst = fac.getSavedAnalysisInstance(analysisId);
+    String analysisUrl = getAnalysisUrl(inst);
     value.put(CONTEXT_HASH_KEY, inst.createHash())
         .put(ACCESS_TOKEN_KEY, inst.getAccessToken())
-        .put(DOWNLOAD_URL_BASE_KEY, getServiceUri())
-        .put(PROPERTIES_URL_BASE_KEY, getServiceUri());
+        .put(DOWNLOAD_URL_KEY, analysisUrl + "/resources")
+        .put(PROPERTIES_URL_KEY, analysisUrl + "/properties");
 
     return Response.ok(value).build();
+  }
+
+  private String getAnalysisUrl(StepAnalysisInstance inst) throws WdkModelException {
+    return String.format("%s/users/%d/steps/%d/analyses/%d",
+        getServiceUri(), inst.getStep().getUser().getUserId(),
+        inst.getStep().getStepId(), inst.getAnalysisId());
   }
 
   @POST

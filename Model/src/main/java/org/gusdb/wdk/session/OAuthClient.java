@@ -122,7 +122,7 @@ public class OAuthClient {
     }
     try {
       // user does not exist; automatically create user for this gmail user
-      user = _userFactory.createUser(gmailAddress, null, null, null, false);
+      user = _userFactory.createUser(gmailAddress, null, null, null, true, false);
       return user.getUserId();
     }
     catch (WdkUserException ue2) {
