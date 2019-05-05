@@ -36,7 +36,6 @@ import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
@@ -97,7 +96,6 @@ public class StepAnalysisService extends UserService {
   public String getStepAnalysisTypeDataFromName(@PathParam("name") String analysisName)
       throws WdkModelException, DataValidationException {
 
-    User user = getUserBundle(Access.PRIVATE).getSessionUser();
     RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
     StepAnalysis analysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), analysisName);
     Map<String, Param> paramMap = analysis.getParamMap();
@@ -248,7 +246,7 @@ public class StepAnalysisService extends UserService {
     return Response.ok(value).build();
   }
 
-  private String getAnalysisUrl(StepAnalysisInstance inst) throws WdkModelException {
+  private String getAnalysisUrl(StepAnalysisInstance inst) {
     return String.format("%s/users/%d/steps/%d/analyses/%d",
         getServiceUri(), inst.getStep().getUser().getUserId(),
         inst.getStep().getStepId(), inst.getAnalysisId());
@@ -354,6 +352,7 @@ public class StepAnalysisService extends UserService {
             "Step analysis operations can only be performed " +
             "on valid steps.  Revise your step and try again."));
   }
+
   /**
    * Creates StepAnalysisInstance from given step, analysis name, and answer
    * value checksum.
