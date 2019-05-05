@@ -94,9 +94,7 @@ public interface StepAnalyzer {
    * @param formParams form parameter values to be validated
    * @return an object encapsulating the errors
    * @throws WdkModelException if unable to validate values
-   * @deprecated use wdk param validation
    */
-  @Deprecated // should use WDK param validation in the future
   default ValidationBundle validateFormParamValues(Map<String,String[]> formParams)
       throws WdkModelException {
     return ValidationBundle.builder(ValidationLevel.RUNNABLE).build();
