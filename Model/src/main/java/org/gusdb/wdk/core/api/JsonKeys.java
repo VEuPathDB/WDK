@@ -234,7 +234,7 @@ public class JsonKeys {
 
   // additional strategy-specific keys
   public static final String AUTHOR = "author";
-  public static final String LATEST_STEP_ID = "latestStepId";
+  public static final String ROOT_STEP_ID = "rootStepId";
   public static final String ORGANIZATION = "organization";
   public static final String RECORD_CLASS_NAME_PLURAL = "recordClassNamePlural";
   public static final String SIGNATURE = "signature";
