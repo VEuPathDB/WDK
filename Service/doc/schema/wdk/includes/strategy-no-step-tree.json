@@ -15,7 +15,7 @@
     "author": {
       "type": "string"
     },
-    "latestStepId": {
+    "rootStepId": {
       "type": "integer"
     },
     "recordClassName": {
