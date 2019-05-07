@@ -47,6 +47,7 @@ import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.StepFormatter;
+import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -210,13 +211,24 @@ public class StepService extends UserService {
   @InSchema("wdk.answer.answer-spec-request")
   public void putAnswerSpec(
       @PathParam(ID_PARAM) long stepId,
+      @QueryParam("allowInvalid") Boolean allowInvalid,  // undocumented.  for use by developers
       JSONObject body
   ) throws WdkModelException, DataValidationException, RequestMisformatException {
 
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
     Step existingStep = getStepForCurrentUser(stepId, ValidationLevel.NONE);
-    SemanticallyValid<AnswerSpec> newSpec = StepRequestParser.getReplacementAnswerSpec(
-        existingStep, body, getWdkModel(), user);
+    
+    AnswerSpec newSpec;
+    if (allowInvalid) { // allow PUTing of invalid steps so we can test how we handle them elsewhere
+      newSpec = AnswerSpecServiceFormat
+      .parse(existingStep.getAnswerSpec().getQuestion(), body, getWdkModel())
+      .build(user, existingStep.getContainer(), ValidationLevel.SEMANTIC);
+    } else {
+      SemanticallyValid<AnswerSpec> validSpec = StepRequestParser.getReplacementAnswerSpec(
+          existingStep, body, getWdkModel(), user);
+      newSpec = validSpec.get();
+    }
+    
     StepBuilder replacementBuilder = Step.builder(existingStep)
         .setAnswerSpec(AnswerSpec.builder(newSpec));
 
