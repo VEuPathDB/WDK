@@ -100,26 +100,11 @@
     
     <copy  todir="${build.home}/webapp/WEB-INF/wdk-config" 
        file="Model/lib/rng/wdkModel.rng" />
-    
-<!--  	<copy todir="${build.home}/webapp/WEB-INF/lib">
-      <fileset dir="../WebDevKit/lib/java" 
-               includes="commons-digester-1.5.jar,
-                         ojdbc14.jar,
-                         commons-beanutils.jar,
-                         commons-cli-1.0.jar
-                         jstl.jar,
-                         pager-taglib.jar,
-                         standard.jar,
-                         jing-20030619.jar,
-                         commons-dbcp-1.1.jar,
-                         commons-pool-1.1.jar" />
-    </copy> -->
-  	
-  	<mkdir dir="${webapp.dir}"/>
+    <mkdir dir="${webapp.dir}"/>
     <copy todir="${webapp.dir}">
       <fileset dir="${build.home}/webapp" />
     </copy>	
-  	
+
   </target>
 
 
