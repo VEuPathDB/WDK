@@ -89,8 +89,8 @@
 	 do so in all other build.xml files that import the driver,
     	 to prevent conflicts in gus_home
     -->
-    <property name="oracle.driver.name" value="ojdbc6"/>
-    <property name="oracle.version" value="11.2.0.3"/>
+    <property name="oracle.driver.name" value="ojdbc8"/>
+    <property name="oracle.version" value="12.2.0.1"/>
 
     <!-- check existence of Oracle  -->
     <property environment="env"/>
