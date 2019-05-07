@@ -204,25 +204,11 @@
     <echo message="." />
   </target>
 
-  <target name="WDK/Service-WebInstallation" depends="WDK/Service-Installation,installYarnBin">
-    <ant target="runRaml2Html"/>
-  </target>
-
-  <!-- raml2html is installed in the install project (see install/package.json). -->
-  <!-- It is then called via yarn (e.g., `yarn raml2html -i ... -o ...`). -->
-  <target name="runRaml2Html" depends="installYarnBin,installYarnDepsForInstallProject">
-    <echo>Generating RAML HTML doc</echo>
-    <echo>  Input:  ${targetDir}/doc/WDK/Service/raml/api.raml</echo>
-    <echo>  Output: ${htdocsTargetDir}/service-api.html</echo>
-    <mkdir dir="${htdocsTargetDir}"/>
-    <exec executable="yarn"
-          failonerror="true"
-          failifexecutionfails="true">
-      <arg line="raml2html"/>
-      <arg line="--theme raml2html-plain-theme"/>
-      <arg line="-i ${targetDir}/doc/WDK/Service/raml/api.raml"/>
-      <arg line="-o ${htdocsTargetDir}/service-api.html"/>
-    </exec>
+  <target name="WDK/Service-WebInstallation" depends="WDK/Service-Installation">
+    <antcall target="runRaml2Html">
+      <param name="inputFile" value="${targetDir}/doc/WDK/Service/raml/api.raml"/>
+      <param name="outputFile" value="${htdocsTargetDir}/service-api.html"/>
+    </antcall>
   </target>
 
   <target name="GusHome" depends="WDK-Installation,
