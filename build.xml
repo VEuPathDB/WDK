@@ -74,7 +74,22 @@
 
   <target name="WDK/Model-Installation">
 
-    <antcall target="handleOracleDriver"/>
+    <!-- set values for supported Oracle driver -->
+    <!-- IMPORTANT CAUTION:  if you update the ojdbc driver here,
+         do so in all other build.xml files that import the driver,
+         to prevent conflicts in gus_home
+    -->
+
+    <!-- install v11/ojdbc6 first so that if v12/ojdbc8 is available v11 will be deleted -->
+    <ant target="handleOracleDriver">
+      <property name="oracle.driver.name" value="ojdbc6"/>
+      <property name="oracle.version" value="11.2.0.4"/>
+    </ant>
+
+    <ant target="handleOracleDriver">
+      <property name="oracle.driver.name" value="ojdbc8"/>
+      <property name="oracle.version" value="12.2.0.1"/>
+    </ant>
 
     <ant target="defaultComponentInstall">
       <property name="project" value="WDK"/>
@@ -83,14 +98,6 @@
   </target>
 
   <target name="handleOracleDriver">
-
-    <!-- set values for supported Oracle driver -->
-    <!-- IMPORTANT CAUTION:  if you update the ojdbc driver here,
-	 do so in all other build.xml files that import the driver,
-    	 to prevent conflicts in gus_home
-    -->
-    <property name="oracle.driver.name" value="ojdbc6"/>
-    <property name="oracle.version" value="11.2.0.3"/>
 
     <!-- check existence of Oracle  -->
     <property environment="env"/>
@@ -104,7 +111,7 @@
       <available file="${env.ORACLE_HOME}/jdbc/lib/${oracle.driver.name}.jar" type="file"/>
     </condition>
 
-    <!-- set valuse to false if not already set to true -->
+    <!-- set values to false if not already set to true -->
     <property name="oracle.home.present" value="false"/>
     <property name="ojdbc.present" value="false"/>
 
@@ -129,7 +136,9 @@
     <!-- perform conditional operations -->
     <antcall target="warnAboutOracleDriver"/>
     <antcall target="copyLocalOracleDriver"/>
+    <!-- temporarily don't fail here
     <fail if="oracle.home.incomplete" message="Error: if $ORACLE_HOME is defined, file $ORACLE_HOME/jdbc/lib/${oracle.driver.name}.jar must be available."/>
+    -->
 
   </target>
 
@@ -143,6 +152,9 @@
 
   <target name="copyLocalOracleDriver" if="oracle.home.complete">
     <echo>Removing old versions of Oracle driver from GUS_HOME</echo>
+    <delete failonerror="false">
+      <fileset dir="${targetDir}/lib/java/db_driver" includes="*.jar"/>
+    </delete>
     <echo>Installing local ${oracle.driver.name}.jar from ${env.ORACLE_HOME}/jdbc/lib/${oracle.driver.name}.jar</echo>
     <copy file="${env.ORACLE_HOME}/jdbc/lib/${oracle.driver.name}.jar"
           toDir="${targetDir}/lib/java/db_driver"
