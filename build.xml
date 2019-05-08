@@ -150,8 +150,8 @@
 
   <target name="copyLocalOracleDriver" if="oracle.home.complete">
     <echo>Removing old versions of Oracle driver from GUS_HOME</echo>
-    <delete>
-      <fileset dir="${targetDir}/lib/java/db_driver" includes="*.jar" failonerror="false"/>
+    <delete failonerror="false">
+      <fileset dir="${targetDir}/lib/java/db_driver" includes="*.jar"/>
     </delete>
     <echo>Installing local ${oracle.driver.name}.jar from ${env.ORACLE_HOME}/jdbc/lib/${oracle.driver.name}.jar</echo>
     <copy file="${env.ORACLE_HOME}/jdbc/lib/${oracle.driver.name}.jar"
