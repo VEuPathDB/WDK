@@ -136,7 +136,9 @@
     <!-- perform conditional operations -->
     <antcall target="warnAboutOracleDriver"/>
     <antcall target="copyLocalOracleDriver"/>
+    <!-- temporarily don't fail here
     <fail if="oracle.home.incomplete" message="Error: if $ORACLE_HOME is defined, file $ORACLE_HOME/jdbc/lib/${oracle.driver.name}.jar must be available."/>
+    -->
 
   </target>
 
