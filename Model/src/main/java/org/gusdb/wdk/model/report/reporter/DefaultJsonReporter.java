@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MediaType;
 
@@ -30,6 +31,7 @@ import org.gusdb.wdk.model.report.config.AnswerDetails;
 import org.gusdb.wdk.model.report.config.AnswerDetailsFactory;
 import org.gusdb.wdk.model.report.util.RecordFormatter;
 import org.gusdb.wdk.model.user.UserPreferences;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -151,13 +153,38 @@ public class DefaultJsonReporter extends AbstractReporter {
   private static JSONObject getMetaData(AnswerValue answerValue,
       Set<String> includedAttributes, Set<String> includedTables, int numRecordsReturned)
       throws WdkModelException, WdkUserException {
+    AnswerValue answerValueWithoutViewFilters = getAnswerValueWithoutViewFilters(answerValue);
     JSONObject meta = new JSONObject();
     meta.put(JsonKeys.RECORD_CLASS_NAME, answerValue.getQuestion().getRecordClass().getFullName());
-    meta.put(JsonKeys.TOTAL_COUNT, answerValue.getResultSizeFactory().getResultSize());
+    meta.put(JsonKeys.TOTAL_COUNT, answerValueWithoutViewFilters.getResultSizeFactory().getResultSize());
+    meta.put(JsonKeys.DISPLAY_TOTAL_COUNT, answerValueWithoutViewFilters.getResultSizeFactory().getDisplayResultSize());
+    meta.put(JsonKeys.VIEW_TOTAL_COUNT, answerValue.getResultSizeFactory().getResultSize());
+    meta.put(JsonKeys.DISPLAY_VIEW_TOTAL_COUNT, answerValue.getResultSizeFactory().getDisplayResultSize());
     meta.put(JsonKeys.RESPONSE_COUNT, numRecordsReturned);
+    meta.put(JsonKeys.PAGINATION, new JSONObject()
+        .put(JsonKeys.OFFSET, answerValue.getStartIndex() - 1)
+        .put(JsonKeys.NUM_RECORDS, answerValue.getEndIndex() - (answerValue.getStartIndex() - 1)));
     meta.put(JsonKeys.ATTRIBUTES, FormatUtil.stringCollectionToJsonArray(includedAttributes));
     meta.put(JsonKeys.TABLES, FormatUtil.stringCollectionToJsonArray(includedTables));
+    meta.put(JsonKeys.SORTING, formatSorting(answerValue.getSortingMap(), answerValue.getQuestion().getAttributeFieldMap()));
     return meta;
+  }
+
+  private static AnswerValue getAnswerValueWithoutViewFilters(AnswerValue answerValue) {
+    if (answerValue.getViewFilterOptions() == null || answerValue.getViewFilterOptions().getSize() == 0) return answerValue;
+    AnswerValue answerValueWithoutViewFilters = new AnswerValue(answerValue);
+    answerValueWithoutViewFilters.setViewFilterOptions(null);
+    return answerValueWithoutViewFilters;
+  }
+
+  public static JSONArray formatSorting(Map<String, Boolean> sortingAttributeMap, Map<String, AttributeField> allowedValues) {
+    return new JSONArray(
+        SortDirectionSpec.convertSorting(sortingAttributeMap, allowedValues)
+            .stream()
+            .map(spec -> new JSONObject()
+                .put("attributeName", spec.getItemName())
+                .put("direction", spec.getDirection()))
+            .collect(Collectors.toList()));
   }
 
   public static ReporterRef createReference() {

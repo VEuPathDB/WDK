@@ -37,7 +37,6 @@ import au.com.bytecode.opencsv.CSVWriter;
  */
 public abstract class AbstractTabularReporter extends StandardReporter {
 
-  @SuppressWarnings("unused")
   private static Logger LOG = Logger.getLogger(AbstractTabularReporter.class);
 
   public static final String FIELD_HAS_HEADER = "includeHeader";
@@ -174,7 +173,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
     // print the header
     if (_includeHeader) {
       for (String title : getHeader()) {
-        writer.print("[" + title + "]");
+        writer.print(title);
         writer.print(_divider);
       }
       writer.println();

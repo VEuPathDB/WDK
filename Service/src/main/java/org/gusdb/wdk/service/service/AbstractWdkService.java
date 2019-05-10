@@ -19,12 +19,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.HttpRequestData;
-import org.gusdb.wdk.errors.ServerErrorBundle;
 import org.gusdb.wdk.errors.ErrorContext;
 import org.gusdb.wdk.errors.ErrorContext.ErrorLocation;
+import org.gusdb.wdk.errors.ServerErrorBundle;
 import org.gusdb.wdk.errors.ValueMaps;
 import org.gusdb.wdk.errors.ValueMaps.RequestAttributeValueMap;
 import org.gusdb.wdk.errors.ValueMaps.ServletContextValueMap;
@@ -48,6 +49,8 @@ import org.gusdb.wdk.service.UserBundle;
  */
 public abstract class AbstractWdkService {
 
+  private static final Logger LOG = Logger.getLogger(AbstractWdkService.class);
+
   public static final String PERMISSION_DENIED = "Permission Denied.  You do not have access to this resource.";
   public static final String NOT_FOUND = "Resource specified [%s] does not exist.";
 
@@ -68,7 +71,7 @@ public abstract class AbstractWdkService {
 
   private ServletContext _servletContext;
   private WdkModel _wdkModel;
-  private String _serviceEndpoint;
+  private String _serviceUrlSegment;
 
   // public setter for unit tests
   public void testSetup(WdkModel wdkModel) {
@@ -101,12 +104,8 @@ public abstract class AbstractWdkService {
     return _request.getScheme();
   }
 
-  protected String getServiceEndpoint() {
-    return _serviceEndpoint;
-  }
-
   protected String getServiceUri() {
-    return getContextUri() + getServiceEndpoint();
+    return getContextUri() + _serviceUrlSegment;
   }
 
   protected Cookie[] getCookies() {
@@ -151,7 +150,7 @@ public abstract class AbstractWdkService {
   protected void setServletContext(ServletContext context) {
     _servletContext = context;
     _wdkModel = (WdkModel)context.getAttribute(Utilities.WDK_MODEL_KEY);
-    _serviceEndpoint = context.getContextPath() + context.getInitParameter(Utilities.WDK_SERVICE_ENDPOINT_KEY);
+    _serviceUrlSegment = context.getInitParameter(Utilities.WDK_SERVICE_ENDPOINT_KEY);
   }
 
   /**
@@ -217,12 +216,11 @@ public abstract class AbstractWdkService {
     return outputStream -> {
       try {
         IoUtil.transferStream(outputStream, content);
+        LOG.info("Finished transferring streaming output");
       }
       catch (IOException e) {
+        LOG.error("Unable to complete data stream transfer", e);
         throw new WebApplicationException(e);
-      }
-      finally {
-        content.close();
       }
     };
   }

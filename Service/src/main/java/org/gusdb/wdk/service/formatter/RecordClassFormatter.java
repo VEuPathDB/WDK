@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -57,13 +56,17 @@ public class RecordClassFormatter {
       .put(JsonKeys.DISPLAY_NAME_PLURAL, recordClass.getDisplayNamePlural())
       .put(JsonKeys.SHORT_DISPLAY_NAME, recordClass.getShortDisplayName())
       .put(JsonKeys.SHORT_DISPLAY_NAME_PLURAL, recordClass.getShortDisplayNamePlural())
+      .put(JsonKeys.NATIVE_DISPLAY_NAME, recordClass.getNativeDisplayName())
+      .put(JsonKeys.NATIVE_DISPLAY_NAME_PLURAL, recordClass.getNativeDisplayNamePlural())
+      .put(JsonKeys.NATIVE_SHORT_DISPLAY_NAME, recordClass.getNativeShortDisplayName())
+      .put(JsonKeys.NATIVE_SHORT_DISPLAY_NAME_PLURAL, recordClass.getNativeShortDisplayNamePlural())
       .put(JsonKeys.URL_SEGMENT,  recordClass.getUrlSegment())
       .put(JsonKeys.ICON_NAME, recordClass.getIconName())
       .put(JsonKeys.USE_BASKET, recordClass.isUseBasket())
       .put(JsonKeys.DESCRIPTION, recordClass.getDescription())
       .put(JsonKeys.FORMATS, getAnswerFormatsJson(recordClass.getReporterMap().values(), FieldScope.ALL))
       .put(JsonKeys.HAS_ALL_RECORDS_QUERY, recordClass.hasAllRecordsQuery())
-      .put(JsonKeys.PRIMARY_KEY_REFS, JsonUtil.toJsonStringArray(recordClass.getPrimaryKeyDefinition().getColumnRefs()))
+      .put(JsonKeys.PRIMARY_KEY_REFS, new JSONArray(recordClass.getPrimaryKeyDefinition().getColumnRefs()))
       .put(JsonKeys.RECORD_ID_ATTRIBUTE_NAME, recordClass.getIdAttributeField().getName())
       .put(JsonKeys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
         recordClass.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))

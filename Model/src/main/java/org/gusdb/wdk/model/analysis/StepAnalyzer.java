@@ -7,10 +7,12 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
+import org.json.JSONObject;
 
 /**
  * Interface to be implemented by Step Analysis Plugins.
@@ -24,25 +26,22 @@ public interface StepAnalyzer {
    * 
    * @param wdkModel WDK Model object
    */
-  public void setWdkModel(WdkModel wdkModel);
+  void setWdkModel(WdkModel wdkModel);
   
   /**
-   * A MVC model object to be made available to the JSP rendering the form for
-   * this plugin.  It we be available to your JSP page as requestScope.viewModel.
-   * 
-   * @return model object for form rendering
-   * @throws WdkUserException 
+   * Get JSON containing the information needed to render a result of this StepAnalyzer
+   * @return
+   * @throws WdkModelException
    */
-  public Object getFormViewModel() throws WdkModelException, WdkUserException;
+  JSONObject getResultViewModelJson() throws WdkModelException;
   
   /**
-   * A MVC model object to be made available to the JSP rendering the results for
-   * this plugin.  It we be available to your JSP page as requestScope.viewModel.
-   * 
-   * @return model object for results rendering
-   * @throws WdkModelException 
+   * Get JSON containing the information needed to render a parameter input form for this StepAnalyzer
+   * @return
+   * @throws WdkModelException
    */
-  public Object getResultViewModel() throws WdkModelException;
+  JSONObject getFormViewModelJson() throws WdkModelException;
+
 
   /**
    * Sets a property as passed in from the WDK Model
@@ -50,46 +49,61 @@ public interface StepAnalyzer {
    * @param key property name
    * @param value property value
    */
-  public void setProperty(String key, String value);
+  void setProperty(String key, String value);
 
   /**
    * Validate that property names and values are valid.
    * 
    * @throws WdkModelException if properties set are invalid
    */
-  public void validateProperties() throws WdkModelException;
+  default void validateProperties() throws WdkModelException {}
+
+  /**
+   * Validate the XML definition of this analyzer's params against the
+   * analyzer's internal expectations.
+   *
+   * @param params params from XML analyzer definition.
+   * @throws WdkModelException if unable to validate params
+   */
+  default void validateParams(Map <String, Param> params)
+      throws WdkModelException {}
 
   /**
    * Validate that this analysis plugin has been assigned to a valid Question.
    * 
+   * @param question question to validate
    * @throws WdkModelException if question is inappropriate to this plugin
    */
-  public void validateQuestion(Question question) throws WdkModelException;
+  default void validateQuestion(Question question) throws WdkModelException {
+    // any question is fine by default; to be overridden by subclass
+  }
 
   /**
    * Sets form params retrieved from the submission of this plugin's form
    * 
    * @param formParams name->values map of submitted form parameters
    */
-  public void setFormParams(Map<String, String[]> formParams);
-  
+  void setFormParamValues(Map<String,String[]> formParams);
+
   /**
    * Validates that form parameters are valid.  Note this method will be called
-   * before params are passed in via <code>setFormParams()</code>.
-   * 
+   * before params are passed in via <code>setFormParamValues()</code>.
+   *
    * @param formParams form parameter values to be validated
    * @return an object encapsulating the errors, or null if no errors occurred
-   * @throws WdkUserException 
+   * @throws WdkModelException if unable to validate values
    */
-  public ValidationErrors validateFormParams(Map<String, String[]> formParams)
-      throws WdkModelException, WdkUserException;
+  default ValidationErrors validateFormParamValues(Map<String,String[]> formParams)
+      throws WdkModelException {
+    return null;
+  }
 
   /**
    * Sets answer value retrieved from the step being analyzed
    * 
    * @param answerValue answer value from the step being analyzed
    */
-  public void setAnswerValue(AnswerValue answerValue);
+  void setAnswerValue(AnswerValue answerValue);
   
   /**
    * Checks that this is a valid answer for this analyzer, and throws an
@@ -100,8 +114,8 @@ public interface StepAnalyzer {
    * @throws WdkModelException if error occurs while determining validity of answer
    * @throws WdkUserException 
    */
-  public void validateAnswerValue(AnswerValue answerValue)
-      throws IllegalAnswerValueException, WdkModelException, WdkUserException;
+  default void validateAnswerValue(AnswerValue answerValue)
+      throws IllegalAnswerValueException, WdkModelException, WdkUserException {}
 
   /**
    * Runs an analysis of the passed AnswerValue.  In-process logging can be
@@ -113,7 +127,7 @@ public interface StepAnalyzer {
    * @throws WdkModelException if an unexpected error occurs.  This is a slightly messier equivalent of returning ERROR
    * @throws WdkUserException 
    */
-  public ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log) throws WdkModelException, WdkUserException;
+  ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log) throws WdkModelException, WdkUserException;
 
   /**
    * Sets the storage directory for this analyzer.  Usage of this directory is
@@ -122,7 +136,7 @@ public interface StepAnalyzer {
    * 
    * @param storageDirectory
    */
-  public void setStorageDirectory(Path storageDirectory);
+  void setStorageDirectory(Path storageDirectory);
   
   /**
    * Store any persistent character data as part of this execution.  It will be
@@ -131,7 +145,7 @@ public interface StepAnalyzer {
    * 
    * @return character data to be persistently stored
    */
-  public String getPersistentCharData();
+  String getPersistentCharData();
   
   /**
    * This method will be called with your persistent character data from a
@@ -140,9 +154,9 @@ public interface StepAnalyzer {
    * data string was stored, this method will still be called but passed a null
    * value.
    * 
-   * @param dataString persistently stored character data
+   * @param data persistently stored character data
    */
-  public void setPersistentCharData(String data);
+  void setPersistentCharData(String data);
 
   /**
    * Store any persistent binary data as part of this execution.  It will be
@@ -151,7 +165,7 @@ public interface StepAnalyzer {
    * 
    * @return binary data to be persistently stored
    */
-  public byte[] getPersistentBinaryData();
+  byte[] getPersistentBinaryData();
   
   /**
    * This method will be called with your persistent binary data from a previous
@@ -161,6 +175,5 @@ public interface StepAnalyzer {
    * 
    * @param data persistently stored binary data
    */
-  public void setPersistentBinaryData(byte[] data);
-  
+  void setPersistentBinaryData(byte[] data);
 }

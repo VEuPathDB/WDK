@@ -21,6 +21,7 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.request.AnswerFormattingParser;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
@@ -102,11 +103,11 @@ public class BasketService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response patchBasket(@PathParam(BASKET_NAME_PARAM) String basketName, String body)
-      throws WdkModelException, DataValidationException, RequestMisformatException {
+      throws WdkModelException, WdkUserException, DataValidationException, RequestMisformatException {
     try {
       User user = getPrivateRegisteredUser();
       RecordClass recordClass = RecordService.getRecordClassOrNotFound(basketName, getWdkModel());
-      BasketActions actions = new BasketActions(new JSONObject(body), recordClass);
+      BasketActions actions = new BasketActions(new JSONObject(body), recordClass, getWdkModel().getStepFactory());
       RevisedRequest<BasketActions> revisedRequest = translatePatchRequest(recordClass, actions);
       BasketFactory factory = getWdkModel().getBasketFactory();
       factory.addPksToBasket(user, revisedRequest.getRecordClass(), revisedRequest.getObject().getRecordsToAdd());

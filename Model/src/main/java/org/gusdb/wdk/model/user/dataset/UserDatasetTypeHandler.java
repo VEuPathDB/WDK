@@ -124,7 +124,7 @@ public abstract class UserDatasetTypeHandler {
       p = new ProcessBuilder(command)
           .directory(workingDir.toFile())
           .redirectOutput(workingDir.resolve("stdout").toFile())
-          //          .redirectError(workingDir.resolve("stderr").toFile())
+          .redirectError(workingDir.resolve("stderr").toFile())
           .start();
       p.waitFor();
       success = p.exitValue() == 0;
@@ -136,7 +136,7 @@ public abstract class UserDatasetTypeHandler {
       if (p != null) p.destroy();
     }
     if (!success) {
-      throw new WdkModelException("Failed running command: " + builder + ". For details, see " + workingDir);
+      throw new WdkModelException("Failed running command: " + builder + ". For details, see " + workingDir + "/stderr");
    }
   }
 

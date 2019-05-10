@@ -1,0 +1,54 @@
+# Step Analysis By ID API
+#
+# @path /users/{id}/steps/{id}/analyses/{id}
+
+
+# URI Params
+
+uriParameters:
+  analysis-id:
+    description: Analysis instance id.
+    type: integer
+
+
+# Methods
+
+delete:
+  description: >
+    Deletes the analysis with the ID provided in the analysis-id URI param.
+  responses:
+    204:
+      description: No Content
+    500:
+      description: WDKModelException
+
+get:
+  description: >
+    Returns the current analysis instance config JSON.
+  responses:
+    200:
+      body:
+        application/json:
+          type: !include ../../../../../../../src/main/resources/schema/wdk/users/steps/analyses/id/get-response.json
+
+patch:
+  description: Update analysis instance
+  body:
+    application/json:
+      example: !include ../../../../example/users-steps-analyses-patch-request.json
+  responses:
+    204:
+      description: No Content
+    422:
+      description: Unprocessable entry
+      body:
+         application/json:
+            type: !include ../../../../../../../src/main/resources/schema/includes/string-array.json
+    500:
+      description: WDKModelException
+
+
+# Child Endpoints
+
+/resources: !include resources.raml
+/result: !include result.raml

@@ -56,16 +56,16 @@ public class FilterSizeCache {
     }
 
     @Override
-    public FilterSizeGroup getNewValue(Long id) throws ValueProductionException {
+    public FilterSizeGroup getNewValue(Long stepId) throws ValueProductionException {
       FilterSizeGroup emptyGroup = new FilterSizeGroup();
-      return getUpdatedValue(id, emptyGroup);
+      return getUpdatedValue(stepId, emptyGroup);
     }
 
     @Override
-    public FilterSizeGroup getUpdatedValue(Long id, FilterSizeGroup previousVersion)
+    public FilterSizeGroup getUpdatedValue(Long stepId, FilterSizeGroup previousVersion)
         throws ValueProductionException {
       try {
-        Step step = _wdkModel.getStepFactory().getStepById(id);
+        Step step = _wdkModel.getStepFactory().getStepByValidId(stepId);
         AnswerValue answerValue = step.getAnswerValue(false);
         int size = answerValue.getResultSizeFactory().getFilterDisplaySize(_filterToFetch);
         previousVersion.sizeMap.put(_filterToFetch, size);
@@ -92,16 +92,16 @@ public class FilterSizeCache {
     }
 
     @Override
-    public FilterSizeGroup getNewValue(Long id) throws ValueProductionException {
+    public FilterSizeGroup getNewValue(Long stepId) throws ValueProductionException {
       FilterSizeGroup emptyGroup = new FilterSizeGroup();
-      return getUpdatedValue(id, emptyGroup);
+      return getUpdatedValue(stepId, emptyGroup);
     }
 
     @Override
-    public FilterSizeGroup getUpdatedValue(Long id, FilterSizeGroup previousVersion)
+    public FilterSizeGroup getUpdatedValue(Long stepId, FilterSizeGroup previousVersion)
         throws ValueProductionException {
       try {
-        Step step = _wdkModel.getStepFactory().getStepById(id);
+        Step step = _wdkModel.getStepFactory().getStepByValidId(stepId);
         AnswerValue answer = step.getAnswerValue(false);
         Map<String, Integer> sizes = answer.getResultSizeFactory().getFilterDisplaySizes();
         previousVersion.sizeMap = sizes;

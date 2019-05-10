@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.user.analysis;
 
+import org.json.JSONObject;
+
 import java.util.Date;
 
 public class AnalysisResult {
@@ -10,8 +12,8 @@ public class AnalysisResult {
   private String _storedString;
   private byte[] _storedBytes;
   private String _statusLog;
-  private Object _resultViewModel;
-  
+  private JSONObject _resultViewModelJson;
+
   public AnalysisResult(ExecutionStatus status, Date startDate, Date updateDate,
       String storedString, byte[] storedBytes, String statusLog) {
     _status = status;
@@ -75,11 +77,11 @@ public class AnalysisResult {
     _statusLog = statusLog;
   }
 
-  public Object getResultViewModel() {
-    return _resultViewModel;
+  public void setResultViewModelJson(JSONObject resultViewModelJson) {
+    _resultViewModelJson = resultViewModelJson;
   }
 
-  public void setResultViewModel(Object resultViewModel) {
-    _resultViewModel = resultViewModel;
+  public JSONObject getResultViewModelJson() {
+    return _resultViewModelJson;
   }
 }

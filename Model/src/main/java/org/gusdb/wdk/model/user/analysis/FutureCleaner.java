@@ -95,7 +95,7 @@ public class FutureCleaner implements Callable<Boolean> {
     for (RunningAnalysis run : _threadResults) {
       // see if this thread has been running too long; if so, cancel the job
       long analysisId = run.analysisId;
-      StepAnalysisContext context = _analysisMgr.getSavedContext(analysisId);
+      StepAnalysisInstance context = _analysisMgr.getSavedAnalysisInstance(analysisId);
       if (context.getStatus().equals(ExecutionStatus.RUNNING) ||
           context.getStatus().equals(ExecutionStatus.PENDING)) {
         // check to see if it's been running too long

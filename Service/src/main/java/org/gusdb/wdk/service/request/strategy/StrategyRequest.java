@@ -4,6 +4,7 @@ import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
 import static org.gusdb.fgputil.json.JsonUtil.getBooleanOrDefault;
 
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
 
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -26,7 +27,7 @@ public class StrategyRequest {
   private boolean _isHidden;
   private boolean _isPublic;
   private TreeNode<Step> _stepTree;
-  
+
   /**
    * Strategy Request JSON as follows:
    * {
@@ -49,7 +50,7 @@ public class StrategyRequest {
    *     }
    *   }
    * }
-   * 
+   *
    * @param name
    * @param savedName
    * @param description
@@ -84,7 +85,8 @@ public class StrategyRequest {
     	  boolean isHidden = getBooleanOrDefault(json, JsonKeys.IS_HIDDEN, false);
     	  boolean isPublic = getBooleanOrDefault(json, JsonKeys.IS_PUBLIC, false);
     	  JSONObject rootStepJson = json.getJSONObject(JsonKeys.ROOT_STEP);
-    	  Step rootStep = stepFactory.getStepById(rootStepJson.getLong(JsonKeys.ID));
+        long rootStepId = rootStepJson.getLong(JsonKeys.ID);
+    	  Step rootStep = stepFactory.getStepById(rootStepId).orElseThrow(() -> new NotFoundException("Step ID not found: " + rootStepId));
     	  TreeNode<Step> stepTree = buildStepTree(new TreeNode<Step>(rootStep), rootStepJson, stepFactory, user, projectId, new StringBuilder());
       return new StrategyRequest(name, savedName, description, isSaved, isHidden, isPublic, stepTree);
     }
@@ -95,7 +97,7 @@ public class StrategyRequest {
     	  throw new DataValidationException(e);
     }
   }
-  
+
   public static TreeNode<Step> buildStepTree(TreeNode<Step> stepTree,
 		  JSONObject stepJson,
 		  StepFactory stepFactory,
@@ -109,7 +111,8 @@ public class StrategyRequest {
     if(stepJson.has(JsonKeys.LEFT_STEP)) {
     	  JSONObject leftStepJson = stepJson.getJSONObject(JsonKeys.LEFT_STEP);
     	  if(leftStepJson != null && leftStepJson.has(JsonKeys.ID)) {
-    		Step leftStep = stepFactory.getStepById(leftStepJson.getLong(JsonKeys.ID));
+    	    long leftStepId = leftStepJson.getLong(JsonKeys.ID);
+    		Step leftStep = stepFactory.getStepById(leftStepId).orElseThrow(() -> new NotFoundException("Step ID not found: " + leftStepId));
     		parentStep.setPreviousStep(leftStep);
     	    TreeNode<Step> leftTreeNode = new TreeNode<>(leftStep);
     	    if(leftStepJson.has(JsonKeys.LEFT_STEP)) {
@@ -123,7 +126,8 @@ public class StrategyRequest {
     if(stepJson.has(JsonKeys.RIGHT_STEP)) {
   	  JSONObject rightStepJson = stepJson.getJSONObject(JsonKeys.RIGHT_STEP);
   	  if(rightStepJson != null && rightStepJson.has(JsonKeys.ID)) {
-  		Step rightStep = stepFactory.getStepById(rightStepJson.getLong(JsonKeys.ID));
+        long rightStepId = rightStepJson.getLong(JsonKeys.ID);
+  		Step rightStep = stepFactory.getStepById(rightStepId).orElseThrow(() -> new NotFoundException("Step ID not found: " + rightStepId));
   		parentStep.setChildStep(rightStep);
   	    TreeNode<Step> rightTreeNode = new TreeNode<>(rightStep);
   	    if(rightStepJson.has(JsonKeys.RIGHT_STEP)) {
@@ -138,7 +142,7 @@ public class StrategyRequest {
     if(errors.length() > 0) throw new WdkUserException(errors.toString());
     return stepTree;
   }
-  
+
   protected static String validateStep(Step step, User user, String projectId) throws WdkModelException {
 	StringBuilder errors = new StringBuilder();
     if(step.getStrategyId() != null) {
@@ -159,9 +163,9 @@ public class StrategyRequest {
     }
     return errors.toString();
   }
-  
+
   protected static void validateWiring(TreeNode<Step> stepTree, StringBuilder errors) throws WdkUserException, WdkModelException {
-	Step step = stepTree.getContents(); 
+	Step step = stepTree.getContents();
     if(step.isBoolean() && (step.getPreviousStep() == null || step.getChildStep() == null)) {
       errors.append("The boolean step " + step.getStepId() + " requires two input steps." + System.lineSeparator());
     }
@@ -184,15 +188,15 @@ public class StrategyRequest {
   public String getDescription() {
     return _description;
   }
-  
+
   public boolean isSaved() {
     return _isSaved;
   }
-  
+
   public boolean isHidden() {
     return _isHidden;
   }
-  
+
   public boolean isPublic() {
     return _isPublic;
   }

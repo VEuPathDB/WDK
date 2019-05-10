@@ -38,6 +38,7 @@ import org.gusdb.wdk.model.report.reporter.TableTabularReporter;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * This analyzer dumps a pre-configured set of result attributes to a tab-
@@ -70,8 +71,6 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   protected static final String MODEL_XML_PROPS_FILE_NAME = "modelXml.prop";
   protected static final String LAST_RUN_FILE_NAME = "last_run";
 
-  protected static final int DEFAULT_IFRAME_WIDTH_PX = 900;
-  protected static final int DEFAULT_IFRAME_HEIGHT_PX = 450;
   protected static final boolean ADD_HEADER_BY_DEFAULT = true;
   protected static final boolean DUMP_MODEL_PROPS_BY_DEFAULT = false;
   protected static final boolean DUMP_HEADER_DISPLAY_MAP_BY_DEFAULT = false;
@@ -79,10 +78,10 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   public static class ViewModel {
 
     private String _iframeBaseUrl;
-    private final int _iframeWidth;
-    private final int _iframeHeight;
+    private final Integer _iframeWidth;
+    private final Integer _iframeHeight;
 
-    public ViewModel(String iframeBaseUrl, int width, int height) {
+    public ViewModel(String iframeBaseUrl, Integer width, Integer height) {
       _iframeBaseUrl = iframeBaseUrl;
       _iframeWidth = width;
       _iframeHeight = height;
@@ -94,6 +93,16 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     public String getDownloadPath() { return ATTRIBUTES_FILE_NAME; }
     public int getIframeWidth() { return _iframeWidth; }
     public int getIframeHeight() { return _iframeHeight; }
+    
+    public JSONObject toJson() {
+      JSONObject json = new JSONObject();
+      json.put("iframeBaseUrl", _iframeBaseUrl);
+      json.put("iframeWidth", _iframeWidth);
+      json.put("iframeHeight", _iframeHeight);
+      json.put("downloadPath", ATTRIBUTES_FILE_NAME);
+
+      return json;
+    }
   }
 
   @Override
@@ -104,18 +113,28 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     checkPositiveIntegerIfPresent(IFRAME_LENGTH_PROP_KEY);
     checkBooleanIfPresent(ADD_HEADER_PROP_KEY);
   }
-
+  
   @Override
-  public Object getResultViewModel() throws WdkModelException {
-    return new ViewModel(
-        getProperty(EXTERNAL_APP_URL_PROP_KEY),
-        chooseSize(IFRAME_WIDTH_PROP_KEY, DEFAULT_IFRAME_WIDTH_PX),
-        chooseSize(IFRAME_LENGTH_PROP_KEY, DEFAULT_IFRAME_HEIGHT_PX));
+  public JSONObject getResultViewModelJson() throws WdkModelException {
+    return createResultViewModel().toJson();
   }
 
-  protected int chooseSize(String propName, int defaultValue) {
-    String prop = getProperty(propName);
-    return (prop != null && !prop.isEmpty()) ? Integer.parseInt(prop) : defaultValue;
+  private ViewModel createResultViewModel() {
+    return new ViewModel(
+        getProperty(EXTERNAL_APP_URL_PROP_KEY),
+        getPropertyAsInt(IFRAME_WIDTH_PROP_KEY),
+        getPropertyAsInt(IFRAME_LENGTH_PROP_KEY));
+  }
+   
+  @Override
+  public JSONObject getFormViewModelJson() throws WdkModelException {
+    return null;
+  }
+
+  protected Integer getPropertyAsInt(String propertyName) {
+    String propertyValue = getProperty(propertyName);
+    if (propertyValue == null || propertyValue.isEmpty()) return null;
+    return Integer.parseInt(propertyValue);
   }
 
   @Override
@@ -162,7 +181,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
   private List<String> getConfiguredFields(String propName) {
     String propValue = getProperty(propName);
     return (propValue == null ?
-      Collections.EMPTY_LIST :
+      Collections.emptyList() :
       mapToList(asList(propValue.split(",")), name -> name.trim()));
   }
 
