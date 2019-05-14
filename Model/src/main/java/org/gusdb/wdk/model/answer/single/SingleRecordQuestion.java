@@ -71,7 +71,7 @@ public class SingleRecordQuestion extends Question {
   }
 
   private void init(RecordClass recordClass, String questionName) {
-    setWdkModel(recordClass.getWdkModel());
+    _wdkModel = recordClass.getWdkModel();
     setRecordClass(recordClass);
     setName(questionName);
     setDisplayName("Single" + recordClass.getDisplayName());
