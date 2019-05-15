@@ -16,7 +16,7 @@ public class SingleRecordQuestion extends Question {
 
   public SingleRecordQuestion(RecordClass recordClass) {
     String name = Question.SINGLE_RECORD_QUESTION_PREFIX + recordClass.getFullName().replace('.', '_');
-    setWdkModel(recordClass.getWdkModel());
+    _wdkModel = recordClass.getWdkModel();
     setRecordClass(recordClass);
     setName(name);
     setDisplayName("Single" + recordClass.getDisplayName());
