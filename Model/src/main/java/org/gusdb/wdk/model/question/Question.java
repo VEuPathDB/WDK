@@ -757,6 +757,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
       // weight.setRemovable(false);
       // }
 
+      // pre-calculate all attribute fields since can be expensive when called frequently
+      _allAttributeFieldsMap = getAttributeFieldMap(FieldScope.ALL);
+
       // resolve default summary attributes
       if (_defaultSummaryAttributeNames != null) {
         Map<String, AttributeField> attributeFields = getAttributeFieldMap();
@@ -811,9 +814,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
       LOG.error("resolving question '" + getFullName() + " failed. " + ex);
       throw ex;
     }
-
-    // pre-calculate all attribute fields since can be expensive when called frequently
-    _allAttributeFieldsMap = getAttributeFieldMap(FieldScope.ALL);
 
     _resolved = true;
   }
