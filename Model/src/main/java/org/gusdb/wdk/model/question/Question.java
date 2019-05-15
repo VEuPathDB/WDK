@@ -122,9 +122,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   protected DynamicAttributeSet _dynamicAttributeSet;
   private Query _dynamicAttributeQuery;
 
-  // cached map of all attributes of this question (since generation can be expensive)
-  private Map<String, AttributeField> _allAttributeFieldsMap;
-
   /**
    * if set to true, if the result of the question has only 1 row, the strategy
    * workspace page will be skipped, and user is redirected to the record page
@@ -644,7 +641,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   @Override
   public Map<String, AttributeField> getAttributeFieldMap() {
-    return _allAttributeFieldsMap;
+    return getAttributeFieldMap(FieldScope.ALL);
   }
 
   @Override
@@ -756,9 +753,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
       // .getAttributeFieldMap().get(Utilities.COLUMN_WEIGHT);
       // weight.setRemovable(false);
       // }
-
-      // pre-calculate all attribute fields since can be expensive when called frequently
-      _allAttributeFieldsMap = getAttributeFieldMap(FieldScope.ALL);
 
       // resolve default summary attributes
       if (_defaultSummaryAttributeNames != null) {
