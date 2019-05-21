@@ -85,7 +85,7 @@ public class RecordStreamFactory {
       .map(Query::getFullName)
       .iterator();
 
-    return !names.hasNext() || hasSingleAttrQuery(names.next(), names);
+    return names.hasNext() && hasSingleAttrQuery(names.next(), names);
   }
 
   private static boolean hasSingleAttrQuery(
