@@ -9,6 +9,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.StaticRecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeValue;
 
@@ -26,7 +27,7 @@ public class SingleAttributeRecordIterator implements Iterator <RecordInstance> 
 
   private final SqlResultList results;
 
-  private final Collection<AttributeField> fields;
+  private final Collection<ColumnAttributeField> fields;
 
   private boolean next;
 
@@ -34,7 +35,7 @@ public class SingleAttributeRecordIterator implements Iterator <RecordInstance> 
     final SingleAttributeRecordStream parent,
     final AnswerValue answer,
     final SqlResultList results,
-    final Collection<AttributeField> fields
+    final Collection<ColumnAttributeField> fields
   ) {
     this.parent = parent;
     this.answer = answer;

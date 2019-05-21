@@ -149,7 +149,7 @@ public class FileBasedRecordStream implements RecordStream {
    * @return map containing all passed column attribute fields and any depended column attributes
    * @throws WdkModelException if unable to load depended attribute fields
    */
-  private static Collection<ColumnAttributeField> getRequiredColumnAttributeFields(
+  public static Collection<ColumnAttributeField> getRequiredColumnAttributeFields(
       Collection<AttributeField> attributes, boolean includeDependedColumns) throws WdkModelException {
     // Using a set to collect column attribute fields because multiple non-column attributes may cite the same
     // column attributes as dependencies and we don't want them counted more than once.
