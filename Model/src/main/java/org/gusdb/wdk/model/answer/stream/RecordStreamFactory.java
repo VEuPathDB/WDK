@@ -1,9 +1,9 @@
 package org.gusdb.wdk.model.answer.stream;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.stream.Stream;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -11,11 +11,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.single.SingleRecordAnswerValue;
-import org.gusdb.wdk.model.query.Column;
-import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 
 public class RecordStreamFactory {
 
@@ -51,7 +48,7 @@ public class RecordStreamFactory {
         out = new PagedAnswerRecordStream(answerValue,
           answerValue.getResultSizeFactory().getResultSize());
 
-      else if (hasSingleAttrQuery(answerValue, attributes, tables))
+      else if (requiresExactlyOneAttrQuery(answerValue, attributes, tables, true))
         out = new SingleAttributeRecordStream(answerValue, attributes);
 
       // otherwise, use file-based; most efficient method for large results where we already know attrs/tables
@@ -67,35 +64,20 @@ public class RecordStreamFactory {
     return out;
   }
 
-  private static boolean hasSingleAttrQuery(
+  private static boolean requiresExactlyOneAttrQuery(
     AnswerValue answerValue,
     Collection<AttributeField> fields,
-    Collection<TableField> tables
-  ) {
-    final Iterator<String> names = Stream.concat(
-      answerValue.getSortingColumns().stream(),
-      Stream.concat(
-        fields.stream(),
-        tables.stream()
-          .flatMap(t -> Arrays.stream(t.getAttributeFields()))))
-      .filter(QueryColumnAttributeField.class::isInstance)
-      .map(QueryColumnAttributeField.class::cast)
-      .map(QueryColumnAttributeField::getColumn)
-      .map(Column::getQuery)
-      .map(Query::getFullName)
-      .iterator();
-
-    return names.hasNext() && hasSingleAttrQuery(names.next(), names);
-  }
-
-  private static boolean hasSingleAttrQuery(
-    final String name,
-    final Iterator<String> names
-  ) {
-    while (names.hasNext()) {
-      if (!name.equals(names.next()))
-        return false;
+    Collection<TableField> tables,
+    boolean includeSortingColumnsInCalculation
+  ) throws WdkModelException {
+    if (!tables.isEmpty()) {
+      return false;
     }
-    return true;
+    List<AttributeField> fieldsToConsider = new ArrayList<>(fields);
+    if (includeSortingColumnsInCalculation) {
+      fieldsToConsider.addAll(answerValue.getSortingColumns()
+          .stream().map(sortSpec -> sortSpec.getItem()).collect(Collectors.toList()));
+    }
+    return FileBasedRecordStream.requiresExactlyOneAttributeQuery(fieldsToConsider);
   }
 }

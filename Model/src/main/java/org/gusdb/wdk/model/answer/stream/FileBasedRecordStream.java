@@ -168,6 +168,18 @@ public class FileBasedRecordStream implements RecordStream {
   }
 
   /**
+   * Convenience method to detect whether a set of requested attribute fields
+   * requires only a single attribute query to fulfill.
+   * 
+   * @param attributes set of requested attribute fields
+   * @return true if fields can be returned by executing only a single attribute query, else false
+   * @throws WdkModelException if error occurs while calculating attribute query needs
+   */
+  public static boolean requiresExactlyOneAttributeQuery(Collection<AttributeField> attributes) throws WdkModelException {
+    return getAttributeQueryMap(getRequiredColumnAttributeFields(attributes, true)).size() == 1;
+  }
+
+  /**
    * Collect all the queries needed to accommodate the requested attributes and assigns attributes to queries
    * 
    * @param columnAttributes required column attributes
