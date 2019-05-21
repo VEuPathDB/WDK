@@ -1,5 +1,19 @@
 package org.gusdb.wdk.model.answer.stream;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import javax.sql.DataSource;
+
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -8,15 +22,8 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class SingleAttributeRecordStream
   implements RecordStream {
@@ -35,19 +42,17 @@ public class SingleAttributeRecordStream
 
   private final Query query;
 
-  private final Collection<AttributeField> fields;
+  private final Collection<ColumnAttributeField> fields;
 
   public SingleAttributeRecordStream(
     AnswerValue answer,
     Collection<AttributeField> attributes
-  ) {
+  ) throws WdkModelException {
     this.answer = answer;
     this.openIterators = new HashMap<>();
     this.db = answer.getQuestion().getWdkModel().getAppDb().getDataSource();
-    this.query = getAttributeQuery(attributes);
-    this.fields = attributes.stream()
-      .filter(QueryColumnAttributeField.class::isInstance)
-      .collect(Collectors.toList());
+    this.fields = FileBasedRecordStream.getRequiredColumnAttributeFields(attributes, true);
+    this.query = getAttributeQuery(this.fields);
   }
 
   @Override
@@ -119,7 +124,7 @@ public class SingleAttributeRecordStream
   }
 
   private static Collection<String> cols(
-    final Collection<AttributeField> fields,
+    final Collection<ColumnAttributeField> fields,
     final AnswerValue answer
   ) {
     Collection<String> out = new HashSet<>();
@@ -137,11 +142,11 @@ public class SingleAttributeRecordStream
   }
 
   private static Query getAttributeQuery(
-    final Collection<AttributeField> cols
+    final Collection<ColumnAttributeField> cols
   ) {
     final Set<Query> qs = new HashSet<>();
 
-    for (final AttributeField col : cols)
+    for (final ColumnAttributeField col : cols)
       if (col instanceof QueryColumnAttributeField)
         qs.add(((QueryColumnAttributeField) col).getColumn().getQuery());
 
