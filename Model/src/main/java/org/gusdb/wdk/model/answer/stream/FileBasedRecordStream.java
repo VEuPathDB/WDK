@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -21,6 +22,7 @@ import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Named;
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -169,14 +171,23 @@ public class FileBasedRecordStream implements RecordStream {
 
   /**
    * Convenience method to detect whether a set of requested attribute fields
-   * requires only a single attribute query to fulfill.
+   * requires exactly one attribute query to fulfill.
    * 
    * @param attributes set of requested attribute fields
    * @return true if fields can be returned by executing only a single attribute query, else false
    * @throws WdkModelException if error occurs while calculating attribute query needs
    */
   public static boolean requiresExactlyOneAttributeQuery(Collection<AttributeField> attributes) throws WdkModelException {
-    return getAttributeQueryMap(getRequiredColumnAttributeFields(attributes, true)).size() == 1;
+    Collection<TwoTuple<Query, List<QueryColumnAttributeField>>> attributeQueries =
+        getAttributeQueryMap(getRequiredColumnAttributeFields(attributes, true));
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Required attribute fields: ");
+      for (TwoTuple<Query, List<QueryColumnAttributeField>> query : attributeQueries) {
+        LOG.info("  " + query.getFirst().getName() + " will provide [ " +
+            query.getSecond().stream().map(NamedObject::getName).collect(Collectors.joining(", ")) + " ]");
+      }
+    }
+    return attributeQueries.size() == 1;
   }
 
   /**
