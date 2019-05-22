@@ -38,7 +38,7 @@ public class SingleAttributeRecordIterator implements Iterator <RecordInstance> 
     this.parent = parent;
     this.answer = answer;
     this.results = results;
-    this.question = answer.getQuestion();
+    this.question = answer.getAnswerSpec().getQuestion();
     this.next = index(results);
     this.fields = fields;
   }
