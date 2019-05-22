@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.question;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -268,11 +270,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   @Override
   public WdkModel getWdkModel() {
-    return this._wdkModel;
-  }
-
-  public void setWdkModel(WdkModel wdkModel) {
-    this._wdkModel = wdkModel;
+    return _wdkModel;
   }
 
   public void setName(String name) {
@@ -530,25 +528,23 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   @Override
   public String toString() {
-    String newline = System.getProperty("line.separator");
-
-    StringBuffer saNames = new StringBuffer();
+    StringBuilder saNames = new StringBuilder();
     if (_recordClass != null) {
       Map<String, AttributeField> summaryFields = getAttributeFieldMap(FieldScope.NON_INTERNAL);
       for (String saName : summaryFields.keySet()) {
         saNames.append(saName + ", ");
       }
     }
-    StringBuffer buf = new StringBuffer(
-        "Question: name='" + _name + "'" + newline +
-        "  recordClass='" + _recordClassRef + "'" + newline +
-        "  query='" + _idQueryRef + "'" + newline +
-        "  displayName='" + getDisplayName() + "'" + newline +
-        "  customJavascript='" + getCustomJavascript() + "'" + newline +
-        "  summary='" + getSummary() + "'" + newline +
-        "  description='" + getDescription() + "'" + newline +
-        "  summaryAttributes='" + saNames + "'" + newline +
-        "  help='" + getHelp() + "'" + newline);
+    StringBuilder buf = new StringBuilder(
+        "Question: name='" + _name + "'" + NL +
+        "  recordClass='" + _recordClassRef + "'" + NL +
+        "  query='" + _idQueryRef + "'" + NL +
+        "  displayName='" + getDisplayName() + "'" + NL +
+        "  customJavascript='" + getCustomJavascript() + "'" + NL +
+        "  summary='" + getSummary() + "'" + NL +
+        "  description='" + getDescription() + "'" + NL +
+        "  summaryAttributes='" + saNames + "'" + NL +
+        "  help='" + getHelp() + "'" + NL);
     if (_dynamicAttributeSet != null)
       buf.append(_dynamicAttributeSet.toString());
     return buf.toString();
@@ -701,7 +697,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     if (_resolved)
       return;
     super.resolveReferences(model);
-    this._wdkModel = model;
+    _wdkModel = model;
 
     try {
       // it must happen before dynamicAttributeSet, because it is
