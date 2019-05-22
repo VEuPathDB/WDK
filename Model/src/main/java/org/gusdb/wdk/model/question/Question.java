@@ -125,6 +125,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   protected DynamicAttributeSet _dynamicAttributeSet;
   private Query _dynamicAttributeQuery;
 
+  // cached map of all attributes of this question
+  private Map<String, AttributeField> _allAttributeFieldsMap;
+
   /**
    * if set to true, if the result of the question has only 1 row, the strategy
    * workspace page will be skipped, and user is redirected to the record page
@@ -569,7 +572,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   @Override
   public Map<String, AttributeField> getAttributeFieldMap() {
-    return getAttributeFieldMap(FieldScope.ALL);
+    return (_allAttributeFieldsMap != null
+        ? _allAttributeFieldsMap // cached value not yet set (done at end of resolveRefs)
+        : getAttributeFieldMap(FieldScope.ALL));
   }
 
   @Override
@@ -682,13 +687,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
       _dynamicAttributeQuery.resolveReferences(model);
       _dynamicAttributeSet.resolveReferences(model);
 
-      // make sure we always display weight for combined question
-      // if (query.isCombined()) {
-      // AttributeField weight = dynamicAttributeSet
-      // .getAttributeFieldMap().get(Utilities.COLUMN_WEIGHT);
-      // weight.setRemovable(false);
-      // }
-
       // resolve default summary attributes
       if (_defaultSummaryAttributeNames != null) {
         Map<String, AttributeField> attributeFields = getAttributeFieldMap();
@@ -730,6 +728,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
         }
       }
 
+      // cache "ALL" attributes for efficient access- can be expensive if done many times
+      _allAttributeFieldsMap = getAttributeFieldMap(FieldScope.ALL);
     }
     catch (WdkModelException ex) {
       LOG.error("resolving question '" + getFullName() + " failed. " + ex);

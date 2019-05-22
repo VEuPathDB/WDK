@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -21,6 +22,7 @@ import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Named;
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -147,7 +149,7 @@ public class FileBasedRecordStream implements RecordStream {
    * @return map containing all passed column attribute fields and any depended column attributes
    * @throws WdkModelException if unable to load depended attribute fields
    */
-  private static Collection<ColumnAttributeField> getRequiredColumnAttributeFields(
+  public static Collection<ColumnAttributeField> getRequiredColumnAttributeFields(
       Collection<AttributeField> attributes, boolean includeDependedColumns) throws WdkModelException {
     // Using a set to collect column attribute fields because multiple non-column attributes may cite the same
     // column attributes as dependencies and we don't want them counted more than once.
@@ -165,6 +167,27 @@ public class FileBasedRecordStream implements RecordStream {
 
     // get unique list and then filter out PK columns, which will always be fetched
     return columnAttributes.toMap().values();
+  }
+
+  /**
+   * Convenience method to detect whether a set of requested attribute fields
+   * requires exactly one attribute query to fulfill.
+   * 
+   * @param attributes set of requested attribute fields
+   * @return true if fields can be returned by executing only a single attribute query, else false
+   * @throws WdkModelException if error occurs while calculating attribute query needs
+   */
+  public static boolean requiresExactlyOneAttributeQuery(Collection<AttributeField> attributes) throws WdkModelException {
+    Collection<TwoTuple<Query, List<QueryColumnAttributeField>>> attributeQueries =
+        getAttributeQueryMap(getRequiredColumnAttributeFields(attributes, true));
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Required attribute fields: ");
+      for (TwoTuple<Query, List<QueryColumnAttributeField>> query : attributeQueries) {
+        LOG.info("  " + query.getFirst().getName() + " will provide [ " +
+            query.getSecond().stream().map(NamedObject::getName).collect(Collectors.joining(", ")) + " ]");
+      }
+    }
+    return attributeQueries.size() == 1;
   }
 
   /**
