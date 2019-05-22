@@ -828,12 +828,6 @@ public class AnswerValue {
     }
   }
 
-  public JSONObject getFilterSummaryJson(String filterName) throws WdkModelException, WdkUserException {
-    String idSql = getIdSql(filterName, false);
-    Filter filter = _question.getFilter(filterName);
-    return filter.getSummaryJson(this, idSql);
-  }
-
   /**
    * Returns one big string containing all IDs in this answer value's result in
    * the following format: each '\n'-delimited line contains one record, whose
@@ -858,7 +852,7 @@ public class AnswerValue {
 
   public List<SortDirectionSpec<AttributeField>> getSortingColumns() {
     return SortDirectionSpec.convertSorting(_sortingMap,
-      _question.getAttributeFieldMap());
+      _answerSpec.getQuestion().getAttributeFieldMap());
   }
 
   public String getFilteredAttributeSql(
@@ -970,7 +964,7 @@ public class AnswerValue {
    * @return the joined SQL query.
    */
   private String joinToIds(final String sql, final String idSql) {
-    final String[] refs = _question.getRecordClass()
+    final String[] refs = _answerSpec.getQuestion().getRecordClass()
       .getPrimaryKeyDefinition()
       .getColumnRefs();
 

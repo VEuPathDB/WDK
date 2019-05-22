@@ -51,7 +51,7 @@ public class SingleAttributeRecordStream
   ) throws WdkModelException {
     this.answer = answer;
     this.openIterators = new HashMap<>();
-    this.db = answer.getQuestion().getWdkModel().getAppDb().getDataSource();
+    this.db = answer.getWdkModel().getAppDb().getDataSource();
     this.fields = trimNonQueryAttrs(FileBasedRecordStream.getRequiredColumnAttributeFields(attributes, true));
     this.query = getAttributeQuery(this.fields);
   }
@@ -141,7 +141,7 @@ public class SingleAttributeRecordStream
       .map(Field::getName)
       .forEach(out::add);
 
-    out.addAll(Arrays.asList(answer.getQuestion()
+    out.addAll(Arrays.asList(answer.getAnswerSpec().getQuestion()
       .getRecordClass()
       .getPrimaryKeyDefinition()
       .getColumnRefs()));
