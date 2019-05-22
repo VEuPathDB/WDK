@@ -1036,4 +1036,8 @@ public class AnswerValue {
 
     return out.toString();
   }
+
+  public boolean entireResultRequested() {
+    return _startIndex == 1 && _endIndex == UNBOUNDED_END_PAGE_INDEX;
+  }
 }
