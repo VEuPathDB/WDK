@@ -91,6 +91,9 @@ site_vars file: {{ site_vars }}
             {% if modelconfig_appDb_maxWait is defined -%}
             maxWait="{{ modelconfig_appDb_maxWait }}"
             {% endif -%}
+            {% if modelconfig_appDb_defaultFetchSize is defined -%}
+            defaultFetchSize="{{ modelconfig_appDb_defaultFetchSize }}"
+            {% endif -%}
             {% if modelconfig_appDb_showConnections is defined -%}
             showConnections="{{ modelconfig_appDb_showConnections }}"
             {% endif -%}
@@ -125,6 +128,9 @@ site_vars file: {{ site_vars }}
             {% if modelconfig_userDb_maxWait is defined -%}
             maxWait="{{ modelconfig_userDb_maxWait }}"
             {% endif -%}
+            {% if modelconfig_userDb_defaultFetchSize is defined -%}
+            defaultFetchSize="{{ modelconfig_userDb_defaultFetchSize }}"
+            {% endif -%}
             {% if modelconfig_userDb_showConnections is defined -%}
             showConnections="{{ modelconfig_userDb_showConnections }}"
             {% endif -%}
@@ -155,6 +161,9 @@ site_vars file: {{ site_vars }}
             {% endif -%}
             {% if modelconfig_accountDb_maxWait is defined -%}
             maxWait="{{ modelconfig_accountDb_maxWait }}"
+            {% endif -%}
+            {% if modelconfig_accountDb_defaultFetchSize is defined -%}
+            defaultFetchSize="{{ modelconfig_accountDb_defaultFetchSize }}"
             {% endif -%}
             {% if modelconfig_accountDb_showConnections is defined -%}
             showConnections="{{ modelconfig_accountDb_showConnections }}"

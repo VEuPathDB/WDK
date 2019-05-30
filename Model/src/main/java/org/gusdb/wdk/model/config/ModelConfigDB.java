@@ -34,6 +34,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   private short maxIdle = 1;
   private short minIdle = 0;
   private long maxWait = 50;
+  private int defaultFetchSize = 0;
   private boolean defaultReadOnly = DEFAULT_READ_ONLY;
   private boolean defaultAutoCommit = DEFAULT_AUTO_COMMIT;
 
@@ -183,6 +184,15 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    */
   public void setMaxWait(long maxWait) {
     this.maxWait = maxWait;
+  }
+
+  @Override
+  public int getDefaultFetchSize() {
+    return defaultFetchSize;
+  }
+
+  public void setDefaultFetchSize(int defaultFetchSize) {
+    this.defaultFetchSize = defaultFetchSize;
   }
 
   @Override
