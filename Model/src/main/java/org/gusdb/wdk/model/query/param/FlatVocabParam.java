@@ -106,11 +106,6 @@ public class FlatVocabParam extends AbstractEnumParam {
   // /////////// Protected properties ////////////////////////////////////
   // ///////////////////////////////////////////////////////////////////
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
-   */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
