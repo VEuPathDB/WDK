@@ -370,8 +370,8 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       return ctxParamVals.setInvalid(name, "At least one value for "
           + getPrompt() + " must be selected.");
 
-    // all other validation requires a DB lookup, so exit here if syntactic
-    if (level.equals(ValidationLevel.SYNTACTIC)) {
+    // all other validation requires a DB lookup, so exit here if displayable or less
+    if (level.isLessThanOrEqualTo(ValidationLevel.DISPLAYABLE)) {
       return ctxParamVals.setValid(name);
     }
 
