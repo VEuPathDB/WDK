@@ -933,9 +933,13 @@ public class FilterParamNew extends AbstractDependentParam {
 
     super.setContextQuestion(question);
 
-    // also set context question in the metadata & ontology queries
+    // also set context question and param in the metadata & ontology queries
     _metadataQuery.setContextQuestion(question);
+    _metadataQuery.setContextParam(this);
     _ontologyQuery.setContextQuestion(question);
+    _ontologyQuery.setContextParam(this);
+    _backgroundQuery.setContextQuestion(question);
+    _backgroundQuery.setContextParam(this);
   }
 
   /**
@@ -958,9 +962,9 @@ public class FilterParamNew extends AbstractDependentParam {
     final String name = getName();
     final FilterParamNewStableValue stableValue =
         new FilterParamNewStableValue(contextParamValues.get(getName()), this);
-    final String err = level.equals(ValidationLevel.SYNTACTIC) ?
-        stableValue.validateSyntax() :
-        stableValue.validateSyntaxAndSemantics(contextParamValues);
+    final String err = level.isGreaterThanOrEqualTo(ValidationLevel.SYNTACTIC) ?
+        stableValue.validateSyntaxAndSemantics(contextParamValues) :
+        stableValue.validateSyntax();
     return err == null ?
         contextParamValues.setValid(name) :
         contextParamValues.setInvalid(name, err);
