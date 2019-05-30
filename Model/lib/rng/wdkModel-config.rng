@@ -211,6 +211,11 @@
             </attribute>
         </optional>
         <optional>
+            <attribute name="defaultFetchSize">
+                <data type="unsignedShort" />
+            </attribute>
+        </optional>
+        <optional>
             <attribute name="driverInitClass">
                 <data type="string" />
             </attribute>
