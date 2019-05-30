@@ -252,11 +252,9 @@ public abstract class AbstractDependentParam extends Param {
         continue;
 
       if (!_dependedParamRefs.contains(queryParamName)) {
-        WdkModelException ex = new WdkModelException("In parameter " + getFullName() + ", " + queryType + query.getFullName() +
-            " declares a depended param " +
-            queryParamName + ", but " + getFullName() + " doesn't declare that in its depended params.");
-        ex.printStackTrace(); // TODO: temporary for debugging filter param new bug
-        throw ex;
+        throw new WdkModelException("In parameter " + getFullName() + ", " +
+            queryType + query.getFullName() + " has a parameter " + queryParamName +
+            ", but " + getFullName() + " doesn't declare that in its depended params.");
       }
     }
 
