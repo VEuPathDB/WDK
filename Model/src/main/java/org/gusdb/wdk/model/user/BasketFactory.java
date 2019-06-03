@@ -382,7 +382,6 @@ public class BasketFactory {
     try {
       try {
         ps = SqlUtils.getPreparedStatement(ds, sql);
-        ps.setFetchSize(100);
         ps.setString(1, _wdkModel.getProjectId());
         ps.setLong(2, user.getUserId());
         ps.setString(3, recordClass.getFullName());
