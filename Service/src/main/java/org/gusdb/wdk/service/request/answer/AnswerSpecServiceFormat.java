@@ -5,11 +5,13 @@ import java.util.Optional;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersDbColumnFormat;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
+import org.gusdb.wdk.service.request.filter.ColumnFilterServiceFormat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,7 +23,7 @@ public class AnswerSpecServiceFormat {
    * filters are optional; omission means no filters will be applied.  Weight is
    * optional and defaults to 0.  Question name will be specified separately
    * and thus is passed in.
-   * 
+   *
    * Input Format:
    * {
    *   "parameters": Object (map from paramName -> paramValue),
@@ -34,7 +36,7 @@ public class AnswerSpecServiceFormat {
    *   } ],
    *   "wdk_weight": (optional) Integer
    * }
-   * 
+   *
    * @param json JSON representation of an answer spec
    * @param wdkModel WDK model
    * @return constructed answer spec builder
@@ -56,13 +58,19 @@ public class AnswerSpecServiceFormat {
       specBuilder.setFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.FILTERS));
       specBuilder.setViewFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.VIEW_FILTERS));
 
+      // TODO: Move this to somewhere that makes a bit more sense
+      if (json.has(JsonKeys.COLUMN_FILTERS))
+        specBuilder.setColumnFilterConfig(
+          ColumnFilterServiceFormat.parse(question,
+            json.getJSONObject(JsonKeys.COLUMN_FILTERS)));
+
       // apply weight if present
       if (json.has(JsonKeys.WDK_WEIGHT)) {
         specBuilder.setAssignedWeight(json.getInt(JsonKeys.WDK_WEIGHT));
       }
       return specBuilder;
     }
-    catch (JSONException e) {
+    catch (JSONException | WdkUserException e) {
       throw new RequestMisformatException("Required value is missing or incorrect type", e);
     }
   }
@@ -71,7 +79,7 @@ public class AnswerSpecServiceFormat {
    * Formats the passed answer spec into JSON.  Output format is the same as
    * input format except for an additional property, "questionName", which is
    * included when formatting an existing answer spec.
-   * 
+   *
    * @param answerSpec answer spec to format
    * @return passed answer spec in JSON format
    */

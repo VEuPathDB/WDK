@@ -25,7 +25,7 @@ import org.json.JSONObject;
  *   properties: Object
  *   formats: Array of reporter names (String)
  * }
- * 
+ *
  * @author rdoherty
  */
 public class AttributeFieldFormatter {
@@ -56,7 +56,15 @@ public class AttributeFieldFormatter {
       .put(JsonKeys.NAME, attribute.getName())
       .put(JsonKeys.PROPERTIES, attribute.getPropertyLists())
       .put(JsonKeys.TRUNCATE_TO, attribute.getTruncateTo())
-      .put(JsonKeys.TYPE, attribute.getType());
+      .put(JsonKeys.TYPE, attribute.getType())
+      .put(JsonKeys.TOOLS, formatToolsJson(attribute))
+      .put(JsonKeys.DATA_TYPE, attribute.getDataType());
 
+  }
+
+  private static JSONObject formatToolsJson(AttributeField field) {
+    return new JSONObject()
+      .put(JsonKeys.REPORTERS, field.getColumnReporterNames())
+      .put(JsonKeys.FILTERS, field.getColumnFilterNames());
   }
 }

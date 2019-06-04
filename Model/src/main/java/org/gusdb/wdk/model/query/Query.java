@@ -1,17 +1,6 @@
 package org.gusdb.wdk.model.query;
 
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.gusdb.fgputil.EncryptionUtil;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
@@ -23,75 +12,85 @@ import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.ParameterContainerImpl;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
 import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.PrintWriter;
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
+ * The query in WDK defines how the data is accessed from the resource. There
+ * are currently two kinds of query, SQL based query, and web service based
+ * query. The query is not exposed to the user, only the question are visible on
+ * the web sites as searches.
+ *
  * <p>
- * The query in WDK defines how the data is accessed from the resource. There are currently two kinds of
- * query, SQL based query, and web service based query. The query is not exposed to the user, only the
- * question are visible on the web sites as searches.
- * </p>
- * 
+ * A Query holds only the definition of query, such as params, SQL template, or
+ * information about the web service etc. It can be used to create
+ * QueryInstance, which will hold param values, and does the real work of
+ * executing a query and retrieve data.
+ *
  * <p>
- * A Query holds only the definition of query, such as params, SQL template, or information about the web
- * service etc. It can be used to create QueryInstance, which will hold param values, and does the real work
- * of executing a query and retrieve data.
- * </p>
- * 
+ * Depending on how many answerParams a query might have, a query can be called
+ * as a normal query (without any answerParam), or a combined query (with one or
+ * more answerParams). If a query has exactly one answerParam, it is also called
+ * a transform query; in the transform query, the type of the answerParam can be
+ * different from the type of the results the query returns. And there is
+ * another special kind of combined query, called BooleanQuery, which has
+ * exactly two answerParams, and the types of the answerParam are the same as
+ * the result of the query.
+ *
  * <p>
- * Depending on how many answerParams a query might have, a query can be called as a normal query (without
- * any answerParam), or a combined query (with one or more answerParams). If a query has exactly one
- * answerParam, it is also called a transform query; in the transform query, the type of the answerParam can
- * be different from the type of the results the query returns. And there is another special kind of combined
- * query, called BooleanQuery, which has exactly two answerParams, and the types of the answerParam are the
- * same as the result of the query.
- * </p>
- * 
+ * A query can be used in four contexts in WDK, as ID query, attribute query,
+ * table query, and param query. and SqlQuery can be used in all four contexts,
+ * but ProcessQuery (web service query) can only be used in ID and param
+ * queries.
+ *
  * <p>
- * A query can be used in four contexts in WDK, as ID query, attribute query, table query, and param query.
- * and SqlQuery can be used in all four contexts, but ProcessQuery (web service query) can only be used in ID
- * and param queries.
- * </p>
- * 
- * <p>
- * An ID query is a query referenced by a question, and the parameters for the search (the visual name of the
- * question) are defined in the queries. An ID query should return all the primary key columns of the
- * recordClass type the associated question linked to. The the primary key values returned by ID query should
- * be unique, and cannot have duplicate rows. If duplicate primary key occurs, WDK will fail when joining it
- * with the attribute query. An ID query can have other columns other than the primary key columns, and those
+ * An ID query is a query referenced by a question, and the parameters for the
+ * search (the visual name of the question) are defined in the queries. An ID
+ * query should return all the primary key columns of the recordClass type the
+ * associated question linked to. The the primary key values returned by ID
+ * query should be unique, and cannot have duplicate rows. If duplicate primary
+ * key occurs, WDK will fail when joining it with the attribute query. An ID
+ * query can have other columns other than the primary key columns, and those
  * columns are usually used for the dynamic attributes.
- * </p>
- * 
+ *
  * <p>
- * An attribute query is a query referenced by a recordClass, in the <attributeQueryRef> tag. An attribute
- * query has to be SqlQuery, and it does not normally have params, although you can define an internal wdk
- * user param in some rare case where the content of the result is user-dependent. The attribute query should
- * return all possible records of a given record type, and the records in the result has to be unique, and the
- * attribute query has to return all the primary key columns, although the corresponding ColumnAttributeField
- * is optional for those columns. The attribute query will be used in two contexts, for single records, and
- * for records in an answer. When used in single record, the attribute SQL is wrapped with the primary key
- * values to return only one row for the record. When used in answer, the attribute SQL is used for sorting
- * the result on the columns in the attribute query, and then the paged id SQL will be used to join with the
- * attribute SQL, to return a page of attributes for the records.
+ * An attribute query is a query referenced by a recordClass, in the
+ * <attributeQueryRef> tag. An attribute query has to be SqlQuery, and it does
+ * not normally have params, although you can define an internal wdk user param
+ * in some rare case where the content of the result is user-dependent. The
+ * attribute query should return all possible records of a given record type,
+ * and the records in the result has to be unique, and the attribute query has
+ * to return all the primary key columns, although the corresponding
+ * ColumnAttributeField is optional for those columns. The attribute query will
+ * be used in two contexts, for single records, and for records in an answer.
+ * When used in single record, the attribute SQL is wrapped with the primary key
+ * values to return only one row for the record. When used in answer, the
+ * attribute SQL is used for sorting the result on the columns in the attribute
+ * query, and then the paged id SQL will be used to join with the attribute SQL,
+ * to return a page of attributes for the records.
+ *
  * <p>
- * 
- * <p>
- * An table query is query referenced by recordClass, in the &lt;table&gt; tag. A table query has to be
- * SqlQuery, and it doesn't normally have params, although you can define an internal wdk user param same way
- * as in attribute query. The table query should return the results for all possible records of a given record
- * type, and each record can have zero or more rows in the result. The table query also must return all the
- * primary key columns, although the ColumnAttributeField of those is optional. The table can be used in two
- * contexts, in single record, or in an answer. In a single record, the table query is used in the similar way
- * as attribute query, and it will be wrapped with the primary key values of the record, to get zero or more
- * rows. In the context of an answer, the table SQL can be used to be combined with the paged ID SQL to get a
- * page of the results for the records.
- * </p>
- * 
+ * An table query is query referenced by recordClass, in the &lt;table&gt; tag.
+ * A table query has to be SqlQuery, and it doesn't normally have params,
+ * although you can define an internal wdk user param same way as in attribute
+ * query. The table query should return the results for all possible records of
+ * a given record type, and each record can have zero or more rows in the
+ * result. The table query also must return all the primary key columns,
+ * although the ColumnAttributeField of those is optional. The table can be used
+ * in two contexts, in single record, or in an answer. In a single record, the
+ * table query is used in the similar way as attribute query, and it will be
+ * wrapped with the primary key values of the record, to get zero or more rows.
+ * In the context of an answer, the table SQL can be used to be combined with
+ * the paged ID SQL to get a page of the results for the records.
+ *
  * @author Jerric Gao
- * 
  */
 public abstract class Query extends ParameterContainerImpl implements OptionallyTestable {
 
@@ -109,8 +108,8 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   protected Map<String, Column> columnMap;
 
   // for sanity testing
-  private boolean doNotTest = false;
-  private List<ParamValuesSet> paramValuesSets = new ArrayList<ParamValuesSet>();
+  private boolean doNotTest;
+  private List<ParamValuesSet> paramValuesSets;
 
   private QuerySet querySet;
 
@@ -121,12 +120,12 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   private Question contextQuestion;
   private Param contextParam;
 
-  private Map<String, Boolean> sortingMap;
+  private final Map<String, Boolean> sortingMap;
 
   // optionally override what is in the query set.  null means don't override
-  private List<PostCacheUpdateSql> postCacheUpdateSqls = null;
+  private List<PostCacheUpdateSql> postCacheUpdateSqls;
 
-  
+
   // =========================================================================
   // Abstract methods
   // =========================================================================
@@ -147,44 +146,72 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   // =========================================================================
 
   protected Query() {
-    columnList = new ArrayList<Column>();
-    columnMap = new LinkedHashMap<String, Column>();
+    columnList = new ArrayList<>();
+    columnMap = new LinkedHashMap<>();
     hasWeight = false;
     sortingMap = new LinkedHashMap<>();
+    paramValuesSets = new ArrayList<>();
   }
 
   /**
    * clone the query object
-   * 
-   * @param query
+   *
+   * @param query existing query to clone
    */
   protected Query(Query query) {
     super(query);
 
-    // logger.debug("clone query: " + query.getFullName());
     this.name = query.name;
     if (query.columnList != null)
       this.columnList = new ArrayList<>(query.columnList);
-    this.columnMap = new LinkedHashMap<String, Column>();
+    this.columnMap = new LinkedHashMap<>();
     this.querySet = query.querySet;
     this.doNotTest = query.doNotTest;
-    this.paramValuesSets = new ArrayList<ParamValuesSet>(query.paramValuesSets);
+    paramValuesSets = new ArrayList<>();
+    this.paramValuesSets = new ArrayList<>(query.paramValuesSets);
     this.hasWeight = query.hasWeight;
     this.contextQuestion = query.getContextQuestion();
     this.contextParam = query.getContextParam();
     this.sortingMap = new LinkedHashMap<>(query.sortingMap);
-    this.postCacheUpdateSqls = query.postCacheUpdateSqls == null ? null : new ArrayList <PostCacheUpdateSql> (query.postCacheUpdateSqls);
+    this.postCacheUpdateSqls = query.postCacheUpdateSqls == null
+      ? null : new ArrayList<>(query.postCacheUpdateSqls);
 
     // clone columns
-    for (String columnName : query.columnMap.keySet()) {
-      Column column = new Column(query.columnMap.get(columnName));
-      column.setQuery(this);
-      columnMap.put(columnName, column);
-    }
+    query.columnMap.values()
+      .stream()
+      .map(Column::new)
+      .peek(c -> c.setQuery(this))
+      .forEach(c -> columnMap.put(c.getName(), c));
   }
 
+  /**
+   * @return the parameter that contains this query or null if this is an
+   * independent query
+   */
   public Param getContextParam() {
     return contextParam;
+  }
+
+  @Override
+  public Map<String, Param> getRequiredParams() {
+    if (contextParam == null)
+      return getParamMap();
+
+    // This is safe because of checks in the model parsing
+    // that ensure the params declared as used by a query
+    // with a context param are included in that params
+    // depended params.
+    var out = new HashMap<String, Param>();
+    var qry = new LinkedList<>(getParamMap().values());
+
+    while (!qry.isEmpty()) {
+      var cur = qry.poll();
+
+      out.put(cur.getName(), cur);
+      qry.addAll(cur.getDependedParams());
+    }
+
+    return out;
   }
 
   public void setContextParam(Param contextParam) {
@@ -197,9 +224,8 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
 
   public void setContextQuestion(Question contextQuestion) throws WdkModelException {
     this.contextQuestion = contextQuestion;
-    for (Param param : paramMap.values()) {
+    for (Param param : paramMap.values())
       param.setContextQuestion(contextQuestion);
-    }
   }
 
   public void setIndexColumns(String[] indexColumns) {
@@ -235,13 +261,13 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     WdkModelException duplicationError = new WdkModelException("More than one column with name '" +
         column.getName() + "' added to Query '" + getFullName() + "'.");
     if (columnList != null) {
-      if (!Functions.filter(columnList, col -> col.getName().equals(column.getName())).isEmpty()) {
+      if (columnList.stream().anyMatch(col -> col.getName().equals(column.getName()))) {
         throw duplicationError;
       }
       columnList.add(column);
     }
     else {
-      if (!Functions.filter(columnMap.keySet(), col -> col.equals(column.getName())).isEmpty()) {
+      if (columnMap.containsKey(column.getName())) {
         throw duplicationError;
       }
       columnMap.put(column.getName(), column);
@@ -250,13 +276,11 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   }
 
   public Map<String, Column> getColumnMap() {
-    return new LinkedHashMap<String, Column>(columnMap);
+    return new LinkedHashMap<>(columnMap);
   }
 
   public Column[] getColumns() {
-    Column[] array = new Column[columnMap.size()];
-    columnMap.values().toArray(array);
-    return array;
+    return columnMap.values().toArray(new Column[0]);
   }
 
   // exclude this query from sanity testing
@@ -269,6 +293,7 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     return doNotTest;
   }
 
+  @SuppressWarnings("unused") // ModelXmlParser
   public void addParamValuesSet(ParamValuesSet paramValuesSet) {
     paramValuesSets.add(paramValuesSet);
   }
@@ -286,56 +311,54 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
       throw new WdkModelException("Unable to get JSON content for checksum.", e);
     }
   }
-  
+
   public List<PostCacheUpdateSql> getPostCacheUpdateSqls() {
     return postCacheUpdateSqls == null? null : Collections.unmodifiableList(postCacheUpdateSqls);
   }
 
+  @SuppressWarnings("unused") // ModelXmlParser
   public void addPostCacheUpdateSql(PostCacheUpdateSql postCacheUpdateSql) {
-    if (postCacheUpdateSqls == null) postCacheUpdateSqls = new ArrayList<PostCacheUpdateSql>();
+    if (postCacheUpdateSqls == null) postCacheUpdateSqls = new ArrayList<>();
     postCacheUpdateSqls.add(postCacheUpdateSql);
   }
 
   /**
    * @param extra
-   *          if extra is true, then column names are also includes, plus the extra info from param.
-   * @return
+   *   if extra is true, then column names are also includes, plus the extra
+   *   info from param.
+   *
    * @throws JSONException
-   *           if unable to create JSON object
+   *   if unable to create JSON object
    */
   private JSONObject getChecksumJSON(boolean extra) throws JSONException {
     // use JSON to construct the string content
-    JSONObject jsQuery = new JSONObject();
-    jsQuery.put("name", getFullName());
-    jsQuery.put("project", getWdkModel().getProjectId());
+    JSONObject jsQuery = new JSONObject()
+      .put("name", getFullName())
+      .put("project", getWdkModel().getProjectId());
 
     // add context question name
     if (contextQuestion != null)
       jsQuery.put("contextQuestion", contextQuestion.getFullName());
 
-    // construct params; ordered by paramName
-    String[] paramNames = new String[paramMap.size()];
-    paramMap.keySet().toArray(paramNames);
-    Arrays.sort(paramNames);
-
     JSONArray jsParams = new JSONArray();
-    for (String paramName : paramNames) {
-      Param param = paramMap.get(paramName);
-      jsParams.put(param.getChecksumJSON(extra));
-    }
+    paramMap.keySet()
+      .stream()
+      .sorted()
+      .map(paramMap::get)
+      .map(param -> param.getChecksumJSON(extra))
+      .forEach(jsParams::put);
     jsQuery.put("params", jsParams);
 
     // construct columns; ordered by columnName
     if (extra) {
-      String[] columnNames = new String[columnMap.size()];
-      columnMap.keySet().toArray(columnNames);
-      Arrays.sort(columnNames);
-
       JSONArray jsColumns = new JSONArray();
-      for (String columnName : columnNames) {
-        Column column = columnMap.get(columnName);
-        jsColumns.put(column.getJSONContent());
-      }
+      columnMap.keySet()
+        .stream()
+        .sorted()
+        .map(columnMap::get)
+        .map(Column::getJSONContent)
+        .forEach(jsColumns::put);
+
       jsQuery.put("columns", jsColumns);
     }
 
@@ -356,8 +379,8 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
         column.excludeResources(projectId);
         String columnName = column.getName();
         if (columnMap.containsKey(columnName)) {
-          throw new WdkModelException("The column '" + columnName + "' is duplicated in query " +
-              getFullName());
+          throw new WdkModelException("The column '" + columnName +
+            "' is duplicated in query " + getFullName());
         }
         else
           columnMap.put(columnName, column);
@@ -366,13 +389,9 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     columnList = null;
 
     // exclude paramValuesSets
-    List<ParamValuesSet> tempList = new ArrayList<ParamValuesSet>();
-    for (ParamValuesSet paramValuesSet : paramValuesSets) {
-      if (paramValuesSet.include(projectId)) {
-        tempList.add(paramValuesSet);
-      }
-    }
-    paramValuesSets = tempList;
+    paramValuesSets = paramValuesSets.stream()
+      .filter(p -> p.include(projectId))
+      .collect(Collectors.toList());
   }
 
   @Override
@@ -389,38 +408,40 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
       if (sortingColumn == null)
         continue;
       if (!columnMap.containsKey(sortingColumn))
-        throw new WdkModelException("Query [" + getFullName() + "] has a column [" + column.getName() +
-            "] with sortingColumn [" + sortingColumn + "], but the sorting column doesn't exist in " +
-            "the same query.");
+        throw new WdkModelException("Query [" + getFullName()
+          + "] has a column [" + column.getName() + "] with sortingColumn ["
+          + sortingColumn + "], but the sorting column doesn't exist in "
+          + "the same query.");
     }
 
     // if the query is a transform, it has to return weight column.
     // this applies to both explicit transform and filter queries.
-    if (getAnswerParamCount() == 1) {
+    if (getAnswerParamCount() == 1)
       if (!columnMap.containsKey(Utilities.COLUMN_WEIGHT))
-        throw new WdkModelException("Transform query [" + getFullName() + "] doesn't define the required " +
-            Utilities.COLUMN_WEIGHT + " column.");
-    }
+        throw new WdkModelException("Transform query [" + getFullName() + "] "
+          + "doesn't define the required " + Utilities.COLUMN_WEIGHT
+          + " column.");
 
     resolveQueryReferences(wdkModel);
 
     // check the column names in the sorting map
-    for (String column : sortingMap.keySet()) {
-      if (!columnMap.containsKey(column)) {
-        throw new WdkModelException("Invalid sorting column '" + column + "' in query " + getFullName());
-      }
-    }
+    for (String column : sortingMap.keySet())
+      if (!columnMap.containsKey(column))
+        throw new WdkModelException("Invalid sorting column '" + column
+          + "' in query " + getFullName());
 
-    if (postCacheUpdateSqls != null) {
+    if (postCacheUpdateSqls != null)
       for (PostCacheUpdateSql postCacheUpdateSql : postCacheUpdateSqls)
-        if (postCacheUpdateSql != null && (postCacheUpdateSql.getSql() == null ||
-            !postCacheUpdateSql.getSql().contains(Utilities.MACRO_CACHE_TABLE) ||
-            !postCacheUpdateSql.getSql().contains(Utilities.MACRO_CACHE_INSTANCE_ID))) {
+        if (postCacheUpdateSql != null
+          && (postCacheUpdateSql.getSql() == null
+            || !postCacheUpdateSql.getSql().contains(Utilities.MACRO_CACHE_TABLE)
+            || !postCacheUpdateSql.getSql().contains(Utilities.MACRO_CACHE_INSTANCE_ID)
+        ))
           throw new WdkModelException(
-            "Invalid PostCacheInsertSql. <sql> must be provided, and include the macros: " +
-                Utilities.MACRO_CACHE_TABLE + " and " + Utilities.MACRO_CACHE_INSTANCE_ID);
-        }
-    }
+            "Invalid PostCacheInsertSql. <sql> must be provided, and include the macros: "
+              + Utilities.MACRO_CACHE_TABLE
+              + " and "
+              + Utilities.MACRO_CACHE_INSTANCE_ID);
   }
 
   public boolean isBoolean() {
@@ -433,8 +454,8 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
 
   public List<AnswerParam> getAnswerParams() {
     return paramMap.values().stream()
-        .filter(param -> param instanceof AnswerParam)
-        .map(param -> (AnswerParam)param)
+        .filter(AnswerParam.class::isInstance)
+        .map(AnswerParam.class::cast)
         .collect(Collectors.toList());
   }
 
@@ -494,13 +515,8 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   }
 
   /**
-   * The only info we need for the query checksum is the columns to make sure we have correct columns to store
-   * info we need.
-   * 
-   * @param _query
-   * @return
-   * @throws JSONException
-   * @throws WdkModelException
+   * The only info we need for the query checksum is the columns to make sure we
+   * have correct columns to store info we need.
    */
   public String getChecksum() throws WdkModelException {
     JSONObject jsQuery = new JSONObject();
@@ -525,7 +541,7 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     String indent2 = indent1 + WdkModel.INDENT;
 
     // print params
-    if (paramMap.size() > 0) {
+    if (!paramMap.isEmpty()) {
       writer.println(indent1 + "<params size=\"" + paramMap.size() + "\">");
       String[] paramNames = paramMap.keySet().toArray(new String[0]);
       Arrays.sort(paramNames);
@@ -536,7 +552,7 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     }
 
     // print columns
-    if (columnMap.size() > 0) {
+    if (!columnMap.isEmpty()) {
       writer.println(indent1 + "<columns size=\"" + columnMap.size() + "\">");
       String[] columnNames = columnMap.keySet().toArray(new String[0]);
       Arrays.sort(columnNames);
@@ -559,4 +575,13 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     return params.size() > 1 ? Optional.of(params.get(1)) : Optional.empty();
   }
 
+  public Map<String, AttributeFieldDataType> resolveColumnTypes() throws WdkModelException {
+    return columnMap.entrySet()
+      .stream()
+      .collect(Collectors.toMap(
+        Map.Entry::getKey,
+        e -> Optional.ofNullable(e.getValue().getType())
+          .map(AttributeFieldDataType::fromColumnType)
+          .orElse(AttributeFieldDataType.OTHER)));
+  }
 }

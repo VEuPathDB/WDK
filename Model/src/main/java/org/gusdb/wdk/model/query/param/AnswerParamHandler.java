@@ -56,6 +56,11 @@ public class AnswerParamHandler extends AbstractParamHandler {
            getAnswerFromStepParam(runnableSpec).getIdSql();
   }
 
+  @Override
+  public String toEmptyInternalValue() {
+    return _param.isNoTranslation() ? "0" : "SELECT * FROM dual";
+  }
+
   /**
    * the signature is the checksum of answer, which doesn't have any user related information, to make sure
    * the cache can be shared.

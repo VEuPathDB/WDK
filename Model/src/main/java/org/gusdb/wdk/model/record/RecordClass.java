@@ -1,43 +1,15 @@
 package org.gusdb.wdk.model.record;
 
-import static org.gusdb.fgputil.functional.Functions.fSwallow;
-import static org.gusdb.fgputil.functional.Functions.mapToList;
-
-import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.Named.NamedObject;
-import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.functional.Functions;
-import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
-import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelBase;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.*;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml.StepAnalysisContainer;
@@ -45,66 +17,50 @@ import org.gusdb.wdk.model.answer.AnswerFilter;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.SummaryView;
-import org.gusdb.wdk.model.filter.ColumnFilter;
-import org.gusdb.wdk.model.filter.Filter;
-import org.gusdb.wdk.model.filter.FilterDefinition;
-import org.gusdb.wdk.model.filter.FilterReference;
-import org.gusdb.wdk.model.filter.StepFilter;
-import org.gusdb.wdk.model.filter.StepFilterDefinition;
-import org.gusdb.wdk.model.query.BooleanQuery;
-import org.gusdb.wdk.model.query.Column;
-import org.gusdb.wdk.model.query.ColumnType;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.bundle.ColumnToolBundle;
+import org.gusdb.wdk.model.bundle.DefaultAttributeToolBundleRef;
+import org.gusdb.wdk.model.bundle.impl.EmptyToolBundle;
+import org.gusdb.wdk.model.filter.*;
+import org.gusdb.wdk.model.query.*;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
-import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.AttributeList;
 import org.gusdb.wdk.model.question.CategoryList;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.record.attribute.AttributeCategory;
-import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
-import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
-import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
-import org.gusdb.wdk.model.record.attribute.IdAttributeField;
-import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
-import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.*;
 import org.gusdb.wdk.model.report.ReporterRef;
 import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
-import org.gusdb.wdk.model.user.BasketFactory;
-import org.gusdb.wdk.model.user.FavoriteReference;
-import org.gusdb.wdk.model.user.StepContainer;
-import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserPreferences;
+import org.gusdb.wdk.model.user.*;
+
+import java.io.PrintWriter;
+import java.util.*;
+
+import static java.util.Objects.isNull;
+import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.gusdb.fgputil.functional.Functions.fSwallow;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 /**
+ * RecordClass is the core entity in WDK, and it defined the type of the data
+ * that is presented in WDK driven system.
  * <p>
- * RecordClass is the core entity in WDK, and it defined the type of the data that is presented in WDK driven
- * system.
- * </p>
- * 
+ * Records are normally retrieved by running questions, and each question is
+ * associated with one recordClass type.
  * <p>
- * Records are normally retrieved by running questions, and each question is associated with one recordClass
- * type.
- * </p>
- * 
+ * A recordClass defines the attribute fields and table fields for records, and
+ * for a given primary key, a RecordInstance can be instantiated, and the
+ * instance will holds attribute values and table values.
  * <p>
- * A recordClass defines the attribute fields and table fields for records, and for a given primary key,
- * a RecordInstance can be instantiated, and the instance will holds attribute values and table values.
- * </p>
- * 
- * <p>
- * A record can have multiple attributes, but for each attribute, it can have only one value; the tables can
- * have multiple attributes, and each attribute might have zero or more values. Please refer to the
- * AttributeQueryReference and TableQueryReference for details about defining the attribute and table queries.
- * </p>
- * 
+ * A record can have multiple attributes, but for each attribute, it can have
+ * only one value; the tables can have multiple attributes, and each attribute
+ * might have zero or more values. Please refer to the AttributeQueryReference
+ * and TableQueryReference for details about defining the attribute and table
+ * queries.
+ *
  * @author jerric
  */
 public class RecordClass extends WdkModelBase implements AttributeFieldContainer, StepAnalysisContainer, OptionallyTestable, NamedObject {
@@ -114,9 +70,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private static final Set<Character> VOWELS = new HashSet<>(Arrays.asList('a', 'e', 'i', 'o', 'u'));
 
   /**
-   * Returns a list of DynamicRecordInstance representing the records to which the passed primary key value
-   * currently maps.
-   * 
+   * Returns a list of DynamicRecordInstance representing the records to which
+   * the passed primary key value currently maps.
+   *
    * @param user user to execute queries under
    * @param pkValue primary key value to look up
    * @return a list of record instances associated with the passed primary key
@@ -133,20 +89,15 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       return Collections.emptyList();
     }
     catch (RuntimeException | WdkUserException e) {
-      // since input to this method is already a PrimaryKeyValue (not Map), should not see these Exceptions
+      // since input to this method is already a PrimaryKeyValue (not Map),
+      // should not see these Exceptions
       throw new WdkModelException(e);
     }
   }
 
   /**
-   * This method takes in a bulk attribute or table query, and adds the primary key columns as params into the
-   * SQL, and return the a Query with the params.
-   * 
-   * @param wdkModel
-   * @param query
-   * @param paramNames
-   * @return
-   * @throws WdkModelException
+   * This method takes in a bulk attribute or table query, and adds the primary
+   * key columns as params into the SQL, and return the a Query with the params.
    */
   public static SqlQuery prepareQuery(WdkModel wdkModel, SqlQuery query, String[] paramNames)
       throws WdkModelException {
@@ -157,7 +108,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     newQuery.setIsCacheable(false);
 
     // find the new params to be created
-    List<String> newParams = new ArrayList<String>();
+    List<String> newParams = new ArrayList<>();
     for (String column : paramNames) {
       if (!originalParams.containsKey(column))
         newParams.add(column);
@@ -177,7 +128,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         boolean number = !type.isText();
         param.setName(columnName);
         param.setNumber(number);
-        // param.setAllowEmpty(true);
 
         param.excludeResources(wdkModel.getProjectId());
         param.resolveReferences(wdkModel);
@@ -188,18 +138,18 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     // if the new query is SqlQuery, modify the sql
-    if (newParams.size() > 0) {
+    if (!newParams.isEmpty()) {
       StringBuilder builder = new StringBuilder("SELECT f.* FROM (");
-      builder.append(newQuery.getSql());
-      builder.append(") f WHERE ");
+      builder.append(newQuery.getSql())
+        .append(") f WHERE ");
       boolean firstColumn = true;
       for (String columnName : newParams) {
         if (firstColumn)
           firstColumn = false;
         else
           builder.append(" AND ");
-        builder.append("f.").append(columnName);
-        builder.append(" = $$").append(columnName).append("$$");
+        builder.append("f.").append(columnName)
+          .append(" = $$").append(columnName).append("$$");
       }
 
       // replace the id_sql macro
@@ -211,14 +161,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
           idqBuilder.append(", ");
         idqBuilder.append("SUBSTR($$" + column + "$$, 1, 4000) AS " + column);
       }
-      DBPlatform platform = wdkModel.getAppDb().getPlatform();
-      idqBuilder.append(platform.getDummyTable());
-      idqBuilder.append(")");
+      idqBuilder.append(wdkModel.getAppDb().getPlatform().getDummyTable())
+        .append(")");
 
       String idSql = idqBuilder.toString();
-      String sql = builder.toString();
-      sql = sql.replace(Utilities.MACRO_ID_SQL, idSql);
-      sql = sql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, idSql);
+      String sql = builder.toString()
+        .replace(Utilities.MACRO_ID_SQL, idSql)
+        .replace(Utilities.MACRO_ID_SQL_NO_FILTERS, idSql);
 
       newQuery.setSql(sql);
     }
@@ -230,19 +179,19 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private String allRecordsQueryRef;
   private Query allRecordsQuery;
 
-  private List<AttributeQueryReference> attributesQueryRefList = new ArrayList<AttributeQueryReference>();
+  private List<AttributeQueryReference> attributesQueryRefList = new ArrayList<>();
 
-  private Map<String, Query> attributeQueries = new LinkedHashMap<String, Query>();
-  private Map<String, Query> tableQueries = new LinkedHashMap<String, Query>();
+  private Map<String, Query> attributeQueries = new LinkedHashMap<>();
+  private Map<String, Query> tableQueries = new LinkedHashMap<>();
 
   private PrimaryKeyDefinition primaryKeyDefinition;
   private IdAttributeField idAttributeField;
 
-  private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
-  private Map<String, AttributeField> attributeFieldsMap = new LinkedHashMap<String, AttributeField>();
+  private List<AttributeField> attributeFieldList = new ArrayList<>();
+  private Map<String, AttributeField> attributeFieldsMap = new LinkedHashMap<>();
 
-  private List<TableField> tableFieldList = new ArrayList<TableField>();
-  private Map<String, TableField> tableFieldsMap = new LinkedHashMap<String, TableField>();
+  private List<TableField> tableFieldList = new ArrayList<>();
+  private Map<String, TableField> tableFieldsMap = new LinkedHashMap<>();
 
   private String name;
   private String fullName;
@@ -251,9 +200,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private String iconName;
 
   /**
-   * the native versions are the real name of the record class.  the non-native are potentially different,
-   * for display purposes.  This can happen if a ResultSizeQueryReference is supplied, that provides non-native
-   * result counts and display names
+   * the native versions are the real name of the record class.  the non-native
+   * are potentially different, for display purposes.  This can happen if a
+   * ResultSizeQueryReference is supplied, that provides non-native result
+   * counts and display names
    */
   private String nativeDisplayName;
   private String nativeDisplayNamePlural;
@@ -267,68 +217,74 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private String shortDisplayNamePlural;
 
   /**
-   * An option that provides SQL to post-process an Answer result, providing a custom result size count. 
-   * If present, induces construction of a non-default result size plugin that uses this sql
+   * An option that provides SQL to post-process an Answer result, providing a
+   * custom result size count. If present, induces construction of a non-default
+   * result size plugin that uses this sql
    */
-  private ResultSizeQueryReference resultSizeQueryRef = null;
+  private ResultSizeQueryReference resultSizeQueryRef;
 
   /**
-   * An option that provides SQL to post-process an Answer result, providing a custom property value. 
+   * An option that provides SQL to post-process an Answer result, providing a
+   * custom property value.
    */
-  private ResultPropertyQueryReference resultPropertyQueryRef = null;
+  private ResultPropertyQueryReference resultPropertyQueryRef;
 
   /**
-   * A pluggable way to compute the result size.  For example, count the number of genes in a list of transcripts.
-   * The default is overridden with a plugin supplied in the XML model, if provided.
+   * A pluggable way to compute the result size.  For example, count the number
+   * of genes in a list of transcripts. The default is overridden with a plugin
+   * supplied in the XML model, if provided.
    */
   private ResultSize resultSizePlugin = new DefaultResultSizePlugin();
-  
-  /**
-   * A pluggable way to compute a result property.  For example, count the number of genes in a list of transcripts that are missing transcripts.
-   */
-  private ResultProperty resultPropertyPlugin = null;
 
-  private String customBooleanQueryClassName = null;
-  
+  /**
+   * A pluggable way to compute a result property.  For example, count the
+   * number of genes in a list of transcripts that are missing transcripts.
+   */
+  private ResultProperty resultPropertyPlugin;
+
+  private String customBooleanQueryClassName;
+
   private BooleanQuery booleanQuery;
-  
+
   private String attributeOrdering;
 
   private AttributeCategoryTree attributeCategoryTree;
 
   // for sanity testing
-  private boolean doNotTest = false;
-  private List<ParamValuesSet> unexcludedParamValuesSets = new ArrayList<ParamValuesSet>();
+  private boolean doNotTest;
+  private List<ParamValuesSet> unexcludedParamValuesSets = new ArrayList<>();
   private ParamValuesSet paramValuesSet;
 
-  private List<ReporterRef> reporterList = new ArrayList<ReporterRef>();
-  private Map<String, ReporterRef> reporterMap = new LinkedHashMap<String, ReporterRef>();
+  private List<ReporterRef> reporterList = new ArrayList<>();
+  private Map<String, ReporterRef> reporterMap = new LinkedHashMap<>();
 
-  private List<AnswerFilter> filterList = new ArrayList<AnswerFilter>();
-  private Map<String, AnswerFilterInstance> filterMap = new LinkedHashMap<String, AnswerFilterInstance>();
+  private List<AnswerFilter> filterList = new ArrayList<>();
+  private Map<String, AnswerFilterInstance> filterMap = new LinkedHashMap<>();
 
-  private List<AnswerFilterLayout> filterLayoutList = new ArrayList<AnswerFilterLayout>();
-  private Map<String, AnswerFilterLayout> filterLayoutMap = new LinkedHashMap<String, AnswerFilterLayout>();
+  private List<AnswerFilterLayout> filterLayoutList = new ArrayList<>();
+  private Map<String, AnswerFilterLayout> filterLayoutMap = new LinkedHashMap<>();
 
   private AnswerFilterInstance defaultFilter;
+
   /**
-   * If the filter is set, in all the boolean operations of the record page, the operands will first be
-   * filtered by this filter, and then the results of these will be used in boolean operation.
+   * If the filter is set, in all the boolean operations of the record page, the
+   * operands will first be filtered by this filter, and then the results of
+   * these will be used in boolean operation.
    */
   private AnswerFilterInstance booleanExpansionFilter;
 
-  private List<AttributeList> attributeLists = new ArrayList<AttributeList>();
+  private List<AttributeList> attributeLists = new ArrayList<>();
 
   private String[] defaultSummaryAttributeNames;
-  private Map<String, AttributeField> defaultSummaryAttributeFields = new LinkedHashMap<String, AttributeField>();
-  private Map<String, Boolean> defaultSortingMap = new LinkedHashMap<String, Boolean>();
+  private Map<String, AttributeField> defaultSummaryAttributeFields = new LinkedHashMap<>();
+  private Map<String, Boolean> defaultSortingMap = new LinkedHashMap<>();
 
   /**
    * if true, the basket feature will be turn on for the records of this type.
    */
   private boolean useBasket = true;
 
-  private List<FavoriteReference> favorites = new ArrayList<FavoriteReference>();
+  private List<FavoriteReference> favorites = new ArrayList<>();
   private String favoriteNoteFieldName;
   private AttributeField favoriteNoteField;
 
@@ -343,10 +299,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   private List<FilterReference> _filterReferences = new ArrayList<>();
   private Map<String, StepFilter> _stepFilters = new LinkedHashMap<>();
-  
+
   private CategoryList _categoryList;
 
   private String _urlSegment;
+
+  private String defaultToolBundleRef;
+  private ColumnToolBundle defaultToolBundle = new EmptyToolBundle();
 
   // ////////////////////////////////////////////////////////////////////
   // Called at model creation time
@@ -394,11 +353,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public String getNativeDisplayNamePlural() {
-      if (nativeDisplayNamePlural != null)
-        return nativeDisplayNamePlural;
+    if (nativeDisplayNamePlural != null)
+      return nativeDisplayNamePlural;
 
-      return getPlural(getNativeDisplayName());
-    }
+    return getPlural(getNativeDisplayName());
+  }
 
   public void setDisplayNamePlural(String displayNamePlural) {
     this.displayNamePlural = displayNamePlural;
@@ -413,11 +372,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public String getNativeShortDisplayNamePlural() {
-      if (nativeShortDisplayNamePlural != null)
-        return nativeShortDisplayNamePlural;
+    if (nativeShortDisplayNamePlural != null)
+      return nativeShortDisplayNamePlural;
 
-      return getPlural(getNativeShortDisplayName());
-    }
+    return getPlural(getNativeShortDisplayName());
+  }
 
   public void setShortDisplayNamePlural(String shortDisplayNamePlural) {
     this.shortDisplayNamePlural = shortDisplayNamePlural;
@@ -432,12 +391,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public void setUrlSegment(String urlSegment) {
     _urlSegment = urlSegment;
   }
+
   public String getUrlSegment() {
     return _urlSegment;
   }
 
   private static String getPlural(String recordClassName) {
-    if (recordClassName == null || recordClassName.length() == 0)
+    if (recordClassName == null || recordClassName.isEmpty())
       return recordClassName;
 
     int length = recordClassName.length();
@@ -450,6 +410,15 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         return recordClassName.substring(0, length - 1) + "ies";
     }
     return recordClassName + "s";
+  }
+
+  @SuppressWarnings("unused") // ModelXmlParser
+  public void setDefaultToolBundleRef(final DefaultAttributeToolBundleRef ref) {
+    this.defaultToolBundleRef = ref.getRef();
+  }
+
+  public ColumnToolBundle getDefaultToolBundle() {
+    return this.defaultToolBundle;
   }
 
   public void setAllRecordsQueryRef(String queryRef) {
@@ -467,7 +436,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public ResultProperty getResultPropertyPlugin() {
     return resultPropertyPlugin;
   }
-  
+
   public String getCustomBooleanQueryClassName() {
     return customBooleanQueryClassName;
   }
@@ -494,20 +463,23 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     attributesQueryRefList.add(attributesQueryRef);
   }
 
+  @SuppressWarnings("unused") // ModelXmlParser
   public void addAttributeField(AttributeField attributeField) {
     attributeField.setContainer(this);
     attributeFieldList.add(attributeField);
   }
 
+  @SuppressWarnings("unused") // ModelXmlParser
   public void addTableField(TableField tableField) {
     tableField.setRecordClass(this);
     tableFieldList.add(tableField);
   }
 
+  @SuppressWarnings("unused") // ModelXmlParser
   public void addReporterRef(ReporterRef reporter) {
     reporterList.add(reporter);
   }
-  
+
   public void setDoNotTest(boolean doNotTest) {
     this.doNotTest = doNotTest;
   }
@@ -517,6 +489,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return doNotTest;
   }
 
+  @SuppressWarnings("unused") // ModelXmlParser
   public void addParamValuesSet(ParamValuesSet newParamValuesSet) {
     unexcludedParamValuesSets.add(newParamValuesSet);
   }
@@ -528,15 +501,17 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public void setAttributeCategoryTree(AttributeCategoryTree tree) {
     attributeCategoryTree = tree;
   }
-  
+
   public void setResultSizeQueryRef(ResultSizeQueryReference ref) {
     resultSizeQueryRef = ref;
   }
-  
+
+  @SuppressWarnings("unused") // ModelXmlParser
   public void setResultPropertyQueryRef(ResultPropertyQueryReference ref) {
     resultPropertyQueryRef = ref;
   }
-  
+
+  @SuppressWarnings("unused") // XML Digester (attribute)
   public void setCustomBooleanQueryClassName(String className) {
     this.customBooleanQueryClassName = className;
   }
@@ -560,26 +535,26 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public Map<String, TableField> getTableFieldMap(FieldScope scope) {
-    Map<String, TableField> fields = new LinkedHashMap<String, TableField>();
-    for (TableField field : tableFieldsMap.values()) {
-      if (scope.isFieldInScope(field)) {
+    Map<String, TableField> fields = new LinkedHashMap<>();
+
+    for (TableField field : tableFieldsMap.values())
+      if (scope.isFieldInScope(field))
         fields.put(field.getName(), field);
-      }
-    }
+
     return fields;
   }
 
-  // used by report maker, adding display names in map so later the tables show sorted by display name
+  // used by report maker, adding display names in map so later the tables show
+  // sorted by display name
   public Map<String, TableField> getTableFieldMap(FieldScope scope, boolean useDisplayNamesAsKeys) {
-    if (!useDisplayNamesAsKeys) {
+    if (!useDisplayNamesAsKeys)
       return getTableFieldMap(scope);
-    }
-    Map<String, TableField> fields = new LinkedHashMap<String, TableField>();
-    for (TableField field : tableFieldsMap.values()) {
-      if (scope.isFieldInScope(field)) {
+
+    Map<String, TableField> fields = new LinkedHashMap<>();
+    for (TableField field : tableFieldsMap.values())
+      if (scope.isFieldInScope(field))
         fields.put(field.getDisplayName(), field);
-      }
-    }
+
     return fields;
   }
 
@@ -596,16 +571,15 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
-    Map<String, AttributeField> fields = new LinkedHashMap<String, AttributeField>();
+    Map<String, AttributeField> fields = new LinkedHashMap<>();
 
     // always put primary key field as the first one
     fields.put(idAttributeField.getName(), idAttributeField);
 
-    for (AttributeField field : attributeFieldsMap.values()) {
-      if (scope.isFieldInScope(field)) {
+    for (AttributeField field : attributeFieldsMap.values())
+      if (scope.isFieldInScope(field))
         fields.put(field.getName(), field);
-      }
-    }
+
     return fields;
   }
 
@@ -634,42 +608,40 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public Map<String, ReporterRef> getReporterMap() {
-    return new LinkedHashMap<String, ReporterRef>(reporterMap);
+    return new LinkedHashMap<>(reporterMap);
   }
 
   public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope) {
     return attributeCategoryTree.getTrimmedCopy(scope);
   }
-  
+
   public ResultSizeQueryReference getResultSizeQueryRef() {
-    return resultSizeQueryRef;  
+    return resultSizeQueryRef;
   }
-  
+
   public ResultPropertyQueryReference getResultPropertyQueryRef() {
-    return resultPropertyQueryRef;  
+    return resultPropertyQueryRef;
   }
-  
+
   public BooleanQuery getBooleanQuery() {
     return booleanQuery;
   }
 
   @Override
   public String toString() {
-    String newline = System.getProperty("line.separator");
-    StringBuffer buf = new StringBuffer("Record: name='" + name + "'").append(newline);
+    StringBuilder buf = new StringBuilder("Record: name='" + name + "'").append(NL)
+      .append("--- Attribute Category Tree (with attribute count per category) ---").append(NL)
+      .append(attributeCategoryTree)
+      .append("--- Attributes ---").append(NL);
 
-    buf.append("--- Attribute Category Tree (with attribute count per category) ---").append(newline);
-    buf.append(attributeCategoryTree);
+    for (AttributeField attribute : attributeFieldsMap.values())
+      buf.append(attribute.getName()).append(NL);
 
-    buf.append("--- Attributes ---").append(newline);
-    for (AttributeField attribute : attributeFieldsMap.values()) {
-      buf.append(attribute.getName()).append(newline);
-    }
+    buf.append("--- Tables ---").append(NL);
 
-    buf.append("--- Tables ---").append(newline);
-    for (TableField table : tableFieldsMap.values()) {
-      buf.append(table.getName()).append(newline);
-    }
+    for (TableField table : tableFieldsMap.values())
+      buf.append(table.getName()).append(NL);
+
     return buf.toString();
   }
 
@@ -679,7 +651,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public String getSanityTestSuggestion() {
     String indent = "    ";
     String newline = System.getProperty("line.separator");
-    StringBuffer buf = new StringBuffer(newline + newline + indent + "<sanityRecord ref=\"" + getFullName() +
+    StringBuilder buf = new StringBuilder(newline + newline + indent + "<sanityRecord ref=\"" + getFullName() +
         "\"" + newline + indent + indent + indent + "primaryKey=\"FIX_pk\">" + newline);
     buf.append(indent + "</sanityRecord>");
     return buf.toString();
@@ -689,10 +661,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   // package scope methods
   // /////////////////////////////////////////////////////////////////////////
 
-  /**
-   * @param recordSetName
-   *          name of the recordSet to which this record belongs.
-   */
   void setRecordClassSet(RecordClassSet recordClassSet) {
     this.recordClassSet = recordClassSet;
     this.fullName = recordClassSet.getName() + "." + name;
@@ -707,21 +675,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public Map<String, Query> getAttributeQueries() {
-    return new LinkedHashMap<String, Query>(attributeQueries);
-  }
-
-  AttributeField getAttributeField(String attributeName) throws WdkModelException {
-    AttributeField attributeField = attributeFieldsMap.get(attributeName);
-    if (attributeField == null) {
-      String message = "RecordClass " + getName() + " doesn't have an attribute field with name '" +
-          attributeName + "'.";
-      throw new WdkModelException(message);
-    }
-    return attributeField;
+    return new LinkedHashMap<>(attributeQueries);
   }
 
   public Map<String, Query> getTableQueries() {
-    return new LinkedHashMap<String, Query>(tableQueries);
+    return new LinkedHashMap<>(tableQueries);
   }
 
   TableField getTableField(String tableName) throws WdkModelException {
@@ -759,9 +717,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     if (_resolved)
       return;
     super.resolveReferences(model);
-    this._wdkModel = model;
 
-    if (name.length() == 0 || name.indexOf('\'') >= 0)
+    if (name.isEmpty() || name.indexOf('\'') >= 0)
       throw new WdkModelException("recordClass name cannot be empty or " + "having single quotes: " + name);
 
     // resolve primary key references
@@ -769,6 +726,15 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
     // create column attribute fields for primary key columns if they don't already exist
     createPrimaryKeySubFields(model.getProjectId());
+
+    // Retrieve default column tool bundle implementation if specified, or
+    // default to global definition.
+    // This must be done before resolving references for the attribute fields.
+    defaultToolBundle = isNull(defaultToolBundleRef)
+      ? _wdkModel.getDefaultAttributeToolBundle()
+      : _wdkModel.getColumnToolBundle(defaultToolBundleRef)
+        .orElseThrow(() -> new WdkModelException(
+          "Invalid columnToolBundle reference: " + defaultToolBundleRef));
 
     // resolve the references for attribute queries
     resolveAttributeQueryReferences(model);
@@ -838,10 +804,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     // resolve the references for table queries
     resolveTableFieldReferences(model);
 
-    if (attributeOrdering != null) {
-      Map<String, AttributeField> orderedAttributes = sortAllAttributes();
-      attributeFieldsMap = orderedAttributes;
-    }
+    if (attributeOrdering != null)
+      attributeFieldsMap = sortAllAttributes();
 
     // resolve the filter and layout.
     resolveFilterReferences(model);
@@ -871,12 +835,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     resolveCategoryTreeReferences(model);
 
     // resolve references for views
-    for (SummaryView summaryView : summaryViewMap.values()) {
+    for (SummaryView summaryView : summaryViewMap.values())
       summaryView.resolveReferences(model);
-    }
-    for (RecordView recordView : recordViewMap.values()) {
+
+    for (RecordView recordView : recordViewMap.values())
       recordView.resolveReferences(model);
-    }
 
     // resolve step analysis refs
     for (StepAnalysis stepAnalysisRef : stepAnalysisMap.values()) {
@@ -886,14 +849,14 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     // resolve reporters
-    for (ReporterRef reporterRef : reporterMap.values()) {
+    for (ReporterRef reporterRef : reporterMap.values())
       reporterRef.resolveReferences(model);
-    }
+
     for (AttributeField attribute : attributeFieldsMap.values()) {
       for (ReporterRef reporterRef : attribute.getReporters().values()) {
-        if (reporterMap.containsKey(reporterRef.getName())) {
-          throw new WdkModelException("Duplicate reporter with name: " + reporterRef.getName());
-        }
+        if (reporterMap.containsKey(reporterRef.getName()))
+          throw new WdkModelException(
+            "Duplicate reporter with name: " + reporterRef.getName());
         reporterMap.put(reporterRef.getName(), reporterRef);
       }
     }
@@ -916,127 +879,87 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     // this must be called before the attributes are added....
     attributeCategoryTree.resolveReferences(model);
 
-    for (AttributeQueryReference queryRef : attributesQueryRefList) {
-      for (AttributeField attribute : queryRef.getAttributeFields()) {
+    for (AttributeQueryReference queryRef : attributesQueryRefList)
+      for (AttributeField attribute : queryRef.getAttributeFields())
         attributeCategoryTree.addAttributeToCategories(attribute);
-      }
-    }
-    for (AttributeField attribute : attributeFieldsMap.values()) {
-      if (attribute != idAttributeField) {
+
+    for (AttributeField attribute : attributeFieldsMap.values())
+      if (attribute != idAttributeField)
         attributeCategoryTree.addAttributeToCategories(attribute);
-      }
-    }
   }
 
   private void resolveAttributeQueryReferences(WdkModel wdkModel) throws WdkModelException {
     String[] pkColumns = primaryKeyDefinition.getColumnRefs();
     List<String> pkColumnList = Arrays.asList(pkColumns);
     for (AttributeQueryReference reference : attributesQueryRefList) {
-      // validate attribute query
-      SqlQuery query = (SqlQuery) wdkModel.resolveReference(reference.getTwoPartName());
-      validateBulkQuery(query);
-      
-      // resolving dynamic column attribute fields
-      reference.resolveReferences(wdkModel);
+      try {
+        // validate attribute query
+        SqlQuery query = (SqlQuery) wdkModel.resolveReference(reference.getTwoPartName());
+        validateBulkQuery(query);
 
-      // add fields into record level, and associate columns
-      Map<String, AttributeField> fields = reference.getAttributeFieldMap();
-      Map<String, Column> columns = query.getColumnMap();
-      for (AttributeField field : fields.values()) {
-        field.setContainer(this);
-        String fieldName = field.getName();
-        // check if the attribute is duplicated
-        if (attributeFieldsMap.containsKey(fieldName))
-          throw new WdkModelException("The attribute " + fieldName +
+        // resolving dynamic column attribute fields
+        reference.resolveReferences(wdkModel);
+
+        // add fields into record level, and associate columns
+        Map<String, AttributeField> fields = reference.getAttributeFieldMap();
+        Map<String, Column> columns = query.getColumnMap();
+        for (AttributeField field : fields.values()) {
+          field.setContainer(this);
+          String fieldName = field.getName();
+          // check if the attribute is duplicated
+          if (attributeFieldsMap.containsKey(fieldName))
+            throw new WdkModelException("The attribute " + fieldName +
               " is duplicated in the recordClass " + getFullName());
 
-        // check if attribute name is same as a table
-        if (tableFieldsMap.containsKey(fieldName))
-          throw new WdkModelException("The attribute " + fieldName +
-              " has the same name as a table in the recordClass " + getFullName());
+          // check if attribute name is same as a table
+          if (tableFieldsMap.containsKey(fieldName))
+            throw new WdkModelException("The attribute " + fieldName +
+              " has the same name as a table in the recordClass " +
+              getFullName());
 
-        // check if attribute name is same as a pk column
-        if (pkColumnList.contains(fieldName)) {
-          throw new WdkModelException("The attribute " + fieldName + " in attributeQueryRef " +
-              reference.getTwoPartName() + " cannot be the same as a primary key column.  Use a " +
-              "pkColumnAttribute tag to declare non-default PK column attribute field behavior.");
-        }
-
-        // link columnAttributes with columns
-        if (field instanceof QueryColumnAttributeField) {
-          Column column = columns.get(fieldName);
-          if (column == null) {
-            throw new WdkModelException("Column is missing for " + "the QueryColumnAttributeField " +
-                fieldName + " in recordClass " + getFullName());
+          // check if attribute name is same as a pk column
+          if (pkColumnList.contains(fieldName)) {
+            throw new WdkModelException(
+              "The attribute " + fieldName + " in attributeQueryRef "
+                + reference.getTwoPartName() + " cannot be the same as a "
+                + "primary key column.  Use a pkColumnAttribute tag to declare "
+                + "non-default PK column attribute field behavior.");
           }
-          ((QueryColumnAttributeField) field).setColumn(column);
+
+          // link columnAttributes with columns
+          if (field instanceof QueryColumnAttributeField) {
+            Column column = columns.get(fieldName);
+            if (column == null) {
+              throw new WdkModelException(
+                "Column is missing for the " + "QueryColumnAttributeField " +
+                  fieldName + " in recordClass " + getFullName());
+            }
+            ((QueryColumnAttributeField) field).setColumn(column);
+          }
+          attributeFieldsMap.put(fieldName, field);
         }
-        attributeFieldsMap.put(fieldName, field);
+
+        SqlQuery attributeQuery = prepareQuery(wdkModel, query, pkColumns);
+        attributeQueries.put(query.getFullName(), attributeQuery);
+
+        // intentionally using unprepared query
+        assignAttributeFieldDataTypes(query);
+      } catch (WdkModelException e) {
+        throw new WdkModelException("Error while resolving attribute query " +
+          "reference \"" + reference.getTwoPartName() + "\" in record type \"" +
+          getFullName() + "\"", e);
       }
-
-      SqlQuery attributeQuery = prepareQuery(wdkModel, query, pkColumns);
-      attributeQueries.put(query.getFullName(), attributeQuery);
-
-      assignSqlColumnTypes(wdkModel, query); // intentionally using unprepared query
     }
   }
 
-  private void assignSqlColumnTypes(WdkModel wdkModel, SqlQuery query) throws WdkModelException {
-
-    LOG.debug("Assigning column types for attribute query " + query.getFullName() + " in record class " + getFullName());
-
-    // run resolved attribute query to get back column types and assign types to attributes
-    RunnableObj<QueryInstanceSpec> querySpec = QueryInstanceSpec.builder()
-        .buildValidated(_wdkModel.getSystemUser(), query,
-            StepContainer.emptyContainer(), ValidationLevel.RUNNABLE, FillStrategy.NO_FILL)
-        .getRunnable()
-        .getOrThrow(invalidSpec -> new WdkModelException("Cannot run raw attribute query '" +
-            query.getFullName() + "': " + invalidSpec.getValidationBundle().toString(2)));
-
-    // get raw SQL from attribute query and replace id sql macros with dummy id sql
-    String idSql = "( SELECT " + Arrays.stream(primaryKeyDefinition.getColumnRefs())
-        .map(pkColName -> "'' as " + pkColName)
-        .collect(Collectors.joining(", ")) + " " +
-        wdkModel.getAppDb().getPlatform().getDummyTable() + " )";
-
-    String sql = Query.makeQueryInstance(querySpec).getSql()
-        .replace(Utilities.MACRO_ID_SQL, idSql)
-        .replace(Utilities.MACRO_ID_SQL_NO_FILTERS, idSql);
-
-    PreparedStatement ps = null;
-    ResultSetMetaData meta = null;
-    Set<String> definedColumnNames = query.getColumnMap().keySet();
-    try (Connection conn = wdkModel.getAppDb().getDataSource().getConnection()) {
-      ps = conn.prepareStatement(sql);
-      meta = ps.getMetaData();
-      for (int i = 1; i <= meta.getColumnCount(); i++) {
-        String columnName = meta.getColumnName(i).toLowerCase();
-        // Some attribute queries return columns that are undefined in the model; ignore these
-        if (!definedColumnNames.contains(columnName)) {
-          continue; // is likely excluded in the model
-        }
-        AttributeField field = attributeFieldsMap.get(columnName);
-        if (field == null) {
-          LOG.warn("In record class '" + getFullName() + "'," +
-              " attribute query column '" + columnName +
-              "' does not have a corresponding attribute field.");
-          continue;
-        }
-        else if (!(field instanceof ColumnAttributeField)) {
-          throw new WdkModelException("In record class '" + getFullName() + "'," +
-              " attribute query column '" + columnName +
-              "'s corresponding attribute field is not a column attributeField.");
-        }
-        AttributeFieldDataType type = AttributeFieldDataType.getFromSqlType(meta.getColumnType(i));
-        ((ColumnAttributeField)field).setDataType(type);
-      }
-    }
-    catch (SQLException e) {
-      LOG.warn("Unable to determine attribute query column types from query " + query.getFullName(), e);
-    }
-    finally {
-      SqlUtils.closeQuietly(meta, ps);
-    }
+  private void assignAttributeFieldDataTypes(SqlQuery query) throws WdkModelException {
+    final var types = query.resolveColumnTypes();
+    types.keySet()
+      .stream()
+      .map(attributeFieldsMap::get)
+      .filter(ColumnAttributeField.class::isInstance)
+      .map(ColumnAttributeField.class::cast)
+      .forEach(field -> field.setDataType(types.get(field.getName())));
   }
 
   private void resolveTableFieldReferences(WdkModel wdkModel) throws WdkModelException {
@@ -1114,9 +1037,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   /**
    * A bulk query is either an original attribute or table query, that is, it either doesn't any param, or
    * just one param with the name of Utilities.PARAM_USER_ID.
-   * 
-   * @param query
-   * @throws WdkModelException
    */
   void validateBulkQuery(Query query) throws WdkModelException {
     validateQuery(query);
@@ -1135,13 +1055,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   /**
    * validate a query, and make sure it returns primary key columns, and the params of it can have only
    * primary_key-column-mapped params (optional) and user_id param (optional).
-   * 
-   * @param query
-   * @throws WdkModelException
    */
   void validateQuery(Query query) throws WdkModelException {
     String[] pkColumns = primaryKeyDefinition.getColumnRefs();
-    Map<String, String> pkColumnMap = new LinkedHashMap<String, String>();
+    Map<String, String> pkColumnMap = new LinkedHashMap<>();
     for (String column : pkColumns)
       pkColumnMap.put(column, column);
 
@@ -1174,8 +1091,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   private Map<String, AttributeField> sortAllAttributes() throws WdkModelException {
-    String orderedAtts[] = attributeOrdering.split(",");
-    Map<String, AttributeField> orderedAttsMap = new LinkedHashMap<String, AttributeField>();
+    String[] orderedAtts = attributeOrdering.split(",");
+    Map<String, AttributeField> orderedAttsMap = new LinkedHashMap<>();
 
     // primaryKey first
     orderedAttsMap.put(idAttributeField.getName(), idAttributeField);
@@ -1295,7 +1212,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     tableFieldList = null;
 
     // exclude query refs
-    Map<String, AttributeQueryReference> attributesQueryRefs = new LinkedHashMap<String, AttributeQueryReference>();
+    Map<String, AttributeQueryReference> attributesQueryRefs = new LinkedHashMap<>();
     for (AttributeQueryReference queryRef : attributesQueryRefList) {
       if (queryRef.include(projectId)) {
         String refName = queryRef.getTwoPartName();
@@ -1313,7 +1230,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     attributesQueryRefList.addAll(attributesQueryRefs.values());
 
     // exclude filter instances
-    List<AnswerFilter> newFilters = new ArrayList<AnswerFilter>();
+    List<AnswerFilter> newFilters = new ArrayList<>();
     for (AnswerFilter filter : filterList) {
       if (filter.include(projectId)) {
         filter.excludeResources(projectId);
@@ -1375,7 +1292,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     favorites = null;
 
     // exclude the summary views
-    Map<String, SummaryView> summaryViews = new LinkedHashMap<String, SummaryView>();
+    Map<String, SummaryView> summaryViews = new LinkedHashMap<>();
     for (SummaryView view : summaryViewList) {
       if (view.include(projectId)) {
         view.excludeResources(projectId);
@@ -1415,7 +1332,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     stepAnalysisList = null;
 
     // exclude the summary views
-    Map<String, RecordView> recordViews = new LinkedHashMap<String, RecordView>();
+    Map<String, RecordView> recordViews = new LinkedHashMap<>();
     for (RecordView view : recordViewList) {
       if (view.include(projectId)) {
         view.excludeResources(projectId);
@@ -1462,7 +1379,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    * @return a map of filter instances available to this record class.
    */
   public Map<String, AnswerFilterInstance> getFilterMap() {
-    return new LinkedHashMap<String, AnswerFilterInstance>(filterMap);
+    return new LinkedHashMap<>(filterMap);
   }
 
   public AnswerFilterInstance[] getFilterInstances() {
@@ -1482,7 +1399,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public Map<String, AnswerFilterLayout> getFilterLayoutMap() {
-    return new LinkedHashMap<String, AnswerFilterLayout>(filterLayoutMap);
+    return new LinkedHashMap<>(filterLayoutMap);
   }
 
   public AnswerFilterLayout[] getFilterLayouts() {
@@ -1504,8 +1421,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   /**
-   * If the filter is not null, in all the boolean operations of the record page, the operands will first be
-   * filtered by this filter, and then the results of these will be used in boolean operation.
+   * If the filter is not null, in all the boolean operations of the record
+   * page, the operands will first be filtered by this filter, and then the
+   * results of these will be used in boolean operation.
    */
   public AnswerFilterInstance getBooleanExpansionFilter() {
     return booleanExpansionFilter;
@@ -1513,7 +1431,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   /**
    * Make sure all pk columns has a corresponding ColumnAttributeField
-   * @throws WdkModelException 
    */
   private void createPrimaryKeySubFields(String projectId) throws WdkModelException {
     String[] pkColumns = primaryKeyDefinition.getColumnRefs();
@@ -1522,14 +1439,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       if (attributeFieldsMap.containsKey(pkColumnName)) {
         AttributeField pkColumnField = attributeFieldsMap.get(pkColumnName);
         if (pkColumnField instanceof PkColumnAttributeField) {
-          // model defined a PkColumnAttributeField for this column; don't generate
+          // model defined a PkColumnAttributeField for this column; don't
+          // generate
           continue;
         }
-        // model defined an attribute but NOT a pkColumnAttribute for this PK column; error
+        // model defined an attribute but NOT a pkColumnAttribute for this PK
+        // column; error
         throw new WdkModelException("RecordClass [" + getFullName() +
-            "] contains attribute [" + pkColumnName + "] with the same name as a primary key column.  " +
-            "Columns declared in the primary key are automatically given internal PkColumnAttributeFields," +
-            "or you may declare them as <pkColumnAttribute> to expose them or assign additional properties.");
+          "] contains attribute [" + pkColumnName + "] with the same name as a primary key column.  " +
+          "Columns declared in the primary key are automatically given internal PkColumnAttributeFields," +
+          "or you may declare them as <pkColumnAttribute> to expose them or assign additional properties.");
       }
 
       // model did not define field for this PK column; create
@@ -1548,12 +1467,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public Map<String, AttributeField> getSummaryAttributeFieldMap() {
-    Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>();
+    Map<String, AttributeField> attributeFields = new LinkedHashMap<>();
 
     // always put primary key as the first field
     attributeFields.put(idAttributeField.getName(), idAttributeField);
 
-    if (defaultSummaryAttributeFields.size() > 0) {
+    if (!defaultSummaryAttributeFields.isEmpty()) {
       attributeFields.putAll(defaultSummaryAttributeFields);
     }
     else {
@@ -1566,10 +1485,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     return attributeFields;
   }
-  
+
   @Override
   public Map<String, Boolean> getSortingAttributeMap() {
-    Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
+    Map<String, Boolean> map = new LinkedHashMap<>();
     int count = 0;
     for (String attrName : defaultSortingMap.keySet()) {
       map.put(attrName, defaultSortingMap.get(attrName));
@@ -1587,14 +1506,14 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public Map<String, Boolean> getIdSortingAttributeMap() {
-    return new MapBuilder<String, Boolean>(new LinkedHashMap<String, Boolean>())
+    return new MapBuilder<String, Boolean>(new LinkedHashMap<>())
         .put(idAttributeField.getName(), true).toMap();
   }
 
   public void addCategoryList(CategoryList categoryList) {
     _categoryList = categoryList;
   }
-  
+
   public List<AttributeCategory> getCollapsedCategories() {
     if (_categoryList == null) {
       return null;
@@ -1618,30 +1537,30 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   /**
-   * The real time question is used on the basket page to display the current records in the basket.
-   * 
-   * @return
-   * @throws WdkModelException
+   * The real time question is used on the basket page to display the current
+   * records in the basket.
    */
   public Question getRealtimeBasketQuestion() throws WdkModelException {
-    String questionName = Utilities.INTERNAL_QUESTION_SET + ".";
-    questionName += getFullName().replace('.', '_');
-    questionName += BasketFactory.REALTIME_BASKET_QUESTION_SUFFIX;
-    return (Question) _wdkModel.resolveReference(questionName);
+    return (Question) _wdkModel.resolveReference(String.format(
+      "%s.%s%s",
+      Utilities.INTERNAL_QUESTION_SET,
+      getFullName().replace('.', '_'),
+      BasketFactory.REALTIME_BASKET_QUESTION_SUFFIX
+    ));
   }
 
   /**
-   * The snapshot question is used when exporting basket to a strategy, and the step will use this question to
-   * get a snapshot of those records in basket, and store them in the
-   * 
-   * @return
-   * @throws WdkModelException
+   * The snapshot question is used when exporting basket to a strategy, and the
+   * step will use this question to get a snapshot of those records in basket,
+   * and store them in the
    */
   public Question getSnapshotBasketQuestion() throws WdkModelException {
-    String questionName = Utilities.INTERNAL_QUESTION_SET + ".";
-    questionName += getFullName().replace('.', '_');
-    questionName += BasketFactory.SNAPSHOT_BASKET_QUESTION_SUFFIX;
-    return (Question) _wdkModel.resolveReference(questionName);
+    return (Question) _wdkModel.resolveReference(String.format(
+      "%s.%s%s",
+      Utilities.INTERNAL_QUESTION_SET,
+      getFullName().replace('.', '_'),
+      BasketFactory.SNAPSHOT_BASKET_QUESTION_SUFFIX
+    ));
   }
 
   /**
@@ -1652,8 +1571,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public String getNativeShortDisplayName() {
-      return (nativeShortDisplayName != null) ? nativeShortDisplayName : getNativeDisplayName();
-    }
+    return (nativeShortDisplayName != null)
+      ? nativeShortDisplayName
+      : getNativeDisplayName();
+  }
 
   /**
    * @param shortDisplayName
@@ -1672,7 +1593,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public Map<String, SummaryView> getSummaryViews() {
-    return new LinkedHashMap<String, SummaryView>(summaryViewMap);
+    return new LinkedHashMap<>(summaryViewMap);
   }
 
   public SummaryView getSummaryView(String viewName) throws WdkUserException {
@@ -1680,8 +1601,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       return summaryViewMap.get(viewName);
     }
     else {
-      throw new WdkUserException("Unknown summary view for record class " + "[" + getFullName() + "]: " +
-          viewName);
+      throw new WdkUserException("Unknown summary view for record class " + "["
+        + getFullName() + "]: " + viewName);
     }
   }
 
@@ -1693,7 +1614,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public Map<String, StepAnalysis> getStepAnalyses() {
-    return new LinkedHashMap<String, StepAnalysis>(stepAnalysisMap);
+    return new LinkedHashMap<>(stepAnalysisMap);
   }
 
   public StepAnalysis getStepAnalysis(String analysisName) throws WdkUserException {
@@ -1701,8 +1622,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       return stepAnalysisMap.get(analysisName);
     }
     else {
-      throw new WdkUserException("Unknown step analysis for record class " + "[" + getFullName() + "]: " +
-          analysisName);
+      throw new WdkUserException("Unknown step analysis for record class " + "["
+        + getFullName() + "]: " + analysisName);
     }
   }
 
@@ -1711,7 +1632,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public Map<String, RecordView> getRecordViews() {
-    return new LinkedHashMap<String, RecordView>(recordViewMap);
+    return new LinkedHashMap<>(recordViewMap);
   }
 
   public RecordView getRecordView(String viewName) throws WdkUserException {
@@ -1719,8 +1640,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       return recordViewMap.get(viewName);
     }
     else {
-      throw new WdkUserException("Unknown record view for record class " + "[" + getFullName() + "]: " +
-          viewName);
+      throw new WdkUserException("Unknown record view for record class " + "[" +
+        getFullName() + "]: " + viewName);
     }
   }
 
@@ -1730,7 +1651,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         return view;
     }
 
-    if (recordViewMap.size() > 0)
+    if (!recordViewMap.isEmpty())
       return recordViewMap.values().iterator().next();
 
     return null;
@@ -1743,8 +1664,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       recordViewList.add(view);
   }
 
-  public boolean hasMultipleRecords(User user, Map<String, Object> pkValues) throws WdkModelException,
-      WdkUserException {
+  public boolean hasMultipleRecords(User user, Map<String, Object> pkValues)
+      throws WdkModelException, WdkUserException {
     List<Map<String, Object>> records = lookupPrimaryKeys(user, pkValues);
     return records.size() > 1;
   }
@@ -1768,7 +1689,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     String indent2 = indent1 + WdkModel.INDENT;
 
     // print attributes
-    if (attributeFieldsMap.size() > 0) {
+    if (!attributeFieldsMap.isEmpty()) {
       writer.println(indent1 + "<attributes size=\"" + attributeFieldsMap.size() + "\">");
       String[] attributeNames = attributeFieldsMap.keySet().toArray(new String[0]);
       Arrays.sort(attributeNames);
@@ -1779,7 +1700,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     // print attribute queries
-    if (attributeQueries.size() > 0) {
+    if (!attributeQueries.isEmpty()) {
       writer.println(indent1 + "<attributeQueries size=\"" + attributeQueries.size() + "\">");
       String[] queryNames = attributeQueries.keySet().toArray(new String[0]);
       Arrays.sort(queryNames);
@@ -1790,7 +1711,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     // print tables
-    if (tableFieldsMap.size() > 0) {
+    if (!tableFieldsMap.isEmpty()) {
       writer.println(indent1 + "<tables size=\"" + tableFieldsMap.size() + "\">");
       String[] tableNames = tableFieldsMap.keySet().toArray(new String[0]);
       Arrays.sort(tableNames);
@@ -1811,9 +1732,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     _stepFilters.put(filter.getKey(), filter);
   }
 
-  /** 
-   * try to find a filter with the associated key.  
-   * @param key
+  /**
+   * try to find a filter with the associated key.
+   *
    * @return null if not found
    */
   public Filter getFilter(String key) {
@@ -1848,7 +1769,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    * Returns a set of filters (by name) for this question.  Only non-view-only
    * filters are included in this list.  View-only filters are only available
    * by name.
-   * 
+   *
    * @return map of all non-view-only filters, from filter name to filter
    */
   public Map<String, Filter> getFilters() {

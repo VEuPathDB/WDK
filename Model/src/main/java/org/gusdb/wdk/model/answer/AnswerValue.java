@@ -1,21 +1,18 @@
 package org.gusdb.wdk.model.answer;
 
-import static org.gusdb.fgputil.FormatUtil.join;
-import static org.gusdb.fgputil.functional.Functions.mapToList;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
-import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.SortDirectionSpec;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
@@ -34,6 +31,7 @@ import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.filter.Filter;
+import org.gusdb.wdk.model.filter.ColumnFilterSqlBuilder;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -52,64 +50,66 @@ import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
+import static org.gusdb.fgputil.StringUtil.indent;
+
 /**
  * <p>
- * A list of {@link RecordInstance}s representing one page of the answer to a {@link Question}. The
- * constructor of the Answer provides a handle ( {@link QueryInstance}) on the {@link ResultList} that is the
- * list of primary keys for the all the records (not * just one page) that are the answer to the
- * {@link Question}. The {@link ResultList} also has a column that contains the row number (RESULT_TABLE_I) so
- * that a list of primary keys for a single page can be efficiently accessed.
- * </p>
+ * A list of {@link RecordInstance}s representing one page of the answer to a
+ * {@link Question}. The constructor of the Answer provides a handle ( {@link
+ * QueryInstance}) on the {@link ResultList} that is the list of primary keys
+ * for the all the records (not * just one page) that are the answer to the
+ * {@link Question}. The {@link ResultList} also has a column that contains the
+ * row number (RESULT_TABLE_I) so that a list of primary keys for a single page
+ * can be efficiently accessed.
  *
  * <p>
- * The AnswerValue is lazy in that it only constructs the set of {@link RecordInstance}s for the page when the
- * first RecordInstance is requested.
- * </p>
+ * The AnswerValue is lazy in that it only constructs the set of {@link
+ * RecordInstance}s for the page when the first RecordInstance is requested.
  *
  * <p>
- * The initial request triggers the creation of skeletal {@link RecordInstance}s for the page. They contain
- * only primary keys (these being acquired from the {@link ResultList}).
- * </p>
+ * The initial request triggers the creation of skeletal {@link RecordInstance}s
+ * for the page. They contain only primary keys (these being acquired from the
+ * {@link ResultList}).
  *
  * <p>
- * These skeletal {@link RecordInstance}s are also lazy in that they only run an attributes {@link Query} when
- * an attribute provided by that query is requested. When they do run an attribute query, its
- * {@link QueryInstance} is put into joinMode. This means that the attribute query joins with the table
- * containing the primary keys, and, in one database query, generates rows containing the attribute values for
- * all the {@link RecordInstance}s in the page.
- * </p>
+ * These skeletal {@link RecordInstance}s are also lazy in that they only run an
+ * attributes {@link Query} when an attribute provided by that query is
+ * requested. When they do run an attribute query, its {@link QueryInstance} is
+ * put into joinMode. This means that the attribute query joins with the table
+ * containing the primary keys, and, in one database query, generates rows
+ * containing the attribute values for all the {@link RecordInstance}s in the
+ * page.
  *
  * <p>
  * similar lazy loading can be applied to table {@link Query} too.
- * </p>
  *
  * <p>
- * The method {@code AnswerValue#integrateAttributesQuery} is invoked by the first RecordInstance in the page
- * upon the first request for an attribute provided by an attributes query. The query is a join with the list
- * of primary keys, and so has a row for each {@link RecordInstance} in the page, and columns that provide the
- * attribute values (plus RESULT_TABLE_I). The values in the rows are integrated into the corresponding
- * {@link RecordInstance} (now no longer skeletal). {@code AnswerValue#integrateAttributesQuery} may be called
- * a number of times, depending upon how many attribute queries the {@link RecordClass} contains.
- * </p>
+ * The method {@code AnswerValue#integrateAttributesQuery} is invoked by the
+ * first RecordInstance in the page upon the first request for an attribute
+ * provided by an attributes query. The query is a join with the list of primary
+ * keys, and so has a row for each {@link RecordInstance} in the page, and
+ * columns that provide the attribute values (plus RESULT_TABLE_I). The values
+ * in the rows are integrated into the corresponding {@link RecordInstance} (now
+ * no longer skeletal). {@code AnswerValue#integrateAttributesQuery} may be
+ * called a number of times, depending upon how many attribute queries the
+ * {@link RecordClass} contains.
  *
  * <p>
- * Attribute queries are guaranteed to provide one row for each {@link RecordInstance} in the page. An
- * exception is thrown otherwise.
- * </p>
+ * Attribute queries are guaranteed to provide one row for each {@link
+ * RecordInstance} in the page. An exception is thrown otherwise.
  *
  * <p>
- * During a standard load of an AnswerValue, we do the following:
- * 1. Apply filter to the IDs in the cache (FilterInstance takes SQL for IDs, wraps to filter, and returns)
- * 2. Apply sorting (AnswerValue takes SQL from filter, join with appropriate attribute queries, wrap to sort, and returns)
- * 3. Apply paging (add rownum, etc. to SQL)
- * Then run SQL!!  Creates template RecordInstances (non populated with attributes)
- * 4. Apply SQL from step 3, join with attribute queries to build results to return to user
- * Attribute fetch is lazy-loaded, but cache all attributes from attribute query (could be big e.g. BFMV), even if don't need all of them
+ * During a standard load of an AnswerValue, we do the following: 1. Apply
+ * filter to the IDs in the cache (FilterInstance takes SQL for IDs, wraps to
+ * filter, and returns) 2. Apply sorting (AnswerValue takes SQL from filter,
+ * join with appropriate attribute queries, wrap to sort, and returns) 3. Apply
+ * paging (add rownum, etc. to SQL) Then run SQL!!  Creates template
+ * RecordInstances (non populated with attributes) 4. Apply SQL from step 3,
+ * join with attribute queries to build results to return to user Attribute
+ * fetch is lazy-loaded, but cache all attributes from attribute query (could be
+ * big e.g. BFMV), even if don't need all of them
  *
- * <p>
- * Created: Fri June 4 13:01:30 2004 EDT
- * </p>
- *
+ * @since Fri June 4 13:01:30 2004 EDT
  * @author David Barkan
  * @version $Revision$ $Date$ $Author$
  */
@@ -149,10 +149,10 @@ public class AnswerValue {
 
   /**
    * @param startIndex
-   *          The index of the first <code>RecordInstance</code> in the page. (>=1)
+   *   The index of the first <code>RecordInstance</code> in the page. (>=1)
    * @param endIndex
-   *          The index of the last <code>RecordInstance</code> in the page, inclusive.
-   * @throws WdkModelException 
+   *   The index of the last <code>RecordInstance</code> in the page,
+   *   inclusive.
    */
   public AnswerValue(User user, RunnableObj<AnswerSpec> validAnswerSpec, int startIndex,
       int endIndex, Map<String, Boolean> sortingMap) throws WdkModelException {
@@ -188,13 +188,18 @@ public class AnswerValue {
 
   /**
    * A copy constructor with start- and end-index modification
+   * <p>
+   * <b>NOTE</b>: DO NOT make this constructor public; continue to use clone
+   * methods since they are overridden in SingleRecordAnswerValue and must be
+   * honored.
    *
-   * @param answerValue source answer value
-   * @param startIndex 1-based start index (inclusive)
-   * @param endIndex end index (inclusive), or a negative value for all records
+   * @param answerValue
+   *   source answer value
+   * @param startIndex
+   *   1-based start index (inclusive)
+   * @param endIndex
+   *   end index (inclusive), or a negative value for all records
    */
-  // NOTE: DO NOT make this constructor public; continue to use clone methods since
-  //       they are overridden in SingleRecordAnswerValue and must be honored
   private AnswerValue(AnswerValue answerValue, int startIndex, int endIndex) {
     _user = answerValue._user;
     _validAnswerSpec = answerValue._validAnswerSpec;
@@ -208,7 +213,7 @@ public class AnswerValue {
     _resultSizeFactory = new ResultSizeFactory(this);
     _startIndex = startIndex;
     _endIndex = endIndex;
-    _sortingMap = new LinkedHashMap<String, Boolean>(answerValue._sortingMap);
+    _sortingMap = new LinkedHashMap<>(answerValue._sortingMap);
   }
 
   public User getUser() {
@@ -243,11 +248,10 @@ public class AnswerValue {
    * @return Map where key is param display name and value is param value
    */
   public Map<String, String> getParamDisplays() {
-    Map<String, String> displayParamsMap = new LinkedHashMap<String, String>();
+    Map<String, String> displayParamsMap = new LinkedHashMap<>();
     ReadOnlyMap<String, String> paramsMap = _idsQueryInstance.getParamStableValues();
     Param[] params = _answerSpec.getQuestion().getParams();
-    for (int i = 0; i < params.length; i++) {
-      Param param = params[i];
+    for (Param param : params) {
       displayParamsMap.put(param.getPrompt(), paramsMap.get(param.getName()));
     }
     return displayParamsMap;
@@ -283,8 +287,8 @@ public class AnswerValue {
    * @return page of dynamic records as an array
    */
   public RecordInstance[] getRecordInstances() throws WdkModelException, WdkUserException {
-    DynamicRecordInstanceList dynamicMap = new DynamicRecordInstanceList(this);
-    return dynamicMap.values().toArray(new RecordInstance[dynamicMap.size()]);
+    return new DynamicRecordInstanceList(this).values()
+      .toArray(new RecordInstance[0]);
   }
 
   // FIXME!!!  Look at how this is called- we should not be using PagedAnswerRecordStream!
@@ -299,41 +303,25 @@ public class AnswerValue {
   }
 
   /**
-   * This method returns a paged attribute sql query.  It is now public because the FileBasedRecordStream object
+   * This method returns a paged attribute sql query.  It is
+   * now public because the FileBasedRecordStream object
    * uses it to acquire an sql statement to execute.
-   * @param attributeQuery
-   * @return
-   * @throws WdkModelException
-   * @throws WdkUserException
    */
-  public String getPagedAttributeSql(Query attributeQuery, boolean sortPage) throws WdkModelException, WdkUserException {
-    LOG.debug("AnswerValue: getPagedAttributeSql(): " + attributeQuery.getFullName() + " --boolean sortPage: " + sortPage);
-
-    // get the paged SQL of id query
-    String idSql = getPagedIdSql();
+  public String getPagedAttributeSql(Query attributeQuery, boolean sortPage)
+  throws WdkModelException {
+    LOG.debug("AnswerValue: getPagedAttributeSql(): "
+      + attributeQuery.getFullName() + " --boolean sortPage: " + sortPage);
 
     // combine the id query with attribute query
-    String attributeSql = getAttributeSql(attributeQuery);
-    StringBuilder sql = new StringBuilder(" /* the desired attributes, for a page of sorted results */ "
-        + " SELECT aq.* FROM (");
-    sql.append(idSql);
-    sql.append(") pidq, (/* attribute query that returns attributes in a page */ ").append(attributeSql).append(
-        ") aq WHERE ");
+    String sql = joinToPagedIds(getAttributeSql(attributeQuery));
 
-    boolean firstColumn = true;
-    for (String column : _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
-      if (firstColumn)
-        firstColumn = false;
-      else
-        sql.append(" AND ");
-      sql.append("aq.").append(column).append(" = pidq.").append(column);
-    }
-    if (sortPage) {
-      // sort by underlying idq row_index if requested
-      sql.append(" ORDER BY pidq.row_index");
-    }
-    LOG.debug("AnswerValue: getPagedAttributeSql(): " + sql.toString());
-    return sql.toString();
+    // sort by underlying idq row_index if requested
+    if (sortPage)
+      sql += "\nORDER BY\n"
+        + "  " + ID_QUERY_HANDLE + ".row_index";
+
+    LOG.debug("AnswerValue: getPagedAttributeSql(): " + sql);
+    return sql;
   }
 
   public ResultList getTableFieldResultList(TableField tableField) throws WdkModelException {
@@ -343,11 +331,6 @@ public class AnswerValue {
     // has to get a clean copy of the attribute query, without pk params appended
     Query tableQuery = tableField.getUnwrappedQuery();
 
-    /*logger.debug("integrate table query from answer: " + tableQuery.getFullName());
-    for (Param param : tableQuery.getParams()) {
-       logger.debug("param: " + param.getName());
-    }
-    */
     // get and run the paged table query sql
     LOG.debug("AnswerValue: getTableFieldResultList(): going to getPagedTableSql()");
     String sql = getPagedTableSql(tableQuery);
@@ -367,37 +350,100 @@ public class AnswerValue {
   }
 
   public String getPagedTableSql(Query tableQuery) throws WdkModelException {
-    // get the paged SQL of id query
-    String idSql = getPagedIdSql();
-
     // Combine the id query with table query.  Make an instance from the
     // original table query; a table query has only one param, user_id. Note
     // that the original table query is different from the table query held by
     // the recordClass.  The user_id param will be added by the query instance.
-    RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder().buildRunnable(
-        _user, tableQuery, StepContainer.emptyContainer());
-    QueryInstance<?> queryInstance = Query.makeQueryInstance(tableQuerySpec);
-    String tableSql = queryInstance.getSql();
-    DBPlatform platform = _answerSpec.getQuestion().getWdkModel().getAppDb().getPlatform();
-    String tableSqlWithRowIndex = "(SELECT tq.*, " + platform.getRowNumberColumn() + " as row_index FROM (" + tableSql + ") tq ";
-    StringBuffer sql = new StringBuffer("SELECT tqi.* FROM (");
-    sql.append(idSql);
-    sql.append(") pidq, ").append(tableSqlWithRowIndex).append(") tqi WHERE ");
+    RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder()
+      .buildRunnable(_user, tableQuery, StepContainer.emptyContainer());
+    String tableSql = Query.makeQueryInstance(tableQuerySpec).getSql();
+    String rowNumCol = _answerSpec.getQuestion().getWdkModel()
+      .getAppDb().getPlatform().getRowNumberColumn();
 
-    boolean firstColumn = true;
-    for (String column : _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
-      if (firstColumn)
-        firstColumn = false;
-      else
-        sql.append(" AND ");
-      sql.append("tqi.").append(column).append(" = pidq.").append(column);
+    String sql = joinToPagedIds(
+      "SELECT\n"
+        + "  tq.*\n"
+        + ", " + rowNumCol + " as row_index\n"
+        + "FROM (\n" + indent(tableSql) + ") tq\n"
+    ) + "ORDER BY\n"
+      + "  " + ID_QUERY_HANDLE + ".row_index\n"
+      + ", " + QUERY_HANDLE    + ".row_index";
+
+    // replace the id_sql macro.
+    // this sql must include filters (but not view filters)
+    return sql.replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true, true))
+      .replace(Utilities.MACRO_ID_SQL_NO_FILTERS, "(" + getNoFiltersIdSql() + ")");
+  }
+
+  public String getUnfilteredAttributeSql(Query attrQuery)
+  throws WdkModelException {
+    String queryName = attrQuery.getFullName();
+    Query dynaQuery = _answerSpec.getQuestion().getDynamicAttributeQuery();
+    String sql;
+    if (dynaQuery != null && queryName.equals(dynaQuery.getFullName())) {
+      // the dynamic query doesn't have sql defined, the sql will be
+      // constructed from the id query cache table.
+      sql = getBaseIdSql();
+    } else {
+      // Make an instance from the original attribute query; an attribute
+      // query has only one param, user_id. Note that the original
+      // attribute query is different from the attribute query held by the
+      // recordClass.  The user_id param will be added by the builder.
+      // TODO: decide if construction of this validated spec should be moved elsewhere?
+      RunnableObj<QueryInstanceSpec> attrQuerySpec = QueryInstanceSpec.builder()
+        .buildValidated(_user, attrQuery, StepContainer.emptyContainer(),
+          ValidationLevel.RUNNABLE, FillStrategy.NO_FILL)
+        .getRunnable()
+        .getOrThrow(spec -> new WdkModelException(
+          "Attribute query spec found invalid: " + spec.getValidationBundle().toString()));
+
+      var fSql = getNoFiltersIdSql();
+      // get attribute query sql from the instance
+      sql = Query.makeQueryInstance(attrQuerySpec).getSql()
+        // replace the id sql macro.
+        // the injected sql must include filters (but not view filters)
+        .replace(Utilities.MACRO_ID_SQL, fSql)
+        // replace the no-filters id sql macro.
+        // the injected sql must NOT include filters
+        // (but should return any dynamic columns)
+        .replace(Utilities.MACRO_ID_SQL_NO_FILTERS,  "(" + fSql + ")");
     }
-    sql.append(" ORDER BY pidq.row_index, tqi.row_index");
+    return sql;
+  }
 
-    // replace the id_sql macro.  this sql must include filters (but not view filters)
-    //LOG.debug("AnswerValue: getPagedTableSql: adding filters to idsql" );
-    String sqlWithIdSql = sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true, true));
-    return sqlWithIdSql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, "(" + getNoFiltersIdSql() + ")");
+  public String getFilteredAttributeSql(
+    final Query attrQuery,
+    final boolean sort
+  ) throws WdkModelException {
+    final var wrapped = joinToIds(getAttributeSql(attrQuery));
+
+    if (!sort)
+      return wrapped;
+
+    final var cols = getSortingColumns()
+      .stream()
+      .filter(spec -> spec.getItem() instanceof QueryColumnAttributeField)
+      .iterator();
+
+    if (!cols.hasNext())
+      return wrapped;
+
+    final var out = new StringBuilder(wrapped).append("\nORDER BY\n  inq.");
+
+    boolean first = true;
+    while (cols.hasNext()) {
+      final var spec = cols.next();
+
+      if (!first)
+        out.append("\n, inq.");
+
+      out.append(spec.getItemName())
+        .append(' ')
+        .append(spec.getDirection().toString());
+      first=false;
+    }
+
+    return out.toString();
   }
 
   public String getAttributeSql(Query attributeQuery) throws WdkModelException {
@@ -408,8 +454,7 @@ public class AnswerValue {
       // the dynamic query doesn't have sql defined, the sql will be
       // constructed from the id query cache table.
       sql = getBaseIdSql();
-    }
-    else {
+    } else {
       // Make an instance from the original attribute query; an attribute
       // query has only one param, user_id. Note that the original
       // attribute query is different from the attribute query held by the
@@ -423,11 +468,14 @@ public class AnswerValue {
               "Attribute query spec found invalid: " + spec.getValidationBundle().toString()));
 
       // get attribute query sql from the instance
-      sql = Query.makeQueryInstance(attrQuerySpec).getSql();
-      // replace the id sql macro.  the injected sql must include filters (but not view filters)
-      sql = sql.replace(Utilities.MACRO_ID_SQL, getIdSql(null, true));
-      // replace the no-filters id sql macro.  the injected sql must NOT include filters (but should return any dynamic columns)
-      sql = sql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS,  "(" + getNoFiltersIdSql() + ")");
+      sql = Query.makeQueryInstance(attrQuerySpec).getSql()
+        // replace the id sql macro.
+        // the injected sql must include filters (but not view filters)
+        .replace(Utilities.MACRO_ID_SQL, getIdSql(null, true))
+        // replace the no-filters id sql macro.
+        // the injected sql must NOT include filters
+        // (but should return any dynamic columns)
+        .replace(Utilities.MACRO_ID_SQL_NO_FILTERS,  "(" + getNoFiltersIdSql() + ")");
     }
     return sql;
   }
@@ -449,25 +497,28 @@ public class AnswerValue {
     String idSql = getIdSql(null, excludeViewFilters);
 
     // get sorting attribute queries
-    Map<String, String> attributeSqls = new LinkedHashMap<String, String>();
-    List<String> orderClauses = new ArrayList<String>();
+    Map<String, String> attributeSqls = new LinkedHashMap<>();
+    List<String> orderClauses = new ArrayList<>();
     prepareSortingSqls(attributeSqls, orderClauses);
 
-    StringBuffer sql = new StringBuffer("/* the ID query results, sorted */ SELECT ");
+    StringBuilder sql = new StringBuilder("\n/* the ID query results, sorted */"
+      + "\nSELECT\n  ");
     boolean firstColumn = true;
     for (String pkColumn : pkColumns) {
       if (firstColumn)
         firstColumn = false;
       else
-        sql.append(", ");
-      sql.append("idq." + pkColumn);
+        sql.append("\n, ");
+      sql.append("idq.").append(pkColumn);
     }
 
-    sql.append(" FROM " + idSql + " idq");
+    sql.append("\nFROM\n").append(idSql).append(" idq");
     // add all tables involved
     for (String shortName : attributeSqls.keySet()) {
-      sql.append(", (").append(attributeSqls.get(shortName)).append(") ");
-      sql.append(shortName);
+      sql.append("\n, (\n")
+        .append(indent(attributeSqls.get(shortName)))
+        .append(") ")
+        .append(shortName);
     }
 
     // add primary key join conditions
@@ -475,15 +526,15 @@ public class AnswerValue {
     for (String shortName : attributeSqls.keySet()) {
       for (String column : pkColumns) {
         if (firstClause) {
-          sql.append(" WHERE ");
+          sql.append("\nWHERE\n  ");
           firstClause = false;
         }
         else
-          sql.append(" AND ");
+          sql.append("\n  AND ");
 
-        sql.append("idq.").append(column);
-        sql.append(" = ");
-        sql.append(shortName).append(".").append(column);
+        sql.append("idq.").append(column)
+          .append(" = ").append(shortName)
+          .append(".").append(column);
       }
     }
 
@@ -491,16 +542,16 @@ public class AnswerValue {
     // always append primary key columns as the last sorting columns,
     // otherwise Oracle may generate unstable results through pagination
     // when the sorted columns are not unique.
-    sql.append(" ORDER BY ");
-    for (String clause : orderClauses) {
-      sql.append(clause).append(", ");
-    }
+    sql.append("\nORDER BY\n  ");
+    for (String clause : orderClauses)
+      sql.append(clause).append("\n, ");
+
     firstClause = true;
     for (String column : pkColumns) {
       if (firstClause)
         firstClause = false;
       else
-        sql.append(", ");
+        sql.append("\n, ");
       sql.append("idq.").append(column);
     }
 
@@ -510,7 +561,7 @@ public class AnswerValue {
   }
 
   public String getPagedIdSql() throws WdkModelException {
-      return getPagedIdSql(false, false);
+    return getPagedIdSql(false, false);
   }
 
   private String getPagedIdSql(boolean excludeViewFilters, boolean includeRowIndex) throws WdkModelException {
@@ -519,7 +570,7 @@ public class AnswerValue {
     String sql = platform.getPlatform().getPagedSql(sortedIdSql, _startIndex, _endIndex, includeRowIndex);
 
     // add comments to the sql
-    sql = " /* a page of sorted ids */ " + sql;
+    sql = "\n/* a page of sorted ids */\n" + sql;
 
     LOG.debug("AnswerValue: getPagedIdSql() : paged id sql constructed: " + sql);
 
@@ -527,20 +578,17 @@ public class AnswerValue {
   }
 
   public String getIdSql() throws WdkModelException {
-      return getIdSql(null, false);
+    return getIdSql(null, false);
   }
 
   private String getBaseIdSql() throws WdkModelException {
-
     // get base ID sql from query instance
-    String innerSql = _idsQueryInstance.getSql();
-    innerSql = " /* the ID query */" + innerSql;
+    String innerSql = "\n/* the ID query */\n" + _idsQueryInstance.getSql();
 
     // add answer param columns
-    innerSql = applyAnswerParams(innerSql, _answerSpec.getQuestion().getParamMap(), _idsQueryInstance.getParamStableValues());
-    innerSql = " /* answer param value cols applied on id query */ " + innerSql;
-
-    return innerSql;
+    return "\n/* answer param value cols applied on id query */\n"
+      + applyAnswerParams(innerSql, _answerSpec.getQuestion().getParamMap(),
+        _idsQueryInstance.getParamStableValues());
   }
 
   protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException {
@@ -551,60 +599,81 @@ public class AnswerValue {
     // apply old-style answer filter
     if (_answerSpec.getLegacyFilter().isPresent()) {
       innerSql = _answerSpec.getLegacyFilter().get().applyFilter(_user, innerSql, _idsQueryInstance.getAssignedWeight());
-      innerSql = " /* old filter applied on id query */ " + innerSql;
+      innerSql = "\n/* old filter applied on id query */\n" + innerSql;
     }
 
     // apply "new" filters
     if (!_answerSpec.getFilterOptions().isEmpty()) {
       innerSql = applyFilters(innerSql, _answerSpec.getFilterOptions(), excludeFilter);
-      innerSql = " /* new filter applied on id query */ " + innerSql;
+      innerSql = "\n/* new filter applied on id query */\n" + innerSql;
     }
 
     // apply view filters if requested
     if (!_answerSpec.getViewFilterOptions().isEmpty() && !excludeViewFilters) {
       innerSql = applyFilters(innerSql, _answerSpec.getViewFilterOptions(), excludeFilter);
-      innerSql = " /* new view filter applied on id query */ " + innerSql;
+      innerSql = "\n/* new view filter applied on id query */\n" + innerSql;
     }
 
-    innerSql = "(" + innerSql + ")";
+    if (!_answerSpec.getColumnFilterConfig().isEmpty())
+      innerSql = applyColumnFilters(innerSql);
+
+    innerSql = "(\n" + indent(innerSql) + "\n)";
     LOG.debug("AnswerValue: getIdSql(): ID SQL constructed with all filters:\n" + innerSql);
 
     return innerSql;
-
   }
 
-  private static String applyAnswerParams(String innerSql, Map<String, Param> paramMap, ReadOnlyMap<String, String> paramValues) {
+  private String applyColumnFilters(String sql) throws WdkModelException {
+    // Apply just the PK cols in the record class order (getIdSql can
+    // append columns)
+    final var q = "SELECT\n"
+      + Arrays.stream(getAnswerSpec().getQuestion().getRecordClass()
+        .getPrimaryKeyDefinition().getColumnRefs())
+        .collect(Collectors.joining("\n, ", "  ", "\n"))
+      + "FROM (\n" + indent(sql) + "\n)";
+
+    return ColumnFilterSqlBuilder.buildFilteredSql(this, q);
+  }
+
+  private static String applyAnswerParams(
+    String innerSql,
+    Map<String, Param> paramMap,
+    ReadOnlyMap<String, String> paramValues
+  ) {
 
     // gather list of answer params for this question
     List<AnswerParam> answerParams = AnswerParam.getExposedParams(paramMap.values());
 
     // if no answer params, then return incoming SQL
-    if (answerParams.isEmpty()) return innerSql;
+    if (answerParams.isEmpty())
+      return innerSql;
 
     // build list of columns to add, then join into string
-    String extraCols = join(mapToList(answerParams, param ->
-      ", " + paramValues.get(param.getName()) + " as " + param.getName()), "");
+    String extraCols = answerParams.stream()
+      .map(AnswerParam::getName)
+      .map(param -> "\n, " + paramValues.get(param) + " as " + param)
+      .collect(Collectors.joining(""));
 
     // return wrapped innerSql including new columns
-    return " select papidsql.*" + extraCols + " from ( " + innerSql + " ) papidsql ";
+    return "\nSELECT\n  papidsql.*" + extraCols + "\nFROM (\n" +
+      indent(innerSql) + "\n) papidsql ";
   }
 
   private String applyFilters(String innerSql, FilterOptionList filterOptions, String excludeFilter)
       throws WdkModelException {
-    for (FilterOption filterOption : filterOptions) {
-      if ((excludeFilter == null || !filterOption.getKey().equals(excludeFilter)) && !filterOption.isDisabled()) {
+    for (FilterOption filterOption : filterOptions)
+      if (!filterOption.getKey().equals(excludeFilter) && !filterOption.isDisabled())
         innerSql = filterOption.getFilter().getSql(this, innerSql, filterOption.getValue());
-      }
-    }
+
     return innerSql;
   }
 
   private void prepareSortingSqls(Map<String, String> sqls, Collection<String> orders)
       throws WdkModelException {
     Map<String, AttributeField> fields = _answerSpec.getQuestion().getAttributeFieldMap();
-    Map<String, String> querySqls = new LinkedHashMap<String, String>();
-    Map<String, String> queryNames = new LinkedHashMap<String, String>();
-    Map<String, String> orderClauses = new LinkedHashMap<String, String>();
+    Map<String, String> querySqls = new LinkedHashMap<>();
+    Map<String, String> queryNames = new LinkedHashMap<>();
+    Map<String, String> orderClauses = new LinkedHashMap<>();
     WdkModel wdkModel = _answerSpec.getQuestion().getWdkModel();
     LOG.debug("AnswerValue: prepareSortingSqls(): sorting map: " + _sortingMap); //e.g.: {primary_key=true}
     final String idQueryNameStub = "answer_id_query";
@@ -687,7 +756,7 @@ public class AnswerValue {
     int resultSize = _resultSizeFactory.getResultSize();
     int n = (_endIndex == UNBOUNDED_END_PAGE_INDEX ? resultSize : Math.min(_endIndex, resultSize)) - _startIndex + 1;
     LOG.debug("AnswerValue: getPageSize(): " + n);
-    return (_endIndex == UNBOUNDED_END_PAGE_INDEX ? resultSize : Math.min(_endIndex, resultSize)) - _startIndex + 1;
+    return n;
   }
 
   public Optional<String> getResultMessage() throws WdkModelException {
@@ -695,14 +764,16 @@ public class AnswerValue {
   }
 
   public Map<String, Boolean> getSortingMap() {
-    return new LinkedHashMap<String, Boolean>(_sortingMap);
+    return new LinkedHashMap<>(_sortingMap);
+  }
+
+  public List<SortDirectionSpec<AttributeField>> getSortingColumns() {
+    return SortDirectionSpec.convertSorting(_sortingMap,
+      _answerSpec.getQuestion().getAttributeFieldMap());
   }
 
   /**
    * Set a new sorting map
-   *
-   * @param sortingMap
-   * @throws WdkModelException
    */
   public void setSortingMap(Map<String, Boolean> sortingMap) throws WdkModelException {
     if (sortingMap == null) {
@@ -711,7 +782,7 @@ public class AnswerValue {
     // make sure all sorting columns exist
     StringBuilder buffer = new StringBuilder("set sorting: ");
     Map<String, AttributeField> attributes = _answerSpec.getQuestion().getAttributeFieldMap();
-    Map<String, Boolean> validMap = new LinkedHashMap<String, Boolean>();
+    Map<String, Boolean> validMap = new LinkedHashMap<>();
     for (String attributeName : sortingMap.keySet()) {
       buffer.append(attributeName + "=" + sortingMap.get(attributeName) + ", ");
       // if a sorting attribute is invalid, instead of throwing out an
@@ -738,11 +809,10 @@ public class AnswerValue {
    * This method is redundant with getAllIds(), consider deprecate either one of them.
    *
    * @return returns a list of all primary key values.
-   * @throws WdkUserException
    */
-  public Object[][] getPrimaryKeyValues() throws WdkModelException, WdkUserException {
+  public Object[][] getPrimaryKeyValues() throws WdkModelException {
     String[] columns = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
-    List<Object[]> buffer = new ArrayList<Object[]>();
+    List<Object[]> buffer = new ArrayList<>();
 
     Optional<AnswerFilterInstance> legacyFilter = _answerSpec.getLegacyFilter();
     try (ResultList resultList =
@@ -773,13 +843,11 @@ public class AnswerValue {
    * through all the pages and get the primary keys.
    *
    * This method is redundant with getPrimaryKeyValues(), consider deprecate either one of them.
-   *
-   * @return
    */
   public List<String[]> getAllIds() throws WdkModelException {
     String idSql = getSortedIdSql();
     String[] pkColumns = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
-    List<String[]> pkValues = new ArrayList<String[]>();
+    List<String[]> pkValues = new ArrayList<>();
     WdkModel wdkModel = _answerSpec.getQuestion().getWdkModel();
     DataSource dataSource = wdkModel.getAppDb().getDataSource();
     ResultSet resultSet = null;
@@ -834,10 +902,8 @@ public class AnswerValue {
    * primary keys are joined and delimited by a comma.
    *
    * @return list of all record IDs
-   * @throws WdkModelException
-   * @throws WdkUserException
    */
-  public String getAllIdsAsString() throws WdkModelException, WdkUserException {
+  public String getAllIdsAsString() throws WdkModelException {
     List<String[]> pkValues = getAllIds();
     StringBuilder buffer = new StringBuilder();
     for (String[] pkValue : pkValues) {
@@ -848,47 +914,6 @@ public class AnswerValue {
         }
     }
     return buffer.toString();
-  }
-
-  public List<SortDirectionSpec<AttributeField>> getSortingColumns() {
-    return SortDirectionSpec.convertSorting(_sortingMap,
-      _answerSpec.getQuestion().getAttributeFieldMap());
-  }
-
-  public String getFilteredAttributeSql(
-    final Query attrQuery,
-    final boolean sort
-  ) throws WdkModelException, WdkUserException {
-    final String wrapped = joinToIds(getAttributeSql(attrQuery));
-
-    if (!sort)
-      return wrapped;
-
-    final Iterator<SortDirectionSpec<AttributeField>> cols = getSortingColumns()
-      .stream()
-      .filter(spec -> spec.getItem() instanceof QueryColumnAttributeField)
-      .iterator();
-
-    if (!cols.hasNext())
-      return wrapped;
-
-    final StringBuilder out = new StringBuilder(wrapped)
-      .append("\nORDER BY\n  inq.");
-
-    boolean first = true;
-    while (cols.hasNext()) {
-      final SortDirectionSpec<AttributeField> spec = cols.next();
-
-      if (!first)
-        out.append("\n, inq.");
-
-      out.append(spec.getItemName())
-        .append(' ')
-        .append(spec.getDirection().toString());
-      first=false;
-    }
-
-    return out.toString();
   }
 
   private final static String ID_QUERY_HANDLE = "pidq";
@@ -905,13 +930,10 @@ public class AnswerValue {
    *
    * @throws WdkModelException
    *   see {@link #getIdSql()}
-   * @throws WdkUserException
-   *   see {@link #getIdSql()}
    *
    * @see #joinToIds(String, String)
    */
-  private String joinToIds(final String sql)
-  throws WdkModelException, WdkUserException {
+  private String joinToIds(final String sql) throws WdkModelException {
     return joinToIds(sql, getIdSql());
   }
 
@@ -926,13 +948,10 @@ public class AnswerValue {
    *
    * @throws WdkModelException
    *   see {@link #getPagedIdSql()}
-   * @throws WdkUserException
-   *   see {@link #getPagedIdSql()}
    *
    * @see #joinToIds(String, String)
    */
-  private String joinToPagedIds(final String sql)
-  throws WdkModelException, WdkUserException {
+  private String joinToPagedIds(final String sql) throws WdkModelException {
     return joinToIds(sql, getPagedIdSql());
   }
 

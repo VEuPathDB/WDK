@@ -37,6 +37,11 @@ public class DateParamHandler extends AbstractParamHandler {
     return "date '" + ctxParamVals.get().get(_param.getName()) + "'";
   }
 
+  @Override
+  public String toEmptyInternalValue() {
+    return "?";
+  }
+
   /**
    * The stable value is the same as signature.
    */

@@ -1,14 +1,14 @@
 package org.gusdb.wdk.model.record.attribute;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.bundle.ColumnToolConfig;
+import org.gusdb.wdk.model.bundle.ColumnToolSet;
 import org.gusdb.wdk.model.filter.ColumnFilter;
 import org.gusdb.wdk.model.filter.ColumnFilterDefinition;
 import org.gusdb.wdk.model.filter.FilterDefinition;
@@ -100,5 +100,40 @@ public class QueryColumnAttributeField extends ColumnAttributeField {
 
   public Collection<ColumnFilter> getColumnFilters() {
     return _columnFilters.values();
+  }
+
+  @Override
+  public Collection<String> getColumnFilterNames() {
+    return getToolBundle().getTools()
+      .values()
+      .stream()
+      .filter(s -> s.hasFilterFor(this))
+      .map(ColumnToolSet::getName)
+      .collect(Collectors.toList());
+  }
+
+  @Override
+  public Optional<org.gusdb.wdk.model.bundle.ColumnFilter> getFilter(
+    final String name
+  ) {
+    return getToolBundle().getTool(name).flatMap(t -> t.getFilterFor(this));
+  }
+
+  @Override
+  public Optional<org.gusdb.wdk.model.bundle.ColumnFilter> prepareFilter(
+    final String name,
+    final AnswerValue val,
+    final ColumnToolConfig config
+  ) {
+    return getToolBundle().getTool(name)
+      .flatMap(t -> t.prepareFilterFor(this, val, config));
+  }
+
+  @Override
+  public boolean isFilterable() {
+    return getToolBundle().getTools()
+      .values()
+      .stream()
+      .anyMatch(s -> s.hasFilterFor(this));
   }
 }

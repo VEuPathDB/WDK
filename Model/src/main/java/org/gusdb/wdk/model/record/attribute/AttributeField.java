@@ -1,54 +1,58 @@
 package org.gusdb.wdk.model.record.attribute;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.fasterxml.jackson.databind.JsonNode;
 import org.gusdb.wdk.model.RngAnnotations.RngOptional;
 import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.bundle.*;
+import org.gusdb.wdk.model.bundle.impl.EmptyToolBundle;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.report.AttributeReporterRef;
 import org.gusdb.wdk.model.report.ReporterRef;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Objects.isNull;
+
 /**
- * <p>
  * The attribute field defines a single value property to a {@link RecordClass}.
- * When a {@link RecordIntance} is created for a {@link RecordClass}, an
+ * When a {@code RecordInstance} is created for a {@link RecordClass}, an
  * {@link AttributeValue} of a given AttributeField will be created to hold the
  * actual value of the field.
- * </p>
- * 
  * <p>
  * Some types of the attribute fields can embed other attribute fields in its
  * content, and the values of those attribute fields will be substituted into
  * the content to produce the the value for the {@link AttributeValue} of the
  * current field.
- * </p>
- * 
+ *
  * @author Jerric
- * @created Jan 19, 2006
+ * @since  Jan 19, 2006
  */
 public abstract class AttributeField extends Field implements Cloneable {
 
   private boolean _sortable = true;
   private String _align;
-  private boolean _nowrap = false;
+  private boolean _nowrap;
   private boolean _removable = true;
   private String _categoryName;
+
+  protected AttributeFieldDataType _dataType = AttributeFieldDataType.OTHER;
   protected AttributeFieldContainer _container;
 
-  private List<AttributeReporterRef> _reporterList = new ArrayList<AttributeReporterRef>();
+  private List<AttributeReporterRef> _reporterList = new ArrayList<>();
   private Map<String, AttributeReporterRef> _reporterMap;
 
-  public abstract Map<String, ColumnAttributeField> getColumnAttributeFields() throws WdkModelException;
+  private String _toolBundleRef;
+  private ColumnToolBundle _toolBundle;
 
-  public abstract Optional<AttributeFieldDataType> getDataType();
+  public abstract Map<String, ColumnAttributeField> getColumnAttributeFields() throws WdkModelException;
 
   @Override
   public AttributeField clone() {
@@ -66,7 +70,7 @@ public abstract class AttributeField extends Field implements Cloneable {
 
   /**
    * by default, an attribute can be removed from the result page.
-   * 
+   *
    * @return
    */
   public boolean isRemovable() {
@@ -146,8 +150,25 @@ public abstract class AttributeField extends Field implements Cloneable {
     _categoryName = categoryName;
   }
 
+  public AttributeFieldDataType getDataType() {
+    return _dataType;
+  }
+
   public boolean isDerived() {
     return false;
+  }
+
+  @RngOptional
+  public void setToolBundleRef(String toolBundleRef) {
+    this._toolBundleRef = toolBundleRef;
+  }
+
+  public ColumnToolBundle getToolBundle() {
+    // This can happen if the attribute field is used without reference
+    // resolution
+    return isNull(_toolBundle)
+      ? (_toolBundle = resolveToolBundle())
+      : _toolBundle;
   }
 
   public void addReporterReference(AttributeReporterRef reference) {
@@ -159,7 +180,7 @@ public abstract class AttributeField extends Field implements Cloneable {
   }
 
   public Map<String, AttributeReporterRef> getReporters() {
-    return new LinkedHashMap<String, AttributeReporterRef>(_reporterMap);
+    return new LinkedHashMap<>(_reporterMap);
   }
 
   @Override
@@ -167,7 +188,7 @@ public abstract class AttributeField extends Field implements Cloneable {
     super.excludeResources(projectId);
 
     // exclude reporter references
-    _reporterMap = new LinkedHashMap<String, AttributeReporterRef>();
+    _reporterMap = new LinkedHashMap<>();
     for (AttributeReporterRef reporter : _reporterList) {
       if (reporter.include(projectId)) {
         String name = reporter.getName();
@@ -193,13 +214,160 @@ public abstract class AttributeField extends Field implements Cloneable {
     return super.getPropertyLists();
   }
 
+  /**
+   * Prepares and configures the column reporter with the given name if such a
+   * column reporter exists.
+   *
+   * @param name
+   *   name of the column reporter to prepare
+   * @param val
+   *   answer value the column reporter will operate on
+   * @param config
+   *   raw client configuration for the reporter
+   *
+   * @return an option containing either a configured column reporter if a one
+   * was found matching the given name, or none if no such reporter was found.
+   *
+   * @throws WdkUserException
+   *   if the given json client configuration is invalid.
+   */
+  public Optional<ColumnReporter> prepareReporter(
+    final String name,
+    final AnswerValue val,
+    final JsonNode config
+  ) throws WdkUserException {
+    var tmp = getReporter(name);
+    if (tmp.isEmpty())
+      return Optional.empty();
+    var conf = tmp.get().validateConfig(config);
+    return getToolBundle().getTool(name)
+      .flatMap(set -> set.prepareReporter(this, val, conf));
+  }
+
+  /**
+   * Convenience shortcut to get an unconfigured instance of the column reporter
+   * with the given name.
+   *
+   * @param name
+   *   name of the column reporter to return.
+   *
+   * @return
+   */
+  public Optional<ColumnReporter> getReporter(final String name) {
+    return getToolBundle().getTool(name)
+      .flatMap(t -> t.getReporterFor(this));
+  }
+
+  /**
+   * Retrieves and returns a list of the names of all the available column
+   * reporters that can be used on this field.
+   *
+   * @return list of reporters available for this field by name
+   */
+  public Collection<String> getColumnReporterNames() {
+    return getToolBundle().getTools()
+      .values()
+      .stream()
+      .filter(s -> s.hasReporterFor(this))
+      .map(ColumnToolSet::getName)
+      .collect(Collectors.toList());
+  }
+
+  /**
+   * Convenience shortcut to get an unconfigured instance of the column filter
+   * with the given name.
+   *
+   * @param name
+   *   name of the column filter to return.
+   *
+   * @return an option of either an unconfigured column filter matching the
+   * given name, or an empty option if no such filter exists.
+   */
+  public Optional<ColumnFilter> getFilter(final String name) {
+    return Optional.empty();
+  }
+
+  /**
+   * Prepares and returns an option of a configured, runnable column filter.
+   *
+   * @param name
+   *   name of the column filter to be configured
+   * @param val
+   *   answer value that the column filter will be applied to
+   * @param config
+   *   validated client config to use in configuring the column filter
+   *
+   * @return an option of either a configured column filter matching the given
+   * name, or an empty option if no such filter exists.
+   */
+  public Optional<ColumnFilter> prepareFilter(
+    @SuppressWarnings("unused") final String name,
+    @SuppressWarnings("unused") final AnswerValue val,
+    @SuppressWarnings("unused") final ColumnToolConfig config
+  ) {
+    return Optional.empty();
+  }
+
+  /**
+   * Retrieves a list of the usable column filter names for the current field.
+   *
+   * @return list of available column filters by name
+   */
+  public Collection<String> getColumnFilterNames() {
+    return Collections.emptyList();
+  }
+
+  /**
+   * Convenience method for determining whether or not a field is filterable.
+   * <p>
+   * A field is considered filterable if it is of the correct field type
+   * <i>and</i> has at least one column filter that could be applied.
+   * <p>
+   * Note: the base attribute field type is not filterable, however extending
+   * classes override this with their own internal checks on whether or not the
+   * above criteria is met.
+   *
+   * @return whether or not this field is filterable
+   */
+  public boolean isFilterable() {
+    return false;
+  }
+
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
+
+    _toolBundle = isNull(_toolBundleRef)
+      ? resolveDefaultToolBundle()
+      : resolveToolBundleRef().orElseThrow(() -> new WdkModelException(
+        "Invalid columnToolBundle reference: " + _toolBundleRef));
 
     // resolve plugin references
     for (ReporterRef reporter : _reporterMap.values()) {
       reporter.resolveReferences(wdkModel);
     }
+  }
+
+  private ColumnToolBundle resolveToolBundle() {
+    return resolveToolBundleRef().orElseGet(this::resolveDefaultToolBundle);
+  }
+
+  private Optional<ColumnToolBundle> resolveToolBundleRef() {
+    return isNull(_toolBundleRef)
+      ? Optional.empty()
+      : _wdkModel.getColumnToolBundle(_toolBundleRef);
+  }
+
+  private ColumnToolBundle resolveDefaultToolBundle() {
+    if (_container instanceof TableField)
+      return ((TableField) _container).getRecordClass().getDefaultToolBundle();
+
+    if (_container instanceof RecordClass)
+      return ((RecordClass) _container).getDefaultToolBundle();
+
+    if (_container instanceof Question)
+      return ((Question) _container).getRecordClass().getDefaultToolBundle();
+
+    return new EmptyToolBundle();
   }
 }

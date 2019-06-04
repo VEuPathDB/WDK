@@ -42,7 +42,7 @@ public class ListColumnFilter extends SqlColumnFilter {
     // group by the query and get a count
     String sql = "SELECT " + columnName + " as " + COLUMN_PROPERTY + ", count(*) AS " + COLUMN_COUNT + " FROM (" + inputSql +
         ") GROUP BY " + columnName;
- 
+
     return sql;
   }
 
@@ -54,7 +54,7 @@ public class ListColumnFilter extends SqlColumnFilter {
 
     // put the filter values as join conditions
     List<String> values = getValues(jsValue);
-    if (values.size() > 0) {
+    if (!values.isEmpty()) {
       for (int i = 0; i < values.size(); i++) {
         if (i > 0)
           sql.append(", ");
@@ -82,14 +82,14 @@ public class ListColumnFilter extends SqlColumnFilter {
         buffer.append(", ");
       buffer.append(value);
     }
-    if (values.size() == 0)
+    if (values.isEmpty())
       buffer.append("(none selected)");
     return buffer.toString();
   }
 
   private List<String> getValues(JSONObject jsValue) {
     List<String> values = new ArrayList<>();
-    if (jsValue.has(KEY_VALUES)) { 
+    if (jsValue.has(KEY_VALUES)) {
       Object objValues = jsValue.get(KEY_VALUES);
       if (objValues instanceof JSONArray) { // multi values
         JSONArray jsValues = (JSONArray) objValues;

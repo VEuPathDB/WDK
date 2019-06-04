@@ -100,17 +100,22 @@ public class AnswerService extends AbstractWdkService {
     _questionUrlSegment = questionUrlSegment;
   }
 
-
   /**
-   * This endpoint
-   * exists so we can provide a concrete JSON schema for the response, since the /reports/{reportName} endpoint
-   * may not even return JSON, depending on which reporter is specified.
-   * 
-   * @param body JSON request body
+   * This endpoint exists so we can provide a concrete JSON schema for the
+   * response, since the /reports/{reportName} endpoint may not even return
+   * JSON, depending on which reporter is specified.
+   *
+   * @param body
+   *   JSON request body
+   *
    * @return standard WDK answer JSON
-   * @throws RequestMisformatException if request body is not JSON or has incorrect JSON structure
-   * @throws DataValidationException if JSON structure is correct but values contained are invalid
-   * @throws WdkModelException if an error occurs while processing the request
+   *
+   * @throws RequestMisformatException
+   *   if request body is not JSON or has incorrect JSON structure
+   * @throws DataValidationException
+   *   if JSON structure is correct but values contained are invalid
+   * @throws WdkModelException
+   *   if an error occurs while processing the request
    */
   @POST
   @Path(STANDARD_REPORT_URL_SEGMENT)
@@ -124,15 +129,22 @@ public class AnswerService extends AbstractWdkService {
   }
 
   /**
-   * Processes an answer request (answer spec + formatting information) by creating an answer from the
-   * answer spec, then calling the specified reporter, passing a configuration, and streaming back the
-   * reporter's result.
-   * 
-   * @param body request body containing answer spec, format string, format configuration
+   * Processes an answer request (answer spec + formatting information) by
+   * creating an answer from the answer spec, then calling the specified
+   * reporter, passing a configuration, and streaming back the reporter's
+   * result.
+   *
+   * @param body
+   *   request body containing answer spec, format string, format configuration
+   *
    * @return generated report
-   * @throws RequestMisformatException if request body is not JSON or has incorrect JSON structure
-   * @throws DataValidationException if JSON structure is correct but values contained are invalid
-   * @throws WdkModelException if an error occurs while processing the request
+   *
+   * @throws RequestMisformatException
+   *   if request body is not JSON or has incorrect JSON structure
+   * @throws DataValidationException
+   *   if JSON structure is correct but values contained are invalid
+   * @throws WdkModelException
+   *   if an error occurs while processing the request
    */
   @POST
   @Path(CUSTOM_REPORT_URL_SEGMENT)
@@ -148,15 +160,22 @@ public class AnswerService extends AbstractWdkService {
   }
 
   /**
-   * Similar to the custom report endpoint that takes JSON, but gets its data from a form instead of JSON.
-   * It is used by the client to push the provided data
-   * to a new http target (ie, a tab), for example, a download report
-   * 
-   * @param data JSON data representing an answer request, passed in the 'data' form param
+   * Similar to the custom report endpoint that takes JSON, but gets its data
+   * from a form instead of JSON. It is used by the client to push the provided
+   * data to a new http target (ie, a tab), for example, a download report
+   *
+   * @param data
+   *   JSON data representing an answer request, passed in the 'data' form
+   *   param
+   *
    * @return generated report
-   * @throws RequestMisformatException if request body is not JSON or has incorrect JSON structure
-   * @throws DataValidationException if JSON structure is correct but values contained are invalid
-   * @throws WdkModelException if an error occurs while processing the request
+   *
+   * @throws RequestMisformatException
+   *   if request body is not JSON or has incorrect JSON structure
+   * @throws DataValidationException
+   *   if JSON structure is correct but values contained are invalid
+   * @throws WdkModelException
+   *   if an error occurs while processing the request
    */
   @POST
   @Path(CUSTOM_REPORT_URL_SEGMENT)
@@ -176,7 +195,7 @@ public class AnswerService extends AbstractWdkService {
     }
     return buildResult(reportName, new JSONObject(data));
   }
-  
+
   static AnswerRequest parseAnswerRequest(Question question,
       String reporterName, JSONObject requestBody, WdkModel wdkModel, User sessionUser)
           throws RequestMisformatException, DataValidationException, WdkModelException {
@@ -213,8 +232,9 @@ public class AnswerService extends AbstractWdkService {
     // can't do that without knowing if the question is valid
     Optional<Question> question = wdkModel.getQuestionByFullName(specBuilder.getQuestionName());
 
-    if (!question.isPresent() || question.get().getQuery().getAnswerParamCount() == 0) {
-      // question will fail validation or is valid but does not contain answer params; no need for lookup
+    if (question.isEmpty() || question.get().getQuery().getAnswerParamCount() == 0) {
+      // question will fail validation or is valid but does not contain answer
+      // params; no need for lookup
       return StepContainer.emptyContainer();
     }
 
@@ -232,7 +252,7 @@ public class AnswerService extends AbstractWdkService {
         Step step = wdkModel.getStepFactory().getStepByIdAndUserId(
             stepId, sessionUser.getUserId(), ValidationLevel.RUNNABLE)
             .orElseThrow(() -> new DataValidationException(notFoundMessage));
-        if (!step.getStrategy().isPresent()) {
+        if (step.getStrategy().isEmpty()) {
           stepsForLookup.add(step); // stand-alone step; add it
         }
         else {
@@ -247,7 +267,7 @@ public class AnswerService extends AbstractWdkService {
         else {
           Step step = wdkModel.getStepFactory().getStepById(stepId, ValidationLevel.RUNNABLE)
               .orElseThrow(() -> new DataValidationException(notFoundMessage));
-          if (step.getStrategy() == null) {
+          if (step.getStrategy().isEmpty()) {
             stepsForLookup.add(step); // stand-alone step; add it
           }
           else {
@@ -276,17 +296,23 @@ public class AnswerService extends AbstractWdkService {
   }
 
   /**
-   * Creates a streaming answer response as the passed user from the passed answer spec and formatting
-   * configuration.  To get the default (i.e. standard WDK service JSON) reporter with default configuration,
-   * pass null as formatting.
+   * Creates a streaming answer response as the passed user from the passed
+   * answer spec and formatting configuration.  To get the default (i.e.
+   * standard WDK service JSON) reporter with default configuration, pass null
+   * as formatting.
    *
-   * @param sessionUser user answer is to be generated as
-   * @param answerSpec answer spec determining result ID set
-   * @param formatting reporter configuration or null for default reporter/config
+   * @param sessionUser
+   *   user answer is to be generated as
+   *
    * @return streaming response representing the formatted answer
-   * @throws RequestMisformatException if reporter does not support the passed formatConfig object
-   * @throws DataValidationException if answerSpec or formatting are syntactically valid but the data itself is invalid
-   * @throws WdkModelException if an application error occurs
+   *
+   * @throws RequestMisformatException
+   *   if reporter does not support the passed formatConfig object
+   * @throws DataValidationException
+   *   if answerSpec or formatting are syntactically valid but the data itself
+   *   is invalid
+   * @throws WdkModelException
+   *   if an application error occurs
    */
   public static TwoTuple<AnswerValue,Response> getAnswerResponse(User sessionUser, AnswerRequest request)
       throws RequestMisformatException, WdkModelException, DataValidationException {
@@ -318,18 +344,26 @@ public class AnswerService extends AbstractWdkService {
   }
 
   /**
-   * Returns configured reporter based on passed answer value and formatting JSON
+   * Returns configured reporter based on passed answer value and formatting
+   * JSON
    *
-   * @param answerValue answer value for which reporter should be constructed
-   * @param formatting formatting object if one was passed, else null
+   * @param answerValue
+   *   answer value for which reporter should be constructed
+   * @param formatting
+   *   formatting object if one was passed, else null
+   *
    * @return configured reporter
-   * @throws RequestMisformatException if required property is not present or the wrong type
-   * @throws DataValidationException if a value passed in the configuration is invalid
-   * @throws WdkModelException if unable to create reporter due to another reason
+   *
+   * @throws RequestMisformatException
+   *   if required property is not present or the wrong type
+   * @throws DataValidationException
+   *   if a value passed in the configuration is invalid
+   * @throws WdkModelException
+   *   if unable to create reporter due to another reason
    */
   private static Reporter getConfiguredReporter(AnswerValue answerValue, AnswerFormatting formatting)
       throws RequestMisformatException, WdkModelException, DataValidationException {
-    
+
     String formatName = formatting.getFormat();
     try {
 
@@ -356,10 +390,10 @@ public class AnswerService extends AbstractWdkService {
         reporter.report(stream);
       }
       catch (WdkModelException | WdkRuntimeException e) {
-        stream.write((" ********************************************* " + NL + 
-            " ********************************************* " + NL + 
-            " *************** ERROR **************** " + NL + 
-            "We're sorry, but an error occurred while streaming your result and your request cannot be completed.  " + NL + 
+        stream.write((" ********************************************* " + NL +
+            " ********************************************* " + NL +
+            " *************** ERROR **************** " + NL +
+            "We're sorry, but an error occurred while streaming your result and your request cannot be completed.  " + NL +
             "Please contact us with a description of your download." + NL + NL).getBytes());
         throw new WebApplicationException(e);
       }

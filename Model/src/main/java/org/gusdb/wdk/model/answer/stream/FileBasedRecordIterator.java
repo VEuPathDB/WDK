@@ -6,12 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
 
 import javax.sql.DataSource;
 
@@ -286,7 +282,7 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
    * table into the record instance being assembled, advance the SingleTableRecordInstanceStream iterator and save it and the resulting new
    * next record instance into the tuple kept in the tableIteratorMap.  Otherwise, just attach an empty version of the provided table
    * to the record instance being assembled.
-   * 
+   *
    * @param aggregateRecordInstance the record instance under assembly
    * @param tableData object containing table field and data stream for that table
    * @param pkValues primary key value of the current record instance

@@ -81,7 +81,12 @@ public class NumberRangeParamHandler extends AbstractParamHandler {
       }
     }
 
-    return new JSONObject().put("min", new Double(values[0])).put("max", new Double(values[1])).toString();
+    return new JSONObject().put("min", values[0]).put("max", values[1]).toString();
+  }
+
+  @Override
+  public String toEmptyInternalValue() {
+    return "?";
   }
 
   @Override

@@ -40,6 +40,11 @@ public class TimestampParamHandler extends AbstractParamHandler {
     return ctxVals.get().get(_param.getName());
   }
 
+  @Override
+  public String toEmptyInternalValue() {
+    return "?";
+  }
+
   /**
    * The stable value is the same as signature.
    */

@@ -32,6 +32,8 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 
@@ -303,4 +305,31 @@ public abstract class AbstractWdkService {
     return question;
   }
 
+  /**
+   * Look up a {@link RecordClass} and {@link Question} by name, then lookup an
+   * {@link AttributeField} by name on the {@code Question}.
+   * <p>
+   * If the {@code RecordClass}, {@code Question}, or the {@code AttributeField}
+   * is not found, throws a {@link NotFoundException}.
+   *
+   * @param container
+   *   Name of the {@code Question} to look up
+   * @param column
+   *   Name of the {@code AttributeField} to look up
+   *
+   * @return The named {@code AttributeField} from the named {@code
+   * RecordClass}.
+   *
+   * @throws NotFoundException
+   *   Throw if either the {@code RecordClass} or {@code AttributeField} could
+   *   not be found.
+   */
+  protected AttributeField requireColumn(
+    final AttributeFieldContainer container,
+    final String column
+  ) {
+    return container.getAttributeField(column)
+      .orElseThrow(() -> new NotFoundException(
+        format("Invalid column \"%s\"", column)));
+  }
 }

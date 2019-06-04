@@ -57,7 +57,7 @@ public class RecordClassFormatter {
 
   public static JSONObject getRecordClassJson(RecordClass recordClass,
       boolean expandAttributes, boolean expandTables, boolean expandTableAttributes) {
-    
+
 
     return new JSONObject()
       .put(JsonKeys.FULL_NAME, recordClass.getFullName())
@@ -100,29 +100,4 @@ public class RecordClassFormatter {
     }
     return array;
   }
-
-  /* remove this after 4/22/2019 3:00:03pm EST
-  private static JSONArray getAttributeCategoriesJson(RecordClass recordClass) {
-    List<AttributeCategory> categories = recordClass.getAttributeCategoryTree(FieldScope.ALL).getTopLevelCategories();
-    JSONArray attributeCategoriesJson = new JSONArray();
-    for (AttributeCategory category : categories) {
-      attributeCategoriesJson.put(getAttributeCategoryJson(category));
-    }
-    return attributeCategoriesJson;
-  }
-
-
-  private static JSONObject getAttributeCategoryJson(AttributeCategory category) {
-    JSONObject attributeCategoryJson = new JSONObject()
-      .put(JsonKeys.NAME,  category.getName())
-      .put(JsonKeys.DISPLAY_NAME,  category.getDisplayName())
-      .put(JsonKeys.DESCRIPTION, category.getDescription());
-    JSONArray subCategoriesJson = new JSONArray();
-    for (AttributeCategory subCategory : category.getSubCategories()) {
-      subCategoriesJson.put(getAttributeCategoryJson(subCategory));
-    }
-    attributeCategoryJson.put(JsonKeys.CATEGORIES, subCategoriesJson);
-    return attributeCategoryJson;
-  }
-*/
 }

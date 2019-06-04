@@ -66,4 +66,15 @@ public class ParameterContainerInstanceSpec<T extends ParameterContainerInstance
     // use linked hashmap since sometimes param ordering matters
     return new MapBuilder<String,String>(new LinkedHashMap<>()).putAll(_map).toMap();
   }
+
+  @Override
+  public String toString() {
+    return "ParameterContainerInstanceSpec {\n"
+      + "  _user: "               + _user               + ",\n"
+      + "  _parameterContainer: " + _parameterContainer + ",\n"
+      + "  _stepContainer: "      + _stepContainer      + ",\n"
+      + "  _validationBundle: "   + _validationBundle   + ",\n"
+      + "  _map: "                + _map                + "\n"
+      + '}';
+  }
 }

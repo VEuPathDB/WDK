@@ -3,9 +3,7 @@ package org.gusdb.wdk.model.query.param;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dataset.Dataset;
-import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
-import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -42,25 +40,24 @@ public class DatasetParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxParamVals) {
-    final String name  = _param.getName();
-    final String value = ctxParamVals.get().get(name);
+    final var value = ctxParamVals.get().get(_param.getName());
 
     if (_param.isNoTranslation())
       return value;
 
-    DatasetFactory datasetFactory = ctxParamVals.get()
+    var datasetFactory = ctxParamVals.get()
       .getUser()
       .getWdkModel()
       .getDatasetFactory();
-    String dvSql = datasetFactory.getDatasetValueSql(Long.valueOf(value));
+    var dvSql = datasetFactory.getDatasetValueSql(Long.valueOf(value));
+    var recordClass = ((DatasetParam) _param).getRecordClass();
 
-    RecordClass recordClass = ((DatasetParam) _param).getRecordClass();
     if (recordClass == null)
       return dvSql;
 
     // use the recordClass primary keys as the column name
-    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
-    StringBuilder sql = new StringBuilder("SELECT ");
+    var pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
+    var sql = new StringBuilder("SELECT ");
     for (int i = 0; i < pkColumns.length; i++) {
       sql.append("dv.data")
         .append(i + 1)
@@ -71,6 +68,11 @@ public class DatasetParamHandler extends AbstractParamHandler {
     // return the remaining data columns
     sql.append("dv.* FROM (").append(dvSql).append(") dv");
     return sql.toString();
+  }
+
+  @Override
+  public String toEmptyInternalValue() {
+    return "SELECT * FROM dual";
   }
 
   /**

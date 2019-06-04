@@ -1,42 +1,16 @@
 package org.gusdb.wdk.model.question;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
-
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.functional.Functions;
-import org.gusdb.wdk.model.Group;
-import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelBase;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.*;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml.StepAnalysisContainer;
 import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.filter.Filter;
-import org.gusdb.wdk.model.query.Column;
-import org.gusdb.wdk.model.query.ColumnType;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QuerySet;
-import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.*;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
@@ -50,6 +24,15 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.report.ReporterRef;
 import org.gusdb.wdk.model.user.UserPreferences;
+
+import java.io.PrintWriter;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.gusdb.fgputil.FormatUtil.NL;
 
 /**
  * A class representing a binding between a RecordClass and a Query. On the
@@ -75,7 +58,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   public static final String BOOLEAN_QUESTION_PREFIX = "boolean_question_";
   public static final String SINGLE_RECORD_QUESTION_PREFIX = "single_record_question_";
 
-  private static final String DYNAMIC_QUERY_SUFFIX = "_dynamic";
+  public static final String DYNAMIC_QUERY_SUFFIX = "_dynamic";
 
   protected static final Logger LOG = Logger.getLogger(Question.class);
 
@@ -89,13 +72,13 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   private String _iconName;
 
-  private List<WdkModelText> _descriptions = new ArrayList<WdkModelText>();
+  private List<WdkModelText> _descriptions = new ArrayList<>();
   private String _description;
 
-  private List<WdkModelText> _summaries = new ArrayList<WdkModelText>();
+  private List<WdkModelText> _summaries = new ArrayList<>();
   private String _summary;
 
-  private List<WdkModelText> _helps = new ArrayList<WdkModelText>();
+  private List<WdkModelText> _helps = new ArrayList<>();
   private String _help;
 
   private QuestionSet _questionSet;
@@ -115,13 +98,13 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
    */
   private String _customJavascriptFile = "";
 
-  private List<AttributeList> _attributeLists = new ArrayList<AttributeList>();
+  private List<AttributeList> _attributeLists = new ArrayList<>();
 
   private String[] _defaultSummaryAttributeNames;
-  private Map<String, AttributeField> _defaultSummaryAttributeFields = new LinkedHashMap<String, AttributeField>();
-  private Map<String, Boolean> _defaultSortingMap = new LinkedHashMap<String, Boolean>();
+  private Map<String, AttributeField> _defaultSummaryAttributeFields = new LinkedHashMap<>();
+  private Map<String, Boolean> _defaultSortingMap = new LinkedHashMap<>();
 
-  private List<DynamicAttributeSet> _dynamicAttributeSets = new ArrayList<DynamicAttributeSet>();
+  private List<DynamicAttributeSet> _dynamicAttributeSets = new ArrayList<>();
   protected DynamicAttributeSet _dynamicAttributeSet;
   private Query _dynamicAttributeQuery;
 
@@ -140,14 +123,15 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
    */
   private String _shortDisplayName;
 
-  private List<ParamReference> _paramRefs = new ArrayList<ParamReference>();
+  private List<ParamReference> _paramRefs = new ArrayList<>();
 
-  private List<WdkModelText> _sqlMacroList = new ArrayList<WdkModelText>();
+  private List<WdkModelText> _sqlMacroList = new ArrayList<>();
+
   /**
    * the macros that can be used to override the same macros/paramValues in the
    * referenced id query.
    */
-  private Map<String, String> _sqlMacroMap = new LinkedHashMap<String, String>();
+  private Map<String, String> _sqlMacroMap = new LinkedHashMap<>();
 
   private List<SummaryView> _summaryViewList = new ArrayList<>();
   private LinkedHashMap<String, SummaryView> _summaryViewMap = new LinkedHashMap<>();
@@ -185,8 +169,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   /**
    * copy constructor
-   *
-   * @param question
    */
   public Question(Question question) {
     super(question);
@@ -320,7 +302,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   }
 
   public Map<String, Field> getFields(FieldScope scope) {
-    Map<String, Field> fields = new LinkedHashMap<String, Field>();
+    Map<String, Field> fields = new LinkedHashMap<>();
     Map<String, AttributeField> attributes = getAttributeFieldMap(scope);
     Map<String, TableField> tables = _recordClass.getTableFieldMap(scope);
 
@@ -345,14 +327,14 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   public Map<Group, Map<String, Param>> getParamMapByGroups() {
     Param[] params = getParams();
-    Map<Group, Map<String, Param>> paramGroups = new LinkedHashMap<Group, Map<String, Param>>();
+    Map<Group, Map<String, Param>> paramGroups = new LinkedHashMap<>();
     for (Param param : params) {
       Group group = param.getGroup();
       Map<String, Param> paramGroup;
       if (paramGroups.containsKey(group)) {
         paramGroup = paramGroups.get(group);
       } else {
-        paramGroup = new LinkedHashMap<String, Param>();
+        paramGroup = new LinkedHashMap<>();
         paramGroups.put(group, paramGroup);
       }
       paramGroup.put(param.getName(), param);
@@ -362,7 +344,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   public Map<Group, Map<String, Param>> getParamMapByGroups(String displayType) {
     Param[] params = getParams();
-    Map<Group, Map<String, Param>> paramGroups = new LinkedHashMap<Group, Map<String, Param>>();
+    Map<Group, Map<String, Param>> paramGroups = new LinkedHashMap<>();
     for (Param param : params) {
       Group group = param.getGroup();
       if (!group.getDisplayType().equalsIgnoreCase(displayType))
@@ -371,7 +353,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
       if (paramGroups.containsKey(group)) {
         paramGroup = paramGroups.get(group);
       } else {
-        paramGroup = new LinkedHashMap<String, Param>();
+        paramGroup = new LinkedHashMap<>();
         paramGroups.put(group, paramGroup);
       }
       paramGroup.put(param.getName(), param);
@@ -426,11 +408,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     return _query;
   }
 
-    /**
-     * Instead of calling this, call setQueryRef() and resolveReferences()
-     */
-    @Deprecated
-    public void setQuery(Query q) throws WdkModelException {
+  /**
+   * Instead of calling this, call setQueryRef() and resolveReferences()
+   */
+  @Deprecated
+  public void setQuery(Query q) throws WdkModelException {
     _query = q;
     _idQueryRef = q.getFullName();
     _query.setContextQuestion(this);
@@ -541,22 +523,20 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
    * getAttribute(SUMMARY) will get the configured summary list, and if the list
    * is not configured, it will return all non-internal attribute fields;
    * meanwhile this method returns the configured list if it is configured,
-   * otherwise it only return a limited number of attribtue fields for display
+   * otherwise it only return a limited number of attribute fields for display
    * purpose.
-   *
-   * @return
    */
   public Map<String, AttributeField> getSummaryAttributeFieldMap() {
-    Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>();
+    Map<String, AttributeField> attributeFields = new LinkedHashMap<>();
 
     // always put ID as the first field
     AttributeField pkField = _recordClass.getIdAttributeField();
     attributeFields.put(pkField.getName(), pkField);
 
-    if (_defaultSummaryAttributeFields.size() > 0) {
-      attributeFields.putAll(_defaultSummaryAttributeFields);
-    } else {
+    if (_defaultSummaryAttributeFields.isEmpty()) {
       attributeFields = _recordClass.getSummaryAttributeFieldMap();
+    } else {
+      attributeFields.putAll(_defaultSummaryAttributeFields);
     }
 
     // add weight to the list
@@ -579,12 +559,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   @Override
   public AttributeField[] getAttributeFields() {
-    AttributeField[] array = {};
-    return getAttributeFieldMap(FieldScope.ALL).values().toArray(array);
+    return getAttributeFieldMap(FieldScope.ALL)
+      .values().toArray(new AttributeField[0]);
   }
 
   public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
-    Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>();
+    Map<String, AttributeField> attributeFields = new LinkedHashMap<>();
 
     // always put primary key as the first field
     AttributeField pkField = _recordClass.getIdAttributeField();
@@ -630,7 +610,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     if (_resolved)
       return;
     super.resolveReferences(model);
-    _wdkModel = model;
 
     try {
       // it must happen before dynamicAttributeSet, because it is
@@ -652,7 +631,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
       }
 
       // check if we have customized params;
-      if (_paramRefs.size() > 0) {
+      if (!_paramRefs.isEmpty()) {
         String queryName = _query.getFullName();
         Map<String, Param> params = _query.getParamMap();
         for (ParamReference paramRef : _paramRefs) {
@@ -664,18 +643,18 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
           Param param = ParamReference.resolveReference(model, paramRef, _query);
           _query.addParam(param);
         }
+
         // resolve the param references after all params are present
-        for (Param param : _query.getParams()) {
+        for (Param param : _query.getParams())
           param.resolveReferences(model);
-        }
+
         // once param references are resolved, resolve dependent params
-        for (Param param : _query.getParams()) {
+        for (Param param : _query.getParams())
           param.resolveDependedParamRefs();
-        }
+
         // once both resolveRefs AND dependedParamRefs have been called, do validation check
-        for (Param param : _query.getParams()) {
+        for (Param param : _query.getParams())
           param.checkAllowEmptyVsEmptyDefault();
-        }
       }
       _query.setContextQuestion(this);
 
@@ -704,9 +683,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
       _query.setIndexColumns(_recordClass.getIndexColumns());
 
       // resolve summary views
-      for (SummaryView summaryView : _summaryViewMap.values()) {
+      for (SummaryView summaryView : _summaryViewMap.values())
         summaryView.resolveReferences(model);
-      }
 
       // resolve step analysis refs
       for (StepAnalysis stepAnalysisRef : _stepAnalysisMap.values()) {
@@ -717,7 +695,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
         stepAnalysisRef.getAnalyzerInstance().validateQuestion(this);
       }
 
-      // make sure this question's query provides columns for each part of the primary key
+      // make sure this question's query provides columns for each part of the
+      // primary key
       Set<String> queryColumnNames = _query.getColumnMap().keySet();
       String[] requiredColumns = _recordClass.getPrimaryKeyDefinition().getColumnRefs();
       for (String requiredColumn : requiredColumns) {
@@ -728,7 +707,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
         }
       }
 
-      // cache "ALL" attributes for efficient access- can be expensive if done many times
+      // cache "ALL" attributes for efficient access- can be expensive if done
+      // many times
       _allAttributeFieldsMap = getAttributeFieldMap(FieldScope.ALL);
     }
     catch (WdkModelException ex) {
@@ -752,7 +732,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
    */
   @Override
   public Map<String, Boolean> getSortingAttributeMap() {
-    Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
+    Map<String, Boolean> map = new LinkedHashMap<>();
 
     for (String attrName : _defaultSortingMap.keySet()) {
       map.put(attrName, _defaultSortingMap.get(attrName));
@@ -761,7 +741,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     }
 
     // no sorting map defined, use the definition in recordClass
-    if (map.size() == 0)
+    if (map.isEmpty())
       map = _recordClass.getSortingAttributeMap();
 
     return map;
@@ -923,9 +903,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   /**
    * If dynamic attributes are defined, a new attribute query will be created
    * which includes all the dynamic attributes.
-   *
-   * @param wdkModel
-   * @return
    */
   private Query createDynamicAttributeQuery(WdkModel wdkModel)
       throws WdkModelException {
@@ -1004,7 +981,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
       Optional<SummaryView> defaultView, Map<String,SummaryView> allViews) {
     return () ->
       allViews.entrySet().stream().filter(view ->
-        !defaultView.isPresent() ||
+        defaultView.isEmpty() ||
         !defaultView.get().getName().equals(view.getKey())
       ).iterator();
   }
@@ -1017,21 +994,19 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
     // find first summary view specified as default; look in question, then recordclass
     Optional<SummaryView> first = findFirstDefault(questionViews);
-    if (!first.isPresent()) first = findFirstDefault(recordClassViews);
+    if (first.isEmpty()) first = findFirstDefault(recordClassViews);
 
     // add default summary view as first element; if no default specified, first summary view will be selected
     List<SummaryView> viewsToReturn = new ArrayList<>();
-    if (first.isPresent()) {
-      viewsToReturn.add(first.get());
-    }
+    first.ifPresent(viewsToReturn::add);
 
     // add remaining question views first
-    for (Entry<String, SummaryView> entry : getTrimmedViews(first, questionViews)) {
+    for (var entry : getTrimmedViews(first, questionViews)) {
       viewsToReturn.add(entry.getValue());
     }
 
     // add remaining record class views, careful not to override question views with the same name
-    for (Entry<String, SummaryView> entry : getTrimmedViews(first, recordClassViews)) {
+    for (var entry : getTrimmedViews(first, recordClassViews)) {
       if (!questionViews.containsKey(entry.getKey())) {
         viewsToReturn.add(entry.getValue());
       }
@@ -1061,10 +1036,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
         return view;
     }
     // return the first view from question
-    if (_summaryViewMap.size() > 0)
+    if (!_summaryViewMap.isEmpty())
       return _summaryViewMap.values().iterator().next();
     // return the first view from record
-    if (viewsFromRecord.size() > 0)
+    if (!viewsFromRecord.isEmpty())
       return viewsFromRecord.values().iterator().next();
 
     return null;

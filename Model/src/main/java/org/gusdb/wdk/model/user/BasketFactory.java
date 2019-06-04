@@ -25,10 +25,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.query.Column;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QuerySet;
-import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.*;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.question.Question;
@@ -604,10 +601,12 @@ public class BasketFactory {
     for (String columnName : pkColumns) {
       Column column = new Column();
       column.setName(columnName);
+      column.setType(ColumnType.STRING); // TODO: Should this be string?
       query.addColumn(column);
     }
     Column column = new Column();
     column.setName(BASKET_ATTRIBUTE);
+    column.setType(ColumnType.BOOLEAN); // TODO: Should this be boolean?
     query.addColumn(column);
 
     // make sure we create index on primary keys
@@ -623,18 +622,18 @@ public class BasketFactory {
     for (int i = 0; i < pkColumns.length; i++) {
       sql.append("i." + pkColumns[i] + ", ");
     }
-    // case clause works for both Oracle & PostreSQL
-    sql.append("(CASE WHEN b." + prefix + "1 IS NULL THEN 0 ELSE 1 END) ");
-    sql.append(" AS " + BASKET_ATTRIBUTE);
-    sql.append(" FROM (##WDK_ID_SQL_NO_FILTERS##) i ");
-    sql.append(" LEFT JOIN " + _userSchema + TABLE_BASKET + dbLink + " b ");
+    // case clause works for both Oracle & PostgreSQL
+    sql.append("(CASE WHEN b." + prefix + "1 IS NULL THEN 0 ELSE 1 END) ")
+      .append(" AS " + BASKET_ATTRIBUTE)
+      .append(" FROM (##WDK_ID_SQL_NO_FILTERS##) i ")
+      .append(" LEFT JOIN " + _userSchema + TABLE_BASKET + dbLink + " b ");
     for (int i = 0; i < pkColumns.length; i++) {
-      sql.append((i == 0) ? " ON " : " AND ");
-      sql.append(" i." + pkColumns[i] + " = b." + prefix + (i + 1));
+      sql.append((i == 0) ? " ON " : " AND ")
+        .append(" i." + pkColumns[i] + " = b." + prefix + (i + 1));
     }
-    sql.append(" AND b." + COLUMN_USER_ID + " = $$" + Utilities.PARAM_USER_ID + "$$ ");
-    sql.append(" AND b." + COLUMN_PROJECT_ID + " = '" + projectId + "'");
-    sql.append(" AND b." + COLUMN_RECORD_CLASS + " = '" + rcName + "'");
+    sql.append(" AND b." + COLUMN_USER_ID + " = $$" + Utilities.PARAM_USER_ID + "$$ ")
+      .append(" AND b." + COLUMN_PROJECT_ID + " = '" + projectId + "'")
+      .append(" AND b." + COLUMN_RECORD_CLASS + " = '" + rcName + "'");
 
     query.setSql(sql.toString());
     querySet.addQuery(query);
@@ -643,8 +642,6 @@ public class BasketFactory {
 
   /**
    * this method has to be called before resolving the model
-   *
-   * @param recordClass
    */
   public void createAttributeQueryRef(RecordClass recordClass) throws WdkModelException {
     String rcName = recordClass.getFullName();

@@ -28,7 +28,7 @@ import org.json.JSONWriter;
 
 /**
  * @author Cary P.
- * 
+ *
  */
 public class JSONReporter extends StandardReporter {
 
@@ -120,7 +120,7 @@ public class JSONReporter extends StandardReporter {
 
   /**
    * Add the following to the writer for the passed record:
-   * 
+   *
    * { tables: [
    *   { name: String, rows: [
    *     { fields: [

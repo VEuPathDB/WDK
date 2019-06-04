@@ -51,15 +51,11 @@ public abstract class DerivedAttributeField extends AttributeField {
   @Override
   public Map<String, ColumnAttributeField> getColumnAttributeFields() throws WdkModelException {
     Map<String, ColumnAttributeField> leaves = new LinkedHashMap<String, ColumnAttributeField>();
-    for (AttributeField dependent : getDependencies()) {
-      leaves.putAll(dependent.getColumnAttributeFields());
-    }
-    return leaves;
-  }
 
-  @Override
-  public Optional<AttributeFieldDataType> getDataType() {
-    return Optional.of(AttributeFieldDataType.STRING);
+    for (AttributeField dependent : getDependencies())
+      leaves.putAll(dependent.getColumnAttributeFields());
+
+    return leaves;
   }
 
   protected String excludeModelText(List<WdkModelText> texts, String projectId,

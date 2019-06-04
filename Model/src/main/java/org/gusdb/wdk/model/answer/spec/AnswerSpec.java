@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
+import org.gusdb.wdk.model.bundle.config.ColumnFilterConfigSet;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
@@ -55,15 +56,28 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
   private final String _questionName;
   private final Question _question;
 
-  // Map of param name (without set name) to stable value (always a string), which are:
-  // StringParam: unquoted raw value
-  // TimestampParam: millisecs since 1970 (or whatever)
-  // DatasetParam: Dataset ID (PK int column in Datasets table in apicomm)
-  // AbstractEnumParam: unsorted string representation of term list (comma-delimited)
-  // EnumParam: (inherited)
-  // FlatVocabParam: (inherited)
-  // FilterParam: JSON string representing all filters applied (see FilterParam)
-  // AnswerParam: Step ID
+  /**
+   * Map of param name (without set name) to stable value (always a string),
+   * which are:
+   * <dl>
+   * <dt>StringParam</dt>
+   *   <dd>unquoted raw value</dd>
+   * <dt>TimestampParam</dt>
+   *   <dd>millisecs since 1970 (or whatever)</dd>
+   * <dt>DatasetParam</dt>
+   *   <dd>Dataset ID (PK int column in Datasets table in apicomm)</dd>
+   * <dt>AbstractEnumParam</dt>
+   *   <dd>unsorted string representation of term list (comma-delimited)</dd>
+   * <dt>EnumParam</dt>
+   *   <dd>(inherited)</dd>
+   * <dt>FlatVocabParam</dt>
+   *   <dd>(inherited)</dd>
+   * <dt>FilterParam</dt>
+   *   <dd>JSON string representing all filters applied (see FilterParam)</dd>
+   * <dt>AnswerParam</dt>
+   *   <dd>Step ID</dd>
+   * </dl>
+  */
   private final QueryInstanceSpec _queryInstanceSpec;
 
   // LEGACY!!  Any filtering code mods should be applied to the parameterized
@@ -87,15 +101,18 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
   // resource to look up steps referred to by answer param values
   private final StepContainer _stepContainer;
 
+  private final ColumnFilterConfigSet _columnFilterConfig;
+
   AnswerSpec(User user, WdkModel wdkModel, String questionName, QueryInstanceSpecBuilder queryInstanceSpec,
       Optional<String> legacyFilterName, FilterOptionListBuilder filters, FilterOptionListBuilder viewFilters,
-      ValidationLevel validationLevel, StepContainer stepContainer, FillStrategy fillStrategy) throws WdkModelException {
+      ValidationLevel validationLevel, StepContainer stepContainer, FillStrategy fillStrategy, ColumnFilterConfigSet columnFilters) throws WdkModelException {
     _wdkModel = wdkModel;
     _questionName = questionName;
     _legacyFilterName = legacyFilterName;
     _stepContainer = stepContainer;
+    _columnFilterConfig = columnFilters;
     ValidationBundleBuilder validation = ValidationBundle.builder(validationLevel);
-    if (!wdkModel.getQuestionByFullName(questionName).isPresent()) {
+    if (wdkModel.getQuestionByFullName(questionName).isEmpty()) {
       // invalid question name; cannot validate other data
       validation.addError("Question '" + questionName + "' is not supported.");
       _question = null;
@@ -123,10 +140,10 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
   }
 
   private Optional<AnswerFilterInstance> getAssignedLegacyFilter(ValidationBundleBuilder validation) {
-    if (!_legacyFilterName.isPresent()) return Optional.empty();
+    if (_legacyFilterName.isEmpty()) return Optional.empty();
     Function<String,Optional<AnswerFilterInstance>> blah = name -> _question.getRecordClass().getFilterInstance(name);
     Optional<AnswerFilterInstance> filterInstance = _legacyFilterName.flatMap(blah);
-    if (!filterInstance.isPresent()) {
+    if (filterInstance.isEmpty()) {
       validation.addError("Legacy answer filter with name '" + _legacyFilterName + "' does not exist.");
     }
     return filterInstance;
@@ -186,7 +203,7 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
       Map<String, Filter> allFilters, SimpleAnswerSpec simpleSpec) {
     // typically always-on filters should be applied before other filters, so put them up front
     FilterOptionListBuilder newFilters = FilterOptionList.builder();
-    List<Filter> alwaysOnFilters = filter(allFilters.values(), filter -> filter.getIsAlwaysApplied());
+    List<Filter> alwaysOnFilters = filter(allFilters.values(), Filter::getIsAlwaysApplied);
     for (Filter filter : alwaysOnFilters) {
       if (!incomingFilters.hasFilter(filter.getKey())) {
         JSONObject defaultValue = filter.getDefaultValue(simpleSpec);
@@ -208,5 +225,9 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
 
   public StepContainer getStepContainer() {
     return _stepContainer;
+  }
+
+  public ColumnFilterConfigSet getColumnFilterConfig() {
+    return _columnFilterConfig;
   }
 }

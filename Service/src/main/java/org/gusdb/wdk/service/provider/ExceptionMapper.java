@@ -105,7 +105,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
   private static String createCompositeExceptionMessage(Exception e) {
     StringBuilder messages = new StringBuilder(e.getMessage() + System.lineSeparator());
     String compositeMessage = e.getMessage();
-    Throwable t = null;
+    Throwable t;
     Throwable descendent = e;
     boolean unwindable = false;
     while((t = descendent.getCause()) != null) {

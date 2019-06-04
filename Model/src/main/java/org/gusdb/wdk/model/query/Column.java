@@ -14,33 +14,34 @@ import org.json.JSONObject;
 
 /**
  * Column defines the fields in the result that will be returned by a query.
- * 
+ * <p>
  * A column can have a type defined, but in the SqlQuery, the type defined in
  * the model will be ignored, and the actual type will be derived from the
  * database. In the ProcessQuery, the type will be used to create the fields of
  * the cache table. The width property of the column is similar to the type, and
  * it is ignored in SqlQuery, but used in ProcessQuery in cache creation.
- * 
+ *
  * @author jerric
- * 
  */
 public class Column extends WdkModelBase implements NamedObject {
 
   private String _name;
   private Query _query;
   private ColumnType _type = ColumnType.STRING;
-  private int _width = 0; // for wsColumns (width of datatype)
+  private int _width; // for wsColumns (width of datatype)
 
   /**
    * The name is used by WSF service.
    */
   private String _wsName;
 
-  private boolean _ignoreCase = false;
+  private boolean _ignoreCase;
 
   private String _sortingColumn;
 
-  private boolean _isPkColumn = false;
+  private boolean _isPkColumn;
+
+  private boolean _typeWasSet;
 
   public Column() {}
 
@@ -67,16 +68,22 @@ public class Column extends WdkModelBase implements NamedObject {
 
   @RngOptional
   public void setColumnType(String typeName) throws WdkModelException {
+    _typeWasSet = true;
     _type = ColumnType.parse(typeName);
   }
 
   @RngUndefined
   public void setType(ColumnType type) {
+    _typeWasSet = true;
     _type = type;
   }
 
   public ColumnType getType() {
     return _type;
+  }
+
+  public boolean wasTypeSet() {
+    return _typeWasSet;
   }
 
   @RngUndefined
@@ -133,7 +140,7 @@ public class Column extends WdkModelBase implements NamedObject {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
    */
   @Override
@@ -143,7 +150,7 @@ public class Column extends WdkModelBase implements NamedObject {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
    * .WdkModel)
    */
@@ -192,7 +199,7 @@ public class Column extends WdkModelBase implements NamedObject {
 
   /**
    * Prints nothing
-   * 
+   *
    * @param writer
    * @param indent
    */

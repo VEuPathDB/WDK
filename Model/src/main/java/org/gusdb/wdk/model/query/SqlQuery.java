@@ -1,15 +1,5 @@
 package org.gusdb.wdk.model.query;
 
-import static org.gusdb.wdk.model.AttributeMetaQueryHandler.getDynamicallyDefinedAttributes;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
@@ -20,17 +10,32 @@ import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.sql.SQLException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Objects.isNull;
+import static java.util.function.Predicate.not;
+import static org.gusdb.wdk.model.AttributeMetaQueryHandler.getDynamicallyDefinedAttributes;
+
 /**
- * An SqlQuery is used to access data from a database with SQL, and if the SQL is
- * relatively slow, it can be optionally cached for better performance.
- * 
+ * An SqlQuery is used to access data from a database with SQL, and if the SQL
+ * is relatively slow, it can be optionally cached for better performance.
+ * <p>
  * the param can be embedded into SQL template in such form: $$param_name$$. the
  * param_name is the name of the param, and it doesn't have the paramSet name
  * prefix.
- * 
+ * <p>
  * You can also define macros in the model and those macros will be substituted
  * into the SQL template. The difference between param and macro is that the
  * value of the macro is defined in the model and substituted into the SQL
@@ -38,10 +43,8 @@ import org.json.JSONObject;
  * while the value of param is provided by the user at run time, and it is
  * substituted into SQL template to produce the final SQL, but it doesn't change
  * the SQL template itself.
- * 
- * 
+ *
  * @author Jerric Gao
- * 
  */
 public class SqlQuery extends Query {
 
@@ -52,14 +55,15 @@ public class SqlQuery extends Query {
   private List<WdkModelText> sqlMacroList;
   private Map<String, String> sqlMacroMap;
   private boolean clobRow;
-  private boolean _useDBLink = false;
+  private boolean _useDBLink;
 
   /**
-   * A flag to check if the cached has been set. if not set, the value from parent querySet will be used.
+   * A flag to check if the cached has been set. if not set, the value from
+   * parent querySet will be used.
    */
-  private boolean setCache = false;
-  private boolean isCacheable = false;
-  
+  private boolean setCache;
+  private boolean isCacheable;
+
   private String _attributeMetaQueryRef;
   private List<WdkModelText> dependentTableList;
   private Map<String, String> dependentTableMap;
@@ -67,11 +71,11 @@ public class SqlQuery extends Query {
   public SqlQuery() {
     super();
     clobRow = false;
-    sqlList = new ArrayList<WdkModelText>();
-    sqlMacroList = new ArrayList<WdkModelText>();
-    sqlMacroMap = new LinkedHashMap<String, String>();
-    dependentTableList = new ArrayList<WdkModelText>();
-    dependentTableMap = new LinkedHashMap<String, String>();
+    sqlList = new ArrayList<>();
+    sqlMacroList = new ArrayList<>();
+    sqlMacroMap = new LinkedHashMap<>();
+    dependentTableList = new ArrayList<>();
+    dependentTableMap = new LinkedHashMap<>();
   }
 
   public SqlQuery(SqlQuery query) {
@@ -80,7 +84,6 @@ public class SqlQuery extends Query {
     this._sql = query._sql;
     this.isCacheable = query.isCacheable;
     this._useDBLink = query._useDBLink;
-    this.isCacheable = query.isCacheable;
     this.setCache = query.setCache;
 
     if (query.sqlList != null) this.sqlList = new ArrayList<>(query.sqlList);
@@ -114,7 +117,7 @@ public class SqlQuery extends Query {
   public String getSql() {
     return replaceMacros(_sql);
   }
-  
+
   public boolean isUseDBLink() {
     return _useDBLink;
   }
@@ -147,7 +150,6 @@ public class SqlQuery extends Query {
 
   /**
    * Sets an optional reference to a meta columns query
-   * @param meta columns query ref of the form "set.element"
    */
   public void setAttributeMetaQueryRef(String attributeMetaQueryRef) {
     _attributeMetaQueryRef = attributeMetaQueryRef;
@@ -156,8 +158,6 @@ public class SqlQuery extends Query {
   /**
    * this method is called by other WDK objects. It is not called by the model
    * xml parser.
-   * 
-   * @param sql
    */
   public void setSql(String sql) {
     // append new line to the end, in case the last line is a comment;
@@ -226,7 +226,7 @@ public class SqlQuery extends Query {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.query.Query#resolveReferences(org.gusdb.wdk.model
    * .WdkModel)
    */
@@ -273,7 +273,7 @@ public class SqlQuery extends Query {
    * into a CLOB. However, since writing and reading clobs are much slower than
    * a normal string column, the flag should be set to false if CLOB is not
    * needed.
-   * 
+   *
    * @return the clobRow
    */
   public boolean isClobRow() {
@@ -295,8 +295,6 @@ public class SqlQuery extends Query {
   /**
    * This is a way to declare the tables the SQL depends on without having to
    * parse the SQL. This feature is used in generating download cache.
-   * 
-   * @return
    */
   public String[] getDependentTables() {
     String[] array = new String[dependentTableMap.size()];
@@ -329,5 +327,96 @@ public class SqlQuery extends Query {
       }
       LOG.debug("Took " + timer.getElapsedString() + " to resolve AttributeMetaQuery: " + _attributeMetaQueryRef);
     }
+  }
+
+  @Override
+  public Map<String, AttributeFieldDataType> resolveColumnTypes() throws WdkModelException {
+    var types = new LinkedHashMap<String, AttributeFieldDataType>();
+    var sql = applyParams(getSql(), paramMap.values().iterator());
+
+    // DB column name casing may not match xml name casing.
+    var names = columnMap.keySet()
+      .stream()
+      .collect(Collectors.toMap(String::toLowerCase, Function.identity()));
+
+    if (isNull(sql) || sql.isBlank())
+      return handleEmptySql();
+
+    try (
+      var con = _wdkModel.getAppDb().getDataSource().getConnection();
+      var ps = con.prepareStatement(sql)
+    ) {
+      var meta = ps.getMetaData();
+      var cols = meta.getColumnCount();
+
+      for (int i = 1; i <= cols; i++) {
+        var name = names.get(meta.getColumnName(i).toLowerCase());
+        var type = meta.getColumnType(i);
+
+        if (name != null)
+          types.put(name, AttributeFieldDataType.fromSqlType(type));
+      }
+    } catch (SQLException e) {
+      return handleColumnTypeException(e);
+    }
+
+    return types;
+  }
+
+  private String applyParams(String sql, Iterator<Param> params) {
+    if (!params.hasNext())
+      return sql;
+    var param = params.next();
+    var value = param.getParamHandler().toEmptyInternalValue();
+    return applyParams(param.replaceSql(sql, value), params);
+  }
+
+  private Map<String, AttributeFieldDataType> handleEmptySql()
+  throws WdkModelException {
+    if (getName().endsWith(Question.DYNAMIC_QUERY_SUFFIX))
+      // TODO: What should actually be done with this?  Is this why query
+      //       instance was needed?
+      return super.resolveColumnTypes();
+    else
+      throw new WdkModelException("Empty SQL in query " + getFullName());
+
+  }
+
+  private static final Pattern MACRO = Pattern.compile("##[A-Z_]+##");
+  private static final Pattern PARAM = Pattern.compile("\\${2}\\w+\\${2}");
+
+  private Map<String, AttributeFieldDataType> handleColumnTypeException(
+    final SQLException ex
+  ) throws WdkModelException {
+    var sql = getSql();
+    var macro = MACRO.matcher(sql);
+    var param = PARAM.matcher(sql);
+
+    // If this query does not contain an unparsed macro or param, then it was
+    // just bad SQL
+    if (!macro.find() && !param.find())
+      throw new WdkModelException(String.format("sqlQuery %s is not valid SQL",
+        getFullName()), ex);
+
+    var invalid = columnMap.values().stream()
+      .anyMatch(not(Column::wasTypeSet));
+
+    if (invalid) {
+      throw new WdkModelException(String.format(
+        "Due to one or more macros and/or params the \"columnType\" value must "
+          + "be set for each column in the sqlQuery \"%s\".\n\n"
+          + "Macros: %s\n"
+          + "Sql: " + sql,
+        getFullName(),
+        Stream.concat(
+          macro.reset().results().map(MatchResult::group),
+          param.reset().results().map(MatchResult::group)
+        )
+          .filter(not(String::isBlank))
+          .collect(Collectors.joining(", "))),
+      ex);
+    }
+
+    return super.resolveColumnTypes();
   }
 }
