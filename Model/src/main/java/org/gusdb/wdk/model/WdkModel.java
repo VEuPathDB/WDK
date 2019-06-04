@@ -1,29 +1,5 @@
 package org.gusdb.wdk.model;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.Timer;
@@ -38,12 +14,11 @@ import org.gusdb.fgputil.runtime.Manageable;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
-import org.gusdb.wdk.model.config.ModelConfig;
-import org.gusdb.wdk.model.config.ModelConfigAccountDB;
-import org.gusdb.wdk.model.config.ModelConfigAppDB;
-import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
-import org.gusdb.wdk.model.config.QueryMonitor;
+import org.gusdb.wdk.model.bundle.ColumnToolBundle;
+import org.gusdb.wdk.model.bundle.ColumnToolBundles;
+import org.gusdb.wdk.model.bundle.DefaultAttributeToolBundleRef;
+import org.gusdb.wdk.model.bundle.impl.EmptyToolBundle;
+import org.gusdb.wdk.model.config.*;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
 import org.gusdb.wdk.model.filter.FilterSet;
@@ -62,12 +37,8 @@ import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.question.SearchCategory;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
-import org.gusdb.wdk.model.user.BasketFactory;
-import org.gusdb.wdk.model.user.FavoriteFactory;
-import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.*;
 import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
-import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
 import org.gusdb.wdk.model.user.analysis.UnconfiguredStepAnalysisFactory;
@@ -77,6 +48,20 @@ import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+
+import static java.util.Objects.isNull;
+import static org.gusdb.fgputil.FormatUtil.NL;
 
 /**
  * The top level WdkModel object provides a facade to access all the resources and functionalities provided by
@@ -193,8 +178,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   private List<OntologyFactoryImpl> ontologyFactoryList = new ArrayList<>();
   private Map<String, OntologyFactory> ontologyFactoryMap = new LinkedHashMap<>();
-  private EuPathCategoriesFactory eupathCategoriesFactory = null;
-  private String categoriesOntologyName = null;
+  private EuPathCategoriesFactory eupathCategoriesFactory;
+  private String categoriesOntologyName;
+
+  private ColumnToolBundles columnToolBundles = new ColumnToolBundles();
+  private ColumnToolBundle defaultColumnToolBundle = new EmptyToolBundle();
+  private String defaultColumnToolBundleRef;
 
   private ReentrantLock systemUserLock = new ReentrantLock();
   private User systemUser;
@@ -377,6 +366,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   public String getCategoriesOntologyName() {
     return categoriesOntologyName;
+  }
+
+  public void setDefaultColumnToolBundleRef(DefaultAttributeToolBundleRef ref) {
+    this.defaultColumnToolBundleRef = ref.getRef();
   }
 
   public void setProperties(Map<String, String> properties, Set<String> replacedMacros)
@@ -786,7 +779,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
     LOG.info("Resolving references...");
 
-    // NOTE: the order of set resolution matters; this sequence has been well thought out and is important
+    // NOTE: the order of set resolution matters; this sequence has been well
+    // thought out and is important
 
     for (GroupSet groupSet : groupSets.values()) {
       groupSet.resolveReferences(this);
@@ -800,6 +794,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     for (ParamSet paramSet : paramSets.values()) {
       paramSet.resolveReferences(this);
     }
+
+    columnToolBundles.resolveReferences(this);
+    if (!isNull(defaultColumnToolBundleRef))
+      defaultColumnToolBundle = getColumnToolBundle(defaultColumnToolBundleRef)
+        .orElseThrow(() -> new WdkModelException("Invalid columnToolBundle reference: " + defaultColumnToolBundleRef));
+
     for (RecordClassSet recordClassSet : recordClassSets.values()) {
       recordClassSet.resolveReferences(this);
     }
@@ -1185,6 +1185,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       filterSetList.add(filterSet);
     else
       addSet(filterSet, filterSets);
+  }
+
+  public void setColumnToolBundles(ColumnToolBundles bundles) {
+    columnToolBundles = bundles;
   }
 
   public void addXmlQuestionSet(XmlQuestionSet questionSet) throws WdkModelException {
@@ -1643,9 +1647,17 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     }
   }
 
+  public Optional<ColumnToolBundle> getColumnToolBundle(final String name) {
+    return columnToolBundles.getBundle(name);
+  }
+
+  public ColumnToolBundle getDefaultAttributeToolBundle() {
+    return defaultColumnToolBundle;
+  }
+
   // TODO: cache at model creation time
   public Map<String, List<Question>> getRecordClassQuestionMap() {
-    Map<String, List<Question>> recordClassQuestionMap = new HashMap<String, List<Question>>();
+    Map<String, List<Question>> recordClassQuestionMap = new HashMap<>();
     for (Question q : getAllQuestions()) {
       String rcName = q.getRecordClass().getFullName();
       if (!recordClassQuestionMap.containsKey(rcName)) {

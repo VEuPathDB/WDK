@@ -129,6 +129,16 @@
       <artifactId>msg-simple</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>io.vulpine.lib</groupId>
+      <artifactId>Jackfish</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.vulpine.lib</groupId>
+      <artifactId>json-schema-builder</artifactId>
+    </dependency>
+
   </dependencies>
 
 </project>

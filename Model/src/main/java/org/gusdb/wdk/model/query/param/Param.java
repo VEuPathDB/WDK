@@ -1,28 +1,10 @@
 package org.gusdb.wdk.model.query.param;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
-
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.stream.Collectors;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.wdk.model.Group;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelBase;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.*;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
@@ -31,6 +13,13 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.PrintWriter;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.stream.Collectors;
+
+import static org.gusdb.fgputil.FormatUtil.NL;
 
 /**
  * Params are used by Query objects and other ParamContainers to provide inputs
@@ -79,9 +68,6 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   private static final Logger LOG = Logger.getLogger(Param.class);
 
-  public static final String RAW_VALUE_SUFFIX = "_raw";
-  public static final String INVALID_VALUE_SUFFIX = "_invalid";
-
   protected static final boolean EMPTY_DESPITE_ALLOWEMPTY_FALSE_IS_FATAL = false;
 
   @Override
@@ -92,27 +78,33 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   protected abstract void applySuggestion(ParamSuggestion suggest);
 
   /**
-   * Validates the value of this parameter only.  This method can assume that any depended/parent params are
-   * already present in contextParamValues; if not, this may throw a WdkModelException.  If validation fails, this
-   * method should not throw an exception, but call contextParamValues.setInvalid() with its parameter name
-   * and a reason for the failure. The only way to get a ParamValidity is by calling one of the setValid()
-   * methods on contextParamValues.
+   * Validates the value of this parameter only.
+   * <p>
+   * This method can assume that any depended/parent params are already present
+   * in contextParamValues; if not, this may throw a WdkModelException.  If
+   * validation fails, this method should not throw an exception, but call
+   * contextParamValues.setInvalid() with its parameter name and a reason for
+   * the failure. The only way to get a ParamValidity is by calling one of the
+   * setValid() methods on contextParamValues.
    *
-   * @param contextParamValues partially validated stable value set
-   * @param level level of validation
+   * @param contextParamValues
+   *   partially validated stable value set
+   * @param level
+   *   level of validation
+   *
    * @return proper param validity value
-   * @throws WdkModelException if application error happens while trying to validate
+   *
+   * @throws WdkModelException
+   *   if application error happens while trying to validate
    */
   protected abstract ParamValidity validateValue(PartiallyValidatedStableValues contextParamValues, ValidationLevel level)
       throws WdkModelException;
 
   /**
-   * TODO: probably want to remove this method, and methods that call it.  it seems to be consumed only by
-   * StepBean (but no jsp or tags), and by the model cacher in fix package, which writes it to db, but never
-   * reads it
-   * @param jsParam
-   * @param extra
-   * @throws JSONException
+   * TODO: probably want to remove this method, and methods that call it.  it
+   *       seems to be consumed only by StepBean (but no jsp or tags), and by
+   *       the model cacher in fix package, which writes it to db, but never
+   *       reads it
    */
   protected abstract void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException;
 
@@ -145,16 +137,17 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   protected boolean _allowEmpty;
 
   protected ParamSet _paramSet;
-  private Map<String, Param> _dependentParamsMap = new HashMap<String, Param>();
-  private Set<Param> _dependentParams = new HashSet<Param>();
+  private Map<String, Param> _dependentParamsMap = new HashMap<>();
+  private Set<Param> _dependentParams = new HashSet<>();
 
   private List<ParamConfiguration> _noTranslations;
 
   /**
-   * if this flag is set to true, the internal value will be the same as dependent value. This flag is useful
-   * when the dependent value is sent to other sites to process using ProcessQuery.
+   * if this flag is set to true, the internal value will be the same as
+   * dependent value. This flag is useful when the dependent value is sent to
+   * other sites to process using ProcessQuery.
    */
-  private boolean _noTranslation = false;
+  private boolean _noTranslation;
 
   protected Question _contextQuestion;
   protected ParameterContainer _container;
@@ -167,10 +160,10 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _visible = true;
     _readonly = false;
     _group = Group.Empty();
-    _helps = new ArrayList<WdkModelText>();
-    _visibleHelps = new ArrayList<WdkModelText>();
-    _suggestions = new ArrayList<ParamSuggestion>();
-    _noTranslations = new ArrayList<ParamConfiguration>();
+    _helps = new ArrayList<>();
+    _visibleHelps = new ArrayList<>();
+    _suggestions = new ArrayList<>();
+    _noTranslations = new ArrayList<>();
     _allowEmpty = false;
     _emptyValue = null;
     _xmlDefaultValue = null;
@@ -207,8 +200,8 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
       _handler = param._handler.clone(this);
     _contextQuestion = param._contextQuestion;
     _container = param._container;
-    _dependentParamsMap = new HashMap<String, Param>(param._dependentParamsMap);
-    _dependentParams = new HashSet<Param>(param._dependentParams);
+    _dependentParamsMap = new HashMap<>(param._dependentParamsMap);
+    _dependentParams = new HashSet<>(param._dependentParams);
   }
 
   @Override
@@ -284,8 +277,6 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   }
 
   public String getVisibleHelp() {
-    // if (visibleHelp == null)
-    // return getHelp(); //should return empty???
     return _visibleHelp;
   }
 
@@ -304,11 +295,15 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   }
 
   /**
-   * Determines a default value for this parameter given the passed stable values.  It can be assumed that
-   * any depended param values required for this param have already been filled in and validated.
+   * Determines a default value for this parameter given the passed stable
+   * values.  It can be assumed that any depended param values required for this
+   * param have already been filled in and validated.
    *
-   * @param stableValues depended values (guaranteed to be present and already valid)
-   * @throws WdkModelException if unable to retrieve default value
+   * @param stableValues
+   *   depended values (guaranteed to be present and already valid)
+   *
+   * @throws WdkModelException
+   *   if unable to retrieve default value
    */
   protected String getDefault(PartiallyValidatedStableValues stableValues) throws WdkModelException {
     return _xmlDefaultValue;
@@ -594,11 +589,9 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   /**
    * Returns list of parameters this parameter depends on.  AbstractDependentParam overrides this
    * method to return any depended params for dependent params.
-   *
-   * @throws WdkModelException
    */
-  public Set<Param> getDependedParams() throws WdkModelException {
-    return Collections.EMPTY_SET;
+  public Set<Param> getDependedParams() {
+    return Collections.emptySet();
   }
 
   public void addNoTranslation(ParamConfiguration noTranslation) {
@@ -616,9 +609,6 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   /**
    * Set the question where the param is used. The params in a question are always cloned when question is
    * initialized, therefore, each param object will refer to one question uniquely.
-   *
-   * @param question
-   * @throws WdkModelException
    */
   public void setContextQuestion(Question question) throws WdkModelException {
     _contextQuestion = question;
@@ -643,13 +633,6 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   /**
    * Transform raw param value into stable value.
-   *
-   * @param user
-   * @param rawValue
-   * @param contextParamValues
-   * @return
-   * @throws WdkUserException
-   * @throws WdkModelException
    */
   public String toStableValue(User user, Object rawValue)
       throws WdkModelException, WdkUserException {
@@ -657,32 +640,38 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   }
 
   /**
-   * Transform stable param value into internal value. The noTranslation and quote flags should be handled by
-   * the plugin.
+   * Transform stable param value into internal value. The noTranslation and
+   * quote flags should be handled by the plugin.
    *
-   * @param queryInstanceSpec
    * @return internal value to be used to create query SQL
-   * @throws WdkModelException
    */
-  // TODO: using SemanticallyValid instead of Runnable here because of AnswerFilterInstance; change when we retire legacy filters
   public String getInternalValue(RunnableObj<QueryInstanceSpec> queryInstanceSpec)
       throws WdkModelException {
     String stableValue = queryInstanceSpec.get().get(getName());
-    if ((stableValue == null || stableValue.length() == 0) && isAllowEmpty()) {
-      // FIXME: RRD: need to determine if getEmptyValue really returns a stable value or internal.  In another
-      //   place (forget where- maybe QueryInstance?) we seem to be popping the empty value in at the last
-      //   moment as an internal value during param population (right before query execution).  Need to discuss with DD.
+    if ((stableValue == null || stableValue.isEmpty()) && isAllowEmpty()) {
+      // FIXME: RRD: need to determine if getEmptyValue really returns a stable
+      //             value or internal.  In another place (forget where- maybe
+      //             QueryInstance?) we seem to be popping the empty value in at
+      //             the last moment as an internal value during param
+      //             population (right before query execution).  Need to
+      //             discuss with DD.
       stableValue = getEmptyValue();
     }
+    LOG.warn("\n  PARAM: " + getName() + "\n  QIS: " + queryInstanceSpec.get());
     return _handler.toInternalValue(queryInstanceSpec);
   }
 
   /**
-   * Creates and returns a signature representing the current value of this param
+   * Creates and returns a signature representing the current value of this
+   * param
    *
-   * @param spec context (used by some handler subclasses)
+   * @param spec
+   *   context (used by some handler subclasses)
+   *
    * @return param value signature
-   * @throws WdkModelException if unable to create signature
+   *
+   * @throws WdkModelException
+   *   if unable to create signature
    */
   public String getSignature(RunnableObj<QueryInstanceSpec> spec)
       throws WdkModelException {
@@ -728,8 +717,6 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   }
 
   /**
-   * @param writer
-   * @param indent
    * @throws WdkModelException if unable to print dependency content
    */
   protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
@@ -746,7 +733,6 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   /**
    * Backlink to dependent params, set by dependent params.
-   * @param param
    */
   public void addDependentParam(Param param) {
     if (!_dependentParamsMap.containsKey(param.getName())) {
@@ -760,11 +746,9 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   }
 
   public Set<Param> getAllDependentParams() {
-    Set<Param> answer = new HashSet<Param>();
-    answer.addAll(_dependentParams);
-    for (Param dependent : _dependentParams) {
+    var answer = new HashSet<>(_dependentParams);
+    for (var dependent : _dependentParams)
       answer.addAll(dependent.getAllDependentParams());
-    }
     return answer;
   }
 
@@ -774,44 +758,46 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    * given a possible changes in values of the depended params provided on
    * input, this param is stale if a previous value for it might no longer be
    * valid, e.g. vocabulary of acceptable values has changed.
-   *
+   * <p>
    * This is more nuanced than simply asking if a depended param is in the
    * passed list. Sometimes declare a dependency on a param for reasons other
    * than vocabulary generation (e.g. internal value generation).
-   *
-   * @param staleDependedParamsFullNames
-   * @return
    */
   public boolean isStale(Set<String> staleDependedParamsFullNames) {
     return false;
   }
 
   public Set<Param> getStaleDependentParams() {
-    Set<String> ss = new HashSet<String>();
+    Set<String> ss = new HashSet<>();
     ss.add(getFullName());
     return getStaleDependentParams(ss);
   }
 
   /**
+   * given an input list of changed or stale params, return a list of
+   * (recursively) dependent params that are stale as a consequence.
    *
-   * given an input list of changed or stale params, return a list of (recursively) dependent params that
-   * are stale as a consequence.
-   * @param staleDependedParamsFullNames the names of depended params whose value has changed, either directly or
-   * because they are stale.
+   * @param staleDependedParamsFullNames
+   *   the names of depended params whose value has changed, either directly or
+   *   because they are stale.
+   *
    * @return a list of stale dependent params
    */
   private Set<Param> getStaleDependentParams(Set<String> staleDependedParamsFullNames) {
 
-    Set<Param> staleDependentParams = new HashSet<Param>(); // return value
+    Set<Param> staleDependentParams = new HashSet<>(); // return value
 
     for (Param dependentParam : getDependentParams()) {
 
-      // if dependent param is stale, add it to stale depended list and recurse to find kids' stale dependents (unless already visited)
-      if (!staleDependedParamsFullNames.contains(dependentParam.getName()) && dependentParam.isStale(staleDependedParamsFullNames)) {
+      // if dependent param is stale, add it to stale depended list and recurse
+      // to find kids' stale dependents (unless already visited)
+      if (!staleDependedParamsFullNames.contains(dependentParam.getName())
+        && dependentParam.isStale(staleDependedParamsFullNames)) {
 
         staleDependentParams.add(dependentParam);
 
-        Set<String> newStaleDependedParams = new HashSet<String>(staleDependedParamsFullNames);
+        Set<String> newStaleDependedParams = new HashSet<>(
+          staleDependedParamsFullNames);
         newStaleDependedParams.add(getFullName());
 
         staleDependentParams.addAll(dependentParam.getStaleDependentParams(newStaleDependedParams));
@@ -837,15 +823,15 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   }
 
   /**
-   * @throws WdkModelException if is depended and default value conflicts with
-   *                           allowEmpty setting
+   * @throws WdkModelException
+   *   if is depended and default value conflicts with allowEmpty setting
    */
   public void checkAllowEmptyVsEmptyDefault() throws WdkModelException {
     // make sure empty param value is either valid or does not happen
-    if (!getDependentParams().isEmpty() &&
-        (_xmlDefaultValue == null || _xmlDefaultValue.isEmpty()) &&
-        !_allowEmpty) {
-      String containerName = getContainer() == null ? "unknown" : getContainer().getFullName();
+    if (isInvalidEmptyDepended()) {
+      String containerName = getContainer() == null
+        ? "unknown"
+        : getContainer().getFullName();
       String msg = "Default value for param '" + getFullName() +
           "' in question '" + containerName + "' cannot be valid " +
           "since the default value is empty but allowEmpty is false and " +
@@ -860,4 +846,9 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     }
   }
 
+  protected boolean isInvalidEmptyDepended() {
+    return !getDependentParams().isEmpty()
+      && (_xmlDefaultValue == null || _xmlDefaultValue.isEmpty())
+      && !_allowEmpty;
+  }
 }

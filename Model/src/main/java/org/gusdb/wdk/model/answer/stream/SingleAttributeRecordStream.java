@@ -1,20 +1,5 @@
 package org.gusdb.wdk.model.answer.stream;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.sql.DataSource;
-
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -26,14 +11,20 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 
-public class SingleAttributeRecordStream
-  implements RecordStream {
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
 
-  public static final String
+public class SingleAttributeRecordStream
+implements RecordStream {
+
+  private static final String
     ERR_MULTI_QUERY = "SingleAttributeRecordStream cannot stream records that "
-        + "rely on more than one attribute query.",
+      + "rely on more than one attribute query.",
     ERR_NO_QUERY    = "SingleAttributeRecordStream cannot be used without "
-        + "at least one query";
+      + "at least one query";
 
   private final AnswerValue answer;
 
@@ -66,7 +57,7 @@ public class SingleAttributeRecordStream
   @Override
   public void close() {
     try {
-      for (final Connection con : openIterators.values())
+      for (final var con : openIterators.values())
         if (!con.isClosed())
           con.close();
     } catch (Exception e) {
@@ -79,26 +70,22 @@ public class SingleAttributeRecordStream
   @SuppressWarnings("NullableProblems")
   public Iterator<RecordInstance> iterator() {
     try {
-      final Connection con = db.getConnection();
-      final Statement stmt = con.createStatement();
+      var con  = db.getConnection();
+      var stmt = con.createStatement();
 
-      final String sql  = answer.getFilteredAttributeSql(query,
+      var sql  = answer.getFilteredAttributeSql(query,
         !answer.getSortingMap().isEmpty());
 
-      final String wrapped = wrapQuery(sql);
-
-      final ResultSet res = stmt.executeQuery(wrapped);
-
-      final SingleAttributeRecordIterator iter = new SingleAttributeRecordIterator(
+      var iter = new SingleAttributeRecordIterator(
         this,
         answer,
-        new SqlResultList(res),
+        new SqlResultList(stmt.executeQuery(wrapQuery(sql))),
         fields
       );
 
       openIterators.put(iter, con);
       return iter;
-    } catch (Exception e) {
+    } catch (SQLException | WdkModelException e) {
       throw new WdkRuntimeException(e);
     }
   }
@@ -112,12 +99,12 @@ public class SingleAttributeRecordStream
 
   // TODO: this really doesn't belong here
   private String wrapQuery(String sql) {
-    final StringBuilder out = new StringBuilder(
+    final var out = new StringBuilder(
       "/* SingleAttributeRecordStream */\nSELECT\n  "
     );
-    boolean first = true;
+    var first = true;
 
-    for (final String col : cols(fields, answer)) {
+    for (final var col : cols(fields, answer)) {
       if (!first)
         out.append(", ");
 
@@ -135,13 +122,14 @@ public class SingleAttributeRecordStream
     final Collection<QueryColumnAttributeField> fields,
     final AnswerValue answer
   ) {
-    Collection<String> out = new HashSet<>();
+    var out = new HashSet<String>();
 
     fields.stream()
       .map(Field::getName)
       .forEach(out::add);
 
-    out.addAll(Arrays.asList(answer.getAnswerSpec().getQuestion()
+    out.addAll(Arrays.asList(answer.getAnswerSpec()
+      .getQuestion()
       .getRecordClass()
       .getPrimaryKeyDefinition()
       .getColumnRefs()));
@@ -152,9 +140,9 @@ public class SingleAttributeRecordStream
   private static Query getAttributeQuery(
     final Collection<QueryColumnAttributeField> cols
   ) {
-    final Set<Query> qs = new HashSet<>();
+    final var qs = new HashSet<Query>();
 
-    for (final QueryColumnAttributeField col : cols)
+    for (final var col : cols)
       qs.add(col.getColumn().getQuery());
 
     if (qs.size() > 1)

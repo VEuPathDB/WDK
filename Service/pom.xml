@@ -129,6 +129,11 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>io.vulpine.lib</groupId>
+      <artifactId>json-schema-builder</artifactId>
+    </dependency>
+
   </dependencies>
 
 </project>

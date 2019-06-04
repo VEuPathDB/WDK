@@ -1,18 +1,8 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.stream.Collectors;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
-import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -28,21 +18,26 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.*;
+
 /**
- * This class provides functions that are common among EnumParam and FlatVocabParam. The parameter of this
- * type can be rendered in the following ways:
+ * This class provides functions that are common among EnumParam and
+ * FlatVocabParam. The parameter of this type can be rendered in the following
+ * ways:
  * <ul>
- * <li>A radio button list, and user can choose only one value from it.</li>
- * <li>A dropdown menu, and user can choose only one value.</li>
- * <li>A checkbox list, and user can choose more than one values.</li>
- * <li>A checkbox tree, and user can choose branches with all the leaves.</li>
- * <li>A type-ahead input box, and when user starts typing, all the matched values will be suggested to the
- * user, and currently only one value is allowed to be chosen from the suggested list.</li>
+ *   <li>A radio button list, and user can choose only one value from it.
+ *   <li>A dropdown menu, and user can choose only one value.
+ *   <li>A checkbox list, and user can choose more than one values.
+ *   <li>A checkbox tree, and user can choose branches with all the leaves.
+ *   <li>A type-ahead input box, and when user starts typing, all the matched
+ *       values will be suggested to the user, and currently only one value is
+ *       allowed to be chosen from the suggested list.
  * </ul>
- *
- * Furthermore, such a param can depend on another param, and if the value of that param is changed, the
- * allowed list of values of this enum/flatVocab param will also be changed on the fly. Currently, an
- * enum/flatVocab param can only depend on another enum or flatVocab param.
+ * <p>
+ * Furthermore, such a param can depend on another param, and if the value of
+ * that param is changed, the allowed list of values of this enum/flatVocab
+ * param will also be changed on the fly. Currently, an enum/flatVocab param can
+ * only depend on another enum or flatVocab param.
  *
  * @author xingao
  *
@@ -79,23 +74,23 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   protected Boolean _multiPick = false;
   protected boolean _quote = true;
 
-  private String _displayType = null;
+  private String _displayType;
   private int _minSelectedCount = -1;
   private int maxSelectedCount = -1;
   private boolean countOnlyLeaves = true;
 
   /**
-   * this property is only used by abstractEnumParams, but have to be initialized from suggest.
-   * it is an enum with values: NONE, ALL, FIRST
+   * this property is only used by abstractEnumParams, but have to be
+   * initialized from suggest. it is an enum with values: NONE, ALL, FIRST
    */
   protected SelectMode selectMode;
 
   /**
    * collapse single-child branches if set to true
    */
-  private boolean suppressNode = false;
+  private boolean suppressNode;
 
-  private int depthExpanded = 0;
+  private int depthExpanded;
 
   // FIXME: this method is public only to support WdkQueryPlugin.java, which is
   //    due to be retired when ApiFed starts using the WDK service (or UniDB is
@@ -141,10 +136,9 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   }
 
   /**
-   * If the quote is true, WDK will escape all the single quotes from internal value, and then wrap those
-   * values around with single quotes. then the final value will be substituted into the SQL.
-   *
-   * @return
+   * If the quote is true, WDK will escape all the single quotes from internal
+   * value, and then wrap those values around with single quotes. then the final
+   * value will be substituted into the SQL.
    */
   public boolean getQuote() {
     return _quote;
@@ -182,8 +176,8 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   }
 
   /**
-   * @return The minimum number of allowed values for this param; if not set (i.e. no min), this method will
-   *         return -1.
+   * @return The minimum number of allowed values for this param; if not set
+   * (i.e. no min), this method will return -1.
    */
   public int getMinSelectedCount() {
     return _minSelectedCount;
@@ -191,16 +185,16 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   /**
    * @param minSelectedCount
-   *          The minimum number of allowed values for this param. If not set, default is "no min"; any number
-   *          of values can be assigned.
+   *   The minimum number of allowed values for this param. If not set, default
+   *   is "no min"; any number of values can be assigned.
    */
   public void setMinSelectedCount(int minSelectedCount) {
     this._minSelectedCount = minSelectedCount;
   }
 
   /**
-   * @return The maximum number of allowed values for this param; if not set (i.e. no max), this method will
-   *         return -1.
+   * @return The maximum number of allowed values for this param; if not set
+   * (i.e. no max), this method will return -1.
    */
   public int getMaxSelectedCount() {
     // only allow one value if multiPick set to false
@@ -211,16 +205,17 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   /**
    * @param maxSelectedCount
-   *          The maximum number of allowed values for this param. If not set, default is "no max"; any number
-   *          of values can be assigned.
+   *   The maximum number of allowed values for this param. If not set, default
+   *   is "no max"; any number of values can be assigned.
    */
   public void setMaxSelectedCount(int maxSelectedCount) {
     this.maxSelectedCount = maxSelectedCount;
   }
 
   /**
-   * @return true if, when validating min- and maxSelectedCount (see above), we should only count leaves
-   *         towards the total selected value count, or, if false, count both leaves and branch selections
+   * @return true if, when validating min- and maxSelectedCount (see above), we
+   * should only count leaves towards the total selected value count, or, if
+   * false, count both leaves and branch selections
    */
   public boolean getCountOnlyLeaves() {
     return countOnlyLeaves;
@@ -228,9 +223,9 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   /**
    * @param countOnlyLeaves
-   *          Set to true if, when validating min- and maxSelectedCount (see above), we should only count
-   *          leaves towards the total selected value count, or set to false if both leaves and branch
-   *          selections should be counted
+   *   Set to true if, when validating min- and maxSelectedCount (see above), we
+   *   should only count leaves towards the total selected value count, or set
+   *   to false if both leaves and branch selections should be counted
    */
   public void setCountOnlyLeaves(boolean countOnlyLeaves) {
     this.countOnlyLeaves = countOnlyLeaves;
@@ -371,9 +366,8 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
           + getPrompt() + " must be selected.");
 
     // all other validation requires a DB lookup, so exit here if displayable or less
-    if (level.isLessThanOrEqualTo(ValidationLevel.DISPLAYABLE)) {
+    if (level.isLessThanOrEqualTo(ValidationLevel.DISPLAYABLE))
       return ctxParamVals.setValid(name);
-    }
 
     // if semantic or runnable, must verify term counts and validity
     EnumParamVocabInstance vocab = getVocabInstance(ctxParamVals);
@@ -499,15 +493,15 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
           cache.getTermTreeListRef().get(0));
   }
 
-
   /**
-   * Determines and returns the sanity default for this param in the following way: if sanitySelectMode is not
-   * null, use it to choose params; if it is, use default (i.e. however param normally gets default)
-   * 
+   * Determines and returns the sanity default for this param in the following
+   * way: if sanitySelectMode is not null, use it to choose params; if it is,
+   * use default (i.e. however param normally gets default)
+   *
    * @param sanitySelectMode
-   *          select mode form model (ParamValuesSet)
+   *   select mode form model (ParamValuesSet)
+   *
    * @return default value for this param, based on cached vocab values
-   * @throws WdkModelException 
    */
   public String getSanityDefaultValue(EnumParamVocabInstance vocab,
       SelectMode sanitySelectMode, boolean isMultiPick, String sanityDefaultNoSelectMode) throws WdkModelException {
@@ -591,32 +585,13 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   /**
    * Override version in param to consider selectMode when deciding if default
    * conflicts with allowEmpty setting.
-   * 
-   * @throws WdkModelException if is depended and default value conflicts with
-   *                           allowEmpty setting
    */
   @Override
-  public void checkAllowEmptyVsEmptyDefault() throws WdkModelException {
-    // make sure empty param value is either valid or does not happen
-    if (!getDependentParams().isEmpty() &&
-        (_xmlDefaultValue == null || _xmlDefaultValue.isEmpty()) &&
-        SelectMode.NONE.equals(selectMode) &&
-        !_allowEmpty) {
-      String containerName = getContainer() == null ? "unknown" : getContainer().getFullName();
-      String msg = "Default value for param '" + getFullName() +
-          "' in question '" + containerName + "' cannot be valid " +
-          "since the default value is empty but allowEmpty is false and " +
-          "the param is depended on by " + getDependentParams().stream()
-          .map(NamedObject::getName).collect(Collectors.joining(", "));
-      if (EMPTY_DESPITE_ALLOWEMPTY_FALSE_IS_FATAL) {
-        throw new WdkModelException(msg);
-      }
-      else {
-        LOG.warn(msg);
-      }
-    }
+  protected boolean isInvalidEmptyDepended() {
+    return super.isInvalidEmptyDepended()
+      && SelectMode.NONE.equals(selectMode);
   }
-  
+
   @Override
   public String getBriefRawValue(Object rawValue, int truncateLength) {
     String[] terms = (String[]) rawValue;

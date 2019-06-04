@@ -83,7 +83,7 @@ public class FileBasedRecordStream implements RecordStream {
    * Creates a record stream that can provide all records without paging by caching attribute and table query
    * results in files and then reading from those file in parallel to construct RecordInstance objects one by
    * one as requested by the provided iterator.
-   * 
+   *
    * @param answerValue
    *          answer value defining the records to be returned
    * @param attributes
@@ -101,7 +101,7 @@ public class FileBasedRecordStream implements RecordStream {
    * Serially executes all attribute and table queries required to construct RecordInstance objects based on
    * the attribute and table sets requested in the constructor. Handles opening and closing DB connections,
    * serializing results to files, and closing files.
-   * 
+   *
    * @throws WdkModelException
    *           if unable to complete population
    */
@@ -126,7 +126,7 @@ public class FileBasedRecordStream implements RecordStream {
 
   /**
    * Create a temporary directory to house the temporary CSV files to be created.
-   * 
+   *
    * @throws WdkModelException
    */
   private static Path createTemporaryDirectory(AnswerValue answerValue) throws WdkModelException {
@@ -143,7 +143,7 @@ public class FileBasedRecordStream implements RecordStream {
    * Returns the set of column attribute fields required to produce the passed set of attributes.  Some
    * non-column attribute fields may depend on column attribute fields not provided in the given
    * attribute field list. Those need to be added.
-   * 
+   *
    * @param attributes list of attribute fields of any flavor
    * @param includeDependedColumns whether to find the needed columns of non-column attributes in the passed list
    * @return map containing all passed column attribute fields and any depended column attributes
@@ -192,7 +192,7 @@ public class FileBasedRecordStream implements RecordStream {
 
   /**
    * Collect all the queries needed to accommodate the requested attributes and assigns attributes to queries
-   * 
+   *
    * @param columnAttributes required column attributes
    * @return a collection of pairs: queries and attribute values available from them
    * @throws WdkModelException
@@ -219,7 +219,7 @@ public class FileBasedRecordStream implements RecordStream {
    * columns provided in the columnNames list. The CSV file columns are tab delimited and any nulls are
    * provided with a unique representation so that they may be turned back into nulls when later creating ad
    * hoc record instances.
-   * 
+   *
    * @param filePath
    *          - the path to the temporary file that will house the CSV data
    * @param columnNames
@@ -256,7 +256,7 @@ public class FileBasedRecordStream implements RecordStream {
   /**
    * Writes out one file per executed query to the temporary directory. A map of attribute file paths to their
    * associated list of attribute fields is created to facilitate later population of a record instance.
-   * 
+   *
    * @param answerValue answer value to write files for
    * @param tempDir temporary directory in which to write the files
    * @param attributes collection of attributes that are required by the caller
@@ -288,7 +288,7 @@ public class FileBasedRecordStream implements RecordStream {
   /**
    * Queries the database use the passed attribute query and answer value and writes a CSV file containing
    * only those columns requested to the temporary directory
-   * 
+   *
    * @param answerValue answer value to write file for
    * @param query attribute query to be executed
    * @param attributeFields column attribute fields to be fetched
@@ -329,7 +329,7 @@ public class FileBasedRecordStream implements RecordStream {
       filePath.toFile().setWritable(true, false);
       return filePath;
     }
-    catch (WdkUserException | SQLException e) {
+    catch (SQLException e) {
       throw new WdkModelException("Unable to transfer attribute query result to CSV file", e);
     }
     finally {
@@ -343,7 +343,7 @@ public class FileBasedRecordStream implements RecordStream {
   /**
    * Constructs one temporary CSV file for each table requested. A map of table file paths to their associated
    * table field is created to facilitate later population of a record instance.
-   * 
+   *
    * @param answerValue answer value to write tables for
    * @param tempDir temporary directory in which to write the files
    * @param tables collection of tables for which files will be written
@@ -370,7 +370,7 @@ public class FileBasedRecordStream implements RecordStream {
   /**
    * Queries the database for the table field rows of the passed table for the passed answer value and writes
    * a CSV file containing those rows (PK and table columns included) to the temporary directory
-   * 
+   *
    * @param answerValue answer value to write table for
    * @param tempDir temporary directory in which to write the file
    * @param table table field for which data will be generated
@@ -410,7 +410,7 @@ public class FileBasedRecordStream implements RecordStream {
 
   /**
    * Collects together all the columns representing the primary key attribute fields.
-   * 
+   *
    * @param answerValue reference answer value
    * @return list of column names for primary key
    */
@@ -421,18 +421,17 @@ public class FileBasedRecordStream implements RecordStream {
   /**
    * Returns a list of the columns that will be written to the table CSV file.  This list includes the primary
    * key values for the record class passed, and the column attributes for the table field.
-   * 
-   * @param recordClass recordclass this table is for
+   *
    * @param table table field
    * @return list of columns
    * @throws WdkModelException if error occurs querying model
    */
   private static List<String> getTableColumnNames(List<String> pkColumns, TableField table) throws WdkModelException {
-  
+
     // Collect together all the columns representing the column attribute fields to be included
     // Not cherry-picking columns here so we can rely on the order of the column attribute fields in the table
     Collection<ColumnAttributeField> fields = getRequiredColumnAttributeFields(table.getAttributeFieldMap().values(), false);
-  
+
     // Combine the primary key columns and column attribute columns into a single list
     List<String> columnNames = new ArrayList<>(pkColumns);
     columnNames.addAll(Functions.mapToList(fields, Named.TO_NAME));

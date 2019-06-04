@@ -11,21 +11,27 @@ import org.gusdb.wdk.model.WdkModelText;
 
 /**
  * An attribute field that is rendered as html text.
- * 
+ *
  * The text attribute is usually embedded with column attributes to provide
  * record specific text section.
- * 
+ *
  * @author jerric
  */
 public class TextAttributeField extends DerivedAttributeField {
 
   // fields set by XML parsing
-  private List<WdkModelText> _texts = new ArrayList<WdkModelText>();
-  private List<WdkModelText> _displays = new ArrayList<WdkModelText>();
+  private final List<WdkModelText> _texts;
+  private final List<WdkModelText> _displays;
 
   // resolved fields
   private String _text;
   private String _display;
+
+  public TextAttributeField() {
+    _texts = new ArrayList<>();
+    _displays = new ArrayList<>();
+    _dataType = AttributeFieldDataType.STRING;
+  }
 
   public void addText(WdkModelText text) {
     _texts.add(text);

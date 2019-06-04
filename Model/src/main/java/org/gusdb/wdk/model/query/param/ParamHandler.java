@@ -10,8 +10,8 @@ import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
 
 /**
- * A param handler can be used to process the internal param value before it is consumed by the query
- * instance.
+ * A param handler can be used to process the internal param value before it is
+ * consumed by the query instance.
  *
  * @author jerric
  */
@@ -46,6 +46,12 @@ public interface ParamHandler {
   Object toRawValue(User user, String stableValue) throws WdkModelException;
 
   String toInternalValue(RunnableObj<QueryInstanceSpec> contextParamValues) throws WdkModelException;
+
+  /**
+   * Converts the param into an empty value which can be used to produce a
+   * syntactically correct parametrized query.
+   */
+  String toEmptyInternalValue();
 
   String toSignature(RunnableObj<QueryInstanceSpec> contextParamValues) throws WdkModelException;
 

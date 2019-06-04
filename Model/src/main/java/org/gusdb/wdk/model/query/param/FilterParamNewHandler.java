@@ -88,6 +88,11 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     }
   }
 
+  @Override
+  public String toEmptyInternalValue() {
+    return "SELECT * FROM dual";
+  }
+
   private String getCachedFilteredSql(User user, String filteredSql, WdkModel wdkModel) throws WdkModelException {
      try {
        // get an sqlquery so we can cache this internal value. it is parameterized by the sql itself

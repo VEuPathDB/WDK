@@ -8,7 +8,7 @@ import org.gusdb.wdk.model.WdkModelException;
 /**
  * A enum of types for columns supported by WDK. The type the will mapped to the
  * actual type of a field in the database.
- * 
+ *
  * @author xingao
  */
 public enum ColumnType {
@@ -24,7 +24,7 @@ public enum ColumnType {
   private int sqlType;
   private TypeConverter converter;
 
-  private ColumnType(int defaultWidth, int sqlType, TypeConverter converter) {
+  ColumnType(int defaultWidth, int sqlType, TypeConverter converter) {
     this.defaultWidth = defaultWidth;
     this.sqlType = sqlType;
     this.converter = converter;
@@ -40,7 +40,7 @@ public enum ColumnType {
   public int getSqlType() {
     return sqlType;
   }
-  
+
   /**
    * @return the defaultWidth
    */
@@ -51,7 +51,7 @@ public enum ColumnType {
   public Object convertStringToTypedValue(String value) {
     return converter.convert(value);
   }
-  
+
   public boolean isText() {
     return (this == CLOB || this == DATE || this == STRING);
   }

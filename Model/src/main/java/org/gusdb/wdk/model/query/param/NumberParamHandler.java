@@ -40,7 +40,7 @@ public class NumberParamHandler extends AbstractParamHandler {
   @Override
   public String toSignature(RunnableObj<QueryInstanceSpec> ctxVals) {
     final String stable = ctxVals.get().get(_param.getName());
-    return stable == null || stable.length() == 0
+    return stable == null || stable.isEmpty()
         ? ""
         : EncryptionUtil.encrypt(stable);
   }
@@ -71,6 +71,11 @@ public class NumberParamHandler extends AbstractParamHandler {
     }
 
     return internal;
+  }
+
+  @Override
+  public String toEmptyInternalValue() {
+    return "?";
   }
 
   @Override

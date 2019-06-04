@@ -23,6 +23,18 @@
       "items": {
         "$ref": "../includes/filter-spec.json"
       }
+    },
+    "columnFilters": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
     }
   }
 }

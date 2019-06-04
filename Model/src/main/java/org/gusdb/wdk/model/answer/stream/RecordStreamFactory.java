@@ -1,12 +1,7 @@
 package org.gusdb.wdk.model.answer.stream;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.SortDirectionSpec;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -14,36 +9,58 @@ import org.gusdb.wdk.model.answer.single.SingleRecordAnswerValue;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.stream.Collectors;
+
+import static org.apache.log4j.LogManager.getLogger;
+
 public class RecordStreamFactory {
 
-  private static final Logger LOG = LogManager.getLogger(RecordStreamFactory.class);
+  private final static Logger LOG = getLogger(RecordStreamFactory.class);
 
   private static final int MAX_PAGE_SIZE = PagedAnswerRecordStream.MAX_IN_MEMORY_PAGE_SIZE;
 
   /**
-   * Uses arguments to make a best guess at the most efficient RecordStream implementation for this
-   * AnswerValue, creates the appropriate stream, and returns it.  There are three possible return values:
+   * Uses arguments to make a best guess at the most efficient RecordStream
+   * implementation for this AnswerValue, creates the appropriate stream, and
+   * returns it.  There are three possible return values:
    *
-   * 1. If answerValue is a SingleRecordAnswerValue, a SingleRecordStream is returned
-   * 2. If result size of answerValue is <= passed maxPageSize, then the answerValue's paging is set to that
-   *    a single (first) page of that size and a PageAnswerRecordStream is returned
-   * 3. Otherwise, a FileBasedRecordStream is returned
+   * <ol>
+   * <li>If answerValue is a SingleRecordAnswerValue, a
+   *     SingleRecordStream is returned
+   * <li>If result size of answerValue is <= passed
+   *     maxPageSize, then the answerValue's paging is set to that a single
+   *     (first) page of that size and a PageAnswerRecordStream is returned
+   * <li>Otherwise, a FileBasedRecordStream is returned
+   * </ol>
    *
-   * @param answerValue answer value for which stream should be produced
-   * @param attributes attributes to be collected from records returned from the stream
-   * @param tables tables to be collected from records returned from the stream
+   * @param answerValue
+   *   answer value for which stream should be produced
+   * @param attributes
+   *   attributes to be collected from records returned from the stream
+   * @param tables
+   *   tables to be collected from records returned from the stream
+   *
    * @return most appropriate RecordStream given the passed arguments
-   * @throws WdkModelException if anything goes wrong
+   *
+   * @throws WdkModelException
+   *   if anything goes wrong
    */
-  public static RecordStream getRecordStream(AnswerValue answerValue,
-      Collection<AttributeField> attributes, Collection<TableField> tables) throws WdkModelException {
+  public static RecordStream getRecordStream(
+    AnswerValue answerValue,
+    Collection<AttributeField> attributes,
+    Collection<TableField> tables
+  ) throws WdkModelException {
     final RecordStream out;
     try {
-      // first, check if this is a single-record answer; if so, return iterator over one dynamic record
+      // first, check if this is a single-record answer; if
+      // so, return iterator over one dynamic record
       if (answerValue instanceof SingleRecordAnswerValue)
         out = new SingleRecordStream((SingleRecordAnswerValue) answerValue);
 
-      // if result is smaller than maxPageSize, load entire answer into memory and lazy load attributes/tables
+      // if result is smaller than maxPageSize, load entire
+      // answer into memory and lazy load attributes/tables
       else if (answerValue.getResultSizeFactory().getResultSize() <= MAX_PAGE_SIZE)
         out = new PagedAnswerRecordStream(answerValue,
           answerValue.getResultSizeFactory().getResultSize());
@@ -74,10 +91,10 @@ public class RecordStreamFactory {
     if (!tables.isEmpty()) {
       return false;
     }
-    List<AttributeField> fieldsToConsider = new ArrayList<>(fields);
+    var fieldsToConsider = new ArrayList<>(fields);
     if (includeSortingColumnsInCalculation) {
       fieldsToConsider.addAll(answerValue.getSortingColumns()
-          .stream().map(sortSpec -> sortSpec.getItem()).collect(Collectors.toList()));
+          .stream().map(SortDirectionSpec::getItem).collect(Collectors.toList()));
     }
     return FileBasedRecordStream.requiresExactlyOneAttributeQuery(fieldsToConsider);
   }

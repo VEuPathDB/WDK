@@ -1,19 +1,18 @@
 package org.gusdb.wdk.model.answer.stream;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.StaticRecordInstance;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeValue;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class SingleAttributeRecordIterator implements Iterator <RecordInstance> {
 
@@ -53,7 +52,7 @@ public class SingleAttributeRecordIterator implements Iterator <RecordInstance> 
     if (!next)
       throw new NoSuchElementException("Stream has no more records");
 
-    RecordInstance o = newRecord();
+    var o = newRecord();
     next = index(results);
     return o;
   }
@@ -68,10 +67,10 @@ public class SingleAttributeRecordIterator implements Iterator <RecordInstance> 
   }
 
   private RecordInstance newRecord() {
-    final RecordClass recordClass = question.getRecordClass();
+    final var recordClass = question.getRecordClass();
 
     try {
-      RecordInstance record = new StaticRecordInstance(
+      var record = new StaticRecordInstance(
         answer.getUser(),
         recordClass,
         question,
@@ -81,7 +80,7 @@ public class SingleAttributeRecordIterator implements Iterator <RecordInstance> 
         false
       );
 
-      for (final QueryColumnAttributeField f : fields)
+      for (final var f : fields)
         record.addAttributeValue(
             new QueryColumnAttributeValue(f, results.get(f.getName())));
 

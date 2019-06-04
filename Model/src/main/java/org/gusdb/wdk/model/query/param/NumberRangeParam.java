@@ -119,13 +119,13 @@ public class NumberRangeParam extends Param {
     catch(JSONException je) {
       return ctxParamVals.setInvalid(name, "Could not parse '" + value + "'. "
         + "The range should be is the format "
-        + "{'min':'min value','max':'max value'}");
+        + "{\"min\":<min value>,\"max\":<max value>}");
     }
 
     // Validate each value in the range against regex.
     if (_regex != null)
       if (!String.valueOf(min).matches(_regex)
-          || String.valueOf(max).matches(_regex))
+          || !String.valueOf(max).matches(_regex))
         return ctxParamVals.setInvalid(name, "value '" + value + "' is invalid."
           + " It must match the regular expression '" + _regex + "'");
 

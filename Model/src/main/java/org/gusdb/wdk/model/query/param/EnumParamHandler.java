@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.query.param;
 
 import org.gusdb.fgputil.EncryptionUtil;
-import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
@@ -10,7 +9,6 @@ import org.gusdb.wdk.model.user.User;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author jerric
@@ -56,44 +54,47 @@ public class EnumParamHandler extends AbstractParamHandler {
   }
 
   /**
-   * return a string representation of a list of the internals. If noTranslation is true, returns a string
-   * representation of a list of terms instead. If quoted is true, each individual value will be quoted
-   * properly.
+   * return a string representation of a list of the internals. If noTranslation
+   * is true, returns a string representation of a list of terms instead. If
+   * quoted is true, each individual value will be quoted properly.
    */
   @Override
   public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxParamVals)
       throws WdkModelException {
-    final String name = _param.getName();
-    final QueryInstanceSpec spec = ctxParamVals.get();
-    final String value = spec.get(name);
+    final var value = ctxParamVals.get().get(_param.getName());
 
-    if (value == null || value.length() == 0)
+    if (value == null || value.isEmpty())
       return value;
 
-    AbstractEnumParam enumParam = (AbstractEnumParam) _param;
-    EnumParamVocabInstance cache = enumParam.getVocabInstance(ctxParamVals);
+    final var enumParam = (AbstractEnumParam) _param;
+    final var cache = enumParam.getVocabInstance(ctxParamVals);
 
     // TODO: This validation should be in the param, not the handler
-    String[] terms = enumParam.convertToTerms(value);
-    Set<String> internals = new LinkedHashSet<>();
-    for (String term : terms) {
+    var terms = enumParam.convertToTerms(value);
+    var internals = new LinkedHashSet<String>();
+    for (var term : terms) {
       if (!cache.containsTerm(term))
         throw new WdkModelException("The term '" + term + "' is invalid for param " + _param.getPrompt());
 
-      String internal = (_param.isNoTranslation()) ? term : cache.getInternal(term);
+      var internal = (_param.isNoTranslation()) ? term : cache.getInternal(term);
 
       if (enumParam.getQuote() && !(internal.startsWith("'") && internal.endsWith("'")))
         internal = "'" + internal.replaceAll("'", "''") + "'";
 
       internals.add(internal);
     }
-    DBPlatform platform = _wdkModel.getAppDb().getPlatform();
-    return platform.prepareExpressionList(internals.toArray(new String[0]));
+    return _wdkModel.getAppDb()
+      .getPlatform()
+      .prepareExpressionList(internals.toArray(new String[0]));
+  }
+
+  @Override
+  public String toEmptyInternalValue() {
+    return "''";
   }
 
   /**
    * the signature is a checksum of sorted stable value.
-   *
    */
   @Override
   public String toSignature(RunnableObj<QueryInstanceSpec> ctxParamVals) {

@@ -5,7 +5,6 @@ import static org.gusdb.fgputil.functional.Functions.mapToList;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,6 @@ import org.json.JSONObject;
  * Functionality shared by params that might depend on other parameters.
  *
  * @author steve
- *
  */
 public abstract class AbstractDependentParam extends Param {
 
@@ -49,8 +47,7 @@ public abstract class AbstractDependentParam extends Param {
       SelectMode sanitySelectMode) throws WdkModelException;
 
   /**
-   * A list of the <query> objects used by this parameter.  
-   * @return
+   * A list of the <query> objects used by this parameter.
    */
   public abstract Set<String> getContainedQueryFullNames();
 
@@ -73,7 +70,7 @@ public abstract class AbstractDependentParam extends Param {
   // ///////////////////////////////////////////////////////////////////
 
   public boolean isDependentParam() {
-    return (_dependedParamRefs.size() > 0);
+    return !_dependedParamRefs.isEmpty();
   }
 
   @Override
@@ -92,22 +89,19 @@ public abstract class AbstractDependentParam extends Param {
   }
 
   /**
-   * This method should be called only after the complete Resolve References phase is done.
-   * Before then, we do not have the proper contexts.
-   *
+   * This method should be called only after the complete Resolve References
+   * phase is done. Before then, we do not have the proper contexts.
+   * <p>
    * We do not validate the existence of the param ref in the context because
-   * some params that call this are contained by queries that are not "root" queries (e.g. ID queries).
-   * They might have an incomplete context.  Instead, validation is done as a dedicated
-   * post-process after resolve references.
-   *
-   * @return set of params this param depends on
-   * @throws WdkModelException
+   * some params that call this are contained by queries that are not "root"
+   * queries (e.g. ID queries). They might have an incomplete context.  Instead,
+   * validation is done as a dedicated post-process after resolve references.
    */
   @Override
   public void resolveDependedParamRefs() throws WdkModelException {
 
     if (!isDependentParam()) {
-      _dependedParams = Collections.EMPTY_SET;
+      _dependedParams = Collections.emptySet();
       return;
     }
 
@@ -171,7 +165,7 @@ public abstract class AbstractDependentParam extends Param {
 
     // resolve depended param refs
     _dependedParamRefs.clear();
-    if (_dependedParamRef != null && _dependedParamRef.trim().length() > 0) {
+    if (_dependedParamRef != null && !_dependedParamRef.trim().isEmpty()) {
       for (String paramRef : _dependedParamRef.split(",\\s*")) {
         // make sure the param exists
         wdkModel.resolveReference(paramRef);
@@ -195,12 +189,8 @@ public abstract class AbstractDependentParam extends Param {
     if (isDependentParam()) {
       List<Param> dependedParams = new ArrayList<>(getDependedParams());
       writer.println(indent + "<dependedParams count=\"" + getDependedParams().size() + "\">");
-      Collections.sort(dependedParams, new Comparator<Param>() {
-        @Override
-        public int compare(Param param1, Param param2) {
-          return param1.getFullName().compareToIgnoreCase(param2.getFullName());
-        }
-      });
+      Collections.sort(dependedParams, (param1, param2) ->
+        param1.getFullName().compareToIgnoreCase(param2.getFullName()));
       String indent1 = indent + WdkModel.INDENT;
       for (Param param : dependedParams) {
         param.printDependency(writer, indent1);
@@ -210,15 +200,13 @@ public abstract class AbstractDependentParam extends Param {
   }
 
   /**
-   * resolve a query that might have depended params.  such a query will be declared by a dependent parameter, to provide
-   * data for that parameter.  for example, the parameter might need a metadata or a vocabulary query.
-   * a parameter might have multiple such queries.  each query can depend on any subset (or none) of the parameter's declared
-   * parameters.  in theory, the union of the query's dependencies would match those declared by the parameter, but we do not enforce that.
-   * @param model
-   * @param queryName
-   * @param queryType
-   * @return
-   * @throws WdkModelException
+   * resolve a query that might have depended params.  such a query will be
+   * declared by a dependent parameter, to provide data for that parameter.  for
+   * example, the parameter might need a metadata or a vocabulary query. a
+   * parameter might have multiple such queries.  each query can depend on any
+   * subset (or none) of the parameter's declared parameters.  in theory, the
+   * union of the query's dependencies would match those declared by the
+   * parameter, but we do not enforce that.
    */
   protected Query resolveDependentQuery(WdkModel model, String queryName, String queryType) throws WdkModelException {
     queryType += " ";

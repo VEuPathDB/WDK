@@ -136,7 +136,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
 
   /**
    * @param name
-   *          The name to set.
+   *   The name to set.
    */
   @RngRequired
   public void setName(String name) {
@@ -152,7 +152,7 @@ public abstract class Field extends WdkModelBase implements ScopedField, NamedOb
 
   /**
    * @param truncateTo
-   *          The truncateTo to set.
+   *   The truncateTo to set.
    */
   @RngOptional
   public void setTruncateTo(int truncateTo) {

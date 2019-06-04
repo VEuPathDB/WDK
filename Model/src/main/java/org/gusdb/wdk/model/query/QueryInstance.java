@@ -1,15 +1,5 @@
 package org.gusdb.wdk.model.query;
 
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.sql.DataSource;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.MapBuilder;
@@ -28,19 +18,25 @@ import org.gusdb.wdk.model.dbms.ResultFactory.CacheTableCreator;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
-import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.sql.SQLException;
+import java.util.*;
+
+import static java.util.Objects.isNull;
+
 /**
- * The query instance holds the values for the parameters, and the sub classes of it are responsible for
- * running the actual query, and retrieving the results from the resource.
- * 
- * If the query is set to be cached, the query instance will call the CacheFactory to cache the results, and
- * then represent the results as an SQL on the cached result. If a query of the same param values is called
- * later, the cache will be used instead to improve the performance of query.
- * 
+ * The query instance holds the values for the parameters, and the sub classes
+ * of it are responsible for running the actual query, and retrieving the
+ * results from the resource.
+ * <p>
+ * If the query is set to be cached, the query instance will call the
+ * CacheFactory to cache the results, and then represent the results as an SQL
+ * on the cached result. If a query of the same param values is called later,
+ * the cache will be used instead to improve the performance of query.
+ *
  * @author Jerric Gao
  */
 public abstract class QueryInstance<T extends Query> implements CacheTableCreator {
@@ -73,7 +69,8 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
    */
   @SuppressWarnings("unchecked")
   protected QueryInstance(RunnableObj<QueryInstanceSpec> spec) {
-    // can cast here since the only way to get to the instance subclass is via the query subclass
+    // can cast here since the only way to get to the instance subclass is via
+    // the query subclass
     _query = (T)spec.get().getQuery();
     _user = spec.get().getUser();
     _wdkModel = _query.getWdkModel();
@@ -82,8 +79,9 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   }
 
   private ReadOnlyMap<String, String> createContext() {
-    Question question = _query.getContextQuestion();
-    Param param = _query.getContextParam();
+    final var question = _query.getContextQuestion();
+    final var param = _query.getContextParam();
+    //noinspection Convert2MethodRef, ConstantConditions
     return new ReadOnlyHashMap<>(
       new MapBuilder<String,String>()
         .put(Utilities.QUERY_CTX_USER, String.valueOf(_user.getUserId()))
@@ -108,7 +106,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   }
 
   public ReadOnlyMap<String, String> getParamStableValues() {
-    return new ReadOnlyHashMap<String,String>(_spec.get().toMap());
+    return new ReadOnlyHashMap<>(_spec.get().toMap());
   }
 
   public int getAssignedWeight() {
@@ -128,29 +126,26 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   }
 
   private InstanceInfo getInstanceInfo() throws WdkModelException {
-    if (_instanceInfo == null) {
-      _instanceInfo = new ResultFactory(_wdkModel.getAppDb()).cacheResults(getChecksum(), this);
-    }
+    if (_instanceInfo == null)
+      _instanceInfo = new ResultFactory(_wdkModel.getAppDb())
+        .cacheResults(getChecksum(), this);
     return _instanceInfo;
   }
 
   public String getChecksum() throws WdkModelException {
-    if (_checksum == null) {
-      JSONObject jsQuery = getJSONContent();
-      _checksum = EncryptionUtil.encrypt(JsonUtil.serialize(jsQuery));
-    }
+    if (_checksum == null)
+      _checksum = EncryptionUtil.encrypt(JsonUtil.serialize(getJSONContent()));
     return _checksum;
   }
 
   public JSONObject getJSONContent() throws WdkModelException {
     try {
-      JSONObject jsInstance = new JSONObject();
-      jsInstance.put("project", _wdkModel.getProjectId());
-      jsInstance.put("query", _query.getFullName());
-      jsInstance.put("queryChecksum", _query.getChecksum());
-
-      jsInstance.put("params", getParamSignatures());
-      jsInstance.put("assignedWeight", _spec.get().getAssignedWeight());
+      JSONObject jsInstance = new JSONObject()
+        .put("project", _wdkModel.getProjectId())
+        .put("query", _query.getFullName())
+        .put("queryChecksum", _query.getChecksum())
+        .put("params", getParamSignatures())
+        .put("assignedWeight", _spec.get().getAssignedWeight());
 
       // include extra info from child
       appendJSONContent(jsInstance);
@@ -165,7 +160,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   }
 
   private Map<String, String> getSignatures() throws WdkModelException {
-    Map<String, String> signatures = new HashMap<String, String>();
+    Map<String, String> signatures = new HashMap<>();
     for (Param param : _query.getParamMap().values()) {
       signatures.put(param.getName(), param.getSignature(_spec));
     }
@@ -181,7 +176,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
       JSONObject jsParams = new JSONObject();
       for (String paramName : _spec.get().getQuery().getParamMap().keySet()) {
         String value = signatures.get(paramName);
-        if (value != null && value.length() > 0)
+        if (value != null && !value.isEmpty())
           jsParams.put(paramName, value);
       }
       return jsParams;
@@ -201,12 +196,11 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
 
   public int getResultSize() throws WdkModelException {
     try {
-      StringBuilder sql = new StringBuilder("SELECT count(*) FROM (");
-      sql.append(getSql()).append(") f");
-      DataSource dataSource = _wdkModel.getAppDb().getDataSource();
-      Object objSize = SqlUtils.executeScalar(dataSource, sql.toString(), _query.getFullName() + "__count");
-      int resultSize = Integer.parseInt(objSize.toString());
-      return resultSize;
+      return Integer.parseInt(SqlUtils.executeScalar(
+        _wdkModel.getAppDb().getDataSource(),
+        "SELECT count(*) FROM (" + getSql() + ") f",
+        _query.getFullName() + "__count"
+      ).toString());
     }
     catch (SQLException e) {
       throw new WdkModelException(e);
@@ -214,47 +208,47 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   }
 
   protected ResultList getCachedResults(boolean performSorting) throws WdkModelException {
-    ResultFactory factory = new ResultFactory(_wdkModel.getAppDb());
-    long instanceId = getInstanceInfo().getInstanceId();
-    return performSorting ?
-        factory.getCachedSortedResults(instanceId, _query.getSortingMap()) :
-        factory.getCachedResults(instanceId);
+    var factory = new ResultFactory(_wdkModel.getAppDb());
+    var instanceId = getInstanceInfo().getInstanceId();
+    return performSorting
+      ? factory.getCachedSortedResults(instanceId, _query.getSortingMap())
+      : factory.getCachedResults(instanceId);
   }
 
   protected String getCachedSql(boolean performSorting) throws WdkModelException {
-    ResultFactory factory = new ResultFactory(_wdkModel.getAppDb());
-    long instanceId = getInstanceInfo().getInstanceId();
-    return performSorting ?
-        factory.getCachedSortedSql(instanceId, _query.getSortingMap()) :
-        factory.getCachedSql(instanceId);
+    var factory = new ResultFactory(_wdkModel.getAppDb());
+    var instanceId = getInstanceInfo().getInstanceId();
+    return performSorting
+      ? factory.getCachedSortedSql(instanceId, _query.getSortingMap())
+      : factory.getCachedSql(instanceId);
   }
 
   protected Map<String, String> getParamInternalValues() throws WdkModelException {
-    if (_paramInternalValues == null) {
-      _paramInternalValues = new LinkedHashMap<String, String>();
-      for (Param param : _query.getParamMap().values()) {
+    if (isNull(_paramInternalValues)) {
+      _paramInternalValues = new LinkedHashMap<>();
+      for (Param param : _query.getParamMap().values())
         _paramInternalValues.put(param.getName(), param.getInternalValue(_spec));
-      }
     }
     return Collections.unmodifiableMap(_paramInternalValues);
   }
 
   protected void executePostCacheUpdateSql(String tableName, long instanceId) throws WdkModelException {
-    List<PostCacheUpdateSql> list = _query.getPostCacheUpdateSqls() != null ? _query.getPostCacheUpdateSqls()
-        : _query.getQuerySet().getPostCacheUpdateSqls();
-    for (PostCacheUpdateSql pcis : list) {
+    final var list = isNull(_query.getPostCacheUpdateSqls())
+      ? _query.getQuerySet().getPostCacheUpdateSqls()
+      : _query.getPostCacheUpdateSqls();
+    final var qsName = _query.getQuerySet().getName();
+    final var ds = _wdkModel.getAppDb().getDataSource();
 
-      String sql = pcis.getSql();
-      sql = sql.replace(Utilities.MACRO_CACHE_TABLE, tableName);
-      sql = sql.replace(Utilities.MACRO_CACHE_INSTANCE_ID, Long.toString(instanceId));
+    for (final var pcis : list) {
+      final var sql = pcis.getSql()
+        .replace(Utilities.MACRO_CACHE_TABLE, tableName)
+        .replace(Utilities.MACRO_CACHE_INSTANCE_ID, Long.toString(instanceId));
 
       LOG.debug("POST sql: " + sql);
       // get results and time process();
-      DataSource dataSource = _wdkModel.getAppDb().getDataSource();
       try {
-        SqlUtils.executeUpdate(dataSource, sql, _query.getQuerySet().getName() + "__postCacheUpdateSql", false);
-      }
-      catch (SQLException ex) {
+        SqlUtils.executeUpdate(ds, sql, qsName + "__postCacheUpdateSql", false);
+      } catch (SQLException ex) {
         throw new WdkModelException("Unable to run postCacheinsertSql:  " + sql, ex);
       }
     }

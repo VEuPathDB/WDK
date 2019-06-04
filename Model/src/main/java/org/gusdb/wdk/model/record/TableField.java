@@ -28,10 +28,10 @@ import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 /**
  * A table field defines a table of data associated with a recordClass. It defines what attributes the table
  * will have. column, link, and text attributes are allowed in the table field.
- * 
+ *
  * A table field is linked to a table query that provides the values for the table. Please refer to the Query
  * class for how to define table queries.
- * 
+ *
  * @author jerric
  */
 public class TableField extends Field implements AttributeFieldContainer {
@@ -40,21 +40,25 @@ public class TableField extends Field implements AttributeFieldContainer {
   private String _attributeMetaQueryTwoPartName;
   private SqlQuery _unwrappedQuery;
   private SqlQuery _wrappedQuery;
-  private List<AttributeField> _attributeFieldList = new ArrayList<AttributeField>();
-  private Map<String, AttributeField> _attributeFieldMap = new LinkedHashMap<String, AttributeField>();
+  private List<AttributeField> _attributeFieldList = new ArrayList<>();
+  private Map<String, AttributeField> _attributeFieldMap = new LinkedHashMap<>();
 
-  private List<WdkModelText> _descriptions = new ArrayList<WdkModelText>();
+  private List<WdkModelText> _descriptions = new ArrayList<>();
   private String _description;
   private String _categoryName;
   private String _clientSortingOrderString;
-  private List<SortDirectionSpec<AttributeField>> _clientSortingOrderList = new ArrayList<SortDirectionSpec<AttributeField>>();
-  public static final String SORT_ASCENDING = "ASC"; 
+  private List<SortDirectionSpec<AttributeField>> _clientSortingOrderList = new ArrayList<>();
+  public static final String SORT_ASCENDING = "ASC";
   public static final String SORT_DESCENDING = "DESC";
 
   private RecordClass _recordClass;
 
   public void setRecordClass(RecordClass recordClass) {
     _recordClass = recordClass;
+  }
+
+  public RecordClass getRecordClass() {
+    return _recordClass;
   }
 
   public SqlQuery getUnwrappedQuery() {
@@ -72,11 +76,11 @@ public class TableField extends Field implements AttributeFieldContainer {
   public String getQueryRef() {
     return _queryTwoPartName;
   }
-  
+
   /**
    * an optional comma delimited list of column names to tell client how to sort this table.
    * each element of the list is of the form "column_name ASC|DESC"
-   * this is used typically if sorting in SQL is too expensive 
+   * this is used typically if sorting in SQL is too expensive
    * @param sortingOrderString
    */
   public void setClientSortingOrder(String sortingOrderString) {
@@ -90,18 +94,18 @@ public class TableField extends Field implements AttributeFieldContainer {
   public List<SortDirectionSpec<AttributeField>> getClientSortingOrderList() {
     return Collections.unmodifiableList(_clientSortingOrderList);
   }
-  
+
   public void setAttributeMetaQueryRef(String attributeMetaQueryRef) {
     _attributeMetaQueryTwoPartName = attributeMetaQueryRef;
   }
-  
+
   public String getAttributeMetaQueryRef() {
     return _attributeMetaQueryTwoPartName;
   }
 
   public void addAttributeField(AttributeField attributeField) {
     if (attributeField instanceof DerivedAttributeField) {
-      ((DerivedAttributeField)attributeField).setContainer(this);
+      attributeField.setContainer(this);
     }
     _attributeFieldList.add(attributeField);
   }
@@ -140,17 +144,13 @@ public class TableField extends Field implements AttributeFieldContainer {
   }
 
   public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
-    Map<String, AttributeField> map = new LinkedHashMap<String, AttributeField>();
+    Map<String, AttributeField> map = new LinkedHashMap<>();
     for (AttributeField field : _attributeFieldMap.values()) {
       if (scope.isFieldInScope(field)) {
         map.put(field.getName(), field);
       }
     }
     return map;
-  }
-
-  public AttributeField getAttributeField(String fieldName) {
-    return _attributeFieldMap.get(fieldName);
   }
 
   @Override
@@ -199,46 +199,37 @@ public class TableField extends Field implements AttributeFieldContainer {
     }
 
     unpackAndValidateClientSortingOrder();
-    
+
     _resolved = true;
   }
-  
+
   private String getTableNameForErrMsg() {
     return "<table name=\""  + _name + "\"> of recordClass " +  _recordClass.getFullName();
   }
-  
+
   private void unpackAndValidateClientSortingOrder() throws WdkModelException {
 
     // comma delimited list of 'column_name ASC|DESC'
-    String[] sortSpecStrings = _clientSortingOrderString == null? new String[0] : _clientSortingOrderString.split(",\\s*"); 
-    
+    String[] sortSpecStrings = _clientSortingOrderString == null? new String[0] : _clientSortingOrderString.split(",\\s*");
+
     for (String sortSpecString : sortSpecStrings) {
 
       String errPrefix = "Invalid clientSortingOrder item '" + sortSpecString + "' in " + getTableNameForErrMsg() + ": ";
 
       String[] parsedSpec = sortSpecString.split("\\s+");
-      
-      if (!(parsedSpec.length == 2 || SortDirection.isValidDirection(parsedSpec[1]))) 
+
+      if (!(parsedSpec.length == 2 || SortDirection.isValidDirection(parsedSpec[1])))
         throw new WdkModelException(errPrefix + "must be in the form: column_name ASC|DESC, ...");
-      
-      if (!_attributeFieldMap.containsKey(parsedSpec[0])) 
+
+      if (!_attributeFieldMap.containsKey(parsedSpec[0]))
         throw new WdkModelException(errPrefix + " no attribute field exists with name " + parsedSpec[0]);
-      
-      SortDirectionSpec<AttributeField> sortDirection = 
+
+      SortDirectionSpec<AttributeField> sortDirection =
           new SortDirectionSpec<AttributeField>(_attributeFieldMap.get(parsedSpec[0]), SortDirection.valueOf(parsedSpec[1]));
-          
+
       _clientSortingOrderList.add(sortDirection);
     }
   }
-  
-  /*
-    public AttributeFieldSortSpec(String sortSpecString) throws WdkModelException {
-
-
-      
-    }
-
-   */
 
   @Override
   public int getTruncateTo() {

@@ -26,7 +26,7 @@ public abstract class ColumnFilter extends AbstractFilter {
   @Override
   public String getDisplay() {
     String display = super.getDisplay();
-    if (display == null || display.length() == 0)
+    if (display == null || display.isEmpty())
       display = _attribute.getDisplayName();
     return display;
   }

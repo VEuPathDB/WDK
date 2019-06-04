@@ -121,7 +121,7 @@ public class NumberParam extends Param {
 
     // Insure that the value provided can be converted into a proper number
     try {
-      numericalValue = Double.valueOf(name);
+      numericalValue = Double.valueOf(value);
     }
     catch (NumberFormatException ex) {
       return contextParamValues.setInvalid(name, "value must be numerical; '" +

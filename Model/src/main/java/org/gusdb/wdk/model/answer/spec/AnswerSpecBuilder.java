@@ -8,12 +8,12 @@ import java.util.function.Function;
 import org.gusdb.fgputil.validation.ValidObjectFactory;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
-import org.gusdb.fgputil.validation.ValidObjectWrappingException;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.spec.FilterOption.FilterOptionBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
+import org.gusdb.wdk.model.bundle.filter.StandardColumnFilterConfigSetBuilder;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
@@ -27,13 +27,15 @@ public class AnswerSpecBuilder {
   private final WdkModel _wdkModel;
   private String _questionName = "";
   private Optional<String> _legacyFilterName = Optional.empty();
-  private int _assignedWeight = 0; // will be reconciled with one in _queryInstanceSpec
+  private int _assignedWeight; // will be reconciled with one in _queryInstanceSpec
   private QueryInstanceSpecBuilder _queryInstanceSpec = QueryInstanceSpec.builder();
   private FilterOptionListBuilder _filters = FilterOptionList.builder();
   private FilterOptionListBuilder _viewFilters = FilterOptionList.builder();
+  private StandardColumnFilterConfigSetBuilder _columnFilters;
 
   public AnswerSpecBuilder(WdkModel wdkModel) {
     _wdkModel = wdkModel;
+    _columnFilters = new StandardColumnFilterConfigSetBuilder();
   }
 
   public AnswerSpecBuilder(AnswerSpec answerSpec) {
@@ -44,6 +46,7 @@ public class AnswerSpecBuilder {
     _legacyFilterName = answerSpec.getLegacyFilterName();
     _filters = FilterOptionList.builder().addAllFilters(answerSpec.getFilterOptions());
     _viewFilters = FilterOptionList.builder().addAllFilters(answerSpec.getViewFilterOptions());
+    _columnFilters = new StandardColumnFilterConfigSetBuilder(answerSpec.getColumnFilterConfig());
   }
 
   public AnswerSpecBuilder(SemanticallyValid<AnswerSpec> validAnswerSpec) {
@@ -71,18 +74,17 @@ public class AnswerSpecBuilder {
   public AnswerSpec build(User user, StepContainer stepContainer,
       ValidationLevel level, FillStrategy fillStrategy) throws WdkModelException {
     return new AnswerSpec(user, _wdkModel, _questionName, _queryInstanceSpec,
-        _legacyFilterName, _filters, _viewFilters, level, stepContainer, fillStrategy);
+      _legacyFilterName, _filters, _viewFilters, level, stepContainer,
+      fillStrategy, _columnFilters.build());
   }
 
   /**
-   * Builds a Runnable answer spec.  Should only be called when caller has a legitimate reason to believe
-   * the answer spec constructed will be runnable, since this will throw a ValidObjectWrappingException
-   * (a runtime exception) if the answer spec constructed is not runnable 
-   * @param user
-   * @param stepContainer
-   * @return
-   * @throws WdkModelException
-   * @throws ValidObjectWrappingException
+   * Builds a Runnable answer spec.
+   *
+   * Should only be called when caller has a legitimate reason to believe the
+   * answer spec constructed will be runnable, since this will throw a
+   * ValidObjectWrappingException (a runtime exception) if the answer spec
+   * constructed is not runnable
    */
   public RunnableObj<AnswerSpec> buildRunnable(User user, StepContainer stepContainer) throws WdkModelException {
     return ValidObjectFactory.getRunnable(build(user, stepContainer, ValidationLevel.RUNNABLE));
@@ -120,7 +122,7 @@ public class AnswerSpecBuilder {
   /**
    * Adds the param values represented by the entries in the passed map to the query instance spec,
    * but does NOT clear the current param values first.
-   * 
+   *
    * @param params map representing a set of param values to add
    * @return this builder
    */
@@ -154,12 +156,9 @@ public class AnswerSpecBuilder {
   }
 
   /**
-   * Finds the first instance of a filter with the passed name and replaces its value with the passed value.
-   * If no filters are found, nothing will be replaced.
-   * 
-   * @param filterName
-   * @param newValue
-   * @return
+   * Finds the first instance of a filter with the passed name and replaces its
+   * value with the passed value. If no filters are found, nothing will be
+   * replaced.
    */
   public AnswerSpecBuilder replaceFirstFilterOption(String filterName, Function<FilterOptionBuilder,FilterOptionBuilder> modifier) {
     for (int i = 0; i < _filters.size(); i++) {
@@ -183,4 +182,10 @@ public class AnswerSpecBuilder {
     return this;
   }
 
+  public AnswerSpecBuilder setColumnFilterConfig(
+    final StandardColumnFilterConfigSetBuilder build
+  ) {
+    _columnFilters = build;
+    return this;
+  }
 }

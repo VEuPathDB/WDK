@@ -503,7 +503,7 @@ public class FilterParamNew extends AbstractDependentParam {
     metadataCols.add(COLUMN_ONTOLOGY_ID);
 
     String cols = metadataCols.stream().collect(Collectors.joining(", "));
-    String unfilteredSqlPerOntologyId = 
+    String unfilteredSqlPerOntologyId =
         "/* START unfilteredSqlPerOntologyId */ " +
         "SELECT distinct " + cols +
         " FROM ( /* START bgdSql */ " + bgdSql + " /* END bgdSql */) mq" +
@@ -813,7 +813,7 @@ public class FilterParamNew extends AbstractDependentParam {
       FilterParamNewStableValue stableValue, Query metadataQuery,
       String idColumn, String defaultFilterClause)
           throws WdkModelException {
-    // get sql that selects the full set of distinct internals from the metadata query                                                                                                          
+    // get sql that selects the full set of distinct internals from the metadata query
     QueryInstanceSpec spec = validSpec.get();
     String metadataSql = getInternalQuerySql(spec.getUser(), spec.toMap(), metadataQuery);
 
@@ -962,12 +962,12 @@ public class FilterParamNew extends AbstractDependentParam {
     final String name = getName();
     final FilterParamNewStableValue stableValue =
         new FilterParamNewStableValue(contextParamValues.get(getName()), this);
-    final String err = level.isGreaterThanOrEqualTo(ValidationLevel.SYNTACTIC) ?
-        stableValue.validateSyntaxAndSemantics(contextParamValues) :
-        stableValue.validateSyntax();
+    final String err = level.isGreaterThanOrEqualTo(ValidationLevel.SYNTACTIC)
+      ? stableValue.validateSyntaxAndSemantics(contextParamValues)
+      : stableValue.validateSyntax();
     return err == null ?
-        contextParamValues.setValid(name) :
-        contextParamValues.setInvalid(name, err);
+      contextParamValues.setValid(name) :
+      contextParamValues.setInvalid(name, err);
   }
 
   @Override
