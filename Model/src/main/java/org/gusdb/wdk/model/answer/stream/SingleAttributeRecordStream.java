@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -30,9 +31,9 @@ public class SingleAttributeRecordStream
 
   public static final String
     ERR_MULTI_QUERY = "SingleAttributeRecordStream cannot stream records that "
-    + "rely on more than one attribute query.",
+        + "rely on more than one attribute query.",
     ERR_NO_QUERY    = "SingleAttributeRecordStream cannot be used without "
-      + "at least one query";
+        + "at least one query";
 
   private final AnswerValue answer;
 
@@ -42,7 +43,7 @@ public class SingleAttributeRecordStream
 
   private final Query query;
 
-  private final Collection<ColumnAttributeField> fields;
+  private final Collection<QueryColumnAttributeField> fields;
 
   public SingleAttributeRecordStream(
     AnswerValue answer,
@@ -51,8 +52,15 @@ public class SingleAttributeRecordStream
     this.answer = answer;
     this.openIterators = new HashMap<>();
     this.db = answer.getQuestion().getWdkModel().getAppDb().getDataSource();
-    this.fields = FileBasedRecordStream.getRequiredColumnAttributeFields(attributes, true);
+    this.fields = trimNonQueryAttrs(FileBasedRecordStream.getRequiredColumnAttributeFields(attributes, true));
     this.query = getAttributeQuery(this.fields);
+  }
+
+  private Collection<QueryColumnAttributeField> trimNonQueryAttrs(Collection<ColumnAttributeField> attributes) {
+    return attributes.stream()
+        .filter(field -> field instanceof QueryColumnAttributeField)
+        .map(field -> (QueryColumnAttributeField)field)
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -124,7 +132,7 @@ public class SingleAttributeRecordStream
   }
 
   private static Collection<String> cols(
-    final Collection<ColumnAttributeField> fields,
+    final Collection<QueryColumnAttributeField> fields,
     final AnswerValue answer
   ) {
     Collection<String> out = new HashSet<>();
@@ -142,13 +150,12 @@ public class SingleAttributeRecordStream
   }
 
   private static Query getAttributeQuery(
-    final Collection<ColumnAttributeField> cols
+    final Collection<QueryColumnAttributeField> cols
   ) {
     final Set<Query> qs = new HashSet<>();
 
-    for (final ColumnAttributeField col : cols)
-      if (col instanceof QueryColumnAttributeField)
-        qs.add(((QueryColumnAttributeField) col).getColumn().getQuery());
+    for (final QueryColumnAttributeField col : cols)
+      qs.add(col.getColumn().getQuery());
 
     if (qs.size() > 1)
       throw new WdkRuntimeException(ERR_MULTI_QUERY);

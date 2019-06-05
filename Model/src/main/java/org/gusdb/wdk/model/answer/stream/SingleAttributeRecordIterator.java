@@ -1,5 +1,9 @@
 package org.gusdb.wdk.model.answer.stream;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -8,14 +12,8 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.StaticRecordInstance;
-import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeValue;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 public class SingleAttributeRecordIterator implements Iterator <RecordInstance> {
 
@@ -27,7 +25,7 @@ public class SingleAttributeRecordIterator implements Iterator <RecordInstance> 
 
   private final SqlResultList results;
 
-  private final Collection<ColumnAttributeField> fields;
+  private final Collection<QueryColumnAttributeField> fields;
 
   private boolean next;
 
@@ -35,7 +33,7 @@ public class SingleAttributeRecordIterator implements Iterator <RecordInstance> 
     final SingleAttributeRecordStream parent,
     final AnswerValue answer,
     final SqlResultList results,
-    final Collection<ColumnAttributeField> fields
+    final Collection<QueryColumnAttributeField> fields
   ) {
     this.parent = parent;
     this.answer = answer;
@@ -70,25 +68,26 @@ public class SingleAttributeRecordIterator implements Iterator <RecordInstance> 
   }
 
   private RecordInstance newRecord() {
-    final RecordClass record = question.getRecordClass();
+    final RecordClass recordClass = question.getRecordClass();
 
     try {
-      RecordInstance o = new StaticRecordInstance(
+      RecordInstance record = new StaticRecordInstance(
         answer.getUser(),
-        record,
+        recordClass,
         question,
-        record.getPrimaryKeyDefinition()
+        recordClass.getPrimaryKeyDefinition()
           .getPrimaryKeyFromResultList(results)
           .getRawValues(),
         false
       );
 
-      for (final AttributeField f : fields)
-        o.addAttributeValue(new QueryColumnAttributeValue(
-          (QueryColumnAttributeField) f, results.get(f.getName())));
+      for (final QueryColumnAttributeField f : fields)
+        record.addAttributeValue(
+            new QueryColumnAttributeValue(f, results.get(f.getName())));
 
-      return o;
-    } catch (Exception e) {
+      return record;
+    }
+    catch (Exception e) {
       throw new WdkRuntimeException(e);
     }
   }

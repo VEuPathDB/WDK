@@ -48,7 +48,8 @@ public class RecordStreamFactory {
         out = new PagedAnswerRecordStream(answerValue,
           answerValue.getResultSizeFactory().getResultSize());
 
-      else if (requiresExactlyOneAttrQuery(answerValue, attributes, tables, true))
+      else if (requiresExactlyOneAttrQuery(answerValue, attributes, tables, true) &&
+               answerValue.entireResultRequested())
         out = new SingleAttributeRecordStream(answerValue, attributes);
 
       // otherwise, use file-based; most efficient method for large results where we already know attrs/tables

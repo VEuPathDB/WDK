@@ -59,7 +59,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       DataSource dataSource = platform.getDataSource();
       LOG.debug("Performing the following SQL: " + sql);
       ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql, _query.getFullName() + "__select-uncached",
-          SqlUtils.DEFAULT_FETCH_SIZE, _query.isUseDBLink());
+          0, _query.isUseDBLink());
       return new SqlResultList(resultSet);
     }
     catch (SQLException e) {
