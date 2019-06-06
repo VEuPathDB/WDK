@@ -38,6 +38,7 @@ import org.json.JSONObject;
  * @author Charles Treatman
  * @author Ryan Doherty
  */
+@SuppressWarnings("UseOfObsoleteDateTimeApi OptionalUsedAsFieldOrParameterType")
 public class Step implements Validateable<Step> {
 
   public static final int RESET_SIZE_FLAG = -1;
@@ -51,17 +52,16 @@ public class Step implements Validateable<Step> {
     private long _stepId;
     private String _projectId;
     private String _projectVersion;
-    private Optional<Long> _strategyId = Optional.empty();
-    private Date _createdTime = new Date();
-    private Date _lastRunTime = new Date();
-    private String _customName = null;
-    private boolean _isDeleted = false;
+    private Optional<Long> _strategyId;
+    private Date _createdTime;
+    private Date _lastRunTime;
+    private String _customName;
+    private boolean _isDeleted;
     private int _estimatedSize = -1;
-    private boolean _isCollapsible = false;
-    private String _collapsedName = null;
+    private boolean _isCollapsible;
+    private String _collapsedName;
     private AnswerSpecBuilder _answerSpec; // cannot be null; must be set
-    private boolean _inMemoryOnly = false;
-    private boolean _isResultSizeDirty = false;
+    private boolean _isResultSizeDirty;
     private JSONObject _displayPrefs;
 
     private StepBuilder(WdkModel wdkModel, long userId, long stepId) {
@@ -71,6 +71,9 @@ public class Step implements Validateable<Step> {
       _userId = userId;
       _stepId = stepId;
       _displayPrefs = new JSONObject();
+      _createdTime = new Date();
+      _lastRunTime = new Date();
+      _strategyId = Optional.empty();
     }
 
     /**
@@ -81,9 +84,12 @@ public class Step implements Validateable<Step> {
     private StepBuilder(Step step) {
       _wdkModel = step._wdkModel;
       _userId = step._user.getUserId();
+      _strategyId = Optional.empty();
       _strategyId = step.getStrategyId();
       _stepId = step._stepId;
+      _createdTime = new Date();
       _createdTime = step._createdTime;
+      _lastRunTime = new Date();
       _lastRunTime = step._lastRunTime;
       _customName = step._customName;
       _isDeleted = step._isDeleted;
@@ -92,7 +98,6 @@ public class Step implements Validateable<Step> {
       _projectId = step._projectId;
       _projectVersion = step._projectVersion;
       _estimatedSize = step._estimatedSize;
-      _inMemoryOnly = step._inMemoryOnly;
       _answerSpec = AnswerSpec.builder(step._answerSpec);
       _displayPrefs = new JSONObject(step.getDisplayPrefs().toString());
     }
@@ -141,11 +146,6 @@ public class Step implements Validateable<Step> {
       return this;
     }
 
-    public StepBuilder setInMemoryOnly(boolean inMemoryOnly) {
-      _inMemoryOnly = inMemoryOnly;
-      return this;
-    }
-
     public StepBuilder setDeleted(boolean isDeleted) {
       _isDeleted = isDeleted;
       return this;
@@ -185,13 +185,14 @@ public class Step implements Validateable<Step> {
       return this;
     }
 
+    @SuppressWarnings("unused") // Getter/Setter Pair
     public JSONObject getDisplayPrefs() {
       return _displayPrefs;
     }
 
     public Step build(UserCache userCache, ValidationLevel validationLevel, Optional<Strategy> strategy) throws WdkModelException {
       if (_strategyId.isPresent() &&
-          (!strategy.isPresent() || !_strategyId.get().equals(strategy.get().getStrategyId()))) {
+          (strategy.isEmpty() || !_strategyId.get().equals(strategy.get().getStrategyId()))) {
         throw new WdkRuntimeException("Strategy passed to build method (ID=" +
             strategy.map(Strategy::getStrategyId).orElse(null) +
             ") does not match strategy ID set on step builder (ID=" + _strategyId.get() + ").");
@@ -203,12 +204,18 @@ public class Step implements Validateable<Step> {
     }
 
     /**
-     * Builds a runnable step.  Will throw ValidObjectWrappingException if step is not runnable after validation
+     * Builds a runnable step.  Will throw ValidObjectWrappingException if step
+     * is not runnable after validation
      *
-     * @param userCache a user cache
-     * @param strategy strategy containing the step
+     * @param userCache
+     *   a user cache
+     * @param strategy
+     *   strategy containing the step
+     *
      * @return a runnable step
-     * @throws WdkModelException if unable to validate step
+     *
+     * @throws WdkModelException
+     *   if unable to validate step
      */
     public RunnableObj<Step> buildRunnable(UserCache userCache, Optional<Strategy> strategy) throws WdkModelException {
       return ValidObjectFactory.getRunnable(build(userCache, ValidationLevel.RUNNABLE, strategy));
@@ -301,23 +308,24 @@ public class Step implements Validateable<Step> {
   // private Step _childStep = null;
 
   /**
-   * First set when step was created and answer generated, size stored in DB. So can use this to show step
-   * size without pulling records from cache. Size == -1 means must rerun step (and recache results), get size
-   * and store in step table. Can be out of date for releases since we don't rerun strategies on release.
-   * Should be reset on step table every time we rerun step. EstimateSize is set to -1 when step is revised
-   * (in place)- also all steps affected by this step are also changed to -1 so the values are set when those
-   * steps are rerun (i.e. value of -1 means step is "dirty" (modified but not run))
+   * First set when step was created and answer generated, size stored in DB. So
+   * can use this to show step size without pulling records from cache. Size ==
+   * -1 means must rerun step (and recache results), get size and store in step
+   * table. Can be out of date for releases since we don't rerun strategies on
+   * release. Should be reset on step table every time we rerun step.
+   * EstimateSize is set to -1 when step is revised (in place)- also all steps
+   * affected by this step are also changed to -1 so the values are set when
+   * those steps are rerun (i.e. value of -1 means step is "dirty" (modified but
+   * not run))
    */
-  private boolean _estimatedSizeRefreshed = false;
+  private boolean _estimatedSizeRefreshed;
 
-  // Set this if this step should not be written to /read from db. A hack in support of
-  // summary views, until they are refactored using service.
-  private final boolean _inMemoryOnly;
-
-  // Set if answer spec was modified from the version stored in the database;
-  // like most other attributes it is immutable and serves only to inform its
-  // strategy that downstream steps' estimatedSize must be reset to -1 since
-  // they are out of date.
+  /**
+   * Set if answer spec was modified from the version stored in the database;
+   * like most other attributes it is immutable and serves only to inform its
+   * strategy that downstream steps' estimatedSize must be reset to -1 since
+   * they are out of date.
+   */
   private final boolean _isResultSizeDirty;
 
   private final JSONObject _displayPrefs;
@@ -327,13 +335,17 @@ public class Step implements Validateable<Step> {
    * constructor lazy-loads the User object for the passed ID if one is required
    * for processing after construction.
    *
-   * @param user            Owner of this step
-   * @param strategy        Strategy this step belongs to
-   * @param builder         Step builder containing this step's property values
-   * @param validationLevel level to which this step should be validated
+   * @param user
+   *   Owner of this step
+   * @param strategy
+   *   Strategy this step belongs to
+   * @param builder
+   *   Step builder containing this step's property values
+   * @param validationLevel
+   *   level to which this step should be validated
    *
-   * @throws WdkModelException if this step does not pass the given validation
-   * level
+   * @throws WdkModelException
+   *   if this step does not pass the given validation level
    */
   private Step(User user, Optional<Strategy> strategy, StepBuilder builder, ValidationLevel validationLevel) throws WdkModelException {
     _user = user;
@@ -349,7 +361,6 @@ public class Step implements Validateable<Step> {
     _projectId = builder._projectId;
     _projectVersion = builder._projectVersion;
     _estimatedSize = builder._estimatedSize;
-    _inMemoryOnly = builder._inMemoryOnly;
     _answerSpec = builder._answerSpec.build(user, getContainer(), validationLevel);
     _displayPrefs = new JSONObject(builder._displayPrefs.toString());
 
@@ -363,7 +374,7 @@ public class Step implements Validateable<Step> {
     for (String answerParamName : getAnswerParamNames()) {
       String paramValue = _answerSpec.getQueryInstanceSpec().get(answerParamName);
       // Confirm left and right child null if strategyId = null
-      if (!_strategy.isPresent() && !AnswerParam.NULL_VALUE.equals(paramValue)) {
+      if (_strategy.isEmpty() && !AnswerParam.NULL_VALUE.equals(paramValue)) {
         throw new WdkModelException("Step " + _stepId + " does not have a strategy but answer param " + answerParamName + " has a value.");
       }
       if (_strategy.isPresent() && AnswerParam.NULL_VALUE.equals(paramValue)) {
@@ -391,8 +402,8 @@ public class Step implements Validateable<Step> {
 
   /**
    * @return optional containing primary input step.  If this step's question
-   * does not have a primary input or if the step is not part of a strategy
-   * (i.e. answer params have null value), an empty optional is returned.
+   *   does not have a primary input or if the step is not part of a strategy
+   *   (i.e. answer params have null value), an empty optional is returned.
    */
   public Optional<Step> getPrimaryInputStep() {
     return findAnswerParamsStep(0);
@@ -408,15 +419,15 @@ public class Step implements Validateable<Step> {
    * value in the answer spec and asks this step's step container (typically a
    * strategy) to find that step by ID.  Returns null if step cannot be found.
    *
-   * @param answerParamOrdinal index of the answer param whose value should be
-   *                           used to look up step
+   * @param answerParamOrdinal
+   *   index of the answer param whose value should be used to look up step
    *
    * @return the found step, or null if not found
    */
   private Optional<Step> findAnswerParamsStep(int answerParamOrdinal) {
 
     Optional<AnswerParam> answerParam = findAnswerParam(answerParamOrdinal);
-    if (!answerParam.isPresent()) {
+    if (answerParam.isEmpty()) {
       return Optional.empty();
     }
 
@@ -428,7 +439,7 @@ public class Step implements Validateable<Step> {
     }
 
     Optional<Step> foundStep = getContainer().findFirstStep(withId(AnswerParam.toStepId(stableValue)));
-    if (!foundStep.isPresent()) {
+    if (foundStep.isEmpty()) {
       throw new WdkRuntimeException("Value of AnswerParam " + answerParam.get().getName() +
           " in step " + getStepId() + " is " + stableValue + ", which does not" +
           " refer to a step in this step's strategy (id=" + getStrategyId() + ").");
@@ -446,9 +457,9 @@ public class Step implements Validateable<Step> {
 
   /**
    * Returns an estimate of the size of this step (number of records returned).
-   * This may be the value of the estimate_size column in the steps table, or
-   * if getResultSize() has been called, a refreshed value.  Returns 0 if this
-   * step has been found to be invalid.
+   * This may be the value of the estimate_size column in the steps table, or if
+   * getResultSize() has been called, a refreshed value.  Returns 0 if this step
+   * has been found to be invalid.
    *
    * @return estimate of this step's result size
    */
@@ -457,9 +468,9 @@ public class Step implements Validateable<Step> {
   }
 
   /**
-   * Returns the real result size of this step (number of records returned); once
-   * this method is called, getEstimateSize() will also return this value, and
-   * the estimate_size column in the database will also be updated.
+   * Returns the real result size of this step (number of records returned);
+   * once this method is called, getEstimateSize() will also return this value,
+   * and the estimate_size column in the database will also be updated.
    *
    * @return the real result size gained by running the step
    */
@@ -494,8 +505,8 @@ public class Step implements Validateable<Step> {
 
   /**
    * @return Returns the customName. If no custom name set before, it will
-   *         return the default name provided by the underline AnswerValue - a
-   *         combination of question's full name, parameter names and values.
+   *   return the default name provided by the underline AnswerValue - a
+   *   combination of question's full name, parameter names and values.
    */
   public String getCustomName() {
     String name = _customName;
@@ -515,7 +526,7 @@ public class Step implements Validateable<Step> {
 
   /**
    * @return Returns the custom name, if it is set. Otherwise, returns the short
-   *         display name for the underlying question.
+   *   display name for the underlying question.
    */
   public String getShortDisplayName() {
     Question question = _answerSpec.getQuestion();
@@ -593,22 +604,8 @@ public class Step implements Validateable<Step> {
     Optional<AnswerFilterInstance> filter = _answerSpec.getLegacyFilter();
     Optional<AnswerFilterInstance> defaultFilter = _answerSpec.getQuestion().getRecordClass().getDefaultFilter();
     return filter.isPresent() &&
-        (!defaultFilter.isPresent() ||
+        (defaultFilter.isEmpty() ||
          !defaultFilter.get().getName().equals(filter.get().getName()));
-  }
-
-  public void updateEstimatedSize(int checkedSize) {
-    _estimatedSize = checkedSize;
-    _estimatedSizeRefreshed = true;
-  }
-
-  public void resetEstimatedSize() {
-    _estimatedSize = RESET_SIZE_FLAG;
-    _estimatedSizeRefreshed = false;
-  }
-
-  public JSONObject getJSONContent(int strategyId) throws WdkModelException {
-    return getJSONContent(strategyId, false);
   }
 
   public JSONObject getJSONContent(long strategyId, boolean forChecksum) throws WdkModelException {
@@ -657,8 +654,8 @@ public class Step implements Validateable<Step> {
 
   /**
    * Get the answerParam that take the previousStep as input, which is the first
-   * answerParam in the param list.  Returns an empty optional if this step
-   * does not have any answer params.
+   * answerParam in the param list.  Returns an empty optional if this step does
+   * not have any answer params.
    */
   public Optional<AnswerParam> getPrimaryInputStepParam() {
     return findAnswerParam(0);
@@ -666,8 +663,8 @@ public class Step implements Validateable<Step> {
 
   /**
    * Get the answerParam that take the childStep as input, which is the second
-   * answerParam in the param list.  Returns an empty optional if this step
-   * does not have a second answer param.
+   * answerParam in the param list.  Returns an empty optional if this step does
+   * not have a second answer param.
    */
   public Optional<AnswerParam> getSecondaryInputStepParam() {
     return findAnswerParam(1);
@@ -703,10 +700,6 @@ public class Step implements Validateable<Step> {
         // must cast to send empty container as default
         .map(str -> (StepContainer)str)
         .orElse(StepContainer.emptyContainer());
-  }
-
-  public boolean isMutable() {
-    return !getStrategy().isPresent() || !getStrategy().get().isSaved();
   }
 
   public boolean isResultSizeDirty() {
