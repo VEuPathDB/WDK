@@ -19,7 +19,7 @@
       "type": "integer"
     },
     "recordClassName": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "signature": {
       "type": "string"
@@ -50,7 +50,7 @@
     }
   },
   "required": [
-    "latestStepId",
+    "rootStepId",
     "isDeleted",
     "isSaved",
     "isValid",

@@ -5,6 +5,7 @@ import static org.gusdb.fgputil.functional.Functions.reduce;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.gusdb.fgputil.FormatUtil;
@@ -26,13 +27,14 @@ public class StrategyFormatter {
   }
 
   public static JSONObject getListingStrategyJson(Strategy strategy) throws JSONException {
+    Optional<String> recordClassName = strategy.getRecordClass().map(NamedObject::getFullName);
     return new JSONObject()
         .put(JsonKeys.STRATEGY_ID, strategy.getStrategyId())
-        .put(JsonKeys.DESCRIPTION, strategy.getDescription())
+        .put(JsonKeys.DESCRIPTION, Optional.ofNullable(strategy.getDescription()).orElse(""))
         .put(JsonKeys.NAME, strategy.getName())
         .put(JsonKeys.AUTHOR, strategy.getUser().getDisplayName())
         .put(JsonKeys.ROOT_STEP_ID, strategy.getRootStepId())
-        .put(JsonKeys.RECORD_CLASS_NAME, strategy.getRecordClass().map(NamedObject::getFullName).orElse(null))
+        .put(JsonKeys.RECORD_CLASS_NAME, recordClassName.isPresent() ? recordClassName.get() :JSONObject.NULL)
         .put(JsonKeys.SIGNATURE, strategy.getSignature())
         .put(JsonKeys.LAST_MODIFIED, FormatUtil.formatDateTime(strategy.getLastModifiedTime()))
         .put(JsonKeys.IS_PUBLIC, strategy.isPublic())
@@ -44,6 +46,7 @@ public class StrategyFormatter {
         .put(JsonKeys.LEAF_AND_TRANSFORM_STEP_COUNT, strategy.getLeafAndTransformStepCount());
   }
 
+  
   public static JSONObject getDetailedStrategyJson(Strategy strategy) throws WdkModelException, JSONException {
     Set<Step> stepsInTree = new HashSet<Step>(); // accumulate the steps found in the tree
     JSONObject stepTreeJson = StepFormatter.formatAsStepTree(strategy.getRootStep(), stepsInTree);

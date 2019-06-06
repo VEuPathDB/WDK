@@ -1,51 +1,50 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object",
-    "additionalProperties": false,
-    "properties": {
-	"description": {
-	    "type": "string"
-	},
-	"name": {
-	    "type": "string"
-	},
-	"author": {
-	    "type": "string"
-	},
-	"recordClassName": {
-	    "type": "string"
-	},
-	"signature": {
-	    "type": "string"
-	},
-	"organization": {
-	    "type": "string"
-	},
-	"lastModified": {
-	    "$ref": "../../includes/date-string-1.json"
-	},
-	"isPublic" : {
-	    "type": "boolean"
-	},
-	"isSaved" : {
-	    "type": "boolean"
-	},
-	"isDeleted" : {
-	    "type": "boolean"
-	},
-	"isValid" : {
-	    "type": "boolean"
-	},
-	"strategyId" : {
-	    "type": "integer"
-	},
-	"latestStepId" : {
-	    "type": "integer"
-	},
-	"estimatedSize" : {
-	    "type": "integer"
-	}
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "description": {
+      "type": "string"
     },
-    "minProperties": 14
+    "name": {
+      "type": "string"
+    },
+    "author": {
+      "type": "string"
+    },
+    "recordClassName": {
+      "type": ["string", "null"]
+    },
+    "signature": {
+      "type": "string"
+    },
+    "organization": {
+      "type": "string"
+    },
+    "lastModified": {
+      "$ref": "../../includes/date-string-1.json"
+    },
+    "isPublic" : {
+      "type": "boolean"
+    },
+    "isSaved" : {
+      "type": "boolean"
+    },
+    "isDeleted" : {
+      "type": "boolean"
+    },
+    "isValid" : {
+      "type": "boolean"
+    },
+    "strategyId" : {
+      "type": "integer"
+    },
+    "rootStepId" : {
+      "type": "integer"
+    },
+    "estimatedSize" : {
+      "type": "integer"
+    }
+  },
+  "minProperties": 14
 }
-

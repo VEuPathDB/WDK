@@ -121,9 +121,9 @@ public class FavoriteRequests {
     try {
       String recordClassName = json.getString(JsonKeys.RECORD_CLASS_NAME);
 
-      RecordClass recordClass = wdkModel.getRecordClassByName(recordClassName)
+      RecordClass recordClass = wdkModel.getRecordClassByUrlSegment(recordClassName)
         .orElseThrow(() -> new DataValidationException(
-          "No record class exists with name '" + recordClassName + "'."));
+          "No record type exists with name '" + recordClassName + "'."));
 
       PrimaryKeyValue primaryKey = RecordRequest.parsePrimaryKey(
         json.getJSONArray(JsonKeys.PRIMARY_KEY), recordClass);

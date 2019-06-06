@@ -18,12 +18,10 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.functional.TreeNode.StructureMapper;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -34,8 +32,6 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class Strategy implements StepContainer, Validateable<Strategy> {
 
@@ -432,53 +428,6 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
 
   public Optional<RecordClass> getRecordClass() {
     return getRootStep().getRecordClass();
-  }
-
-  /**
-   * checksum of a strategy is different from signature in that signature is stable and it will never change
-   * after the strategy is created, while checksum depends on many properties of a strategy, and it will
-   * change when the strategies properties are changed.
-   *
-   * @return
-   * @throws WdkModelException
-   */
-  public String getChecksum() throws WdkModelException {
-    JSONObject jsStrategy = getJSONContent(true);
-    String checksum = EncryptionUtil.encrypt(JsonUtil.serialize(jsStrategy));
-    LOG.debug("Strategy #" + _strategyId + ", checksum=" + checksum + ", json:\n" + jsStrategy);
-    return checksum;
-  }
-
-  public JSONObject getJSONContent() throws WdkModelException {
-    return getJSONContent(false);
-  }
-
-  // TODO: see if this is really the JSON we want to send and also whether we want isValid in the checksum
-  public JSONObject getJSONContent(boolean forChecksum) throws WdkModelException {
-    JSONObject jsStrategy = new JSONObject();
-
-    try {
-      jsStrategy.put("id", _strategyId);
-      jsStrategy.put("name", _name);
-      jsStrategy.put("savedName", _savedName);
-      jsStrategy.put("description", _description);
-      jsStrategy.put("saved", _isSaved);
-      jsStrategy.put("deleted", _isDeleted);
-      jsStrategy.put("type", getRecordClass().map(NamedObject::getFullName).orElse(null));
-
-      if (!forChecksum) {
-        jsStrategy.put("valid", isValid());
-        jsStrategy.put("version", getVersion());
-        jsStrategy.put("resultSize", getEstimatedSize());
-      }
-
-      JSONObject stepContent = getRootStep().getJSONContent(_strategyId, forChecksum);
-      jsStrategy.put("latestStep", stepContent);
-    }
-    catch (JSONException ex) {
-      throw new WdkModelException(ex);
-    }
-    return jsStrategy;
   }
 
   @Override
