@@ -128,7 +128,7 @@ public class EmailListsGenerator extends BaseCLI {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
     ResultSet resultSet = null;
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql, "wdk-get-emails", 100);
+      resultSet = SqlUtils.executeQuery(dataSource, sql, "wdk-get-emails");
       while (resultSet.next()) {
         writer.print(resultSet.getString("email") + ",\n");
       }
