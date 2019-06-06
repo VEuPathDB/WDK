@@ -466,7 +466,7 @@ public class StepValidator extends BaseCLI {
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
     ResultSet resultSet = null;
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql, "wdk-get-dangling-strats", 100);
+      resultSet = SqlUtils.executeQuery(dataSource, sql, "wdk-get-dangling-strats");
       while (resultSet.next()) {
         writer.print(resultSet.getInt("user_id") + "\t");
         writer.print(resultSet.getString("email") + "\t");

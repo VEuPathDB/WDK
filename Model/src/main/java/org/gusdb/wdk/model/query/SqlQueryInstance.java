@@ -66,10 +66,11 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
         _wdkModel.getAppDb().getDataSource(),
         sql,
         _query.getFullName() + "__select-uncached",
-        SqlUtils.DEFAULT_FETCH_SIZE,
+        0,
         _query.isUseDBLink()
       ));
-    } catch (SQLException e) {
+    }
+    catch (SQLException e) {
       throw new WdkModelException("Could not get uncached results from DB.", e);
     }
   }

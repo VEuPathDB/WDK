@@ -217,7 +217,7 @@ public class SharedStepsResolver extends BaseCLI {
     try {
       resultSet = SqlUtils.executeQuery(dataSource,
           "SELECT step_id, left_child_id, right_child_id, display_params FROM " + TEMP_STEP_TABLE,
-          "select-tmp-steps", 100);
+          "select-tmp-steps");
       psUpdate = SqlUtils.getPreparedStatement(dataSource, "UPDATE " + TEMP_STEP_TABLE +
           " SET step_id = ?, left_child_id = ?, right_child_id = ?, display_params = ? WHERE step_id = ?");
       Map<Long, StepInfo> steps = new HashMap<>();
