@@ -264,7 +264,7 @@ public class UserFactory {
    * @return the guest user with remaining fields populated
    * @throws WdkRuntimeException if unable to persist temporary user
    */
-  GuestUser saveTemporaryUser(GuestUser user) throws WdkRuntimeException {
+  public GuestUser saveTemporaryUser(GuestUser user) throws WdkRuntimeException {
     try {
       UserProfile profile = _accountManager.createGuestAccount(user.getEmailPrefix());
       addUserReference(profile.getUserId(), true);
