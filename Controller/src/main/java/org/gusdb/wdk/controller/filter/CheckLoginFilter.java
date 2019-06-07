@@ -161,7 +161,7 @@ public class CheckLoginFilter implements Filter {
           }
         }
         catch (Exception ex) {
-          LOG.error("Caught exception while checking login cookie: " + ex);
+          LOG.error("Caught exception while checking login cookie", ex);
           response.addCookie(LoginCookieFactory.createLogoutCookie());
           throw new ServletException("Unable to complete check-login process", ex);
         }
@@ -179,7 +179,8 @@ public class CheckLoginFilter implements Filter {
   private StateBundle calculateCurrentState(WdkModel wdkModel, HttpSession session, HttpServletRequest request) {
 
     // get the current user in session and determine type
-    User wdkUser = (User)session.getAttribute(Utilities.WDK_USER_KEY);
+    UserBean wdkUserBean = (UserBean)session.getAttribute(Utilities.WDK_USER_KEY);
+    User wdkUser = wdkUserBean == null ? null : wdkUserBean.getUser();
     boolean userPresent = (wdkUser != null);
     boolean isGuestUser = (userPresent ? wdkUser.isGuest() : false);
 
