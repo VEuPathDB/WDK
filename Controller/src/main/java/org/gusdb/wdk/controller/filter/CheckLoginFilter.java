@@ -19,6 +19,7 @@ import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.GuestUser;
 import org.gusdb.wdk.model.user.User;
@@ -156,9 +157,7 @@ public class CheckLoginFilter implements Filter {
             response.addCookie(cookieToSend);
           }
           if (userToSet != null) {
-            session.setAttribute(Utilities.WDK_USER_KEY, userToSet);
-            //Events.triggerAndWait(new NewUserEvent(userToSet, stateBundle.getSessionUser(), session),
-            //    new WdkRuntimeException("Unable to complete WDK user assignement."));
+            session.setAttribute(Utilities.WDK_USER_KEY, new UserBean(userToSet));
           }
         }
         catch (Exception ex) {
