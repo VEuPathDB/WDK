@@ -14,7 +14,6 @@ import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.SortDirection;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.FileBasedRecordStream;
@@ -54,21 +53,15 @@ public abstract class StandardReporter extends AbstractReporter {
   }
 
   private static void standardizeAnswerValue(AnswerValue answerValue) {
-    try {
 
-      // always return all records; user cannot select a subset of records
-      answerValue.setPageIndex(1, -1);
+    // always return all records; user cannot select a subset of records
+    answerValue.setPageIndex(1, -1);
 
-      // disable custom sorting - always sort by ID column
-      String idAttributeFieldName = answerValue.getAnswerSpec()
-          .getQuestion().getRecordClass().getIdAttributeField().getName();
-      answerValue.setSortingMap(new MapBuilder<String,Boolean>(
-          idAttributeFieldName, SortDirection.ASC.isAscending()).toMap());
-
-    }
-    catch (WdkModelException ex) {
-      throw new WdkRuntimeException(ex);
-    }
+    // disable custom sorting - always sort by ID column
+    String idAttributeFieldName = answerValue.getAnswerSpec()
+        .getQuestion().getRecordClass().getIdAttributeField().getName();
+    answerValue.setSortingMap(new MapBuilder<String,Boolean>(
+        idAttributeFieldName, SortDirection.ASC.isAscending()).toMap());
   }
 
   @Override

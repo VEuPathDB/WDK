@@ -89,6 +89,7 @@ implements ColumnToolBuilder<T> {
     return this;
   }
 
+  @Override
   public ColumnToolBuilder<T> addProperty(final WdkModelText prop) {
     props.put(prop.getName(), prop.getText());
     return this;

@@ -18,6 +18,7 @@ abstract class AbstractColumnFilter extends AbstractColumnTool implements Column
     return newSqlBuilder(getColumn().getName());
   }
 
+  @Override
   public void parseConfig(JsonNode obj) {
     try {
       Jackson.readerForUpdating(genConfig()).readValue(obj);

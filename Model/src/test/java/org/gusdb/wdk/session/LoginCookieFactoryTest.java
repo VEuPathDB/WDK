@@ -73,12 +73,12 @@ public class LoginCookieFactoryTest {
     for (String[] successCase : PARSE_CASES) {
       LoginCookieParts parts = LoginCookieFactory.parseCookieValue(successCase[0]);
       assertEquals(parts.getUsername(), successCase[1]);
-      assertEquals(new Boolean(parts.isRemember()).toString(), successCase[2]);
+      assertEquals(Boolean.valueOf(parts.isRemember()).toString(), successCase[2]);
       assertEquals(parts.getChecksum(), successCase[3]);
     }
   }
   
-  public static final String REMEMBER_MAX_AGE = new Integer(java.lang.Integer.MAX_VALUE / 256).toString();
+  public static final String REMEMBER_MAX_AGE = Integer.valueOf(java.lang.Integer.MAX_VALUE / 256).toString();
   public static final String NO_REMEMBER_MAX_AGE = "-1";
   public static final String COOKIE_PATH = "/";
   

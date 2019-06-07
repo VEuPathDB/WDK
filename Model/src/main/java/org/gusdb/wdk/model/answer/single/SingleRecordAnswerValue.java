@@ -116,7 +116,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
   }
 
   @Override
-  public void setSortingMap(Map<String, Boolean> sortingMap) throws WdkModelException {
+  public void setSortingMap(Map<String, Boolean> sortingMap) {
     // no-op since sorting is irrelevant in a single record answer
   }
 }

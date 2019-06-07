@@ -19,6 +19,7 @@ public interface ColumnReporter<T> extends ColumnTool {
    * @return a new ColumnReport instance containing the same configuration as
    * this instance.
    */
+  @Override
   ColumnReporter<T> copy();
 
   /**
@@ -63,6 +64,7 @@ public interface ColumnReporter<T> extends ColumnTool {
 
     void write(T field) throws WdkModelException;
 
+    @Override
     void close() throws WdkModelException;
   }
 

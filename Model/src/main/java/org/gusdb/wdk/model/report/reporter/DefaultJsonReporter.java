@@ -72,7 +72,7 @@ public class DefaultJsonReporter extends AbstractReporter {
     return configure(AnswerDetailsFactory.createFromJson(config, _baseAnswer.getAnswerSpec().getQuestion()));
   }
 
-  private DefaultJsonReporter configure(AnswerDetails config) throws WdkModelException {
+  private DefaultJsonReporter configure(AnswerDetails config) {
     _baseAnswer = getConfiguredAnswer(_baseAnswer, config);
     _attributes = config.getAttributes();
     _tables = config.getTables();
@@ -80,7 +80,7 @@ public class DefaultJsonReporter extends AbstractReporter {
     return this;
   }
 
-  private static AnswerValue getConfiguredAnswer(AnswerValue answerValue, AnswerDetails config) throws WdkModelException {
+  private static AnswerValue getConfiguredAnswer(AnswerValue answerValue, AnswerDetails config) {
     int startIndex = config.getOffset() + 1;
     int endIndex = startIndex + config.getNumRecords() - 1;
     AnswerValue configuredAnswer = answerValue.cloneWithNewPaging(startIndex, endIndex);

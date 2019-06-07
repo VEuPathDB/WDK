@@ -21,7 +21,7 @@ import org.json.JSONObject;
  */
 public class NumberRangeParam extends Param {
 
-  private Integer _numDecimalPlaces = new Integer(1);
+  private Integer _numDecimalPlaces = Integer.valueOf(1);
   private Double _min;
   private Double _max;
   private Double _increment;

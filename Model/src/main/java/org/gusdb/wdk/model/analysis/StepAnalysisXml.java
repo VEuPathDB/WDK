@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.analysis;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -177,7 +178,7 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
           _analyzerClass).asSubclass(StepAnalyzer.class);
 
       // instantiate instance and pass reference to model
-      StepAnalyzer analyzer = aClass.newInstance();
+      StepAnalyzer analyzer = aClass.getDeclaredConstructor().newInstance();
       analyzer.setWdkModel(getWdkModel());
 
       analyzer.validateParams(paramMap);
@@ -188,7 +189,9 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
 
       return analyzer;
     }
-    catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+    catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+        IllegalArgumentException | InvocationTargetException |
+        NoSuchMethodException | SecurityException ex) {
       throw new WdkModelException(ex);
     }
   }

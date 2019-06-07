@@ -70,7 +70,7 @@ public class NumberRangeParamHandler extends AbstractParamHandler {
 
       // If the number is in exponential form, change to decimal form
       if(stable.matches("^.*[eE].*$")) {
-        values[i] = new Double(new BigDecimal(values[i]).toPlainString());
+        values[i] = Double.valueOf(new BigDecimal(values[i]).toPlainString());
       }
 
       // If the number is not an integer, round it according to the number of decimal places

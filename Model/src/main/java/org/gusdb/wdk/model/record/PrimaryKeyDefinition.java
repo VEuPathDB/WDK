@@ -136,7 +136,7 @@ public class PrimaryKeyDefinition extends WdkModelBase {
       if (_aliasPluginClassName != null && _aliasPlugin == null) {
         Class<? extends PrimaryKeyAliasPlugin> pluginClass = Class.forName(_aliasPluginClassName).asSubclass(
             PrimaryKeyAliasPlugin.class);
-        _aliasPlugin = pluginClass.newInstance();
+        _aliasPlugin = pluginClass.getDeclaredConstructor().newInstance();
       }
     }
     catch (Exception e) {

@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.record;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -24,10 +26,12 @@ public class BooleanReference extends WdkModelBase {
     
     try {
       Class<? extends BooleanQuery> queryClass = Class.forName(_queryClassName).asSubclass(BooleanQuery.class);
-      _query = queryClass.newInstance();
+      _query = queryClass.getDeclaredConstructor().newInstance();
       _query.resolveReferences(wdkModel);
     }
-    catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+    catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+        IllegalArgumentException | InvocationTargetException |
+        NoSuchMethodException | SecurityException ex) {
       throw new WdkModelException(ex);
     }
   }

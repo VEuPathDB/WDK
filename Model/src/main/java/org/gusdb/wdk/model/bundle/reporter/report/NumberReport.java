@@ -76,6 +76,7 @@ public class NumberReport extends AbstractReport<BigDecimal> {
       : padSize(BD_SIZE_PREFIX);
   }
 
+  @Override
   public void pushValue(BigDecimal val) {
     super.pushValue(val);
 

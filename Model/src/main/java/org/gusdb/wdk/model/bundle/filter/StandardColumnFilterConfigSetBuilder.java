@@ -49,6 +49,7 @@ implements ColumnFilterConfigSetBuilder {
     return this;
   }
 
+  @Override
   public ColumnFilterConfigSet build() {
     final var out = new HashMap<String, ColumnConfig>(builders.size());
     builders.forEach((k, v) -> out.put(k, v.build()));

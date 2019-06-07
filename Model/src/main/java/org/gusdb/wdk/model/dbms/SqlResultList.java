@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -14,21 +13,6 @@ import org.gusdb.wdk.model.WdkModelException;
  * 
  */
 public class SqlResultList implements ResultList {
-
-  private static final Logger logger = Logger.getLogger(SqlResultList.class);
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#finalize()
-   */
-  @Override
-  protected void finalize() throws Throwable {
-    if (!resultSetClosed) {
-      logger.warn("ResultSet in SqlResultList has not been closed!  This may be a resource leak!");
-    }
-    super.finalize();
-  }
 
   private Set<String> columns;
   private ResultSet resultSet;
@@ -39,11 +23,6 @@ public class SqlResultList implements ResultList {
     resultSetClosed = false;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.dbms.ResultList#close()
-   */
   @Override
   public void close() throws WdkModelException {
     if (!resultSetClosed) {
@@ -52,11 +31,6 @@ public class SqlResultList implements ResultList {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.dbms.ResultList#contains(java.lang.String)
-   */
   @Override
   public boolean contains(String columnName) throws WdkModelException {
     try {
@@ -69,11 +43,6 @@ public class SqlResultList implements ResultList {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.dbms.ResultList#get(java.lang.String)
-   */
   @Override
   public Object get(String columnName) throws WdkModelException {
     try {
@@ -92,11 +61,6 @@ public class SqlResultList implements ResultList {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.dbms.ResultList#next()
-   */
   @Override
   public boolean next() throws WdkModelException {
     try {

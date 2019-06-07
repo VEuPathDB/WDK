@@ -22,7 +22,7 @@ public class ColumnReportRunner implements ReportRunner {
     this.column = column;
   }
 
-  @SuppressWarnings("unchecked")
+  @Override
   public void run(Aggregator out) throws WdkModelException {
     try (
       var stream = RecordStreamFactory.getRecordStream(value,

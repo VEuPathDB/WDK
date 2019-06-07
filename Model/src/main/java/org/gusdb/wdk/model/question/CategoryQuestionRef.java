@@ -37,7 +37,7 @@ public class CategoryQuestionRef extends WdkModelText implements Comparable<Cate
   }
 
   public void setSortOrder(int sortOrder) {
-    this._sortOrder = new Integer(sortOrder);
+    _sortOrder = Integer.valueOf(sortOrder);
   }
 
   public void setQuestionDisplayName(String name) {

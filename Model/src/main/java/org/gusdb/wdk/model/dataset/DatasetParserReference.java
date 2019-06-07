@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.dataset;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,12 +74,15 @@ public class DatasetParserReference extends WdkModelBase {
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     try {
       Class<? extends DatasetParser> parserClass = Class.forName(_implementation).asSubclass(DatasetParser.class);
-      _parser = parserClass.newInstance();
+      _parser = parserClass.getDeclaredConstructor().newInstance();
       _parser.setName(_name);
       if (_display != null) _parser.setDisplay(_display);
       if (_description != null) _parser.setDescription(_description);
       _parser.setProperties(_properties);
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+    }
+    catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+        IllegalArgumentException | InvocationTargetException |
+        NoSuchMethodException | SecurityException ex) {
       throw new WdkModelException(ex);
     }
   }

@@ -37,8 +37,8 @@ implements ColumnToolBundle {
   }
 
   @Override
-  public Optional<ColumnToolSet> getTool(String name) {
-    return Optional.ofNullable(toolSets.get(name));
+  public Optional<ColumnToolSet> getTool(String toolName) {
+    return Optional.ofNullable(toolSets.get(toolName));
   }
 
   @Override

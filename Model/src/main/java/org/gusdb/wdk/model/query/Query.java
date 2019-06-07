@@ -222,6 +222,10 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     return contextQuestion;
   }
 
+  /**
+   * @throws WdkModelException if something goes wrong while assigning values
+   * related to the context question
+   */
   public void setContextQuestion(Question contextQuestion) throws WdkModelException {
     this.contextQuestion = contextQuestion;
     for (Param param : paramMap.values())
@@ -575,6 +579,9 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     return params.size() > 1 ? Optional.of(params.get(1)) : Optional.empty();
   }
 
+  /**
+   * @throws WdkModelException if error occurs resolving column types 
+   */
   public Map<String, AttributeFieldDataType> resolveColumnTypes() throws WdkModelException {
     return columnMap.entrySet()
       .stream()

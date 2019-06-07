@@ -775,7 +775,7 @@ public class AnswerValue {
   /**
    * Set a new sorting map
    */
-  public void setSortingMap(Map<String, Boolean> sortingMap) throws WdkModelException {
+  public void setSortingMap(Map<String, Boolean> sortingMap) {
     if (sortingMap == null) {
       sortingMap = _answerSpec.getQuestion().getSortingAttributeMap();
     }

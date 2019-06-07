@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.ontology;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -121,12 +122,13 @@ public class OntologyFactoryImpl extends WdkModelBase implements OntologyFactory
   }
 
   private OntologyFactoryPlugin getPlugin()
-      throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+      throws InstantiationException, IllegalAccessException, ClassNotFoundException,
+      IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
         
     if (plugin == null) {
       Class<? extends OntologyFactoryPlugin> pluginClass = Class.forName(pluginClassName).asSubclass(
           OntologyFactoryPlugin.class);
-      plugin = pluginClass.newInstance();
+      plugin = pluginClass.getDeclaredConstructor().newInstance();
     }
     return plugin;
   }
