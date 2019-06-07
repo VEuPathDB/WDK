@@ -19,6 +19,7 @@ import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.GuestUser;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
@@ -100,7 +101,7 @@ public class CheckLoginFilter implements Filter {
       throws IOException, ServletException {
 
     // load model, user
-    WdkModel wdkModel = (WdkModel)_context.getAttribute(Utilities.WDK_MODEL_KEY);
+    WdkModel wdkModel = ((WdkModelBean)_context.getAttribute(Utilities.WDK_MODEL_KEY)).getModel();
     UserFactory userFactory = wdkModel.getUserFactory();
 
     HttpServletRequest request = (HttpServletRequest) servletRequest;
