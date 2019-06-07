@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.filter;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -41,12 +42,13 @@ public class StepFilterDefinition extends FilterDefinition {
 
   public StepFilter getStepFilter() throws WdkModelException {
     try {
-      StepFilter filter = _class.newInstance();
+      StepFilter filter = _class.getDeclaredConstructor().newInstance();
       initializeFilter(filter);
       filter.setSummaryQuery(_summaryQuery);
       return filter;
     }
-    catch (InstantiationException | IllegalAccessException ex) {
+    catch (InstantiationException | IllegalAccessException | IllegalArgumentException |
+        InvocationTargetException | NoSuchMethodException | SecurityException ex) {
       throw new WdkModelException(ex);
     }
   }

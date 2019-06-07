@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.migrate;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
@@ -98,14 +99,15 @@ public class MigratorController {
   }
 
   public Migrator getMigrator(String[] args) throws ClassNotFoundException,
-      InstantiationException, IllegalAccessException {
+      InstantiationException, IllegalAccessException, IllegalArgumentException,
+      InvocationTargetException, NoSuchMethodException, SecurityException {
     // determine which migrator to be used
     String className = args[0];
     logger.debug("Initializing migrator: " + className);
 
     Class<? extends Migrator> migratorClass = Class.forName(className).asSubclass(
         Migrator.class);
-    Migrator migrator = migratorClass.newInstance();
+    Migrator migrator = migratorClass.getDeclaredConstructor().newInstance();
 
     // declare options
     options = declareOptions(migrator);

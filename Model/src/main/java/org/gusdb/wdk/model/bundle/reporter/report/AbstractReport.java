@@ -21,7 +21,7 @@ import static org.gusdb.fgputil.runtime.JvmUtil.OBJECT_SIZE_PADDING_FACTOR;
   AbstractReport.KEY_NULLS,
   AbstractReport.KEY_VALUES
 })
-abstract class AbstractReport<T extends Comparable>
+abstract class AbstractReport<T extends Comparable<?>>
 {
   static final String
     KEY_VALUES = "values",

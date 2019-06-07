@@ -5,6 +5,7 @@ import static org.gusdb.fgputil.functional.Functions.mapToList;
 import static org.gusdb.fgputil.iterator.IteratorUtil.flatten;
 import static org.gusdb.fgputil.iterator.IteratorUtil.transform;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -164,9 +165,11 @@ public class TableRowUpdater<T extends TableRow> {
       @SuppressWarnings("unchecked")
       Class<? extends TableRowUpdaterPlugin<?>> pluginClass =
           (Class<? extends TableRowUpdaterPlugin<?>>) Class.forName(pluginClassName);
-      config.plugin = pluginClass.newInstance();
+      config.plugin = pluginClass.getDeclaredConstructor().newInstance();
     }
-    catch (ClassCastException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+    catch (ClassCastException | InstantiationException | IllegalAccessException |
+        ClassNotFoundException | IllegalArgumentException | InvocationTargetException |
+        NoSuchMethodException | SecurityException e) {
       throw new IllegalArgumentException("Unable to instantiate plugin class '" + pluginClassName + "'", e);
     }
     return config;

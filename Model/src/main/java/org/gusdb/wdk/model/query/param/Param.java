@@ -15,6 +15,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
@@ -609,6 +610,9 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   /**
    * Set the question where the param is used. The params in a question are always cloned when question is
    * initialized, therefore, each param object will refer to one question uniquely.
+   * 
+   * @throws WdkModelException if error occurs assigning values related to the
+   * passed question
    */
   public void setContextQuestion(Question question) throws WdkModelException {
     _contextQuestion = question;
@@ -693,10 +697,12 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
       try {
         Class<? extends ParamHandler> handlerClass = Class.forName(_handlerReference.getImplementation()).asSubclass(
             ParamHandler.class);
-        _handler = handlerClass.newInstance();
+        _handler = handlerClass.getDeclaredConstructor().newInstance();
         _handler.setProperties(_handlerReference.getProperties());
       }
-      catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+      catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+          IllegalArgumentException | InvocationTargetException |
+          NoSuchMethodException | SecurityException ex) {
         throw new WdkModelException(ex);
       }
       _handlerReference = null;
@@ -717,6 +723,8 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   }
 
   /**
+   * @param writer location to which dependencies should be written
+   * @param indent how much to indent at this "level"
    * @throws WdkModelException if unable to print dependency content
    */
   protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
@@ -762,6 +770,9 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    * This is more nuanced than simply asking if a depended param is in the
    * passed list. Sometimes declare a dependency on a param for reasons other
    * than vocabulary generation (e.g. internal value generation).
+   * 
+   * @param staleDependedParamsFullNames a set of stale depended params used
+   * to inform logic deciding if this param's value is also stale
    */
   public boolean isStale(Set<String> staleDependedParamsFullNames) {
     return false;

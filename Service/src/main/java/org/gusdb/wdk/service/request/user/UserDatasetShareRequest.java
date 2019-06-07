@@ -164,7 +164,7 @@ public class UserDatasetShareRequest {
         for(Object userDataset : userDatasets.keySet()) {
           Long datasetId = 0L;
           try {
-            datasetId = new Long(((String)userDataset).trim());
+            datasetId = Long.valueOf(((String)userDataset).trim());
           }
           catch(NumberFormatException nfe) {
             _malformedDatasetIds.add(userDataset);

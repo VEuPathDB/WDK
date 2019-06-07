@@ -37,6 +37,7 @@ import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.gusdb.wdk.model.user.*;
 
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import static java.util.Objects.isNull;
@@ -790,10 +791,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       try {
         Class<? extends BooleanQuery> clazz =
             Class.forName(customBooleanQueryClassName).asSubclass(BooleanQuery.class);
-        booleanQuery = clazz.newInstance();
+        booleanQuery = clazz.getDeclaredConstructor().newInstance();
         booleanQuery.setRecordClass(this);
       }
-      catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+      catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+          IllegalArgumentException | InvocationTargetException |
+          NoSuchMethodException | SecurityException ex) {
         throw new WdkModelException(errmsg, ex);
       }
     }

@@ -119,7 +119,9 @@ public class MBeanRegistration {
       catch (ClassNotFoundException | MBeanRegistrationException |
           InstanceAlreadyExistsException | NotCompliantMBeanException |
           MalformedObjectNameException | InstantiationException |
-          IllegalAccessException | ContextResolutionException e) {
+          IllegalAccessException | ContextResolutionException |
+          IllegalArgumentException | InvocationTargetException |
+          NoSuchMethodException | SecurityException e) {
         LOG.error("Unable to load and register MBean entry { " + entry.getKey() + ", " + entry.getValue() + " }", e);
       }
     }
@@ -163,10 +165,16 @@ public class MBeanRegistration {
    * @throws ClassNotFoundException
    * @throws IllegalAccessException 
    * @throws InstantiationException 
+   * @throws SecurityException 
+   * @throws NoSuchMethodException 
+   * @throws InvocationTargetException 
+   * @throws IllegalArgumentException 
    */
   private Object getInstanceOfClass(String className)
-      throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-    return getClass(className).newInstance();
+      throws ClassNotFoundException, InstantiationException,
+      IllegalAccessException, IllegalArgumentException,
+      InvocationTargetException, NoSuchMethodException, SecurityException {
+    return getClass(className).getDeclaredConstructor().newInstance();
   }
 
   /**

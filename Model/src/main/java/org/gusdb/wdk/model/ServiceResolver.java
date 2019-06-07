@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import org.gusdb.fgputil.MapBuilder;
@@ -78,9 +79,11 @@ public class ServiceResolver {
 
   private static Object getImplemenation(Service service) {
     try {
-      return Class.forName(service._implementationName).newInstance();
+      return Class.forName(service._implementationName).getDeclaredConstructor().newInstance();
     }
-    catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+    catch (InstantiationException | IllegalAccessException | ClassNotFoundException |
+        IllegalArgumentException | InvocationTargetException |
+        NoSuchMethodException | SecurityException e) {
       throw new WdkRuntimeException("Unable to instantiate implemenation instance of " +
           service._implementationName + " for interface "  + service._interfaceName +
           ".  Is the necessary JAR included in the runtime?");

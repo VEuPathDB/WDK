@@ -22,39 +22,39 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 
 abstract class DelegateFilter implements ColumnFilter {
 
-  private Map<String, String> properties;
+  private Map<String, String> _properties;
 
-  private String key;
+  private String _key;
 
-  private AnswerValue answer;
+  private AnswerValue _answer;
 
-  private AttributeField column;
+  private AttributeField _column;
 
-  private ColumnToolConfig config;
+  private ColumnToolConfig _config;
 
-  private ColumnFilter[] delegatees;
+  private ColumnFilter[] _delegatees;
 
   DelegateFilter(ColumnFilter... delegatees) {
-    this.properties = Collections.emptyMap();
-    this.delegatees = delegatees;
+    _properties = Collections.emptyMap();
+    _delegatees = delegatees;
   }
 
   @Override
   public DelegateFilter setKey(String key) {
-    this.key = key;
+    _key = key;
     return this;
   }
 
   @Override
   public String getKey() {
-    return key;
+    return _key;
   }
 
   @Override
   public DelegateFilter setAnswerValue(AnswerValue val) {
-    this.answer = val;
+    _answer = val;
 
-    for (var d : delegatees)
+    for (var d : _delegatees)
       d.setAnswerValue(val);
 
     return this;
@@ -62,9 +62,9 @@ abstract class DelegateFilter implements ColumnFilter {
 
   @Override
   public DelegateFilter setAttributeField(AttributeField field) {
-    this.column = field;
+    _column = field;
 
-    for (var d : delegatees)
+    for (var d : _delegatees)
       d.setAttributeField(field);
 
     return this;
@@ -72,17 +72,17 @@ abstract class DelegateFilter implements ColumnFilter {
 
   @Override
   public DelegateFilter setModelProperties(Map<String, String> props) {
-    this.properties = Map.copyOf(props);
+    _properties = Map.copyOf(props);
 
-    for (var d : delegatees)
-      d.setModelProperties(this.properties);
+    for (var d : _delegatees)
+      d.setModelProperties(_properties);
 
     return this;
   }
 
   @Override
   public DelegateFilter setConfiguration(ColumnToolConfig config) {
-    this.config = config;
+    _config = config;
     return this;
   }
 
@@ -115,8 +115,8 @@ abstract class DelegateFilter implements ColumnFilter {
   @Override
   public SchemaBuilder inputSpec() {
     var out = Schema.draft4().oneOf();
-    for (var d : delegatees)
-      if (column == null || d.isCompatibleWith(column.getDataType()))
+    for (var d : _delegatees)
+      if (_column == null || d.isCompatibleWith(_column.getDataType()))
         out.add(d.inputSpec());
     return out;
   }
@@ -128,7 +128,7 @@ abstract class DelegateFilter implements ColumnFilter {
 
   @Override
   public boolean isCompatibleWith(AttributeFieldDataType type) {
-    for (var d : delegatees)
+    for (var d : _delegatees)
       if (d.isCompatibleWith(type))
         return true;
     return false;
@@ -138,47 +138,47 @@ abstract class DelegateFilter implements ColumnFilter {
   public String toString() {
     return new JSONObject()
       .put("class", getClass().getName())
-      .put("properties", properties)
-      .put("column", column == null
+      .put("properties", _properties)
+      .put("column", _column == null
         ? JSONObject.NULL
-        : new JSONObject().put("name", column.getName()))
-      .put("config", config == null
+        : new JSONObject().put("name", _column.getName()))
+      .put("config", _config == null
         ? JSONObject.NULL
-        : new JSONObject(config.getConfig().toString()))
-      .put("answer", answer == null
+        : new JSONObject(_config.getConfig().toString()))
+      .put("answer", _answer == null
         ? JSONObject.NULL
-        : answer.toString())
-      .put("delegatees", new JSONArray(delegatees))
+        : _answer.toString())
+      .put("delegatees", new JSONArray(_delegatees))
       .toString();
   }
 
   protected Optional<ColumnToolConfig> getConfig() {
-    return Optional.ofNullable(config);
+    return Optional.ofNullable(_config);
   }
 
   protected final <T extends DelegateFilter> T copyInto(T copy) {
-    var val = (DelegateFilter) copy;
-    val.config     = this.config;
-    val.properties = Map.copyOf(this.properties);
-    val.column     = this.column;
-    val.answer     = this.answer;
-    val.delegatees = Arrays.stream(delegatees)
+    DelegateFilter val = copy;
+    val._config     = _config;
+    val._properties = Map.copyOf(_properties);
+    val._column     = _column;
+    val._answer     = _answer;
+    val._delegatees = Arrays.stream(_delegatees)
       .map(ColumnFilter::copy)
       .toArray(ColumnFilter[]::new);
     return copy;
   }
 
   private ColumnFilter configure(ColumnFilter filter) {
-    filter.setConfiguration(config);
-    filter.setAttributeField(column);
-    filter.setAnswerValue(answer);
-    filter.setModelProperties(properties);
+    filter.setConfiguration(_config);
+    filter.setAttributeField(_column);
+    filter.setAnswerValue(_answer);
+    filter.setModelProperties(_properties);
     return filter;
   }
 
   private Stream<ColumnFilter> filterDelegatees(final JsonNode config) {
-    return Arrays.stream(delegatees)
-      .filter(c -> c.isCompatibleWith(column.getDataType()))
+    return Arrays.stream(_delegatees)
+      .filter(c -> c.isCompatibleWith(_column.getDataType()))
       .filter(c -> c.isCompatibleWith(config));
   }
 

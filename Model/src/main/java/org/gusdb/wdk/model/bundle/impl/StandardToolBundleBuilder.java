@@ -53,11 +53,11 @@ public class StandardToolBundleBuilder implements ColumnToolBundleBuilder {
     try {
       for (final ColumnToolSetBuilder builder : builders) {
         final ColumnToolSet set = builder.build(wdk);
-        final String name = set.getName();
+        final String setName = set.getName();
 
-        if (toolSets.containsKey(name))
-          throw new WdkModelException(format(ERR_DUPLICATE_TOOL, name, getName()));
-        toolSets.put(name, set);
+        if (toolSets.containsKey(setName))
+          throw new WdkModelException(format(ERR_DUPLICATE_TOOL, setName, getName()));
+        toolSets.put(setName, set);
       }
     } catch (Exception e) {
       throw new WdkModelException(format(ERR_WRAP, name), e);

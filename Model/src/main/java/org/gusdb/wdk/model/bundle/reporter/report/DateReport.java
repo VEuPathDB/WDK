@@ -50,6 +50,7 @@ public class DateReport extends AbstractReport<LocalDateTime> {
     return DATE_SIZE;
   }
 
+  @Override
   public void pushValue(LocalDateTime val) {
     super.pushValue(val);
 

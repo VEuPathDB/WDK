@@ -1,10 +1,9 @@
 package org.gusdb.wdk.model.query.spec;
 
-import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import org.apache.log4j.LogManager;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.collection.ReadOnlyHashMap;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -12,8 +11,7 @@ import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.param.*;
+import org.gusdb.wdk.model.query.param.ParameterContainer;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
