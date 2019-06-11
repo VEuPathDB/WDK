@@ -159,7 +159,7 @@ public class DefaultJsonReporter extends AbstractReporter {
       throws WdkModelException {
     AnswerValue answerValueWithoutViewFilters = getAnswerValueWithoutViewFilters(answerValue);
     JSONObject meta = new JSONObject();
-    meta.put(JsonKeys.RECORD_CLASS_NAME, answerValue.getAnswerSpec().getQuestion().getRecordClass().getFullName());
+    meta.put(JsonKeys.RECORD_CLASS_NAME, answerValue.getAnswerSpec().getQuestion().getRecordClass().getUrlSegment());
     meta.put(JsonKeys.TOTAL_COUNT, answerValueWithoutViewFilters.getResultSizeFactory().getResultSize());
     meta.put(JsonKeys.DISPLAY_TOTAL_COUNT, answerValueWithoutViewFilters.getResultSizeFactory().getDisplayResultSize());
     meta.put(JsonKeys.VIEW_TOTAL_COUNT, answerValue.getResultSizeFactory().getResultSize());

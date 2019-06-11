@@ -81,7 +81,7 @@ public class QuestionFormatter {
       .put(JsonKeys.HELP, q.getHelp())
       .put(JsonKeys.NEW_BUILD, q.getNewBuild())
       .put(JsonKeys.REVISE_BUILD, q.getReviseBuild())
-      .put(JsonKeys.OUTPUT_RECORD_CLASS_NAME, q.getRecordClass().getFullName())
+      .put(JsonKeys.OUTPUT_RECORD_CLASS_NAME, q.getRecordClass().getUrlSegment())
       .put(JsonKeys.GROUPS, getGroupsJson(q.getParamMapByGroups()))
       .put(JsonKeys.FILTERS, new JSONArray(q.getFilters().keySet()))
       .put(JsonKeys.DEFAULT_ATTRIBUTES, new JSONArray(q.getSummaryAttributeFieldMap().keySet()))

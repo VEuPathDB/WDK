@@ -9,6 +9,7 @@ import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.json.JSONException;
@@ -75,8 +76,8 @@ public class StepFormatter {
         .put(JsonKeys.OWNER_ID, step.getUser().getUserId())
         .put(JsonKeys.STRATEGY_ID, JsonUtil.convertNulls(step.getStrategyId().orElse(null)))
         .put(JsonKeys.HAS_COMPLETE_STEP_ANALYSES, step.getHasCompleteAnalyses())
-        .put(JsonKeys.RECORD_CLASS_NAME, step.getRecordClass().map(NamedObject::getFullName).orElse(null))
-        .put(JsonKeys.SEARCH_NAME, step.getAnswerSpec().getQuestionName())
+        .put(JsonKeys.RECORD_CLASS_NAME, step.getRecordClass().map(RecordClass::getUrlSegment).orElse(null))
+        .put(JsonKeys.SEARCH_NAME, step.getAnswerSpec().getQuestion().getName())
         .put(JsonKeys.SEARCH_CONFIG, AnswerSpecServiceFormat.format(step.getAnswerSpec()))
         .put(JsonKeys.VALIDATION, getValidationBundleJson(step.getValidationBundle()))
         .put(JsonKeys.CREATED_TIME, FormatUtil.formatDateTime(step.getCreatedTime()))
