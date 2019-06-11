@@ -1005,7 +1005,7 @@ public class AnswerValue {
         .append(refs[i]);
     }
 
-    return out.toString();
+    return out.append("\n").toString();
   }
 
   public boolean entireResultRequested() {
