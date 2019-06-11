@@ -63,6 +63,8 @@ public class Step implements Validateable<Step> {
     private AnswerSpecBuilder _answerSpec; // cannot be null; must be set
     private boolean _isResultSizeDirty;
     private JSONObject _displayPrefs;
+    private String _expandedName;
+    private boolean _isExpanded;
 
     private StepBuilder(WdkModel wdkModel, long userId, long stepId) {
       _wdkModel = wdkModel;
@@ -86,20 +88,22 @@ public class Step implements Validateable<Step> {
       _userId = step._user.getUserId();
       _strategyId = Optional.empty();
       _strategyId = step.getStrategyId();
-      _stepId = step._stepId;
+      _stepId = step.getStepId();
       _createdTime = new Date();
-      _createdTime = step._createdTime;
+      _createdTime = step.getCreatedTime();
       _lastRunTime = new Date();
       _lastRunTime = step._lastRunTime;
       _customName = step._customName;
-      _isDeleted = step._isDeleted;
+      _isDeleted = step.isDeleted();
       _isCollapsible = step._isCollapsible;
       _collapsedName = step._collapsedName;
-      _projectId = step._projectId;
-      _projectVersion = step._projectVersion;
+      _projectId = step.getProjectId();
+      _projectVersion = step.getProjectVersion();
       _estimatedSize = step._estimatedSize;
       _answerSpec = AnswerSpec.builder(step._answerSpec);
       _displayPrefs = new JSONObject(step.getDisplayPrefs().toString());
+      _expandedName = step.getExpandedName();
+      _isExpanded = step.isExpanded();
     }
 
     public long getStepId() {
@@ -247,11 +251,29 @@ public class Step implements Validateable<Step> {
       return _isResultSizeDirty;
     }
 
+    public String getExpandedName() {
+      return _expandedName;
+    }
+
+    public StepBuilder setExpandedName(String expandedName) {
+      _expandedName = expandedName;
+      return this;
+    }
+
+    public boolean isExpanded() {
+      return _isExpanded;
+    }
+
+    public StepBuilder setExpanded(boolean expanded) {
+      _isExpanded = expanded;
+      return this;
+    }
+
     @Override
     public String toString() {
       return JsonUtil.serialize(new JSONObject()
-          .put("id", _stepId)
-          .put("question", _answerSpec.getQuestionName()));
+        .put("id", _stepId)
+        .put("question", _answerSpec.getQuestionName()));
     }
   }
 
@@ -285,8 +307,10 @@ public class Step implements Validateable<Step> {
   // in DB, for soft delete
   private final boolean _isDeleted;
   // in DB, tells if nested step
+  @Deprecated
   private final boolean _isCollapsible;
   // in DB, custom name for nested "strategy"
+  @Deprecated
   private final String _collapsedName;
   // in DB, project ID when step was created
   private final String _projectId;
@@ -297,6 +321,10 @@ public class Step implements Validateable<Step> {
 
   // in DB, last known size of result (see _estimateSizeRefreshed below)
   private int _estimatedSize;
+
+  private final boolean _isExpanded;
+
+  private final String _expandedName;
 
   // Steps within the "main branch" strategy flow
   // Next Step must be combined step (e.g. transform or boolean/span-logic (two-answer function))
@@ -358,11 +386,13 @@ public class Step implements Validateable<Step> {
     _isDeleted = builder._isDeleted;
     _isCollapsible = builder._isCollapsible;
     _collapsedName = checkName("collapsedName", builder._collapsedName);
-    _projectId = builder._projectId;
+    _projectId = builder.getProjectId();
     _projectVersion = builder._projectVersion;
     _estimatedSize = builder._estimatedSize;
     _answerSpec = builder._answerSpec.build(user, getContainer(), validationLevel);
     _displayPrefs = new JSONObject(builder._displayPrefs.toString());
+    _isExpanded = builder.isExpanded();
+    _expandedName = builder.getExpandedName();
 
     // set estimated size appropriately if this step set dirty
     _isResultSizeDirty = builder._isResultSizeDirty;
@@ -455,6 +485,14 @@ public class Step implements Validateable<Step> {
         _answerSpec.getQuestion().getQuery().getAnswerParams(), answerParamOrdinal));
   }
 
+  public boolean isExpanded() {
+    return _isExpanded;
+  }
+
+  public String getExpandedName() {
+    return _expandedName;
+  }
+
   /**
    * Returns an estimate of the size of this step (number of records returned).
    * This may be the value of the estimate_size column in the steps table, or if
@@ -511,17 +549,20 @@ public class Step implements Validateable<Step> {
   public String getCustomName() {
     String name = _customName;
     Question question = _answerSpec.getQuestion();
+
     if (name == null || name.isEmpty()) {
-      name = question == null ? _answerSpec.getQuestionName() : question.getShortDisplayName();
+      name = question == null
+        ? _answerSpec.getQuestionName()
+        : question.getShortDisplayName();
     }
+
     // remove script injections
-    name = name.replaceAll("<.+?>", " ");
-    name = name.replaceAll("[\"]", " ");
-    name = name.trim().replaceAll("\\s+", " ");
-    if (name.length() > 4000) {
-      name = name.substring(0, 4000);
-    }
-    return name;
+    name = name.replaceAll("<.+?>", " ")
+      .replaceAll("[\"]", " ")
+      .trim()
+      .replaceAll("\\s+", " ");
+
+    return name.length() > 4000 ? name.substring(0, 4000) : name;
   }
 
   /**
@@ -565,14 +606,16 @@ public class Step implements Validateable<Step> {
     return _isDeleted;
   }
 
+  @Deprecated
   public boolean isCollapsible() {
     return _isCollapsible;
   }
 
+  @Deprecated
   public String getCollapsedName() {
-    if (_collapsedName == null && isCollapsible())
-      return getCustomName();
-    return _collapsedName;
+    return _collapsedName == null && isCollapsible()
+      ? getCustomName()
+      : _collapsedName;
   }
 
   public String getProjectId() {
