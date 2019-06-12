@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.user;
 
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.FormatUtil.join;
@@ -15,12 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -46,13 +40,11 @@ public class StrategyLoader {
 
   private static final Logger LOG = Logger.getLogger(StrategyLoader.class);
 
-  private static final String STEP_COLUMNS = join(
-      asList(STEP_TABLE_COLUMNS).stream()
+  private static final String STEP_COLUMNS = Arrays.stream(STEP_TABLE_COLUMNS)
       .map(col -> "st." + col)
-      .collect(toList()), ", ");
+      .collect(Collectors.joining(", "));
 
-  private static final List<String> STRAT_COLUMNS =
-      asList(STRATEGY_TABLE_COLUMNS).stream()
+  private static final List<String> STRAT_COLUMNS = Arrays.stream(STRATEGY_TABLE_COLUMNS)
       .filter(col -> !COLUMN_STRATEGY_ID.equals(col))
       .collect(toList());
 
@@ -239,27 +231,24 @@ public class StrategyLoader {
     String displayPrefs = rs.getString(COLUMN_DISPLAY_PREFS);
 
     return Step.builder(_wdkModel, userId, stepId)
-        .setStrategyId(Optional.ofNullable(fetchNullableLong(rs, COLUMN_STRATEGY_ID, null)))
-        .setProjectId(rs.getString(COLUMN_PROJECT_ID))
-        .setProjectVersion(rs.getString(COLUMN_PROJECT_VERSION))
-        .setCreatedTime(rs.getTimestamp(COLUMN_CREATE_TIME))
-        .setLastRunTime(rs.getTimestamp(COLUMN_LAST_RUN_TIME))
-        .setEstimatedSize(rs.getInt(COLUMN_ESTIMATE_SIZE))
-        .setDeleted(rs.getBoolean(COLUMN_IS_DELETED))
-        // no longer load these; Step will figure out which params hold these values
-        //.setPreviousStepId(fetchNullableLong(rs, COLUMN_LEFT_CHILD_ID, null))
-        //.setChildStepId(fetchNullableLong(rs, COLUMN_RIGHT_CHILD_ID, null))
-        .setCustomName(rs.getString(COLUMN_CUSTOM_NAME))
-        .setCollapsedName(rs.getString(COLUMN_COLLAPSED_NAME))
-        .setCollapsible(rs.getBoolean(COLUMN_IS_COLLAPSIBLE))
-        .setAnswerSpec(
-            AnswerSpec.builder(_wdkModel)
-            .setQuestionFullName(rs.getString(COLUMN_QUESTION_NAME))
-            .setLegacyFilterName(Optional.ofNullable(rs.getString(COLUMN_ANSWER_FILTER)))
-            .setAssignedWeight(fetchNullableInteger(rs, COLUMN_ASSIGNED_WEIGHT, 0))
-            .setDbParamFiltersJson(new JSONObject(_userDbPlatform.getClobData(rs, COLUMN_DISPLAY_PARAMS)))
-        )
-        .setDisplayPrefs(displayPrefs == null ? new JSONObject() : new JSONObject(displayPrefs));
+      .setStrategyId(Optional.ofNullable(fetchNullableLong(rs, COLUMN_STRATEGY_ID, null)))
+      .setProjectId(rs.getString(COLUMN_PROJECT_ID))
+      .setProjectVersion(rs.getString(COLUMN_PROJECT_VERSION))
+      .setCreatedTime(rs.getTimestamp(COLUMN_CREATE_TIME))
+      .setLastRunTime(rs.getTimestamp(COLUMN_LAST_RUN_TIME))
+      .setEstimatedSize(rs.getInt(COLUMN_ESTIMATE_SIZE))
+      .setDeleted(rs.getBoolean(COLUMN_IS_DELETED))
+      .setCustomName(rs.getString(COLUMN_CUSTOM_NAME))
+      .setExpandedName(rs.getString(COLUMN_EXPANDED_NAME))
+      .setExpanded(rs.getBoolean(COLUMN_IS_EXPANDED))
+      .setAnswerSpec(
+        AnswerSpec.builder(_wdkModel)
+        .setQuestionFullName(rs.getString(COLUMN_QUESTION_NAME))
+        .setLegacyFilterName(Optional.ofNullable(rs.getString(COLUMN_ANSWER_FILTER)))
+        .setAssignedWeight(fetchNullableInteger(rs, COLUMN_ASSIGNED_WEIGHT, 0))
+        .setDbParamFiltersJson(new JSONObject(_userDbPlatform.getClobData(rs, COLUMN_DISPLAY_PARAMS)))
+      )
+      .setDisplayPrefs(displayPrefs == null ? new JSONObject() : new JSONObject(displayPrefs));
   }
 
   public Optional<Step> getStepById(long stepId) throws WdkModelException {
@@ -350,6 +339,7 @@ public class StrategyLoader {
 
   }
 
+  @SuppressWarnings("UseOfObsoleteDateTimeApi")
   private static Timestamp getRecentTimestamp() {
     Calendar calendar = Calendar.getInstance();
     calendar.add(Calendar.DATE, -1);
@@ -357,11 +347,11 @@ public class StrategyLoader {
   }
 
   private static Map<Long,Step> toStepMap(List<Step> steps) {
-    return getMapFromList(steps, step -> new TwoTuple<Long,Step>(step.getStepId(), step));
+    return getMapFromList(steps, step -> new TwoTuple<>(step.getStepId(), step));
   }
 
   private static Map<Long,Strategy> toStrategyMap(List<Strategy> strategies) {
-    return getMapFromList(strategies, strat -> new TwoTuple<Long,Strategy>(strat.getStrategyId(), strat));
+    return getMapFromList(strategies, strat -> new TwoTuple<>(strat.getStrategyId(), strat));
   }
 
   // add prefix to strategy table columns since some share names with step table columns

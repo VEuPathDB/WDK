@@ -157,8 +157,6 @@ public class JsonKeys {
   // step- and strategy-specific keys
   public static final String CUSTOM_NAME = "customName";
   public static final String BASE_CUSTOM_NAME = "baseCustomName";
-  public static final String IS_COLLAPSIBLE = "isCollapsible";
-  public static final String COLLAPSED_NAME = "collapsedName";
   public static final String OWNER_ID = "ownerId";
   public static final String STRATEGY_ID = "strategyId";
   public static final String ESTIMATED_SIZE = "estimatedSize";
@@ -179,6 +177,8 @@ public class JsonKeys {
   public static final String DISPLAY_PREFS = "displayPrefs";
   public static final String IS_FILTERED = "isFiltered";
   public static final String LEAF_AND_TRANSFORM_STEP_COUNT = "leafAndTransformStepCount";
+  public static final String IS_EXPANDED = "expanded";
+  public static final String EXPANDED_NAME = "expandedName";
 
   // step analysis keys
   public static final String ANALYSIS_ID = "analysisId"; // TODO convert to simply ID

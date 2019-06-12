@@ -89,11 +89,11 @@ public class StepRequestParser {
       }
 
       String customName = getStringOrDefault(stepJson, JsonKeys.CUSTOM_NAME, spec.getQuestion().getName());
-      boolean isCollapsible = getBooleanOrDefault(stepJson, JsonKeys.IS_COLLAPSIBLE, false);
-      String collapsedName = getStringOrDefault(stepJson, JsonKeys.COLLAPSED_NAME, customName); 
+      boolean isExpanded = getBooleanOrDefault(stepJson, JsonKeys.IS_EXPANDED, false);
+      String expandedName = getStringOrDefault(stepJson, JsonKeys.EXPANDED_NAME, customName);
       JSONObject displayPrefs = getJsonObjectOrDefault(stepJson, JsonKeys.DISPLAY_PREFS, new JSONObject());
 
-      return new NewStepRequest(validSpec, customName, isCollapsible, collapsedName, displayPrefs);
+      return new NewStepRequest(validSpec, customName, isExpanded, expandedName, displayPrefs);
     }
     catch (JSONException e) {
       throw new RequestMisformatException("Invalid JSON in step request", e);
@@ -118,10 +118,10 @@ public class StepRequestParser {
 
       if (patchSet.has(JsonKeys.CUSTOM_NAME))
         newStep.setCustomName(patchSet.getString(JsonKeys.CUSTOM_NAME));
-      if (patchSet.has(JsonKeys.IS_COLLAPSIBLE))
-        newStep.setCollapsible(patchSet.getBoolean(JsonKeys.IS_COLLAPSIBLE));
-      if (patchSet.has(JsonKeys.COLLAPSED_NAME))
-        newStep.setCollapsedName(patchSet.getString(JsonKeys.COLLAPSED_NAME));
+      if (patchSet.has(JsonKeys.IS_EXPANDED))
+        newStep.setExpanded(patchSet.getBoolean(JsonKeys.IS_EXPANDED));
+      if (patchSet.has(JsonKeys.EXPANDED_NAME))
+        newStep.setExpandedName(patchSet.getString(JsonKeys.EXPANDED_NAME));
       if (patchSet.has(JsonKeys.DISPLAY_PREFERENCES))
         newStep.setDisplayPrefs(patchSet.getJSONObject(JsonKeys.DISPLAY_PREFERENCES));
 

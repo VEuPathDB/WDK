@@ -79,28 +79,32 @@ public class StepFactory {
   static final String COLUMN_IS_DELETED = "is_deleted";
 
   // steps table and columns
-  static final String TABLE_STEP = "steps";
-  static final String COLUMN_STEP_ID = "step_id";
-  static final String COLUMN_PREVIOUS_STEP_ID = "left_child_id";
-  static final String COLUMN_CHILD_STEP_ID = "right_child_id";
-  static final String COLUMN_LAST_RUN_TIME = "last_run_time";
-  static final String COLUMN_ESTIMATE_SIZE = "estimate_size";
-  static final String COLUMN_ANSWER_FILTER = "answer_filter";
-  static final String COLUMN_CUSTOM_NAME = "custom_name";
-  static final String COLUMN_IS_VALID = "is_valid";
-  static final String COLUMN_COLLAPSED_NAME = "collapsed_name";
-  static final String COLUMN_IS_COLLAPSIBLE = "is_collapsible";
-  static final String COLUMN_ASSIGNED_WEIGHT = "assigned_weight";
-  static final String COLUMN_PROJECT_VERSION = "project_version";
-  static final String COLUMN_QUESTION_NAME = "question_name";
-  static final String COLUMN_DISPLAY_PARAMS = "display_params";
-  static final String COLUMN_DISPLAY_PREFS  = "display_prefs";
+  static final String TABLE_STEP = "steps",
+    COLUMN_STEP_ID          = "step_id",
+    COLUMN_PREVIOUS_STEP_ID = "left_child_id",
+    COLUMN_CHILD_STEP_ID    = "right_child_id",
+    COLUMN_LAST_RUN_TIME    = "last_run_time",
+    COLUMN_ESTIMATE_SIZE    = "estimate_size",
+    COLUMN_ANSWER_FILTER    = "answer_filter",
+    COLUMN_CUSTOM_NAME      = "custom_name",
+    COLUMN_IS_VALID         = "is_valid",
+    COLUMN_ASSIGNED_WEIGHT  = "assigned_weight",
+    COLUMN_PROJECT_VERSION  = "project_version",
+    COLUMN_QUESTION_NAME    = "question_name",
+    COLUMN_DISPLAY_PARAMS   = "display_params",
+    COLUMN_DISPLAY_PREFS    = "display_prefs",
+    COLUMN_IS_EXPANDED      = "branch_is_expanded",
+    COLUMN_EXPANDED_NAME    = "branch_name";
+
 
   static final String[] STEP_TABLE_COLUMNS = {
-      COLUMN_USER_ID, COLUMN_STRATEGY_ID, COLUMN_PROJECT_ID, COLUMN_CREATE_TIME, COLUMN_IS_DELETED,
-      COLUMN_STEP_ID, COLUMN_PREVIOUS_STEP_ID, COLUMN_CHILD_STEP_ID, COLUMN_LAST_RUN_TIME, COLUMN_ESTIMATE_SIZE,
-      COLUMN_ANSWER_FILTER, COLUMN_CUSTOM_NAME, COLUMN_IS_VALID, COLUMN_COLLAPSED_NAME, COLUMN_IS_COLLAPSIBLE,
-      COLUMN_ASSIGNED_WEIGHT, COLUMN_PROJECT_VERSION, COLUMN_QUESTION_NAME, COLUMN_DISPLAY_PARAMS, COLUMN_DISPLAY_PREFS
+    COLUMN_USER_ID, COLUMN_STRATEGY_ID, COLUMN_PROJECT_ID, COLUMN_CREATE_TIME,
+    COLUMN_IS_DELETED, COLUMN_STEP_ID, COLUMN_PREVIOUS_STEP_ID,
+    COLUMN_CHILD_STEP_ID, COLUMN_LAST_RUN_TIME, COLUMN_ESTIMATE_SIZE,
+    COLUMN_ANSWER_FILTER, COLUMN_CUSTOM_NAME, COLUMN_IS_VALID,
+    COLUMN_ASSIGNED_WEIGHT, COLUMN_PROJECT_VERSION, COLUMN_QUESTION_NAME,
+    COLUMN_DISPLAY_PARAMS, COLUMN_DISPLAY_PREFS, COLUMN_IS_EXPANDED,
+    COLUMN_EXPANDED_NAME
   };
 
   // strategies table and columns
@@ -138,8 +142,9 @@ public class StepFactory {
     _userSchema = _wdkModel.getModelConfig().getUserDB().getUserSchema();
   }
 
+  @SuppressWarnings("UseOfObsoleteDateTimeApi")
   public SemanticallyValid<Step> createStep(User user, SemanticallyValid<AnswerSpec> validSpec, String customName,
-      boolean isCollapsible, String collapsedName, JSONObject displayPrefs) throws WdkModelException {
+      boolean isExpanded, String expandedName, JSONObject displayPrefs) throws WdkModelException {
 
     // define creation time
     Date createTime = new Date();
@@ -155,8 +160,8 @@ public class StepFactory {
         .setProjectId(_wdkModel.getProjectId())
         .setProjectVersion(_wdkModel.getVersion())
         .setCustomName(customName)
-        .setCollapsible(isCollapsible)
-        .setCollapsedName(collapsedName)
+        .setExpanded(isExpanded)
+        .setExpandedName(expandedName)
         .setDisplayPrefs(displayPrefs)
         .setStrategyId(Optional.empty()) // new steps do not belong to a strategy
         .setAnswerSpec(AnswerSpec.builder(validSpec.get()))
@@ -302,10 +307,15 @@ public class StepFactory {
   }
 
   /**
-   * @param stepId step ID for which to retrieve step
-   * @param validationLevel level with which to validate step
+   * @param stepId
+   *   step ID for which to retrieve step
+   * @param validationLevel
+   *   level with which to validate step
+   *
    * @return step by step ID
-   * @throws WdkModelException if step not found or problem occurs
+   *
+   * @throws WdkModelException
+   *   if step not found or problem occurs
    */
   public Optional<Step> getStepById(long stepId, ValidationLevel validationLevel) throws WdkModelException {
     LOG.debug("Loading step#" + stepId + "....");
@@ -333,14 +343,17 @@ public class StepFactory {
     return new StrategyLoader(_wdkModel, validationLevel)
         .getAllStrategies(malformedStrategies);
   }
+
   /**
    * Find strategies matching the given criteria.
    *
-   * @param userId id of the user who owns the strategy
-   * @param saved  TRUE = return only saved strategies, FALSE = return only
-   *               unsaved strategies.
-   * @param recent TRUE = filter strategies to only those viewed within the past
-   *               24 hours.
+   * @param userId
+   *   id of the user who owns the strategy
+   * @param saved
+   *   TRUE = return only saved strategies, FALSE = return only unsaved
+   *   strategies.
+   * @param recent
+   *   TRUE = filter strategies to only those viewed within the past 24 hours.
    *
    * @return A list of Strategy instances matching the search criteria.
    */
@@ -358,8 +371,11 @@ public class StepFactory {
   }
 
   /**
-   * @return the number of runnable public strategies (to populate count in public strat tab)
-   * @throws WdkModelException if unable to load and validate all public strats
+   * @return the number of runnable public strategies (to populate count in
+   *   public strat tab)
+   *
+   * @throws WdkModelException
+   *   if unable to load and validate all public strats
    */
   public int getPublicStrategyCount() throws WdkModelException {
     return filter(new StrategyLoader(_wdkModel, ValidationLevel.RUNNABLE)
@@ -379,10 +395,15 @@ public class StepFactory {
    * this step does NOT have a saved strategy; the DB will reflect that the new
    * steps are orphans until attached to a new strategy.
    *
-   * @param user owner of the new steps
-   * @param strategy strategy to clone
+   * @param user
+   *   owner of the new steps
+   * @param strategy
+   *   strategy to clone
+   *
    * @return a step representing a branch created from an existing strategy
-   * @throws WdkModelException if something goes wrong
+   *
+   * @throws WdkModelException
+   *   if something goes wrong
    */
   public Step copyStrategyToBranch(User user, Strategy strategy)
       throws WdkModelException {
@@ -423,13 +444,9 @@ public class StepFactory {
   }
 
   /**
-   *
-   * @param user
-   * @param oldStrategy
-   * @param stepIdsMap An output map of old to new step IDs. Steps recursively
-   *                   encountered in the copy are added by the copy
-   * @return
-   * @throws WdkModelException
+   * @param stepIdsMap
+   *   An output map of old to new step IDs. Steps recursively encountered in
+   *   the copy are added by the copy
    */
   public Strategy copyStrategy(User user, Strategy oldStrategy, Map<Long, Long> stepIdsMap)
       throws WdkModelException {
@@ -509,12 +526,12 @@ public class StepFactory {
       "  " + COLUMN_PROJECT_VERSION + ",\n" +
       "  " + COLUMN_QUESTION_NAME   + ",\n" +
       "  " + COLUMN_CUSTOM_NAME     + ",\n" +
-      "  " + COLUMN_COLLAPSED_NAME  + ",\n" +
       "  " + COLUMN_IS_DELETED      + ",\n" +
-      "  " + COLUMN_IS_COLLAPSIBLE  + ",\n" +
       "  " + COLUMN_STRATEGY_ID     + ",\n" +
       "  " + COLUMN_DISPLAY_PARAMS  + ",\n" +
-      "  " + COLUMN_DISPLAY_PREFS   + ")\n" +
+      "  " + COLUMN_DISPLAY_PREFS   + ",\n" +
+      "  " + COLUMN_IS_EXPANDED     + ",\n" +
+      "  " + COLUMN_EXPANDED_NAME   + ")\n" +
       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
   }
 
@@ -539,21 +556,22 @@ public class StepFactory {
       Types.VARCHAR,   // PROJECT_VERSION
       Types.VARCHAR,   // QUESTION_NAME
       Types.VARCHAR,   // CUSTOM_NAME
-      Types.VARCHAR,   // COLLAPSED_NAME
       boolType,        // IS_DELETED
-      boolType,        // IS_COLLAPSIBLE
       Types.BIGINT,    // STRATEGY_ID
       Types.CLOB,      // DISPLAY_PARAMS
-      Types.CLOB       // DISPLAY_PREFS
+      Types.CLOB,      // DISPLAY_PREFS
+      boolType,        // IS_EXPANDED
+      Types.VARCHAR    // EXPANDED_NAME
     };
   }
 
   /**
    * Constructs an array of values from the given step matching the columns and
-   * types returned by {@link #buildInsertStepSQL()} and
-   * {@link #getInsertStepParamTypes()} for use with {@link SQLRunner}.
+   * types returned by {@link #buildInsertStepSQL()} and {@link
+   * #getInsertStepParamTypes()} for use with {@link SQLRunner}.
    *
-   * @param step The step for which a values array should be constructed.
+   * @param step
+   *   The step for which a values array should be constructed.
    *
    * @return an array of values for use in an insert query run with SQLRunner.
    */
@@ -572,13 +590,13 @@ public class StepFactory {
       _wdkModel.getVersion(),
       spec.getQuestionName(),
       step.getCustomName(),
-      step.getCollapsedName(),
       _userDbPlatform.convertBoolean(step.isDeleted()),
-      _userDbPlatform.convertBoolean(step.isCollapsible()),
       step.getStrategyId().orElse(null),
       new StringReader(ParamsAndFiltersDbColumnFormat.formatParamFilters(spec).toString()),
       step.getDisplayPrefs() == null ? null :
-        new StringReader(step.getDisplayPrefs().toString())
+        new StringReader(step.getDisplayPrefs().toString()),
+      _userDbPlatform.convertBoolean(step.isExpanded()),
+      step.getExpandedName()
     };
   }
 
@@ -590,11 +608,11 @@ public class StepFactory {
   /**
    * Insert a collection of steps into the database.
    *
-   * @param con   Open connection to the DB.  This can be used to run the step
-   *              insert queries in a controlled connection such as a
-   *              transaction.
-   * @param steps The collection of steps that will be inserted into the
-   *              database.
+   * @param con
+   *   Open connection to the DB.  This can be used to run the step insert
+   *   queries in a controlled connection such as a transaction.
+   * @param steps
+   *   The collection of steps that will be inserted into the database.
    */
   private void insertSteps(Connection con, Collection<Step> steps) {
     final BasicArgumentBatch batch = new BasicArgumentBatch();
@@ -656,13 +674,14 @@ public class StepFactory {
   private MapBuilder<Long, StepBuilder> copyStepTree(User newUser, Step oldStep) throws WdkModelException {
 
     StepBuilder newStep = Step.builder(oldStep)
-        .setStepId(getNewStepId())
-        .setUserId(newUser.getUserId())
-        .setStrategyId(Optional.empty());
+      .setStepId(getNewStepId())
+      .setUserId(newUser.getUserId())
+      .setStrategyId(Optional.empty());
 
-    
+
     MapBuilder<Long,StepBuilder> childSteps = assignParamValues(
-        oldStep.getUser(), oldStep.getAnswerSpec(), newUser, newStep.getAnswerSpec());
+      oldStep.getUser(), oldStep.getAnswerSpec(), newUser,
+      newStep.getAnswerSpec());
 
     return childSteps.put(oldStep.getStepId(), newStep);
   }
@@ -713,15 +732,15 @@ public class StepFactory {
   // RRD 4/2019: Though not called anywhere, leaving this method here because I
   //   think once we start writing the client, we may have a use case to call it.
   private Optional<TwoTuple<Long, String>> getOverwriteStrategy(long userId, String name) {
-    final String sql = "SELECT\n" +
-        "  " + COLUMN_STRATEGY_ID + ",\n" +
-        "  " + COLUMN_SIGNATURE +
-        "FROM "  + _userSchema + TABLE_STRATEGY +
-        "WHERE " + COLUMN_USER_ID    + " = ?\n" +
-        "  AND " + COLUMN_PROJECT_ID + " = ?\n" +
-        "  AND " + COLUMN_NAME       + " = ?\n" +
-        "  AND " + COLUMN_IS_SAVED   + " = ?\n" +
-        "  AND " + COLUMN_IS_DELETED + " = ?\n";
+    final String sql = "SELECT\n"
+      + "  " + COLUMN_STRATEGY_ID + ",\n"
+      + "  " + COLUMN_SIGNATURE   + "\n"
+      + "FROM " + _userSchema + TABLE_STRATEGY + "\n"
+      + "WHERE " + COLUMN_USER_ID    + " = ?\n"
+      + "  AND " + COLUMN_PROJECT_ID + " = ?\n"
+      + "  AND " + COLUMN_NAME       + " = ?\n"
+      + "  AND " + COLUMN_IS_SAVED   + " = ?\n"
+      + "  AND " + COLUMN_IS_DELETED + " = ?\n";
 
     // If we're overwriting, need to look up saved strategy id by
     // name (only if the saved strategy is not the one we're
@@ -749,22 +768,23 @@ public class StepFactory {
           boolType       // IS_DELETED
         },
         rs -> rs.next()
-            ? Optional.of(new TwoTuple<>(
-                rs.getLong(COLUMN_STRATEGY_ID),
-                rs.getString(COLUMN_SIGNATURE)
-              ))
-            : Optional.empty()
+          ? Optional.of(new TwoTuple<>(
+            rs.getLong(COLUMN_STRATEGY_ID),
+            rs.getString(COLUMN_SIGNATURE)
+          ))
+          : Optional.empty()
       );
   }
 
   /**
    * Overwrite the given strategy in the strategies table.
    *
-   * @param strat Strategy to overwrite
+   * @param strat
+   *   Strategy to overwrite
    *
    * @return Whether or not that strategy was updated in the database.  A return
-   *         value of false indicates that the strategy has not been created in
-   *         the database.
+   *   value of false indicates that the strategy has not been created in the
+   *   database.
    */
   public boolean updateStrategy(Strategy strat) throws WdkModelException {
     try(Connection con = _userDbDs.getConnection()) {
@@ -789,14 +809,15 @@ public class StepFactory {
   /**
    * Overwrite the given strategy in the strategies table.
    *
-   * @param con   Open connection to the DB.  This can be used to run the step
-   *              update queries in a controlled connection such as a
-   *              transaction.
-   * @param strat Strategy to overwrite
+   * @param con
+   *   Open connection to the DB.  This can be used to run the step update
+   *   queries in a controlled connection such as a transaction.
+   * @param strat
+   *   Strategy to overwrite
    *
    * @return Whether or not that strategy was updated in the database.  A return
-   *         value of false indicates that the strategy has not been created in
-   *         the database.
+   *   value of false indicates that the strategy has not been created in the
+   *   database.
    */
   public boolean updateStrategy(Connection con, Strategy strat)
       throws WdkModelException {
@@ -858,9 +879,11 @@ public class StepFactory {
   /**
    * Overwrite the details of a step in the database.
    *
-   * @param step the step that will will be updated
+   * @param step
+   *   the step that will will be updated
    *
-   * @throws WdkModelException if a connection to the database cannot be opened.
+   * @throws WdkModelException
+   *   if a connection to the database cannot be opened.
    */
   public void updateStep(Step step) throws WdkModelException {
     updateSteps(ListBuilder.asList(step));
@@ -869,9 +892,11 @@ public class StepFactory {
   /**
    * Overwrite the details of a collection of steps in the database.
    *
-   * @param steps The collection of steps that will be updated in the database.
+   * @param steps
+   *   The collection of steps that will be updated in the database.
    *
-   * @throws WdkModelException if a connection to the database cannot be opened.
+   * @throws WdkModelException
+   *   if a connection to the database cannot be opened.
    */
   public void updateSteps(Collection<Step> steps) throws WdkModelException {
     try(Connection con = _userDbDs.getConnection()) {
@@ -884,11 +909,11 @@ public class StepFactory {
   /**
    * Overwrite the details of a collection of steps in the database.
    *
-   * @param con   Open connection to the DB.  This can be used to run the step
-   *              update queries in a controlled connection such as a
-   *              transaction.
-   * @param steps The collection of steps that will be updated in the database.
-   * @throws WdkModelException
+   * @param con
+   *   Open connection to the DB.  This can be used to run the step update
+   *   queries in a controlled connection such as a transaction.
+   * @param steps
+   *   The collection of steps that will be updated in the database.
    */
   private void updateSteps(Connection con, Collection<Step> steps) throws WdkModelException {
     final String sql = "UPDATE " + _userSchema + TABLE_STEP + "\n" +
@@ -901,39 +926,39 @@ public class StepFactory {
         "  " + COLUMN_CUSTOM_NAME      + " = ?,\n" +
         "  " + COLUMN_IS_DELETED       + " = ?,\n" +
         "  " + COLUMN_IS_VALID         + " = ?,\n" +
-        "  " + COLUMN_COLLAPSED_NAME   + " = ?,\n" +
-        "  " + COLUMN_IS_COLLAPSIBLE   + " = ?,\n" +
         "  " + COLUMN_ASSIGNED_WEIGHT  + " = ?,\n" +
         "  " + COLUMN_PROJECT_ID       + " = ?,\n" +
         "  " + COLUMN_PROJECT_VERSION  + " = ?,\n" +
         "  " + COLUMN_QUESTION_NAME    + " = ?,\n" +
         "  " + COLUMN_STRATEGY_ID      + " = ?,\n" +
         "  " + COLUMN_DISPLAY_PARAMS   + " = ?,\n" +
-        "  " + COLUMN_DISPLAY_PREFS    + " = ?\n"  +
+        "  " + COLUMN_DISPLAY_PREFS    + " = ?,\n" +
+        "  " + COLUMN_IS_EXPANDED      + " = ?,\n" +
+        "  " + COLUMN_EXPANDED_NAME    + " = ?\n"  +
         "WHERE\n" +
         "  " + COLUMN_STEP_ID + " = ?";
 
     final BasicArgumentBatch batch = new BasicArgumentBatch();
     final int boolType = _userDbPlatform.getBooleanType();
     batch.setParameterTypes(new Integer[]{
-        Types.BIGINT,    // LEFT_CHILD_ID
-        Types.BIGINT,    // RIGHT_CHILD_ID
-        Types.TIMESTAMP, // LAST_RUN_TIME
-        Types.BIGINT,    // ESTIMATE_SIZE
-        Types.VARCHAR,   // ANSWER_FILTER
-        Types.VARCHAR,   // CUSTOM_NAME
-        boolType,        // IS_DELETED
-        boolType,        // IS_VALID
-        Types.VARCHAR,   // COLLAPSED_NAME
-        boolType,        // IS_COLLAPSIBLE
-        Types.BIGINT,    // ASSIGNED_WEIGHT
-        Types.VARCHAR,   // PROJECT_ID
-        Types.VARCHAR,   // PROJECT_VERSION
-        Types.VARCHAR,   // QUESTION_NAME
-        Types.BIGINT,    // STRATEGY_ID
-        Types.CLOB,      // DISPLAY_PARAMS
-        Types.CLOB,      // DISPLAY_PREFS
-        Types.BIGINT     // STEP_ID
+      Types.BIGINT,    // LEFT_CHILD_ID
+      Types.BIGINT,    // RIGHT_CHILD_ID
+      Types.TIMESTAMP, // LAST_RUN_TIME
+      Types.BIGINT,    // ESTIMATE_SIZE
+      Types.VARCHAR,   // ANSWER_FILTER
+      Types.VARCHAR,   // CUSTOM_NAME
+      boolType,        // IS_DELETED
+      boolType,        // IS_VALID
+      Types.BIGINT,    // ASSIGNED_WEIGHT
+      Types.VARCHAR,   // PROJECT_ID
+      Types.VARCHAR,   // PROJECT_VERSION
+      Types.VARCHAR,   // QUESTION_NAME
+      Types.BIGINT,    // STRATEGY_ID
+      Types.CLOB,      // DISPLAY_PARAMS
+      Types.CLOB,      // DISPLAY_PREFS
+      boolType,        // IS_EXPANDED
+      Types.VARCHAR,   // EXPANDED_NAME
+      Types.BIGINT,    // STEP_ID
     });
 
     for (final Step step : steps) {
@@ -948,8 +973,6 @@ public class StepFactory {
         step.getCustomName(),
         _userDbPlatform.convertBoolean(step.isDeleted()),
         _userDbPlatform.convertBoolean(step.isValid()),
-        step.getCollapsedName(),
-        _userDbPlatform.convertBoolean(step.isCollapsible()),
         spec.getQueryInstanceSpec().getAssignedWeight(),
         step.getProjectId(),
         step.getProjectVersion(),
@@ -957,6 +980,8 @@ public class StepFactory {
         step.getStrategyId().orElse(null),
         ParamsAndFiltersDbColumnFormat.formatParamFilters(spec),
         step.getDisplayPrefs().toString(),
+        _userDbPlatform.convertBoolean(step.isExpanded()),
+        step.getExpandedName(),
         step.getStepId()
       });
     }
@@ -1096,12 +1121,14 @@ public class StepFactory {
   /**
    * Attempt to parse an int out of parenthesis at the end of a strategy name.
    *
-   * @param test    String to check for appended counter
-   * @param against Original strategy name
+   * @param test
+   *   String to check for appended counter
+   * @param against
+   *   Original strategy name
    *
-   * @return If a counter value is present and in the correct format, an option wrapping that int.
-   *         If no counter is present or is misformatted, an option of none.
-   * @throws  
+   * @return If a counter value is present and in the correct format, an option
+   *   wrapping that int. If no counter is present or is misformatted, an option
+   *   of none.
    */
   private static Optional<Integer> parseStrategyNameIndex(String test, String against) {
     test = test.trim();
@@ -1173,6 +1200,5 @@ public class StepFactory {
       return Optional.empty();
     }
     return step;
-    
   }
 }
