@@ -28,7 +28,7 @@ public class AnswerDetailsFactory {
   /**
    * Creates a default request specifics object based on the default attributes
    * and sorting defined in the question and the question's record class.
-   * 
+   *
    * @param question question this specifics object is for
    * @return default request specifics
    */
@@ -51,16 +51,16 @@ public class AnswerDetailsFactory {
    * a non-negative integer; numRecords can be any integer, with positive values
    * being the number of records to be returned.  Zero or negative values for
    * numRecords will return all records.
-   * 
+   *
    * Special values: The attributes and tables properties can be either an array
    * of names, or a special String value indicating a particular set of values.
    * The following special strings are currently supported:
-   * 
+   *
    * - '__ALL_ATTRIBUTES__': represents all attributes for the passed question
    * - '__DEFAULT_ATTRIBUTES__': represents the default attributes for the passed question
    * - '__ALL_TABLES__': represents all tables for the passed question
    * - Note: there are no "default" tables
-   * 
+   *
    * @param specJson JSON value used to create instance. Should have the form:
    * {
    *   pagination: { offset: Number, numRecords: Number },
@@ -69,9 +69,9 @@ public class AnswerDetailsFactory {
    *   sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ],
    *   contentDisposition: 'inline' (default) OR 'attachment'
    * }
-   * 
+   *
    * All values are optional.
-   * 
+   *
    * @param question question used to validate incoming values
    * @throws RequestMisformatException if values are invalid or structure is malformed
    */
@@ -195,8 +195,7 @@ public class AnswerDetailsFactory {
       String attributeName = obj.getString("attributeName");
       String directionStr = obj.getString("direction").toUpperCase();
       if (!allowedValues.containsKey(attributeName)) {
-        throw new ReporterConfigException("Attribute '" + attributeName +
-            "' was listed in sorting but is not an attribute for this question.");
+        continue;
       }
       if (!SortDirection.isValidDirection(directionStr)) {
         throw new ReporterConfigException("Bad value: '" + directionStr +
