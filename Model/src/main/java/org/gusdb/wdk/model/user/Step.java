@@ -26,12 +26,10 @@ import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
-import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersDbColumnFormat;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -58,8 +56,6 @@ public class Step implements Validateable<Step> {
     private String _customName;
     private boolean _isDeleted;
     private int _estimatedSize = -1;
-    private boolean _isCollapsible;
-    private String _collapsedName;
     private AnswerSpecBuilder _answerSpec; // cannot be null; must be set
     private boolean _isResultSizeDirty;
     private JSONObject _displayPrefs;
@@ -95,8 +91,6 @@ public class Step implements Validateable<Step> {
       _lastRunTime = step._lastRunTime;
       _customName = step._customName;
       _isDeleted = step.isDeleted();
-      _isCollapsible = step._isCollapsible;
-      _collapsedName = step._collapsedName;
       _projectId = step.getProjectId();
       _projectVersion = step.getProjectVersion();
       _estimatedSize = step._estimatedSize;
@@ -157,16 +151,6 @@ public class Step implements Validateable<Step> {
 
     public StepBuilder setCustomName(String customName) {
       _customName = customName;
-      return this;
-    }
-
-    public StepBuilder setCollapsedName(String collapsedName) {
-      _collapsedName = collapsedName;
-      return this;
-    }
-
-    public StepBuilder setCollapsible(boolean isCollapsible) {
-      _isCollapsible = isCollapsible;
       return this;
     }
 
@@ -306,12 +290,6 @@ public class Step implements Validateable<Step> {
   private final String _customName;
   // in DB, for soft delete
   private final boolean _isDeleted;
-  // in DB, tells if nested step
-  @Deprecated
-  private final boolean _isCollapsible;
-  // in DB, custom name for nested "strategy"
-  @Deprecated
-  private final String _collapsedName;
   // in DB, project ID when step was created
   private final String _projectId;
   // in DB, project version when step was created
@@ -384,15 +362,13 @@ public class Step implements Validateable<Step> {
     _lastRunTime = builder._lastRunTime;
     _customName = checkName("customName", builder._customName);
     _isDeleted = builder._isDeleted;
-    _isCollapsible = builder._isCollapsible;
-    _collapsedName = checkName("collapsedName", builder._collapsedName);
     _projectId = builder.getProjectId();
     _projectVersion = builder._projectVersion;
     _estimatedSize = builder._estimatedSize;
     _answerSpec = builder._answerSpec.build(user, getContainer(), validationLevel);
     _displayPrefs = new JSONObject(builder._displayPrefs.toString());
     _isExpanded = builder.isExpanded();
-    _expandedName = builder.getExpandedName();
+    _expandedName = checkName("expandedName", builder.getExpandedName());
 
     // set estimated size appropriately if this step set dirty
     _isResultSizeDirty = builder._isResultSizeDirty;
@@ -606,18 +582,6 @@ public class Step implements Validateable<Step> {
     return _isDeleted;
   }
 
-  @Deprecated
-  public boolean isCollapsible() {
-    return _isCollapsible;
-  }
-
-  @Deprecated
-  public String getCollapsedName() {
-    return _collapsedName == null && isCollapsible()
-      ? getCustomName()
-      : _collapsedName;
-  }
-
   public String getProjectId() {
     return _projectId;
   }
@@ -627,9 +591,9 @@ public class Step implements Validateable<Step> {
   }
 
   public Optional<RecordClass> getRecordClass() {
-    return hasValidQuestion() ?
-        Optional.of(_answerSpec.getQuestion().getRecordClass()) :
-        Optional.empty();
+    return hasValidQuestion()
+      ? Optional.of(_answerSpec.getQuestion().getRecordClass())
+      : Optional.empty();
   }
 
   public boolean isFiltered() throws WdkModelException {
@@ -649,50 +613,6 @@ public class Step implements Validateable<Step> {
     return filter.isPresent() &&
         (defaultFilter.isEmpty() ||
          !defaultFilter.get().getName().equals(filter.get().getName()));
-  }
-
-  public JSONObject getJSONContent(long strategyId, boolean forChecksum) throws WdkModelException {
-
-    JSONObject jsStep = new JSONObject();
-
-    try {
-      jsStep.put("id", _stepId);
-      jsStep.put("customName", _customName);
-      jsStep.put("question", _answerSpec.getQuestion());
-      jsStep.put("projectVersion", _projectVersion);
-      jsStep.put("filter", _answerSpec.getLegacyFilterName().orElse(null));
-      jsStep.put("collapsed", this.isCollapsible());
-      jsStep.put("collapsedName", this.getCollapsedName());
-      jsStep.put("deleted", _isDeleted);
-      jsStep.put(ParamsAndFiltersDbColumnFormat.KEY_PARAMS,
-          ParamsAndFiltersDbColumnFormat.formatParams(_answerSpec.getQueryInstanceSpec()));
-      jsStep.put(ParamsAndFiltersDbColumnFormat.KEY_FILTERS,
-          ParamsAndFiltersDbColumnFormat.formatFilters(_answerSpec.getFilterOptions()));
-
-      Optional<Step> childStep = getSecondaryInputStep();
-      if (childStep.isPresent()) {
-        jsStep.put("child", childStep.get().getJSONContent(strategyId, forChecksum));
-      }
-
-      Optional<Step> prevStep = getPrimaryInputStep();
-      if (prevStep.isPresent()) {
-        jsStep.put("previous", prevStep.get().getJSONContent(strategyId, forChecksum));
-      }
-
-      if (!forChecksum) {
-        jsStep.put("size", _estimatedSize);
-      }
-
-      if (this.isCollapsible()) { // a sub-strategy, needs to get order number
-        String subStratId = strategyId + "_" + _stepId;
-        int order = getUser().getSession().getStrategyOrder(subStratId);
-        jsStep.put("order", order);
-      }
-    }
-    catch (JSONException ex) {
-      throw new WdkModelException(ex);
-    }
-    return jsStep;
   }
 
   /**
