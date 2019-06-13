@@ -195,7 +195,8 @@ public class AnswerDetailsFactory {
       String attributeName = obj.getString("attributeName");
       String directionStr = obj.getString("direction").toUpperCase();
       if (!allowedValues.containsKey(attributeName)) {
-        continue;
+        throw new ReporterConfigException("Attribute '" + attributeName +
+            "' was listed in sorting but is not an attribute for this question.");
       }
       if (!SortDirection.isValidDirection(directionStr)) {
         throw new ReporterConfigException("Bad value: '" + directionStr +
