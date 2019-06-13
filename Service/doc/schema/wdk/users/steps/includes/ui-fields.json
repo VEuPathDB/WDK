@@ -5,10 +5,10 @@
     "name": {
       "type": "string"
     },
-    "isCollapsible": {
+    "isExpanded": {
       "type": "boolean"
     },
-    "collapseName": {
+    "expandedName": {
       "type": "string"
     }
   }
