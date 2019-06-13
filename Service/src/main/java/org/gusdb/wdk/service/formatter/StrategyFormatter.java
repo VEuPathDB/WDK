@@ -9,9 +9,9 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
 import org.json.JSONArray;
@@ -27,7 +27,8 @@ public class StrategyFormatter {
   }
 
   public static JSONObject getListingStrategyJson(Strategy strategy) throws JSONException {
-    Optional<String> recordClassName = strategy.getRecordClass().map(NamedObject::getFullName);
+    Optional<String> recordClassName = strategy.getRecordClass().map(RecordClass::getUrlSegment);
+    int estimatedSize = strategy.getEstimatedSize();
     return new JSONObject()
         .put(JsonKeys.STRATEGY_ID, strategy.getStrategyId())
         .put(JsonKeys.DESCRIPTION, Optional.ofNullable(strategy.getDescription()).orElse(""))
@@ -42,7 +43,7 @@ public class StrategyFormatter {
         .put(JsonKeys.IS_VALID, strategy.isValid())
         .put(JsonKeys.IS_DELETED, strategy.isDeleted())
         .put(JsonKeys.ORGANIZATION, strategy.getUser().getProfileProperties().get("organization"))
-        .put(JsonKeys.ESTIMATED_SIZE, strategy.getEstimatedSize())
+        .put(JsonKeys.ESTIMATED_SIZE, estimatedSize < 0 ? null : estimatedSize)
         .put(JsonKeys.LEAF_AND_TRANSFORM_STEP_COUNT, strategy.getLeafAndTransformStepCount());
   }
 
