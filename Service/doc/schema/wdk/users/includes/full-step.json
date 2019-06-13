@@ -18,10 +18,10 @@
     "baseCustomName": {
       "type": "string"
     },
-    "isCollapsible": {
+    "isExpanded": {
       "type": "boolean"
     },
-    "collapsedName": {
+    "expandedName": {
       "type": "string"
     },
     "hasCompleteStepAnalysis": {
@@ -53,7 +53,7 @@
   "additionalProperties": false,
   "required": [
     "id",
-    "isCollapsible",
+    "isExpanded",
     "hasCompleteStepAnalysis",
     "isAnswerSpecComplete",
     "isValid"

@@ -6,10 +6,10 @@
     "customName": {
       "type": "string"
     },
-    "isCollabsible": {
+    "isExpanded": {
       "type": "boolean"
     },
-    "collapsedName": {
+    "expandedName": {
       "type": "string"
     },
     "displayPreferences": {
