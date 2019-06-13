@@ -5,7 +5,7 @@
     "name": {
       "type": "string"
     },
-    "isExpanded": {
+    "expanded": {
       "type": "boolean"
     },
     "expandedName": {

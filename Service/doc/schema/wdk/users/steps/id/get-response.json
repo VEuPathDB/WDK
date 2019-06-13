@@ -33,7 +33,7 @@
       "validation": {
         "$ref": "../../../includes/validation-bundle.json"
       },
-    "isExpanded": {
+    "expanded": {
       "type": "boolean"
     },
     "expandedName": {
@@ -69,7 +69,7 @@
       "id",
       "ownerId",
       "validation",
-      "isExpanded",
+      "expanded",
       "hasCompleteStepAnalyses",
       "searchName",
       "searchConfig",
