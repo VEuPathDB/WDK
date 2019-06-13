@@ -15,8 +15,13 @@
       "type": "array",
       "items": {
         "type": "object",
-        "patternProperties":  {
-          ".+": {
+        "properties": {
+          "name": {
+            "description": "The name of a column",
+            "type": "string"
+          },
+          "direction": {
+            "description": "The direction to sort the column",
             "type": "string",
             "enum": [
               "ASC",
