@@ -9,7 +9,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.bundle.ColumnReporter;
+import org.gusdb.wdk.model.toolbundle.ColumnReporter;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.user.User;
