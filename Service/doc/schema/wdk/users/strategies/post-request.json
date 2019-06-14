@@ -55,15 +55,15 @@
           "type": "boolean"
         },
         "stepTree": {
-	  "$ref": "#/definitions/step"
+          "$ref": "#/definitions/step"
         }
       },
       "additionalProperties": false,
       "required": [
-          "name",
-	  "isSaved",
-	  "isPublic",
-	  "stepTree"
+        "name",
+        "isSaved",
+        "isPublic",
+        "stepTree"
       ]
     }
   ]
