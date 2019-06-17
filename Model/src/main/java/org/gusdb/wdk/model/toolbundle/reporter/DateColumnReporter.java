@@ -4,13 +4,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.vulpine.lib.json.schema.Schema;
 import io.vulpine.lib.json.schema.SchemaBuilder;
 import org.gusdb.fgputil.SortDirection;
+import org.gusdb.fgputil.functional.Result;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.toolbundle.reporter.report.DateReport;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
 
 import java.io.OutputStream;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.json.JsonUtil.Jackson;
 
 public class DateColumnReporter extends AbstractColumnReporter<LocalDateTime> {
@@ -57,9 +62,11 @@ public class DateColumnReporter extends AbstractColumnReporter<LocalDateTime> {
 
       @Override
       public LocalDateTime parse(String val) throws WdkModelException {
-        if (val == null) return null;
-        try { return LocalDateTime.parse(val); }
-        catch(Exception e) { throw new WdkModelException(e); }
+        if (val == null)
+          return null;
+        return tryParse(val)
+          .mapError(WdkModelException::new)
+          .valueOrElseThrow();
       }
 
       @Override
@@ -77,6 +84,22 @@ public class DateColumnReporter extends AbstractColumnReporter<LocalDateTime> {
 
   @Override
   public void parseConfig(JsonNode config) {
+    // TODO: Sort direction should maybe be configurable.
+  }
 
+  public Result<Exception, LocalDateTime> tryParse(String val) {
+    var err = new ArrayList<String>();
+    err.add("Failed to parse date: " + val);
+
+    // Default parse
+    try { return Result.value(LocalDateTime.parse(val)); }
+    catch (Exception e) { err.add(e.getMessage()); }
+
+    // Wonkydate parse
+    try { return Result.value(LocalDateTime.parse(val,
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"))); }
+    catch (Exception e) { err.add(e.getMessage()); }
+
+    return Result.error(new Exception(String.join(NL, err)));
   }
 }

@@ -54,9 +54,9 @@ public class DateReport extends AbstractReport<LocalDateTime> {
   public void pushValue(LocalDateTime val) {
     super.pushValue(val);
 
-    if (val.isAfter(max))
+    if (max == null || val.isAfter(max))
       max = val;
-    if (val.isBefore(min))
+    if (min == null || val.isBefore(min))
       min = val;
   }
 

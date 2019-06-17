@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.answer.stream;
 
+import org.gusdb.fgputil.SortDirectionSpec;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -44,15 +45,9 @@ implements RecordStream {
     this.openIterators = new HashMap<>();
     this.db = answer.getWdkModel().getAppDb().getDataSource();
     this.fields = trimNonQueryAttrs(FileBasedRecordStream.getRequiredColumnAttributeFields(attributes, true));
-    this.query = getAttributeQuery(this.fields);
+    this.query = getAttributeQuery(allCols(answer, this.fields));
   }
 
-  private Collection<QueryColumnAttributeField> trimNonQueryAttrs(Collection<ColumnAttributeField> attributes) {
-    return attributes.stream()
-        .filter(field -> field instanceof QueryColumnAttributeField)
-        .map(field -> (QueryColumnAttributeField)field)
-        .collect(Collectors.toList());
-  }
 
   @Override
   public void close() {
@@ -95,6 +90,13 @@ implements RecordStream {
       try { openIterators.remove(it).close(); }
       catch (SQLException e) { throw new WdkModelException(e); }
     }
+  }
+
+  private Collection<QueryColumnAttributeField> trimNonQueryAttrs(Collection<ColumnAttributeField> attributes) {
+    return attributes.stream()
+      .filter(field -> field instanceof QueryColumnAttributeField)
+      .map(field -> (QueryColumnAttributeField)field)
+      .collect(Collectors.toList());
   }
 
   // TODO: this really doesn't belong here
@@ -151,5 +153,19 @@ implements RecordStream {
       throw new WdkRuntimeException(ERR_NO_QUERY);
 
     return qs.iterator().next();
+  }
+
+  private static Collection<QueryColumnAttributeField> allCols(
+    final AnswerValue answer,
+    final Collection<QueryColumnAttributeField> cols
+  ) {
+    final var out = new ArrayList<>(cols);
+    answer.getSortingColumns()
+      .stream()
+      .map(SortDirectionSpec::getItem)
+      .filter(QueryColumnAttributeField.class::isInstance)
+      .map(QueryColumnAttributeField.class::cast)
+      .forEach(out::add);
+    return out;
   }
 }
