@@ -117,6 +117,8 @@ public class StepAnalysisService extends UserService {
     // VALUES list is a SQL construct that creates a temporary table
     // this case, with two fields, one for the param name, one for the param value
     // allowing stepAnalysis parameters to be depended on step parameter values
+    
+    /* FIXME This is broken and not sure how it should be done now
     if (paramMap.containsKey("stepParamValuesSql")) {
       if (user.getWdkModel().getAppDb().getPlatform() instanceof PostgreSQL) {
         if (context.isEmpty()) {
@@ -132,6 +134,7 @@ public class StepAnalysisService extends UserService {
         throw new WdkModelException("Invalid step analysis parameter: stepParamValuesSql only valid for PostgreSQL.");
       }
     }
+    */
 
     /* FIXME: currently broken; need to do some work still to integrate step analysis param containers
     return QuestionFormatter.getParamsJson(
