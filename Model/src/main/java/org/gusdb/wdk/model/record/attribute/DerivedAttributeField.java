@@ -1,29 +1,23 @@
 package org.gusdb.wdk.model.record.attribute;
 
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.SortDirection;
-import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.fgputil.functional.Result;
+import org.gusdb.wdk.model.*;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.toolbundle.ColumnFilter;
+import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
+
+import java.io.PrintWriter;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * A derived attribute field is one whose value depends on the values of other attribute fields
+ * A derived attribute field is one whose value depends on the values of other
+ * attribute fields
  *
  * @author rdoherty
  */
@@ -31,7 +25,10 @@ public abstract class DerivedAttributeField extends AttributeField {
 
   private static final Logger LOG = Logger.getLogger(DerivedAttributeField.class);
 
-  public static final Pattern MACRO_PATTERN = Pattern.compile("\\$\\$([^\\$]+?)\\$\\$", Pattern.MULTILINE);
+  public static final Pattern MACRO_PATTERN = Pattern.compile("\\$\\$([^$]+?)\\$\\$", Pattern.MULTILINE);
+
+  private boolean checkedFilterDependency;
+  private QueryColumnAttributeField filterDependency;
 
   /**
    * The dependent fields are the ones that are embedded in the current field.
@@ -40,7 +37,7 @@ public abstract class DerivedAttributeField extends AttributeField {
 
   /**
    * @param container
-   *          the container to set
+   *   the container to set
    */
   @Override
   public void setContainer(AttributeFieldContainer container) {
@@ -49,7 +46,7 @@ public abstract class DerivedAttributeField extends AttributeField {
 
   @Override
   public Map<String, ColumnAttributeField> getColumnAttributeFields() throws WdkModelException {
-    Map<String, ColumnAttributeField> leaves = new LinkedHashMap<String, ColumnAttributeField>();
+    Map<String, ColumnAttributeField> leaves = new LinkedHashMap<>();
 
     for (AttributeField dependent : getDependencies())
       leaves.putAll(dependent.getColumnAttributeFields());
@@ -89,7 +86,7 @@ public abstract class DerivedAttributeField extends AttributeField {
    * @return map of attribute fields this field depends on
    */
   protected Map<String, AttributeField> parseFields(String text) throws WdkModelException {
-    Map<String, AttributeField> children = new LinkedHashMap<String, AttributeField>();
+    Map<String, AttributeField> children = new LinkedHashMap<>();
     Map<String, AttributeField> fields = _container.getAttributeFieldMap();
 
     for (String fieldName : parseFieldNames(text)) {
@@ -118,15 +115,17 @@ public abstract class DerivedAttributeField extends AttributeField {
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
     // check for dependency loops
-    traverseDependency(this, new Stack<String>());
+    traverseDependency(this, new Stack<>());
   }
 
   /**
    * Make sure the attribute doesn't embed other attributes that may cause
    * cross-dependency.
    *
-   * @param attribute the attribute to be checked
-   * @param path the path from root to the attribute (attribute is not included)
+   * @param attribute
+   *   the attribute to be checked
+   * @param path
+   *   the path from root to the attribute (attribute is not included)
    */
   private static void traverseDependency(DerivedAttributeField attribute, Stack<String> path)
       throws WdkModelException {
@@ -134,8 +133,7 @@ public abstract class DerivedAttributeField extends AttributeField {
     // add this attribute and traverse branches
     path.push(attribute.getName());
     for (AttributeField dependency : attribute.getDependencies()) {
-      if (dependency instanceof ColumnAttributeField ||
-          dependency instanceof PkColumnAttributeField) {
+      if (dependency instanceof ColumnAttributeField) {
         checkBranch(path, dependency);
       }
       else if (dependency instanceof DerivedAttributeField) {
@@ -143,7 +141,7 @@ public abstract class DerivedAttributeField extends AttributeField {
       }
       else {
         throw new WdkModelException("A derived attribute can only depend on a column or another derived " +
-            "attriubte.  Derived attribute [" + attribute.getName() + "] depends on [" + dependency + "].");
+            "attribute.  Derived attribute [" + attribute.getName() + "] depends on [" + dependency + "].");
       }
     }
     path.pop();
@@ -192,5 +190,106 @@ public abstract class DerivedAttributeField extends AttributeField {
       }
     }
     return Utilities.replaceMacros(text, values);
+  }
+
+  /**
+   * @return whether or not this field has a filterable dependency field.
+   *
+   * @see #getFilterDependencyField()
+   */
+  @Override
+  public boolean isFilterable() {
+    return getFilterDependencyField().isPresent();
+  }
+
+  /**
+   * Delegates to the {@code getFilter} method of this field's filterable
+   * dependency (if present)
+   *
+   * @see #getFilterDependencyField()
+   * @see AttributeField#getFilter(String)
+   */
+  @Override
+  public Optional<ColumnFilter> getFilter(final String name) {
+    return getFilterDependencyField().flatMap(af -> af.getFilter(name));
+  }
+
+  /**
+   * Delegates to the {@code prepareFilter} method of this field's filterable
+   * dependency (if present)
+   *
+   * @see #getFilterDependencyField()
+   * @see AttributeField#prepareFilter(String, AnswerValue, ColumnToolConfig)
+   */
+  @Override
+  public Optional<ColumnFilter> prepareFilter(
+    final String name,
+    final AnswerValue val,
+    final ColumnToolConfig config
+  ) throws WdkModelException {
+    var field = getFilterDependencyField();
+    if (field.isEmpty())
+      return Optional.empty();
+
+    return field.get().prepareFilter(name, val, config);
+  }
+
+  /**
+   * Delegates to the {@code getColumnFilterNames} method of this field's
+   * filterable dependency (if present)
+   *
+   * @see #getFilterDependencyField()
+   * @see AttributeField#getColumnFilterNames()
+   */
+  @Override
+  public Collection<String> getColumnFilterNames() {
+    return getFilterDependencyField()
+      .map(QueryColumnAttributeField::getColumnFilterNames)
+      .orElse(Collections.emptyList());
+  }
+
+  /**
+   * Returns an option of this {@code DerivedAttributeField}'s filterable
+   * dependency field.
+   * <p>
+   * The filter dependency field is the actual backing field that will be used
+   * by column filters if the client chooses to apply a column filter to this
+   * {@code DerivedAttributeField}.
+   * <p>
+   * This {@code DerivedAttributeField} and it's filterable dependency must meet
+   * the following criteria:
+   * <p>
+   * <ul>
+   * <li>This field has exactly 1 dependency
+   * <li>This field's 1 dependency is an instance of
+   * {@link QueryColumnAttributeField}
+   * <li>this field's 1 dependency is itself filterable
+   * </ul>
+   *
+   * @return an option containing either the filterable field if such a field
+   *   exists and satisfies the above criteria, or none if the above rules are
+   *   not met.
+   */
+  public Optional<QueryColumnAttributeField> getFilterDependencyField() {
+    if (checkedFilterDependency)
+      return Optional.ofNullable(filterDependency);
+
+    checkedFilterDependency = true;
+
+    var deps = Result.of(this::getDependencies)
+      .value()
+      .orElse(Collections.emptyList());
+
+    if (deps.size() != 1)
+      return Optional.empty();
+
+    var dep = deps.iterator().next();
+
+    if (!(dep instanceof QueryColumnAttributeField) || !dep.isFilterable())
+      return Optional.empty();
+
+    filterDependency = (QueryColumnAttributeField) dep;
+
+    return Optional.of(filterDependency);
   }
 }

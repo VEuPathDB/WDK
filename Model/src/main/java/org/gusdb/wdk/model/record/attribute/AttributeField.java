@@ -235,13 +235,17 @@ public abstract class AttributeField extends Field implements Cloneable {
     final String name,
     final AnswerValue val,
     final JsonNode config
-  ) throws WdkUserException {
+  ) throws WdkModelException, WdkUserException {
     var tmp = getReporter(name);
     if (tmp.isEmpty())
       return Optional.empty();
+
     var conf = tmp.get().validateConfig(config);
-    return getToolBundle().getTool(name)
-      .flatMap(set -> set.prepareReporter(this, val, conf));
+    var set  = getToolBundle().getTool(name);
+    if (set.isEmpty())
+      return Optional.empty();
+
+    return set.get().prepareReporter(this, val, conf);
   }
 
   /**
@@ -304,7 +308,7 @@ public abstract class AttributeField extends Field implements Cloneable {
     @SuppressWarnings("unused") final String name,
     @SuppressWarnings("unused") final AnswerValue val,
     @SuppressWarnings("unused") final ColumnToolConfig config
-  ) {
+  ) throws WdkModelException {
     return Optional.empty();
   }
 

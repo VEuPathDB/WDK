@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.toolbundle;
 
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 
@@ -39,7 +40,7 @@ public interface ColumnToolSet {
     AttributeField field,
     AnswerValue val,
     ColumnToolConfig config
-  );
+  ) throws WdkModelException;
 
   Optional<ColumnFilter> getFilterFor(AttributeField field);
 
@@ -72,7 +73,7 @@ public interface ColumnToolSet {
     AttributeField field,
     AnswerValue val,
     ColumnToolConfig config
-  );
+  ) throws WdkModelException;
 
   Optional<ColumnReporter> getReporterFor(AttributeField field);
 }

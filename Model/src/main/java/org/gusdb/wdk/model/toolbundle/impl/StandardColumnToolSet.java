@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.toolbundle.impl;
 
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.toolbundle.*;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
@@ -39,7 +40,7 @@ public class StandardColumnToolSet implements ColumnToolSet {
     final AttributeField field,
     final AnswerValue val,
     final ColumnToolConfig config
-  ) {
+  ) throws WdkModelException {
     return _filter.prepareTool(field, val, config);
   }
 
@@ -58,7 +59,7 @@ public class StandardColumnToolSet implements ColumnToolSet {
     final AttributeField field,
     final AnswerValue val,
     final ColumnToolConfig config
-  ) {
+  ) throws WdkModelException {
     return _reporter.prepareTool(field, val, config);
   }
 

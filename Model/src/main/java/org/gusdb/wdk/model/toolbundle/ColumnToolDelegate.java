@@ -13,7 +13,7 @@ public interface ColumnToolDelegate<T extends ColumnTool> {
     AttributeField field,
     AnswerValue answer,
     C config
-  );
+  ) throws WdkModelException;
 
   Optional<T> getTool(AttributeField field);
 

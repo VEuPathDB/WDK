@@ -124,9 +124,12 @@ public class QueryColumnAttributeField extends ColumnAttributeField {
     final String name,
     final AnswerValue val,
     final ColumnToolConfig config
-  ) {
-    return getToolBundle().getTool(name)
-      .flatMap(t -> t.prepareFilterFor(this, val, config));
+  ) throws WdkModelException {
+    var set = getToolBundle().getTool(name);
+    if (set.isEmpty())
+      return Optional.empty();
+
+    return set.get().prepareFilterFor(this, val, config);
   }
 
   @Override
