@@ -25,10 +25,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.fgputil.db.platform.PostgreSQL;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
@@ -105,8 +107,30 @@ public class StepAnalysisService extends UserService {
     // param type called something like <stepAnalysisIdSqlParam> that would
     // have no attributes, and be dedicated to this need.
     if (paramMap.containsKey("answerIdSql")) {
-      context = new HashMap<>();
+      if (context.isEmpty()) {
+        context = new HashMap<>();
+      }
       context.put("answerIdSql", AnswerValueFactory.makeAnswer(step).getIdSql());
+    }
+
+    // TODO: also a hack; PostgreSQL only
+    // VALUES list is a SQL construct that creates a temporary table
+    // this case, with two fields, one for the param name, one for the param value
+    // allowing stepAnalysis parameters to be depended on step parameter values
+    if (paramMap.containsKey("stepParamValuesSql")) {
+      if (user.getWdkModel().getAppDb().getPlatform() instanceof PostgreSQL) {
+        if (context.isEmpty()) {
+          context = new HashMap<>();
+        }
+        ArrayList<String> values = new ArrayList<String>();
+        for (Map.Entry<String, String> param : step.getParamValues().entrySet()) {
+          String row = "('" + param.getKey() + "', '" + param.getValue() + "')";
+          values.add(row);
+        }
+        context.put("stepParamValuesSql", "SELECT * FROM ( VALUES " + StringUtils.join(values, ",") + " ) AS p (name, value)");
+      } else {
+        throw new WdkModelException("Invalid step analysis parameter: stepParamValuesSql only valid for PostgreSQL.");
+      }
     }
 
     /* FIXME: currently broken; need to do some work still to integrate step analysis param containers
@@ -115,7 +139,7 @@ public class StepAnalysisService extends UserService {
         true,
         user,
         context).toString();*/
-    
+
     return "";
   }
 
