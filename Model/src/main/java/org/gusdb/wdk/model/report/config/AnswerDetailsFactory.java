@@ -1,11 +1,5 @@
 package org.gusdb.wdk.model.report.config;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.SortDirection;
@@ -19,6 +13,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.*;
+
 public class AnswerDetailsFactory {
 
   private static final String RETURN_ALL_ATTRIBUTES = "__ALL_ATTRIBUTES__";
@@ -29,51 +25,62 @@ public class AnswerDetailsFactory {
    * Creates a default request specifics object based on the default attributes
    * and sorting defined in the question and the question's record class.
    *
-   * @param question question this specifics object is for
+   * @param question
+   *   question this specifics object is for
+   *
    * @return default request specifics
    */
   public static AnswerDetails createDefault(Question question) {
     AnswerDetails defaultSpecs = new AnswerDetails();
     // default offset and numRecords are set on declaration lines
     defaultSpecs.setAttributes(question.getSummaryAttributeFieldMap());
-    defaultSpecs.setTables(Collections.EMPTY_MAP);
+    defaultSpecs.setTables(Collections.emptyMap());
     defaultSpecs.setSorting(getDefaultSorting(question));
     return defaultSpecs;
   }
 
   /**
    * Creates an instance of this class from the passed JSON, validated for the
-   * passed question.  All fields are optional.  Attributes and tables passed
-   * must be valid for the question.  If attributes or tables properties are
-   * omitted, none are returned.  If sorting is omitted, default sorting is used.
-   * Sorting attributes not in the returned attribute set are skipped.  If no
-   * sorting remains after skipping, the PK is used.  Pagination offset must be
-   * a non-negative integer; numRecords can be any integer, with positive values
+   * passed question.
+   * <p>
+   * All fields are optional.  Attributes and tables passed must be valid for
+   * the question.  If attributes or tables properties are omitted, none are
+   * returned.  If sorting is omitted, default sorting is used. Sorting
+   * attributes not in the returned attribute set are skipped.  If no sorting
+   * remains after skipping, the PK is used.  Pagination offset must be a
+   * non-negative integer; numRecords can be any integer, with positive values
    * being the number of records to be returned.  Zero or negative values for
    * numRecords will return all records.
-   *
+   * <p>
    * Special values: The attributes and tables properties can be either an array
    * of names, or a special String value indicating a particular set of values.
    * The following special strings are currently supported:
+   * <p>
+   * <dl>
+   * <dt>__ALL_ATTRIBUTES__</dt>
+   * <dd>represents all attributes for the passed question</dd>
+   * <dt>__DEFAULT_ATTRIBUTES__</dt>
+   * <dd>represents the default attributes for the passed question</dd>
+   * <dt>__ALL_TABLES__</dt>
+   * <dd>represents all tables for the passed question</dd>
+   * </dl>
+   * <p>
+   * <b>Note</b>: there are no "default" tables
    *
-   * - '__ALL_ATTRIBUTES__': represents all attributes for the passed question
-   * - '__DEFAULT_ATTRIBUTES__': represents the default attributes for the passed question
-   * - '__ALL_TABLES__': represents all tables for the passed question
-   * - Note: there are no "default" tables
-   *
-   * @param specJson JSON value used to create instance. Should have the form:
-   * {
-   *   pagination: { offset: Number, numRecords: Number },
-   *   attributes: [ attributeName: String ], or special string,
-   *   tables: [ tableName: String ], or special string,
-   *   sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ],
-   *   contentDisposition: 'inline' (default) OR 'attachment'
-   * }
-   *
-   * All values are optional.
-   *
-   * @param question question used to validate incoming values
-   * @throws RequestMisformatException if values are invalid or structure is malformed
+   * @param specJson
+   *   JSON value used to create instance. Should have the form:
+   *   <pre>
+   *     {
+   *       pagination: { offset: Number, numRecords: Number },
+   *       attributes: [ attributeName: String ], or special string,
+   *       tables: [ tableName: String ], or special string,
+   *       sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ],
+   *       contentDisposition: 'inline' (default) OR 'attachment'
+   *     }
+   *   </pre>
+   *   All values are optional.
+   * @param question
+   *   question used to validate incoming values
    */
   public static AnswerDetails createFromJson(JSONObject specJson, Question question)
       throws ReporterConfigException {
@@ -126,23 +133,23 @@ public class AnswerDetailsFactory {
     if (specJson.has("tables")) {
       // see if property value is a String, if so, it could be a special value
       try {
-        switch(specJson.getString("tables")) {
-          case RETURN_ALL_TABLES:
-            return question.getRecordClass().getTableFieldMap();
-          default:
-            throw new ReporterConfigException("Illegal string found for " +
-                "tables property.  Must be an array or '" + RETURN_ALL_TABLES + "'.");
+        if (RETURN_ALL_TABLES.equals(specJson.getString("tables"))) {
+          return question.getRecordClass().getTableFieldMap();
         }
+        throw new ReporterConfigException("Illegal string found for "
+          + "tables property.  Must be an array or '"
+          + RETURN_ALL_TABLES
+          + "'.");
       }
       // this is the standard case; handle value as an array of table names
       catch (JSONException e) {
         JSONArray tablesJson = specJson.getJSONArray("tables");
-        return (tablesJson.length() == 0 ? Collections.EMPTY_MAP :
+        return (tablesJson.length() == 0 ? Collections.emptyMap() :
           parseTableArray(tablesJson, question));
       }
     }
     // if unspecified, do not include any tables
-    return Collections.EMPTY_MAP;
+    return Collections.emptyMap();
   }
 
   private static Map<String, AttributeField> parseAttributeJson(JSONObject specJson, Question question) throws ReporterConfigException {
@@ -163,13 +170,13 @@ public class AnswerDetailsFactory {
       // this is the standard case; handle value as an array of attribute names
       catch (JSONException e) {
         JSONArray attributesJson = specJson.getJSONArray("attributes");
-        return (attributesJson.length() == 0 ? Collections.EMPTY_MAP :
+        return (attributesJson.length() == 0 ? Collections.emptyMap() :
           parseAttributeArray(attributesJson, question));
       }
     }
     else {
       // if unspecified, do not include any attributes; user could just be requesting tables
-      return Collections.EMPTY_MAP;
+      return Collections.emptyMap();
     }
   }
 
@@ -177,8 +184,8 @@ public class AnswerDetailsFactory {
     if (!sorting.isEmpty()) return sorting;
     AttributeField pkAttribute = question.getRecordClass().getIdAttributeField();
     return SortDirectionSpec.convertSorting(
-        question.getRecordClass().getIdSortingAttributeMap(),
-        new MapBuilder<String, AttributeField>(pkAttribute.getName(), pkAttribute).toMap());
+      question.getRecordClass().getIdSortingAttributeMap(),
+      new MapBuilder<>(pkAttribute.getName(), pkAttribute).toMap());
   }
 
   private static List<SortDirectionSpec<AttributeField>> getDefaultSorting(Question question) {
