@@ -2,7 +2,7 @@ package org.gusdb.wdk.model.filter;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
 import org.gusdb.wdk.model.toolbundle.ColumnFilter;
 import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSet;
 import org.gusdb.wdk.model.query.Query;
@@ -169,25 +169,6 @@ public class ColumnFilterSqlBuilder {
   }
 
   /**
-   * Checks whether or not the given {@link AttributeField} is usable in the SQL
-   * building process.
-   * <p>
-   * To be usable, the {@code AttributeField} must be marked as filterable, have
-   * a configuration present in the {@link AnswerSpec}, and it must be an
-   * instance of {@link QueryColumnAttributeField}.
-   *
-   * @param field
-   *   the field to check for usability
-   *
-   * @return whether or not the field should be used for SQL query building.
-   */
-  private boolean columnIsUsable(final AttributeField field) {
-    return field.isFilterable()
-      && configs.hasColumn(field.getName())
-      && field instanceof QueryColumnAttributeField;
-  }
-
-  /**
    * Retrieves the backing SQL for the {@link Query} matching the given name
    * with macros resolved.
    * <p>
@@ -242,7 +223,12 @@ public class ColumnFilterSqlBuilder {
    * @return full name of the given {@code AttributeField}'s backing query
    */
   private static String getQueryName(final AttributeField field) {
-    return ((QueryColumnAttributeField) field).getColumn()
+    return (field instanceof QueryColumnAttributeField
+      ? (QueryColumnAttributeField) field
+      : ((DerivedAttributeField) field).getFilterDependencyField()
+        .orElseThrow(IllegalStateException::new)
+    )
+      .getColumn()
       .getQuery()
       .getFullName();
   }

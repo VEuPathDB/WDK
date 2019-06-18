@@ -37,6 +37,6 @@ public interface ColumnFilter extends ColumnTool {
     /**
      * @return an SQL {@code WHERE} clause.
      */
-    String buildSqlWhere();
+    String  buildSqlWhere();
   }
 }

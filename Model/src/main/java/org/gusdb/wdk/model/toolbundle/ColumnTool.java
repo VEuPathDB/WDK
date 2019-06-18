@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.toolbundle;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.vulpine.lib.json.schema.SchemaBuilder;
 import org.gusdb.fgputil.json.SchemaUtil;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
@@ -36,7 +37,12 @@ public interface ColumnTool {
    *
    * @return the current ColumnTool instance.
    */
-  ColumnTool setAnswerValue(AnswerValue val);
+  ColumnTool setAnswerValue(PreparedAnswerValue val);
+
+  default PreparedAnswerValue prepareAnswerValue(AnswerValue answerValue)
+  throws WdkModelException {
+    return () -> answerValue;
+  }
 
   /**
    * Sets the attribute field that this tool will apply to
@@ -101,4 +107,8 @@ public interface ColumnTool {
    * current ColumnTool implementation.
    */
   boolean isCompatibleWith(JsonNode js);
+
+  interface PreparedAnswerValue {
+    AnswerValue get();
+  }
 }

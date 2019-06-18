@@ -1,16 +1,16 @@
 package org.gusdb.wdk.model.toolbundle.impl;
 
-import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
-import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.toolbundle.ColumnTool;
-import org.gusdb.wdk.model.toolbundle.ColumnToolDelegate;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
+import org.gusdb.wdk.model.toolbundle.ColumnTool;
+import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
+import org.gusdb.wdk.model.toolbundle.ColumnToolDelegate;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 
 class StandardToolDelegate<T extends ColumnTool>
 implements ColumnToolDelegate<T> {
@@ -26,9 +26,12 @@ implements ColumnToolDelegate<T> {
     final AttributeField field,
     final AnswerValue val,
     final ColumnToolConfig config
-  ) {
-    return Optional.ofNullable(tools.get(field.getDataType()))
-      .map(buildTool(field, val, config));
+  ) throws WdkModelException {
+    final var tool = tools.get(field.getDataType());
+    if (null == tool)
+      return Optional.empty();
+
+    return Optional.of(buildTool(tool, field, val, config));
   }
 
   @Override
@@ -44,13 +47,14 @@ implements ColumnToolDelegate<T> {
   }
 
   @SuppressWarnings("unchecked")
-  private Function<T, T> buildTool(
+  private <T extends ColumnTool> T buildTool(
+    final T tool,
     final AttributeField field,
     final AnswerValue val,
     final ColumnToolConfig config
-  ) {
-    return v -> (T) v.copy()
-      .setAnswerValue(val)
+  ) throws WdkModelException {
+    return (T) tool.copy()
+      .setAnswerValue(tool.prepareAnswerValue(val))
       .setAttributeField(field)
       .setConfiguration(config);
   }

@@ -51,8 +51,8 @@ abstract class DelegateFilter implements ColumnFilter {
   }
 
   @Override
-  public DelegateFilter setAnswerValue(AnswerValue val) {
-    _answer = val;
+  public DelegateFilter setAnswerValue(PreparedAnswerValue val) {
+    _answer = val.get();
 
     for (var d : _delegatees)
       d.setAnswerValue(val);
@@ -171,7 +171,7 @@ abstract class DelegateFilter implements ColumnFilter {
   private ColumnFilter configure(ColumnFilter filter) {
     filter.setConfiguration(_config);
     filter.setAttributeField(_column);
-    filter.setAnswerValue(_answer);
+    filter.setAnswerValue(() -> _answer);
     filter.setModelProperties(_properties);
     return filter;
   }

@@ -35,8 +35,8 @@ public abstract class AbstractColumnTool implements ColumnTool {
   }
 
   @Override
-  public ColumnTool setAnswerValue(AnswerValue val) {
-    _answer = val;
+  public ColumnTool setAnswerValue(PreparedAnswerValue val) {
+    _answer = val.get();
     return this;
   }
 
@@ -100,7 +100,7 @@ public abstract class AbstractColumnTool implements ColumnTool {
     if (_props != null)
       tool.setModelProperties(_props);
     if (_answer != null)
-      tool.setAnswerValue(_answer);
+      tool.setAnswerValue(() -> _answer);
     return tool;
   }
 }
