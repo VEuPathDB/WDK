@@ -46,7 +46,7 @@ public class ColumnReporterService extends AbstractWdkService {
   public static final String
     ID_VAR = "reporter",
     ID_PARAM = "{" + ID_VAR + "}",
-    BASE_PATH = SearchColumnService.ID_PATH + "/reporters";
+    BASE_PATH = SearchColumnService.ID_PATH + "/" + JsonKeys.REPORTS;
 
   /**
    * Reporter not found message.
