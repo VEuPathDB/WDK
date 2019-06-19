@@ -224,7 +224,8 @@ public class AnswerService extends AbstractWdkService {
             "Invalid answer spec: " + spec.getValidationBundle().toString()));
   }
 
-  private static StepContainer loadContainer(AnswerSpecBuilder specBuilder,
+  // TODO:  now that this method is public, should find a better place for it
+  public static StepContainer loadContainer(AnswerSpecBuilder specBuilder,
       WdkModel wdkModel, User sessionUser) throws WdkModelException, DataValidationException {
 
     // to allow a user to use steps from an existing strategy, need to get the
