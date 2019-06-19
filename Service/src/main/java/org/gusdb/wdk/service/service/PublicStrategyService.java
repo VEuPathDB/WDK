@@ -1,47 +1,47 @@
 package org.gusdb.wdk.service.service;
 
-import static org.gusdb.fgputil.functional.Functions.filter;
-import static org.gusdb.fgputil.functional.Functions.pSwallow;
-
-import java.util.List;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.Strategy;
+import org.gusdb.wdk.service.formatter.StrategyFormatter;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.Strategy;
-import org.gusdb.wdk.service.formatter.StrategyFormatter;
-import org.json.JSONException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Provides list of public strategies
- * 
+ *
  * TODO: rename this class to StrategyListsService, after merge into trunk
  */
 @Path("/strategy-lists/public")
 @Produces(MediaType.APPLICATION_JSON)
 public class PublicStrategyService extends AbstractWdkService {
 
-  @SuppressWarnings("unused")
-  private static final Logger LOG = Logger.getLogger(PublicStrategyService.class);
-
   /**
    * Get a list of all valid public strategies
    */
   @GET
-  public Response getPublicStrategies(@QueryParam("userEmail") List<String> userEmails) throws JSONException, WdkModelException {
-    List<Strategy> publicStrategies = getWdkModel().getStepFactory().getPublicStrategies();
-    List<Strategy> validPublicStrategies = filter(publicStrategies, pSwallow(strategy -> strategy.isValid()));
-    List<Strategy> filteredPublicStrategies = userEmails.isEmpty() ? validPublicStrategies :
-      filter(validPublicStrategies, pSwallow(strategy ->
-        userEmails.stream().anyMatch(userEmail ->
-          strategy.getUser().getEmail().equals(userEmail))));
-    return Response.ok(StrategyFormatter.getStrategiesJson(filteredPublicStrategies).toString()).build();
+  public JSONArray getPublicStrategies(@QueryParam("userEmail") List<String> userEmails)
+  throws JSONException, WdkModelException {
+    var strategies = getWdkModel()
+      .getStepFactory()
+      .getPublicStrategies()
+      .stream()
+      .filter(Strategy::isValid);
+
+    if (!userEmails.isEmpty())
+      strategies = strategies.filter(strat -> userEmails.stream()
+        .anyMatch(userEmail -> strat.getUser()
+          .getEmail()
+          .equals(userEmail)));
+
+    return StrategyFormatter.getStrategiesJson(strategies.collect(Collectors.toList()));
   }
 
 }
