@@ -73,8 +73,10 @@ public class QuestionService extends AbstractWdkService {
   }
 
   /**
-   * Returns an array of questions in this site's model.  Each question's parameter information is
-   * omitted at this level; call individual question endpoints for that.
+   * Returns an array of questions in this site's model.  Each question's
+   * parameter information is omitted at this level; call individual question
+   * endpoints for that.
+   *
    * @return question json
    */
   @GET
@@ -90,13 +92,17 @@ public class QuestionService extends AbstractWdkService {
 
   /**
    * Get information about a single question.  Includes parameter information,
-   * including vocabularies and metadata based on generated default values.
-   * This endpoint is typically used to render a "new" question page (i.e.
-   * filled with default parameter values).
+   * including vocabularies and metadata based on generated default values. This
+   * endpoint is typically used to render a "new" question page (i.e. filled
+   * with default parameter values).
    *
-   * @param questionUrlSegment name of the question being requested
+   * @param questionUrlSegment
+   *   name of the question being requested
+   *
    * @return question json
-   * @throws WdkModelException if unable to generate param information
+   *
+   * @throws WdkModelException
+   *   if unable to generate param information
    */
   @GET
   @Path(ID_PARAM)
@@ -124,23 +130,27 @@ public class QuestionService extends AbstractWdkService {
    * Returns information about a single question, given a set of parameter
    * values.  Any missing or invalid parameters are replaced with valid values
    * and the associated vocabularies.  Response includes parameter information,
-   * including vocabularies and metadata based on the incoming values, and error messages
-   * for any parameter values that were invalid. This
-   * endpoint is typically used to render a revise question page.  Input JSON
-   * should have the following form:
-   *
+   * including vocabularies and metadata based on the incoming values, and error
+   * messages for any parameter values that were invalid. This endpoint is
+   * typically used to render a revise question page.  Input JSON should have
+   * the following form:
+   * <pre>
    * {
    *   "contextParamValues": {
    *     "<each-param-name>": String (stable value for param)
    *   }
    * }
+   * </pre>
    *
-   * @param questionUrlSegment name of the question being requested
-   * @param body body of request (see JSON above)
+   * @param questionUrlSegment
+   *   name of the question being requested
+   * @param body
+   *   body of request (see JSON above)
+   *
    * @return question json
-   * @throws WdkModelException if unable to generate param information
-   * @throws DataValidationException
-   * @throws RequestMisformatException
+   *
+   * @throws WdkModelException
+   *   if unable to generate param information
    */
   @POST
   @Path(ID_PARAM)
@@ -184,26 +194,20 @@ public class QuestionService extends AbstractWdkService {
 
   /**
    * Get an updated set of vocabularies (and meta data info) for the parameters
-   * that depend on the specified changed parameter.
-   * (Also validate the changed parameter.)
-   *
+   * that depend on the specified changed parameter. (Also validate the changed
+   * parameter.)
+   * <p>
    * Request must provide the parameter values of any other parameters that
-   * those vocabularies depend on, as well as the changed parameter.
-   * (This endpoint is typically used when a user changes a depended param.)
-   *
+   * those vocabularies depend on, as well as the changed parameter. (This
+   * endpoint is typically used when a user changes a depended param.)
+   * <p>
    * Sample request body:
-   *
+   * <pre>
    * {
    *   "changedParam" : { "name": "height", "value": "12" },
    *   "contextParamValues" : [see /{questionUrlSegment} endpoint]
    * }
-   *
-   * @param questionUrlSegment
-   * @param body
-   * @return
-   * @throws WdkUserException
-   * @throws WdkModelException
-   * @throws DataValidationException
+   * </pre>
    */
   @POST
   @Path(ID_PARAM + "/refreshed-dependent-params")
@@ -224,8 +228,7 @@ public class QuestionService extends AbstractWdkService {
     Param changedParam = question.getParamMap().get(changedParamEntry.getKey());
 
     // set incoming values to reflect changed value
-    Map<String,String> contextParams = new MapBuilder<String,String>(
-        request.getContextParamValues()).put(changedParamEntry).toMap();
+    Map<String,String> contextParams = new MapBuilder<>(request.getContextParamValues()).put(changedParamEntry).toMap();
 
     // Build an answer spec with the passed values but replace missing/invalid
     // values with defaults.  Will remove unaffected params below.
@@ -279,22 +282,15 @@ public class QuestionService extends AbstractWdkService {
   /**
    * Exclusive to FilterParams.  Get a summary of filtered and unfiltered counts
    * for a specified ontology term.
-   *
+   * <p>
    * Sample request body:
-   *
+   * <pre>
    * {
    *   "ontologyId" : string
    *   "filters" : [ see raw value for FilterParamHandler ]
    *   "contextParamValues" : [see /{questionUrlSegment} endpoint]
    * }
-   *
-   * @param questionUrlSegment
-   * @param paramName
-   * @param body
-   * @return
-   * @throws WdkModelException
-   * @throws DataValidationException
-   * @throws RequestMisformatException
+   * </pre>
    */
   @POST
   @Path(ID_PARAM + "/{paramName}/ontology-term-summary")
@@ -340,23 +336,16 @@ public class QuestionService extends AbstractWdkService {
   }
 
   /**
-   * Exclusive to FilterParams.  Get a summary of filtered and unfiltered counts.
-   *
+   * Exclusive to FilterParams.  Get a summary of filtered and unfiltered
+   * counts.
+   * <p>
    * Sample request body:
-   *
+   * <pre>
    * {
    *   "filters" : [ see raw value for FilterParamHandler ]
    *   "contextParamValues" : [see /{questionUrlSegment} endpoint]
    * }
-   *
-   * @param questionUrlSegment
-   * @param paramName
-   * @param body
-   * @return
-   * @throws WdkUserException
-   * @throws WdkModelException
-   * @throws DataValidationException
-   * @throws RequestMisformatException
+   * </pre>
    */
   @POST
   @Path(ID_PARAM + "/{paramName}/summary-counts")
@@ -394,7 +383,7 @@ public class QuestionService extends AbstractWdkService {
 
   private static FilterParamNew getFilterParam(Question question, String paramName) {
     Param param = question.getParamMap().get(paramName);
-    if (param == null || !(param instanceof FilterParamNew)) {
+    if (!(param instanceof FilterParamNew)) {
       throw new NotFoundException(formatNotFound(FILTER_PARAM_RESOURCE + paramName));
     }
     return (FilterParamNew)param;

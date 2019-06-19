@@ -76,7 +76,6 @@ public class RecordService extends AbstractWdkService {
         .orElse(defaultValue);
   }
 
-
   // TODO: replace this with a GET (using the path to encode the primary key)
   @POST
   @Path(ID_PARAM + "/records")

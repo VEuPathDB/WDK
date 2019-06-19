@@ -39,15 +39,15 @@ public class TemporaryFileService extends AbstractWdkService {
   public final static String TEMP_FILE_METADATA = "tempFileMetadata";  // for use in session
 
   public interface TemporaryFileMetadata {
-    public String getTempName();
-    public String getOriginalName();
-    public String getType();
+    String getTempName();
+    String getOriginalName();
+    String getType();
   }
 
-  /*
-   * Take file stream from request and write to WdkTempFile directory.
-   * Return the generated temp file name in the head.er
-   * Also push the temp file name into the session, for other service calls to use.
+  /**
+   * Take file stream from request and write to WdkTempFile directory. Return
+   * the generated temp file name in the head.er Also push the temp file name
+   * into the session, for other service calls to use.
    */
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -75,12 +75,12 @@ public class TemporaryFileService extends AbstractWdkService {
     java.nio.file.Path tempFileName = tempFilePath.getFileName();
 
     addTempFileToSession(new TemporaryFileMetadata() {
-    
+
       @Override
       public String getTempName() {
         return tempFileName.toString();
       }
-    
+
       @Override
       public String getOriginalName() {
         return fileMetadata.getFileName();
@@ -101,15 +101,16 @@ public class TemporaryFileService extends AbstractWdkService {
     @SuppressWarnings("unchecked")
     Map<String, TemporaryFileMetadata> tempFilesInSession = (Map<String, TemporaryFileMetadata>)(session.getAttribute(TEMP_FILE_METADATA));
     if (tempFilesInSession == null) {
-      tempFilesInSession = Collections.synchronizedMap(new HashMap<String, TemporaryFileMetadata>());
+      tempFilesInSession = Collections.synchronizedMap(new HashMap<>());
     }
     tempFilesInSession.put(tempFileMetadata.getTempName(), tempFileMetadata);
     session.setAttribute(TEMP_FILE_METADATA, tempFilesInSession);
   }
 
-  /*
-   * Deleting a wdk temp file is always optional, as by design they are purged asynchronously on occasion.
-   * But, if a client or test knows the file is no longer needed, it can use this endpoint.
+  /**
+   * Deleting a wdk temp file is always optional, as by design they are purged
+   * asynchronously on occasion. But, if a client or test knows the file is no
+   * longer needed, it can use this endpoint.
    */
   @DELETE
   @Path("/{id}")
@@ -138,11 +139,15 @@ public class TemporaryFileService extends AbstractWdkService {
   }
 
   /**
-   * Returns a factory function that can look up temporary files by name.  An optional of path is returned;
-   * if the file is not in the current session or cannot be found, an empty optional is returned.
+   * Returns a factory function that can look up temporary files by name.  An
+   * optional of path is returned; if the file is not in the current session or
+   * cannot be found, an empty optional is returned.
    *
-   * @param wdkModel the WDK model
-   * @param session the current user session
+   * @param wdkModel
+   *   the WDK model
+   * @param session
+   *   the current user session
+   *
    * @return a factory function for looking up temporary file paths by name
    */
   public static Function<String, Optional<java.nio.file.Path>> getTempFileFactory(WdkModel wdkModel, HttpSession session) {
@@ -165,16 +170,18 @@ public class TemporaryFileService extends AbstractWdkService {
   }
 
   /**
-   * Returns the path to a temp file that is known by the user's session (having been put there by the temp
-   * file service).  If the file is not found in the session, or does not exist, return empty optional.
+   * Returns the path to a temp file that is known by the user's session (having
+   * been put there by the temp file service).  If the file is not found in the
+   * session, or does not exist, return empty optional.
    */
-  public Optional<java.nio.file.Path> getTempFileFromSession(String tempFileName) {
+  private Optional<java.nio.file.Path> getTempFileFromSession(String tempFileName) {
     return getTempFileFactory(getWdkModel(), getSession()).apply(tempFileName);
   }
 
   /**
-   * Returns the metadata for a temp file that is known by the user's session (having been put there by the temp
-   * file service).  If the metadata is not found in the session, return empty optional.
+   * Returns the metadata for a temp file that is known by the user's session
+   * (having been put there by the temp file service).  If the metadata is not
+   * found in the session, return empty optional.
    */
   public static Optional<TemporaryFileMetadata> getTempFileMetadata(String tempFileName, HttpSession session) {
     @SuppressWarnings("unchecked")
