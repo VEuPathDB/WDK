@@ -6,8 +6,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 import javax.ws.rs.BadRequestException;
@@ -117,15 +119,13 @@ public class StepAnalysisService extends UserService {
     // VALUES list is a SQL construct that creates a temporary table
     // this case, with two fields, one for the param name, one for the param value
     // allowing stepAnalysis parameters to be depended on step parameter values
-    
-    /* FIXME This is broken and not sure how it should be done now
     if (paramMap.containsKey("stepParamValuesSql")) {
-      if (user.getWdkModel().getAppDb().getPlatform() instanceof PostgreSQL) {
+      if (getWdkModel().getAppDb().getPlatform() instanceof PostgreSQL) {
         if (context.isEmpty()) {
           context = new HashMap<>();
         }
         ArrayList<String> values = new ArrayList<String>();
-        for (Map.Entry<String, String> param : step.getParamValues().entrySet()) {
+        for (Entry<String, String> param : step.get().getAnswerSpec().getQueryInstanceSpec().entrySet()) {
           String row = "('" + param.getKey() + "', '" + param.getValue() + "')";
           values.add(row);
         }
@@ -134,7 +134,6 @@ public class StepAnalysisService extends UserService {
         throw new WdkModelException("Invalid step analysis parameter: stepParamValuesSql only valid for PostgreSQL.");
       }
     }
-    */
 
     /* FIXME: currently broken; need to do some work still to integrate step analysis param containers
     return QuestionFormatter.getParamsJson(
