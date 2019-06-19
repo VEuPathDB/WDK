@@ -64,7 +64,7 @@ public class AttributeFieldFormatter {
 
   private static JSONObject formatToolsJson(AttributeField field) {
     return new JSONObject()
-      .put(JsonKeys.REPORTERS, field.getColumnReporterNames())
+      .put(JsonKeys.REPORT, field.getColumnReporterNames())
       .put(JsonKeys.FILTERS, field.getColumnFilterNames());
   }
 }
