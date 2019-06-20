@@ -86,4 +86,11 @@ public class OntologyItem {
     return isRange;
   }
 
+  @Override
+  public String toString() {
+    return "OntologyItem [ontologyId=" + ontologyId + ", parentOntologyId=" + parentOntologyId +
+        ", displayName=" + displayName + ", description=" + description + ", type=" + type + ", units=" +
+        units + ", precision=" + precision + ", isRange=" + isRange + "]";
+  }
+
 }

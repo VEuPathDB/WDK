@@ -108,7 +108,17 @@ public class FilterParamNewStableValue {
         errors.add("'" + field + "'" + " is not a recognized ontology term");
         continue;
       }
-      if (!ontology.get(field).getIsRange() && MULTIFILTER != ontology.get(field).getType()) memberFilters.add((MembersFilter)filter);
+      OntologyItem ontologyItem = ontology.get(field);
+      if (!ontologyItem.getIsRange() && !MULTIFILTER.equals(ontologyItem.getType())) {
+        if (filter instanceof MembersFilter) {
+          memberFilters.add((MembersFilter)filter);
+        }
+        else {
+          throw new WdkModelException(filter + " is of type " +
+              filter.getClass().getSimpleName() +
+              " which does not match " + ontologyItem);
+        }
+      }
     }
 
     // run metadata query to find distinct values for each member field
@@ -132,8 +142,8 @@ public class FilterParamNewStableValue {
 
     // TODO Add error if param._minSelectedCount < # matching items
 
-    if (errors.size() != 0) return errors.stream().collect(Collectors.joining("', '")) + System.lineSeparator() + _stableValueJson;
-    return null;
+    return errors.isEmpty() ? null :
+        errors.stream().collect(Collectors.joining("', '")) + System.lineSeparator() + _stableValueJson;
   }
 
 
@@ -331,6 +341,11 @@ public class FilterParamNewStableValue {
     @Override
     public int compareTo(Filter f) {
       return field.compareTo(f.getField());
+    }
+
+    @Override
+    public String toString() {
+      return "Filter for field '" + field + "', signature: " + getSignature();
     }
   }
 
