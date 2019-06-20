@@ -11,6 +11,7 @@ import java.util.Optional;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -25,7 +26,6 @@ import javax.ws.rs.core.Response;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
-import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
@@ -211,24 +211,22 @@ public class StepService extends UserService {
   @InSchema("wdk.answer.answer-spec-request")
   public void putAnswerSpec(
       @PathParam(ID_PARAM) long stepId,
-      @QueryParam("allowInvalid") Boolean allowInvalid,  // undocumented.  for use by developers
+      @QueryParam("allowInvalid") @DefaultValue("false") Boolean allowInvalid,  // undocumented.  for use by developers
       JSONObject body
   ) throws WdkModelException, DataValidationException, RequestMisformatException {
 
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
     Step existingStep = getStepForCurrentUser(stepId, ValidationLevel.NONE);
-    
-    AnswerSpec newSpec;
-    if (allowInvalid) { // allow PUTing of invalid steps so we can test how we handle them elsewhere
-      newSpec = AnswerSpecServiceFormat
-      .parse(existingStep.getAnswerSpec().getQuestion(), body, getWdkModel())
-      .build(user, existingStep.getContainer(), ValidationLevel.SEMANTIC);
-    } else {
-      SemanticallyValid<AnswerSpec> validSpec = StepRequestParser.getReplacementAnswerSpec(
-          existingStep, body, getWdkModel(), user);
-      newSpec = validSpec.get();
-    }
-    
+
+    AnswerSpec newSpec =
+      allowInvalid // allow PUTing of invalid steps so we can test how we handle them elsewhere
+      ? AnswerSpecServiceFormat
+          .parse(existingStep.getAnswerSpec().getQuestion(), body, getWdkModel())
+          .build(user, existingStep.getContainer(), ValidationLevel.SEMANTIC)
+      : StepRequestParser
+          .getReplacementAnswerSpec(existingStep, body, getWdkModel(), user)
+          .get();
+
     StepBuilder replacementBuilder = Step.builder(existingStep)
         .setAnswerSpec(AnswerSpec.builder(newSpec));
 
