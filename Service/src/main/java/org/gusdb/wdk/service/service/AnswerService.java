@@ -381,7 +381,13 @@ public class AnswerService extends AbstractWdkService {
       throw new RequestMisformatException("Invalid JSON structure: " + e.getMessage());
     }
     catch (ReporterConfigException e) {
-      throw new RequestMisformatException("Could not configure reporter '" + formatName + "' with passed formatConfig. " + e.getMessage());
+      switch(e.getErrorType()) {
+        case MISFORMAT:
+          throw new RequestMisformatException("Could not configure reporter '" + formatName + "' with passed formatConfig. " + e.getMessage());
+        case DATA_VALIDATION:
+        default: // added here for compilation; remove when new Java switch implemented
+          throw new DataValidationException("Could not configure reporter '" + formatName + "' with passed formatConfig. " + e.getMessage());
+      }
     }
   }
 
