@@ -13,7 +13,6 @@ import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * @author xingao
- * 
  */
 class ActiveStrategyFactory {
 
@@ -38,7 +37,7 @@ class ActiveStrategyFactory {
     /**
      * The method returns an array of top strategies; nested strategies are
      * computed later.
-     * 
+     *
      * @return
      */
     long[] getRootStrategies() {

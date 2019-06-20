@@ -46,15 +46,15 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     private String _version;
     private String _name;
     private String _description;
-    private boolean _isSaved = false;
-    private String _savedName = null;
-    private boolean _isDeleted = false;
+    private boolean _isSaved;
+    private String _savedName;
+    private boolean _isDeleted;
     private Date _createdTime = new Date();
     private Date _lastModifiedTime;
     private Date _lastRunTime;
     private String _signature;
-    private boolean _isPublic = false;
-    private long _rootStepId = 0;
+    private boolean _isPublic;
+    private long _rootStepId;
 
     private Map<Long,StepBuilder> _stepMap = new HashMap<>();
 
@@ -172,7 +172,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     /**
      * Removes any existing StepBuilders from this builder and resets
      * the root step ID to 0.
-     * 
+     *
      * @return this builder
      */
     public StrategyBuilder clearSteps() {
@@ -281,7 +281,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
 
     LOG.debug("Generated the following tree of steps for strategy " +
         _strategyId + ":" + FormatUtil.NL + builderTree.toMultiLineString("  "));
-    
+
     // Build StepBuilders from the bottom up into a tree of Steps, setting dirty
     // bits on steps downstream from dirty steps as it builds the tree.
     UserCache userCache = new UserCache(_user);
@@ -289,9 +289,8 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
 
     // map structure into a TreeNode<Step> so branches have access to the
     //   built children below them (need to assign dirty bit)
-    builderTree.mapStructure(new StructureMapper<StepBuilder, TreeNode<Step>>() {
-      @Override
-      public TreeNode<Step> apply(StepBuilder builder, List<TreeNode<Step>> mappedChildren) {
+    builderTree.mapStructure(
+      (StructureMapper<StepBuilder, TreeNode<Step>>) (builder, mappedChildren) -> {
         try {
           // figure out if dirty bit should be set (if this or any children dirty)
           boolean isDirty = builder.isResultSizeDirty() || reduce(
@@ -303,10 +302,10 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
           Step step = builder
             .setResultSizeDirty(isDirty)
             .build(userCache, validationLevel, Optional.of(thisStrategy));
-  
+
           // add to strategy
           thisStrategy._stepMap.put(step.getStepId(), step);
-  
+
           // build a node around the step and add children (builds tree of Steps)
           TreeNode<Step> node = new TreeNode<>(step);
           node.addChildNodes(mappedChildren, node2 -> true);
@@ -315,8 +314,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
         catch (WdkModelException e) {
           throw new WdkRuntimeException(e);
         }
-      }
-    });
+      });
   }
 
   /**
@@ -341,7 +339,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     // check for answer params; if not present or undeterminable (bad question name), simply return
     String questionName = step.getAnswerSpec().getQuestionName();
     Optional<List<AnswerParam>> answerParams = _wdkModel.getQuestionByFullName(questionName)
-        .map(question -> question.getQuery().getAnswerParams());
+      .map(question -> question.getQuery().getAnswerParams());
 
     // Check if answer params are present.  If not present in optional, then
     // question name is invalid in this step; if leaf step, that's ok- will just
