@@ -196,7 +196,7 @@ public class StrategyLoader {
       return new SearchResult(builtStrategies, builtOrphanSteps, malstructuredStrategies);
     }
     catch (Exception e) {
-      LOG.error("Unable to execute search with SQL: " + NL + sql + NL + "and params [" + FormatUtil.join(paramValues, ",") + "].");
+      LOG.error("Unable to execute search with SQL: " + NL + sql + NL + "and params [" + FormatUtil.join(paramValues, ",") + "].", e);
       return WdkModelException.unwrap(e);
     }
   }
