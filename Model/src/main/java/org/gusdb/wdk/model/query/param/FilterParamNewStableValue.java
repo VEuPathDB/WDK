@@ -114,9 +114,10 @@ public class FilterParamNewStableValue {
           memberFilters.add((MembersFilter)filter);
         }
         else {
-          throw new WdkModelException(filter + " is of type " +
+          errors.add(" filter " + filter + " is of type " +
               filter.getClass().getSimpleName() +
               " which does not match " + ontologyItem);
+          continue;
         }
       }
     }
