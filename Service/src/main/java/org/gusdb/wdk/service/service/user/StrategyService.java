@@ -348,7 +348,7 @@ public class StrategyService extends UserService {
           build.setSaved(change.getBoolean(key));
           break;
         case JsonKeys.IS_PUBLIC:
-          build.setSaved(change.getBoolean(key));
+          build.setIsPublic(change.getBoolean(key));
           break;
         case JsonKeys.DESCRIPTION:
           build.setDescription(change.getString(key));
