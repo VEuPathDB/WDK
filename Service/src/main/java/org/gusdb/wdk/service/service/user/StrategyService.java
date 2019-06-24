@@ -147,7 +147,6 @@ public class StrategyService extends UserService {
   @PATCH
   @Path(ID_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.strategies.id.patch-request")
   public void updateStrategy(@PathParam(ID_PARAM) long strategyId,
       JSONObject body) throws WdkModelException, DataValidationException {
