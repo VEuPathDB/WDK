@@ -27,7 +27,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -129,7 +128,7 @@ public class StepAnalysisService extends UserService {
           String row = "('" + param.getKey() + "', '" + param.getValue() + "')";
           values.add(row);
         }
-        context.put("stepParamValuesSql", "SELECT * FROM ( VALUES " + StringUtils.join(values, ",") + " ) AS p (name, value)");
+        context.put("stepParamValuesSql", "SELECT * FROM ( VALUES " + String.join(",", values) + " ) AS p (name, value)");
       } else {
         throw new WdkModelException("Invalid step analysis parameter: stepParamValuesSql only valid for PostgreSQL.");
       }
@@ -175,7 +174,7 @@ public class StepAnalysisService extends UserService {
    *
    * @return JSON response containing an array of basic analysis instance
    * details
-   * @throws DataValidationException 
+   * @throws DataValidationException
    */
   // TODO: IS THIS NEEDED?  Maybe this should be in the step details...
   @GET
