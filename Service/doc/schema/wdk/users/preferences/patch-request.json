@@ -11,12 +11,12 @@
       ]
     },
     "updates": {
-      "type": "object"
+      "type": "object",
       "additionalProperties": {
         "type": ["string", "null"]
       }
     }
-  }
+  },
   "required": [
       "action"
   ]
