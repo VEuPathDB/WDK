@@ -395,7 +395,8 @@ public class SqlQuery extends Query {
     // If this query does not contain an unparsed macro or param, then it was
     // just bad SQL
     if (!macro.find() && !param.find())
-      throw new WdkModelException(String.format("sqlQuery %s is not valid SQL",
+      throw new WdkModelException(String.format("Database error while "
+          + "attempting to parse sqlQuery %s",
         getFullName()), ex);
 
     var invalid = columnMap.values().stream()
