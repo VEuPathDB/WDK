@@ -4,9 +4,16 @@
   "properties": {
     "project": {
       "type": "object"
+      "additionalProperties": {
+        "type": "string"
+      }
+
     },
     "global": {
       "type": "object"
+      "additionalProperties": {
+        "type": "string"
+      }
     }
   }
 }
