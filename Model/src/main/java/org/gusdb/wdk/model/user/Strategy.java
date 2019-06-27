@@ -419,6 +419,18 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
             step.getAnswerSpec().getQuestion().getQuery().getAnswerParamCount() < 2)
         .collect(Collectors.counting());
   }
+  
+  // the "first" step in the strategy
+  public Step getMostPrimaryLeafStep() {
+    return getMostPrimaryLeafStep(getRootStep());
+  }
+  
+  private Step getMostPrimaryLeafStep(Step rootStep) {
+    return rootStep
+        .getPrimaryInputStep()
+        .map(step -> getMostPrimaryLeafStep(step))
+        .orElse(rootStep);
+  }
 
   public long getRootStepId() {
     return _rootStepId;

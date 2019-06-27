@@ -160,6 +160,7 @@ public class JsonKeys {
   public static final String OWNER_ID = "ownerId";
   public static final String STRATEGY_ID = "strategyId";
   public static final String ESTIMATED_SIZE = "estimatedSize";
+  public static final String NAME_OF_FIRST_STEP = "nameOfFirstStep";
   public static final String HAS_COMPLETE_STEP_ANALYSES = "hasCompleteStepAnalyses";
   public static final String SEARCH_CONFIG = "searchConfig";
   public static final String REPORT_NAME = "reportName";

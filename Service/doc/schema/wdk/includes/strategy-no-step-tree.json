@@ -47,6 +47,9 @@
     },
     "leafAndTransformStepCount": {
       "type": "integer"
+    },
+    "nameOfFirstStep": {
+      "type": "string"
     }
   },
   "required": [
