@@ -14,6 +14,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferences;
 import org.gusdb.wdk.service.UserPreferenceValidator;
+import org.gusdb.wdk.service.annotation.InSchema;
+import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserFormatter;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -34,25 +36,10 @@ public class PreferenceService extends UserService {
   @GET
   @Path("preferences")
   @Produces(MediaType.APPLICATION_JSON)
+  @OutSchema("wdk.users.preferences.get-response")
   public Response getUserPrefs() throws WdkModelException {
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
     return Response.ok(UserFormatter.getPreferencesJson(user.getPreferences()).toString()).build();
-  }
-
-  @GET
-  @Path("preferences/global")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getGlobalUserPrefs() throws WdkModelException {
-    User user = getUserBundle(Access.PRIVATE).getSessionUser();
-    return Response.ok(new JSONObject(user.getPreferences().getGlobalPreferences()).toString()).build();
-  }
- 
-  @GET
-  @Path("preferences/project")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getProjectUserPrefs() throws WdkModelException {
-    User user = getUserBundle(Access.PRIVATE).getSessionUser();
-    return Response.ok(new JSONObject(user.getPreferences().getProjectPreferences()).toString()).build();
   }
 
   /**
@@ -69,37 +56,42 @@ public class PreferenceService extends UserService {
   @PATCH
   @Path("preferences/global")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response patchGlobalUserPrefs(String body) throws WdkModelException, DataValidationException {
+  @InSchema("wdk.users.preferences.patch-request")
+  public Response patchGlobalUserPrefs(JSONObject body) throws WdkModelException, DataValidationException {
     return patchUserPrefs(body, Scope.GLOBAL);
   }
   
   @PATCH
   @Path("preferences/project")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response patchProjectUserPrefs(String body) throws WdkModelException, DataValidationException {
+  @InSchema("wdk.users.preferences.patch-request")
+  public Response patchProjectUserPrefs(JSONObject body) throws WdkModelException, DataValidationException {
     return patchUserPrefs(body, Scope.PROJECT);
   }
   
-  private Response patchUserPrefs(String body, Scope scope) throws WdkModelException, DataValidationException {
+  private Response patchUserPrefs(JSONObject body, Scope scope) throws WdkModelException, DataValidationException {
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
     try {
-      JSONObject json = new JSONObject(body);
-      Action action = Action.valueOf(json.getString(JsonKeys.ACTION));  // IllegalArgumentException
+      Action action = Action.valueOf(body.getString(JsonKeys.ACTION));  // IllegalArgumentException
       UserPreferences prefs = user.getPreferences();
       
       if (scope == Scope.GLOBAL) {
         if (action == Action.CLEAR) prefs.clearGlobalPreferences();
         else {
-          UserPreferencesRequest request = UserPreferencesRequest.createFromJson(json.getJSONObject(JsonKeys.UPDATES));
-          updateGlobalPreferences(prefs, request);
+          if (body.has(JsonKeys.UPDATES)) {  // schema doesn't require this because it is hard to model in json schema
+            UserPreferencesRequest request = UserPreferencesRequest.createFromJson(body.getJSONObject(JsonKeys.UPDATES));
+            updateGlobalPreferences(prefs, request);
+          }
         }
       }
       
       else {
         if (action == Action.CLEAR) prefs.clearProjectPreferences();
         else {
-          UserPreferencesRequest request = UserPreferencesRequest.createFromJson(json.getJSONObject(JsonKeys.UPDATES));
-          updateProjectPreferences(prefs, request);
+          if (body.has(JsonKeys.UPDATES)) {
+            UserPreferencesRequest request = UserPreferencesRequest.createFromJson(body.getJSONObject(JsonKeys.UPDATES));
+            updateProjectPreferences(prefs, request);
+          }
         }
       }
       
