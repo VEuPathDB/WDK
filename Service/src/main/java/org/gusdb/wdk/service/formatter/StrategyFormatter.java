@@ -44,6 +44,7 @@ public class StrategyFormatter {
         .put(JsonKeys.IS_DELETED, strategy.isDeleted())
         .put(JsonKeys.ORGANIZATION, strategy.getUser().getProfileProperties().get("organization"))
         .put(JsonKeys.ESTIMATED_SIZE, estimatedSize < 0 ? null : estimatedSize)
+        .put(JsonKeys.NAME_OF_FIRST_STEP, strategy.getMostPrimaryLeafStep().getDisplayName())
         .put(JsonKeys.LEAF_AND_TRANSFORM_STEP_COUNT, strategy.getLeafAndTransformStepCount());
   }
 
