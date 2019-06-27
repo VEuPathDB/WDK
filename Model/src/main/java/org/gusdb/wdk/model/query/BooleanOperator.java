@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query;
 
 import java.util.LinkedHashSet;
@@ -10,8 +7,7 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
- * Since we no longer offer boolean expressions, this class might be deprecated
- * in the future.
+ * Provides utilities for standardization and SQL generation of our boolean operations
  * 
  * @author xingao
  * 
@@ -81,9 +77,6 @@ public enum BooleanOperator {
 
   private String operator;
 
-  /**
-     * 
-     */
   private BooleanOperator(String operator) {
     this.operator = operator;
   }
