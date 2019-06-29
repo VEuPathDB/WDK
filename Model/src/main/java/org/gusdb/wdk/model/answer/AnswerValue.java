@@ -311,7 +311,7 @@ public class AnswerValue {
     LOG.debug("AnswerValue: getPagedAttributeSql(): " + attributeQuery.getFullName() + " --boolean sortPage: " + sortPage);
 
     // get the paged SQL of id query
-    String idSql = getPagedIdSql();
+    String idSql = getPagedIdSql(false, sortPage);
 
     // combine the id query with attribute query
     String attributeSql = getAttributeSql(attributeQuery);
