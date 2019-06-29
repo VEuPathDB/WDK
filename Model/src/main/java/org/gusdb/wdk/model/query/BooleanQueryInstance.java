@@ -54,18 +54,21 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     String sql;
     if (op == BooleanOperator.UNION) {
       sql = getUnionSql(leftSql, rightSql, operator);
-    } else if (op == BooleanOperator.INTERSECT) {
+    }
+    else if (op == BooleanOperator.INTERSECT) {
       // the union query is reused, and having count(*) > 1 is appended to
       // last group by to get intersect results. the unioned sql has to
-      // have
-      // group by as the last clause.
+      // have group by as the last clause.
       sql = getIntersectSql(leftSql, rightSql,
           BooleanOperator.UNION.getOperator(platform));
-    } else if (op == BooleanOperator.RIGHT_ONLY) {
+    }
+    else if (op == BooleanOperator.RIGHT_ONLY) {
       sql = getOnlySql(2, rightSql);
-    } else if (op == BooleanOperator.LEFT_ONLY) {
+    }
+    else if (op == BooleanOperator.LEFT_ONLY) {
       sql = getOnlySql(1, leftSql);
-    } else {
+    }
+    else {
       // swap sqls if it is right_minus
       if (op == BooleanOperator.RIGHT_MINUS) {
         String tempSql = leftSql;
@@ -109,9 +112,9 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     String weightColumn = Utilities.COLUMN_WEIGHT;
     sql.append("sum (" + weightColumn + ") AS " + weightColumn);
     sql.append(" FROM (");
-    sql.append("(SELECT 1 AS wdk_t, l.* FROM (" + leftSql + ") l) ");
+    sql.append("(SELECT 1 AS wdk_t, ls.* FROM (" + leftSql + ") ls) ");
     sql.append(operator);
-    sql.append(" (SELECT 2 AS wdk_t, r.* FROM (" + rightSql + ") r)");
+    sql.append(" (SELECT 2 AS wdk_t, rs.* FROM (" + rightSql + ") rs)");
     sql.append(") t GROUP BY ");
     for (int i = 0; i < pkColumns.length; i++) {
       sql.append((i == 0) ? "" : ",");
@@ -151,9 +154,9 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     // correctly
     sql.append("sum (" + weightColumn + ") AS " + weightColumn);
     sql.append(" FROM (");
-    sql.append("(SELECT 1 AS wdk_t, left.* FROM (" + leftSql + ") left) ");
+    sql.append("(SELECT 1 AS wdk_t, ls.* FROM (" + leftSql + ") ls) ");
     sql.append(operator);
-    sql.append(" (SELECT 2 AS wdk_t, right.* FROM (" + rightSql + ") right)");
+    sql.append(" (SELECT 2 AS wdk_t, rs.* FROM (" + rightSql + ") rs)");
     sql.append(") t GROUP BY " + pkColumnsString);
     sql.append(" HAVING count(*) > 1");
     return sql.toString();
