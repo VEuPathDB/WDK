@@ -312,6 +312,10 @@ public class AnswerValue {
     LOG.debug("AnswerValue: getPagedAttributeSql(): "
       + attributeQuery.getFullName() + " --boolean sortPage: " + sortPage);
 
+    // TODO: see what merge is needed here
+    // get the paged SQL of id query
+    //String idSql = getPagedIdSql(false, sortPage);
+
     // combine the id query with attribute query
     String sql = joinToPagedIds(getAttributeSql(attributeQuery));
 
