@@ -190,6 +190,20 @@ public class AnswerService extends AbstractWdkService {
     return buildResult(reportName, new JSONObject(data));
   }
 
+  @POST
+  @Path("filter-summary/{filterName}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Deprecated
+  public Response displayFilterResults(@PathParam("filterName") String filterName, JSONObject requestJson)
+  throws WdkModelException, WdkUserException, DataValidationException {
+    RunnableObj<AnswerSpec> answerSpec = parseAnswerSpec(getQuestionOrNotFound(_recordClassUrlSegment, _questionUrlSegment),
+      requestJson.getJSONObject(JsonKeys.SEARCH_CONFIG), getWdkModel(), getSessionUser());
+    AnswerValue answerValue = AnswerValueFactory.makeAnswer(getSessionUser(), answerSpec);
+    JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
+    return Response.ok(filterSummaryJson.toString()).build();
+  }
+
   static AnswerRequest parseAnswerRequest(Question question,
       String reporterName, JSONObject requestBody, WdkModel wdkModel, User sessionUser)
           throws RequestMisformatException, DataValidationException, WdkModelException {
@@ -217,8 +231,8 @@ public class AnswerService extends AbstractWdkService {
         .getOrThrow(spec -> new DataValidationException(
             "Invalid answer spec: " + spec.getValidationBundle().toString()));
   }
-
   // TODO:  now that this method is public, should find a better place for it
+
   public static StepContainer loadContainer(AnswerSpecBuilder specBuilder,
       WdkModel wdkModel, User sessionUser) throws WdkModelException, DataValidationException {
 
@@ -322,20 +336,6 @@ public class AnswerService extends AbstractWdkService {
     ResponseBuilder builder = Response.ok(getAnswerAsStream(reporter)).type(reporter.getHttpContentType());
     return new TwoTuple<>(answerValue, applyDisposition(
         builder, reporter.getContentDisposition(), reporter.getDownloadFileName()).build());
-  }
-
-  @POST
-  @Path("filter-summary/{filterName}")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  @Deprecated
-  public Response displayFilterResults(@PathParam("filterName") String filterName, JSONObject requestJson)
-      throws WdkModelException, WdkUserException, DataValidationException {
-    RunnableObj<AnswerSpec> answerSpec = parseAnswerSpec(getQuestionOrNotFound(_recordClassUrlSegment, _questionUrlSegment),
-        requestJson.getJSONObject(JsonKeys.SEARCH_CONFIG), getWdkModel(), getSessionUser());
-    AnswerValue answerValue = AnswerValueFactory.makeAnswer(getSessionUser(), answerSpec);
-    JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
-    return Response.ok(filterSummaryJson.toString()).build();
   }
 
   /**
