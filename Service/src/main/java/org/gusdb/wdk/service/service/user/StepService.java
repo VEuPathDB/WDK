@@ -1,28 +1,5 @@
 package org.gusdb.wdk.service.service.user;
 
-import static org.gusdb.wdk.service.service.AnswerService.CUSTOM_REPORT_URL_SEGMENT;
-import static org.gusdb.wdk.service.service.AnswerService.REPORTS_URL_SEGMENT;
-import static org.gusdb.wdk.service.service.AnswerService.REPORT_NAME_PATH_PARAM;
-import static org.gusdb.wdk.service.service.AnswerService.STANDARD_REPORT_URL_SEGMENT;
-
-import java.util.Date;
-import java.util.Optional;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
@@ -36,13 +13,8 @@ import org.gusdb.wdk.model.answer.request.AnswerFormatting;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
-import org.gusdb.wdk.model.user.InvalidStrategyStructureException;
-import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.*;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
-import org.gusdb.wdk.model.user.StepFactory;
-import org.gusdb.wdk.model.user.Strategy;
-import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserCache;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
@@ -57,6 +29,14 @@ import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.Date;
+import java.util.Optional;
+
+import static org.gusdb.wdk.service.service.AnswerService.*;
 
 public class StepService extends UserService {
 
@@ -83,8 +63,8 @@ public class StepService extends UserService {
           user,
           stepRequest.getAnswerSpec(),
           stepRequest.getCustomName(),
-          stepRequest.isCollapsible(),
-          stepRequest.getCollapsedName(),
+          stepRequest.isExpanded(),
+          stepRequest.getExpandedName(),
           stepRequest.getDisplayPrefs()).get();
       return Response.ok(new JSONObject()
           .put(JsonKeys.ID, step.getStepId()))
@@ -116,7 +96,7 @@ public class StepService extends UserService {
   /**
    * @param stepId ID of the step to update
    * @param body JSON body containing only fields to update on the step
-   * @throws RequestMisformatException 
+   * @throws RequestMisformatException
    */
   @PATCH
   @Path(ID_PATH)
@@ -172,14 +152,14 @@ public class StepService extends UserService {
       @PathParam(REPORT_NAME_PATH_PARAM) String reporterName,
       JSONObject requestJson)
           throws WdkModelException, RequestMisformatException, DataValidationException {
-    
+
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
     StepFactory stepFactory = getWdkModel().getStepFactory();
     Step step = stepFactory
         .getStepByIdAndUserId(stepId, user.getUserId(), ValidationLevel.NONE)
         .orElseThrow(() -> new NotFoundException(formatNotFound(STEP_RESOURCE + stepId)));
     if (!step.getStrategy().isPresent()) {
-      throw new DataValidationException("Step " + step.getStepId() + " is not part of a strategy, so cannot run."); 
+      throw new DataValidationException("Step " + step.getStepId() + " is not part of a strategy, so cannot run.");
     }
 
     RunnableObj<Step> runnableStep = stepFactory
@@ -187,7 +167,7 @@ public class StepService extends UserService {
         .orElseThrow(() -> new NotFoundException(formatNotFound(STEP_RESOURCE + stepId)))
         .getRunnable()
         .getOrThrow(StepService::getNotRunnableException);
-      
+
     AnswerRequest request = new AnswerRequest(
         Step.getRunnableAnswerSpec(runnableStep),
         new AnswerFormatting(reporterName, requestJson));
@@ -258,7 +238,7 @@ public class StepService extends UserService {
 
   /**
    * Apply any desired changes based on the modifications made already
-   * 
+   *
    * @param existingStep previous version of the step
    * @param replacementBuilder a replacement builder with client-requested changes applied
    * @throws WdkModelException if unable to make the appropriate changes
