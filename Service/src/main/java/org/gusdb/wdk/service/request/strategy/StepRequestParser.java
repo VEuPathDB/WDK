@@ -33,17 +33,17 @@ public class StepRequestParser {
 
     private final SemanticallyValid<AnswerSpec> _answerSpec;
     private final String _customName;
-    private final boolean _isCollapsible;
-    private final String _collapsedName;
+    private final boolean _isExpanded;
+    private final String _expandedName;
     private final JSONObject _displayPrefs;
 
     public NewStepRequest(SemanticallyValid<AnswerSpec> answerSpec,
-        String customName, boolean isCollapsible, String collapsedName,
+        String customName, boolean isExpanded, String expandedName,
         JSONObject displayPrefs) {
       _answerSpec = answerSpec;
       _customName = customName;
-      _isCollapsible = isCollapsible;
-      _collapsedName = collapsedName;
+      _isExpanded = isExpanded;
+      _expandedName = expandedName;
       _displayPrefs = displayPrefs;
     }
 
@@ -55,12 +55,12 @@ public class StepRequestParser {
       return _customName;
     }
 
-    public boolean isCollapsible() {
-      return _isCollapsible;
+    public boolean isExpanded() {
+      return _isExpanded;
     }
 
-    public String getCollapsedName() {
-      return _collapsedName;
+    public String getExpandedName() {
+      return _expandedName;
     }
 
     public JSONObject getDisplayPrefs() {
@@ -90,7 +90,7 @@ public class StepRequestParser {
 
       String customName = getStringOrDefault(stepJson, JsonKeys.CUSTOM_NAME, spec.getQuestion().getName());
       boolean isExpanded = getBooleanOrDefault(stepJson, JsonKeys.IS_EXPANDED, false);
-      String expandedName = getStringOrDefault(stepJson, JsonKeys.EXPANDED_NAME, customName);
+      String expandedName = stepJson.getString(JsonKeys.EXPANDED_NAME);
       JSONObject displayPrefs = getJsonObjectOrDefault(stepJson, JsonKeys.DISPLAY_PREFS, new JSONObject());
 
       return new NewStepRequest(validSpec, customName, isExpanded, expandedName, displayPrefs);
