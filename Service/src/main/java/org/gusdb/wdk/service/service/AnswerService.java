@@ -1,23 +1,5 @@
 package org.gusdb.wdk.service.service;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.StreamingOutput;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
@@ -54,6 +36,18 @@ import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.StreamingOutput;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static org.gusdb.fgputil.FormatUtil.NL;
 
 /**
  * <p>JSON input format:</p>
@@ -414,7 +408,7 @@ public class AnswerService extends AbstractWdkService {
         response.header("Pragma", "Public");
         break;
       case ATTACHMENT:
-        response.header("Content-disposition", "attachment; filename=" + filename);
+        response.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename);
         break;
       default:
         throw new WdkModelException("Unsupported content disposition: " + disposition);
