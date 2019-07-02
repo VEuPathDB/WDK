@@ -1,41 +1,13 @@
 package org.gusdb.wdk.service.service.user;
 
-import static org.gusdb.fgputil.functional.Functions.mapToList;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
-import org.gusdb.wdk.model.user.dataset.UserDataset;
-import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
-import org.gusdb.wdk.model.user.dataset.UserDatasetInfo;
-import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
-import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
+import org.gusdb.wdk.model.user.dataset.*;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserDatasetFormatter;
@@ -44,6 +16,19 @@ import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.UserDatasetShareRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 /**
  *  TODO: validate
@@ -74,7 +59,7 @@ public class UserDatasetService extends UserService {
     long userId = user.getUserId();
     UserFactory userFactory = getWdkModel().getUserFactory();
     UserDatasetStore dsStore = getUserDatasetStore();
-    String responseJson = null;
+    String responseJson;
     try (UserDatasetSession dsSession = dsStore.getSession()) {
 
       // get all the user datasets this user can see that are installed in this application db.
@@ -112,7 +97,7 @@ public class UserDatasetService extends UserService {
     long userId = user.getUserId();
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore();
-    String responseJson = null;
+    String responseJson;
     try (UserDatasetSession dsSession = dsStore.getSession()) {
       UserDataset userDataset =
           dsSession.getUserDatasetExists(userId, datasetId) ?
@@ -133,16 +118,11 @@ public class UserDatasetService extends UserService {
 
   /**
    * Service to stream out a binary datafile from IRODS
-   * @param datasetIdStr
-   * @param datafileName
-   * @return
-   * @throws WdkModelException
-   * @throws WdkUserException
    */
   @GET
   @Path("user-datasets/{datasetId}/user-datafiles/{datafileName}")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response getBinaryDatafile(@PathParam("datasetId") String datasetIdStr, @PathParam("datafileName") String datafileName) throws WdkModelException, WdkUserException {
+  public Response getBinaryDatafile(@PathParam("datasetId") String datasetIdStr, @PathParam("datafileName") String datafileName) throws WdkModelException {
     LOG.debug("\nservice user-datasets/datasetId/user-datafiles/filename has been called\n");
 
     long userId = getUser(Access.PRIVATE).getUserId();
@@ -203,9 +183,12 @@ public class UserDatasetService extends UserService {
     }
   }
 
-  /*
-   * This service allows a WDK user to share/unshare owned datasets with
-   * other WDK users.  The JSON object accepted by the service should have the following form:
+  /**
+   * This service allows a WDK user to share/unshare owned datasets with other
+   * WDK users.
+   * <p>
+   * The JSON object accepted by the service should have the following form:
+   * <pre>
    *    {
    *      "add": {
    *        "dataset_id1": [ "user_id1", "user_id2" ]
@@ -215,6 +198,7 @@ public class UserDatasetService extends UserService {
    *        "dataset_id3": [ "user_id1", "user_id3" ]
    *      }
    *    }
+   * </pre>
    */
   @PATCH
   @Path("user-dataset-sharing")
@@ -297,11 +281,9 @@ public class UserDatasetService extends UserService {
   }
 
   /**
-   * In addition to returning the target user's id, this identifies whether the session
-   * user must be the target user.  Regardless of session user access, the target user
-   * cannot be a guest.
-   * @return
-   * @throws WdkModelException
+   * In addition to returning the target user's id, this identifies whether the
+   * session user must be the target user.  Regardless of session user access,
+   * the target user cannot be a guest.
    */
   private User getUser(Access access) throws WdkModelException {
     if(access == Access.PRIVATE) return getPrivateRegisteredUser();
@@ -311,9 +293,11 @@ public class UserDatasetService extends UserService {
   }
 
   /**
-   * Determines whether set of target users is valid.  Any invalid user id throws a Not Found exception.
-   * @param targetUserIds - set of target user ids to check for validity
-   * @throws WdkModelException
+   * Determines whether set of target users is valid.  Any invalid user id
+   * throws a Not Found exception.
+   *
+   * @param targetUserIds
+   *   - set of target user ids to check for validity
    */
   private void validateTargetUserIds(Set<Long> targetUserIds) throws WdkModelException {
     for(Long targetUserId : targetUserIds) {
