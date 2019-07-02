@@ -167,11 +167,13 @@ public class BooleanQuery extends SqlQuery {
     StringParam param;
     if (paramSet.contains(paramName)) {
       param = (StringParam) paramSet.getParam(paramName);
-    } else {
+    }
+    else {
       param = new StringParam();
       param.setName(paramName);
       param.setNumber(false);
       param.setNoTranslation(true);
+      param.setDefault(BooleanOperator.INTERSECT.name());
       param.resolveReferences(_wdkModel);
       param.setResources(_wdkModel);
       paramSet.addParam(param);
