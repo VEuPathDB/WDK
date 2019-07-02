@@ -13,6 +13,7 @@ import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.SortDirectionSpec;
 import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
@@ -309,23 +310,35 @@ public class AnswerValue {
    */
   public String getPagedAttributeSql(Query attributeQuery, boolean sortPage)
   throws WdkModelException {
-    LOG.debug("AnswerValue: getPagedAttributeSql(): "
-      + attributeQuery.getFullName() + " --boolean sortPage: " + sortPage);
+    LOG.debug("AnswerValue: getPagedAttributeSql(): " +
+      attributeQuery.getFullName() + " --boolean sortPage: " + sortPage);
 
-    // TODO: see what merge is needed here
     // get the paged SQL of id query
-    //String idSql = getPagedIdSql(false, sortPage);
+    String idSql = getPagedIdSql(false, sortPage);
 
     // combine the id query with attribute query
-    String sql = joinToPagedIds(getAttributeSql(attributeQuery));
+    String attributeSql = getAttributeSql(attributeQuery);
+    StringBuilder sql = new StringBuilder(" /* the desired attributes, for a page of sorted results */ "
+        + " SELECT aq.* FROM (");
+    sql.append(idSql);
+    sql.append(") pidq, (/* attribute query that returns attributes in a page */ ").append(attributeSql).append(
+        ") aq WHERE ");
 
-    // sort by underlying idq row_index if requested
-    if (sortPage)
-      sql += "\nORDER BY\n"
-        + "  " + ID_QUERY_HANDLE + ".row_index";
+    boolean firstColumn = true;
+    for (String column : getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
+      if (firstColumn)
+        firstColumn = false;
+      else
+        sql.append(" AND ");
+      sql.append("aq.").append(column).append(" = pidq.").append(column);
+    }
+    if (sortPage) {
+      // sort by underlying idq row_index if requested
+      sql.append(" ORDER BY pidq.row_index");
+    }
+    LOG.debug("AnswerValue: getPagedAttributeSql(): " + sql.toString());
+    return sql.toString();
 
-    LOG.debug("AnswerValue: getPagedAttributeSql(): " + sql);
-    return sql;
   }
 
   public ResultList getTableFieldResultList(TableField tableField) throws WdkModelException {
@@ -354,6 +367,9 @@ public class AnswerValue {
   }
 
   public String getPagedTableSql(Query tableQuery) throws WdkModelException {
+    // get the paged SQL of id query
+    String idSql = getPagedIdSql();
+
     // Combine the id query with table query.  Make an instance from the
     // original table query; a table query has only one param, user_id. Note
     // that the original table query is different from the table query held by
@@ -361,22 +377,29 @@ public class AnswerValue {
     RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder()
       .buildRunnable(_user, tableQuery, StepContainer.emptyContainer());
     String tableSql = Query.makeQueryInstance(tableQuerySpec).getSql();
-    String rowNumCol = _answerSpec.getQuestion().getWdkModel()
-      .getAppDb().getPlatform().getRowNumberColumn();
 
-    String sql = joinToPagedIds(
-      "SELECT\n"
-        + "  tq.*\n"
-        + ", " + rowNumCol + " as row_index\n"
-        + "FROM (\n" + indent(tableSql) + ") tq\n"
-    ) + "ORDER BY\n"
-      + "  " + ID_QUERY_HANDLE + ".row_index\n"
-      + ", " + QUERY_HANDLE    + ".row_index";
+    DBPlatform platform = _wdkModel.getAppDb().getPlatform();
+    String tableSqlWithRowIndex = "(SELECT tq.*, " + platform.getRowNumberColumn() + " as row_index FROM (" + tableSql + ") tq ";
+    StringBuilder sql = new StringBuilder()
+        .append("SELECT tqi.* FROM (")
+        .append(idSql)
+        .append(") pidq, ")
+        .append(tableSqlWithRowIndex)
+        .append(") tqi WHERE ");
 
-    // replace the id_sql macro.
-    // this sql must include filters (but not view filters)
-    return sql.replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true, true))
-      .replace(Utilities.MACRO_ID_SQL_NO_FILTERS, "(" + getNoFiltersIdSql() + ")");
+    boolean firstColumn = true;
+    for (String column : getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
+      if (firstColumn)
+        firstColumn = false;
+      else
+        sql.append(" AND ");
+      sql.append("tqi.").append(column).append(" = pidq.").append(column);
+    }
+    sql.append(" ORDER BY pidq.row_index, tqi.row_index");
+
+    // replace the id_sql macro.  this sql must include filters (but not view filters)
+    String sqlWithIdSql = sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true, true));
+    return sqlWithIdSql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, "(" + getNoFiltersIdSql() + ")");
   }
 
   public String getUnfilteredAttributeSql(Query attrQuery)
@@ -432,7 +455,7 @@ public class AnswerValue {
     if (!cols.hasNext())
       return wrapped;
 
-    final var out = new StringBuilder(wrapped).append("\nORDER BY\n  inq.");
+    final var out = new StringBuilder(wrapped).append("\nORDER BY\n inq.");
 
     boolean first = true;
     while (cols.hasNext()) {
@@ -458,7 +481,8 @@ public class AnswerValue {
       // the dynamic query doesn't have sql defined, the sql will be
       // constructed from the id query cache table.
       sql = getBaseIdSql();
-    } else {
+    }
+    else {
       // Make an instance from the original attribute query; an attribute
       // query has only one param, user_id. Note that the original
       // attribute query is different from the attribute query held by the
@@ -942,24 +966,6 @@ public class AnswerValue {
   }
 
   /**
-   * Builds a query that selects from the given query joining on the ID sql
-   * returned by {@link #getPagedIdSql()}.
-   *
-   * @param sql
-   *   Table/Attribute query
-   *
-   * @return the given query joined on the paged id query
-   *
-   * @throws WdkModelException
-   *   see {@link #getPagedIdSql()}
-   *
-   * @see #joinToIds(String, String)
-   */
-  private String joinToPagedIds(final String sql) throws WdkModelException {
-    return joinToIds(sql, getPagedIdSql());
-  }
-
-  /**
    * Builds a query that selects from the first provided query joining on the
    * second using the primary key columns.
    * <p>
@@ -992,7 +998,7 @@ public class AnswerValue {
       .getColumnRefs();
 
     final StringBuilder out = new StringBuilder("/* joinToIds */\nSELECT\n  "
-      + QUERY_HANDLE + ".*\nFROM\n  (\n")
+      + QUERY_HANDLE + ".* \nFROM\n  (\n")
       .append(sql)
       .append("\n  ) " + QUERY_HANDLE + "\n, (\n")
       .append(idSql)
