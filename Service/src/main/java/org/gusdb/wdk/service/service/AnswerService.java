@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.function.Predicate.not;
 import static org.gusdb.fgputil.FormatUtil.NL;
 
 /**
@@ -202,6 +203,55 @@ public class AnswerService extends AbstractWdkService {
     AnswerValue answerValue = AnswerValueFactory.makeAnswer(getSessionUser(), answerSpec);
     JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
     return Response.ok(filterSummaryJson.toString()).build();
+  }
+
+  /**
+   * {@code GET} form of the service method {@link
+   * #buildDefaultReporterResult(JSONObject)}.
+   * <p>
+   * This method is required because of Jersey's route matching trying to run
+   * {@code GET} requests through the {@code buildDefaultReporterResult} method.
+   *
+   * @see #getReport(String)
+   * @see #buildDefaultReporterResult(JSONObject)
+   */
+  @GET
+  @Path(STANDARD_REPORT_URL_SEGMENT)
+  @Produces(MediaType.APPLICATION_JSON)
+  @OutSchema("wdk.answer.post-response")
+  public Response getDefaultReporterResult()
+  throws DataValidationException, WdkUserException, WdkModelException {
+    return getReport(DefaultJsonReporter.RESERVED_NAME);
+  }
+
+  /**
+   * {@code GET} form of the {@link #buildResult(String, JSONObject)} service
+   * method.
+   *
+   * @see #buildResult(String, JSONObject)
+   */
+  @GET
+  @Path(CUSTOM_REPORT_URL_SEGMENT)
+  public Response getReport(@PathParam(REPORT_NAME_PATH_PARAM) String report)
+  throws WdkUserException, WdkModelException, DataValidationException {
+    var params = getUriInfo().getQueryParameters();
+    var searchConfig = new JSONObject().put(
+      JsonKeys.PARAMETERS,
+      params.keySet()
+        .stream()
+        .filter(not(JsonKeys.REPORT_CONFIG::equals))
+        .reduce(
+          new JSONObject(),
+          (b, v) -> b.put(v, params.getFirst(v)),
+          (a, b) -> a
+        )
+    );
+
+    return buildResult(report, new JSONObject()
+      .put(JsonKeys.SEARCH_CONFIG, searchConfig)
+      .put(JsonKeys.REPORT_CONFIG, Optional.of(params.getFirst(JsonKeys.REPORT_CONFIG))
+        .map(JSONObject::new)
+        .orElseGet(JSONObject::new)));
   }
 
   static AnswerRequest parseAnswerRequest(Question question,
