@@ -200,17 +200,25 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
   //   long as they override and correctly implement the getIsAlwaysApplied() and getDefaultValue() methods
   //   in their Filter implementation/configuration.
   private static FilterOptionListBuilder applyAlwaysOnFilters(FilterOptionListBuilder incomingFilters,
-      Map<String, Filter> allFilters, SimpleAnswerSpec simpleSpec) {
+      Map<String, Filter> allFilters, SimpleAnswerSpec simpleSpec) throws WdkModelException {
     // typically always-on filters should be applied before other filters, so put them up front
     FilterOptionListBuilder newFilters = FilterOptionList.builder();
     List<Filter> alwaysOnFilters = filter(allFilters.values(), Filter::getIsAlwaysApplied);
     for (Filter filter : alwaysOnFilters) {
       if (!incomingFilters.hasFilter(filter.getKey())) {
-        JSONObject defaultValue = filter.getDefaultValue(simpleSpec);
-        if (defaultValue != null) {
-          newFilters.addFilterOption(FilterOption.builder()
-              .setFilterName(filter.getKey())
-              .setValue(defaultValue));
+        try {
+          JSONObject defaultValue = filter.getDefaultValue(simpleSpec);
+          if (defaultValue != null) {
+            newFilters.addFilterOption(FilterOption.builder()
+                .setFilterName(filter.getKey())
+                .setValue(defaultValue));
+          }
+        }
+        catch (Exception e) {
+          throw new WdkModelException("Could not apply always-on filter '" +
+              filter.getKey() + "'. The answer spec may be missing information " +
+                  "needed to fetch a default value for this filter. " +
+                  "AnswerSpec: " + simpleSpec, e);
         }
       }
     }
