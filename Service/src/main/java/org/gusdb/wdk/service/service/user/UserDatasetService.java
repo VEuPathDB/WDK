@@ -14,6 +14,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -22,7 +23,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.HeaderParam;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
@@ -31,7 +31,11 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
-import org.gusdb.wdk.model.user.dataset.*;
+import org.gusdb.wdk.model.user.dataset.UserDataset;
+import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
+import org.gusdb.wdk.model.user.dataset.UserDatasetInfo;
+import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
+import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.service.FileRanges;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.annotation.PATCH;
@@ -41,19 +45,6 @@ import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.UserDatasetShareRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 /**
  *  TODO: validate
