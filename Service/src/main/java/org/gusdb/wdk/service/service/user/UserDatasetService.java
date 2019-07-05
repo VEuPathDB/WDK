@@ -1,5 +1,29 @@
 package org.gusdb.wdk.service.service.user;
 
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.HeaderParam;
+
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
@@ -8,6 +32,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.dataset.*;
+import org.gusdb.wdk.service.FileRanges;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserDatasetFormatter;
@@ -122,7 +147,11 @@ public class UserDatasetService extends UserService {
   @GET
   @Path("user-datasets/{datasetId}/user-datafiles/{datafileName}")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response getBinaryDatafile(@PathParam("datasetId") String datasetIdStr, @PathParam("datafileName") String datafileName) throws WdkModelException {
+  public Response getBinaryDatafile(
+    @PathParam("datasetId")    String datasetIdStr,
+    @PathParam("datafileName") String datafileName,
+    @HeaderParam("Range")      String fileRange
+  ) throws WdkModelException {
     LOG.debug("\nservice user-datasets/datasetId/user-datafiles/filename has been called\n");
 
     long userId = getUser(Access.PRIVATE).getUserId();
@@ -143,7 +172,10 @@ public class UserDatasetService extends UserService {
         throw new WdkModelException("There is no data file corresponding to the filename " + datafileName);
       }
       InputStream inputStream = userDatasetFile.getFileContents(dsSession, temporaryDirPath);
-      return Response.ok(getStreamingOutput(inputStream)).build();
+      return fileRange == null || fileRange.isEmpty()
+        ? Response.ok(getStreamingOutput(inputStream)).build()
+        : FileRanges.getFileChunkResponse(temporaryDirPath.resolve(datafileName),
+          FileRanges.parseRangeHeaderValue(fileRange));
     }
     catch(IOException ioe) {
       throw new WdkModelException(ioe);
