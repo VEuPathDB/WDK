@@ -22,6 +22,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.HeaderParam;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
@@ -36,6 +37,7 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetInfo;
 import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
+import org.gusdb.wdk.service.FileRanges;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserDatasetFormatter;
@@ -142,7 +144,11 @@ public class UserDatasetService extends UserService {
   @GET
   @Path("user-datasets/{datasetId}/user-datafiles/{datafileName}")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response getBinaryDatafile(@PathParam("datasetId") String datasetIdStr, @PathParam("datafileName") String datafileName) throws WdkModelException, WdkUserException {
+  public Response getBinaryDatafile(
+    @PathParam("datasetId")    String datasetIdStr,
+    @PathParam("datafileName") String datafileName,
+    @HeaderParam("Range")      String fileRange
+  ) throws WdkModelException {
     LOG.debug("\nservice user-datasets/datasetId/user-datafiles/filename has been called\n");
 
     long userId = getUser(Access.PRIVATE).getUserId();
@@ -163,7 +169,10 @@ public class UserDatasetService extends UserService {
         throw new WdkModelException("There is no data file corresponding to the filename " + datafileName);
       }
       InputStream inputStream = userDatasetFile.getFileContents(dsSession, temporaryDirPath);
-      return Response.ok(getStreamingOutput(inputStream)).build();
+      return fileRange == null || fileRange.isEmpty()
+        ? Response.ok(getStreamingOutput(inputStream)).build()
+        : FileRanges.getFileChunkResponse(temporaryDirPath.resolve(datafileName),
+          FileRanges.parseRangeHeaderValue(fileRange));
     }
     catch(IOException ioe) {
       throw new WdkModelException(ioe);
