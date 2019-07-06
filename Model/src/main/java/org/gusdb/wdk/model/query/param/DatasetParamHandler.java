@@ -87,7 +87,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
       .getDatasetFactory()
       .getDataset(
         spec.getUser(),
-        Long.valueOf(ctxParamVals.get().get(spec.get(_param.getName())))
+        Long.valueOf(spec.get(_param.getName()))
       );
     return dataset.getChecksum();
   }
