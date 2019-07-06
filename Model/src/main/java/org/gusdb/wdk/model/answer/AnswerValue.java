@@ -369,7 +369,7 @@ public class AnswerValue {
 
   String getPagedTableSql(Query tableQuery) throws WdkModelException, WdkUserException {
     // get the paged SQL of id query
-    String idSql = getPagedIdSql();
+    String idSql = getPagedIdSql(false, true);
 
     // combine the id query with attribute query
     // make an instance from the original attribute query, and attribute
@@ -384,7 +384,7 @@ public class AnswerValue {
 
     DBPlatform platform = _question.getWdkModel().getAppDb().getPlatform();
     String tableSqlWithRowIndex = "(SELECT tq.*, " + platform.getRowNumberColumn() + " as row_index FROM (" + tableSql + ") tq ";
-    StringBuffer sql = new StringBuffer("SELECT tqi.* FROM (");
+    StringBuilder sql = new StringBuilder("SELECT tqi.* FROM (");
     sql.append(idSql);
     sql.append(") pidq, ").append(tableSqlWithRowIndex).append(") tqi WHERE ");
 
@@ -961,27 +961,6 @@ public class AnswerValue {
   private String joinToIds(final String sql)
   throws WdkModelException, WdkUserException {
     return joinToIds(sql, getIdSql());
-  }
-
-  /**
-   * Builds a query that selects from the given query joining on the ID sql
-   * returned by {@link #getPagedIdSql()}.
-   *
-   * @param sql
-   *   Table/Attribute query
-   *
-   * @return the given query joined on the paged id query
-   *
-   * @throws WdkModelException
-   *   see {@link #getPagedIdSql()}
-   * @throws WdkUserException
-   *   see {@link #getPagedIdSql()}
-   *
-   * @see #joinToIds(String, String)
-   */
-  private String joinToPagedIds(final String sql)
-  throws WdkModelException, WdkUserException {
-    return joinToIds(sql, getPagedIdSql());
   }
 
   /**
