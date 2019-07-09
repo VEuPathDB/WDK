@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
@@ -29,8 +26,6 @@ public class EnumItemList extends WdkModelBase {
   private List<ParamConfiguration> useTermOnlies;
   private Boolean useTermOnly;
 
-  private String dependedValue;
-
   public EnumItemList() {
     items = new ArrayList<EnumItem>();
     useTermOnlies = new ArrayList<ParamConfiguration>();
@@ -40,14 +35,6 @@ public class EnumItemList extends WdkModelBase {
     this.param = itemList.param;
     this.items = new ArrayList<EnumItem>(itemList.items);
     this.useTermOnly = itemList.useTermOnly;
-  }
-
-  public void setDependedValue(String dependedValue) {
-    this.dependedValue = dependedValue;
-  }
-
-  public String getDependedValue() {
-    return dependedValue;
   }
 
   public void addEnumItem(EnumItem enumItem) {
@@ -75,11 +62,6 @@ public class EnumItemList extends WdkModelBase {
     this.param = param;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     // exclude use term only
@@ -109,17 +91,10 @@ public class EnumItemList extends WdkModelBase {
     items = newItems;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.
-   * WdkModel)
-   */
   @Override
-  public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
+  public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     for (EnumItem item : items) {
-      item.resolveReferences(wodkModel);
+      item.resolveReferences(wdkModel);
     }
   }
 }
