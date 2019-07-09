@@ -21,8 +21,10 @@ public class SearchColumnService extends AbstractWdkService {
   public static final String
     ID_VAR = "columnName",
     ID_PARAM = "{" + ID_VAR + "}",
-    BASE_PATH = QuestionService.ID_PATH + "/columns",
-    ID_PATH = BASE_PATH + "/" + ID_PARAM;
+    COLUMNS_SEGMENT = "/columns",
+    NAMED_COLUMN_SEGMENT = COLUMNS_SEGMENT + "/" + ID_PARAM,
+    BASE_PATH = QuestionService.ID_PATH + COLUMNS_SEGMENT,
+    ID_PATH = QuestionService.ID_PATH + NAMED_COLUMN_SEGMENT;
 
   private final Question search;
 
