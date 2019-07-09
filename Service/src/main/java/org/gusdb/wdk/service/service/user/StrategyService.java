@@ -204,7 +204,7 @@ public class StrategyService extends UserService {
         .clearSteps()
         .setRootStepId(parsedTree.getFirst())
         .addSteps(parsedTree.getSecond())
-        .build(new UserCache(oldStrat.getUser()), ValidationLevel.RUNNABLE);
+        .build(new UserCache(oldStrat.getUser()), ValidationLevel.NONE);
 
       if (!newStrat.isValid()) {
         throw new DataValidationException(
