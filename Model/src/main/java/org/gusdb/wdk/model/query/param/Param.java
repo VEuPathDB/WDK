@@ -788,13 +788,13 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    * given an input list of changed or stale params, return a list of
    * (recursively) dependent params that are stale as a consequence.
    *
-   * @param staleDependedParamsFullNames
+   * @param staleDependedParamNames
    *   the names of depended params whose value has changed, either directly or
    *   because they are stale.
    *
    * @return a list of stale dependent params
    */
-  private Set<Param> getStaleDependentParams(Set<String> staleDependedParamsFullNames) {
+  private Set<Param> getStaleDependentParams(Set<String> staleDependedParamNames) {
 
     Set<Param> staleDependentParams = new HashSet<>(); // return value
 
@@ -802,13 +802,13 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
       // if dependent param is stale, add it to stale depended list and recurse
       // to find kids' stale dependents (unless already visited)
-      if (!staleDependedParamsFullNames.contains(dependentParam.getName())
-        && dependentParam.isStale(staleDependedParamsFullNames)) {
+      if (!staleDependedParamNames.contains(dependentParam.getName())
+        && dependentParam.isStale(staleDependedParamNames)) {
 
         staleDependentParams.add(dependentParam);
 
         Set<String> newStaleDependedParams = new HashSet<>(
-          staleDependedParamsFullNames);
+            staleDependedParamNames);
         newStaleDependedParams.add(getFullName());
 
         staleDependentParams.addAll(dependentParam.getStaleDependentParams(newStaleDependedParams));

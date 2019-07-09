@@ -120,11 +120,6 @@ public class EnumParam extends AbstractEnumParam {
       throw new WdkModelException("No enum items available in enumParam " + getFullName());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
-   */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
@@ -149,36 +144,15 @@ public class EnumParam extends AbstractEnumParam {
     }
   }
 
-  /**
-   * enum params can't get stale, because they can't actually be dependent (since they have no query)
-   */
-  @Override
-  public boolean isStale(Set<String> staleDependedParamsFullNames) {
-    return false;
-  }
-
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.Param#clone()
-   */
   @Override
   public Param clone() {
     return new EnumParam(this);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsParam, boolean extra) {
-    // do nothing. do not add the enum list into the content, since they may
-    // be
-    // changed between versions, but we don't want to invalidate a query
-    // because
+    // do nothing. do not add the enum list into the content, since they may be
+    // changed between versions, but we don't want to invalidate a query because
     // of it.
   }
 
@@ -190,7 +164,7 @@ public class EnumParam extends AbstractEnumParam {
 
   @Override
   public List<Query> getQueries() {
-	return new ArrayList<>();
+    return new ArrayList<>();
   }
 
 }

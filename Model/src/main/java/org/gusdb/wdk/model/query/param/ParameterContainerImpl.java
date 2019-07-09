@@ -104,7 +104,6 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
 
     userParam.excludeResources(wdkModel.getProjectId());
     userParam.resolveReferences(wdkModel);
-    userParam.setResources(wdkModel);
     paramSet.addParam(userParam);
     return userParam;
   }
@@ -121,7 +120,6 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
 
     userParam.excludeResources(_wdkModel.getProjectId());
     userParam.resolveReferences(_wdkModel);
-    userParam.setResources(_wdkModel);
     paramSet.addParam(userParam);
     return userParam;
   }

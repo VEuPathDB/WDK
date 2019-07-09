@@ -592,6 +592,14 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       && SelectMode.NONE.equals(selectMode);
   }
 
+  /**
+   * enum params are always stale if any depended param is stale
+   */
+  @Override
+  public boolean isStale(Set<String> staleDependedParamsFullNames) {
+    return true;
+  }
+
   @Override
   public String getBriefRawValue(Object rawValue, int truncateLength) {
     String[] terms = (String[]) rawValue;

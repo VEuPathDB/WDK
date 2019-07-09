@@ -124,16 +124,11 @@ public class FlatVocabParam extends AbstractEnumParam {
     param.setName(PARAM_SERVED_QUERY);
     param.setDefault(servedQueryName);
     param.setAllowEmpty(true);
+    param.excludeResources(model.getProjectId());
     param.resolveReferences(model);
-    param.setResources(model);
     paramSet.addParam(param);
     query.addParam(param);
     return query;
-  }
-
-  @Override
-  public void setResources(WdkModel model) throws WdkModelException {
-    super.setResources(model);
   }
 
   @Override
@@ -148,14 +143,6 @@ public class FlatVocabParam extends AbstractEnumParam {
     catch (ValueProductionException e) {
       throw new WdkModelException(e);
     }
-  }
-
-  /**
-   * flat vocab params are always stale if any depended param is stale
-   */
-  @Override
-  public boolean isStale(Set<String> staleDependedParamsFullNames) {
-    return true;
   }
 
   @Override

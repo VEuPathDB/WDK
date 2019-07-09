@@ -132,7 +132,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
         param.excludeResources(wdkModel.getProjectId());
         param.resolveReferences(wdkModel);
-        param.setResources(wdkModel);
         paramSet.addParam(param);
       }
       newQuery.addParam(param);
