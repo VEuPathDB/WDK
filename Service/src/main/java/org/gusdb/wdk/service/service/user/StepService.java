@@ -1,5 +1,29 @@
 package org.gusdb.wdk.service.service.user;
 
+import static org.gusdb.wdk.service.service.AnswerService.CUSTOM_REPORT_URL_SEGMENT;
+import static org.gusdb.wdk.service.service.AnswerService.REPORTS_URL_SEGMENT;
+import static org.gusdb.wdk.service.service.AnswerService.REPORT_NAME_PATH_PARAM;
+import static org.gusdb.wdk.service.service.AnswerService.STANDARD_REPORT_URL_SEGMENT;
+
+import java.util.Date;
+import java.util.Optional;
+
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
@@ -12,9 +36,16 @@ import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.request.AnswerFormatting;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
-import org.gusdb.wdk.model.user.*;
+import org.gusdb.wdk.model.user.InvalidStrategyStructureException;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
+import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.Strategy;
+import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserCache;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
@@ -27,22 +58,20 @@ import org.gusdb.wdk.service.request.strategy.StepRequestParser;
 import org.gusdb.wdk.service.request.strategy.StepRequestParser.NewStepRequest;
 import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.gusdb.wdk.service.service.AnswerService;
+import org.gusdb.wdk.service.service.search.ColumnReporterService;
+import org.gusdb.wdk.service.service.search.SearchColumnService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.util.Date;
-import java.util.Optional;
-
-import static org.gusdb.wdk.service.service.AnswerService.*;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class StepService extends UserService {
 
   private static final String BASE_PATH = "steps";
   private static final String ID_PARAM = "stepId";
   private static final String ID_PATH = BASE_PATH + "/{" + ID_PARAM + "}";
+  private static final String COLUMN_REPORTER_PATH =
+      ID_PATH + SearchColumnService.NAMED_COLUMN_SEGMENT + ColumnReporterService.NAMED_REPORT_SEGMENT;
 
   public StepService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
@@ -252,7 +281,7 @@ public class StepService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   @Deprecated
   public JSONObject getFilterSummary(
-    @PathParam(ID_PATH) long stepId,
+    @PathParam(ID_PARAM) long stepId,
     @PathParam("filterName") String filterName
   ) throws WdkModelException, DataValidationException, WdkUserException {
     return AnswerValueFactory.makeAnswer(
@@ -262,6 +291,28 @@ public class StepService extends UserService {
             .getRunnable()
             .getOrThrow(StepService::getNotRunnableException)))
       .getFilterSummaryJson(filterName);
+  }
+
+  @POST
+  @Path(COLUMN_REPORTER_PATH)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public StreamingOutput getColumnReporterResponse(
+      @PathParam(ID_PARAM) final long stepId,
+      @PathParam(SearchColumnService.ID_VAR) final String columnName,
+      @PathParam(ColumnReporterService.ID_VAR) final String reporterName,
+      final JsonNode reporterConfig)
+          throws WdkModelException, DataValidationException, NotFoundException, WdkUserException {
+    RunnableObj<Step> existingStep = getStepForCurrentUser(stepId, ValidationLevel.RUNNABLE)
+        .getRunnable().getOrThrow(StepService::getNotRunnableException);
+    Question question = existingStep.get().getAnswerSpec().getQuestion();
+    AttributeField attribute = requireColumn(question, columnName);
+    return ColumnReporterService.wrapReporter(
+        attribute.prepareReporter(
+            reporterName,
+            AnswerValueFactory.makeAnswer(existingStep),
+            reporterConfig
+        ).orElseThrow(ColumnReporterService.makeNotFound(attribute, reporterName))
+    );
   }
 
   private static DataValidationException getNotRunnableException(Step badStep) {

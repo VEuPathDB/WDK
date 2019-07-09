@@ -46,7 +46,9 @@ public class ColumnReporterService extends AbstractWdkService {
   public static final String
     ID_VAR = "reporter",
     ID_PARAM = "{" + ID_VAR + "}",
-    BASE_PATH = SearchColumnService.ID_PATH + "/reports";
+    REPORTS_SEGMENT = "/reports",
+    NAMED_REPORT_SEGMENT = REPORTS_SEGMENT + "/" + ID_PARAM,
+    BASE_PATH = SearchColumnService.ID_PATH + REPORTS_SEGMENT;
 
   /**
    * Reporter not found message.
@@ -106,7 +108,7 @@ public class ColumnReporterService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Object getReporterDetails(@PathParam(ID_VAR) final String reporter) {
     var rep = column.getReporter(reporter)
-      .orElseThrow(makeNotFound(reporter));
+      .orElseThrow(makeNotFound(column, reporter));
 
     return Jackson.createObjectNode()
       .put(JsonKeys.NAME, rep.getKey())
@@ -144,11 +146,11 @@ public class ColumnReporterService extends AbstractWdkService {
       reporter,
       makeAnswer(body.get(JsonKeys.SEARCH_CONFIG)),
       body.get(JsonKeys.REPORT_CONFIG)
-    ).orElseThrow(makeNotFound(reporter)));
+    ).orElseThrow(makeNotFound(column, reporter)));
   }
 
   // TODO: Unify this with answer service
-  private StreamingOutput wrapReporter(final ColumnReporter rep) {
+  public static StreamingOutput wrapReporter(final ColumnReporter rep) {
     return stream -> {
       try {
         rep.runner().run(rep.build(stream));
@@ -213,15 +215,17 @@ public class ColumnReporterService extends AbstractWdkService {
   /**
    * Returns a supplier for a {@link NotFoundException} configured with the
    * message defined in {@link ColumnReporterService#ERR_404} populated with the
-   * given report name and the name of the current column.
+   * given report name and the name of the passed column.
    *
+   * @param column
+   *   selected attribute field
    * @param rep
    *   report name
    *
    * @return
    *   a supplier for a configured {@link NotFoundException}.
    */
-  private Supplier<NotFoundException> makeNotFound(final String rep) {
+  public static Supplier<NotFoundException> makeNotFound(AttributeField column, final String rep) {
     return () -> new NotFoundException(format(ERR_404, rep, column.getName()));
   }
 
