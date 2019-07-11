@@ -205,12 +205,6 @@ public class StrategyService extends UserService {
         .setRootStepId(parsedTree.getFirst())
         .addSteps(parsedTree.getSecond())
         .build(new UserCache(oldStrat.getUser()), ValidationLevel.NONE);
-
-      if (!newStrat.isValid()) {
-        throw new DataValidationException(
-            "Invalid strategy produced by passed tree. Reasons follow: " + NL +
-            newStrat.getValidationBundle().toString());
-      }
   
       // filter the list of original steps down to only steps that do not appear
       // in the new tree
