@@ -74,10 +74,24 @@ public class UserDatasetService extends UserService {
 
     expandDatasets = getFlag(expandDatasets, false);
     User user = getUser(Access.PRIVATE);
-    return getAllUserDatasetsJson(getWdkModel(), user, expandDatasets);
+
+    return getAllUserDatasetsJson(getWdkModel(), user, expandDatasets, false, null);
   }
 
-  public static JSONArray getAllUserDatasetsJson(WdkModel wdkModel, User user, boolean expandDatasets) throws WdkModelException {
+
+  @GET
+  @Path("user-datasets-jbrowse")
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray getAllUserDatasetsJBrowse(@QueryParam("organism") String publicOrganismAbbrev) throws WdkModelException {
+    LOG.debug("\nservice user-datasets-jbrowse has been called ---gets all jbrowse configuration for user datasets\n");
+
+    User user = getUser(Access.PRIVATE);
+
+    return getAllUserDatasetsJson(getWdkModel(), user, false, true, publicOrganismAbbrev);
+  }
+
+
+    public static JSONArray getAllUserDatasetsJson(WdkModel wdkModel, User user, boolean expandDatasets, boolean jbrowse, String publicOrganismAbbrev) throws WdkModelException {
     UserFactory userFactory = wdkModel.getUserFactory();
     UserDatasetStore dsStore = getUserDatasetStore(wdkModel);
     long userId = user.getUserId();
@@ -94,7 +108,7 @@ public class UserDatasetService extends UserService {
       List<UserDatasetInfo> sharedDatasets = getDatasetInfo(dsSession.getExternalUserDatasets(userId).values(),
           installedUserDatasets, dsStore, dsSession, userFactory, wdkModel, user);
       return UserDatasetFormatter.getUserDatasetsJson(dsSession, userDatasets,
-          sharedDatasets, expandDatasets);
+                                                      sharedDatasets, expandDatasets, jbrowse, publicOrganismAbbrev);
     }
   }
 
