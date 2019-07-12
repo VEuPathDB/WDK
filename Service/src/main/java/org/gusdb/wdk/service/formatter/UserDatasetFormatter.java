@@ -39,6 +39,8 @@ public class UserDatasetFormatter {
         if(jbrowse) {
             JSONArray samples = getUserDatasetJBrowseJson(dsSession, dataset, includeSharingData, false, publicOrganismAbbrev);
 
+            
+
             for (int i = 0 ; i < samples.length(); i++) {
                 datasetsJson.put(samples.getJSONObject(i));
             }
