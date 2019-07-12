@@ -61,16 +61,17 @@ public class EnumParamHandler extends AbstractParamHandler {
   @Override
   public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxParamVals)
       throws WdkModelException {
-    final var value = ctxParamVals.get().get(_param.getName());
+    final var stableValue = ctxParamVals.get().get(_param.getName());
 
-    if (value == null || value.isEmpty())
-      return value;
+    if (stableValue == null || stableValue.isEmpty() || _param.isNoTranslation()) {
+      return stableValue;
+    }
 
     final var enumParam = (AbstractEnumParam) _param;
     final var cache = enumParam.getVocabInstance(ctxParamVals);
 
     // TODO: This validation should be in the param, not the handler
-    var terms = enumParam.convertToTerms(value);
+    var terms = enumParam.convertToTerms(stableValue);
     var internals = new LinkedHashSet<String>();
     for (var term : terms) {
       if (!cache.containsTerm(term))
