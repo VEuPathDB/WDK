@@ -178,8 +178,8 @@ public class BooleanQuery extends SqlQuery {
       for (BooleanOperator value : BooleanOperator.values()) {
         EnumItem item = new EnumItem();
         item.setDisplay(value.name());
-        item.setTerm(value.name());
-        item.setInternal(value.name());
+        item.setTerm(value.getBaseOperator());
+        item.setInternal(value.getBaseOperator());
         items.addEnumItem(item);
       }
       param.addEnumItemList(items);
