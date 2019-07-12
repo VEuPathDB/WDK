@@ -80,14 +80,19 @@ public class UserDatasetService extends UserService {
 
 
   @GET
-  @Path("user-datasets-jbrowse")
+  @Path("user-datasets-jbrowse/{organism}")
   @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray getAllUserDatasetsJBrowse(@QueryParam("organism") String publicOrganismAbbrev) throws WdkModelException {
+  public JSONObject getAllUserDatasetsJBrowse(@PathParam("organism") String publicOrganismAbbrev) throws WdkModelException {
     LOG.debug("\nservice user-datasets-jbrowse has been called ---gets all jbrowse configuration for user datasets\n");
 
     User user = getUser(Access.PRIVATE);
 
-    return getAllUserDatasetsJson(getWdkModel(), user, false, true, publicOrganismAbbrev);
+    JSONArray tracks = getAllUserDatasetsJson(getWdkModel(), user, false, true, publicOrganismAbbrev);
+
+    JSONObject json = new JSONObject();
+    json.put("tracks", tracks);
+
+    return json;
   }
 
 
