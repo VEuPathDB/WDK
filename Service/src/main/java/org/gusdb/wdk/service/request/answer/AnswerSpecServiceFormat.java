@@ -34,6 +34,11 @@ public class AnswerSpecServiceFormat {
    *   "viewFilters": (optional) [ {
    *     "name": String, value: Any
    *   } ],
+   *   "columnFilters": (optional) {
+   *     "columnName": {
+   *       "toolName": [ any ]
+   *     }
+   *   },
    *   "wdk_weight": (optional) Integer
    * }
    *
@@ -58,7 +63,7 @@ public class AnswerSpecServiceFormat {
       specBuilder.setFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.FILTERS));
       specBuilder.setViewFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.VIEW_FILTERS));
 
-      // TODO: Move this to somewhere that makes a bit more sense
+      // apply column filter configurations if present
       if (json.has(JsonKeys.COLUMN_FILTERS))
         specBuilder.setColumnFilterConfig(
           ColumnFilterServiceFormat.parse(question,
@@ -68,6 +73,7 @@ public class AnswerSpecServiceFormat {
       if (json.has(JsonKeys.WDK_WEIGHT)) {
         specBuilder.setAssignedWeight(json.getInt(JsonKeys.WDK_WEIGHT));
       }
+
       return specBuilder;
     }
     catch (JSONException | WdkUserException e) {
@@ -89,6 +95,7 @@ public class AnswerSpecServiceFormat {
         .put(JsonKeys.PARAMETERS, ParamsAndFiltersDbColumnFormat.formatParams(answerSpec.getQueryInstanceSpec()))
         .put(JsonKeys.FILTERS, ParamsAndFiltersDbColumnFormat.formatFilters(answerSpec.getFilterOptions()))
         .put(JsonKeys.VIEW_FILTERS, ParamsAndFiltersDbColumnFormat.formatFilters(answerSpec.getViewFilterOptions()))
+        .put(JsonKeys.COLUMN_FILTERS, ParamsAndFiltersDbColumnFormat.formatColumnFilters(answerSpec.getColumnFilterConfig()))
         .put(JsonKeys.WDK_WEIGHT, answerSpec.getQueryInstanceSpec().getAssignedWeight())
         .put(JsonKeys.LEGACY_FILTER_NAME, answerSpec.getLegacyFilterName().orElse(null));
   }

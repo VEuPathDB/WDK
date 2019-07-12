@@ -5,7 +5,6 @@ import static org.gusdb.wdk.service.formatter.ValidationFormatter.getValidationB
 import java.util.Set;
 
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
@@ -37,6 +36,7 @@ import org.json.JSONObject;
  *     parameters: Object,
  *     filters: Array,
  *     viewFilters: Array,
+ *     columnFilters: Map<String,Map<String,Array<Object>>
  *     legacyFilter: String,
  *     wdkWeight: Number
  *   },

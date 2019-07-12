@@ -1,11 +1,16 @@
 package org.gusdb.wdk.model.answer.spec;
 
+import java.util.Map.Entry;
+
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
+import org.gusdb.wdk.model.toolbundle.config.ColumnConfig;
+import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSet;
+import org.gusdb.wdk.model.toolbundle.config.FilterConfigSet;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,6 +31,7 @@ public class ParamsAndFiltersDbColumnFormat {
   public static final String KEY_PARAMS = "params";
   public static final String KEY_FILTERS = "filters";
   public static final String KEY_VIEW_FILTERS = "viewFilters";
+  public static final String KEY_COLUMN_FILTERS = "columnFilters";
 
   // filter json keys
   public static final String KEY_NAME = "name";
@@ -37,6 +43,7 @@ public class ParamsAndFiltersDbColumnFormat {
     jsContent.put(KEY_PARAMS, formatParams(answerSpec.getQueryInstanceSpec()));
     jsContent.put(KEY_FILTERS, formatFilters(answerSpec.getFilterOptions()));
     jsContent.put(KEY_VIEW_FILTERS, formatFilters(answerSpec.getViewFilterOptions()));
+    jsContent.put(KEY_COLUMN_FILTERS, formatColumnFilters(answerSpec.getColumnFilterConfig()));
     return jsContent;
   }
 
@@ -104,6 +111,18 @@ public class ParamsAndFiltersDbColumnFormat {
       }
     }
     return builder;
+  }
+
+  public static JSONObject formatColumnFilters(ColumnFilterConfigSet columnFilterConfig) {
+    JSONObject obj = new JSONObject();
+    for (Entry<String, ColumnConfig> column: columnFilterConfig.getColumnConfigs().entrySet()) {
+      for (Entry<String, FilterConfigSet> filter : column.getValue().getFilterConfigSets().entrySet()) {
+        JSONArray configs = new JSONArray();
+        filter.getValue().getConfigs().stream().forEach(config -> configs.put(config.getConfig()));
+        obj.put(column.getKey(), configs);
+      }
+    }
+    return obj;
   }
 
 }
