@@ -368,7 +368,7 @@ public class AnswerValue {
 
   public String getPagedTableSql(Query tableQuery) throws WdkModelException {
     // get the paged SQL of id query
-    String idSql = getPagedIdSql();
+    String idSql = getPagedIdSql(false, true);
 
     // Combine the id query with table query.  Make an instance from the
     // original table query; a table query has only one param, user_id. Note
@@ -380,6 +380,7 @@ public class AnswerValue {
 
     DBPlatform platform = _wdkModel.getAppDb().getPlatform();
     String tableSqlWithRowIndex = "(SELECT tq.*, " + platform.getRowNumberColumn() + " as row_index FROM (" + tableSql + ") tq ";
+
     StringBuilder sql = new StringBuilder()
         .append("SELECT tqi.* FROM (")
         .append(idSql)
