@@ -90,7 +90,7 @@ public class StepRequestParser {
 
       String customName = getStringOrDefault(stepJson, JsonKeys.CUSTOM_NAME, spec.getQuestion().getName());
       boolean isExpanded = getBooleanOrDefault(stepJson, JsonKeys.IS_EXPANDED, false);
-      String expandedName = getStringOrDefault(stepJson, JsonKeys.CUSTOM_NAME, null);
+      String expandedName = getStringOrDefault(stepJson, JsonKeys.EXPANDED_NAME, null);
       JSONObject displayPrefs = getJsonObjectOrDefault(stepJson, JsonKeys.DISPLAY_PREFS, new JSONObject());
 
       return new NewStepRequest(validSpec, customName, isExpanded, expandedName, displayPrefs);
