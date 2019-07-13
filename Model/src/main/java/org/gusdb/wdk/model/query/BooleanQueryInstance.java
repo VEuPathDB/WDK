@@ -40,10 +40,8 @@ public class BooleanQueryInstance extends SqlQueryInstance {
   @Override
   public String getUncachedSql() throws WdkModelException {
 
-    Map<String, String> internalValues = getParamInternalValues();
-
-    // parse operator
-    String operator = internalValues.get(booleanQuery.getOperatorParam().getName());
+    // parse operator - special case: use stable value to determine operator
+    String operator = getParamStableValues().get(booleanQuery.getOperatorParam().getName());
     BooleanOperator op = BooleanOperator.parse(operator);
     DBPlatform platform = _wdkModel.getAppDb().getPlatform();
     operator = op.getOperator(platform);

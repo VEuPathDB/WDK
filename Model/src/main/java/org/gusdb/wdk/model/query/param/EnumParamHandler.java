@@ -63,7 +63,7 @@ public class EnumParamHandler extends AbstractParamHandler {
       throws WdkModelException {
     final var stableValue = ctxParamVals.get().get(_param.getName());
 
-    if (stableValue == null || stableValue.isEmpty() || _param.isNoTranslation()) {
+    if (stableValue == null || stableValue.isEmpty()) {
       return stableValue;
     }
 
