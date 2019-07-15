@@ -15,18 +15,18 @@ import org.gusdb.wdk.service.service.AbstractWdkService;
 /*
  * TODO: rename this AbstractUserService when this branch is merged into trunk
  */
-@Path(UserService.USER_PATH)
+@Path(UserService.NAMED_USER_PATH)
 public abstract class UserService extends AbstractWdkService {
 
   private static final String NOT_LOGGED_IN = "You must log in to use this functionality.";
 
   // subclasses must read the following path param to gain access to requested user
-  protected static final String USER_ID_PATH_PARAM = "id";
+  protected static final String USER_ID_PATH_PARAM = "userId";
 
   protected static final String USER_RESOURCE = "User ID ";
   protected static final String STEP_RESOURCE = "Step ID ";
 
-  protected static final String USER_PATH = "/users/{"+USER_ID_PATH_PARAM+"}";
+  protected static final String NAMED_USER_PATH = UserUtilityServices.USERS_PATH + "/{"+USER_ID_PATH_PARAM+"}";
 
   protected enum Access { PUBLIC, PRIVATE, ADMIN; }
 

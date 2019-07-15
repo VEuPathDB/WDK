@@ -34,13 +34,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@Path(RecordService.BASE_PATH)
+@Path(RecordService.RECORD_TYPES_PATH)
 public class RecordService extends AbstractWdkService {
 
-  public static final String BASE_PATH = "/record-types";
-  public static final String ID_VAR = "recordClassName";
-  public static final String ID_PARAM = "{" + ID_VAR + "}";
-  public static final String ID_PATH = BASE_PATH + "/" + ID_PARAM;
+  public static final String RECORD_TYPES_PATH = "/record-types";
+  public static final String RECORD_TYPE_PATH_PARAM = "recordClassUrlSegment";
+  public static final String RECORD_TYPE_PARAM_SEGMENT = "{" + RECORD_TYPE_PATH_PARAM + "}";
+  public static final String NAMED_RECORD_TYPE_SEGMENT_PAIR = RECORD_TYPES_PATH + "/" + RECORD_TYPE_PARAM_SEGMENT;
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(RecordService.class);
@@ -58,11 +58,11 @@ public class RecordService extends AbstractWdkService {
   }
 
   @GET
-  @Path(ID_PARAM)
+  @Path(RECORD_TYPE_PARAM_SEGMENT)
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.records.name.get")
   public JSONObject getRecordClassInfo(
-      @PathParam(ID_VAR) String recordClassName,
+      @PathParam(RECORD_TYPE_PATH_PARAM) String recordClassName,
       @QueryParam("format") String format) {
     RecordClass rc = getRecordClassOrNotFound(recordClassName);
     return isExpandedFormat(format, true) ?
@@ -78,10 +78,10 @@ public class RecordService extends AbstractWdkService {
 
   // TODO: replace this with a GET (using the path to encode the primary key)
   @POST
-  @Path(ID_PARAM + "/records")
+  @Path(RECORD_TYPE_PARAM_SEGMENT + "/records")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response buildResult(@PathParam(ID_VAR) String recordClassName, String body)
+  public Response buildResult(@PathParam(RECORD_TYPE_PATH_PARAM) String recordClassName, String body)
       throws WdkModelException, DataValidationException, RequestMisformatException {
     try {
       // get and parse request information

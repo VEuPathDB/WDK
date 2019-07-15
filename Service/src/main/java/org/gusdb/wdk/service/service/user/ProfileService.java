@@ -37,7 +37,6 @@ import org.json.JSONObject;
 /*
  * TODO: rename this to UsersService when this branch is merged to trunk
  */
-@Path("/users/{id}")
 public class ProfileService extends UserService {
 
   private static final String DUPLICATE_EMAIL = "This email is already in use by another account.  Please choose another.";

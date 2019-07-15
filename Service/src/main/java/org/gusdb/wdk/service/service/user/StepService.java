@@ -1,9 +1,9 @@
 package org.gusdb.wdk.service.service.user;
 
-import static org.gusdb.wdk.service.service.AnswerService.CUSTOM_REPORT_URL_SEGMENT;
-import static org.gusdb.wdk.service.service.AnswerService.REPORTS_URL_SEGMENT;
+import static org.gusdb.wdk.service.service.AnswerService.CUSTOM_REPORT_SEGMENT_PAIR;
 import static org.gusdb.wdk.service.service.AnswerService.REPORT_NAME_PATH_PARAM;
-import static org.gusdb.wdk.service.service.AnswerService.STANDARD_REPORT_URL_SEGMENT;
+import static org.gusdb.wdk.service.service.AnswerService.STANDARD_REPORT_SEGMENT_PAIR;
+import static org.gusdb.wdk.service.service.search.SearchColumnService.NAMED_COLUMN_SEGMENT_PAIR;
 
 import java.util.Date;
 import java.util.Optional;
@@ -67,18 +67,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class StepService extends UserService {
 
-  private static final String BASE_PATH = "steps";
-  private static final String ID_PARAM = "stepId";
-  private static final String ID_PATH = BASE_PATH + "/{" + ID_PARAM + "}";
+  private static final String STEPS_SEGMENT = "steps";
+  public static final String STEP_ID_PATH_PARAM = "stepId";
+  public static final String NAMED_STEP_PATH = STEPS_SEGMENT + "/{" + STEP_ID_PATH_PARAM + "}";
   private static final String COLUMN_REPORTER_PATH =
-      ID_PATH + SearchColumnService.NAMED_COLUMN_SEGMENT + ColumnReporterService.NAMED_REPORT_SEGMENT;
+      NAMED_STEP_PATH + NAMED_COLUMN_SEGMENT_PAIR + CUSTOM_REPORT_SEGMENT_PAIR;
 
   public StepService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
   }
 
   @POST
-  @Path(BASE_PATH)
+  @Path(STEPS_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.steps.post-request")
@@ -108,11 +108,11 @@ public class StepService extends UserService {
   }
 
   @GET
-  @Path(ID_PATH)
+  @Path(NAMED_STEP_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.users.steps.id.get-response")
   public JSONObject getStep(
-    @PathParam(ID_PARAM) long stepId,
+    @PathParam(STEP_ID_PATH_PARAM) long stepId,
     @QueryParam("validationLevel") String validationLevelStr
   ) throws WdkModelException {
     ValidationLevel validationLevel = Functions.defaultOnException(
@@ -128,10 +128,10 @@ public class StepService extends UserService {
    * @throws RequestMisformatException
    */
   @PATCH
-  @Path(ID_PATH)
+  @Path(NAMED_STEP_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.steps.id.patch-request")
-  public void updateStepMeta(@PathParam(ID_PARAM) long stepId,
+  public void updateStepMeta(@PathParam(STEP_ID_PATH_PARAM) long stepId,
       JSONObject body) throws WdkModelException, RequestMisformatException {
     if (body.length() != 0) {
       Step step = StepRequestParser.updateStepMeta(getStepForCurrentUser(stepId, ValidationLevel.NONE), body);
@@ -140,8 +140,8 @@ public class StepService extends UserService {
   }
 
   @DELETE
-  @Path(ID_PATH)
-  public void deleteStep(@PathParam(ID_PARAM) long stepId)
+  @Path(NAMED_STEP_PATH)
+  public void deleteStep(@PathParam(STEP_ID_PATH_PARAM) long stepId)
       throws WdkModelException, ConflictException {
 
     Step step = getStepForCurrentUser(stepId, ValidationLevel.NONE);
@@ -161,23 +161,23 @@ public class StepService extends UserService {
   }
 
   @POST
-  @Path(ID_PATH + REPORTS_URL_SEGMENT + STANDARD_REPORT_URL_SEGMENT)
+  @Path(NAMED_STEP_PATH + STANDARD_REPORT_SEGMENT_PAIR)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.steps.answer.post-request")
   @OutSchema("wdk.answer.post-response")
-  public Response createDefaultReporterAnswer(
-      @PathParam(ID_PARAM) long stepId, JSONObject requestJson)
+  public Response createStandardReportAnswer(
+      @PathParam(STEP_ID_PATH_PARAM) long stepId, JSONObject requestJson)
           throws WdkModelException, RequestMisformatException, DataValidationException {
-    return createAnswer(stepId, DefaultJsonReporter.RESERVED_NAME, requestJson);
+    return createCustomReportAnswer(stepId, DefaultJsonReporter.RESERVED_NAME, requestJson);
   }
 
   @POST
-  @Path(ID_PATH + REPORTS_URL_SEGMENT + CUSTOM_REPORT_URL_SEGMENT)
+  @Path(NAMED_STEP_PATH + CUSTOM_REPORT_SEGMENT_PAIR)
   @Consumes(MediaType.APPLICATION_JSON)
   // Produces an unknown media type; varies depending on reporter selected
-  public Response createAnswer(
-      @PathParam(ID_PARAM) long stepId,
+  public Response createCustomReportAnswer(
+      @PathParam(STEP_ID_PATH_PARAM) long stepId,
       @PathParam(REPORT_NAME_PATH_PARAM) String reporterName,
       JSONObject requestJson)
           throws WdkModelException, RequestMisformatException, DataValidationException {
@@ -215,11 +215,11 @@ public class StepService extends UserService {
   }
 
   @PUT
-  @Path(ID_PATH + "/search-config")
+  @Path(NAMED_STEP_PATH + "/search-config")
   @Consumes(MediaType.APPLICATION_JSON)
   @InSchema("wdk.answer.answer-spec-request")
   public void putAnswerSpec(
-      @PathParam(ID_PARAM) long stepId,
+      @PathParam(STEP_ID_PATH_PARAM) long stepId,
       @QueryParam("allowInvalid") @DefaultValue("false") Boolean allowInvalid,  // undocumented.  for use by developers
       JSONObject body
   ) throws WdkModelException, DataValidationException, RequestMisformatException {
@@ -277,11 +277,11 @@ public class StepService extends UserService {
   }
 
   @GET
-  @Path(ID_PATH + REPORTS_URL_SEGMENT + "/filter-summary/{filterName}")
+  @Path(NAMED_STEP_PATH + "/filter-summary/{filterName}")
   @Produces(MediaType.APPLICATION_JSON)
   @Deprecated
   public JSONObject getFilterSummary(
-    @PathParam(ID_PARAM) long stepId,
+    @PathParam(STEP_ID_PATH_PARAM) long stepId,
     @PathParam("filterName") String filterName
   ) throws WdkModelException, DataValidationException, WdkUserException {
     return AnswerValueFactory.makeAnswer(
@@ -297,9 +297,9 @@ public class StepService extends UserService {
   @Path(COLUMN_REPORTER_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   public StreamingOutput getColumnReporterResponse(
-      @PathParam(ID_PARAM) final long stepId,
-      @PathParam(SearchColumnService.ID_VAR) final String columnName,
-      @PathParam(ColumnReporterService.ID_VAR) final String reporterName,
+      @PathParam(STEP_ID_PATH_PARAM) final long stepId,
+      @PathParam(SearchColumnService.COLUMN_PATH_PARAM) final String columnName,
+      @PathParam(REPORT_NAME_PATH_PARAM) final String reporterName,
       final JsonNode reporterConfig)
           throws WdkModelException, DataValidationException, NotFoundException, WdkUserException {
     RunnableObj<Step> existingStep = getStepForCurrentUser(stepId, ValidationLevel.RUNNABLE)

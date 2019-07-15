@@ -55,20 +55,23 @@ import org.json.JSONObject;
  *
  * @author rdoherty
  */
-@Path(QuestionService.BASE_PATH)
+@Path(QuestionService.SEARCHES_PATH)
 @Produces(MediaType.APPLICATION_JSON)
 public class QuestionService extends AbstractWdkService {
 
-  public static final String BASE_PATH = RecordService.ID_PATH + "/searches";
-  public static final String ID_VAR = "questionUrlSegment";
-  public static final String ID_PARAM = "{" + ID_VAR + "}";
-  public static final String ID_PATH = BASE_PATH + "/" + ID_PARAM;
+  public static final String SEARCHES_PATH = RecordService.NAMED_RECORD_TYPE_SEGMENT_PAIR + "/searches";
+  public static final String SEARCH_PATH_PARAM = "questionUrlSegment";
+  public static final String SEARCH_PARAM_SEGMENT = "{" + SEARCH_PATH_PARAM + "}";
+  public static final String NAMED_SEARCH_PATH = SEARCHES_PATH + "/" + SEARCH_PARAM_SEGMENT;
+
+  private static final String FILTER_PARAM_NAME_PATH_PARAM = "filterParamName";
+  private static final String FILTER_PARAM_NAME_PATH_PARAM_SEGMENT = "{" + FILTER_PARAM_NAME_PATH_PARAM + "}";
 
   private static final String FILTER_PARAM_RESOURCE = "filter parameter: ";
 
   private final String _recordClassUrlSegment;
 
-  protected QuestionService(@PathParam(RecordService.ID_VAR) String recordClassUrlSegment) {
+  protected QuestionService(@PathParam(RecordService.RECORD_TYPE_PATH_PARAM) String recordClassUrlSegment) {
     _recordClassUrlSegment = recordClassUrlSegment;
   }
 
@@ -105,11 +108,11 @@ public class QuestionService extends AbstractWdkService {
    *   if unable to generate param information
    */
   @GET
-  @Path(ID_PARAM)
+  @Path(SEARCH_PARAM_SEGMENT)
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.questions.name.get")
   public Response getQuestionNew(
-      @PathParam(ID_VAR) String questionUrlSegment)
+      @PathParam(SEARCH_PATH_PARAM) String questionUrlSegment)
           throws WdkModelException {
     DisplayablyValid<AnswerSpec> validSpec = AnswerSpec.builder(getWdkModel())
         .setQuestionFullName(getQuestionOrNotFound(questionUrlSegment).getFullName())
@@ -153,12 +156,12 @@ public class QuestionService extends AbstractWdkService {
    *   if unable to generate param information
    */
   @POST
-  @Path(ID_PARAM)
+  @Path(SEARCH_PARAM_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   // TODO:  pass back error messages about invalid parameters
   public Response getQuestionRevise(
-      @PathParam(ID_VAR) String questionUrlSegment,
+      @PathParam(SEARCH_PATH_PARAM) String questionUrlSegment,
       String body)
           throws WdkModelException, RequestMisformatException, DataValidationException {
     Question question = getQuestionOrNotFound(questionUrlSegment);
@@ -210,10 +213,10 @@ public class QuestionService extends AbstractWdkService {
    * </pre>
    */
   @POST
-  @Path(ID_PARAM + "/refreshed-dependent-params")
+  @Path(SEARCH_PARAM_SEGMENT + "/refreshed-dependent-params")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getQuestionChange(@PathParam(ID_VAR) String questionUrlSegment, String body)
+  public Response getQuestionChange(@PathParam(SEARCH_PATH_PARAM) String questionUrlSegment, String body)
           throws WdkUserException, WdkModelException, DataValidationException {
 
     // get requested question and throw not found if invalid
@@ -293,12 +296,12 @@ public class QuestionService extends AbstractWdkService {
    * </pre>
    */
   @POST
-  @Path(ID_PARAM + "/{paramName}/ontology-term-summary")
+  @Path(SEARCH_PARAM_SEGMENT + "/" + FILTER_PARAM_NAME_PATH_PARAM_SEGMENT + "/ontology-term-summary")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFilterParamOntologyTermSummary(
-      @PathParam(ID_VAR) String questionUrlSegment,
-      @PathParam("paramName") String paramName,
+      @PathParam(SEARCH_PATH_PARAM) String questionUrlSegment,
+      @PathParam(FILTER_PARAM_NAME_PATH_PARAM) String paramName,
       String body)
           throws WdkModelException, DataValidationException, RequestMisformatException {
 
@@ -348,12 +351,12 @@ public class QuestionService extends AbstractWdkService {
    * </pre>
    */
   @POST
-  @Path(ID_PARAM + "/{paramName}/summary-counts")
+  @Path(SEARCH_PARAM_SEGMENT + "/" + FILTER_PARAM_NAME_PATH_PARAM_SEGMENT + "/summary-counts")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFilterParamSummaryCounts(
-      @PathParam(ID_VAR) String questionUrlSegment,
-      @PathParam("paramName") String paramName,
+      @PathParam(SEARCH_PATH_PARAM) String questionUrlSegment,
+      @PathParam(FILTER_PARAM_NAME_PATH_PARAM) String paramName,
       String body)
           throws WdkModelException, RequestMisformatException, DataValidationException {
 

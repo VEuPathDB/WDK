@@ -1,5 +1,26 @@
 package org.gusdb.wdk.service.service;
 
+import static java.util.function.Predicate.not;
+import static org.gusdb.fgputil.FormatUtil.NL;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.StreamingOutput;
+
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
@@ -37,19 +58,6 @@ import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.StreamingOutput;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static java.util.function.Predicate.not;
-import static org.gusdb.fgputil.FormatUtil.NL;
-
 /**
  * <p>JSON input format:</p>
  * <pre>
@@ -72,25 +80,25 @@ import static org.gusdb.fgputil.FormatUtil.NL;
  * }
  * </pre>
  */
-@Path("/record-types/{" + AnswerService.RECORDCLASS_URL_SEGMENT + "}/searches/{" + AnswerService.SEARCH_URL_SEGMENT + "}" + AnswerService.REPORTS_URL_SEGMENT)
+@Path(AnswerService.REPORTS_PATH)
 public class AnswerService extends AbstractWdkService {
 
   private static final Logger LOG = Logger.getLogger(AnswerService.class);
 
-  static final String RECORDCLASS_URL_SEGMENT = "recordClassUrlSegment";
-  static final String SEARCH_URL_SEGMENT = "questionUrlSegment";
-
-  public static final String REPORTS_URL_SEGMENT = "/reports";
-  public static final String REPORT_NAME_PATH_PARAM = "reportNameSegment";
-  public static final String STANDARD_REPORT_URL_SEGMENT = "/" + DefaultJsonReporter.RESERVED_NAME;
-  public static final String CUSTOM_REPORT_URL_SEGMENT = "/{" + REPORT_NAME_PATH_PARAM + "}";
+  public static final String REPORTS_URL_SEGMENT = "reports";
+  public static final String REPORTS_PATH = QuestionService.NAMED_SEARCH_PATH + "/" + REPORTS_URL_SEGMENT;
+  public static final String REPORT_NAME_PATH_PARAM = "reportName";
+  public static final String STANDARD_REPORT_SEGMENT = DefaultJsonReporter.RESERVED_NAME;
+  public static final String CUSTOM_REPORT_SEGMENT = "{" + REPORT_NAME_PATH_PARAM + "}";
+  public static final String STANDARD_REPORT_SEGMENT_PAIR = "/" + REPORTS_URL_SEGMENT + "/" + STANDARD_REPORT_SEGMENT;
+  public static final String CUSTOM_REPORT_SEGMENT_PAIR = "/" + REPORTS_URL_SEGMENT + "/" + CUSTOM_REPORT_SEGMENT;
 
   private final String _recordClassUrlSegment;
   private final String _questionUrlSegment;
 
   public AnswerService(
-      @PathParam(RECORDCLASS_URL_SEGMENT) String recordClassUrlSegment,
-      @PathParam(SEARCH_URL_SEGMENT) String questionUrlSegment) {
+      @PathParam(RecordService.RECORD_TYPE_PATH_PARAM) String recordClassUrlSegment,
+      @PathParam(QuestionService.SEARCH_PATH_PARAM) String questionUrlSegment) {
     _recordClassUrlSegment = recordClassUrlSegment;
     _questionUrlSegment = questionUrlSegment;
   }
@@ -113,14 +121,14 @@ public class AnswerService extends AbstractWdkService {
    *   if an error occurs while processing the request
    */
   @POST
-  @Path(STANDARD_REPORT_URL_SEGMENT)
+  @Path(STANDARD_REPORT_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @InSchema("wdk.answer.post-request")
   @OutSchema("wdk.answer.post-response")
-  public Response buildDefaultReporterResult(JSONObject body)
+  public Response createStandardReportAnswer(JSONObject body)
       throws RequestMisformatException, WdkModelException, DataValidationException {
-    return buildResult(DefaultJsonReporter.RESERVED_NAME, body);
+    return createCustomReportAnswer(DefaultJsonReporter.RESERVED_NAME, body);
   }
 
   /**
@@ -142,10 +150,10 @@ public class AnswerService extends AbstractWdkService {
    *   if an error occurs while processing the request
    */
   @POST
-  @Path(CUSTOM_REPORT_URL_SEGMENT)
+  @Path(CUSTOM_REPORT_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
   // Produces an unknown media type; varies depending on reporter selected
-  public Response buildResult(
+  public Response createCustomReportAnswer(
       @PathParam(REPORT_NAME_PATH_PARAM) String reportName,
       JSONObject body)
           throws WdkModelException, DataValidationException, RequestMisformatException {
@@ -173,9 +181,9 @@ public class AnswerService extends AbstractWdkService {
    *   if an error occurs while processing the request
    */
   @POST
-  @Path(CUSTOM_REPORT_URL_SEGMENT)
+  @Path(CUSTOM_REPORT_SEGMENT)
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  public Response buildResultFromForm(
+  public Response createCustomReportAnswerFromForm(
       @PathParam(REPORT_NAME_PATH_PARAM) String reportName,
       @FormParam("data") String data)
           throws WdkModelException, DataValidationException, RequestMisformatException {
@@ -188,7 +196,7 @@ public class AnswerService extends AbstractWdkService {
       throw new RequestMisformatException("Request JSON cannot be empty. " +
           "If submitting a form, include the 'data' input parameter.");
     }
-    return buildResult(reportName, new JSONObject(data));
+    return createCustomReportAnswer(reportName, new JSONObject(data));
   }
 
   @POST
@@ -216,12 +224,12 @@ public class AnswerService extends AbstractWdkService {
    * @see #buildDefaultReporterResult(JSONObject)
    */
   @GET
-  @Path(STANDARD_REPORT_URL_SEGMENT)
+  @Path(STANDARD_REPORT_SEGMENT)
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.answer.post-response")
-  public Response getDefaultReporterResult()
+  public Response createStandardReportAnswer()
   throws DataValidationException, WdkUserException, WdkModelException {
-    return getReport(DefaultJsonReporter.RESERVED_NAME);
+    return createCustomReportAnswer(DefaultJsonReporter.RESERVED_NAME);
   }
 
   /**
@@ -231,8 +239,8 @@ public class AnswerService extends AbstractWdkService {
    * @see #buildResult(String, JSONObject)
    */
   @GET
-  @Path(CUSTOM_REPORT_URL_SEGMENT)
-  public Response getReport(@PathParam(REPORT_NAME_PATH_PARAM) String report)
+  @Path(CUSTOM_REPORT_SEGMENT)
+  public Response createCustomReportAnswer(@PathParam(REPORT_NAME_PATH_PARAM) String report)
   throws WdkUserException, WdkModelException, DataValidationException {
     var params = getUriInfo().getQueryParameters();
     var searchConfig = new JSONObject().put(
@@ -247,7 +255,7 @@ public class AnswerService extends AbstractWdkService {
         )
     );
 
-    return buildResult(report, new JSONObject()
+    return createCustomReportAnswer(report, new JSONObject()
       .put(JsonKeys.SEARCH_CONFIG, searchConfig)
       .put(JsonKeys.REPORT_CONFIG, Optional.of(params.getFirst(JsonKeys.REPORT_CONFIG))
         .map(JSONObject::new)
@@ -281,8 +289,8 @@ public class AnswerService extends AbstractWdkService {
         .getOrThrow(spec -> new DataValidationException(
             "Invalid answer spec: " + spec.getValidationBundle().toString()));
   }
-  // TODO:  now that this method is public, should find a better place for it
 
+  // TODO:  now that this method is public, should find a better place for it
   public static StepContainer loadContainer(AnswerSpecBuilder specBuilder,
       WdkModel wdkModel, User sessionUser) throws WdkModelException, DataValidationException {
 

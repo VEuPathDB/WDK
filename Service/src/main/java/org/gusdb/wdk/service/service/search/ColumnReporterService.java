@@ -1,6 +1,28 @@
 package org.gusdb.wdk.service.service.search;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import static java.lang.String.format;
+import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.gusdb.fgputil.json.JsonUtil.Jackson;
+import static org.gusdb.fgputil.validation.ValidationLevel.RUNNABLE;
+import static org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy.FILL_PARAM_IF_MISSING;
+import static org.gusdb.wdk.model.user.StepContainer.emptyContainer;
+import static org.gusdb.wdk.service.service.AnswerService.REPORT_NAME_PATH_PARAM;
+
+import java.util.function.Supplier;
+
+import javax.servlet.ServletContext;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.StreamingOutput;
+
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -9,46 +31,31 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.toolbundle.ColumnReporter;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.toolbundle.ColumnReporter;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.service.AbstractWdkService;
+import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.QuestionService;
 import org.gusdb.wdk.service.service.RecordService;
 import org.json.JSONArray;
 
-import javax.servlet.ServletContext;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.StreamingOutput;
-import java.util.function.Supplier;
-
-import static java.lang.String.format;
-import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.gusdb.fgputil.json.JsonUtil.Jackson;
-import static org.gusdb.fgputil.validation.ValidationLevel.RUNNABLE;
-import static org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy.FILL_PARAM_IF_MISSING;
-import static org.gusdb.wdk.model.user.StepContainer.emptyContainer;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Endpoints for getting info about or running column reporters.
  */
-@Path(ColumnReporterService.BASE_PATH)
+@Path(ColumnReporterService.NAMED_COLUMN_REPORT_PATH)
 public class ColumnReporterService extends AbstractWdkService {
 
   /**
    * API Paths
    */
-  public static final String
-    ID_VAR = "reporter",
-    ID_PARAM = "{" + ID_VAR + "}",
-    REPORTS_SEGMENT = "/reports",
-    NAMED_REPORT_SEGMENT = REPORTS_SEGMENT + "/" + ID_PARAM,
-    BASE_PATH = SearchColumnService.ID_PATH + REPORTS_SEGMENT;
+  public static final String NAMED_COLUMN_REPORT_PATH =
+      SearchColumnService.NAMED_COLUMN_PATH + AnswerService.CUSTOM_REPORT_SEGMENT_PAIR;
 
   /**
    * Reporter not found message.
@@ -71,9 +78,9 @@ public class ColumnReporterService extends AbstractWdkService {
   private final AttributeField column;
 
   public ColumnReporterService(
-    @PathParam(RecordService.ID_VAR) final String recordType,
-    @PathParam(QuestionService.ID_VAR) final String searchType,
-    @PathParam(SearchColumnService.ID_VAR) final String columnName,
+    @PathParam(RecordService.RECORD_TYPE_PATH_PARAM) final String recordType,
+    @PathParam(QuestionService.SEARCH_PATH_PARAM) final String searchType,
+    @PathParam(SearchColumnService.COLUMN_PATH_PARAM) final String columnName,
     @Context ServletContext ctx
   ) {
     setServletContext(ctx);
@@ -104,9 +111,9 @@ public class ColumnReporterService extends AbstractWdkService {
    * input on run
    */
   @GET
-  @Path(ID_PARAM)
+  @Path(NAMED_COLUMN_REPORT_PATH)
   @Produces(MediaType.APPLICATION_JSON)
-  public Object getReporterDetails(@PathParam(ID_VAR) final String reporter) {
+  public Object getReporterDetails(@PathParam(REPORT_NAME_PATH_PARAM) final String reporter) {
     var rep = column.getReporter(reporter)
       .orElseThrow(makeNotFound(column, reporter));
 
@@ -135,11 +142,11 @@ public class ColumnReporterService extends AbstractWdkService {
    *   if the given reporter configuration is invalid.
    */
   @POST
-  @Path(ID_PARAM)
+  @Path(NAMED_COLUMN_REPORT_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public StreamingOutput runReporter(
-    @PathParam(ID_VAR) final String reporter,
+    @PathParam(REPORT_NAME_PATH_PARAM) final String reporter,
     final JsonNode body
   ) throws WdkModelException, WdkUserException {
     return wrapReporter(column.prepareReporter(

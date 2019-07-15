@@ -1,5 +1,7 @@
 package org.gusdb.wdk.service.service.user;
 
+import static org.gusdb.wdk.service.service.user.StepService.STEP_ID_PATH_PARAM;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -56,8 +58,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class StepAnalysisService extends UserService {
 
-  protected static final String STEP_ID_PATH_PARAM = "stepId";
-  protected static final String STEP_ANALYSIS_PATH = "steps/{"+STEP_ID_PATH_PARAM+"}";
+  // endpoints to handle analysis types for a given step
+  private static final String ANALYSIS_TYPES_PATH = StepService.NAMED_STEP_PATH + "/analysis-types";
+  private static final String ANALYSIS_TYPE_PATH_PARAM = "analysisTypeName";
+  private static final String NAMED_ANALYSIS_TYPE_PATH = ANALYSIS_TYPES_PATH + "/{" + ANALYSIS_TYPE_PATH_PARAM + "}";
+
+  // endpoints to handle analysis instances for a given step
+  private static final String ANALYSES_PATH = StepService.NAMED_STEP_PATH + "/analyses";
+  private static final String ANALYSIS_ID_PATH_PARAM = "analysisId";
+  private static final String NAMED_ANALYSIS_PATH = ANALYSES_PATH + "/{" + ANALYSIS_ID_PATH_PARAM + "}";
+
+  // sub-endpoints for an analysis instance
+  private static final String NAMED_ANALYSIS_RESULT_PATH = NAMED_ANALYSIS_PATH + "/result";
+  private static final String NAMED_ANALYSIS_RESULT_STATUS_PATH = NAMED_ANALYSIS_RESULT_PATH + "/status";
+  private static final String NAMED_ANALYSIS_RESOURCES_PATH = NAMED_ANALYSIS_PATH + "/resources";
+  private static final String NAMED_ANALYSIS_PROPERTIES_PATH = NAMED_ANALYSIS_PATH + "/properties";
+
+  private static final String ACCESS_TOKEN_QUERY_PARAM = "accessToken";
 
   private static final String ANALYSIS_PARAMS_KEY = StepAnalysisInstance.JsonKey.formParams.name();
   private static final String ANALYSIS_NAME_KEY = StepAnalysisInstance.JsonKey.analysisName.name();
@@ -78,7 +95,7 @@ public class StepAnalysisService extends UserService {
   }
 
   @GET
-  @Path(STEP_ANALYSIS_PATH + "/analysis-types")
+  @Path(ANALYSIS_TYPES_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   public String getStepAnalysisTypes() throws WdkModelException, DataValidationException {
     RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
@@ -94,9 +111,9 @@ public class StepAnalysisService extends UserService {
    * @return Ok response containing JSON provided by the Analyzer instance.
    */
   @GET
-  @Path(STEP_ANALYSIS_PATH + "/analysis-types/{name}")
+  @Path(NAMED_ANALYSIS_TYPE_PATH)
   @Produces(MediaType.APPLICATION_JSON)
-  public String getStepAnalysisTypeDataFromName(@PathParam("name") String analysisName)
+  public String getStepAnalysisTypeDataFromName(@PathParam(ANALYSIS_TYPE_PATH_PARAM) String analysisName)
       throws WdkModelException, DataValidationException {
 
     RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
@@ -151,7 +168,7 @@ public class StepAnalysisService extends UserService {
    * @return Details of the newly created step analysis instance as JSON
    */
   @POST
-  @Path(STEP_ANALYSIS_PATH + "/analyses")
+  @Path(ANALYSES_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public String createStepAnalysis(JSONObject json) throws WdkModelException {
@@ -178,7 +195,7 @@ public class StepAnalysisService extends UserService {
    */
   // TODO: IS THIS NEEDED?  Maybe this should be in the step details...
   @GET
-  @Path(STEP_ANALYSIS_PATH + "/analyses")
+  @Path(ANALYSES_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray getStepAnalysisInstanceList() throws WdkModelException, DataValidationException {
     getUserBundle(Access.PRIVATE); // make sure session user matches target user
@@ -189,29 +206,29 @@ public class StepAnalysisService extends UserService {
   }
 
   @GET
-  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}")
+  @Path(NAMED_ANALYSIS_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   public JSONObject getStepAnalysisInstance(
-      @PathParam("analysisId") long analysisId,
-      @QueryParam("accessToken") String accessToken) throws WdkModelException {
+      @PathParam(ANALYSIS_ID_PATH_PARAM) long analysisId,
+      @QueryParam(ACCESS_TOKEN_QUERY_PARAM) String accessToken) throws WdkModelException {
     return StepAnalysisFormatter.getStepAnalysisJson(getAnalysis(analysisId, accessToken));
   }
 
   //  TODO: Why is this so slow?
   @DELETE
-  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}")
+  @Path(NAMED_ANALYSIS_PATH)
   public void deleteStepAnalysisInstance(
-      @PathParam("analysisId") long analysisId,
-      @QueryParam("accessToken") String accessToken) throws WdkModelException {
+      @PathParam(ANALYSIS_ID_PATH_PARAM) long analysisId,
+      @QueryParam(ACCESS_TOKEN_QUERY_PARAM) String accessToken) throws WdkModelException {
     getWdkModel().getStepAnalysisFactory().deleteAnalysis(getAnalysis(analysisId, accessToken));
   }
 
   @PATCH
-  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}")
+  @Path(NAMED_ANALYSIS_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   public void updateStepAnalysisInstance(
-      @PathParam("analysisId") long analysisId,
-      @QueryParam("accessToken") String accessToken,
+      @PathParam(ANALYSIS_ID_PATH_PARAM) long analysisId,
+      @QueryParam(ACCESS_TOKEN_QUERY_PARAM) String accessToken,
       String body) throws WdkModelException, WdkUserException {
     final ObjectMapper mapper = new ObjectMapper();
     final StepAnalysisFactory factory = getWdkModel().getStepAnalysisFactory();
@@ -246,11 +263,11 @@ public class StepAnalysisService extends UserService {
   }
 
   @GET
-  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}/result")
+  @Path(NAMED_ANALYSIS_RESULT_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getStepAnalysisResult(
-    @PathParam("analysisId")   long analysisId,
-    @QueryParam("accessToken") String accessToken
+    @PathParam(ANALYSIS_ID_PATH_PARAM) long analysisId,
+    @QueryParam(ACCESS_TOKEN_QUERY_PARAM) String accessToken
   ) throws WdkModelException, WdkUserException {
 
     final StepAnalysisFactory fac = getWdkModel().getStepAnalysisFactory();
@@ -278,11 +295,11 @@ public class StepAnalysisService extends UserService {
   }
 
   @POST
-  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}/result")
+  @Path(NAMED_ANALYSIS_RESULT_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   public Response runAnalysis(
-    @PathParam("analysisId") long analysisId,
-    @QueryParam("accessToken") String accessToken
+    @PathParam(ANALYSIS_ID_PATH_PARAM) long analysisId,
+    @QueryParam(ACCESS_TOKEN_QUERY_PARAM) String accessToken
   ) throws WdkModelException {
     final StepAnalysisInstance instance = getAnalysis(analysisId, accessToken);
 
@@ -294,10 +311,10 @@ public class StepAnalysisService extends UserService {
   }
 
   @GET
-  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}/result/status")
+  @Path(NAMED_ANALYSIS_RESULT_STATUS_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   public JSONObject getStepAnalysisResultStatus(
-    @PathParam("analysisId") long analysisId
+    @PathParam(ANALYSIS_ID_PATH_PARAM) long analysisId
   ) throws WdkModelException {
     try {
       return new JSONObject().put(
@@ -313,9 +330,9 @@ public class StepAnalysisService extends UserService {
   }
 
   @GET
-  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}/resources")
+  @Path(NAMED_ANALYSIS_RESOURCES_PATH)
   public Response getStepAnalysisResource(
-    @PathParam("analysisId") long analysisId,
+    @PathParam(ANALYSIS_ID_PATH_PARAM) long analysisId,
     @QueryParam("path") String path
   ) throws Exception {
     StepAnalysisFactory stepAnalysisFactory = getWdkModel().getStepAnalysisFactory();
@@ -346,11 +363,11 @@ public class StepAnalysisService extends UserService {
   }
 
   @GET
-  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}/properties")
+  @Path(NAMED_ANALYSIS_PROPERTIES_PATH)
   @Produces(MediaType.TEXT_PLAIN)
   public Response getStepAnalysisProperties(
-    @PathParam("analysisId") long analysisId,
-    @QueryParam("accessToken") String accessToken
+    @PathParam(ANALYSIS_ID_PATH_PARAM) long analysisId,
+    @QueryParam(ACCESS_TOKEN_QUERY_PARAM) String accessToken
   ) throws WdkModelException {
     StepAnalysisInstance instance = getAnalysis(analysisId, accessToken);
     InputStream propertiesStream = getWdkModel().getStepAnalysisFactory()
@@ -360,11 +377,11 @@ public class StepAnalysisService extends UserService {
 
   // TODO: this should 404 if the analysis or step id are not found, presently it 500s
   @PUT
-  @Path(STEP_ANALYSIS_PATH + "/analyses/{analysisId}/properties")
+  @Path(NAMED_ANALYSIS_PROPERTIES_PATH)
   @Consumes(MediaType.TEXT_PLAIN)
   public void setStepAnalysisProperties(
-      @PathParam("analysisId") long analysisId,
-      @QueryParam("accessToken") String accessToken,
+      @PathParam(ANALYSIS_ID_PATH_PARAM) long analysisId,
+      @QueryParam(ACCESS_TOKEN_QUERY_PARAM) String accessToken,
       InputStream body) throws WdkModelException {
     StepAnalysisInstance instance = getAnalysis(analysisId, accessToken);
     getWdkModel().getStepAnalysisFactory().setProperties(instance, body);
