@@ -1,6 +1,5 @@
 package org.gusdb.wdk.service.service.user;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.functional.Functions.fSwallow;
 import static org.gusdb.fgputil.functional.Functions.not;
 

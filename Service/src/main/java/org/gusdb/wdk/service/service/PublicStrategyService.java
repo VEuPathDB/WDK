@@ -1,19 +1,19 @@
 package org.gusdb.wdk.service.service;
 
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.Strategy;
-import org.gusdb.wdk.service.formatter.StrategyFormatter;
-import org.json.JSONArray;
-import org.json.JSONException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.apache.log4j.Logger;
+
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.Strategy;
+import org.gusdb.wdk.service.formatter.StrategyFormatter;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 
 /**
@@ -25,9 +25,6 @@ import org.apache.log4j.Logger;
 @Produces(MediaType.APPLICATION_JSON)
 public class PublicStrategyService extends AbstractWdkService {
 
-  private static Logger LOG = Logger.getLogger(PublicStrategyService.class);
-
-  
   // TODO: there is probably a more elegant way to do this
   static boolean isValidStrategy(Strategy s) { return  s.isValid(); }
   static boolean isInvalidStrategy(Strategy s) { return  !s.isValid(); }

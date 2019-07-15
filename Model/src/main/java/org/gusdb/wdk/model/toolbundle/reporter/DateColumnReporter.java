@@ -1,22 +1,23 @@
 package org.gusdb.wdk.model.toolbundle.reporter;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.vulpine.lib.json.schema.Schema;
-import io.vulpine.lib.json.schema.SchemaBuilder;
-import org.gusdb.fgputil.SortDirection;
-import org.gusdb.fgputil.functional.Result;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.toolbundle.reporter.report.DateReport;
-import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
+import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.gusdb.fgputil.json.JsonUtil.Jackson;
 
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.gusdb.fgputil.json.JsonUtil.Jackson;
+import org.gusdb.fgputil.SortDirection;
+import org.gusdb.fgputil.functional.Result;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
+import org.gusdb.wdk.model.toolbundle.reporter.report.DateReport;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
+import io.vulpine.lib.json.schema.Schema;
+import io.vulpine.lib.json.schema.SchemaBuilder;
 
 public class DateColumnReporter extends AbstractColumnReporter<LocalDateTime> {
   public static final String
