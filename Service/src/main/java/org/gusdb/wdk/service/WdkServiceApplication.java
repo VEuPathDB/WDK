@@ -5,7 +5,6 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.gusdb.fgputil.SetBuilder;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.wdk.service.filter.ClientCacheExpirationFilter;
 import org.gusdb.wdk.service.filter.MethodRewritingFilter;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
@@ -20,6 +19,7 @@ import org.gusdb.wdk.service.service.user.*;
 
 import javax.ws.rs.core.Application;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class WdkServiceApplication extends Application {
 
