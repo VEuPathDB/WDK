@@ -53,7 +53,9 @@ import org.json.JSONObject;
  */
 public class FavoritesService extends UserService {
 
+  private static final String FAVORITES_SEGMENT = "favorites";
   private static final String FAVORITE_ID_PATH_PARAM = "favoriteId";
+  private static final String NAMED_FAVORITE_PATH = FAVORITES_SEGMENT + "/{" + FAVORITE_ID_PATH_PARAM + "}";
 
   @SuppressWarnings("unused")
   private static Logger LOG = Logger.getLogger(FavoritesService.class);
@@ -68,7 +70,7 @@ public class FavoritesService extends UserService {
    * @throws WdkModelException
    */
   @GET
-  @Path("favorites")
+  @Path(FAVORITES_SEGMENT)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFavorites() throws WdkModelException {
     User user = getPrivateRegisteredUser();
@@ -86,7 +88,7 @@ public class FavoritesService extends UserService {
    * @throws DataValidationException
    */
   @PATCH
-  @Path("favorites")
+  @Path(FAVORITES_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
   // TODO: @InSchema(...)
   public Response batchDeleteFavoritesByFavoriteIds(String body) throws WdkModelException, DataValidationException {
@@ -123,7 +125,7 @@ public class FavoritesService extends UserService {
    * @throws DataValidationException
    */
   @POST
-  @Path("favorites")
+  @Path(FAVORITES_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response addToFavorites(String body) throws WdkModelException, DataValidationException {
@@ -151,7 +153,7 @@ public class FavoritesService extends UserService {
    * @throws WdkModelException
    */
   @GET
-  @Path("favorites/{favoriteId}")
+  @Path(NAMED_FAVORITE_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFavoriteByFavoriteId(@PathParam(FAVORITE_ID_PATH_PARAM) Long favoriteId) throws WdkModelException {
     try {
@@ -178,7 +180,7 @@ public class FavoritesService extends UserService {
    * @throws DataValidationException
    */
   @PATCH
-  @Path("favorites/{favoriteId}")
+  @Path(NAMED_FAVORITE_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response editFavoriteByFavoriteId(@PathParam(FAVORITE_ID_PATH_PARAM) Long favoriteId, String body)
       throws WdkModelException, DataValidationException {
@@ -203,7 +205,7 @@ public class FavoritesService extends UserService {
    * @throws WdkModelException
    */
   @DELETE
-  @Path("favorites/{favoriteId}")
+  @Path(NAMED_FAVORITE_PATH)
   public Response deleteFavoriteByFavoriteId(@PathParam(FAVORITE_ID_PATH_PARAM) Long favoriteId) throws WdkModelException {
     User user = getPrivateRegisteredUser();
     List<Long> favoriteIds = new ArrayList<>();
@@ -236,7 +238,7 @@ public class FavoritesService extends UserService {
    * @throws DataValidationException
    */
   @POST
-  @Path("favorites/query")
+  @Path(FAVORITES_SEGMENT + "/query")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response queryFavoriteStatus(String body) throws WdkModelException, RequestMisformatException, DataValidationException {

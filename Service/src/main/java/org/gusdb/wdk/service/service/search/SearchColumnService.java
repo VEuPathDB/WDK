@@ -15,22 +15,22 @@ import javax.ws.rs.core.Context;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
-@Path(SearchColumnService.BASE_PATH)
+@Path(SearchColumnService.COLUMNS_PATH)
 public class SearchColumnService extends AbstractWdkService {
 
   public static final String
-    ID_VAR = "columnName",
-    ID_PARAM = "{" + ID_VAR + "}",
-    COLUMNS_SEGMENT = "/columns",
-    NAMED_COLUMN_SEGMENT = COLUMNS_SEGMENT + "/" + ID_PARAM,
-    BASE_PATH = QuestionService.ID_PATH + COLUMNS_SEGMENT,
-    ID_PATH = QuestionService.ID_PATH + NAMED_COLUMN_SEGMENT;
+    COLUMNS_SEGMENT = "columns",
+    COLUMN_PATH_PARAM = "columnName",
+    COLUMN_PARAM_SEGMENT = "{" + COLUMN_PATH_PARAM + "}",
+    NAMED_COLUMN_SEGMENT_PAIR = "/" + COLUMNS_SEGMENT + "/" + COLUMN_PARAM_SEGMENT,
+    COLUMNS_PATH = QuestionService.NAMED_SEARCH_PATH + "/" + COLUMNS_SEGMENT,
+    NAMED_COLUMN_PATH = QuestionService.NAMED_SEARCH_PATH + NAMED_COLUMN_SEGMENT_PAIR;
 
   private final Question search;
 
   public SearchColumnService(
-    @PathParam(RecordService.ID_VAR) final String recordType,
-    @PathParam(QuestionService.ID_VAR) final String searchType,
+    @PathParam(RecordService.RECORD_TYPE_PATH_PARAM) final String recordType,
+    @PathParam(QuestionService.SEARCH_PATH_PARAM) final String searchType,
     @Context ServletContext ctx
   ) {
     setServletContext(ctx);
@@ -50,9 +50,9 @@ public class SearchColumnService extends AbstractWdkService {
   }
 
   @GET
-  @Path(ID_PARAM)
+  @Path(COLUMN_PARAM_SEGMENT)
   @Produces(APPLICATION_JSON)
-  public JSONObject getColumn(@PathParam(ID_VAR) final String col) {
+  public JSONObject getColumn(@PathParam(COLUMN_PATH_PARAM) final String col) {
     return AttributeFieldFormatter.getAttributeJson(requireColumn(search, col));
   }
 }

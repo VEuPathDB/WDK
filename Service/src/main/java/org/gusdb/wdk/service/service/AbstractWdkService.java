@@ -68,6 +68,10 @@ public abstract class AbstractWdkService {
     return format(NOT_FOUND, resource);
   }
 
+  public static String paramToSegment(String pathParamName) {
+    return "{" + pathParamName + "}";
+  }
+
   @Context
   private HttpServletRequest _request;
 

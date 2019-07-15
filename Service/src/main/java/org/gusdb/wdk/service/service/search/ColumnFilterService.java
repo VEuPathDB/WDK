@@ -15,16 +15,17 @@ import java.util.function.Supplier;
 
 import static java.lang.String.format;
 
-@Path(ColumnFilterService.BASE_PATH)
+@Path(ColumnFilterService.COLUMN_FILTERS_PATH)
 public class ColumnFilterService extends AbstractWdkService {
 
   /**
    * API Paths
    */
   public static final String
-    ID_VAR = "filter",
-    ID_PARAM = "{" + ID_VAR + "}",
-    BASE_PATH = SearchColumnService.ID_PATH + "/filters";
+    COLUMN_FILTERS_SEGMENT = "filters",
+    COLUMN_FILTER_PATH_PARAM = "columnFilterName",
+    COLUMN_FILTER_PARAM_SEGMENT = "{" + COLUMN_FILTER_PATH_PARAM + "}",
+    COLUMN_FILTERS_PATH = SearchColumnService.NAMED_COLUMN_PATH + "/" + COLUMN_FILTERS_SEGMENT;
 
   /**
    * Reporter not found message.
@@ -36,9 +37,9 @@ public class ColumnFilterService extends AbstractWdkService {
   private final AttributeField column;
 
   public ColumnFilterService(
-    @PathParam(RecordService.ID_VAR) final String recordType,
-    @PathParam(QuestionService.ID_VAR) final String searchType,
-    @PathParam(SearchColumnService.ID_VAR) final String columnName,
+    @PathParam(RecordService.RECORD_TYPE_PATH_PARAM) final String recordType,
+    @PathParam(QuestionService.SEARCH_PATH_PARAM) final String searchType,
+    @PathParam(SearchColumnService.COLUMN_PATH_PARAM) final String columnName,
     @Context ServletContext ctx
   ) {
     setServletContext(ctx);
@@ -69,9 +70,9 @@ public class ColumnFilterService extends AbstractWdkService {
    * input on run
    */
   @GET
-  @Path(ID_PARAM)
+  @Path(COLUMN_FILTER_PARAM_SEGMENT)
   @Produces(MediaType.APPLICATION_JSON)
-  public Object getFilterDetails(@PathParam(ID_VAR) final String filter) {
+  public Object getFilterDetails(@PathParam(COLUMN_FILTER_PATH_PARAM) final String filter) {
     return column.getFilter(filter)
       .orElseThrow(makeNotFound(filter))
       .inputSpec();
