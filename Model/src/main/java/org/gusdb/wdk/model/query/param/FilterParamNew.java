@@ -443,7 +443,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // get filtered filter_item_ids  count
     String filteredItemIdsSql = getFilteredFilterItemIdsSql(validSpec, stableValue, _metadataQuery, _filterItemIdColumn, null);
-    sql = "select count( distinct " + _filterItemIdColumn + ") as CNT from (" + filteredItemIdsSql + ")";
+    sql = "select count( distinct " + _filterItemIdColumn + ") as CNT from (" + filteredItemIdsSql + ") c";
     fpsc.filteredFilterItemCount = runCountSql(sql, "filterItemIds-filtered");
 
     if (_filterItemIdColumn.equals(_recordIdColumn)) {
@@ -528,7 +528,7 @@ public class FilterParamNew extends AbstractDependentParam {
         " where " + COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId().replaceAll("'", "''") + "'");
 
     // use that set of ids to limit our ontology id's metadata
-    String andClause = " /* START andClause */ AND " + _filterItemIdColumn + " in ( select " + _filterItemIdColumn + " from (" + filteredFilterItemIdSql + ")) /* END andClause */ ";
+    String andClause = " /* START andClause */ AND " + _filterItemIdColumn + " in ( select " + _filterItemIdColumn + " from (" + filteredFilterItemIdSql + ") a) /* END andClause */ ";
     String filteredSqlPerOntologyId = unfilteredSqlPerOntologyId + andClause;
 
     // read this filtered set into map of internal -> value(s)
@@ -859,7 +859,7 @@ public class FilterParamNew extends AbstractDependentParam {
       if (defaultFilterClause != null) {
         filteredSql += defaultFilterClause;
       }
-      LOG.debug("filteredSql:\n" + filteredSql);
+      LOG.debug("filteredSql:\n" + filteredSql); 
       return " /* START filteredIdsSql */ " + filteredSql + " /* END filteredIdsSql */ ";
     }
 

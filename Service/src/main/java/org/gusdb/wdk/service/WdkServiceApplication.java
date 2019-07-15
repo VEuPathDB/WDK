@@ -5,6 +5,7 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.gusdb.fgputil.SetBuilder;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.wdk.service.filter.ClientCacheExpirationFilter;
 import org.gusdb.wdk.service.filter.MethodRewritingFilter;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
@@ -87,4 +88,22 @@ public class WdkServiceApplication extends Application {
     .toSet();
   }
 
+
+  /**
+   * Convenience method for subclasses to filter WDK services by class
+   * object, either for removal or replacement
+   * 
+   * @param classes array of classes which should not be added to the application
+   * @return predicate which filters those classes
+   */
+  protected static Predicate<Class<?>> acceptAllExcept(Class<?>... classesToFilterOut) {
+    return clazz -> {
+      for (Class<?> classToFilterOut : classesToFilterOut) {
+        if (clazz.getName().equals(classToFilterOut.getName())) {
+          return false; // do not accept
+        }
+      }
+      return true;
+    };
+  }
 }
