@@ -1,9 +1,7 @@
 package org.gusdb.wdk.service.formatter;
 
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Set;
 
 import org.gusdb.fgputil.json.JsonType;
@@ -11,7 +9,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
-import org.gusdb.wdk.model.user.dataset.UserDatasetMeta;
 import org.gusdb.wdk.model.user.dataset.UserDatasetCompatibility;
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
@@ -22,38 +19,29 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class UserDatasetFormatter {
+public class UserDatasetFormatter implements UserDatasetsFormatter {
 
-  public static JSONArray getUserDatasetsJson(UserDatasetSession dsSession, List<UserDatasetInfo> userDatasets,
-                                              List<UserDatasetInfo> sharedDatasets, boolean expandDatasets, boolean jbrowse, String publicOrganismAbbrev) throws WdkModelException {
-    JSONArray datasetsJson = new JSONArray();
-    putDatasetsIntoJsonArray(dsSession, datasetsJson, userDatasets, expandDatasets, true, jbrowse, publicOrganismAbbrev);
-    putDatasetsIntoJsonArray(dsSession, datasetsJson, sharedDatasets, expandDatasets, false, jbrowse, publicOrganismAbbrev);
-    return datasetsJson;
+  private final boolean _expandDatasets;
+
+  public UserDatasetFormatter(boolean expandDatasets) {
+    _expandDatasets = expandDatasets;
   }
 
-  private static void putDatasetsIntoJsonArray(UserDatasetSession dsSession, JSONArray datasetsJson, List<UserDatasetInfo> datasets,
-                                               boolean expand, boolean includeSharingData, boolean jbrowse, String publicOrganismAbbrev) throws WdkModelException {
-    for (UserDatasetInfo dataset : datasets) {
-
-        if(jbrowse) {
-            JSONArray samples = getUserDatasetJBrowseJson(dsSession, dataset, includeSharingData, false, publicOrganismAbbrev);
-
-            
-
-            for (int i = 0 ; i < samples.length(); i++) {
-                datasetsJson.put(samples.getJSONObject(i));
-            }
-
-        }
-        else {
-            datasetsJson.put(expand ?
-                             getUserDatasetJson(dsSession, dataset, includeSharingData, false) :
-                             dataset.getDataset().getUserDatasetId());
-        }
-    }
+  @Override
+  public void addUserDatasetInfoToJsonArray(UserDatasetInfo dataset,
+      JSONArray datasetsJson, UserDatasetSession dsSession) throws WdkModelException {
+    datasetsJson.put(_expandDatasets
+        ? getUserDatasetJson(dsSession, dataset, false, false)
+        : dataset.getDataset().getUserDatasetId());
   }
 
+  @Override
+  public void addSharedDatasetInfoToJsonArray(UserDatasetInfo dataset,
+      JSONArray datasetsJson, UserDatasetSession dsSession) throws WdkModelException {
+    datasetsJson.put(_expandDatasets
+        ? getUserDatasetJson(dsSession, dataset, true, false)
+        : dataset.getDataset().getUserDatasetId());
+  }
 
   /**
    * Return a JSONObject describing this dataset.  Should not include the contents of data file
@@ -97,9 +85,9 @@ public class UserDatasetFormatter {
     typeJson.put("name", type.getName());
     typeJson.put("version", type.getVersion());
     typeJson.put("display", datasetInfo.getTypeDisplay());
-    JsonType trackSpecificData = detailedData ?
-            datasetInfo.getDetailedTrackSpecificData() : datasetInfo.getTrackSpecificData();
-    typeJson.put("data", trackSpecificData == null ? JSONObject.NULL : trackSpecificData.get());
+    JsonType typeSpecificData = detailedData ?
+            datasetInfo.getDetailedTypeSpecificData() : datasetInfo.getTypeSpecificData();
+    typeJson.put("data", typeSpecificData == null ? JSONObject.NULL : typeSpecificData.get());
     json.put("id", dataset.getUserDatasetId());
     json.put("type", typeJson);
     json.put("isInstalled", datasetInfo.isInstalled());
@@ -172,10 +160,6 @@ public class UserDatasetFormatter {
     }
     json.put("datafiles", filesJson);
 
-//    JsonType trackSpecificData = detailedData ?
-//        datasetInfo.getDetailedTrackSpecificData() : datasetInfo.getTrackSpecificData();
-//    json.put("trackSpecificData", trackSpecificData == null ? new JsonType(null) : trackSpecificData.get());
-
     /* replace this with installation state, when we code that up.
     JSONObject compatJson = new JSONObject();
     compatJson.put("isCompatible", compatibility.isCompatible());
@@ -184,71 +168,6 @@ public class UserDatasetFormatter {
     */
     return json;
   }
-
-
-
-    public static JSONArray getUserDatasetJBrowseJson(UserDatasetSession dsSession, UserDatasetInfo datasetInfo, boolean includeSharingData, boolean detailedData, String publicOrganismAbbrev) throws WdkModelException {
-
-        JSONArray samplesJson = new JSONArray();
-
-        String genomeSuffix = "_" + publicOrganismAbbrev + "_Genome";
-        int maxScore = 1000;
-
-        UserDataset dataset = datasetInfo.getDataset();
-        UserDatasetType type = dataset.getType();
-        String datasetType = type.getName();
-        if(datasetType.equals("RnaSeq"))
-           datasetType = "RNASeq";
-
-        boolean matchesOrganismAbbrev = false;
-
-        for (UserDatasetDependency dependency : dataset.getDependencies()) {
-            if(dependency.getResourceIdentifier().endsWith(genomeSuffix)) 
-                matchesOrganismAbbrev = true;
-        }
-
-        if(!matchesOrganismAbbrev) 
-            return samplesJson;
-
-
-        Long datasetId = dataset.getUserDatasetId();
-        UserDatasetMeta datasetMeta = dataset.getMeta();
-        String datasetName = datasetMeta.getName();
-        String datasetSummary = datasetMeta.getSummary();
-
-        for (UserDatasetFile file : dataset.getFiles().values()) {
-            String fileName = file.getFileName(dsSession);
-            if(!fileName.toUpperCase().endsWith(".BW"))
-                continue ;
-
-            String urlTemplate = "/a/service/users/current/user-datasets/" + datasetId + "/user-datafiles/" + fileName;
-
-            JSONObject json = new JSONObject();
-            json.put("storeClass", "JBrowse/Store/SeqFeature/BigWig");
-            json.put("urlTemplate", urlTemplate);
-            json.put("yScalePosition",  "left");
-            json.put("key", datasetName + " " + fileName);
-            json.put("label", datasetName + " " + fileName);
-            json.put("type", "JBrowse/View/Track/Wiggle/XYPlot");
-            json.put("category", "My Data from Galaxy");
-            json.put("min_score",0);
-            json.put("max_score", maxScore);
-
-
-            JSONObject metadata = new JSONObject();
-            metadata.put("subcategory", datasetType);
-            metadata.put("dataset", datasetName);
-            metadata.put("trackType", "Coverage");
-            metadata.put("mdescription", datasetSummary);
-
-            json.put("metadata", metadata);
-
-            samplesJson.put(json);
-        }
-        
-        return samplesJson;
-  }
-
 
   public static JSONObject getUserDatasetSharesJson(UserFactory userFactory, Map<String, Map<Long, Set<Long>>> userDatasetShareMap) throws WdkModelException {
     JSONObject json = new JSONObject();
