@@ -101,11 +101,11 @@ public class UserDatasetInfo {
     return _relevantQuestionNames;
   }
 
-  public JsonType getTrackSpecificData() {
+  public JsonType getTypeSpecificData() {
     return _typeSpecificData;
   }
 
-  public JsonType getDetailedTrackSpecificData() {
+  public JsonType getDetailedTypeSpecificData() {
     return _detailedTypeSpecificData;
   }
 

@@ -1,7 +1,6 @@
 package org.gusdb.wdk.service.formatter;
 
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,23 +19,28 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class UserDatasetFormatter {
+public class UserDatasetFormatter implements UserDatasetsFormatter {
 
-  public static JSONArray getUserDatasetsJson(UserDatasetSession dsSession, List<UserDatasetInfo> userDatasets,
-      List<UserDatasetInfo> sharedDatasets, boolean expandDatasets) throws WdkModelException {
-    JSONArray datasetsJson = new JSONArray();
-    putDatasetsIntoJsonArray(dsSession, datasetsJson, userDatasets, expandDatasets, true);
-    putDatasetsIntoJsonArray(dsSession, datasetsJson, sharedDatasets, expandDatasets, false);
-    return datasetsJson;
+  private final boolean _expandDatasets;
+
+  public UserDatasetFormatter(boolean expandDatasets) {
+    _expandDatasets = expandDatasets;
   }
 
-  private static void putDatasetsIntoJsonArray(UserDatasetSession dsSession, JSONArray datasetsJson, List<UserDatasetInfo> datasets,
-      boolean expand, boolean includeSharingData) throws WdkModelException {
-    for (UserDatasetInfo dataset : datasets) {
-      datasetsJson.put(expand ?
-          getUserDatasetJson(dsSession, dataset, includeSharingData, false) :
-          dataset.getDataset().getUserDatasetId());
-    }
+  @Override
+  public void addUserDatasetInfoToJsonArray(UserDatasetInfo dataset,
+      JSONArray datasetsJson, UserDatasetSession dsSession) throws WdkModelException {
+    datasetsJson.put(_expandDatasets
+        ? getUserDatasetJson(dsSession, dataset, false, false)
+        : dataset.getDataset().getUserDatasetId());
+  }
+
+  @Override
+  public void addSharedDatasetInfoToJsonArray(UserDatasetInfo dataset,
+      JSONArray datasetsJson, UserDatasetSession dsSession) throws WdkModelException {
+    datasetsJson.put(_expandDatasets
+        ? getUserDatasetJson(dsSession, dataset, true, false)
+        : dataset.getDataset().getUserDatasetId());
   }
 
   /**
@@ -81,9 +85,9 @@ public class UserDatasetFormatter {
     typeJson.put("name", type.getName());
     typeJson.put("version", type.getVersion());
     typeJson.put("display", datasetInfo.getTypeDisplay());
-    JsonType trackSpecificData = detailedData ?
-            datasetInfo.getDetailedTrackSpecificData() : datasetInfo.getTrackSpecificData();
-    typeJson.put("data", trackSpecificData == null ? JSONObject.NULL : trackSpecificData.get());
+    JsonType typeSpecificData = detailedData ?
+            datasetInfo.getDetailedTypeSpecificData() : datasetInfo.getTypeSpecificData();
+    typeJson.put("data", typeSpecificData == null ? JSONObject.NULL : typeSpecificData.get());
     json.put("id", dataset.getUserDatasetId());
     json.put("type", typeJson);
     json.put("isInstalled", datasetInfo.isInstalled());
@@ -155,10 +159,6 @@ public class UserDatasetFormatter {
       filesJson.put(fileJson);
     }
     json.put("datafiles", filesJson);
-
-//    JsonType trackSpecificData = detailedData ?
-//        datasetInfo.getDetailedTrackSpecificData() : datasetInfo.getTrackSpecificData();
-//    json.put("trackSpecificData", trackSpecificData == null ? new JsonType(null) : trackSpecificData.get());
 
     /* replace this with installation state, when we code that up.
     JSONObject compatJson = new JSONObject();
