@@ -2,19 +2,22 @@ package org.gusdb.wdk.model.user.dataset.irods;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.io.*;
 import org.irods.jargon.core.pub.io.FileIOOperations.SeekWhenceType;
-import org.irods.jargon.core.pub.io.IRODSFile;
-import org.irods.jargon.core.pub.io.IRODSFileFactory;
-import org.irods.jargon.core.pub.io.IRODSRandomAccessFile;
 import org.irods.jargon.core.transfer.TransferControlBlock;
+
+import static java.lang.Math.ceil;
+import static java.lang.Math.min;
 
 /**
  * @author steve
@@ -28,7 +31,6 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
   @Override
   public InputStream getFileContents(UserDatasetSession dsSession, Path temporaryDirPath) throws WdkModelException {
     long start = System.currentTimeMillis();
-    //IrodsUserDatasetStoreAdaptor adaptor = (IrodsUserDatasetStoreAdaptor) dsSession.getUserDatasetStoreAdaptor();
     try {
       Path localPath = getLocalCopy(dsSession, temporaryDirPath);
       return Files.newInputStream(localPath);
@@ -96,4 +98,41 @@ public class IrodsUserDatasetFile extends UserDatasetFile {
     }
   }
 
+  @Override
+  public long readRangeInto(
+    UserDatasetSession dsSess,
+    long offset,
+    long len,
+    OutputStream into
+  ) throws WdkRuntimeException {
+    if (len == 0)
+      return 0;
+
+    final IrodsUserDatasetStoreAdaptor adaptor;
+    long wrote = 0;
+
+    adaptor = (IrodsUserDatasetStoreAdaptor) dsSess.getUserDatasetStoreAdaptor();
+    try {
+      IRODSFileFactory fileFac = adaptor.getIrodsFileFactory();
+      IRODSFile file = fileFac.instanceIRODSFile(getFilePath().toString());
+      try (IRODSFileInputStream is = fileFac.instanceIRODSFileInputStream(file)) {
+        if (file.length() <= offset)
+          return 0;
+
+        is.skip(offset);
+
+        final byte[] buffer = new byte[(int) min(32768L, len)];
+
+        for (int i = (int) ceil((double) len / buffer.length); i > 0; i--) {
+          final int d = is.read(buffer);
+          into.write(buffer, 0, d);
+          wrote += d;
+        }
+      }
+    } catch (Exception ioe) {
+      throw new WdkRuntimeException("Unable to access the file " + getFilePath().toString(), ioe);
+    }
+
+    return wrote;
+  }
 }
