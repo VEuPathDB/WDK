@@ -108,7 +108,10 @@ abstract class AbstractReport<T extends Comparable<?>>
     if (limited)
       return;
 
-    limiter(sizeOf(val));
+    // FIXME: Had to temporarily disable because even organism filter was "too big".
+    //        Need to assess this code and see if it is adding too much or if
+    //        size limit is simply too small.
+    //limiter(sizeOf(val));
     if (limited)
       return;
 
