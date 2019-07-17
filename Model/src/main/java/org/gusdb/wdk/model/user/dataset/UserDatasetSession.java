@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.user.dataset;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModelException;
@@ -42,6 +43,49 @@ public interface UserDatasetSession extends AutoCloseable {
    * @throws WdkModelException
    */
   Map<Long, UserDataset> getExternalUserDatasets(Long userId) throws WdkModelException;
+
+  /**
+   * Get a single external user dataset by user and dataset id.
+   *
+   * @param userId
+   *   id of the user that the dataset must have been shared with
+   * @param datasetId
+   *   id of the user dataset itself
+   *
+   * @return An option of a UserDataset. The option will contain a UserDataset
+   *   if a UserDataset was found with the given {@code datasetId} and that
+   *   dataset has been shared with the user matching the given {@code userId}.
+   *   Otherwise, the option will be empty.
+   *
+   * @throws WdkModelException
+   *   if an internal exception occurs while trying to retrieve details about
+   *   the UserDataset from the source system.
+   */
+  Optional<UserDataset> getExternalUserDataset(long userId, long datasetId)
+  throws WdkModelException;
+
+  /**
+   * Get a handle on the named external user datafile shared with the given user
+   * in dataset represented by the given id.
+   *
+   * @param userId
+   *   id of the user the dataset must be shared with
+   * @param datasetId
+   *   id of the dataset itself
+   * @param fileName
+   *   name of the datafile contained by the dataset
+   *
+   * @return an optional RandomAccessFile that can be used to read the datafile
+   *
+   * @throws WdkModelException
+   *   if an internal exception occurs while trying to retrieve details about
+   *   the UserDataset.
+   */
+  Optional<UserDatasetFile> getExternalUserDatafile(
+    long userId,
+    long datasetId,
+    String fileName
+  ) throws WdkModelException;
 
   /**
    * Update user supplied meta data.  Client provides JSON to describe the new
@@ -104,7 +148,7 @@ public interface UserDatasetSession extends AutoCloseable {
   void deleteUserDataset(Long userId, Long datasetId) throws WdkModelException;
 
   /**
-   * Delete the specified external dataset.  Must unshare the dataset from 
+   * Delete the specified external dataset.  Must unshare the dataset from
    * @param userId
    * @param externalUserId
    * @param externalDatasetId
@@ -125,7 +169,7 @@ public interface UserDatasetSession extends AutoCloseable {
    * @return
    */
   Long getQuota(Long userId) throws WdkModelException;
-  
+
   /**
    * Gets the size of the default quota.  Option to always grab from the store so that
    * this could be used in a service to check health of store.
@@ -136,7 +180,7 @@ public interface UserDatasetSession extends AutoCloseable {
   Long getDefaultQuota(boolean getFromStore) throws WdkModelException;
 
   /**
-   * Check if a user has a userId directory in the store. 
+   * Check if a user has a userId directory in the store.
    * @param userId
    * @return true if so.
    * @throws WdkModelException
@@ -144,7 +188,7 @@ public interface UserDatasetSession extends AutoCloseable {
   boolean checkUserDirExists(Long userId)  throws WdkModelException;
 
   /**
-   * Check if a user has a datasets/ directory in the store. 
+   * Check if a user has a datasets/ directory in the store.
    * @param userId
    * @return true if so.
    * @throws WdkModelException
@@ -171,7 +215,7 @@ public interface UserDatasetSession extends AutoCloseable {
    * @throws WdkModelException
    */
   String initializeUserDatasetStoreId() throws WdkModelException;
-  
+
   /**
    * This method grabs a subset of event paths from the events folder.  The subset is based upon
    * the lastHandledEventId provided.

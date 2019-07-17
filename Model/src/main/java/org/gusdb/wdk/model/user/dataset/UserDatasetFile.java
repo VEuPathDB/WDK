@@ -1,9 +1,11 @@
 package org.gusdb.wdk.model.user.dataset;
 
-import java.io.InputStream;
-import java.nio.file.Path;
-
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Path;
 
 /**
  * A handle on a file within a user dataset.
@@ -30,7 +32,7 @@ public abstract class UserDatasetFile {
   }
 
   /**
-   * @param dsSession session to use to fetch file name 
+   * @param dsSession session to use to fetch file name
    */
   public String getFileName(UserDatasetSession dsSession) {
     return getFilePath().getFileName().toString();
@@ -69,10 +71,13 @@ public abstract class UserDatasetFile {
   protected abstract void createLocalCopy(UserDatasetSession dsSession, Path tmpFile) throws WdkModelException;
 
   /**
-   * for use by implementers of getLocalCopy, to 
+   * for use by implementers of getLocalCopy, to
    * @return
    */
   protected Long getUserDatasetId() {
     return userDatasetId;
   }
+
+  public abstract long readRangeInto(UserDatasetSession dsSess, long offset,
+    long len, OutputStream into) throws WdkRuntimeException;
 }
