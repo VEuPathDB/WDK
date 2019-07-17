@@ -3,7 +3,6 @@ package org.gusdb.wdk.service.service.user;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Collection;
 import java.util.List;
@@ -27,7 +26,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.Range;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
@@ -37,7 +36,6 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetInfo;
 import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
-import org.gusdb.wdk.service.FileRanges;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserDatasetFormatter;
@@ -48,6 +46,15 @@ import org.gusdb.wdk.service.request.user.UserDatasetShareRequest;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.StreamingOutput;
+
+import static java.nio.file.StandardOpenOption.READ;
+import static org.gusdb.fgputil.IoUtil.createOpenPermsTempDir;
+import static org.gusdb.fgputil.IoUtil.transferStream;
+import static org.gusdb.wdk.service.FileRanges.CONTENT_RANGE_HEADER;
+import static org.gusdb.wdk.service.FileRanges.parseRangeHeaderValue;
 
 /**
  *  TODO: validate
@@ -124,9 +131,9 @@ public class UserDatasetService extends UserService {
     String responseJson;
     try (UserDatasetSession dsSession = dsStore.getSession()) {
       UserDataset userDataset =
-          dsSession.getUserDatasetExists(userId, datasetId) ?
-          dsSession.getUserDataset(userId, datasetId) :
-          dsSession.getExternalUserDatasets(userId).get(datasetId);
+        dsSession.getUserDatasetExists(userId, datasetId) ?
+        dsSession.getUserDataset(userId, datasetId) :
+        dsSession.getExternalUserDataset(userId, datasetId).orElse(null);
       if (userDataset == null) {
         throw new NotFoundException("user-dataset/" + datasetIdStr);
       }
@@ -156,40 +163,20 @@ public class UserDatasetService extends UserService {
     long userId = getPrivateRegisteredUser().getUserId();
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore(getWdkModel());
-    java.nio.file.Path temporaryDirPath = null;
     try (UserDatasetSession dsSession = dsStore.getSession()) {
-         temporaryDirPath = IoUtil.createOpenPermsTempDir(getWdkModel().getModelConfig().getWdkTempDir(), "irods_");
-      UserDataset userDataset =
-          dsSession.getUserDatasetExists(userId, datasetId) ?
-          dsSession.getUserDataset(userId, datasetId) :
-          dsSession.getExternalUserDatasets(userId).get(datasetId);
-      if (userDataset == null) {
-        throw new NotFoundException("No user dataset is found with ID " + datasetId);
-      }
-      UserDatasetFile userDatasetFile = userDataset.getFile(dsSession, datafileName);
-      if (userDatasetFile == null) {
-        throw new WdkModelException("There is no data file corresponding to the filename " + datafileName);
-      }
-      InputStream inputStream = userDatasetFile.getFileContents(dsSession, temporaryDirPath);
-      return fileRange == null || fileRange.isEmpty()
-        ? Response.ok(getStreamingOutput(inputStream)).build()
-        : FileRanges.getFileChunkResponse(temporaryDirPath.resolve(datafileName),
-          FileRanges.parseRangeHeaderValue(fileRange));
-    }
-    catch(IOException ioe) {
-      throw new WdkModelException(ioe);
-    }
-    finally {
-      if (temporaryDirPath != null) {
-        java.nio.file.Path temporaryFilePath = temporaryDirPath.resolve(datafileName);
-        try {
-          Files.delete(temporaryFilePath);
-          Files.delete(temporaryDirPath);
-        }
-        catch(IOException ioe) {
-          throw new WdkModelException(ioe);
-        }
-      }
+      final UserDatasetFile file = dsSession.getUserDatasetExists(userId, datasetId)
+        ? dsSession.getUserDataset(userId, datasetId).getFile(dsSession, datafileName)
+        : dsSession.getExternalUserDatafile(userId, datasetId, datafileName)
+          .orElse(null);
+
+      if (file == null)
+        return Response.status(Status.NOT_FOUND).build();
+
+      return fileRange != null && !fileRange.isEmpty()
+        ? getDatafileRange(dsSession, file, parseRangeHeaderValue(fileRange))
+        : getFullDatafile(dsSession, file);
+    } catch (IOException e) {
+      throw new WdkModelException(e);
     }
   }
 
@@ -326,5 +313,77 @@ public class UserDatasetService extends UserService {
         throw new NotFoundException(formatNotFound(UserService.USER_RESOURCE + targetUserBundle.getTargetUserIdString()));
       }
     }
+  }
+
+  /**
+   * Streams the selected range of bytes from the desired user dataset file from
+   * a locally cached copy.
+   * <p>
+   * If no such copy exists, a copy will be created.
+   * <p>
+   * If another local copy being created is detected, this will attempt to wait
+   * for the other download to complete before streaming the range
+   */
+  private Response getDatafileRange(
+    final UserDatasetSession dsSess,
+    final UserDatasetFile dsFile,
+    final Range<Long> range
+  ) throws WdkModelException {
+    return Response.status(206)
+      .entity((StreamingOutput) out -> dsFile.readRangeInto(dsSess,
+        range.getBegin(), 1 + range.getEnd() - range.getBegin(), out))
+      .header(CONTENT_RANGE_HEADER, range.getBegin() + "-" + range.getEnd() +
+        "/" + dsFile.getFileSize(dsSess))
+      .build();
+  }
+
+  /**
+   * Streams the full contents of the desired user dataset file from either a
+   * local cache copy or the external system.
+   */
+  private Response getFullDatafile(
+    final UserDatasetSession dsSess,
+    final UserDatasetFile dsFile
+  ) throws IOException, WdkModelException {
+    LOG.info("getFullDatafile");
+    return Response.ok()
+      .entity(streamAndDelete(dsFile.getLocalCopy(dsSess,
+        createOpenPermsTempDir(getWdkModel().getModelConfig().getWdkTempDir(),
+        "irods_"))))
+      .build();
+  }
+
+  /**
+   * Creates a {@code StreamingOutput} instance that will attempt to write all
+   * the contents of the given file to the client output stream.
+   *
+   * @param file
+   *   file to write out to the client
+   *
+   * @return A {@code StreamingOutput} instance
+   */
+  private StreamingOutput cacheStream(java.nio.file.Path file) {
+    return output -> transferStream(output, Files.newInputStream(file, READ));
+  }
+
+  /**
+   * Creates a {@code StreamingOutput} instance that will attempt to write all
+   * the contents of the given file to the client output stream before deleting
+   * the given file.
+   *
+   * @param file
+   *   file that will be written to the output stream then deleted
+   *
+   * @return A {@code StreamingOutput} instance
+   */
+  private StreamingOutput streamAndDelete(java.nio.file.Path file) {
+    return output -> {
+      try {
+        cacheStream(file).write(output);
+      } finally {
+        Files.delete(file);
+        Files.delete(file.getParent());
+      }
+    };
   }
 }
