@@ -478,7 +478,7 @@ public class Step implements Validateable<Step> {
    * @return estimate of this step's result size
    */
   public int getEstimatedSize() {
-    return _answerSpec.isValid() ? _estimatedSize : 0;
+    return _answerSpec.isValid() ? _estimatedSize : -1;
   }
 
   /**
@@ -490,7 +490,7 @@ public class Step implements Validateable<Step> {
    */
   public int getResultSize() throws WdkModelException {
     return _estimatedSizeRefreshed ? _estimatedSize :
-           !_answerSpec.isRunnable() ? 0 :
+           !_answerSpec.isRunnable() ? -1 :
            recalculateResultSize(_answerSpec.getRunnable().getLeft());
   }
 

@@ -200,6 +200,13 @@ public class StrategyRequest {
         next.add(sec);
       }
 
+      // TODO: optimize!!!  We should only set this if:
+      //    1. step has answer params AND
+      //    2. answer params inputs have changed
+      // Easier to always set if #1 to start- save implementing #2 for later
+      if (step.getAnswerSpec().getAnswerParamCount() > 0) {
+        builder.setResultSizeDirty(true);
+      }
       allBuilders.add(builder);
     }
 

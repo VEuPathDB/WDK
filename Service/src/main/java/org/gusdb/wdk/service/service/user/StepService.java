@@ -237,7 +237,8 @@ public class StepService extends UserService {
           .get();
 
     StepBuilder replacementBuilder = Step.builder(existingStep)
-        .setAnswerSpec(AnswerSpec.builder(newSpec));
+        .setAnswerSpec(AnswerSpec.builder(newSpec))
+        .setResultSizeDirty(true);
 
     // allows subclasses to apply follow-up modifications to the new version
     applyAdditionalChanges(existingStep, replacementBuilder);
