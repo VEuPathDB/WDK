@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.answer.spec;
 
+import java.io.IOException;
 import java.util.Map.Entry;
 
 import org.gusdb.fgputil.json.JsonIterators;
@@ -11,9 +12,13 @@ import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
 import org.gusdb.wdk.model.toolbundle.config.ColumnConfig;
 import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSet;
 import org.gusdb.wdk.model.toolbundle.config.FilterConfigSet;
+import org.gusdb.wdk.model.toolbundle.filter.StandardColumnFilterConfigSetBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Handles conversion back and forth from the JSON contained in the
@@ -92,7 +97,7 @@ public class ParamsAndFiltersDbColumnFormat {
     return parseFiltersJson(paramFiltersJson, KEY_VIEW_FILTERS);
   }
 
-  public static FilterOptionListBuilder parseFiltersJson(JSONObject paramFiltersJson, String filtersKey) {
+  public static FilterOptionListBuilder parseFiltersJson(JSONObject paramFiltersJson, String filtersKey) throws JSONException {
     FilterOptionListBuilder builder = FilterOptionList.builder();
     if (paramFiltersJson == null || !paramFiltersJson.has(filtersKey)) {
       return builder;
@@ -113,16 +118,48 @@ public class ParamsAndFiltersDbColumnFormat {
     return builder;
   }
 
+  public static StandardColumnFilterConfigSetBuilder parseColumnFilters(JSONObject paramFiltersJson) throws JSONException {
+    StandardColumnFilterConfigSetBuilder builder = new StandardColumnFilterConfigSetBuilder();
+    if (paramFiltersJson == null || !paramFiltersJson.has(KEY_COLUMN_FILTERS)) {
+      return builder;
+    }
+    JSONObject columnsObject = paramFiltersJson.getJSONObject(KEY_COLUMN_FILTERS);
+    for (Entry<String,JsonType> columnEntry : JsonIterators.objectIterable(columnsObject)) {
+      if (columnEntry.getValue().getType().equals(JsonType.ValueType.OBJECT)) {
+        JSONObject filtersObject = columnEntry.getValue().getJSONObject();
+        for (Entry<String,JsonType> filterEntry : JsonIterators.objectIterable(filtersObject)) {
+          if (filterEntry.getValue().getType().equals(JsonType.ValueType.ARRAY)) {
+            JSONArray configArray = filterEntry.getValue().getJSONArray();
+            for (JsonType config : JsonIterators.arrayIterable(configArray)) {
+              if (config.getType().equals(JsonType.ValueType.OBJECT)) {
+                try {
+                  JsonNode jacksonObj = new ObjectMapper().readTree(config.getJSONObject().toString());
+                  builder.append(columnEntry.getKey(), filterEntry.getKey(), () -> jacksonObj);
+                }
+                catch (IOException e) {
+                  throw new JSONException("Unable to deserialize string version of: " + config.getJSONObject());
+                }
+              } else throw new JSONException(config + " is not a JSON object.");
+            }
+          } else throw new JSONException(filterEntry.getValue() + " is not a JSON array.");
+        }
+      } else throw new JSONException(columnEntry.getValue() + " is not a JSON object.");
+    }
+    return builder;
+  }
+
   public static JSONObject formatColumnFilters(ColumnFilterConfigSet columnFilterConfig) {
-    JSONObject obj = new JSONObject();
+    JSONObject json = new JSONObject();
     for (Entry<String, ColumnConfig> column: columnFilterConfig.getColumnConfigs().entrySet()) {
+      JSONObject columnObj = new JSONObject();
       for (Entry<String, FilterConfigSet> filter : column.getValue().getFilterConfigSets().entrySet()) {
         JSONArray configs = new JSONArray();
-        filter.getValue().getConfigs().stream().forEach(config -> configs.put(config.getConfig()));
-        obj.put(column.getKey(), configs);
+        filter.getValue().getConfigs().stream().forEach(config -> configs.put(config.getConfigAsJSONObject()));
+        columnObj.put(filter.getKey(), configs);
       }
+      json.put(column.getKey(), columnObj);
     }
-    return obj;
+    return json;
   }
 
 }

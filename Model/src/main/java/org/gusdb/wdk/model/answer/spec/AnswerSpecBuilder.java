@@ -61,6 +61,7 @@ public class AnswerSpecBuilder {
     setQueryInstanceSpec(ParamsAndFiltersDbColumnFormat.parseParamsJson(paramFiltersJson));
     setFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(paramFiltersJson));
     setViewFilterOptions(ParamsAndFiltersDbColumnFormat.parseViewFiltersJson(paramFiltersJson));
+    setColumnFilterConfig(ParamsAndFiltersDbColumnFormat.parseColumnFilters(paramFiltersJson));
     // caller may have already called setAssignedWeight on answer spec builder
     _queryInstanceSpec.setAssignedWeight(_assignedWeight);
     return this;
