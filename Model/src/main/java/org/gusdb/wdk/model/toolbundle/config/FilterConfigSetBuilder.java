@@ -31,4 +31,9 @@ public interface FilterConfigSetBuilder {
    * @return the constructed FilterConfigSet instance.
    */
   FilterConfigSet build();
+
+  /**
+   * @return first config in the list
+   */
+  ColumnToolConfig getFirst();
 }

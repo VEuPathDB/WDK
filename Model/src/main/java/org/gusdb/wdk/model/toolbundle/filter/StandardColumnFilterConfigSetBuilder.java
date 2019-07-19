@@ -1,17 +1,17 @@
 package org.gusdb.wdk.model.toolbundle.filter;
 
-import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
-import org.gusdb.wdk.model.toolbundle.config.ColumnConfigBuilder;
-import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSet;
-import org.gusdb.wdk.model.toolbundle.config.ColumnConfig;
-import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSetBuilder;
-import org.gusdb.wdk.model.toolbundle.config.FilterConfigSet;
-import org.gusdb.wdk.model.toolbundle.config.FilterConfigSetBuilder;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
+import org.gusdb.wdk.model.toolbundle.config.ColumnConfig;
+import org.gusdb.wdk.model.toolbundle.config.ColumnConfigBuilder;
+import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSet;
+import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSetBuilder;
+import org.gusdb.wdk.model.toolbundle.config.FilterConfigSet;
+import org.gusdb.wdk.model.toolbundle.config.FilterConfigSetBuilder;
 
 public class StandardColumnFilterConfigSetBuilder
 implements ColumnFilterConfigSetBuilder {
@@ -54,6 +54,22 @@ implements ColumnFilterConfigSetBuilder {
     final var out = new HashMap<String, ColumnConfig>(builders.size());
     builders.forEach((k, v) -> out.put(k, v.build()));
     return new ColumnFilterConfigSetImpl(out);
+  }
+
+  /**
+   * Remove a filter config for the passed column name and filter name
+   * 
+   * @param columnName
+   * @param filterName
+   * @return true if filter removed, else false
+   */
+  public boolean remove(String columnName, String filterName) {
+    ColumnConfigBuilder columnFilters = builders.get(columnName);
+    if (columnFilters == null) return false;
+    ColumnToolConfig config = columnFilters.get(filterName);
+    if (config == null) return false;
+    columnFilters.removeAll(filterName);
+    return true;
   }
 }
 
@@ -100,6 +116,16 @@ implements ColumnConfigBuilder {
     builders.forEach((k, v) -> out.put(k, v.build()));
     return new ColumnConfigImpl(out);
   }
+
+  @Override
+  public ColumnToolConfig get(String name) {
+    return builders.get(name).getFirst();
+  }
+
+  @Override
+  public void removeAll(String name) {
+    builders.remove(name);
+  }
 }
 
 
@@ -128,5 +154,11 @@ implements FilterConfigSetBuilder {
   @Override
   public FilterConfigSet build() {
     return new FilterConfigSetImpl(configs);
+  }
+
+  @Override
+  public ColumnToolConfig getFirst() {
+    if (configs.isEmpty()) return null;
+    return configs.iterator().next();
   }
 }
