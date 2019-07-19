@@ -189,4 +189,8 @@ public class AnswerSpecBuilder {
     _columnFilters = build;
     return this;
   }
+
+  public StandardColumnFilterConfigSetBuilder getColumnFilters() {
+    return _columnFilters;
+  }
 }

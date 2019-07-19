@@ -1,8 +1,8 @@
 package org.gusdb.wdk.model.toolbundle.config;
 
-import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
-
 import java.util.Map;
+
+import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
 
 public interface ColumnConfigBuilder {
   Map<String, FilterConfigSetBuilder> getAll();
@@ -12,4 +12,8 @@ public interface ColumnConfigBuilder {
   ColumnConfigBuilder append(String filter, ColumnToolConfig config);
 
   ColumnConfig build();
+
+  ColumnToolConfig get(String name);
+
+  void removeAll(String name);
 }

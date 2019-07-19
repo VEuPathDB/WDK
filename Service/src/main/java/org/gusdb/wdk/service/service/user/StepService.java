@@ -36,6 +36,7 @@ import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.request.AnswerFormatting;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
@@ -303,14 +304,20 @@ public class StepService extends UserService {
       @PathParam(REPORT_NAME_PATH_PARAM) final String reporterName,
       final JsonNode reporterConfig)
           throws WdkModelException, DataValidationException, NotFoundException, WdkUserException {
-    RunnableObj<Step> existingStep = getStepForCurrentUser(stepId, ValidationLevel.RUNNABLE)
-        .getRunnable().getOrThrow(StepService::getNotRunnableException);
-    Question question = existingStep.get().getAnswerSpec().getQuestion();
+    // don't validate step right away; do it after we clean filters
+    Step step = getStepForCurrentUser(stepId, ValidationLevel.NONE);
+    AnswerSpecBuilder specBuilder = ColumnReporterService.trimColumnFilter(
+        new AnswerSpecBuilder(step.getAnswerSpec()), columnName, reporterName);
+    RunnableObj<AnswerSpec> trimmedSpec = specBuilder
+        .build(step.getUser(), step.getContainer(), ValidationLevel.RUNNABLE)
+        .getRunnable()
+        .getOrThrow(StepService::getNotRunnableException);
+    Question question = trimmedSpec.get().getQuestion();
     AttributeField attribute = requireColumn(question, columnName);
     return ColumnReporterService.wrapReporter(
         attribute.prepareReporter(
             reporterName,
-            AnswerValueFactory.makeAnswer(existingStep),
+            AnswerValueFactory.makeAnswer(step.getUser(), trimmedSpec),
             reporterConfig
         ).orElseThrow(ColumnReporterService.makeNotFound(attribute, reporterName))
     );
@@ -321,4 +328,8 @@ public class StepService extends UserService {
         "This step is not runnable for the following reasons: " + badStep.getValidationBundle().toString());
   }
 
+  private static DataValidationException getNotRunnableException(AnswerSpec badSpec) {
+    return new DataValidationException(
+        "This step is not runnable for the following reasons: " + badSpec.getValidationBundle().toString());
+  }
 }
