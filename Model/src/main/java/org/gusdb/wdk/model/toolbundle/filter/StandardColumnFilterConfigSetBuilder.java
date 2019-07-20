@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.toolbundle.filter;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,12 +8,11 @@ import org.gusdb.wdk.model.toolbundle.config.ColumnConfig;
 import org.gusdb.wdk.model.toolbundle.config.ColumnConfigBuilder;
 import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSet;
 import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSetBuilder;
-import org.gusdb.wdk.model.toolbundle.config.FilterConfigSet;
-import org.gusdb.wdk.model.toolbundle.config.FilterConfigSetBuilder;
 
 public class StandardColumnFilterConfigSetBuilder
 implements ColumnFilterConfigSetBuilder {
 
+  // map from column name to builder for a map of tool name -> filter config
   private final Map<String, ColumnConfigBuilder> builders = new HashMap<>();
 
   public StandardColumnFilterConfigSetBuilder() {}
@@ -39,13 +36,13 @@ implements ColumnFilterConfigSetBuilder {
   }
 
   @Override
-  public ColumnFilterConfigSetBuilder append(
+  public ColumnFilterConfigSetBuilder setFilterConfig(
     final String column,
     final String filter,
     final ColumnToolConfig config
   ) {
     builders.computeIfAbsent(column, x -> new ColumnConfigBuilderImpl())
-      .append(filter, config);
+      .addEntry(filter, config);
     return this;
   }
 
@@ -68,97 +65,32 @@ implements ColumnFilterConfigSetBuilder {
     if (columnFilters == null) return false;
     ColumnToolConfig config = columnFilters.get(filterName);
     if (config == null) return false;
-    columnFilters.removeAll(filterName);
+    columnFilters.remove(filterName);
     return true;
   }
 }
 
 
-class ColumnConfigBuilderImpl
-implements ColumnConfigBuilder {
-
-  private Map<String, FilterConfigSetBuilder> builders = new HashMap<>();
+class ColumnConfigBuilderImpl extends HashMap<String, ColumnToolConfig> implements ColumnConfigBuilder {
 
   public ColumnConfigBuilderImpl() {}
 
-  public ColumnConfigBuilderImpl(ColumnConfig old) {
-    old.getFilterConfigSets()
-      .forEach((a, b) -> builders.put(a, new FilterConfigSetBuilderImpl(b)));
+  public ColumnConfigBuilderImpl(ColumnConfig orig) {
+    orig.forEach((toolName, config) -> put(toolName, config.deepCopy()));
   }
 
   @Override
-  public Map<String, FilterConfigSetBuilder> getAll() {
-    return builders;
-  }
-
-  @Override
-  public ColumnConfigBuilder put(
+  public ColumnConfigBuilder addEntry(
     final String name,
-    final FilterConfigSetBuilder builder
+    final ColumnToolConfig builder
   ) {
-    builders.put(name, builder);
-    return this;
-  }
-
-  @Override
-  public ColumnConfigBuilder append(
-    final String name,
-    final ColumnToolConfig config
-  ) {
-    builders.computeIfAbsent(name, x -> new FilterConfigSetBuilderImpl())
-      .add(config);
+    put(name, builder);
     return this;
   }
 
   @Override
   public ColumnConfig build() {
-    final var out = new HashMap<String, FilterConfigSet>();
-    builders.forEach((k, v) -> out.put(k, v.build()));
-    return new ColumnConfigImpl(out);
-  }
-
-  @Override
-  public ColumnToolConfig get(String name) {
-    return builders.get(name).getFirst();
-  }
-
-  @Override
-  public void removeAll(String name) {
-    builders.remove(name);
+    return new ColumnConfigImpl(this);
   }
 }
 
-
-class FilterConfigSetBuilderImpl
-implements FilterConfigSetBuilder {
-  private final Collection<ColumnToolConfig> configs = new ArrayList<>();
-
-  public FilterConfigSetBuilderImpl() {}
-
-  public FilterConfigSetBuilderImpl(FilterConfigSet old) {
-    configs.addAll(old.getConfigs());
-  }
-
-  @Override
-  public Collection<ColumnToolConfig> getAll() {
-    return configs;
-  }
-
-  @Override
-  public FilterConfigSetBuilder add(
-    ColumnToolConfig conf) {
-    configs.add(conf);
-    return this;
-  }
-
-  @Override
-  public FilterConfigSet build() {
-    return new FilterConfigSetImpl(configs);
-  }
-
-  @Override
-  public ColumnToolConfig getFirst() {
-    if (configs.isEmpty()) return null;
-    return configs.iterator().next();
-  }
-}

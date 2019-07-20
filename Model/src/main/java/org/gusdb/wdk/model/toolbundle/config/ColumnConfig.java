@@ -1,28 +1,25 @@
 package org.gusdb.wdk.model.toolbundle.config;
 
-import java.util.Map;
+import static java.util.Objects.isNull;
+
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
-import static java.util.Objects.isNull;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
+import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
 
-public interface ColumnConfig {
-  Map<String, FilterConfigSet> getFilterConfigSets();
+public interface ColumnConfig extends ReadOnlyMap<String, ColumnToolConfig> {
 
-  default void forEach(BiConsumer<String, FilterConfigSet> fn) {
-    getFilterConfigSets().forEach(fn);
+  default void forEach(BiConsumer<String, ColumnToolConfig> fn) {
+    entrySet().stream().forEach(entry -> fn.accept(entry.getKey(), entry.getValue()));
   }
 
-  default FilterConfigSet getFilterConfigs(String name) {
-    return getFilterConfigSets().get(name);
+  default boolean hasFilter(String toolName) {
+    return isNull(toolName);
   }
 
-  default boolean hasFilters(String name) {
-    return isNull(getFilterConfigs(name));
-  }
-
-  default Optional<FilterConfigSet> filterConfigs(String name) {
-    return Optional.ofNullable(getFilterConfigs(name));
+  default Optional<ColumnToolConfig> getFilterConfig(String toolName) {
+    return Optional.ofNullable(get(toolName));
   }
 
 }

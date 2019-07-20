@@ -9,9 +9,9 @@ import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
+import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
 import org.gusdb.wdk.model.toolbundle.config.ColumnConfig;
 import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSet;
-import org.gusdb.wdk.model.toolbundle.config.FilterConfigSet;
 import org.gusdb.wdk.model.toolbundle.filter.StandardColumnFilterConfigSetBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -128,20 +128,15 @@ public class ParamsAndFiltersDbColumnFormat {
       if (columnEntry.getValue().getType().equals(JsonType.ValueType.OBJECT)) {
         JSONObject filtersObject = columnEntry.getValue().getJSONObject();
         for (Entry<String,JsonType> filterEntry : JsonIterators.objectIterable(filtersObject)) {
-          if (filterEntry.getValue().getType().equals(JsonType.ValueType.ARRAY)) {
-            JSONArray configArray = filterEntry.getValue().getJSONArray();
-            for (JsonType config : JsonIterators.arrayIterable(configArray)) {
-              if (config.getType().equals(JsonType.ValueType.OBJECT)) {
-                try {
-                  JsonNode jacksonObj = new ObjectMapper().readTree(config.getJSONObject().toString());
-                  builder.append(columnEntry.getKey(), filterEntry.getKey(), () -> jacksonObj);
-                }
-                catch (IOException e) {
-                  throw new JSONException("Unable to deserialize string version of: " + config.getJSONObject());
-                }
-              } else throw new JSONException(config + " is not a JSON object.");
+          if (filterEntry.getValue().getType().equals(JsonType.ValueType.OBJECT)) {
+            try {
+              JsonNode jacksonObj = new ObjectMapper().readTree(filterEntry.getValue().getJSONObject().toString());
+              builder.setFilterConfig(columnEntry.getKey(), filterEntry.getKey(), () -> jacksonObj);
             }
-          } else throw new JSONException(filterEntry.getValue() + " is not a JSON array.");
+            catch (IOException e) {
+              throw new JSONException("Unable to deserialize string version of: " + filterEntry.getValue().getJSONObject());
+            }
+          } else throw new JSONException(filterEntry.getValue() + " is not a JSON object.");
         }
       } else throw new JSONException(columnEntry.getValue() + " is not a JSON object.");
     }
@@ -152,10 +147,8 @@ public class ParamsAndFiltersDbColumnFormat {
     JSONObject json = new JSONObject();
     for (Entry<String, ColumnConfig> column: columnFilterConfig.getColumnConfigs().entrySet()) {
       JSONObject columnObj = new JSONObject();
-      for (Entry<String, FilterConfigSet> filter : column.getValue().getFilterConfigSets().entrySet()) {
-        JSONArray configs = new JSONArray();
-        filter.getValue().getConfigs().stream().forEach(config -> configs.put(config.getConfigAsJSONObject()));
-        columnObj.put(filter.getKey(), configs);
+      for (Entry<String, ColumnToolConfig> filter : column.getValue().entrySet()) {
+        columnObj.put(filter.getKey(), filter.getValue().getConfigAsJSONObject());
       }
       json.put(column.getKey(), columnObj);
     }

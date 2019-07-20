@@ -9,7 +9,7 @@ public interface ColumnFilterConfigSetBuilder {
 
   ColumnFilterConfigSetBuilder put(String name, ColumnConfigBuilder builder);
 
-  ColumnFilterConfigSetBuilder append(String column, String filter,
+  ColumnFilterConfigSetBuilder setFilterConfig(String column, String filter,
     ColumnToolConfig config);
 
   ColumnFilterConfigSet build();

@@ -1,12 +1,9 @@
 package org.gusdb.wdk.service.request.filter;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSet;
 import org.gusdb.wdk.model.toolbundle.filter.StandardColumnFilterConfigSetBuilder;
-import org.gusdb.wdk.model.question.Question;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 public final class ColumnFilterServiceFormat {
@@ -36,8 +33,7 @@ public final class ColumnFilterServiceFormat {
     final Question question,
     final JSONObject config
   ) throws WdkUserException {
-    return new FilterConfigParser(question,
-      (ObjectNode) JsonUtil.toJsonNode(config)).parse();
+    return new FilterConfigParser(question).parse(config);
   }
 
   /**
@@ -51,18 +47,14 @@ public final class ColumnFilterServiceFormat {
    * compatible with {@link #parse(Question, JSONObject)}.
    */
   public JSONObject format(ColumnFilterConfigSet conf) {
-    final var out = new JSONObject();
-
-    conf.forEach((col, colConf) -> colConf.forEach((type, filConf) -> {
-      if (!out.has(col))
-        out.put(col, new JSONObject().put(type, new JSONArray()));
-
-      final var tmp = out.getJSONObject(col)
-        .getJSONArray(type);
-
-      filConf.forEach(config -> tmp.put(config.getConfig()));
-    }));
-
+    JSONObject out = new JSONObject();
+    conf.forEach((columnName, columnConf) -> {
+      JSONObject columnJson = new JSONObject();
+      columnConf.forEach((toolName, filterConf) -> {
+        columnJson.put(toolName, filterConf);
+      });
+      out.put(columnName, columnJson);
+    });
     return out;
   }
 }

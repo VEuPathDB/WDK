@@ -1,11 +1,11 @@
 package org.gusdb.wdk.model.toolbundle.filter;
 
-import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSet;
-import org.gusdb.wdk.model.toolbundle.config.ColumnConfig;
-import org.gusdb.wdk.model.toolbundle.config.FilterConfigSet;
-import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
+import java.util.Map;
 
-import java.util.*;
+import org.gusdb.fgputil.collection.ReadOnlyHashMap;
+import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
+import org.gusdb.wdk.model.toolbundle.config.ColumnConfig;
+import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSet;
 
 /**
  * Base implementation of the {@link ColumnFilterConfigSet} interface.
@@ -31,34 +31,8 @@ class ColumnFilterConfigSetImpl implements ColumnFilterConfigSet {
  * <p>
  * Constructed via {@link StandardColumnFilterConfigSetBuilder}.
  */
-class ColumnConfigImpl implements ColumnConfig {
-  private final Map<String, FilterConfigSet> filters;
-
-  ColumnConfigImpl(Map<String, FilterConfigSet> filters) {
-    this.filters = Map.copyOf(filters);
-  }
-
-  @Override
-  public Map<String, FilterConfigSet> getFilterConfigSets() {
-    return filters;
-  }
-}
-
-
-/**
- * Base implementation of the {@link FilterConfigSet} interface.
- *
- * Constructed via {@link StandardColumnFilterConfigSetBuilder}.
- */
-class FilterConfigSetImpl implements FilterConfigSet {
-  private final Collection<ColumnToolConfig> configs;
-
-  FilterConfigSetImpl(Collection<ColumnToolConfig> configs) {
-    this.configs = List.copyOf(new ArrayList<>(configs));
-  }
-
-  @Override
-  public Collection<ColumnToolConfig> getConfigs() {
-    return configs;
+class ColumnConfigImpl extends ReadOnlyHashMap<String, ColumnToolConfig> implements ColumnConfig {
+  ColumnConfigImpl(Map<String, ColumnToolConfig> filters) {
+    super(filters);
   }
 }
