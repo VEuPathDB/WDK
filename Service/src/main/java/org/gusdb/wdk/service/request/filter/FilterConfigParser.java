@@ -1,116 +1,106 @@
 package org.gusdb.wdk.service.request.filter;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.toolbundle.ColumnFilter;
-import org.gusdb.wdk.model.toolbundle.filter.StandardColumnFilterConfigSetBuilder;
-import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.record.FieldScope;
-import org.gusdb.wdk.model.record.attribute.AttributeField;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-
 import static org.gusdb.fgputil.json.JsonUtil.Jackson;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+
+import org.gusdb.fgputil.json.JsonIterators;
+import org.gusdb.fgputil.json.JsonType;
+import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.toolbundle.ColumnFilter;
+import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
+import org.gusdb.wdk.model.toolbundle.filter.StandardColumnFilterConfigSetBuilder;
+import org.json.JSONObject;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
 class FilterConfigParser {
+
   private static final String
+    ERR_NOT_AN_OBJECT = "value of property \"%s\" is not a JSON object",
     ERR_INVALID_COLUMN = "column \"%s\" is not a member of the search \"%s\"",
-    ERR_CANNOT_FILTER  = "filter configuration provided for non-filterable " +
-      "column \"%s\"",
-    ERR_INVALID_FILTER = "column \"%s\" does not have have configured filter " +
-      "\"%s\"";
+    ERR_CANNOT_FILTER  = "filter configuration provided for non-filterable column \"%s\"",
+    ERR_INVALID_FILTER = "column \"%s\" does not have have configured filter \"%s\"";
 
-  private final Question question;
-  private final Collection<String> errors;
-  private final ObjectNode config;
-  private final Map<String, AttributeField> fields;
-  private final StandardColumnFilterConfigSetBuilder builder;
+  private final Question _question;
+  private final Map<String,AttributeField> _attributeMap;
 
-  private String columnName;
-  private ObjectNode columnConf;
-  private String filterName;
-  private ArrayNode filterConfSet;
-
-  FilterConfigParser(
-    final Question question,
-    final ObjectNode config
-  ) {
-    this.question = question;
-    this.config = config;
-    this.errors = new ArrayList<>();
-    this.builder = new StandardColumnFilterConfigSetBuilder();
-
-    // TODO: Is NON_INTERNAL correct here?
-    this.fields = question.getAttributeFieldMap(FieldScope.NON_INTERNAL);
+  FilterConfigParser(Question question) {
+    _question = question;
+    _attributeMap = question.getAttributeFieldMap();
   }
 
-  StandardColumnFilterConfigSetBuilder parse() throws WdkUserException {
-    config.fieldNames().forEachRemaining(key -> {
-      columnConf = (ObjectNode) config.get(columnName = key);
-      getColumn().ifPresent(this::handleColumn);
-    });
-
-    if (hasErrors())
-      throw new WdkUserException(formatErrors());
+  StandardColumnFilterConfigSetBuilder parse(JSONObject columnFiltersConfig) throws WdkUserException {
+    var builder = new StandardColumnFilterConfigSetBuilder();
+    var errors = new ArrayList<String>();
+    for (Entry<String,JsonType> columnEntry : JsonIterators.objectIterable(columnFiltersConfig)) {
+      Optional<AttributeField> field = getColumn(columnEntry.getKey(), errors);
+      Optional<JSONObject> columnConfig = getJsonObject(columnEntry, errors);
+      if (field.isPresent() && columnConfig.isPresent()) {
+        for (Entry<String,JsonType> filterEntry : JsonIterators.objectIterable(columnConfig.get())) {
+          Optional<ColumnFilter> filterOpt = getFilter(field.get(), filterEntry.getKey(), errors);
+          Optional<ColumnToolConfig> filterConfig = getJsonObject(filterEntry, errors)
+              .flatMap(jsonObject -> filterOpt.flatMap(filter -> getToolConfig(filter, jsonObject, errors)));
+          if (filterConfig.isPresent()) {
+            builder.setFilterConfig(columnEntry.getKey(), filterEntry.getKey(), filterConfig.get());
+          }
+        }
+      }
+    }
+    if (!errors.isEmpty())
+      throw new WdkUserException(formatErrors(errors));
 
     return builder;
   }
 
-  private void handleColumn(final AttributeField field) {
-    columnConf.fieldNames().forEachRemaining(key -> {
-      filterConfSet = (ArrayNode) columnConf.get(filterName = key);
-      getFilters(field).ifPresent(this::handleFilters);
-    });
+  private Optional<AttributeField> getColumn(String columnName, List<String> errors) {
+    if (!_attributeMap.containsKey(columnName)) {
+      return error(errors, ERR_INVALID_COLUMN, columnName, _question.getName());
+    }
+    return Optional.of(_attributeMap.get(columnName));
   }
 
-  private void handleFilters(final ColumnFilter filter) {
-    filterConfSet.forEach(node -> handleFilter(filter, (ObjectNode) node));
+  private static Optional<ColumnFilter> getFilter(AttributeField field, String filterName, List<String> errors) {
+    if (!field.isFilterable()) {
+      return error(errors, ERR_CANNOT_FILTER, field.getName());
+    }
+    var filter = field.getFilter(filterName);
+    return !filter.isEmpty() ? filter :
+      error(errors, ERR_INVALID_FILTER, field.getName(), filterName);
   }
 
-  private void handleFilter(final ColumnFilter filter, final ObjectNode conf) {
+  private static Optional<ColumnToolConfig> getToolConfig(ColumnFilter filter, JSONObject config, ArrayList<String> errors) {
     try {
-      builder.append(columnName, filterName, filter.validateConfig(conf));
-    } catch (WdkUserException e) {
-      errors.add(e.getMessage());
+      return Optional.of(filter.validateConfig(JsonUtil.toJsonNode(config)));
+    }
+    catch (WdkUserException e) {
+      return error(errors, e.getMessage());
     }
   }
 
-  private Optional<AttributeField> getColumn() {
-    if (!fields.containsKey(columnName)) {
-      return error(ERR_INVALID_COLUMN, columnName, question.getFullName());
+  private static Optional<JSONObject> getJsonObject(Entry<String, JsonType> namedValue, ArrayList<String> errors) {
+    if (namedValue.getValue().getType().equals(JsonType.ValueType.OBJECT)) {
+      return Optional.of(namedValue.getValue().getJSONObject());
     }
-    return Optional.of(fields.get(columnName));
+    return error(errors, ERR_NOT_AN_OBJECT, namedValue.getKey());
   }
 
-  private Optional<ColumnFilter> getFilters(final AttributeField field) {
-    if (!field.isFilterable())
-      return error(ERR_CANNOT_FILTER, columnName);
-
-    final var fil = field.getFilter(filterName);
-
-    if (fil.isEmpty())
-      return error(ERR_INVALID_FILTER, columnName, filterName);
-
-    return fil;
+  private static <T> Optional<T> error(final List<String> errors, final String mes, final Object... in) {
+    errors.add(String.format(mes, in));
+    return Optional.empty();
   }
 
-  private String formatErrors() {
+  private static String formatErrors(List<String> errors) {
     return Jackson.createObjectNode()
       .set("errors", errors.stream()
         .reduce(Jackson.createArrayNode(), ArrayNode::add, ArrayNode::addAll))
       .toString();
-  }
-
-  private boolean hasErrors() {
-    return !errors.isEmpty();
-  }
-
-  private <T> Optional<T> error(final String mes, final Object... in) {
-    errors.add(String.format(mes, in));
-    return Optional.empty();
   }
 }

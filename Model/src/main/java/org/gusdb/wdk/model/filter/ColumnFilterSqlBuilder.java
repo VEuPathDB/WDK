@@ -102,16 +102,14 @@ public class ColumnFilterSqlBuilder {
       final var sql = retrieveBuilder(field);
       final var conf = configs.getColumnConfig(key);
 
-      for (final var e : conf.getFilterConfigSets().entrySet())
-        for (final var config : e.getValue().getConfigs()) {
-          final var filter = field.prepareFilter(e.getKey(), answer, config)
-            .get();
-          sql.append("  AND ")
-            .append(filter.build().buildSqlWhere())
-            .append(" /* ")
-            .append(filter.getClass().getSimpleName())
-            .append(" */\n");
-        }
+      for (final var entry : conf.entrySet()) {
+        final var filter = field.prepareFilter(entry.getKey(), answer, entry.getValue()).get();
+        sql.append("  AND ")
+           .append(filter.build().buildSqlWhere())
+           .append(" /* ")
+           .append(filter.getClass().getSimpleName())
+           .append(" */\n");
+      }
     }
     queries.values().forEach(out::append);
     final var sql = out.toString();

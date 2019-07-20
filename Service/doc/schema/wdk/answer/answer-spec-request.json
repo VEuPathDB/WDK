@@ -29,10 +29,7 @@
       "additionalProperties": {
         "type": "object",
         "additionalProperties": {
-          "type": "array",
-          "items": {
-            "type": "object"
-          }
+          "type": "object"
         }
       }
     }
