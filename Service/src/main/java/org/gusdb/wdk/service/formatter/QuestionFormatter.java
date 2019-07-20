@@ -25,6 +25,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.service.formatter.param.ParamFormatterFactory;
 import org.json.JSONArray;
@@ -106,7 +107,8 @@ public class QuestionFormatter {
    * @return array of allowed names or null if no param present
    */
   private static JSONArray getAllowedRecordClasses(Optional<AnswerParam> answerParam) {
-    return answerParam.map(param -> new JSONArray(param.getAllowedRecordClasses().keySet())).orElse(null);
+    return answerParam.map(param -> new JSONArray(
+        param.getAllowedRecordClasses().values().stream().map(RecordClass::getUrlSegment).toArray())).orElse(null);
   }
 
   public static <T extends ParameterContainerInstanceSpec<T>> JSONArray getParamsJson(
