@@ -49,14 +49,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 /**
  * Endpoints for getting info about or running column reporters.
  */
-@Path(ColumnReporterService.NAMED_COLUMN_REPORT_PATH)
+@Path(ColumnReporterService.NAMED_COLUMN_REPORTS_PATH)
 public class ColumnReporterService extends AbstractWdkService {
 
   /**
    * API Paths
    */
-  public static final String NAMED_COLUMN_REPORT_PATH =
-      SearchColumnService.NAMED_COLUMN_PATH + AnswerService.CUSTOM_REPORT_SEGMENT_PAIR;
+  public static final String NAMED_COLUMN_REPORTS_PATH =
+      SearchColumnService.NAMED_COLUMN_PATH + "/" + AnswerService.REPORTS_URL_SEGMENT;
 
   /**
    * Reporter not found message.
@@ -112,9 +112,9 @@ public class ColumnReporterService extends AbstractWdkService {
    * input on run
    */
   @GET
-  @Path(NAMED_COLUMN_REPORT_PATH)
+  @Path(AnswerService.CUSTOM_REPORT_SEGMENT)
   @Produces(MediaType.APPLICATION_JSON)
-  public Object getReporterDetails(@PathParam(REPORT_NAME_PATH_PARAM) final String reporter) {
+  public JsonNode getReporterDetails(@PathParam(REPORT_NAME_PATH_PARAM) final String reporter) {
     var rep = column.getReporter(reporter)
       .orElseThrow(makeNotFound(column, reporter));
 
@@ -143,7 +143,7 @@ public class ColumnReporterService extends AbstractWdkService {
    *   if the given reporter configuration is invalid.
    */
   @POST
-  @Path(NAMED_COLUMN_REPORT_PATH)
+  @Path(AnswerService.CUSTOM_REPORT_SEGMENT)
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public StreamingOutput runReporter(
