@@ -8,7 +8,7 @@ import java.util.Arrays;
  * Comparators used by column filters to represent and construct the various
  * possible operations.
  *
- * Each value holds a key which can be used to represent a comparator accross
+ * Each value holds a key which can be used to represent a comparator across
  * application boundaries as well as a string template for the SQL comparator
  * operation itself.
  */
