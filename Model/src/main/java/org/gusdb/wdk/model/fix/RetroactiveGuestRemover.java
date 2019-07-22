@@ -172,7 +172,7 @@ public class RetroactiveGuestRemover extends BaseCLI {
       Date cutoffDate = (cutoffDateStr == null || cutoffDateStr.isEmpty()) &&
                           (oldestDayCount != null && !oldestDayCount.isEmpty()) ?
                         deriveCutoffDate(userDb.getDataSource(), userSchema, oldestDayCount) :
-                        FormatUtil.parseDate(cutoffDateStr);
+                        FormatUtil.toDate(FormatUtil.parseDate(cutoffDateStr));
       
       LOG.info("********** Cutoff Date: " + cutoffDate + " **********");
       
