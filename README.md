@@ -1,8 +1,6 @@
 StrategiesWDK: a powerful search platform and GUI for 'omics' databases
 =======================================================================
 
-*http://strategieswdk.gusdb.org/templatesite/wdk/images/strategiesWDK.png*
-
 The Strategies WDK is a powerful search platform and GUI for 'omics' databases.
 
 To learn more:
