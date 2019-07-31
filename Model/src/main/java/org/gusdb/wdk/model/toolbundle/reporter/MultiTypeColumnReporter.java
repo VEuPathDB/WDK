@@ -1,53 +1,52 @@
 package org.gusdb.wdk.model.toolbundle.reporter;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.vulpine.lib.json.schema.Schema;
-import io.vulpine.lib.json.schema.SchemaBuilder;
-import org.gusdb.fgputil.functional.Result;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.toolbundle.ColumnReporter;
-import org.gusdb.wdk.model.toolbundle.impl.AbstractColumnTool;
-import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
+import static org.gusdb.fgputil.FormatUtil.NL;
 
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
+import org.gusdb.fgputil.functional.Result;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
+import org.gusdb.wdk.model.toolbundle.ColumnReporter;
+import org.gusdb.wdk.model.toolbundle.ColumnReporterInstance;
+import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
+import org.gusdb.wdk.model.toolbundle.impl.AbstractColumnTool;
 
-public class MultiTypeColumnReporter extends AbstractColumnReporter {
+import com.fasterxml.jackson.databind.JsonNode;
 
-  private ColumnReporter[] reporters = {
+import io.vulpine.lib.json.schema.Schema;
+import io.vulpine.lib.json.schema.SchemaBuilder;
+
+public class MultiTypeColumnReporter extends AbstractColumnTool<ColumnReporterInstance> implements ColumnReporter {
+
+  private static final ColumnReporter[] REPORTERS = {
     new NumberColumnReporter(),
     new StringColumnReporter(),
     new DateColumnReporter()
   };
 
-  private Result<WdkModelException, ColumnReporter> handler;
-
   @Override
-  public SchemaBuilder inputSpec() {
+  public SchemaBuilder getInputSpec(AttributeFieldDataType type) {
     var js = Schema.draft4().oneOf();
-
-    for (var rep : reporters)
-      if (rep.isCompatibleWith(getColumn().getDataType()))
-        js.add(rep.inputSpec());
-
+    for (var rep : REPORTERS)
+      if (rep.isCompatibleWith(type))
+        js.add(rep.getInputSpec(type));
     return js;
   }
 
   @Override
-  public SchemaBuilder outputSpec() {
-    var js = Arrays.stream(reporters)
-      .filter(r -> r.isCompatibleWith(getColumn().getDataType()))
-      .map(ColumnReporter::outputSpec)
+  public SchemaBuilder outputSpec(AttributeFieldDataType type) {
+    var js = Arrays.stream(REPORTERS)
+      .filter(r -> r.isCompatibleWith(type))
+      .map(rep -> rep.outputSpec(type))
       .toArray(SchemaBuilder[]::new);
 
     if (js.length == 1)
       return js[0];
-
 
     var out = Schema.draft4().oneOf();
     for (var rep : js)
@@ -57,50 +56,34 @@ public class MultiTypeColumnReporter extends AbstractColumnReporter {
   }
 
   @Override
-  public ColumnReporter copy() {
-    final var out = copyInto(new MultiTypeColumnReporter());
-
-    out.reporters = new ColumnReporter[reporters.length];
-    for (var i = 0; i < reporters.length; i++)
-      out.reporters[i] = reporters[i].copy();
-
-    return out;
-  }
-
-  @Override
   public boolean isCompatibleWith(AttributeFieldDataType type) {
-    for (var rep : reporters)
+    for (var rep : REPORTERS)
       if (rep.isCompatibleWith(type))
         return true;
     return false;
   }
 
   @Override
-  public boolean isCompatibleWith(JsonNode js) {
-    for (var rep : reporters)
-      if (rep.isCompatibleWith(js))
+  public boolean isCompatibleWith(AttributeFieldDataType type, JsonNode js) {
+    for (var rep : REPORTERS)
+      if (rep.isCompatibleWith(type, js))
         return true;
     return false;
   }
 
   @Override
-  public Aggregator build(OutputStream out) throws WdkModelException {
-    return handler.valueOrElseThrow().build(out);
+  public ColumnReporterInstance makeInstance(AnswerValue answerValue, AttributeField field,
+      ColumnToolConfig config) throws WdkModelException {
+    return pickHandler(field.getDataType(), config.getConfig()).valueOrElseThrow()
+        .makeInstance(answerValue, field, config);
   }
 
-  @Override
-  public void parseConfig(JsonNode config) {
-    handler = pickHandler();
-    if (handler.isValue())
-      if (handler.getValue() instanceof AbstractColumnTool)
-        ((AbstractColumnTool) handler.getValue()).parseConfig(config);
-  }
-
-  private Result<WdkModelException, ColumnReporter> pickHandler() {
-    var ress = Arrays.stream(reporters)
-      .filter(r -> r.isCompatibleWith(getColumn().getDataType()))
-      .filter(r -> r.isCompatibleWith(getConfig()))
-      .map(this::checkConf)
+  private Result<WdkModelException, ColumnReporter> pickHandler(
+      AttributeFieldDataType dataType, JsonNode jsonNode) {
+    var ress = Arrays.stream(REPORTERS)
+      .filter(r -> r.isCompatibleWith(dataType))
+      .filter(r -> r.isCompatibleWith(dataType, jsonNode))
+      .map(r -> Result.of(() -> { r.validateConfig(dataType, jsonNode); return r; }))
       .map(r -> r.mapError(WdkModelException::new))
       .collect(Collectors.toList());
 
@@ -127,13 +110,5 @@ public class MultiTypeColumnReporter extends AbstractColumnReporter {
           + errs.toString()));
 
     return Result.error(new WdkModelException(errs.toString()));
-  }
-
-  private Result<WdkUserException, ColumnReporter>
-  checkConf(ColumnReporter reporter) {
-    return Result.of(() -> {
-      reporter.validateConfig(getConfig());
-      return reporter;
-    });
   }
 }

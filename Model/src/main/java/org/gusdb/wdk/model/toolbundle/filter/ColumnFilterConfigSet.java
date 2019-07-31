@@ -25,7 +25,6 @@ class ColumnFilterConfigSetImpl implements ColumnFilterConfigSet {
   }
 }
 
-
 /**
  * Base implementation of the {@link ColumnConfig} interface.
  * <p>

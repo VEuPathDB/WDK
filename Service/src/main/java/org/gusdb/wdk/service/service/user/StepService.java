@@ -314,8 +314,8 @@ public class StepService extends UserService {
         .getOrThrow(StepService::getNotRunnableException);
     Question question = trimmedSpec.get().getQuestion();
     AttributeField attribute = requireColumn(question, columnName);
-    return ColumnReporterService.wrapReporter(
-        attribute.prepareReporter(
+    return AnswerService.getAnswerAsStream(
+        attribute.makeReporterInstance(
             reporterName,
             AnswerValueFactory.makeAnswer(step.getUser(), trimmedSpec),
             reporterConfig

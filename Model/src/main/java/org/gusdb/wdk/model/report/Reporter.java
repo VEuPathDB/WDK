@@ -24,12 +24,12 @@ public interface Reporter {
   // public Reporter(AnswerValue answerValue);
 
   /**
-   * Pass on any required information contained in reporter reference to the reporter
+   * Pass on any properties contained in reporter reference to the reporter
    *
-   * @param reporterRef reference to this reporter
+   * @param properties properties of the reference to this reporter
    * @throws WdkModelException
    */
-  void setProperties(ReporterRef reporterRef) throws WdkModelException;
+  void setProperties(ReporterInfo reporterInfo) throws WdkModelException;
 
   /**
    * A legacy method to gather user configurations for the reporter.  Called by struts actions.

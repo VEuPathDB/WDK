@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.toolbundle;
 
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 
 import java.util.*;
@@ -14,7 +15,8 @@ import static org.gusdb.fgputil.json.JsonUtil.Jackson;
  * If more than one ColumnToolBundle is found with the same name an exception
  * will be thrown at model parse time.
  */
-public class ColumnToolBundles {
+public class ColumnToolBundles extends WdkModelBase {
+
   private static final String ERR_DUPLICATE = "More than one columnToolBundle "
     + "is defined with the name \"%s\".";
 
@@ -64,9 +66,11 @@ public class ColumnToolBundles {
    *   another existing tool bundle or if any error is encountered while
    *   attempting to resolve model references.
    */
-  public void resolveReferences(final WdkModel wdk) throws WdkModelException {
+  @Override
+  public void resolveReferences(final WdkModel wdkModel) throws WdkModelException {
+    super.resolveReferences(wdkModel);
     for (final ColumnToolBundleBuilder builder : builders) {
-      final ColumnToolBundle tmp = builder.build(wdk);
+      final ColumnToolBundle tmp = builder.build(wdkModel);
       if (bundles.containsKey(tmp.getName()))
         throw new WdkModelException(format(ERR_DUPLICATE, tmp.getName()));
       bundles.put(tmp.getName(), tmp);

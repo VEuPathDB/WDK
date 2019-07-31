@@ -1,7 +1,6 @@
 package org.gusdb.wdk.service.service.search;
 
 import static java.lang.String.format;
-import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.json.JsonUtil.Jackson;
 import static org.gusdb.fgputil.validation.ValidationLevel.RUNNABLE;
 import static org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy.FILL_PARAM_IF_MISSING;
@@ -18,7 +17,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.StreamingOutput;
@@ -34,7 +32,6 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.toolbundle.ColumnReporter;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -63,17 +60,6 @@ public class ColumnReporterService extends AbstractWdkService {
    */
   private static final String ERR_404 =
     "Invalid reporter \"%s\" for column " + "\"%s\".";
-
-  /**
-   * Stream error message.
-   */
-  private static final byte[] ERR_STREAM = (
-    " ********************************************* " + NL +
-    " ********************************************* " + NL +
-    " *************** ERROR **************** " + NL +
-    "We're sorry, but an error occurred while streaming your result and your request cannot be completed.  " +
-    NL + "Please contact us with a description of your download." + NL + NL
-  ).getBytes();
 
   private final Question search;
   private final AttributeField column;
@@ -121,8 +107,8 @@ public class ColumnReporterService extends AbstractWdkService {
     return Jackson.createObjectNode()
       .put(JsonKeys.NAME, rep.getKey())
       .set("schema", Jackson.createObjectNode()
-        .putPOJO("input", rep.inputSpec())
-        .putPOJO("output", rep.outputSpec().build()));
+        .putPOJO("input", rep.getInputSpec(column.getDataType()))
+        .putPOJO("output", rep.outputSpec(column.getDataType()).build()));
   }
 
   /**
@@ -150,23 +136,11 @@ public class ColumnReporterService extends AbstractWdkService {
     @PathParam(REPORT_NAME_PATH_PARAM) final String toolName,
     final JsonNode body
   ) throws WdkModelException, WdkUserException {
-    return wrapReporter(column.prepareReporter(
+    return AnswerService.getAnswerAsStream(column.makeReporterInstance(
       toolName,
       makeAnswer(body.get(JsonKeys.SEARCH_CONFIG), toolName),
       body.get(JsonKeys.REPORT_CONFIG)
     ).orElseThrow(makeNotFound(column, toolName)));
-  }
-
-  // TODO: Unify this with answer service
-  public static StreamingOutput wrapReporter(final ColumnReporter rep) {
-    return stream -> {
-      try {
-        rep.runner().run(rep.build(stream));
-      } catch (final WdkModelException e) {
-        stream.write(ERR_STREAM);
-        throw new WebApplicationException(e);
-      }
-    };
   }
 
   /**

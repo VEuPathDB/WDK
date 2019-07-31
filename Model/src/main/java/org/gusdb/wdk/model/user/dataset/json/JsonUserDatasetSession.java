@@ -605,7 +605,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
       String line = adaptor.readSingleLineFile(quotaFile);
       if (line == null)
         throw new WdkModelException("Empty quota file " + quotaFile);
-      defaultQuota = new Long(line.trim());
+      defaultQuota = Long.valueOf(line.trim());
     }
     return defaultQuota;
   }

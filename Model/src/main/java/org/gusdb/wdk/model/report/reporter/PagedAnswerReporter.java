@@ -5,7 +5,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.PagedAnswerRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.report.AbstractReporter;
-import org.gusdb.wdk.model.report.ReporterRef;
+import org.gusdb.wdk.model.report.ReporterInfo;
 
 /**
  * A PagedReporter outputs a result in a paged fashion in order to avoid memory problems.  To do so, it
@@ -28,7 +28,7 @@ public abstract class PagedAnswerReporter extends AbstractReporter {
   }
 
   @Override
-  public void setProperties(ReporterRef reporterRef) throws WdkModelException {
+  public void setProperties(ReporterInfo reporterRef) throws WdkModelException {
     super.setProperties(reporterRef);
     if (_properties.containsKey(PROPERTY_PAGE_SIZE)) {
       try {

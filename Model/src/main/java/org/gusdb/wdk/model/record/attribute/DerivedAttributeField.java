@@ -8,6 +8,7 @@ import org.gusdb.fgputil.functional.Result;
 import org.gusdb.wdk.model.*;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.toolbundle.ColumnFilter;
+import org.gusdb.wdk.model.toolbundle.ColumnFilterInstance;
 import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
 
 import java.io.PrintWriter;
@@ -222,7 +223,7 @@ public abstract class DerivedAttributeField extends AttributeField {
    * @see AttributeField#prepareFilter(String, AnswerValue, ColumnToolConfig)
    */
   @Override
-  public Optional<ColumnFilter> prepareFilter(
+  public Optional<ColumnFilterInstance> makeFilterInstance(
     final String name,
     final AnswerValue val,
     final ColumnToolConfig config
@@ -231,7 +232,7 @@ public abstract class DerivedAttributeField extends AttributeField {
     if (field.isEmpty())
       return Optional.empty();
 
-    return field.get().prepareFilter(name, val, config);
+    return field.get().makeFilterInstance(name, val, config);
   }
 
   /**

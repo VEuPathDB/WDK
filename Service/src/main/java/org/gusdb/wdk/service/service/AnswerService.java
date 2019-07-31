@@ -443,7 +443,7 @@ public class AnswerService extends AbstractWdkService {
     }
   }
 
-  private static StreamingOutput getAnswerAsStream(final Reporter reporter) {
+  public static StreamingOutput getAnswerAsStream(final Reporter reporter) {
     return stream -> {
       try {
         reporter.report(stream);

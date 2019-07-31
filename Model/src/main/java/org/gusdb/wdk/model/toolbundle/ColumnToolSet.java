@@ -36,7 +36,7 @@ public interface ColumnToolSet {
    *
    * @return a constructed attribute field filter
    */
-  Optional<ColumnFilter> prepareFilterFor(
+  Optional<ColumnFilterInstance> makeFilterInstance(
     AttributeField field,
     AnswerValue val,
     ColumnToolConfig config
@@ -69,7 +69,7 @@ public interface ColumnToolSet {
    * @return a result of either an exception or a constructed attribute field
    * reporter
    */
-  Optional<ColumnReporter> prepareReporter(
+  Optional<ColumnReporterInstance> makeReporterInstance(
     AttributeField field,
     AnswerValue val,
     ColumnToolConfig config

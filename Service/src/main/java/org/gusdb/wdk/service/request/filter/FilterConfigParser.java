@@ -47,7 +47,7 @@ class FilterConfigParser {
         for (Entry<String,JsonType> filterEntry : JsonIterators.objectIterable(columnConfig.get())) {
           Optional<ColumnFilter> filterOpt = getFilter(field.get(), filterEntry.getKey(), errors);
           Optional<ColumnToolConfig> filterConfig = getJsonObject(filterEntry, errors)
-              .flatMap(jsonObject -> filterOpt.flatMap(filter -> getToolConfig(filter, jsonObject, errors)));
+              .flatMap(jsonObject -> filterOpt.flatMap(filter -> getToolConfig(field.get(), filter, jsonObject, errors)));
           if (filterConfig.isPresent()) {
             builder.setFilterConfig(columnEntry.getKey(), filterEntry.getKey(), filterConfig.get());
           }
@@ -76,9 +76,9 @@ class FilterConfigParser {
       error(errors, ERR_INVALID_FILTER, field.getName(), filterName);
   }
 
-  private static Optional<ColumnToolConfig> getToolConfig(ColumnFilter filter, JSONObject config, ArrayList<String> errors) {
+  private static Optional<ColumnToolConfig> getToolConfig(AttributeField column, ColumnFilter filter, JSONObject config, ArrayList<String> errors) {
     try {
-      return Optional.of(filter.validateConfig(JsonUtil.toJsonNode(config)));
+      return Optional.of(filter.validateConfig(column.getDataType(), JsonUtil.toJsonNode(config)));
     }
     catch (WdkUserException e) {
       return error(errors, e.getMessage());

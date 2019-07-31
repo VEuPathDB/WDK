@@ -7,9 +7,9 @@ import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
 
 import java.util.Map;
 
-public interface ColumnToolBuilder<T extends ColumnTool> {
+public interface ColumnToolBuilder<S extends ColumnToolInstance, T extends ColumnTool<S>> {
 
-  ColumnToolBuilder<T> setKey(String key);
+  ColumnToolBuilder<S,T> setKey(String key);
 
   /**
    * @return the AttributeFieldDataType supported by this column tool.
@@ -30,7 +30,7 @@ public interface ColumnToolBuilder<T extends ColumnTool> {
    *
    * @return the updated ColumnToolBuilder
    */
-  ColumnToolBuilder<T> setColumnType(AttributeFieldDataType type);
+  ColumnToolBuilder<S,T> setColumnType(AttributeFieldDataType type);
 
   /**
    * Appends an XML property to this column tool builder's
@@ -42,9 +42,9 @@ public interface ColumnToolBuilder<T extends ColumnTool> {
    * @return the updated ColumnToolBuilder
    */
   @SuppressWarnings("unused") // Referenced by ModelXmlParser
-  ColumnToolBuilder<T> addProperty(WdkModelText prop);
+  ColumnToolBuilder<S,T> addProperty(WdkModelText prop);
 
-  ColumnToolBuilder<T> setImplementation(String path);
+  ColumnToolBuilder<S,T> setImplementation(String path);
 
   T build(WdkModel wdk) throws WdkModelException;
 }

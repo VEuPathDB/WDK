@@ -7,6 +7,7 @@ import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.toolbundle.ColumnFilterInstance;
 import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
 import org.gusdb.wdk.model.toolbundle.ColumnToolSet;
 import org.gusdb.wdk.model.filter.ColumnFilter;
@@ -120,7 +121,7 @@ public class QueryColumnAttributeField extends ColumnAttributeField {
   }
 
   @Override
-  public Optional<org.gusdb.wdk.model.toolbundle.ColumnFilter> prepareFilter(
+  public Optional<ColumnFilterInstance> makeFilterInstance(
     final String name,
     final AnswerValue val,
     final ColumnToolConfig config
@@ -129,7 +130,7 @@ public class QueryColumnAttributeField extends ColumnAttributeField {
     if (set.isEmpty())
       return Optional.empty();
 
-    return set.get().prepareFilterFor(this, val, config);
+    return set.get().makeFilterInstance(this, val, config);
   }
 
   @Override

@@ -5,6 +5,7 @@ import io.vulpine.lib.json.schema.Schema;
 import io.vulpine.lib.json.schema.SchemaBuilder;
 import org.gusdb.fgputil.SortDirection;
 import org.gusdb.fgputil.runtime.JvmUtil;
+import org.gusdb.wdk.model.WdkModelException;
 
 import java.math.BigDecimal;
 
@@ -17,6 +18,7 @@ import java.math.BigDecimal;
   AbstractReport.KEY_VALUES
 })
 public class NumberReport extends AbstractReport<BigDecimal> {
+
   static final String
     KEY_MAX_VAL = "maxValue",
     KEY_MIN_VAL = "minValue";
@@ -63,8 +65,11 @@ public class NumberReport extends AbstractReport<BigDecimal> {
     super(maxValues, sort);
   }
 
-  public NumberReport(SortDirection sort) {
-    super(sort);
+  @Override
+  public BigDecimal parse(String raw) throws WdkModelException {
+    if (raw == null) return null;
+    try { return new BigDecimal(raw); }
+    catch (Exception e) { throw new WdkModelException(e); }
   }
 
   @Override
@@ -96,8 +101,7 @@ public class NumberReport extends AbstractReport<BigDecimal> {
     return min;
   }
 
-  public static SchemaBuilder outputSchema()
-  {
+  public static SchemaBuilder outputSchema() {
     var js = Schema.draft4();
     return AbstractReport.outputSpec()
       .requiredProperty(KEY_MAX_VAL, js.asNumber()

@@ -10,28 +10,28 @@ public interface ColumnToolSetBuilder {
   void setName(String name);
 
   @SuppressWarnings("unused") // Referenced by name in ModelXmlParser
-  void setStringReporter(ColumnToolBuilder<ColumnReporter> tool);
+  void setStringReporter(ColumnToolBuilder<ColumnReporterInstance,ColumnReporter> tool);
 
   @SuppressWarnings("unused") // Referenced by name in ModelXmlParser
-  void setStringFilter(ColumnToolBuilder<ColumnFilter> tool);
+  void setStringFilter(ColumnToolBuilder<ColumnFilterInstance,ColumnFilter> tool);
 
   @SuppressWarnings("unused") // Referenced by name in ModelXmlParser
-  void setNumberReporter(ColumnToolBuilder<ColumnReporter> tool);
+  void setNumberReporter(ColumnToolBuilder<ColumnReporterInstance,ColumnReporter> tool);
 
   @SuppressWarnings("unused") // Referenced by name in ModelXmlParser
-  void setNumberFilter(ColumnToolBuilder<ColumnFilter> tool);
+  void setNumberFilter(ColumnToolBuilder<ColumnFilterInstance,ColumnFilter> tool);
 
   @SuppressWarnings("unused") // Referenced by name in ModelXmlParser
-  void setDateReporter(ColumnToolBuilder<ColumnReporter> tool);
+  void setDateReporter(ColumnToolBuilder<ColumnReporterInstance,ColumnReporter> tool);
 
   @SuppressWarnings("unused") // Referenced by name in ModelXmlParser
-  void setDateFilter(ColumnToolBuilder<ColumnFilter> tool);
+  void setDateFilter(ColumnToolBuilder<ColumnFilterInstance,ColumnFilter> tool);
 
   @SuppressWarnings("unused") // Referenced by name in ModelXmlParser
-  void setOtherReporter(ColumnToolBuilder<ColumnReporter> tool);
+  void setOtherReporter(ColumnToolBuilder<ColumnReporterInstance,ColumnReporter> tool);
 
   @SuppressWarnings("unused") // Referenced by name in ModelXmlParser
-  void setOtherFilter(ColumnToolBuilder<ColumnFilter> tool);
+  void setOtherFilter(ColumnToolBuilder<ColumnFilterInstance,ColumnFilter> tool);
 
   ColumnToolSet build(WdkModel wdk) throws WdkModelException;
 }

@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.answer.spec;
 import java.io.IOException;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonUtil;
@@ -31,6 +32,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @rdoherty
  */
 public class ParamsAndFiltersDbColumnFormat {
+
+  private static final Logger LOG = Logger.getLogger(ParamsAndFiltersDbColumnFormat.class);
 
   // top level json keys
   public static final String KEY_PARAMS = "params";
@@ -131,6 +134,7 @@ public class ParamsAndFiltersDbColumnFormat {
           if (filterEntry.getValue().getType().equals(JsonType.ValueType.OBJECT)) {
             try {
               JsonNode jacksonObj = new ObjectMapper().readTree(filterEntry.getValue().getJSONObject().toString());
+              LOG.info("Read column filter config object from DB: " + jacksonObj.toString());
               builder.setFilterConfig(columnEntry.getKey(), filterEntry.getKey(), () -> jacksonObj);
             }
             catch (IOException e) {

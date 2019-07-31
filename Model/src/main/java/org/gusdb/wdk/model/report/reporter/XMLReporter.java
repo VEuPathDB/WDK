@@ -24,7 +24,7 @@ import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
-import org.gusdb.wdk.model.report.ReporterRef;
+import org.gusdb.wdk.model.report.ReporterInfo;
 import org.gusdb.wdk.model.report.util.TableCache;
 
 /**
@@ -43,7 +43,7 @@ public class XMLReporter extends StandardReporter {
   }
 
   @Override
-  public void setProperties(ReporterRef reporterRef) throws WdkModelException {
+  public void setProperties(ReporterInfo reporterRef) throws WdkModelException {
     super.setProperties(reporterRef);
     String cacheTableName = TableCache.getCacheTableName(_properties);
     if (cacheTableName != null) {

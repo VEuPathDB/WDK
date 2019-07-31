@@ -5,10 +5,18 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.vulpine.lib.json.schema.Schema;
 import io.vulpine.lib.json.schema.SchemaBuilder;
 import io.vulpine.lib.json.schema.v4.Format;
+
+import org.gusdb.fgputil.ComparableLocalDateTime;
 import org.gusdb.fgputil.SortDirection;
+import org.gusdb.fgputil.functional.Result;
 import org.gusdb.fgputil.runtime.JvmUtil;
+import org.gusdb.wdk.model.WdkModelException;
+
+import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 @JsonPropertyOrder({
   DateReport.KEY_MIN_VAL,
@@ -18,7 +26,8 @@ import java.time.LocalDateTime;
   AbstractReport.KEY_NULLS,
   AbstractReport.KEY_VALUES
 })
-public class DateReport extends AbstractReport<LocalDateTime> {
+public class DateReport extends AbstractReport<ComparableLocalDateTime> {
+
   static final String
     KEY_MIN_VAL = "minValue",
     KEY_MAX_VAL = "maxValue";
@@ -46,18 +55,43 @@ public class DateReport extends AbstractReport<LocalDateTime> {
   }
 
   @Override
-  protected int sizeOf(LocalDateTime val) {
+  public ComparableLocalDateTime parse(String val) throws WdkModelException {
+    if (val == null)
+      return null;
+    return tryParse(val)
+      .mapError(WdkModelException::new)
+      .valueOrElseThrow();
+  }
+
+  private Result<Exception, ComparableLocalDateTime> tryParse(String val) {
+    var err = new ArrayList<String>();
+    err.add("Failed to parse date: " + val);
+
+    // Default parse
+    try { return Result.value(new ComparableLocalDateTime(LocalDateTime.parse(val))); }
+    catch (Exception e) { err.add(e.getMessage()); }
+
+    // Wonkydate parse
+    try { return Result.value(new ComparableLocalDateTime(LocalDateTime.parse(val,
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S")))); }
+    catch (Exception e) { err.add(e.getMessage()); }
+
+    return Result.error(new Exception(String.join(NL, err)));
+  }
+
+  @Override
+  protected int sizeOf(ComparableLocalDateTime val) {
     return DATE_SIZE;
   }
 
   @Override
-  public void pushValue(LocalDateTime val) {
+  public void pushValue(ComparableLocalDateTime val) {
     super.pushValue(val);
-
-    if (max == null || val.isAfter(max))
-      max = val;
-    if (min == null || val.isBefore(min))
-      min = val;
+    var underlyingVal = val.get();
+    if (max == null || underlyingVal.isAfter(max))
+      max = underlyingVal;
+    if (min == null || underlyingVal.isBefore(min))
+      min = underlyingVal;
   }
 
   @JsonGetter(KEY_MAX_VAL)
@@ -70,9 +104,8 @@ public class DateReport extends AbstractReport<LocalDateTime> {
     return min.toString();
   }
 
-  public static SchemaBuilder outputSchema()
-  {
-    var js   = Schema.draft4();
+  public static SchemaBuilder outputSchema() {
+    var js = Schema.draft4();
     return AbstractReport.outputSpec()
       .requiredProperty(KEY_MAX_VAL, js.asString().format(Format.DATE_TIME)
         .description("Highest value that appears in the results"))

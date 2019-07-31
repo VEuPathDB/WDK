@@ -231,7 +231,7 @@ public abstract class AttributeField extends Field implements Cloneable {
    * @throws WdkUserException
    *   if the given json client configuration is invalid.
    */
-  public Optional<ColumnReporter> prepareReporter(
+  public Optional<ColumnReporterInstance> makeReporterInstance(
     final String name,
     final AnswerValue val,
     final JsonNode config
@@ -240,12 +240,12 @@ public abstract class AttributeField extends Field implements Cloneable {
     if (tmp.isEmpty())
       return Optional.empty();
 
-    var conf = tmp.get().validateConfig(config);
+    var conf = tmp.get().validateConfig(getDataType(), config);
     var set  = getToolBundle().getTool(name);
     if (set.isEmpty())
       return Optional.empty();
 
-    return set.get().prepareReporter(this, val, conf);
+    return set.get().makeReporterInstance(this, val, conf);
   }
 
   /**
@@ -303,8 +303,10 @@ public abstract class AttributeField extends Field implements Cloneable {
    *
    * @return an option of either a configured column filter matching the given
    * name, or an empty option if no such filter exists.
+   * 
+   * @throws WdkModelException if unable to create an instance of the specified filter
    */
-  public Optional<ColumnFilter> prepareFilter(
+  public Optional<ColumnFilterInstance> makeFilterInstance(
     @SuppressWarnings("unused") final String name,
     @SuppressWarnings("unused") final AnswerValue val,
     @SuppressWarnings("unused") final ColumnToolConfig config

@@ -103,9 +103,9 @@ public class ColumnFilterSqlBuilder {
       final var conf = configs.getColumnConfig(key);
 
       for (final var entry : conf.entrySet()) {
-        final var filter = field.prepareFilter(entry.getKey(), answer, entry.getValue()).get();
+        final var filter = field.makeFilterInstance(entry.getKey(), answer, entry.getValue()).get();
         sql.append("  AND ")
-           .append(filter.build().buildSqlWhere())
+           .append(filter.buildSqlWhere())
            .append(" /* ")
            .append(filter.getClass().getSimpleName())
            .append(" */\n");
