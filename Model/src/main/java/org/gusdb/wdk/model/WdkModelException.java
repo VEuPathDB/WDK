@@ -28,14 +28,21 @@ public class WdkModelException extends WdkException {
     super(cause);
   }
 
+  public static WdkModelException translateFrom(Exception e) {
+    return translateFrom(e, e.getMessage());
+  }
+
+  public static WdkModelException translateFrom(Exception e, String newMessage) {
+    Throwable t = (e.getCause() != null ? e.getCause() : e);
+    return (t instanceof WdkModelException ? (WdkModelException)t : new WdkModelException(newMessage, t));
+  }
+
   public static <T> T unwrap(Exception e) throws WdkModelException {
-    unwrap(e, e.getMessage());
-    return null;
+    throw translateFrom(e, e.getMessage());
   }
 
   public static <T> T unwrap(Exception e, String newMessage) throws WdkModelException {
-    Throwable t = (e.getCause() != null ? e.getCause() : e);
-    throw (t instanceof WdkModelException ? (WdkModelException)t : new WdkModelException(newMessage, t));
+    throw translateFrom(e, newMessage);
   }
 
 }
