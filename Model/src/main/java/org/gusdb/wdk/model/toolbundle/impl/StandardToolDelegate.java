@@ -7,13 +7,14 @@ import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
 import org.gusdb.wdk.model.toolbundle.ColumnTool;
 import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
 import org.gusdb.wdk.model.toolbundle.ColumnToolDelegate;
+import org.gusdb.wdk.model.toolbundle.ColumnToolInstance;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-class StandardToolDelegate<T extends ColumnTool>
-implements ColumnToolDelegate<T> {
+class StandardToolDelegate<S extends ColumnToolInstance, T extends ColumnTool<S>>
+implements ColumnToolDelegate<S,T> {
 
   private final Map<AttributeFieldDataType, T> tools;
 
@@ -22,7 +23,7 @@ implements ColumnToolDelegate<T> {
   }
 
   @Override
-  public Optional<T> prepareTool(
+  public Optional<S> makeInstance(
     final AttributeField field,
     final AnswerValue val,
     final ColumnToolConfig config
@@ -35,10 +36,8 @@ implements ColumnToolDelegate<T> {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public Optional<T> getTool(AttributeField field) {
-    return Optional.ofNullable(tools.get(field.getDataType()))
-      .map(t -> (T) t.setAttributeField(field));
+    return Optional.ofNullable(tools.get(field.getDataType()));
   }
 
   @Override
@@ -46,16 +45,12 @@ implements ColumnToolDelegate<T> {
     return tools.containsKey(type);
   }
 
-  @SuppressWarnings("unchecked")
-  private <T extends ColumnTool> T buildTool(
+  private S buildTool(
     final T tool,
     final AttributeField field,
-    final AnswerValue val,
+    final AnswerValue answerValue,
     final ColumnToolConfig config
   ) throws WdkModelException {
-    return (T) tool.copy()
-      .setAnswerValue(tool.prepareAnswerValue(val))
-      .setAttributeField(field)
-      .setConfiguration(config);
+    return tool.makeInstance(answerValue, field, config);
   }
 }

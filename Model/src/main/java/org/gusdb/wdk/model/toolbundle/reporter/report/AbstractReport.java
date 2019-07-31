@@ -1,18 +1,27 @@
 package org.gusdb.wdk.model.toolbundle.reporter.report;
 
+import static org.gusdb.fgputil.runtime.JvmUtil.OBJECT_SIZE_PADDING_FACTOR;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
+import org.gusdb.fgputil.SortDirection;
+import org.gusdb.fgputil.runtime.JvmUtil;
+import org.gusdb.wdk.model.WdkModelException;
+
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import io.vulpine.lib.json.schema.Schema;
 import io.vulpine.lib.json.schema.v4.ObjectSchema;
-import org.gusdb.fgputil.SortDirection;
-import org.gusdb.fgputil.runtime.JvmUtil;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.gusdb.fgputil.runtime.JvmUtil.OBJECT_SIZE_PADDING_FACTOR;
 
 @JsonInclude(Include.NON_NULL)
 @JsonPropertyOrder({
@@ -21,8 +30,8 @@ import static org.gusdb.fgputil.runtime.JvmUtil.OBJECT_SIZE_PADDING_FACTOR;
   AbstractReport.KEY_NULLS,
   AbstractReport.KEY_VALUES
 })
-abstract class AbstractReport<T extends Comparable<?>>
-{
+public abstract class AbstractReport<T extends Comparable<T>> {
+
   static final String
     KEY_VALUES = "values",
     KEY_UNIQUE = "uniqueValues",
@@ -81,6 +90,8 @@ abstract class AbstractReport<T extends Comparable<?>>
   AbstractReport(SortDirection sort) {
     this(-1, sort);
   }
+
+  public abstract T parse(String val) throws WdkModelException;
 
   /**
    * Determine the approximate size in bytes of the given value.
@@ -180,8 +191,7 @@ abstract class AbstractReport<T extends Comparable<?>>
    *
    * @return ObjectSchema containing base elements for column reporter output.
    */
-  static ObjectSchema outputSpec()
-  {
+  public static ObjectSchema outputSpec() {
     var schema = Schema.draft4();
     return schema.asObject()
       .additionalProperties(false)

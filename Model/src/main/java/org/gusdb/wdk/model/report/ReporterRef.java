@@ -24,18 +24,18 @@ import org.gusdb.wdk.model.record.ScopedField;
  * @author xingao
  *
  */
-public class ReporterRef extends WdkModelBase implements ScopedField {
+public class ReporterRef extends WdkModelBase implements ScopedField, ReporterInfo {
 
-  private static final Logger logger = Logger.getLogger(ReporterRef.class);
+  private static final Logger LOG = Logger.getLogger(ReporterRef.class);
 
-  private String name;
-  private String displayName;
-  private String scopes = "";
-  private String description;
-  private String implementation;
-  private boolean inReportMaker = true;
-  private List<WdkModelText> propertyList = new ArrayList<>();
-  private Map<String, String> properties = new LinkedHashMap<>();
+  private String _name;
+  private String _displayName;
+  private String _scopes = "";
+  private String _description;
+  private String _implementation;
+  private boolean _inReportMaker = true;
+  private List<WdkModelText> _propertyList = new ArrayList<>();
+  private Map<String, String> _properties = new LinkedHashMap<>();
 
   @Override
   public WdkModel getWdkModel() {
@@ -46,7 +46,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
    * @return the implementation
    */
   public String getImplementation() {
-    return implementation;
+    return _implementation;
   }
 
   /**
@@ -55,14 +55,14 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
    */
   @RngOptional
   public void setImplementation(String implementation) {
-    this.implementation = implementation;
+    _implementation = implementation;
   }
 
   /**
    * @return the name
    */
   public String getName() {
-    return name;
+    return _name;
   }
 
   /**
@@ -71,21 +71,21 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
    */
   @RngOptional
   public void setName(String name) {
-    this.name = name;
+    _name = name;
   }
 
   /**
    * @return name by default, overridden by attribute reporter refs
    */
   public String getReferenceName() {
-    return name;
+    return _name;
   }
 
   /**
    * @return the displayName
    */
   public String getDisplayName() {
-    return displayName;
+    return _displayName;
   }
 
   /**
@@ -94,7 +94,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
    */
   @RngOptional
   public void setDisplayName(String displayName) {
-    this.displayName = displayName;
+    _displayName = displayName;
   }
 
   @Override
@@ -108,7 +108,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
    */
   @Override
   public boolean isInReportMaker() {
-    return inReportMaker;
+    return _inReportMaker;
   }
 
   /**
@@ -117,19 +117,19 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
    */
   @RngOptional
   public void setInReportMaker(boolean inReportMaker) {
-    this.inReportMaker = inReportMaker;
+    _inReportMaker = inReportMaker;
   }
 
   /**
    * @return the list of scopes
    */
   public String getScopes() {
-    return scopes;
+    return _scopes;
   }
 
   public List<String> getScopesList() {
-    return scopes.isEmpty() ? Collections.emptyList() :
-        Arrays.asList(scopes.split("\\s*,\\s*"));
+    return _scopes.isEmpty() ? Collections.emptyList() :
+        Arrays.asList(_scopes.split("\\s*,\\s*"));
   }
 
   /**
@@ -138,48 +138,49 @@ public class ReporterRef extends WdkModelBase implements ScopedField {
    */
   @RngOptional
   public void setScopes(String scopes) {
-    this.scopes = scopes;
+    _scopes = scopes;
   }
 
   @RngOptional
   public void setDescription(WdkModelText description) {
-    this.description = description.getText();
+    _description = description.getText();
   }
 
   public String getDescription() {
-    return (description == null ? displayName : description);
+    return (_description == null ? _displayName : _description);
   }
 
   public void addProperty(WdkModelText property) {
-    this.propertyList.add(property);
+    _propertyList.add(property);
   }
 
+  @Override
   public Map<String, String> getProperties() {
-    return new LinkedHashMap<String, String>(this.properties);
+    return new LinkedHashMap<String, String>(_properties);
   }
 
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     // exclude properties
-    for (WdkModelText property : propertyList) {
+    for (WdkModelText property : _propertyList) {
       if (property.include(projectId)) {
         property.excludeResources(projectId);
         String propName = property.getName();
         String propValue = property.getText();
-        if (properties.containsKey(propName))
+        if (_properties.containsKey(propName))
           throw new WdkModelException("The property " + propName
-              + " is duplicated in reporter " + name);
-        properties.put(propName, propValue);
-        logger.trace("reporter property: [" + propName + "]='" + propValue
+              + " is duplicated in reporter " + _name);
+        _properties.put(propName, propValue);
+        LOG.trace("reporter property: [" + propName + "]='" + propValue
             + "'");
       }
     }
-    propertyList = null;
+    _propertyList = null;
   }
 
   @RngUndefined
   public void setResources(WdkModel wdkModel) {
-    this._wdkModel = wdkModel;
+    _wdkModel = wdkModel;
   }
 
   @Override

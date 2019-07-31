@@ -606,8 +606,10 @@ public class ModelXmlParser extends XmlParser {
     configureColumnTool(dig, path, method, ColumnFilterBuilder.class);
   }
 
-  private static void configureColumnTool(Digester dig, String path,
-      String method, Class<? extends ColumnToolBuilder> type) {
+  private static
+  <S extends ColumnToolInstance, T extends ColumnTool<S>, R extends ColumnToolBuilder<S,T>>
+  void configureColumnTool(Digester dig, String path,
+      String method, Class<R> type) {
     configureNode(dig, path, type, method);
     dig.addCallMethod(path, "setImplementation", 1);
     dig.addCallParam(path, 0, "implementation");

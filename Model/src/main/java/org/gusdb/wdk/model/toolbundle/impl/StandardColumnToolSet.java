@@ -11,14 +11,14 @@ public class StandardColumnToolSet implements ColumnToolSet {
 
   private final String _name;
 
-  private final ColumnToolDelegate<ColumnReporter> _reporter;
+  private final ColumnToolDelegate<ColumnReporterInstance,ColumnReporter> _reporter;
 
-  private final ColumnToolDelegate<ColumnFilter> _filter;
+  private final ColumnToolDelegate<ColumnFilterInstance,ColumnFilter> _filter;
 
   StandardColumnToolSet(
     final String name,
-    final ColumnToolDelegate<ColumnReporter> reporter,
-    final ColumnToolDelegate<ColumnFilter> filter
+    final ColumnToolDelegate<ColumnReporterInstance,ColumnReporter> reporter,
+    final ColumnToolDelegate<ColumnFilterInstance,ColumnFilter> filter
   ) {
     _name = name;
     _reporter = reporter;
@@ -36,12 +36,12 @@ public class StandardColumnToolSet implements ColumnToolSet {
   }
 
   @Override
-  public Optional<ColumnFilter> prepareFilterFor(
+  public Optional<ColumnFilterInstance> makeFilterInstance(
     final AttributeField field,
     final AnswerValue val,
     final ColumnToolConfig config
   ) throws WdkModelException {
-    return _filter.prepareTool(field, val, config);
+    return _filter.makeInstance(field, val, config);
   }
 
   @Override
@@ -55,12 +55,12 @@ public class StandardColumnToolSet implements ColumnToolSet {
   }
 
   @Override
-  public Optional<ColumnReporter> prepareReporter(
+  public Optional<ColumnReporterInstance> makeReporterInstance(
     final AttributeField field,
     final AnswerValue val,
     final ColumnToolConfig config
   ) throws WdkModelException {
-    return _reporter.prepareTool(field, val, config);
+    return _reporter.makeInstance(field, val, config);
   }
 
   @Override

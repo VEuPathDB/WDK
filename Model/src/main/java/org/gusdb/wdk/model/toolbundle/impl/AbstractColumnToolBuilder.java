@@ -2,10 +2,12 @@ package org.gusdb.wdk.model.toolbundle.impl;
 
 import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.toolbundle.ColumnTool;
 import org.gusdb.wdk.model.toolbundle.ColumnToolBuilder;
+import org.gusdb.wdk.model.toolbundle.ColumnToolInstance;
 import org.json.JSONObject;
 
 import java.util.Collections;
@@ -20,8 +22,8 @@ import static java.util.Objects.isNull;
  *
  * @param <T>
  */
-abstract class AbstractColumnToolBuilder<T extends ColumnTool>
-implements ColumnToolBuilder<T> {
+abstract class AbstractColumnToolBuilder<S extends ColumnToolInstance, T extends ColumnTool<S>>
+extends WdkModelBase implements ColumnToolBuilder<S,T> {
 
   private static final String ERR_INVALID_CLASS = "Invalid implementation "
     + "class path \"%s\"";
@@ -84,25 +86,25 @@ implements ColumnToolBuilder<T> {
   //
 
   @Override
-  public ColumnToolBuilder<T> setImplementation(final String impl) {
+  public ColumnToolBuilder<S,T> setImplementation(final String impl) {
     implementation = impl;
     return this;
   }
 
   @Override
-  public ColumnToolBuilder<T> addProperty(final WdkModelText prop) {
+  public ColumnToolBuilder<S,T> addProperty(final WdkModelText prop) {
     props.put(prop.getName(), prop.getText());
     return this;
   }
 
   @Override
-  public ColumnToolBuilder<T> setColumnType(final AttributeFieldDataType type) {
+  public ColumnToolBuilder<S,T> setColumnType(final AttributeFieldDataType type) {
     this.type = type;
     return this;
   }
 
   @Override
-  public ColumnToolBuilder<T> setKey(String key) {
+  public ColumnToolBuilder<S,T> setKey(String key) {
     name = key;
     return this;
   }

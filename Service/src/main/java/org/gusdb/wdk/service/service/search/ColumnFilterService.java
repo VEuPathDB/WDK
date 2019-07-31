@@ -75,7 +75,7 @@ public class ColumnFilterService extends AbstractWdkService {
   public Object getFilterDetails(@PathParam(COLUMN_FILTER_PATH_PARAM) final String filter) {
     return column.getFilter(filter)
       .orElseThrow(makeNotFound(filter))
-      .inputSpec();
+      .getInputSpec(column.getDataType());
   }
 
   private Supplier<NotFoundException> makeNotFound(final String name) {

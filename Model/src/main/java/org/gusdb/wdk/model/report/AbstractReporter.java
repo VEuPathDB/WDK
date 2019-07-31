@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.report;
 
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil;
@@ -28,8 +27,8 @@ public abstract class AbstractReporter implements Reporter {
   }
 
   @Override
-  public void setProperties(ReporterRef reporterRef) throws WdkModelException {
-    _properties = new HashMap<>(reporterRef.getProperties());
+  public void setProperties(ReporterInfo reporterInfo) throws WdkModelException {
+    _properties = reporterInfo.getProperties(); // don't need to copy; is already a copy
   }
 
   public String getPropertyInfo() {
@@ -100,4 +99,8 @@ public abstract class AbstractReporter implements Reporter {
     return _baseAnswer.getAnswerSpec().getQuestion();
   }
 
+  @Override
+  public Reporter configure(Map<String, String> config) throws ReporterConfigException, WdkModelException {
+    throw new UnsupportedOperationException();
+  }
 }

@@ -58,10 +58,10 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
   }
 
   @Override
-  public void setProperties(ReporterRef reporterRef) throws WdkModelException {
+  public void setProperties(ReporterInfo reporterRef) throws WdkModelException {
     if (!(reporterRef instanceof AttributeReporterRef)) {
       // this should never happen
-      throw new WdkModelException("Reporter ref passed to AbstractAttributeReporter is not an AttributeReporterRef");
+      throw new WdkModelException("Reporter ref passed to AbstractAttributeReporter is not an AttributeReporterRef!");
     }
     super.setProperties(reporterRef);
     _attributeField = ((AttributeReporterRef)reporterRef).getAttributeField();

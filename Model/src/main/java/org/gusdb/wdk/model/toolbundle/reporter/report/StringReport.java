@@ -22,12 +22,16 @@ public class StringReport extends AbstractReport<String> {
   }
 
   @Override
+  public String parse(String raw) {
+    return raw;
+  }
+
+  @Override
   protected int sizeOf(String val) {
     return padSize(SIZE_PREFIX + val.getBytes().length);
   }
 
-  public static SchemaBuilder outputSchema()
-  {
+  public static SchemaBuilder outputSchema() {
     var js = Schema.draft4();
     return AbstractReport.outputSpec()
       .optionalProperty(KEY_VALUES, js.asArray()
@@ -38,5 +42,3 @@ public class StringReport extends AbstractReport<String> {
         .uniqueItems(true));
   }
 }
-
-

@@ -268,8 +268,8 @@ public class BasketService extends UserService {
     RunnableObj<AnswerSpec> basketAnswerSpec = AnswerSpec.builder(getWdkModel())
       .setQuestionFullName(recordClass.getRealtimeBasketQuestion().getFullName())
       .buildRunnable(getSessionUser(), StepContainer.emptyContainer());
-    return ColumnReporterService.wrapReporter(
-        attribute.prepareReporter(
+    return AnswerService.getAnswerAsStream(
+        attribute.makeReporterInstance(
             reporterName,
             AnswerValueFactory.makeAnswer(user, basketAnswerSpec),
             reporterConfig

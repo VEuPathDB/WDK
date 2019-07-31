@@ -7,6 +7,7 @@ import org.gusdb.wdk.model.toolbundle.ColumnTool;
 import org.gusdb.wdk.model.toolbundle.ColumnToolBuilder;
 import org.gusdb.wdk.model.toolbundle.ColumnToolDelegate;
 import org.gusdb.wdk.model.toolbundle.ColumnToolDelegate.ColumnToolDelegateBuilder;
+import org.gusdb.wdk.model.toolbundle.ColumnToolInstance;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,8 +22,8 @@ import static java.lang.String.format;
  * @param <T> type of the ColumnTool that the constructed tool delegate will
  *           handle.
  */
-public class StandardToolDelegateBuilder<T extends ColumnTool>
-implements ColumnToolDelegateBuilder<T> {
+public class StandardToolDelegateBuilder<S extends ColumnToolInstance, T extends ColumnTool<S>>
+implements ColumnToolDelegateBuilder<S,T> {
 
   private static final String ERR_CONFLICT = "More than one tool was defined " +
     "for the type(s): %s";
@@ -32,7 +33,7 @@ implements ColumnToolDelegateBuilder<T> {
    * more easily allow reporting more than one error at a
    * time for multiple handlers assigned to the same type.
    */
-  private Collection<ColumnToolBuilder<T>> builders;
+  private Collection<ColumnToolBuilder<S,T>> builders;
 
   /**
    * Index of flags for whether or not a tool was set for
@@ -47,7 +48,7 @@ implements ColumnToolDelegateBuilder<T> {
   }
 
   @Override
-  public ColumnToolDelegateBuilder<T> addTool(final ColumnToolBuilder<T> tool) {
+  public ColumnToolDelegateBuilder<S,T> addTool(final ColumnToolBuilder<S,T> tool) {
     builders.add(tool);
     typeFlags[tool.getColumnType().ordinal()] = true;
     return this;
@@ -59,10 +60,10 @@ implements ColumnToolDelegateBuilder<T> {
   }
 
   @Override
-  public ColumnToolDelegate<T> build(WdkModel wdk) throws WdkModelException {
+  public ColumnToolDelegate<S,T> build(WdkModel wdk) throws WdkModelException {
     final Map<AttributeFieldDataType, T> out = new HashMap<>();
 
-    for (final ColumnToolBuilder<T> builder : builders) {
+    for (final ColumnToolBuilder<S,T> builder : builders) {
       final var type = builder.getColumnType();
 
       if (out.containsKey(type))
