@@ -60,7 +60,7 @@ public class NumberColumnReporter extends AbstractSingleTypeColumnReporter {
   private NumberReport getConfiguredReport(JsonNode config) {
     long maxVals = !config.has(KEY_MAX_VALS) ? DEFAULT_MAX_VALS :
         config.get(KEY_MAX_VALS).asLong(DEFAULT_MAX_VALS);
-    SortDirection sort = config.has(KEY_SORT) ? DEFAULT_SORT :
+    SortDirection sort = !config.has(KEY_SORT) ? DEFAULT_SORT :
         SortDirection.valueOf(config.get(KEY_SORT).textValue());
     return new NumberReport(maxVals, sort);
   }
