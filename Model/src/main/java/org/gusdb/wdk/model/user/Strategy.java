@@ -40,8 +40,8 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
   public static class StrategyBuilder {
 
     private final WdkModel _wdkModel;
-    private final long _userId;
     private final long _strategyId;
+    private long _userId;
     private String _projectId;
     private String _version;
     private String _name;
@@ -166,6 +166,12 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
 
     public StrategyBuilder addSteps(Collection<StepBuilder> steps) {
       _stepMap.putAll(Functions.getMapFromList(steps, step -> new TwoTuple<>(step.getStepId(), step)));
+      return this;
+    }
+
+    public StrategyBuilder setUserId(long userId) {
+      _userId = userId;
+      _stepMap.values().stream().forEach(step -> step.setUserId(userId));
       return this;
     }
 

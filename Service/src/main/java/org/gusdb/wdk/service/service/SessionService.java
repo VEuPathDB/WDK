@@ -116,11 +116,14 @@ public class SessionService extends AbstractWdkService {
 
       // Is there a matching user id for the auth code provided?
       long userId = client.getUserIdFromAuthCode(authCode, getContextUri());
-      User newUser = userFactory.login(oldUser, userId);
+      User newUser = userFactory.login(userId);
       if (newUser == null) {
         throw new WdkModelException("Unable to find user with ID " + userId +
             ", returned by OAuth service with auth code " + authCode);
       }
+
+      // transfer strategies from guest to logged-in user
+      wdkModel.getStepFactory().transferStrategyOwnership(oldUser, newUser);
 
       // login successful; create redirect response
       return getSuccessResponse(newUser, oldUser, redirectUrl, true);
@@ -158,8 +161,12 @@ public class SessionService extends AbstractWdkService {
         return createRedirectResponse(appUrl + ALREADY_LOGGED_IN_URL).build();
       }
 
-      // log in the user and return JSON response
+      // log in the user
       User newUser = wdkModel.getUserFactory().login(oldUser, request.getEmail(), request.getPassword());
+
+      // transfer strategies from guest to logged-in user
+      wdkModel.getStepFactory().transferStrategyOwnership(oldUser, newUser);
+
       return getSuccessResponse(newUser, oldUser, redirectUrl, false);
 
     }
