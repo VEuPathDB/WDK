@@ -3,9 +3,12 @@ package org.gusdb.wdk.model.user;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
@@ -16,6 +19,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.UserProfileUpdateEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -288,7 +292,7 @@ public class UserFactory {
     }
 
     // merge the history of the guest into the user
-    registeredUser.getSession().mergeUser(guestUser);
+    mergeUser(guestUser, registeredUser);
 
     // update user active timestamp
     _accountManager.updateLastLogin(registeredUser.getUserId());
@@ -434,4 +438,32 @@ public class UserFactory {
     _accountManager.updatePassword(userId, newPassword);
   }
 
+  /**
+   * this method is only called by UserFactory during the login process, it merges the existing history of the
+   * current guest user into the logged-in user.
+   * 
+   * @param guestUser
+   * @throws WdkModelException
+   * @throws  
+   */
+  private void mergeUser(User guestUser, User registeredUser) throws WdkModelException {
+
+    LOG.debug("Merging user #" + guestUser.getUserId() + " into user #" + registeredUser.getUserId() + "...");
+
+    // first of all we import all the strategies
+    StepFactory stepFactory = guestUser.getWdkModel().getStepFactory();
+    Set<Long> importedSteps = new LinkedHashSet<>();
+    Map<Long, Long> strategiesMap = new LinkedHashMap<>();
+    Map<Long, Long> stepsMap = new LinkedHashMap<>();
+    for (Strategy strategy : stepFactory.getStrategies(guestUser.getUserId(), ValidationLevel.NONE).values()) {
+      // the root step is considered as imported
+      Step rootStep = strategy.getRootStep();
+
+      // import the strategy
+      Strategy newStrategy = stepFactory.copyStrategy(registeredUser, strategy, stepsMap);
+
+      importedSteps.add(rootStep.getStepId());
+      strategiesMap.put(strategy.getStrategyId(), newStrategy.getStrategyId());
+    }
+  }
 }

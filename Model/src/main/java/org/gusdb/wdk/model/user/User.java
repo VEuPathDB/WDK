@@ -38,9 +38,6 @@ public abstract class User {
   // Holds key/value pairs associated with the user for this project (come from user db)
   protected UserPreferences _preferences;
 
-  // Holds current session data for this user.  TODO: factor out
-  protected UserSession _session;
-
   /**
    * Temporarily provide display name value until Struts Actions are purged.
    * After that, client will determine what to display
@@ -64,7 +61,6 @@ public abstract class User {
     _signature = signature;
     _stableId = stableId;
     _preferences = new UserPreferences(this);
-    _session = new UserSession(this);
   }
 
   public long getUserId() {
@@ -123,10 +119,6 @@ public abstract class User {
     return _preferences;
   }
 
-  public UserSession getSession() {
-    return _session;
-  }
-
   public WdkModel getWdkModel() {
     return _wdkModel;
   }
@@ -181,18 +173,6 @@ public abstract class User {
     return getProfileProperties().get("organization");
   }
 
-  public String getFrontAction() {
-    return getSession().getFrontAction();
-  }
-
-  public Long getFrontStrategy() {
-    return getSession().getFrontStrategy();
-  }
-
-  public Long getFrontStep() {
-    return getSession().getFrontStep();
-  }
-
   public Map<String, String> getGlobalPreferences() {
     return getPreferences().getGlobalPreferences();
   }
@@ -225,32 +205,6 @@ public abstract class User {
       }
       LOG.debug("   Total: " + total);
     }
-  }
-
-  public String getViewStrategyId() {
-    return getSession().getViewStrategyKey();
-  }
-
-  public long getViewStepId() {
-    return getSession().getViewStepId();
-  }
-
-  public Integer getViewPagerOffset() {
-    return getSession().getViewPagerOffset();
-  }
-
-  public Strategy[] getActiveStrategies() {
-    List<Strategy> strategies = new ArrayList<>();
-    for (Strategy strategy : getSession().getActiveStrategies()) {
-      strategies.add(strategy);
-    }
-    Strategy[] array = new Strategy[strategies.size()];
-    strategies.toArray(array);
-    return array;
-  }
-
-  public long[] getActiveStrategyIds() {
-    return getSession().getActiveStrategyIds();
   }
 
   public Map<RecordClass, Integer> getBasketCounts() throws WdkModelException {
