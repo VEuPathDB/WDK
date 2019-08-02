@@ -541,7 +541,7 @@ public class FilterParamNew extends AbstractDependentParam {
         " where " + COLUMN_ONTOLOGY_ID + " = '" + ontologyItem.getOntologyId().replaceAll("'", "''") + "'");
 
     // use that set of ids to limit our ontology id's metadata
-    String andClause = " /* START andClause */ AND " + _filterItemIdColumn + " in ( select " + _filterItemIdColumn + " from (" + filteredFilterItemIdSql + ") a) /* END andClause */ ";
+    String andClause = " /* START andClause */ AND " + _filterItemIdColumn + " in ( select " + _filterItemIdColumn + " from (" + filteredFilterItemIdSql + ") a)  /* END andClause */ ";
     String filteredSqlPerOntologyId = unfilteredSqlPerOntologyId + andClause;
 
     // read this filtered set into map of internal -> value(s)
@@ -557,10 +557,10 @@ public class FilterParamNew extends AbstractDependentParam {
     /* GET DISTINCT FILTER ITEM COUNTS */
     /////////////////////////////////////
     String oneColumnBgdSql = "select " + _filterItemIdColumn + " from (" + bgdSql + ") bq WHERE bq." + COLUMN_ONTOLOGY_ID +  " = ?";
-    String unfilteredDistinctFilterItemsSql = "SELECT count (distinct " + _filterItemIdColumn + ") as cnt FROM (" + oneColumnBgdSql + ")";
+    String unfilteredDistinctFilterItemsSql = "SELECT count (distinct " + _filterItemIdColumn + ") as cnt FROM (" + oneColumnBgdSql + ") fd";
 
     String filteredDistinctFilterItemsSql = "SELECT count (distinct " + _filterItemIdColumn + ") as cnt FROM (" + oneColumnBgdSql +
-        " INTERSECT select " + _filterItemIdColumn + " from (" + filteredFilterItemIdSql + "))";
+        " INTERSECT select " + _filterItemIdColumn + " from (" + filteredFilterItemIdSql + ") fi) fs";
 
     getCountsOfDistinctFilterItems(summary, unfilteredDistinctFilterItemsSql, filteredDistinctFilterItemsSql, ontologyItem.getOntologyId());
 
@@ -603,6 +603,7 @@ public class FilterParamNew extends AbstractDependentParam {
   
     try {
       long start = System.currentTimeMillis();
+      LOG.info(filteredDistinctFilterItemsSql);
       ps = SqlUtils.getPreparedStatement(dataSource, filteredDistinctFilterItemsSql);
       ps.setString(1, ontologyId);
       resultSet = ps.executeQuery();
