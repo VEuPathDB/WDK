@@ -3,12 +3,9 @@ package org.gusdb.wdk.model.user;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
-import java.util.Set;
 import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
@@ -19,7 +16,6 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
 import org.gusdb.fgputil.events.Events;
-import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.UserProfileUpdateEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -281,23 +277,19 @@ public class UserFactory {
     }
   }
 
-  private User completeLogin(User guestUser, User registeredUser)
-      throws WdkModelException {
-    if (registeredUser == null)
-      return registeredUser;
+  private User completeLogin(User user) {
+    if (user == null)
+      return user;
 
     // make sure user has reference in this user DB (needs to happen before merging)
-    if (!hasUserReference(registeredUser.getUserId())) {
-      addUserReference(registeredUser.getUserId(), false);
+    if (!hasUserReference(user.getUserId())) {
+      addUserReference(user.getUserId(), false);
     }
 
-    // merge the history of the guest into the user
-    mergeUser(guestUser, registeredUser);
-
     // update user active timestamp
-    _accountManager.updateLastLogin(registeredUser.getUserId());
+    _accountManager.updateLastLogin(user.getUserId());
 
-    return registeredUser;
+    return user;
   }
 
   public User login(User guest, String email, String password)
@@ -311,11 +303,11 @@ public class UserFactory {
     if (user == null) {
       throw new WdkUserException("Invalid email or password.");
     }
-    return completeLogin(guest, user);
+    return completeLogin(user);
   }
 
-  public User login(User guest, long userId) throws WdkModelException {
-    return completeLogin(guest, getUserById(userId)
+  public User login(long userId) throws WdkModelException {
+    return completeLogin(getUserById(userId)
         .orElseThrow(() -> new WdkModelException("User with ID " + userId + " could not be found.")));
   }
 
@@ -436,34 +428,5 @@ public class UserFactory {
 
   public void changePassword(long userId, String newPassword) {
     _accountManager.updatePassword(userId, newPassword);
-  }
-
-  /**
-   * this method is only called by UserFactory during the login process, it merges the existing history of the
-   * current guest user into the logged-in user.
-   * 
-   * @param guestUser
-   * @throws WdkModelException
-   * @throws  
-   */
-  private void mergeUser(User guestUser, User registeredUser) throws WdkModelException {
-
-    LOG.debug("Merging user #" + guestUser.getUserId() + " into user #" + registeredUser.getUserId() + "...");
-
-    // first of all we import all the strategies
-    StepFactory stepFactory = guestUser.getWdkModel().getStepFactory();
-    Set<Long> importedSteps = new LinkedHashSet<>();
-    Map<Long, Long> strategiesMap = new LinkedHashMap<>();
-    Map<Long, Long> stepsMap = new LinkedHashMap<>();
-    for (Strategy strategy : stepFactory.getStrategies(guestUser.getUserId(), ValidationLevel.NONE).values()) {
-      // the root step is considered as imported
-      Step rootStep = strategy.getRootStep();
-
-      // import the strategy
-      Strategy newStrategy = stepFactory.copyStrategy(registeredUser, strategy, stepsMap);
-
-      importedSteps.add(rootStep.getStepId());
-      strategiesMap.put(strategy.getStrategyId(), newStrategy.getStrategyId());
-    }
   }
 }

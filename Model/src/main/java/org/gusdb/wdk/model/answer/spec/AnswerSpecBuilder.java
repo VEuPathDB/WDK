@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.validation.ValidObjectFactory;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
@@ -23,6 +24,8 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
 
 public class AnswerSpecBuilder {
+
+  private static final Logger LOG = Logger.getLogger(AnswerSpecBuilder.class);
 
   private final WdkModel _wdkModel;
   private String _questionName = "";
@@ -58,6 +61,9 @@ public class AnswerSpecBuilder {
   }
 
   public AnswerSpecBuilder setDbParamFiltersJson(JSONObject paramFiltersJson) {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Parsing display_params JSON Object into its parts: " + paramFiltersJson.toString(2));
+    }
     setQueryInstanceSpec(ParamsAndFiltersDbColumnFormat.parseParamsJson(paramFiltersJson));
     setFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(paramFiltersJson));
     setViewFilterOptions(ParamsAndFiltersDbColumnFormat.parseViewFiltersJson(paramFiltersJson));

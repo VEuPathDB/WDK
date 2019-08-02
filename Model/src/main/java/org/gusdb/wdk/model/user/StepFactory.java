@@ -58,6 +58,7 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
+import org.gusdb.wdk.model.user.Strategy.StrategyBuilder;
 import org.gusdb.wdk.model.user.StrategyLoader.MalformedStrategyList;
 import org.json.JSONObject;
 
@@ -276,32 +277,6 @@ public class StepFactory {
         .executeStatement(values, types);
   }
 
-  // RRD 4/2019: Though not called anywhere, leaving this method here because I
-  //   think once we start writing the client, we may have a use case to call it.
-  private int getStepCount(User user) throws WdkModelException {
-    try {
-      String sql =
-          "SELECT count(*) AS num" +
-          " FROM " + _userSchema + TABLE_STEP +
-          " WHERE " + COLUMN_USER_ID + " = ?" +
-          "   AND " + COLUMN_PROJECT_ID + " = ? " +
-          "   AND is_deleted = " + _userDbPlatform.convertBoolean(false);
-
-      return new SQLRunner(_userDbDs, sql, "wdk-step-factory-step-count")
-          .executeQuery(
-              new Object[] { user.getUserId(), _wdkModel.getProjectId() },
-              new Integer[] { Types.BIGINT, Types.VARCHAR },
-              new SingleLongResultSetHandler()
-          )
-          .orElseThrow(() -> new WdkModelException(
-              "Could not get step count for user " + user.getEmail()))
-          .intValue();
-    }
-    catch (Exception e) {
-      return WdkModelException.unwrap(e);
-    }
-  }
-
   public Map<Long, Step> getStepsByUserId(long userId, ValidationLevel level) throws WdkModelException {
     return new StrategyLoader(_wdkModel, level).getSteps(userId);
   }
@@ -357,9 +332,7 @@ public class StepFactory {
    *
    * @return A list of Strategy instances matching the search criteria.
    */
-  // RRD 4/2019: Though not called anywhere, leaving this method here because I
-  //   think once we start writing the client, we may have a use case to call it.
-  private List<Strategy> getStrategies(long userId, boolean saved,
+  public List<Strategy> getStrategies(long userId, boolean saved,
       boolean recent) throws WdkModelException {
     return new StrategyLoader(_wdkModel, ValidationLevel.SYNTACTIC)
         .getStrategies(userId, saved, recent);
@@ -729,53 +702,6 @@ public class StepFactory {
         .getStrategyBySignature(strategySignature);
   }
 
-  // RRD 4/2019: Though not called anywhere, leaving this method here because I
-  //   think once we start writing the client, we may have a use case to call it.
-  private Optional<TwoTuple<Long, String>> getOverwriteStrategy(long userId, String name) {
-    final String sql = "SELECT\n"
-      + "  " + COLUMN_STRATEGY_ID + ",\n"
-      + "  " + COLUMN_SIGNATURE   + "\n"
-      + "FROM " + _userSchema + TABLE_STRATEGY + "\n"
-      + "WHERE " + COLUMN_USER_ID    + " = ?\n"
-      + "  AND " + COLUMN_PROJECT_ID + " = ?\n"
-      + "  AND " + COLUMN_NAME       + " = ?\n"
-      + "  AND " + COLUMN_IS_SAVED   + " = ?\n"
-      + "  AND " + COLUMN_IS_DELETED + " = ?\n";
-
-    // If we're overwriting, need to look up saved strategy id by
-    // name (only if the saved strategy is not the one we're
-    // updating, i.e. the saved strategy id != this strategy id)
-
-    // jerric - will also find the saved copy of itself, so that we
-    // can keep the signature.
-
-    final int boolType = _userDbPlatform.getBooleanType();
-
-    return new SQLRunner(_userDbDs, sql)
-      .executeQuery(
-        new Object[]{
-          userId,
-          _wdkModel.getProjectId(),
-          name,
-          _userDbPlatform.convertBoolean(true),
-          _userDbPlatform.convertBoolean(false)
-        },
-        new Integer[] {
-          Types.BIGINT,  // USER_ID
-          Types.VARCHAR, // PROJECT_ID
-          Types.VARCHAR, // NAME
-          boolType,      // IS_SAVED
-          boolType       // IS_DELETED
-        },
-        rs -> rs.next()
-          ? Optional.of(new TwoTuple<>(
-            rs.getLong(COLUMN_STRATEGY_ID),
-            rs.getString(COLUMN_SIGNATURE)
-          ))
-          : Optional.empty()
-      );
-  }
-
   /**
    * Overwrite the given strategy in the strategies table.
    *
@@ -825,6 +751,7 @@ public class StepFactory {
     final String sql = "UPDATE " + _userSchema + TABLE_STRATEGY + "\n" +
       "SET\n" +
       "  " + COLUMN_NAME               + " = ?,\n" +
+      "  " + COLUMN_USER_ID            + " = ?,\n" +
       "  " + COLUMN_ROOT_STEP_ID       + " = ?,\n" +
       "  " + COLUMN_SAVED_NAME         + " = ?,\n" +
       "  " + COLUMN_IS_SAVED           + " = ?,\n" +
@@ -838,6 +765,7 @@ public class StepFactory {
     final boolean stratUpdated = 0 < new SQLRunner(con, sql).executeUpdate(
       new Object[]{
         strat.getName(),
+        strat.getUser().getUserId(),
         strat.getRootStep().getStepId(),
         strat.getSavedName(),
         _userDbPlatform.convertBoolean(strat.isSaved()),
@@ -850,6 +778,7 @@ public class StepFactory {
       },
       new Integer[]{
         Types.VARCHAR,   // NAME
+        Types.BIGINT,    // USER_ID
         Types.BIGINT,    // ROOT_STEP_ID
         Types.VARCHAR,   // SAVED_NAME
         boolType,        // IS_SAVED
@@ -918,6 +847,7 @@ public class StepFactory {
   private void updateSteps(Connection con, Collection<Step> steps) throws WdkModelException {
     final String sql = "UPDATE " + _userSchema + TABLE_STEP + "\n" +
         "SET\n" +
+        "  " + COLUMN_USER_ID          + " = ?,\n" +
         "  " + COLUMN_PREVIOUS_STEP_ID + " = ?,\n" +
         "  " + COLUMN_CHILD_STEP_ID    + " = ?,\n" +
         "  " + COLUMN_LAST_RUN_TIME    + " = ?,\n" +
@@ -941,6 +871,7 @@ public class StepFactory {
     final BasicArgumentBatch batch = new BasicArgumentBatch();
     final int boolType = _userDbPlatform.getBooleanType();
     batch.setParameterTypes(new Integer[]{
+      Types.BIGINT,    // USER_ID
       Types.BIGINT,    // LEFT_CHILD_ID
       Types.BIGINT,    // RIGHT_CHILD_ID
       Types.TIMESTAMP, // LAST_RUN_TIME
@@ -965,6 +896,7 @@ public class StepFactory {
       final AnswerSpec spec = step.getAnswerSpec();
 
       batch.add(new Object[]{
+        step.getUser().getUserId(),
         step.getPrimaryInputStep().map(Step::getStepId).orElse(null),
         step.getSecondaryInputStep().map(Step::getStepId).orElse(null),
         step.getLastRunTime(),
@@ -1200,5 +1132,35 @@ public class StepFactory {
       return Optional.empty();
     }
     return step;
+  }
+
+  /**
+   * Transfers ownership of all the strategies belonging to one user to another
+   * user.
+   * 
+   * @param fromUser user strats will be transferred from
+   * @param toUser  user strats will be transferred to
+   * @throws WdkModelException
+   */
+  public void transferStrategyOwnership(User guestUser, User registeredUser) throws WdkModelException {
+    LOG.debug("Transferring user #" + guestUser.getUserId() + "'s strategies to user #" + registeredUser.getUserId() + "...");
+    MalformedStrategyList malformedStrats = new MalformedStrategyList();
+    for (Strategy strategy : getStrategies(guestUser.getUserId(), ValidationLevel.NONE, malformedStrats).values()) {
+      malformedStrats.stream().forEach(tuple -> logMalformedStrat(tuple));
+      StrategyBuilder builder = null;
+      try {
+        builder = Strategy.builder(strategy).setUserId(registeredUser.getUserId());
+        updateStrategy(builder.build(new UserCache(registeredUser), ValidationLevel.NONE));
+      }
+      catch (InvalidStrategyStructureException e) {
+        logMalformedStrat(new TwoTuple<>(builder, e));
+      }
+    }
+  }
+
+  private static void logMalformedStrat(TwoTuple<StrategyBuilder, InvalidStrategyStructureException> malformedStrat) {
+    LOG.warn("Unable to transfer ownership of strategy: " +
+        malformedStrat.getFirst() + FormatUtil.NL +
+        "For the following reason:" + malformedStrat.getSecond());
   }
 }
