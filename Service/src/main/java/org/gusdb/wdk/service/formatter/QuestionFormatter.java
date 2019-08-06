@@ -50,7 +50,8 @@ import org.json.JSONObject;
  *   dynamicAttributes: [ see AttributeFieldFormatter ],
  *   defaultSummaryView: String,
  *   summaryViewPlugins: [ see SummaryViewPluginFormatter ],
- *   stepAnalysisPlugins: [ String ]
+ *   stepAnalysisPlugins: [ String ],
+ *   paramNames: [ String ]
  * }
  *
  * @author rdoherty
@@ -96,7 +97,8 @@ public class QuestionFormatter {
       .put(JsonKeys.ALLOWED_PRIMARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getPrimaryAnswerParam()))
       .put(JsonKeys.ALLOWED_SECONDARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getSecondaryAnswerParam()))
       .put(JsonKeys.FILTERS, getFiltersJson(q.getFilters()))
-      .put(JsonKeys.PROPERTIES, q.getPropertyLists());
+      .put(JsonKeys.PROPERTIES, q.getPropertyLists())
+      .put(JsonKeys.PARAM_NAMES, q.getParamMap().keySet());
   }
 
   /**
