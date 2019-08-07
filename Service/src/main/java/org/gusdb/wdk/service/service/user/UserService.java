@@ -5,11 +5,14 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.service.AbstractWdkService;
 
 /*
@@ -50,7 +53,7 @@ public abstract class UserService extends AbstractWdkService {
    * @return a userBundle representing the target user and his relationship to the session user
    * @throws WdkModelException if error occurs creating user bundle (probably a DB problem)
    */
-  protected UserBundle getUserBundle(Access requestedAccess) throws WdkModelException {
+  public UserBundle getUserBundle(Access requestedAccess) throws WdkModelException {
     UserBundle userBundle = parseTargetUserId(_userIdStr);
     if (!userBundle.isValidUserId()) {
       throw new NotFoundException(AbstractWdkService.formatNotFound(USER_RESOURCE + userBundle.getTargetUserIdString()));
@@ -80,5 +83,14 @@ public abstract class UserService extends AbstractWdkService {
             level)
         .orElseThrow(
             () -> new NotFoundException(formatNotFound(STEP_RESOURCE + stepId)));
+  }
+
+  protected RunnableObj<Step> getRunnableStepForCurrentUser(long stepId) throws WdkModelException, DataValidationException {
+    return getStepForCurrentUser(stepId, ValidationLevel.RUNNABLE)
+        .getRunnable()
+        .getOrThrow(step -> new DataValidationException(
+            "This operation can only be performed on a runnable step. Please " +
+            "revise your step and try again.  The following errors were found: " +
+            FormatUtil.NL + step.getValidationBundle().toString(2)));
   }
 }
