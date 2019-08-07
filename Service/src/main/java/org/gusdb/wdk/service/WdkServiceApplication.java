@@ -74,6 +74,7 @@ public class WdkServiceApplication extends Application {
     .add(SessionService.class)
     .add(StrategyService.class)
     .add(StepAnalysisService.class)
+    .add(StepAnalysisFormService.class)
     .add(ClientErrorReportingService.class)
     .add(TemporaryResultService.class)
     .add(TemporaryFileService.class)
