@@ -87,7 +87,7 @@ public abstract class AbstractWdkService {
     _wdkModel = wdkModel;
   }
 
-  protected WdkModel getWdkModel() {
+  public WdkModel getWdkModel() {
     return _wdkModel;
   }
 

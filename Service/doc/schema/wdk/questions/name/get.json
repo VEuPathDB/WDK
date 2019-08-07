@@ -197,7 +197,22 @@
       "type": "string"
     },
     "summaryViewPlugins": {
-       "type": "array"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      }
     },
     "urlSegment": {
       "type": "string"
@@ -216,6 +231,12 @@
     },
     "filters": {
       "$ref": "#/definitions/filter-def-array"
+    },
+    "paramNames": {
+      "type": "array",
+      "items": {
+         "type": "string"
+      }
     }
   },
   "required": [
