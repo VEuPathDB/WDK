@@ -109,7 +109,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   private SqlQuery getSqlQueryForInternalValue(WdkModel wdkModel) throws WdkModelException {
     SqlQuery sqlQuery = new SqlQuery();
     sqlQuery.setName("InternalValue");
-    sqlQuery.setSql("select distinct " + FilterParamNew.COLUMN_INTERNAL + " from ( $$sql$$)");  // the sql will be provided by the sql param
+    sqlQuery.setSql("select distinct " + FilterParamNew.COLUMN_INTERNAL + " from ( $$sql$$) sq");  // the sql will be provided by the sql param
     Column column = new Column();
     column.setName(FilterParamNew.COLUMN_INTERNAL);
     sqlQuery.addColumn(column);
@@ -124,26 +124,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
     querySet.setName("FilterParamNew");
     sqlQuery.setQuerySet(querySet);
     return sqlQuery;
-  }
-
-  private SqlQuery getSqlQueryForInternalValue(WdkModel wdkModel) throws WdkModelException {
-     SqlQuery sqlQuery = new SqlQuery();
-     sqlQuery.setName("InternalValue");
-     sqlQuery.setSql("select distinct " + FilterParamNew.COLUMN_INTERNAL + " from ( $$sql$$) sq");  // the sql will be provided by the sql param
-     Column column = new Column();
-     column.setName(FilterParamNew.COLUMN_INTERNAL);
-     sqlQuery.addColumn(column);
-     sqlQuery.setDoNotTest(true);
-     sqlQuery.setIsCacheable(true);
-     StringParam sqlParam = new StringParam();
-     sqlParam.setName("sql");
-     sqlParam.setNoTranslation(true);  // avoid quotes
-     sqlQuery.addParam(sqlParam);
-     sqlQuery.resolveReferences(wdkModel);
-     QuerySet querySet= new QuerySet();
-     querySet.setName("FilterParamNew");
-     sqlQuery.setQuerySet(querySet);
-     return sqlQuery;
   }
 
   /**
