@@ -109,7 +109,7 @@ public class StrategyService extends UserService {
   @PATCH
   @Path(BASE_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
-  @InSchema("wdk.users.strategy.patch-request")
+  @InSchema("wdk.users.strategies.patch-request")
   public void deleteStrategies(JSONObject[] strats) // TODO: Find a better name for me
       throws WdkModelException {
     final Collection<Strategy> toUpdate = new ArrayList<>(strats.length);

@@ -24,7 +24,13 @@
     "signature": {
       "type": "string"
     },
+    "createdTime": {
+      "type": "string"
+    },
     "lastModified": {
+      "type": "string"
+    },
+    "releaseVersion": {
       "type": "string"
     },
     "isPublic": {
