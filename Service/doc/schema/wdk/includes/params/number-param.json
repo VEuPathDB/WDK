@@ -4,17 +4,27 @@
     { "$ref": "base-param.json"},
     {
       "type": "object",
-	"properties": {
-	    "min": {
-	      "type": "number"
-	    },
-	    "max": {
-	      "type": "number"
-	    },
-	    "increment": {
-	      "type": "number"
-	    }
-      }
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [ "number" ]
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "increment": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "min",
+        "max",
+        "increment",
+        "type"
+      ]
     }
   ]
 }

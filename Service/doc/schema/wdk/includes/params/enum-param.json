@@ -8,9 +8,6 @@
         "countOnlyLeaves": {
           "type": "boolean"
         },
-        "defaultValue": {
-          "type": "string"
-        },
         "depthExpanded": {
           "type": "integer"
         },
@@ -31,9 +28,7 @@
         },
         "type": {
           "type": "string",
-          "enum": [
-            "EnumParam"
-          ]
+          "enum": [ "vocabulary" ]
         },
         "vocabulary": {
           "type": "array",
@@ -50,7 +45,6 @@
       },
       "required": [
         "countOnlyLeaves",
-        "defaultValue",
         "depthExpanded",
         "displayType",
         "maxSelectedCount",

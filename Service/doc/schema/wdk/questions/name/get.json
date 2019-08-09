@@ -32,43 +32,6 @@
           "isViewOnly"
         ]
       }
-    },
-    "step-analysis-def-array": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "displayName": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "shortDescription": {
-            "type": "string"
-          },
-          "releaseVersion": {
-            "type": "string"
-          },
-          "customThumbnail": {
-            "type": "string"
-          },
-          "hasParameters": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "name",
-          "displayName",
-          "description",
-          "shortDescription",
-          "releaseVersion",
-          "hasParameters"
-        ]
-      }
     }
   },
   "properties": {
@@ -178,6 +141,9 @@
             },
             {
               "$ref": "../../includes/params/string-param.json"
+            },
+            {
+              "$ref": "../../includes/params/timestamp-param.json"
             }
           ]
     },
@@ -189,9 +155,6 @@
     },
     "shortDisplayName": {
       "type": "string"
-    },
-    "stepAnalysisPlugins": {
-      "$ref": "#/definitions/step-analysis-def-array"
     },
     "summary": {
       "type": "string"
@@ -240,13 +203,20 @@
     }
   },
   "required": [
+    "urlSegment",
     "fullName",
-    "displayName", 
-    "dynamicAttributes",
-    "groups",
-    "properties",
-    "outputRecordClassName",
+    "displayName",
     "shortDisplayName",
-    "urlSegment"
+    "outputRecordClassName",
+    "filters",
+    "defaultAttributes",
+    "defaultSorting",
+    "dynamicAttributes",
+    "defaultSummaryView",
+    "summaryViewPlugins",
+    "filters",
+    "properties",
+    "groups",
+    "paramNames"
   ]
 }

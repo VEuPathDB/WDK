@@ -34,6 +34,7 @@ import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
@@ -408,14 +409,14 @@ public class FilterParamNew extends AbstractDependentParam {
    *          (in stable value format)
    * @return { totalCount: number; filteredCount: number; }
    */
-  public FilterParamSummaryCounts getTotalsSummary(SemanticallyValid<QueryInstanceSpec> validSpec,
+  public <S extends ParameterContainerInstanceSpec<S>> FilterParamSummaryCounts getTotalsSummary(SemanticallyValid<S> validSpec,
       JSONObject appliedFilters) throws WdkModelException {
 
     ////////////////////////////////////////
     /* GET UNFILTERED (BACKGROUND) COUNTS */
     ////////////////////////////////////////
 
-    QueryInstanceSpec spec = validSpec.get();
+    S spec = validSpec.get();
     String bgdSql = getInternalQuerySql(spec.getUser(), spec.toMap(), _backgroundQuery);
 
     // Set up counts store
@@ -486,7 +487,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkModelException
    * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
    */
-  public <T> OntologyTermSummary<T> getOntologyTermSummary(SemanticallyValid<QueryInstanceSpec> validSpec,
+  public <T, S extends ParameterContainerInstanceSpec<S>> OntologyTermSummary<T> getOntologyTermSummary(SemanticallyValid<S> validSpec,
       OntologyItem ontologyItem, JSONObject appliedFilters, Class<T> ontologyItemClass)
           throws WdkModelException {
 
@@ -494,7 +495,7 @@ public class FilterParamNew extends AbstractDependentParam {
     /* GET UNFILTERED MAP AND POPULATE COUNTS */
     ////////////////////////////////////////////
 
-    QueryInstanceSpec spec = validSpec.get();
+    S spec = validSpec.get();
     String bgdSql = getInternalQuerySql(spec.getUser(), spec.toMap(), _backgroundQuery);
 
     // limit it to our ontology_id
@@ -656,7 +657,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return
    * @throws WdkModelException
    */
-  private <T> Map<T, Long> countMetaDataForOntologyTerm(SemanticallyValid<QueryInstanceSpec> spec,
+  private <T,S extends ParameterContainerInstanceSpec<S>> Map<T, Long> countMetaDataForOntologyTerm(SemanticallyValid<S> spec,
       OntologyItem ontologyItem, String metaDataSql, Class<T> ontologyItemClass)
           throws WdkModelException {
 
@@ -810,12 +811,12 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return sql
    * @throws WdkModelException
    */
-  String getFilteredFilterItemIdsSql(SemanticallyValid<QueryInstanceSpec> validSpec,
+  <S extends ParameterContainerInstanceSpec<S>> String getFilteredFilterItemIdsSql(SemanticallyValid<S> validSpec,
       FilterParamNewStableValue stableValue, Query metadataQuery,
       String idColumn, String defaultFilterClause)
           throws WdkModelException {
     // get sql that selects the full set of distinct internals from the metadata query
-    QueryInstanceSpec spec = validSpec.get();
+    S spec = validSpec.get();
     String metadataSql = getInternalQuerySql(spec.getUser(), spec.toMap(), metadataQuery);
 
     String metadataTableName = "md";
@@ -830,11 +831,11 @@ public class FilterParamNew extends AbstractDependentParam {
   /**
    * Apply provided filters to metadata sql, returning all three value columns
    */
-  String getFilteredMetadataSql(SemanticallyValid<QueryInstanceSpec> validSpec,
+  <S extends ParameterContainerInstanceSpec<S>> String getFilteredMetadataSql(SemanticallyValid<S> validSpec,
       FilterParamNewStableValue stableValue, Query metadataQuery, String defaultFilterClause)
           throws WdkModelException {
     // get sql that selects the full set of distinct internals from the metadata query
-    QueryInstanceSpec spec = validSpec.get();
+    S spec = validSpec.get();
     String metadataSql = getInternalQuerySql(spec.getUser(), spec.toMap(), metadataQuery);
 
     String metadataTableName = "md";
@@ -843,14 +844,14 @@ public class FilterParamNew extends AbstractDependentParam {
     return getFilteredIdsSql(validSpec, stableValue, metadataTableName, filterSelectSql, defaultFilterClause);
   }
 
-  private String getFilteredIdsSql(SemanticallyValid<QueryInstanceSpec> validSpec,
+  private <S extends ParameterContainerInstanceSpec<S>> String getFilteredIdsSql(SemanticallyValid<S> validSpec,
       FilterParamNewStableValue stableValue, String metadataTableAbbrev,
       String filterSelectSql, String defaultFilterClause)
           throws WdkModelException {
 
     // get the applied filters and the ontology
     List<FilterParamNewStableValue.Filter> filters = stableValue.getFilters();
-    QueryInstanceSpec spec = validSpec.get();
+    S spec = validSpec.get();
     Map<String, OntologyItem> ontology = getOntology(spec.getUser(), spec.toMap());
 
     // if no filters, return sql for the full set of internals

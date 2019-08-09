@@ -17,8 +17,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
@@ -33,14 +33,15 @@ import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
 import org.gusdb.wdk.model.query.param.OntologyItem;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParameterContainer;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.StepContainer;
-import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.formatter.QuestionFormatter;
-import org.gusdb.wdk.service.request.QuestionRequest;
+import org.gusdb.wdk.service.formatter.param.ParamContainerFormatter;
+import org.gusdb.wdk.service.request.ParamValueSetRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
@@ -59,15 +60,23 @@ import org.json.JSONObject;
 @Produces(MediaType.APPLICATION_JSON)
 public class QuestionService extends AbstractWdkService {
 
+  private static final Logger LOG = Logger.getLogger(QuestionService.class);
+
   public static final String SEARCHES_PATH = RecordService.NAMED_RECORD_TYPE_SEGMENT_PAIR + "/searches";
   public static final String SEARCH_PATH_PARAM = "questionUrlSegment";
   public static final String SEARCH_PARAM_SEGMENT = "{" + SEARCH_PATH_PARAM + "}";
   public static final String NAMED_SEARCH_PATH = SEARCHES_PATH + "/" + SEARCH_PARAM_SEGMENT;
 
-  private static final String FILTER_PARAM_NAME_PATH_PARAM = "filterParamName";
+  public static final String FILTER_PARAM_NAME_PATH_PARAM = "filterParamName";
   private static final String FILTER_PARAM_NAME_PATH_PARAM_SEGMENT = "{" + FILTER_PARAM_NAME_PATH_PARAM + "}";
 
   private static final String FILTER_PARAM_RESOURCE = "filter parameter: ";
+
+  // secondary resources to serve more specific purposes
+  public static final String REFRESHED_DEPENDENT_PARAMS_EXTENSION = "/refreshed-dependent-params";
+  public static final String ONTOLOGY_TERM_SUMMARY_EXTENSION = "/" + FILTER_PARAM_NAME_PATH_PARAM_SEGMENT + "/ontology-term-summary";
+  public static final String SUMMARY_COUNTS_EXTENSION = "/" + FILTER_PARAM_NAME_PATH_PARAM_SEGMENT + "/summary-counts";
+  
 
   private final String _recordClassUrlSegment;
 
@@ -110,8 +119,8 @@ public class QuestionService extends AbstractWdkService {
   @GET
   @Path(SEARCH_PARAM_SEGMENT)
   @Produces(MediaType.APPLICATION_JSON)
-  @OutSchema("wdk.questions.name.get")
-  public Response getQuestionNew(
+  //@OutSchema("wdk.questions.name.get") TODO: FIX!
+  public JSONObject getQuestionNew(
       @PathParam(SEARCH_PATH_PARAM) String questionUrlSegment)
           throws WdkModelException {
     DisplayablyValid<AnswerSpec> validSpec = AnswerSpec.builder(getWdkModel())
@@ -125,8 +134,9 @@ public class QuestionService extends AbstractWdkService {
         .getOrThrow(spec -> new WdkModelException("Default values for question '" +
             questionUrlSegment + "' are not displayable. Validation " +
             "details: " + spec.getValidationBundle().toString(2)));
-    return Response.ok(QuestionFormatter.getQuestionJsonWithParamValues(validSpec,
-        validSpec.get().getValidationBundle()).toString()).build();
+    JSONObject result = QuestionFormatter.getQuestionJsonWithParams(validSpec, validSpec.get().getValidationBundle());
+    if (LOG.isDebugEnabled()) LOG.debug("Returning JSON: " + result.toString(2));
+    return result;
   }
 
   /**
@@ -159,13 +169,12 @@ public class QuestionService extends AbstractWdkService {
   @Path(SEARCH_PARAM_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  // TODO:  pass back error messages about invalid parameters
-  public Response getQuestionRevise(
+  public JSONObject getQuestionRevise(
       @PathParam(SEARCH_PATH_PARAM) String questionUrlSegment,
       String body)
           throws WdkModelException, RequestMisformatException, DataValidationException {
     Question question = getQuestionOrNotFound(questionUrlSegment);
-    QuestionRequest request = QuestionRequest.parse(body, question);
+    ParamValueSetRequest request = ParamValueSetRequest.parse(body, question.getQuery());
     AnswerSpec answerSpec = AnswerSpec.builder(getWdkModel())
         .setQuestionFullName(question.getFullName())
         .setParamValues(request.getContextParamValues())
@@ -178,6 +187,7 @@ public class QuestionService extends AbstractWdkService {
     ValidationBundle validation = answerSpec.getValidationBundle();
     DisplayablyValid<AnswerSpec> displayableSpec =
         answerSpec.isValid() ?
+        // input spec was already valid; populate vocabularies and return
         answerSpec.getDisplayablyValid().getLeft() :
         // need to generate a new, displayable answer spec so revise form can be shown
         AnswerSpec.builder(getWdkModel())
@@ -192,7 +202,7 @@ public class QuestionService extends AbstractWdkService {
             .getOrThrow(spec -> new WdkModelException("Default values for question '" +
                 questionUrlSegment + "' are not displayable. Validation " +
                 "details: " + spec.getValidationBundle().toString(2)));
-    return Response.ok(QuestionFormatter.getQuestionJsonWithParamValues(displayableSpec, validation).toString()).build();
+    return QuestionFormatter.getQuestionJsonWithParams(displayableSpec, validation);
   }
 
   /**
@@ -213,17 +223,17 @@ public class QuestionService extends AbstractWdkService {
    * </pre>
    */
   @POST
-  @Path(SEARCH_PARAM_SEGMENT + "/refreshed-dependent-params")
+  @Path(SEARCH_PARAM_SEGMENT + REFRESHED_DEPENDENT_PARAMS_EXTENSION)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getQuestionChange(@PathParam(SEARCH_PATH_PARAM) String questionUrlSegment, String body)
+  public JSONArray getQuestionChange(@PathParam(SEARCH_PATH_PARAM) String questionUrlSegment, String body)
           throws WdkUserException, WdkModelException, DataValidationException {
 
     // get requested question and throw not found if invalid
     Question question = getQuestionOrNotFound(questionUrlSegment);
 
     // parse incoming JSON into existing and changed values
-    QuestionRequest request = QuestionRequest.parse(body, question);
+    ParamValueSetRequest request = ParamValueSetRequest.parse(body, question.getQuery());
 
     // find the param object for the changed param
     Entry<String,String> changedParamEntry = request.getChangedParam()
@@ -235,7 +245,8 @@ public class QuestionService extends AbstractWdkService {
 
     // Build an answer spec with the passed values but replace missing/invalid
     // values with defaults.  Will remove unaffected params below.
-    DisplayablyValid<AnswerSpec> answerSpec = AnswerSpec.builder(getWdkModel())
+    DisplayablyValid<AnswerSpec> answerSpec = AnswerSpec
+        .builder(getWdkModel())
         .setQuestionFullName(question.getFullName())
         .setParamValues(contextParams)
         .build(
@@ -276,10 +287,9 @@ public class QuestionService extends AbstractWdkService {
     // may have inadvertently changed (if incoming values were invalid) but the
     // client is only interested in params that depend on the changed value
     List<String> paramsToOutput = mapToList(staleDependentParams, NamedObject::getName);
-    JSONArray output = QuestionFormatter.getParamsJson(
+    return ParamContainerFormatter.getParamsJson(
         AnswerSpec.getValidQueryInstanceSpec(answerSpec),
         param -> paramsToOutput.contains(param.getName()));
-    return Response.ok(output.toString()).build();
   }
 
   /**
@@ -296,10 +306,10 @@ public class QuestionService extends AbstractWdkService {
    * </pre>
    */
   @POST
-  @Path(SEARCH_PARAM_SEGMENT + "/" + FILTER_PARAM_NAME_PATH_PARAM_SEGMENT + "/ontology-term-summary")
+  @Path(SEARCH_PARAM_SEGMENT + ONTOLOGY_TERM_SUMMARY_EXTENSION)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getFilterParamOntologyTermSummary(
+  public JSONObject getFilterParamOntologyTermSummary(
       @PathParam(SEARCH_PATH_PARAM) String questionUrlSegment,
       @PathParam(FILTER_PARAM_NAME_PATH_PARAM) String paramName,
       String body)
@@ -307,13 +317,15 @@ public class QuestionService extends AbstractWdkService {
 
     // parse elements of the request
     Question question = getQuestionOrNotFound(questionUrlSegment);
-    FilterParamNew filterParam = getFilterParam(question, paramName);
-    Map<String, String> contextParamValues = QuestionRequest.parse(body, question).getContextParamValues();
+    FilterParamNew filterParam = getFilterParam(question.getQuery(), paramName);
+    Map<String, String> contextParamValues = ParamValueSetRequest.parse(
+        body, question.getQuery()).getContextParamValues();
     JSONObject jsonBody = new JSONObject(body);
     String ontologyId = jsonBody.getString("ontologyId");
 
     // build a query instance spec from passed values
-    SemanticallyValid<QueryInstanceSpec> validSpec = QueryInstanceSpec.builder()
+    SemanticallyValid<QueryInstanceSpec> validSpec = QueryInstanceSpec
+        .builder()
         .putAll(contextParamValues)
         .buildValidated(
             getSessionUser(),
@@ -332,10 +344,9 @@ public class QuestionService extends AbstractWdkService {
     }
 
     // get term summary and format
-    JSONObject summaryJson = QuestionFormatter.getOntologyTermSummaryJson(
+    return ParamContainerFormatter.getOntologyTermSummaryJson(
         f0Swallow(() -> filterParam.getOntologyTermSummary(validSpec, ontologyItem,
             jsonBody, ontologyItem.getType().getJavaClass())));
-    return Response.ok(summaryJson.toString()).build();
   }
 
   /**
@@ -351,10 +362,10 @@ public class QuestionService extends AbstractWdkService {
    * </pre>
    */
   @POST
-  @Path(SEARCH_PARAM_SEGMENT + "/" + FILTER_PARAM_NAME_PATH_PARAM_SEGMENT + "/summary-counts")
+  @Path(SEARCH_PARAM_SEGMENT + SUMMARY_COUNTS_EXTENSION)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getFilterParamSummaryCounts(
+  public JSONObject getFilterParamSummaryCounts(
       @PathParam(SEARCH_PATH_PARAM) String questionUrlSegment,
       @PathParam(FILTER_PARAM_NAME_PATH_PARAM) String paramName,
       String body)
@@ -362,12 +373,14 @@ public class QuestionService extends AbstractWdkService {
 
     // parse elements of the request
     Question question = getQuestionOrNotFound(questionUrlSegment);
-    FilterParamNew filterParam = getFilterParam(question, paramName);
-    Map<String, String> contextParamValues = QuestionRequest.parse(body, question).getContextParamValues();
+    FilterParamNew filterParam = getFilterParam(question.getQuery(), paramName);
+    Map<String, String> contextParamValues = ParamValueSetRequest.parse
+        (body, question.getQuery()).getContextParamValues();
     JSONObject jsonBody = new JSONObject(body);
 
     // build a query instance spec from passed values
-    SemanticallyValid<QueryInstanceSpec> validSpec = QueryInstanceSpec.builder()
+    SemanticallyValid<QueryInstanceSpec> validSpec = QueryInstanceSpec
+        .builder()
         .putAll(contextParamValues)
         .buildValidated(
             getSessionUser(),
@@ -379,13 +392,12 @@ public class QuestionService extends AbstractWdkService {
         .getOrThrow(spec -> new DataValidationException(spec.getValidationBundle().toString()));
 
     FilterParamSummaryCounts counts = filterParam.getTotalsSummary(validSpec, jsonBody);
-    JSONObject result = QuestionFormatter.getFilterParamSummaryJson(counts);
-    return Response.ok(result.toString()).build();
+    return ParamContainerFormatter.getFilterParamSummaryJson(counts);
 
   }
 
-  private static FilterParamNew getFilterParam(Question question, String paramName) {
-    Param param = question.getParamMap().get(paramName);
+  public static FilterParamNew getFilterParam(ParameterContainer container, String paramName) {
+    Param param = container.getParamMap().get(paramName);
     if (!(param instanceof FilterParamNew)) {
       throw new NotFoundException(formatNotFound(FILTER_PARAM_RESOURCE + paramName));
     }

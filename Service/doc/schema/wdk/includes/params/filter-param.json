@@ -6,62 +6,75 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "type": {
+          "type": "string",
+          "enum": [ "filter" ]
+        },
         "countOnlyLeaves": {
           "type": "boolean"
         },
-	  "filterDataTypeDisplayName": {
-	      "type": "string"
-	  },
-	  "hideEmptyOntologyNodes": {
-	      "type": "boolean"
-	  },
-	  "minSelectedCount": {
-	      "type": "integer"
-	  },
-	  "ontology": {
-	      "type": "array",
-	      "items": {
-		  "type": "object",
-		  "properties": {
-		      "term": {
-			  "type": "string"
-		      },
-		      "parent": {
-			  "type": "string"
-		      },
-		      "display": {
-			  "type": "string"
-		      },
-		      "description": {
-			  "type": "string"
-		      },
-		      "type": {
-			  "type": "string"
-		      },
-		      "units": {
-			  "type": "string"
-		      },
-		      "isRange": {
-			  "type": "boolean"
-		      },
-		      "precision": {
-			  "type": "integer"
-		      }
-		  }
-	      }
-	  },
-	  "values": {
-	      "type": "object",
-              "patternProperties": {
-		  "^.+$": {
-		      "type": "array",
-		      "items": {
-			  "type": "string"
-		      }
-		  }
-	      }
-	  }	  
-      }
+        "filterDataTypeDisplayName": {
+          "type": "string"
+        },
+        "hideEmptyOntologyNodes": {
+          "type": "boolean"
+        },
+        "minSelectedCount": {
+          "type": "integer"
+        },
+        "ontology": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "term": {
+                "type": "string"
+              },
+              "parent": {
+                "type": "string"
+              },
+              "display": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "units": {
+                "type": "string"
+              },
+              "isRange": {
+                "type": "boolean"
+              },
+              "precision": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "values": {
+          "type": "object",
+          "patternProperties": {
+            "^.+$": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "type",
+        "countOnlyLeaves",
+        "filterDataTypeDisplayName",
+        "hideEmptyOntologyNodes",
+        "minSelectedCount",
+        "ontology",
+        "values"
+      ]
     }
   ]
 }

@@ -90,14 +90,20 @@ public class StepFormatter {
   }
 
   public static JSONObject getStepJsonWithResultSize(Step step) throws WdkModelException {
-    return getStepJson(step)
-        .put(JsonKeys.ESTIMATED_SIZE, step.getResultSize());
+    return getStepJson(step).put(
+        JsonKeys.ESTIMATED_SIZE,
+        translateEstimatedSize(step.getResultSize()));
   }
 
   public static JSONObject getStepJsonWithEstimatedSize(Step step) throws WdkModelException {
-    Integer estSz = step.getEstimatedSize();
-    return getStepJson(step)
-        .put(JsonKeys.ESTIMATED_SIZE, estSz == -1? null : estSz);
+    return getStepJson(step).put(
+        JsonKeys.ESTIMATED_SIZE,
+        translateEstimatedSize(step.getEstimatedSize()));
+  }
+
+  // NOTE: returning null here means the actuall property will be omitted due to JSONObject's API
+  public static Integer translateEstimatedSize(Integer estimatedSize) {
+    return estimatedSize == null || estimatedSize < 0 ? null : estimatedSize;
   }
 
   /**

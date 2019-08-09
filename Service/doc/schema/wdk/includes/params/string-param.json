@@ -12,7 +12,7 @@
         },
         "type": {
           "type": "string",
-          "enum": ["StringParam"]
+          "enum": ["string"]
         }
       },
       "required": [

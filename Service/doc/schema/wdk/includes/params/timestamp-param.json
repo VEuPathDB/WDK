@@ -1,24 +1,18 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema",
   "allOf": [
-    { "$ref": "base-param.json"},
+    {
+      "$ref": "base-param.json"
+    },
     {
       "type": "object",
       "properties": {
         "type": {
           "type": "string",
-          "enum": [ "date" ]
-        },
-        "minDate": {
-          "type": "string"
-        },
-        "maxDate": {
-          "type": "string"
+          "enum": ["timestamp"]
         }
       },
       "required": [
-        "minDate",
-        "maxDate",
         "type"
       ]
     }

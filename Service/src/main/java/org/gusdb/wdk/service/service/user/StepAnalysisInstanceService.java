@@ -66,7 +66,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * @author eharper
  */
-public class StepAnalysisService extends UserService implements StepAnalysisLookupMixin {
+public class StepAnalysisInstanceService extends UserService implements StepAnalysisLookupMixin {
 
   // endpoints to handle analysis instances for a given step
   private static final String ANALYSES_PATH = StepService.NAMED_STEP_PATH + "/analyses";
@@ -92,7 +92,7 @@ public class StepAnalysisService extends UserService implements StepAnalysisLook
 
   private final long _stepId;
 
-  protected StepAnalysisService(
+  protected StepAnalysisInstanceService(
       @PathParam(USER_ID_PATH_PARAM) String uid,
       @PathParam(STEP_ID_PATH_PARAM) long stepId) {
     super(uid);
@@ -122,7 +122,7 @@ public class StepAnalysisService extends UserService implements StepAnalysisLook
       StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), analysisName);
       StepAnalysisInstance stepAnalysisInstance = getStepAnalysisInstance(step, stepAnalysis, answerValueChecksum);
 
-      return StepAnalysisFormatter.getStepAnalysisJson(stepAnalysisInstance).toString();
+      return StepAnalysisFormatter.getStepAnalysisInstanceJson(stepAnalysisInstance).toString();
     }
     catch (JSONException | DataValidationException e) {
       throw new BadRequestException(e);
@@ -152,7 +152,7 @@ public class StepAnalysisService extends UserService implements StepAnalysisLook
   public JSONObject getStepAnalysisInstance(
       @PathParam(ANALYSIS_ID_PATH_PARAM) long analysisId,
       @QueryParam(ACCESS_TOKEN_QUERY_PARAM) String accessToken) throws WdkModelException {
-    return StepAnalysisFormatter.getStepAnalysisJson(getAnalysis(analysisId, accessToken));
+    return StepAnalysisFormatter.getStepAnalysisInstanceJson(getAnalysis(analysisId, accessToken));
   }
 
   //  TODO: Why is this so slow?
