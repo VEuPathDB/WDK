@@ -24,6 +24,9 @@
     },
     "name": {
       "type": "string"
+    },
+    "initialDisplayValue": {
+      "type": "string"
     }
   },
   "required": [

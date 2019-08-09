@@ -8,21 +8,21 @@ import javax.ws.rs.BadRequestException;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.query.param.ParameterContainer;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class QuestionRequest {
+public class ParamValueSetRequest {
 
-  public static QuestionRequest parse(String body, Question question)
+  public static ParamValueSetRequest parse(String body, ParameterContainer container)
       throws RequestMisformatException, DataValidationException {
     try {
       JSONObject jsonBody = new JSONObject(body);
-      return new QuestionRequest(
-          parseContextParamValues(jsonBody, question),
-          parseChangedParam(jsonBody, question));
+      return new ParamValueSetRequest(
+          parseContextParamValues(jsonBody, container),
+          parseChangedParam(jsonBody, container));
     }
     catch (JSONException e) {
       throw new BadRequestException(e);
@@ -30,7 +30,7 @@ public class QuestionRequest {
   }
 
   private static Optional<Entry<String, String>> parseChangedParam(
-      JSONObject jsonBody, Question question)
+      JSONObject jsonBody, ParameterContainer container)
           throws RequestMisformatException, DataValidationException {
     if (!jsonBody.has("changedParam")) {
       return Optional.empty();
@@ -42,19 +42,19 @@ public class QuestionRequest {
     }
     Entry<String,String> changedParam = new TwoTuple<String,String>(
         changedParamJson.getString("name"), changedParamJson.getString("value"));
-    checkParam(changedParam.getKey(), question);
+    checkParam(changedParam.getKey(), container);
     return Optional.of(changedParam);
   }
 
   private static Map<String, String> parseContextParamValues(
-      JSONObject bodyJson, Question question)
+      JSONObject bodyJson, ParameterContainer container)
           throws RequestMisformatException, DataValidationException {
     try {
       JSONObject contextJson = bodyJson.getJSONObject("contextParamValues");
       Map<String,String> contextParamValues = JsonUtil.parseProperties(contextJson);
       // param name validation (values will be validated later)
       for (String paramName : contextParamValues.keySet()) {
-        checkParam(paramName, question);
+        checkParam(paramName, container);
       }
       return contextParamValues;
     }
@@ -63,17 +63,17 @@ public class QuestionRequest {
     }
   }
 
-  private static void checkParam(String paramName, Question question) throws DataValidationException {
-    if (!question.getParamMap().containsKey(paramName)) {
+  private static void checkParam(String paramName, ParameterContainer container) throws DataValidationException {
+    if (!container.getParamMap().containsKey(paramName)) {
       throw new DataValidationException("Parameter '" + paramName +
-          "' is not in question '" + question.getFullName() + "'.");
+          "' is not in container '" + container.getFullName() + "'.");
     }
   }
 
   private final Map<String, String> _contextParamValues;
   private final Optional<Entry<String, String>> _changedParam;
 
-  private QuestionRequest(
+  private ParamValueSetRequest(
       Map<String,String> contextParamValues,
       Optional<Entry<String,String>> changedParam) {
     _contextParamValues = contextParamValues;

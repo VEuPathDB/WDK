@@ -4,30 +4,35 @@
     { "$ref": "base-param.json"},
     {
       "type": "object",
-	"properties": {
-	    "defaultIdList": {
-	      "type": "string"
-	    },
-            "parsers": {
-		"type": "array",
-		"items": {
-		    "type": "object",
-		    "properties": {
-			"name": {
-			  "type": "string"
-		      },
-			"displayName": {
-			  "type": "string"
-		      },
-			"description": {
-			  "type": "string"
-		      }
-		    }
-		}
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [ "input-dataset" ]
+        },
+        "defaultIdList": {
+          "type": "string"
+        },
+        "parsers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
             }
+          }
+        }
       },
       "required": [
         "parsers",
+        "type"
       ]
     }
   ]

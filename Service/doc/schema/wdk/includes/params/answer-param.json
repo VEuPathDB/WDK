@@ -7,11 +7,12 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "AnswerParam"
-          ]
+          "enum": [ "input-step" ]
         }
-      }
+      },
+      "required": [
+        "type"
+      ]
     }
   ]
 }

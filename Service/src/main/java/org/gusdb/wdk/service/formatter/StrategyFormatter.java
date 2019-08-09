@@ -28,7 +28,6 @@ public class StrategyFormatter {
 
   public static JSONObject getListingStrategyJson(Strategy strategy) throws JSONException {
     Optional<String> recordClassName = strategy.getRecordClass().map(RecordClass::getUrlSegment);
-    int estimatedSize = strategy.getEstimatedSize();
     return new JSONObject()
         .put(JsonKeys.STRATEGY_ID, strategy.getStrategyId())
         .put(JsonKeys.DESCRIPTION, Optional.ofNullable(strategy.getDescription()).orElse(""))
@@ -45,18 +44,18 @@ public class StrategyFormatter {
         .put(JsonKeys.IS_VALID, strategy.isValid())
         .put(JsonKeys.IS_DELETED, strategy.isDeleted())
         .put(JsonKeys.ORGANIZATION, strategy.getUser().getProfileProperties().get("organization"))
-        .put(JsonKeys.ESTIMATED_SIZE, estimatedSize < 0 ? null : estimatedSize)
+        .put(JsonKeys.ESTIMATED_SIZE, StepFormatter.translateEstimatedSize(strategy.getEstimatedSize()))
         .put(JsonKeys.NAME_OF_FIRST_STEP, strategy.getMostPrimaryLeafStep().getDisplayName())
         .put(JsonKeys.LEAF_AND_TRANSFORM_STEP_COUNT, strategy.getLeafAndTransformStepCount());
   }
 
-  
   public static JSONObject getDetailedStrategyJson(Strategy strategy) throws WdkModelException, JSONException {
     Set<Step> stepsInTree = new HashSet<Step>(); // accumulate the steps found in the tree
     JSONObject stepTreeJson = StepFormatter.formatAsStepTree(strategy.getRootStep(), stepsInTree);
     JSONObject stepDetailsMap = new JSONObject();
-    for (Step step : stepsInTree) stepDetailsMap.put(Long.toString(step.getStepId()), StepFormatter.getStepJsonWithEstimatedSize(step));
-    
+    for (Step step : stepsInTree) {
+      stepDetailsMap.put(Long.toString(step.getStepId()), StepFormatter.getStepJsonWithEstimatedSize(step));
+    }
     return getListingStrategyJson(strategy)
         .put(JsonKeys.STEP_TREE, stepTreeJson)
         .put(JsonKeys.STEPS, stepDetailsMap)
