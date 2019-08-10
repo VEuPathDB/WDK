@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.query.spec.StepAnalysisFormSpec;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisSupplementalParams;
 import org.gusdb.wdk.service.formatter.param.ParamContainerFormatter;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,18 +30,20 @@ public class StepAnalysisFormatter {
       DisplayablyValid<StepAnalysisFormSpec> spec, ValidationBundle validation)
       throws JSONException, WdkModelException {
     return ParamContainerFormatter.convertToValidatedParamContainerJson(
-      getStepAnalysisTypeJsonWithoutParams(spec.get().getStepAnalysis()), spec, validation);
+      getStepAnalysisTypeJsonWithoutParams(spec.get().getStepAnalysis()),
+      spec, validation, StepAnalysisSupplementalParams.getNames());
   }
 
   private static JSONObject getStepAnalysisTypeJsonWithoutParams(StepAnalysis analysis) {
     return ParamContainerFormatter.supplementWithBasicParamInfo(analysis,
       new JSONObject()
-      .put(JsonKeys.NAME, analysis.getName())
-      .put(JsonKeys.DISPLAY_NAME, analysis.getDisplayName())
-      .put(JsonKeys.SHORT_DESCRIPTION, analysis.getShortDescription())
-      .put(JsonKeys.DESCRIPTION, analysis.getDescription())
-      .put(JsonKeys.RELEASE_VERSION, analysis.getReleaseVersion())
-      .put(JsonKeys.CUSTOM_THUMBNAIL, analysis.getCustomThumbnail())
+        .put(JsonKeys.NAME, analysis.getName())
+        .put(JsonKeys.DISPLAY_NAME, analysis.getDisplayName())
+        .put(JsonKeys.SHORT_DESCRIPTION, analysis.getShortDescription())
+        .put(JsonKeys.DESCRIPTION, analysis.getDescription())
+        .put(JsonKeys.RELEASE_VERSION, analysis.getReleaseVersion())
+        .put(JsonKeys.CUSTOM_THUMBNAIL, analysis.getCustomThumbnail()),
+      StepAnalysisSupplementalParams.getNames()
     );
   }
 

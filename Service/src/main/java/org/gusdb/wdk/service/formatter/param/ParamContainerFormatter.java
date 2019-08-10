@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -22,11 +23,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class ParamContainerFormatter {
-
-  public static <T extends ParameterContainerInstanceSpec<T>> JSONArray getParamsJson(
-      DisplayablyValid<T> spec) throws WdkModelException {
-    return getParamsJson(spec, param -> true);
-  }
 
   public static <T extends ParameterContainerInstanceSpec<T>> JSONArray getParamsJson(
       DisplayablyValid<T> spec, Predicate<Param> inclusionPredicate) throws WdkModelException {
@@ -82,19 +78,26 @@ public class ParamContainerFormatter {
     return json;
   }
 
-  public static JSONObject supplementWithBasicParamInfo(ParameterContainer container, JSONObject baseObject) {
+  public static JSONObject supplementWithBasicParamInfo(
+      ParameterContainer container, JSONObject baseObject, Set<String> paramsToExclude) {
     return baseObject
-      .put(JsonKeys.GROUPS, getGroupsJson(container.getParamMapByGroups()))
-      .put(JsonKeys.PARAM_NAMES, container.getParamMap().keySet());
+      .put(JsonKeys.GROUPS, getGroupsJson(container.getParamMapByGroups(), paramsToExclude))
+      .put(JsonKeys.PARAM_NAMES, filterNames(container.getParamMap().keySet(), paramsToExclude));
   }
 
-  private static JSONArray getGroupsJson(Map<Group, Map<String, Param>> paramsByGroup) {
+  private static JSONArray getGroupsJson(Map<Group, Map<String, Param>> paramsByGroup, Set<String> paramsToExclude) {
     JSONArray groups = new JSONArray();
     for (Group group: paramsByGroup.keySet()) {
       Map<String, Param> entry = paramsByGroup.get(group);
-      groups.put(getGroupJson(group, entry.keySet()));
+      groups.put(getGroupJson(group, filterNames(entry.keySet(), paramsToExclude)));
     }
     return groups;
+  }
+
+  private static Set<String> filterNames(Set<String> setOfNames, Set<String> namesToExclude) {
+    return setOfNames.stream()
+        .filter(p -> !namesToExclude.contains(p))
+        .collect(Collectors.toSet());
   }
 
   private static JSONObject getGroupJson(Group group, Set<String> params) {
@@ -110,16 +113,19 @@ public class ParamContainerFormatter {
 
   private static <T extends ParameterContainerInstanceSpec<T>> JSONObject supplementWithDetailedParamInfo(
       JSONObject baseObjectJson,
-      DisplayablyValid<T> validSpec) throws JSONException, WdkModelException {
-    return baseObjectJson.put(JsonKeys.PARAMETERS, getParamsJson(validSpec));
+      DisplayablyValid<T> validSpec,
+      Set<String> paramsToExclude) throws JSONException, WdkModelException {
+    return baseObjectJson.put(JsonKeys.PARAMETERS, getParamsJson(
+        validSpec, param -> !paramsToExclude.contains(param.getName())));
   }
 
   public static <T extends ParameterContainerInstanceSpec<T>> JSONObject convertToValidatedParamContainerJson(
       JSONObject baseObjectJson,
       DisplayablyValid<T> validSpec,
-      ValidationBundle validation) throws JSONException, WdkModelException {
+      ValidationBundle validation,
+      Set<String> paramsToExclude) throws JSONException, WdkModelException {
     return new JSONObject()
-      .put(JsonKeys.SEARCH_DATA, supplementWithDetailedParamInfo(baseObjectJson, validSpec))
+      .put(JsonKeys.SEARCH_DATA, supplementWithDetailedParamInfo(baseObjectJson, validSpec, paramsToExclude))
       .put(JsonKeys.VALIDATION, ValidationFormatter.getValidationBundleJson(validation));
   }
 }
