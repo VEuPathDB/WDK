@@ -40,6 +40,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.StepAnalysisFormSpec;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisSupplementalParams;
 import org.gusdb.wdk.service.formatter.StepAnalysisFormatter;
 import org.gusdb.wdk.service.formatter.param.ParamContainerFormatter;
 import org.gusdb.wdk.service.request.ParamValueSetRequest;
@@ -123,38 +124,6 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
     return StepAnalysisFormatter.getStepAnalysisTypeJsonWithParams(formSpec, formSpec.get().getValidationBundle());
   }
 
-  /*
-    // TODO: this is a hack.  We could fix it by introducing a dedicated
-    // param type called something like <stepAnalysisIdSqlParam> that would
-    // have no attributes, and be dedicated to this need.
-    if (paramMap.containsKey("answerIdSql")) {
-      if (context.isEmpty()) {
-        context = new HashMap<>();
-      }
-      context.put("answerIdSql", AnswerValueFactory.makeAnswer(step).getIdSql());
-    }
-
-    // TODO: also a hack; PostgreSQL only
-    // VALUES list is a SQL construct that creates a temporary table
-    // this case, with two fields, one for the param name, one for the param value
-    // allowing stepAnalysis parameters to be depended on step parameter values
-    if (paramMap.containsKey("stepParamValuesSql")) {
-      if (getWdkModel().getAppDb().getPlatform() instanceof PostgreSQL) {
-        if (context.isEmpty()) {
-          context = new HashMap<>();
-        }
-        ArrayList<String> values = new ArrayList<String>();
-        for (Entry<String, String> param : step.get().getAnswerSpec().getQueryInstanceSpec().entrySet()) {
-          String row = "('" + param.getKey() + "', '" + param.getValue() + "')";
-          values.add(row);
-        }
-        context.put("stepParamValuesSql", "SELECT * FROM ( VALUES " + String.join(",", values) + " ) AS p (name, value)");
-      } else {
-        throw new WdkModelException("Invalid step analysis parameter: stepParamValuesSql only valid for PostgreSQL.");
-      }
-    }
-   */
-
   /**
    * Returns form information about a single analysis type, given a set of parameter
    * values.  Any missing or invalid parameters are replaced with valid values
@@ -190,6 +159,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
     StepAnalysisFormSpec inputSpec = StepAnalysisFormSpec
         .builder()
         .putAll(request.getContextParamValues())
+        .putAll(StepAnalysisSupplementalParams.getValues(step.get().getUser(), Step.getRunnableAnswerSpec(step)))
         .buildValidated(
             step.get().getUser(),
             stepAnalysis,
@@ -258,6 +228,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
     DisplayablyValid<StepAnalysisFormSpec> formSpec = StepAnalysisFormSpec
         .builder()
         .putAll(contextParams)
+        .putAll(StepAnalysisSupplementalParams.getValues(step.get().getUser(), Step.getRunnableAnswerSpec(step)))
         .buildValidated(
             getSessionUser(),
             stepAnalysis,

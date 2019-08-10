@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.formatter;
 
 import static org.gusdb.fgputil.functional.Functions.reduce;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -58,35 +59,36 @@ public class QuestionFormatter {
     return ParamContainerFormatter.convertToValidatedParamContainerJson(
       getQuestionJsonWithoutParams(spec.get().getQuestion()),
       AnswerSpec.getValidQueryInstanceSpec(spec),
-      validation);
+      validation, Collections.emptySet());
   }
 
   private static JSONObject getQuestionJsonWithoutParams(Question q) {
     return ParamContainerFormatter.supplementWithBasicParamInfo(q.getQuery(),
       new JSONObject()
-      .put(JsonKeys.URL_SEGMENT, q.getName())
-      .put(JsonKeys.FULL_NAME, q.getFullName())
-      .put(JsonKeys.DISPLAY_NAME, q.getDisplayName())
-      .put(JsonKeys.SHORT_DISPLAY_NAME, q.getShortDisplayName())
-      .put(JsonKeys.DESCRIPTION, q.getDescription())
-      .put(JsonKeys.ICON_NAME, q.getIconName())
-      .put(JsonKeys.SUMMARY, q.getSummary())
-      .put(JsonKeys.HELP, q.getHelp())
-      .put(JsonKeys.NEW_BUILD, q.getNewBuild())
-      .put(JsonKeys.REVISE_BUILD, q.getReviseBuild())
-      .put(JsonKeys.OUTPUT_RECORD_CLASS_NAME, q.getRecordClass().getUrlSegment())
-      .put(JsonKeys.FILTERS, new JSONArray(q.getFilters().keySet()))
-      .put(JsonKeys.DEFAULT_ATTRIBUTES, new JSONArray(q.getSummaryAttributeFieldMap().keySet()))
-      .put(JsonKeys.DEFAULT_SORTING, DefaultJsonReporter.formatSorting(q.getSortingAttributeMap(), q.getAttributeFieldMap()))
-      .put(JsonKeys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
-          q.getDynamicAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, true))
-      .put(JsonKeys.DEFAULT_SUMMARY_VIEW, q.getDefaultSummaryView().getName())
-      .put(JsonKeys.SUMMARY_VIEW_PLUGINS, SummaryViewPluginFormatter.getSummaryViewPluginsJson(q.getOrderedSummaryViews()))
-      // NOTE: if null returned by getAllowedRecordClasses, property will be omitted in returned JSON
-      .put(JsonKeys.ALLOWED_PRIMARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getPrimaryAnswerParam()))
-      .put(JsonKeys.ALLOWED_SECONDARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getSecondaryAnswerParam()))
+        .put(JsonKeys.URL_SEGMENT, q.getName())
+        .put(JsonKeys.FULL_NAME, q.getFullName())
+        .put(JsonKeys.DISPLAY_NAME, q.getDisplayName())
+        .put(JsonKeys.SHORT_DISPLAY_NAME, q.getShortDisplayName())
+        .put(JsonKeys.DESCRIPTION, q.getDescription())
+        .put(JsonKeys.ICON_NAME, q.getIconName())
+        .put(JsonKeys.SUMMARY, q.getSummary())
+        .put(JsonKeys.HELP, q.getHelp())
+        .put(JsonKeys.NEW_BUILD, q.getNewBuild())
+        .put(JsonKeys.REVISE_BUILD, q.getReviseBuild())
+        .put(JsonKeys.OUTPUT_RECORD_CLASS_NAME, q.getRecordClass().getUrlSegment())
+        .put(JsonKeys.FILTERS, new JSONArray(q.getFilters().keySet()))
+        .put(JsonKeys.DEFAULT_ATTRIBUTES, new JSONArray(q.getSummaryAttributeFieldMap().keySet()))
+        .put(JsonKeys.DEFAULT_SORTING, DefaultJsonReporter.formatSorting(q.getSortingAttributeMap(), q.getAttributeFieldMap()))
+        .put(JsonKeys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
+            q.getDynamicAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, true))
+        .put(JsonKeys.DEFAULT_SUMMARY_VIEW, q.getDefaultSummaryView().getName())
+        .put(JsonKeys.SUMMARY_VIEW_PLUGINS, SummaryViewPluginFormatter.getSummaryViewPluginsJson(q.getOrderedSummaryViews()))
+        // NOTE: if null returned by getAllowedRecordClasses, property will be omitted in returned JSON
+        .put(JsonKeys.ALLOWED_PRIMARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getPrimaryAnswerParam()))
+        .put(JsonKeys.ALLOWED_SECONDARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getSecondaryAnswerParam()))
       .put(JsonKeys.FILTERS, getFiltersJson(q.getFilters()))
-      .put(JsonKeys.PROPERTIES, q.getPropertyLists())
+      .put(JsonKeys.PROPERTIES, q.getPropertyLists()),
+      Collections.emptySet()
     );
   }
 
