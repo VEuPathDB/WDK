@@ -124,11 +124,6 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
         getPropertyAsInt(IFRAME_WIDTH_PROP_KEY),
         getPropertyAsInt(IFRAME_LENGTH_PROP_KEY));
   }
-   
-  @Override
-  public JSONObject getFormViewModelJson() throws WdkModelException {
-    return null;
-  }
 
   protected Integer getPropertyAsInt(String propertyName) {
     String propertyValue = getProperty(propertyName);

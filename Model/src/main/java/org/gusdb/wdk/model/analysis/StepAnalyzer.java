@@ -38,13 +38,6 @@ public interface StepAnalyzer {
   JSONObject getResultViewModelJson() throws WdkModelException;
 
   /**
-   * Get JSON containing the information needed to render a parameter input form for this StepAnalyzer
-   * @return
-   * @throws WdkModelException
-   */
-  JSONObject getFormViewModelJson() throws WdkModelException;
-
-  /**
    * Sets a property as passed in from the WDK Model
    *
    * @param key property name
@@ -86,19 +79,6 @@ public interface StepAnalyzer {
    * @param formParams name->values map of submitted form parameters
    */
   void setFormParamValues(Map<String,String[]> formParams);
-
-  /**
-   * Validates that form parameters are valid.  Note this method will be called
-   * before params are passed in via <code>setFormParamValues()</code>.
-   *
-   * @param formParams form parameter values to be validated
-   * @return an object encapsulating the errors
-   * @throws WdkModelException if unable to validate values
-   */
-  default ValidationBundle validateFormParamValues(Map<String,String[]> formParams)
-      throws WdkModelException {
-    return ValidationBundle.builder(ValidationLevel.RUNNABLE).build();
-  }
 
   /**
    * Sets answer value retrieved from the step being analyzed
