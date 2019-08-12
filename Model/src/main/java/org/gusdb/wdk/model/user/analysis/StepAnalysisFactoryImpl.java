@@ -358,7 +358,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   /**
-   * Collects the data associated with a result and returns the aggregating
+   * Collects the data associated with a result and returns the aggregated
    * object.  This method is only to be called when a "recent" call to
    * getSavedInstance() has status COMPLETE.  No checks are done to ensure that
    * persistent storage mechanisms have not been cleared.
@@ -383,6 +383,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     analyzer.setPersistentCharData(result.getStoredString());
     analyzer.setPersistentBinaryData(result.getStoredBytes());
     result.clearStoredData(); // only care about the view model
+    result.setResultViewModelJson(analyzer.getResultViewModelJson());
     return result;
   }
 
