@@ -116,6 +116,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
     StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), analysisName);
     DisplayablyValid<StepAnalysisFormSpec> formSpec = StepAnalysisFormSpec
         .builder()
+        .putAll(StepAnalysisSupplementalParams.getValues(stepAnalysis, step.get().getUser(), Step.getRunnableAnswerSpec(step)))
         .buildValidated(step.get().getUser(), stepAnalysis, ValidationLevel.DISPLAYABLE, FillStrategy.FILL_PARAM_IF_MISSING)
         .getDisplayablyValid()
         .getOrThrow(spec -> new WdkModelException("Default values for step analysis type '" +
@@ -159,7 +160,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
     StepAnalysisFormSpec inputSpec = StepAnalysisFormSpec
         .builder()
         .putAll(request.getContextParamValues())
-        .putAll(StepAnalysisSupplementalParams.getValues(step.get().getUser(), Step.getRunnableAnswerSpec(step)))
+        .putAll(StepAnalysisSupplementalParams.getValues(stepAnalysis, step.get().getUser(), Step.getRunnableAnswerSpec(step)))
         .buildValidated(
             step.get().getUser(),
             stepAnalysis,
@@ -228,7 +229,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
     DisplayablyValid<StepAnalysisFormSpec> formSpec = StepAnalysisFormSpec
         .builder()
         .putAll(contextParams)
-        .putAll(StepAnalysisSupplementalParams.getValues(step.get().getUser(), Step.getRunnableAnswerSpec(step)))
+        .putAll(StepAnalysisSupplementalParams.getValues(stepAnalysis, step.get().getUser(), Step.getRunnableAnswerSpec(step)))
         .buildValidated(
             getSessionUser(),
             stepAnalysis,

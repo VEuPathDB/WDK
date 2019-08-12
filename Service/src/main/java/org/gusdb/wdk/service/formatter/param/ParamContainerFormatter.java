@@ -1,11 +1,11 @@
 package org.gusdb.wdk.service.formatter.param;
 
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -95,9 +95,11 @@ public class ParamContainerFormatter {
   }
 
   private static Set<String> filterNames(Set<String> setOfNames, Set<String> namesToExclude) {
-    return setOfNames.stream()
-        .filter(p -> !namesToExclude.contains(p))
-        .collect(Collectors.toSet());
+    Set<String> filteredNames = new LinkedHashSet<>();
+    setOfNames.stream()
+      .filter(p -> !namesToExclude.contains(p))
+      .forEach(p -> filteredNames.add(p));
+    return filteredNames;
   }
 
   private static JSONObject getGroupJson(Group group, Set<String> params) {

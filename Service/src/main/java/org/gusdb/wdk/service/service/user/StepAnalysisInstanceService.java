@@ -25,12 +25,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.media.multipart.ContentDisposition;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
@@ -178,11 +181,10 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
     try {
       json = mapper.readTree(body);
       if (json.has(ANALYSIS_PARAMS_KEY)) {
-        final Map<String, String[]> inputParams = mapper.readerFor(
-            new TypeReference<Map<String, String[]>>() {}).readValue(json.get(ANALYSIS_PARAMS_KEY));
+        final Map<String, String> inputParams = mapper.readerFor(
+            new TypeReference<Map<String, String>>() {}).readValue(json.get(ANALYSIS_PARAMS_KEY));
 
-        instance.getFormParams().clear();
-        instance.getFormParams().putAll(inputParams);
+        instance.setFormParams(translateParamValues(instance.getStepAnalysis().getParamMap(), inputParams));
 
         ValidationBundle validation = factory.validateFormParams(instance);
 
@@ -201,6 +203,15 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
       instance.setDisplayName(json.get(ANALYSIS_DISPLAY_NAME_KEY).asText());
       factory.renameInstance(instance);
     }
+  }
+
+  private Map<String,String[]> translateParamValues(Map<String, Param> paramMap, Map<String, String> inputParams) {
+    // FIXME: try to get to where this method is not needed.  It is very flawed.
+    //   For more explanation see: StepAnalysisFormatter.getStepAnalysisInstanceJson()
+    return Functions.getMapFromKeys(inputParams.keySet(),
+        key -> paramMap.get(key) instanceof AbstractEnumParam
+            ? inputParams.get(key).split(",")
+            : new String[]{inputParams.get(key)});
   }
 
   @GET

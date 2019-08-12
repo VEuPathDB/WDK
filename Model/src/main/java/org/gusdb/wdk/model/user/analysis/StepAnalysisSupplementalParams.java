@@ -11,6 +11,7 @@ import org.gusdb.fgputil.db.platform.PostgreSQL;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkRuntimeException;
+import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.user.User;
@@ -43,14 +44,17 @@ public class StepAnalysisSupplementalParams {
 
     }};
 
-  public static Set<String> getNames() {
-    return PARAM_VALUE_GENERATORS.keySet();
+  public static Set<String> getNames(StepAnalysis analysis) {
+    return PARAM_VALUE_GENERATORS.keySet().stream()
+      .filter(name -> analysis.getParamMap().keySet().contains(name))
+      .collect(Collectors.toSet());
   }
 
-  public static Map<String,String> getValues(User user, RunnableObj<AnswerSpec> runnableSpec) {
+  public static Map<String,String> getValues(StepAnalysis analysis, User user, RunnableObj<AnswerSpec> runnableSpec) {
     return PARAM_VALUE_GENERATORS.entrySet().stream()
-        .map(e -> new TwoTuple<>(e.getKey(), e.getValue().apply(user, runnableSpec)))
-        .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+      .filter(entry -> analysis.getParamMap().keySet().contains(entry.getKey()))
+      .map(e -> new TwoTuple<>(e.getKey(), e.getValue().apply(user, runnableSpec)))
+      .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
   }
 
 }

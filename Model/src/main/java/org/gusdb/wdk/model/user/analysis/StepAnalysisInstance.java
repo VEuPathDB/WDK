@@ -365,6 +365,10 @@ public String getUserNotes() {
     return _formParams;
   }
 
+  public void setFormParams(Map<String,String[]> formParams) {
+    _formParams = formParams;
+  }
+
   public ExecutionStatus getStatus() {
     return _status;
   }
@@ -427,4 +431,5 @@ public String getUserNotes() {
     }
     return AnswerValueFactory.makeAnswer(getStep().getRunnable().getLeft());
   }
+
 }
