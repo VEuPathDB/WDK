@@ -20,6 +20,7 @@ import org.gusdb.fgputil.events.Event;
 import org.gusdb.fgputil.events.EventListener;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.events.StepImportedEvent;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
@@ -153,8 +154,10 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   public ValidationBundle validateFormParams(StepAnalysisInstance instance)
       throws WdkModelException, WdkUserException {
     // this is a unique configuration; validate parameters
-    return getConfiguredAnalyzer(instance, _fileStore)
-        .validateFormParamValues(instance.getFormParams());
+    // FIXME: perform regular param validation here
+    return ValidationBundle.builder(ValidationLevel.RUNNABLE).build();
+    //return getConfiguredAnalyzer(instance, _fileStore)
+    //    .validateFormParamValues(instance.getFormParams());
   }
 
   @Override
