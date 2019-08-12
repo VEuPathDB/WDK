@@ -42,23 +42,4 @@ public interface ParameterContainer {
     return paramGroups;
   }
 
-  /*
-  default Map<Group, Map<String, Param>> getParamMapByGroups(String displayType) {
-    Param[] params = getParams();
-    Map<Group, Map<String, Param>> paramGroups = new LinkedHashMap<>();
-    for (Param param : params) {
-      Group group = param.getGroup();
-      if (!group.getDisplayType().equalsIgnoreCase(displayType))
-        continue;
-      Map<String, Param> paramGroup;
-      if (paramGroups.containsKey(group)) {
-        paramGroup = paramGroups.get(group);
-      } else {
-        paramGroup = new LinkedHashMap<>();
-        paramGroups.put(group, paramGroup);
-      }
-      paramGroup.put(param.getName(), param);
-    }
-    return paramGroups;
-  }*/
 }
