@@ -122,7 +122,7 @@ public class StepAnalysisInstance {
       AnswerValueFactory.makeAnswer(step.getRunnable().getLeft()).getChecksum();
   }
 
-  public static StepAnalysisInstance createFromForm(Map<String,String[]> params, StepAnalysisFactory analysisMgr)
+  private static StepAnalysisInstance createFromForm(Map<String,String[]> params, StepAnalysisFactory analysisMgr)
       throws WdkUserException, WdkModelException {
     int analysisId = getAnalysisIdParam(params);
     StepAnalysisInstance ctx = createFromId(analysisId, analysisMgr);
