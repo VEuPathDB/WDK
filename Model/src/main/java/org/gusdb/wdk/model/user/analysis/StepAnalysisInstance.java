@@ -10,7 +10,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkException;
@@ -122,16 +121,6 @@ public class StepAnalysisInstance {
       AnswerValueFactory.makeAnswer(step.getRunnable().getLeft()).getChecksum();
   }
 
-  private static StepAnalysisInstance createFromForm(Map<String,String[]> params, StepAnalysisFactory analysisMgr)
-      throws WdkUserException, WdkModelException {
-    int analysisId = getAnalysisIdParam(params);
-    StepAnalysisInstance ctx = createFromId(analysisId, analysisMgr);
-    // overwrite old set of form params and set new values
-    ctx._formParams = new HashMap<>(params);
-    ctx._formParams.remove(ANALYSIS_ID_KEY);
-    return ctx;
-  }
-
   public static StepAnalysisInstance createFromId(long analysisId, StepAnalysisFactory analysisMgr)
       throws WdkUserException, WdkModelException {
     return analysisMgr.getSavedAnalysisInstance(analysisId);
@@ -226,17 +215,6 @@ public class StepAnalysisInstance {
       }
     }
     return newParamMap;
-  }
-
-  private static int getAnalysisIdParam(Map<String, String[]> params) throws WdkUserException {
-    String[] values = params.get(ANALYSIS_ID_KEY);
-    if (values == null || values.length != 1)
-      throw new WdkUserException("Param '" + ANALYSIS_ID_KEY + "' is required.");
-    String value = values[0];
-    int analysisId;
-    if (!FormatUtil.isInteger(value) || (analysisId = Integer.parseInt(value)) <= 0)
-      throw new WdkUserException("Parameter '" + ANALYSIS_ID_KEY + "' must be a positive integer.");
-    return analysisId;
   }
 
   /**
