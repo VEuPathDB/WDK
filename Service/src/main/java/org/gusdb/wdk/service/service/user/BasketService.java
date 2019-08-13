@@ -110,7 +110,7 @@ public class BasketService extends UserService {
     return Response.ok(
       reduce(
         getWdkModel().getBasketFactory().getBasketCounts(getPrivateRegisteredUser()).entrySet(),
-        (json, entry) -> json.put(entry.getKey().getFullName(), entry.getValue()),
+        (json, entry) -> json.put(entry.getKey().getUrlSegment(), entry.getValue()),
         new JSONObject()
       ).toString()
     ).build();
