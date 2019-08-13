@@ -90,11 +90,6 @@ public class DatasetParam extends Param {
     parserReferences = new ArrayList<>(references.values());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
-   */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
@@ -121,27 +116,18 @@ public class DatasetParam extends Param {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.Param#clone()
-   */
   @Override
   public Param clone() {
     return new DatasetParam(this);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
     if (extra) {
       jsParam.put("recordClass", recordClass.getFullName());
     }
   }
+
 
   @Override
   protected ParamValidity validateValue(PartiallyValidatedStableValues ctxParamVals, ValidationLevel level) {
@@ -226,5 +212,12 @@ public class DatasetParam extends Param {
 
   public void addParserReference(DatasetParserReference reference) {
     this.parserReferences.add(reference);
+  }
+
+  @Override
+  protected String getDefault(PartiallyValidatedStableValues stableValues) throws WdkModelException {
+    // default stable value for DatasetParam is always an empty string;
+    // XML default value is used to display a default set of IDs (i.e. raw value) in the user interface
+    return "";
   }
 }
