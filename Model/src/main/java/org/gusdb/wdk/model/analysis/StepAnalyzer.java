@@ -3,8 +3,6 @@ package org.gusdb.wdk.model.analysis;
 import java.nio.file.Path;
 import java.util.Map;
 
-import org.gusdb.fgputil.validation.ValidationBundle;
-import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
