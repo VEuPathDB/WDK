@@ -1,8 +1,15 @@
 package org.gusdb.wdk.model.answer;
 
+import static org.gusdb.fgputil.StringUtil.indent;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -10,6 +17,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.SortDirectionSpec;
 import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -31,8 +39,8 @@ import org.gusdb.wdk.model.answer.stream.PagedAnswerRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
-import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.ColumnFilterSqlBuilder;
+import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -41,6 +49,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
@@ -50,8 +59,6 @@ import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONObject;
-
-import static org.gusdb.fgputil.StringUtil.indent;
 
 /**
  * <p>
@@ -1021,5 +1028,22 @@ public class AnswerValue {
 
   public boolean entireResultRequested() {
     return _startIndex == 1 && _endIndex == UNBOUNDED_END_PAGE_INDEX;
+  }
+
+  public static String wrapToReturnOnlyPkAndSelectedCols(String sql,
+      RecordClass rc, Collection<QueryColumnAttributeField> fields) {
+
+    List<String> cols = new ListBuilder<String>()
+      .addAll(Arrays.asList(rc.getPrimaryKeyDefinition().getColumnRefs()))
+      .addAll(fields.stream().map(Field::getName).collect(Collectors.toList()))
+      .toList();
+    
+    return new StringBuilder()
+      .append("/* SingleAttributeRecordStream */\nSELECT\n  ")
+      .append(String.join(",\n  ", cols))
+      .append("\n FROM (\n")
+      .append(sql)
+      .append("\n) sarsc")
+      .toString();
   }
 }

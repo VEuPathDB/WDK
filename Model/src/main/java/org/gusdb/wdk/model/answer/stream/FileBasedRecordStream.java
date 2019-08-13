@@ -29,7 +29,6 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
@@ -451,7 +450,7 @@ public class FileBasedRecordStream implements RecordStream {
       populateFiles(); // will do nothing if already called
       iter = new FileBasedRecordIterator(_answerValue, _attributeFileMap, _tableFileMap);
     }
-    catch (WdkModelException | WdkUserException e) {
+    catch (WdkModelException e) {
       throw new WdkRuntimeException(e);
     }
     _iterators.add(iter);
