@@ -77,7 +77,7 @@ public class StepFormatter {
         .put(JsonKeys.STRATEGY_ID, JsonUtil.convertNulls(step.getStrategyId().orElse(null)))
         .put(JsonKeys.HAS_COMPLETE_STEP_ANALYSES, step.getHasCompleteAnalyses())
         .put(JsonKeys.RECORD_CLASS_NAME, step.getRecordClass().map(RecordClass::getUrlSegment).orElse(null))
-        .put(JsonKeys.SEARCH_NAME, step.getAnswerSpec().getQuestion().getName())
+        .put(JsonKeys.SEARCH_NAME, step.getAnswerSpec().getQuestionName())
         .put(JsonKeys.SEARCH_CONFIG, AnswerSpecServiceFormat.format(step.getAnswerSpec()))
         .put(JsonKeys.VALIDATION, getValidationBundleJson(step.getValidationBundle()))
         .put(JsonKeys.CREATED_TIME, FormatUtil.formatDateTime(step.getCreatedTime()))
