@@ -13,9 +13,9 @@ public class UserDatasetTypeHandlerPlugin extends WdkModelBase {
   private String type;
   private String version;
   private UserDatasetTypeHandler typeHandler;
-  
+
   public UserDatasetTypeHandler getTypeHandler() { return typeHandler; }
-  
+
   /**
    * @return the implementation
    */
@@ -25,25 +25,22 @@ public class UserDatasetTypeHandlerPlugin extends WdkModelBase {
 
   /**
    * @param implementation
-   *          the implementation to set
+   *   the implementation to set
    */
   public void setImplementation(String implementation) {
     this.implementationClass = implementation;
   }
 
   public void setType(String type) { this.type = type; }
-  
+
   public String getType() { return type; }
-  
+
   public void setVersion(String version) { this.version = version; }
-  
+
   public String getVersion() { return version; }
- 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
-   * .WdkModel)
+
+  /**
+   * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(WdkModel)
    */
   @Override
   public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
@@ -52,7 +49,7 @@ public class UserDatasetTypeHandlerPlugin extends WdkModelBase {
     String msgStart = "Implementation class for userDatasetTypeHandlerPlugin [" + getImplementation() + "] ";
     try {
       Class<?> implClass = Class.forName(getImplementation());
-      if (!UserDatasetTypeHandler.class.isAssignableFrom(implClass)) 
+      if (!UserDatasetTypeHandler.class.isAssignableFrom(implClass))
         throw new WdkModelException(msgStart + "must implement " + UserDatasetTypeHandler.class.getName());
       Constructor<?> constructor = implClass.getConstructor();
       typeHandler = (UserDatasetTypeHandler) constructor.newInstance();
@@ -65,7 +62,6 @@ public class UserDatasetTypeHandlerPlugin extends WdkModelBase {
     catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
       throw new WdkModelException(msgStart + "cannot be constructed.", e);
     }
-    
-  }
 
+  }
 }

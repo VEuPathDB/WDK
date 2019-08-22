@@ -7,10 +7,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class JsonUserDatasetTypeFactory {
-  
+
   public static final String NAME = "name";
   public static final String VERSION = "version";
-  
+
   public static synchronized UserDatasetType getUserDatasetType(JSONObject jsonObject) throws WdkModelException {
     try {
       return UserDatasetTypeFactory.getUserDatasetType(jsonObject.getString(NAME), jsonObject.getString(VERSION));
@@ -18,7 +18,7 @@ public class JsonUserDatasetTypeFactory {
       throw new WdkModelException(e);
     }
   }
-  
+
   public static JSONObject toJsonObject(UserDatasetType type) {
     JSONObject json = new JSONObject();
     json.put(NAME, type.getName());

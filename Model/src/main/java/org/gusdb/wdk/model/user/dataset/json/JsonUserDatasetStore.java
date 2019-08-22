@@ -14,38 +14,37 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetStoreAdaptor;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 
-
 /**
  * An abstract implementation of UserDatasetStore that uses the JSON based
- * objects in this package, as well as java.nio.file.Path (but no other nio classes).
- * Since Path is just a file path, should be compatible with other file systems
- * (such as iRODS).
- * 
+ * objects in this package, as well as java.nio.file.Path (but no other nio
+ * classes). Since Path is just a file path, should be compatible with other
+ * file systems (such as iRODS).
+ * <p>
  * This is the directory structure:
- * 
- rootPath/
-  default_quota
-  u12345/              # files in this directory are user readable, but not writeable
-    quota              # can put this here, if increased from default
-    datasets/
-      d34541/
-      d67690/
-        datafiles/        
-           Blah.bigwig    
-           blah.profile
-        dataset.json
-        meta.json      # we have this as a separate file to avoid race conditions with sharing updates
-        /sharedWith
-          54145        # a an empty file, named for the user that is shared with
-          90912
-    externalDatasets/
-      43425.12592    # reference to dataset in another user.  empty file, name: user_id.dataset_id
-      691056.53165 
-    removedExternalDatasets/   # holds shares this user no longer wants to see.
-      502401.90112
-
- * @author steve
+ * <pre>
+ *  rootPath/
+ *   default_quota
+ *   u12345/              # files in this directory are user readable, but not writeable
+ *     quota              # can put this here, if increased from default
+ *     datasets/
+ *       d34541/
+ *       d67690/
+ *         datafiles/
+ *            Blah.bigwig
+ *            blah.profile
+ *         dataset.json
+ *         meta.json      # we have this as a separate file to avoid race conditions with sharing updates
+ *         /sharedWith
+ *           54145        # a an empty file, named for the user that is shared with
+ *           90912
+ *     externalDatasets/
+ *       43425.12592    # reference to dataset in another user.  empty file, name: user_id.dataset_id
+ *       691056.53165
+ *     removedExternalDatasets/   # holds shares this user no longer wants to see.
+ *       502401.90112
+ * </pre>
  *
+ * @author steve
  */
 public abstract class JsonUserDatasetStore implements UserDatasetStore {
 
@@ -77,11 +76,10 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
     typeHandlersMap = typeHandlers;
     createUnsupportedTypeHandler();
   }
-  
+
   /**
-   * This creates a user dataset type handler to substitute for type handlers that are
-   * no longer supported by the website.
-   * @throws WdkModelException
+   * This creates a user dataset type handler to substitute for type handlers
+   * that are no longer supported by the website.
    */
   protected void createUnsupportedTypeHandler() throws WdkModelException {
     Class<?> implClass = UnsupportedTypeHandler.class;
@@ -90,13 +88,14 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
       _unsupportedTypeHandler = (UserDatasetTypeHandler) constructor.newInstance();
     }
     catch(NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
-    	  throw new WdkModelException("No proper unsupported type handler implementation exists.", e);
+      throw new WdkModelException("No proper unsupported type handler implementation exists.", e);
     }
   }
 
   /**
-   * Return the user dataset type handler that matches the type and version of the given user dataset type.
-   * Otherwise return a very generic type handler (intended for types/versions that are no longer supported).
+   * Return the user dataset type handler that matches the type and version of
+   * the given user dataset type. Otherwise return a very generic type handler
+   * (intended for types/versions that are no longer supported).
    */
   @Override
   public UserDatasetTypeHandler getTypeHandler(UserDatasetType type) {
@@ -108,10 +107,9 @@ public abstract class JsonUserDatasetStore implements UserDatasetStore {
   public String getId() {
     return _id;
   }
-  
+
   @Override
   public Path getWdkTempDir() {
-	return _wdkTempDir;
+    return _wdkTempDir;
   }
-  
 }

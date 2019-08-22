@@ -14,9 +14,8 @@ import org.gusdb.wdk.model.WdkModelException;
 public interface UserDatasetStore {
 
   /**
-   * Called at start up by the WDK.  The configuration comes from
-   * properties in model XML.
-   * @param configuration
+   * Called at start up by the WDK.  The configuration comes from properties in
+   * model XML.
    */
   void initialize(Map<String, String> configuration, Map<UserDatasetType, UserDatasetTypeHandler> typeHandlers, Path wdkTempDir) throws WdkModelException;
 
@@ -27,7 +26,7 @@ public interface UserDatasetStore {
 
   /**
    * Return the type handler registered for the specified type.
-   * @param type
+   *
    * @return null if not found.
    */
   UserDatasetTypeHandler getTypeHandler(UserDatasetType type);

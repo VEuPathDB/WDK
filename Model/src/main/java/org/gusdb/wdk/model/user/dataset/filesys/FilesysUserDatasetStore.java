@@ -16,11 +16,11 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetStore;
 
 /**
- * An implementation of JsonUserDatasetStore that uses the java nio Files operations
- * @author steve
+ * An implementation of JsonUserDatasetStore that uses the java nio Files
+ * operations
  *
+ * @author steve
  */
-
 public class FilesysUserDatasetStore extends JsonUserDatasetStore {
 
   @Override
@@ -46,7 +46,7 @@ public class FilesysUserDatasetStore extends JsonUserDatasetStore {
   public FilesysUserDatasetSession getSession() {
     return new FilesysUserDatasetSession(_usersRootDir);
   }
-  
+
   @Override
   public FilesysUserDatasetSession getSession(Path usersRootDir) {
     return new FilesysUserDatasetSession(usersRootDir);

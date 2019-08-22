@@ -10,8 +10,8 @@ import org.json.JSONArray;
 /**
  * A wrapper around the UserDatasetEventArrayHandler library to allow it to be
  * called via a command line interface.
- * @author crisl-adm
  *
+ * @author crisl-adm
  */
 public class UserDatasetEventListHandler extends BaseCLI {
 
@@ -37,13 +37,13 @@ public class UserDatasetEventListHandler extends BaseCLI {
       System.exit(1);
     }
   }
-  
+
   @Override
   protected void execute() throws Exception {
-	String projectId = (String) getOptionValue(ARG_PROJECT);
+    String projectId = (String) getOptionValue(ARG_PROJECT);
     UserDatasetEventArrayHandler handler = new UserDatasetEventArrayHandler(projectId);
     File eventFile = new File((String)getOptionValue(ARG_EVENTS_FILE));
-    JSONArray eventJsonArray = null;
+    JSONArray eventJsonArray;
     try (FileInputStream fileInputStream = new FileInputStream(eventFile)) {
       eventJsonArray = new JSONArray(fileInputStream.toString());
     }
@@ -53,7 +53,6 @@ public class UserDatasetEventListHandler extends BaseCLI {
   @Override
   protected void declareOptions() {
     addSingleValueOption(ARG_PROJECT, true, null, "The project of the app db");
-    addSingleValueOption(ARG_EVENTS_FILE, true, null, "File containing an ordered JSON Array of user dataset events"); 
+    addSingleValueOption(ARG_EVENTS_FILE, true, null, "File containing an ordered JSON Array of user dataset events");
   }
-
 }

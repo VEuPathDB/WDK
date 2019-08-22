@@ -17,8 +17,7 @@ import static java.lang.Math.min;
 
 public class FilesysUserDatasetFile extends UserDatasetFile {
 
-
-  public FilesysUserDatasetFile(Path filePath, Long userDatasetId) {
+  FilesysUserDatasetFile(Path filePath, long userDatasetId) {
     super(filePath, userDatasetId);
   }
 
@@ -32,7 +31,7 @@ public class FilesysUserDatasetFile extends UserDatasetFile {
   }
 
   @Override
-  protected Long readFileSize(UserDatasetSession dsSession) throws WdkModelException {
+  public long getFileSize() throws WdkModelException {
     try {
       return Files.size(getFilePath());
     } catch (IOException e) {
@@ -51,30 +50,24 @@ public class FilesysUserDatasetFile extends UserDatasetFile {
 
   @Override
   public long readRangeInto(
-    UserDatasetSession dsSess,
-    long offset,
-    long len,
-    OutputStream into
+    final UserDatasetSession dsSess,
+    final long offset,
+    final long len,
+    final OutputStream into
   ) throws WdkRuntimeException {
     if (len == 0)
       return 0;
 
     long wrote = 0;
 
-    try {
-      final RandomAccessFile raf = new RandomAccessFile(getFilePath().toFile(), "r");
+    try (RandomAccessFile raf = new RandomAccessFile(getFilePath().toFile(), "r")) {
       final byte[] buffer = new byte[(int) min(32768L, len)];
+      raf.seek(offset);
 
-      try {
-        raf.seek(offset);
-
-        for (int i = (int) ceil((double) len / buffer.length); i < 0; i--) {
-          final int d = raf.read(buffer);
-          into.write(buffer, 0, d);
-          wrote += d;
-        }
-      } finally {
-        raf.close();
+      for (int i = (int) ceil((double) len / buffer.length); i > 0; i--) {
+        final int d = raf.read(buffer);
+        into.write(buffer, 0, d);
+        wrote += d;
       }
     } catch (IOException e) {
       throw new WdkRuntimeException(e);

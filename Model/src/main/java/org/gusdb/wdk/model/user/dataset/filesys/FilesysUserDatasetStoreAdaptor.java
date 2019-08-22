@@ -12,39 +12,35 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.dataset.UserDatasetStoreAdaptor;
 
 /**
- * An implementation of JsonUserDatasetStoreAdaptor that uses the java nio Files operations
- * 
- * @author steve
+ * An implementation of JsonUserDatasetStoreAdaptor that uses the java nio Files
+ * operations
  *
+ * @author steve
  */
-
-public class FilesysUserDatasetStoreAdaptor
-    implements org.gusdb.wdk.model.user.dataset.UserDatasetStoreAdaptor {
+public class FilesysUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
 
   @Override
   public List<Path> getPathsInDir(Path dir) throws WdkModelException {
-    List<Path> paths = new ArrayList<Path>();
+    List<Path> paths = new ArrayList<>();
     try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(dir)) {
       for (Path file : dirStream) {
         paths.add(file);
       }
       return paths;
-    }
-    catch (IOException | DirectoryIteratorException e) {
+    } catch (IOException | DirectoryIteratorException e) {
       throw new WdkModelException(e);
     }
-
   }
 
   @Override
   public Long getModificationTime(Path fileOrDir) throws WdkModelException {
-    Long modTime = null;
+    Long modTime;
     try {
       modTime = Files.getLastModifiedTime(fileOrDir).toMillis();
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new WdkModelException(e);
     }
     return modTime;
@@ -59,8 +55,7 @@ public class FilesysUserDatasetStoreAdaptor
   public String readSingleLineFile(Path file) throws WdkModelException {
     try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
       return reader.readLine();
-    }
-    catch (IOException x) {
+    } catch (IOException x) {
       throw new WdkModelException(x);
     }
   }
@@ -70,24 +65,21 @@ public class FilesysUserDatasetStoreAdaptor
     StandardOpenOption option = errorIfAlreadyExists? StandardOpenOption.CREATE_NEW : StandardOpenOption.CREATE;
     try {
       Files.write(file, contents.getBytes(), option);
-    }
-    catch (IOException e) {
-      throw new WdkModelException(e);
-    }   
-  }
-  
-  @Override
-  public void writeEmptyFile(Path file) throws WdkModelException {
-    try {
-      Files.write(file, new String("").getBytes(), StandardOpenOption.CREATE);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new WdkModelException(e);
     }
   }
 
-  
-  @Override 
+  @Override
+  public void writeEmptyFile(Path file) throws WdkModelException {
+    try {
+      Files.write(file, "".getBytes(), StandardOpenOption.CREATE);
+    } catch (IOException e) {
+      throw new WdkModelException(e);
+    }
+  }
+
+  @Override
   public boolean isDirectory(Path dir) {
     return Files.isDirectory(dir);
   }
@@ -97,11 +89,10 @@ public class FilesysUserDatasetStoreAdaptor
     StringBuilder jsonStringBldr = new StringBuilder();
 
     try (BufferedReader reader = Files.newBufferedReader(file, Charset.defaultCharset())) {
-      String line = null;
+      String line;
       while ((line = reader.readLine()) != null)
         jsonStringBldr.append(line);
-    }
-    catch (IOException x) {
+    } catch (IOException x) {
       throw new WdkModelException(x);
     }
     return jsonStringBldr.toString();
@@ -111,8 +102,7 @@ public class FilesysUserDatasetStoreAdaptor
   public void createDirectory(Path dir) throws WdkModelException {
     try {
       Files.createDirectory(dir);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new WdkModelException(e);
     }
   }
@@ -121,8 +111,7 @@ public class FilesysUserDatasetStoreAdaptor
   public void deleteFileOrDirectory(Path fileOrDir) throws WdkModelException {
     try {
       Files.delete(fileOrDir);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new WdkModelException(e);
     }
   }
@@ -131,19 +120,16 @@ public class FilesysUserDatasetStoreAdaptor
   public void moveFileAtomic(Path from, Path to) throws WdkModelException {
     try {
       Files.move(from, to, StandardCopyOption.ATOMIC_MOVE);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new WdkModelException(e);
     }
-
   }
-  
+
   @Override
   public String findUserDatasetStoreId(Path usersRootDir) throws WdkModelException {
-	if(usersRootDir == null) {
-	  throw new WdkModelException("No users root directory provided.");
-	}
-	return usersRootDir.toString();
+    if(usersRootDir == null) {
+      throw new WdkModelException("No users root directory provided.");
+    }
+    return usersRootDir.toString();
   }
-
 }

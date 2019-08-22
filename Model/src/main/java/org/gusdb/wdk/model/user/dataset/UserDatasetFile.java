@@ -9,59 +9,42 @@ import java.nio.file.Path;
 
 /**
  * A handle on a file within a user dataset.
+ *
  * @author steve
  */
 public abstract class UserDatasetFile {
   private Path filePath;
   private Long userDatasetId;
-  private Long fileSize;
 
-  public UserDatasetFile(Path filePath, Long userDatasetId) {
+  public UserDatasetFile(Path filePath, long userDatasetId) {
     this.filePath = filePath;
     this.userDatasetId = userDatasetId;
-  }
-
-  public void setSize(Long fileSize) {
-    this.fileSize = fileSize;
   }
 
   public Path getFilePath() {
     return filePath;
   }
 
-  /**
-   * @param dsSession session to use to fetch file name
-   */
-  public String getFileName(UserDatasetSession dsSession) {
+  public String getFileName() {
     return getFilePath().getFileName().toString();
   }
 
   /**
    * Get the contents of the file as a stream
-   * @return
    */
   public abstract InputStream getFileContents(UserDatasetSession dsSession, Path path) throws WdkModelException;
 
-  public Long getFileSize(UserDatasetSession dsSession) throws WdkModelException {
-    if (fileSize == null ) fileSize = readFileSize(dsSession);
-    return fileSize;
-  }
+  public abstract long getFileSize() throws WdkModelException;
 
   /**
-   * Get the size of the file by asking the store
-   * @return
-   */
-  protected abstract Long readFileSize(UserDatasetSession dsSession) throws WdkModelException;
-
-  /**
-   * Make a local copy of this user dataset file.  tmpWorkingDir is a temp dir that is dedicated
-   * to the job that needs this local copy.
-   * Call removeLocalCopy() when done.
+   * Make a local copy of this user dataset file.  tmpWorkingDir is a temp dir
+   * that is dedicated to the job that needs this local copy. Call
+   * removeLocalCopy() when done.
+   *
    * @return The full path as a String.
-   * @throws WdkModelException
    */
   public Path getLocalCopy(UserDatasetSession dsSession, Path tmpWorkingDir) throws WdkModelException {
-      Path localCopy = tmpWorkingDir.resolve(getFileName(dsSession));
+      Path localCopy = tmpWorkingDir.resolve(getFileName());
       createLocalCopy(dsSession, localCopy);
       return localCopy;
   }
@@ -70,12 +53,36 @@ public abstract class UserDatasetFile {
 
   /**
    * for use by implementers of getLocalCopy, to
-   * @return
    */
   protected Long getUserDatasetId() {
     return userDatasetId;
   }
 
+  /**
+   * Reads the byte range specified by {@code offset} and {@code len} from this
+   * user dataset file into the provided {@link OutputStream} {@code into}.
+   *
+   * @param dsSess
+   *   user dataset session service
+   * @param offset
+   *   byte range offset, this many bytes will be skipped from the beginning of
+   *   the file
+   * @param len
+   *   number of bytes to read into the given output stream
+   * @param into
+   *   output stream into which {@code len} bytes will be read from this user
+   *   dataset file
+   *
+   * @return the number of bytes read from this file into the given output
+   *   stream.  This number may differ from {@code len} if the
+   *   difference between {@code offset} and the total size of this file is less
+   *   than {@code len}.
+   *
+   * @throws WdkRuntimeException
+   *   may be thrown by the underlying implementation due to any error that
+   *   occur while attempting to read this file or write to the given output
+   *   stream.
+   */
   public abstract long readRangeInto(UserDatasetSession dsSess, long offset,
     long len, OutputStream into) throws WdkRuntimeException;
 }
