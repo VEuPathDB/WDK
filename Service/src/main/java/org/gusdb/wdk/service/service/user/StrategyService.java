@@ -77,7 +77,7 @@ public class StrategyService extends UserService {
   public JSONArray getStrategies() throws WdkModelException {
     return StrategyFormatter.getStrategiesJson(getWdkModel().getStepFactory()
       .getStrategies(getUserBundle(Access.PRIVATE).getSessionUser().getUserId(),
-          ValidationLevel.SYNTACTIC, FillStrategy.FILL_PARAM_IF_MISSING).values());
+          ValidationLevel.SYNTACTIC, FillStrategy.NO_FILL).values());
   }
 
   @POST
@@ -267,7 +267,7 @@ public class StrategyService extends UserService {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
 
       Strategy strategy = getWdkModel().getStepFactory()
-        .getStrategyById(strategyId, level, FillStrategy.FILL_PARAM_IF_MISSING)
+        .getStrategyById(strategyId, level, FillStrategy.NO_FILL)
         .orElseThrow(() -> new NotFoundException(
             formatNotFound(STRATEGY_RESOURCE + strategyId)));
 
