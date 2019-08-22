@@ -2,7 +2,7 @@ package org.gusdb.wdk.model.user.dataset;
 
 /**
  * Describes the type of a dataset.  Should be constructed only by the factory.
- * 
+ *
  * @author steve
  */
 public class UserDatasetType {

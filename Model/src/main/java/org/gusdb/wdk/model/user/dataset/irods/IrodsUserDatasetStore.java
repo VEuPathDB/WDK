@@ -27,13 +27,12 @@ public class IrodsUserDatasetStore extends JsonUserDatasetStore {
   }
 
   @Override
-  public IrodsUserDatasetSession getSession() throws WdkModelException {
+  public IrodsUserDatasetSession getSession() {
     return new IrodsUserDatasetSession(_usersRootDir, getWdkTempDir());
   }
-  
+
   @Override
-  public IrodsUserDatasetSession getSession(Path usersRootDir) throws WdkModelException {
+  public IrodsUserDatasetSession getSession(Path usersRootDir) {
     return new IrodsUserDatasetSession(usersRootDir, getWdkTempDir());
   }
-
 }

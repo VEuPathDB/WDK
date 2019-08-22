@@ -31,7 +31,7 @@ public class UserDatasetFormatter implements UserDatasetsFormatter {
   public void addUserDatasetInfoToJsonArray(UserDatasetInfo dataset,
       JSONArray datasetsJson, UserDatasetSession dsSession) throws WdkModelException {
     datasetsJson.put(_expandDatasets
-        ? getUserDatasetJson(dsSession, dataset, false, false)
+        ? getUserDatasetJson(dataset, false, false)
         : dataset.getDataset().getUserDatasetId());
   }
 
@@ -39,7 +39,7 @@ public class UserDatasetFormatter implements UserDatasetsFormatter {
   public void addSharedDatasetInfoToJsonArray(UserDatasetInfo dataset,
       JSONArray datasetsJson, UserDatasetSession dsSession) throws WdkModelException {
     datasetsJson.put(_expandDatasets
-        ? getUserDatasetJson(dsSession, dataset, true, false)
+        ? getUserDatasetJson(dataset, true, false)
         : dataset.getDataset().getUserDatasetId());
   }
 
@@ -76,7 +76,8 @@ public class UserDatasetFormatter implements UserDatasetsFormatter {
    * @return json object representing the dataset and associated information
    * @throws WdkModelException
    */
-  public static JSONObject getUserDatasetJson(UserDatasetSession dsSession, UserDatasetInfo datasetInfo, boolean includeSharingData, boolean detailedData) throws WdkModelException {
+  public static JSONObject getUserDatasetJson(UserDatasetInfo datasetInfo,
+    boolean includeSharingData, boolean detailedData) throws WdkModelException {
     UserDataset dataset = datasetInfo.getDataset();
     UserDatasetCompatibility compatibility = datasetInfo.getUserDatasetCompatibility();
     JSONObject json = new JSONObject();
@@ -154,8 +155,8 @@ public class UserDatasetFormatter implements UserDatasetsFormatter {
     JSONArray filesJson = new JSONArray();
     for (UserDatasetFile file : dataset.getFiles().values()) {
       JSONObject fileJson = new JSONObject();
-      fileJson.put("name", file.getFileName(dsSession));
-      fileJson.put("size", file.getFileSize(dsSession));
+      fileJson.put("name", file.getFileName());
+      fileJson.put("size", file.getFileSize());
       filesJson.put(fileJson);
     }
     json.put("datafiles", filesJson);

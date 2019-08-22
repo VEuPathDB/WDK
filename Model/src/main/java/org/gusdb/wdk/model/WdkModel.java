@@ -91,7 +91,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public static final String DB_INSTANCE_APP = "APP";
   public static final String DB_INSTANCE_USER = "USER";
   public static final String DB_INSTANCE_ACCOUNT = "ACCT";
-  
+
   public static final String UD_ENABLED = "UD_ENABLED";
   public static final String UD_DISABLED = "UD_DISABLED";
   public static final String UD_BROKEN = "UD_BROKEN";
@@ -100,7 +100,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   /**
    * Convenience method for constructing a model from the configuration information.
-   * 
+   *
    * @throws WdkModelException
    *           if unable to construct model
    */
@@ -147,7 +147,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   private Map<String, String> _questionUrlSegmentMap = new HashMap<>();
   private Map<String, String> _recordClassUrlSegmentMap = new HashMap<>();
-  
+
   private List<WdkModelName> wdkModelNames = new ArrayList<WdkModelName>();
   private String displayName;
   private String version; // use default version
@@ -607,7 +607,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     ModelConfigAppDB appDbConfig = modelConfig.getAppDB();
     ModelConfigUserDB userDbConfig = modelConfig.getUserDB();
     ModelConfigAccountDB accountDbConfig = modelConfig.getAccountDB();
-    ModelConfigUserDatasetStore udsConfig= modelConfig.getUserDatasetStoreConfig();
+    ModelConfigUserDatasetStore udsConfig = modelConfig.getUserDatasetStoreConfig();
 
     QueryLogger.initialize(modelConfig.getQueryMonitor());
 
@@ -651,7 +651,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
     // create boolean questions
     createBooleanQuestions();
-   
+
     validateDependentParams();
 
     // create step analysis factory - wait until the end since it spawns a thread
@@ -664,7 +664,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   private void validateDependentParams() throws WdkModelException {
-    
+
     // find names of all queries that are not owned by a parameter.  these are our "root" queries
     Set<String> nonRootQueryNames = new HashSet<String>();
     for (ParamSet paramSet : paramSets.values()) {
@@ -674,24 +674,24 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
         }
       }
     }
-    
-    // gather all root queries (those that are not contained by a param).  
+
+    // gather all root queries (those that are not contained by a param).
     Set<Query> rootQueries = new HashSet<Query>();
     Set<String> rootQueryNames = new HashSet<String>();
     for (QuerySet querySet : querySets.values()) {
       for (Query query : querySet.getQueries()) {
         if (!nonRootQueryNames.contains(query.getFullName())) {
         	rootQueries.add(query);
-            rootQueryNames.add(query.getFullName());	
+            rootQueryNames.add(query.getFullName());
         }
       }
     }
-    
+
     // for each root query, put the names of its immediate parameters into a "context"
     // then recurse down through its param-query tree, and validate that all queries use only params
     // found in the context
     for (Query rootQuery : rootQueries) {
-      rootQuery.validateDependentParams();	
+      rootQuery.validateDependentParams();
     }
   }
 
@@ -1024,7 +1024,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       }
     }
     ontologyFactoryList = null;
-    
+
     // exclude categories
     for (MacroDeclaration macro : macroList) {
       if (macro.include(_projectId)) {
@@ -1249,7 +1249,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public File getXmlDataDir() {
     return xmlDataDir;
   }
-  
+
   public UserDatasetStore getUserDatasetStore() {
     return userDatasetStore;
   }
@@ -1264,7 +1264,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   /**
    * This method is supposed to be called by the digester
-   * 
+   *
    * @param propertyList
    */
   public void addDefaultPropertyList(PropertyList propertyList) {
@@ -1273,7 +1273,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   /**
    * if the property list of the given name doesn't exist, an empty string array will be returned.
-   * 
+   *
    * @param propertyListName
    * @return
    */
@@ -1321,7 +1321,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     if (eupathCategoriesFactory != null) {
       return eupathCategoriesFactory.getRootCategories(usedBy);
     }
-    
+
     Map<String, SearchCategory> roots = new LinkedHashMap<String, SearchCategory>();
     for (SearchCategory root : rootCategoryMap.values()) {
       String cusedBy = root.getUsedBy();
@@ -1527,7 +1527,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   /**
    * Tries to find a configured recordclass, either by full name or URL segment
-   * 
+   *
    * @param urlSegment or record class name
    * @return record class or null if not found
    */
@@ -1570,7 +1570,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       throw e;
     }
   }
-  
+
   /**
    * Identifies and returns an xml question by its full name.
    * @param xmlQuestionFullName
@@ -1585,7 +1585,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     if(xmlQuestion == null) throw new WdkModelException("Cannot find xml question with the name " + xmlQuestionFullName);
     return xmlQuestion;
   }
-  
+
   public String getUserDatasetStoreStatus() {
     return _userDatasetStoreStatus;
   }
@@ -1599,7 +1599,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
    * place but not another and if so, then we want to know about it.  If we
    * mask this mistake with a WdkUserException, we might see bad consequences
    * down the line.
-   * 
+   *
    * @param qFullName potential question name
    * @throws WdkUserException if name is not in format *.*
    */
@@ -1633,7 +1633,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
    * in one place but not another and if so, then we want to know about it.
    * If we mask this mistake with a WdkUserException, we might see bad
    * consequences down the line.
-   * 
+   *
    * @param recordClassName potential record class name
    * @throws WdkUserException if name is not in format *.*
    */
