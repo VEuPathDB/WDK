@@ -33,6 +33,7 @@ import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.user.InvalidStrategyStructureException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
@@ -76,7 +77,7 @@ public class StrategyService extends UserService {
   public JSONArray getStrategies() throws WdkModelException {
     return StrategyFormatter.getStrategiesJson(getWdkModel().getStepFactory()
       .getStrategies(getUserBundle(Access.PRIVATE).getSessionUser().getUserId(),
-          ValidationLevel.SYNTACTIC).values());
+          ValidationLevel.SYNTACTIC, FillStrategy.FILL_PARAM_IF_MISSING).values());
   }
 
   @POST
@@ -266,7 +267,7 @@ public class StrategyService extends UserService {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
 
       Strategy strategy = getWdkModel().getStepFactory()
-        .getStrategyById(strategyId, level)
+        .getStrategyById(strategyId, level, FillStrategy.FILL_PARAM_IF_MISSING)
         .orElseThrow(() -> new NotFoundException(
             formatNotFound(STRATEGY_RESOURCE + strategyId)));
 

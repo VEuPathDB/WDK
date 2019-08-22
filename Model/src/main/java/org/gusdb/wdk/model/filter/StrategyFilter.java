@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
@@ -42,7 +43,7 @@ public class StrategyFilter extends StepFilter {
   public JSONObject getSummaryJson(AnswerValue answer, String idSql) throws WdkModelException {
     String rcName = answer.getAnswerSpec().getQuestion().getRecordClass().getFullName();
     List<Strategy> strategies = answer.getWdkModel().getStepFactory()
-        .getStrategies(answer.getUser().getUserId(), ValidationLevel.RUNNABLE)
+        .getStrategies(answer.getUser().getUserId(), ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
         .values()
         .stream()
         .filter(strategy -> strategy.isValid() && strategy.getRecordClass().get().getFullName().equals(rcName))
@@ -100,7 +101,7 @@ public class StrategyFilter extends StepFilter {
 
   private Strategy getStrategy(AnswerValue answer, JSONObject jsValue) throws WdkModelException {
     int strategyId = jsValue.getInt(KEY_STRATEGY);
-    return answer.getWdkModel().getStepFactory().getStrategyById(strategyId, ValidationLevel.SEMANTIC)
+    return answer.getWdkModel().getStepFactory().getStrategyById(strategyId, ValidationLevel.SEMANTIC, FillStrategy.FILL_PARAM_IF_MISSING)
         .orElseThrow(() -> new WdkModelException("Passed ID (" + strategyId + ") does not correspond to a strategy."));
   }
 

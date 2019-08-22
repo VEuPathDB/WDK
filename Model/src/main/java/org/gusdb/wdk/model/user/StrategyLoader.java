@@ -32,6 +32,7 @@ import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.Strategy.StrategyBuilder;
 import org.json.JSONObject;
@@ -108,14 +109,20 @@ public class StrategyLoader {
   private final String _userSchema;
   private final UserFactory _userFactory;
   private final ValidationLevel _validationLevel;
+  private final FillStrategy _fillStrategy;
 
   public StrategyLoader(WdkModel wdkModel, ValidationLevel validationLevel) {
+    this(wdkModel, validationLevel, FillStrategy.NO_FILL);
+  }
+
+  public StrategyLoader(WdkModel wdkModel, ValidationLevel validationLevel, FillStrategy fillStrategy) {
     _wdkModel = wdkModel;
     _userDbDs = wdkModel.getUserDb().getDataSource();
     _userDbPlatform = wdkModel.getUserDb().getPlatform();
     _userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
     _userFactory = wdkModel.getUserFactory();
     _validationLevel = validationLevel;
+    _fillStrategy = fillStrategy;
   }
 
   private String sqlBoolean(boolean boolValue) {
@@ -184,7 +191,7 @@ public class StrategyLoader {
       MalformedStrategyList malstructuredStrategies = new MalformedStrategyList();
       for (StrategyBuilder stratBuilder : strategies) {
         try {
-          builtStrategies.add(stratBuilder.build(userCache, _validationLevel));
+          builtStrategies.add(stratBuilder.build(userCache, _validationLevel, _fillStrategy));
         }
         catch (InvalidStrategyStructureException e) {
           malstructuredStrategies.add(new TwoTuple<>(stratBuilder, e));
@@ -192,7 +199,7 @@ public class StrategyLoader {
       }
       // only build orphan steps; attached steps will be built by their strategy
       List<Step> builtOrphanSteps = Functions.mapToList(orphanSteps,
-          fSwallow(builder -> builder.build(userCache, _validationLevel, Optional.empty())));
+          fSwallow(builder -> builder.build(userCache, _validationLevel, _fillStrategy, Optional.empty())));
       return new SearchResult(builtStrategies, builtOrphanSteps, malstructuredStrategies);
     }
     catch (Exception e) {

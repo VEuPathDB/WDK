@@ -30,6 +30,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 
@@ -189,10 +190,15 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
 
     public Strategy build(UserCache userCache, ValidationLevel validationLevel)
         throws InvalidStrategyStructureException {
+      return build(userCache, validationLevel, FillStrategy.NO_FILL);
+    }
+
+    public Strategy build(UserCache userCache, ValidationLevel validationLevel, FillStrategy fillStrategy)
+        throws InvalidStrategyStructureException {
       if (_rootStepId == 0) {
         throw new InvalidStrategyStructureException("Root step ID is required but has not been set.");
       }
-      return new Strategy(this, userCache.get(_userId), validationLevel);
+      return new Strategy(this, userCache.get(_userId), validationLevel, fillStrategy);
     }
 
     public long getNumSteps() {
@@ -228,7 +234,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
   private final ValidationBundle _validationBundle;
 
   private Strategy(StrategyBuilder strategyBuilder, User user,
-      ValidationLevel validationLevel)
+      ValidationLevel validationLevel, FillStrategy fillStrategy)
           throws InvalidStrategyStructureException {
     _user = user;
     _wdkModel = strategyBuilder._wdkModel;
@@ -248,14 +254,15 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     _rootStepId = strategyBuilder._rootStepId;
     _stepMap = new HashMap<>();
     // populates _stepMap
-    buildSteps(strategyBuilder._stepMap, validationLevel);
+    buildSteps(strategyBuilder._stepMap, validationLevel, fillStrategy);
     _validationBundle = ValidationBundle.builder(validationLevel)
         .aggregateStatus(_stepMap.values().toArray(new Step[0]))
         .build();
   }
 
   private void buildSteps(Map<Long, StepBuilder> steps,
-      ValidationLevel validationLevel) throws InvalidStrategyStructureException {
+      ValidationLevel validationLevel, FillStrategy fillStrategy)
+          throws InvalidStrategyStructureException {
 
     // Confirm project and user id match across strat and all steps, and that steps were properly assigned
     for (StepBuilder step : steps.values()) {
@@ -307,7 +314,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
           // build the step
           Step step = builder
             .setResultSizeDirty(isDirty)
-            .build(userCache, validationLevel, Optional.of(thisStrategy));
+            .build(userCache, validationLevel, fillStrategy, Optional.of(thisStrategy));
 
           // add to strategy
           thisStrategy._stepMap.put(step.getStepId(), step);

@@ -13,6 +13,7 @@ import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.user.Strategy.StrategyBuilder;
 import org.gusdb.wdk.model.user.StrategyLoader.MalformedStrategyList;
 
@@ -41,7 +42,7 @@ public class StrategyAnalysis {
               "Could not find user with email: " + userEmail
             ))
             .getUserId(),
-          validationLevel, malformedStrats).values();
+          validationLevel, FillStrategy.NO_FILL, malformedStrats).values();
       List<Strategy> validStrats = filter(strategies, str -> str.isValid());
       List<Strategy> invalidStrats = filter(strategies, str -> !str.isValid());
       System.out.println(
