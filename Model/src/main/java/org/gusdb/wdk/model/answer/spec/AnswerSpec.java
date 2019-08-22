@@ -81,7 +81,7 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
   private final QueryInstanceSpec _queryInstanceSpec;
 
   // LEGACY!!  Any filtering code mods should be applied to the parameterized
-  //     filter framework.  TODO: remove this code and migrade the DB
+  //     filter framework.  TODO: remove this code and migrate the DB
   // Name of (non-parameterized) filter instance applied to this step (if any), DB value of null = no filter
   // if any filters exist on a recordclass, model must have a "default" filter; usually this is
   // a filter that simply returns all the results. The default filter is automatically applied to a step.

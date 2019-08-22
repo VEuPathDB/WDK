@@ -23,7 +23,9 @@ import javax.ws.rs.core.StreamingOutput;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
@@ -40,6 +42,7 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.request.RecordRequest;
+import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.BasketRequests.BasketActions;
@@ -49,8 +52,6 @@ import org.gusdb.wdk.service.service.search.SearchColumnService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Use cases this service supports:
@@ -240,16 +241,19 @@ public class BasketService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   // Produces an unknown media type; varies depending on reporter selected
   public Response createCustomReportAnswer(
-      @PathParam(BASKET_NAME_PATH_PARAM) String basketName,
-      @PathParam(REPORT_NAME_PATH_PARAM) String reportName,
-      JSONObject requestJson)
+      @PathParam(BASKET_NAME_PATH_PARAM) final String basketName,
+      @PathParam(REPORT_NAME_PATH_PARAM) final String reportName,
+      final JSONObject requestJson)
           throws WdkModelException, RequestMisformatException, DataValidationException {
     User user = getPrivateRegisteredUser();
     RecordClass recordClass = getRecordClassOrNotFound(basketName);
-    RunnableObj<AnswerSpec> basketAnswerSpec = AnswerSpec.builder(getWdkModel())
+    RunnableObj<AnswerSpec> basketAnswerSpec = AnswerSpec
+      .builder(getWdkModel())
       .setQuestionFullName(recordClass.getRealtimeBasketQuestion().getFullName())
+      .setViewFilterOptions(AnswerSpecServiceFormat.parseViewFilters(requestJson))
       .buildRunnable(getSessionUser(), StepContainer.emptyContainer());
-    AnswerRequest request = new AnswerRequest(basketAnswerSpec, new AnswerFormatting(reportName, requestJson));
+    AnswerRequest request = new AnswerRequest(basketAnswerSpec,
+        new AnswerFormatting(reportName, requestJson.getJSONObject(JsonKeys.REPORT_CONFIG)));
     return AnswerService.getAnswerResponse(user, request).getSecond();
   }
 
@@ -257,23 +261,25 @@ public class BasketService extends UserService {
   @Path(COLUMN_REPORTER_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   public StreamingOutput getColumnReporterResponse(
-      @PathParam(BASKET_NAME_PATH_PARAM) String basketName,
+      @PathParam(BASKET_NAME_PATH_PARAM) final String basketName,
       @PathParam(SearchColumnService.COLUMN_PATH_PARAM) final String columnName,
-      @PathParam(REPORT_NAME_PATH_PARAM) final String reporterName,
-      final JsonNode reporterConfig)
+      @PathParam(REPORT_NAME_PATH_PARAM) final String reportName,
+      final JSONObject requestJson)
           throws WdkModelException, NotFoundException, WdkUserException {
     User user = getPrivateRegisteredUser();
     RecordClass recordClass = getRecordClassOrNotFound(basketName);
     AttributeField attribute = requireColumn(recordClass, columnName);
-    RunnableObj<AnswerSpec> basketAnswerSpec = AnswerSpec.builder(getWdkModel())
+    RunnableObj<AnswerSpec> basketAnswerSpec = AnswerSpec
+      .builder(getWdkModel())
       .setQuestionFullName(recordClass.getRealtimeBasketQuestion().getFullName())
+      .setViewFilterOptions(AnswerSpecServiceFormat.parseViewFilters(requestJson))
       .buildRunnable(getSessionUser(), StepContainer.emptyContainer());
     return AnswerService.getAnswerAsStream(
         attribute.makeReporterInstance(
-            reporterName,
+            reportName,
             AnswerValueFactory.makeAnswer(user, basketAnswerSpec),
-            reporterConfig
-        ).orElseThrow(ColumnReporterService.makeNotFound(attribute, reporterName))
+            JsonUtil.toJsonNode(requestJson.getJSONObject(JsonKeys.REPORT_CONFIG))
+        ).orElseThrow(ColumnReporterService.makeNotFound(attribute, reportName))
     );
   }
 }

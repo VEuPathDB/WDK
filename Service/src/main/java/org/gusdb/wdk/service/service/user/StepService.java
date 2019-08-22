@@ -26,6 +26,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -43,7 +44,6 @@ import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.model.user.InvalidStrategyStructureException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
-import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserCache;
@@ -63,8 +63,6 @@ import org.gusdb.wdk.service.service.search.ColumnReporterService;
 import org.gusdb.wdk.service.service.search.SearchColumnService;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 public class StepService extends UserService {
 
@@ -183,34 +181,34 @@ public class StepService extends UserService {
       JSONObject requestJson)
           throws WdkModelException, RequestMisformatException, DataValidationException {
 
-    User user = getUserBundle(Access.PRIVATE).getSessionUser();
-    StepFactory stepFactory = getWdkModel().getStepFactory();
-    Step step = stepFactory
-        .getStepByIdAndUserId(stepId, user.getUserId(), ValidationLevel.NONE)
-        .orElseThrow(() -> new NotFoundException(formatNotFound(STEP_RESOURCE + stepId)));
+    // don't validate step right away; do it after we clean filters and add any view filters
+    Step step = getStepForCurrentUser(stepId, ValidationLevel.NONE);
+
+    // only allow step to be run from service if part of a strategy (even if otherwise runnable)
     if (!step.getStrategy().isPresent()) {
       throw new DataValidationException("Step " + step.getStepId() + " is not part of a strategy, so cannot run.");
     }
 
-    RunnableObj<Step> runnableStep = stepFactory
-        .getStepById(stepId, ValidationLevel.RUNNABLE)
-        .orElseThrow(() -> new NotFoundException(formatNotFound(STEP_RESOURCE + stepId)))
+    // create a runnable answer spec with view filters applied (if present)
+    RunnableObj<AnswerSpec> runnableSpec = AnswerSpec
+        .builder(step.getAnswerSpec())
+        .setViewFilterOptions(AnswerSpecServiceFormat.parseViewFilters(requestJson))
+        .build(step.getUser(), step.getContainer(), ValidationLevel.RUNNABLE)
         .getRunnable()
         .getOrThrow(StepService::getNotRunnableException);
 
-    AnswerRequest request = new AnswerRequest(
-        Step.getRunnableAnswerSpec(runnableStep),
-        new AnswerFormatting(reporterName, requestJson));
-
-    TwoTuple<AnswerValue, Response> result = AnswerService.getAnswerResponse(user, request);
+    // execute reporter against the answer spec
+    AnswerRequest request = new AnswerRequest(runnableSpec,
+        new AnswerFormatting(reporterName, requestJson.getJSONObject(JsonKeys.REPORT_CONFIG)));
+    TwoTuple<AnswerValue, Response> result = AnswerService.getAnswerResponse(step.getUser(), request);
 
     // update the estimated size and last-run time on this step
-    stepFactory.updateStep(
-        Step.builder(runnableStep.get())
+    getWdkModel().getStepFactory().updateStep(
+        Step.builder(step)
         .setEstimatedSize(result.getFirst().getResultSizeFactory().getDisplayResultSize())
         .setLastRunTime(new Date())
-        .build(new UserCache(runnableStep.get().getUser()),
-            ValidationLevel.NONE, runnableStep.get().getStrategy()));
+        .build(new UserCache(step.getUser()),
+            ValidationLevel.NONE, step.getStrategy()));
 
     return result.getSecond();
   }
@@ -302,23 +300,36 @@ public class StepService extends UserService {
       @PathParam(STEP_ID_PATH_PARAM) final long stepId,
       @PathParam(SearchColumnService.COLUMN_PATH_PARAM) final String columnName,
       @PathParam(REPORT_NAME_PATH_PARAM) final String reporterName,
-      final JsonNode reporterConfig)
+      final JSONObject requestJson)
           throws WdkModelException, DataValidationException, NotFoundException, WdkUserException {
-    // don't validate step right away; do it after we clean filters
+
+    // don't validate step right away; do it after we clean filters and add any view filters
     Step step = getStepForCurrentUser(stepId, ValidationLevel.NONE);
+
+    // only allow step to be run from service if part of a strategy (even if otherwise runnable)
+    if (!step.getStrategy().isPresent()) {
+      throw new DataValidationException("Step " + step.getStepId() + " is not part of a strategy, so cannot run.");
+    }
+
+    // trim off a filter linked to this reporter if present and apply view filters
     AnswerSpecBuilder specBuilder = ColumnReporterService.trimColumnFilter(
         new AnswerSpecBuilder(step.getAnswerSpec()), columnName, reporterName);
     RunnableObj<AnswerSpec> trimmedSpec = specBuilder
+        .setViewFilterOptions(AnswerSpecServiceFormat.parseViewFilters(requestJson))
         .build(step.getUser(), step.getContainer(), ValidationLevel.RUNNABLE)
         .getRunnable()
         .getOrThrow(StepService::getNotRunnableException);
+
+    // make sure passed column is valid for this question
     Question question = trimmedSpec.get().getQuestion();
     AttributeField attribute = requireColumn(question, columnName);
+
+    // execute reporter against the runnable answer spec
     return AnswerService.getAnswerAsStream(
         attribute.makeReporterInstance(
             reporterName,
             AnswerValueFactory.makeAnswer(step.getUser(), trimmedSpec),
-            reporterConfig
+            JsonUtil.toJsonNode(requestJson.getJSONObject(JsonKeys.REPORT_CONFIG))
         ).orElseThrow(ColumnReporterService.makeNotFound(attribute, reporterName))
     );
   }
