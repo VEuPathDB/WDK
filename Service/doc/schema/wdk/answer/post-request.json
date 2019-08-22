@@ -1,17 +1,23 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object",
-    "additionalProperties": false,
-    "properties": {
-	"searchConfig" : {
-	    "$ref": "answer-spec-request.json"
-
-	},
-	"reportConfig": {
-	    "$ref": "../includes/answer-formatConfig-json-request.json"
-	}
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "searchConfig" : {
+      "$ref": "answer-spec-request.json"
     },
-    "required" : [
-	"searchConfig"
-    ]
+    "reportConfig": {
+      "$ref": "../includes/answer-formatConfig-json-request.json"
+    },
+    "viewFilters": {
+      "type": "array",
+      "items": {
+        "$ref": "../includes/filter-spec.json"
+      }
+    }
+  },
+  "required" : [
+    "searchConfig",
+    "reportConfig"
+  ]
 }

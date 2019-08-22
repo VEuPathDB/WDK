@@ -8,6 +8,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
+import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersDbColumnFormat;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -29,9 +30,6 @@ public class AnswerSpecServiceFormat {
    *   "parameters": Object (map from paramName -> paramValue),
    *   "legacyFilterName": (optional) String,
    *   "filters": (optional) [ {
-   *     "name": String, value: Any
-   *   } ],
-   *   "viewFilters": (optional) [ {
    *     "name": String, value: Any
    *   } ],
    *   "columnFilters": (optional) {
@@ -61,7 +59,8 @@ public class AnswerSpecServiceFormat {
 
       // apply filter and view filter options if present
       specBuilder.setFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.FILTERS));
-      specBuilder.setViewFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.VIEW_FILTERS));
+      // NOTE: As of 8/20/19 we do not parse view filters with other answer spec properties
+      //specBuilder.setViewFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.VIEW_FILTERS));
 
       // apply column filter configurations if present
       if (json.has(JsonKeys.COLUMN_FILTERS))
@@ -82,6 +81,21 @@ public class AnswerSpecServiceFormat {
   }
 
   /**
+   * Parses view filters out of the passed parent JSON object.  If present,
+   * view filters should have the following format:
+   * {
+   *   "viewFilters": (optional) [ {
+   *     "name": String, value: Any
+   *   } ]
+   * }
+   * @param parentJson object possibly containing a viewFilters property
+   * @return builder for the parsed view filters (may be an empty builder if none present)
+   */
+  public static FilterOptionListBuilder parseViewFilters(JSONObject parentJson) {
+    return ParamsAndFiltersDbColumnFormat.parseFiltersJson(parentJson, JsonKeys.VIEW_FILTERS);
+  }
+
+  /**
    * Formats the passed answer spec into JSON.  Output format is the same as
    * input format except for an additional property, "questionName", which is
    * included when formatting an existing answer spec.
@@ -94,7 +108,8 @@ public class AnswerSpecServiceFormat {
         // params and filters are sent with the same format as in the DB
         .put(JsonKeys.PARAMETERS, ParamsAndFiltersDbColumnFormat.formatParams(answerSpec.getQueryInstanceSpec()))
         .put(JsonKeys.FILTERS, ParamsAndFiltersDbColumnFormat.formatFilters(answerSpec.getFilterOptions()))
-        .put(JsonKeys.VIEW_FILTERS, ParamsAndFiltersDbColumnFormat.formatFilters(answerSpec.getViewFilterOptions()))
+        // NOTE: As of 8/20/19 we do not include view filters as part of the normal answer spec (StepService)
+        //.put(JsonKeys.VIEW_FILTERS, ParamsAndFiltersDbColumnFormat.formatFilters(answerSpec.getViewFilterOptions()))
         .put(JsonKeys.COLUMN_FILTERS, ParamsAndFiltersDbColumnFormat.formatColumnFilters(answerSpec.getColumnFilterConfig()))
         .put(JsonKeys.WDK_WEIGHT, answerSpec.getQueryInstanceSpec().getAssignedWeight())
         .put(JsonKeys.LEGACY_FILTER_NAME, answerSpec.getLegacyFilterName().orElse(null));

@@ -14,12 +14,12 @@
           "$ref": "#/definitions/step"
         }
       },
-	"required": [
+      "required": [
           "stepId"
-	],
-        "additionalProperties": false
-      }
-    },
+      ],
+      "additionalProperties": false
+    }
+  },
   "allOf": [
     { "$ref": "../../../includes/strategy-no-step-tree.json" },
     {

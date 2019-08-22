@@ -37,6 +37,7 @@ import org.gusdb.wdk.model.answer.request.AnswerFormatting;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
+import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.report.Reporter;
@@ -62,10 +63,9 @@ import org.json.JSONObject;
  * <p>JSON input format:</p>
  * <pre>
  * {
- *   "searchConfig": {
- *       see AnswerRequestFactory for details
- *   },
- *   reportConfig: Object (sample for JSON, XML, etc. below)
+ *   "searchConfig": Object (see AnswerRequestFactory for details),
+ *   "viewFilters": Array of view filter configurations (optional),
+ *   "reportConfig": Object (sample for JSON, XML, etc. below)
  * }
  * </pre>
  * <p>Sample input for our standard reporters:</p>
@@ -206,8 +206,9 @@ public class AnswerService extends AbstractWdkService {
   @Deprecated
   public Response displayFilterResults(@PathParam("filterName") String filterName, JSONObject requestJson)
   throws WdkModelException, WdkUserException, DataValidationException {
+    FilterOptionListBuilder viewFilters = AnswerSpecServiceFormat.parseViewFilters(requestJson);
     RunnableObj<AnswerSpec> answerSpec = parseAnswerSpec(getQuestionOrNotFound(_recordClassUrlSegment, _questionUrlSegment),
-      requestJson.getJSONObject(JsonKeys.SEARCH_CONFIG), getWdkModel(), getSessionUser());
+      requestJson.getJSONObject(JsonKeys.SEARCH_CONFIG), getWdkModel(), getSessionUser(), viewFilters);
     AnswerValue answerValue = AnswerValueFactory.makeAnswer(getSessionUser(), answerSpec);
     JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
     return Response.ok(filterSummaryJson.toString()).build();
@@ -266,9 +267,12 @@ public class AnswerService extends AbstractWdkService {
       String reporterName, JSONObject requestBody, WdkModel wdkModel, User sessionUser)
           throws RequestMisformatException, DataValidationException, WdkModelException {
 
+    // parse view filters
+    FilterOptionListBuilder viewFilters = AnswerSpecServiceFormat.parseViewFilters(requestBody);
+
     // parse answer spec (question, params, etc.)
     RunnableObj<AnswerSpec> answerSpec = parseAnswerSpec(question,
-        requestBody.getJSONObject(JsonKeys.SEARCH_CONFIG), wdkModel, sessionUser);
+        requestBody.getJSONObject(JsonKeys.SEARCH_CONFIG), wdkModel, sessionUser, viewFilters);
 
     // parse formatting
     AnswerFormatting formatting = new AnswerFormatting(reporterName,
@@ -279,9 +283,11 @@ public class AnswerService extends AbstractWdkService {
   }
 
   private static RunnableObj<AnswerSpec> parseAnswerSpec(Question question,
-      JSONObject answerSpecJson, WdkModel wdkModel, User sessionUser)
+      JSONObject answerSpecJson, WdkModel wdkModel, User sessionUser, FilterOptionListBuilder viewFilters)
           throws RequestMisformatException, WdkModelException, DataValidationException {
-    AnswerSpecBuilder specBuilder = AnswerSpecServiceFormat.parse(question, answerSpecJson, wdkModel);
+    AnswerSpecBuilder specBuilder = AnswerSpecServiceFormat
+      .parse(question, answerSpecJson, wdkModel)
+      .setViewFilterOptions(viewFilters);
     StepContainer stepContainer = loadContainer(specBuilder, wdkModel, sessionUser);
     return specBuilder
         .build(sessionUser, stepContainer, ValidationLevel.RUNNABLE)

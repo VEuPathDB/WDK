@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Handles conversion back and forth from the JSON contained in the
  * param_filters CLOB column of the STEPS table (in user DB) to the aggregate
- * parts of an answer spec (param values, filter values, view filter values).
+ * parts of an answer spec (param values, filter values, column filter values).
  * 
  * Note there are subtle differences between this JSON format and the one
  * handled by AnswerSpecServiceFormat (in WDK/Service).
@@ -50,7 +50,8 @@ public class ParamsAndFiltersDbColumnFormat {
     JSONObject jsContent = new JSONObject();
     jsContent.put(KEY_PARAMS, formatParams(answerSpec.getQueryInstanceSpec()));
     jsContent.put(KEY_FILTERS, formatFilters(answerSpec.getFilterOptions()));
-    jsContent.put(KEY_VIEW_FILTERS, formatFilters(answerSpec.getViewFilterOptions()));
+    // TODO: As of 8/20/19 we do not write view filters to the database; should purge their existence at some point
+    //jsContent.put(KEY_VIEW_FILTERS, formatFilters(answerSpec.getViewFilterOptions()));
     jsContent.put(KEY_COLUMN_FILTERS, formatColumnFilters(answerSpec.getColumnFilterConfig()));
     return jsContent;
   }

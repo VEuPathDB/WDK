@@ -18,12 +18,6 @@
         "$ref": "../includes/filter-spec.json"
       }
     },
-    "viewFilters": {
-      "type": "array",
-      "items": {
-        "$ref": "../includes/filter-spec.json"
-      }
-    },
     "columnFilters": {
       "type": "object",
       "additionalProperties": {

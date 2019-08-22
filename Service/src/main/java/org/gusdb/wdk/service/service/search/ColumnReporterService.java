@@ -30,6 +30,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
+import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.user.User;
@@ -40,6 +41,7 @@ import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.QuestionService;
 import org.gusdb.wdk.service.service.RecordService;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -136,9 +138,12 @@ public class ColumnReporterService extends AbstractWdkService {
     @PathParam(REPORT_NAME_PATH_PARAM) final String toolName,
     final JsonNode body
   ) throws WdkModelException, WdkUserException {
+    FilterOptionListBuilder viewFilters = AnswerSpecServiceFormat
+        .parseViewFilters(JsonUtil.toJSONObject(body)
+            .valueOrElseThrow(() -> new RequestMisformatException("Passed body is not a JSON object.")));
     return AnswerService.getAnswerAsStream(column.makeReporterInstance(
       toolName,
-      makeAnswer(body.get(JsonKeys.SEARCH_CONFIG), toolName),
+      makeAnswer(body.get(JsonKeys.SEARCH_CONFIG), toolName, viewFilters),
       body.get(JsonKeys.REPORT_CONFIG)
     ).orElseThrow(makeNotFound(column, toolName)));
   }
@@ -148,6 +153,7 @@ public class ColumnReporterService extends AbstractWdkService {
    *
    * @param body JSON body to parse
    * @param filterToIgnore name of filter to ignore
+   * @param viewFilters 
    *
    * @return an answer value from the given answer spec json
    *
@@ -159,9 +165,9 @@ public class ColumnReporterService extends AbstractWdkService {
    * @throws RequestMisformatException
    *   See {@link #makeAnswerSpec(JsonNode)}
    */
-  private AnswerValue makeAnswer(JsonNode body, String filterToIgnore)
+  private AnswerValue makeAnswer(JsonNode body, String filterToIgnore, FilterOptionListBuilder viewFilters)
   throws WdkModelException, RequestMisformatException {
-    return AnswerValueFactory.makeAnswer(getSessionUser(), makeAnswerSpec(body, filterToIgnore));
+    return AnswerValueFactory.makeAnswer(getSessionUser(), makeAnswerSpec(body, filterToIgnore, viewFilters));
   }
 
   /**
@@ -170,6 +176,7 @@ public class ColumnReporterService extends AbstractWdkService {
    *
    * @param body
    *   Json body to parse
+   * @param viewFilters 
    *
    * @return
    *   A runnable answer spec
@@ -181,15 +188,18 @@ public class ColumnReporterService extends AbstractWdkService {
    *   if the json body was semantically invalid and could not be parsed into
    *   an answer spec.
    */
-  private RunnableObj<AnswerSpec> makeAnswerSpec(JsonNode body, String filterToIgnore)
+  private RunnableObj<AnswerSpec> makeAnswerSpec(JsonNode body, String filterToIgnore, FilterOptionListBuilder viewFilters)
   throws WdkModelException, RequestMisformatException {
+    JSONObject parentJson = JsonUtil.toJSONObject(body)
+        .mapError(WdkModelException::new)
+        .valueOrElseThrow();
     return trimColumnFilter(AnswerSpecServiceFormat.parse(
       search,
-      JsonUtil.toJSONObject(body)
-        .mapError(WdkModelException::new)
-        .valueOrElseThrow(),
+      parentJson,
       getWdkModel()
-    ), column.getName(), filterToIgnore)
+    )
+    .setViewFilterOptions(viewFilters),
+    column.getName(), filterToIgnore)
       .build(getSessionUser(), emptyContainer(), RUNNABLE, FILL_PARAM_IF_MISSING)
       .getRunnable()
       .getOrThrow(ColumnReporterService::specToException);
