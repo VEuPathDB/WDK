@@ -27,6 +27,7 @@ import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -179,6 +180,10 @@ public class Step implements Validateable<Step> {
     }
 
     public Step build(UserCache userCache, ValidationLevel validationLevel, Optional<Strategy> strategy) throws WdkModelException {
+      return build(userCache, validationLevel, FillStrategy.NO_FILL, strategy);
+    }
+
+    public Step build(UserCache userCache, ValidationLevel validationLevel, FillStrategy fillStrategy, Optional<Strategy> strategy) throws WdkModelException {
       if (_strategyId.isPresent() &&
           (strategy.isEmpty() || !_strategyId.get().equals(strategy.get().getStrategyId()))) {
         throw new WdkRuntimeException("Strategy passed to build method (ID=" +
@@ -188,7 +193,7 @@ public class Step implements Validateable<Step> {
       if (_answerSpec == null) {
         throw new WdkRuntimeException("Cannot build a step without an answer spec.");
       }
-      return new Step(userCache.get(_userId), strategy, this, validationLevel);
+      return new Step(userCache.get(_userId), strategy, this, validationLevel, fillStrategy);
     }
 
     /**
@@ -206,7 +211,7 @@ public class Step implements Validateable<Step> {
      *   if unable to validate step
      */
     public RunnableObj<Step> buildRunnable(UserCache userCache, Optional<Strategy> strategy) throws WdkModelException {
-      return ValidObjectFactory.getRunnable(build(userCache, ValidationLevel.RUNNABLE, strategy));
+      return ValidObjectFactory.getRunnable(build(userCache, ValidationLevel.RUNNABLE, FillStrategy.NO_FILL, strategy));
     }
 
     public long getUserId() {
@@ -349,11 +354,14 @@ public class Step implements Validateable<Step> {
    *   Step builder containing this step's property values
    * @param validationLevel
    *   level to which this step should be validated
+   * @param fillStrategy
+   *   whether and when to fill in default values for parameters if not present or if not valid
    *
    * @throws WdkModelException
    *   if this step does not pass the given validation level
    */
-  private Step(User user, Optional<Strategy> strategy, StepBuilder builder, ValidationLevel validationLevel) throws WdkModelException {
+  private Step(User user, Optional<Strategy> strategy, StepBuilder builder,
+      ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
     _user = user;
     _strategy = strategy;
     _wdkModel = builder._wdkModel;
@@ -365,7 +373,7 @@ public class Step implements Validateable<Step> {
     _projectId = builder.getProjectId();
     _projectVersion = builder._projectVersion;
     _estimatedSize = builder._estimatedSize;
-    _answerSpec = builder._answerSpec.build(user, getContainer(), validationLevel);
+    _answerSpec = builder._answerSpec.build(user, getContainer(), validationLevel, fillStrategy);
     _displayPrefs = new JSONObject(builder._displayPrefs.toString());
     _isExpanded = builder.isExpanded();
     _expandedName = checkName("expandedName", builder.getExpandedName());

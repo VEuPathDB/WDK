@@ -57,6 +57,7 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.Strategy.StrategyBuilder;
 import org.gusdb.wdk.model.user.StrategyLoader.MalformedStrategyList;
@@ -302,14 +303,14 @@ public class StepFactory {
         new WdkModelException("Could not find step with 'valid' ID: " + stepId));
   }
 
-  public Map<Long, Strategy> getStrategies(long userId, ValidationLevel validationLevel)
+  public Map<Long, Strategy> getStrategies(long userId, ValidationLevel validationLevel, FillStrategy fillStrategy)
       throws WdkModelException {
-    return getStrategies(userId, validationLevel, new MalformedStrategyList());
+    return getStrategies(userId, validationLevel, fillStrategy, new MalformedStrategyList());
   }
 
-  public Map<Long, Strategy> getStrategies(long userId, ValidationLevel validationLevel,
+  public Map<Long, Strategy> getStrategies(long userId, ValidationLevel validationLevel, FillStrategy fillStrategy,
       MalformedStrategyList malformedStrategies) throws WdkModelException {
-    return new StrategyLoader(_wdkModel, validationLevel)
+    return new StrategyLoader(_wdkModel, validationLevel, fillStrategy)
         .getStrategies(userId, malformedStrategies);
   }
 
@@ -356,8 +357,8 @@ public class StepFactory {
   }
 
   public Optional<Strategy> getStrategyById(long strategyId,
-      ValidationLevel validationLevel) throws WdkModelException {
-    return new StrategyLoader(_wdkModel, validationLevel)
+      ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
+    return new StrategyLoader(_wdkModel, validationLevel, fillStrategy)
         .getStrategyById(strategyId);
   }
 
@@ -1145,7 +1146,7 @@ public class StepFactory {
   public void transferStrategyOwnership(User guestUser, User registeredUser) throws WdkModelException {
     LOG.debug("Transferring user #" + guestUser.getUserId() + "'s strategies to user #" + registeredUser.getUserId() + "...");
     MalformedStrategyList malformedStrats = new MalformedStrategyList();
-    for (Strategy strategy : getStrategies(guestUser.getUserId(), ValidationLevel.NONE, malformedStrats).values()) {
+    for (Strategy strategy : getStrategies(guestUser.getUserId(), ValidationLevel.NONE, FillStrategy.NO_FILL, malformedStrats).values()) {
       malformedStrats.stream().forEach(tuple -> logMalformedStrat(tuple));
       StrategyBuilder builder = null;
       try {

@@ -95,7 +95,7 @@ public class AnswerSpecBuilder {
    * constructed is not runnable
    */
   public RunnableObj<AnswerSpec> buildRunnable(User user, StepContainer stepContainer) throws WdkModelException {
-    return ValidObjectFactory.getRunnable(build(user, stepContainer, ValidationLevel.RUNNABLE));
+    return ValidObjectFactory.getRunnable(build(user, stepContainer, ValidationLevel.RUNNABLE, FillStrategy.NO_FILL));
   }
 
   public AnswerSpecBuilder setQuestionFullName(String questionName) {

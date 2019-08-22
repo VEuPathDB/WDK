@@ -34,6 +34,7 @@ import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.ListDatasetParser;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -178,7 +179,7 @@ public class DatasetRequestProcessor {
   private static Dataset createFromStrategy(long strategyId, User user, DatasetFactory factory)
       throws WdkModelException, DataValidationException {
     RunnableObj<Strategy> strategy = factory.getWdkModel().getStepFactory()
-        .getStrategyById(strategyId, ValidationLevel.RUNNABLE)
+        .getStrategyById(strategyId, ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
         .orElseThrow(() -> new DataValidationException("Strategy with ID " + strategyId + " not found."))
         .getRunnable()
         .getOrThrow(strat -> new DataValidationException("Strategy with ID " +
