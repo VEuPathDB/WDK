@@ -2,10 +2,7 @@ package org.gusdb.wdk.model.user.dataset.irods.icat;
 
 import org.gusdb.fgputil.TraceLog;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.dataset.irods.icat.query.*;
-import org.gusdb.wdk.model.user.dataset.irods.session.IrodsSession;
-import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSGenQueryExecutor;
 import org.irods.jargon.core.query.*;
@@ -21,16 +18,15 @@ import java.util.Optional;
 public final class ICatAdaptor {
 
   private static final String
-    ERR_NO_QUERY_EXEC = "Failed to construct an iRODS query executor",
     ERR_QUERY_FAIL    = "Failed to execute iCAT query: %s";
 
   private static final TraceLog TRACE = new TraceLog(ICatAdaptor.class);
 
   private final IRODSGenQueryExecutor iCatExec;
 
-  public ICatAdaptor(final IRODSAccount account) {
-    TRACE.start(account);
-    this.iCatExec = getExecutor(account);
+  public ICatAdaptor(final IRODSGenQueryExecutor exec) {
+    TRACE.start(exec);
+    this.iCatExec = exec;
     TRACE.end();
   }
 
@@ -139,33 +135,6 @@ public final class ICatAdaptor {
         .run().getResult());
     } catch(JargonException e) {
       throw new WdkModelException(String.format(ERR_QUERY_FAIL, sql), e);
-    }
-  }
-
-  /*⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺*\
-  ▏                                                        ▕
-  ▏  Static Internal API Methods                           ▕
-  ▏                                                        ▕
-  \*⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽*/
-
-  /**
-   * Retrieves an instance of an iRODS query executor for running iCAT queries.
-   *
-   * @param acc
-   *   iRODS account credentials/configuration
-   *
-   * @return a new iRODS query executor instance.
-   *
-   * @throws WdkRuntimeException
-   *   if an iRODS library error occurs while attempting to instantiate a new
-   *   query executor.
-   */
-  private static IRODSGenQueryExecutor getExecutor(final IRODSAccount acc) {
-    TRACE.start(acc);
-    try {
-      return TRACE.end(IrodsSession.queryExecutor(acc));
-    } catch (WdkModelException e) {
-      throw new WdkRuntimeException(ERR_NO_QUERY_EXEC, e);
     }
   }
 }

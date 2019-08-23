@@ -8,7 +8,6 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetStoreAdaptor;
 import org.gusdb.wdk.model.user.dataset.irods.icat.ICatAdaptor;
 import org.gusdb.wdk.model.user.dataset.irods.icat.ICatCollection;
 import org.gusdb.wdk.model.user.dataset.irods.icat.ICatNode;
-import org.gusdb.wdk.model.user.dataset.irods.session.IrodsSession;
 
 import org.irods.jargon.core.connection.ClientServerNegotiationPolicy;
 import org.irods.jargon.core.connection.ClientServerNegotiationPolicy.SslNegotiationPolicy;
@@ -53,6 +52,8 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
 
   private ICatAdaptor iCatAdaptor;
 
+  private IRODSAccessObjectFactory iFactory;
+
   IrodsUserDatasetStoreAdaptor(Path wdkTempDir) {
     TRACE.start(wdkTempDir);
     _wdkTempDir = wdkTempDir;
@@ -76,8 +77,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
       // Resorted to this workaround because Jargon cannot move one file into an
       // already occupied location and no 'force' flag is implemented
       // (apparently) in Jargon yet.
-      TransferControlBlock tcb = IrodsSession.objectFactory()
-        .buildDefaultTransferControlBlockBasedOnJargonProperties();
+      TransferControlBlock tcb = getTransferControlBlock();
 
       tcb.getTransferOptions().setForceOption(ForceOption.USE_FORCE);
       dataXferOps.copy(fromPathName, "", toPathName, null, tcb);
@@ -347,8 +347,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     String pathName = userRootDir.toString().substring(0, userRootDir.toString().lastIndexOf('/'));
 
     try {
-      CollectionAO collection = IrodsSession.objectFactory()
-        .getCollectionAO(account);
+      CollectionAO collection = getIrodsAccessFac().getCollectionAO(account);
       List<MetaDataAndDomainData> metadata = collection.findMetadataValuesForCollection(pathName);
       String id = null;
 
@@ -362,6 +361,15 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     } catch (JargonException | JargonQueryException je) {
       throw new WdkModelException(je);
     }
+  }
+
+  public void close() {
+    TRACE.start();
+    if (iFactory != null) {
+      TRACE.log("Closing iRODS Session");
+      iFactory.closeSessionAndEatExceptions();
+    }
+    TRACE.end();
   }
 
   /**
@@ -413,7 +421,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
   DataTransferOperations getDataTransferOperations() throws WdkModelException {
     TRACE.start();
     try {
-      return TRACE.end(IrodsSession.objectFactory().getDataTransferOperations(account));
+      return TRACE.end(getIrodsAccessFac().getDataTransferOperations(account));
     } catch(JargonException je) {
       throw new WdkModelException(je);
     }
@@ -448,7 +456,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
   IRODSFileFactory getIrodsFileFactory() throws WdkModelException {
     TRACE.start();
     try {
-      return TRACE.end(IrodsSession.objectFactory().getIRODSFileFactory(account));
+      return TRACE.end(getIrodsAccessFac().getIRODSFileFactory(account));
     } catch(JargonException je) {
       throw new WdkModelException(je);
     }
@@ -474,7 +482,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
   TransferControlBlock getTransferControlBlock() throws WdkModelException {
     TRACE.start();
     try {
-      return TRACE.end(IrodsSession.objectFactory()
+      return TRACE.end(getIrodsAccessFac()
         .buildDefaultTransferControlBlockBasedOnJargonProperties());
     } catch(JargonException je) {
       throw new WdkModelException(je);
@@ -556,13 +564,32 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     }
   }
 
-  private ICatAdaptor getICatAdaptor() {
+  private ICatAdaptor getICatAdaptor() throws WdkModelException {
     TRACE.start();
     if (iCatAdaptor == null) {
       TRACE.log("instantiating new ICatAdaptor");
-      iCatAdaptor = new ICatAdaptor(account);
+      try {
+        iCatAdaptor = new ICatAdaptor(getIrodsAccessFac()
+          .getIRODSGenQueryExecutor(account));
+      } catch (JargonException e) {
+        throw new WdkModelException(e);
+      }
     }
     return TRACE.end(iCatAdaptor);
+  }
+
+  private IRODSAccessObjectFactory getIrodsAccessFac()
+  throws WdkModelException {
+    TRACE.start();
+    if (iFactory == null) {
+      TRACE.log("Instantiating new iRODS Access Object factory");
+      try {
+        iFactory = IRODSFileSystem.instance().getIRODSAccessObjectFactory();
+      } catch (JargonException e) {
+        throw new WdkModelException(e);
+      }
+    }
+    return TRACE.end(iFactory);
   }
 
   /**
