@@ -1,39 +1,10 @@
-<project name="WDK" default="Installation" basedir="."> 
+<project name="WDK" default="Installation" basedir=".">
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Dependencies  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <import file="${projectsDir}/WSF/build.xml" />
-
-
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooo    Checkout    oooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-
-  <target name="WDK-ChildCheckout">
-    <available file="${projectsDir}/WSF" type="dir"  property="WSF.present" />
-    <antcall target="WSF-Checkout"/>
-  </target>
-
-  <target name="WSF-Checkout" unless="WSF.present">
-    <ant target="defaultProjectCheckout" inheritAll="false">
-      <property name="svnurl" value="https://cbilsvn.pmacs.upenn.edu/svn/gus/WSF"/>
-      <property name="project" value="WSF"/>
-      <property name="version" value="WDK_version_1-28"/>
-    </ant>
-  </target>
-
-
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooo    Update    oooooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-
-  <target name="WDK-ChildUpdate">
-    <ant target="defaultProjectUpdate">
-      <property name="project" value="WSF"/>
-    </ant>
-  </target>
 
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
@@ -45,27 +16,27 @@
                                            WDK/Model-Installation,
                                            WDK/Service-Installation">
     <ant target="defaultProjectInstall">
-      <property name="project" value="WDK"/>
+      <property name="project" value="WDK" />
     </ant>
   </target>
 
   <target name="WDK-MavenInstallation">
     <ant target="mavenBuildProject">
-      <property name="project" value="WDK"/>
+      <property name="project" value="WDK" />
     </ant>
-    <property name="alreadyBuilt" value="true"/>
+    <property name="alreadyBuilt" value="true" />
   </target>
 
 
   <!-- oooooooooooooooooo  Installation Postprocess  ooooooooooooooooooooo -->
 
   <target name="WDK-Installation-postprocess">
-    <echo message="Postprocessing the WDK installation"/>
+    <echo message="Postprocessing the WDK installation" />
 
     <replace dir="${targetDir}/bin"
-             propertyFile="${targetDir}/config/replacements.prop" >
+             propertyFile="${targetDir}/config/replacements.prop">
       <include name="**/*" />
-      <replacefilter token="@perl@" property="perl"/>
+      <replacefilter token="@perl@" property="perl" />
     </replace>
 
   </target>
@@ -74,18 +45,18 @@
 
   <target name="WDK/Model-Installation">
 
-    <ant target="installOracleDriver"/>
+    <ant target="installOracleDriver" />
 
     <ant target="defaultComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="Model"/>
+      <property name="project" value="WDK" />
+      <property name="component" value="Model" />
     </ant>
   </target>
 
   <target name="WDK/Service-Installation">
     <ant target="defaultComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="Service"/>
+      <property name="project" value="WDK" />
+      <property name="component" value="Service" />
     </ant>
   </target>
 
@@ -96,9 +67,10 @@
   <target name="WDK-WebInstallation" depends="WSF-WebInstallation,
                                               GusHome">
     <echo message="." />
-    <echo message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file ojdbc14.jar) from ${targetDir}/lib/java/db_driver into your webapp server's designated place (such as common/lib for Tomcat). See the installation instructions available at www.gusdb.org/wdk for details."  />
+    <echo
+      message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file ojdbc14.jar) from ${targetDir}/lib/java/db_driver into your webapp server's designated place (such as common/lib for Tomcat). See the installation instructions available at www.gusdb.org/wdk for details." />
     <echo message="." />
- </target>
+  </target>
 
   <target name="GusHome" depends="WDK-Installation,
                                              checkLinks,
@@ -110,57 +82,72 @@
                                              rngLink,
                                              perlLink,
                                              xmlLink,
-                                             wdkLink"/>
+                                             wdkLink" />
 
   <target name="checkLinks">
-     <available file="${webappTargetDir}/WEB-INF" property="webInfDirExists"/>
-     <available file="${webappTargetDir}/WEB-INF/lib" property="libLinkExists"/>
-     <available file="${webappTargetDir}/WEB-INF/wdk-model/config" property="configLinkExists"/>
-     <available file="${webappTargetDir}/WEB-INF/wdk-model/bin" property="binLinkExists"/>
-     <available file="${webappTargetDir}/WEB-INF/wdk-model/data" property="dataLinkExists"/>
-     <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/rng" property="rngLinkExists"/>
-     <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/perl" property="perlLinkExists"/>
-     <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/xml" property="xmlLinkExists"/>
-     <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/wdk" property="wdkLinkExists"/>
+    <available file="${webappTargetDir}/WEB-INF" property="webInfDirExists" />
+    <available file="${webappTargetDir}/WEB-INF/lib" property="libLinkExists" />
+    <available file="${webappTargetDir}/WEB-INF/wdk-model/config"
+               property="configLinkExists" />
+    <available file="${webappTargetDir}/WEB-INF/wdk-model/bin"
+               property="binLinkExists" />
+    <available file="${webappTargetDir}/WEB-INF/wdk-model/data"
+               property="dataLinkExists" />
+    <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/rng"
+               property="rngLinkExists" />
+    <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/perl"
+               property="perlLinkExists" />
+    <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/xml"
+               property="xmlLinkExists" />
+    <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/wdk"
+               property="wdkLinkExists" />
   </target>
 
   <target name="webInfDir" unless="webInfDirExists">
-    <mkdir dir="${webappTargetDir}/WEB-INF"/>
+    <mkdir dir="${webappTargetDir}/WEB-INF" />
   </target>
 
   <target name="libLink" unless="libLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/lib" resource="${targetDir}/lib/java"/>
+    <symlink link="${webappTargetDir}/WEB-INF/lib"
+             resource="${targetDir}/lib/java" />
   </target>
 
   <target name="configLink" unless="configLinkExists">
-    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model"/>
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/config" resource="${targetDir}/config"/>
+    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model" />
+    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/config"
+             resource="${targetDir}/config" />
   </target>
 
   <target name="binLink" unless="binLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/bin" resource="${targetDir}/bin"/>
+    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/bin"
+             resource="${targetDir}/bin" />
   </target>
 
   <target name="dataLink" unless="dataLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/data" resource="${targetDir}/data"/>
+    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/data"
+             resource="${targetDir}/data" />
   </target>
 
   <target name="rngLink" unless="rngLinkExists">
-    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib"/>
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/rng" resource="${targetDir}/lib/rng"/>
+    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib" />
+    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/rng"
+             resource="${targetDir}/lib/rng" />
   </target>
 
   <target name="perlLink" unless="perlLinkExists">
-    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib"/>
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/perl" resource="${targetDir}/lib/perl"/>
+    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib" />
+    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/perl"
+             resource="${targetDir}/lib/perl" />
   </target>
 
   <target name="xmlLink" unless="xmlLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/xml" resource="${targetDir}/lib/xml"/>
+    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/xml"
+             resource="${targetDir}/lib/xml" />
   </target>
 
   <target name="wdkLink" unless="wdkLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/wdk" resource="${targetDir}/lib/wdk"/>
+    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/wdk"
+             resource="${targetDir}/lib/wdk" />
   </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
@@ -170,7 +157,7 @@
   <target name="WDK-Release">
 
     <ant target="defaultProjectRelease">
-      <property name="cvsroot" value=":ext:cvs.sanger.ac.uk:/cvsroot/GUS"/>
+      <property name="cvsroot" value=":ext:cvs.sanger.ac.uk:/cvsroot/GUS" />
     </ant>
   </target>
 
@@ -181,7 +168,7 @@
   <target name="WDK-Distributable">
 
     <copy todir="${targetDir}">
-      <fileset dir="${projectsDir}" >
+      <fileset dir="${projectsDir}">
         <exclude name="**/CVS/*" />
       </fileset>
     </copy>
