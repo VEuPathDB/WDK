@@ -35,7 +35,7 @@ public interface UserDataset {
   /**
    * A list of files
    */
-  Map<String, UserDatasetFile>getFiles() throws WdkModelException;
+  Map<String, UserDatasetFile> getFiles() throws WdkModelException;
 
   /**
    * Get a file by name.  We don't need more than the basename, because, within

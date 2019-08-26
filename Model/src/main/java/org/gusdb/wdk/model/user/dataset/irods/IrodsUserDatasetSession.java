@@ -536,7 +536,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
   private static UserDatasetShare iCat2DataShare(final ICatDataObject obj) {
     return TRACE.start(obj)
       .end(new JsonUserDatasetShare(Long.valueOf(obj.getName()),
-        obj.getLastModified()));
+        Duration.ofSeconds(obj.getLastModified()).toMillis()));
   }
 
   /**
