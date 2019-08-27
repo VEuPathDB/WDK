@@ -502,6 +502,12 @@ public class Step implements Validateable<Step> {
            recalculateResultSize(_answerSpec.getRunnable().getLeft());
   }
 
+  // should only be called by this step's strategy
+  void setRefreshedResultSize(int resultSize) {
+    _estimatedSize = resultSize;
+    _estimatedSizeRefreshed = true;
+  }
+
   private int recalculateResultSize(RunnableObj<AnswerSpec> answerSpec) throws WdkModelException {
     int oldEstimatedSize = _estimatedSize;
     _estimatedSize = AnswerValueFactory.makeAnswer(_user, answerSpec).getResultSizeFactory().getDisplayResultSize();
