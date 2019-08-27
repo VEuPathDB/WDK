@@ -182,7 +182,7 @@ public class StepService extends UserService {
           throws WdkModelException, RequestMisformatException, DataValidationException {
 
     // don't validate step right away; do it after we clean filters and add any view filters
-    Step step = getStepForCurrentUser(stepId, ValidationLevel.NONE);
+    Step step = getStepForCurrentUser(stepId, ValidationLevel.RUNNABLE);
 
     // only allow step to be run from service if part of a strategy (even if otherwise runnable)
     if (!step.getStrategy().isPresent()) {
