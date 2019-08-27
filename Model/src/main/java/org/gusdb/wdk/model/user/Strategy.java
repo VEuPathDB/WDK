@@ -2,8 +2,8 @@ package org.gusdb.wdk.model.user;
 
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.defaultOnException;
-import static org.gusdb.fgputil.functional.Functions.filter;
 import static org.gusdb.fgputil.functional.Functions.reduce;
+import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
 import static org.gusdb.wdk.model.user.StepContainer.withId;
 
 import java.util.ArrayList;
@@ -527,13 +527,26 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     return strategy.get().findFirstStep(withId(stepId)).map(step -> step.getRunnable().getLeft());
   }
 
-  public void updateStaleResultSizesOnRunnableSteps() throws WdkModelException {
-    List<Step> stepsToRun = filter(getAllSteps(),
-        step -> step.isRunnable() && step.getEstimatedSize() == Step.RESET_SIZE_FLAG);
-    for (Step step : stepsToRun) {
-      // getResultSize() will update the size in the step and write the size to the DB
-      step.getResultSize();
-    }
+  public void updateStaleResultSizesOnRunnableSteps() {
+    // this strategy may or may not have been validated at the runnable level; if not, make one that is
+    Strategy strat =
+        getValidationBundle().getLevel().isGreaterThanOrEqualTo(ValidationLevel.RUNNABLE) ? this :
+          swallowAndGet(() -> Strategy.builder(this).build(new UserCache(getUser()), ValidationLevel.RUNNABLE));
+
+    strat.getAllSteps().stream()
+      .filter(step -> step.isRunnable() && step.getEstimatedSize() == Step.RESET_SIZE_FLAG)
+      .forEach(runnableStep -> {
+        try {
+          // getResultSize() will update the size in the step and write the size to the DB
+          int resultSize = runnableStep.getResultSize();
+          // need to set it in the this strat's step
+          findFirstStep(withId(runnableStep.getStepId())).get().setRefreshedResultSize(resultSize);
+        }
+        catch (WdkModelException e) {
+          // ignore; result size will simply not be updated
+          LOG.error("Runnably valid step could not fetch result size", e);
+        }
+      });
   }
 
   public static String createSignature(String projectId, long userId, long strategyId) {
