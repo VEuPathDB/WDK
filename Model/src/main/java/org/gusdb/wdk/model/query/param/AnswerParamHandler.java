@@ -72,14 +72,18 @@ public class AnswerParamHandler extends AbstractParamHandler {
   }
 
   private AnswerValue getAnswerFromStepParam(RunnableObj<QueryInstanceSpec> qiSpec) throws WdkModelException {
+    long stepId = getStepIdFromStableValue(qiSpec);
     return AnswerValueFactory.makeAnswer(
       qiSpec
         .get()
         .getStepContainer()
-        .findFirstStep(withId(getStepIdFromStableValue(qiSpec)))
-        .orElseThrow(WdkModelException::new)
+        .findFirstStep(withId(stepId))
+        .orElseThrow(() -> new WdkModelException("Cannot find step " + stepId +
+            " in step container referenced by query instance spec."))
         .getRunnable()
-        .getLeft());
+        .getOrThrow(spec -> new WdkModelException("Answer Spec inside step " +
+            stepId + " is not runnable despite being referenced by a runnable " +
+            "query instance spec.  Validation bundle: " + spec.getValidationBundle().toString(2))));
   }
 
   private long getStepIdFromStableValue(RunnableObj<QueryInstanceSpec> qiSpec) {

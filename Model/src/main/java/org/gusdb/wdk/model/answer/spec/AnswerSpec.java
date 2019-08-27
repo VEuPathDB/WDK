@@ -98,9 +98,6 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
   // validation-related values
   private final ValidationBundle _validationBundle;
 
-  // resource to look up steps referred to by answer param values
-  private final StepContainer _stepContainer;
-
   private final ColumnFilterConfigSet _columnFilterConfig;
 
   AnswerSpec(User user, WdkModel wdkModel, String questionName, QueryInstanceSpecBuilder queryInstanceSpec,
@@ -109,7 +106,6 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
     _wdkModel = wdkModel;
     _questionName = questionName;
     _legacyFilterName = legacyFilterName;
-    _stepContainer = stepContainer;
     _columnFilterConfig = columnFilters;
     ValidationBundleBuilder validation = ValidationBundle.builder(validationLevel);
     if (wdkModel.getQuestionByFullName(questionName).isEmpty()) {
@@ -232,7 +228,7 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
   }
 
   public StepContainer getStepContainer() {
-    return _stepContainer;
+    return _queryInstanceSpec.getStepContainer();
   }
 
   public ColumnFilterConfigSet getColumnFilterConfig() {

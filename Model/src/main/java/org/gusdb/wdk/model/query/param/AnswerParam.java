@@ -158,7 +158,18 @@ public class AnswerParam extends Param {
         + "' is not allowed in the answerParam " + getFullName());
     }
 
-    return ctxParamVals.setValid(name);
+    // make sure step is runnable itself; needs to have been validated at the runnable level
+    if (step.getValidationBundle().getLevel().isGreaterThanOrEqualTo(ValidationLevel.RUNNABLE)) {
+      return step.isValid() ?
+        ctxParamVals.setValid(name) :
+        ctxParamVals.setInvalid(name, "The step referenced by this param's value (step ID " +
+            stepId + " is not runnable because: " + step.getValidationBundle().toString(2));
+    }
+
+    // request was made to validate this answer param at the runnable level with a step container
+    //   that was not validated at the runnable level; this is illegal and calling code should be modified
+    throw new WdkModelException("Attempt made to validate an answer param at " +
+        "the runnable level using a step container that was not validated at the runnable level.");
   }
 
   @Override
