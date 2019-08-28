@@ -1,24 +1,24 @@
 package org.gusdb.wdk.model.user.dataset;
 
 /**
- * A simple data container describing the dependency of a user dataset on an application resource (such as
- * data in the application database).
- * @author steve
+ * A simple data container describing the dependency of a user dataset on an
+ * application resource (such as data in the application database).
  *
+ * @author steve
  */
 public class UserDatasetDependency {
   private String resourceIdentifier;
   private String resourceVersion;
   private String resourceDisplayName;
-  
+
   public UserDatasetDependency() {} // for subclasses that want to initialize using the setters
-   
+
   public UserDatasetDependency(String resourceIdentifier, String resourceVersion, String resourceDisplayName) {
     this.resourceIdentifier = resourceIdentifier;
     this.resourceVersion = resourceVersion;
     this.resourceDisplayName = resourceDisplayName;
   }
-  
+
   public void setResourceIdentifier(String resourceIdentifier) { this.resourceIdentifier = resourceIdentifier; }
   public void setResourceVersion(String resourceVersion) { this.resourceVersion = resourceVersion; }
   public void setResourceDisplayName(String resourceDisplayName) {
@@ -27,7 +27,6 @@ public class UserDatasetDependency {
 
   /**
    * The identifier of the resource depended on
-   * @return
    */
   public String getResourceIdentifier() {
     return resourceIdentifier;
@@ -35,7 +34,6 @@ public class UserDatasetDependency {
 
   /**
    * The version of the resource depended on
-   * @return
    */
   public String getResourceVersion() {
     return resourceVersion;
@@ -43,7 +41,6 @@ public class UserDatasetDependency {
 
   /**
    * A human readable form of the resource, for display to end user
-   * @return
    */
   public String getResourceDisplayName() {
     return resourceDisplayName;

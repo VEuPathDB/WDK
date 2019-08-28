@@ -10,11 +10,9 @@ public class JsonUserDatasetDependency extends UserDatasetDependency {
   private static final String RESOURCE_IDENTIFIER = "resourceIdentifier";
   private static final String RESOURCE_VERSION = "resourceVersion";
   private static final String RESOURCE_DISPLAY_NAME = "resourceDisplayName";
-  
+
   /**
    * Construct from jsonObject, eg, when info is provided from larger json file
-   * @param jsonObject
-   * @throws WdkModelException
    */
   public JsonUserDatasetDependency(JSONObject jsonObject) throws WdkModelException {
     super();
@@ -26,5 +24,5 @@ public class JsonUserDatasetDependency extends UserDatasetDependency {
       throw new WdkModelException(e);
     }
   }
- 
+
 }

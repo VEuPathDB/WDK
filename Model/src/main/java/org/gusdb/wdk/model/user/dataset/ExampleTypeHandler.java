@@ -7,7 +7,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 public class ExampleTypeHandler extends UserDatasetTypeHandler {
-  
+
   public final static String NAME = "example";
   public final static String VERSION = "1.0";
   public final static String DISPLAY = "Example";
@@ -21,7 +21,7 @@ public class ExampleTypeHandler extends UserDatasetTypeHandler {
   public UserDatasetType getUserDatasetType() {
     return UserDatasetTypeFactory.getUserDatasetType(NAME, VERSION);
   }
-  
+
   @Override
   public String getDisplay() {
 	return DISPLAY;
@@ -50,6 +50,4 @@ public class ExampleTypeHandler extends UserDatasetTypeHandler {
     String[] empty = {};
     return empty;
   }
-
-
 }

@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.user.dataset.json;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.TraceLog;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.*;
 import org.json.JSONException;
@@ -22,43 +23,57 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 public class JsonUserDatasetSession implements UserDatasetSession {
 
   private static final Logger LOG = Logger.getLogger(JsonUserDatasetSession.class);
+  private static final TraceLog TRACE = new TraceLog(JsonUserDatasetSession.class);
 
-  private static final String DATASET_JSON_FILE = "dataset.json";
-  private static final String META_JSON_FILE = "meta.json";
-  private static final String EXTERNAL_DATASETS_DIR = "externalDatasets";
-  private static final String SHARED_WITH_DIR = "sharedWith";
-  private static final String REMOVED_EXTERNAL_DATASETS_DIR = "removedExternalDatasets";
-  private static final String DATASETS_DIR = "datasets";
-  private static final String DATAFILES_DIR = "datafiles";
+  protected static final String DATASET_JSON_FILE = "dataset.json";
+  protected static final String META_JSON_FILE = "meta.json";
+  protected static final String EXTERNAL_DATASETS_DIR = "externalDatasets";
+  protected static final String SHARED_WITH_DIR = "sharedWith";
+  protected static final String REMOVED_EXTERNAL_DATASETS_DIR = "removedExternalDatasets";
+  protected static final String DATASETS_DIR = "datasets";
+  protected static final String DATAFILES_DIR = "datafiles";
 
   protected UserDatasetStoreAdaptor adaptor;
-  private Map<UserDatasetType, UserDatasetTypeHandler> typeHandlersMap = new HashMap<>();
-  private Path usersRootDir;
-  private Map<Long, UserDatasetUser> usersMap = new HashMap<>();
+  protected Path usersRootDir;
+  private Map<UserDatasetType, UserDatasetTypeHandler> typeHandlersMap;
+  private Map<Long, UserDatasetUser> usersMap;
+  private Map<Long, Path> userDirsMap;
   private Long defaultQuota;
-  private Map<Long, Path> userDirsMap = new HashMap<>();
 
   public JsonUserDatasetSession(UserDatasetStoreAdaptor adaptor, Path usersRootDir) {
+    TRACE.start(adaptor, usersRootDir);
+
+    this.typeHandlersMap = new HashMap<>();
+    this.usersMap = new HashMap<>();
+    this.userDirsMap = new HashMap<>();
     this.adaptor = adaptor;
     this.usersRootDir = usersRootDir;
+
+    TRACE.end();
   }
 
   public void checkRootDirExists() throws WdkModelException {
+    TRACE.start();
     if (!directoryExists(usersRootDir))
       throw new WdkModelException("Provided property 'rootPath' has value '"
         + usersRootDir + "' which is not an existing directory");
+    TRACE.end();
   }
 
   @Override
   public Long getModificationTime(Long userId) throws WdkModelException {
+    TRACE.start(userId);
     Optional<Path> userDatasetsDir = getUserDatasetsDir(userId);
-    return userDatasetsDir.isPresent()
+    return TRACE.end(userDatasetsDir.isPresent()
       ? adaptor.getModificationTime(userDatasetsDir.get())
-      : null;
+      : null);
   }
 
   @Override
-  public Map<Long, UserDataset> getUserDatasets(Long userId) throws WdkModelException {
+  public Map<Long, UserDataset> getUserDatasets(Long userId)
+  throws WdkModelException {
+    TRACE.start(userId);
+
     UserDatasetUser user = getUserDatasetUser(userId);
     Path userDatasetsDir = getUserDatasetsDirIfExists(userId);
 
@@ -70,15 +85,19 @@ public class JsonUserDatasetSession implements UserDatasetSession {
           UserDataset dataset = getUserDataset(datasetDir);
           user.datasetsMap.put(dataset.getUserDatasetId(), dataset);
         } catch (WdkModelException wme) {
+          // Intentionally empty?
         }
       }
     }
 
-    return Collections.unmodifiableMap(user.datasetsMap);
+    return TRACE.end(Collections.unmodifiableMap(user.datasetsMap));
   }
 
   @Override
-  public Set<UserDatasetShare> getSharedWith(Long ownerUserId, Long datasetId) throws WdkModelException {
+  public Set<UserDatasetShare> getSharedWith(Long ownerUserId, Long datasetId)
+  throws WdkModelException {
+    TRACE.start(ownerUserId, datasetId);
+
     UserDatasetUser user = getUserDatasetUser(ownerUserId);
     if (user.sharedWithUsers.get(datasetId) == null) {
 
@@ -93,14 +112,15 @@ public class JsonUserDatasetSession implements UserDatasetSession {
       }
       user.sharedWithUsers.put(datasetId, sharedWithItems);
     }
-    return Collections.unmodifiableSet(user.sharedWithUsers.get(datasetId));
+
+    return TRACE.end(Collections.unmodifiableSet(user.sharedWithUsers.get(datasetId)));
   }
 
   @Override
   public Optional<UserDataset> getExternalUserDataset(long userId, long dsId)
   throws WdkModelException {
-    return Optional.ofNullable(getExternalDatasetsMap(
-      getUserDatasetUser(userId)).externalDatasetsMap.get(dsId));
+    return TRACE.start(userId, dsId).end(Optional.ofNullable(getExternalDatasetsMap(
+      getUserDatasetUser(userId)).externalDatasetsMap.get(dsId)));
   }
 
   @Override
@@ -109,6 +129,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
     final long datasetId,
     final String fileName
   ) throws WdkModelException {
+    TRACE.start(userId, datasetId, fileName);
     final List<Path> paths = adaptor.getPathsInDir(resolvePath(
       usersRootDir, userId, EXTERNAL_DATASETS_DIR));
 
@@ -124,15 +145,16 @@ public class JsonUserDatasetSession implements UserDatasetSession {
 
       final Optional<UserDatasetFile> userDatasetFile = Optional.of(
         getUserDatasetFile(filePath, datasetId));
-      return userDatasetFile;
+      return TRACE.end(userDatasetFile);
     }
 
-    return Optional.empty();
+    return TRACE.end(Optional.empty());
   }
 
   @Override
   public Map<Long, UserDataset> getExternalUserDatasets(Long userId)
   throws WdkModelException {
+    TRACE.start(userId);
     UserDatasetUser user = getUserDatasetUser(userId);
     if (user.externalDatasetsMap == null) {
 
@@ -156,41 +178,48 @@ public class JsonUserDatasetSession implements UserDatasetSession {
         }
       }
     }
-    return Collections.unmodifiableMap(user.externalDatasetsMap);
+    return TRACE.end(Collections.unmodifiableMap(user.externalDatasetsMap));
   }
 
   // TODO: this is probably doable without 2 adaptor requests
   @Override
-  public JsonUserDataset getUserDataset(Long userId, Long datasetId) throws WdkModelException {
+  public JsonUserDataset getUserDataset(Long userId, Long datasetId)
+  throws WdkModelException {
+    TRACE.start(userId, datasetId);
     Path userDatasetsDir = requireUserDatasetsDir(userId);
     Path datasetDir = userDatasetsDir.resolve(datasetId.toString());
-    return getUserDataset(datasetDir);
+    return TRACE.end(getUserDataset(datasetDir));
   }
 
   @Override
-  public boolean getUserDatasetExists(Long userId, Long datasetId) throws WdkModelException {
-    LOG.info("S: getUserDatasetExists");
+  public boolean getUserDatasetExists(Long userId, Long datasetId)
+  throws WdkModelException {
+    TRACE.start(userId, datasetId);
     UserDatasetUser user = getUserDatasetUser(userId);
 
     if (!user.userDatasetExistsMap.containsKey(datasetId))
       user.userDatasetExistsMap.put(datasetId,
         getUserDatasetDir(userId, datasetId).isPresent());
 
-    LOG.info("E: getUserDatasetExists");
-    return user.userDatasetExistsMap.get(datasetId);
+    return TRACE.end(user.userDatasetExistsMap.get(datasetId));
   }
 
   @Override
   public void updateMetaFromJson(Long userId, Long datasetId, JSONObject metaJson) throws WdkModelException {
+    TRACE.start(userId, datasetId, metaJson);
     JsonUserDatasetMeta metaObj = new JsonUserDatasetMeta(metaJson);  // validate the input json
     Path metaJsonFile = requireUserDatasetsDir(userId).resolve(datasetId.toString()).resolve(META_JSON_FILE);
     writeFileAtomic(metaJsonFile, metaObj.getJsonObject().toString(), false);
+    TRACE.end();
   }
 
   @Override
   public void shareUserDataset(Long ownerUserId, Long datasetId, Long recipientUserId) throws WdkModelException {
-    if (recipientUserId.equals(ownerUserId))
+    TRACE.start(ownerUserId, datasetId, recipientUserId);
+    if (recipientUserId.equals(ownerUserId)) {
+      TRACE.log("Recipient == owner").end();
       return;  // don't think this is worth throwing an error on
+    }
 
     // Check both ends of the share
     Path sharedWithPath = getSharedWithFile(ownerUserId, datasetId, recipientUserId);
@@ -204,23 +233,35 @@ public class JsonUserDatasetSession implements UserDatasetSession {
     }
     // The share is already in place...nothing more to do.
     if(sharedWithPath != null && externalDatasetLink != null) {
+      TRACE.log("Already shared").end();
       return;
     }
     // Write the external dataset link last because only that put fires an IRODS event.
     writeShareFile(ownerUserId, datasetId, recipientUserId);
     writeExternalDatasetLink(ownerUserId, datasetId, recipientUserId);
+    TRACE.end();
   }
 
   @Override
-  public void shareUserDataset(Long ownerUserId, Long datasetId, Set<Long> recipientUserIds) throws WdkModelException {
+  public void shareUserDataset(
+    final Long ownerUserId,
+    final Long datasetId,
+    final Set<Long> recipientUserIds
+  ) throws WdkModelException {
+    TRACE.start(ownerUserId, datasetId, recipientUserIds);
     for (Long recipientUserId : recipientUserIds)
       shareUserDataset(ownerUserId, datasetId, recipientUserId);
+    TRACE.end();
   }
 
   @Override
   public void unshareUserDataset(Long ownerId, Long datasetId, Long recipientId)
   throws WdkModelException {
-    if (recipientId.equals(ownerId)) return;  // don't think this is worth throwing an error on
+    TRACE.start(ownerId, datasetId, recipientId);
+    if (recipientId.equals(ownerId)) {
+      TRACE.log("Recipient == owner").end();
+      return;  // don't think this is worth throwing an error on
+    }
 
     // Check both ends of the share
     Path sharedWithPath = getSharedWithFile(ownerId, datasetId, recipientId);
@@ -234,21 +275,30 @@ public class JsonUserDatasetSession implements UserDatasetSession {
     }
     // If no share is in place, there is nothing more to do.
     if(sharedWithPath == null && externalDatasetLink == null) {
+      TRACE.log("Dataset wasn't shared").end();
       return;
     }
     adaptor.deleteFileOrDirectory(sharedWithPath);
     adaptor.deleteFileOrDirectory(externalDatasetLink);
+    TRACE.end();
   }
 
   @Override
-  public void unshareUserDataset(Long ownerUserId, Long datasetId, Set<Long> recipientUserIds) throws WdkModelException {
-    for (Long recipientUserId : recipientUserIds) {
+  public void unshareUserDataset(
+    final Long ownerUserId,
+    final Long datasetId,
+    final Set<Long> recipientUserIds
+  ) throws WdkModelException {
+    TRACE.start(ownerUserId, datasetId, recipientUserIds);
+    for (Long recipientUserId : recipientUserIds)
       unshareUserDataset(ownerUserId, datasetId, recipientUserId);
-    }
+    TRACE.end();
   }
 
   @Override
-  public void unshareWithAll(Long ownerUserId, Long datasetId) throws WdkModelException {
+  public void unshareWithAll(Long ownerUserId, Long datasetId)
+  throws WdkModelException {
+    TRACE.start(ownerUserId, datasetId);
 
     // Create a list of recipients of this dataset share
     Set<Long> recipientUserIds = new HashSet<>();
@@ -268,10 +318,13 @@ public class JsonUserDatasetSession implements UserDatasetSession {
     }
     // Unshare the dataset with that collection of recipients
     unshareUserDataset(ownerUserId, datasetId, recipientUserIds);
+    TRACE.end();
   }
 
   @Override
-  public void deleteUserDataset(Long userId, Long datasetId) throws WdkModelException {
+  public void deleteUserDataset(Long userId, Long datasetId)
+  throws WdkModelException {
+    TRACE.start(userId, datasetId);
     Optional<Path> userDatasetsDir = getUserDatasetDir(userId, datasetId);
 
     // User is owner
@@ -315,22 +368,30 @@ public class JsonUserDatasetSession implements UserDatasetSession {
         }
       }
     }
+    TRACE.end();
   }
 
   @Override
-  public void deleteExternalUserDataset(Long ownerUserId, Long datasetId, Long recipientUserId) throws WdkModelException {
+  public void deleteExternalUserDataset(
+    final Long ownerUserId,
+    final Long datasetId,
+    final Long recipientUserId
+  ) throws WdkModelException {
+    TRACE.start(ownerUserId, datasetId, recipientUserId);
     Path recipientExternalDatasetsDir = getOrCreateUserDir(recipientUserId).resolve(EXTERNAL_DATASETS_DIR);
     Path recipientRemovedDatasetsDir = getOrCreateUserDir(recipientUserId).resolve(REMOVED_EXTERNAL_DATASETS_DIR);
     deleteExternalUserDataset(recipientExternalDatasetsDir, recipientRemovedDatasetsDir, ownerUserId, datasetId);
+    TRACE.end();
   }
 
   @Override
   public boolean checkUserDirExists(Long userId)  throws WdkModelException {
-    return getUserDir(userId).isPresent();
+    return TRACE.start(userId).end(getUserDir(userId).isPresent());
   }
 
   @Override
   public Long getQuota(Long userId) throws WdkModelException {
+    TRACE.start(userId);
     UserDatasetUser user = getUserDatasetUser(userId);
     if (user.quota == null) {
       Path userQuotaFile = getOrCreateUserDir(userId).resolve("quota");
@@ -341,11 +402,12 @@ public class JsonUserDatasetSession implements UserDatasetSession {
         user.quota = new Long(line.trim());
       } else user.quota = getDefaultQuota();
     }
-    return user.quota;
+    return TRACE.end(user.quota);
   }
 
   @Override
   public Long getDefaultQuota(boolean getFromStore) throws WdkModelException {
+    TRACE.start(getFromStore);
     if (getFromStore || defaultQuota == null) {
       Path quotaFile = usersRootDir.resolve("default_quota");
       String line = adaptor.readSingleLineFile(quotaFile);
@@ -353,12 +415,12 @@ public class JsonUserDatasetSession implements UserDatasetSession {
         throw new WdkModelException("Empty quota file " + quotaFile);
       defaultQuota = new Long(line.trim());
     }
-    return defaultQuota;
+    return TRACE.end(defaultQuota);
   }
 
   @Override
   public boolean checkUserDatasetsDirExists(Long userId) throws WdkModelException {
-    return getUserDatasetsDir(userId).isPresent();
+    return TRACE.start(userId).end(getUserDatasetsDir(userId).isPresent());
   }
 
   @Override
@@ -376,17 +438,17 @@ public class JsonUserDatasetSession implements UserDatasetSession {
 
   @Override
   public UserDatasetStoreAdaptor getUserDatasetStoreAdaptor() {
-    return adaptor;
+    return TRACE.getter(adaptor);
   }
 
   @Override
   public String initializeUserDatasetStoreId() throws WdkModelException {
-    return adaptor.findUserDatasetStoreId(usersRootDir);
+    return TRACE.getter(adaptor.findUserDatasetStoreId(usersRootDir));
   }
 
   @Override
-  public List<Path> getRecentEvents(String eventsDirectory, Long lastHandledEventId) throws WdkModelException {
-    return null;
+  public List<Path> getRecentEvents(String eventsDirectory, long lastHandledEventId) throws WdkModelException {
+    return TRACE.start(eventsDirectory, lastHandledEventId).end(null);
   }
 
   /**
@@ -394,13 +456,86 @@ public class JsonUserDatasetSession implements UserDatasetSession {
    */
   @Override
   public void close() {
+    TRACE.start().end();
   }
 
   @Override
-  public UserDatasetFile getUserDatasetFile(Path path, Long userDatasetId) {
+  public UserDatasetFile getUserDatasetFile(Path path, long userDatasetId)
+  throws WdkModelException {
     // TODO Auto-generated method stub
-    return null;
+    return TRACE.start(path, userDatasetId).end(null);
   }
+
+  /*⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺*\
+  ▏                                                        ▕
+  ▏  Protected Methods                                     ▕
+  ▏                                                        ▕
+  \*⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽*/
+
+  /**
+   * When the owner unshares a dataset, we need to remove the external dataset
+   * link found in the recpient's workspace.  This removal with cause IRODS to
+   * fire off a share/revoke event.
+   */
+  protected void removeExternalDatasetLink(
+    long ownerId,
+    long datasetId,
+    long recipientId
+  ) throws WdkModelException {
+    TRACE.start(ownerId, datasetId, recipientId);
+    Path recipientUserDir = getOrCreateUserDir(recipientId);
+
+    // If no external datasets directory exists for this recipient or if the
+    // external database link does not exist for this dataset, do nothing.
+    // The client likely made an error.  Should we sent back something?
+    Path recipientExternalDatasetsDir = recipientUserDir.resolve(EXTERNAL_DATASETS_DIR);
+    if (directoryExists(recipientExternalDatasetsDir)) {
+      Path externalDatasetFileName = recipientExternalDatasetsDir.resolve(getExternalDatasetFileName(ownerId, datasetId));
+      if(fileExists(externalDatasetFileName))
+        adaptor.deleteFileOrDirectory(externalDatasetFileName);
+    }
+    TRACE.end();
+  }
+
+  protected Path makeUserDirPath(final long userId) {
+    return TRACE.start(userId).end(usersRootDir.resolve(String.valueOf(userId)));
+  }
+
+  protected Path makeDatasetsDirPath(final long userId) {
+    return TRACE.start(userId)
+      .end(makeUserDirPath(userId).resolve(DATASETS_DIR));
+  }
+
+  protected Path makeDatasetPath(final long userId, final long datasetId) {
+    return TRACE.start(userId, datasetId).end(makeDatasetsDirPath(userId)
+      .resolve(String.valueOf(datasetId)));
+  }
+
+  protected Path makeShareDirPath(final long userId, final long datasetId) {
+    return TRACE.start(userId, datasetId).end(makeDatasetPath(userId, datasetId)
+      .resolve(SHARED_WITH_DIR));
+  }
+
+  protected Path makeSharePath(
+    final long ownerId,
+    final long datasetId,
+    final long targetId
+  ) {
+    return TRACE.start(ownerId, datasetId, targetId)
+      .end(makeShareDirPath(ownerId, datasetId)
+        .resolve(String.valueOf(targetId)));
+  }
+
+  protected Path makeExternalDsDirPath(final long userId) {
+    return TRACE.start(userId)
+      .end(makeUserDirPath(userId).resolve(EXTERNAL_DATASETS_DIR));
+  }
+
+  /*⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺*\
+  ▏                                                        ▕
+  ▏  Private Methods                                       ▕
+  ▏                                                        ▕
+  \*⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽*/
 
   /**
    * Insures that the path given points to an existing file.
@@ -414,28 +549,35 @@ public class JsonUserDatasetSession implements UserDatasetSession {
    *   if the path points to a directory.
    */
   private boolean fileExists(Path path) throws WdkModelException {
+    TRACE.start(path);
     final boolean exists = adaptor.fileExists(path);
     if (exists && adaptor.isDirectory(path))
       throw new WdkModelException("The path given is not a file, but a directory: " + path);
-    return exists;
+    return TRACE.end(exists);
   }
 
-  private void writeFileAtomic(Path file, String contents,
-    boolean errorIfTargetExists) throws WdkModelException {
+  private void writeFileAtomic(
+    final Path file,
+    final String contents,
+    final boolean errorIfTargetExists
+  ) throws WdkModelException {
+    TRACE.start(file, contents, errorIfTargetExists);
     if (errorIfTargetExists && adaptor.fileExists(file))
       throw new WdkModelException("File already exists: " + file);
     Path tempFile = file.getParent()
       .resolve(file.getFileName().toString() + "." + System.currentTimeMillis());
     adaptor.writeFile(tempFile, contents, true);
     adaptor.moveFileAtomic(tempFile, file);
+    TRACE.end();
   }
 
   private boolean directoryExists(Path dir) throws WdkModelException {
+    TRACE.start(dir);
     if (!adaptor.fileExists(dir))
-      return false;
+      return TRACE.end(false);
 
     if (adaptor.isDirectory(dir))
-      return true;
+      return TRACE.end(true);
 
     throw new WdkModelException("File exists and is not a directory: " + dir);
   }
@@ -445,13 +587,19 @@ public class JsonUserDatasetSession implements UserDatasetSession {
    * Move the link from the external datasets dir to the removed external
    * datasets dir
    */
-  private void deleteExternalUserDataset(Path recipientExternalDir,
-    Path recipientRemovedDir, Long ownerUserId, Long datasetId) throws WdkModelException {
+  private void deleteExternalUserDataset(
+    final Path recipientExternalDir,
+    final Path recipientRemovedDir,
+    final Long ownerId,
+    final Long dsId
+  ) throws WdkModelException {
+    TRACE.start(recipientExternalDir, recipientRemovedDir, ownerId, dsId);
     if (!directoryExists(recipientRemovedDir))
       adaptor.createDirectory(recipientRemovedDir);
-    Path externalDatasetFileName = recipientExternalDir.resolve(getExternalDatasetFileName(ownerUserId, datasetId));
-    Path moveToFileName = recipientRemovedDir.resolve(getExternalDatasetFileName(ownerUserId, datasetId));
+    Path externalDatasetFileName = recipientExternalDir.resolve(getExternalDatasetFileName(ownerId, dsId));
+    Path moveToFileName = recipientRemovedDir.resolve(getExternalDatasetFileName(ownerId, dsId));
     adaptor.moveFileAtomic(externalDatasetFileName, moveToFileName);
+    TRACE.end();
   }
 
   /**
@@ -467,10 +615,11 @@ public class JsonUserDatasetSession implements UserDatasetSession {
    */
   private Path getOrCreateExternalDatasetDir(long userId)
   throws WdkModelException {
+    TRACE.start(userId);
     Path externalDatasetDir = getOrCreateUserDir(userId).resolve(EXTERNAL_DATASETS_DIR);
     if (!adaptor.fileExists(externalDatasetDir))
       adaptor.createDirectory(externalDatasetDir);
-    return externalDatasetDir;
+    return TRACE.end(externalDatasetDir);
   }
 
   /**
@@ -489,9 +638,13 @@ public class JsonUserDatasetSession implements UserDatasetSession {
    */
   private Path getExternalDatasetLink(long ownerId, long datasetId, long recipientId)
   throws WdkModelException {
+    TRACE.start(ownerId, datasetId, recipientId);
     Path externalDatasetLink = getOrCreateExternalDatasetDir(recipientId)
       .resolve(getExternalDatasetFileName(ownerId, datasetId));
-    return fileExists(externalDatasetLink) ? externalDatasetLink : null;
+
+    return TRACE.end(fileExists(externalDatasetLink)
+      ? externalDatasetLink
+      : null);
   }
 
   /**
@@ -513,9 +666,10 @@ public class JsonUserDatasetSession implements UserDatasetSession {
     long datasetId,
     long recipientUserId
   ) throws WdkModelException {
+    TRACE.start(ownerUserId, datasetId, recipientUserId);
     Path sharedWithFile = resolvePath(getSharedWithDir(ownerUserId, datasetId),
       recipientUserId);
-    return fileExists(sharedWithFile) ? sharedWithFile : null;
+    return TRACE.end(fileExists(sharedWithFile) ? sharedWithFile : null);
   }
 
   /**
@@ -523,7 +677,8 @@ public class JsonUserDatasetSession implements UserDatasetSession {
    * the owner's space.
    */
   private String getExternalDatasetFileName(long ownerUserId, long datasetId) {
-    return ownerUserId + "." + datasetId;
+    return TRACE.start(ownerUserId, datasetId)
+      .end(ownerUserId + "." + datasetId);
   }
 
   /**
@@ -535,61 +690,48 @@ public class JsonUserDatasetSession implements UserDatasetSession {
    */
   private void writeShareFile(long ownerId, long datasetId, long recipientId)
   throws WdkModelException {
+    TRACE.start(ownerId, datasetId, recipientId);
     Path sharedWithFile = resolvePath(getSharedWithDir(ownerId, datasetId),
       recipientId);
     if (!adaptor.fileExists(sharedWithFile))
       adaptor.writeEmptyFile(sharedWithFile);
+    TRACE.end();
   }
 
   /**
    * Write a file in a user's space, indicating that this user can see another
    * user's dataset.
    */
-  private void writeExternalDatasetLink(long ownerId, long datasetId,
-    long recipientId) throws WdkModelException {
+  private void writeExternalDatasetLink(
+    final long ownerId,
+    final long datasetId,
+    final long recipientId
+  ) throws WdkModelException {
+    TRACE.start();
     adaptor.writeEmptyFile(resolvePath(
       getOrCreateExternalDatasetDir(recipientId),
       getExternalDatasetFileName(ownerId, datasetId)
     ));
+    TRACE.end();
   }
 
-  /**
-   * When the owner unshares a dataset, we need to remove the external dataset
-   * link found in the recpient's workspace.  This removal with cause IRODS to
-   * fire off a share/revoke event.
-   */
-  protected void removeExternalDatasetLink(
-    long ownerId,
-    long datasetId,
-    long recipientId
-  ) throws WdkModelException {
-    Path recipientUserDir = getOrCreateUserDir(recipientId);
+  protected static class ExternalDatasetLink {
+    public long externalUserId;
+    public long datasetId;
 
-    // If no external datasets directory exists for this recipient or if the
-    // external database link does not exist for this dataset, do nothing.
-    // The client likely made an error.  Should we sent back something?
-    Path recipientExternalDatasetsDir = recipientUserDir.resolve(EXTERNAL_DATASETS_DIR);
-    if (directoryExists(recipientExternalDatasetsDir)) {
-      Path externalDatasetFileName = recipientExternalDatasetsDir.resolve(getExternalDatasetFileName(ownerId, datasetId));
-      if(fileExists(externalDatasetFileName))
-        adaptor.deleteFileOrDirectory(externalDatasetFileName);
+    public ExternalDatasetLink(Path externalLinkPath) throws WdkModelException {
+      this(externalLinkPath.getFileName().toString());
     }
-  }
 
-  class ExternalDatasetLink {
-    long externalUserId;
-    long datasetId;
-
-    ExternalDatasetLink(Path externalLinkPath) throws WdkModelException {
-      String linkName = externalLinkPath.getFileName().toString();
-      String[] words = linkName.split(Pattern.quote("."));
+    public ExternalDatasetLink(String name) throws WdkModelException {
+      String[] words = name.split(Pattern.quote("."));
       if (words.length != 2)
-        throw new WdkModelException("Illegal external dataset link: " + linkName);
+        throw new WdkModelException("Illegal external dataset link: " + name);
       try {
         externalUserId = Long.parseLong(words[0]);
         datasetId      = Long.parseLong(words[1]);
       } catch (NumberFormatException e) {
-        throw new WdkModelException("Illegal external dataset link: " + linkName);
+        throw new WdkModelException("Illegal external dataset link: " + name);
       }
     }
 
@@ -599,6 +741,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   }
 
   private Long getDefaultQuota() throws WdkModelException {
+    TRACE.start();
     if (defaultQuota == null) {
       Path quotaFile = usersRootDir.resolve("default_quota");
 
@@ -607,7 +750,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
         throw new WdkModelException("Empty quota file " + quotaFile);
       defaultQuota = new Long(line.trim());
     }
-    return defaultQuota;
+    return TRACE.end(defaultQuota);
   }
 
   /**
@@ -615,35 +758,37 @@ public class JsonUserDatasetSession implements UserDatasetSession {
    * exist, return NULL.
    */
   private Path getUserDatasetsDirIfExists(Long userId) throws WdkModelException {
+    TRACE.start(userId);
     Path userDatasetsDir = getOrCreateUserDir(userId).resolve(DATASETS_DIR);
-
-    return !directoryExists(userDatasetsDir) ? null : userDatasetsDir;
+    return TRACE.end(!directoryExists(userDatasetsDir) ? null : userDatasetsDir);
   }
 
   /**
    * Given a user ID, return a Path to that user's datasets dir.
    */
   private Path requireUserDatasetsDir(long userId) throws WdkModelException {
-    return getUserDatasetsDir(userId)
+    return TRACE.start(userId).end(getUserDatasetsDir(userId)
       .orElseThrow(() -> new WdkModelException("User datasets dir does not"
-        + "exist for user: " + userId));
+        + "exist for user: " + userId)));
   }
 
   private UserDatasetUser getUserDatasetUser(Long userId) {
+    TRACE.start(userId);
     if (usersMap.containsKey(userId))
-      return usersMap.get(userId);
+      return TRACE.end(usersMap.get(userId));
     final UserDatasetUser user = new UserDatasetUser();
     user.userId = userId;
     usersMap.put(userId, user);
-    return user;
+    return TRACE.end(user);
   }
 
   private List<Path> getDatasetDirs(Long userId, Path userDatasetsDir) throws WdkModelException {
+    TRACE.start(userId, userDatasetsDir);
     UserDatasetUser user = getUserDatasetUser(userId);
     if (user.datasetDirsList == null) {
       user.datasetDirsList = adaptor.getPathsInDir(userDatasetsDir);
     }
-    return user.datasetDirsList;
+    return TRACE.end(user.datasetDirsList);
   }
 
   /**
@@ -659,6 +804,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
    * @return The path to the sharedWith directory under the dataset's directory
    */
   private Path getSharedWithDir(long userId, long datasetId) throws WdkModelException {
+    TRACE.start(userId, datasetId);
     UserDatasetUser user = getUserDatasetUser(userId);
 
     Path userDatasetDir = getUserDatasetDir(userId, datasetId)
@@ -673,7 +819,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
       }
       user.sharedWithDirs.put(datasetId, sharedWithDir);
     }
-    return user.sharedWithDirs.get(datasetId);
+    return TRACE.end(user.sharedWithDirs.get(datasetId));
   }
 
   /**
@@ -682,11 +828,14 @@ public class JsonUserDatasetSession implements UserDatasetSession {
    * @return null if not found
    */
   private UserDataset followExternalDatasetLink(
-    Long userId,
-    ExternalDatasetLink link,
-    Map<Long, Map<Long, UserDataset>> otherUsersCache
+    final Long userId,
+    final ExternalDatasetLink link,
+    final Map<Long, Map<Long, UserDataset>> otherUsersCache
   ) throws WdkModelException {
-    if (!checkUserDirExists(link.externalUserId)) return null;
+    TRACE.start(userId, link, otherUsersCache);
+    if (!checkUserDirExists(link.externalUserId)) {
+      return TRACE.end(null);
+    }
 
     // get the datasets belonging to the external user.  (use cache to avoid re-querying repeated user IDs)
     Map<Long, UserDataset> datasetsOfExternalUser;
@@ -716,9 +865,9 @@ public class JsonUserDatasetSession implements UserDatasetSession {
           break;
         }
       }
-      if (found) return originalDataset;
+      if (found) return TRACE.end(originalDataset);
     }
-    return null;
+    return TRACE.end(null);
   }
 
   /**
@@ -727,7 +876,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
    * should do so if needed.
    */
   private JsonUserDataset getUserDataset(Path datasetDir) throws WdkModelException {
-
+    TRACE.start(datasetDir);
     long datasetId;
     try {
       datasetId = Long.parseLong(datasetDir.getFileName().toString());
@@ -739,15 +888,16 @@ public class JsonUserDatasetSession implements UserDatasetSession {
     JSONObject datasetJson = readAndParseJsonFile(datasetDir.resolve(DATASET_JSON_FILE));
     JSONObject metaJson = readAndParseJsonFile(datasetDir.resolve(META_JSON_FILE));
 
-    return new JsonUserDataset(datasetId, datasetJson, metaJson, datasetDir.resolve(DATAFILES_DIR), this);
+    return TRACE.end(new JsonUserDataset(datasetId, datasetJson, metaJson, datasetDir.resolve(DATAFILES_DIR), this));
   }
 
   /**
    * Read a dataset.json file, and return the JSONObject that it parses to.
    */
   private JSONObject readAndParseJsonFile(Path jsonFile) throws WdkModelException {
+    TRACE.start(jsonFile);
     try {
-      return new JSONObject(adaptor.readFileContents(jsonFile));
+      return TRACE.end(new JSONObject(adaptor.readFileContents(jsonFile)));
     } catch (JSONException e) {
       throw new WdkModelException("Could not parse " + jsonFile, e);
     }
@@ -755,25 +905,28 @@ public class JsonUserDatasetSession implements UserDatasetSession {
 
   private Optional<Path> getUserDatasetDir(long userId, long dsId)
   throws WdkModelException {
-    return optionalDir(resolvePath(usersRootDir, userId, DATASETS_DIR, dsId));
+    return TRACE.start(userId, dsId)
+      .end(optionalDir(makeDatasetPath(userId, dsId)));
   }
 
   private Optional<Path> getUserDatasetsDir(long userId)
   throws WdkModelException {
-    return optionalDir(resolvePath(usersRootDir, userId, DATASETS_DIR));
+    return TRACE.start(userId).end(optionalDir(makeDatasetsDirPath(userId)));
   }
 
   private Optional<Path> getUserDir(long userId) throws WdkModelException {
+    TRACE.start(userId);
     if (userDirsMap.containsKey(userId))
-      return Optional.of(userDirsMap.get(userId));
+      return TRACE.end(Optional.of(userDirsMap.get(userId)));
 
-    final Optional<Path> out = optionalDir(resolvePath(usersRootDir, userId));
+    final Optional<Path> out = optionalDir(makeUserDirPath(userId));
     out.ifPresent(p -> userDirsMap.put(userId, p));
-    return out;
+    return TRACE.end(out);
   }
 
   private Optional<Path> optionalDir(Path dir) throws WdkModelException {
-    return directoryExists(dir) ? Optional.of(dir) : Optional.empty();
+    return TRACE.start(dir)
+      .end(directoryExists(dir) ? Optional.of(dir) : Optional.empty());
   }
 
   /**
@@ -789,27 +942,32 @@ public class JsonUserDatasetSession implements UserDatasetSession {
    *   thrown if an adaptor error occurs while checking for the existence of or
    *   creating a user directory.
    */
-  private Path getOrCreateUserDir(Long userId) throws WdkModelException {
+  private Path getOrCreateUserDir(long userId) throws WdkModelException {
+    TRACE.start(userId);
     if (!userDirsMap.containsKey(userId)) {
-      Path userDir = usersRootDir.resolve(userId.toString());
+      TRACE.log("User dir is not in cache");
+      Path userDir = makeUserDirPath(userId);
       if (!directoryExists(userDir)) {
+        TRACE.log("User dir "+userDir+" does not exist");
         adaptor.createDirectory(userDir);
       }
       userDirsMap.put(userId, userDir);
     }
-    return userDirsMap.get(userId);
+    final Path out = userDirsMap.get(userId);
+    return TRACE.end(out);
   }
 
   private UserDatasetUser getExternalDatasetsMap(final UserDatasetUser user)
   throws WdkModelException {
+    TRACE.start(user);
     if (user.externalDatasetsMap != null)
-      return user;
+      return TRACE.end(user);
 
     final Path exDir = getOrCreateUserDir(user.userId).resolve(EXTERNAL_DATASETS_DIR);
     user.externalDatasetsMap = new HashMap<>();
 
     if (!adaptor.isDirectory(exDir))
-      return user;
+      return TRACE.end(user);
 
     final Iterator<Path> paths = adaptor.getPathsInDir(exDir)
       .stream()
@@ -827,12 +985,11 @@ public class JsonUserDatasetSession implements UserDatasetSession {
           link
         ));
 
-      user.externalDatasetsMap.put(link.datasetId, getUserDataset(resolvePath(
-        usersRootDir, link.externalUserId, DATASETS_DIR, link.datasetId
-      )));
+      user.externalDatasetsMap.put(link.datasetId, getUserDataset(
+        makeDatasetPath(link.externalUserId, link.datasetId)));
     }
 
-    return user;
+    return TRACE.end(user);
   }
 
   private boolean isSharedWith(
@@ -840,15 +997,23 @@ public class JsonUserDatasetSession implements UserDatasetSession {
     final long datasetId,
     final long targetId
   ) throws WdkModelException {
-    return adaptor.fileExists(resolvePath(usersRootDir, ownerId, DATASETS_DIR,
-      datasetId, SHARED_WITH_DIR, targetId));
+    return TRACE.start(ownerId, datasetId, targetId)
+      .end(adaptor.fileExists(resolvePath(usersRootDir, ownerId, DATASETS_DIR,
+        datasetId, SHARED_WITH_DIR, targetId)));
   }
 
+  /*⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺*\
+  ▏                                                        ▕
+  ▏  Private Static Methods                                ▕
+  ▏                                                        ▕
+  \*⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽*/
+
   private static Path resolvePath(final Path root, final Object... append) {
+    TRACE.start(root, append);
     Path tmp = root;
     for (final Object next : append)
       tmp = tmp.resolve(next.toString());
-    return tmp;
+    return TRACE.end(tmp);
   }
 
   /**

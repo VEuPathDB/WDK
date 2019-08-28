@@ -33,12 +33,17 @@ public class UserDatasetFactory {
   }
 
   /**
-   * Return the dataset IDs the provided user can use in this website, i.e. that are installed and has access to (which can
-   * include those owned by or shared with a user)
-   * 
-   * @param userId user for whom to get installed dataset ids
+   * Return the dataset IDs the provided user can use in this website, i.e. that
+   * are installed and has access to (which can include those owned by or shared
+   * with a user)
+   *
+   * @param userId
+   *   user for whom to get installed dataset ids
+   *
    * @return set of IDs of installed datasets
-   * @throws WdkModelException if error occurs querying
+   *
+   * @throws WdkModelException
+   *   if error occurs querying
    */
   public Set<Long> getInstalledUserDatasets(long userId) throws WdkModelException {
     String sql = "select user_dataset_id from " + _userDatasetSchema + "userDatasetAccessControl where user_id = ?";
@@ -50,12 +55,11 @@ public class UserDatasetFactory {
         }});
     return datasetIds;
   }
-  
+
   /**
    * Determine whether the dataset, given by its datasetId, is installed.
-   * @param datasetId
+   *
    * @return - true if installed and false otherwise
-   * @throws WdkModelException
    */
   public boolean isUserDatasetInstalled(long datasetId) throws WdkModelException {
     String sql = "select user_dataset_id from " + _userDatasetSchema + "userDatasetAccessControl where dataset_id = ?";
@@ -71,9 +75,6 @@ public class UserDatasetFactory {
 
   /**
    * Adds (non-detailed) type-specific data to the passed user datasets.
-   * 
-   * @param userDatasets
-   * @throws WdkModelException 
    */
   public void addTypeSpecificData(WdkModel wdkModel, List<UserDatasetInfo> userDatasets, User user)
       throws WdkModelException{

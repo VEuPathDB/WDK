@@ -36,13 +36,13 @@ import org.json.JSONObject;
  * query, SQL based query, and web service based query. The query is not exposed to the user, only the
  * question are visible on the web sites as searches.
  * </p>
- * 
+ *
  * <p>
  * A Query holds only the definition of query, such as params, SQL template, or information about the web
  * service etc. It can be used to create QueryInstance, which will hold param values, and does the real work
  * of executing a query and retrieve data.
  * </p>
- * 
+ *
  * <p>
  * Depending on how many answerParams a query might have, a query can be called as a normal query (without
  * any answerParam), or a combined query (with one or more answerParams). If a query has exactly one
@@ -51,13 +51,13 @@ import org.json.JSONObject;
  * query, called BooleanQuery, which has exactly two answerParams, and the types of the answerParam are the
  * same as the result of the query.
  * </p>
- * 
+ *
  * <p>
  * A query can be used in four contexts in WDK, as ID query, attribute query, table query, and param query.
  * and SqlQuery can be used in all four contexts, but ProcessQuery (web service query) can only be used in ID
  * and param queries.
  * </p>
- * 
+ *
  * <p>
  * An ID query is a query referenced by a question, and the parameters for the search (the visual name of the
  * question) are defined in the queries. An ID query should return all the primary key columns of the
@@ -66,7 +66,7 @@ import org.json.JSONObject;
  * with the attribute query. An ID query can have other columns other than the primary key columns, and those
  * columns are usually used for the dynamic attributes.
  * </p>
- * 
+ *
  * <p>
  * An attribute query is a query referenced by a recordClass, in the <attributeQueryRef> tag. An attribute
  * query has to be SqlQuery, and it does not normally have params, although you can define an internal wdk
@@ -79,7 +79,7 @@ import org.json.JSONObject;
  * the result on the columns in the attribute query, and then the paged id SQL will be used to join with the
  * attribute SQL, to return a page of attributes for the records.
  * <p>
- * 
+ *
  * <p>
  * An table query is query referenced by recordClass, in the &lt;table&gt; tag. A table query has to be
  * SqlQuery, and it doesn't normally have params, although you can define an internal wdk user param same way
@@ -91,9 +91,9 @@ import org.json.JSONObject;
  * rows. In the context of an answer, the table SQL can be used to be combined with the paged ID SQL to get a
  * page of the results for the records.
  * </p>
- * 
+ *
  * @author Jerric Gao
- * 
+ *
  */
 public abstract class Query extends ParameterContainerImpl implements OptionallyTestable {
 
@@ -126,7 +126,7 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   // optionally override what is in the query set.  null means don't override
   private List<PostCacheUpdateSql> postCacheUpdateSqls = null;
 
-  
+
   // =========================================================================
   // Abstract methods
   // =========================================================================
@@ -154,7 +154,7 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
 
   /**
    * clone the query object
-   * 
+   *
    * @param query
    */
   protected Query(Query query) {
@@ -187,9 +187,10 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
    * @return the cached
    */
   public boolean getIsCacheable() {
-    // first check if global caching is turned off, if off, then return false; otherwise, use query's own 
+    // first check if global caching is turned off, if off, then return false; otherwise, use query's own
     // settings.
-    if (!_wdkModel.getModelConfig().isCaching()) return false;
+    if (_wdkModel != null && !_wdkModel.getModelConfig().isCaching())
+      return false;
     return this.isCacheable;
   }
 
@@ -297,7 +298,7 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
       throw new WdkModelException("Unable to get JSON content for checksum.", e);
     }
   }
-  
+
   public List<PostCacheUpdateSql> getPostCacheUpdateSqls() {
     return postCacheUpdateSqls == null? null : Collections.unmodifiableList(postCacheUpdateSqls);
   }
@@ -529,10 +530,10 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   /**
    * NOTE: this method is only called from actionland/beans and does not need to be compatible with
    * FilterParamNew (which is only valid in the service)
-   * 
+   *
    * for reviseStep action, validate all the values, and if it's invalid, substitute it with default. if the
    * value doesn't exist in the map, I will add default into it.
-   * 
+   *
    * @param contextParamValues
    * @throws WdkModelException
    * @throws WdkUserException
@@ -573,7 +574,7 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   /**
    * The only info we need for the query checksum is the columns to make sure we have correct columns to store
    * info we need.
-   * 
+   *
    * @param _query
    * @return
    * @throws JSONException

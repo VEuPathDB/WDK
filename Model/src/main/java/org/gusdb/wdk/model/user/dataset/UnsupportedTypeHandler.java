@@ -16,7 +16,7 @@ public class UnsupportedTypeHandler extends UserDatasetTypeHandler {
 
   @Override
   public UserDatasetCompatibility getCompatibility(UserDataset userDataset, DataSource appDbDataSource)
-   throws WdkModelException {
+  throws WdkModelException {
     return new UserDatasetCompatibility(false, "This type of user dataset is no longer supported.");
   }
 
@@ -24,22 +24,22 @@ public class UnsupportedTypeHandler extends UserDatasetTypeHandler {
   public UserDatasetType getUserDatasetType() {
     return UserDatasetTypeFactory.getUserDatasetType(NAME, VERSION);
   }
-  
+
   @Override
   public String getDisplay() {
-	return DISPLAY;
+    return DISPLAY;
   }
 
   @Override
   public String[] getInstallInAppDbCommand(UserDataset userDataset, Map<String, Path> fileNameToTempFileMap,
-   String project) {
+    String project) {
     String[] cmd = {};
     return cmd;
   }
 
   @Override
   public Set<String> getInstallInAppDbFileNames(UserDataset userDataset) {
-    return new HashSet<String>();
+    return new HashSet<>();
   }
 
   @Override
@@ -50,7 +50,7 @@ public class UnsupportedTypeHandler extends UserDatasetTypeHandler {
 
   @Override
   public String[] getRelevantQuestionNames() {
-	String[] q = {};
+    String[] q = {};
     return q;
   }
 

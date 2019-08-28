@@ -17,7 +17,7 @@ import org.gusdb.wdk.model.user.UserFactory;
 
 /**
  * Aggregation of information about a user dataset
- * 
+ *
  * @author rdoherty
  */
 public class UserDatasetInfo {
@@ -32,9 +32,9 @@ public class UserDatasetInfo {
   private final UserDatasetTypeHandler _handler;
   private JsonType _typeSpecificData;
   private JsonType _detailedTypeSpecificData;
-  
+
   public UserDatasetInfo(UserDataset dataset, boolean isInstalled, UserDatasetStore store,
-      UserDatasetSession session, final UserFactory userFactory, WdkModel wdkModel) {
+    UserDatasetSession session, final UserFactory userFactory, WdkModel wdkModel) {
     try {
       long ownerId = dataset.getOwnerId();
       final Map<Long,User> userCache = new HashMap<>();
@@ -45,7 +45,7 @@ public class UserDatasetInfo {
       _ownerQuota = session.getQuota(ownerId);
       _relevantQuestionNames = Arrays.asList(store.getTypeHandler(dataset.getType()).getRelevantQuestionNames());
       _shares = mapToList(session.getSharedWith(ownerId, dataset.getUserDatasetId()), share ->
-          new UserDatasetShareUser(getUser(userCache, share.getUserId(), userFactory), share.getTimeShared()));
+        new UserDatasetShareUser(getUser(userCache, share.getUserId(), userFactory), share.getTimeShared()));
       _handler = store.getTypeHandler(dataset.getType());
     }
     catch (WdkModelException e) {
@@ -54,9 +54,9 @@ public class UserDatasetInfo {
   }
 
   public void loadDetailedTypeSpecificData(User user) throws WdkModelException {
-	if(_isInstalled) {  
+    if(_isInstalled) {
       _detailedTypeSpecificData = _handler.getDetailedTypeSpecificData(_wdkModel, _userDataset, user);
-	}
+    }
   }
 
   public void setTypeSpecificData(JsonType typeSpecificData) {
@@ -92,9 +92,9 @@ public class UserDatasetInfo {
   public long getOwnerQuota() {
     return _ownerQuota;
   }
-  
+
   public String getTypeDisplay() {
-	return _handler.getDisplay();
+    return _handler.getDisplay();
   }
 
   public List<String> getRelevantQuestionNames() {
@@ -112,10 +112,10 @@ public class UserDatasetInfo {
   public List<UserDatasetShareUser> getShares() {
     return _shares;
   }
-  
+
   public UserDatasetCompatibility getUserDatasetCompatibility() throws WdkModelException {
-	return _userDataset.getProjects().contains(_wdkModel.getProjectId()) ?
-     _handler.getCompatibility(_userDataset, _wdkModel.getAppDb().getDataSource()) : null;
+    return _userDataset.getProjects().contains(_wdkModel.getProjectId()) ?
+      _handler.getCompatibility(_userDataset, _wdkModel.getAppDb().getDataSource()) : null;
   }
 
   public class UserDatasetShareUser extends TwoTuple<User,Long> implements UserDatasetShare {
@@ -137,6 +137,5 @@ public class UserDatasetInfo {
     public Long getTimeShared() {
       return getSecond();
     }
-    
   }
 }

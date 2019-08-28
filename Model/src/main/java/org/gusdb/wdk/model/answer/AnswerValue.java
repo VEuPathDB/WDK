@@ -6,11 +6,13 @@ import static org.gusdb.fgputil.functional.Functions.mapToList;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.SortDirectionSpec;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -34,6 +36,7 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
@@ -1018,5 +1021,22 @@ public class AnswerValue {
 
   public boolean entireResultRequested() {
     return _startIndex == 1 && _endIndex == UNBOUNDED_END_PAGE_INDEX;
+  }
+
+  public static String wrapToReturnOnlyPkAndSelectedCols(String sql,
+      RecordClass rc, Collection<QueryColumnAttributeField> fields) {
+
+    List<String> cols = new ListBuilder<String>()
+      .addAll(Arrays.asList(rc.getPrimaryKeyDefinition().getColumnRefs()))
+      .addAll(fields.stream().map(Field::getName).collect(Collectors.toList()))
+      .toList();
+    
+    return new StringBuilder()
+      .append("/* SingleAttributeRecordStream */\nSELECT\n  ")
+      .append(String.join(",\n  ", cols))
+      .append("\n FROM (\n")
+      .append(sql)
+      .append("\n) sarsc")
+      .toString();
   }
 }

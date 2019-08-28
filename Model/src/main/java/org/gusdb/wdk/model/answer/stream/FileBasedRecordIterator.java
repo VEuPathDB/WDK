@@ -6,14 +6,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
-
-import javax.sql.DataSource;
 
 import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.FormatUtil;
@@ -22,14 +18,11 @@ import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.functional.Functions;
-import org.gusdb.fgputil.iterator.ReadOnlyIterator;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
-import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.CsvResultList;
 import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
@@ -41,7 +34,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeValue;
 
-class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
+class FileBasedRecordIterator extends AbstractRecordIterator {
 
   /** Buffer size for the buffered writer use to write CSV files */
   private static final int BUFFER_SIZE = 32768;
@@ -94,18 +87,11 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
     }
   }
 
-  // answer value source of these records
-  private final AnswerValue _answerValue;
   // list of data to populate attributes
   private final AutoCloseableList<AttributeRowStreamData> _attributeIteratorList;
+
   // list of data to populate tables
   private final AutoCloseableList<TableRecordStreamData> _tableIteratorList;
-  // id query result list
-  private final SqlResultList _idResultList;
-  // last record loaded (will be held in "cache" until next() delivers it)
-  private RecordInstance _lastRecord = null;
-  // whether this iterator is closed; if closed, next and hasNext will fail
-  private boolean _isClosed = false;
 
   /**
    * This constructor creates the SQL result list of requested ids along with setting up readers to read the attribute and table
@@ -116,19 +102,31 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public FileBasedRecordIterator(AnswerValue answerValue, Map<Path, List<QueryColumnAttributeField>> attributeFileMap, Map<Path, TwoTuple<TableField,List<String>>> tableFileMap) throws WdkModelException, WdkUserException {
+  public FileBasedRecordIterator(AnswerValue answerValue,
+      Map<Path, List<QueryColumnAttributeField>> attributeFileMap,
+      Map<Path, TwoTuple<TableField,List<String>>> tableFileMap)
+          throws WdkModelException, WdkUserException {
+    // Obtain the result list of primary keys from the raw paged id SQL.  This same paged id SQL was used in
+    // the attribute SQL.  So the primary keys should correspond 1:1 with the rows in the attribute CSV files.
+    super(answerValue, makeIdResultList(answerValue));
     try {
-      _answerValue = answerValue;
       _attributeIteratorList = initializeAttributeProviders(answerValue, attributeFileMap);
       _tableIteratorList = initializeTableProviders(answerValue, tableFileMap);
-
-      // Obtain the result list of primary keys from the raw paged id SQL.  This same paged id SQL was used in
-      // the attribute SQL.  So the primary keys should correspond 1:1 with the rows in the attribute CSV files.
-      DataSource dataSource = _answerValue.getQuestion().getWdkModel().getAppDb().getDataSource();
-      _idResultList = new SqlResultList(SqlUtils.executeQuery(dataSource, _answerValue.getPagedIdSql(), "id__attr-full"));
     }
-    catch(IOException | SQLException e) {
+    catch (IOException e) {
+      close();
       throw new WdkModelException("Unable to create FileBasedRecordIterator", e);
+    }
+  }
+
+  private static SqlResultList makeIdResultList(AnswerValue answerValue) throws WdkModelException {
+    try {
+      return new SqlResultList(SqlUtils.executeQuery(
+          answerValue.getQuestion().getWdkModel().getAppDb().getDataSource(),
+          answerValue.getPagedIdSql(), "id__attr-full"));
+    }
+    catch (WdkUserException | SQLException e) {
+      throw new WdkModelException("Unable to run ID SQL", e);
     }
   }
 
@@ -175,72 +173,43 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
     return tableIteratorList;
   }
 
-  /**
-   * Bumps the id result list cursor to the next SQL record.
-   */
-  @Override
-  public boolean hasNext() {
-    checkClosed();
-    if (_lastRecord != null) return true;
-    _lastRecord = createNextRecordInstance();
-    return (_lastRecord != null);
-  }
 
-  /**
-   * Identifies the current primary key data and uses that along with attribute and table temporary files to
-   * construct and return a record instance containing the attribute and table information requested.
-   */
-  @Override
-  public RecordInstance next() {
-    checkClosed();
-    if (!hasNext()) {
-      throw new NoSuchElementException("No more record instances in this iterator.");
-    }
-    RecordInstance nextRecord = _lastRecord;
-    _lastRecord = null;
-    return nextRecord;
-  }
 
   /**
    * Creates a new record instance for the given primary key and populates it from the input files represented
    * here by the map of buffered readers.
+   * @throws WdkModelException 
+   * @throws WdkUserException 
    */
-  private RecordInstance createNextRecordInstance() {
-    try {
-      if (!_idResultList.next()) {
-        // no more records. make sure our CSV files don't still have data; if so, it's an error
-        checkForExtraData(_attributeIteratorList, _tableIteratorList);
-        return null;
-      }
+  @Override
+  protected RecordInstance createNextRecordInstance(ResultList idResultList) throws WdkModelException, WdkUserException {
 
-      // Construct the primary key values for this record
-      Question question = _answerValue.getQuestion();
-      PrimaryKeyDefinition pkDef = question.getRecordClass().getPrimaryKeyDefinition();
-      Map<String, Object> pkValues = pkDef.getPrimaryKeyFromResultList(_idResultList).getRawValues();
-
-      // Create a new record instance that will contain all the requested column attributes
-      //   and tables for the provided primary key values
-      StaticRecordInstance aggregateRecordInstance = new StaticRecordInstance(
-          _answerValue.getUser(), question.getRecordClass(), question, pkValues, false);
-
-      // Iterate over all the CSV file result lists.  Note that the next item in the
-      //   result list should correspond to the primary key values provided.  There is
-      //   no primary key information in the attribute CSV files themselves.
-      for (AttributeRowStreamData attributeData : _attributeIteratorList) {
-        attachAttributes(aggregateRecordInstance, attributeData, pkDef, pkValues);
-      }
-
-      // Iterate over all the tables for which iterators exist and pull out the iterator and the next record
-      // instance generated from that iterator.
-      for (TableRecordStreamData tableData : _tableIteratorList) {
-        attachTable(aggregateRecordInstance, tableData, pkValues);
-      }
-
-      return aggregateRecordInstance;
+    if (!idResultList.next()) {
+      // no more records. make sure our CSV files don't still have data; if so, it's an error
+      checkForExtraData(_attributeIteratorList, _tableIteratorList);
+      return null;
     }
-    catch(WdkModelException | WdkUserException e) {
-      throw new WdkRuntimeException("Failed to load next record", e);
+
+    // Create a new record instance that will contain all the requested column attributes
+    //   and tables for the provided primary key values
+    StaticRecordInstance aggregateRecordInstance = createInstanceTemplate(idResultList);
+    PrimaryKeyDefinition pkDef = aggregateRecordInstance.getRecordClass().getPrimaryKeyDefinition();
+    Map<String,Object> pkValues = aggregateRecordInstance.getPrimaryKey().getRawValues();
+
+    // Iterate over all the CSV file result lists.  Note that the next item in the
+    //   result list should correspond to the primary key values provided.  There is
+    //   no primary key information in the attribute CSV files themselves.
+    for (AttributeRowStreamData attributeData : _attributeIteratorList) {
+      attachAttributes(aggregateRecordInstance, attributeData, pkDef, pkValues);
     }
+
+    // Iterate over all the tables for which iterators exist and pull out the iterator and the next record
+    // instance generated from that iterator.
+    for (TableRecordStreamData tableData : _tableIteratorList) {
+      attachTable(aggregateRecordInstance, tableData, pkValues);
+    }
+
+    return aggregateRecordInstance;
   }
 
   private void checkForExtraData(AutoCloseableList<AttributeRowStreamData> attributeIteratorList,
@@ -318,22 +287,9 @@ class FileBasedRecordIterator extends ReadOnlyIterator<RecordInstance> {
    * Closing the attribute CSV result lists, the table CSV result list, the id SQL result list and
    * the single table record instance streams used to populate the record instance tables.
    */
-  void close() {
-    if (_isClosed) return;
-    _isClosed = true;
-    _attributeIteratorList.close();
-    _tableIteratorList.close();
-    try {
-      _idResultList.close();
-    }
-    catch(WdkModelException e) {
-      throw new WdkRuntimeException("Unable to close ID query result list", e);
-    }
-  }
-
-  private void checkClosed() {
-    if (_isClosed) {
-      throw new ConcurrentModificationException("This iterator has been closed.");
-    }
+  @Override
+  protected void performAdditionalClosingOps() {
+    if (_attributeIteratorList != null) _attributeIteratorList.close();
+    if (_tableIteratorList != null) _tableIteratorList.close();
   }
 }
