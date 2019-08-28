@@ -121,7 +121,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   protected String _visibleHelp;
 
   // both default value and empty values will be used to construct default raw value. these values themselves
-  // are neither valid raw values nor stable values.
+  // are neither valid raw values nor stable values.  See FIXME below in getInternalValue()
   protected String _xmlDefaultValue;
   private String _emptyValue;
 
@@ -166,7 +166,9 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _suggestions = new ArrayList<>();
     _noTranslations = new ArrayList<>();
     _allowEmpty = false;
-    _emptyValue = null;
+    // in most cases empty string is preferable empty value to null
+    // TODO: determine if non-null, non-empty value should be required in XML if allowEmpty=true
+    _emptyValue = "";
     _xmlDefaultValue = null;
     _sanityDefaultValue = null;
     _handlerReferences = new ArrayList<>();
