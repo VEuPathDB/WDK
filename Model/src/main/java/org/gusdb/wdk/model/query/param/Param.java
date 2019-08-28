@@ -658,8 +658,8 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
       //             QueryInstance?) we seem to be popping the empty value in at
       //             the last moment as an internal value during param
       //             population (right before query execution).  Need to
-      //             discuss with DD.
-      stableValue = getEmptyValue();
+      //             discuss with DD.  For now return as if it is an internal value.
+      return getEmptyValue();
     }
     LOG.warn("\n  PARAM: " + getName() + "\n  QIS: " + queryInstanceSpec.get());
     return _handler.toInternalValue(queryInstanceSpec);
