@@ -600,13 +600,18 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     // handle cases where value is still empty after possibly being populated by a default
     value = stableValues.get(getName()); // refresh local var
     if (value == null || value.isEmpty()) {
+      String msgPrefix = "Is still empty (defaultUsed=" + defaultValueRequired + ") ";
       // empty value is still allowed if param is not depended on and validation level is displayable or less
       if (level.isLessThanOrEqualTo(ValidationLevel.DISPLAYABLE) && getDependentParams().isEmpty()) {
-        validationLog(() -> "Is still empty (defaultUsed=" + defaultValueRequired + "), but allowed due to validation level.");
+        validationLog(() -> msgPrefix + "but allowed due to validation level.");
         return stableValues.setValid(getName(), level);
       }
-      if (!isAllowEmpty()) {
-        validationLog(() -> "Is still empty (defaultUsed=" + defaultValueRequired + ") and cannot be empty; marking invalid.");
+      if (isAllowEmpty()) {
+        validationLog(() -> msgPrefix + "but allowed because allowEmpty=true");
+        return stableValues.setValid(getName(), level);
+      }
+      else {
+        validationLog(() -> msgPrefix + "and cannot be empty; marking invalid.");
         return stableValues.setInvalid(getName(), level, "Parameter '" + getName() + "' cannot be empty" +
             (defaultValueRequired ? ", but no default value exists." : "."));
       }
