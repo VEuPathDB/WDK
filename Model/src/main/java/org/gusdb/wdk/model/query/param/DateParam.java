@@ -154,7 +154,7 @@ public class DateParam extends Param {
       dateValue = LocalDate.parse(value, STANDARD_DATE_FORMAT);
     }
     catch(DateTimeParseException dtpe) {
-      return contextParamValues.setInvalid(name, "value '" + value + "' cannot "
+      return contextParamValues.setInvalid(name, level, "value '" + value + "' cannot "
           + "be parsed as an Iso1806 date.  Make sure the data is in the "
           + "yyyy-mm-dd format");
     }
@@ -162,7 +162,7 @@ public class DateParam extends Param {
     // Insure that the value provided matches the regular expression provided.
     // This could be more restrictive than the iso1806 date test.
     if(_regex != null && !value.matches(_regex)) {
-      return contextParamValues.setInvalid(name, "value '" + value + "' is "
+      return contextParamValues.setInvalid(name, level, "value '" + value + "' is "
           + "invalid and probably contains illegal characters. It must match "
           + "the regular expression '" + _regex + "'");
     }
@@ -170,18 +170,18 @@ public class DateParam extends Param {
     // Check minimum allowed date
     if(_minDate != null &&
         dateValue.isBefore(LocalDate.parse(_minDate, STANDARD_DATE_FORMAT))) {
-      return contextParamValues.setInvalid(name, "The date '" + value
+      return contextParamValues.setInvalid(name, level, "The date '" + value
           + "' should not be earlier than '" + _minDate + "'");
     }
 
     // Check maximum allowed date
     if(_maxDate != null &&
      dateValue.isAfter(LocalDate.parse(_maxDate, STANDARD_DATE_FORMAT))) {
-      return contextParamValues.setInvalid(name, "The date '" + value
+      return contextParamValues.setInvalid(name, level, "The date '" + value
           + "' should not be after '" + _maxDate + "'");
     }
 
-    return contextParamValues.setValid(name);
+    return contextParamValues.setValid(name, level);
   }
 
   @Override

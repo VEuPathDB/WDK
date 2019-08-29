@@ -142,7 +142,7 @@ public abstract class AbstractDependentParam extends Param {
       for (Param param : _dependedParams) {
         String vocab = "";
         if ((param instanceof FlatVocabParam)) {
-          Query query = ((FlatVocabParam) param).getQuery();
+          Query query = ((FlatVocabParam) param).getVocabularyQuery();
           vocab = (query != null) ? query.getFullName() : "N/A";
         }
         LOG.trace("Param " + getName() + " depends on " + param.getName() + "(" + vocab + ")");

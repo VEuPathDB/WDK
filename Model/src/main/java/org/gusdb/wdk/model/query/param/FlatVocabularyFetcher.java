@@ -40,7 +40,7 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
   public FlatVocabularyFetcher(User user, FlatVocabParam param) {
     _user = user;
     _param = param;
-    _vocabQuery = param.getQuery();
+    _vocabQuery = param.getVocabularyQuery();
     logger.debug("constructor: fetcher created for param: " + _param.getFullName() );
   }
 

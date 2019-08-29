@@ -137,13 +137,13 @@ public class DatasetParam extends Param {
 
     // value must be either the empty string or an integer (representing a step ID)
     if (!FormatUtil.isInteger(stableValue)) {
-      return ctxParamVals.setInvalid(name, "Param " + name +
+      return ctxParamVals.setInvalid(name, level, "Param " + name +
           "'s value must be a positive integer.");
     }
 
     // that's all the validation we perform if level is syntactic
     if (level.equals(ValidationLevel.SYNTACTIC)) {
-      return ctxParamVals.setValid(name);
+      return ctxParamVals.setValid(name, level);
     }
 
     // otherwise, make sure the dataset exists
@@ -151,10 +151,10 @@ public class DatasetParam extends Param {
       _wdkModel.getDatasetFactory().getDataset(ctxParamVals.getUser(), Long.parseLong(stableValue));
     }
     catch (WdkModelException e) {
-      return ctxParamVals.setInvalid(name, e.getMessage());
+      return ctxParamVals.setInvalid(name, level, e.getMessage());
     }
 
-    return ctxParamVals.setValid(name);
+    return ctxParamVals.setValid(name, level);
   }
 
   /**

@@ -83,7 +83,7 @@ public class FlatVocabParam extends AbstractEnumParam {
     this.vocabQueryRef = queryTwoPartName;
   }
 
-  public Query getQuery() {
+  public Query getVocabularyQuery() {
     return vocabQuery;
   }
 

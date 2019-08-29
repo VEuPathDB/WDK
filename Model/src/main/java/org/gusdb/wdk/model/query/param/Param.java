@@ -1,10 +1,32 @@
 package org.gusdb.wdk.model.query.param;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
+import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.stream.Collectors;
+
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Named.NamedObject;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.wdk.model.*;
+import org.gusdb.wdk.model.Group;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelBase;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
@@ -13,14 +35,6 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.stream.Collectors;
-
-import static org.gusdb.fgputil.FormatUtil.NL;
 
 /**
  * Params are used by Query objects and other ParamContainers to provide inputs
@@ -522,45 +536,65 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
   }
 
+  private static final Level VALIDATION_LOG_PRIORITY = Level.DEBUG;
+  private void validationLog(SupplierWithException<String> logMessage) throws WdkModelException {
+    if (LOG.isEnabledFor(VALIDATION_LOG_PRIORITY)) {
+      try {
+        LOG.log(VALIDATION_LOG_PRIORITY, "Param " + getName() + ": " + logMessage.get());
+      }
+      catch (Exception e) {
+        throw WdkModelException.translateFrom(e);
+      }
+    }
+  }
+
   public ParamValidity validate(PartiallyValidatedStableValues stableValues, ValidationLevel level, FillStrategy fillStrategy)
       throws WdkModelException {
 
-    // check to see if this param has already been validated
-    if (stableValues.hasParamBeenValidated(getName())) {
+    validationLog(() -> "Beginning validation");
+
+    // check to see if this param has already been validated at at least this level
+    if (stableValues.hasParamBeenValidated(getName()) &&
+        stableValues.getParamValidity(getName()).getLevel().isGreaterThanOrEqualTo(level)) {
+      validationLog(() -> "Already validated! isValid = " + stableValues.getParamValidity(getName()).isValid());
       return stableValues.getParamValidity(getName());
     }
 
-    // validate any parent (depended) params
-    boolean allParentsPassValidation = true;
-    for (Param parent : getDependedParams()) {
-      parent.validate(stableValues, level, fillStrategy);
-      if (!stableValues.isParamValid(parent.getName())) {
-        allParentsPassValidation = false;
-        // continue to validate parents so caller has most complete information
-      }
-    }
-    if (!allParentsPassValidation) {
-      // this param fails validation because its parents failed
-      return stableValues.setInvalid(getName(), "At least one parameter that '" + getName() + "' depends on is invalid or missing.");
-    }
-
-    // all parents passed validation; handle case where empty value is always allowed (per flag)
+    // check if value is empty but empty value allowed
     String value = stableValues.get(getName());
     if ((value == null || value.isEmpty()) &&
         isAllowEmpty() &&
         !fillStrategy.shouldFillWhenMissing()) {
       // make sure entry present (might have been missing);
       //  empty value will be filled in at query execution time (internal value conversion)
-      return stableValues.setValid(getName());
+      validationLog(() -> "Has empty value but this is allowed here and we are not to fill.  Marking valid.");
+      return stableValues.setValid(getName(), level);
     }
 
-    // empty value not generally allowed; fill with default value if requested
-    boolean defaultUsed = false;
-    if (stableValues.get(getName()) == null && fillStrategy.shouldFillWhenMissing()) {
+    // determine if we will need to generate a default value; if so, any depended
+    // values will need to be validated at the runnable level in order to run
+    // any depended queries required to generate a default value
+    boolean defaultValueRequired = stableValues.get(getName()) == null && fillStrategy.shouldFillWhenMissing();
+
+    // validate any parent (depended) params; if a default for this param will
+    //   be generated, then these params MUST be validated at the RUNNABLE level
+    //   so that their values can be used to run dependent queries in the params
+    //   that depend on them
+    ValidationLevel parentLevel = defaultValueRequired ? ValidationLevel.RUNNABLE : level;
+    Optional<ParamValidity> invalidityResult = validateDependedParams(stableValues, level, parentLevel, fillStrategy);
+    if (invalidityResult.isPresent()) {
+      return invalidityResult.get();
+    }
+
+    // all parents passed validation; handle case where empty value is always allowed (per flag)
+    validationLog(() -> "All parents were valid; continuing with validation...");
+
+    // empty value not generally allowed; fill with default value if required
+    if (defaultValueRequired) {
       // fill in default value; value will still be validated below (cheap because vocabs are cached)
+      validationLog(() -> "Has empty value and we are to fill with default.");
       String defaultValue = getDefault(stableValues);
       stableValues.put(getName(), defaultValue);
-      defaultUsed = true;
     }
 
     // handle cases where value is still empty after possibly being populated by a default
@@ -568,25 +602,64 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     if (value == null || value.isEmpty()) {
       // empty value is still allowed if param is not depended on and validation level is displayable or less
       if (level.isLessThanOrEqualTo(ValidationLevel.DISPLAYABLE) && getDependentParams().isEmpty()) {
-        return stableValues.setValid(getName());
+        validationLog(() -> "Is still empty (defaultUsed=" + defaultValueRequired + "), but allowed due to validation level.");
+        return stableValues.setValid(getName(), level);
       }
       if (!isAllowEmpty()) {
-        return stableValues.setInvalid(getName(), "Parameter '" + getName() + "' cannot be empty" +
-            (defaultUsed ? ", but no default value exists." : "."));
+        validationLog(() -> "Is still empty (defaultUsed=" + defaultValueRequired + ") and cannot be empty; marking invalid.");
+        return stableValues.setInvalid(getName(), level, "Parameter '" + getName() + "' cannot be empty" +
+            (defaultValueRequired ? ", but no default value exists." : "."));
       }
     }
 
     // sub-classes will complete further validation
+    validationLog(() -> "Passing validation to subclass " + getClass().getSimpleName()+ "; value = " + stableValues.get(getName()));
     ParamValidity validity = validateValue(stableValues, level);
 
     // if valid or (invalid but we were not asked to replace with default) return
     if (validity.isValid() || !fillStrategy.shouldFillWhenInvalid()) {
+      validationLog(() -> "Is " + (validity.isValid() ? "valid" : "invalid") + "; returning status.");
       return validity;
     }
 
-    // invalid and asked to replace with default; do it, then revalidate
+    // invalid and asked to replace with default; do it, then revalidate, but first, must validate parents (again)
+    invalidityResult = validateDependedParams(stableValues, level, ValidationLevel.RUNNABLE, fillStrategy);
+    if (invalidityResult.isPresent()) {
+      return invalidityResult.get();
+    }
+
+    validationLog(() -> "Value was found invalid but we were asked to fill if invalid; getting default");
     stableValues.put(getName(), getDefault(stableValues));
-    return validateValue(stableValues, level);
+
+    validationLog(() -> "Got default value: " + stableValues.get(getName()) + ", will now validate.");
+    ParamValidity defaultsValidity = validateValue(stableValues, level);
+
+    validationLog(() -> "Populated default value is " + (defaultsValidity.isValid() ? "valid" : "invalid") + "; returning status.");
+    return defaultsValidity;
+  }
+
+  private Optional<ParamValidity> validateDependedParams(
+      PartiallyValidatedStableValues stableValues, ValidationLevel level, ValidationLevel parentLevel, FillStrategy fillStrategy) throws WdkModelException {
+    validationLog(() -> "Checking depended params, will use validation level: " + parentLevel);
+    boolean allParentsPassValidation = true;
+    for (Param parent : getDependedParams()) {
+      validationLog(() -> "Found depended param " + parent.getName() + ", will validate it first...");
+      parent.validate(stableValues, parentLevel, fillStrategy);
+      validationLog(() -> "Back from parent validation.  Was " + parent.getName() + " valid? " + stableValues.isParamValid(parent.getName()));
+      if (!stableValues.isParamValid(parent.getName())) {
+        allParentsPassValidation = false;
+        // continue to validate parents so caller has most complete information
+      }
+    }
+
+    if (!allParentsPassValidation) {
+      // this param fails validation because its parents failed
+      validationLog(() -> "Not all parents were valid so marking invalid.");
+      return Optional.of(stableValues.setInvalid(getName(), level,
+          "At least one parameter that '" + getName() + "' depends on is invalid or missing."));
+    }
+
+    return Optional.empty();
   }
 
   /**
