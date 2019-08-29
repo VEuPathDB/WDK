@@ -385,6 +385,8 @@ public class StrategyService extends UserService {
    *         saved strategy.
    */
   private static boolean isAllowedOnSavedStrategy(final String key) {
-    return JsonKeys.NAME.equals(key) || JsonKeys.IS_PUBLIC.equals(key);
+    // I don't think we need to restrict this -- dmf
+    // return JsonKeys.NAME.equals(key) || JsonKeys.IS_PUBLIC.equals(key);
+    return true;
   }
 }
