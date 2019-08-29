@@ -968,8 +968,8 @@ public class FilterParamNew extends AbstractDependentParam {
       ? stableValue.validateSyntaxAndSemantics(contextParamValues)
       : stableValue.validateSyntax();
     return err == null ?
-      contextParamValues.setValid(name) :
-      contextParamValues.setInvalid(name, err);
+      contextParamValues.setValid(name, level) :
+      contextParamValues.setInvalid(name, level, err);
   }
 
   @Override

@@ -30,7 +30,6 @@ public class AnswerSpecBuilder {
   private final WdkModel _wdkModel;
   private String _questionName = "";
   private Optional<String> _legacyFilterName = Optional.empty();
-  private int _assignedWeight; // will be reconciled with one in _queryInstanceSpec
   private QueryInstanceSpecBuilder _queryInstanceSpec = QueryInstanceSpec.builder();
   private FilterOptionListBuilder _filters = FilterOptionList.builder();
   private FilterOptionListBuilder _viewFilters = FilterOptionList.builder();
@@ -45,7 +44,6 @@ public class AnswerSpecBuilder {
     _wdkModel = answerSpec.getWdkModel();
     _questionName = answerSpec.getQuestionName();
     _queryInstanceSpec = QueryInstanceSpec.builder().fromQueryInstanceSpec(answerSpec.getQueryInstanceSpec());
-    _assignedWeight = _queryInstanceSpec.getAssignedWeight();
     _legacyFilterName = answerSpec.getLegacyFilterName();
     _filters = FilterOptionList.builder().addAllFilters(answerSpec.getFilterOptions());
     _viewFilters = FilterOptionList.builder().addAllFilters(answerSpec.getViewFilterOptions());
@@ -60,17 +58,17 @@ public class AnswerSpecBuilder {
     this(validAnswerSpec.get());
   }
 
-  public AnswerSpecBuilder setDbParamFiltersJson(JSONObject paramFiltersJson) {
+  public AnswerSpecBuilder setDbParamFiltersJson(JSONObject paramFiltersJson, int assignedWeight) {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Parsing display_params JSON Object into its parts: " + paramFiltersJson.toString(2));
     }
-    setQueryInstanceSpec(ParamsAndFiltersDbColumnFormat.parseParamsJson(paramFiltersJson));
+    QueryInstanceSpecBuilder qiSpec = ParamsAndFiltersDbColumnFormat.parseParamsJson(paramFiltersJson);
+    qiSpec.setAssignedWeight(assignedWeight);
+    setQueryInstanceSpec(qiSpec);
     setFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(paramFiltersJson));
     // TODO: As of 8/20/19 we do not read view filters from the database; should purge their existence at some point
     //setViewFilterOptions(ParamsAndFiltersDbColumnFormat.parseViewFiltersJson(paramFiltersJson));
     setColumnFilterConfig(ParamsAndFiltersDbColumnFormat.parseColumnFilters(paramFiltersJson));
-    // caller may have already called setAssignedWeight on answer spec builder
-    _queryInstanceSpec.setAssignedWeight(_assignedWeight);
     return this;
   }
 
@@ -114,7 +112,6 @@ public class AnswerSpecBuilder {
 
   public AnswerSpecBuilder setQueryInstanceSpec(QueryInstanceSpecBuilder queryInstanceSpec) {
     _queryInstanceSpec = queryInstanceSpec;
-    _assignedWeight = queryInstanceSpec.getAssignedWeight();
     return this;
   }
 
@@ -146,12 +143,6 @@ public class AnswerSpecBuilder {
 
   public AnswerSpecBuilder setViewFilterOptions(FilterOptionListBuilder viewFilterOptions) {
     _viewFilters = viewFilterOptions;
-    return this;
-  }
-
-  public AnswerSpecBuilder setAssignedWeight(int assignedWeight) {
-    _assignedWeight = assignedWeight;
-    _queryInstanceSpec.setAssignedWeight(assignedWeight);
     return this;
   }
 

@@ -26,10 +26,10 @@ public class SingleRecordQuestionParam extends StringParam {
   protected ParamValidity validateValue(PartiallyValidatedStableValues stableValues, ValidationLevel level) {
     try {
       parseParamValue(stableValues.get(getName()));
-      return stableValues.setValid(getName());
+      return stableValues.setValid(getName(), level);
     }
     catch (IllegalArgumentException e) {
-      return stableValues.setInvalid(getName(), e.getMessage());
+      return stableValues.setInvalid(getName(), level, e.getMessage());
     }
   }
 

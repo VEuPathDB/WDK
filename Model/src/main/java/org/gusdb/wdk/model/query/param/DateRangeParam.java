@@ -174,7 +174,7 @@ public class DateRangeParam extends Param {
       maxValue = LocalDate.parse(jsonVal.getString("max"), STANDARD_DATE_FORMAT);
     }
     catch(JSONException je) {
-      return ctxParamVals.setInvalid(name, "Could not parse '" + rawVal + "'. "
+      return ctxParamVals.setInvalid(name, level, "Could not parse '" + rawVal + "'. "
         + "The range should be is the format {'min':'min value','max':'max value'}");
     }
 
@@ -182,36 +182,36 @@ public class DateRangeParam extends Param {
     // potentially be more restrictive than LocalDate.
     if (_regex != null) {
      if (!jsonVal.getString("min").matches(_regex)) {
-       return ctxParamVals.setInvalid(name, "value '" + jsonVal.getString("min")
+       return ctxParamVals.setInvalid(name, level, "value '" + jsonVal.getString("min")
          + "' is invalid. It must match the regular expression '" + _regex + "'");
      }
      if (!jsonVal.getString("max").matches(_regex)) {
-       return ctxParamVals.setInvalid(name, "value '" + jsonVal.getString("max")
+       return ctxParamVals.setInvalid(name, level, "value '" + jsonVal.getString("max")
          + "' is invalid. It must match the regular expression '" + _regex + "'");
       }
     }
 
     // Ensure that the minimum date does not come after the maximum date
     if (minValue.isAfter(maxValue)) {
-      return ctxParamVals.setInvalid(name, "The minimum date '" + minValue
+      return ctxParamVals.setInvalid(name, level, "The minimum date '" + minValue
         + "' should come before, or equal, the maximum date '" + maxValue + "'");
     }
 
     // Ensure that the minimum date comes no earlier than the minimum allowed date
     if (_minDate != null &&
         minValue.isBefore(LocalDate.parse(_minDate, STANDARD_DATE_FORMAT))) {
-      return ctxParamVals.setInvalid(name, "The date '" + minValue
+      return ctxParamVals.setInvalid(name, level, "The date '" + minValue
         + "' should not be earlier than '" + _minDate + "'");
     }
 
     // Ensure that the maximum data comes no later than the maximum allowed date
     if (_maxDate != null &&
         maxValue.isAfter(LocalDate.parse(_maxDate, STANDARD_DATE_FORMAT))) {
-      return ctxParamVals.setInvalid(name, "The date '" + maxValue
+      return ctxParamVals.setInvalid(name, level, "The date '" + maxValue
         + "' should not be after '" + _maxDate + "'");
     }
 
-    return ctxParamVals.setValid(name);
+    return ctxParamVals.setValid(name, level);
   }
 
   /**

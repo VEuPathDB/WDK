@@ -18,6 +18,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.*;
 
 /**
@@ -358,16 +360,14 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     final String name = getName();
     final String stableValue = ctxParamVals.get(name);
 
-    LOG.debug("param=" + getFullName() + " - validating: " + stableValue +
+    if (LOG.isDebugEnabled()) LOG.debug("param=" + getFullName() + " - validating: " + stableValue +
         ", with contextParamValues=" + FormatUtil.prettyPrint(ctxParamVals));
 
-    if (stableValue.isEmpty() && !_allowEmpty)
-      return ctxParamVals.setInvalid(name, "At least one value for "
-          + getPrompt() + " must be selected.");
-
     // all other validation requires a DB lookup, so exit here if displayable or less
-    if (level.isLessThanOrEqualTo(ValidationLevel.DISPLAYABLE))
-      return ctxParamVals.setValid(name);
+    if (level.isLessThanOrEqualTo(ValidationLevel.DISPLAYABLE)) {
+      LOG.debug("Don't need to check against vocab since validation level is displayable; returning valid=true");
+      return ctxParamVals.setValid(name, level);
+    }
 
     // if semantic or runnable, must verify term counts and validity
     EnumParamVocabInstance vocab = getVocabInstance(ctxParamVals);
@@ -380,21 +380,25 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
         (_minSelectedCount > 0 && numSelected < _minSelectedCount)) {
       String range = (_minSelectedCount > 0 ? "[ " + _minSelectedCount : "( Inf") + ", " +
           (maxSelectedCount > 0 ? maxSelectedCount + " ]" : "Inf )");
-      return ctxParamVals.setInvalid(name, "Number of selected values ("
+      return ctxParamVals.setInvalid(name, level, "Number of selected values ("
         + numSelected + ") was not in range " + range + " for parameter "
         + getPrompt());
     }
 
     Set<String> allTerms = vocab.getTerms();
+    if (LOG.isDebugEnabled()) LOG.debug("Validating " + getName() + NL +
+        "Valid terms: " + String.join(", ", allTerms) + NL +
+        "Found terms: " + String.join(", ", selectedTerms));
     List<String> messages = new ArrayList<>();
     for (String term : selectedTerms) {
       if (!allTerms.contains(term)) {
         messages.add("Invalid term for param [" + getFullName() + "]: " + term + ".");
       }
     }
+
     return messages.isEmpty() ?
-        ctxParamVals.setValid(name) :
-        ctxParamVals.setInvalid(name, FormatUtil.join(messages, FormatUtil.NL));
+        ctxParamVals.setValid(name, level) :
+        ctxParamVals.setInvalid(name, level, FormatUtil.join(messages, FormatUtil.NL));
   }
 
   private int getNumSelected(EnumParamVocabInstance vocab, List<String> selectedTerms) {

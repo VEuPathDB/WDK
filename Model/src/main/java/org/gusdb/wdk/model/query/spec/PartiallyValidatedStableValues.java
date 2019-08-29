@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.query.spec;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
@@ -11,15 +12,19 @@ public class PartiallyValidatedStableValues extends HashMap<String,String> {
   public static class ParamValidity {
 
     private final boolean _isValid;
+    private final ValidationLevel _level;
     private final String _errorMessage;
 
-    private ParamValidity(boolean isValid, String errorMessage) {
+    private ParamValidity(boolean isValid, ValidationLevel level, String errorMessage) {
       _isValid = isValid;
+      _level = level;
       _errorMessage = errorMessage;
     }
 
-    public boolean isValid()   { return _isValid; }
-    public String getMessage() { return _errorMessage; }
+    public boolean isValid()          { return _isValid; }
+    public ValidationLevel getLevel() { return _level; }
+    public String getMessage()        { return _errorMessage; }
+
   }
 
   private final User _user;
@@ -56,14 +61,14 @@ public class PartiallyValidatedStableValues extends HashMap<String,String> {
     return _validationStatusMap;
   }
 
-  public ParamValidity setValid(String paramName) {
-    ParamValidity validity = new ParamValidity(true, null);
+  public ParamValidity setValid(String paramName, ValidationLevel level) {
+    ParamValidity validity = new ParamValidity(true, level, null);
     _validationStatusMap.put(paramName, validity);
     return validity;
   }
 
-  public ParamValidity setInvalid(String paramName, String reason) {
-    ParamValidity validity = new ParamValidity(false, reason);
+  public ParamValidity setInvalid(String paramName, ValidationLevel level, String reason) {
+    ParamValidity validity = new ParamValidity(false, level, reason);
     _validationStatusMap.put(paramName, validity);
     return validity;
   }

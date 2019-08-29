@@ -129,13 +129,13 @@ public class AnswerParam extends Param {
 
     // value must be either the empty string or an integer (representing a step ID)
     if (!stableValue.equals(NULL_VALUE) && !FormatUtil.isInteger(stableValue)) {
-      return ctxParamVals.setInvalid(name, "Param " + name +
+      return ctxParamVals.setInvalid(name, level, "Param " + name +
           "'s value must be an empty string or a positive integer.");
     }
 
     // that's all the validation we perform unless level is runnable
     if (!level.equals(ValidationLevel.RUNNABLE)) {
-      return ctxParamVals.setValid(name);
+      return ctxParamVals.setValid(name, level);
     }
 
     // if level is runnable, check that the step is in our container and
@@ -144,25 +144,25 @@ public class AnswerParam extends Param {
     Step step = ctxParamVals.getStepContainer().findFirstStep(withId(stepId)).orElse(null);
 
     if (step == null) {
-      return ctxParamVals.setInvalid(name, "Step ID value " + stepId + " does not correspond to an available step.");
+      return ctxParamVals.setInvalid(name, level, "Step ID value " + stepId + " does not correspond to an available step.");
     }
     
     if (!step.hasValidQuestion()) {
-      return ctxParamVals.setInvalid(name, "Step " + stepId + " is not associated with a valid search (" + step.getAnswerSpec().getQuestionName() + ")");
+      return ctxParamVals.setInvalid(name, level, "Step " + stepId + " is not associated with a valid search (" + step.getAnswerSpec().getQuestionName() + ")");
     }
     
     // make sure the input step is of the acceptable type
     String rcName = step.getRecordClass().get().getFullName();
     if (!recordClasses.containsKey(rcName)) {
-      return ctxParamVals.setInvalid(name, "The step of record type '" + rcName
+      return ctxParamVals.setInvalid(name, level, "The step of record type '" + rcName
         + "' is not allowed in the answerParam " + getFullName());
     }
 
     // make sure step is runnable itself; needs to have been validated at the runnable level
     if (step.getValidationBundle().getLevel().isGreaterThanOrEqualTo(ValidationLevel.RUNNABLE)) {
       return step.isValid() ?
-        ctxParamVals.setValid(name) :
-        ctxParamVals.setInvalid(name, "The step referenced by this param's value (step ID " +
+        ctxParamVals.setValid(name, level) :
+        ctxParamVals.setInvalid(name, level, "The step referenced by this param's value (step ID " +
             stepId + " is not runnable because: " + step.getValidationBundle().toString(2));
     }
 

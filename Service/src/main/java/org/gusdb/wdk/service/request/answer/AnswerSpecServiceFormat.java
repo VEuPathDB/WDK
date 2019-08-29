@@ -10,6 +10,8 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersDbColumnFormat;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.filter.ColumnFilterServiceFormat;
@@ -37,7 +39,7 @@ public class AnswerSpecServiceFormat {
    *       "toolName": [ any ]
    *     }
    *   },
-   *   "wdk_weight": (optional) Integer
+   *   "wdkWeight": (optional) Integer
    * }
    *
    * @param json JSON representation of an answer spec
@@ -47,10 +49,19 @@ public class AnswerSpecServiceFormat {
    */
   public static AnswerSpecBuilder parse(Question question, JSONObject json, WdkModel wdkModel) throws RequestMisformatException {
     try {
+
+      QueryInstanceSpecBuilder qiSpecBuilder = QueryInstanceSpec.builder()
+        .putAll(JsonUtil.parseProperties(json.getJSONObject(JsonKeys.PARAMETERS)));
+
+      // apply weight if present
+      if (json.has(JsonKeys.WDK_WEIGHT)) {
+        qiSpecBuilder.setAssignedWeight(json.getInt(JsonKeys.WDK_WEIGHT));
+      }
+
       // get question name, validate, and create instance with valid Question
       AnswerSpecBuilder specBuilder = AnswerSpec.builder(wdkModel)
           .setQuestionFullName(question.getFullName())
-          .setParamValues(JsonUtil.parseProperties(json.getJSONObject(JsonKeys.PARAMETERS)));
+          .setQueryInstanceSpec(qiSpecBuilder);
 
       // all filter fields and weight are optional
       if (json.has(JsonKeys.LEGACY_FILTER_NAME)) {
@@ -59,18 +70,15 @@ public class AnswerSpecServiceFormat {
 
       // apply filter and view filter options if present
       specBuilder.setFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.FILTERS));
+
       // NOTE: As of 8/20/19 we do not parse view filters with other answer spec properties
       //specBuilder.setViewFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.VIEW_FILTERS));
 
       // apply column filter configurations if present
-      if (json.has(JsonKeys.COLUMN_FILTERS))
+      if (json.has(JsonKeys.COLUMN_FILTERS)) {
         specBuilder.setColumnFilterConfig(
           ColumnFilterServiceFormat.parse(question,
             json.getJSONObject(JsonKeys.COLUMN_FILTERS)));
-
-      // apply weight if present
-      if (json.has(JsonKeys.WDK_WEIGHT)) {
-        specBuilder.setAssignedWeight(json.getInt(JsonKeys.WDK_WEIGHT));
       }
 
       return specBuilder;

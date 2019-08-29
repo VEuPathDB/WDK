@@ -117,7 +117,7 @@ public class NumberRangeParam extends Param {
       max = stableValueJson.getDouble("max");
     }
     catch(JSONException je) {
-      return ctxParamVals.setInvalid(name, "Could not parse '" + value + "'. "
+      return ctxParamVals.setInvalid(name, level, "Could not parse '" + value + "'. "
         + "The range should be is the format "
         + "{\"min\":<min value>,\"max\":<max value>}");
     }
@@ -126,30 +126,30 @@ public class NumberRangeParam extends Param {
     if (_regex != null)
       if (!String.valueOf(min).matches(_regex)
           || !String.valueOf(max).matches(_regex))
-        return ctxParamVals.setInvalid(name, "value '" + value + "' is invalid."
+        return ctxParamVals.setInvalid(name, level, "value '" + value + "' is invalid."
           + " It must match the regular expression '" + _regex + "'");
 
     // By convention, the first value of the range should be less than or equal
     // to the second value.
     if(min > max)
-      return ctxParamVals.setInvalid(name, "The miniumum value, '" + min +  "',"
+      return ctxParamVals.setInvalid(name, level, "The miniumum value, '" + min +  "',"
         + "in the range must be less than the maximum value, '" + max + "'");
 
     // Verify both ends of the range are integers if such is specified.
     if (_isInteger && (min % 1 != 0 || max % 1 != 0))
-      return ctxParamVals.setInvalid(name, "Minimum and maximum values (" + min
+      return ctxParamVals.setInvalid(name, level, "Minimum and maximum values (" + min
           + ", " + max + ") must both be integers");
 
     // Verify the given range in within any required limits
     if(_min != null && min < _min)
-      return ctxParamVals.setInvalid(name, "value '" + min + "' must be "
+      return ctxParamVals.setInvalid(name, level, "value '" + min + "' must be "
         + "greater than or equal to '" + _min + "'" );
 
     if(_max != null && max > _max)
-      return ctxParamVals.setInvalid(name, "value '" + max + "' must be less "
+      return ctxParamVals.setInvalid(name, level, "value '" + max + "' must be less "
         + "than or equal to '" + _max + "'" );
 
-    return ctxParamVals.setValid(name);
+    return ctxParamVals.setValid(name, level);
   }
 
   /**
