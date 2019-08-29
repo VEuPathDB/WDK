@@ -533,13 +533,15 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
         getValidationBundle().getLevel().isGreaterThanOrEqualTo(ValidationLevel.RUNNABLE) ? this :
           swallowAndGet(() -> Strategy.builder(this).build(new UserCache(getUser()), ValidationLevel.RUNNABLE));
 
+    LOG.debug("Updating stale result sizes on runnable steps");
     strat.getAllSteps().stream()
       .filter(step -> step.isRunnable() && step.getEstimatedSize() == Step.RESET_SIZE_FLAG)
       .forEach(runnableStep -> {
         try {
           // getResultSize() will update the size in the step and write the size to the DB
           int resultSize = runnableStep.getResultSize();
-          // need to set it in the this strat's step
+          LOG.debug("Refreshing size of step " + runnableStep.getStepId() + ": " + resultSize + ", DB has been updated.");
+          // need to set it in the this strategy object's step (local memory copy)
           findFirstStep(withId(runnableStep.getStepId())).get().setRefreshedResultSize(resultSize);
         }
         catch (WdkModelException e) {
