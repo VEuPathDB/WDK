@@ -65,7 +65,7 @@ public class ResultSizeFactory {
 
   public int getResultSize() throws WdkModelException {
     QueryInstance<?> idsQueryInstance = _answerValue.getIdsQueryInstance();
-    boolean isCacheable = idsQueryInstance.getQuery().getIsCacheable();
+    boolean isCacheable = idsQueryInstance.getQuery().isCacheable();
     if (_resultSize == null || !isCacheable) {
       _resultSize = new DefaultResultSizePlugin().getResultSize(_answerValue);
     }
@@ -209,7 +209,7 @@ public class ResultSizeFactory {
       throws WdkModelException {
     FilterSizeType sizeType = useDisplay ? FilterSizeType.DISPLAY : FilterSizeType.STANDARD;
     Integer size = _resultSizesByFilter.get(sizeType).get(filterName);
-    if (size != null && _answerValue.getIdsQueryInstance().getQuery().getIsCacheable()) {
+    if (size != null && _answerValue.getIdsQueryInstance().getQuery().isCacheable()) {
       return size;
     }
 

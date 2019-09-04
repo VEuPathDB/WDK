@@ -183,7 +183,7 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   @Override
   public abstract Query clone();
 
-  public abstract boolean getIsCacheable();
+  public abstract boolean isCacheable();
 
   public abstract void resolveQueryReferences(WdkModel wdkModel) throws WdkModelException;
 
@@ -237,14 +237,6 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
 
   public Param getContextParam() {
     return contextParam;
-  }
-
-  public boolean getIsCacheable() {
-    // first check if global caching is turned off, if off, then return false; otherwise, use query's own
-    // settings.
-    if (_wdkModel != null && !_wdkModel.getModelConfig().isCaching())
-      return false;
-    return this.isCacheable;
   }
 
   @Override

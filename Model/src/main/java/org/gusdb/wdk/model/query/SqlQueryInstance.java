@@ -37,7 +37,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
 
   @Override
   protected ResultList getResults(boolean performSorting) throws WdkModelException {
-    return _query.getIsCacheable()
+    return _query.isCacheable()
       ? getCachedResults(performSorting)
       : getUncachedResults();
   }
@@ -53,7 +53,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
   }
 
   private String getSql(boolean performSorting) throws WdkModelException {
-    return _query.getIsCacheable()
+    return _query.isCacheable()
       ? getCachedSql(performSorting)
       : getUncachedSql();
   }

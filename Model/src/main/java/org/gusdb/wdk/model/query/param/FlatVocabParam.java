@@ -136,7 +136,7 @@ public class FlatVocabParam extends AbstractEnumParam {
       throws WdkModelException {
     try {
       FlatVocabularyFetcher fetcher = new FlatVocabularyFetcher(user, this);
-      return (vocabQuery.getIsCacheable() ?
+      return (vocabQuery.isCacheable() ?
           CacheMgr.get().getVocabCache().getValue(fetcher.getCacheKey(dependedParamValues), fetcher) :
           fetcher.fetchItem(dependedParamValues));
     }

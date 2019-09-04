@@ -62,7 +62,7 @@ public class ProcessQuery extends Query {
   }
 
   @Override
-  public boolean getIsCacheable() {
+  public boolean isCacheable() {
     return true;
   }
 

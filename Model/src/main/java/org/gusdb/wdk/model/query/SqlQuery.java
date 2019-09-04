@@ -130,7 +130,7 @@ public class SqlQuery extends Query {
    * @return whether this query should be cached
    */
   @Override
-  public boolean getIsCacheable() {
+  public boolean isCacheable() {
     // check if global caching is turned off, if off, then return false
     if (!_wdkModel.getModelConfig().isCaching()) return false;
     // check if this query's value has been set; if not, use QuerySet's value
