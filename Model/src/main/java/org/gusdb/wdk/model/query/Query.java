@@ -34,6 +34,11 @@ import java.util.stream.Collectors;
  * QueryInstance, which will hold param values, and does the real work of
  * executing a query and retrieve data.
  *
+ * The query in WDK defines how the data is accessed from the resource. There are currently two kinds of
+ * query, SQL based query, and web service based query. The query is not exposed to the user, only the
+ * question are visible on the web sites as searches.
+ * </p>
+ *
  * <p>
  * Depending on how many answerParams a query might have, a query can be called
  * as a normal query (without any answerParam), or a combined query (with one or
@@ -44,11 +49,24 @@ import java.util.stream.Collectors;
  * exactly two answerParams, and the types of the answerParam are the same as
  * the result of the query.
  *
+ * A Query holds only the definition of query, such as params, SQL template, or information about the web
+ * service etc. It can be used to create QueryInstance, which will hold param values, and does the real work
+ * of executing a query and retrieve data.
+ * </p>
+ *
  * <p>
  * A query can be used in four contexts in WDK, as ID query, attribute query,
  * table query, and param query. and SqlQuery can be used in all four contexts,
  * but ProcessQuery (web service query) can only be used in ID and param
  * queries.
+ *
+ * Depending on how many answerParams a query might have, a query can be called as a normal query (without
+ * any answerParam), or a combined query (with one or more answerParams). If a query has exactly one
+ * answerParam, it is also called a transform query; in the transform query, the type of the answerParam can
+ * be different from the type of the results the query returns. And there is another special kind of combined
+ * query, called BooleanQuery, which has exactly two answerParams, and the types of the answerParam are the
+ * same as the result of the query.
+ * </p>
  *
  * <p>
  * An ID query is a query referenced by a question, and the parameters for the
@@ -58,7 +76,21 @@ import java.util.stream.Collectors;
  * query should be unique, and cannot have duplicate rows. If duplicate primary
  * key occurs, WDK will fail when joining it with the attribute query. An ID
  * query can have other columns other than the primary key columns, and those
+
+ * A query can be used in four contexts in WDK, as ID query, attribute query, table query, and param query.
+ * and SqlQuery can be used in all four contexts, but ProcessQuery (web service query) can only be used in ID
+ * and param queries.
+ * </p>
+ *
+ * <p>
+ * An ID query is a query referenced by a question, and the parameters for the search (the visual name of the
+ * question) are defined in the queries. An ID query should return all the primary key columns of the
+ * recordClass type the associated question linked to. The the primary key values returned by ID query should
+ * be unique, and cannot have duplicate rows. If duplicate primary key occurs, WDK will fail when joining it
+ * with the attribute query. An ID query can have other columns other than the primary key columns, and those
  * columns are usually used for the dynamic attributes.
+ *
+ * </p>
  *
  * <p>
  * An attribute query is a query referenced by a recordClass, in the
@@ -90,7 +122,21 @@ import java.util.stream.Collectors;
  * In the context of an answer, the table SQL can be used to be combined with
  * the paged ID SQL to get a page of the results for the records.
  *
+ *
+ * <p>
+ * An table query is query referenced by recordClass, in the &lt;table&gt; tag. A table query has to be
+ * SqlQuery, and it doesn't normally have params, although you can define an internal wdk user param same way
+ * as in attribute query. The table query should return the results for all possible records of a given record
+ * type, and each record can have zero or more rows in the result. The table query also must return all the
+ * primary key columns, although the ColumnAttributeField of those is optional. The table can be used in two
+ * contexts, in single record, or in an answer. In a single record, the table query is used in the similar way
+ * as attribute query, and it will be wrapped with the primary key values of the record, to get zero or more
+ * rows. In the context of an answer, the table SQL can be used to be combined with the paged ID SQL to get a
+ * page of the results for the records.
+ * </p>
+ *
  * @author Jerric Gao
+ *
  */
 public abstract class Query extends ParameterContainerImpl implements OptionallyTestable {
 
@@ -188,8 +234,17 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
    * @return the parameter that contains this query or null if this is an
    * independent query
    */
+
   public Param getContextParam() {
     return contextParam;
+  }
+
+  public boolean getIsCacheable() {
+    // first check if global caching is turned off, if off, then return false; otherwise, use query's own
+    // settings.
+    if (_wdkModel != null && !_wdkModel.getModelConfig().isCaching())
+      return false;
+    return this.isCacheable;
   }
 
   @Override

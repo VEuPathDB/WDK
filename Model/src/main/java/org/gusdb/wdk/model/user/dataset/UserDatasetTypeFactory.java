@@ -7,19 +7,16 @@ import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * Construct UserDatasetTypes, enforcing one singleton per (name, version) pair
- * 
- * @author steve
  *
+ * @author steve
  */
 public final class UserDatasetTypeFactory {
 
-  static Map<String, UserDatasetType> map = new HashMap<String, UserDatasetType>();
+  static Map<String, UserDatasetType> map = new HashMap<>();
 
   /**
-   * Get a singleton UserDatasetType object that conforms to the input name and version
-   * @param name
-   * @param version
-   * @return
+   * Get a singleton UserDatasetType object that conforms to the input name and
+   * version
    */
   public static UserDatasetType getUserDatasetType(String name, String version) {
     // there must be a better way to do this
@@ -31,15 +28,10 @@ public final class UserDatasetTypeFactory {
 
   /**
    * Find a type handler for the provided user dataset.
-   * @param handlers
-   * @param userDataset
-   * @return
-   * @throws WdkModelException
    */
   public static UserDatasetTypeHandler getCompatibleTypeHandler(
       Map<UserDatasetType, UserDatasetTypeHandler> handlers, UserDataset userDataset)
           throws WdkModelException {
     return handlers.get(userDataset.getType());
   }
-
 }

@@ -134,6 +134,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private Map<String, String> _recordClassUrlSegmentMap = new HashMap<>();
 
   private List<WdkModelName> wdkModelNames = new ArrayList<>();
+
   private String displayName;
   private String version; // use default version
   private String releaseDate;
@@ -583,7 +584,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     ModelConfigAppDB appDbConfig = modelConfig.getAppDB();
     ModelConfigUserDB userDbConfig = modelConfig.getUserDB();
     ModelConfigAccountDB accountDbConfig = modelConfig.getAccountDB();
-    ModelConfigUserDatasetStore udsConfig= modelConfig.getUserDatasetStoreConfig();
+    ModelConfigUserDatasetStore udsConfig = modelConfig.getUserDatasetStoreConfig();
 
     QueryLogger.initialize(modelConfig.getQueryMonitor());
 
@@ -655,6 +656,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     List<Query> allQueries = new ArrayList<>();
     Set<Query> rootQueries = new HashSet<>();
     Set<String> rootQueryNames = new HashSet<>();
+
     for (QuerySet querySet : querySets.values()) {
       for (Query query : querySet.getQueries()) {
         allQueries.add(query);

@@ -26,23 +26,21 @@ import org.gusdb.wdk.model.user.User;
  * A handler for a particular type of dataset.  These are plugged in to the wdk.
  * If a particular type is not plugged in, then datasets of that type are not
  * compatible with this wdk application, for that reason.
- * @author steve
  *
+ * @author steve
  */
 public abstract class UserDatasetTypeHandler {
 
   private static final Logger LOG = Logger.getLogger(UserDatasetTypeHandler.class);
 
   /**
-   * Check if a dataset is compatible with this application, based on its data dependencies.
-   * @param userDataset
-   * @return
+   * Check if a dataset is compatible with this application, based on its data
+   * dependencies.
    */
   public abstract UserDatasetCompatibility getCompatibility(UserDataset userDataset, DataSource appDbDataSource) throws WdkModelException;
 
   /**
    * The user dataset type this handler handles.
-   * @return
    */
   public abstract UserDatasetType getUserDatasetType();
 
@@ -52,31 +50,21 @@ public abstract class UserDatasetTypeHandler {
 
   public abstract String[] getUninstallInAppDbCommand(Long userDatasetId, String projectName);
 
-  public abstract String[] getRelevantQuestionNames();
-  
+  public abstract String[] getRelevantQuestionNames(UserDataset userDataset);
+
   public abstract String getDisplay();
 
   /**
-   * Returns detailed type-specific data for a single user dataset for use in a detailed display page
-   * 
-   * @param wdkModel
-   * @param userDataset
-   * @param user
-   * @return
-   * @throws WdkModelException
+   * Returns detailed type-specific data for a single user dataset for use in a
+   * detailed display page
    */
   public JsonType getDetailedTypeSpecificData(WdkModel wdkModel, UserDataset userDataset, User user) throws WdkModelException {
     return new JsonType(null);
   }
 
   /**
-   * Returns small-scale type-specific data for a collection of user datasets for use in a non-detailed
-   * user dataset listing page
-   * 
-   * @param wdkModel
-   * @param userDatasets
-   * @return
-   * @throws WdkModelException
+   * Returns small-scale type-specific data for a collection of user datasets
+   * for use in a non-detailed user dataset listing page
    */
   public List<JsonType> getTypeSpecificData(WdkModel wdkModel, List<UserDataset> userDatasets, User user) throws WdkModelException {
     return mapToList(userDatasets, fSwallow(ud -> getDetailedTypeSpecificData(wdkModel, ud, user)));
@@ -84,7 +72,7 @@ public abstract class UserDatasetTypeHandler {
 
   public void installInAppDb(UserDatasetSession dsSession, UserDataset userDataset, Path tmpDir, String projectId) throws WdkModelException {
 
-    Map<String, Path> nameToTempFileMap = new HashMap<String, Path>();
+    Map<String, Path> nameToTempFileMap = new HashMap<>();
 
     Path workingDir = createWorkingDir(tmpDir, userDataset.getUserDatasetId());
 
@@ -98,7 +86,7 @@ public abstract class UserDatasetTypeHandler {
     // For the case where no user dataset file data is installed into the DB
     if(command.length > 0) {
       runCommand(command, workingDir);
-    }  
+    }
     deleteWorkingDir(workingDir);
    }
 
@@ -107,7 +95,7 @@ public abstract class UserDatasetTypeHandler {
     String[] command = getUninstallInAppDbCommand(userDatasetId, projectId);
     // For the case where no user dataset data was stored in the DB
     if(command.length > 0) {
-      runCommand(command, workingDir); 
+      runCommand(command, workingDir);
     }
     deleteWorkingDir(workingDir);
   }
@@ -115,11 +103,11 @@ public abstract class UserDatasetTypeHandler {
   private void runCommand(String[] command, Path workingDir) throws WdkModelException {
 
     StringBuilder builder = new StringBuilder();
-    for (String s : command) { builder.append(s + " "); }
+    for (String s : command) { builder.append(s).append(" "); }
     LOG.info("Running command: " + builder);
 
     Process p = null;
-    Boolean success = false;
+    boolean success;
     try {
       p = new ProcessBuilder(command)
           .directory(workingDir.toFile())
@@ -150,7 +138,7 @@ public abstract class UserDatasetTypeHandler {
     }
     return workingDir;
   }
-  
+
   private void deleteWorkingDir(Path workingDir) throws WdkModelException {
     try {
       Files.walkFileTree(workingDir, new SimpleFileVisitor<Path>() {
@@ -171,5 +159,4 @@ public abstract class UserDatasetTypeHandler {
       throw new WdkModelException(e);
     }
   }
-
 }
