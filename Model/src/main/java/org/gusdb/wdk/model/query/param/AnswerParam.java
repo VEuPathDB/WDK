@@ -138,8 +138,8 @@ public class AnswerParam extends Param {
       return ctxParamVals.setValid(name, level);
     }
 
-    // if level is runnable, check that the step is in our container and
-    // produces the correct record type 
+    // if level is runnable, check that the step is in our container,
+    // produces the correct record type, and is runnably valid
     long stepId = Long.valueOf(stableValue);
     Step step = ctxParamVals.getStepContainer().findFirstStep(withId(stepId)).orElse(null);
 

@@ -78,7 +78,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   private String _displayType;
   private int _minSelectedCount = -1;
-  private int maxSelectedCount = -1;
+  private int _maxSelectedCount = -1;
   private boolean countOnlyLeaves = true;
 
   /**
@@ -115,7 +115,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     this.selectMode = param.selectMode;
     this.suppressNode = param.suppressNode;
     this._minSelectedCount = param._minSelectedCount;
-    this.maxSelectedCount = param.maxSelectedCount;
+    this._maxSelectedCount = param._maxSelectedCount;
     this.countOnlyLeaves = param.countOnlyLeaves;
     this.depthExpanded = param.depthExpanded;
   }
@@ -202,7 +202,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     // only allow one value if multiPick set to false
     if (!getMultiPick())
       return 1;
-    return maxSelectedCount;
+    return _maxSelectedCount;
   }
 
   /**
@@ -211,7 +211,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    *   is "no max"; any number of values can be assigned.
    */
   public void setMaxSelectedCount(int maxSelectedCount) {
-    this.maxSelectedCount = maxSelectedCount;
+    this._maxSelectedCount = maxSelectedCount;
   }
 
   /**
@@ -376,10 +376,10 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
     // verify that user did not select too few or too many values for this param
     int numSelected = getNumSelected(vocab, selectedTerms);
-    if ((maxSelectedCount > 0 && numSelected > maxSelectedCount) ||
+    if ((_maxSelectedCount > 0 && numSelected > _maxSelectedCount) ||
         (_minSelectedCount > 0 && numSelected < _minSelectedCount)) {
       String range = (_minSelectedCount > 0 ? "[ " + _minSelectedCount : "( Inf") + ", " +
-          (maxSelectedCount > 0 ? maxSelectedCount + " ]" : "Inf )");
+          (_maxSelectedCount > 0 ? _maxSelectedCount + " ]" : "Inf )");
       return ctxParamVals.setInvalid(name, level, "Number of selected values ("
         + numSelected + ") was not in range " + range + " for parameter "
         + getPrompt());
