@@ -46,7 +46,7 @@ public class ExampleTypeHandler extends UserDatasetTypeHandler {
   }
 
   @Override
-  public String[] getRelevantQuestionNames() {
+  public String[] getRelevantQuestionNames(UserDataset userDataset) {
     String[] empty = {};
     return empty;
   }
