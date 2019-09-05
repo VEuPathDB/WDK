@@ -449,8 +449,6 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     final boolean force
   ) throws WdkModelException {
     TRACE.start(path, force);
-    if (!path.startsWith(usersRootDir))
-      throw Err.illegalPath(path);
 
     Optional<ICatCollection> optCol = iCatMirror.getCollection(path);
 
