@@ -73,6 +73,8 @@ public class StepFactory {
 
   private static final Logger LOG = Logger.getLogger(StepFactory.class);
 
+  private static final FillStrategy DEFAULT_DB_FILL_STRATEGY = FillStrategy.FILL_PARAM_IF_MISSING;
+
   // columns shared between steps and strategies tables
   static final String COLUMN_USER_ID = Utilities.COLUMN_USER_ID;
   static final String COLUMN_STRATEGY_ID = "strategy_id";
@@ -279,7 +281,7 @@ public class StepFactory {
   }
 
   public Map<Long, Step> getStepsByUserId(long userId, ValidationLevel level) throws WdkModelException {
-    return new StrategyLoader(_wdkModel, level).getSteps(userId);
+    return new StrategyLoader(_wdkModel, level, DEFAULT_DB_FILL_STRATEGY).getSteps(userId);
   }
 
   /**
@@ -295,7 +297,7 @@ public class StepFactory {
    */
   public Optional<Step> getStepById(long stepId, ValidationLevel validationLevel) throws WdkModelException {
     LOG.debug("Loading step#" + stepId + "....");
-    return new StrategyLoader(_wdkModel, validationLevel).getStepById(stepId);
+    return new StrategyLoader(_wdkModel, validationLevel, DEFAULT_DB_FILL_STRATEGY).getStepById(stepId);
   }
 
   public Step getStepByValidId(long stepId, ValidationLevel validationLevel) throws WdkModelException {
@@ -316,7 +318,7 @@ public class StepFactory {
 
   public Map<Long, Strategy> getAllStrategies(ValidationLevel validationLevel,
       MalformedStrategyList malformedStrategies) throws WdkModelException {
-    return new StrategyLoader(_wdkModel, validationLevel)
+    return new StrategyLoader(_wdkModel, validationLevel, DEFAULT_DB_FILL_STRATEGY)
         .getAllStrategies(malformedStrategies);
   }
 
@@ -335,12 +337,12 @@ public class StepFactory {
    */
   public List<Strategy> getStrategies(long userId, boolean saved,
       boolean recent) throws WdkModelException {
-    return new StrategyLoader(_wdkModel, ValidationLevel.SYNTACTIC)
+    return new StrategyLoader(_wdkModel, ValidationLevel.SYNTACTIC, DEFAULT_DB_FILL_STRATEGY)
         .getStrategies(userId, saved, recent);
   }
 
   public List<Strategy> getPublicStrategies() throws WdkModelException {
-    return new StrategyLoader(_wdkModel, ValidationLevel.RUNNABLE)
+    return new StrategyLoader(_wdkModel, ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
         .getPublicStrategies();
   }
 
@@ -352,7 +354,7 @@ public class StepFactory {
    *   if unable to load and validate all public strats
    */
   public int getPublicStrategyCount() throws WdkModelException {
-    return filter(new StrategyLoader(_wdkModel, ValidationLevel.RUNNABLE)
+    return filter(new StrategyLoader(_wdkModel, ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
         .getPublicStrategies(), Strategy::isValid).size();
   }
 
@@ -699,7 +701,7 @@ public class StepFactory {
 
   public Optional<Strategy> getStrategyBySignature(String strategySignature)
       throws WdkModelException {
-    return new StrategyLoader(_wdkModel, ValidationLevel.SEMANTIC)
+    return new StrategyLoader(_wdkModel, ValidationLevel.SEMANTIC, DEFAULT_DB_FILL_STRATEGY)
         .getStrategyBySignature(strategySignature);
   }
 

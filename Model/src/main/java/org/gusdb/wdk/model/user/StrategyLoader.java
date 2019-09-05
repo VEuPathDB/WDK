@@ -111,10 +111,6 @@ public class StrategyLoader {
   private final ValidationLevel _validationLevel;
   private final FillStrategy _fillStrategy;
 
-  public StrategyLoader(WdkModel wdkModel, ValidationLevel validationLevel) {
-    this(wdkModel, validationLevel, FillStrategy.NO_FILL);
-  }
-
   public StrategyLoader(WdkModel wdkModel, ValidationLevel validationLevel, FillStrategy fillStrategy) {
     _wdkModel = wdkModel;
     _userDbDs = wdkModel.getUserDb().getDataSource();
