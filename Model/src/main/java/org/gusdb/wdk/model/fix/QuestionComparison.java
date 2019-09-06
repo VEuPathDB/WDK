@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +24,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.IoUtil;
-import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.json.JSONArray;
@@ -50,12 +52,16 @@ public class QuestionComparison {
     return String.format(STANDARD_REPORT_URL, recordType, question);
   }
 
-  private static class QuestionReference extends TwoTuple<List<String>,Map<String,String>> {
-    public QuestionReference(List<String> first, Map<String, String> second) {
-      super(first, second);
+  private static class QuestionReference extends ThreeTuple<List<String>,Map<String,String>,Map<String,List<String>>> {
+    public QuestionReference(
+        List<String> questionNames,
+        Map<String, String> recordClassMap,
+        Map<String,List<String>> paramNamesMap) {
+      super(questionNames, recordClassMap, paramNamesMap);
     }
     public List<String> sortedNames() { return getFirst(); }
     public String getRecordType(String questionName) { return getSecond().get(questionName); }
+    public List<String> getParamNames(String questionName) { return getThird().get(questionName); }
   }
 
   private ComparisonBean questionNameComparison = null;
@@ -110,17 +116,12 @@ public class QuestionComparison {
       System.out.println(NL + "Logging Comparisons between " + qaUrl + " and " + prodUrl + NL);
 
       // Order is important. Compare question names first.
-      Map<String,String> commonQuestionMap = compareQuestionNames(qaUrl, prodUrl);
+      Map<String,String> commonQuestionMap = compareQuestionAndParamNames(qaUrl, prodUrl);
 
       // Not all WDK sites necessarily contain the organism question or if in the rare event of
       // the sites having no questions in common, there is nothing to do here.
       if (commonQuestionMap.containsKey(ORGANISM_QUESTION))
         compareOrganisms(qaUrl, prodUrl);
-
-      // Although an unlikely scenario, there are no parameter names to compare if the sites have no
-      // questions in common.
-      if (!commonQuestionMap.isEmpty())
-        compareParameterNames(qaUrl, prodUrl, commonQuestionMap);
 
       // Although an unlikely scenario, there are no parameter value to compare if the sites have no
       // questions in common or no parameter in common for the questions they do have in common.
@@ -170,38 +171,38 @@ public class QuestionComparison {
    * @param prodUrl
    * @throws WdkModelException
    */
-  protected Map<String,String> compareQuestionNames(String qaUrl, String prodUrl) throws WdkModelException {
+  protected Map<String,String> compareQuestionAndParamNames(String qaUrl, String prodUrl) throws WdkModelException {
 
     System.out.println("Starting question name comparison");
     Instant start = Instant.now();
 
     // Create the question name lists from the JSONArrays returned by service calls
-    QuestionReference qaQuestionNames = createQuestionReference(
+    QuestionReference qaQuestionRef = createQuestionReference(
         new JSONArray(callGetService(qaUrl + RECORDTYPES_REQUEST_URL)));
-    QuestionReference prodQuestionNames = createQuestionReference(
+    QuestionReference prodQuestionRef = createQuestionReference(
         new JSONArray(callGetService(prodUrl + RECORDTYPES_REQUEST_URL)));
 
     // Contains qa question names not in prod
-    List<String> newQuestionList = new ArrayList<>(qaQuestionNames.sortedNames());
-    newQuestionList.removeAll(prodQuestionNames.sortedNames());
+    List<String> newQuestionList = new ArrayList<>(qaQuestionRef.sortedNames());
+    newQuestionList.removeAll(prodQuestionRef.sortedNames());
 
     // Contains prod question names not in qa
-    List<String> invalidQuestionList = new ArrayList<>(prodQuestionNames.sortedNames());
-    invalidQuestionList.removeAll(qaQuestionNames.sortedNames());
+    List<String> invalidQuestionList = new ArrayList<>(prodQuestionRef.sortedNames());
+    invalidQuestionList.removeAll(qaQuestionRef.sortedNames());
 
     // Contains question names common to both sites. Needed to identify which questions
     // to use when comparing parameters.
-    List<String> commonQuestionList = new ArrayList<>(qaQuestionNames.sortedNames());
-    commonQuestionList.retainAll(prodQuestionNames.sortedNames());
+    List<String> commonQuestionList = new ArrayList<>(qaQuestionRef.sortedNames());
+    commonQuestionList.retainAll(prodQuestionRef.sortedNames());
     commonQuestionList.sort(String.CASE_INSENSITIVE_ORDER);
 
     // Confirm record classes are the same for all common questions; if different, don't compare params
     List<String> questionsWithDiffRcs = new ArrayList<>();
     for (String commonQuestion : commonQuestionList) {
-      if (!qaQuestionNames.getRecordType(commonQuestion).equals(prodQuestionNames.getRecordType(commonQuestion))) {
+      if (!qaQuestionRef.getRecordType(commonQuestion).equals(prodQuestionRef.getRecordType(commonQuestion))) {
         questionsWithDiffRcs.add(commonQuestion);
         System.err.println("Warning: Question " + commonQuestion + " exists in both sites but has different types (" +
-            qaQuestionNames.getRecordType(commonQuestion) + " vs. " + prodQuestionNames.getRecordType(commonQuestion));
+            qaQuestionRef.getRecordType(commonQuestion) + " vs. " + prodQuestionRef.getRecordType(commonQuestion));
       }
     }
     commonQuestionList.removeAll(questionsWithDiffRcs);
@@ -212,7 +213,11 @@ public class QuestionComparison {
 
     Instant end = Instant.now();
     System.out.println("Concluding question name comparison\t" + Duration.between(start, end).toNanos() / 1E9 + "\tsec");
-    return Functions.getMapFromKeys(commonQuestionList, qName -> qaQuestionNames.getRecordType(qName));
+
+    // use param name data from the GET to compare names
+    compareParameterNames(commonQuestionList, qaQuestionRef, prodQuestionRef);
+
+    return Functions.getMapFromKeys(commonQuestionList, qName -> qaQuestionRef.getRecordType(qName));
   }
 
   /**
@@ -222,21 +227,26 @@ public class QuestionComparison {
   protected QuestionReference createQuestionReference(JSONArray recordTypeDataArray) {
     List<String> questionNames = new ArrayList<>();
     Map<String,String> questionToRecordClassMap = new HashMap<>();
+    Map<String,List<String>> questionToParamNamesMap = new HashMap<>();
     arrayStream(recordTypeDataArray)
       // map each rc json to its array of searches
       .map(rcJson -> rcJson.getJSONObject().getJSONArray(JsonKeys.SEARCHES))
       .forEach(searchesArray -> arrayStream(searchesArray)
         // map each search json to its name
-        .map(searchJson -> new TwoTuple<String,String>(
+        .map(searchJson -> new ThreeTuple<String,String,List<String>>(
             searchJson.getJSONObject().getString(JsonKeys.URL_SEGMENT),
-            searchJson.getJSONObject().getString(JsonKeys.OUTPUT_RECORD_CLASS_NAME)))
+            searchJson.getJSONObject().getString(JsonKeys.OUTPUT_RECORD_CLASS_NAME),
+            Arrays.asList(JsonUtil.toStringArray(searchJson.getJSONObject().getJSONArray(JsonKeys.PARAM_NAMES)))))
         .forEach(tuple -> {
           questionNames.add(tuple.getFirst());
           questionToRecordClassMap.put(tuple.getFirst(), tuple.getSecond());
+          List<String> parameterNames = tuple.getThird();
+          parameterNames.sort(String.CASE_INSENSITIVE_ORDER);
+          questionToParamNamesMap.put(tuple.getFirst(), parameterNames);
         }));
     // sort for later comparison to another list
     questionNames.sort(String.CASE_INSENSITIVE_ORDER);
-    return new QuestionReference(questionNames, questionToRecordClassMap);
+    return new QuestionReference(questionNames, questionToRecordClassMap, questionToParamNamesMap);
   }
 
   /**
@@ -247,7 +257,7 @@ public class QuestionComparison {
    * @param prodUrl
    * @throws WdkModelException
    */
-  protected void compareOrganisms(String qaUrl, String prodUrl) throws WdkModelException {
+  private void compareOrganisms(String qaUrl, String prodUrl) throws WdkModelException {
     System.out.println("Starting organism comparison");
     Instant start = Instant.now();
     JSONObject organismRequest = getOrganismRequest();
@@ -290,7 +300,7 @@ public class QuestionComparison {
    * 
    * @return - request object for post
    */
-  protected JSONObject getOrganismRequest() {
+  private static JSONObject getOrganismRequest() {
     return new JSONObject()
       .put(JsonKeys.SEARCH_CONFIG, new JSONObject()
         .put(JsonKeys.PARAMETERS, new JSONObject()))
@@ -306,7 +316,7 @@ public class QuestionComparison {
    * @param data
    * @return
    */
-  protected List<String> createOrganismList(JSONObject data) {
+  private static List<String> createOrganismList(JSONObject data) {
     List<String> organisms = new ArrayList<>();
     JSONArray records = data.getJSONArray(JsonKeys.RECORDS);
     for (int i = 0; i < records.length(); i++) {
@@ -322,45 +332,19 @@ public class QuestionComparison {
    * Finds the names of those parameters, for each question common to both urls, that exist in one url and not
    * in the other and uses that data to populate a list of comparison objects for eventual display.
    */
-  protected void compareParameterNames(String qaUrl, String prodUrl, Map<String,String> questionToRcMap) {
+  private void compareParameterNames(List<String> commonQuestionList, QuestionReference qaQuestionRef,
+      QuestionReference prodQuestionRef) {
     System.out.println("Starting parameter name comparison");
     Instant start = Instant.now();
 
     Duration serviceCallDuration = Duration.ZERO;
 
     // Iterate over those questions both site have in common
-    for (String question : questionToRcMap.keySet()) {
-
-      // Service call takes the question name in its path
-      String questionPath = getQuestionUrl(questionToRcMap.get(question), question);
-
-      JSONObject qaData;
-      JSONObject prodData;
-
-      Instant serviceCallStart = Instant.now();
-      try {
-        // Get additional question metadata containing parameter names from the question service for question
-        // for each site.
-        qaData = new JSONObject(callGetService(qaUrl + questionPath));
-        prodData = new JSONObject(callGetService(prodUrl + questionPath));
-      }
-      catch (WdkModelException wme) {
-        // An error due to a bad response to a service call may not affect the rest of the report. So we
-        // continue
-        // with the next question and log the error for later display.
-        errors.add(
-            new Error("While processing the " + question + " in compareParameterName", wme.getMessage()));
-        continue;
-      }
-      finally {
-        Instant serviceCallEnd = Instant.now();
-        serviceCallDuration = serviceCallDuration.plusNanos(
-            Duration.between(serviceCallStart, serviceCallEnd).toNanos());
-      }
+    for (String question : commonQuestionList) {
 
       // Create the parameter name lists from the JSONObjects returned by the service calls.
-      List<String> qaParameterNames = createParameterNameList(qaData);
-      List<String> prodParameterNames = createParameterNameList(prodData);
+      List<String> qaParameterNames = qaQuestionRef.getParamNames(question);
+      List<String> prodParameterNames = prodQuestionRef.getParamNames(question);
 
       // Contains qa parameter names not in prod
       List<String> newParameterList = new ArrayList<>(qaParameterNames);
@@ -388,28 +372,11 @@ public class QuestionComparison {
   }
 
   /**
-   * Creates an alphabetically sorted list of parameter names given the JSONObject returned by a question
-   * service call for a specific question
-   * 
-   * @param data
-   * @return
-   */
-  protected List<String> createParameterNameList(JSONObject data) {
-    List<String> parameterNames = new ArrayList<>();
-    JSONArray parameters = data.getJSONArray("parameters");
-    for (int i = 0; i < parameters.length(); i++) {
-      parameterNames.add(parameters.getString(i));
-    }
-    parameterNames.sort(String.CASE_INSENSITIVE_ORDER);
-    return parameterNames;
-  }
-
-  /**
    * Finds the parameter values for each parameter common to both urls, for each question common to both urls,
    * that exist in one url and not in the other and uses that data to populate a list of comparison objects
    * for eventual display.
    */
-  protected void compareParameterValues(String qaUrl, String prodUrl, Map<String,String> questionToRcMap) {
+  private void compareParameterValues(String qaUrl, String prodUrl, Map<String,String> questionToRcMap) {
     System.out.println("Starting parameter value comparison");
     Instant start = Instant.now();
 
@@ -446,18 +413,16 @@ public class QuestionComparison {
       }
 
       // Extract the parameters JSONArray from each JSONObject
-      JSONArray qaParameters = qaData.getJSONArray("parameters");
-      JSONArray prodParameters = prodData.getJSONArray("parameters");
+      JSONArray qaParameters = qaData.getJSONObject(JsonKeys.SEARCH_DATA).getJSONArray(JsonKeys.PARAMETERS);
+      JSONArray prodParameters = prodData.getJSONObject(JsonKeys.SEARCH_DATA).getJSONArray(JsonKeys.PARAMETERS);
 
-      // Use one of the parameters JSONArrays to collect a list of dependent parameter names. We are not
-      // comparing
-      // dependent parameter name lists between the sites but rather just choosing one of the sites.
-      // Hopefully, for
+      // Use one of the parameters JSONArrays to collect a list of dependent parameter names. We are not comparing
+      // dependent parameter name lists between the sites but rather just choosing one of the sites. Hopefully, for
       // those parameters the sites have in common for this question, dependencies will not have changed.
       List<String> dependentParamList = new ArrayList<>();
       for (int i = 0; i < qaParameters.length(); i++) {
         JSONObject parameter = qaParameters.getJSONObject(i);
-        JSONArray dependentParams = parameter.getJSONArray("dependentParams");
+        JSONArray dependentParams = parameter.getJSONArray(JsonKeys.DEPENDENT_PARAMS);
         for (int j = 0; j < dependentParams.length(); j++) {
           dependentParamList.add(dependentParams.getString(j));
         }
@@ -465,10 +430,8 @@ public class QuestionComparison {
 
       // Create maps of parameters to a listing of parameter values from the JSONObjects returned by the
       // service calls.
-      Map<String, List<ParameterValue>> qaParameterMap = createParameterValueMap(question, qaParameters,
-          dependentParamList);
-      Map<String, List<ParameterValue>> prodParameterMap = createParameterValueMap(question, prodParameters,
-          dependentParamList);
+      Map<String, List<ParameterValue>> qaParameterMap = createParameterValueMap(question, qaParameters, dependentParamList);
+      Map<String, List<ParameterValue>> prodParameterMap = createParameterValueMap(question, prodParameters, dependentParamList);
 
       // Iterate over the question parameters common to both sites. Can use the key set of either site mapping
       // because
@@ -484,10 +447,10 @@ public class QuestionComparison {
         }
 
         // Pull the string values out of the ParameterValue objects for comparison.
-        List<String> qaParameterValues = qaParameterMap.get(parameter).stream().map(
-            v -> v.getValue()).collect(Collectors.toList());
-        List<String> prodParameterValues = prodParameterMap.get(parameter).stream().map(
-            v -> v.getValue()).collect(Collectors.toList());
+        List<String> qaParameterValues = qaParameterMap.get(parameter).stream()
+            .map(v -> v.getValue()).collect(Collectors.toList());
+        List<String> prodParameterValues = prodParameterMap.get(parameter).stream()
+            .map(v -> v.getValue()).collect(Collectors.toList());
 
         // Contains qa parameter values not in prod
         List<String> newParameterValueList = new ArrayList<>(qaParameterValues);
@@ -497,22 +460,19 @@ public class QuestionComparison {
         List<String> invalidParameterValueList = new ArrayList<>(prodParameterValues);
         invalidParameterValueList.removeAll(qaParameterValues);
 
-        // Create a list of parameter value comparisons for each question and parameter combination for
-        // display
+        // Create a list of parameter value comparisons for each question and parameter combination for display
         ComparisonBean comparison = new ComparisonBean(question + "/" + parameter, "New Parameter Values",
             "Invalid Parameter Values", newParameterValueList, invalidParameterValueList);
         parameterValueComparisons.add(comparison);
 
         // Contains parameter values common to both sites for each question and parameter combination. Needed
         // to identify which parameter values to use when comparing options for a given question, parameter
-        // and
-        // parameter value in the case of a filter param new parameter.
+        // and parameter value in the case of a filter param new parameter.
         List<String> commonParameterValueList = new ArrayList<>(qaParameterValues);
         commonParameterValueList.retainAll(prodParameterValues);
 
         // Iterate over the list of parameter values for this question/parameter combination that are common
-        // to both
-        // sites.
+        // to both sites.
         for (String parameterValue : commonParameterValueList) {
 
           // Find the corresponding ParameterValue object from the previously created parameter maps
@@ -677,7 +637,7 @@ public class QuestionComparison {
    * @return
    * @throws WdkModelException
    */
-  protected String callGetService(String serviceUrl) throws WdkModelException {
+  private static String callGetService(String serviceUrl) throws WdkModelException {
     Client client = ClientBuilder.newBuilder().build();
     Response response = client.target(serviceUrl).request().get();
     try {
@@ -710,7 +670,7 @@ public class QuestionComparison {
    * @return
    * @throws WdkModelException
    */
-  protected String callPostService(String serviceUrl, JSONObject body) throws WdkModelException {
+  private static String callPostService(String serviceUrl, JSONObject body) throws WdkModelException {
     Client client = ClientBuilder.newBuilder().build();
     Response response = client.target(serviceUrl).request().post(
         Entity.entity(body.toString(), MediaType.APPLICATION_JSON));
