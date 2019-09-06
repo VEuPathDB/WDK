@@ -85,9 +85,11 @@ public class QuestionComparison {
   public static void main(String[] args) {
     if (args.length < 2 || args.length > 3) {
       System.err.println(
-          "Usage: questionComparison <qa url> <prod url> <new | invalid>\nExample: questionComparison https://qa.plasmodb.org/plasmo https://plasmodb.org/plasmo invalid");
+          "Usage: wdkQuestionComparisonReport <qa_url> <prod_url> <new | invalid>\nExample: questionComparison https://qa.plasmodb.org/plasmo https://plasmodb.org/plasmo invalid");
       System.exit(1);
     }
+    validateUrl(args[0]);
+    validateUrl(args[1]);
     try {
       new QuestionComparison().execute(args[0], args[1], args.length == 3 ? args[2] : "");
     }
@@ -104,47 +106,43 @@ public class QuestionComparison {
    * 
    * @param qaUrl
    * @param prodUrl
+   * @throws WdkModelException 
    * @throws Exception
    */
-  protected void execute(String qaUrl, String prodUrl, String displayOption) {
+  private void execute(String qaUrl, String prodUrl, String displayOption) throws WdkModelException {
+
     System.out.println("Starting site comparison");
     Instant start = Instant.now();
 
-    // validateParameters(qaUrl, prodUrl);
+    System.out.println(NL + "Logging Comparisons between " + qaUrl + " and " + prodUrl + NL);
 
-    try {
-      System.out.println(NL + "Logging Comparisons between " + qaUrl + " and " + prodUrl + NL);
+    // Order is important. Compare question names first.
+    Map<String,String> commonQuestionMap = compareQuestionAndParamNames(qaUrl, prodUrl);
 
-      // Order is important. Compare question names first.
-      Map<String,String> commonQuestionMap = compareQuestionAndParamNames(qaUrl, prodUrl);
+    // Not all WDK sites necessarily contain the organism question or if in the rare event of
+    // the sites having no questions in common, there is nothing to do here.
+    if (commonQuestionMap.containsKey(ORGANISM_QUESTION))
+      compareOrganisms(qaUrl, prodUrl);
 
-      // Not all WDK sites necessarily contain the organism question or if in the rare event of
-      // the sites having no questions in common, there is nothing to do here.
-      if (commonQuestionMap.containsKey(ORGANISM_QUESTION))
-        compareOrganisms(qaUrl, prodUrl);
+    // Although an unlikely scenario, there are no parameter value to compare if the sites have no
+    // questions in common or no parameter in common for the questions they do have in common.
+    if (!commonParameterMap.isEmpty())
+      compareParameterValues(qaUrl, prodUrl, commonQuestionMap);
 
-      // Although an unlikely scenario, there are no parameter value to compare if the sites have no
-      // questions in common or no parameter in common for the questions they do have in common.
-      if (!commonParameterMap.isEmpty())
-        compareParameterValues(qaUrl, prodUrl, commonQuestionMap);
+    // Display results
+    System.out.print(NL + "Result of Comparisons between " + qaUrl + " and " + prodUrl + NL);
+    if (questionNameComparison != null)
+      questionNameComparison.display(displayOption);
+    if (organismComparison != null)
+      organismComparison.display(displayOption);
+    parameterNameComparisons.stream().forEach(comparison -> comparison.display(displayOption));
+    parameterValueComparisons.stream().forEach(comparison -> comparison.display(displayOption));
+    parameterValueOptionComparisons.stream().forEach(comparison -> comparison.display(displayOption));
 
-      // Display results
-      System.out.print(NL + "Result of Comparisons between " + qaUrl + " and " + prodUrl);
-      if (questionNameComparison != null)
-        questionNameComparison.display(displayOption);
-      if (organismComparison != null)
-        organismComparison.display(displayOption);
-      parameterNameComparisons.stream().forEach(comparison -> comparison.display(displayOption));
-      parameterValueComparisons.stream().forEach(comparison -> comparison.display(displayOption));
-      parameterValueOptionComparisons.stream().forEach(comparison -> comparison.display(displayOption));
+    // Display errors
+    System.out.println(NL + "Trapped Errors");
+    errors.stream().forEach(error -> error.display());
 
-      // Display errors
-      System.out.println(NL + "Trapped Errors");
-      errors.stream().forEach(error -> error.display());
-    }
-    catch (WdkModelException wme) {
-      throw new RuntimeException(wme);
-    }
     Instant end = Instant.now();
     System.out.println("Site comparison\t" + Duration.between(start, end).toNanos() / 1E9 + "\tsec");
   }
@@ -152,14 +150,12 @@ public class QuestionComparison {
   /**
    * Very basic validation to insure that the given arguments are urls. Does not insure that the urls
    * represent WDK sites.
-   * 
-   * @param qaUrl
-   * @param prodUrl
    */
-  protected void validateParameters(String qaUrl, String prodUrl) {
+  private static void validateUrl(String url) {
     String pattern = "^(http|https)://.*\\.(org|net)/.*";
-    if (!Pattern.matches(pattern, qaUrl) || !Pattern.matches(pattern, prodUrl)) {
-      throw new RuntimeException("One or both of the urls provided is not recognized as such.");
+    if (!Pattern.matches(pattern, url)) {
+      System.err.println("URL provided '" + url + "' is not a valid URL.");
+      System.exit(1);
     }
   }
 
@@ -171,7 +167,7 @@ public class QuestionComparison {
    * @param prodUrl
    * @throws WdkModelException
    */
-  protected Map<String,String> compareQuestionAndParamNames(String qaUrl, String prodUrl) throws WdkModelException {
+  private Map<String,String> compareQuestionAndParamNames(String qaUrl, String prodUrl) throws WdkModelException {
 
     System.out.println("Starting question name comparison");
     Instant start = Instant.now();
@@ -224,7 +220,7 @@ public class QuestionComparison {
    * Creates an alphabetically sorted list of question names given the JSONArray returned by a question
    * service call
    */
-  protected QuestionReference createQuestionReference(JSONArray recordTypeDataArray) {
+  private static QuestionReference createQuestionReference(JSONArray recordTypeDataArray) {
     List<String> questionNames = new ArrayList<>();
     Map<String,String> questionToRecordClassMap = new HashMap<>();
     Map<String,List<String>> questionToParamNamesMap = new HashMap<>();
@@ -546,7 +542,7 @@ public class QuestionComparison {
    *          - list of names of those parameters that depend on other parameters
    * @return - parameter values map
    */
-  protected Map<String, List<ParameterValue>> createParameterValueMap(String question, JSONArray parameters,
+  private Map<String, List<ParameterValue>> createParameterValueMap(String question, JSONArray parameters,
       List<String> dependentParameterList) {
     Map<String, List<ParameterValue>> parameterValueMap = new HashMap<>();
     for (int i = 0; i < parameters.length(); i++) {
@@ -618,10 +614,10 @@ public class QuestionComparison {
    * @param leaves
    *          - list of parameter values
    */
-  protected void getLeaves(JSONObject item, List<ParameterValue> leaves) {
-    JSONArray children = item.getJSONArray("children");
+  private static void getLeaves(JSONObject item, List<ParameterValue> leaves) {
+    JSONArray children = item.getJSONArray(JsonKeys.CHILDREN);
     if (children.length() == 0) {
-      leaves.add(new ParameterValue(item.getJSONObject("data").getString("term")));
+      leaves.add(new ParameterValue(item.getJSONObject(JsonKeys.DATA).getString(JsonKeys.TERM)));
       return;
     }
     for (int i = 0; i < children.length(); i++) {
@@ -701,7 +697,7 @@ public class QuestionComparison {
    * @author crisl-adm
    *
    */
-  private class ParameterValue {
+  private static class ParameterValue {
     private String _value;
 
     public ParameterValue(String value) {
@@ -719,7 +715,7 @@ public class QuestionComparison {
    * @author crisl-adm
    *
    */
-  private class FilterParamNewValue extends ParameterValue {
+  private static class FilterParamNewValue extends ParameterValue {
     private boolean _histogram;
     private List<String> _ontologyTermValues;
 
@@ -745,7 +741,7 @@ public class QuestionComparison {
    * @author crisl-adm
    *
    */
-  private class Error {
+  private static class Error {
     private String _context;
     private String _message;
 

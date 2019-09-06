@@ -93,6 +93,8 @@ public class JsonKeys {
   public static final String ADD_FROM_STEP_ID = "addFromStepId";
 
   // keys for what and how data is being referenced
+  public static final String DATA = "data";
+  public static final String TERM = "term";
   public static final String TREE = "tree";
   public static final String CHILDREN = "children";
   public static final String PARAMETERS = "parameters";

@@ -15,6 +15,8 @@ import org.json.JSONObject;
 
 public abstract class AbstractEnumParamFormatter extends ParamFormatter<AbstractEnumParam> {
 
+  private static final String DUMMY_VALUE = "@@fake@@";
+
   AbstractEnumParamFormatter(AbstractEnumParam param) {
     super(param);
   }
@@ -52,8 +54,8 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
       return nodeToJson(rootNodes[0]);
     }
 
-    EnumParamTermNode root = new EnumParamTermNode("@@fake@@");
-    root.setDisplay("@@fake@@");
+    EnumParamTermNode root = new EnumParamTermNode(DUMMY_VALUE);
+    root.setDisplay(DUMMY_VALUE);
     for (EnumParamTermNode child: rootNodes) {
       root.addChild(child);
     }
@@ -62,8 +64,8 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
 
   protected JSONObject nodeToJson(EnumParamTermNode node) {
     return new JSONObject()
-        .put("data", new JSONObject().put("term", node.getTerm()).put("display", node.getDisplay()))
-        .put("children", new JSONArray(Arrays.stream(node.getChildren()).map(this::nodeToJson).toArray()));
+        .put(JsonKeys.DATA, new JSONObject().put(JsonKeys.TERM, node.getTerm()).put(JsonKeys.DISPLAY, node.getDisplay()))
+        .put(JsonKeys.CHILDREN, new JSONArray(Arrays.stream(node.getChildren()).map(this::nodeToJson).toArray()));
   }
 
   @Override
