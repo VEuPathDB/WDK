@@ -173,6 +173,9 @@ public class DatasetRequestProcessor {
         .map(ri -> ri.getPrimaryKey().getValues().values().toArray(new String[0]))
         .collect(Collectors.toList());
 
+    if (ids.isEmpty()) {
+      throw new DataValidationException("Basket '" + recordClassName + "' does not contain any records.  No dataset can be made.");
+    }
     return createDataset(user, new ListDatasetParser(), joinIds(ids), null, factory);
   }
 
@@ -187,6 +190,9 @@ public class DatasetRequestProcessor {
     AnswerValue answerValue = AnswerValueFactory.makeAnswer(
         Strategy.getRunnableStep(strategy, strategy.get().getRootStepId()).get());
     List<String[]> ids = answerValue.getAllIds();
+    if (ids.isEmpty()) {
+      throw new DataValidationException("Strategy '" + strategyId + "' does not contain any records.  No dataset can be made.");
+    }
     return createDataset(user, new ListDatasetParser(), joinIds(ids), null, factory);
   }
 
@@ -221,6 +227,9 @@ public class DatasetRequestProcessor {
 
     try {
       String contents = new String(Files.readAllBytes(tempFilePath));
+      if (contents.isEmpty()) {
+        throw new DataValidationException("The file submitted is empty.  No dataset can be made.");
+      }
       return createDataset(user, parser, contents, tempFileId, factory);
     }
     catch (IOException e) {
