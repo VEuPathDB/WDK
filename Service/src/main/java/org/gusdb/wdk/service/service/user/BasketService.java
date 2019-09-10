@@ -75,9 +75,8 @@ import org.json.JSONObject;
  * <pre>
  * 1. GET    /baskets                                  returns list of baskets (record classes) and record count in each basket
  * 2. PATCH  /baskets/{recordClassOrUrlSegment}        add or remove multiple records from a basket
- * 3. DELETE /baskets/{recordClassOrUrlSegment}        clears all records from a basket
- * 4. POST   /baskets/{recordClassOrUrlSegment}/query  queries basket status (presence) of multiple records at one time
- * 5. POST   /baskets/{recordClassOrUrlSegment}/answer same API as "format" property of answer service
+ * 3. POST   /baskets/{recordClassOrUrlSegment}/query  queries basket status (presence) of multiple records at one time
+ * 4. POST   /baskets/{recordClassOrUrlSegment}/answer same API as "format" property of answer service
  * </pre>
  *//*
  * TODO #1: Need to add option in POST /dataset endpoint to create from basket (i.e. basket snapshot)
