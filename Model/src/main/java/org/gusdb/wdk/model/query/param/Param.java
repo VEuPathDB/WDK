@@ -571,16 +571,21 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
       return stableValues.setValid(getName(), level);
     }
 
-    // determine if we will need to generate a default value; if so, any depended
+    // determine if we will need to generate a default value and also if the
+    // generation of that value requires runnable values of dependent params; if so, any depended
     // values will need to be validated at the runnable level in order to run
     // any depended queries required to generate a default value
-    boolean defaultValueRequired = stableValues.get(getName()) == null && fillStrategy.shouldFillWhenMissing();
+    boolean defaultValueRequired =
+        stableValues.get(getName()) == null &&
+        fillStrategy.shouldFillWhenMissing();
 
     // validate any parent (depended) params; if a default for this param will
     //   be generated, then these params MUST be validated at the RUNNABLE level
     //   so that their values can be used to run dependent queries in the params
     //   that depend on them
-    ValidationLevel parentLevel = defaultValueRequired ? ValidationLevel.RUNNABLE : level;
+    ValidationLevel parentLevel = defaultValueRequired &&
+        defaultGenerationRequiresRunnableParents() ?
+            ValidationLevel.RUNNABLE : level;
     Optional<ParamValidity> invalidityResult = validateDependedParams(stableValues, level, parentLevel, fillStrategy);
     if (invalidityResult.isPresent()) {
       return invalidityResult.get();
@@ -641,6 +646,16 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
     validationLog(() -> "Populated default value is " + (defaultsValidity.isValid() ? "valid" : "invalid") + "; returning status.");
     return defaultsValidity;
+  }
+
+  /**
+   * @return true if the generation of this param's initial display value
+   * requires that its depended params have runnably valid values.  Typically
+   * this method will return false unless this param needs to run vocabulary
+   * queries inorder to generate its initial displaly value
+   */
+  protected boolean defaultGenerationRequiresRunnableParents() {
+    return false;
   }
 
   private Optional<ParamValidity> validateDependedParams(
