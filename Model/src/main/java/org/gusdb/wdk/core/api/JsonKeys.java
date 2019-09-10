@@ -175,7 +175,6 @@ public class JsonKeys {
   public static final String FILTERS = "filters";
   public static final String VIEW_FILTERS = "viewFilters";
   public static final String WDK_WEIGHT = "wdkWeight";
-  public static final String IS_ANSWER_SPEC_COMPLETE = "isAnswerSpecComplete";
   public static final String CREATED_TIME = "createdTime";
   public static final String LAST_RUN_TIME = "lastRunTime";
   public static final String DISPLAY_PREFS = "displayPrefs";
@@ -183,6 +182,7 @@ public class JsonKeys {
   public static final String LEAF_AND_TRANSFORM_STEP_COUNT = "leafAndTransformStepCount";
   public static final String IS_EXPANDED = "expanded";
   public static final String EXPANDED_NAME = "expandedName";
+  public static final String OVERWRITE_WITH_OPERATION = "overwrite-with"; // PATCH operation
 
   // step analysis keys
   public static final String ANALYSIS_ID = "analysisId"; // TODO convert to simply ID

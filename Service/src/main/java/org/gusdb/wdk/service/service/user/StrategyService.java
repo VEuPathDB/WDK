@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -39,6 +40,7 @@ import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.Strategy;
+import org.gusdb.wdk.model.user.Strategy.StrategyBuilder;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserCache;
 import org.gusdb.wdk.service.annotation.InSchema;
@@ -111,14 +113,14 @@ public class StrategyService extends UserService {
   @Path(BASE_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @InSchema("wdk.users.strategies.patch-request")
-  public void deleteStrategies(JSONObject[] strats) // TODO: Find a better name for me
+  public void deleteStrategies(JSONObject[] operations)
       throws WdkModelException {
-    final Collection<Strategy> toUpdate = new ArrayList<>(strats.length);
+    final Collection<Strategy> toUpdate = new ArrayList<>(operations.length);
 
     try {
-      for (JSONObject action : strats) {
-        final long id = action.getLong(JsonKeys.STRATEGY_ID);
-        final boolean del = action.getBoolean(JsonKeys.IS_DELETED);
+      for (JSONObject op : operations) {
+        final long id = op.getLong(JsonKeys.STRATEGY_ID);
+        final boolean del = op.getBoolean(JsonKeys.IS_DELETED);
         final Strategy strat = getStrategyForCurrentUser(id, ValidationLevel.NONE);
 
         if (del != strat.isDeleted())
@@ -190,21 +192,25 @@ public class StrategyService extends UserService {
   @InSchema("wdk.users.strategies.id.put-request")
   public void replaceStepTree(@PathParam(ID_PARAM) long stratId, JSONObject body)
       throws WdkModelException, DataValidationException {
-
     final Strategy oldStrat = getNotDeletedStrategyForCurrentUser(stratId, ValidationLevel.NONE);
-
     JSONObject stepTree = body.getJSONObject(JsonKeys.STEP_TREE);
-     final StepFactory stepFactory = getWdkModel().getStepFactory();
+    overwriteStepTreeAndSave(oldStrat, stepTree, o -> {});
+  }
+
+  private Strategy overwriteStepTreeAndSave(Strategy oldStrat, JSONObject stepTree,
+      Consumer<StrategyBuilder> additionalChanges) throws WdkModelException, DataValidationException {
+    final StepFactory stepFactory = getWdkModel().getStepFactory();
     final TwoTuple<Long, Collection<StepBuilder>> parsedTree =
         StrategyRequest.treeToSteps(Optional.of(oldStrat), stepTree, stepFactory);
     try {
 
       // build and validate modified strategy
-      Strategy newStrat = Strategy.builder(oldStrat)
+      StrategyBuilder newStratBuilder = Strategy.builder(oldStrat)
         .clearSteps()
         .setRootStepId(parsedTree.getFirst())
-        .addSteps(parsedTree.getSecond())
-        .build(new UserCache(oldStrat.getUser()), ValidationLevel.NONE);
+        .addSteps(parsedTree.getSecond());
+      additionalChanges.accept(newStratBuilder);
+      Strategy newStrat = newStratBuilder.build(new UserCache(oldStrat.getUser()), ValidationLevel.NONE);
   
       // filter the list of original steps down to only steps that do not appear
       // in the new tree
@@ -220,6 +226,7 @@ public class StrategyService extends UserService {
       // update strategy and newly orphaned steps
       stepFactory.updateStrategyAndOtherSteps(newStrat, orphanedSteps);
 
+      return newStrat;
     }
     catch (InvalidStrategyStructureException e) {
       throw new DataValidationException(e.getMessage());
@@ -323,35 +330,80 @@ public class StrategyService extends UserService {
    *
    * @return New strategy instance with the given changes applied.
    * @throws InvalidStrategyStructureException
+   * @throws DataValidationException 
    */
   private Strategy applyStrategyChange(
     Strategy strat,
     JSONObject change
-  ) throws WdkModelException, InvalidStrategyStructureException {
-    final Strategy.StrategyBuilder build = Strategy.builder(strat);
+  ) throws WdkModelException, InvalidStrategyStructureException, DataValidationException {
 
-    for(final String key : change.keySet()) {
+    // apply overwrite-with first if present, then apply other changes
+    if (change.has(JsonKeys.OVERWRITE_WITH_OPERATION)) {
+      long sourceStrategyId = change.getLong(JsonKeys.OVERWRITE_WITH_OPERATION);
+      strat = applyOverwriteChanges(strat, sourceStrategyId);
+    }
+
+    StrategyBuilder builder = Strategy.builder(strat);
+
+    // apply any other changes
+    for (final String key : change.keySet()) {
       switch (key) {
         case JsonKeys.NAME:
-          build.setName(change.getString(key));
+          builder.setName(change.getString(key));
           break;
         case JsonKeys.SAVED_NAME:
-          build.setSavedName(change.getString(key));
+          builder.setSavedName(change.getString(key));
           break;
         case JsonKeys.IS_SAVED:
-          build.setSaved(change.getBoolean(key));
+          builder.setSaved(change.getBoolean(key));
           break;
         case JsonKeys.IS_PUBLIC:
-          build.setIsPublic(change.getBoolean(key));
+          builder.setIsPublic(change.getBoolean(key));
           break;
         case JsonKeys.DESCRIPTION:
-          build.setDescription(change.getString(key));
+          builder.setDescription(change.getString(key));
           break;
       }
     }
 
-    return build.build(new UserCache(getUserBundle(Access.PRIVATE).getSessionUser()),
+    return builder.build(new UserCache(getUserBundle(Access.PRIVATE).getSessionUser()),
         ValidationLevel.NONE);
+  }
+
+  /**
+   * Overwrites some properties of a strategy with copies of those of an existing
+   * strategy.
+   *
+   * Copies over: name, description, step tree
+   * Retains in original: id, signature, is_public, is_saved
+   *
+   * NOTE: the way we do this is inefficient since we are writing the copies of
+   *   steps to the DB, then pulling them back out for application to the strat
+   *   being overwritten.  However, it's good code reuse and far easier than a
+   *   big refactor to handle this case
+   *
+   * @param strategyToBeOverwritten strategy whose properties will be overwritten
+   * @param sourceStrategyId ID of the strategy whose properties will be copied over
+   * @return modified strategy.  Changes will already have been written to the DB.
+   * @throws WdkModelException
+   * @throws DataValidationException
+   */
+  private Strategy applyOverwriteChanges(Strategy strategyToBeOverwritten, long sourceStrategyId)
+      throws WdkModelException, DataValidationException {
+
+    Strategy sourceStrategy = getNotDeletedStrategyForCurrentUser(sourceStrategyId, ValidationLevel.NONE);
+
+    // copy the source strat's step tree into new, unattached steps
+    JSONObject copiedStepTree = StepFormatter.formatAsStepTree(
+      getWdkModel().getStepFactory().copyStrategyToBranch(getSessionUser(),sourceStrategy),
+      new HashSet<Step>() // we don't need to consume the list of step IDs found in the tree
+    );
+
+    // write the copied step tree to this strategy, and apply other changes; also takes care of orphaning old steps
+    return overwriteStepTreeAndSave(strategyToBeOverwritten, copiedStepTree, builder -> {
+      builder.setName(sourceStrategy.getName());
+      builder.setDescription(sourceStrategy.getDescription());
+    });
   }
 
   /**
