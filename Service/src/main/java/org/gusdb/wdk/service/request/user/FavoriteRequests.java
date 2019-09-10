@@ -2,11 +2,11 @@ package org.gusdb.wdk.service.request.user;
 
 import static java.util.Arrays.stream;
 import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
+
 import java.util.Optional;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -80,18 +80,9 @@ public class FavoriteRequests {
      * @throws WdkModelException
      */
     public FavoriteActions(JSONObject json) throws DataValidationException, WdkModelException {
-      super(json, ActionType.values());
-    }
-
-    @Override
-    protected ActionType parseAction(Object obj) throws DataValidationException {
-      return ActionType.fromString(obj.toString()).orElseThrow(DataValidationException::new);
-    }
-
-    @Override
-    protected Long parsePrimaryKey(JsonType obj)
-        throws DataValidationException, WdkModelException {
-      return obj.getLong();
+      super(json, ActionType.values(),
+        val -> ActionType.fromString(val.toString()).orElseThrow(DataValidationException::new),
+        val -> val.getLong());
     }
   }
 
