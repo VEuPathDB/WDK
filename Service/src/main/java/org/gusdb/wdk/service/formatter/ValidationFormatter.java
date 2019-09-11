@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.formatter;
 
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.wdk.core.api.JsonKeys;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class ValidationFormatter {
@@ -20,4 +21,12 @@ public class ValidationFormatter {
     return json;
   }
 
+  public static JSONObject getValidationBundleJson(String singleGeneralErrorMessage) {
+    return new JSONObject()
+      .put(JsonKeys.LEVEL, "UNSPECIFIED")
+      .put(JsonKeys.IS_VALID, false)
+      .put(JsonKeys.ERRORS, new JSONObject()
+        .put(JsonKeys.GENERAL, new JSONArray().put(singleGeneralErrorMessage))
+        .put(JsonKeys.BY_KEY, new JSONObject()));
+  }
 }

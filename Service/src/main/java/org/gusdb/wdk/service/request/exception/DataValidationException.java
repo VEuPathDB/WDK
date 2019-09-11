@@ -1,5 +1,9 @@
 package org.gusdb.wdk.service.request.exception;
 
+import java.util.Optional;
+
+import org.gusdb.fgputil.validation.ValidationBundle;
+
 /**
  * Custom service exception to be thrown when the JSON received is syntactically
  * correct but problems with the content preclude the successful completion of
@@ -11,6 +15,8 @@ public class DataValidationException extends Exception {
 
   private static final long serialVersionUID = 1L;
   private static final String DEFAULT_MESSAGE = "HTTP 422 Unprocessable Entity";
+
+  private ValidationBundle _validation;
 
   /**
    * No arg constructor
@@ -25,6 +31,21 @@ public class DataValidationException extends Exception {
    */
   public DataValidationException(String message) {
       super(message);
+  }
+
+  /**
+   * Passing the message into the superclass
+   */
+  public DataValidationException(ValidationBundle validation) {
+      super(DEFAULT_MESSAGE);
+      _validation = validation;
+  }
+
+  /**
+   * @return either a validation bundle or error message
+   */
+  public Optional<ValidationBundle> getValidationBundle() {
+    return Optional.ofNullable(_validation);
   }
 
   /**

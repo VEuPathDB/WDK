@@ -35,6 +35,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
+import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.gusdb.wdk.service.service.AnswerService;
@@ -129,6 +130,7 @@ public class ColumnReporterService extends AbstractWdkService {
    *   answer spec, or reporter.
    * @throws WdkUserException
    *   if the given reporter configuration is invalid.
+   * @throws DataValidationException if answer spec is invalid
    */
   @POST
   @Path(AnswerService.CUSTOM_REPORT_SEGMENT)
@@ -137,7 +139,7 @@ public class ColumnReporterService extends AbstractWdkService {
   public StreamingOutput runReporter(
     @PathParam(REPORT_NAME_PATH_PARAM) final String toolName,
     final JsonNode body
-  ) throws WdkModelException, WdkUserException {
+  ) throws WdkModelException, WdkUserException, DataValidationException {
     FilterOptionListBuilder viewFilters = AnswerSpecServiceFormat
         .parseViewFilters(JsonUtil.toJSONObject(body)
             .valueOrElseThrow(() -> new RequestMisformatException("Passed body is not a JSON object.")));
@@ -164,9 +166,10 @@ public class ColumnReporterService extends AbstractWdkService {
    *   </ul>
    * @throws RequestMisformatException
    *   See {@link #makeAnswerSpec(JsonNode)}
+   * @throws DataValidationException if answer spec is invalid
    */
   private AnswerValue makeAnswer(JsonNode body, String filterToIgnore, FilterOptionListBuilder viewFilters)
-  throws WdkModelException, RequestMisformatException {
+  throws WdkModelException, RequestMisformatException, DataValidationException {
     return AnswerValueFactory.makeAnswer(getSessionUser(), makeAnswerSpec(body, filterToIgnore, viewFilters));
   }
 
@@ -187,9 +190,10 @@ public class ColumnReporterService extends AbstractWdkService {
    * @throws RequestMisformatException
    *   if the json body was semantically invalid and could not be parsed into
    *   an answer spec.
+   * @throws DataValidationException if answer spec is invalid
    */
   private RunnableObj<AnswerSpec> makeAnswerSpec(JsonNode body, String filterToIgnore, FilterOptionListBuilder viewFilters)
-  throws WdkModelException, RequestMisformatException {
+  throws WdkModelException, RequestMisformatException, DataValidationException {
     JSONObject parentJson = JsonUtil.toJSONObject(body)
         .mapError(WdkModelException::new)
         .valueOrElseThrow();
@@ -237,7 +241,7 @@ public class ColumnReporterService extends AbstractWdkService {
    *   an exception containing the string form of the validation errors from the
    *   given answer spec.
    */
-  private static WdkModelException specToException(final AnswerSpec spec) {
-    return new WdkModelException(spec.getValidationBundle().toString(2));
+  private static DataValidationException specToException(final AnswerSpec spec) {
+    return new DataValidationException(spec.getValidationBundle());
   }
 }

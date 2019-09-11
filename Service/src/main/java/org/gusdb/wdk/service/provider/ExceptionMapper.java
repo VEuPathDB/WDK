@@ -1,5 +1,7 @@
 package org.gusdb.wdk.service.provider;
 
+import static org.gusdb.wdk.service.formatter.ValidationFormatter.getValidationBundleJson;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
@@ -15,9 +17,9 @@ import javax.ws.rs.ext.Provider;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.server.ParamException.PathParamException;
 import org.gusdb.fgputil.events.Events;
-import org.gusdb.wdk.errors.ServerErrorBundle;
-import org.gusdb.wdk.errors.ErrorContext.ErrorLocation;
 import org.gusdb.wdk.errors.ErrorContext;
+import org.gusdb.wdk.errors.ErrorContext.ErrorLocation;
+import org.gusdb.wdk.errors.ServerErrorBundle;
 import org.gusdb.wdk.events.ErrorEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -28,6 +30,7 @@ import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.gusdb.wdk.service.statustype.UnprocessableEntityStatusType;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 @Provider
 public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exception> {
@@ -56,7 +59,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
 
     catch (JSONException | RequestMisformatException | BadRequestException e400) {
       return Response.status(Status.BAD_REQUEST)
-          .type(MediaType.TEXT_PLAIN).entity(ExceptionMapper.createCompositeExceptionMessage(e400)).build();
+          .type(MediaType.TEXT_PLAIN).entity(createCompositeExceptionMessage(e400)).build();
     }
 
     catch (ConflictException e409) {
@@ -67,7 +70,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     // Custom exception to handle client content issues
     catch (DataValidationException | WdkUserException e422) {
       return Response.status(new UnprocessableEntityStatusType())
-          .type(MediaType.TEXT_PLAIN).entity(ExceptionMapper.createCompositeExceptionMessage(e422)).build();
+          .type(MediaType.TEXT_PLAIN).entity(get422ResponseEntity(e422)).build();
     }
 
     catch (WebApplicationException eApp) {
@@ -89,6 +92,25 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
       return Response.serverError()
           .type(MediaType.TEXT_PLAIN).entity("Internal Error").build();
     }
+  }
+
+  /**
+   * Returns formatted errors that resulted in 422 being thrown; these are
+   * formatted as ValidationBundle JSON even if a ValidationBundle is not
+   * present, in which case we add the exception's message as a single general
+   * error.
+   * 
+   * @param e exception causing the 422
+   * @return formatted JSON for the response
+   */
+  private JSONObject get422ResponseEntity(Exception e) {
+    if (e instanceof DataValidationException) {
+      DataValidationException dve = (DataValidationException)e;
+      return dve.getValidationBundle()
+        .map(bundle -> getValidationBundleJson(bundle))
+        .orElse(getValidationBundleJson(createCompositeExceptionMessage(e)));
+    }
+    return getValidationBundleJson(createCompositeExceptionMessage(e));
   }
 
   /**

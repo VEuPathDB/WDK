@@ -8,7 +8,6 @@ import static org.gusdb.wdk.service.service.search.SearchColumnService.NAMED_COL
 import java.util.Date;
 import java.util.Optional;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -83,7 +82,7 @@ public class StepService extends UserService {
   @InSchema("wdk.users.steps.post-request")
   @OutSchema("wdk.standard-post-response")
   public Response createStep(JSONObject jsonBody)
-      throws WdkModelException, DataValidationException {
+      throws WdkModelException, DataValidationException, RequestMisformatException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       NewStepRequest stepRequest = StepRequestParser.newStepFromJson(jsonBody, getWdkModel(), user);
@@ -101,8 +100,8 @@ public class StepService extends UserService {
               .build(step.getStepId()))
           .build();
     }
-    catch (JSONException | RequestMisformatException e) {
-      throw new BadRequestException(e);
+    catch (JSONException e) {
+      throw new RequestMisformatException(e.getMessage());
     }
   }
 
@@ -227,13 +226,16 @@ public class StepService extends UserService {
     Step existingStep = getStepForCurrentUser(stepId, ValidationLevel.NONE);
 
     AnswerSpec newSpec =
-      allowInvalid // allow PUTing of invalid steps so we can test how we handle them elsewhere
+      allowInvalid
+      // allow PUTing of invalid steps so we can test how we handle them elsewhere
       ? AnswerSpecServiceFormat
           .parse(existingStep.getAnswerSpec().getQuestion(), body, getWdkModel())
           .build(user, existingStep.getContainer(), ValidationLevel.SEMANTIC)
       : StepRequestParser
           .getReplacementAnswerSpec(existingStep, body, getWdkModel(), user)
           .get();
+
+    StepRequestParser.assertAnswerParamsUnmodified(existingStep, newSpec);
 
     StepBuilder replacementBuilder = Step.builder(existingStep)
         .setAnswerSpec(AnswerSpec.builder(newSpec))
@@ -248,11 +250,7 @@ public class StepService extends UserService {
         getWdkModel().getStepFactory().updateStrategy(Strategy
             .builder(existingStep.getStrategy().get())
             .addStep(replacementBuilder)
-            .build(new UserCache(user), ValidationLevel.SEMANTIC)
-            .getSemanticallyValid()
-            .getOrThrow(strat -> new DataValidationException(
-                "The passed answer spec is not semantically valid."))
-            .get());
+            .build(new UserCache(user), ValidationLevel.SEMANTIC));
       }
       catch (InvalidStrategyStructureException e) {
         throw new DataValidationException("Invalid strategy structure passed. " + e.getMessage(), e);

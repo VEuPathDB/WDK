@@ -199,21 +199,6 @@ public class AnswerService extends AbstractWdkService {
     return createCustomReportAnswer(reportName, new JSONObject(data));
   }
 
-  @POST
-  @Path("filter-summary/{filterName}")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  @Deprecated
-  public Response displayFilterResults(@PathParam("filterName") String filterName, JSONObject requestJson)
-  throws WdkModelException, WdkUserException, DataValidationException {
-    FilterOptionListBuilder viewFilters = AnswerSpecServiceFormat.parseViewFilters(requestJson);
-    RunnableObj<AnswerSpec> answerSpec = parseAnswerSpec(getQuestionOrNotFound(_recordClassUrlSegment, _questionUrlSegment),
-      requestJson.getJSONObject(JsonKeys.SEARCH_CONFIG), getWdkModel(), getSessionUser(), viewFilters);
-    AnswerValue answerValue = AnswerValueFactory.makeAnswer(getSessionUser(), answerSpec);
-    JSONObject filterSummaryJson = answerValue.getFilterSummaryJson(filterName);
-    return Response.ok(filterSummaryJson.toString()).build();
-  }
-
   /**
    * {@code GET} form of the service method {@link
    * #buildDefaultReporterResult(JSONObject)}.
@@ -292,8 +277,7 @@ public class AnswerService extends AbstractWdkService {
     return specBuilder
         .build(sessionUser, stepContainer, ValidationLevel.RUNNABLE)
         .getRunnable()
-        .getOrThrow(spec -> new DataValidationException(
-            "Invalid answer spec: " + spec.getValidationBundle().toString()));
+        .getOrThrow(spec -> new DataValidationException(spec.getValidationBundle()));
   }
 
   // TODO:  now that this method is public, should find a better place for it

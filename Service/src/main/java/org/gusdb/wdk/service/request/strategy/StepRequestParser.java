@@ -1,7 +1,5 @@
 package org.gusdb.wdk.service.request.strategy;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.json.JsonUtil.getBooleanOrDefault;
 import static org.gusdb.fgputil.json.JsonUtil.getJsonObjectOrDefault;
 import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
@@ -108,7 +106,7 @@ public class StepRequestParser {
         .getSemanticallyValid()
         .getOrThrow(spec ->
           // incoming answer spec not semantically valid
-          new DataValidationException("Invalid search config: " + join(spec.getValidationBundle().getAllErrors(), NL)));
+          new DataValidationException(spec.getValidationBundle()));
   }
 
   public static Step updateStepMeta(Step step, JSONObject patchSet)
@@ -151,6 +149,13 @@ public class StepRequestParser {
       throw new DataValidationException("Question of an existing step cannot be changed.");
     }
 
+    // make sure user has not tried to modify answer params
+    assertAnswerParamsUnmodified(existingStep, answerSpec);
+
+    return validSpec;
+  }
+
+  public static void assertAnswerParamsUnmodified(Step existingStep, AnswerSpec answerSpec) throws DataValidationException {
     // ensure answer param values are not modified; the strategy service handles
     //   modification of the strategy tree (i.e. answer param values)
     QueryInstanceSpec updateParams = answerSpec.getQueryInstanceSpec();
@@ -163,6 +168,5 @@ public class StepRequestParser {
         throw illegalAnswerParamException;
       }
     }
-    return validSpec;
   }
 }
