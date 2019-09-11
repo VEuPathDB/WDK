@@ -151,6 +151,7 @@ public class JsonKeys {
   public static final String DEPTH_EXPANDED = "depthExpanded";
   public static final String PARSERS = "parsers";
   public static final String PARSER = "parser";
+  public static final String ALLOW_EMPTY_VALUE = "allowEmptyValue";
 
   // dataset-related keys
   public static final String DEFAULT_ID_LIST = "defaultIdList";
