@@ -1,5 +1,7 @@
 package org.gusdb.wdk.service.service;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -7,6 +9,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
@@ -53,6 +56,9 @@ public abstract class AbstractWdkService {
 
   public static final String PERMISSION_DENIED = "Permission Denied.  You do not have access to this resource.";
   public static final String NOT_FOUND = "Resource specified [%s] does not exist.";
+
+  private static final byte[] PROCESS_STREAMING_FAILURE_MESSAGE = (NL + NL +
+      "****** An error occured while processing your request. The response's data may be truncated.").getBytes();
 
   /**
    * Composes a proper Not Found exception message using the supplied resource.
@@ -217,6 +223,54 @@ public abstract class AbstractWdkService {
       try {
         IoUtil.transferStream(outputStream, content);
         LOG.info("Finished transferring streaming output");
+      }
+      catch (IOException e) {
+        LOG.error("Unable to complete data stream transfer", e);
+        throw new WebApplicationException(e);
+      }
+    };
+  }
+
+  /**
+   * Creates a JAX/RS StreamingOutput object based on the standard output
+   * stream of the passed process.  The standard output of the process will
+   * be streamed until exhausted.  It then waits for the process to complete data
+   * content from a file, database, or other data producer
+   *
+   * @param process process whose stdout will be streamed to the client
+   * @param commandLine command line of passed process (used for logging in event of failure)
+   * @return streaming output object that will stream content to the client
+   */
+  public static StreamingOutput getStreamingStandardOutput(Process process, String commandLine) {
+    return outputStream -> {
+      try {
+        IoUtil.transferStream(outputStream, process.getInputStream());
+        LOG.info("Finished transferring streaming output");
+        try {
+          if (process.waitFor(5, TimeUnit.SECONDS)) {
+            // process completed; check exit value
+            int exitValue = process.exitValue();
+            if (exitValue != 0) {
+              LOG.error("A process meant to stream its output as a service " +
+                  "response exited abnormally (exit value = " + exitValue +
+                  ").  Command line of process: " + commandLine);
+              outputStream.write(PROCESS_STREAMING_FAILURE_MESSAGE);
+              outputStream.flush();
+            }
+          }
+          else {
+            // process is still running; write an error to stream and long and kill
+            LOG.error("A process meant to stream its output as a service " +
+                "response closed its output stream but is not completing.  " +
+                "Waited 5 seconds before killing it.  Command line of process: " + commandLine);
+            process.destroyForcibly();
+            outputStream.write(PROCESS_STREAMING_FAILURE_MESSAGE);
+            outputStream.flush();
+          }
+        }
+        catch (InterruptedException e) {
+          // nothing to do here; this should probably never happen
+        }
       }
       catch (IOException e) {
         LOG.error("Unable to complete data stream transfer", e);
