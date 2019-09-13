@@ -269,7 +269,13 @@ public abstract class AbstractWdkService {
           }
         }
         catch (InterruptedException e) {
-          // nothing to do here; this should probably never happen
+          // this should probably never happen, but handle anyway
+          LOG.error("A process meant to stream its output as a service " +
+              "response was interrupted before it could complete.  " +
+              "Command line of process: " + commandLine);
+          outputStream.write(PROCESS_STREAMING_FAILURE_MESSAGE);
+          outputStream.flush();
+          
         }
       }
       catch (IOException e) {
