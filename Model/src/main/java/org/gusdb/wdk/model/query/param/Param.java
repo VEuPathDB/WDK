@@ -83,6 +83,8 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   private static final Logger LOG = Logger.getLogger(Param.class);
 
+  public static final Level VALIDATION_LOG_PRIORITY = Level.DEBUG;
+
   protected static final boolean EMPTY_DESPITE_ALLOWEMPTY_FALSE_IS_FATAL = false;
 
   @Override
@@ -536,11 +538,11 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
   }
 
-  private static final Level VALIDATION_LOG_PRIORITY = Level.DEBUG;
   private void validationLog(SupplierWithException<String> logMessage) throws WdkModelException {
     if (LOG.isEnabledFor(VALIDATION_LOG_PRIORITY)) {
       try {
-        LOG.log(VALIDATION_LOG_PRIORITY, "Param " + getName() + ": " + logMessage.get());
+        LOG.log(VALIDATION_LOG_PRIORITY, "Param '" + getName() + "' of container '" +
+            getContainer().getFullName() + "': " + logMessage.get());
       }
       catch (Exception e) {
         throw WdkModelException.translateFrom(e);
@@ -551,7 +553,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   public ParamValidity validate(PartiallyValidatedStableValues stableValues, ValidationLevel level, FillStrategy fillStrategy)
       throws WdkModelException {
 
-    validationLog(() -> "Beginning validation");
+    validationLog(() -> "Beginning validation at level: " + level);
 
     // check to see if this param has already been validated at at least this level
     if (stableValues.hasParamBeenValidated(getName()) &&

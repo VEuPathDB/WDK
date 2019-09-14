@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.collection.ReadOnlyHashMap;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -11,12 +12,15 @@ import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParameterContainer;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 public class ParameterContainerInstanceSpecBuilder<T extends ParameterContainerInstanceSpecBuilder<T>>
     extends ReadOnlyHashMap.Builder<String,String> {
+
+  private static final Logger LOG = Logger.getLogger(ParameterContainerInstanceSpecBuilder.class);
 
   public enum FillStrategy {
     NO_FILL(false, false),
@@ -81,6 +85,8 @@ public class ParameterContainerInstanceSpecBuilder<T extends ParameterContainerI
     var stableValues = new PartiallyValidatedStableValues(user, tmpValues, stepContainer);
     var validation = ValidationBundle.builder(validationLevel);
 
+    LOG.log(Param.VALIDATION_LOG_PRIORITY, "Beginning param validation for " +
+        "instance of container: " + paramContainer.getFullName());
     for (var param : reqParams.values()) {
       var result = param.validate(stableValues, validationLevel, fillStrategy);
       if (!result.isValid())
