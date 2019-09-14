@@ -964,7 +964,7 @@ public class FilterParamNew extends AbstractDependentParam {
     final String name = getName();
     final FilterParamNewStableValue stableValue =
         new FilterParamNewStableValue(contextParamValues.get(getName()), this);
-    final String err = level.isGreaterThanOrEqualTo(ValidationLevel.SYNTACTIC)
+    final String err = level.isGreaterThanOrEqualTo(ValidationLevel.SEMANTIC)
       ? stableValue.validateSyntaxAndSemantics(contextParamValues)
       : stableValue.validateSyntax();
     return err == null ?
