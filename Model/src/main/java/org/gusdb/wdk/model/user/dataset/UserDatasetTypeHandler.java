@@ -50,7 +50,7 @@ public abstract class UserDatasetTypeHandler {
 
   public abstract String[] getUninstallInAppDbCommand(Long userDatasetId, String projectName);
 
-  public abstract String[] getRelevantQuestionNames();
+  public abstract String[] getRelevantQuestionNames(UserDataset userDataset);
 
   public abstract String getDisplay();
 

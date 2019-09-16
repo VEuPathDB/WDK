@@ -43,7 +43,7 @@ public class UserDatasetInfo {
       _isInstalled = isInstalled;
       _owner = getUser(userCache, ownerId, userFactory);
       _ownerQuota = session.getQuota(ownerId);
-      _relevantQuestionNames = Arrays.asList(store.getTypeHandler(dataset.getType()).getRelevantQuestionNames());
+      _relevantQuestionNames = Arrays.asList(store.getTypeHandler(dataset.getType()).getRelevantQuestionNames(dataset));
       _shares = mapToList(session.getSharedWith(ownerId, dataset.getUserDatasetId()), share ->
         new UserDatasetShareUser(getUser(userCache, share.getUserId(), userFactory), share.getTimeShared()));
       _handler = store.getTypeHandler(dataset.getType());
