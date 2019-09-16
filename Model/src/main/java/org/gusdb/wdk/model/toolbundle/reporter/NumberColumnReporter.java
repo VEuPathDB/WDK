@@ -37,7 +37,7 @@ public class NumberColumnReporter extends AbstractSingleTypeColumnReporter {
     var schema = Schema.draft4();
     return schema.asObject()
       .additionalProperties(false)
-      .optionalProperty(KEY_MAX_VALS, schema.asInteger().minimum(1)
+      .optionalProperty(KEY_MAX_VALS, schema.asInteger().minimum(0)
         .description("Max number of distinct values to return in result"))
       .optionalProperty(KEY_SORT, schema.asString()
         .enumValues(SortDirection.ASC.name(), SortDirection.DESC.name())

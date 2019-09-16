@@ -36,7 +36,7 @@ public class StringColumnReporter extends AbstractSingleTypeColumnReporter {
       .optionalProperty(KEY_MAX_VALS)
         .asInteger()
         .description(DESC_MAX_VALS)
-        .minimum(1)
+        .minimum(0)
         .close();
   }
 
