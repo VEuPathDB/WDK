@@ -18,7 +18,7 @@ abstract class AbstractIntoQuery extends AbstractQueryRunner {
 
   private static final TraceLog TRACE = new TraceLog(AbstractIntoQuery.class);
 
-  private final ICatCollection root;
+  private final ICatCollection _root;
 
   AbstractIntoQuery(
     final ICatCollection        root,
@@ -26,7 +26,7 @@ abstract class AbstractIntoQuery extends AbstractQueryRunner {
     final IRODSGenQuery         query
   ) {
     super(db, query);
-    this.root = root;
+    _root = root;
   }
 
   /**
@@ -56,7 +56,7 @@ abstract class AbstractIntoQuery extends AbstractQueryRunner {
     int i = 0;
     final List<IRODSQueryResultRow> results = rs.getResults();
     for (; i < results.size(); i++)
-      handleRow(root, results.get(i));
+      handleRow(_root, results.get(i));
     TRACE.end();
   }
 }

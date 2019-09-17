@@ -30,7 +30,7 @@ implements ICatResultQueryRunner<T> {
 
   private static final TraceLog TRACE = new TraceLog(AbstractResultQuery.class);
 
-  private T value;
+  private T _value;
 
   AbstractResultQuery(
     final IRODSGenQueryExecutor db,
@@ -71,17 +71,17 @@ implements ICatResultQueryRunner<T> {
 
   @Override
   public T getResult() {
-    return value;
+    return _value;
   }
 
   @Override
   protected void handleResultSet(final IRODSQueryResultSet rs) throws Exception {
     TRACE.start(rs);
-    if (value == null) {
-      value = newValue();
+    if (_value == null) {
+      _value = newValue();
     }
 
-    parseResultSet(value, rs);
+    parseResultSet(_value, rs);
     TRACE.end();
   }
 

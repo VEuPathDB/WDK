@@ -60,11 +60,10 @@ if ($status != 0) then
   exit(-1)
 endif
 
-# cvs -d :ext:cvs.sanger.ac.uk:/cvsroot/GUS co WDK
-svn co https://cbilsvn.pmacs.upenn.edu/svn/gus/WDK/trunk WDK
+git clone https://github.com/EuPathDB/WDK
 
 if ($status != 0) then
-  echo could not svn checkout $status
+  echo could not git clone $status
   exit(-1)
 endif
 
@@ -75,7 +74,7 @@ echo copying oracle driver from original GUS_HOME
 cp $orig_gus_home/lib/java/oracle-classes12.jar $PROJECT_HOME/WDK/Model/lib/java
 
 build WDK install -append -returnErrStatus
-  
+
 exit $?
-  
+
 

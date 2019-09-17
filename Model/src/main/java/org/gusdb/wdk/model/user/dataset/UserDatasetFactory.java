@@ -13,6 +13,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -44,26 +45,37 @@ public class UserDatasetFactory {
    *   if error occurs querying
    */
   public Set<Long> getInstalledUserDatasets(long userId) throws WdkModelException {
-    String sql = "select user_dataset_id from " + _userDatasetSchema + "userDatasetAccessControl where user_id = ?";
-    return new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "installed-datasets-by-user")
-      .executeQuery(new Object[] { userId }, new Integer[] { Types.BIGINT }, rs -> {
-        Set<Long> datasetIds = new HashSet<>();
-        while (rs.next()) {
-          datasetIds.add(rs.getLong(1));
-        }
-        return datasetIds;
-      });
+    try {
+      String sql = "select user_dataset_id from " + _userDatasetSchema + "userDatasetAccessControl where user_id = ?";
+      return new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "installed-datasets-by-user")
+        .executeQuery(new Object[] { userId }, new Integer[] { Types.BIGINT }, rs -> {
+          Set<Long> datasetIds = new HashSet<>();
+          while (rs.next()) {
+            datasetIds.add(rs.getLong(1));
+          }
+          return datasetIds;
+        });
+    }
+    catch (SQLRunnerException e) {
+      return WdkModelException.unwrap(e);
+    }
   }
 
   /**
    * Determine whether the dataset, given by its datasetId, is installed.
    *
    * @return - true if installed and false otherwise
+   * @throws WdkModelException
    */
   public boolean isUserDatasetInstalled(long datasetId) throws WdkModelException {
-    String sql = "select user_dataset_id from " + _userDatasetSchema + "userDatasetAccessControl where dataset_id = ?";
-    return new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "is-user-dataset-installed")
-      .executeQuery(new Object[] { datasetId }, new Integer[] { Types.BIGINT }, rs -> rs.next());
+    try {
+      String sql = "select user_dataset_id from " + _userDatasetSchema + "userDatasetAccessControl where dataset_id = ?";
+      return new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "is-user-dataset-installed")
+        .executeQuery(new Object[] { datasetId }, new Integer[] { Types.BIGINT }, rs -> rs.next());
+    }
+    catch (SQLRunnerException e) {
+      return WdkModelException.unwrap(e);
+    }
   }
 
   /**
