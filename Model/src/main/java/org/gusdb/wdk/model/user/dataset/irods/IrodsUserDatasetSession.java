@@ -102,6 +102,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     if (lastEventStamp < 1) {
       final List<Path> out = loadCollection(Paths.get(eventsDirectory), false)
         .map(col -> col.streamObjectsShallow()
+          .sorted(Comparator.comparingLong(ICatNode::getLastModified))
           .map(ICatNode::getPath)
           .collect(Collectors.toList()))
         .orElseGet(Collections::emptyList);
@@ -449,6 +450,8 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     final boolean force
   ) throws WdkModelException {
     TRACE.start(path, force);
+    if (!path.startsWith(usersRootDir))
+      throw Err.illegalPath(path);
 
     Optional<ICatCollection> optCol = iCatMirror.getCollection(path);
 
