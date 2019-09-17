@@ -102,6 +102,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     if (lastEventStamp < 1) {
       final List<Path> out = loadCollection(Paths.get(eventsDirectory), false)
         .map(col -> col.streamObjectsShallow()
+          .sorted(Comparator.comparingLong(ICatNode::getLastModified))
           .map(ICatNode::getPath)
           .collect(Collectors.toList()))
         .orElseGet(Collections::emptyList);
