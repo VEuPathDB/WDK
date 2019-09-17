@@ -459,8 +459,8 @@ public class StepFactory {
     // persist new strategy and all steps to the DB
     try (Connection connection = _userDbDs.getConnection()){
       SqlUtils.performInTransaction(connection,
-        conn -> insertStrategy(conn, newStrategy),
-        conn -> insertSteps(conn, newStrategy.getAllSteps())
+        conn -> insertSteps(conn, newStrategy.getAllSteps()),
+        conn -> insertStrategy(conn, newStrategy)
       );
     }
     catch (Exception e) {
