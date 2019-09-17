@@ -57,6 +57,12 @@ public abstract class UserDatasetTypeHandler {
   /**
    * Returns detailed type-specific data for a single user dataset for use in a
    * detailed display page
+   * 
+   * @param wdkModel
+   * @param userDataset
+   * @param user
+   * @return
+   * @throws WdkModelException
    */
   public JsonType getDetailedTypeSpecificData(WdkModel wdkModel, UserDataset userDataset, User user) throws WdkModelException {
     return new JsonType(null);
@@ -65,6 +71,12 @@ public abstract class UserDatasetTypeHandler {
   /**
    * Returns small-scale type-specific data for a collection of user datasets
    * for use in a non-detailed user dataset listing page
+   * 
+   * @param wdkModel
+   * @param userDatasets
+   * @param user
+   * @return
+   * @throws WdkModelException
    */
   public List<JsonType> getTypeSpecificData(WdkModel wdkModel, List<UserDataset> userDatasets, User user) throws WdkModelException {
     return mapToList(userDatasets, fSwallow(ud -> getDetailedTypeSpecificData(wdkModel, ud, user)));
