@@ -26,6 +26,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -738,7 +739,7 @@ public class StepFactory {
   /**
    * Overwrite the given strategy in the strategies table.
    *
-   * @param con
+   * @param connection
    *   Open connection to the DB.  This can be used to run the step update
    *   queries in a controlled connection such as a transaction.
    * @param strat
@@ -748,7 +749,7 @@ public class StepFactory {
    *   value of false indicates that the strategy has not been created in the
    *   database.
    */
-  public boolean updateStrategy(Connection con, Strategy strat)
+  public boolean updateStrategy(Connection connection, Strategy strat)
       throws WdkModelException {
     final int boolType =_userDbPlatform.getBooleanType();
     final String sql = "UPDATE " + _userSchema + TABLE_STRATEGY + "\n" +
@@ -765,38 +766,46 @@ public class StepFactory {
       "  " + COLUMN_IS_DELETED         + " = ?\n" +
       "WHERE " + COLUMN_STRATEGY_ID + " = ?";
 
-    final boolean stratUpdated = 0 < new SQLRunner(con, sql).executeUpdate(
-      new Object[]{
-        strat.getName(),
-        strat.getUser().getUserId(),
-        strat.getRootStep().getStepId(),
-        strat.getSavedName(),
-        _userDbPlatform.convertBoolean(strat.isSaved()),
-        strat.getDescription(),
-        new Timestamp(strat.getLastModifiedTime().getTime()),
-        strat.getSignature(),
-        _userDbPlatform.convertBoolean(strat.isPublic()),
-        _userDbPlatform.convertBoolean(strat.isDeleted()),
-        strat.getStrategyId()
-      },
-      new Integer[]{
-        Types.VARCHAR,   // NAME
-        Types.BIGINT,    // USER_ID
-        Types.BIGINT,    // ROOT_STEP_ID
-        Types.VARCHAR,   // SAVED_NAME
-        boolType,        // IS_SAVED
-        Types.VARCHAR,   // DESCRIPTION
-        Types.TIMESTAMP, // LAST_MODIFY_TIME
-        Types.VARCHAR,   // SIGNATURE
-        boolType,        // IS_PUBLIC
-        boolType,        // IS_DELETED
-        Types.BIGINT     // STRATEGY_ID
-      }
-    );
+    final Object[] params = new Object[] {
+      strat.getName(),
+      strat.getUser().getUserId(),
+      strat.getRootStep().getStepId(),
+      strat.getSavedName(),
+      _userDbPlatform.convertBoolean(strat.isSaved()),
+      strat.getDescription(),
+      new Timestamp(strat.getLastModifiedTime().getTime()),
+      strat.getSignature(),
+      _userDbPlatform.convertBoolean(strat.isPublic()),
+      _userDbPlatform.convertBoolean(strat.isDeleted()),
+      strat.getStrategyId()
+    };
 
-    updateSteps(strat.getAllSteps());
+    final Integer[] paramTypes = new Integer[] {
+      Types.VARCHAR,   // NAME
+      Types.BIGINT,    // USER_ID
+      Types.BIGINT,    // ROOT_STEP_ID
+      Types.VARCHAR,   // SAVED_NAME
+      boolType,        // IS_SAVED
+      Types.VARCHAR,   // DESCRIPTION
+      Types.TIMESTAMP, // LAST_MODIFY_TIME
+      Types.VARCHAR,   // SIGNATURE
+      boolType,        // IS_PUBLIC
+      boolType,        // IS_DELETED
+      Types.BIGINT     // STRATEGY_ID
+    };
 
-    return stratUpdated;
+    try {
+      // update strategy and all its steps in one transaction
+      Wrapper<Boolean> stratUpdated = new Wrapper<>();
+      SqlUtils.performInTransaction(connection, conn -> {
+        stratUpdated.set(0 < new SQLRunner(conn, sql).executeUpdate(params, paramTypes));
+        updateSteps(conn, strat.getAllSteps());
+      });
+      return stratUpdated.get();
+    }
+    catch (Exception e) {
+      return WdkModelException.unwrap(e);
+    }
   }
 
   public long getNewStrategyId() throws WdkModelException {
@@ -1149,7 +1158,6 @@ public class StepFactory {
     LOG.debug("Transferring user #" + guestUser.getUserId() + "'s strategies to user #" + registeredUser.getUserId() + "...");
     MalformedStrategyList malformedStrats = new MalformedStrategyList();
     for (Strategy strategy : getStrategies(guestUser.getUserId(), ValidationLevel.NONE, FillStrategy.NO_FILL, malformedStrats).values()) {
-      malformedStrats.stream().forEach(tuple -> logMalformedStrat(tuple));
       StrategyBuilder builder = null;
       try {
         builder = Strategy.builder(strategy).setUserId(registeredUser.getUserId());
@@ -1159,6 +1167,7 @@ public class StepFactory {
         logMalformedStrat(new TwoTuple<>(builder, e));
       }
     }
+    malformedStrats.stream().forEach(tuple -> logMalformedStrat(tuple));
   }
 
   private static void logMalformedStrat(TwoTuple<StrategyBuilder, InvalidStrategyStructureException> malformedStrat) {
