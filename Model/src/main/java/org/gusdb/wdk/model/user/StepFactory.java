@@ -389,7 +389,7 @@ public class StepFactory {
     Map<Long,StepBuilder> stepBuilders = copyStepTree(user, strategy.getRootStep()).toMap();
 
     // create stub strategy- will not be saved to DB; used only to create and
-    // validate steps
+    // validate steps.  answer param values are valid (make a valid tree) in this strategy
     Strategy stratStub = Functions.mapException(
         () -> Strategy.builder(user.getWdkModel(), user.getUserId(), 0)
           .setRootStepId(stepBuilders.get(strategy.getRootStepId()).getStepId())
@@ -415,6 +415,17 @@ public class StepFactory {
       throw new WdkModelException("Unable to insert strategy or update steps.");
     }
 
+    // now that steps are in DB, trigger step copied events to copy any other
+    //   step-related info (must be afterward because of some FK constraints)
+    triggerCopyEvents(stepBuilders.keySet().stream()
+      .map(oldId -> new TwoTuple<>(
+        strategy.findFirstStep(withId(oldId)).get(),
+        stratStub.findFirstStep(withId(
+          stepBuilders.get(oldId).getStrategyId().get()
+        )).get()))
+      .collect(Collectors.toList()));
+          
+    
     // return the strategy's root step- will be used to create a branch for
     // adding to another strat
     return stratStub.getRootStep();
@@ -469,20 +480,24 @@ public class StepFactory {
     }
 
     // trigger copy events on all steps
-    for (Entry<Long,Long> stepMapping : stepIdsMap.entrySet()) {
-      Events.triggerAndWait(new StepCopiedEvent(
-          // using get() here because we know these steps exist
-          oldStrategy.findFirstStep(withId(stepMapping.getKey())).get(),
-          newStrategy.findFirstStep(withId(stepMapping.getValue())).get()),
-          new WdkModelException(
-              "Unable to execute all operations subsequent to step copy."));
-    }
+    triggerCopyEvents(stepIdsMap.entrySet().stream()
+      .map(entry -> new TwoTuple<>(
+        oldStrategy.findFirstStep(withId(entry.getKey())).get(),
+        newStrategy.findFirstStep(withId(entry.getValue())).get()))
+      .collect(Collectors.toList()));
 
     // populate stepIdsMap with mapping from oldId -> newId
     stepIdsMap.putAll(getMapFromKeys(newStepMap.keySet(),
         oldId -> newStepMap.get(oldId).getStepId()));
 
     return newStrategy;
+  }
+
+  private void triggerCopyEvents(List<Entry<Step, Step>> stepMapping) throws WdkModelException {
+    for (Entry<Step,Step> mapping : stepMapping) {
+      Events.triggerAndWait(new StepCopiedEvent(mapping.getKey(), mapping.getValue()),
+          new WdkModelException("Unable to execute all operations subsequent to step copy."));
+    }
   }
 
   /**
