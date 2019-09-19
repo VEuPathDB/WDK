@@ -420,9 +420,7 @@ public class StepFactory {
     triggerCopyEvents(stepBuilders.keySet().stream()
       .map(oldId -> new TwoTuple<>(
         strategy.findFirstStep(withId(oldId)).get(),
-        stratStub.findFirstStep(withId(
-          stepBuilders.get(oldId).getStrategyId().get()
-        )).get()))
+        stratStub.findFirstStep(withId(stepBuilders.get(oldId).getStepId())).get()))
       .collect(Collectors.toList()));
           
     
