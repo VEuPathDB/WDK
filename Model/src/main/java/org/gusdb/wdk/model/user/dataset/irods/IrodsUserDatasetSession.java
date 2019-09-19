@@ -110,18 +110,12 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
       return TRACE.end(out);
     }
 
-    // Incoming event id values consist of a timestamp, with
-    // an 8 digit value appended to them (a 0 padded PID).
-    // Remove those last 8 digits to get just the timestamp
-    String lastEventTime = String.valueOf(lastEventId);
-    lastEventTime = lastEventTime.substring(0, lastEventTime.length() - 8);
+    final String cutoff = "event_" + lastEventId + ".json";
 
-    final String cutoffTime = lPad(lastEventTime, '0', 11);
-
-    LOG.info("Event Cutoff Timestamp is " + cutoffTime + " sec");
+    LOG.info("Event Cutoff ID is " + cutoff);
 
     final String queryString = "select DATA_NAME where COLL_NAME like '"
-      + eventsDirectory + "' AND DATA_MODIFY_TIME >= '" + cutoffTime + "'";
+      + eventsDirectory + "' AND DATA_NAME > '" + cutoff + "'";
 
     return TRACE.end(getIrodsAdaptor()
       .executeIrodsQuery(queryString)
