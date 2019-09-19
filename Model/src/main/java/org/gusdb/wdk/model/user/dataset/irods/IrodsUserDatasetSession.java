@@ -93,13 +93,12 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
   @Override
   public List<Path> getRecentEvents(
     final String eventsDirectory,
-    final long   lastEventStamp
+    final long   lastEventId
   ) throws WdkModelException {
-    TRACE.start(eventsDirectory, lastEventStamp);
-
+    TRACE.start(eventsDirectory, lastEventId);
     // If no prior event has been handled it is assumed that a new db is being
     // spun up and all prior events are needed.
-    if (lastEventStamp < 1) {
+    if (lastEventId < 1) {
       final List<Path> out = loadCollection(Paths.get(eventsDirectory), false)
         .map(col -> col.streamObjectsShallow()
           .sorted(Comparator.comparingLong(ICatNode::getLastModified))
@@ -111,11 +110,13 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
       return TRACE.end(out);
     }
 
-    final String cutoffTime = lPad(
-      String.valueOf(Duration.ofMillis(lastEventStamp).getSeconds()),
-      '0',
-      11
-    );
+    // Incoming event id values consist of a timestamp, with
+    // an 8 digit value appended to them (a 0 padded PID).
+    // Remove those last 8 digits to get just the timestamp
+    String lastEventTime = String.valueOf(lastEventId);
+    lastEventTime = lastEventTime.substring(0, lastEventTime.length() - 8);
+
+    final String cutoffTime = lPad(lastEventTime, '0', 11);
 
     LOG.info("Event Cutoff Timestamp is " + cutoffTime + " sec");
 
