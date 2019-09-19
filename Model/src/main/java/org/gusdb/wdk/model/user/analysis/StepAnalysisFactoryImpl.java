@@ -187,7 +187,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   private void copyAnalysisInstances(Step fromStep, Step toStep)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     LOG.info("Request made to copy analysis instances from step " + fromStep.getStepId() + " to " + toStep.getStepId());
     Map<Long, StepAnalysisInstance> fromInstances = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
     for (StepAnalysisInstance fromInstance : fromInstances.values()) {
@@ -198,7 +198,12 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       // non-new steps copied during revise have invalid results until run again
       // non-new steps copied during import should always have no_results
       toInstance.setState(StepAnalysisState.NO_RESULTS);
-      try {
+
+      // RRD 9/19: while copying, should not matter if fromStep is valid;
+      //   we can assume toStep is AS VALID as fromStep and thus can copy the
+      //   analysis configuration- it will be as valid or invalid as the
+      //   existing step+analysis combo
+      /*try {
         checkStepForValidity(toInstance);
         toInstance.setIsValidStep(true);
       }
@@ -206,7 +211,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
         // if answer value of toStep is not valid for the given analysis, mark as
         // such and save; user will not be shown form and will be unable to run analysis
         toInstance.setIsValidStep(false, e.getMessage());
-      }
+      }*/
+      toInstance.setIsValidStep(true);
       writeNewAnalysisInstance(toInstance, false);
       LOG.info("Wrote new duplicate context with ID " + toInstance.getAnalysisId() +
           " for revised step " + toInstance.getStep().getStepId() + ".  Copying properties...");
