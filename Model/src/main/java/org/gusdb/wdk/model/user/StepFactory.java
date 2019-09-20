@@ -492,7 +492,8 @@ public class StepFactory {
   }
 
   private void triggerCopyEvents(List<Entry<Step, Step>> stepMapping) throws WdkModelException {
-    for (Entry<Step,Step> mapping : stepMapping) {
+    for (Entry<Step, Step> mapping : stepMapping) {
+      LOG.info("Triggering step copied event with old step ID " + mapping.getKey().getStepId() + ", new step ID " + mapping.getValue().getStepId());
       Events.triggerAndWait(new StepCopiedEvent(mapping.getKey(), mapping.getValue()),
           new WdkModelException("Unable to execute all operations subsequent to step copy."));
     }
