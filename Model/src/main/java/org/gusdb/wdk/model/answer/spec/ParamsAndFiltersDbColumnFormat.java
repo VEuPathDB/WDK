@@ -135,7 +135,7 @@ public class ParamsAndFiltersDbColumnFormat {
           if (filterEntry.getValue().getType().equals(JsonType.ValueType.OBJECT)) {
             try {
               JsonNode jacksonObj = new ObjectMapper().readTree(filterEntry.getValue().getJSONObject().toString());
-              LOG.info("Read column filter config object from DB: " + jacksonObj.toString());
+              LOG.debug("Read column filter config object from DB: " + jacksonObj.toString());
               builder.setFilterConfig(columnEntry.getKey(), filterEntry.getKey(), () -> jacksonObj);
             }
             catch (IOException e) {
