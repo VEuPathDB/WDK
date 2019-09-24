@@ -9,6 +9,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.service.formatter.StrategyFormatter;
@@ -25,17 +26,15 @@ import org.json.JSONException;
 @Produces(MediaType.APPLICATION_JSON)
 public class PublicStrategyService extends AbstractWdkService {
 
-  // TODO: there is probably a more elegant way to do this
-  static boolean isValidStrategy(Strategy s) { return  s.isValid(); }
-  static boolean isInvalidStrategy(Strategy s) { return  !s.isValid(); }
-
   /**
    * Get a list of all valid public strategies
    * the isInvalid query param is undocumented, and for internal use only, allowing
    * developers to review invalid strategies
    */
   @GET
-  public JSONArray getPublicStrategies(@QueryParam("userEmail") List<String> userEmails, @QueryParam("invalid") Boolean returnInvalid)
+  public JSONArray getPublicStrategies(
+      @QueryParam("userEmail") List<String> userEmails,
+      @QueryParam("invalid") Boolean returnInvalid)
   throws JSONException, WdkModelException {
     boolean showInvalid = false;
     if (returnInvalid != null ) showInvalid = returnInvalid;
@@ -43,7 +42,9 @@ public class PublicStrategyService extends AbstractWdkService {
       .getStepFactory()
       .getPublicStrategies()
       .stream()
-      .filter(showInvalid? strat -> isInvalidStrategy(strat) : strat -> isValidStrategy(strat));
+      .filter(showInvalid ?
+        Strategy::isValid :
+        Functions.not(Strategy::isValid));
 
     if (!userEmails.isEmpty())
       strategies = strategies.filter(strat -> userEmails.stream()
