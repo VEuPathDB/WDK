@@ -189,12 +189,12 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     }
 
     public Strategy build(UserCache userCache, ValidationLevel validationLevel)
-        throws InvalidStrategyStructureException {
+        throws InvalidStrategyStructureException, WdkModelException {
       return build(userCache, validationLevel, FillStrategy.NO_FILL);
     }
 
     public Strategy build(UserCache userCache, ValidationLevel validationLevel, FillStrategy fillStrategy)
-        throws InvalidStrategyStructureException {
+        throws InvalidStrategyStructureException, WdkModelException {
       if (_rootStepId == 0) {
         throw new InvalidStrategyStructureException("Root step ID is required but has not been set.");
       }
@@ -235,7 +235,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
 
   private Strategy(StrategyBuilder strategyBuilder, User user,
       ValidationLevel validationLevel, FillStrategy fillStrategy)
-          throws InvalidStrategyStructureException {
+          throws InvalidStrategyStructureException, WdkModelException {
     _user = user;
     _wdkModel = strategyBuilder._wdkModel;
     _strategyId = strategyBuilder._strategyId;
@@ -262,7 +262,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
 
   private void buildSteps(Map<Long, StepBuilder> steps,
       ValidationLevel validationLevel, FillStrategy fillStrategy)
-          throws InvalidStrategyStructureException {
+          throws InvalidStrategyStructureException, WdkModelException {
 
     // Confirm project and user id match across strat and all steps, and that steps were properly assigned
     for (StepBuilder step : steps.values()) {
@@ -302,32 +302,37 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
 
     // map structure into a TreeNode<Step> so branches have access to the
     //   built children below them (need to assign dirty bit)
-    builderTree.mapStructure(
-      (StructureMapper<StepBuilder, TreeNode<Step>>) (builder, mappedChildren) -> {
-        try {
-          // figure out if dirty bit should be set (if this or any children dirty)
-          boolean isDirty = builder.isResultSizeDirty() || reduce(
-            mappedChildren,
-            (dirtySoFar, childNode) -> dirtySoFar || childNode.getContents().isResultSizeDirty(),
-            false);
-
-          // build the step
-          Step step = builder
-            .setResultSizeDirty(isDirty)
-            .build(userCache, validationLevel, fillStrategy, Optional.of(thisStrategy));
-
-          // add to strategy
-          thisStrategy._stepMap.put(step.getStepId(), step);
-
-          // build a node around the step and add children (builds tree of Steps)
-          TreeNode<Step> node = new TreeNode<>(step);
-          node.addChildNodes(mappedChildren, node2 -> true);
-          return node;
-        }
-        catch (WdkModelException e) {
-          throw new WdkRuntimeException(e);
-        }
-      });
+    try {
+      builderTree.mapStructure(
+        (StructureMapper<StepBuilder, TreeNode<Step>>) (builder, mappedChildren) -> {
+          try {
+            // figure out if dirty bit should be set (if this or any children dirty)
+            boolean isDirty = builder.isResultSizeDirty() || reduce(
+              mappedChildren,
+              (dirtySoFar, childNode) -> dirtySoFar || childNode.getContents().isResultSizeDirty(),
+              false);
+  
+            // build the step
+            Step step = builder
+              .setResultSizeDirty(isDirty)
+              .build(userCache, validationLevel, fillStrategy, Optional.of(thisStrategy));
+  
+            // add to strategy
+            thisStrategy._stepMap.put(step.getStepId(), step);
+  
+            // build a node around the step and add children (builds tree of Steps)
+            TreeNode<Step> node = new TreeNode<>(step);
+            node.addChildNodes(mappedChildren, node2 -> true);
+            return node;
+          }
+          catch (WdkModelException e) {
+            throw new WdkRuntimeException(e);
+          }
+        });
+    }
+    catch (WdkRuntimeException e) {
+      throw WdkModelException.translateFrom(e);
+    }
   }
 
   /**

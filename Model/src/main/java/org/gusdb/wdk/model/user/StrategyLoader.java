@@ -6,15 +6,50 @@ import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.db.SqlUtils.fetchNullableBoolean;
 import static org.gusdb.fgputil.db.SqlUtils.fetchNullableInteger;
 import static org.gusdb.fgputil.db.SqlUtils.fetchNullableLong;
-import static org.gusdb.fgputil.functional.Functions.fSwallow;
 import static org.gusdb.fgputil.functional.Functions.getMapFromList;
-import static org.gusdb.wdk.model.user.StepFactory.*;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ANSWER_FILTER;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ASSIGNED_WEIGHT;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_CREATE_TIME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_CUSTOM_NAME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_DESCRIPTION;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_DISPLAY_PARAMS;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_DISPLAY_PREFS;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ESTIMATE_SIZE;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_EXPANDED_NAME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_IS_DELETED;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_IS_EXPANDED;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_IS_PUBLIC;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_IS_SAVED;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_LAST_MODIFIED_TIME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_LAST_RUN_TIME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_LAST_VIEWED_TIME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_NAME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_PROJECT_ID;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_PROJECT_VERSION;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_QUESTION_NAME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ROOT_STEP_ID;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_SAVED_NAME;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_SIGNATURE;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_STEP_ID;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_STRATEGY_ID;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_USER_ID;
+import static org.gusdb.wdk.model.user.StepFactory.COLUMN_VERSION;
+import static org.gusdb.wdk.model.user.StepFactory.STEP_TABLE_COLUMNS;
+import static org.gusdb.wdk.model.user.StepFactory.STRATEGY_TABLE_COLUMNS;
+import static org.gusdb.wdk.model.user.StepFactory.TABLE_STEP;
+import static org.gusdb.wdk.model.user.StepFactory.TABLE_STRATEGY;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -27,7 +62,6 @@ import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -133,10 +167,14 @@ public class StrategyLoader {
   }
 
   private SearchResult doSearch(String sql) throws WdkModelException {
-    return doSearch(sql, new Object[0], new Integer[0]);
+    return doSearch(sql, false, new Object[0], new Integer[0]);
   }
 
-  private SearchResult doSearch(String sql, Object[] paramValues, Integer[] paramTypes) throws WdkModelException {
+  private SearchResult doSearch(String sql, boolean hideLoadErrors) throws WdkModelException {
+    return doSearch(sql, hideLoadErrors, new Object[0], new Integer[0]);
+  }
+
+  private SearchResult doSearch(String sql, boolean hideLoadErrors, Object[] paramValues, Integer[] paramTypes) throws WdkModelException {
     List<StrategyBuilder> strategies = new ArrayList<>();
     List<StepBuilder> orphanSteps = new ArrayList<>();
     try {
@@ -192,10 +230,28 @@ public class StrategyLoader {
         catch (InvalidStrategyStructureException e) {
           malstructuredStrategies.add(new TwoTuple<>(stratBuilder, e));
         }
+        catch (WdkModelException e) {
+          if (hideLoadErrors) {
+            LOG.warn("Error occurred while building strategy. By request, ignoring.", e);
+            continue;
+          }
+          else throw e;
+        }
       }
       // only build orphan steps; attached steps will be built by their strategy
-      List<Step> builtOrphanSteps = Functions.mapToList(orphanSteps,
-          fSwallow(builder -> builder.build(userCache, _validationLevel, _fillStrategy, Optional.empty())));
+      List<Step> builtOrphanSteps = new ArrayList<>();
+      for (StepBuilder orphanBuilder : orphanSteps) {
+        try {
+          builtOrphanSteps.add(orphanBuilder.build(userCache, _validationLevel, _fillStrategy, Optional.empty()));
+        }
+        catch (WdkModelException e) {
+          if (hideLoadErrors) {
+            LOG.warn("Error occurred while building orphan step. By request, ignoring.", e);
+            continue;
+          }
+          else throw e;
+        }
+      }
       return new SearchResult(builtStrategies, builtOrphanSteps, malstructuredStrategies);
     }
     catch (Exception e) {
@@ -271,7 +327,7 @@ public class StrategyLoader {
   List<Strategy> getPublicStrategies() throws WdkModelException {
     String sql = prepareSql(FIND_STRATEGIES_SQL
         .replace(SEARCH_CONDITIONS_MACRO, "and sr." + COLUMN_IS_PUBLIC + " = " + sqlBoolean(true)));
-    return descModTimeSort(doSearch(sql).getStrategies());
+    return descModTimeSort(doSearch(sql, true).getStrategies());
   }
 
   Map<Long, Step> getSteps(Long userId) throws WdkModelException {
@@ -305,7 +361,7 @@ public class StrategyLoader {
         // search using recently viewed condition and related statement param
         doSearch(
             baseSql.replace(SEARCH_CONDITIONS_MACRO, baseConditions +
-                " and sr." + COLUMN_LAST_VIEWED_TIME + " >= ?"),
+                " and sr." + COLUMN_LAST_VIEWED_TIME + " >= ?"), false,
             new Object[] { getRecentTimestamp() }, new Integer[] { Types.TIMESTAMP }) :
 
         // search using only user id and is-saved conditions
@@ -339,7 +395,7 @@ public class StrategyLoader {
   Optional<Strategy> getStrategyBySignature(String strategySignature) throws WdkModelException {
     String sql = prepareSql(FIND_STRATEGIES_SQL
         .replace(SEARCH_CONDITIONS_MACRO, "and sr." + COLUMN_SIGNATURE + " = ?"));
-    return doSearch(sql, new Object[]{ strategySignature }, new Integer[]{ Types.VARCHAR })
+    return doSearch(sql, false, new Object[]{ strategySignature }, new Integer[]{ Types.VARCHAR })
         .getOnlyStrategy("with strategy signature = " + strategySignature);
 
   }
