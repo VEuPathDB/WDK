@@ -79,8 +79,8 @@ public class PublicStrategyService extends AbstractWdkService {
       .getStepFactory()
       .getPublicStrategyErrors();
     return new JSONObject()
-      .put("buildErrors", formatErrors(erroredStrats.getFirst()))
-      .put("structuralErrors", formatErrors(erroredStrats.getSecond()));
+      .put("structuralErrors", formatErrors(erroredStrats.getFirst()))
+      .put("buildErrors", formatErrors(erroredStrats.getSecond()));
   }
 
   private <T extends Exception> JSONArray formatErrors(UnbuildableStrategyList<T> list) {
