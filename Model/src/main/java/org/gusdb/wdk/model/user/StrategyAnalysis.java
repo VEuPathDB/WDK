@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.user.Strategy.StrategyBuilder;
-import org.gusdb.wdk.model.user.StrategyLoader.MalformedStrategyList;
+import org.gusdb.wdk.model.user.StrategyLoader.UnbuildableStrategyList;
 
 public class StrategyAnalysis {
 
@@ -31,10 +31,11 @@ public class StrategyAnalysis {
 
     try (WdkModel model = WdkModel.construct(projectId, GusHome.getGusHome())) {
       Timer timer = new Timer();
-      MalformedStrategyList malformedStrats = new MalformedStrategyList();
+      UnbuildableStrategyList<InvalidStrategyStructureException> malformedStrats = new UnbuildableStrategyList<>();
+      UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors = new UnbuildableStrategyList<>();
       Collection<Strategy> strategies =
         !userEmail.isPresent() ?
-        model.getStepFactory().getAllStrategies(validationLevel, malformedStrats).values() :
+        model.getStepFactory().getAllStrategies(validationLevel, malformedStrats, stratsWithBuildErrors).values() :
         model.getStepFactory().getStrategies(
           Optional.ofNullable(model.getUserFactory()
             .getUserByEmail(userEmail.get()))
@@ -42,7 +43,7 @@ public class StrategyAnalysis {
               "Could not find user with email: " + userEmail
             ))
             .getUserId(),
-          validationLevel, FillStrategy.NO_FILL, malformedStrats).values();
+          validationLevel, FillStrategy.NO_FILL, malformedStrats, stratsWithBuildErrors).values();
       List<Strategy> validStrats = filter(strategies, str -> str.isValid());
       List<Strategy> invalidStrats = filter(strategies, str -> !str.isValid());
       System.out.println(
@@ -54,6 +55,8 @@ public class StrategyAnalysis {
         getStrategyText(invalidStrats) +
         header("Found " + malformedStrats.size() + " malformed strategies") +
         getStrategyText(malformedStrats) +
+        header("Errors while building " + stratsWithBuildErrors.size() + " strategies") +
+        getStrategyText(stratsWithBuildErrors) +
         "Done in " + timer.getElapsedString() + NL
       );
     }
@@ -113,9 +116,9 @@ public class StrategyAnalysis {
     return sb.toString();
   }
 
-  private static String getStrategyText(MalformedStrategyList malformedStrats) {
+  private static <T extends Exception> String getStrategyText(UnbuildableStrategyList<T> malformedStrats) {
     StringBuilder sb = new StringBuilder();
-    for (Entry<StrategyBuilder, InvalidStrategyStructureException> entry : malformedStrats) {
+    for (Entry<StrategyBuilder, T> entry : malformedStrats) {
       StrategyBuilder builder = entry.getKey();
       sb.append(builder.getStrategyId() + " has " + builder.getNumSteps() +
           " steps. Malformed because: " + NL + "  " + entry.getValue().getMessage() + NL + NL);

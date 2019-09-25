@@ -167,63 +167,25 @@ public class StrategyLoader {
   }
 
   private SearchResult doSearch(String sql) throws WdkModelException {
-    return doSearch(sql, false, new Object[0], new Integer[0]);
+    return doSearch(sql, true, new Object[0], new Integer[0]);
   }
 
-  private SearchResult doSearch(String sql, boolean hideLoadErrors) throws WdkModelException {
-    return doSearch(sql, hideLoadErrors, new Object[0], new Integer[0]);
+  private SearchResult doSearch(String sql, boolean propagateBuildErrors) throws WdkModelException {
+    return doSearch(sql, propagateBuildErrors, new Object[0], new Integer[0]);
   }
 
-  private SearchResult doSearch(String sql, boolean hideLoadErrors, Object[] paramValues, Integer[] paramTypes) throws WdkModelException {
-    List<StrategyBuilder> strategies = new ArrayList<>();
-    List<StepBuilder> orphanSteps = new ArrayList<>();
+  private SearchResult doSearch(String sql, boolean propagateBuildErrors, Object[] paramValues, Integer[] paramTypes) throws WdkModelException {
     try {
-      new SQLRunner(_userDbDs, sql, "search-steps-strategies").executeQuery(paramValues, paramTypes, rs -> {
-        StrategyBuilder currentStrategy = null;
-        while(rs.next()) {
-          // read a row
-          long nextStrategyId = rs.getLong(COLUMN_STRATEGY_ID);
-          if (rs.wasNull()) {
-            // this step row has no strategy ID
-            if (currentStrategy != null) {
-              // save off current strategy and reset
-              strategies.add(currentStrategy);
-              currentStrategy = null;
-            }
-            // read orphan step and save off
-            orphanSteps.add(readStep(rs));
-          }
-          else {
-            // this step row has a strategy ID
-            if (currentStrategy != null) {
-              // check to see if this row part of current strategy or beginning of next one
-              if (currentStrategy.getStrategyId() == nextStrategyId) {
-                // part of current; add step to current strategy
-                currentStrategy.addStep(readStep(rs));
-              }
-              else {
-                // beginning of next strategy; save off current strat then read and make next strat current
-                strategies.add(currentStrategy);
-                currentStrategy = readStrategy(rs); // will also read/add step
-              }
-            }
-            else {
-              // no current strategy to save off; start new one with this step row
-              currentStrategy = readStrategy(rs); // will also read/add step
-            }
-          }
-        }
-        // check for leftover strategy to save
-        if (currentStrategy != null) {
-          strategies.add(currentStrategy);
-        }
-        return this;
-      });
+      // execute the search and create builders for results
+      TwoTuple<List<StrategyBuilder>,List<StepBuilder>> queryResults =
+          loadBuilders(sql, paramValues, paramTypes);
+
       // all data loaded; build steps and strats at the specified validation level
       UserCache userCache = new UserCache(_userFactory);
       List<Strategy> builtStrategies = new ArrayList<>();
-      MalformedStrategyList malstructuredStrategies = new MalformedStrategyList();
-      for (StrategyBuilder stratBuilder : strategies) {
+      UnbuildableStrategyList<InvalidStrategyStructureException> malstructuredStrategies = new UnbuildableStrategyList<>();
+      UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors = new UnbuildableStrategyList<>();
+      for (StrategyBuilder stratBuilder : queryResults.getFirst()) {
         try {
           builtStrategies.add(stratBuilder.build(userCache, _validationLevel, _fillStrategy));
         }
@@ -231,33 +193,87 @@ public class StrategyLoader {
           malstructuredStrategies.add(new TwoTuple<>(stratBuilder, e));
         }
         catch (WdkModelException e) {
-          if (hideLoadErrors) {
-            LOG.warn("Error occurred while building strategy. By request, ignoring.", e);
-            continue;
-          }
-          else throw e;
+          stratsWithBuildErrors.add(new TwoTuple<>(stratBuilder, e));
         }
       }
+      if (propagateBuildErrors && !stratsWithBuildErrors.isEmpty()) {
+        throw new WdkModelException("At least one strategy could not be build due to WdkModelException: " + NL +
+            stratsWithBuildErrors.stream()
+            .map(tuple ->
+              "Strategy " + tuple.getFirst().getStrategyId() +
+              ", owned by " + tuple.getFirst().getUserId() + NL +
+              tuple.getSecond().toString() + NL +
+              FormatUtil.getStackTrace(tuple.getSecond()))
+            .collect(Collectors.joining(NL)));
+      }
+
       // only build orphan steps; attached steps will be built by their strategy
       List<Step> builtOrphanSteps = new ArrayList<>();
-      for (StepBuilder orphanBuilder : orphanSteps) {
+      for (StepBuilder orphanBuilder : queryResults.getSecond()) {
         try {
           builtOrphanSteps.add(orphanBuilder.build(userCache, _validationLevel, _fillStrategy, Optional.empty()));
         }
         catch (WdkModelException e) {
-          if (hideLoadErrors) {
-            LOG.warn("Error occurred while building orphan step. By request, ignoring.", e);
-            continue;
-          }
-          else throw e;
+          if (propagateBuildErrors) throw e;
+          LOG.warn("Error occurred while building orphan step. By request, ignoring.", e);
+          continue;
         }
       }
-      return new SearchResult(builtStrategies, builtOrphanSteps, malstructuredStrategies);
+
+      return new SearchResult(builtStrategies, builtOrphanSteps, malstructuredStrategies, stratsWithBuildErrors);
     }
     catch (Exception e) {
       LOG.error("Unable to execute search with SQL: " + NL + sql + NL + "and params [" + FormatUtil.join(paramValues, ",") + "].", e);
       return WdkModelException.unwrap(e);
     }
+  }
+
+  private TwoTuple<List<StrategyBuilder>, List<StepBuilder>> loadBuilders(
+      String sql, Object[] paramValues, Integer[] paramTypes) {
+    List<StrategyBuilder> strategies = new ArrayList<>();
+    List<StepBuilder> orphanSteps = new ArrayList<>();
+    new SQLRunner(_userDbDs, sql, "search-steps-strategies").executeQuery(paramValues, paramTypes, rs -> {
+      StrategyBuilder currentStrategy = null;
+      while(rs.next()) {
+        // read a row
+        long nextStrategyId = rs.getLong(COLUMN_STRATEGY_ID);
+        if (rs.wasNull()) {
+          // this step row has no strategy ID
+          if (currentStrategy != null) {
+            // save off current strategy and reset
+            strategies.add(currentStrategy);
+            currentStrategy = null;
+          }
+          // read orphan step and save off
+          orphanSteps.add(readStep(rs));
+        }
+        else {
+          // this step row has a strategy ID
+          if (currentStrategy != null) {
+            // check to see if this row part of current strategy or beginning of next one
+            if (currentStrategy.getStrategyId() == nextStrategyId) {
+              // part of current; add step to current strategy
+              currentStrategy.addStep(readStep(rs));
+            }
+            else {
+              // beginning of next strategy; save off current strat then read and make next strat current
+              strategies.add(currentStrategy);
+              currentStrategy = readStrategy(rs); // will also read/add step
+            }
+          }
+          else {
+            // no current strategy to save off; start new one with this step row
+            currentStrategy = readStrategy(rs); // will also read/add step
+          }
+        }
+      }
+      // check for leftover strategy to save
+      if (currentStrategy != null) {
+        strategies.add(currentStrategy);
+      }
+      return this;
+    });
+    return new TwoTuple<>(strategies, orphanSteps);
   }
 
   private StrategyBuilder readStrategy(ResultSet rs) throws SQLException {
@@ -327,7 +343,17 @@ public class StrategyLoader {
   List<Strategy> getPublicStrategies() throws WdkModelException {
     String sql = prepareSql(FIND_STRATEGIES_SQL
         .replace(SEARCH_CONDITIONS_MACRO, "and sr." + COLUMN_IS_PUBLIC + " = " + sqlBoolean(true)));
-    return descModTimeSort(doSearch(sql, true).getStrategies());
+    return descModTimeSort(doSearch(sql, false).getStrategies());
+  }
+
+  TwoTuple<
+    UnbuildableStrategyList<InvalidStrategyStructureException>,
+    UnbuildableStrategyList<WdkModelException>
+  > getPublicStrategyErrors() throws WdkModelException {
+    String sql = prepareSql(FIND_STRATEGIES_SQL
+        .replace(SEARCH_CONDITIONS_MACRO, "and sr." + COLUMN_IS_PUBLIC + " = " + sqlBoolean(true)));
+    SearchResult result = doSearch(sql, false);
+    return new TwoTuple<>(result.getMalformedStrategies(), result.getStratsWithBuildErrors());
   }
 
   Map<Long, Step> getSteps(Long userId) throws WdkModelException {
@@ -373,22 +399,28 @@ public class StrategyLoader {
     return descModTimeSort(strategies);
   }
 
-  Map<Long, Strategy> getAllStrategies(MalformedStrategyList malformedStrategies) throws WdkModelException {
+  Map<Long, Strategy> getAllStrategies(
+      UnbuildableStrategyList<InvalidStrategyStructureException> malformedStrategies,
+      UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors) throws WdkModelException {
     return getStrategies(
         prepareSql(FIND_STRATEGIES_SQL.replace(SEARCH_CONDITIONS_MACRO, "")),
-        malformedStrategies);
+        malformedStrategies, stratsWithBuildErrors);
   }
 
-  Map<Long, Strategy> getStrategies(long userId, MalformedStrategyList malformedStrategies) throws WdkModelException {
+  Map<Long, Strategy> getStrategies(long userId,
+      UnbuildableStrategyList<InvalidStrategyStructureException> malformedStrategies,
+      UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors) throws WdkModelException {
     return getStrategies(
         prepareSql(FIND_STRATEGIES_SQL.replace(SEARCH_CONDITIONS_MACRO, "and sr." + COLUMN_USER_ID + " = " + userId)),
-        malformedStrategies);
+        malformedStrategies, stratsWithBuildErrors);
   }
 
   private Map<Long, Strategy> getStrategies(String searchSql,
-      MalformedStrategyList malformedStrategies) throws WdkModelException {
+      UnbuildableStrategyList<InvalidStrategyStructureException> malformedStrategies,
+      UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors) throws WdkModelException {
     SearchResult result = doSearch(searchSql);
     malformedStrategies.addAll(result.getMalformedStrategies());
+    stratsWithBuildErrors.addAll(result.getStratsWithBuildErrors());
     return toStrategyMap(descModTimeSort(result.getStrategies()));
   }
 
@@ -429,22 +461,25 @@ public class StrategyLoader {
     return strategies;
   }
 
-  public static class MalformedStrategyList extends
-    ArrayList<TwoTuple<StrategyBuilder, InvalidStrategyStructureException>> {}
+  public static class UnbuildableStrategyList<T extends Exception> extends
+    ArrayList<TwoTuple<StrategyBuilder, T>> {}
 
   private static class SearchResult {
 
     private final List<Strategy> _strategies;
     private final List<Step> _orphanSteps;
-    private final MalformedStrategyList _malformedStrategies;
+    private final UnbuildableStrategyList<InvalidStrategyStructureException> _malformedStrategies;
+    private final UnbuildableStrategyList<WdkModelException> _stratsWithBuildErrors;
 
     public SearchResult(
         List<Strategy> strategies,
         List<Step> orphanSteps,
-        MalformedStrategyList malformedStrategies) {
+        UnbuildableStrategyList<InvalidStrategyStructureException> malformedStrategies,
+        UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors) {
       _strategies = strategies;
       _orphanSteps = orphanSteps;
       _malformedStrategies = malformedStrategies;
+      _stratsWithBuildErrors = stratsWithBuildErrors;
     }
 
     public List<Step> findAllSteps(Predicate<Step> pred) {
@@ -464,8 +499,12 @@ public class StrategyLoader {
       return _orphanSteps.stream().filter(pred).collect(toList());
     }
 
-    public MalformedStrategyList getMalformedStrategies() {
+    public UnbuildableStrategyList<InvalidStrategyStructureException> getMalformedStrategies() {
       return _malformedStrategies;
+    }
+
+    public UnbuildableStrategyList<WdkModelException> getStratsWithBuildErrors() {
+      return _stratsWithBuildErrors;
     }
 
     public List<Strategy> getStrategies() {
@@ -498,6 +537,11 @@ public class StrategyLoader {
                       .collect(Collectors.toList())))
               .collect(Collectors.toList()))
           .put("malformedStrategies", _malformedStrategies.stream()
+              .map(tup -> new JSONObject()
+                  .put("id", tup.getFirst().getStrategyId())
+                  .put("problem", tup.getSecond().getMessage()))
+              .collect(Collectors.toList()))
+          .put("stratsWithBuildErrors", _stratsWithBuildErrors.stream()
               .map(tup -> new JSONObject()
                   .put("id", tup.getFirst().getStrategyId())
                   .put("problem", tup.getSecond().getMessage()))

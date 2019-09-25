@@ -61,7 +61,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.Strategy.StrategyBuilder;
-import org.gusdb.wdk.model.user.StrategyLoader.MalformedStrategyList;
+import org.gusdb.wdk.model.user.StrategyLoader.UnbuildableStrategyList;
 import org.json.JSONObject;
 
 /**
@@ -308,19 +308,23 @@ public class StepFactory {
 
   public Map<Long, Strategy> getStrategies(long userId, ValidationLevel validationLevel, FillStrategy fillStrategy)
       throws WdkModelException {
-    return getStrategies(userId, validationLevel, fillStrategy, new MalformedStrategyList());
+    return getStrategies(userId, validationLevel, fillStrategy,
+        new UnbuildableStrategyList<InvalidStrategyStructureException>(),
+        new UnbuildableStrategyList<WdkModelException>());
   }
 
   public Map<Long, Strategy> getStrategies(long userId, ValidationLevel validationLevel, FillStrategy fillStrategy,
-      MalformedStrategyList malformedStrategies) throws WdkModelException {
+      UnbuildableStrategyList<InvalidStrategyStructureException> malformedStrategies,
+      UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors) throws WdkModelException {
     return new StrategyLoader(_wdkModel, validationLevel, fillStrategy)
-        .getStrategies(userId, malformedStrategies);
+        .getStrategies(userId, malformedStrategies, stratsWithBuildErrors);
   }
 
   public Map<Long, Strategy> getAllStrategies(ValidationLevel validationLevel,
-      MalformedStrategyList malformedStrategies) throws WdkModelException {
+      UnbuildableStrategyList<InvalidStrategyStructureException> malformedStrategies,
+      UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors) throws WdkModelException {
     return new StrategyLoader(_wdkModel, validationLevel, DEFAULT_DB_FILL_STRATEGY)
-        .getAllStrategies(malformedStrategies);
+        .getAllStrategies(malformedStrategies, stratsWithBuildErrors);
   }
 
   /**
@@ -357,6 +361,14 @@ public class StepFactory {
   public int getPublicStrategyCount() throws WdkModelException {
     return filter(new StrategyLoader(_wdkModel, ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
         .getPublicStrategies(), Strategy::isValid).size();
+  }
+
+  public TwoTuple<
+    UnbuildableStrategyList<InvalidStrategyStructureException>,
+    UnbuildableStrategyList<WdkModelException>
+  > getPublicStrategyErrors() throws WdkModelException {
+    return new StrategyLoader(_wdkModel, ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
+        .getPublicStrategyErrors();
   }
 
   public Optional<Strategy> getStrategyById(long strategyId,
@@ -1170,8 +1182,10 @@ public class StepFactory {
    */
   public void transferStrategyOwnership(User guestUser, User registeredUser) throws WdkModelException {
     LOG.debug("Transferring user #" + guestUser.getUserId() + "'s strategies to user #" + registeredUser.getUserId() + "...");
-    MalformedStrategyList malformedStrats = new MalformedStrategyList();
-    for (Strategy strategy : getStrategies(guestUser.getUserId(), ValidationLevel.NONE, FillStrategy.NO_FILL, malformedStrats).values()) {
+    UnbuildableStrategyList<InvalidStrategyStructureException> malformedStrats = new UnbuildableStrategyList<>();
+    UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors = new UnbuildableStrategyList<>();
+    for (Strategy strategy : getStrategies(guestUser.getUserId(), ValidationLevel.NONE,
+        FillStrategy.NO_FILL, malformedStrats, stratsWithBuildErrors).values()) {
       StrategyBuilder builder = null;
       try {
         builder = Strategy.builder(strategy).setUserId(registeredUser.getUserId());
@@ -1182,9 +1196,10 @@ public class StepFactory {
       }
     }
     malformedStrats.stream().forEach(tuple -> logMalformedStrat(tuple));
+    stratsWithBuildErrors.stream().forEach(tuple -> logMalformedStrat(tuple));
   }
 
-  private static void logMalformedStrat(TwoTuple<StrategyBuilder, InvalidStrategyStructureException> malformedStrat) {
+  private static <T extends Exception> void logMalformedStrat(TwoTuple<StrategyBuilder, T> malformedStrat) {
     LOG.warn("Unable to transfer ownership of strategy: " +
         malformedStrat.getFirst() + FormatUtil.NL +
         "For the following reason:" + malformedStrat.getSecond());

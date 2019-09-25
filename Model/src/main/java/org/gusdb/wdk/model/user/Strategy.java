@@ -92,6 +92,10 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
       return _strategyId;
     }
 
+    public long getUserId() {
+      return _userId;
+    }
+
     public StrategyBuilder setProjectId(String projectId) {
       _projectId = projectId;
       return this;

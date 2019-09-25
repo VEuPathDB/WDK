@@ -219,6 +219,7 @@ public class JsonKeys {
 
   // user-specific keys
   public static final String USER = "user";
+  public static final String USER_ID = "userId";
   public static final String EMAIL = "email";
   public static final String IS_GUEST = "isGuest";
   public static final String PREFERENCES = "preferences";
@@ -260,6 +261,10 @@ public class JsonKeys {
   public static final String IS_VALID = "isValid";
   public static final String GENERAL = "general";
   public static final String BY_KEY = "byKey";
+
+  // error reporting keys
+  public static final String EXCEPTION = "exception";
+  public static final String STACK_TRACE = "stackTrace";
 
   public static final String COLUMN_SELECTION = "columnSelection";
   public static final String SORT_COLUMNS     = "sortColumns";
