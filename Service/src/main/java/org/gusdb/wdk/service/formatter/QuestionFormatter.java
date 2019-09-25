@@ -86,8 +86,9 @@ public class QuestionFormatter {
         // NOTE: if null returned by getAllowedRecordClasses, property will be omitted in returned JSON
         .put(JsonKeys.ALLOWED_PRIMARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getPrimaryAnswerParam()))
         .put(JsonKeys.ALLOWED_SECONDARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getSecondaryAnswerParam()))
-      .put(JsonKeys.FILTERS, getFiltersJson(q.getFilters()))
-      .put(JsonKeys.PROPERTIES, q.getPropertyLists()),
+        .put(JsonKeys.QUERY_NAME, q.getQuery().getName())
+        .put(JsonKeys.FILTERS, getFiltersJson(q.getFilters()))
+        .put(JsonKeys.PROPERTIES, q.getPropertyLists()),
       Collections.emptySet()
     );
   }

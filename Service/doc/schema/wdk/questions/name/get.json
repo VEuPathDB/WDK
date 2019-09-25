@@ -200,6 +200,9 @@
       "items": {
          "type": "string"
       }
+    },
+    "queryName": {
+      "type": "string"
     }
   },
   "required": [
