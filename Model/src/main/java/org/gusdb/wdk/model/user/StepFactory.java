@@ -679,7 +679,8 @@ public class StepFactory {
     StepBuilder newStep = Step.builder(oldStep)
       .setStepId(getNewStepId())
       .setUserId(newUser.getUserId())
-      .setStrategyId(Optional.empty());
+      .setStrategyId(Optional.empty())
+      .setEstimatedSize(Step.RESET_SIZE_FLAG); // always reset on copy
 
 
     MapBuilder<Long,StepBuilder> childSteps = assignParamValues(
