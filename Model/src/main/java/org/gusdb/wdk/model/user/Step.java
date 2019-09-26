@@ -37,7 +37,7 @@ import org.json.JSONObject;
  * @author Charles Treatman
  * @author Ryan Doherty
  */
-@SuppressWarnings("UseOfObsoleteDateTimeApi OptionalUsedAsFieldOrParameterType")
+@SuppressWarnings("UseOfObsoleteDateTimeApi")
 public class Step implements Validateable<Step> {
 
   public static final int RESET_SIZE_FLAG = -1;
@@ -620,6 +620,11 @@ public class Step implements Validateable<Step> {
     // check if new-style filter has been applied
     if (_answerSpec.getFilterOptions().isFiltered(_answerSpec.toSimpleAnswerSpec()))
       return true;
+
+    // check if column filter has been applied
+    if (!_answerSpec.getColumnFilterConfig().isEmpty()) {
+      return true;
+    }
 
     // check if old-style filter has been applied
     Optional<AnswerFilterInstance> filter = _answerSpec.getLegacyFilter();
