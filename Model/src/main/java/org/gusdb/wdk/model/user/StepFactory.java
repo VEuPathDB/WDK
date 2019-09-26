@@ -682,10 +682,10 @@ public class StepFactory {
       .setStrategyId(Optional.empty())
       .setEstimatedSize(Step.RESET_SIZE_FLAG); // always reset on copy
 
-
-    MapBuilder<Long,StepBuilder> childSteps = assignParamValues(
-      oldStep.getUser(), oldStep.getAnswerSpec(), newUser,
-      newStep.getAnswerSpec());
+    MapBuilder<Long,StepBuilder> childSteps =
+      oldStep.getAnswerSpec().hasValidQuestion()
+        ? assignParamValues(oldStep.getUser(), oldStep.getAnswerSpec(), newUser, newStep.getAnswerSpec())
+        : new MapBuilder<>(); // no child steps can be parsed from invalid question
 
     return childSteps.put(oldStep.getStepId(), newStep);
   }
