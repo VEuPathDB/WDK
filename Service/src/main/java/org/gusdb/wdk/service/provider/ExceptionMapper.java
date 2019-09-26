@@ -43,43 +43,41 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
   @Override
   public Response toResponse(Exception e) {
 
-    LOG.error("Caught service error", e);
-
     try { throw e; }
 
     catch (NotFoundException | PathParamException e404) {
-      return Response.status(Status.NOT_FOUND)
-          .type(MediaType.TEXT_PLAIN).entity(e404.getMessage()).build();
+      return logResponse(e, Response.status(Status.NOT_FOUND)
+          .type(MediaType.TEXT_PLAIN).entity(e404.getMessage()).build());
     }
 
     catch (ForbiddenException e403) {
-      return Response.status(Status.FORBIDDEN)
-          .type(MediaType.TEXT_PLAIN).entity(e403.getMessage()).build();
+      return logResponse(e, Response.status(Status.FORBIDDEN)
+          .type(MediaType.TEXT_PLAIN).entity(e403.getMessage()).build());
     }
 
     catch (JSONException | RequestMisformatException | BadRequestException e400) {
-      return Response.status(Status.BAD_REQUEST)
-          .type(MediaType.TEXT_PLAIN).entity(createCompositeExceptionMessage(e400)).build();
+      return logResponse(e, Response.status(Status.BAD_REQUEST)
+          .type(MediaType.TEXT_PLAIN).entity(createCompositeExceptionMessage(e400)).build());
     }
 
     catch (ConflictException e409) {
-      return Response.status(Status.CONFLICT)
-          .type(MediaType.TEXT_PLAIN).entity(e409.getMessage()).build();
+      return logResponse(e, Response.status(Status.CONFLICT)
+          .type(MediaType.TEXT_PLAIN).entity(e409.getMessage()).build());
     }
 
     // Custom exception to handle client content issues
     catch (DataValidationException | WdkUserException e422) {
-      return Response.status(new UnprocessableEntityStatusType())
-          .type(MediaType.TEXT_PLAIN).entity(get422ResponseEntity(e422)).build();
+      return logResponse(e, Response.status(new UnprocessableEntityStatusType())
+          .type(MediaType.TEXT_PLAIN).entity(get422ResponseEntity(e422)).build());
     }
 
     catch (WebApplicationException eApp) {
       if(eApp.getCause() != null && eApp.getCause() instanceof Exception ) {
-        return this.toResponse((Exception) eApp.getCause());
+        return logResponse(e, this.toResponse((Exception) eApp.getCause()));
       }
       else {
-        return Response.status(eApp.getResponse().getStatus())
-          .type(MediaType.TEXT_PLAIN).entity(eApp.getMessage()).build();
+        return logResponse(e, Response.status(eApp.getResponse().getStatus())
+          .type(MediaType.TEXT_PLAIN).entity(eApp.getMessage()).build());
       }
     }
 
@@ -89,9 +87,21 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
       ErrorContext errorContext = AbstractWdkService.getErrorContext(context, req, wdkModel, ErrorLocation.WDK_SERVICE);
       LOG.error("log4j marker: " + errorContext.getLogMarker());
       Events.trigger(new ErrorEvent(new ServerErrorBundle(other), errorContext));
-      return Response.serverError()
-          .type(MediaType.TEXT_PLAIN).entity("Internal Error").build();
+      return logResponse(e, Response.serverError()
+          .type(MediaType.TEXT_PLAIN).entity("Internal Error").build());
     }
+  }
+
+  /**
+   * Logs both the thrown exception and the HTTP status code of the response
+   * 
+   * @param e exception being mapped
+   * @param response response to be returned to the client
+   * @return unmodified response
+   */
+  private Response logResponse(Exception e, Response response) {
+    LOG.error("Caught service error [ responseCode: " + response.getStatus() + "]", e);
+    return response;
   }
 
   /**
