@@ -151,7 +151,7 @@ public class BasketService extends UserService {
       return Response.noContent().build();
     }
     catch (JSONException e) {
-      throw new RequestMisformatException(e.getMessage());
+      throw new RequestMisformatException(e.getMessage(), e);
     }
   }
 

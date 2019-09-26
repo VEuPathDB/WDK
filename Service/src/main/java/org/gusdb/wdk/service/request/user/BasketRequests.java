@@ -60,8 +60,17 @@ public class BasketRequests {
      * Input Format:
      * <pre>
      * {
-     *   action: add|remove|removeAll,
+     *   action: "add"|"remove",
      *   primaryKeys?: PrimaryKey[]
+     * }
+     * OR
+     * {
+     *   action: "addFromStepId",
+     *   stepId: string
+     * }
+     * OR
+     * {
+     *   action: "removeAll"
      * }
      * </pre>
      * Where PrimaryKey is <code>[ { name: String, value: String } ]</code>.
@@ -73,17 +82,17 @@ public class BasketRequests {
      */
     public BasketActions(JSONObject json, RecordClass recordClass)
         throws DataValidationException, WdkModelException {
-      super(translateStepIdOption(json), ActionType.values(),
+      super(addPrimaryKeysIfAbsent(json), ActionType.values(),
           val -> ActionType.fromString(val.getString()).orElseThrow(DataValidationException::new),
           val -> RecordRequest.parsePrimaryKey(val.getJSONArray(), recordClass));
-      if (json.has(ActionType.ADD_FROM_STEP_ID.toString())) {
+      if (getAction().equals(ActionType.ADD_FROM_STEP_ID)) {
         _stepId = json.getLong(JsonKeys.STEP_ID);
       }
     }
 
-    private static JSONObject translateStepIdOption(JSONObject json) {
-      return json.has(ActionType.ADD_FROM_STEP_ID.toString()) ?
-        json.put(JsonKeys.PRIMARY_KEYS, new JSONArray()) : json;
+    private static JSONObject addPrimaryKeysIfAbsent(JSONObject json) {
+      return json.has(JsonKeys.PRIMARY_KEYS) ? json :
+        json.put(JsonKeys.PRIMARY_KEYS, new JSONArray());
     }
 
     public BasketActions(ActionType action, Collection<PrimaryKeyValue> records)
