@@ -27,7 +27,7 @@ public abstract class UserService extends AbstractWdkService {
   protected static final String USER_ID_PATH_PARAM = "userId";
 
   protected static final String USER_RESOURCE = "User ID ";
-  protected static final String STEP_RESOURCE = "Step ID ";
+  public static final String STEP_RESOURCE = "Step ID ";
 
   protected static final String NAMED_USER_PATH = UserUtilityServices.USERS_PATH + "/{"+USER_ID_PATH_PARAM+"}";
 

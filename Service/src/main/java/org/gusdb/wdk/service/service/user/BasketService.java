@@ -92,6 +92,7 @@ public class BasketService extends UserService {
       NAMED_BASKET_PATH + NAMED_COLUMN_SEGMENT_PAIR + CUSTOM_REPORT_SEGMENT_PAIR;
 
   protected static class RevisedRequest<T> extends TwoTuple<RecordClass, T> {
+    
     public RevisedRequest(RecordClass recordClass, T object) {
       super(recordClass, object);
     }
@@ -134,6 +135,9 @@ public class BasketService extends UserService {
         case ADD:
           factory.addPksToBasket(user, revisedRequest.getRecordClass(),
               revisedRequest.getObject().getIdentifiers());
+          break;
+        case ADD_FROM_STEP_ID:
+          factory.addEntireResultToBasket(user, revisedRequest.getObject().getRunnableAnswerSpec(user, getWdkModel()));
           break;
         case REMOVE:
           factory.removePksFromBasket(user, revisedRequest.getRecordClass(),
