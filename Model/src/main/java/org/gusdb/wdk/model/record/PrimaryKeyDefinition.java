@@ -13,7 +13,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -181,7 +180,7 @@ public class PrimaryKeyDefinition extends WdkModelBase {
   }
 
   public List<Map<String, Object>> lookUpPrimaryKeys(User user, Map<String, Object> pkValues)
-      throws WdkUserException, WdkModelException {
+      throws RecordNotFoundException, WdkModelException {
     List<Map<String,Object>> primaryKeys = new ArrayList<>();
     if (_aliasQuery != null) {
       primaryKeys = getPrimaryKeyFromAliasQuery(user, pkValues);
@@ -217,7 +216,7 @@ public class PrimaryKeyDefinition extends WdkModelBase {
   }
 
   private List<Map<String, Object>> getPrimaryKeyFromAliasPlugin(User user, Map<String, Object> pkValues)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException, RecordNotFoundException {
     return _aliasPlugin.getPrimaryKey(user, pkValues);
   }
 

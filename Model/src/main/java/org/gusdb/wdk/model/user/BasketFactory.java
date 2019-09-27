@@ -35,6 +35,7 @@ import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.RecordNotFoundException;
 import org.gusdb.wdk.model.record.StaticRecordInstance;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 
@@ -392,10 +393,12 @@ public class BasketFactory {
             RecordInstance record = new StaticRecordInstance(user, recordClass, recordClass, pkValues, true);
             records.add(record);
           }
-          catch (WdkUserException e) {
-            // FIXME: thrown because pkValues mapped to more than one record;
-            // skip for now but probably want to convert to the multiple records
-            // and return all records in this result.
+          catch (WdkUserException | RecordNotFoundException e) {
+            // FIXME: thrown because pkValues either:
+            //    WdkUserException: mapped to more than one record
+            //    RecordNotFoundException: did not map to any records
+            // Skip both for now but probably want to convert the multiple case
+            // IDs to records and add all those records to the result.
           }
         }
         return records;

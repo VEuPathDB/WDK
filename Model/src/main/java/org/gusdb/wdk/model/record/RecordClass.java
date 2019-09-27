@@ -89,10 +89,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     catch (RecordNotFoundException rnfe) {
       return Collections.emptyList();
     }
-    catch (RuntimeException | WdkUserException e) {
+    catch (Exception e) {
       // since input to this method is already a PrimaryKeyValue (not Map),
       // should not see these Exceptions
-      throw new WdkModelException(e);
+      throw WdkModelException.translateFrom(e);
     }
   }
 
@@ -1667,7 +1667,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public boolean hasMultipleRecords(User user, Map<String, Object> pkValues)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException, RecordNotFoundException {
     List<Map<String, Object>> records = lookupPrimaryKeys(user, pkValues);
     return records.size() > 1;
   }
@@ -1676,7 +1676,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    * use alias query to lookup old ids and convert to new ids
    */
   public List<Map<String, Object>> lookupPrimaryKeys(User user, Map<String, Object> pkValues)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException, RecordNotFoundException {
     return primaryKeyDefinition.lookUpPrimaryKeys(user, pkValues);
   }
 
