@@ -429,10 +429,10 @@ public class StepFactory {
 
     // now that steps are in DB, trigger step copied events to copy any other
     //   step-related info (must be afterward because of some FK constraints)
-    triggerCopyEvents(stepBuilders.keySet().stream()
-      .map(oldId -> new TwoTuple<>(
-        strategy.findFirstStep(withId(oldId)).get(),
-        stratStub.findFirstStep(withId(stepBuilders.get(oldId).getStepId())).get()))
+    triggerCopyEvents(stepBuilders.entrySet().stream()
+      .map(entry -> new TwoTuple<>(
+        strategy.findFirstStep(withId(entry.getKey())).get(),
+        stratStub.findFirstStep(withId(entry.getValue().getStepId())).get()))
       .collect(Collectors.toList()));
           
     
@@ -490,10 +490,10 @@ public class StepFactory {
     }
 
     // trigger copy events on all steps
-    triggerCopyEvents(stepIdsMap.entrySet().stream()
+    triggerCopyEvents(newStepMap.entrySet().stream()
       .map(entry -> new TwoTuple<>(
         oldStrategy.findFirstStep(withId(entry.getKey())).get(),
-        newStrategy.findFirstStep(withId(entry.getValue())).get()))
+        newStrategy.findFirstStep(withId(entry.getValue().getStepId())).get()))
       .collect(Collectors.toList()));
 
     // populate stepIdsMap with mapping from oldId -> newId
