@@ -758,7 +758,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
       //             discuss with DD.  For now return as if it is an internal value.
       return getEmptyValue();
     }
-    LOG.warn("\n  PARAM: " + getName() + "\n  QIS: " + queryInstanceSpec.get());
+    LOG.debug("\n  PARAM: " + getName() + "\n  QIS: " + queryInstanceSpec.get());
     return _handler.toInternalValue(queryInstanceSpec);
   }
 
