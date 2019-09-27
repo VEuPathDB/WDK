@@ -100,7 +100,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
    * @return unmodified response
    */
   private Response logResponse(Exception e, Response response) {
-    LOG.error("Caught service error [ responseCode: " + response.getStatus() + "]", e);
+    LOG.error("Caught service error [ responseCode: " + response.getStatus() + " ]", e);
     return response;
   }
 
