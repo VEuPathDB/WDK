@@ -38,6 +38,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> impl
     //TODO: remove the null test when val map query becomes required
     if (valuesMap != null) pJson.put("values", valuesMap);
     pJson.put("hideEmptyOntologyNodes", filterParam.getTrimMetadataTerms());
+    pJson.put("sortLeavesBeforeBranches", filterParam.getSortLeavesBeforeBranches());
     pJson.put("countPredictsAnswerCount", filterParam.getCountPredictsAnswerCount());
     pJson.put(MIN_SELECTED_COUNT, filterParam.getMinSelectedCount());
     return pJson;

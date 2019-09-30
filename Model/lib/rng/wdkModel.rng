@@ -670,6 +670,11 @@
         </attribute>
       </optional>
       <optional>
+        <attribute name="sortLeavesBeforeBranches">
+          <data type="boolean" />
+        </attribute>
+      </optional>
+      <optional>
         <attribute name="countPredictsAnswerCount">
           <data type="boolean" />
         </attribute>
