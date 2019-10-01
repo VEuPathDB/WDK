@@ -86,7 +86,8 @@ public class ParameterContainerInstanceSpecBuilder<T extends ParameterContainerI
     var validation = ValidationBundle.builder(validationLevel);
 
     LOG.log(Param.VALIDATION_LOG_PRIORITY, "Beginning param validation for " +
-        "instance of container: " + paramContainer.getFullName());
+        "instance of container: " + paramContainer.getFullName() +
+        " with validation level " + validationLevel + " and fill strategy " + fillStrategy);
     for (var param : reqParams.values()) {
       var result = param.validate(stableValues, validationLevel, fillStrategy);
       if (!result.isValid())
