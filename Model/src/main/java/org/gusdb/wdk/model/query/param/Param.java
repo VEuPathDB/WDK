@@ -83,7 +83,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   private static final Logger LOG = Logger.getLogger(Param.class);
 
-  public static final Level VALIDATION_LOG_PRIORITY = Level.DEBUG;
+  public static final Level VALIDATION_LOG_PRIORITY = Level.INFO;
 
   protected static final boolean EMPTY_DESPITE_ALLOWEMPTY_FALSE_IS_FATAL = false;
 
@@ -542,7 +542,8 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     if (LOG.isEnabledFor(VALIDATION_LOG_PRIORITY)) {
       try {
         LOG.log(VALIDATION_LOG_PRIORITY, "Param '" + getName() + "' of container '" +
-            getContainer().getFullName() + "': " + logMessage.get());
+            (getContainer() == null ? "null!!" : getContainer().getFullName()) +
+            "': " + logMessage.get());
       }
       catch (Exception e) {
         throw WdkModelException.translateFrom(e);
