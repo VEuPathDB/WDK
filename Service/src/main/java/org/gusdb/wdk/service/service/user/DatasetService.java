@@ -1,6 +1,8 @@
 package org.gusdb.wdk.service.service.user;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -20,6 +22,7 @@ import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.DatasetRequestProcessor;
 import org.gusdb.wdk.service.request.user.DatasetRequestProcessor.DatasetRequest;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -75,5 +78,19 @@ public class DatasetService extends UserService {
     catch (WdkUserException e) {
       throw new DataValidationException(e);
     }
+  }
+
+  @GET
+  @Path("datasets/{id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray getDataset(@PathParam("id") long datasetId) throws WdkModelException {
+    DatasetFactory factory = getWdkModel().getDatasetFactory();
+    try {
+      factory.getDatasetWithOwner(datasetId, getPrivateRegisteredUser().getUserId());
+    }
+    catch (WdkUserException e) {
+      throw new NotFoundException(formatNotFound("Dataset with ID " + datasetId));
+    }
+    return new JSONArray(factory.getDatasetValues(datasetId));
   }
 }

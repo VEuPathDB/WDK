@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.query.param;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
@@ -30,9 +31,14 @@ public class DatasetParamHandler extends AbstractParamHandler {
    */
   @Override
   public Dataset toRawValue(User user, String stableValue) throws WdkModelException {
-    return user.getWdkModel()
-      .getDatasetFactory()
-      .getDataset(user, Long.valueOf(stableValue));
+    try {
+      return user.getWdkModel()
+        .getDatasetFactory()
+        .getDatasetWithOwner(Long.valueOf(stableValue), user.getUserId());
+    }
+    catch (WdkUserException e) {
+      throw new WdkModelException("Dataset does not belong to current user", e);
+    }
   }
 
   /**
@@ -49,14 +55,14 @@ public class DatasetParamHandler extends AbstractParamHandler {
       .getUser()
       .getWdkModel()
       .getDatasetFactory();
-    var dvSql = datasetFactory.getDatasetValueSql(Long.valueOf(value));
-    var recordClass = ((DatasetParam) _param).getRecordClass();
+    var dvSql = datasetFactory.getDatasetValueSqlForAppDb(Long.valueOf(value));
+    var recordClassOpt = ((DatasetParam) _param).getRecordClass();
 
-    if (recordClass == null)
+    if (recordClassOpt.isEmpty())
       return dvSql;
 
     // use the recordClass primary keys as the column name
-    var pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
+    var pkColumns = recordClassOpt.get().getPrimaryKeyDefinition().getColumnRefs();
     var sql = new StringBuilder("SELECT ");
     for (int i = 0; i < pkColumns.length; i++) {
       sql.append("dv.data")
@@ -81,15 +87,20 @@ public class DatasetParamHandler extends AbstractParamHandler {
   @Override
   public String toSignature(RunnableObj<QueryInstanceSpec> ctxParamVals)
       throws WdkModelException {
-    final QueryInstanceSpec spec = ctxParamVals.get();
-    Dataset dataset = spec.getUser()
-      .getWdkModel()
-      .getDatasetFactory()
-      .getDataset(
-        spec.getUser(),
-        Long.valueOf(spec.get(_param.getName()))
-      );
-    return dataset.getChecksum();
+    try {
+      final QueryInstanceSpec spec = ctxParamVals.get();
+      Dataset dataset = spec.getUser()
+        .getWdkModel()
+        .getDatasetFactory()
+        .getDatasetWithOwner(
+          Long.valueOf(spec.get(_param.getName())), 
+          spec.getUser().getUserId()
+        );
+      return dataset.getChecksum();
+    }
+    catch (WdkUserException e) {
+      throw new WdkModelException("Dataset does not belong to current user", e);
+    }
   }
 
   @Override

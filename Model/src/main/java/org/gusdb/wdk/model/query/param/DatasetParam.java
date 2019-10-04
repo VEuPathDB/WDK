@@ -5,11 +5,13 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.DatasetParserReference;
@@ -148,9 +150,10 @@ public class DatasetParam extends Param {
 
     // otherwise, make sure the dataset exists
     try {
-      _wdkModel.getDatasetFactory().getDataset(ctxParamVals.getUser(), Long.parseLong(stableValue));
+      _wdkModel.getDatasetFactory().getDatasetWithOwner(
+          Long.parseLong(stableValue), ctxParamVals.getUser().getUserId());
     }
-    catch (WdkModelException e) {
+    catch (WdkModelException | WdkUserException | NumberFormatException e) {
       return ctxParamVals.setInvalid(name, level, e.getMessage());
     }
 
@@ -160,8 +163,8 @@ public class DatasetParam extends Param {
   /**
    * @return the recordClass
    */
-  public RecordClass getRecordClass() {
-    return recordClass;
+  public Optional<RecordClass> getRecordClass() {
+    return Optional.ofNullable(recordClass);
   }
 
   /**

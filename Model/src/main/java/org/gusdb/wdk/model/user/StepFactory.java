@@ -47,6 +47,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
@@ -720,11 +721,17 @@ public class StepFactory {
   // clone DatasetParams (we want a fresh copy per step because we don't track which steps are using a dataset param)
   private String cloneDatasetParam(User oldUser, String oldStableValue,
       User newUser) throws WdkModelException {
-    long oldDatasetId = Long.parseLong(oldStableValue);
-    DatasetFactory datasetFactory = _wdkModel.getDatasetFactory();
-    Dataset oldDataset = datasetFactory.getDataset(oldUser, oldDatasetId);
-    Dataset newDataset = datasetFactory.cloneDataset(oldDataset, newUser);
-    return Long.toString(newDataset.getDatasetId());
+    try {
+      long oldDatasetId = Long.parseLong(oldStableValue);
+      DatasetFactory datasetFactory = _wdkModel.getDatasetFactory();
+      Dataset oldDataset = datasetFactory.getDatasetWithOwner(oldDatasetId, oldUser.getUserId());
+      Dataset newDataset = datasetFactory.cloneDataset(oldDataset, newUser);
+      return Long.toString(newDataset.getDatasetId());
+    }
+    catch (WdkUserException e) {
+      // dataset ID does not exist or is not owned by the user; this is DB corruption
+      throw new WdkModelException("Unable to clone dataset param value", e);
+    }
   }
 
   public Optional<Strategy> getStrategyBySignature(String strategySignature)

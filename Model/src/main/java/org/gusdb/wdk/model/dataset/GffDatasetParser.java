@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -88,9 +89,9 @@ public class GffDatasetParser extends AbstractDatasetParser {
     String types = properties.get(PROP_RECORD_TYPES);
     Set<String> recordTypes = new HashSet<>();
     if (types == null) { // type is not specified, infer the types from record class
-      RecordClass recordClass = param.getRecordClass();
-      if (recordClass != null) {
-        String type = recordClass.getDisplayName().trim().toLowerCase();
+      Optional<RecordClass> recordClass = param.getRecordClass();
+      if (recordClass.isPresent()) {
+        String type = recordClass.get().getDisplayName().trim().toLowerCase();
         recordTypes.add(type);
       } // else, no type specified.
     }
