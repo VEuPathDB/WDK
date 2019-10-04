@@ -6,6 +6,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -20,6 +21,7 @@ public class DatasetParamFormatter extends ParamFormatter<DatasetParam> {
     JSONObject pJson = getBaseJson(spec);
     JSONArray parsersJson = new JSONArray();
     pJson.put(JsonKeys.DEFAULT_ID_LIST, _param.getXmlDefault());
+    pJson.put(JsonKeys.RECORD_CLASS_NAME, _param.getRecordClass().map(RecordClass::getUrlSegment).orElse(null));
     pJson.put(JsonKeys.PARSERS, parsersJson);
     for (DatasetParser parser : _param.getParsers()) {
       JSONObject parserJson = new JSONObject();
@@ -30,7 +32,7 @@ public class DatasetParamFormatter extends ParamFormatter<DatasetParam> {
     }
     return pJson;
   }
-  
+
   @Override
   public String getParamType() {
     return JsonKeys.DATASET_PARAM_TYPE;
