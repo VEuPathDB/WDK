@@ -1,14 +1,10 @@
 package org.gusdb.wdk.model.report.reporter;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.ws.rs.core.MediaType;
 
 import org.gusdb.fgputil.SortDirectionSpec;
 import org.gusdb.fgputil.json.JsonWriter;
@@ -24,16 +20,9 @@ import org.gusdb.wdk.model.answer.spec.FilterOptionList;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStreamFactory;
 import org.gusdb.wdk.model.record.RecordInstance;
-import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.report.AbstractReporter;
-import org.gusdb.wdk.model.report.Reporter;
-import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.gusdb.wdk.model.report.ReporterRef;
-import org.gusdb.wdk.model.report.config.AnswerDetails;
-import org.gusdb.wdk.model.report.config.AnswerDetailsFactory;
 import org.gusdb.wdk.model.report.util.RecordFormatter;
-import org.gusdb.wdk.model.user.UserPreferences;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -50,49 +39,12 @@ import org.json.JSONObject;
  *   records: [ see RecordFormatter ]
  * }
  */
-public class DefaultJsonReporter extends AbstractReporter {
+public class DefaultJsonReporter extends AnswerDetailsReporter {
 
   public static final String RESERVED_NAME = "standard";
-
-  private Map<String,AttributeField> _attributes;
-  private Map<String,TableField> _tables;
-  private ContentDisposition _contentDisposition;
   
   public DefaultJsonReporter(AnswerValue answerValue) {
     super(answerValue);
-  }
-
-  @Override
-  public Reporter configure(Map<String, String> config) {
-    throw new UnsupportedOperationException("Map configuration not supported by this reporter.");
-  }
-
-  @Override
-  public Reporter configure(JSONObject config) throws ReporterConfigException, WdkModelException {
-    return configure(AnswerDetailsFactory.createFromJson(config, _baseAnswer.getAnswerSpec().getQuestion()));
-  }
-
-  private DefaultJsonReporter configure(AnswerDetails config) {
-    _baseAnswer = getConfiguredAnswer(_baseAnswer, config);
-    _attributes = config.getAttributes();
-    _tables = config.getTables();
-    _contentDisposition = config.getContentDisposition();
-    return this;
-  }
-
-  private static AnswerValue getConfiguredAnswer(AnswerValue answerValue, AnswerDetails config) {
-    int startIndex = config.getOffset() + 1;
-    int endIndex = startIndex + config.getNumRecords() - 1;
-    AnswerValue configuredAnswer = answerValue.cloneWithNewPaging(startIndex, endIndex);
-    Map<String, Boolean> sorting = SortDirectionSpec.convertSorting(
-        config.getSorting(), UserPreferences.MAX_NUM_SORTING_COLUMNS);
-    configuredAnswer.setSortingMap(sorting);
-    return configuredAnswer;
-  }
-
-  @Override
-  public String getHttpContentType() {
-    return MediaType.APPLICATION_JSON;
   }
 
   @Override
@@ -101,15 +53,10 @@ public class DefaultJsonReporter extends AbstractReporter {
   }
 
   @Override
-  public ContentDisposition getContentDisposition() {
-    return _contentDisposition;
-  }
-
-  @Override
   protected void write(OutputStream out) throws WdkModelException {
 
     // create output writer and initialize record stream
-    try (JsonWriter writer = new JsonWriter(new BufferedWriter(new OutputStreamWriter(out)));
+    try (JsonWriter writer = new JsonWriter(out);
          RecordStream recordStream = RecordStreamFactory.getRecordStream(
             _baseAnswer, _attributes.values(), _tables.values())) {
 
