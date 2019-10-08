@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
@@ -664,22 +666,23 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   private Optional<ParamValidity> validateDependedParams(
       PartiallyValidatedStableValues stableValues, ValidationLevel level, ValidationLevel parentLevel, FillStrategy fillStrategy) throws WdkModelException {
     validationLog(() -> "Checking depended params, will use validation level: " + parentLevel);
-    boolean allParentsPassValidation = true;
+    Map<String, String> dependedParamValidationErrors = new HashMap<>();
     for (Param parent : getDependedParams()) {
       validationLog(() -> "Found depended param " + parent.getName() + ", will validate it first...");
       parent.validate(stableValues, parentLevel, fillStrategy);
       validationLog(() -> "Back from parent validation.  Was " + parent.getName() + " valid? " + stableValues.isParamValid(parent.getName()));
       if (!stableValues.isParamValid(parent.getName())) {
-        allParentsPassValidation = false;
+        dependedParamValidationErrors.put(parent.getName(), stableValues.getParamValidity(parent.getName()).getMessage());
         // continue to validate parents so caller has most complete information
       }
     }
 
-    if (!allParentsPassValidation) {
+    if (!dependedParamValidationErrors.isEmpty()) {
       // this param fails validation because its parents failed
       validationLog(() -> "Not all parents were valid so marking invalid.");
       return Optional.of(stableValues.setInvalid(getName(), level,
-          "At least one parameter that '" + getName() + "' depends on is invalid or missing."));
+          "At least one parameter that '" + getName() + "' depends on is invalid or missing. Errors: " + NL +
+          FormatUtil.prettyPrint(dependedParamValidationErrors, Style.MULTI_LINE)));
     }
 
     return Optional.empty();
