@@ -525,9 +525,9 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   private void validationLog(SupplierWithException<String> logMessage) throws WdkModelException {
     if (LOG.isEnabledFor(VALIDATION_LOG_PRIORITY)) {
       try {
-        LOG.log(VALIDATION_LOG_PRIORITY, "Param '" + getName() + "' of container '" +
+        LOG.log(VALIDATION_LOG_PRIORITY, "Container '" + 
             (getContainer() == null ? "null!!" : getContainer().getFullName()) +
-            "': " + logMessage.get());
+            "', Param '" + getName() + "': " + logMessage.get());
       }
       catch (Exception e) {
         throw WdkModelException.translateFrom(e);
