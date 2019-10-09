@@ -1,16 +1,14 @@
 package org.gusdb.wdk.model.query.param;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * The NumberParam is used to accept numerical user inputs from a web service only.
@@ -104,14 +102,6 @@ public class NumberParam extends Param {
     return new NumberParam(this);
   }
 
-  @Override
-  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
-    // nothing to be added
-  }
-
-  /**
-   * @inheritDoc
-   */
   @Override
   protected ParamValidity validateValue(PartiallyValidatedStableValues contextParamValues, ValidationLevel level) {
 

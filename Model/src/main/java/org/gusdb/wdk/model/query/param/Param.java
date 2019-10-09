@@ -35,8 +35,6 @@ import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidi
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Params are used by Query objects and other ParamContainers to provide inputs
@@ -118,14 +116,6 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    */
   protected abstract ParamValidity validateValue(PartiallyValidatedStableValues contextParamValues, ValidationLevel level)
       throws WdkModelException;
-
-  /**
-   * TODO: probably want to remove this method, and methods that call it.  it
-   *       seems to be consumed only by StepBean (but no jsp or tags), and by
-   *       the model cacher in fix package, which writes it to db, but never
-   *       reads it
-   */
-  protected abstract void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException;
 
   protected String _id;
   protected String _name;
@@ -518,14 +508,6 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _handlerReferences = null;
   }
 
-  public JSONObject getChecksumJSON(boolean extra) throws JSONException {
-    JSONObject jsParam = new JSONObject();
-    jsParam.put("name", getFullName());
-
-    appendChecksumJSON(jsParam, extra);
-    return jsParam;
-  }
-
   /**
    * @throws WdkModelException
    *           if unable to load resources from model
@@ -576,20 +558,25 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
       return stableValues.setValid(getName(), level);
     }
 
-    // determine if we will need to generate a default value and also if the
-    // generation of that value requires runnable values of dependent params; if so, any depended
-    // values will need to be validated at the runnable level in order to run
-    // any depended queries required to generate a default value
+    // Determine if a default value must be generated
     boolean defaultValueRequired =
         stableValues.get(getName()) == null &&
         fillStrategy.shouldFillWhenMissing();
+
+    // Determine if we will need to run dependent queries within this param
+    //   (either to generate a default or simply produce results of depended
+    //   queries.  If so, and if running dependent queries requires runnable
+    //   values of dependent params, then any depended values will need to be
+    //   validated at the runnable level.
+    boolean dependedQueriesNeedToBeRun = defaultValueRequired ||
+        level.isGreaterThanOrEqualTo(ValidationLevel.DISPLAYABLE);
 
     // validate any parent (depended) params; if a default for this param will
     //   be generated, then these params MUST be validated at the RUNNABLE level
     //   so that their values can be used to run dependent queries in the params
     //   that depend on them
-    ValidationLevel parentLevel = defaultValueRequired &&
-        defaultGenerationRequiresRunnableParents() ?
+    ValidationLevel parentLevel = dependedQueriesNeedToBeRun &&
+        runningDependedQueriesRequiresRunnableParents() ?
             ValidationLevel.RUNNABLE : level;
     Optional<ParamValidity> invalidityResult = validateDependedParams(stableValues, level, parentLevel, fillStrategy);
     if (invalidityResult.isPresent()) {
@@ -659,7 +646,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    * this method will return false unless this param needs to run vocabulary
    * queries inorder to generate its initial displaly value
    */
-  protected boolean defaultGenerationRequiresRunnableParents() {
+  protected boolean runningDependedQueriesRequiresRunnableParents() {
     return false;
   }
 

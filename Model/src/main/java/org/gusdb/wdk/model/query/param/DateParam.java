@@ -13,8 +13,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * The DateParam is strictly a web service parameter
@@ -132,11 +130,6 @@ public class DateParam extends Param {
   @Override
   public Param clone() {
     return new DateParam(this);
-  }
-
-  @Override
-  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
-    // nothing to be added
   }
 
   /**

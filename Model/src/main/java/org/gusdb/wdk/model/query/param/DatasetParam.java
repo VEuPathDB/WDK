@@ -19,8 +19,6 @@ import org.gusdb.wdk.model.dataset.ListDatasetParser;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Dataset param represents a list of user input ids. The list is readonly, and stored in persistence
@@ -122,14 +120,6 @@ public class DatasetParam extends Param {
   public Param clone() {
     return new DatasetParam(this);
   }
-
-  @Override
-  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
-    if (extra) {
-      jsParam.put("recordClass", recordClass.getFullName());
-    }
-  }
-
 
   @Override
   protected ParamValidity validateValue(PartiallyValidatedStableValues ctxParamVals, ValidationLevel level) {

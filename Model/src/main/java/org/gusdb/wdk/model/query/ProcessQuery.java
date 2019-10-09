@@ -111,7 +111,7 @@ public class ProcessQuery extends Query {
     configureProcessLocation(wdkModel);
 
     // Set default column type for columns that don't have a type defined in XML
-    columnMap.values()
+    _columnMap.values()
       .stream()
       .filter(c -> isNull(c.getType()))
       .forEach(c -> c.setType(ColumnType.STRING));

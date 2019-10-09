@@ -93,11 +93,6 @@ public class NumberRangeParam extends Param {
     return new NumberRangeParam(this);
   }
 
-  @Override
-  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
-    // nothing to be added
-  }
-
   /**
    * Verifies that the stringified JSONObject holding the range is properly
    * formatted, matches the supplied regex, adheres to all imposed property

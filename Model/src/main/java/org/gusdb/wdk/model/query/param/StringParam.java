@@ -1,17 +1,15 @@
 package org.gusdb.wdk.model.query.param;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * The StringParam is used to accept user inputs from a input box.
@@ -165,11 +163,6 @@ public class StringParam extends Param {
   @Override
   public Param clone() {
     return new StringParam(this);
-  }
-
-  @Override
-  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
-    // nothing to be added
   }
 
   @Override

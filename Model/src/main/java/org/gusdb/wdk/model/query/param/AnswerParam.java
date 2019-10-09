@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.query.param;
 import static org.gusdb.wdk.model.user.StepContainer.withId;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,9 +18,6 @@ import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * AnswerParam is used to take a previous step as input value. The answerParam is the building block of the
@@ -109,15 +105,6 @@ public class AnswerParam extends Param {
     this.recordClassRefs = null;
 
     this._resolved = true;
-  }
-
-  @Override
-  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
-    // add recordClass names
-    String[] rcNames = recordClasses.keySet().toArray(new String[0]);
-    Arrays.sort(rcNames);
-    JSONArray jsArray = new JSONArray(Arrays.asList(rcNames));
-    jsParam.put("recordClass", jsArray);
   }
 
   @Override

@@ -258,7 +258,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   //  (multi-pick, trimming whitespace).  Need to figure out if we can move all
   //  that to regular validation so this method can potentially return false.
   @Override
-  protected boolean defaultGenerationRequiresRunnableParents() {
+  protected boolean runningDependedQueriesRequiresRunnableParents() {
     return true;
   }
 

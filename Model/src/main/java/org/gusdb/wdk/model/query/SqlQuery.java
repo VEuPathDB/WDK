@@ -50,51 +50,51 @@ public class SqlQuery extends Query {
 
   private static final Logger LOG = Logger.getLogger(SqlQuery.class);
 
-  private List<WdkModelText> sqlList;
+  private static final boolean DEFAULT_IS_CACHEABLE = true;
+
+  private List<WdkModelText> _sqlList;
   private String _sql;
-  private List<WdkModelText> sqlMacroList;
-  private Map<String, String> sqlMacroMap;
-  private boolean clobRow;
+  private List<WdkModelText> _sqlMacroList;
+  private Map<String, String> _sqlMacroMap;
+  private boolean _clobRow;
   private boolean _useDBLink;
 
   /**
    * A flag to check if the cached has been set. if not set, the value from
-   * parent querySet will be used.
+   * parent querySet will be used, or default if no query set is present
    */
-  private boolean setCache;
-  private boolean isCacheable;
+  private Boolean _isCacheable;
 
   private String _attributeMetaQueryRef;
-  private List<WdkModelText> dependentTableList;
-  private Map<String, String> dependentTableMap;
+  private List<WdkModelText> _dependentTableList;
+  private Map<String, String> _dependentTableMap;
 
   public SqlQuery() {
     super();
-    clobRow = false;
-    sqlList = new ArrayList<>();
-    sqlMacroList = new ArrayList<>();
-    sqlMacroMap = new LinkedHashMap<>();
-    dependentTableList = new ArrayList<>();
-    dependentTableMap = new LinkedHashMap<>();
+    _clobRow = false;
+    _sqlList = new ArrayList<>();
+    _sqlMacroList = new ArrayList<>();
+    _sqlMacroMap = new LinkedHashMap<>();
+    _dependentTableList = new ArrayList<>();
+    _dependentTableMap = new LinkedHashMap<>();
   }
 
   public SqlQuery(SqlQuery query) {
     super(query);
-    this.clobRow = query.clobRow;
-    this._sql = query._sql;
-    this.isCacheable = query.isCacheable;
-    this._useDBLink = query._useDBLink;
-    this.setCache = query.setCache;
+    _clobRow = query._clobRow;
+    _sql = query._sql;
+    _isCacheable = query._isCacheable;
+    _useDBLink = query._useDBLink;
 
-    if (query.sqlList != null) this.sqlList = new ArrayList<>(query.sqlList);
-    if (query.sqlMacroMap != null)
-      this.sqlMacroMap = new LinkedHashMap<>(query.sqlMacroMap);
-    if (query.sqlMacroList != null)
-      this.sqlMacroList = new ArrayList<>(query.sqlMacroList);
-    if (query.dependentTableMap != null)
-      this.dependentTableMap = new LinkedHashMap<>(query.dependentTableMap);
-    if (query.dependentTableList != null)
-      this.dependentTableList = new ArrayList<>(query.dependentTableList);
+    if (query._sqlList != null) _sqlList = new ArrayList<>(query._sqlList);
+    if (query._sqlMacroMap != null)
+      _sqlMacroMap = new LinkedHashMap<>(query._sqlMacroMap);
+    if (query._sqlMacroList != null)
+      _sqlMacroList = new ArrayList<>(query._sqlMacroList);
+    if (query._dependentTableMap != null)
+      _dependentTableMap = new LinkedHashMap<>(query._dependentTableMap);
+    if (query._dependentTableList != null)
+      _dependentTableList = new ArrayList<>(query._dependentTableList);
   }
 
   @Override
@@ -103,15 +103,15 @@ public class SqlQuery extends Query {
   }
 
   public void addSql(WdkModelText sql) {
-    this.sqlList.add(sql);
+    _sqlList.add(sql);
   }
 
   public void addSqlParamValue(WdkModelText sqlMacro) {
-    this.sqlMacroList.add(sqlMacro);
+    _sqlMacroList.add(sqlMacro);
   }
 
   public void addSqlParamValue(String macro, String value) {
-    this.sqlMacroMap.put(macro, value);
+    _sqlMacroMap.put(macro, value);
   }
 
   public String getSql() {
@@ -133,10 +133,14 @@ public class SqlQuery extends Query {
   public boolean isCacheable() {
     // check if global caching is turned off, if off, then return false
     if (!_wdkModel.getModelConfig().isCaching()) return false;
-    // check if this query's value has been set; if not, use QuerySet's value
-    if (!setCache) return getQuerySet().isCacheable();
-    // otherwise, use value assigned to this query
-    return isCacheable;
+    // if this query's value has been set, use it
+    if (_isCacheable != null) {
+      return _isCacheable;
+    }
+    // if not, use QuerySet's value or default
+    return (getQuerySet() != null ?
+        getQuerySet().isCacheable() :
+        DEFAULT_IS_CACHEABLE);
   }
 
   /**
@@ -144,8 +148,7 @@ public class SqlQuery extends Query {
    *          the cached to set
    */
   public void setIsCacheable(boolean isCacheable) {
-    this.isCacheable = isCacheable;
-    setCache = true;
+    _isCacheable = isCacheable;
   }
 
   /**
@@ -162,7 +165,7 @@ public class SqlQuery extends Query {
   public void setSql(String sql) {
     // append new line to the end, in case the last line is a comment;
     // otherwise, all modified sql will fail.
-    this._sql = sql + "\n";
+    _sql = sql + "\n";
   }
 
   @Override
@@ -170,12 +173,12 @@ public class SqlQuery extends Query {
       throws JSONException {
     if (extra) {
       // add macro into the content
-      String[] macroNames = new String[sqlMacroMap.size()];
-      sqlMacroMap.keySet().toArray(macroNames);
+      String[] macroNames = new String[_sqlMacroMap.size()];
+      _sqlMacroMap.keySet().toArray(macroNames);
       Arrays.sort(macroNames);
       JSONObject jsMacros = new JSONObject();
       for (String macroName : macroNames) {
-        jsMacros.put(macroName, sqlMacroMap.get(macroName));
+        jsMacros.put(macroName, _sqlMacroMap.get(macroName));
       }
       jsQuery.put("macros", jsMacros);
 
@@ -190,57 +193,50 @@ public class SqlQuery extends Query {
     super.excludeResources(projectId);
 
     // exclude sql
-    for (WdkModelText sql : sqlList) {
+    for (WdkModelText sql : _sqlList) {
       if (sql.include(projectId)) {
         sql.excludeResources(projectId);
         this.setSql(sql.getText());
         break;
       }
     }
-    sqlList = null;
+    _sqlList = null;
 
     // exclude sql
-    for (WdkModelText dependentTable : dependentTableList) {
+    for (WdkModelText dependentTable : _dependentTableList) {
       if (dependentTable.include(projectId)) {
         dependentTable.excludeResources(projectId);
         String table = dependentTable.getText();
-        this.dependentTableMap.put(table, table);
+        _dependentTableMap.put(table, table);
       }
     }
-    dependentTableList = null;
+    _dependentTableList = null;
 
     // exclude macros
-    for (WdkModelText macro : sqlMacroList) {
+    for (WdkModelText macro : _sqlMacroList) {
       if (macro.include(projectId)) {
         macro.excludeResources(projectId);
         String name = macro.getName();
-        if (sqlMacroMap.containsKey(name))
+        if (_sqlMacroMap.containsKey(name))
           throw new WdkModelException("The macro " + name
               + " is duplicated in query " + getFullName());
 
-        sqlMacroMap.put(macro.getName(), macro.getText());
+        _sqlMacroMap.put(macro.getName(), macro.getText());
       }
     }
-    sqlMacroList = null;
+    _sqlMacroList = null;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.query.Query#resolveReferences(org.gusdb.wdk.model
-   * .WdkModel)
-   */
   @Override
   public void resolveQueryReferences(WdkModel wdkModel)
       throws WdkModelException {
     // apply the sql macros into sql
-    if (this._sql == null)
-      throw new WdkModelException("null sql in " + getQuerySet().getName()
-          + "." + getName());
+    if (_sql == null)
+      throw new WdkModelException("null sql in " + getFullName());
 
     // don't replace the sql here. the macros have to be replaced on the fly
     // in order to inject overridden macros from question.
-    String sql = replaceMacros(this._sql);
+    String sql = replaceMacros(_sql);
 
     // verify the all param macros have been replaced
     Matcher matcher = Pattern.compile("&&([^&]+)&&").matcher(sql);
@@ -251,9 +247,9 @@ public class SqlQuery extends Query {
   }
 
   private String replaceMacros(String sql) {
-    for (String paramName : sqlMacroMap.keySet()) {
+    for (String paramName : _sqlMacroMap.keySet()) {
       String pattern = "&&" + paramName + "&&";
-      String value = sqlMacroMap.get(paramName);
+      String value = _sqlMacroMap.get(paramName);
       // escape the & $ \ chars in the value
       sql = sql.replaceAll(pattern, Matcher.quoteReplacement(value));
     }
@@ -277,7 +273,7 @@ public class SqlQuery extends Query {
    * @return the clobRow
    */
   public boolean isClobRow() {
-    return clobRow;
+    return _clobRow;
   }
 
   /**
@@ -285,11 +281,11 @@ public class SqlQuery extends Query {
    *          the clobRow to set
    */
   public void setClobRow(boolean clobRow) {
-    this.clobRow = clobRow;
+    _clobRow = clobRow;
   }
 
   public void addDependentTable(WdkModelText dependentTable) {
-    this.dependentTableList.add(dependentTable);
+    _dependentTableList.add(dependentTable);
   }
 
   /**
@@ -297,8 +293,8 @@ public class SqlQuery extends Query {
    * parse the SQL. This feature is used in generating download cache.
    */
   public String[] getDependentTables() {
-    String[] array = new String[dependentTableMap.size()];
-    dependentTableMap.keySet().toArray(array);
+    String[] array = new String[_dependentTableMap.size()];
+    _dependentTableMap.keySet().toArray(array);
     return array;
   }
 
@@ -323,7 +319,7 @@ public class SqlQuery extends Query {
         // Need to set this here since this column originates from the database
         column.setQuery(SqlQuery.this);
         AttributeMetaQueryHandler.populate(column, row);
-        columnMap.put(column.getName(), column);
+        _columnMap.put(column.getName(), column);
       }
       LOG.debug("Took " + timer.getElapsedString() + " to resolve AttributeMetaQuery: " + _attributeMetaQueryRef);
     }
@@ -335,7 +331,7 @@ public class SqlQuery extends Query {
     var sql = applyParams(getSql(), paramMap.values().iterator());
 
     // DB column name casing may not match xml name casing.
-    var names = columnMap.keySet()
+    var names = _columnMap.keySet()
       .stream()
       .collect(Collectors.toMap(String::toLowerCase, Function.identity()));
 
@@ -399,7 +395,7 @@ public class SqlQuery extends Query {
           + "attempting to parse sqlQuery %s",
         getFullName()), ex);
 
-    var invalid = columnMap.values().stream()
+    var invalid = _columnMap.values().stream()
       .anyMatch(not(Column::wasTypeSet));
 
     if (invalid) {

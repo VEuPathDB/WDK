@@ -15,8 +15,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * The FlatVocab param represents a list of param values that user can choose from. The difference between
@@ -148,14 +146,6 @@ public class FlatVocabParam extends AbstractEnumParam {
   @Override
   public Param clone() {
     return new FlatVocabParam(this);
-  }
-
-  @Override
-  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
-    if (extra) {
-      // add underlying query name to it
-      jsParam.append("query", vocabQuery.getFullName());
-    }
   }
 
   @Override

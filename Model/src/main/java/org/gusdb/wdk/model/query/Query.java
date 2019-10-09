@@ -1,5 +1,17 @@
 package org.gusdb.wdk.model.query;
 
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
@@ -17,10 +29,6 @@ import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.PrintWriter;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -82,29 +90,30 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     return spec.getQuery().makeInstance(validSpec);
   }
 
-  private String name;
+  private String _name;
 
   // temp list, will be discarded after resolve references
-  private List<Column> columnList;
-  protected Map<String, Column> columnMap;
+  private List<Column> _columnList;
+  protected Map<String, Column> _columnMap;
 
   // for sanity testing
-  private boolean doNotTest;
-  private List<ParamValuesSet> paramValuesSets;
+  private boolean _doNotTest;
+  private List<ParamValuesSet> _paramValuesSets;
 
-  private QuerySet querySet;
+  // NOTE: this may be null for internally created queries
+  private QuerySet _querySet;
 
-  private String[] indexColumns;
+  private String[] _indexColumns;
 
-  private boolean hasWeight;
+  private boolean _hasWeight;
 
-  private Question contextQuestion;
-  private Param contextParam;
+  private Question _contextQuestion;
+  private Param _contextParam;
 
-  private final Map<String, Boolean> sortingMap;
+  private final Map<String, Boolean> _sortingMap;
 
   // optionally override what is in the query set.  null means don't override
-  private List<PostCacheUpdateSql> postCacheUpdateSqls;
+  private List<PostCacheUpdateSql> _postCacheUpdateSqls;
 
 
   // =========================================================================
@@ -127,11 +136,11 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   // =========================================================================
 
   protected Query() {
-    columnList = new ArrayList<>();
-    columnMap = new LinkedHashMap<>();
-    hasWeight = false;
-    sortingMap = new LinkedHashMap<>();
-    paramValuesSets = new ArrayList<>();
+    _columnList = new ArrayList<>();
+    _columnMap = new LinkedHashMap<>();
+    _hasWeight = false;
+    _sortingMap = new LinkedHashMap<>();
+    _paramValuesSets = new ArrayList<>();
   }
 
   /**
@@ -142,27 +151,27 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   protected Query(Query query) {
     super(query);
 
-    this.name = query.name;
-    if (query.columnList != null)
-      this.columnList = new ArrayList<>(query.columnList);
-    this.columnMap = new LinkedHashMap<>();
-    this.querySet = query.querySet;
-    this.doNotTest = query.doNotTest;
-    paramValuesSets = new ArrayList<>();
-    this.paramValuesSets = new ArrayList<>(query.paramValuesSets);
-    this.hasWeight = query.hasWeight;
-    this.contextQuestion = query.getContextQuestion();
-    this.contextParam = query.getContextParam();
-    this.sortingMap = new LinkedHashMap<>(query.sortingMap);
-    this.postCacheUpdateSqls = query.postCacheUpdateSqls == null
-      ? null : new ArrayList<>(query.postCacheUpdateSqls);
+    _name = query._name;
+    if (query._columnList != null)
+      _columnList = new ArrayList<>(query._columnList);
+    _columnMap = new LinkedHashMap<>();
+    _querySet = query._querySet;
+    _doNotTest = query._doNotTest;
+    _paramValuesSets = new ArrayList<>();
+    _paramValuesSets = new ArrayList<>(query._paramValuesSets);
+    _hasWeight = query._hasWeight;
+    _contextQuestion = query.getContextQuestion();
+    _contextParam = query.getContextParam();
+    _sortingMap = new LinkedHashMap<>(query._sortingMap);
+    _postCacheUpdateSqls = query._postCacheUpdateSqls == null
+      ? null : new ArrayList<>(query._postCacheUpdateSqls);
 
     // clone columns
-    query.columnMap.values()
+    query._columnMap.values()
       .stream()
       .map(Column::new)
       .peek(c -> c.setQuery(this))
-      .forEach(c -> columnMap.put(c.getName(), c));
+      .forEach(c -> _columnMap.put(c.getName(), c));
   }
 
   /**
@@ -171,12 +180,12 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
    */
 
   public Param getContextParam() {
-    return contextParam;
+    return _contextParam;
   }
 
   @Override
   public Map<String, Param> getRequiredParams() {
-    if (contextParam == null)
+    if (_contextParam == null)
       return getParamMap();
 
     // This is safe because of checks in the model parsing
@@ -197,11 +206,11 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
   }
 
   public void setContextParam(Param contextParam) {
-    this.contextParam = contextParam;
+    _contextParam = contextParam;
   }
 
   public Question getContextQuestion() {
-    return contextQuestion;
+    return _contextQuestion;
   }
 
   /**
@@ -209,149 +218,97 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
    * related to the context question
    */
   public void setContextQuestion(Question contextQuestion) throws WdkModelException {
-    this.contextQuestion = contextQuestion;
+    _contextQuestion = contextQuestion;
     for (Param param : paramMap.values())
       param.setContextQuestion(contextQuestion);
   }
 
   public void setIndexColumns(String[] indexColumns) {
-    this.indexColumns = indexColumns;
+    _indexColumns = indexColumns;
   }
 
   public String[] getIndexColumns() {
-    return indexColumns;
+    return _indexColumns;
   }
 
   public String getName() {
-    return name;
+    return _name;
   }
 
   public void setName(String name) {
-    this.name = name;
+    _name = name;
   }
 
   public QuerySet getQuerySet() {
-    return querySet;
+    return _querySet;
   }
 
   public void setQuerySet(QuerySet querySet) {
-    this.querySet = querySet;
+    _querySet = querySet;
   }
 
   @Override
   public String getFullName() {
-    return ((querySet != null) ? querySet.getName() + "." : "") + name;
+    return ((_querySet != null) ? _querySet.getName() + "." : "") + _name;
   }
 
   public void addColumn(Column column) throws WdkModelException {
     WdkModelException duplicationError = new WdkModelException("More than one column with name '" +
         column.getName() + "' added to Query '" + getFullName() + "'.");
-    if (columnList != null) {
-      if (columnList.stream().anyMatch(col -> col.getName().equals(column.getName()))) {
+    if (_columnList != null) {
+      if (_columnList.stream().anyMatch(col -> col.getName().equals(column.getName()))) {
         throw duplicationError;
       }
-      columnList.add(column);
+      _columnList.add(column);
     }
     else {
-      if (columnMap.containsKey(column.getName())) {
+      if (_columnMap.containsKey(column.getName())) {
         throw duplicationError;
       }
-      columnMap.put(column.getName(), column);
+      _columnMap.put(column.getName(), column);
     }
     column.setQuery(this);
   }
 
   public Map<String, Column> getColumnMap() {
-    return new LinkedHashMap<>(columnMap);
+    return new LinkedHashMap<>(_columnMap);
   }
 
   public Column[] getColumns() {
-    return columnMap.values().toArray(new Column[0]);
+    return _columnMap.values().toArray(new Column[0]);
   }
 
   // exclude this query from sanity testing
   public void setDoNotTest(boolean doNotTest) {
-    this.doNotTest = doNotTest;
+    _doNotTest = doNotTest;
   }
 
   @Override
   public boolean getDoNotTest() {
-    return doNotTest;
+    return _doNotTest;
   }
 
   @SuppressWarnings("unused") // ModelXmlParser
   public void addParamValuesSet(ParamValuesSet paramValuesSet) {
-    paramValuesSets.add(paramValuesSet);
+    _paramValuesSets.add(paramValuesSet);
   }
 
   public List<ParamValuesSet> getRawParamValuesSets() {
-    return paramValuesSets;
-  }
-
-  public String getChecksum(boolean extra) throws WdkModelException {
-    try {
-      JSONObject jsQuery = getChecksumJSON(extra);
-      return EncryptionUtil.encrypt(JsonUtil.serialize(jsQuery));
-    }
-    catch (JSONException e) {
-      throw new WdkModelException("Unable to get JSON content for checksum.", e);
-    }
+    return _paramValuesSets;
   }
 
   public List<PostCacheUpdateSql> getPostCacheUpdateSqls() {
-    return postCacheUpdateSqls == null? null : Collections.unmodifiableList(postCacheUpdateSqls);
+    return _postCacheUpdateSqls != null
+      ? Collections.unmodifiableList(_postCacheUpdateSqls)
+      : getQuerySet() != null
+      ? getQuerySet().getPostCacheUpdateSqls()
+      : Collections.emptyList();
   }
 
   @SuppressWarnings("unused") // ModelXmlParser
   public void addPostCacheUpdateSql(PostCacheUpdateSql postCacheUpdateSql) {
-    if (postCacheUpdateSqls == null) postCacheUpdateSqls = new ArrayList<>();
-    postCacheUpdateSqls.add(postCacheUpdateSql);
-  }
-
-  /**
-   * @param extra
-   *   if extra is true, then column names are also includes, plus the extra
-   *   info from param.
-   *
-   * @throws JSONException
-   *   if unable to create JSON object
-   */
-  private JSONObject getChecksumJSON(boolean extra) throws JSONException {
-    // use JSON to construct the string content
-    JSONObject jsQuery = new JSONObject()
-      .put("name", getFullName())
-      .put("project", getWdkModel().getProjectId());
-
-    // add context question name
-    if (contextQuestion != null)
-      jsQuery.put("contextQuestion", contextQuestion.getFullName());
-
-    JSONArray jsParams = new JSONArray();
-    paramMap.keySet()
-      .stream()
-      .sorted()
-      .map(paramMap::get)
-      .map(param -> param.getChecksumJSON(extra))
-      .forEach(jsParams::put);
-    jsQuery.put("params", jsParams);
-
-    // construct columns; ordered by columnName
-    if (extra) {
-      JSONArray jsColumns = new JSONArray();
-      columnMap.keySet()
-        .stream()
-        .sorted()
-        .map(columnMap::get)
-        .map(Column::getJSONContent)
-        .forEach(jsColumns::put);
-
-      jsQuery.put("columns", jsColumns);
-    }
-
-    // append child-specific data
-    appendChecksumJSON(jsQuery, extra);
-
-    return jsQuery;
+    if (_postCacheUpdateSqls == null) _postCacheUpdateSqls = new ArrayList<>();
+    _postCacheUpdateSqls.add(postCacheUpdateSql);
   }
 
   @Override
@@ -360,22 +317,22 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     super.excludeResources(projectId);
 
     // exclude columns
-    for (Column column : columnList) {
+    for (Column column : _columnList) {
       if (column.include(projectId)) {
         column.excludeResources(projectId);
         String columnName = column.getName();
-        if (columnMap.containsKey(columnName)) {
+        if (_columnMap.containsKey(columnName)) {
           throw new WdkModelException("The column '" + columnName +
             "' is duplicated in query " + getFullName());
         }
         else
-          columnMap.put(columnName, column);
+          _columnMap.put(columnName, column);
       }
     }
-    columnList = null;
+    _columnList = null;
 
     // exclude paramValuesSets
-    paramValuesSets = paramValuesSets.stream()
+    _paramValuesSets = _paramValuesSets.stream()
       .filter(p -> p.include(projectId))
       .collect(Collectors.toList());
   }
@@ -389,11 +346,11 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     super.resolveReferences(wdkModel);
 
     // resolve columns
-    for (Column column : columnMap.values()) {
+    for (Column column : _columnMap.values()) {
       String sortingColumn = column.getSortingColumn();
       if (sortingColumn == null)
         continue;
-      if (!columnMap.containsKey(sortingColumn))
+      if (!_columnMap.containsKey(sortingColumn))
         throw new WdkModelException("Query [" + getFullName()
           + "] has a column [" + column.getName() + "] with sortingColumn ["
           + sortingColumn + "], but the sorting column doesn't exist in "
@@ -403,7 +360,7 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     // if the query is a transform, it has to return weight column.
     // this applies to both explicit transform and filter queries.
     if (getAnswerParamCount() == 1)
-      if (!columnMap.containsKey(Utilities.COLUMN_WEIGHT))
+      if (!_columnMap.containsKey(Utilities.COLUMN_WEIGHT))
         throw new WdkModelException("Transform query [" + getFullName() + "] "
           + "doesn't define the required " + Utilities.COLUMN_WEIGHT
           + " column.");
@@ -411,13 +368,13 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     resolveQueryReferences(wdkModel);
 
     // check the column names in the sorting map
-    for (String column : sortingMap.keySet())
-      if (!columnMap.containsKey(column))
+    for (String column : _sortingMap.keySet())
+      if (!_columnMap.containsKey(column))
         throw new WdkModelException("Invalid sorting column '" + column
           + "' in query " + getFullName());
 
-    if (postCacheUpdateSqls != null)
-      for (PostCacheUpdateSql postCacheUpdateSql : postCacheUpdateSqls)
+    if (_postCacheUpdateSqls != null)
+      for (PostCacheUpdateSql postCacheUpdateSql : _postCacheUpdateSqls)
         if (postCacheUpdateSql != null
           && (postCacheUpdateSql.getSql() == null
             || !postCacheUpdateSql.getSql().contains(Utilities.MACRO_CACHE_TABLE)
@@ -460,7 +417,7 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     }
     buffer.append("} columns{");
     boolean firstColumn = true;
-    for (Column column : columnMap.values()) {
+    for (Column column : _columnMap.values()) {
       if (firstColumn)
         firstColumn = false;
       else
@@ -476,28 +433,28 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
    *          the hasWeight to set
    */
   public void setHasWeight(boolean hasWeight) {
-    this.hasWeight = hasWeight;
+    _hasWeight = hasWeight;
   }
 
   /**
    * @return the hasWeight
    */
   public boolean isHasWeight() {
-    return hasWeight;
+    return _hasWeight;
   }
 
   public void setSorting(String sorting) {
-    sortingMap.clear();
+    _sortingMap.clear();
     for (String clause : sorting.split(",")) {
       String[] term = clause.trim().split(" ", 2);
       String column = term[0];
       boolean order = (term.length == 1 || term[1].equalsIgnoreCase("ASC"));
-      sortingMap.put(column, order);
+      _sortingMap.put(column, order);
     }
   }
 
   public Map<String, Boolean> getSortingMap() {
-    return new LinkedHashMap<>(sortingMap);
+    return new LinkedHashMap<>(_sortingMap);
   }
 
   /**
@@ -538,12 +495,12 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     }
 
     // print columns
-    if (!columnMap.isEmpty()) {
-      writer.println(indent1 + "<columns size=\"" + columnMap.size() + "\">");
-      String[] columnNames = columnMap.keySet().toArray(new String[0]);
+    if (!_columnMap.isEmpty()) {
+      writer.println(indent1 + "<columns size=\"" + _columnMap.size() + "\">");
+      String[] columnNames = _columnMap.keySet().toArray(new String[0]);
       Arrays.sort(columnNames);
       for (String columnName : columnNames) {
-        columnMap.get(columnName).printDependency(writer, indent2);
+        _columnMap.get(columnName).printDependency(writer, indent2);
       }
       writer.println(indent1 + "</columns>");
     }
@@ -565,7 +522,7 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
    * @throws WdkModelException if error occurs resolving column types 
    */
   public Map<String, AttributeFieldDataType> resolveColumnTypes() throws WdkModelException {
-    return columnMap.entrySet()
+    return _columnMap.entrySet()
       .stream()
       .collect(Collectors.toMap(
         Map.Entry::getKey,

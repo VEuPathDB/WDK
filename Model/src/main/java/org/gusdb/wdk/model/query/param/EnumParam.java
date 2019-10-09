@@ -12,7 +12,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONObject;
 
 /**
  * The enumParam represents a list of param values declared in the model that user can choose from.
@@ -147,13 +146,6 @@ public class EnumParam extends AbstractEnumParam {
   @Override
   public Param clone() {
     return new EnumParam(this);
-  }
-
-  @Override
-  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) {
-    // do nothing. do not add the enum list into the content, since they may be
-    // changed between versions, but we don't want to invalidate a query because
-    // of it.
   }
 
   @Override

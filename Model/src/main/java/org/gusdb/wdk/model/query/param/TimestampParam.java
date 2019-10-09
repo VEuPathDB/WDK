@@ -3,8 +3,6 @@ package org.gusdb.wdk.model.query.param;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * The timestamp param represents a flag that use the current timestamp as input value every time a search is
@@ -58,13 +56,6 @@ public class TimestampParam extends Param {
     if (interval <= 0)
       interval = 1;
     this.interval = interval;
-  }
-
-  @Override
-  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
-    if (extra) {
-      jsParam.put("interval", interval);
-    }
   }
 
   @Override

@@ -233,10 +233,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   }
 
   protected void executePostCacheUpdateSql(String tableName, long instanceId) throws WdkModelException {
-    final var list = isNull(_query.getPostCacheUpdateSqls())
-      ? _query.getQuerySet().getPostCacheUpdateSqls()
-      : _query.getPostCacheUpdateSqls();
-    final var qsName = _query.getQuerySet().getName();
+    final var list = _query.getPostCacheUpdateSqls();
     final var ds = _wdkModel.getAppDb().getDataSource();
 
     for (final var pcis : list) {
@@ -247,7 +244,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
       LOG.debug("POST sql: " + sql);
       // get results and time process();
       try {
-        SqlUtils.executeUpdate(ds, sql, qsName + "__postCacheUpdateSql", false);
+        SqlUtils.executeUpdate(ds, sql, _query.getFullName() + "__postCacheUpdateSql", false);
       } catch (SQLException ex) {
         throw new WdkModelException("Unable to run postCacheinsertSql:  " + sql, ex);
       }

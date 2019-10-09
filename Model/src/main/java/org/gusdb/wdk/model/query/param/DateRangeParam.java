@@ -151,11 +151,6 @@ public class DateRangeParam extends Param {
     return new DateRangeParam(this);
   }
 
-  @Override
-  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
-    // nothing to be added
-  }
-
   /**
    * Ensure that the value provided by the user conforms to the parameter's requirements
    */

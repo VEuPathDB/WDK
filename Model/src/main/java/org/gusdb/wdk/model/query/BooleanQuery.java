@@ -195,7 +195,7 @@ public class BooleanQuery extends SqlQuery {
       Column column = new Column();
       column.setName(columnName);
       column.setQuery(this);
-      columnMap.put(columnName, column);
+      _columnMap.put(columnName, column);
     }
   }
 

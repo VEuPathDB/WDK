@@ -26,13 +26,11 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.cache.CacheMgr;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
@@ -766,7 +764,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // Now that we've constructed the sql, we want to use the WDK cache for it,
     //   so have to force the sql into a new SqlQuery object.
-    SqlQuery sqlQuery = createValuesMapQuery(_wdkModel, filterSelectSql, ontologyValuesCols, _backgroundQuery.getParams(), _ontologyQuery.getParams());
+    SqlQuery sqlQuery = createValuesMapQuery(filterSelectSql, ontologyValuesCols, getDependedParams());
 
     // run the sqlQuery to get all the values, and stuff into the map
     RunnableObj<QueryInstanceSpec> valuesMapSpec = QueryInstanceSpec.builder()
@@ -788,34 +786,31 @@ public class FilterParamNew extends AbstractDependentParam {
     return ontologyValues;
   }
 
-  // given sql to provide data for the values map, construct a wdk-cacheable sqlQuery from it
-  // because the sql embeds the ontology and bgd queries, which might have parameters, this query
-  // must inherit their parameters
-  private SqlQuery createValuesMapQuery(WdkModel wdkModel, String sql, List<String> colNames, Param[] bgdQueryParams, Param[] ontoQueryParams)
+  // given sql to provide data for the values map, construct a sqlQuery from it;
+  // because the sql embeds the ontology and bgd queries, which might have
+  // parameters, this query must inherit their parameters
+  private SqlQuery createValuesMapQuery(String sql, List<String> colNames, Set<Param> dependedParams)
       throws WdkModelException {
-    QuerySet querySet = wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
     SqlQuery query = new SqlQuery();
     query.setName(getFullName() + "_values_map");
     query.setIsCacheable(true);
     query.setSql(sql);
-    Set <String> paramsSeen = new HashSet<>();
-    for (Param param : bgdQueryParams) {
-      query.addParamRef(new ParamReference(param.getFullName()));
-      paramsSeen.add(param.getFullName());
+    // assign params; may be more than we need but is not less
+    for (Param param : dependedParams) {
+      ParameterContainer contextQuery = param.getContainer();
+      param = param.clone();
+      query.addParam(param);
+      param.setContainer(contextQuery);
     }
-    for (Param param : ontoQueryParams) {
-      if (!paramsSeen.contains(param.getFullName())) {
-        query.addParamRef(new ParamReference(param.getFullName()));
-      }
-    }
-    querySet.addQuery(query);
+    // assign columns returned by this query
     for (String colName : colNames) {
       Column column = new Column();
       column.setName(colName);
       column.setQuery(query);
       query.addColumn(column);
     }
-    query.resolveReferences(wdkModel);
+    query.excludeResources(_wdkModel.getProjectId());
+    query.resolveReferences(_wdkModel);
     return query;
   }
 
@@ -983,19 +978,12 @@ public class FilterParamNew extends AbstractDependentParam {
     final String name = getName();
     final FilterParamNewStableValue stableValue =
         new FilterParamNewStableValue(contextParamValues.get(getName()), this);
-    final String err = level.isGreaterThanOrEqualTo(ValidationLevel.SEMANTIC)
+    final String err = level.isGreaterThanOrEqualTo(ValidationLevel.DISPLAYABLE)
       ? stableValue.validateSyntaxAndSemantics(contextParamValues)
       : stableValue.validateSyntax();
     return err == null ?
       contextParamValues.setValid(name, level) :
       contextParamValues.setInvalid(name, level, err);
-  }
-
-  @Override
-  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
-    throw new UnsupportedOperationException(); // this method seems to go nowhere. TODO: remove its whole call
-                                               // stack up to stepBean
-
   }
 
   /**
