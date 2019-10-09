@@ -134,6 +134,9 @@ public class FilterParamNew extends AbstractDependentParam {
   // remove non-terminal nodes with a single child
   private boolean _trimMetadataTerms = true;
 
+  // for each level of the ontology tree, sort leaf nodes before branch nodes
+  private boolean _sortLeavesBeforeBranches = true;
+
   public FilterParamNew() {
     // register handlers
     setHandler(new FilterParamNewHandler());
@@ -155,6 +158,7 @@ public class FilterParamNew extends AbstractDependentParam {
       _backgroundQuery = param._backgroundQuery.clone();
 
     _trimMetadataTerms = param._trimMetadataTerms;
+    _sortLeavesBeforeBranches = param._sortLeavesBeforeBranches;
     _filterDataTypeDisplayName = param._filterDataTypeDisplayName;
     _filterItemIdColumn = param._filterItemIdColumn;
     _recordIdColumn = param._recordIdColumn;
@@ -275,6 +279,21 @@ public class FilterParamNew extends AbstractDependentParam {
    */
   public boolean getTrimMetadataTerms() {
     return _trimMetadataTerms;
+  }
+
+  /**
+   * @param sortLeavesBeforeBranches
+   *          the metadataQuery to set
+   */
+  public void setSortLeavesBeforeBranches(boolean sortLeavesBeforeBranches) {
+    _sortLeavesBeforeBranches = sortLeavesBeforeBranches;
+  }
+
+  /**
+   * @return the trimMetadataTerms
+   */
+  public boolean getSortLeavesBeforeBranches() {
+    return _sortLeavesBeforeBranches;
   }
 
   public void setFilterDataTypeDisplayName(String filterDataTypeDisplayName) {

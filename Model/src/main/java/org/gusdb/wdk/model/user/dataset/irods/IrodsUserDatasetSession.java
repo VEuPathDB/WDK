@@ -93,15 +93,15 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
   @Override
   public List<Path> getRecentEvents(
     final String eventsDirectory,
-    final long   lastEventStamp
+    final long   lastEventId
   ) throws WdkModelException {
-    TRACE.start(eventsDirectory, lastEventStamp);
-
+    TRACE.start(eventsDirectory, lastEventId);
     // If no prior event has been handled it is assumed that a new db is being
     // spun up and all prior events are needed.
-    if (lastEventStamp < 1) {
+    if (lastEventId < 1) {
       final List<Path> out = loadCollection(Paths.get(eventsDirectory), false)
         .map(col -> col.streamObjectsShallow()
+          .sorted(Comparator.comparingLong(ICatNode::getLastModified))
           .map(ICatNode::getPath)
           .collect(Collectors.toList()))
         .orElseGet(Collections::emptyList);
@@ -110,16 +110,12 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
       return TRACE.end(out);
     }
 
-    final String cutoffTime = lPad(
-      String.valueOf(Duration.ofMillis(lastEventStamp).getSeconds()),
-      '0',
-      11
-    );
+    final String cutoff = "event_" + lastEventId + ".json";
 
-    LOG.info("Event Cutoff Timestamp is " + cutoffTime + " sec");
+    LOG.info("Event Cutoff ID is " + cutoff);
 
     final String queryString = "select DATA_NAME where COLL_NAME like '"
-      + eventsDirectory + "' AND DATA_MODIFY_TIME >= '" + cutoffTime + "'";
+      + eventsDirectory + "' AND DATA_NAME > '" + cutoff + "'";
 
     return TRACE.end(getIrodsAdaptor()
       .executeIrodsQuery(queryString)
@@ -449,8 +445,6 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     final boolean force
   ) throws WdkModelException {
     TRACE.start(path, force);
-    if (!path.startsWith(usersRootDir))
-      throw Err.illegalPath(path);
 
     Optional<ICatCollection> optCol = iCatMirror.getCollection(path);
 

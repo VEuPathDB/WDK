@@ -172,12 +172,13 @@ public class EuPathCategoriesFactory {
     String[][] infos;
     switch (model.getProjectId()) {
       case "MicrobiomeDB": infos = mbioRecordClassInfo;    break;
+      case "AllClinEpiDB":    infos = clinepiRecordClassInfo; break;
       case "ClinEpiDB":    infos = clinepiRecordClassInfo; break;
       case "Gates":        infos = clinepiRecordClassInfo; break;
       case "ICEMR":        infos = clinepiRecordClassInfo; break;
       default:             infos = otherRecordClassInfo;
     }
-
+    
     for (String[] recordClassInfo : infos) {
       TreeNode<OntologyNode> prunedOntologyTree = findPrunedOntology(ontology, recordClassInfo[1], scopes(MENU, WEBSERVICE));
       if (prunedOntologyTree == null)
