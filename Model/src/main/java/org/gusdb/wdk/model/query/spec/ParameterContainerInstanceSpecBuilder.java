@@ -1,5 +1,8 @@
 package org.gusdb.wdk.model.query.spec;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.gusdb.fgputil.FormatUtil.getCurrentStackTrace;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -87,7 +90,9 @@ public class ParameterContainerInstanceSpecBuilder<T extends ParameterContainerI
 
     LOG.log(Param.VALIDATION_LOG_PRIORITY, "Beginning param validation for " +
         "instance of container: " + paramContainer.getFullName() +
-        " with validation level " + validationLevel + " and fill strategy " + fillStrategy);
+        " with validation level " + validationLevel + " and fill strategy " +
+        fillStrategy + ". It has the following params [ " +
+        String.join(", ", reqParams.keySet()) + " ]" + NL + getCurrentStackTrace());
     for (var param : reqParams.values()) {
       var result = param.validate(stableValues, validationLevel, fillStrategy);
       if (!result.isValid())
