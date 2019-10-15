@@ -86,7 +86,7 @@ public class DatasetService extends UserService {
   public JSONArray getDataset(@PathParam("id") long datasetId) throws WdkModelException {
     DatasetFactory factory = getWdkModel().getDatasetFactory();
     try {
-      factory.getDatasetWithOwner(datasetId, getPrivateRegisteredUser().getUserId());
+      factory.getDatasetWithOwner(datasetId, getUserBundle(Access.PRIVATE).getTargetUser().getUserId());
     }
     catch (WdkUserException e) {
       throw new NotFoundException(formatNotFound("Dataset with ID " + datasetId));
