@@ -150,7 +150,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
 
     loadCollectionMeta(dsCol, false);
 
-    return TRACE.end(collectionToDataset(datasetId, dsCol));
+    return TRACE.end(collectionToDataset(datasetId, userId, dsCol));
   }
 
   @Override
@@ -194,7 +194,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     while (datasets.hasNext()) {
       final ICatCollection ds = datasets.next();
       final long dsId = Long.parseLong(ds.getName());
-      out.put(dsId, collectionToDataset(dsId, ds));
+      out.put(dsId, collectionToDataset(dsId, userId, ds));
     }
 
     return TRACE.end(Collections.unmodifiableMap(out));
@@ -237,7 +237,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
         continue;
 
       loadCollectionMeta(extDs.get(), false);
-      out.put(link.datasetId, collectionToDataset(link.datasetId, extDs.get()));
+      out.put(link.datasetId, collectionToDataset(link.datasetId, userId, extDs.get()));
     }
 
     return TRACE.end(out);
@@ -251,7 +251,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     if(optDir.isPresent()) {
       final ICatCollection extDs = optDir.get();
       loadCollectionMeta(extDs, false);
-      return TRACE.end(Optional.of(collectionToDataset(dsId, extDs)));
+      return TRACE.end(Optional.of(collectionToDataset(dsId, userId, extDs)));
     }
     return TRACE.end(Optional.empty());
   }
@@ -420,10 +420,10 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
    * Returns an {@link ICatCollection} located at the given path under the user
    * directory root.
    * <p>
-   * This method will attempt to retrieve the desired path from the temporary
-   * local mirror first.  If the path does not exist in the local mirror, or if
-   * {@code force} is set to {@code true}, this method will load the given path
-   * from iCAT into the local mirror.
+   * This method will attempt to retrieve all contents under the desired path
+   * from the temporary local mirror first.  If the path does not exist in the
+   * local mirror, or if {@code force} is set to {@code true}, this method will
+   * load the given path from iCAT into the local mirror.
    *
    * @param path
    *   path to the collection to load
@@ -435,8 +435,6 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
    * @return an option containing a tree representation of the iRODS state for
    *   the given path, if that path exists in iRODS
    *
-   * @throws WdkModelException
-   *   if the given path is not a subpath of the iRODS user directory root.
    * @throws WdkModelException
    *   if an error occurs while attempting to load the given path from iCAT.
    */
@@ -565,7 +563,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
 
   /**
    * Converts the given {@link ICatCollection} into a {@code JsonUserDataset}
-   * by parsing it's attached metadata json.
+   * by parsing it's attached metadata json from iRODS iCAT.
    *
    * @param dsId
    *   dataset ID
@@ -582,10 +580,19 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
    */
   private JsonUserDataset collectionToDataset(
     final long           dsId,
+    final long           usId,
     final ICatCollection dsCol
   ) throws WdkModelException {
     TRACE.start(dsId, dsCol);
 
+    // Does this even look look like a real dataset?
+    // (do the dataset.json and meta.json files exist?)
+    if (!dsCol.contains(AVU_DATASET_JSON) || !dsCol.contains(AVU_META_JSON))
+      throw Err.datasetMissingMeta(dsId, usId);
+
+    // Read the contents of the dataset and meta json files
+    // from iCAT rather than iRODS to avoid any heavy
+    // filesystem calls.
     JSONObject datasetJson = readAndParseJson(dsCol, AVU_DATASET_JSON);
     JSONObject metaJson    = readAndParseJson(dsCol, AVU_META_JSON);
 
@@ -688,7 +695,9 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
         + " dataset (dataset: %d, owner: %d)",
       ILLEGAL_PATH = "Attempted to load the iRODS path \"%s\" which is outside "
         + "of the user directory root.",
-      DS_NOT_FOUND = "Dataset %d not found for user %d";
+      DS_NOT_FOUND = "Dataset %d not found for user %d",
+      BROKEN_DS = "Dataset %d for user %d does not contain both a dataset.json"
+        + " file and a meta.json file";
 
     static Supplier<WdkModelException> missingMeta(
       final ICatNode node,
@@ -724,6 +733,13 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     ) {
       return () -> new WdkModelException(String.format(DS_NOT_FOUND,
         datasetId, userId));
+    }
+
+    static WdkModelException datasetMissingMeta(
+      final long datasetId,
+      final long userId
+    ) {
+      return new WdkModelException(String.format(BROKEN_DS, datasetId, userId));
     }
   }
 }
