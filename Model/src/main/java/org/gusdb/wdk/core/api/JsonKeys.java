@@ -129,6 +129,7 @@ public class JsonKeys {
   // param-related keys
   public static final String INITIAL_DISPLAY_VALUE = "initialDisplayValue"; // aka "default"
   public static final String VOCABULARY = "vocabulary";
+  public static final String VOCABULARY_MAP = "vocabularyMap";
   public static final String DEPENDENT_PARAMS = "dependentParams";
 
   // param types
