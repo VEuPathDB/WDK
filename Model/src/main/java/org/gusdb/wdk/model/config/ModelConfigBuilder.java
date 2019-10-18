@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.IoUtil;
@@ -75,7 +76,7 @@ public class ModelConfigBuilder {
     assertNonNull("gusHome", _gusHome);
     Path gusHome = Paths.get(_gusHome);
     // TODO: check gusHome presence and readability; we currently use a symbolic link which complicates matters
-    Path secretKeyFile = Paths.get(_secretKeyFile);
+    Optional<Path> secretKeyFile = Optional.ofNullable(_secretKeyFile).map(f -> Paths.get(f));
     assertNonNull("wdkTempDir", _wdkTempDir);
     // create wdk temp dir and parents if they do not exist
     Path wdkTempDir = Functions.mapException(
