@@ -43,12 +43,6 @@
           }
         }
       },
-      "vocabularyMap": {
-        "type": "object",
-        "items": {
-          "type": "string"
-        }
-      },
       "required": [
         "countOnlyLeaves",
         "depthExpanded",

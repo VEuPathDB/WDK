@@ -20,8 +20,7 @@ public class EnumParamFormatter extends AbstractEnumParamFormatter {
     return super.getJson(spec)
         .put(JsonKeys.VOCABULARY, _param.getDisplayType().equals(AbstractEnumParam.DISPLAY_TREEBOX)
             ? getVocabTreeJson(vocabInstance)
-            : getVocabArrayJson(vocabInstance))
-        .put(JsonKeys.VOCABULARY_MAP, getVocabMapJson(vocabInstance));
+            : getVocabArrayJson(vocabInstance));
   }
 
 }
