@@ -22,7 +22,6 @@ import org.gusdb.wdk.model.config.*;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
 import org.gusdb.wdk.model.filter.FilterSet;
-import org.gusdb.wdk.model.ontology.EuPathCategoriesFactory;
 import org.gusdb.wdk.model.ontology.Ontology;
 import org.gusdb.wdk.model.ontology.OntologyFactory;
 import org.gusdb.wdk.model.ontology.OntologyFactoryImpl;
@@ -179,7 +178,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   private List<OntologyFactoryImpl> ontologyFactoryList = new ArrayList<>();
   private Map<String, OntologyFactory> ontologyFactoryMap = new LinkedHashMap<>();
-  private EuPathCategoriesFactory eupathCategoriesFactory;
   private String categoriesOntologyName;
 
   private ColumnToolBundles columnToolBundles = new ColumnToolBundles();
@@ -873,11 +871,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
         this.categoriesOntologyName = wdkCategoriesOntologyName;
     }
 
-    // comment out to use old categories
-    if (!ontologyFactoryMap.isEmpty() && !getProjectId().equals("OrthoMCL")) { // FIXME: remove ortho hardcode
-      eupathCategoriesFactory = new EuPathCategoriesFactory(this);
-    }
-
     LOG.info("Total ontology load time: " + ontologyTime.getElapsedString());
   }
 
@@ -1314,9 +1307,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   public Map<String, SearchCategory> getCategories(String usedBy, boolean strict) {
-    if (eupathCategoriesFactory != null) {
-      return eupathCategoriesFactory.getCategories(usedBy);
-    }
     Map<String, SearchCategory> categories = new LinkedHashMap<>();
     for (String name : categoryMap.keySet()) {
       SearchCategory category = categoryMap.get(name);
@@ -1327,9 +1317,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   public Map<String, SearchCategory> getRootCategories(String usedBy) {
-    if (eupathCategoriesFactory != null) {
-      return eupathCategoriesFactory.getRootCategories(usedBy);
-    }
 
     Map<String, SearchCategory> roots = new LinkedHashMap<>();
     for (SearchCategory root : rootCategoryMap.values()) {
