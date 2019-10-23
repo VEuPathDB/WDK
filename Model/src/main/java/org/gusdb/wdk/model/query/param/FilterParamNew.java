@@ -17,6 +17,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.cache.InMemoryCache;
 import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -764,9 +765,12 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // Now that we've constructed the sql, we want to use the WDK cache for it,
     //   so have to force the sql into a new SqlQuery object.
-    SqlQuery sqlQuery = createValuesMapQuery(filterSelectSql, ontologyValuesCols, getDependedParams());
+    Set<Param> dependedParams = getDependedParams();
+    LOG.info("Creating values map query; passing the following params: " + dependedParams.stream().map(Param::getName).collect(Collectors.joining(", ")));
+    SqlQuery sqlQuery = createValuesMapQuery(filterSelectSql, ontologyValuesCols, dependedParams);
 
     // run the sqlQuery to get all the values, and stuff into the map
+    LOG.info("Running values map query (has params " + sqlQuery.getParamMap().keySet().stream().collect(Collectors.joining(", ")) + ") with values: " + FormatUtil.prettyPrint(paramValues, Style.MULTI_LINE));
     RunnableObj<QueryInstanceSpec> valuesMapSpec = QueryInstanceSpec.builder()
         .putAll(paramValues)
         .buildRunnable(user, sqlQuery, StepContainer.emptyContainer());

@@ -84,7 +84,7 @@ public abstract class AbstractDependentParam extends Param {
       catch (WdkModelException e) {
         throw new WdkRuntimeException(e);
       }
-     }
+    }
     return _dependedParams;
   }
 
@@ -110,7 +110,7 @@ public abstract class AbstractDependentParam extends Param {
    * validation is done as a dedicated post-process after resolve references.
    */
   @Override
-  public void resolveDependedParamRefs() throws WdkModelException {
+  public synchronized void resolveDependedParamRefs() throws WdkModelException {
 
     if (!isDependentParam()) {
       _dependedParams = Collections.emptySet();
