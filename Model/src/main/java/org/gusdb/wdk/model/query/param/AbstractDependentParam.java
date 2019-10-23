@@ -227,6 +227,7 @@ public abstract class AbstractDependentParam extends Param {
     Query query = (Query) model.resolveReference(queryName);
     query.resolveReferences(model);
     query = query.clone();
+    query.setContextParam(this);
 
     // the query's params should be in the list of the param's depended params;
     for (Param param : query.getParams()) {
