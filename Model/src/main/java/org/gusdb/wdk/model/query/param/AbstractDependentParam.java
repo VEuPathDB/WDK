@@ -88,6 +88,18 @@ public abstract class AbstractDependentParam extends Param {
     return _dependedParams;
   }
 
+
+  // FIXME: finding default currently ALWAYS requires running vocab query (see:
+  //  String getDefault(EnumParamVocabInstance), since we validate the XML
+  //  default against the vocabulary.  This should probably be done only in the
+  //  validateValue() method.  There is additional validation, editing as well
+  //  (multi-pick, trimming whitespace).  Need to figure out if we can move all
+  //  that to regular validation so this method can potentially return false.
+  @Override
+  protected boolean runningDependedQueriesRequiresRunnableParents() {
+    return true;
+  }
+
   /**
    * This method should be called only after the complete Resolve References
    * phase is done. Before then, we do not have the proper contexts.

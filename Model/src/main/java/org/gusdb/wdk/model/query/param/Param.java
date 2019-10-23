@@ -644,7 +644,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    * @return true if the generation of this param's initial display value
    * requires that its depended params have runnably valid values.  Typically
    * this method will return false unless this param needs to run vocabulary
-   * queries inorder to generate its initial displaly value
+   * queries in order to generate its initial displaly value
    */
   protected boolean runningDependedQueriesRequiresRunnableParents() {
     return false;
@@ -652,9 +652,10 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   private Optional<ParamValidity> validateDependedParams(
       PartiallyValidatedStableValues stableValues, ValidationLevel level, ValidationLevel parentLevel, FillStrategy fillStrategy) throws WdkModelException {
-    validationLog(() -> "Checking depended params, will use validation level: " + parentLevel);
+    Set<Param> dependedParams = getDependedParams();
+    validationLog(() -> "Checking " + dependedParams.size() + " depended params, will use validation level: " + parentLevel);
     Map<String, String> dependedParamValidationErrors = new HashMap<>();
-    for (Param parent : getDependedParams()) {
+    for (Param parent : dependedParams) {
       validationLog(() -> "Found depended param " + parent.getName() + ", will validate it first...");
       parent.validate(stableValues, parentLevel, fillStrategy);
       validationLog(() -> "Back from parent validation.  Was " + parent.getName() + " valid? " + stableValues.isParamValid(parent.getName()));
