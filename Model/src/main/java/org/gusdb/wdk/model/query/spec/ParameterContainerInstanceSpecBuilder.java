@@ -8,6 +8,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.collection.ReadOnlyHashMap;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -91,8 +93,9 @@ public class ParameterContainerInstanceSpecBuilder<T extends ParameterContainerI
     LOG.log(Param.VALIDATION_LOG_PRIORITY, "Beginning param validation for " +
         "instance of container: " + paramContainer.getFullName() +
         " with validation level " + validationLevel + " and fill strategy " +
-        fillStrategy + ". It has the following params [ " +
-        String.join(", ", reqParams.keySet()) + " ]" + NL + getCurrentStackTrace());
+        fillStrategy + ". It requires the following params [ " +
+        String.join(", ", reqParams.keySet()) + " ].  Passed params: " +
+        FormatUtil.prettyPrint(tmpValues, Style.MULTI_LINE) + NL + getCurrentStackTrace());
     for (var param : reqParams.values()) {
       var result = param.validate(stableValues, validationLevel, fillStrategy);
       if (!result.isValid())
