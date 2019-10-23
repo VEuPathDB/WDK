@@ -795,12 +795,12 @@ public class FilterParamNew extends AbstractDependentParam {
     query.setName(getFullName() + "_values_map");
     query.setIsCacheable(true);
     query.setSql(sql);
+    query.setContextParam(this);
     // assign params; may be more than we need but is not less
     for (Param param : dependedParams) {
-      ParameterContainer contextQuery = param.getContainer();
       param = param.clone();
+      param.setContextQuestion(getContextQuestion());
       query.addParam(param);
-      param.setContainer(contextQuery);
     }
     // assign columns returned by this query
     for (String colName : colNames) {

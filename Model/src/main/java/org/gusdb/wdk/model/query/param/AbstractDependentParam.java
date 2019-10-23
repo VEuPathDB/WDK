@@ -228,21 +228,6 @@ public abstract class AbstractDependentParam extends Param {
     query.resolveReferences(model);
     query = query.clone();
 
-    /* I don't think we should call getDependedParams() during resolve references, as the query context
-     * is not set.  we were only doing so here to get the names of the param's depended params.  but we can
-     * get that from their paramrefs.
-
-    // get set of names of declared depended params
-    getDependedParams();
-    Set<String> dependedParamNames = new HashSet<>();
-    if (_dependedParams != null) {
-      for (Param param : _dependedParams) {
-        dependedParamNames.add(param.getName());
-      }
-    }
-
-    */
-
     // the query's params should be in the list of the param's depended params;
     for (Param param : query.getParams()) {
       String queryParamName = param.getFullName();
