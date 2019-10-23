@@ -791,6 +791,8 @@ public class FilterParamNew extends AbstractDependentParam {
   // parameters, this query must inherit their parameters
   private SqlQuery createValuesMapQuery(String sql, List<String> colNames, Set<Param> dependedParams)
       throws WdkModelException {
+    LOG.info("Inside filter param " + getName() + ", creating values map query with the following params: " +
+        dependedParams.stream().map(Param::getName).collect(Collectors.joining(", ")));
     SqlQuery query = new SqlQuery();
     query.setName(getFullName() + "_values_map");
     query.setIsCacheable(true);
@@ -806,11 +808,10 @@ public class FilterParamNew extends AbstractDependentParam {
     for (String colName : colNames) {
       Column column = new Column();
       column.setName(colName);
-      column.setQuery(query);
       query.addColumn(column);
     }
     query.excludeResources(_wdkModel.getProjectId());
-    query.resolveReferences(_wdkModel);
+    //query.resolveReferences(_wdkModel);
     return query;
   }
 
