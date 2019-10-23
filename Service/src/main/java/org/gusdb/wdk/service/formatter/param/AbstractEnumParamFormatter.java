@@ -62,10 +62,6 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
     return nodeToJson(root);
   }
 
-  protected JSONObject getVocabMapJson(EnumParamVocabInstance vocabInstance) {
-    return new JSONObject(vocabInstance.getVocabMap());
-  }
-
   protected JSONObject nodeToJson(EnumParamTermNode node) {
     return new JSONObject()
         .put(JsonKeys.DATA, new JSONObject().put(JsonKeys.TERM, node.getTerm()).put(JsonKeys.DISPLAY, node.getDisplay()))

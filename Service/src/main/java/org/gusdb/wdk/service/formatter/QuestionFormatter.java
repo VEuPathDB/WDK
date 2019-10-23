@@ -83,6 +83,7 @@ public class QuestionFormatter {
             q.getDynamicAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, true))
         .put(JsonKeys.DEFAULT_SUMMARY_VIEW, q.getDefaultSummaryView().getName())
         .put(JsonKeys.SUMMARY_VIEW_PLUGINS, SummaryViewPluginFormatter.getSummaryViewPluginsJson(q.getOrderedSummaryViews()))
+        .put(JsonKeys.IS_ANALYZABLE, q.getStepAnalyses().size() > 0)
         // NOTE: if null returned by getAllowedRecordClasses, property will be omitted in returned JSON
         .put(JsonKeys.ALLOWED_PRIMARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getPrimaryAnswerParam()))
         .put(JsonKeys.ALLOWED_SECONDARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getSecondaryAnswerParam()))

@@ -125,11 +125,11 @@ public class JsonKeys {
   public static final String DEFAULT_SORTING = "defaultSorting";
   public static final String SUMMARY_VIEW_PLUGINS = "summaryViewPlugins";
   public static final String STEP_ANALYSIS_PLUGINS = "stepAnalysisPlugins";
+  public static final String IS_ANALYZABLE = "isAnalyzable";
 
   // param-related keys
   public static final String INITIAL_DISPLAY_VALUE = "initialDisplayValue"; // aka "default"
   public static final String VOCABULARY = "vocabulary";
-  public static final String VOCABULARY_MAP = "vocabularyMap";
   public static final String DEPENDENT_PARAMS = "dependentParams";
 
   // param types

@@ -56,6 +56,9 @@
     "filters": {
       "$ref": "../../../includes/string-array.json"
     },
+    "isAnalyzable": {
+      "type": "boolean"
+    },
     "allowedPrimaryInputRecordClassNames": {
       "type": "array",
       "items": {
@@ -211,13 +214,13 @@
     "displayName",
     "shortDisplayName",
     "outputRecordClassName",
-    "filters",
     "defaultAttributes",
     "defaultSorting",
     "dynamicAttributes",
     "defaultSummaryView",
     "summaryViewPlugins",
     "filters",
+    "isAnalyzable",
     "properties",
     "groups",
     "paramNames"
