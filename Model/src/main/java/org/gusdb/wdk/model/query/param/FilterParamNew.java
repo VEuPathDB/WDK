@@ -811,7 +811,9 @@ public class FilterParamNew extends AbstractDependentParam {
       query.addColumn(column);
     }
     query.excludeResources(_wdkModel.getProjectId());
+    LOG.info("Before: " + String.join(", ", query.getParamMap().keySet()));
     query.resolveReferences(_wdkModel);
+    LOG.info("After: " + String.join(", ", query.getParamMap().keySet()));
     return query;
   }
 
