@@ -765,12 +765,12 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // Now that we've constructed the sql, we want to use the WDK cache for it,
     //   so have to force the sql into a new SqlQuery object.
-    Set<Param> dependedParams = getDependedParams();
-    LOG.info("Creating values map query; passing the following params: " + dependedParams.stream().map(Param::getName).collect(Collectors.joining(", ")));
-    SqlQuery sqlQuery = createValuesMapQuery(filterSelectSql, ontologyValuesCols, dependedParams);
+    SqlQuery sqlQuery = createValuesMapQuery(filterSelectSql, ontologyValuesCols, getDependedParams());
 
     // run the sqlQuery to get all the values, and stuff into the map
-    LOG.info("Running values map query (has params " + sqlQuery.getParamMap().keySet().stream().collect(Collectors.joining(", ")) + ") with values: " + FormatUtil.prettyPrint(paramValues, Style.MULTI_LINE));
+    LOG.debug("Running values map query (has params " +
+        sqlQuery.getParamMap().keySet().stream().collect(Collectors.joining(", ")) +
+        ") with values: " + FormatUtil.prettyPrint(paramValues, Style.MULTI_LINE));
     RunnableObj<QueryInstanceSpec> valuesMapSpec = QueryInstanceSpec.builder()
         .putAll(paramValues)
         .buildRunnable(user, sqlQuery, StepContainer.emptyContainer());
@@ -795,8 +795,6 @@ public class FilterParamNew extends AbstractDependentParam {
   // parameters, this query must inherit their parameters
   private SqlQuery createValuesMapQuery(String sql, List<String> colNames, Set<Param> dependedParams)
       throws WdkModelException {
-    LOG.info("Inside filter param " + getName() + ", creating values map query with the following params: " +
-        dependedParams.stream().map(Param::getName).collect(Collectors.joining(", ")));
     SqlQuery query = new SqlQuery();
     query.setName(getFullName() + "_values_map");
     query.setIsCacheable(true);
@@ -815,9 +813,7 @@ public class FilterParamNew extends AbstractDependentParam {
       query.addColumn(column);
     }
     query.excludeResources(_wdkModel.getProjectId());
-    LOG.info("Before: " + String.join(", ", query.getParamMap().keySet()));
     query.resolveReferences(_wdkModel);
-    LOG.info("After: " + String.join(", ", query.getParamMap().keySet()));
     return query;
   }
 
