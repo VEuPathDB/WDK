@@ -590,29 +590,13 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     if (defaultValueRequired) {
       // fill in default value; value will still be validated below (cheap because vocabs are cached)
       validationLog(() -> "Has empty value and we are to fill with default.");
-      String defaultValue = getDefault(stableValues);
-      stableValues.put(getName(), defaultValue);
+      stableValues.put(getName(), getDefault(stableValues));
     }
 
     // handle cases where value is still empty after possibly being populated by a default
     value = stableValues.get(getName()); // refresh local var
-    if (value == null || value.isEmpty()) {
-      String msgPrefix = "Is still empty (defaultUsed=" + defaultValueRequired + ") ";
-      // empty value is still allowed if param is not depended on and validation level is displayable or less
-      if (level.isLessThanOrEqualTo(ValidationLevel.DISPLAYABLE) && getDependentParams().isEmpty()) {
-        validationLog(() -> msgPrefix + "but allowed due to validation level.");
-        return stableValues.setValid(getName(), level);
-      }
-      if (isAllowEmpty()) {
-        validationLog(() -> msgPrefix + "but allowed because allowEmpty=true");
-        return stableValues.setValid(getName(), level);
-      }
-      else {
-        validationLog(() -> msgPrefix + "and cannot be empty; marking invalid.");
-        return stableValues.setInvalid(getName(), level, "Parameter '" + getName() + "' cannot be empty" +
-            (defaultValueRequired ? ", but no default value exists." : "."));
-      }
-    }
+    Optional<ParamValidity> validityOpt = handleEmptyValueCases(value, defaultValueRequired, stableValues, level);
+    if (validityOpt.isPresent()) return validityOpt.get();
 
     // sub-classes will complete further validation
     validationLog(() -> "Passing validation to subclass " + getClass().getSimpleName()+ "; value = " + stableValues.get(getName()));
@@ -633,11 +617,38 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     validationLog(() -> "Value was found invalid but we were asked to fill if invalid; getting default");
     stableValues.put(getName(), getDefault(stableValues));
 
-    validationLog(() -> "Got default value: " + stableValues.get(getName()) + ", will now validate.");
+    validationLog(() -> "Got default value: " + stableValues.get(getName()) + ", checking empty value cases...");
+    value = stableValues.get(getName()); // refresh local var
+    validityOpt = handleEmptyValueCases(value, defaultValueRequired, stableValues, level);
+    if (validityOpt.isPresent()) return validityOpt.get();
+
+    validationLog(() -> "Default value: " + stableValues.get(getName()) + " is not empty, will now validate.");
     ParamValidity defaultsValidity = validateValue(stableValues, level);
 
     validationLog(() -> "Populated default value is " + (defaultsValidity.isValid() ? "valid" : "invalid") + "; returning status.");
     return defaultsValidity;
+  }
+
+  private Optional<ParamValidity> handleEmptyValueCases(String value, boolean defaultValueRequired,
+      PartiallyValidatedStableValues stableValues, ValidationLevel level) throws WdkModelException {
+    if (value == null || value.isEmpty()) {
+      String msgPrefix = "Is still empty (defaultUsed=" + defaultValueRequired + ") ";
+      // empty value is still allowed if param is not depended on and validation level is displayable or less
+      if (level.isLessThanOrEqualTo(ValidationLevel.DISPLAYABLE) && getDependentParams().isEmpty()) {
+        validationLog(() -> msgPrefix + "but allowed due to validation level.");
+        return Optional.of(stableValues.setValid(getName(), level));
+      }
+      if (isAllowEmpty()) {
+        validationLog(() -> msgPrefix + "but allowed because allowEmpty=true");
+        return Optional.of(stableValues.setValid(getName(), level));
+      }
+      else {
+        validationLog(() -> msgPrefix + "and cannot be empty; marking invalid.");
+        return Optional.of(stableValues.setInvalid(getName(), level, "Parameter '" + getName() + "' cannot be empty" +
+            (defaultValueRequired ? ", but no default value exists." : ".")));
+      }
+    }
+    return Optional.empty();
   }
 
   /**
