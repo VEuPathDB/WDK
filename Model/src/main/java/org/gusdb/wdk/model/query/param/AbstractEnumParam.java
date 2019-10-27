@@ -365,8 +365,8 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
         ", with contextParamValues=" + FormatUtil.prettyPrint(ctxParamVals));
 
     // all other validation requires a DB lookup, so exit here if displayable or less
-    if (level.isLessThanOrEqualTo(ValidationLevel.DISPLAYABLE)) {
-      LOG.log(Param.VALIDATION_LOG_PRIORITY, "Don't need to check against vocab since validation level is displayable; returning valid=true");
+    if (level.isLessThanOrEqualTo(ValidationLevel.SYNTACTIC)) {
+      LOG.log(Param.VALIDATION_LOG_PRIORITY, "Don't need to check against vocab since validation level is syntactic or less; returning valid=true");
       return ctxParamVals.setValid(name, level);
     }
 
