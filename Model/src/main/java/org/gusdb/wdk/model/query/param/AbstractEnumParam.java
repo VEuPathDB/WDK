@@ -360,12 +360,13 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     final String name = getName();
     final String stableValue = ctxParamVals.get(name);
 
-    if (LOG.isDebugEnabled()) LOG.debug("param=" + getFullName() + " - validating: " + stableValue +
+    if (LOG.isEnabledFor(Param.VALIDATION_LOG_PRIORITY))
+      LOG.log(Param.VALIDATION_LOG_PRIORITY, "param=" + getFullName() + " - validating: " + stableValue +
         ", with contextParamValues=" + FormatUtil.prettyPrint(ctxParamVals));
 
     // all other validation requires a DB lookup, so exit here if displayable or less
     if (level.isLessThanOrEqualTo(ValidationLevel.DISPLAYABLE)) {
-      LOG.debug("Don't need to check against vocab since validation level is displayable; returning valid=true");
+      LOG.log(Param.VALIDATION_LOG_PRIORITY, "Don't need to check against vocab since validation level is displayable; returning valid=true");
       return ctxParamVals.setValid(name, level);
     }
 
@@ -386,7 +387,8 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     }
 
     Set<String> allTerms = vocab.getTerms();
-    if (LOG.isDebugEnabled()) LOG.debug("Validating " + getName() + NL +
+    if (LOG.isEnabledFor(Param.VALIDATION_LOG_PRIORITY))
+      LOG.log(Param.VALIDATION_LOG_PRIORITY, "Validating " + getName() + NL +
         "Valid terms: " + String.join(", ", allTerms) + NL +
         "Found terms: " + String.join(", ", selectedTerms));
     List<String> messages = new ArrayList<>();
