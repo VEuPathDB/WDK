@@ -834,18 +834,14 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     // resolve ontology references and determine WDK Categories ontology
     OntologyFactoryImpl ontologyFactory;
     switch (this.ontologyFactoryMap.size()) {
-
       case 0:
-        throw new WdkModelException(
-            "At least one ontology element must be specified in WDK Model XML.");
-
+        break;
       case 1:
         ontologyFactory = (OntologyFactoryImpl)this.ontologyFactoryMap.values().iterator().next();
         ontologyFactory.resolveReferences(this);
         ontologyFactory.setUseAsWdkCategories(true);
         this.categoriesOntologyName = ontologyFactory.getName();
         break;
-
       default: // more than one ontology
         String wdkCategoriesOntologyName = null;
         for (OntologyFactory ontology: this.ontologyFactoryMap.values()) {
@@ -863,10 +859,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
                   "] is specified as the WDK Categories Ontology.  Only one can be used.");
             }
           }
-        }
-        if (wdkCategoriesOntologyName == null) {
-            throw new WdkModelException("You must specify an ontology as the WDK Categories " +
-                "Ontology.  Use the 'useAsWdkCategories' flag in the ontology XML tag.");
         }
         this.categoriesOntologyName = wdkCategoriesOntologyName;
     }
