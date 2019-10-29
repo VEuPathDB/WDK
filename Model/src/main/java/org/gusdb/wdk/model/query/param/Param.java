@@ -609,7 +609,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
       }
       else {
         validationLog(() -> msgPrefix + "and cannot be empty; marking invalid.");
-        return stableValues.setInvalid(getName(), level, "Parameter '" + getName() + "' cannot be empty" +
+        return stableValues.setInvalid(getName(), level, "cannot be empty" +
             (defaultValueRequired ? ", but no default value exists." : "."));
       }
     }

@@ -403,7 +403,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     List<String> messages = new ArrayList<>();
     for (String term : selectedTerms) {
       if (!allTerms.contains(term)) {
-        messages.add("Invalid term for param [" + getFullName() + "]: " + term + ".");
+        messages.add("Invalid value '" + term + "'.");
       }
     }
 
