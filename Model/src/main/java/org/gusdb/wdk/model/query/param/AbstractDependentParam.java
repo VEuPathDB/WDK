@@ -84,8 +84,20 @@ public abstract class AbstractDependentParam extends Param {
       catch (WdkModelException e) {
         throw new WdkRuntimeException(e);
       }
-     }
+    }
     return _dependedParams;
+  }
+
+
+  // FIXME: finding default currently ALWAYS requires running vocab query (see:
+  //  String getDefault(EnumParamVocabInstance), since we validate the XML
+  //  default against the vocabulary.  This should probably be done only in the
+  //  validateValue() method.  There is additional validation, editing as well
+  //  (multi-pick, trimming whitespace).  Need to figure out if we can move all
+  //  that to regular validation so this method can potentially return false.
+  @Override
+  protected boolean runningDependedQueriesRequiresRunnableParents() {
+    return true;
   }
 
   /**
@@ -98,7 +110,7 @@ public abstract class AbstractDependentParam extends Param {
    * validation is done as a dedicated post-process after resolve references.
    */
   @Override
-  public void resolveDependedParamRefs() throws WdkModelException {
+  public synchronized void resolveDependedParamRefs() throws WdkModelException {
 
     if (!isDependentParam()) {
       _dependedParams = Collections.emptySet();
@@ -215,21 +227,7 @@ public abstract class AbstractDependentParam extends Param {
     Query query = (Query) model.resolveReference(queryName);
     query.resolveReferences(model);
     query = query.clone();
-
-    /* I don't think we should call getDependedParams() during resolve references, as the query context
-     * is not set.  we were only doing so here to get the names of the param's depended params.  but we can
-     * get that from their paramrefs.
-
-    // get set of names of declared depended params
-    getDependedParams();
-    Set<String> dependedParamNames = new HashSet<>();
-    if (_dependedParams != null) {
-      for (Param param : _dependedParams) {
-        dependedParamNames.add(param.getName());
-      }
-    }
-
-    */
+    query.setContextParam(this);
 
     // the query's params should be in the list of the param's depended params;
     for (Param param : query.getParams()) {

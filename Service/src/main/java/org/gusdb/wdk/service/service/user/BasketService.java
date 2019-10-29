@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -258,6 +259,36 @@ public class BasketService extends UserService {
     AnswerRequest request = new AnswerRequest(basketAnswerSpec,
         new AnswerFormatting(reportName, requestJson.getJSONObject(JsonKeys.REPORT_CONFIG)));
     return AnswerService.getAnswerResponse(user, request).getSecond();
+  }
+
+  /**
+   * Similar to the custom report endpoint that takes JSON, but gets its data
+   * from a form instead of JSON. It is used by the client to push the provided
+   * data to a new http target (ie, a tab), for example, a download report
+   *
+   * @param data
+   *   JSON data representing an answer request, passed in the 'data' form
+   *   param
+   *
+   * @return generated report
+   *
+   * @throws RequestMisformatException
+   *   if request body is not JSON or has incorrect JSON structure
+   * @throws DataValidationException
+   *   if JSON structure is correct but values contained are invalid
+   * @throws WdkModelException
+   *   if an error occurs while processing the request
+   */
+  @POST
+  @Path(NAMED_BASKET_PATH + CUSTOM_REPORT_SEGMENT_PAIR)
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  public Response createCustomReportAnswerFromForm(
+      @PathParam(BASKET_NAME_PATH_PARAM) final String basketName,
+      @PathParam(REPORT_NAME_PATH_PARAM) final String reportName,
+      @FormParam("data") String data)
+          throws WdkModelException, DataValidationException, RequestMisformatException {
+    AnswerService.preHandleFormRequest(getUriInfo(), data);
+    return createCustomReportAnswer(basketName, reportName, new JSONObject(data));
   }
 
   @POST

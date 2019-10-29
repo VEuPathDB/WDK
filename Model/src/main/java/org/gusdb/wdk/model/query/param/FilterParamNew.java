@@ -17,6 +17,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.cache.InMemoryCache;
 import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -767,6 +768,9 @@ public class FilterParamNew extends AbstractDependentParam {
     SqlQuery sqlQuery = createValuesMapQuery(filterSelectSql, ontologyValuesCols, getDependedParams());
 
     // run the sqlQuery to get all the values, and stuff into the map
+    LOG.debug("Running values map query (has params " +
+        sqlQuery.getParamMap().keySet().stream().collect(Collectors.joining(", ")) +
+        ") with values: " + FormatUtil.prettyPrint(paramValues, Style.MULTI_LINE));
     RunnableObj<QueryInstanceSpec> valuesMapSpec = QueryInstanceSpec.builder()
         .putAll(paramValues)
         .buildRunnable(user, sqlQuery, StepContainer.emptyContainer());
@@ -795,18 +799,17 @@ public class FilterParamNew extends AbstractDependentParam {
     query.setName(getFullName() + "_values_map");
     query.setIsCacheable(true);
     query.setSql(sql);
+    query.setContextParam(this);
     // assign params; may be more than we need but is not less
     for (Param param : dependedParams) {
-      ParameterContainer contextQuery = param.getContainer();
       param = param.clone();
+      param.setContextQuestion(getContextQuestion());
       query.addParam(param);
-      param.setContainer(contextQuery);
     }
     // assign columns returned by this query
     for (String colName : colNames) {
       Column column = new Column();
       column.setName(colName);
-      column.setQuery(query);
       query.addColumn(column);
     }
     query.excludeResources(_wdkModel.getProjectId());

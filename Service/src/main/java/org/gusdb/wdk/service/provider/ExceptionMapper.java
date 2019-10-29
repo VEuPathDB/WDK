@@ -68,7 +68,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     // Custom exception to handle client content issues
     catch (DataValidationException | WdkUserException e422) {
       return logResponse(e, Response.status(new UnprocessableEntityStatusType())
-          .type(MediaType.TEXT_PLAIN).entity(get422ResponseEntity(e422)).build());
+          .type(MediaType.TEXT_PLAIN).entity(get422ResponseEntity(e422).toString()).build());
     }
 
     catch (WebApplicationException eApp) {

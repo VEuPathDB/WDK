@@ -8,6 +8,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.collection.ReadOnlyHashMap;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -24,6 +26,8 @@ public class ParameterContainerInstanceSpecBuilder<T extends ParameterContainerI
     extends ReadOnlyHashMap.Builder<String,String> {
 
   private static final Logger LOG = Logger.getLogger(ParameterContainerInstanceSpecBuilder.class);
+
+  private static final boolean INCLUDE_STACK_TRACE_IN_VALIDATION_INIT_LOG = false;
 
   public enum FillStrategy {
     NO_FILL(false, false),
@@ -88,11 +92,16 @@ public class ParameterContainerInstanceSpecBuilder<T extends ParameterContainerI
     var stableValues = new PartiallyValidatedStableValues(user, tmpValues, stepContainer);
     var validation = ValidationBundle.builder(validationLevel);
 
-    LOG.log(Param.VALIDATION_LOG_PRIORITY, "Beginning param validation for " +
-        "instance of container: " + paramContainer.getFullName() +
-        " with validation level " + validationLevel + " and fill strategy " +
-        fillStrategy + ". It has the following params [ " +
-        String.join(", ", reqParams.keySet()) + " ]" + NL + getCurrentStackTrace());
+    if (LOG.isEnabledFor(Param.VALIDATION_LOG_PRIORITY)) {
+      LOG.log(Param.VALIDATION_LOG_PRIORITY, "Beginning param validation for " +
+          "instance of container: " + paramContainer.getFullName() +
+          " with validation level " + validationLevel + " and fill strategy " +
+          fillStrategy + ". It requires the following params [ " +
+          String.join(", ", reqParams.keySet()) + " ].  Passed params: " +
+          FormatUtil.prettyPrint(tmpValues, Style.MULTI_LINE) +
+          (INCLUDE_STACK_TRACE_IN_VALIDATION_INIT_LOG ? (NL + getCurrentStackTrace()) : ""));
+    }
+
     for (var param : reqParams.values()) {
       var result = param.validate(stableValues, validationLevel, fillStrategy);
       if (!result.isValid())

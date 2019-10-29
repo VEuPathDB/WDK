@@ -20,6 +20,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
@@ -187,15 +188,7 @@ public class AnswerService extends AbstractWdkService {
       @PathParam(REPORT_NAME_PATH_PARAM) String reportName,
       @FormParam("data") String data)
           throws WdkModelException, DataValidationException, RequestMisformatException {
-    // log this request's JSON here since filter will not log form data
-    if (RequestLoggingFilter.isLogEnabled()) {
-      RequestLoggingFilter.logRequest("POST", getUriInfo(),
-          RequestLoggingFilter.formatJson(data));
-    }
-    if (data == null || data.isEmpty()) {
-      throw new RequestMisformatException("Request JSON cannot be empty. " +
-          "If submitting a form, include the 'data' input parameter.");
-    }
+    preHandleFormRequest(getUriInfo(), data);
     return createCustomReportAnswer(reportName, new JSONObject(data));
   }
 
@@ -463,5 +456,17 @@ public class AnswerService extends AbstractWdkService {
         throw new WdkModelException("Unsupported content disposition: " + disposition);
     }
     return response;
+  }
+
+  public static void preHandleFormRequest(UriInfo uriInfo, String data) throws RequestMisformatException {
+    // log this request's JSON here since filter will not log form data
+    if (RequestLoggingFilter.isLogEnabled()) {
+      RequestLoggingFilter.logRequest("POST", uriInfo,
+          RequestLoggingFilter.formatJson(data));
+    }
+    if (data == null || data.isEmpty()) {
+      throw new RequestMisformatException("Request JSON cannot be empty. " +
+          "If submitting a form, include the 'data' input parameter.");
+    }
   }
 }

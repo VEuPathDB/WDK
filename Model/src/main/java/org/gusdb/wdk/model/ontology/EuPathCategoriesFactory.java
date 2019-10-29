@@ -108,6 +108,9 @@ public class EuPathCategoriesFactory {
       //Maled DCC phase2
       { "Participants", "DS_3dbf92dc05ParticipantRecordClasses.DS_3dbf92dc05ParticipantRecordClass" },
       { "Observations", "DS_3dbf92dc05ObservationRecordClasses.DS_3dbf92dc05ObservationRecordClass" },
+      //Maled 60m
+      { "Participants", "DS_5c41b87221ParticipantRecordClasses.DS_5c41b87221ParticipantRecordClass" },
+      { "Observations", "DS_5c41b87221ObservationRecordClasses.DS_5c41b87221ObservationRecordClass" },
       // south asia
       { "Participants", "DS_13c737a528ParticipantRecordClasses.DS_13c737a528ParticipantRecordClass" },
       { "Observations", "DS_13c737a528ObservationRecordClasses.DS_13c737a528ObservationRecordClass" },

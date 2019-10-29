@@ -92,14 +92,6 @@ public class FlatVocabParam extends AbstractEnumParam {
     vocabQuery.setContextParam(this);
   }
 
-  /**
-   * @param servedQueryName
-   *          the servedQueryName to set
-   */
-  public void setServedQueryName(String servedQueryName) {
-    this.servedQueryName = servedQueryName;
-  }
-
   // ///////////////////////////////////////////////////////////////////
   // /////////// Protected properties ////////////////////////////////////
   // ///////////////////////////////////////////////////////////////////
