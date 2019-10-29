@@ -175,21 +175,20 @@ public class StringParam extends Param {
         // Verify the string can be parsed as a number.
         Double.valueOf(value.replaceAll(",", ""));
       } catch (NumberFormatException ex) {
-        return contextParamValues.setInvalid(name, level,
-            "value must be numerical; '" + value + "' is invalid.");
+        return contextParamValues.setInvalid(name, level, "'" + value + "' must be a number");
       }
     }
 
     if (_regex != null && !value.matches(_regex))
       return value.equals("*")
-        ? contextParamValues.setInvalid(name, level, "value '" + value +
+        ? contextParamValues.setInvalid(name, level, "'" + value +
           "' cannot be used on its own; it needs to be part of a word.")
-        : contextParamValues.setInvalid(name, level, "value '" + value + "' is " +
-          "invalid and probably contains illegal characters. It must match " +
+        : contextParamValues.setInvalid(name, level, "'" + value + "' is " +
+          "invalid (it might contain illegal characters). It must match " +
           "the regular expression '" + _regex + "'");
 
     if (_length != 0 && value.length() > _length)
-      return contextParamValues.setInvalid(name, level, "value cannot be longer than "
+      return contextParamValues.setInvalid(name, level, "'" + value + "' must not be longer than "
         + _length + " characters (it is " + value.length() + ").");
 
     return contextParamValues.setValid(name, level);

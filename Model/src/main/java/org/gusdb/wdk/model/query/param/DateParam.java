@@ -142,36 +142,31 @@ public class DateParam extends Param {
     final String value = contextParamValues.get(name);
     final LocalDate dateValue;
 
-    // Insure that the value provided is formatted as a proper iso1806 date.
+    // Ensure that the value provided is formatted as a proper iso1806 date.
     try {
       dateValue = LocalDate.parse(value, STANDARD_DATE_FORMAT);
     }
     catch(DateTimeParseException dtpe) {
-      return contextParamValues.setInvalid(name, level, "value '" + value + "' cannot "
-          + "be parsed as an Iso1806 date.  Make sure the data is in the "
-          + "yyyy-mm-dd format");
+      return contextParamValues.setInvalid(name, level, "'" + value + "' must be in yyyy-mm-dd format");
     }
 
-    // Insure that the value provided matches the regular expression provided.
+    // Ensure that the value provided matches the regular expression provided.
     // This could be more restrictive than the iso1806 date test.
     if(_regex != null && !value.matches(_regex)) {
-      return contextParamValues.setInvalid(name, level, "value '" + value + "' is "
-          + "invalid and probably contains illegal characters. It must match "
+      return contextParamValues.setInvalid(name, level, "'" + value + "' has an invalid format (it might contain illegal characters). It must match "
           + "the regular expression '" + _regex + "'");
     }
 
     // Check minimum allowed date
     if(_minDate != null &&
         dateValue.isBefore(LocalDate.parse(_minDate, STANDARD_DATE_FORMAT))) {
-      return contextParamValues.setInvalid(name, level, "The date '" + value
-          + "' should not be earlier than '" + _minDate + "'");
+      return contextParamValues.setInvalid(name, level, "'" + value + " 'must not be earlier than '" + _minDate + "'");
     }
 
     // Check maximum allowed date
     if(_maxDate != null &&
      dateValue.isAfter(LocalDate.parse(_maxDate, STANDARD_DATE_FORMAT))) {
-      return contextParamValues.setInvalid(name, level, "The date '" + value
-          + "' should not be after '" + _maxDate + "'");
+      return contextParamValues.setInvalid(name, level, "'" + value + " 'must not be after '" + _maxDate + "'");
     }
 
     return contextParamValues.setValid(name, level);

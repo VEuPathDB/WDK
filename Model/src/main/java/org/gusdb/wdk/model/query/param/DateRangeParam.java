@@ -169,20 +169,17 @@ public class DateRangeParam extends Param {
       maxValue = LocalDate.parse(jsonVal.getString("max"), STANDARD_DATE_FORMAT);
     }
     catch(JSONException je) {
-      return ctxParamVals.setInvalid(name, level, "Could not parse '" + rawVal + "'. "
-        + "The range should be is the format {'min':'min value','max':'max value'}");
+      return ctxParamVals.setInvalid(name, level, "'" + rawVal + "' must be in the format {'min':'min value','max':'max value'}");
     }
 
     // Validate each value in the range against regex.  The regex could
     // potentially be more restrictive than LocalDate.
     if (_regex != null) {
      if (!jsonVal.getString("min").matches(_regex)) {
-       return ctxParamVals.setInvalid(name, level, "value '" + jsonVal.getString("min")
-         + "' is invalid. It must match the regular expression '" + _regex + "'");
+       return ctxParamVals.setInvalid(name, level, "'" + jsonVal.getString("min") + "' is an invalid format.  It must match the regular expression '" + _regex + "'");
      }
      if (!jsonVal.getString("max").matches(_regex)) {
-       return ctxParamVals.setInvalid(name, level, "value '" + jsonVal.getString("max")
-         + "' is invalid. It must match the regular expression '" + _regex + "'");
+       return ctxParamVals.setInvalid(name, level, "'" + jsonVal.getString("max") + "' is an invalid format.  It must match the regular expression '" + _regex + "'");
       }
     }
 

@@ -127,10 +127,9 @@ public class DatasetParam extends Param {
     final String name = getName();
     final String stableValue = ctxParamVals.get(name);
 
-    // value must be either the empty string or an integer (representing a step ID)
+    // value must be a positive integer (representing a dataset ID)
     if (!FormatUtil.isInteger(stableValue)) {
-      return ctxParamVals.setInvalid(name, level, "Param " + name +
-          "'s value must be a positive integer.");
+      return ctxParamVals.setInvalid(name, level, "'" + stableValue + "' must be a positive integer (Dataset ID).");
     }
 
     // that's all the validation we perform if level is syntactic

@@ -114,36 +114,31 @@ public class NumberParam extends Param {
       numericalValue = Double.valueOf(value);
     }
     catch (NumberFormatException ex) {
-      return contextParamValues.setInvalid(name, level, "value must be numerical; '" +
-          value + "' is invalid.");
+      return contextParamValues.setInvalid(name, level, "'" + value + "' must be a number");
     }
 
     // Insure that the value provided matches the regular expression provided.
     // This could be more restrictive than the number test above.
     if (_regex != null && !value.matches(_regex)) {
-      return contextParamValues.setInvalid(name, level, "value '" + value
-          + "' is invalid. It must match the regular expression '"
+      return contextParamValues.setInvalid(name, level, "'" + value + " 'must match the regular expression '"
           + _regex + "'");
     }
 
     // Verify the value provided is an integer if that property is specified.
     if(_isInteger && numericalValue % 1 != 0) {
-      return contextParamValues.setInvalid(name, level, "value '" + value +
-          "' must be an integer.");
+      return contextParamValues.setInvalid(name, level, "'" + value + "' must be an integer.");
     }
 
     // Verify the value provided is greater than the minimum allowed value, if that property
     // is specified.
     if(_min != null && numericalValue < _min) {
-      return contextParamValues.setInvalid(name, level, "value '" + value
-          + "' must be greater than or equal to '" + _min + "'" );
+      return contextParamValues.setInvalid(name, level, "'" + value + "' must be greater than or equal to '" + _min + "'" );
     }
 
     // Verify the value provided is no greater than the maximum allowed value, if that property
     // is specified.
     if(_max != null && numericalValue > _max) {
-      return contextParamValues.setInvalid(name, level, "value '" + value
-          + "' must be less than or equal to '" + _max + "'" );
+      return contextParamValues.setInvalid(name, level, "'" + value + "' must be less than or equal to '" + _max + "'" );
     }
 
     return contextParamValues.setValid(name, level);

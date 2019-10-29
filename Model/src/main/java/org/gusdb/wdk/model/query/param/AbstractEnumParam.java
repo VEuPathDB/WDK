@@ -382,8 +382,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       String range = (_minSelectedCount > 0 ? "[ " + _minSelectedCount : "( Inf") + ", " +
           (_maxSelectedCount > 0 ? _maxSelectedCount + " ]" : "Inf )");
       return ctxParamVals.setInvalid(name, level, "Number of selected values ("
-        + numSelected + ") was not in range " + range + " for parameter "
-        + getPrompt());
+        + numSelected + ") was too few or too many.  Must be within " + range);
     }
 
     Set<String> allTerms = vocab.getTerms();
