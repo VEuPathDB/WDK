@@ -539,7 +539,7 @@ public class FilterParamNew extends AbstractDependentParam {
     metadataCols.add(_filterItemIdColumn);
     metadataCols.add(COLUMN_ONTOLOGY_ID);
     String cols = metadataCols.stream().collect(Collectors.joining(", "));
-    String unfilteredSqlPerOntologyId = "/* START unfilteredSqlPerOntologyId */ SELECT distinct " + cols + " FROM ( /* START bgdSql */ " + bgdSql + " /* END bgdSql */) mq WHERE mq." + COLUMN_ONTOLOGY_ID +
+    String unfilteredSqlPerOntologyId = "/* START unfilteredSqlPerOntologyId */ SELECT " + cols + " FROM ( /* START bgdSql */ " + bgdSql + " /* END bgdSql */) mq WHERE mq." + COLUMN_ONTOLOGY_ID +
         " = ? /* END unfilteredSqlPerOntologyId */ ";
     
     // read into a map of filter_item_id -> value(s)
@@ -804,7 +804,7 @@ public class FilterParamNew extends AbstractDependentParam {
     String bgdQueryNotIsRangeSql = "select bgd.* from (" + bgdQuerySql + ") bgd, (" + ontologyQuerySql + ") onto where bgd." + COLUMN_ONTOLOGY_ID + " = onto." + COLUMN_ONTOLOGY_ID + " and onto." + COLUMN_IS_RANGE + " = 0";
     
     // sql to find the distinct values (from value columns) in the bgd query for non isRange terms
-    String filterSelectSql = "SELECT distinct " + String.join(", ", ontologyValuesCols) + " FROM (" + bgdQueryNotIsRangeSql + ") bgd" + ontologyTermsWhereClause;
+    String filterSelectSql = "SELECT " + String.join(", ", ontologyValuesCols) + " FROM (" + bgdQueryNotIsRangeSql + ") bgd" + ontologyTermsWhereClause;
 
     // the map that we will return
     Map<String, Set<String>> ontologyValues = new HashMap<String, Set<String>>();
@@ -884,7 +884,7 @@ public class FilterParamNew extends AbstractDependentParam {
        QueryInstance<?> instance = metadataQuery.makeInstance(user, contextParamValues, true, 0, new HashMap<String, String>());
        metadataSql = instance.getSql();
        String metadataTableName = "md";
-       String filterSelectSql = "/* START filterSelectSql */ SELECT distinct " + metadataTableName + "." + idColumn + " FROM ( /* START metadataSql */ " + metadataSql + " /* END metadataSql */ ) " + metadataTableName + " /* END filterSelectSql */";
+       String filterSelectSql = "/* START filterSelectSql */ SELECT " + metadataTableName + "." + idColumn + " FROM ( /* START metadataSql */ " + metadataSql + " /* END metadataSql */ ) " + metadataTableName + " /* END filterSelectSql */";
        
        return getFilteredIdsSql(user, stableValue, contextParamValues, metadataTableName, filterSelectSql, defaultFilterClause);
      }
