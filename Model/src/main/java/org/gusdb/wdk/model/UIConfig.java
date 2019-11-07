@@ -5,13 +5,15 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.gusdb.fgputil.web.CookieBuilder;
+
 public class UIConfig extends WdkModelBase {
 
-  public static class ExtraLogoutCookies extends ArrayList<WdkCookie> {
+  public static class ExtraLogoutCookies extends ArrayList<CookieBuilder> {
     private static final long serialVersionUID = 1L;
     @Override public String toString() {
       StringBuilder sb = new StringBuilder("  ExtraLogoutCookies {").append(NL);
-      for (WdkCookie cookie : this) {
+      for (CookieBuilder cookie : this) {
         sb.append("    Cookie { name='").append(cookie.getName())
           .append("' path='").append(cookie.getPath()).append("' }").append(NL);
       }
@@ -34,7 +36,7 @@ public class UIConfig extends WdkModelBase {
     _extraLogoutCookies = extraLogoutCookies;
   }
 
-  public List<WdkCookie> getExtraLogoutCookies() {
+  public List<CookieBuilder> getExtraLogoutCookies() {
     return _extraLogoutCookies;
   }
 

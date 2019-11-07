@@ -12,8 +12,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpSession;
-
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonType;
@@ -21,6 +19,7 @@ import org.gusdb.fgputil.json.JsonType.ValueType;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.fgputil.web.SessionProxy;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -116,7 +115,7 @@ public class DatasetRequestProcessor {
 
   }
 
-  public static Dataset createFromRequest(DatasetRequest request, User user, DatasetFactory factory, HttpSession session)
+  public static Dataset createFromRequest(DatasetRequest request, User user, DatasetFactory factory, SessionProxy session)
       throws WdkModelException, DataValidationException, RequestMisformatException {
     JsonType value = request.getConfigValue();
     switch(request.getSourceType()) {
@@ -214,7 +213,7 @@ public class DatasetRequestProcessor {
   }
 
   private static Dataset createFromTemporaryFile(String tempFileId, User user, DatasetFactory factory,
-      Map<String, JsonType> additionalConfig, HttpSession session)
+      Map<String, JsonType> additionalConfig, SessionProxy session)
           throws DataValidationException, WdkModelException, RequestMisformatException {
     Optional<String> parserName = getStringOrFail(additionalConfig, JsonKeys.PARSER);
     DatasetParser parser = parserName.isPresent() ?

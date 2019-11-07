@@ -13,15 +13,21 @@ import org.apache.log4j.Logger;
 
 /**
  * This filter serves two purposes:
- * 
- * 1. To capitalize the HTTP method if it's not already.  This is needed to property route requests to
- *    services with methods not supported by Jersey (e.g. PATCH), using custom annotations.
- * 
- * 2. To allow form submission using HTTP methods not generally allowed by browsers.  To do this, the form
- *    can be submitted to a resource using GET or POST but with additional query parameter "http-method" which
- *    can contain PUT, PATCH, or DELETE.  If this parameter is found and the value valid then the method of
- *    the request will be changed to the requested method.
- * 
+ *
+ * 1. To capitalize the HTTP method if it's not already.  This is needed to
+ *    properly route requests to services with methods not supported by Jersey
+ *    (e.g. PATCH), using custom annotations.
+ *
+ * 2. To allow form submission using HTTP methods not generally allowed by
+ *    browsers.  To do this, the form can be submitted to a resource using GET
+ *    or POST but with additional query parameter "http-method" which can
+ *    contain PUT, PATCH, or DELETE.  If this parameter is found and the value
+ *    valid then the method of the request will be changed to the requested
+ *    method.
+ *
+ * TODO: See if this is still necessary (late 2019)- Jersey and browsers may now
+ *       have complete support for PUT, PATCH, and DELETE
+ *
  * @author rdoherty
  */
 @PreMatching

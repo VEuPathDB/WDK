@@ -35,6 +35,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.runtime.GusHome;
+import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.xml.XmlParser;
 import org.gusdb.fgputil.xml.XmlValidator;
 import org.gusdb.wdk.model.UIConfig.ExtraLogoutCookies;
@@ -1065,7 +1066,7 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/uiConfig", UIConfig.class, "setUiConfig");
     configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies", ExtraLogoutCookies.class,
         "setExtraLogoutCookies");
-    configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies/cookie", WdkCookie.class, "add");
+    configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies/cookie", CookieBuilder.class, "add");
   }
 
   private static void configureStepAnalysis(Digester digester) {

@@ -3,7 +3,6 @@ package org.gusdb.wdk.service.service.user;
 import java.util.List;
 import java.util.Map.Entry;
 
-import javax.servlet.http.Cookie;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.ForbiddenException;
@@ -21,7 +20,6 @@ import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
-import org.gusdb.wdk.service.CookieConverter;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserFormatter;
@@ -183,8 +181,7 @@ public class ProfileService extends UserService {
         throw new ConflictException(DUPLICATE_EMAIL);
       }
       LoginCookieFactory cookieFactory = new LoginCookieFactory(getWdkModel().getModelConfig().getSecretKey());
-      Cookie oldLoginCookie = LoginCookieFactory.findLoginCookie(getCookies());
-      return CookieConverter.toJaxRsCookie(cookieFactory.createLoginCookie(email, oldLoginCookie.getMaxAge()));
+      return cookieFactory.createLoginCookie(email, LoginCookieFactory.getDefaultMaxAge()).toJaxRsCookie();
     }
     return null;
   }

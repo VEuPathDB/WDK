@@ -2,10 +2,9 @@ package org.gusdb.wdk.controller;
 
 import static org.gusdb.wdk.model.ThreadMonitor.getThreadMonitorConfig;
 
-import javax.servlet.ServletContext;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.runtime.GusHome;
+import org.gusdb.fgputil.web.ApplicationContext;
 import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.ThreadMonitor;
 import org.gusdb.wdk.model.Utilities;
@@ -19,31 +18,31 @@ public class WdkInitializer {
 
   public static final String GUS_HOME_KEY = "GUS_HOME";
   public static final String WDK_MODEL_KEY = "wdkModel";
-  public static final String WDK_WIZARD_KEY = "wdkWizard";
   public static final String WDK_ASSETS_URL_KEY = "assetsUrl";
 
-  public static void initializeWdk(ServletContext servletContext) {
+  public static void initializeWdk(ApplicationContext context) {
     try {
       MDCUtil.setNonRequestThreadVars("init");
       LOG.info("Initializing WDK web application");
 
       // get gus home and set on context
-      String gusHome = GusHome.webInit(servletContext);
-      servletContext.setAttribute(GUS_HOME_KEY, gusHome);
+      String gusHome = GusHome.overrideWith(context.getRealPath(
+          context.getInitParameter(GUS_HOME_KEY)));
+      context.put(GUS_HOME_KEY, gusHome);
 
       LOG.info("Initializing model...");
-      String projectId = servletContext.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
+      String projectId = context.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
       WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
 
       LOG.info("Initialized model object.  Setting on servlet context.");
-      servletContext.setAttribute(Utilities.WDK_MODEL_KEY, wdkModel);
+      context.put(Utilities.WDK_MODEL_KEY, wdkModel);
 
       // Set assetsUrl attribute. It will be null if not defined in the model
-      servletContext.setAttribute(WDK_ASSETS_URL_KEY,
+      context.put(WDK_ASSETS_URL_KEY,
           wdkModel.getModelConfig().getAssetsUrl());
 
       // assign select init parameters as context attributes
-      assignInitParamToAttribute(servletContext, Utilities.WDK_SERVICE_ENDPOINT_KEY);
+      assignInitParamToAttribute(context, Utilities.WDK_SERVICE_ENDPOINT_KEY);
 
       // load wizard
       //LOG.info("Loading wizard configuration.");
@@ -65,7 +64,7 @@ public class WdkInitializer {
     }
   }
 
-  public static void terminateWdk(ServletContext servletContext) {
+  public static void terminateWdk(ApplicationContext applicationScope) {
     try {
       MDCUtil.setNonRequestThreadVars("term");
       LOG.info("Terminating WDK web application");
@@ -73,7 +72,7 @@ public class WdkInitializer {
       // shut down thread monitor
       ThreadMonitor.shutDown();
 
-      WdkModel wdkModel = getWdkModel(servletContext);
+      WdkModel wdkModel = getWdkModel(applicationScope);
       if (wdkModel != null) {
         // insulate in case model never properly loaded
         LOG.info("Releasing resources for WDK Model.");
@@ -92,11 +91,11 @@ public class WdkInitializer {
     }
   }
 
-  public static WdkModel getWdkModel(ServletContext servletContext) {
-    return (WdkModel)servletContext.getAttribute(Utilities.WDK_MODEL_KEY);
+  public static WdkModel getWdkModel(ApplicationContext context) {
+    return (WdkModel)context.get(Utilities.WDK_MODEL_KEY);
   }
 
-  private static void assignInitParamToAttribute(ServletContext servletContext, String key) {
-    servletContext.setAttribute(key, servletContext.getInitParameter(key));
+  private static void assignInitParamToAttribute(ApplicationContext applicationScope, String key) {
+    applicationScope.put(key, applicationScope.getInitParameter(key));
   }
 }

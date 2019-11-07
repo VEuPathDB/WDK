@@ -15,15 +15,18 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.log4j.Logger;
+import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.jersey.server.ParamException.PathParamException;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.fgputil.web.ApplicationContext;
+import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.wdk.errors.ErrorContext;
 import org.gusdb.wdk.errors.ErrorContext.ErrorLocation;
 import org.gusdb.wdk.errors.ServerErrorBundle;
 import org.gusdb.wdk.events.ErrorEvent;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.service.ContextLookup;
 import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -37,8 +40,9 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
 
   private static final Logger LOG = Logger.getLogger(ExceptionMapper.class);
 
-  @Context HttpServletRequest req;
-  @Context ServletContext context;
+  @Context HttpServletRequest _servletRequest;
+  @Context Request _grizzlyRequest;
+  @Context ServletContext _servletContext;
 
   @Override
   public Response toResponse(Exception e) {
@@ -83,8 +87,10 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
 
     // Some other exception that must be handled by the application; send error event
     catch (Exception other) {
-      WdkModel wdkModel = (WdkModel)context.getAttribute(Utilities.WDK_MODEL_KEY);
-      ErrorContext errorContext = AbstractWdkService.getErrorContext(context, req, wdkModel, ErrorLocation.WDK_SERVICE);
+      ApplicationContext context = ContextLookup.getApplicationContext(_servletContext);
+      WdkModel wdkModel = ContextLookup.getWdkModel(_servletContext);
+      RequestData request = ContextLookup.getRequest(_servletRequest, _grizzlyRequest);
+      ErrorContext errorContext = AbstractWdkService.getErrorContext(context, request, wdkModel, ErrorLocation.WDK_SERVICE);
       LOG.error("log4j marker: " + errorContext.getLogMarker());
       Events.trigger(new ErrorEvent(new ServerErrorBundle(other), errorContext));
       return logResponse(e, Response.serverError()

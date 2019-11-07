@@ -1308,7 +1308,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return categories;
   }
 
-  public Map<String, SearchCategory> getRootCategories(String usedBy) {
+  public Map<String, SearchCategory> getRootCategories() {
 
     Map<String, SearchCategory> roots = new LinkedHashMap<>();
     for (SearchCategory root : rootCategoryMap.values()) {

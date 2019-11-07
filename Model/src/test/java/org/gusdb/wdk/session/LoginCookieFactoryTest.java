@@ -8,6 +8,8 @@ import static org.junit.Assert.assertTrue;
 
 import javax.servlet.http.Cookie;
 
+import org.gusdb.fgputil.web.CookieBuilder;
+import org.gusdb.wdk.controller.filter.CheckLoginFilter;
 import org.gusdb.wdk.session.LoginCookieFactory;
 import org.gusdb.wdk.session.LoginCookieFactory.LoginCookieParts;
 import org.junit.Test;
@@ -28,16 +30,16 @@ public class LoginCookieFactoryTest {
   public void testFindCookie() {
     Cookie c;
     // test null
-    c = LoginCookieFactory.findLoginCookie(null);
+    c = CheckLoginFilter.findLoginCookie(null);
     assertNull(c);
     // test empty list
-    c = LoginCookieFactory.findLoginCookie(new Cookie[0]);
+    c = CheckLoginFilter.findLoginCookie(new Cookie[0]);
     assertNull(c);
     // test list not containing cookie
-    c = LoginCookieFactory.findLoginCookie(BAD_LIST);
+    c = CheckLoginFilter.findLoginCookie(BAD_LIST);
     assertNull(c);
     // test list not containing cookie
-    c = LoginCookieFactory.findLoginCookie(GOOD_LIST);
+    c = CheckLoginFilter.findLoginCookie(GOOD_LIST);
     assertNotNull(c);
     assertEquals(c.getName(), LoginCookieFactory.WDK_LOGIN_COOKIE_NAME);
   }
@@ -93,7 +95,7 @@ public class LoginCookieFactoryTest {
   public void testCreateCookie() throws Exception {
     LoginCookieFactory factory = new LoginCookieFactory(SECRET_KEY);
     for (String[] data : COOKIE_CASES) {
-      Cookie c = factory.createLoginCookie(data[0], Boolean.parseBoolean(data[1]));
+      CookieBuilder c = factory.createLoginCookie(data[0], Boolean.parseBoolean(data[1]));
       assertEquals(c.getMaxAge(), Integer.parseInt(data[2]));
       assertEquals(c.getValue(), data[3]);
       assertEquals(c.getPath(), COOKIE_PATH);

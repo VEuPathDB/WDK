@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.NotFoundException;
@@ -23,6 +22,7 @@ import javax.ws.rs.core.Response;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.web.SessionProxy;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -97,7 +97,7 @@ public class TemporaryFileService extends AbstractWdkService {
   }
 
   private void addTempFileToSession(TemporaryFileMetadata tempFileMetadata) {
-    HttpSession session = getSession();
+    SessionProxy session = getSession();
     @SuppressWarnings("unchecked")
     Map<String, TemporaryFileMetadata> tempFilesInSession = (Map<String, TemporaryFileMetadata>)(session.getAttribute(TEMP_FILE_METADATA));
     if (tempFilesInSession == null) {
@@ -121,7 +121,7 @@ public class TemporaryFileService extends AbstractWdkService {
     java.nio.file.Path path = optPath.orElseThrow(() -> new NotFoundException(
         "Temporary file with ID " + tempFileName + " is not found in this user's session"));
 
-    HttpSession session = getSession();
+    SessionProxy session = getSession();
     @SuppressWarnings("unchecked")
     Map<String, TemporaryFileMetadata> tempFilesInSession = (Map<String, TemporaryFileMetadata>)(session.getAttribute(TEMP_FILE_METADATA));
     if (tempFilesInSession != null) {
@@ -150,7 +150,7 @@ public class TemporaryFileService extends AbstractWdkService {
    *
    * @return a factory function for looking up temporary file paths by name
    */
-  public static Function<String, Optional<java.nio.file.Path>> getTempFileFactory(WdkModel wdkModel, HttpSession session) {
+  public static Function<String, Optional<java.nio.file.Path>> getTempFileFactory(WdkModel wdkModel, SessionProxy session) {
     java.nio.file.Path tempDirPath = wdkModel.getModelConfig().getWdkTempDir();
 
     return tempFileName -> {
@@ -183,7 +183,7 @@ public class TemporaryFileService extends AbstractWdkService {
    * (having been put there by the temp file service).  If the metadata is not
    * found in the session, return empty optional.
    */
-  public static Optional<TemporaryFileMetadata> getTempFileMetadata(String tempFileName, HttpSession session) {
+  public static Optional<TemporaryFileMetadata> getTempFileMetadata(String tempFileName, SessionProxy session) {
     @SuppressWarnings("unchecked")
     Map<String, TemporaryFileMetadata> tempFilesInSession = (Map<String, TemporaryFileMetadata>)(session.getAttribute(TEMP_FILE_METADATA));
 

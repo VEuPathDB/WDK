@@ -1,5 +1,13 @@
 package org.gusdb.wdk.service.service.search;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
@@ -8,12 +16,6 @@ import org.gusdb.wdk.service.service.QuestionService;
 import org.gusdb.wdk.service.service.RecordService;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import javax.servlet.ServletContext;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Path(SearchColumnService.COLUMNS_PATH)
 public class SearchColumnService extends AbstractWdkService {
@@ -30,10 +32,8 @@ public class SearchColumnService extends AbstractWdkService {
 
   public SearchColumnService(
     @PathParam(RecordService.RECORD_TYPE_PATH_PARAM) final String recordType,
-    @PathParam(QuestionService.SEARCH_PATH_PARAM) final String searchType,
-    @Context ServletContext ctx
+    @PathParam(QuestionService.SEARCH_PATH_PARAM) final String searchType
   ) {
-    setServletContext(ctx);
     this.search = getQuestionOrNotFound(recordType, searchType);
   }
 

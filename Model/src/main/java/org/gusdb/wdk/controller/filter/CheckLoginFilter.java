@@ -17,14 +17,16 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.fgputil.web.CookieBuilder;
+import org.gusdb.fgputil.web.HttpSessionProxy;
 import org.gusdb.wdk.events.NewUserEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
+import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
-import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.session.LoginCookieFactory;
 import org.gusdb.wdk.session.LoginCookieFactory.LoginCookieParts;
 
@@ -125,7 +127,7 @@ public class CheckLoginFilter implements Filter {
 
         try {
           // determine actions based on state
-          Cookie cookieToSend = null;
+          CookieBuilder cookieToSend = null;
           User userToSet = null;
           switch (stateBundle.getCurrentState()) {
             case REGISTERED_USER_BAD_COOKIE:
@@ -155,17 +157,17 @@ public class CheckLoginFilter implements Filter {
   
           // take action as needed
           if (cookieToSend != null) {
-            response.addCookie(cookieToSend);
+            response.addCookie(cookieToSend.toHttpCookie());
           }
           if (userToSet != null) {
             session.setAttribute(Utilities.WDK_USER_KEY, userToSet);
-            Events.triggerAndWait(new NewUserEvent(userToSet, stateBundle.getSessionUser(), session),
+            Events.triggerAndWait(new NewUserEvent(userToSet, stateBundle.getSessionUser(), new HttpSessionProxy(session)),
                 new WdkRuntimeException("Unable to complete WDK user assignement."));
           }
         }
         catch (Exception ex) {
           LOG.error("Caught exception while checking login cookie: " + ex);
-          response.addCookie(LoginCookieFactory.createLogoutCookie());
+          response.addCookie(LoginCookieFactory.createLogoutCookie().toHttpCookie());
           throw new ServletException("Unable to complete check-login process", ex);
         }
       }
@@ -183,7 +185,7 @@ public class CheckLoginFilter implements Filter {
     boolean isGuestUser = (userPresent ? wdkUser.isGuest() : false);
 
     // figure out what's going on with the cookie
-    Cookie loginCookie = LoginCookieFactory.findLoginCookie(request.getCookies());
+    Cookie loginCookie = findLoginCookie(request.getCookies());
     boolean cookiePresent = (loginCookie != null);
     LoginCookieParts cookieParts = null;
     boolean cookieValid = false, cookieMatches = false;
@@ -204,6 +206,15 @@ public class CheckLoginFilter implements Filter {
     return new StateBundle(state, wdkUser, cookieValid ? cookieParts.getUsername() : null);
   }
 
+  public static Cookie findLoginCookie(Cookie[] cookies) {
+    for (Cookie cookie : cookies) {
+      if (cookie.getName().equals(LoginCookieFactory.WDK_LOGIN_COOKIE_NAME)) {
+        return cookie;
+      }
+    }
+    return null;
+  }
+  
   @Override
   public void destroy() {
     this._context = null;

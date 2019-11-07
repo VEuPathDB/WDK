@@ -9,7 +9,6 @@ import static org.gusdb.wdk.service.service.AnswerService.REPORT_NAME_PATH_PARAM
 
 import java.util.function.Supplier;
 
-import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -17,7 +16,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -70,10 +68,8 @@ public class ColumnReporterService extends AbstractWdkService {
   public ColumnReporterService(
     @PathParam(RecordService.RECORD_TYPE_PATH_PARAM) final String recordType,
     @PathParam(QuestionService.SEARCH_PATH_PARAM) final String searchType,
-    @PathParam(SearchColumnService.COLUMN_PATH_PARAM) final String columnName,
-    @Context ServletContext ctx
+    @PathParam(SearchColumnService.COLUMN_PATH_PARAM) final String columnName
   ) {
-    setServletContext(ctx);
     this.search = getQuestionOrNotFound(recordType, searchType);
     this.column = requireColumn(this.search, columnName);
   }

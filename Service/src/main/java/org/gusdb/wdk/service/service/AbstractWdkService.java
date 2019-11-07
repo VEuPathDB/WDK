@@ -1,34 +1,35 @@
 package org.gusdb.wdk.service.service;
 
+import static java.lang.String.format;
 import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
+import org.glassfish.grizzly.http.server.Request;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.events.Events;
-import org.gusdb.fgputil.web.HttpRequestData;
+import org.gusdb.fgputil.web.ApplicationContext;
+import org.gusdb.fgputil.web.RequestData;
+import org.gusdb.fgputil.web.SessionProxy;
 import org.gusdb.wdk.errors.ErrorContext;
 import org.gusdb.wdk.errors.ErrorContext.ErrorLocation;
 import org.gusdb.wdk.errors.ServerErrorBundle;
-import org.gusdb.wdk.errors.ValueMaps;
-import org.gusdb.wdk.errors.ValueMaps.RequestAttributeValueMap;
-import org.gusdb.wdk.errors.ValueMaps.ServletContextValueMap;
-import org.gusdb.wdk.errors.ValueMaps.SessionAttributeValueMap;
 import org.gusdb.wdk.events.ErrorEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -38,9 +39,8 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.service.ContextLookup;
 import org.gusdb.wdk.service.UserBundle;
-
-import static java.lang.String.format;
 
 /**
  * This class serves as a superclass for WDK JAX-RS services.  It provides a
@@ -79,22 +79,33 @@ public abstract class AbstractWdkService {
   }
 
   @Context
-  private HttpServletRequest _request;
+  private ServletContext _servletContext;
+
+  @Context
+  private HttpServletRequest _servletRequest;
+
+  @Context
+  private Request _grizzlyRequest;
 
   @Context
   private UriInfo _uriInfo;
 
-  private ServletContext _servletContext;
-  private WdkModel _wdkModel;
-  private String _serviceUrlSegment;
+  @Context
+  private HttpHeaders _headers;
+
+  private WdkModel _testWdkModel;
 
   // public setter for unit tests
   public void testSetup(WdkModel wdkModel) {
-    _wdkModel = wdkModel;
+    _testWdkModel = wdkModel;
   }
 
   public WdkModel getWdkModel() {
-    return _wdkModel;
+    return _testWdkModel != null ? _testWdkModel : ContextLookup.getWdkModel(_servletContext);
+  }
+
+  public RequestData getRequest() {
+    return ContextLookup.getRequest(_servletRequest, _grizzlyRequest);
   }
 
   protected UriInfo getUriInfo() {
@@ -102,52 +113,32 @@ public abstract class AbstractWdkService {
   }
 
   protected String getContextUri() {
-    int port = _request.getServerPort();
-    String portPart = port == 80 || port == 443 ? "" : ":" + port;
-    return (
-      _request.getScheme() + "://" +
-      _request.getServerName() + portPart +
-      _request.getContextPath()
-    );
-  }
-
-  protected String getContextPath() {
-    return _request.getContextPath();
-  }
-
-  protected String getScheme() {
-    return _request.getScheme();
+    return getRequest().getContextUri();
   }
 
   protected String getServiceUri() {
-    return getContextUri() + _serviceUrlSegment;
+    return getContextUri() + getServiceUrlSegment();
   }
 
-  protected Cookie[] getCookies() {
-    return _request.getCookies();
+  private String getServiceUrlSegment() {
+    return ContextLookup.getApplicationContext(_servletContext)
+        .getInitParameter(Utilities.WDK_SERVICE_ENDPOINT_KEY);
+  }
+
+  protected Map<String, Cookie> getRequestCookies() {
+    return _headers.getCookies();
   }
 
   protected Map<String, List<String>> getHeaders() {
-    Map<String, List<String>> headers = new HashMap<>();
-    Enumeration<String> headerNames = _request.getHeaderNames();
-    while (headerNames.hasMoreElements()) {
-      String headerName = headerNames.nextElement();
-      Enumeration<String> headerValues = _request.getHeaders(headerName);
-      List<String> values = new ArrayList<>();
-      while (headerValues.hasMoreElements()) {
-        values.add(headerValues.nextElement());
-      }
-      headers.put(headerName, values);
-    }
-    return headers;
+    return _headers.getRequestHeaders();
   }
 
-  protected HttpSession getSession() {
-    return _request.getSession();
+  protected SessionProxy getSession() {
+    return getRequest().getSession();
   }
 
   protected User getSessionUser() {
-    return (User) _request.getSession().getAttribute(Utilities.WDK_USER_KEY);
+    return (User) getRequest().getSession().getAttribute(Utilities.WDK_USER_KEY);
   }
 
   protected boolean isSessionUserAdmin() {
@@ -159,13 +150,6 @@ public abstract class AbstractWdkService {
     if (!isSessionUserAdmin()) {
       throw new ForbiddenException("Administrative access is required for this function.");
     }
-  }
-
-  @Context
-  protected void setServletContext(ServletContext context) {
-    _servletContext = context;
-    _wdkModel = (WdkModel) context.getAttribute(Utilities.WDK_MODEL_KEY);
-    _serviceUrlSegment = context.getInitParameter(Utilities.WDK_SERVICE_ENDPOINT_KEY);
   }
 
   /**
@@ -199,7 +183,7 @@ public abstract class AbstractWdkService {
    * @return error context for the current request
    */
   public ErrorContext getErrorContext(ErrorLocation errorLocation) {
-    return getErrorContext(_servletContext, _request, _wdkModel, errorLocation);
+    return getErrorContext(ContextLookup.getApplicationContext(_servletContext), getRequest(), getWdkModel(), errorLocation);
   }
 
   /**
@@ -210,14 +194,14 @@ public abstract class AbstractWdkService {
    * @param wdkModel this WDK Model
    * @return context data for this error
    */
-  public static ErrorContext getErrorContext(ServletContext context,
-          HttpServletRequest request, WdkModel wdkModel, ErrorLocation errorLocation) {
+  public static ErrorContext getErrorContext(ApplicationContext context,
+          RequestData request, WdkModel wdkModel, ErrorLocation errorLocation) {
     return new ErrorContext(
       wdkModel,
-      new HttpRequestData(request),
-      ValueMaps.toMap(new ServletContextValueMap(context)),
-      ValueMaps.toMap(new RequestAttributeValueMap(request)),
-      ValueMaps.toMap(new SessionAttributeValueMap(request.getSession())),
+      request,
+      context,
+      request.getAttributeMap(),
+      request.getSession().getAttributeMap(),
       errorLocation);
   }
 

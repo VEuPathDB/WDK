@@ -11,11 +11,11 @@ public class ApplicationInitListener implements ServletContextListener {
 
   @Override
   public void contextInitialized(ServletContextEvent sce) {
-    WdkInitializer.initializeWdk(sce.getServletContext());
+    WdkInitializer.initializeWdk(new ServletApplicationContext(sce.getServletContext()));
   }
 
   @Override
   public void contextDestroyed(ServletContextEvent sce) {
-    WdkInitializer.terminateWdk(sce.getServletContext());
+    WdkInitializer.terminateWdk(new ServletApplicationContext(sce.getServletContext()));
   }
 }
