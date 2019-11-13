@@ -63,9 +63,7 @@ public class CheckLoginFilter implements Filter {
     if (cookies != null) {
       for (Cookie cookie : cookies) {
         if (cookie.getName().equals(LoginCookieFactory.WDK_LOGIN_COOKIE_NAME)) {
-          return Optional.of(new CookieBuilder(cookie.getName(), cookie.getValue())
-              .setMaxAge(cookie.getMaxAge())
-              .setPath(cookie.getPath()));
+          return Optional.of(new CookieBuilder(cookie.getName(), cookie.getValue()));
         }
       }
     }

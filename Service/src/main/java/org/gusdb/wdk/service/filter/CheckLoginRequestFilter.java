@@ -55,7 +55,6 @@ public class CheckLoginRequestFilter implements ContainerRequestFilter {
 
   private Optional<CookieBuilder> findLoginCookie(Map<String, Cookie> cookies) {
     return Optional.ofNullable(cookies.get(LoginCookieFactory.WDK_LOGIN_COOKIE_NAME))
-        .map(cookie -> new CookieBuilder(cookie.getName(), cookie.getValue())
-            .setPath(cookie.getPath()));
+        .map(cookie -> new CookieBuilder(cookie.getName(), cookie.getValue()));
   }
 }
