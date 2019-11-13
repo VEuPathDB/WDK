@@ -122,6 +122,7 @@ public class JsonKeys {
 
   // question plugin keys
   public static final String DEFAULT_SUMMARY_VIEW = "defaultSummaryView";
+  public static final String NO_SUMMARY_ON_SINGLE_RECORD = "noSummaryOnSingleRecord";
   public static final String DEFAULT_SORTING = "defaultSorting";
   public static final String SUMMARY_VIEW_PLUGINS = "summaryViewPlugins";
   public static final String STEP_ANALYSIS_PLUGINS = "stepAnalysisPlugins";

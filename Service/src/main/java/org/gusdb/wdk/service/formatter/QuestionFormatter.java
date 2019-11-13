@@ -89,6 +89,7 @@ public class QuestionFormatter {
         .put(JsonKeys.ALLOWED_SECONDARY_INPUT_RECORD_CLASS_NAMES, getAllowedRecordClasses(q.getQuery().getSecondaryAnswerParam()))
         .put(JsonKeys.QUERY_NAME, q.getQuery().getName())
         .put(JsonKeys.FILTERS, getFiltersJson(q.getFilters()))
+        .put(JsonKeys.NO_SUMMARY_ON_SINGLE_RECORD, q.isNoSummaryOnSingleRecord())
         .put(JsonKeys.PROPERTIES, q.getPropertyLists()),
       Collections.emptySet()
     );

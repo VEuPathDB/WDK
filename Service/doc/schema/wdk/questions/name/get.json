@@ -41,6 +41,9 @@
     "defaultSummaryView": {
       "type": "string"
     },
+    "noSummaryOnSingleRecord": {
+      "type": "boolean"
+    },
     "description": {
       "type": "string"
     },
@@ -218,6 +221,7 @@
     "defaultSorting",
     "dynamicAttributes",
     "defaultSummaryView",
+    "noSummaryOnSingleRecord",
     "summaryViewPlugins",
     "filters",
     "isAnalyzable",
