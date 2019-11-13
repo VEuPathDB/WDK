@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.provider;
 
 import static org.gusdb.wdk.service.formatter.ValidationFormatter.getValidationBundleJson;
 
+import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
@@ -40,9 +41,14 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
 
   private static final Logger LOG = Logger.getLogger(ExceptionMapper.class);
 
-  @Context HttpServletRequest _servletRequest;
-  @Context Request _grizzlyRequest;
-  @Context ServletContext _servletContext;
+  @Context
+  private ServletContext _servletContext;
+
+  @Inject
+  private javax.inject.Provider<HttpServletRequest> _servletRequest;
+
+  @Inject
+  private javax.inject.Provider<Request> _grizzlyRequest;
 
   @Override
   public Response toResponse(Exception e) {
@@ -89,7 +95,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     catch (Exception other) {
       ApplicationContext context = ContextLookup.getApplicationContext(_servletContext);
       WdkModel wdkModel = ContextLookup.getWdkModel(_servletContext);
-      RequestData request = ContextLookup.getRequest(_servletRequest, _grizzlyRequest);
+      RequestData request = ContextLookup.getRequest(_servletRequest.get(), _grizzlyRequest.get());
       ErrorContext errorContext = AbstractWdkService.getErrorContext(context, request, wdkModel, ErrorLocation.WDK_SERVICE);
       LOG.error("log4j marker: " + errorContext.getLogMarker());
       Events.trigger(new ErrorEvent(new ServerErrorBundle(other), errorContext));

@@ -10,10 +10,11 @@ import org.gusdb.fgputil.server.GrizzlyRequestData;
 import org.gusdb.fgputil.server.GrizzlySessionProxy;
 import org.gusdb.fgputil.server.RESTServer;
 import org.gusdb.fgputil.web.ApplicationContext;
-import org.gusdb.fgputil.web.HttpRequestData;
-import org.gusdb.fgputil.web.HttpSessionProxy;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.fgputil.web.SessionProxy;
+import org.gusdb.fgputil.web.servlet.HttpRequestData;
+import org.gusdb.fgputil.web.servlet.HttpServletApplicationContext;
+import org.gusdb.fgputil.web.servlet.HttpSessionProxy;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 
@@ -23,14 +24,14 @@ public class ContextLookup {
   public static ApplicationContext getApplicationContext(ServletContext servletContext) {
     return servletContext == null ?
         RESTServer.getApplicationContext() :
-        new ServletApplicationContext(servletContext);
+        new HttpServletApplicationContext(servletContext);
   }
 
   public static WdkModel getWdkModel(ServletContext servletContext) {
     ApplicationContext context =
       servletContext == null ? // not injected
       RESTServer.getApplicationContext() :
-      new ServletApplicationContext(servletContext);
+      new HttpServletApplicationContext(servletContext);
     return (WdkModel)context.get(Utilities.WDK_MODEL_KEY);
   }
 
