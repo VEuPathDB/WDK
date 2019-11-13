@@ -40,6 +40,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.service.UserBundle;
 
 /**
@@ -95,6 +96,10 @@ public abstract class AbstractWdkService {
 
   private WdkModel _testWdkModel;
 
+  // used to cache a guest user ONLY if one is not present in the session
+  // NOTE: this is a temporary hack to support Grizzly use of the WDK service
+  private User _cachedSessionUser;
+
   // public setter for unit tests
   public void testSetup(WdkModel wdkModel) {
     _testWdkModel = wdkModel;
@@ -138,7 +143,17 @@ public abstract class AbstractWdkService {
   }
 
   protected User getSessionUser() {
-    return (User) getRequest().getSession().getAttribute(Utilities.WDK_USER_KEY);
+    User user = (User) getRequest().getSession().getAttribute(Utilities.WDK_USER_KEY);
+    if (user != null) {
+      // NOTE: user should ALWAYS be non-null in servlet containers with CheckLoginFilter active
+      return user;
+    }
+    // used to cache a guest user ONLY if one is not present in the session
+    // NOTE: this is a temporary hack to support Grizzly use of the WDK service
+    if (_cachedSessionUser == null) {
+      _cachedSessionUser = getWdkModel().getUserFactory().createUnregistedUser(UnregisteredUserType.GUEST);
+    }
+    return _cachedSessionUser;
   }
 
   protected boolean isSessionUserAdmin() {

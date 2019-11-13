@@ -45,10 +45,12 @@ public class CheckLoginFilter implements Filter {
     ApplicationContext context = ContextLookup.getApplicationContext(_context);
     RequestData requestData = new HttpRequestData(request);
 
+    // note this is not a pure function and may add/change the user on the session
     Optional<CookieBuilder> newCookie =
         CheckLoginFilterShared.calculateUserActions(
             findLoginCookie(request.getCookies()), context, requestData.getSession());
 
+    // add/replace user cookie
     if (newCookie.isPresent()) {
       response.addCookie(newCookie.get().toHttpCookie());
     }
