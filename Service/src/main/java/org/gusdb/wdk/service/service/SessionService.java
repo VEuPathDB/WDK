@@ -66,7 +66,6 @@ public class SessionService extends AbstractWdkService {
   private static final String EMAIL_KEY = "email";
 
   // redirect URLs
-  private static final String ALREADY_LOGGED_IN_URL = "/showApplicaton.do";
   private static final String OAUTH_ERROR_URL = "/app/user/message/login-error?requestUrl=";
 
   @GET
@@ -89,7 +88,7 @@ public class SessionService extends AbstractWdkService {
     // Is the user already logged in?
     User oldUser = getSessionUser();
     if (!oldUser.isGuest()) {
-      return createRedirectResponse(appUrl + ALREADY_LOGGED_IN_URL).build();
+      return createRedirectResponse(redirectUrl).build();
     }
 
     try {
@@ -156,7 +155,7 @@ public class SessionService extends AbstractWdkService {
       // Is the user already logged in?
       User oldUser = getSessionUser();
       if (!oldUser.isGuest()) {
-        return createRedirectResponse(appUrl + ALREADY_LOGGED_IN_URL).build();
+        return createRedirectResponse(redirectUrl).build();
       }
 
       // log in the user
