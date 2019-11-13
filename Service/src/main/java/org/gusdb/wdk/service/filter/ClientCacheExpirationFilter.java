@@ -13,7 +13,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.gusdb.wdk.service.ContextLookup;
+import org.gusdb.wdk.controller.ContextLookup;
 
 @Priority(40)
 public class ClientCacheExpirationFilter implements ContainerRequestFilter {

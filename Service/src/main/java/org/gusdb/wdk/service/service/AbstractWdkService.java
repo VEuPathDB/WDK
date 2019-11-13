@@ -27,6 +27,7 @@ import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.ApplicationContext;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.fgputil.web.SessionProxy;
+import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.errors.ErrorContext;
 import org.gusdb.wdk.errors.ErrorContext.ErrorLocation;
 import org.gusdb.wdk.errors.ServerErrorBundle;
@@ -39,7 +40,6 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.service.ContextLookup;
 import org.gusdb.wdk.service.UserBundle;
 
 /**

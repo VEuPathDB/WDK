@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Optional;
+
 import javax.servlet.http.Cookie;
 
 import org.gusdb.fgputil.web.CookieBuilder;
@@ -28,7 +30,7 @@ public class LoginCookieFactoryTest {
   
   @Test
   public void testFindCookie() {
-    Cookie c;
+    Optional<CookieBuilder> c;
     // test null
     c = CheckLoginFilter.findLoginCookie(null);
     assertNull(c);
@@ -41,7 +43,7 @@ public class LoginCookieFactoryTest {
     // test list not containing cookie
     c = CheckLoginFilter.findLoginCookie(GOOD_LIST);
     assertNotNull(c);
-    assertEquals(c.getName(), LoginCookieFactory.WDK_LOGIN_COOKIE_NAME);
+    assertEquals(c.get().getName(), LoginCookieFactory.WDK_LOGIN_COOKIE_NAME);
   }
 
   public static final String[] EXCEPTION_CASES = {
