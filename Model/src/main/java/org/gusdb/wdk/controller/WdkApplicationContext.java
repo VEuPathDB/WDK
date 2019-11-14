@@ -7,6 +7,15 @@ import org.gusdb.wdk.model.Utilities;
 
 public class WdkApplicationContext extends BasicApplicationContext {
 
+  private static final String DEFAULT_SERVICE_ENDPOINT = "";
+
+  public WdkApplicationContext(
+      String gusHome,
+      String projectId
+  ) {
+    this(gusHome, projectId, DEFAULT_SERVICE_ENDPOINT);
+  }
+
   public WdkApplicationContext(
       String gusHome,
       String projectId,
