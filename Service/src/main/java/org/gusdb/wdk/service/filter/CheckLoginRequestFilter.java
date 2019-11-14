@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.Priority;
+import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -12,7 +14,6 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
-import javax.ws.rs.ext.Provider;
 
 import org.glassfish.grizzly.http.server.Request;
 import org.gusdb.fgputil.web.ApplicationContext;
@@ -22,7 +23,6 @@ import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.controller.filter.CheckLoginFilterShared;
 import org.gusdb.wdk.session.LoginCookieFactory;
 
-@Provider
 @PreMatching
 @Priority(10)
 public class CheckLoginRequestFilter implements ContainerRequestFilter {
@@ -32,17 +32,17 @@ public class CheckLoginRequestFilter implements ContainerRequestFilter {
   @Context
   ServletContext _servletContext;
 
-  @Context
-  HttpServletRequest _servletRequest;
+  @Inject
+  private Provider<HttpServletRequest> _servletRequest;
 
-  @Context
-  Request _grizzlyRequest;
+  @Inject
+  private Provider<Request> _grizzlyRequest;
 
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
 
     ApplicationContext context = ContextLookup.getApplicationContext(_servletContext);
-    RequestData request = ContextLookup.getRequest(_servletRequest, _grizzlyRequest);
+    RequestData request = ContextLookup.getRequest(_servletRequest.get(), _grizzlyRequest.get());
 
     Optional<CookieBuilder> newCookie =
         CheckLoginFilterShared.calculateUserActions(
