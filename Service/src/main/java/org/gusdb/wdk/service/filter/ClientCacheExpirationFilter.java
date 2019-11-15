@@ -15,7 +15,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.gusdb.wdk.controller.ContextLookup;
 
-@Priority(40)
+@Priority(50)
 public class ClientCacheExpirationFilter implements ContainerRequestFilter {
 
   private static final String CLIENT_WDK_TIMESTAMP_HEADER = "x-client-wdk-timestamp";

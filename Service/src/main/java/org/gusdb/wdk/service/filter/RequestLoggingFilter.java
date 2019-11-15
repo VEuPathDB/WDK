@@ -22,7 +22,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@Priority(30)
+@Priority(200)
 public class RequestLoggingFilter implements ContainerRequestFilter {
 
   private static final Logger LOG = Logger.getLogger(RequestLoggingFilter.class);

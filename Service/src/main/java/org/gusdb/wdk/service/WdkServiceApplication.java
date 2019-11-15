@@ -10,12 +10,16 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.gusdb.fgputil.SetBuilder;
+import org.gusdb.wdk.service.filter.CheckLoginRequestFilter;
+import org.gusdb.wdk.service.filter.CheckLoginResponseFilter;
 import org.gusdb.wdk.service.filter.ClientCacheExpirationFilter;
+import org.gusdb.wdk.service.filter.MDCRequestFilter;
+import org.gusdb.wdk.service.filter.MDCResponseFilter;
 import org.gusdb.wdk.service.filter.MethodRewritingFilter;
+import org.gusdb.wdk.service.filter.RequestCompleteFilter;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.provider.ExceptionMapper;
 import org.gusdb.wdk.service.provider.JsonSchemaProvider;
-import org.gusdb.wdk.service.provider.LoggingWriterInterceptor;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.ClientErrorReportingService;
 import org.gusdb.wdk.service.service.OAuthService;
@@ -67,11 +71,15 @@ public class WdkServiceApplication extends Application {
     // add provider classes
     .add(JsonSchemaProvider.class)
     .add(ExceptionMapper.class)
-    .add(LoggingWriterInterceptor.class)
 
     // add filter classes
+    .add(CheckLoginRequestFilter.class)
+    .add(CheckLoginResponseFilter.class)
+    .add(MDCRequestFilter.class)
+    .add(MDCResponseFilter.class)
     .add(MethodRewritingFilter.class)
     .add(RequestLoggingFilter.class)
+    .add(RequestCompleteFilter.class)
     .add(ClientCacheExpirationFilter.class)
     .addIf(compressResponses(), EncodingFilter.class)
 
