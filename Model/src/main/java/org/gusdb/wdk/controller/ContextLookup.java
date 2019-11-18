@@ -22,17 +22,24 @@ public class ContextLookup {
 
 
   public static ApplicationContext getApplicationContext(ServletContext servletContext) {
-    return servletContext == null ?
-        RESTServer.getApplicationContext() :
-        new HttpServletApplicationContext(servletContext);
+    // first try to create application context from servlet context
+    if (servletContext != null) {
+      return new HttpServletApplicationContext(servletContext);
+    }
+    // if servlet context not present, then get application context from RESTServer
+    ApplicationContext context = RESTServer.getApplicationContext();
+    if (context == null) {
+      throw new IllegalStateException("Neither Servlet nor Grizzly application context was configured.");
+    }
+    return context;
+  }
+
+  public static WdkModel getWdkModel(ApplicationContext context) {
+    return (WdkModel)context.get(Utilities.WDK_MODEL_KEY);
   }
 
   public static WdkModel getWdkModel(ServletContext servletContext) {
-    ApplicationContext context =
-      servletContext == null ? // not injected
-      RESTServer.getApplicationContext() :
-      new HttpServletApplicationContext(servletContext);
-    return (WdkModel)context.get(Utilities.WDK_MODEL_KEY);
+    return getWdkModel(getApplicationContext(servletContext));
   }
 
   public static RequestData getRequest(HttpServletRequest servletRequest, Request grizzlyRequest) {
@@ -43,10 +50,6 @@ public class ContextLookup {
         new GrizzlyRequestData(grizzlyRequest) :
         new HttpRequestData(servletRequest);
       
-  }
-
-  public static WdkModel getWdkModel(ApplicationContext context) {
-    return (WdkModel)context.get(Utilities.WDK_MODEL_KEY);
   }
 
   public static SessionProxy getSession(HttpSession servletSession, Session grizzlySession) {
