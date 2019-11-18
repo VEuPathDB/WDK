@@ -36,16 +36,26 @@ public class ColumnFilterService extends AbstractWdkService {
   private static final String ERR_404 =
     "Column \"%s\" does not have a filter named \"%s\".";
 
-  private final Question search;
-  private final AttributeField column;
+  private final String _recordType;
+  private final String _searchName;
+  private final String _columnName;
 
   public ColumnFilterService(
     @PathParam(RecordService.RECORD_TYPE_PATH_PARAM) final String recordType,
-    @PathParam(QuestionService.SEARCH_PATH_PARAM) final String searchType,
+    @PathParam(QuestionService.SEARCH_PATH_PARAM) final String searchName,
     @PathParam(SearchColumnService.COLUMN_PATH_PARAM) final String columnName
   ) {
-    this.search = getQuestionOrNotFound(recordType, searchType);
-    this.column = requireColumn(this.search, columnName);
+    _recordType = recordType;
+    _searchName = searchName;
+    _columnName = columnName;
+  }
+
+  private Question getQuestion() {
+    return getQuestionOrNotFound(_recordType, _searchName);
+  }
+
+  private AttributeField getColumn() {
+    return requireColumn(getQuestion(), _columnName);
   }
 
   /**
@@ -57,7 +67,7 @@ public class ColumnFilterService extends AbstractWdkService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray getFilters() {
-    return new JSONArray(this.column.getColumnFilterNames());
+    return new JSONArray(getColumn().getColumnFilterNames());
   }
 
   /**
@@ -74,12 +84,13 @@ public class ColumnFilterService extends AbstractWdkService {
   @Path(COLUMN_FILTER_PARAM_SEGMENT)
   @Produces(MediaType.APPLICATION_JSON)
   public Object getFilterDetails(@PathParam(COLUMN_FILTER_PATH_PARAM) final String filter) {
+    AttributeField column = getColumn();
     return column.getFilter(filter)
       .orElseThrow(makeNotFound(filter))
       .getInputSpec(column.getDataType());
   }
 
   private Supplier<NotFoundException> makeNotFound(final String name) {
-    return () -> new NotFoundException(format(ERR_404, column.getName(), name));
+    return () -> new NotFoundException(format(ERR_404, getColumn().getName(), name));
   }
 }

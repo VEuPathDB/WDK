@@ -8,7 +8,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
-import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
 import org.gusdb.wdk.service.service.AbstractWdkService;
@@ -28,13 +27,15 @@ public class SearchColumnService extends AbstractWdkService {
     COLUMNS_PATH = QuestionService.NAMED_SEARCH_PATH + "/" + COLUMNS_SEGMENT,
     NAMED_COLUMN_PATH = QuestionService.NAMED_SEARCH_PATH + NAMED_COLUMN_SEGMENT_PAIR;
 
-  private final Question search;
+  private final String _recordType;
+  private final String _searchName;
 
   public SearchColumnService(
     @PathParam(RecordService.RECORD_TYPE_PATH_PARAM) final String recordType,
-    @PathParam(QuestionService.SEARCH_PATH_PARAM) final String searchType
+    @PathParam(QuestionService.SEARCH_PATH_PARAM) final String searchName
   ) {
-    this.search = getQuestionOrNotFound(recordType, searchType);
+    _recordType = recordType;
+    _searchName = searchName;
   }
 
   @GET
@@ -43,7 +44,7 @@ public class SearchColumnService extends AbstractWdkService {
     @QueryParam("format") final String format
   ) {
     return AttributeFieldFormatter.getAttributesJson(
-      this.search.getAttributeFieldMap().values(),
+      getQuestionOrNotFound(_recordType, _searchName).getAttributeFieldMap().values(),
       FieldScope.ALL,
       "expanded".equals(format)
     );
@@ -53,6 +54,7 @@ public class SearchColumnService extends AbstractWdkService {
   @Path(COLUMN_PARAM_SEGMENT)
   @Produces(APPLICATION_JSON)
   public JSONObject getColumn(@PathParam(COLUMN_PATH_PARAM) final String col) {
-    return AttributeFieldFormatter.getAttributeJson(requireColumn(search, col));
+    return AttributeFieldFormatter.getAttributeJson(
+        requireColumn(getQuestionOrNotFound(_recordType, _searchName), col));
   }
 }
