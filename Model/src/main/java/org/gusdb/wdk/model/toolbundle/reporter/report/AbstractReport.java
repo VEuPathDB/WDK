@@ -219,6 +219,7 @@ public abstract class AbstractReport<T extends Comparable<T>> {
    * @param add
    *   the byte size of the last value to be appended to this report.
    */
+  // FIXME: this method is not called because its use is disabled- was causing problems for org filter.  FIX!
   private void limiter(int add) {
     bytes += padSize(add + JvmUtil.OBJECT_HEADER_SIZE + Long.BYTES);
 

@@ -36,9 +36,7 @@ import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
-import org.gusdb.fgputil.functional.Either;
 import org.gusdb.fgputil.functional.Functions;
-import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.StepCopiedEvent;
@@ -48,14 +46,11 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersDbColumnFormat;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
-import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -177,28 +172,6 @@ public class StepFactory {
     insertStep(step);
 
     return step.getSemanticallyValid().getLeft();
-  }
-
-  // RRD 4/2019: Though not called anywhere, leaving this method here because I
-  //   think once we start writing the client, we may have a use case to call it.
-  private static Either<Integer, Exception> tryEstimateSize(RunnableObj<Step> runnableStep) {
-    try {
-      Step step = runnableStep.get();
-      User user = step.getUser();
-      String questionFullName = step.getAnswerSpec().getQuestion().getFullName();
-      AnswerValue answerValue = AnswerValueFactory.makeAnswer(user, step.getAnswerSpec().getRunnable().getLeft());
-
-      QueryInstance<?> qi = answerValue.getIdsQueryInstance();
-      LOG.debug("id query name  :" + (qi == null ? "<no_query_specified>" : qi.getQuery().getFullName()));
-      LOG.debug("answer checksum:" + answerValue.getChecksum());
-      LOG.debug("question name:  " + questionFullName);
-      int estimateSize = answerValue.getResultSizeFactory().getDisplayResultSize();
-      return new Either<>(estimateSize, null);
-    }
-    catch (Exception e) {
-      LOG.error("Creating step failed", e);
-      return new Either<>(null, e);
-    }
   }
 
   public long getNewStepId() throws WdkModelException {

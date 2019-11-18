@@ -723,6 +723,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
       return () -> new WdkModelException(String.format(LINK_TO_DEAD_DS, targetId, link.datasetId, link.externalUserId));
     }
 
+    // TODO: determine if this method is still needed
     static WdkModelException illegalPath(final Path path) {
       return new WdkModelException(String.format(ILLEGAL_PATH, path));
     }
