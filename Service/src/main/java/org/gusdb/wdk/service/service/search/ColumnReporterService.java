@@ -62,16 +62,26 @@ public class ColumnReporterService extends AbstractWdkService {
   private static final String ERR_404 =
     "Invalid reporter \"%s\" for column " + "\"%s\".";
 
-  private final Question search;
-  private final AttributeField column;
+  private final String _recordType;
+  private final String _searchName;
+  private final String _columnName;
 
   public ColumnReporterService(
     @PathParam(RecordService.RECORD_TYPE_PATH_PARAM) final String recordType,
-    @PathParam(QuestionService.SEARCH_PATH_PARAM) final String searchType,
+    @PathParam(QuestionService.SEARCH_PATH_PARAM) final String searchName,
     @PathParam(SearchColumnService.COLUMN_PATH_PARAM) final String columnName
   ) {
-    this.search = getQuestionOrNotFound(recordType, searchType);
-    this.column = requireColumn(this.search, columnName);
+    _recordType = recordType;
+    _searchName = searchName;
+    _columnName = columnName;
+  }
+
+  private Question getQuestion() {
+    return getQuestionOrNotFound(_recordType, _searchName);
+  }
+
+  private AttributeField getColumn() {
+    return requireColumn(getQuestion(), _columnName);
   }
 
   /**
@@ -83,7 +93,7 @@ public class ColumnReporterService extends AbstractWdkService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray getReporters() {
-    return new JSONArray(this.column.getColumnReporterNames());
+    return new JSONArray(getColumn().getColumnReporterNames());
   }
 
   /**
@@ -100,6 +110,7 @@ public class ColumnReporterService extends AbstractWdkService {
   @Path(AnswerService.CUSTOM_REPORT_SEGMENT)
   @Produces(MediaType.APPLICATION_JSON)
   public JsonNode getReporterDetails(@PathParam(REPORT_NAME_PATH_PARAM) final String reporter) {
+    AttributeField column = getColumn();
     var rep = column.getReporter(reporter)
       .orElseThrow(makeNotFound(column, reporter));
 
@@ -136,6 +147,7 @@ public class ColumnReporterService extends AbstractWdkService {
     @PathParam(REPORT_NAME_PATH_PARAM) final String toolName,
     final JsonNode body
   ) throws WdkModelException, WdkUserException, DataValidationException {
+    AttributeField column = getColumn();
     FilterOptionListBuilder viewFilters = AnswerSpecServiceFormat
         .parseViewFilters(JsonUtil.toJSONObject(body)
             .valueOrElseThrow(() -> new RequestMisformatException("Passed body is not a JSON object.")));
@@ -190,6 +202,8 @@ public class ColumnReporterService extends AbstractWdkService {
    */
   private RunnableObj<AnswerSpec> makeAnswerSpec(JsonNode body, String filterToIgnore, FilterOptionListBuilder viewFilters)
   throws WdkModelException, RequestMisformatException, DataValidationException {
+    Question search = getQuestion();
+    AttributeField column = getColumn();
     JSONObject parentJson = JsonUtil.toJSONObject(body)
         .mapError(WdkModelException::new)
         .valueOrElseThrow();
