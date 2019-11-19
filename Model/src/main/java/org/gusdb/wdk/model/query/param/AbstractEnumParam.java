@@ -21,6 +21,7 @@ import org.json.JSONObject;
 import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class provides functions that are common among EnumParam and
@@ -255,7 +256,8 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   protected String getDefault(PartiallyValidatedStableValues stableVals) throws WdkModelException {
     LOG.debug("Default value requested for param " + getName() + " with context values " +
         FormatUtil.prettyPrint(stableVals, Style.SINGLE_LINE));
-    String value = getDefault(getVocabInstance(stableVals));
+    String priorValue = stableVals.get(getName());
+    String value = getDefault(priorValue, getVocabInstance(stableVals));
     LOG.debug("Returning default value of '" + value + "' for dependent param " + getName());
     return value;
   }
@@ -456,7 +458,11 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   // FIXME: this method is public only to support WdkQueryPlugin.java, which is
   //    due to be retired when ApiFed starts using the WDK service (or UniDB is
   //    in use).  When either of these happens, change this back to private.
-  public String getDefault(EnumParamVocabInstance cache) throws WdkModelException {
+  public String getDefault(String existingStableValue, EnumParamVocabInstance cache) throws WdkModelException {
+    String trimmedExistingValue = trimInvalidValues(existingStableValue, cache);
+    if (!trimmedExistingValue.isEmpty()) {
+      return trimmedExistingValue;
+    }
     String defaultFromModel = getXmlDefault();
     LOG.debug("applySelectMode(): select mode: '" + selectMode + "', default from model = " + defaultFromModel);
     if (defaultFromModel != null) {
@@ -498,6 +504,22 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
           cache.getTermTreeListRef().get(0));
   }
 
+  private String trimInvalidValues(String existingStableValue, EnumParamVocabInstance cache) {
+    if (existingStableValue == null || existingStableValue.isEmpty()) return "";
+    String[] values = getMultiPick() ?
+        existingStableValue.split("\\s*,\\s*") :
+        new String[] { existingStableValue };
+    List<String> trimmedValues = new ArrayList<>();
+    for (String value : values) {
+      if (cache.getTerms().contains(value)) {
+        // this value is valid
+        trimmedValues.add(value);
+      }
+    }
+    // if any values are valid, join them with commas; else return empty string
+    return trimmedValues.isEmpty() ? "" : trimmedValues.stream().collect(Collectors.joining(","));
+  }
+
   /**
    * Determines and returns the sanity default for this param in the following
    * way: if sanitySelectMode is not null, use it to choose params; if it is,
@@ -515,7 +537,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       return getDefaultWithSelectMode(vocab.getTerms(), sanitySelectMode, isMultiPick,
           vocab.getTermTreeListRef().isEmpty() ? null : vocab.getTermTreeListRef().get(0));
     }
-    String defaultVal = getDefault(vocab);
+    String defaultVal = getDefault(null, vocab);
     LOG.info("Sanity select mode is null; using sanity default (" + sanityDefaultNoSelectMode +
         ") or default (" + defaultVal + ")");
     return sanityDefaultNoSelectMode != null ? sanityDefaultNoSelectMode : defaultVal;
