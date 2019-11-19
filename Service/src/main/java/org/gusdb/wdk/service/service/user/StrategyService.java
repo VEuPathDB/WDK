@@ -77,9 +77,15 @@ public class StrategyService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.users.strategies.get-response")
   public JSONArray getStrategies() throws WdkModelException {
-    return StrategyFormatter.getStrategiesJson(getWdkModel().getStepFactory()
-      .getStrategies(getUserBundle(Access.PRIVATE).getSessionUser().getUserId(),
-          ValidationLevel.SYNTACTIC, FillStrategy.FILL_PARAM_IF_MISSING).values());
+    Collection<Strategy> strategies = getWdkModel().getStepFactory()
+        .getStrategies(getUserBundle(Access.PRIVATE).getSessionUser().getUserId(),
+            ValidationLevel.SYNTACTIC, FillStrategy.FILL_PARAM_IF_MISSING).values();
+    // do not return one-step strategies whose only step has an invalid question 
+    strategies = strategies.stream()
+        // keep strategy if >1 step or its single step's question is valid
+        .filter(strat -> strat.getAllSteps().size() > 1 || strat.getAllSteps().get(0).hasValidQuestion())
+        .collect(Collectors.toList());
+    return StrategyFormatter.getStrategiesJson(strategies);
   }
 
   @POST
