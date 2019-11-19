@@ -1,5 +1,7 @@
 package org.gusdb.wdk.server;
 
+import java.net.URI;
+
 import org.glassfish.jersey.server.ResourceConfig;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.runtime.GusHome;
@@ -28,11 +30,12 @@ public class Server extends RESTServer {
   }
 
   @Override
-  protected ApplicationContext createApplicationContext(JSONObject config) {
+  protected ApplicationContext createApplicationContext(URI baseUri, JSONObject config) {
     return new WdkApplicationContext(
         // basically the replacement for config contained in web.xml; set init parameters
         GusHome.getGusHome(), // get from ENV
-        _projectId            // get from command line
+        _projectId,           // get from command line
+        baseUri               // defined below
     );
   }
 
