@@ -1,17 +1,19 @@
 package org.gusdb.wdk.model.test.sanity.tests;
 
 import java.sql.ResultSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.test.sanity.TestResult;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 public class TableTotalQueryTest extends QueryTest {
@@ -22,12 +24,10 @@ public class TableTotalQueryTest extends QueryTest {
 
   @Override
   protected int runQuery(User user, Query query, ParamValuesSet paramValuesSet,
-      TestResult result) throws Exception {
+      TestResult result) throws WdkModelException {
 
-    Map<String, String> params = new LinkedHashMap<String, String>();
-
-    SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
-        params, true, 0, new LinkedHashMap<String, String>());
+    SqlQueryInstance instance = (SqlQueryInstance) Query.makeQueryInstance(
+        QueryInstanceSpec.builder().buildRunnable(user, query, StepContainer.emptyContainer()));
 
     String sql = instance.getUncachedSql();
     DataSource dataSource = query.getWdkModel().getAppDb().getDataSource();
@@ -39,6 +39,9 @@ public class TableTotalQueryTest extends QueryTest {
       while (resultSet.next())
         count++; // bring full result over to test speed
       return count;
+    }
+    catch(SQLException e) {
+      throw new WdkModelException(e);
     }
     finally {
       SqlUtils.closeResultSetAndStatement(resultSet, null);

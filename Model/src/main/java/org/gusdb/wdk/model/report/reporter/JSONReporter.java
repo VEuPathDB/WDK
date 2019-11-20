@@ -19,7 +19,7 @@ import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
-import org.gusdb.wdk.model.report.ReporterRef;
+import org.gusdb.wdk.model.report.ReporterInfo;
 import org.gusdb.wdk.model.report.util.TableCache;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,7 +28,7 @@ import org.json.JSONWriter;
 
 /**
  * @author Cary P.
- * 
+ *
  */
 public class JSONReporter extends StandardReporter {
 
@@ -41,7 +41,7 @@ public class JSONReporter extends StandardReporter {
   }
 
   @Override
-  public void setProperties(ReporterRef reporterRef) throws WdkModelException {
+  public void setProperties(ReporterInfo reporterRef) throws WdkModelException {
     super.setProperties(reporterRef);
     String cacheTableName = TableCache.getCacheTableName(_properties);
     if (cacheTableName != null) {
@@ -68,7 +68,7 @@ public class JSONReporter extends StandardReporter {
       AnswerValue av = _baseAnswer;
       writer.object().key("response").object().key("recordset").object().key("id").value(
           av.getChecksum()).key("count").value(this.getResultSize()).key("type").value(
-              av.getQuestion().getRecordClass().getDisplayName()).key("records").array();
+              av.getAnswerSpec().getQuestion().getRecordClass().getDisplayName()).key("records").array();
 
       if (_tableCache != null) {
         _tableCache.open();
@@ -120,7 +120,7 @@ public class JSONReporter extends StandardReporter {
 
   /**
    * Add the following to the writer for the passed record:
-   * 
+   *
    * { tables: [
    *   { name: String, rows: [
    *     { fields: [

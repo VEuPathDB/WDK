@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "properties": {
+    "columnSelection": {
+      "description": "Names of user selected display columns for a step",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "sortColumns": {
+      "description": "Ordered list of column names to sort direction",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "The name of a column",
+            "type": "string"
+          },
+          "direction": {
+            "description": "The direction to sort the column",
+            "type": "string",
+            "enum": [
+              "ASC",
+              "DESC"
+            ]
+          }
+        },
+        "minProperties": 1,
+        "maxProperties": 3
+      }
+    }
+  }
+}

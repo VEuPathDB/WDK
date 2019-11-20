@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "allOf": [
+    { "$ref": "base-param.json"},
+    {
+      "type": "object",
+      "properties": {
+        "countOnlyLeaves": {
+          "type": "boolean"
+        },
+        "depthExpanded": {
+          "type": "integer"
+        },
+        "displayType": {
+          "type": "string",
+          "enum": [
+            "select"
+          ]
+        },
+        "maxSelectedCount": {
+          "type": "integer"
+        },
+        "minSelectedCount": {
+          "type": "integer"
+        },
+        "multiPick": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string",
+          "enum": [ "vocabulary" ]
+        },
+        "vocabulary": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": [
+              { "type": "string" },
+              { "type": "null" }
+            ],
+            "maxItems": 3,
+            "minItems": 3
+          }
+        }
+      },
+      "required": [
+        "countOnlyLeaves",
+        "depthExpanded",
+        "displayType",
+        "maxSelectedCount",
+        "minSelectedCount",
+        "multiPick",
+        "type",
+        "vocabulary"
+      ]
+    }
+  ]
+}

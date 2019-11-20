@@ -36,6 +36,8 @@ import org.json.JSONObject;
 @Path("/")
 public class UserUtilityServices extends AbstractWdkService {
 
+  public static final String USERS_PATH = "/users";
+
   private static final String NO_USER_BY_THAT_EMAIL = "No user exists with the email you submitted.";
 
   /**
@@ -48,7 +50,7 @@ public class UserUtilityServices extends AbstractWdkService {
    * @throws WdkModelException if error occurs creating user
    */
   @POST
-  @Path("users")
+  @Path(USERS_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response createNewUser(String body) throws RequestMisformatException, DataValidationException, WdkModelException {
@@ -60,8 +62,8 @@ public class UserUtilityServices extends AbstractWdkService {
       User newUser = getWdkModel().getUserFactory().createUser(
           request.getProfileRequest().getEmail(),
           request.getProfileRequest().getProfileMap(),
-          request.getPreferencesRequest().getGlobalPreferenceMods(),
-          request.getPreferencesRequest().getProjectPreferenceMods());
+          request.getGlobalPreferencesRequest().getPreferenceUpdates(),
+          request.getProjectPreferencesRequest().getPreferenceUpdates());
 
       return Response.ok(new JSONObject().put(JsonKeys.ID, newUser.getUserId()))
           .location(getUriInfo().getAbsolutePathBuilder().build(newUser.getUserId()))

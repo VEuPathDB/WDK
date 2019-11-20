@@ -102,8 +102,7 @@ public abstract class ICatNode {
    *
    * @return an option containing the requested value if such a value exists.
    */
-  @SuppressWarnings("WeakerAccess")
-  public Optional<String> getMetadata(final String key, final int index) {
+  private Optional<String> getMetadata(final String key, final int index) {
     return Optional.ofNullable(metadata.get(key))
       .filter(l -> l.size() > index)
       .map(l -> l.get(index));

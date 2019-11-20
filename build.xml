@@ -58,6 +58,28 @@
       <property name="project" value="WDK" />
       <property name="component" value="Service" />
     </ant>
+    <ant target="WDK-Service-Schema"/>
+  </target>
+
+  <target name="WDK-Service-Schema" depends="installYarnBin">
+    <echo message="Resolving and merging JSON Schema files"/>
+    <exec dir="${targetDir}/bin"
+          executable="installSchema.sh"
+          failonerror="true"
+          failifexecutionfails="true">
+      <arg line="${projectsDir} ${targetDir}"/>
+    </exec>
+    <ant target="createSchemaJar"/>
+  </target>
+
+  <target name="createSchemaJar">
+    <echo message="Creating JSON schema jar file at ${targetDir}/lib/java/wdk-service-schema.jar"/>
+    <exec dir="${targetDir}/doc/WDK/Service"
+          executable="jar"
+          failonerror="true"
+          failifexecutionfails="true">
+      <arg line="cf ${targetDir}/lib/java/wdk-service-schema.jar schema"/>
+    </exec>
   </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
@@ -65,24 +87,32 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="WDK-WebInstallation" depends="WSF-WebInstallation,
-                                              GusHome">
+                                              GusHome,
+                                              WDK/Service-WebInstallation">
     <echo message="." />
     <echo
       message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file ojdbc14.jar) from ${targetDir}/lib/java/db_driver into your webapp server's designated place (such as common/lib for Tomcat). See the installation instructions available at www.gusdb.org/wdk for details." />
     <echo message="." />
   </target>
 
+  <target name="WDK/Service-WebInstallation" depends="WDK/Service-Installation">
+    <antcall target="runRaml2Html">
+      <param name="inputFile" value="${targetDir}/doc/WDK/Service/raml/api.raml"/>
+      <param name="outputFile" value="${htdocsTargetDir}/service-api.html"/>
+    </antcall>
+  </target>
+
   <target name="GusHome" depends="WDK-Installation,
-                                             checkLinks,
-                                             webInfDir,
-                                             libLink,
-                                             configLink,
-                                             binLink,
-                                             dataLink,
-                                             rngLink,
-                                             perlLink,
-                                             xmlLink,
-                                             wdkLink" />
+                                  checkLinks,
+                                  webInfDir,
+                                  libLink,
+                                  configLink,
+                                  binLink,
+                                  dataLink,
+                                  rngLink,
+                                  perlLink,
+                                  xmlLink,
+                                  wdkLink"/>
 
   <target name="checkLinks">
     <available file="${webappTargetDir}/WEB-INF" property="webInfDirExists" />

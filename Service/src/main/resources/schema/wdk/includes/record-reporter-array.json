@@ -1,8 +1,0 @@
-{
-  "$schema": "http://json-schema.org/draft-04/schema",
-  "description": "List of reporters",
-  "type": "array",
-  "items": {
-    "$ref": "/schema/wdk/includes/record-reporter.json"
-  }
-}

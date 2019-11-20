@@ -47,7 +47,7 @@ public class ParamValuesSet extends WdkModelBase {
   }
 
   public void setMinRows(int minRows) {
-    this.minRows = new Integer(minRows);
+    this.minRows = Integer.valueOf(minRows);
   }
 
   public int getMinRows() {
@@ -55,7 +55,7 @@ public class ParamValuesSet extends WdkModelBase {
   }
 
   public void setMaxRows(int maxRows) {
-    this.maxRows = new Integer(maxRows);
+    this.maxRows = Integer.valueOf(maxRows);
   }
 
   public int getMaxRows() {

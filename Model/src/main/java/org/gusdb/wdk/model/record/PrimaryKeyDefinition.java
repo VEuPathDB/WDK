@@ -13,13 +13,14 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -38,7 +39,7 @@ import org.gusdb.wdk.model.user.User;
  * limited number of columns in a primary key. the number is defined
  * {@link Utilities#MAX_PK_COLUMN_COUNT}.
  * </p>
- * 
+ *
  * @author jerric
  */
 public class PrimaryKeyDefinition extends WdkModelBase {
@@ -52,17 +53,17 @@ public class PrimaryKeyDefinition extends WdkModelBase {
    * if an alias query ref is defined, the ids will be passed though this alias
    * query to get the new ids whenever a recordInstance is created.
    */
-  private String _aliasQueryRef = null;
-  private String _aliasPluginClassName = null;
+  private String _aliasQueryRef;
+  private String _aliasPluginClassName;
 
   /**
    * the reference to a query that returns a list of alias ids of the given gene id
    */
-  private Query _aliasQuery = null;
-  private PrimaryKeyAliasPlugin _aliasPlugin = null;
+  private Query _aliasQuery;
+  private PrimaryKeyAliasPlugin _aliasPlugin;
 
-  private List<WdkModelText> _columnRefList = new ArrayList<WdkModelText>();
-  private Set<String> _columnRefSet = new LinkedHashSet<String>();
+  private List<WdkModelText> _columnRefList = new ArrayList<>();
+  private Set<String> _columnRefSet = new LinkedHashSet<>();
 
   public void setRecordClass(RecordClass recordClass) {
     _recordClass = recordClass;
@@ -77,23 +78,17 @@ public class PrimaryKeyDefinition extends WdkModelBase {
   }
 
   public String[] getColumnRefs() {
-    return _columnRefSet.toArray(new String[_columnRefSet.size()]);
+    return _columnRefSet.toArray(new String[0]);
   }
 
   public boolean hasColumn(String columnName) {
     return _columnRefSet.contains(columnName);
   }
 
-  /**
-   * @param aliasQueryRef
-   */
   public void setAliasQueryRef(String aliasQueryRef) {
     _aliasQueryRef = aliasQueryRef;
   }
 
-  /**
-   * @param aliasPluginClassName
-   */
   public void setAliasPluginClassName(String aliasPluginClassName) {
     _aliasPluginClassName = aliasPluginClassName;
   }
@@ -120,7 +115,7 @@ public class PrimaryKeyDefinition extends WdkModelBase {
     }
     _columnRefList = null;
 
-    if (_columnRefSet.size() == 0)
+    if (_columnRefSet.isEmpty())
       throw new WdkModelException("No primary key column defined in "
           + "recordClass " + _recordClass.getFullName());
     if (_columnRefSet.size() > Utilities.MAX_PK_COLUMN_COUNT)
@@ -140,7 +135,7 @@ public class PrimaryKeyDefinition extends WdkModelBase {
       if (_aliasPluginClassName != null && _aliasPlugin == null) {
         Class<? extends PrimaryKeyAliasPlugin> pluginClass = Class.forName(_aliasPluginClassName).asSubclass(
             PrimaryKeyAliasPlugin.class);
-        _aliasPlugin = pluginClass.newInstance();
+        _aliasPlugin = pluginClass.getDeclaredConstructor().newInstance();
       }
     }
     catch (Exception e) {
@@ -152,13 +147,13 @@ public class PrimaryKeyDefinition extends WdkModelBase {
    * resolve the alias query, and verify the needed columns. A alias query should return all columns in the
    * primary key, and it should also return another set of columns that starts with
    * ALIAS_OLD_KEY_COLUMN_PREFIX constant, appended by the column names in the primary key.
-   * 
+   *
    * @param wdkModel
    * @throws WdkModelException
    */
   private void resolveAliasQuery(WdkModel wdkModel) throws WdkModelException {
     if (_aliasQueryRef != null) {
-      Query query = (SqlQuery) wdkModel.resolveReference(_aliasQueryRef);
+      SqlQuery query = (SqlQuery) wdkModel.resolveReference(_aliasQueryRef);
 
       _recordClass.validateBulkQuery(query);
 
@@ -185,7 +180,7 @@ public class PrimaryKeyDefinition extends WdkModelBase {
   }
 
   public List<Map<String, Object>> lookUpPrimaryKeys(User user, Map<String, Object> pkValues)
-      throws WdkUserException, WdkModelException {
+      throws RecordNotFoundException, WdkModelException {
     List<Map<String,Object>> primaryKeys = new ArrayList<>();
     if (_aliasQuery != null) {
       primaryKeys = getPrimaryKeyFromAliasQuery(user, pkValues);
@@ -213,7 +208,7 @@ public class PrimaryKeyDefinition extends WdkModelBase {
    * @return
    */
   private String displayPkValues(Map<String,Object> pkValues) {
-    StringBuilder display = new StringBuilder(); 
+    StringBuilder display = new StringBuilder();
     for(String key : pkValues.keySet()) {
       display.append(key + "=" + pkValues.get(key) + " ");
     }
@@ -221,12 +216,12 @@ public class PrimaryKeyDefinition extends WdkModelBase {
   }
 
   private List<Map<String, Object>> getPrimaryKeyFromAliasPlugin(User user, Map<String, Object> pkValues)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException, RecordNotFoundException {
     return _aliasPlugin.getPrimaryKey(user, pkValues);
   }
 
   private List<Map<String, Object>> getPrimaryKeyFromAliasQuery(User user, Map<String, Object> pkValues)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
 
     List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
 
@@ -238,9 +233,9 @@ public class PrimaryKeyDefinition extends WdkModelBase {
       oldValues.put(oldParam, value);
     }
 
-    QueryInstance<?> instance = _aliasQuery.makeInstance(user, oldValues, true, 0,
-        new LinkedHashMap<String, String>());
-    
+    QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+        .putAll(oldValues).buildRunnable(user, _aliasQuery, StepContainer.emptyContainer()));
+
     try (ResultList resultList = instance.getResults()) {
       while (resultList.next()) {
         Map<String, Object> newValue = new LinkedHashMap<String, Object>();

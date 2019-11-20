@@ -14,7 +14,7 @@ import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 /**
  * This class is the common parent for most of the classes that are represented
  * as a tag in the WDK model.
- * 
+ *
  * An important feature of this class are the include/exclude projects flags.
  * They are used to support shared model files among different projects. If
  * several projects shared many common definitions such as record class types,
@@ -22,11 +22,11 @@ import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
  * include/exclude projects on the project specific elements. If the flags are
  * not set, then an element will be included in all the projects by default. The
  * include/exclude flag can be applied to almost all the model tags.
- * 
+ *
  * This class provides property list to all its children classes, and it also
  * supports the include/exclude properties for almost all the tags in the wdk
  * model.
- * 
+ *
  * @author Jerric
  */
 public abstract class WdkModelBase {
@@ -35,7 +35,7 @@ public abstract class WdkModelBase {
   private static final Logger LOG = Logger.getLogger(WdkModelBase.class);
 
   protected WdkModel _wdkModel;
-  protected boolean _resolved = false;
+  protected boolean _resolved;
 
   private Set<String> _includeProjects;
   private Set<String> _excludeProjects;
@@ -44,22 +44,21 @@ public abstract class WdkModelBase {
   private Map<String, String[]> _propertyListMap;
 
   public WdkModelBase() {
-    _includeProjects = new LinkedHashSet<String>();
-    _excludeProjects = new LinkedHashSet<String>();
-    _propertyLists = new ArrayList<PropertyList>();
-    _propertyListMap = new LinkedHashMap<String, String[]>();
+    _includeProjects = new LinkedHashSet<>();
+    _excludeProjects = new LinkedHashSet<>();
+    _propertyLists = new ArrayList<>();
+    _propertyListMap = new LinkedHashMap<>();
   }
 
   public WdkModelBase(WdkModelBase base) {
     _wdkModel = base._wdkModel;
     _resolved = base._resolved;
-    _includeProjects = new LinkedHashSet<String>(base._includeProjects);
-    _excludeProjects = new LinkedHashSet<String>(base._excludeProjects);
+    _includeProjects = new LinkedHashSet<>(base._includeProjects);
+    _excludeProjects = new LinkedHashSet<>(base._excludeProjects);
     if (base._propertyLists != null)
-      _propertyLists = new ArrayList<PropertyList>(base._propertyLists);
+      _propertyLists = new ArrayList<>(base._propertyLists);
     if (base._propertyListMap != null)
-      _propertyListMap = new LinkedHashMap<String, String[]>(
-          base._propertyListMap);
+      _propertyListMap = new LinkedHashMap<>(base._propertyListMap);
   }
 
   @Override
@@ -80,7 +79,7 @@ public abstract class WdkModelBase {
   @RngUndefined
   public void setExcludeProjects(String excludeProjects) {
     excludeProjects = excludeProjects.trim();
-    if (excludeProjects.length() == 0)
+    if (excludeProjects.isEmpty())
       return;
 
     String[] projects = excludeProjects.split(",");
@@ -96,7 +95,7 @@ public abstract class WdkModelBase {
   @RngUndefined
   public void setIncludeProjects(String includeProjects) {
     includeProjects = includeProjects.trim();
-    if (includeProjects.length() == 0)
+    if (includeProjects.isEmpty())
       return;
 
     String[] projects = includeProjects.split(",");
@@ -106,8 +105,6 @@ public abstract class WdkModelBase {
   }
 
   /**
-   * 
-   * @param projectId
    * @return true if the object is included in the current project
    */
   public boolean include(String projectId) {
@@ -127,8 +124,6 @@ public abstract class WdkModelBase {
 
   /**
    * This method is supposed to be called by the digester
-   * 
-   * @param propertyList
    */
   public void addPropertyList(PropertyList propertyList) {
     _propertyLists.add(propertyList);
@@ -137,8 +132,7 @@ public abstract class WdkModelBase {
   /**
    * if the property list of the given name doesn't exist, it will try to get a
    * default property list from the WdkModel.
-   * 
-   * @param propertyListName
+   *
    * @return list for the given name, or null if no list exists
    */
   public String[] getPropertyList(String propertyListName) {
@@ -161,8 +155,7 @@ public abstract class WdkModelBase {
   /**
    * exclude the resources the object hold which are not included in the current
    * project
-   * 
-   * @param projectId
+   *
    * @throws WdkModelException if error occurs excluding resources
    */
   public void excludeResources(String projectId) throws WdkModelException {
@@ -189,6 +182,7 @@ public abstract class WdkModelBase {
    */
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     _wdkModel = wdkModel;
+    _resolved = true;
   }
 
   public WdkModel getWdkModel() {

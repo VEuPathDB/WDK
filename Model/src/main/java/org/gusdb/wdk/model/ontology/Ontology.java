@@ -6,9 +6,9 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.wdk.model.WdkUserException;
 
@@ -95,7 +95,7 @@ public class Ontology extends TreeNode<OntologyNode> {
     return root.mapStructure(new StructureMapper<OntologyNode, TreeNode<OntologyNode>>() {
 
       @Override
-      public TreeNode<OntologyNode> map(OntologyNode obj, List<TreeNode<OntologyNode>> mappedChildren) {
+      public TreeNode<OntologyNode> apply(OntologyNode obj, List<TreeNode<OntologyNode>> mappedChildren) {
 
         // trim null children to get an accurate list
 	       trimNulls(mappedChildren);

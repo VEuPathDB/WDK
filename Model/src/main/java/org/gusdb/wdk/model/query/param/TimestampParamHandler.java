@@ -1,17 +1,12 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query.param;
 
-import java.util.Map;
-
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
 
 /**
  * @author jerric
- * 
  */
 public class TimestampParamHandler extends AbstractParamHandler {
 
@@ -23,9 +18,6 @@ public class TimestampParamHandler extends AbstractParamHandler {
 
   /**
    * The raw value is the same as stable value.
-   * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#toStableValue(org.gusdb.wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
    */
   @Override
   public String toStableValue(User user, Object rawValue) {
@@ -34,9 +26,6 @@ public class TimestampParamHandler extends AbstractParamHandler {
 
   /**
    * The raw value is the same as stable value.
-   * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#toRawValue(org.gusdb.wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
    */
   @Override
   public String toRawValue(User user, String stableValue) {
@@ -45,53 +34,23 @@ public class TimestampParamHandler extends AbstractParamHandler {
 
   /**
    * The internal value is the same as stable value.
-   * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#toInternalValue(org.gusdb.wdk.model.user.User,
-   *      java.lang.String, java.util.Map)
    */
   @Override
-  public String toInternalValue(User user, String stableValue, Map<String, String> contextParamValues) {
-    return stableValue;
+  public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxVals) {
+    return ctxVals.get().get(_param.getName());
+  }
+
+  @Override
+  public String toEmptyInternalValue() {
+    return "?";
   }
 
   /**
    * The stable value is the same as signature.
-   * 
-   * @see org.gusdb.wdk.model.query.param.ParamHandler#toSignature(org.gusdb.wdk.model.user.User,
-   *      java.lang.String, Map)
    */
   @Override
-  public String toSignature(User user, String stableValue, Map<String, String> contextParamValues) {
-    return stableValue;
-  }
-
-  @Override
-  public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
-      WdkModelException {
-    return validateStableValueSyntax(user, requestParams.getParam(_param.getName()));
-  }
-  
-  @Override 
-  public String validateStableValueSyntax(User user, String inputStableValue) throws WdkUserException,
-  WdkModelException {
-    String stableValue = inputStableValue;
-    if (inputStableValue == null) {
-      if (!_param.isAllowEmpty())
-        throw new WdkUserException("The input to parameter '" + _param.getPrompt() + "' is required");
-      stableValue = _param.getEmptyValue();
-    }
-    return stableValue;
-  }
-
-  @Override
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
-    String stableValue = requestParams.getParam(_param.getName());
-    if (stableValue == null) {
-      stableValue = _param.getDefault();
-      if (stableValue != null)
-        requestParams.setParam(_param.getName(), stableValue);
-    }
+  public String toSignature(RunnableObj<QueryInstanceSpec> ctxVals) {
+    return ctxVals.get().get(_param.getName());
   }
 
   @Override
@@ -100,9 +59,7 @@ public class TimestampParamHandler extends AbstractParamHandler {
   }
 
   @Override
-  public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException {
-    return toRawValue(user, stableValue);
+  public String getDisplayValue(QueryInstanceSpec ctxVals) throws WdkModelException {
+    return toRawValue(ctxVals.getUser(), ctxVals.get(_param.getName()));
   }
-
 }

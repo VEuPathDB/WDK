@@ -13,6 +13,7 @@ import java.nio.file.Path;
  * @author steve
  */
 public abstract class UserDatasetFile {
+
   private Path filePath;
   private Long userDatasetId;
 

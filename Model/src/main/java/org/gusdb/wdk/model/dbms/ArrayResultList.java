@@ -92,7 +92,7 @@ public class ArrayResultList implements ResultList, WsfResponseListener {
     }
     else {
       // must be a weight column, and no value available, use assignedWeight.
-      return new Integer(_assignedWeight);
+      return Integer.valueOf(_assignedWeight);
     }
   }
 

@@ -22,7 +22,7 @@ public class SingleAttributeRecordIterator extends AbstractRecordIterator {
   public SingleAttributeRecordIterator(AnswerValue answerValue,
       List<QueryColumnAttributeField> fields, String sql) throws SQLException {
     super(answerValue, new SqlResultList(SqlUtils.executeQuery(
-        answerValue.getQuestion().getWdkModel().getAppDb().getDataSource(),
+        answerValue.getWdkModel().getAppDb().getDataSource(),
         sql, "single-attribute-query-iterator-sql")));
     _fields = fields;
   }

@@ -12,9 +12,14 @@ import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersDbColumnFormat;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -59,7 +64,7 @@ public class Migrator_b18_b19 implements Migrator {
       int count = 0;
       while (rsSteps.next()) {
         // test getting question name, and fail if we are still on old schema
-        rsSteps.getString("question_name");
+        String questionName = rsSteps.getString("question_name");
 
         // get step info
         int stepId = rsSteps.getInt("step_id");
@@ -68,12 +73,16 @@ public class Migrator_b18_b19 implements Migrator {
 
         // update params
         String paramContent = platform.getClobData(rsSteps, "display_params");
-        Step step = new Step(null, 0, 0);
-        step.setParamFilterJSON(new JSONObject(paramContent));
-        Map<String, String> params = step.getParamValues();
-        updateParams(stepId, params, leftChildId, rightChildId);
-        step.setParamValues(params);
-        paramContent = step.getParamFilterJSON().toString();
+        
+        QueryInstanceSpecBuilder params = ParamsAndFiltersDbColumnFormat.parseParamsJson(new JSONObject(paramContent));
+        Map<String,String> newParams = updateParams(stepId, params.toMap(), leftChildId, rightChildId);
+        AnswerSpec answerSpec = AnswerSpec.builder(wdkModel)
+          .setQuestionFullName(questionName)
+          .setDbParamFiltersJson(new JSONObject(paramContent), 10)
+          .setQueryInstanceSpec(QueryInstanceSpec.builder().putAll(newParams))
+          .build(wdkModel.getSystemUser(), StepContainer.emptyContainer(), ValidationLevel.SYNTACTIC);
+
+        paramContent = ParamsAndFiltersDbColumnFormat.formatParamFilters(answerSpec).toString();
 
         // save changes
         platform.setClobData(psUpdate, 1, paramContent, false);
@@ -99,7 +108,7 @@ public class Migrator_b18_b19 implements Migrator {
     }
   }
 
-  private void updateParams(int stepId, Map<String, String> params, int leftChildId, int rightChildId) {
+  private Map<String,String> updateParams(int stepId, Map<String, String> params, int leftChildId, int rightChildId) {
     String[] names = params.keySet().toArray(new String[0]);
     boolean leftFound = false, rightFound = false;
     for (String name : names) {
@@ -137,5 +146,6 @@ public class Migrator_b18_b19 implements Migrator {
     if (!leftFound && !rightFound) {
       System.err.println("Couldn't find step param to update in step: #" + stepId);
     }
+    return params;
   }
 }

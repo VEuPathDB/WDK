@@ -5,12 +5,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.accountdb.UserProfile;
 import org.gusdb.fgputil.accountdb.UserPropertyName;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.core.api.JsonKeys;

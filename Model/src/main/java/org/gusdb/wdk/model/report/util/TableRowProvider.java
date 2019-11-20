@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -41,21 +41,19 @@ public class TableRowProvider implements RowsProvider {
 
   private static Function<Map<String,AttributeValue>,List<Object>> getTableRowConverter(
       final RecordInstance record, final TableField tableField) {
-    return new Function<Map<String,AttributeValue>,List<Object>>() {
-      @Override public List<Object> apply(Map<String, AttributeValue> tableRow) {
-        try {
-          List<Object> values = new ArrayList<Object>();
-          values.add(record.getIdAttributeValue().getDisplay());
-          AttributeField[] fields = tableField.getAttributeFields(FieldScope.REPORT_MAKER);
-          for (AttributeField field : fields) {
-            AttributeValue attrValue = tableRow.get(field.getName());
-            values.add((attrValue == null) ? "N/A" : attrValue.getValue());
-          }
-          return values;
+    return tableRow -> {
+      try {
+        List<Object> values = new ArrayList<Object>();
+        values.add(record.getIdAttributeValue().getDisplay());
+        AttributeField[] fields = tableField.getAttributeFields(FieldScope.REPORT_MAKER);
+        for (AttributeField field : fields) {
+          AttributeValue attrValue = tableRow.get(field.getName());
+          values.add((attrValue == null) ? "N/A" : attrValue.getValue());
         }
-        catch (WdkUserException | WdkModelException e) {
-          throw new WdkRuntimeException("Unable to create value row for table " + tableField.getName(), e);
-        }
+        return values;
+      }
+      catch (WdkUserException | WdkModelException e) {
+        throw new WdkRuntimeException("Unable to create value row for table " + tableField.getName(), e);
       }
     };
   }

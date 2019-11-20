@@ -3,7 +3,6 @@ package org.gusdb.wdk.service.service;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -15,7 +14,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -41,8 +39,7 @@ public class OntologyService extends AbstractWdkService {
    */
   @GET
   public Response getOntologies() throws JSONException {
-    return Response.ok(FormatUtil.stringCollectionToJsonArray(
-        getWdkModel().getOntologyNames()).toString()).build();
+    return Response.ok(new JSONArray(getWdkModel().getOntologyNames()).toString()).build();
   }
 
   /**
@@ -58,27 +55,23 @@ public class OntologyService extends AbstractWdkService {
     return Response.ok(OntologyFormatter.getOntologyJson(ontology).toString()).build();
   }
 
+  // TODO: this should be a GET
   @POST
-  @Path("{ontologyName}/path")
+  @Path("{ontologyName}/filteredOntologyTerms")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getPathsToMatchingNodes(@PathParam("ontologyName") String ontologyName, String body) throws WdkModelException {
+  public Response getPathsToMatchingNodes(@PathParam("ontologyName") String ontologyName, JSONObject criteriaJson) throws WdkModelException {
     Ontology ontology = getOntology(ontologyName);
-    if (ontology == null)
+    if (ontology == null) {
       throw new NotFoundException(AbstractWdkService.formatNotFound(ONTOLOGY_RESOURCE + ontologyName));
-    try {
-      JSONObject criteriaJson = new JSONObject(body);
-      Map<String,String> criteria = new HashMap<String,String>();
-      for (String key : JsonUtil.getKeys(criteriaJson)) {
-        criteria.put(key, criteriaJson.getString(key));
-      }
-      JSONArray pathsList = OntologyFormatter.pathsToJson(
-          ontology.getAllPaths(new PropertyPredicate(criteria)));
-      return Response.ok(pathsList.toString()).build();
     }
-    catch (JSONException e) {
-      throw new BadRequestException(e);
+    Map<String,String> criteria = new HashMap<String,String>();
+    for (String key : JsonUtil.getKeys(criteriaJson)) {
+      criteria.put(key, criteriaJson.getString(key));
     }
+    JSONArray pathsList = OntologyFormatter.pathsToJson(
+        ontology.getAllPaths(new PropertyPredicate(criteria)));
+    return Response.ok(pathsList.toString()).build();
   }
 
   private Ontology getOntology(String ontologyName) throws WdkModelException {

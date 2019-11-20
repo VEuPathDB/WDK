@@ -1,106 +1,124 @@
 package org.gusdb.wdk.service.request.user;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import static java.util.Arrays.stream;
 
+import java.util.Collection;
+import java.util.Optional;
+
+import javax.ws.rs.NotFoundException;
+
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.wdk.core.api.JsonKeys;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
+import org.gusdb.wdk.service.service.AbstractWdkService;
+import org.gusdb.wdk.service.service.user.UserService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import static org.gusdb.wdk.core.api.JsonKeys.ADD;
-import static org.gusdb.wdk.core.api.JsonKeys.ADD_FROM_STEP_ID;
-import static org.gusdb.wdk.core.api.JsonKeys.REMOVE;
-
 public class BasketRequests {
 
-  public static class BasketActions extends PatchMap<PrimaryKeyValue> {
+  public enum ActionType {
+    ADD("add"),
+    ADD_FROM_STEP_ID("addFromStepId"),
+    REMOVE("remove"),
+    REMOVE_ALL("removeAll");
 
-    private static final List<String> ACTION_TYPES = Arrays.asList(ADD, REMOVE, ADD_FROM_STEP_ID);
+    public final String value;
+
+    ActionType(String s) {
+      value = s;
+    }
+
+    public static Optional<ActionType> fromString(String s) {
+      return stream(values()).filter(v -> v.value.equals(s)).findFirst();
+    }
+
+    @Override
+    public String toString() {
+      return value;
+    }
+  }
+
+  public static class BasketActions extends PatchMap<ActionType, PrimaryKeyValue> {
+
+    // will be populated only if action type is addFromStepId
+    private Long _stepId;
+    private RunnableObj<AnswerSpec> _runnableAnswerSpec;
 
     /**
      * Creates set of actions, each associated with a list of basket records
+     * <p>
      * Input Format:
+     * <pre>
      * {
-     *   add: [PrimaryKey, PrimaryKey, ...],
-     *   remove: [PrimaryKey, PrimaryKey, ...],
-     *   createFromStepId: Number
+     *   action: "add"|"remove",
+     *   primaryKeys?: PrimaryKey[]
      * }
-     * Where PrimaryKey is [ { name: String, value: String } ].
+     * OR
+     * {
+     *   action: "addFromStepId",
+     *   stepId: string
+     * }
+     * OR
+     * {
+     *   action: "removeAll"
+     * }
+     * </pre>
+     * Where PrimaryKey is <code>[ { name: String, value: String } ]</code>.
      *
      * @param json input object
      * @return parsed actions to perform on IDs
      * @throws WdkModelException
      * @throws DataValidationException
      */
-    public BasketActions(JSONObject json, RecordClass recordClass, StepFactory stepFactory)
-        throws DataValidationException, WdkModelException, WdkUserException {
-      super(ACTION_TYPES);
-      List<PrimaryKeyValue> recordsToAdd = parseIdJsonArray(json, ADD, recordClass);
-      List<PrimaryKeyValue> recordsToRemove = parseIdJsonArray(json, REMOVE, recordClass);
-      List<PrimaryKeyValue> stepIdsToAdd = parseStepIds(json, ADD_FROM_STEP_ID, stepFactory);
-      recordsToAdd.addAll(stepIdsToAdd);
-      put(ADD, recordsToAdd);
-      put(REMOVE, recordsToRemove);
-      removeSharedIds(ADD, REMOVE);
-    }
-
-    public BasketActions(List<PrimaryKeyValue> recordsToAdd, List<PrimaryKeyValue> recordsToRemove) {
-      super(ACTION_TYPES);
-      put(ADD, recordsToAdd);
-      put(REMOVE, recordsToRemove);
-      removeSharedIds(ADD, REMOVE);
-    }
-
-    public List<PrimaryKeyValue> getRecordsToAdd() {
-      return get(ADD);
-    }
-
-    public List<PrimaryKeyValue> getRecordsToRemove() {
-      return get(REMOVE);
-    }
-
-    private List<PrimaryKeyValue> parseIdJsonArray(JSONObject json, String key, RecordClass recordClass) throws DataValidationException, WdkModelException {
-      if (!json.has(key)) return new LinkedList<>();
-      JSONArray idJsonArray = json.getJSONArray(key);
-      List<PrimaryKeyValue> pkValues = new LinkedList<>();
-      for (int i = 0; i < idJsonArray.length(); i++) {
-        pkValues.add(RecordRequest.parsePrimaryKey(idJsonArray.getJSONArray(i), recordClass));
+    public BasketActions(JSONObject json, RecordClass recordClass)
+        throws DataValidationException, WdkModelException {
+      super(addPrimaryKeysIfAbsent(json), ActionType.values(),
+          val -> ActionType.fromString(val.getString()).orElseThrow(DataValidationException::new),
+          val -> RecordRequest.parsePrimaryKey(val.getJSONArray(), recordClass));
+      if (getAction().equals(ActionType.ADD_FROM_STEP_ID)) {
+        _stepId = json.getLong(JsonKeys.STEP_ID);
       }
-      return pkValues;
     }
 
-    private List<PrimaryKeyValue> parseStepIds(JSONObject json, String key, StepFactory stepFactory) throws WdkModelException, WdkUserException {
-      if (!json.has(key)) return new LinkedList<>();
-      Long stepId = json.getLong(key);
-      Step step = stepFactory.getStepById(stepId).orElseThrow(() -> new WdkUserException("Could not load step with step id " + stepId));
-      PrimaryKeyDefinition pkDef = step.getRecordClass().getPrimaryKeyDefinition();
-      return step.getAnswerValue().getAllIds()
-          .stream()
-          .map(ids -> {
-            Map<String, Object> pkValues = new HashMap<>();
-            for (int i = 0; i < pkDef.getColumnRefs().length; i++) {
-              pkValues.put(pkDef.getColumnRefs()[i], ids[i]);
-            }
-            try {
-              return new PrimaryKeyValue(pkDef, pkValues);
-            } catch (Exception e) {
-              throw (e instanceof RuntimeException ? (RuntimeException) e : new RuntimeException(e));
-            }
-          })
-          .collect(Collectors.toList());
+    private static JSONObject addPrimaryKeysIfAbsent(JSONObject json) {
+      return json.has(JsonKeys.PRIMARY_KEYS) ? json :
+        json.put(JsonKeys.PRIMARY_KEYS, new JSONArray());
+    }
+
+    public BasketActions(ActionType action, Collection<PrimaryKeyValue> records)
+        throws DataValidationException {
+      super(ActionType.values(), action, records);
+    }
+
+    public Long getRequestedStepId() {
+      return _stepId;
+    }
+
+    public BasketActions setRunnableAnswerSpec(RunnableObj<AnswerSpec> runnableAnswerSpec) {
+      _runnableAnswerSpec = runnableAnswerSpec;
+      return this;
+    }
+
+    public RunnableObj<AnswerSpec> getRunnableAnswerSpec(User user, WdkModel wdkModel) throws NotFoundException, WdkModelException, DataValidationException {
+      return _runnableAnswerSpec != null ? _runnableAnswerSpec :
+        Step.getRunnableAnswerSpec(wdkModel
+          .getStepFactory()
+          .getStepByIdAndUserId(_stepId, user.getUserId(), ValidationLevel.RUNNABLE)
+          .orElseThrow(() -> new NotFoundException(
+            AbstractWdkService.formatNotFound(UserService.STEP_RESOURCE + _stepId)))
+          .getRunnable()
+          .getOrThrow(step -> new DataValidationException(
+            "Step " + _stepId + " is not runnable so its results cannot be added to the basket.")));
     }
   }
-
 }

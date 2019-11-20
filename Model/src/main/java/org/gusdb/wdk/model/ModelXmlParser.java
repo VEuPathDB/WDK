@@ -35,6 +35,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.runtime.GusHome;
+import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.xml.XmlParser;
 import org.gusdb.fgputil.xml.XmlValidator;
 import org.gusdb.wdk.model.UIConfig.ExtraLogoutCookies;
@@ -45,6 +46,8 @@ import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterInstanceReference;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.SummaryView;
+import org.gusdb.wdk.model.toolbundle.*;
+import org.gusdb.wdk.model.toolbundle.impl.*;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigBuilder;
 import org.gusdb.wdk.model.config.ModelConfigParser;
@@ -109,7 +112,6 @@ import org.gusdb.wdk.model.record.attribute.LinkAttributeField;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
-import org.gusdb.wdk.model.report.AttributeReporterRef;
 import org.gusdb.wdk.model.report.ReporterRef;
 import org.gusdb.wdk.model.user.FavoriteReference;
 import org.gusdb.wdk.model.xml.XmlAttributeField;
@@ -128,48 +130,48 @@ import org.xml.sax.SAXException;
  * <p>
  * The XML parser is used to parse the WDK model file and all its sub-model files.
  * </p>
- * 
+ *
  * <p>
  * First, the parser will start from the top level model file, and get sub-model files from the
  * {@code <import>} tag. currently, we only support {@code <import>} in the top level model file, and
  * sub-model file cannot have {@code <import>} to other sub-models.
  * </p>
- * 
+ *
  * <p>
  * Then the top level model and each such-model's XML file will be validated against {@code wdkModel.rng}, and
  * if validation fails, an exception will be thrown out with the line number where it failed.
  * </p>
- * 
+ *
  * <p>
  * Nest, the parser will first get global constants defined in the top level model, and substitute them into
  * the text of the model; then it will read constants from each sub-model, and those constants can override
  * the global constants in the scope of the sub-model; and the constants are substituted into the text of the
  * sub-models.
  * </p>
- * 
+ *
  * <p>
  * In the next step, the parser will substitute the macros defined in model.prop into the text of the top
  * level model and each sub-model.
  * </p>
- * 
+ *
  * <p>
  * Next, a DOM will be created for each top level and sub-model, and DOM of sub-model will be injected into
  * top level model. the {@code <wdkModel>} root tag in each sub-model will be ignored, but all its child
  * elements will be inserted into the {@code <wdkModel>} in the top level DOM.
  * </p>
- * 
+ *
  * <p>
  * Next, the DOM will be streamed into Apache {@link org.apache.commons.digester.Digester}, and a
  * {@link WdkModel} object will be created.
  * </p>
- * 
+ *
  * <p>
  * Next, {@link WdkModel#excludeResources} will be called, and the resources that don't belong to the current
  * project will be removed, and the model objects will be cleaned up to remove excluded resources, and some of
  * the unique constraints will be applied here. The include/exclude projects flag are used to declared if a
  * resource belongs, or doesn't belong, to a list of projects.
  * </p>
- * 
+ *
  * <p>
  * Lastly, {@link WdkModel#resolveReferences} will be called and object references will be resolved, for
  * example, a {@link Question} object will have a reference to {@link RecordClass} object. In certain cases, a
@@ -177,9 +179,9 @@ import org.xml.sax.SAXException;
  * {@link Query} will have a local copy of all the {@link Param}s because the properties of a {@link Param}
  * can be overriden in the {@code <paramRef>} inside of {@code <question>, <sqlQuery>, and <processQuery>}.
  * </p>
- * 
+ *
  * @author jerric
- * 
+ *
  */
 public class ModelXmlParser extends XmlParser {
 
@@ -259,7 +261,7 @@ public class ModelXmlParser extends XmlParser {
    * Before building the master model DOM, the constants will be loaded first, and then substituted into each
    * sub model dom. Then each sub model dom will be combined into the master model. At last, the properties
    * from model.prop will be substituded into the master model.
-   * 
+   *
    * @param projectId
    * @param wdkModelURL
    * @param properties
@@ -317,7 +319,7 @@ public class ModelXmlParser extends XmlParser {
 
   /**
    * Load constants recursively from all the model files.
-   * 
+   *
    * @param projectId
    * @param modelXmlURL
    * @return
@@ -377,7 +379,7 @@ public class ModelXmlParser extends XmlParser {
   /**
    * Valid the xml first, and then subsitute properties and constants, and at last return the parsed XML
    * Document.
-   * 
+   *
    * @param modelXmlURL
    * @param properties
    * @param replacedMacros
@@ -552,7 +554,7 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/ontology", OntologyFactoryImpl.class, "addOntology");
     configureNode(digester, "wdkModel/ontology/property", WdkModelText.class, "addProperty");
     digester.addCallMethod("wdkModel/ontology/property", "setText", 0);
-    
+
     // categories
     configureNode(digester, "wdkModel/searchCategory", SearchCategory.class, "addCategory");
 
@@ -570,6 +572,48 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "*/property", WdkModelText.class, "addProperty");
     digester.addCallMethod("*/property", "setText", 0);
 
+    // Configure attribute tool bundles
+    configureToolBundlesNode(digester);
+    configureNode(digester, "wdkModel/defaultColumnToolBundle",
+      DefaultAttributeToolBundleRef.class, "setDefaultColumnToolBundleRef");
+  }
+
+  private static void configureToolBundlesNode(final Digester dig) {
+    final String root = "wdkModel/columnToolBundles";
+    final String bundle = root + "/toolBundle";
+    final String tool = bundle + "/tool";
+    configureNode(dig, root, ColumnToolBundles.class,
+      "setColumnToolBundles");
+
+    configureNode(dig, bundle, StandardToolBundleBuilder.class, "addBundle");
+    configureNode(dig, tool, StandardToolSetBuilder.class, "addTool");
+
+    configureColumnReporter(dig, tool + "/string/reporter", "setStringReporter");
+    configureColumnReporter(dig, tool + "/date/reporter", "setDateReporter");
+    configureColumnReporter(dig, tool + "/number/reporter", "setNumberReporter");
+    configureColumnReporter(dig, tool + "/default/reporter", "setOtherReporter");
+
+    configureColumnFilter(dig, tool + "/string/filter", "setStringFilter");
+    configureColumnFilter(dig, tool + "/date/filter", "setDateFilter");
+    configureColumnFilter(dig, tool + "/number/filter", "setNumberFilter");
+    configureColumnFilter(dig, tool + "/default/filter", "setOtherFilter");
+  }
+
+  private static void configureColumnReporter(Digester dig, String path, String method) {
+    configureColumnTool(dig, path, method, ColumnReporterBuilder.class);
+  }
+
+  private static void configureColumnFilter(Digester dig, String path, String method) {
+    configureColumnTool(dig, path, method, ColumnFilterBuilder.class);
+  }
+
+  private static
+  <S extends ColumnToolInstance, T extends ColumnTool<S>, R extends ColumnToolBuilder<S,T>>
+  void configureColumnTool(Digester dig, String path,
+      String method, Class<R> type) {
+    configureNode(dig, path, type, method);
+    dig.addCallMethod(path, "setImplementation", 1);
+    dig.addCallParam(path, 0, "implementation");
   }
 
   private static void configureRecordClassSet(Digester digester) {
@@ -585,8 +629,6 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "*/attributeCategory", AttributeCategory.class, "addAttributeCategory");
     configureNode(digester, "*/attributeCategory/description", WdkModelText.class, "setDescription");
     digester.addCallMethod("*/attributeCategory/description", "setText", 0);
-
-
 
     // favorite references
     configureNode(digester, "wdkModel/recordClassSet/recordClass/favorite", FavoriteReference.class,
@@ -643,6 +685,10 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod("wdkModel/recordClassSet/recordClass/answerFilter/instance/paramValue", "setText",
         0);
 
+    // Default attribute tool bundle
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/defaultColumnToolBundle",
+      DefaultAttributeToolBundleRef.class, "setDefaultToolBundleRef");
+
     // attribute query ref
     configureNode(digester, "wdkModel/recordClassSet/recordClass/attributeQueryRef",
         AttributeQueryReference.class, "addAttributesQueryRef");
@@ -687,10 +733,10 @@ public class ModelXmlParser extends XmlParser {
 
     configureNode(digester, "wdkModel/recordClassSet/recordClass/filterRef", FilterReference.class,
         "addFilterReference");
-    
+
     configureNode(digester, "wdkModel/recordClassSet/recordClass/count", CountReference.class,
         "setCountReference");
-    
+
     configureNode(digester, "wdkModel/recordClassSet/recordClass/boolean", BooleanReference.class,
         "setBooleanReference");
 
@@ -763,21 +809,21 @@ public class ModelXmlParser extends XmlParser {
     configureParamContent(digester, path, ParamSuggestion.class);
     configureNode(digester, path + "/regex", WdkModelText.class, "addRegex");
     digester.addCallMethod(path + "/regex", "setText", 0);
-    
+
     // number param
     path = "wdkModel/paramSet/numberParam";
     configureNode(digester, path, NumberParam.class, "addParam");
     configureParamContent(digester, path, ParamSuggestion.class);
     configureNode(digester, path + "/regex", WdkModelText.class, "addRegex");
     digester.addCallMethod(path + "/regex", "setText", 0);
-    
+
     // number range param
     path = "wdkModel/paramSet/numberRangeParam";
     configureNode(digester, path, NumberRangeParam.class, "addParam");
     configureParamContent(digester, path, ParamSuggestion.class);
     configureNode(digester, path + "/regex", WdkModelText.class, "addRegex");
     digester.addCallMethod(path + "/regex", "setText", 0);
-    
+
     // date param
     path = "wdkModel/paramSet/dateParam";
     configureNode(digester, path, DateParam.class, "addParam");
@@ -791,7 +837,7 @@ public class ModelXmlParser extends XmlParser {
     configureParamContent(digester, path, ParamSuggestion.class);
     configureNode(digester, path + "/regex", WdkModelText.class, "addRegex");
     digester.addCallMethod(path + "/regex", "setText", 0);
-    
+
     // flatVocabParam
     path = "wdkModel/paramSet/flatVocabParam";
     configureNode(digester, path, FlatVocabParam.class, "addParam");
@@ -999,7 +1045,7 @@ public class ModelXmlParser extends XmlParser {
   private static void configureAttributeReporters(Digester digester, String attribute) {
     String prefix = "*/" + attribute + "/reporter";
     // configure plugins for
-    configureNode(digester, prefix, AttributeReporterRef.class, "addReporterReference");
+    configureNode(digester, prefix, org.gusdb.wdk.model.report.AttributeReporterRef.class, "addReporterReference");
     configureNode(digester, prefix + "/property", WdkModelText.class, "addProperty");
     digester.addCallMethod(prefix + "/property", "setText", 0);
 
@@ -1020,7 +1066,7 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/uiConfig", UIConfig.class, "setUiConfig");
     configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies", ExtraLogoutCookies.class,
         "setExtraLogoutCookies");
-    configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies/cookie", WdkCookie.class, "add");
+    configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies/cookie", CookieBuilder.class, "add");
   }
 
   private static void configureStepAnalysis(Digester digester) {

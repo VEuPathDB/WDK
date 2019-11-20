@@ -4,12 +4,12 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.user.User;
 
 /**
  * BooleanQueryInstance.java
@@ -29,31 +29,19 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 
   private BooleanQuery booleanQuery;
 
-  /**
-   * @param query
-   * @param values
-   * @throws WdkUserException
-   */
-  protected BooleanQueryInstance(User user, BooleanQuery query,
-      Map<String, String> values, boolean validate, int assignedWeight,
-      Map<String, String> context) throws WdkModelException, WdkUserException {
-    // boolean query doesn't use assigned weight
-    super(user, query, values, validate, assignedWeight, context);
-    this.booleanQuery = query;
+  protected BooleanQueryInstance(RunnableObj<QueryInstanceSpec> spec) {
+    super(spec);
+    if (!(spec.get().getQuery() instanceof BooleanQuery)) {
+      throw new IllegalStateException("Spec passed to BooleanQueryInstance does not contain a BooleanQuery");
+    }
+    booleanQuery = (BooleanQuery)spec.get().getQuery();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.SqlQueryInstance#getUncachedSql()
-   */
   @Override
-  public String getUncachedSql() throws WdkModelException, WdkUserException {
+  public String getUncachedSql() throws WdkModelException {
 
-    Map<String, String> internalValues = getParamInternalValues();
-
-    // parse operator
-    String operator = internalValues.get(booleanQuery.getOperatorParam().getName());
+    // parse operator - special case: use stable value to determine operator
+    String operator = getParamStableValues().get(booleanQuery.getOperatorParam().getName());
     BooleanOperator op = BooleanOperator.parse(operator);
     DBPlatform platform = _wdkModel.getAppDb().getPlatform();
     operator = op.getOperator(platform);
@@ -230,14 +218,14 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 	  return rc.getPrimaryKeyDefinition().getColumnRefs();
   }
   
-    protected String getLeftSql ()  throws WdkModelException, WdkUserException {
+    protected String getLeftSql()  throws WdkModelException {
 	Map<String, String> internalValues = getParamInternalValues();
         AnswerParam leftParam = booleanQuery.getLeftOperandParam();
 	String leftSubSql = internalValues.get(leftParam.getName());
 	return constructOperandSql(leftSubSql);
     }
 
-    protected String getRightSql ()  throws WdkModelException, WdkUserException {
+    protected String getRightSql()  throws WdkModelException {
 	Map<String, String> internalValues = getParamInternalValues();
 	AnswerParam rightParam = booleanQuery.getRightOperandParam();
 	String rightSubSql = internalValues.get(rightParam.getName());

@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.filter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
@@ -117,6 +118,13 @@ public abstract class FilterDefinition extends WdkModelBase {
     }
     _descriptions.clear();
     _descriptions = null;
+  }
+
+  @Override
+  public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+    if (_isViewOnly && _isAlwaysApplied) {
+      throw new WdkModelException("Filter " + _name + " cannot be both view-only and always-applied.  View filters are never automatically applied.");
+    }
   }
 
   protected void initializeFilter(Filter filter) {

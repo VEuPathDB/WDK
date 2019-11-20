@@ -12,13 +12,12 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONObject;
 
 /**
  * The enumParam represents a list of param values declared in the model that user can choose from.
- * 
+ *
  * @author jerric
- * 
+ *
  */
 public class EnumParam extends AbstractEnumParam {
 
@@ -28,7 +27,7 @@ public class EnumParam extends AbstractEnumParam {
   private EnumItemList _enumItemList;
 
   public EnumParam() {
-    _enumItemLists = new ArrayList<EnumItemList>();
+    _enumItemLists = new ArrayList<>();
   }
 
   public EnumParam(EnumParam param) {
@@ -49,11 +48,11 @@ public class EnumParam extends AbstractEnumParam {
   // ///////////////////////////////////////////////////////////////////
 
   @Override
-  protected EnumParamVocabInstance createVocabInstance(User user, Map<String, String> dependedParamValues)
+  public EnumParamVocabInstance getVocabInstance(User user, Map<String, String> dependedParamValues)
       throws WdkModelException {
     LOG.trace("Entering createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
     Set<Param> dependedParams = getDependedParams();
-    EnumParamVocabInstance cache = new EnumParamVocabInstance(dependedParamValues, this);
+    EnumParamVocabInstance cache = new EnumParamVocabInstance(dependedParamValues);
     EnumItem[] enumItems = _enumItemList.getEnumItems();
     for (EnumItem item : enumItems) {
       String term = item.getTerm();
@@ -86,16 +85,10 @@ public class EnumParam extends AbstractEnumParam {
       throw new WdkEmptyEnumListException("The EnumParam [" + getFullName() + "] doesn't have any values.");
 
     initTreeMap(cache);
-    applySelectMode(cache);
     LOG.trace("Leaving createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
     return cache;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
@@ -126,11 +119,6 @@ public class EnumParam extends AbstractEnumParam {
       throw new WdkModelException("No enum items available in enumParam " + getFullName());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
-   */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
@@ -154,49 +142,21 @@ public class EnumParam extends AbstractEnumParam {
       setDefault(sb.toString());
     }
   }
-  
-  /**
-   * enum params can't get stale, because they can't actually be dependent (since they have no query)
-   */
-  @Override
-  public boolean isStale(Set<String> staleDependedParamsFullNames) {
-    return false;
-  }
 
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#clone()
-   */
   @Override
   public Param clone() {
     return new EnumParam(this);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
-   */
-  @Override
-  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) {
-    // do nothing. do not add the enum list into the content, since they may
-    // be
-    // changed between versions, but we don't want to invalidate a query
-    // because
-    // of it.
-  }
-  
   @Override
   public Set<String> getContainedQueryFullNames() {
-    Set<String> names = new HashSet<String>();
+    Set<String> names = new HashSet<>();
     return names;
   }
-  
+
   @Override
   public List<Query> getQueries() {
-	return new ArrayList<Query>();
+    return new ArrayList<>();
   }
 
 }

@@ -30,17 +30,24 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.runtime.GusHome;
+import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
-import org.gusdb.wdk.model.query.param.FlatVocabParam;
+import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.test.CommandHelper;
 import org.gusdb.wdk.model.test.stress.StressTestRunner.RunnerState;
 import org.gusdb.wdk.model.test.stress.StressTestTask.ResultType;
+import org.gusdb.wdk.model.user.StepContainer;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 
@@ -71,6 +78,7 @@ public class StressTester {
     private static Logger logger = Logger.getLogger(StressTester.class);
 
     private final WdkModel _wdkModel;
+    private final User _user;
     private final List<UrlItem> urlPool;
     private final Map<String, Map<String, Set<String>>> questionCache;
 
@@ -97,6 +105,7 @@ public class StressTester {
         logger.info("Initializing stress test on " + wdkModel.getProjectId());
 
         _wdkModel = wdkModel;
+        _user = wdkModel.getSystemUser();
         urlPool = new ArrayList<UrlItem>();
         otherUrls = new LinkedHashMap<String, String>();
         questionCache = new LinkedHashMap<String, Map<String, Set<String>>>();
@@ -254,28 +263,45 @@ public class StressTester {
 
             Question[] questions = qset.getQuestions();
             for (Question question : questions) {
-                // create question cache, and create param stub, and load the
-                // vocab params
-                String qName = question.getFullName();
-                Param[] params = question.getParams();
-                Map<String, Set<String>> paramMap = new LinkedHashMap<String, Set<String>>();
+                // skip questions with certain types of params
                 boolean unusable = false;
-                for (Param param : params) {
-                    Set<String> values = new LinkedHashSet<String>();
-                    if (param instanceof FlatVocabParam) {
-                        FlatVocabParam fvParam = (FlatVocabParam) param;
-                        String[] terms = fvParam.getVocab(null); // assume independent param
-                        for (String term : terms) {
+                for (Param param : question.getParams()) {
+                  if (param instanceof AnswerParam ||
+                      param instanceof DatasetParam) {
+                    unusable = true;
+                    break;
+                  }
+                }
+                if (unusable) continue;
+                
+                // create question cache, and create param stub
+                String qName = question.getFullName();
+                try {
+                  SemanticallyValid<QueryInstanceSpec> validSpec =
+                    QueryInstanceSpec.builder()
+                      .buildValidated(_user, question.getQuery(), StepContainer.emptyContainer(),
+                        ValidationLevel.SEMANTIC, FillStrategy.FILL_PARAM_IF_MISSING)
+                      .getSemanticallyValid()
+                      .getOrThrow(spec -> new WdkModelException(spec.getValidationBundle().toString()));
+                  Param[] params = question.getParams();
+                  Map<String, Set<String>> paramMap = new LinkedHashMap<String, Set<String>>();
+                  for (Param param : params) {
+                    Set<String> values = new LinkedHashSet<>();
+                    if (param instanceof AbstractEnumParam) {
+                        AbstractEnumParam enumParam = (AbstractEnumParam) param;
+                        EnumParamVocabInstance vocab = enumParam.getVocabInstance(validSpec);
+                        for (String term : vocab.getVocab()) {
                             values.add(term);
                         }
-                    } else if (param instanceof AnswerParam
-                            || param instanceof DatasetParam) {
-                        unusable = true;
-                        break;
                     }
                     paramMap.put(param.getName(), values);
+                  }
+                  questionCache.put(qName, paramMap);
                 }
-                if (!unusable) questionCache.put(qName, paramMap);
+                catch (WdkModelException e) {
+                  // could not load vocabularies for at least one param; skip
+                  continue;
+                }
             }
         }
     }

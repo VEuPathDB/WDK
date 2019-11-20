@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,15 +18,14 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.query.Column;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QuerySet;
-import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.query.*;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.question.Question;
@@ -35,6 +35,7 @@ import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.RecordNotFoundException;
 import org.gusdb.wdk.model.record.StaticRecordInstance;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 
@@ -67,19 +68,22 @@ public class BasketFactory {
     _userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
   }
 
-  public void addToBasket(User user, Step step) throws WdkModelException, WdkUserException {
-
-    LOG.debug("adding to basket from step...");
-
-    AnswerValue answerValue = step.getAnswerValue();
-    RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-    List<String[]> pkValues = answerValue.getAllIds();
-    addToBasket(user, recordClass, pkValues);
+  public void addEntireResultToBasket(User user, RunnableObj<AnswerSpec> spec) throws WdkModelException {
+    List<String[]> pkValues = AnswerValueFactory.makeAnswer(user, spec).getAllIds();
+    addToBasket(user, spec.get().getQuestion().getRecordClass(), pkValues);
   }
 
-  public void addPksToBasket(User user, RecordClass recordClass, List<PrimaryKeyValue> recordsToAdd)
-      throws WdkModelException {
+  public void removeEntireResultFromBasket(User user, RunnableObj<AnswerSpec> spec) throws WdkModelException {
+    List<String[]> pkValues = AnswerValueFactory.makeAnswer(user, spec).getAllIds();
+    removeFromBasket(user, spec.get().getQuestion().getRecordClass(), pkValues);
+  }
+
+  public void addPksToBasket(User user, RecordClass recordClass, Collection<PrimaryKeyValue> recordsToAdd) throws WdkModelException {
     addToBasket(user, recordClass, PrimaryKeyValue.toStringArrays(recordsToAdd));
+  }
+
+  public void removePksFromBasket(User user, RecordClass recordClass, Collection<PrimaryKeyValue> recordsToDelete) throws WdkModelException {
+    removeFromBasket(user, recordClass, PrimaryKeyValue.toStringArrays(recordsToDelete));
   }
 
   /**
@@ -88,7 +92,7 @@ public class BasketFactory {
    * @param pkValues a list of primary key values. the inner map is a primary-key column-value map
    * @throws WdkModelException
    */
-  public void addToBasket(User user, RecordClass recordClass, List<String[]> pkValues)
+  public void addToBasket(User user, RecordClass recordClass, Collection<String[]> pkValues)
       throws WdkModelException {
     long userId = user.getUserId();
     String projectId = _wdkModel.getProjectId();
@@ -171,18 +175,6 @@ public class BasketFactory {
       SqlUtils.closeStatement(psInsert);
       SqlUtils.closeStatement(psCount);
     }
-  }
-
-  public void removeFromBasket(User user, Step step) throws WdkModelException, WdkUserException {
-    AnswerValue answerValue = step.getAnswerValue();
-    RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-    List<String[]> pkValues = answerValue.getAllIds();
-    removeFromBasket(user, recordClass, pkValues);
-  }
-
-  public void removePksFromBasket(User user, RecordClass recordClass, List<PrimaryKeyValue> recordsToDelete)
-      throws WdkModelException {
-    removeFromBasket(user, recordClass, PrimaryKeyValue.toStringArrays(recordsToDelete));
   }
 
   public void removeFromBasket(User user, RecordClass recordClass, List<String[]> pkValues)
@@ -372,7 +364,7 @@ public class BasketFactory {
   }
 
   public List<RecordInstance> getBasket(User user, RecordClass recordClass)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     String sql = "SELECT * FROM " + _userSchema + TABLE_BASKET + " WHERE " + COLUMN_PROJECT_ID + " = ? AND " +
         COLUMN_USER_ID + " = ? AND " + COLUMN_RECORD_CLASS + " =?";
     DataSource ds = _wdkModel.getUserDb().getDataSource();
@@ -397,8 +389,17 @@ public class BasketFactory {
             Object columnValue = rs.getObject(Utilities.COLUMN_PK_PREFIX + i);
             pkValues.put(columns[i - 1], columnValue);
           }
-          RecordInstance record = new StaticRecordInstance(user, recordClass, recordClass, pkValues, true);
-          records.add(record);
+          try {
+            RecordInstance record = new StaticRecordInstance(user, recordClass, recordClass, pkValues, true);
+            records.add(record);
+          }
+          catch (WdkUserException | RecordNotFoundException e) {
+            // FIXME: thrown because pkValues either:
+            //    WdkUserException: mapped to more than one record
+            //    RecordNotFoundException: did not map to any records
+            // Skip both for now but probably want to convert the multiple case
+            // IDs to records and add all those records to the result.
+          }
         }
         return records;
       }
@@ -418,13 +419,13 @@ public class BasketFactory {
 
   /**
    * the method has to be called before the recordClasses are resolved.
-   * 
+   *
    * @param recordClass
    */
   public void createSnapshotBasketQuestion(RecordClass recordClass) throws WdkModelException {
     // check if the basket question already exists
     String qname = recordClass.getFullName().replace('.', '_') + SNAPSHOT_BASKET_QUESTION_SUFFIX;
-    QuestionSet questionSet = _wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
+    QuestionSet questionSet = _wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET).get();
     if (questionSet.contains(qname))
       return;
 
@@ -507,13 +508,13 @@ public class BasketFactory {
 
   /**
    * the method has to be called before the recordClasses are resolved.
-   * 
+   *
    * @param recordClass
    */
   public void createRealtimeBasketQuestion(RecordClass recordClass) throws WdkModelException {
     // check if the basket question already exists
     String qname = recordClass.getFullName().replace('.', '_') + REALTIME_BASKET_QUESTION_SUFFIX;
-    QuestionSet questionSet = _wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
+    QuestionSet questionSet = _wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET).get();
     if (questionSet.contains(qname))
       return;
 
@@ -578,7 +579,7 @@ public class BasketFactory {
 
   /**
    * the method has to be called before the recordClasses are resolved.
-   * 
+   *
    * @param recordClass
    * @return
    */
@@ -602,10 +603,12 @@ public class BasketFactory {
     for (String columnName : pkColumns) {
       Column column = new Column();
       column.setName(columnName);
+      column.setType(ColumnType.STRING); // TODO: Should this be string?
       query.addColumn(column);
     }
     Column column = new Column();
     column.setName(BASKET_ATTRIBUTE);
+    column.setType(ColumnType.BOOLEAN); // TODO: Should this be boolean?
     query.addColumn(column);
 
     // make sure we create index on primary keys
@@ -621,18 +624,18 @@ public class BasketFactory {
     for (int i = 0; i < pkColumns.length; i++) {
       sql.append("i." + pkColumns[i] + ", ");
     }
-    // case clause works for both Oracle & PostreSQL
-    sql.append("(CASE WHEN b." + prefix + "1 IS NULL THEN 0 ELSE 1 END) ");
-    sql.append(" AS " + BASKET_ATTRIBUTE);
-    sql.append(" FROM (##WDK_ID_SQL_NO_FILTERS##) i ");
-    sql.append(" LEFT JOIN " + _userSchema + TABLE_BASKET + dbLink + " b ");
+    // case clause works for both Oracle & PostgreSQL
+    sql.append("(CASE WHEN b." + prefix + "1 IS NULL THEN 0 ELSE 1 END) ")
+      .append(" AS " + BASKET_ATTRIBUTE)
+      .append(" FROM (##WDK_ID_SQL_NO_FILTERS##) i ")
+      .append(" LEFT JOIN " + _userSchema + TABLE_BASKET + dbLink + " b ");
     for (int i = 0; i < pkColumns.length; i++) {
-      sql.append((i == 0) ? " ON " : " AND ");
-      sql.append(" i." + pkColumns[i] + " = b." + prefix + (i + 1));
+      sql.append((i == 0) ? " ON " : " AND ")
+        .append(" i." + pkColumns[i] + " = b." + prefix + (i + 1));
     }
-    sql.append(" AND b." + COLUMN_USER_ID + " = $$" + Utilities.PARAM_USER_ID + "$$ ");
-    sql.append(" AND b." + COLUMN_PROJECT_ID + " = '" + projectId + "'");
-    sql.append(" AND b." + COLUMN_RECORD_CLASS + " = '" + rcName + "'");
+    sql.append(" AND b." + COLUMN_USER_ID + " = $$" + Utilities.PARAM_USER_ID + "$$ ")
+      .append(" AND b." + COLUMN_PROJECT_ID + " = '" + projectId + "'")
+      .append(" AND b." + COLUMN_RECORD_CLASS + " = '" + rcName + "'");
 
     query.setSql(sql.toString());
     querySet.addQuery(query);
@@ -641,8 +644,6 @@ public class BasketFactory {
 
   /**
    * this method has to be called before resolving the model
-   * 
-   * @param recordClass
    */
   public void createAttributeQueryRef(RecordClass recordClass) throws WdkModelException {
     String rcName = recordClass.getFullName();

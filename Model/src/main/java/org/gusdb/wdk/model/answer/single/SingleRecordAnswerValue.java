@@ -12,11 +12,12 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.ResultSizeFactory;
-import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -36,11 +37,12 @@ public class SingleRecordAnswerValue extends AnswerValue {
   private RecordClass _recordClass;
   private Map<String, Object> _pkMap;
 
-  public SingleRecordAnswerValue(User user, RecordClass recordClass,
-      Question question, Map<String, Object> pkMap) {
-    super(user, question, null, 1, 1, Collections.EMPTY_MAP, null);
-    _recordClass = recordClass;
-    _pkMap = pkMap;
+  public SingleRecordAnswerValue(User user, RunnableObj<AnswerSpec> validSpec) throws WdkModelException {
+    super(user, validSpec, 1, 1, Collections.EMPTY_MAP);
+    SingleRecordQuestion question = (SingleRecordQuestion)validSpec.get().getQuestion();
+    SingleRecordQuestionParam param = question.getParam();
+    _recordClass = question.getRecordClass();
+    _pkMap = param.parseParamValue(validSpec.get().getQueryInstanceSpec().get(param.getName()));
     _resultSizeFactory = new SingleRecordResultSizeFactory(this);
   }
 
@@ -54,13 +56,19 @@ public class SingleRecordAnswerValue extends AnswerValue {
   }
 
   @Override
-  public AnswerValue cloneWithNewPaging(int startIndex, int endIndex) {
-    // paging is irrelevant since there's only one record
+  public AnswerValue clone() {
+    // paging/sorting is irrelevant since there's only one record
     return this;
   }
 
   @Override
-  protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException, WdkUserException {
+  public AnswerValue cloneWithNewPaging(int startIndex, int endIndex) {
+    // paging/sorting is irrelevant since there's only one record
+    return this;
+  }
+
+  @Override
+  protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException {
     DBPlatform platform = _recordClass.getWdkModel().getAppDb().getPlatform();
     return new StringBuilder("( select ")
       .append(join(mapToList(_pkMap.entrySet(), pkColumnValue -> {
@@ -75,20 +83,20 @@ public class SingleRecordAnswerValue extends AnswerValue {
   }
 
   @Override
-  protected String getNoFiltersIdSql() throws WdkModelException, WdkUserException {
+  protected String getNoFiltersIdSql() throws WdkModelException {
     // no filters can be applied to single-record questions/answers
     return getIdSql();
   }
 
   @Override
-  public String getChecksum() throws WdkModelException, WdkUserException {
+  public String getChecksum() throws WdkModelException {
     return EncryptionUtil.encrypt(new StringBuilder("SingleRecordAnswer_")
       .append(_recordClass.getFullName()).append("_")
       .append(FormatUtil.prettyPrint(_pkMap)).toString());
   }
   
   @Override
-  public List<String[]> getAllIds() throws WdkModelException, WdkUserException {
+  public List<String[]> getAllIds() throws WdkModelException {
     String[] pkArray = new String[_pkMap.size()];
     String[] pkColNames = _recordClass.getPrimaryKeyDefinition().getColumnRefs();
     if (pkArray.length != pkColNames.length)
@@ -102,13 +110,13 @@ public class SingleRecordAnswerValue extends AnswerValue {
   @Override
   public Map<String, String> getParamDisplays() {
     return new MapBuilder<String,String>(
-        SingleRecordQuestion.PRIMARY_KEY_PARAM_NAME,
+        SingleRecordQuestionParam.PRIMARY_KEY_PARAM_NAME,
         join(_pkMap.values().toArray(), ",")
     ).toMap();
   }
 
   @Override
-  public void setSortingMap(Map<String, Boolean> sortingMap) throws WdkModelException {
+  public void setSortingMap(Map<String, Boolean> sortingMap) {
     // no-op since sorting is irrelevant in a single record answer
   }
 }

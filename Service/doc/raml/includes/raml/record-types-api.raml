@@ -1,0 +1,55 @@
+displayName: Record Types
+
+get:
+  description: >
+    Get a listing of supported record types, either in summary or detail.
+    
+    Each Record Type describes one of the (potentially many) types of records that are available through the API .  Each Record Type includes a set of records of that type, and a set of searches that return different sets of those records.  The sets of records and searches are available in sub-endpoints.  Record types, and their records and searches, are the primary means of accessing data through this API.
+    
+    Individual records serve their data through "attributes," which are single-valued (e.g. "age") and "tables," which are multi-valued (e.g. "friends").
+
+  queryParameters:
+    expand: if false, just return an array of record type names (url segments).  If true return full details of each record type, as well as full details of all searches, and available reports.  This is the only endpoint that offers a full listing of  record types, searches and reports.
+  body:
+    application/json:
+      type: !include ../../../schema/wdk/records/get.json
+
+
+/{recordType}:
+  uriParameters: 
+    recordType: 
+      type: string
+  get:
+    description: >
+      Get a detailed description of the specified record type.  This includes properties of the type, eg, whether it is displayable, and the attributes and tables that each record of this type will have, as well as the details of searches available for this record type.
+  body:
+    application/json:
+      type: !include ../../../schema/wdk/records/name/get.json
+
+
+  # TODO: this endpoint will be changed to a GET
+  /records:
+    post:
+      description: >
+        (GET by POST) get the attributes and tables of a record instance.  If
+        just the PK is supplied, gets all tables and attributes.  Otherwise,
+        only get those that are explicitly specified.
+      queryParameters:
+        source_id:
+        project:
+        attributes:
+        tables:
+        categoriesFilter:
+        internalFilter:
+        inReportMakerFilter:
+        tableNamesFilter:
+        attributesNamesFilter:
+      body:
+        application/json:
+      responses: 
+        200:
+          description: Success
+          body: 
+            application/json:
+
+

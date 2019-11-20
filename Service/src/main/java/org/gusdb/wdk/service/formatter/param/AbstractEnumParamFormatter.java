@@ -2,46 +2,34 @@ package org.gusdb.wdk.service.formatter.param;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public abstract class AbstractEnumParamFormatter extends ParamFormatter<AbstractEnumParam> {
+
+  private static final String DUMMY_VALUE = "@@fake@@";
 
   AbstractEnumParamFormatter(AbstractEnumParam param) {
     super(param);
   }
 
   @Override
-  public JSONObject getJson() throws JSONException, WdkModelException, WdkUserException {
-    return super.getJson()
+  public <S extends ParameterContainerInstanceSpec<S>> JSONObject getJson(DisplayablyValid<S> spec) throws WdkModelException {
+    return getBaseJson(spec)
         .put(JsonKeys.COUNT_ONLY_LEAVES, _param.getCountOnlyLeaves())
         .put(JsonKeys.MAX_SELECTED_COUNT, _param.getMaxSelectedCount())
         .put(JsonKeys.MIN_SELECTED_COUNT, _param.getMinSelectedCount())
         .put(JsonKeys.IS_MULTIPICK, _param.getMultiPick())
         .put(JsonKeys.DISPLAY_TYPE, _param.getDisplayType())
         .put(JsonKeys.DEPTH_EXPANDED, _param.getDepthExpanded());
-  }
-
-  /**
-   * Override so we don't unnecessarily calculate context-free default
-   */
-  @Override
-  protected String getDefault() {
-    return null;
-  }
-
-  protected EnumParamVocabInstance getVocabInstance(User user, Map<String,String> dependedParamValues) {
-    return _param.getVocabInstance(user, dependedParamValues);
   }
 
   protected JSONArray getVocabArrayJson(EnumParamVocabInstance vocabInstance) throws WdkModelException {
@@ -66,8 +54,8 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
       return nodeToJson(rootNodes[0]);
     }
 
-    EnumParamTermNode root = new EnumParamTermNode("@@fake@@");
-    root.setDisplay("@@fake@@");
+    EnumParamTermNode root = new EnumParamTermNode(DUMMY_VALUE);
+    root.setDisplay(DUMMY_VALUE);
     for (EnumParamTermNode child: rootNodes) {
       root.addChild(child);
     }
@@ -76,8 +64,13 @@ public abstract class AbstractEnumParamFormatter extends ParamFormatter<Abstract
 
   protected JSONObject nodeToJson(EnumParamTermNode node) {
     return new JSONObject()
-        .put("data", new JSONObject().put("term", node.getTerm()).put("display", node.getDisplay()))
-        .put("children", new JSONArray(Arrays.stream(node.getChildren()).map(this::nodeToJson).toArray()));
+        .put(JsonKeys.DATA, new JSONObject().put(JsonKeys.TERM, node.getTerm()).put(JsonKeys.DISPLAY, node.getDisplay()))
+        .put(JsonKeys.CHILDREN, new JSONArray(Arrays.stream(node.getChildren()).map(this::nodeToJson).toArray()));
+  }
+
+  @Override
+  public String getParamType() {
+    return JsonKeys.VOCAB_PARAM_TYPE;
   }
 
 }

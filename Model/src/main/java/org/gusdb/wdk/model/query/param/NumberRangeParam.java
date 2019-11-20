@@ -2,14 +2,14 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,10 +21,10 @@ import org.json.JSONObject;
  */
 public class NumberRangeParam extends Param {
 
-  private Integer _numDecimalPlaces = new Integer(1);
+  private Integer _numDecimalPlaces = Integer.valueOf(1);
   private Double _min;
   private Double _max;
-  private Double _step;
+  private Double _increment;
   private boolean _isInteger;
 
   private List<WdkModelText> _regexes;
@@ -39,15 +39,16 @@ public class NumberRangeParam extends Param {
 
   public NumberRangeParam(NumberRangeParam param) {
     super(param);
-    if (param._regexes != null)
+    if (param._regexes != null) {
       _regexes = new ArrayList<WdkModelText>();
+    }
     _regex = param._regex;
     _numDecimalPlaces = param._numDecimalPlaces;
     _numDecimalPlaces = param._numDecimalPlaces == null ? _numDecimalPlaces : param._numDecimalPlaces;
     _isInteger = param._isInteger;
     _min = param._min;
     _max = param._max;
-    this.setStep(param._step);
+    setStep(param._increment);
   }
 
   /////////////////////////////////////////////////////////////////////
@@ -92,65 +93,56 @@ public class NumberRangeParam extends Param {
     return new NumberRangeParam(this);
   }
 
-  @Override
-  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
-    // nothing to be added
-  }
-
   /**
-   * Verifies that the stringified JSONObject holding the range is properly formatted, matches
-   * the supplied regex, adheres to all imposed property restrictions and that the range is
-   * properly ordered.
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
+   * Verifies that the stringified JSONObject holding the range is properly
+   * formatted, matches the supplied regex, adheres to all imposed property
+   * restrictions and that the range is properly ordered.
    */
   @Override
-  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkUserException, WdkModelException {
+  protected ParamValidity validateValue(PartiallyValidatedStableValues ctxParamVals, ValidationLevel level) {
 
-    Double values[] = new Double[2];
+    final String name = getName();
+    final String value = ctxParamVals.get(name);
+    final double min, max;
 
     // Insure that the JSON Object format is valid.
     try {
-      JSONObject stableValueJson = new JSONObject(stableValue);
-      values[0] = stableValueJson.getDouble("min");
-      values[1] = stableValueJson.getDouble("max");
+      JSONObject stableValueJson = new JSONObject(value);
+      min = stableValueJson.getDouble("min");
+      max = stableValueJson.getDouble("max");
     }
     catch(JSONException je) {
-      throw new WdkUserException("Could not parse '" + stableValue + "'. "
-          + "The range should be is the format {'min':'min value','max':'max value'}");
+      return ctxParamVals.setInvalid(name, level, "'" + value + "' must be is the format "
+        + "{\"min\":<min value>,\"max\":<max value>}");
     }
 
-    // Validate each value in the range against regex.  The regex could be a more
-    // restrictive test.
-    for(Double value : values) {
-      String stringValue = String.valueOf(value);
-      if (_regex != null && !stringValue.matches(_regex)) {
-        throw new WdkUserException("value '" + value + "' is invalid. " +
-            "It must match the regular expression '" + _regex + "'");
-      }
-    }
+    // Validate each value in the range against regex.
+    if (_regex != null)
+      if (!String.valueOf(min).matches(_regex)
+          || !String.valueOf(max).matches(_regex))
+        return ctxParamVals.setInvalid(name, level, "'" + value + "' is invalid."
+          + " It must match the regular expression '" + _regex + "'");
 
-    // By convention, the first value of the range should be less than or equal to the second value.
-    if(values[0] > values[1]) {
-      throw new WdkUserException("The miniumum value, '" + values[0] +  "', in the range"
-          + " must be less than the maximum value, '" + values[1] + "'");
-    }
+    // By convention, the first value of the range should be less than or equal
+    // to the second value.
+    if(min > max)
+      return ctxParamVals.setInvalid(name, level, "The miniumum value must be less than the maximum value");
 
     // Verify both ends of the range are integers if such is specified.
-    for(Double value : values) {
-      if(_isInteger && value.doubleValue() % 1 != 0) {
-        throw new WdkUserException("value '" + value + "' must be an integer.");
-      }
-    }
+    if (_isInteger && (min % 1 != 0 || max % 1 != 0))
+      return ctxParamVals.setInvalid(name, level, "Minimum and maximum values (" + min
+          + ", " + max + ") must both be integers");
 
     // Verify the given range in within any required limits
-    if(_min != null && values[0] < new Double(_min)) {
-        throw new WdkUserException("value '" + values[0] + "' must be greater than or equal to '" + _min + "'" );
-    }
-    if(_max != null && values[1] > new Double(_max)) {
-      throw new WdkUserException("value '" + values[1] + "' must be less than or equal to '" + _max + "'" );
-    }
+    if(_min != null && min < _min)
+      return ctxParamVals.setInvalid(name, level, "'" + min + "' must be "
+        + "greater than or equal to '" + _min + "'" );
+
+    if(_max != null && max > _max)
+      return ctxParamVals.setInvalid(name, level, "'" + max + "' must be less "
+        + "than or equal to '" + _max + "'" );
+
+    return ctxParamVals.setValid(name, level);
   }
 
   /**
@@ -226,8 +218,8 @@ public class NumberRangeParam extends Param {
   }
 
   @Override
-  public String getDefault() throws WdkModelException {
-    String defaultValue = super.getDefault();
+  public String getDefault(PartiallyValidatedStableValues stableValues) throws WdkModelException {
+    String defaultValue = super.getDefault(stableValues);
     try {
       return (defaultValue == null || defaultValue.isEmpty()) ?
           // if default not provided, default is the entire range
@@ -249,14 +241,14 @@ public class NumberRangeParam extends Param {
   }
 
   public Double getStep() {
-    return _step;
+    return _increment;
   }
 
-  public void setStep(Double step) {
-    if(step == null) {
-      step = _isInteger ? 1 : 0.01;
+  public void setStep(Double increment) {
+    if(increment == null) {
+      increment = _isInteger ? 1 : 0.01;
     }
-    _step = step;
+    _increment = increment;
   }
 
 }

@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
 
 public class ServerErrorBundle implements ErrorBundle {
 
@@ -77,32 +76,5 @@ public class ServerErrorBundle implements ErrorBundle {
           st.append("\n\n-- from request.getAttribute(CConstants.WDK_EXCEPTION)\n");
       }
       return st.toString();
-  }
-
-  @Override
-  public String getActionErrorsAsHtml() {
-    StringBuilder sb = new StringBuilder();
-    for (String error : _actionErrors) {
-        // filter non-sensical errors
-        if (!error.equals("???en_US.global.error.user???") &&
-            !error.equals("???en_US.global.error.model???")) {
-            sb.append("<li>" + error + "</li>\n");
-        }
-    }
-    String errorList = sb.toString();
-    return (errorList.isEmpty() ? "" : "<ul>\n" + errorList + "</ul>\n");
-  }
-
-  @Override
-  public String getActionErrorsAsText() {
-    StringBuilder sb = new StringBuilder();
-    for (String error : _actionErrors) {
-        // filter non-sensical errors
-        if (!error.equals("???en_US.global.error.user???") &&
-            !error.equals("???en_US.global.error.model???")) {
-            sb.append(error).append(FormatUtil.NL);
-        }
-    }
-    return sb.toString();
   }
 }

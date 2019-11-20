@@ -3,9 +3,9 @@ package org.gusdb.wdk.model.ontology;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 
 public class PropertyPredicate implements Predicate<OntologyNode> {
 

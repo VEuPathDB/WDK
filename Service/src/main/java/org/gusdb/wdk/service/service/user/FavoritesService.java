@@ -9,7 +9,6 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -54,7 +53,9 @@ import org.json.JSONObject;
  */
 public class FavoritesService extends UserService {
 
+  private static final String FAVORITES_SEGMENT = "favorites";
   private static final String FAVORITE_ID_PATH_PARAM = "favoriteId";
+  private static final String NAMED_FAVORITE_PATH = FAVORITES_SEGMENT + "/{" + FAVORITE_ID_PATH_PARAM + "}";
 
   @SuppressWarnings("unused")
   private static Logger LOG = Logger.getLogger(FavoritesService.class);
@@ -69,7 +70,7 @@ public class FavoritesService extends UserService {
    * @throws WdkModelException
    */
   @GET
-  @Path("favorites")
+  @Path(FAVORITES_SEGMENT)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getFavorites() throws WdkModelException {
     User user = getPrivateRegisteredUser();
@@ -77,73 +78,6 @@ public class FavoritesService extends UserService {
     return Response.ok(FavoritesFormatter.getFavoritesJson(favorites).toString()).build();
   }
 
-  /**
-   * Get the favorite, for favorite id, if it belongs to the given user.
-   * @param favoriteId
-   * @return a json object representation of the favorite or a 404 if no such favorite is found
-   * @throws WdkModelException
-   */
-  @GET
-  @Path("favorites/{favoriteId}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getFavoriteByFavoriteId(@PathParam(FAVORITE_ID_PATH_PARAM) Long favoriteId) throws WdkModelException {
-    try {
-      User user = getPrivateRegisteredUser();
-      Favorite favorite = getWdkModel().getFavoriteFactory().getFavorite(user, favoriteId);
-      if(favorite == null) {
-        throw new NotFoundException("No favorite with the id " + favoriteId + " was found for this user.");
-      }
-      return Response.ok(FavoritesFormatter.getFavoriteJson(favorite).toString()).build();
-    }
-    catch(NumberFormatException nfe) {
-      throw new BadRequestException("The favoriteId, " + favoriteId + " is not a number.");
-    }
-  }
-
-  /**
-   * Updates an existing favorite found by its favorite id (if belonging to the given user) with a
-   * new favorite.  The body need only contain note and group (both required but can be empty strings).
-   * Note that once created, a user cannot alter the recordClass or primarykey data of a favorite.
-   *
-   * @param favoriteId
-   * @param body
-   * @return - a 204 response in the event of a successful edit.
-   * @throws WdkModelException
-   * @throws DataValidationException
-   */
-  @PUT
-  @Path("favorites/{favoriteId}")
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Response editFavoriteByFavoriteId(@PathParam(FAVORITE_ID_PATH_PARAM) Long favoriteId, String body)
-      throws WdkModelException, DataValidationException {
-    User user = getPrivateRegisteredUser();
-    JSONObject json = new JSONObject(body);
-    try {
-      NoteAndGroup noteAndGroup = FavoriteRequests.createNoteAndGroupFromJson(json);
-      FavoriteFactory factory = getWdkModel().getFavoriteFactory();
-      factory.editFavorite(user, favoriteId, noteAndGroup.getNote(), noteAndGroup.getGroup());
-      return Response.noContent().build();
-    }
-    catch(WdkUserException e) {
-      throw new BadRequestException(e);
-    }
-  }
-
-  /**
-   * Delete favorite by given favorite id in url (no body)
-   * @param favoriteId
-   * @return - no response for successful execution
-   * @throws WdkModelException
-   */
-  @DELETE
-  @Path("favorites/{favoriteId}")
-  public Response deleteFavoriteByFavoriteId(@PathParam(FAVORITE_ID_PATH_PARAM) Long favoriteId) throws WdkModelException {
-    User user = getPrivateRegisteredUser();
-    List<Long> favoriteIds = new ArrayList<>();
-    favoriteIds.add(favoriteId);
-    getWdkModel().getFavoriteFactory().deleteFavorites(user,favoriteIds);
-    return Response.noContent().build();
-  }
 
   /**
    * Remove multiple favorites using a json array of favorite ids in the body of the request
@@ -154,30 +88,32 @@ public class FavoritesService extends UserService {
    * @throws DataValidationException
    */
   @PATCH
-  @Path("favorites")
+  @Path(FAVORITES_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
+  // TODO: @InSchema(...)
   public Response batchDeleteFavoritesByFavoriteIds(String body) throws WdkModelException, DataValidationException {
     User user = getPrivateRegisteredUser();
     FavoriteFactory factory = getWdkModel().getFavoriteFactory();
     JSONObject json = new JSONObject(body);
     FavoriteActions actions = new FavoriteActions(json);
-    int numDeleted = factory.deleteFavorites(user, actions.getIdsToDelete());
-    int numUndeleted = factory.undeleteFavorites(user, actions.getIdsToUndelete());
+
+    int numDeleted = 0, numUndeleted = 0;
+
+    switch (actions.getAction()) {
+      case DELETE:
+        numDeleted = factory.deleteFavorites(user, actions.getIdentifiers());
+        break;
+      case UNDELETE:
+        numUndeleted = factory.undeleteFavorites(user, actions.getIdentifiers());
+        break;
+      case DELETE_ALL:
+        numDeleted = factory.deleteAllFavorites(user);
+        break;
+    }
+
     return Response.ok(FavoritesFormatter.getCountsJson(numDeleted, numUndeleted).toString()).build();
   }
 
-  /**
-   * Delete all of the user's favorites
-   * @return - no response for successful execution
-   * @throws WdkModelException
-   */
-  @DELETE
-  @Path("favorites")
-  public Response deleteAllFavorites() throws WdkModelException {
-    User user = getPrivateRegisteredUser();
-    int count = getWdkModel().getFavoriteFactory().deleteAllFavorites(user);
-    return Response.ok(FavoritesFormatter.getCountJson(count).toString()).build();
-  }
 
   /**
    * Creates a new favorite for the given user.  If a favorite already exists for this record, it is returned.
@@ -189,7 +125,7 @@ public class FavoritesService extends UserService {
    * @throws DataValidationException
    */
   @POST
-  @Path("favorites")
+  @Path(FAVORITES_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response addToFavorites(String body) throws WdkModelException, DataValidationException {
@@ -208,6 +144,74 @@ public class FavoritesService extends UserService {
     catch(WdkUserException e) {
       throw new BadRequestException(e);
     }
+  }
+
+  /**
+   * Get the favorite, for favorite id, if it belongs to the given user.
+   * @param favoriteId
+   * @return a json object representation of the favorite or a 404 if no such favorite is found
+   * @throws WdkModelException
+   */
+  @GET
+  @Path(NAMED_FAVORITE_PATH)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getFavoriteByFavoriteId(@PathParam(FAVORITE_ID_PATH_PARAM) Long favoriteId) throws WdkModelException {
+    try {
+      User user = getPrivateRegisteredUser();
+      Favorite favorite = getWdkModel().getFavoriteFactory().getFavorite(user, favoriteId);
+      if(favorite == null) {
+        throw new NotFoundException("No favorite with the id " + favoriteId + " was found for this user.");
+      }
+      return Response.ok(FavoritesFormatter.getFavoriteJson(favorite).toString()).build();
+    }
+    catch(NumberFormatException nfe) {
+      throw new BadRequestException("The favoriteId, " + favoriteId + " is not a number.");
+    }
+  }
+
+  /**
+   * Updates the note and/or group (both required but can be empty strings).
+   * Note that once created, a user cannot alter the recordClass or primarykey data of a favorite.
+   *
+   * @param favoriteId
+   * @param body
+   * @return - a 204 response in the event of a successful edit.
+   * @throws WdkModelException
+   * @throws DataValidationException
+   */
+  @PATCH
+  @Path(NAMED_FAVORITE_PATH)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response editFavoriteByFavoriteId(@PathParam(FAVORITE_ID_PATH_PARAM) Long favoriteId, String body)
+      throws WdkModelException, DataValidationException {
+    User user = getPrivateRegisteredUser();
+    JSONObject json = new JSONObject(body);
+    try {
+      FavoriteFactory factory = getWdkModel().getFavoriteFactory();
+      Favorite fav = factory.getFavorite(user, favoriteId);
+      NoteAndGroup noteAndGroup = FavoriteRequests.createNoteAndGroupFromJson(json, fav.getNote(), fav.getGroup());
+      factory.editFavorite(user, favoriteId, noteAndGroup.getNote(), noteAndGroup.getGroup());
+      return Response.noContent().build();
+    }
+    catch(WdkUserException e) {
+      throw new BadRequestException(e);
+    }
+  }
+
+  /**
+   * Delete favorite by given favorite id in url (no body)
+   * @param favoriteId
+   * @return - no response for successful execution
+   * @throws WdkModelException
+   */
+  @DELETE
+  @Path(NAMED_FAVORITE_PATH)
+  public Response deleteFavoriteByFavoriteId(@PathParam(FAVORITE_ID_PATH_PARAM) Long favoriteId) throws WdkModelException {
+    User user = getPrivateRegisteredUser();
+    List<Long> favoriteIds = new ArrayList<>();
+    favoriteIds.add(favoriteId);
+    getWdkModel().getFavoriteFactory().deleteFavorites(user,favoriteIds);
+    return Response.noContent().build();
   }
 
   /**
@@ -234,7 +238,7 @@ public class FavoritesService extends UserService {
    * @throws DataValidationException
    */
   @POST
-  @Path("favorites/query")
+  @Path(FAVORITES_SEGMENT + "/query")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response queryFavoriteStatus(String body) throws WdkModelException, RequestMisformatException, DataValidationException {

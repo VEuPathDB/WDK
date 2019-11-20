@@ -1,828 +1,567 @@
 package org.gusdb.wdk.model.user;
 
-import java.sql.SQLException;
+import static org.gusdb.fgputil.FormatUtil.join;
+import static org.gusdb.fgputil.functional.Functions.defaultOnException;
+import static org.gusdb.fgputil.functional.Functions.reduce;
+import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
+import static org.gusdb.wdk.model.user.StepContainer.withId;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
-import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.fgputil.functional.TreeNode.StructureMapper;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.Validateable;
+import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.WdkRuntimeException;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.gusdb.wdk.model.user.Step.StepBuilder;
 
-public class Strategy {
+public class Strategy implements StepContainer, Validateable<Strategy> {
 
   private static final Logger LOG = Logger.getLogger(Strategy.class);
 
-  private StepFactory stepFactory;
-  private User user;
-  private Step latestStep;
-  private long strategyId;
-  private boolean isSaved;
-  private boolean isDeleted = false;
-  private Date createdTime;
-  private Date lastModifiedTime;
-  private String projectId;
-  private String signature;
-  private String description;
-  private String name;
-  private String savedName = null;
-  private boolean isPublic = false;
+  public static class StrategyBuilder {
 
-  private long latestStepId = 0;
-  private int estimateSize;
-  private String version;
-  private boolean valid = true;
-  private boolean isValidBasedOnStepFlags;
-  private Date lastRunTime;
-  private RecordClass recordClass;
+    private final WdkModel _wdkModel;
+    private final long _strategyId;
+    private long _userId;
+    private String _projectId;
+    private String _version;
+    private String _name;
+    private String _description;
+    private boolean _isSaved;
+    private String _savedName;
+    private boolean _isDeleted;
+    private Date _createdTime = new Date();
+    private Date _lastModifiedTime;
+    private Date _lastRunTime;
+    private String _signature;
+    private boolean _isPublic;
+    private long _rootStepId;
 
-  public Strategy(StepFactory factory, User user, long strategyId) {
-    this.stepFactory = factory;
-    this.user = user;
-    this.strategyId = strategyId;
-    isSaved = false;
+    private Map<Long,StepBuilder> _stepMap = new HashMap<>();
+
+    public StrategyBuilder(WdkModel wdkModel, long userId, long strategyId) {
+      _wdkModel = wdkModel;
+      _projectId = wdkModel.getProjectId();
+      _version = wdkModel.getVersion();
+      _userId = userId;
+      _strategyId = strategyId;
+    }
+
+    private StrategyBuilder(Strategy strategy) {
+      _wdkModel = strategy._wdkModel;
+      _userId = strategy.getUser().getUserId();
+      _strategyId = strategy._strategyId;
+      _projectId = strategy._projectId;
+      _version = strategy._version;
+      _name = strategy._name;
+      _description = strategy._description;
+      _isSaved = strategy._isSaved;
+      _savedName = strategy._savedName;
+      _isDeleted = strategy._isDeleted;
+      _createdTime = strategy._createdTime;
+      _lastModifiedTime = strategy._lastModifiedTime;
+      _lastRunTime = strategy._lastRunTime;
+      _signature = strategy._signature;
+      _isPublic = strategy._isPublic;
+      _rootStepId = strategy._rootStepId;
+      _stepMap = Functions.getMapFromList(strategy._stepMap.values(),
+          step -> new TwoTuple<>(step.getStepId(), Step.builder(step)));
+    }
+
+    public long getStrategyId() {
+      return _strategyId;
+    }
+
+    public long getUserId() {
+      return _userId;
+    }
+
+    public StrategyBuilder setProjectId(String projectId) {
+      _projectId = projectId;
+      return this;
+    }
+
+    public StrategyBuilder setVersion(String version) {
+      _version = version;
+      return this;
+    }
+
+    public StrategyBuilder setName(String name) {
+      _name = name == null ? null :
+        FormatUtil.shrinkUtf8String(name, StepFactory.COLUMN_NAME_LIMIT);
+      return this;
+    }
+
+    public StrategyBuilder setDescription(String description) {
+      _description = description;
+      return this;
+    }
+
+    public StrategyBuilder setSaved(boolean isSaved) {
+      _isSaved = isSaved;
+      return this;
+    }
+
+    public StrategyBuilder setSavedName(String savedName) {
+      _savedName = savedName == null ? null :
+        FormatUtil.shrinkUtf8String(savedName, StepFactory.COLUMN_NAME_LIMIT);
+      return this;
+    }
+
+    public StrategyBuilder setDeleted(boolean isDeleted) {
+      _isDeleted = isDeleted;
+      return this;
+    }
+
+    public StrategyBuilder setCreatedTime(Date createdTime) {
+      _createdTime = createdTime;
+      return this;
+    }
+
+    public StrategyBuilder setLastModifiedTime(Date lastModifiedTime) {
+      _lastModifiedTime = lastModifiedTime;
+      return this;
+    }
+
+    public StrategyBuilder setLastRunTime(Date lastRunTime) {
+      _lastRunTime = lastRunTime;
+      return this;
+    }
+
+    public StrategyBuilder setSignature(String signature) {
+      _signature = signature;
+      return this;
+    }
+
+    public StrategyBuilder setIsPublic(boolean isPublic) {
+      _isPublic = isPublic;
+      return this;
+    }
+
+    // note root step must be added just like any other step
+    public StrategyBuilder setRootStepId(long rootStepId) {
+      _rootStepId = rootStepId;
+      return this;
+    }
+
+    public StrategyBuilder addStep(StepBuilder step) {
+      _stepMap.put(step.getStepId(), step);
+      return this;
+    }
+
+    public StrategyBuilder addSteps(Collection<StepBuilder> steps) {
+      _stepMap.putAll(Functions.getMapFromList(steps, step -> new TwoTuple<>(step.getStepId(), step)));
+      return this;
+    }
+
+    public StrategyBuilder setUserId(long userId) {
+      _userId = userId;
+      _stepMap.values().stream().forEach(step -> step.setUserId(userId));
+      return this;
+    }
+
+    /**
+     * Removes any existing StepBuilders from this builder and resets
+     * the root step ID to 0.
+     *
+     * @return this builder
+     */
+    public StrategyBuilder clearSteps() {
+      _stepMap.clear();
+      _rootStepId = 0;
+      return this;
+    }
+
+    public Strategy build(UserCache userCache, ValidationLevel validationLevel)
+        throws InvalidStrategyStructureException, WdkModelException {
+      return build(userCache, validationLevel, FillStrategy.NO_FILL);
+    }
+
+    public Strategy build(UserCache userCache, ValidationLevel validationLevel, FillStrategy fillStrategy)
+        throws InvalidStrategyStructureException, WdkModelException {
+      if (_rootStepId == 0) {
+        throw new InvalidStrategyStructureException("Root step ID is required but has not been set.");
+      }
+      return new Strategy(this, userCache.get(_userId), validationLevel, fillStrategy);
+    }
+
+    public long getNumSteps() {
+      return _stepMap.size();
+    }
+  }
+
+  public static StrategyBuilder builder(WdkModel wdkModel, long userId, long strategyId) {
+    return new StrategyBuilder(wdkModel, userId, strategyId);
+  }
+
+  public static StrategyBuilder builder(Strategy strategy) {
+    return new StrategyBuilder(strategy);
+  }
+
+  private final WdkModel _wdkModel;
+  private final User _user;
+  private final long _strategyId;
+  private final String _projectId;
+  private final String _version;
+  private final String _name;
+  private final String _description;
+  private final boolean _isSaved;
+  private final String _savedName;
+  private final boolean _isDeleted;
+  private final Date _createdTime;
+  private final Date _lastModifiedTime;
+  private final Date _lastRunTime;
+  private final String _signature;
+  private final boolean _isPublic;
+  private final long _rootStepId;
+  private final Map<Long, Step> _stepMap;
+  private final ValidationBundle _validationBundle;
+
+  private Strategy(StrategyBuilder strategyBuilder, User user,
+      ValidationLevel validationLevel, FillStrategy fillStrategy)
+          throws InvalidStrategyStructureException, WdkModelException {
+    _user = user;
+    _wdkModel = strategyBuilder._wdkModel;
+    _strategyId = strategyBuilder._strategyId;
+    _projectId = strategyBuilder._projectId;
+    _version = strategyBuilder._version;
+    _name = strategyBuilder._name;
+    _description = strategyBuilder._description;
+    _isSaved = strategyBuilder._isSaved;
+    _savedName = strategyBuilder._savedName;
+    _isDeleted = strategyBuilder._isDeleted;
+    _createdTime = strategyBuilder._createdTime;
+    _lastModifiedTime = strategyBuilder._lastModifiedTime;
+    _lastRunTime = strategyBuilder._lastRunTime;
+    _signature = strategyBuilder._signature;
+    _isPublic = strategyBuilder._isPublic;
+    _rootStepId = strategyBuilder._rootStepId;
+    _stepMap = new HashMap<>();
+    // populates _stepMap
+    buildSteps(strategyBuilder._stepMap, validationLevel, fillStrategy);
+    _validationBundle = ValidationBundle.builder(validationLevel)
+        .aggregateStatus(_stepMap.values().toArray(new Step[0]))
+        .build();
+  }
+
+  private void buildSteps(Map<Long, StepBuilder> steps,
+      ValidationLevel validationLevel, FillStrategy fillStrategy)
+          throws InvalidStrategyStructureException, WdkModelException {
+
+    // Confirm project and user id match across strat and all steps, and that steps were properly assigned
+    for (StepBuilder step : steps.values()) {
+      String identifier = "Step " + step.getStepId();
+      if (_user.getUserId() != step.getUserId()) {
+        throw new InvalidStrategyStructureException(identifier + " does not have the same owner as its strategy, " + _strategyId);
+      }
+      if (!_projectId.equals(step.getProjectId())) {
+        throw new InvalidStrategyStructureException(identifier + " does not have the same project as its strategy, " + _strategyId);
+      }
+      Optional<Long> stepStratId = step.getStrategyId();
+      if (stepStratId.isPresent() && !stepStratId.get().equals(_strategyId)) {
+        throw new InvalidStrategyStructureException(identifier + " was given to strategy " + _strategyId + " but belongs to strategy " + stepStratId.get());
+      }
+    }
+
+    // temporarily build an actual tree of the steps from a copy of the step builder map
+    Map<Long, StepBuilder> stepMap = new HashMap<>(steps); // make a copy since buildTree modifies it
+    TreeNode<StepBuilder> builderTree = buildTree(stepMap, _rootStepId);
+    // FIXME: uncomment when findCircularPaths is implemented
+    //if (!builderTree.findCircularPaths().isEmpty()) {
+    //  throw new InvalidStrategyStructureException("Strategy " + _strategyId + "'s tree has at least one circular dependency.");
+    //}
+    if (!stepMap.isEmpty()) {
+      throw new InvalidStrategyStructureException("Strategy " + _strategyId + " has been " +
+          "assigned the following steps which are not referenced in its tree: " +
+          join(stepMap.values().stream().map(StepBuilder::getStepId), ", "));
+    }
+
+    LOG.debug("Generated the following tree of steps for strategy " +
+        _strategyId + ":" + FormatUtil.NL + builderTree.toMultiLineString("  "));
+
+    // Build StepBuilders from the bottom up into a tree of Steps, setting dirty
+    // bits on steps downstream from dirty steps as it builds the tree.
+    UserCache userCache = new UserCache(_user);
+    Strategy thisStrategy = this;
+
+    // map structure into a TreeNode<Step> so branches have access to the
+    //   built children below them (need to assign dirty bit)
+    try {
+      builderTree.mapStructure(
+        (StructureMapper<StepBuilder, TreeNode<Step>>) (builder, mappedChildren) -> {
+          try {
+            // figure out if dirty bit should be set (if this or any children dirty)
+            boolean isDirty = builder.isResultSizeDirty() || reduce(
+              mappedChildren,
+              (dirtySoFar, childNode) -> dirtySoFar || childNode.getContents().isResultSizeDirty(),
+              false);
+  
+            // build the step
+            Step step = builder
+              .setResultSizeDirty(isDirty)
+              .build(userCache, validationLevel, fillStrategy, Optional.of(thisStrategy));
+  
+            // add to strategy
+            thisStrategy._stepMap.put(step.getStepId(), step);
+  
+            // build a node around the step and add children (builds tree of Steps)
+            TreeNode<Step> node = new TreeNode<>(step);
+            node.addChildNodes(mappedChildren, node2 -> true);
+            return node;
+          }
+          catch (WdkModelException e) {
+            throw new WdkRuntimeException(e);
+          }
+        });
+    }
+    catch (WdkRuntimeException e) {
+      throw WdkModelException.translateFrom(e);
+    }
+  }
+
+  /**
+   * Recursive function builds a tree of step builders from the passed map.
+   *
+   * @param steps map of step builders to put in tree
+   * @param stepId step being added to the tree in the current recursive call
+   * @return tree of steps whose root has the passed stepId
+   * @throws InvalidStrategyStructureException if step ID referenced that does not exist in map
+   */
+  private TreeNode<StepBuilder> buildTree(Map<Long, StepBuilder> steps, long stepId) throws InvalidStrategyStructureException {
+    StepBuilder step = steps.get(stepId);
+    if (step == null) {
+      throw new InvalidStrategyStructureException("Step " + stepId + ", referenced in the" +
+          " tree of strategy " + _strategyId + " has either not been assigned" +
+          " to that strategy or has been assigned more than once.");
+    }
+    // create a node for this step and remove from the map
+    TreeNode<StepBuilder> node = new TreeNode<>(step);
+    steps.remove(stepId);
+
+    // check for answer params; if not present or undeterminable (bad question name), simply return
+    String questionName = step.getAnswerSpec().getQuestionName();
+    Optional<List<AnswerParam>> answerParams = _wdkModel.getQuestionByFullName(questionName)
+      .map(question -> question.getQuery().getAnswerParams());
+
+    // Check if answer params are present.  If not present in optional, then
+    // question name is invalid in this step; if leaf step, that's ok- will just
+    // be invalid, but if boolean/transform, then the branch below it is
+    // irretrieveable and will result in a WdkModelException since extra steps
+    // will be found in this strategy.  This is probably ok since we don't
+    // change boolean/transform question names very often.  If it's NOT ok,
+    // we'll have to reintroduce the child/previous DB cols back into this code.
+    if (answerParams.isPresent()) {
+      // answer params are present; find child steps
+      List<String> answerParamValues = answerParams.get().stream()
+          .map(param -> step.getParamValue(param.getName()))
+          .collect(Collectors.toList());
+      for (String paramValue : answerParamValues) {
+        if (FormatUtil.isInteger(paramValue)) { // skip if non-numeric; param will fail validation
+          long childStepId = Long.parseLong(paramValue);
+          node.addChildNode(buildTree(steps, childStepId));
+        }
+      }
+    }
+
+    // all child nodes have been added; return node for this step
+    return node;
   }
 
   public User getUser() {
-    return user;
+    return _user;
   }
 
   public boolean isDeleted() {
-    return isDeleted;
-  }
-
-  void setDeleted(boolean isDeleted) {
-    this.isDeleted = isDeleted;
+    return _isDeleted;
   }
 
   public String getVersion() {
-    // if (latestStep != null)
-    // version = latestStep.getAnswer().getProjectVersion();
-    return version;
-  }
-
-  void setVersion(String version) {
-    this.version = version;
-  }
-
-  public void setName(String name) {
-    if (name != null && name.length() > StepFactory.COLUMN_NAME_LIMIT) {
-      name = name.substring(0, StepFactory.COLUMN_NAME_LIMIT - 1);
-    }
-    this.name = name;
+    return _version;
   }
 
   public String getName() {
-    return name;
-  }
-
-  public void setSavedName(String savedName) {
-    if (savedName != null && savedName.length() > StepFactory.COLUMN_NAME_LIMIT) {
-      savedName = savedName.substring(0, StepFactory.COLUMN_NAME_LIMIT - 1);
-    }
-    this.savedName = savedName;
+    return _name;
   }
 
   public String getSavedName() {
-    return savedName;
+    return _savedName;
   }
 
-  public void setIsSaved(boolean saved) {
-    this.isSaved = saved;
+  public boolean isSaved() {
+    return _isSaved;
   }
 
-  public boolean getIsSaved() {
-    return isSaved;
-  }
-
-  public boolean getIsPublic() {
-    return isPublic;
-  }
-
-  public void setIsPublic(boolean isPublic) {
-    this.isPublic = isPublic;
+  public boolean isPublic() {
+    return _isPublic;
   }
 
   public String getProjectId() {
-    return projectId;
+    return _projectId;
   }
 
-  public void setProjectId(String projectId) {
-    this.projectId = projectId;
-  }
-
-  public Step getLatestStep() throws WdkModelException {
-    if (latestStep == null && latestStepId != 0)
-      setLatestStep(stepFactory.loadStepFromValidStepId(user, latestStepId));
-    return latestStep;
-  }
-
-  public void setLatestStep(Step step) throws WdkModelException {
-    stepFactory.verifySameOwnerAndProject(this, step);
-    this.latestStep = step;
-    // also update the cached info
-    latestStepId = step.getStepId();
-  }
-
-  void setStrategyId(long strategyId) {
-    this.strategyId = strategyId;
+  public Step getRootStep() {
+    return findFirstStep(withId(_rootStepId)).orElseThrow(
+        () -> new WdkRuntimeException("Root step ID " + _rootStepId + " no longer present in strategy."));
   }
 
   public long getStrategyId() {
-    return strategyId;
+    return _strategyId;
   }
 
   /**
    * @return Returns the createTime.
    */
   public Date getCreatedTime() {
-    return createdTime;
+    return _createdTime;
   }
 
-  /**
-   * @param createTime
-   *          The createTime to set.
-   */
-  void setCreatedTime(Date createdTime) {
-    this.createdTime = createdTime;
+  public long getLeafAndTransformStepCount() {
+    return getAllSteps().stream()
+        .filter(step -> step.hasValidQuestion() &&
+            step.getAnswerSpec().getQuestion().getQuery().getAnswerParamCount() < 2)
+        .collect(Collectors.counting());
+  }
+  
+  // the "first" step in the strategy
+  public Step getMostPrimaryLeafStep() {
+    return getMostPrimaryLeafStep(getRootStep());
+  }
+  
+  private Step getMostPrimaryLeafStep(Step rootStep) {
+    return rootStep
+        .getPrimaryInputStep()
+        .map(step -> getMostPrimaryLeafStep(step))
+        .orElse(rootStep);
   }
 
-  public Step getStep(int index) throws WdkModelException {
-    return getLatestStep().getStep(index);
+  public long getRootStepId() {
+    return _rootStepId;
   }
 
-  public List<Step> getMainBranch() throws WdkModelException {
-    return getLatestStep().getMainBranch();
+  public Optional<RecordClass> getRecordClass() {
+    return getRootStep().getRecordClass();
   }
 
-  public int getLength() throws WdkModelException {
-    return getLatestStep().getLength();
-  }
-
-  public void setLatestStepId(long stepId) {
-    this.latestStepId = stepId;
-    this.latestStep = null; // root step is now out of date
-  }
-
-  public long getLatestStepId() {
-    return latestStepId;
-  }
-
-  public Step getStepById(long id) throws WdkModelException {
-    Step step = getLatestStep().getStepByDisplayId(id);
-    if (step == null)
-      throw new WdkModelException("Strategy #" + strategyId + " doesn't have step #" + id);
-    return step;
-  }
-
-  /**
-   * @param overwrite
-   *          if true, it will overwrite the strategy even if it's already saved; if false, we will create a
-   *          new unsaved copy if the strategy is already saved.
-   * 
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public void update(boolean overwrite) throws WdkModelException, WdkUserException {
-    stepFactory.updateStrategy(user, this, overwrite);
-  }
-
-  public RecordClass getRecordClass() throws WdkModelException {
-    if (latestStep == null && recordClass != null)
-      return recordClass;
-    return getLatestStep().getRecordClass();
-  }
-
-  /**
-   * Insert a new step before the target. The new step will become the previous step of the target, and the
-   * old previousStep of the target should become the previousStep of the new step.
-   * 
-   * @param newStep
-   *          the newStep
-   * @param targetId
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public Map<Long, Long> insertStepBefore(Step newStep, long targetId) throws WdkModelException,
-      WdkUserException {
-    Step targetStep = getStepById(targetId);
-    stepFactory.verifySameOwnerAndProject(this, targetStep);
-
-    Map<Long, Long> rootMap = new HashMap<>();
-
-    // if the strategy is saved, need to make a unsaved copy first
-    if (getIsSaved())
-      update(false);
-
-    // make sure the previousStep of the target is now the previousStep of newStep
-    if (targetStep.isFirstStep()) { // inserting before first step will cause the first step being replaced by
-      // the new step, while old first step will become the child of this new step
-      if (newStep.getChildStep() == null || newStep.getChildStep().getStepId() != targetId)
-        throw new WdkUserException("Cannot insert step #" + newStep.getStepId() + " before step #" +
-            targetId + " since it will corrupt the structure of the strategy #" + strategyId);
-
-      // if the first step has any step upstream, will link it to the new step
-      Step nextStep = getNext(targetStep);
-      if (nextStep != null) { // insert the new step in the same strategy panel
-        nextStep.checkPreviousAllowed(newStep);
-        nextStep.setPreviousStep(newStep);
-        nextStep.saveParamFilters();
-      }
-      else { // the target is the only step in the strategy/nested strategy.
-        Step parentStep = getParent(targetStep);
-        if (parentStep != null) {
-          // add the new step as the last one in a nested strategy
-          // copy information from target step
-          newStep.setCollapsible(targetStep.isCollapsible());
-          newStep.setCollapsedName(targetStep.getCollapsedName());
-          newStep.update(false); // don't need to update LastRunTime
-          targetStep.setCollapsible(false);
-          targetStep.update(false);
-
-          // check and set the newStep as the child of the parent, to replace the target step
-          parentStep.checkChildAllowed(newStep);
-          parentStep.setChildStep(newStep);
-          parentStep.saveParamFilters();
-          rootMap.put(targetId, newStep.getStepId());
-        }
-        else { // target is at the end of the strategy, set newStep as the end of the strategy
-          setLatestStep(newStep);
-          update(false); // don't overwrite a saved strategy.
-          rootMap.put(targetId, newStep.getStepId());
-        }
-      }
-    }
-    else { // target is not the first, then the previousStep of the target will become the previous of the
-      // new step.
-      if (targetStep.getPreviousStepId() != newStep.getPreviousStepId())
-        throw new WdkUserException("Cannot insert step #" + newStep.getStepId() + " before step #" +
-            targetId + " since it will corrupt the structure of the strategy #" + strategyId);
-
-      // make sure the target step can take the newStep as previousStep
-      targetStep.checkPreviousAllowed(newStep);
-
-      targetStep.setPreviousStep(newStep);
-      targetStep.saveParamFilters();
-    }
-    return rootMap;
-  }
-
-  /**
-   * Inserting a step after the target. This is used when we add steps in main and nested strategy. The
-   * newStep will become the next step of the target.
-   * 
-   * @param newStep
-   *          The next step has to be a combined step, with the target as the previous step of it.
-   * @param targetId
-   *          a target step id that can live anywhere in the step tree.
-   * @return a map of oldStepId to newStepId that are roots of the strategy or nested strategy.
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public Map<Long, Long> insertStepAfter(Step newStep, long targetId) throws WdkModelException,
-      WdkUserException {
-    Map<Long, Long> rootMap = new HashMap<>();
-
-    // make sure the newStep uses target step as its previousStep
-    Step previousStep = newStep.getPreviousStep();
-    if (previousStep == null || previousStep.getStepId() != targetId)
-      throw new WdkUserException("Cannot insert step #" + newStep.getStepId() + " after step #" + targetId +
-          " since it will corrupt the structure of the strategy #" + strategyId);
-
-    // if the strategy is saved, need to make a unsaved copy first
-    if (getIsSaved())
-      update(false);
-
-    Step targetStep = getStepById(targetId);
-
-    Step nextStep = getNext(targetStep);
-    if (nextStep != null) { // insert in the middle of a strategy
-      // make sure the next step can take the newStep as previousStep
-      nextStep.checkPreviousAllowed(newStep);
-      // link new step to target step.
-      targetStep.setNextStep(newStep);
-      // link next step to the new step
-      nextStep.setPreviousStep(newStep);
-      nextStep.saveParamFilters();
-    }
-    else { // newStep will be the last one in main/nested strategy
-      Step parentStep = getParent(targetStep);
-      if (parentStep != null) {
-        // make sure the parent step can take the newStep as childStep
-        parentStep.checkChildAllowed(newStep);
-      }
-
-      // copy over collapsing info
-      if (previousStep.isCollapsible()) {
-        newStep.setCollapsible(previousStep.isCollapsible());
-        newStep.setCollapsedName(previousStep.getCollapsedName());
-        newStep.update(false);
-
-        // reset the colllapsing infom
-        previousStep.setCollapsible(false);
-        previousStep.setCollapsedName(null);
-        previousStep.update(false);
-      }
-
-      rootMap.put(previousStep.getStepId(), newStep.getStepId());
-
-      if (parentStep != null) {
-        // a step is inserted at the end of a nested strategy -- ie. add step on nested strategy.
-        // the new step will become the child of the parentStep
-        parentStep.setChildStep(newStep);
-        parentStep.saveParamFilters();
-      }
-      else { // a step is inserted at the end of main strategy
-        setLatestStep(newStep);
-        update(false);
-      }
-    }
-    return rootMap;
-  }
-
-  /**
-   * Delete the given step from the strategy. Additional step, or even the current strategy maybe deleted,
-   * depending on the following cases:
-   * 
-   * #1 - if there is only one step in the strategy and it's deleted, then the whole strategy will be deleted.
-   * 
-   * #2 - if the step to be deleted is a combined one, all the steps in its child branch will also be deleted.
-   * 
-   * #3 - if the step has previous and next, the previous will be connected to the next;
-   * 
-   * #2 & #3 means that when deleting a nested step in the main strategy, we should send the id of the boolean
-   * that takes the nested step, and it will delete both boolean and the whole nested strategy; however, if
-   * the root of the nested strategy is passed in, the only the root will be deleted, and the remaining steps
-   * in the nested strategy will become a new sub-tree.
-   * 
-   * 
-   * 
-   * @param step
-   * @return a map of root id changes (both main & nested strategies) {old, new}; the information will be used
-   *         to update the states of active strategies.
-   * 
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public Map<Long, Long> deleteStep(Step step) throws WdkModelException, WdkUserException {
-    List<Step> deletes = new ArrayList<>();
-    Map<Long, Long> rootMap = new HashMap<>();
-
-    // if the strategy is saved, need to make a unsaved copy first
-    if (getIsSaved())
-      update(false);
-
-    // if a step has child, delete all the steps on that branch.
-    Step childStep = step.getChildStep();
-    if (childStep != null)
-      deletes.addAll(childStep.getNestedBranch());
-    deletes.add(step); // delete the current step
-
-    // keep a reference to previous step, in case we need to delete multiple steps. this previousStep will be
-    // used to connect to the remaining steps.
-    Step previousStep = step.getPreviousStep();
-
-    // loop while the current step is marked to be deleted.
-    while (step != null && deletes.contains(step)) {
-      Step nextStep = getNext(step);
-      if (nextStep != null) { // go to the next step in the same panel.
-        step = nextStep;
-        if (previousStep == null) {
-          if (step.isCombined() && !step.isTransform()) {
-            // a two-input combined step, since there is no previousStep, the child of it will become new
-            // previousStep, and this combined step will be deleted
-            previousStep = step.getChildStep();
-          } // otherwise, a transform step, and since there is no previousStep, it will also be deleted
-          deletes.add(step);
-        }
-        else { // otherwise, previous step exists, no more deletion needed. will exit loop.
-          // check if the step can take the previous step
-          stepFactory.dropDependency(previousStep.getStepId(), StepFactory.COLUMN_LEFT_CHILD_ID);
-          step.checkPreviousAllowed(previousStep);
-          step.setPreviousStep(previousStep);
-          step.saveParamFilters();
-        }
-      }
-      else { // no next step exists, the current step must be a root of main/nested strategy.
-        Step parentStep = getParent(step);
-        if (parentStep != null) { // found a parent, which means we are deleting in a nested strategy.
-          if (previousStep != null) { // make the previous step in the nested strategy a new root there.
-            // get the collapsing info from old root of the nested strategy.
-            previousStep.setCollapsible(step.isCollapsible());
-            previousStep.setCollapsedName(step.getCollapsedName());
-            previousStep.update(false);
-            rootMap.put(step.getStepId(), previousStep.getStepId());
-
-            // check if parent can take previous step as child
-            stepFactory.dropDependency(previousStep.getStepId(), StepFactory.COLUMN_RIGHT_CHILD_ID);
-            parentStep.checkChildAllowed(previousStep);
-            parentStep.setChildStep(previousStep);
-            parentStep.saveParamFilters();
-            break;
-          }
-          else { // no previousStep
-            // Otherwise, the last step from nested strategy is deleted, we will also delete the parent; but
-            // now the previousStep will become the previous one from the parent.
-            previousStep = parentStep.getPreviousStep();
-            deletes.add(parentStep);
-          }
-        } // otherwise, we are deleting the last step in main branch, will handle it outside of the loop
-        step = parentStep;
-      }
-    }
-
-    if (step == null) {
-      if (previousStep != null) { // current step is null, then previous step should become new root.
-        rootMap.put(getLatestStepId(), previousStep.getStepId());
-        setLatestStep(previousStep);
-        update(false);
-      }
-      else { // no more steps left in the strategy, delete the strategy itself.
-        stepFactory.deleteStrategy(strategyId);
-        rootMap.clear();
-      }
-    }
-
-    // after strategy is deleted (if needed), will now delete steps
-    LOG.debug("Total " + deletes.size() + " steps deleted.");
-    for (Step delete : deletes) {
-      stepFactory.deleteStep(delete.getStepId());
-    }
-
-    return rootMap;
-  }
-
-  // public Map<Integer, Integer> moveStep(int moveFromId, int moveToId, String branch)
-  // throws WdkModelException, WdkUserException, SQLException {
-  // Step targetStep;
-  // if (branch == null) {
-  // targetStep = getLatestStep();
-  // }
-  // else {
-  // targetStep = getLatestStep().getStepByDisplayId(Integer.parseInt(branch));
-  // }
-  //
-  // int moveFromIx = targetStep.getIndexFromId(moveFromId);
-  // int moveToIx = targetStep.getIndexFromId(moveToId);
-  //
-  // Step moveFromStep = targetStep.getStep(moveFromIx);
-  // Step moveToStep = targetStep.getStep(moveToIx);
-  // Step step, newStep;
-  //
-  // int stubIx = Math.min(moveFromIx, moveToIx) - 1;
-  // int targetStepId = targetStep.getStepId();
-  // int length = targetStep.getLength();
-  //
-  // if (stubIx < 0) {
-  // step = null;
-  // }
-  // else {
-  // step = targetStep.getStep(stubIx);
-  // }
-  //
-  // for (int i = stubIx + 1; i < length; ++i) {
-  // if (i == moveToIx) {
-  // if (step == null) {
-  // step = moveFromStep.getChildStep();
-  // }
-  // else {
-  // // assuming boolean, will need to add case for
-  // // non-boolean op
-  // Step rightStep = moveFromStep.getChildStep();
-  // moveFromStep = user.createBooleanStep(step, rightStep, moveFromStep.getOperation(), false,
-  // moveFromStep.getFilterName());
-  // step = moveFromStep;
-  // }
-  // // again, assuming boolean, will need to add case for
-  // // non-boolean
-  // Step rightStep = moveToStep.getChildStep();
-  // moveToStep = user.createBooleanStep(step, rightStep, moveToStep.getOperation(), false,
-  // moveToStep.getFilterName());
-  // step = moveToStep;
-  // }
-  // else if (i == moveFromIx) {
-  // // do nothing; this step was moved, so we just ignore it.
-  // }
-  // else {
-  // newStep = targetStep.getStep(i);
-  // if (step == null) {
-  // step = newStep.getChildStep();
-  // }
-  // else {
-  // // again, assuming boolean, will need to add case for
-  // // non-boolean
-  // Step rightStep = newStep.getChildStep();
-  // newStep = user.createBooleanStep(step, rightStep, newStep.getOperation(), false,
-  // newStep.getFilterName());
-  // step = moveToStep;
-  // }
-  // }
-  // }
-  //
-  // return updateStepTree(targetStepId, step);
-  // }
-
-  // private void resetStepCounts(Step fromStep) throws WdkModelException {
-  // stepFactory.resetStepCounts(fromStep);
-  // }
-
-  // private Map<Integer, Integer> updateStepTree(int targetStepId, Step newStep) throws WdkModelException,
-  // WdkUserException, SQLException {
-  // logger.debug("update step tree - target=" + targetStepId + ", newStep=" + newStep.getStepId());
-  // Map<Integer, Integer> stepIdsMap = new HashMap<Integer, Integer>();
-  // Step root = getLatestStep();
-  // Step targetStep = root.getStepByDisplayId(targetStepId);
-  //
-  // int newStepId = newStep.getStepId();
-  // stepIdsMap.put(targetStepId, newStepId);
-  //
-  // newStep.setCollapsible(targetStep.isCollapsible());
-  // newStep.setCollapsedName(targetStep.getCollapsedName());
-  // newStep.update(false);
-  //
-  // // update the parents/nexts
-  // while (targetStep.getStepId() != root.getStepId()) {
-  // Step parentStep = root.getStepByChildId(targetStepId);
-  // Step nextStep = root.getStepByPreviousId(targetStepId);
-  //
-  // logger.debug("target: " + targetStep.getStepId() + ", parent: " + parentStep + ", next: " + nextStep);
-  // if (parentStep == null && nextStep == null)
-  // break;
-  //
-  // targetStep = (parentStep != null) ? parentStep : nextStep;
-  //
-  // // create a new step by replacing only the target step id in the
-  // // params.
-  // Question question = targetStep.getQuestion();
-  // Map<String, String> values = targetStep.getParamValues();
-  //
-  // // filter out invalid params for the new step to use
-  // Set<String> invalidParams = new LinkedHashSet<>();
-  // Map<String, Param> params = question.getParamMap();
-  // for (String paramName : values.keySet()) {
-  // if (!params.containsKey(paramName))
-  // invalidParams.add(paramName);
-  // }
-  // for (String paramName : invalidParams) {
-  // values.remove(paramName);
-  // }
-  //
-  // String paramName;
-  // if (parentStep != null) {
-  // paramName = targetStep.getChildStepParam();
-  // }
-  // else {
-  // paramName = targetStep.getPreviousStepParam();
-  // }
-  // values.put(paramName, Integer.toString(newStepId));
-  //
-  // // replace newStep with new pnStep, and iterate to the parent/next
-  // // node
-  // newStep = user.createStep(question, values, targetStep.getFilter(), false, false,
-  // targetStep.getAssignedWeight());
-  // newStep.setCustomName(targetStep.getBaseCustomName());
-  // newStep.setCollapsible(targetStep.isCollapsible());
-  // newStep.setCollapsedName(targetStep.getCollapsedName());
-  // newStep.update(false);
-  //
-  // Events.triggerAndWait(new StepCopiedEvent(targetStep, newStep), new WdkModelException(
-  // "Unable to execute all operations subsequent to step copy."));
-  //
-  // newStepId = newStep.getStepId();
-  // targetStepId = targetStep.getStepId();
-  // stepIdsMap.put(targetStepId, newStepId);
-  // }
-  // // done with iteration, the target will be the original root, while the
-  // // newStep will be the new root.
-  //
-  // this.setLatestStep(newStep);
-  // this.update(false);
-  //
-  // return stepIdsMap;
-  // }
-
-  public Step getFirstStep() throws WdkModelException {
-    return getLatestStep().getFirstStep();
-  }
-
-  /**
-   * checksum of a strategy is different from signature in that signature is stable and it will never change
-   * after the strategy is created, while checksum depends on many properties of a strategy, and it will
-   * change when the strategies properties are changed.
-   * 
-   * @return
-   * @throws WdkModelException
-   */
-  public String getChecksum() throws WdkModelException {
-    JSONObject jsStrategy = getJSONContent(true);
-    String checksum = EncryptionUtil.encrypt(JsonUtil.serialize(jsStrategy));
-    LOG.debug("Strategy #" + strategyId + ", checksum=" + checksum + ", json:\n" + jsStrategy);
-    return checksum;
-  }
-
-  public JSONObject getJSONContent() throws WdkModelException {
-    return getJSONContent(false);
-  }
-
-  public JSONObject getJSONContent(boolean forChecksum) throws WdkModelException {
-    JSONObject jsStrategy = new JSONObject();
-
-    try {
-      jsStrategy.put("id", this.strategyId);
-      jsStrategy.put("name", this.name);
-      jsStrategy.put("savedName", this.savedName);
-      jsStrategy.put("description", this.description);
-      jsStrategy.put("saved", this.isSaved);
-      jsStrategy.put("deleted", this.isDeleted);
-      jsStrategy.put("type", getRecordClass().getFullName());
-
-      if (!forChecksum) {
-        jsStrategy.put("valid", isValid());
-        jsStrategy.put("version", getVersion());
-        jsStrategy.put("resultSize", getEstimateSize());
-      }
-
-      JSONObject stepContent = getLatestStep().getJSONContent(this.strategyId, forChecksum);
-      jsStrategy.put("latestStep", stepContent);
-    }
-    catch (JSONException ex) {
-      throw new WdkModelException(ex);
-    }
-    return jsStrategy;
-  }
-
-  public boolean isValidBasedOnStepFlags() {
-    return isValidBasedOnStepFlags;
-  }
-
-  public void setValidBasedOnStepFlags(boolean isValidBasedOnStepFlags) {
-    this.isValidBasedOnStepFlags = isValidBasedOnStepFlags;
-  }
-
-  /**
-   * @return the valid
-   * @throws JSONException
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public boolean isValid() throws WdkModelException {
-    if (latestStep == null)
-      getLatestStep();
-    if (latestStep != null)
-      valid = latestStep.isValid();
-    return valid;
-  }
-
-  public void setValid(boolean valid) {
-    this.valid = valid;
+  @Override
+  public boolean isValid() {
+    return _validationBundle.getStatus().isValid();
   }
 
   /**
    * @return the lastRunTime
    */
   public Date getLastRunTime() {
-    if (latestStep != null)
-      lastRunTime = latestStep.getLastRunTime();
-    return lastRunTime;
-  }
-
-  /**
-   * @param lastRunTime
-   *          the lastRunTime to set
-   */
-  public void setLastRunTime(Date lastRunTime) {
-    this.lastRunTime = lastRunTime;
+    return getRootStep().getLastRunTime();
   }
 
   /**
    * @return the lastModifiedTime
    */
   public Date getLastModifiedTime() {
-    return lastModifiedTime;
-  }
-
-  /**
-   * @param lastModifiedTime
-   *          the lastModifiedTime to set
-   */
-  public void setLastModifiedTime(Date lastModifiedTime) {
-    this.lastModifiedTime = lastModifiedTime;
+    return _lastModifiedTime != null ? _lastModifiedTime : _createdTime;
   }
 
   /**
    * checksum of a strategy is different from signature in that signature is stable and it will never change
    * after the strategy is created, while checksum depends on many properties of a strategy, and it will
    * change when the strategies properties are changed.
-   * 
+   *
    * @return the signature
    */
   public String getSignature() {
-    return signature;
-  }
-
-  /**
-   * @param signature
-   *          the signature to set
-   */
-  public void setSignature(String signature) {
-    this.signature = signature;
+    return _signature;
   }
 
   /**
    * @return the description
    */
   public String getDescription() {
-    return description;
+    return _description;
+  }
+
+  public int getResultSize() {
+    return defaultOnException(() -> getRootStep().getResultSize(), 0);
+  }
+
+  public int getEstimatedSize() {
+    return getRootStep().getEstimatedSize();
   }
 
   /**
-   * @param description
-   *          the description to set
+   * Returns the first step in this strategy that passes the search predicate.  If none exists,
+   * throws IllegalArgumentException with a custom message.
+   *
+   * @param search step search
+   * @return first step found that passes the predicate
+   * @throws IllegalArgumentException if strategy does not contain a step that matches the search criteria
    */
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  public int getEstimateSize() {
-    if (latestStep != null)
-      estimateSize = latestStep.getEstimateSize();
-    return estimateSize;
-  }
-
-  public String getEstimateSizeNoCalculate() {
-    return (estimateSize == Step.RESET_SIZE_FLAG ? "Unknown" : String.valueOf(estimateSize));
-  }
-
-  void setEstimateSize(int estimateSize) {
-    this.estimateSize = estimateSize;
-  }
-
-  public void setRecordClass(RecordClass recordClass) {
-    this.recordClass = recordClass;
+  @Override
+  public Optional<Step> findFirstStep(StepSearch search) {
+    return _stepMap.values().stream().filter(search.getPredicate()).findFirst();
   }
 
   /**
-   * Get the parent of the given step in the context of the strategy, which maybe different from the parent
-   * set in the step itself (in the case that the step is updated, but the strategy tree hasn't been updated).
-   * 
-   * @param step
-   * @return the parent of the step, or null if the step doesn't have parent, or doesn't belong to the
-   *         strategy.
-   * @throws WdkModelException
+   * @return all steps in this strategy
    */
-  private Step getParent(Step step) throws WdkModelException {
-    // use a stack to store the previous steps to be examined.
-    Stack<Step> stack = new Stack<>();
-    stack.push(getLatestStep());
-    while (!stack.isEmpty()) {
-      Step s = stack.pop();
-      Step parent = null;
-      while (s != null) {
-        if (s.getPreviousStep() != null)
-          stack.push(s.getPreviousStep());
-        if (s.getStepId() == step.getStepId())
-          return parent;
-        parent = s;
-        s = s.getChildStep();
-      }
-    }
-    return null;
+  public List<Step> getAllSteps() {
+    return new ArrayList<>(_stepMap.values());
   }
 
-  /**
-   * Get the next of the given step, which could be different from the next stored in the step itself (in the
-   * case that step is updated, but strategy hasn't been updated).
-   * 
-   * @param step
-   * @return return the next of the given step, or null if the step doesn't have next, or if the step doesn't
-   *         belong the the strategy.
-   * @throws WdkModelException
-   */
-  private Step getNext(Step step) throws WdkModelException {
-    // use a stack to store the child steps to be examined.
-    Stack<Step> stack = new Stack<>();
-    stack.push(getLatestStep());
-    while (!stack.isEmpty()) {
-      Step s = stack.pop();
-      Step next = null;
-      while (s != null) {
-        if (s.getChildStep() != null)
-          stack.push(s.getChildStep());
-        if (s.getStepId() == step.getStepId())
-          return next;
-        next = s;
-        s = s.getPreviousStep();
-      }
-    }
-    return null;
+  @Override
+  public ValidationBundle getValidationBundle() {
+    return _validationBundle;
+  }
+
+  public static Optional<RunnableObj<Step>> getRunnableStep(RunnableObj<Strategy> strategy, long stepId) {
+    return strategy.get().findFirstStep(withId(stepId)).map(step -> step.getRunnable().getLeft());
+  }
+
+  public void updateStaleResultSizesOnRunnableSteps() {
+    // this strategy may or may not have been validated at the runnable level; if not, make one that is
+    Strategy strat =
+        getValidationBundle().getLevel().isGreaterThanOrEqualTo(ValidationLevel.RUNNABLE) ? this :
+          swallowAndGet(() -> Strategy.builder(this).build(new UserCache(getUser()), ValidationLevel.RUNNABLE));
+
+    LOG.debug("Updating stale result sizes on runnable steps");
+    strat.getAllSteps().stream()
+      .filter(step -> step.isRunnable() && step.getEstimatedSize() == Step.RESET_SIZE_FLAG)
+      .forEach(runnableStep -> {
+        try {
+          // getResultSize() will update the size in the step and write the size to the DB
+          int resultSize = runnableStep.getResultSize();
+          LOG.debug("Refreshing size of step " + runnableStep.getStepId() + ": " + resultSize + ", DB has been updated.");
+          // need to set it in the this strategy object's step (local memory copy)
+          findFirstStep(withId(runnableStep.getStepId())).get().setRefreshedResultSize(resultSize);
+        }
+        catch (WdkModelException e) {
+          // ignore; result size will simply not be updated
+          LOG.error("Runnably valid step could not fetch result size", e);
+        }
+      });
+  }
+
+  public static String createSignature(String projectId, long userId, long strategyId) {
+    String content = projectId + "_" + userId + "_" + strategyId + "_6276406938881110742";
+    return EncryptionUtil.encrypt(content, true);
   }
 }

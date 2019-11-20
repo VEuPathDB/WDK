@@ -4,11 +4,11 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.accountdb.AccountManager;
 import org.gusdb.fgputil.accountdb.UserProfile;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -177,7 +177,7 @@ public class UserFactory {
     Timestamp insertedOn = new Timestamp(new Date().getTime());
     String sql = INSERT_USER_REF_SQL
         .replace(USER_SCHEMA_MACRO, _userSchema)
-        .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isGuest));
+        .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isGuest).toString());
     new SQLRunner(_userDb.getDataSource(), sql, "insert-user-ref")
       .executeStatement(new Object[]{ userId, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
   }
@@ -201,16 +201,10 @@ public class UserFactory {
   private Date getGuestUserRefFirstAccess(long userId) {
     String sql = SELECT_GUEST_USER_REF_BY_ID_SQL
         .replace(USER_SCHEMA_MACRO, _userSchema)
-        .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(true));
-    Wrapper<Date> resultWrapper = new Wrapper<>();
-    new SQLRunner(_userDb.getDataSource(), sql, "get-guest-user-ref")
-      .executeQuery(new Object[]{ userId }, SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES, rs -> {
-        if (rs.next()) {
-          resultWrapper.set(new Date(rs.getTimestamp(COL_FIRST_ACCESS).getTime()));
-        }
-      });
-    // will return null if result set contained no rows
-    return resultWrapper.get();
+        .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(true).toString());
+    return new SQLRunner(_userDb.getDataSource(), sql, "get-guest-user-ref")
+      .executeQuery(new Object[]{ userId }, SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES, rs ->
+          !rs.next() ? null : new Date(rs.getTimestamp(COL_FIRST_ACCESS).getTime()));
   }
 
   private static void emailTemporaryPassword(User user, String password,
@@ -283,23 +277,19 @@ public class UserFactory {
     }
   }
 
-  private User completeLogin(User guestUser, User registeredUser)
-      throws WdkModelException, WdkUserException {
-    if (registeredUser == null)
-      return registeredUser;
+  private User completeLogin(User user) {
+    if (user == null)
+      return user;
 
     // make sure user has reference in this user DB (needs to happen before merging)
-    if (!hasUserReference(registeredUser.getUserId())) {
-      addUserReference(registeredUser.getUserId(), false);
+    if (!hasUserReference(user.getUserId())) {
+      addUserReference(user.getUserId(), false);
     }
 
-    // merge the history of the guest into the user
-    registeredUser.getSession().mergeUser(guestUser);
-
     // update user active timestamp
-    _accountManager.updateLastLogin(registeredUser.getUserId());
+    _accountManager.updateLastLogin(user.getUserId());
 
-    return registeredUser;
+    return user;
   }
 
   public User login(User guest, String email, String password)
@@ -313,12 +303,12 @@ public class UserFactory {
     if (user == null) {
       throw new WdkUserException("Invalid email or password.");
     }
-    return completeLogin(guest, user);
+    return completeLogin(user);
   }
 
-  public User login(User guest, long userId)
-      throws WdkModelException, WdkUserException {
-    return completeLogin(guest, getUserById(userId));
+  public User login(long userId) throws WdkModelException {
+    return completeLogin(getUserById(userId)
+        .orElseThrow(() -> new WdkModelException("User with ID " + userId + " could not be found.")));
   }
 
   /**
@@ -338,19 +328,17 @@ public class UserFactory {
   }
 
   /**
-   * Returns user by user ID. Since the ID will generally be produced
-   * "internally", this function throws WdkModelException if user is not found.
+   * Returns user by user ID, or an empty optional if not found
    * 
    * @param userId user ID
    * @return user user object for the passed ID
-   * @throws NoSuchUserException if user cannot be found
    * @throws WdkModelException if an error occurs in the attempt
    */
-  public User getUserById(long userId) throws WdkModelException {
+  public Optional<User> getUserById(long userId) throws WdkModelException {
     UserProfile profile = _accountManager.getUserProfile(userId);
     if (profile != null) {
       // found registered user in account DB; create RegisteredUser and populate
-      return populateRegisteredUser(profile);
+      return Optional.of(populateRegisteredUser(profile));
     }
     else {
       // cannot find user in account DB; however, the passed ID may represent a guest local to this userDb
@@ -358,12 +346,13 @@ public class UserFactory {
       if (accessDate != null) {
         // guest user was found in local user Db; create UnregisteredUser and populate
         profile = AccountManager.createGuestProfile(UnregisteredUserType.GUEST.getStableIdPrefix(), userId, accessDate);
-        return new UnregisteredUser(_wdkModel, profile.getUserId(), profile.getEmail(), profile.getSignature(), profile.getStableId());
+        return Optional.of(new UnregisteredUser(_wdkModel, profile.getUserId(),
+            profile.getEmail(), profile.getSignature(), profile.getStableId()));
         
       }
       else {
-        // user does not exist in account or user DBs; throw exception
-        throw new NoSuchUserException("Invalid user id: " + userId);
+        // user does not exist in account or user DBs
+        return Optional.empty();
       }
     }
   }
@@ -439,29 +428,5 @@ public class UserFactory {
 
   public void changePassword(long userId, String newPassword) {
     _accountManager.updatePassword(userId, newPassword);
-  }
-
-  @Deprecated // check of old password and matching of two new passwords should be done by caller
-  public void changePassword(String email, String oldPassword, String newPassword,
-      String confirmPassword) throws WdkUserException {
-    // standardize email
-
-    // make sure new password is not empty
-    if (newPassword == null || newPassword.trim().isEmpty())
-      throw new WdkUserException("The new password cannot be empty.");
-
-    // check if the new password matches the confirm input
-    if (!newPassword.equals(confirmPassword))
-      throw new WdkUserException("The new password doesn't match, "
-          + "please type them again. It's case sensitive.");
-
-    // make sure email/password combo matches a current user
-    UserProfile profile = _accountManager.getUserProfile(email.trim().toLowerCase(), oldPassword);
-    if (profile == null) {
-      throw new WdkUserException("The current password is incorrect.");
-    }
-
-    // update the password
-    changePassword(profile.getUserId(), newPassword);
   }
 }

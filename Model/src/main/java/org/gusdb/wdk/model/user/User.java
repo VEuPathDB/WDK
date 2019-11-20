@@ -11,8 +11,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.record.RecordClass;
 
 /**
@@ -40,9 +38,6 @@ public abstract class User {
   // Holds key/value pairs associated with the user for this project (come from user db)
   protected UserPreferences _preferences;
 
-  // Holds current session data for this user.  TODO: factor out
-  protected UserSession _session;
-
   /**
    * Temporarily provide display name value until Struts Actions are purged.
    * After that, client will determine what to display
@@ -66,7 +61,6 @@ public abstract class User {
     _signature = signature;
     _stableId = stableId;
     _preferences = new UserPreferences(this);
-    _session = new UserSession(this);
   }
 
   public long getUserId() {
@@ -125,10 +119,6 @@ public abstract class User {
     return _preferences;
   }
 
-  public UserSession getSession() {
-    return _session;
-  }
-
   public WdkModel getWdkModel() {
     return _wdkModel;
   }
@@ -183,18 +173,6 @@ public abstract class User {
     return getProfileProperties().get("organization");
   }
 
-  public String getFrontAction() {
-    return getSession().getFrontAction();
-  }
-
-  public Long getFrontStrategy() {
-    return getSession().getFrontStrategy();
-  }
-
-  public Long getFrontStep() {
-    return getSession().getFrontStep();
-  }
-
   public Map<String, String> getGlobalPreferences() {
     return getPreferences().getGlobalPreferences();
   }
@@ -217,18 +195,6 @@ public abstract class User {
     return getPreferences().getItemsPerPage();
   }
 
-  public Map<String, List<Strategy>> getSavedStrategiesByCategory() throws WdkModelException {
-    Map<String, List<Strategy>> strategies = StepUtilities.getSavedStrategiesByCategory(this);
-    logFoundStrategies(strategies, "saved");
-    return convertMap(strategies);
-  }
-
-  public Map<String, List<Strategy>> getUnsavedStrategiesByCategory() throws WdkModelException {
-    Map<String, List<Strategy>> strategies = StepUtilities.getUnsavedStrategiesByCategory(this);
-    logFoundStrategies(strategies, "unsaved");
-    return convertMap(strategies);
-  }
-
   public void logFoundStrategies(Map<String, List<Strategy>> strategies, String condition) {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Loaded map of " + strategies.size() + " " + condition + " strategy categories:");
@@ -239,100 +205,6 @@ public abstract class User {
       }
       LOG.debug("   Total: " + total);
     }
-  }
-
-  public Map<String, List<Strategy>> getRecentStrategiesByCategory() throws WdkModelException {
-    Map<String, List<Strategy>> strategies = StepUtilities.getRecentStrategiesByCategory(this);
-    return convertMap(strategies);
-  }
-
-  public Map<String, List<Strategy>> getActiveStrategiesByCategory() throws WdkModelException,
-      WdkUserException {
-    Map<String, List<Strategy>> strategies = StepUtilities.getActiveStrategiesByCategory(this);
-    return convertMap(strategies);
-  }
-
-  /**
-   * @return { category/(type name)->{ activity->strategyBean } }
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public Map<String, Map<String, List<Strategy>>> getStrategiesByCategoryActivity()
-      throws WdkModelException, WdkUserException {
-    Map<String, List<Strategy>> activeStrats = getActiveStrategiesByCategory();
-    Map<String, List<Strategy>> savedStrats = getSavedStrategiesByCategory();
-    Map<String, List<Strategy>> recentStrats = getRecentStrategiesByCategory();
-    Map<String, Map<String, List<Strategy>>> categories = new LinkedHashMap<>();
-    WdkModel wdkModel = getWdkModel();
-
-    for (String rcName : activeStrats.keySet()) {
-      RecordClass recordClass = wdkModel.getRecordClass(rcName);
-      String category = recordClass.getDisplayName();
-      List<Strategy> strategies = activeStrats.get(rcName);
-      if (strategies.size() == 0)
-        continue;
-
-      Map<String, List<Strategy>> activities = new LinkedHashMap<>();
-      activities.put("Opened", strategies);
-      categories.put(category, activities);
-    }
-
-    for (String rcName : savedStrats.keySet()) {
-      RecordClass recordClass = wdkModel.getRecordClass(rcName);
-      String category = recordClass.getDisplayName();
-      List<Strategy> strategies = savedStrats.get(rcName);
-      if (strategies.size() == 0)
-        continue;
-
-      Map<String, List<Strategy>> activities = categories.get(category);
-      if (activities == null) {
-        activities = new LinkedHashMap<>();
-        categories.put(category, activities);
-      }
-      activities.put("Saved", strategies);
-    }
-
-    for (String rcName : recentStrats.keySet()) {
-      RecordClass recordClass = wdkModel.getRecordClass(rcName);
-      String category = recordClass.getDisplayName();
-      List<Strategy> strategies = recentStrats.get(rcName);
-      if (strategies.size() == 0)
-        continue;
-
-      Map<String, List<Strategy>> activities = categories.get(category);
-      if (activities == null) {
-        activities = new LinkedHashMap<>();
-        categories.put(category, activities);
-      }
-      activities.put("Recent", strategies);
-    }
-    return categories;
-  }
-
-  public String getViewStrategyId() {
-    return getSession().getViewStrategyKey();
-  }
-
-  public long getViewStepId() {
-    return getSession().getViewStepId();
-  }
-
-  public Integer getViewPagerOffset() {
-    return getSession().getViewPagerOffset();
-  }
-
-  public Strategy[] getActiveStrategies() throws WdkUserException {
-    List<Strategy> strategies = new ArrayList<>();
-    for (Strategy strategy : getSession().getActiveStrategies()) {
-      strategies.add(strategy);
-    }
-    Strategy[] array = new Strategy[strategies.size()];
-    strategies.toArray(array);
-    return array;
-  }
-
-  public long[] getActiveStrategyIds() {
-    return getSession().getActiveStrategyIds();
   }
 
   public Map<RecordClass, Integer> getBasketCounts() throws WdkModelException {
@@ -352,30 +224,6 @@ public abstract class User {
       total += count;
     }
     return total;
-  }
-
-  @Deprecated
-  public Map<RecordClass, List<Favorite>> getFavorites() throws WdkModelException {
-    Map<RecordClass, List<Favorite>> favorites = getWdkModel().getFavoriteFactory().getFavorites(this);
-    Map<RecordClass, List<Favorite>> beans = new LinkedHashMap<>();
-    for (RecordClass recordClass : favorites.keySet()) {
-      List<Favorite> beanList = new ArrayList<>();
-      List<Favorite> list = favorites.get(recordClass);
-      for (Favorite favorite : list) {
-        beanList.add(favorite);
-      }
-      beans.put(recordClass, beanList);
-    }
-    return beans;
-  }
-
-  @Deprecated
-  public String[] getFavoriteGroups() throws WdkModelException {
-    return getWdkModel().getFavoriteFactory().getGroups(this);
-  }
-
-  public Map<String,SummaryView> getCurrentSummaryViews() {
-    return exposeAsMap(questionName -> getPreferences().getCurrentSummaryView(questionName));
   }
 
   static <T> Map<String, T> exposeAsMap(FunctionWithException<String,T> getter) {

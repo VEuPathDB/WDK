@@ -184,7 +184,7 @@ public class B33_To_B34_Migration {
   private static boolean userSchemaTableExists(DataSource acctDbDs, String tableWithSchema) {
     String tableCheckSql = getUserDbTableCheck(tableWithSchema);
     boolean exists = new SQLRunner(acctDbDs, tableCheckSql)
-        .executeQuery(new SingleLongResultSetHandler()).getRetrievedValue() > 0;
+        .executeQuery(new SingleLongResultSetHandler()).get() > 0;
     System.out.println("Backup table exists? " + exists + ", SQL: " + tableCheckSql);
     return exists;
   }

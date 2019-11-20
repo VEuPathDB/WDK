@@ -3,11 +3,13 @@ package org.gusdb.wdk.model.filter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
-import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -34,27 +36,25 @@ public class ListColumnFilter extends SqlColumnFilter {
   }
 
   @Override
-  public String getSummarySql(String inputSql) throws WdkModelException,
-      WdkUserException {
+  public String getSummarySql(String inputSql) throws WdkModelException {
     String columnName = _attribute.getName();
 
     // group by the query and get a count
     String sql = "SELECT " + columnName + " as " + COLUMN_PROPERTY + ", count(*) AS " + COLUMN_COUNT + " FROM (" + inputSql +
         ") GROUP BY " + columnName;
- 
+
     return sql;
   }
 
   @Override
-  public String getFilterSql(String inputSql, JSONObject jsValue) throws WdkModelException,
-      WdkUserException {
+  public String getFilterSql(String inputSql, JSONObject jsValue) throws WdkModelException {
     String columnName = _attribute.getName();
 
     StringBuilder sql = new StringBuilder("select * from (" + inputSql + ") where " + columnName + " in (");
 
     // put the filter values as join conditions
     List<String> values = getValues(jsValue);
-    if (values.size() > 0) {
+    if (!values.isEmpty()) {
       for (int i = 0; i < values.size(); i++) {
         if (i > 0)
           sql.append(", ");
@@ -82,14 +82,14 @@ public class ListColumnFilter extends SqlColumnFilter {
         buffer.append(", ");
       buffer.append(value);
     }
-    if (values.size() == 0)
+    if (values.isEmpty())
       buffer.append("(none selected)");
     return buffer.toString();
   }
 
   private List<String> getValues(JSONObject jsValue) {
     List<String> values = new ArrayList<>();
-    if (jsValue.has(KEY_VALUES)) { 
+    if (jsValue.has(KEY_VALUES)) {
       Object objValues = jsValue.get(KEY_VALUES);
       if (objValues instanceof JSONArray) { // multi values
         JSONArray jsValues = (JSONArray) objValues;
@@ -103,17 +103,23 @@ public class ListColumnFilter extends SqlColumnFilter {
     }
     return values;
   }
-  
+
   @Override
   public void setDefaultValue(JSONObject defaultValue) {
-	  throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
+    throw new UnsupportedOperationException("Not supported until the defaultValueEquals() method is fully implemented");
   }
-  
-  @Override
+
   /**
    * Not fully implemented yet.
    */
-  public boolean defaultValueEquals(Step step, JSONObject value)  throws WdkModelException {
-	  return false;
+  @Override
+  public boolean defaultValueEquals(SimpleAnswerSpec answerSpec, JSONObject value) {
+    return false;
+  }
+
+  @Override
+  public ValidationBundle validate(Question question, JSONObject value, ValidationLevel validationLevel) {
+    // TODO: determine if validation is warranted here
+    return ValidationBundle.builder(ValidationLevel.SEMANTIC).build();
   }
 }

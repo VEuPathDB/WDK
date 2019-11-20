@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "strategyId": {
+      "type": "integer"
+    },
+    "description": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "author": {
+      "type": "string"
+    },
+    "rootStepId": {
+      "type": "integer"
+    },
+    "recordClassName": {
+      "type": ["string", "null"]
+    },
+    "signature": {
+      "type": "string"
+    },
+    "createdTime": {
+      "type": "string"
+    },
+    "lastModified": {
+      "type": "string"
+    },
+    "releaseVersion": {
+      "type": "string"
+    },
+    "isPublic": {
+      "type": "boolean"
+    },
+    "isSaved": {
+      "type": "boolean"
+    },
+    "isValid": {
+      "type": "boolean"
+    },
+    "isDeleted": {
+      "type": "boolean"
+    },
+    "organization": {
+      "type": "string"
+    },
+    "estimatedSize": {
+      "type": "integer"
+    },
+    "leafAndTransformStepCount": {
+      "type": "integer"
+    },
+    "nameOfFirstStep": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "rootStepId",
+    "isDeleted",
+    "isSaved",
+    "isValid",
+    "isPublic"
+  ]
+}
+

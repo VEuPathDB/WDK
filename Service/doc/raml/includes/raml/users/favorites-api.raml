@@ -1,18 +1,5 @@
 # Users Favorites API
-#
-# This RAML doc is a draft.  The details below are pulled from the google doc
-# do not necessarily reflect the actual implementation.
-#
-# @path /users/{id}/favorites
-
-delete:
-  description: Deletes all a user's favorites (takes rc param to filter)
-  responses:
-    200:
-      description: Success
-      body:
-        application/json:
-          type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/delete-response.json
+	  
 get:
   description: Returns array of user's favorites (takes rc param to filter)
   responses:
@@ -20,19 +7,19 @@ get:
       description: Success
       body:
         application/json:
-          type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/get-response.json
-          example: !include ../../example/users/favorites/get-favorites-200.json
+          type: !include ../../../../schema/wdk/users/favorites/get-response.json
+
 patch:
   description: Accepts instructions for editing/deleting multiple favorites
   body:
     application/json:
-      type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/patch-request.json
+      type: !include ../../../../schema/wdk/users/favorites/patch-request.json
   responses:
     200:
       description: Success
       body:
         application/json:
-          type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/patch-response.json
+          type: !include ../../../../schema/wdk/users/favorites/patch-response.json
 
 post:
   description: >
@@ -44,11 +31,7 @@ post:
     favoriteId:
       description: user favorite id
       type: integer
-  delete:
-    description: Deletes the specified favorite
-    responses:
-      204:
-        description: No content
+
   get:
     description: Returns the specified favorite
     responses:
@@ -56,14 +39,19 @@ post:
         description: Success
         body:
           application/json:
-            type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/get-response.json
-            example: !include ../../example/users/favorites/get-favorite-200.json
-  put:
+            type: !include ../../../../schema/wdk/users/favorites/get-response.json
+
+  patch:
     description: Replaces the specified favorite with the passed one
     body:
       application/json:
-        type: !include ../../../../../src/main/resources/schema/wdk/users/favorites/id/put-request.json
-        example: !include ../../example/users/favorites/put-favorite-input.json
+        type: !include ../../../../schema/wdk/users/favorites/id/put-request.json
+    responses:
+      204:
+        description: No content
+
+  delete:
+    description: Deletes the specified favorite
     responses:
       204:
         description: No content
@@ -71,11 +59,4 @@ post:
 /query:
   post:
     description: >
-      Takes array of {RC+PKs} objects as JSON and returns object containing an
-      array of {RC+PKs} objects found
-
-/summary:
-  get:
-    description: >
-      Provides an overview of the current state of favorites (e.g. total count,
-      record classes represented)
+      Takes array of {record-type + primary keys} objects as JSON and returns object containing the subset of those that are favorites.

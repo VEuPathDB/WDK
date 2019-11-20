@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.query.param;
 
 import static org.gusdb.fgputil.functional.Functions.fSwallow;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
-import static org.gusdb.fgputil.functional.Functions.toJavaFunction;
 import static org.gusdb.wdk.model.query.param.OntologyItemType.MULTIFILTER;
 
 import java.util.ArrayList;
@@ -21,6 +20,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -87,10 +87,10 @@ public class FilterParamNewStableValue {
 
   /**
    * validate the syntax and, for semantics, compare the field names and values against ontology and metadata
-   * 
+   *
    * @return err message if any. null if valid
    */
-   String validateSyntaxAndSemantics(User user, Map<String, String> contextParamValues) throws WdkModelException {
+   String validateSyntaxAndSemantics(PartiallyValidatedStableValues contextParamValues) throws WdkModelException {
 
     // validate syntax
     String errmsg = validateSyntax();
@@ -100,7 +100,7 @@ public class FilterParamNewStableValue {
     List<String> errors = new ArrayList<String>();
 
     // validate fields against ontology; collect fields that are not isRange
-    Map<String, OntologyItem> ontology = _param.getOntology(user, contextParamValues);
+    Map<String, OntologyItem> ontology = _param.getOntology(contextParamValues.getUser(), contextParamValues);
     Set<MembersFilter> memberFilters = new HashSet<MembersFilter>();
     for (Filter filter : _filters) {
       String field = filter.getField();
@@ -108,16 +108,27 @@ public class FilterParamNewStableValue {
         errors.add("'" + field + "'" + " is not a recognized ontology term");
         continue;
       }
-      if (!ontology.get(field).getIsRange() && MULTIFILTER != ontology.get(field).getType()) memberFilters.add((MembersFilter)filter);
+      OntologyItem ontologyItem = ontology.get(field);
+      if (!ontologyItem.getIsRange() && !MULTIFILTER.equals(ontologyItem.getType())) {
+        if (filter instanceof MembersFilter) {
+          memberFilters.add((MembersFilter)filter);
+        }
+        else {
+          errors.add(" filter " + filter + " is of type " +
+              filter.getClass().getSimpleName() +
+              " which does not match " + ontologyItem);
+          continue;
+        }
+      }
     }
-    
+
     // run metadata query to find distinct values for each member field
     if (memberFilters.size() != 0) {
       //Set<String> relevantOntologyTerms = memberFilters.stream()
       //    .map(FilterParamNewStableValue.MembersFilter::getField)
       //    .collect(Collectors.toSet());
       Map<String, Set<String>> metadataMembers = _param.getValuesMap(
-          user, contextParamValues, null, ontology);
+          contextParamValues.getUser(), contextParamValues, null, ontology);
 
       // iterate through our member filters, validating the values of each
       for (MembersFilter mf : memberFilters) {
@@ -129,17 +140,17 @@ public class FilterParamNewStableValue {
           errors.add(err);
       }
     }
-    
+
     // TODO Add error if param._minSelectedCount < # matching items
 
-    if (errors.size() != 0) return errors.stream().collect(Collectors.joining("', '")) + System.lineSeparator() + _stableValueJson;
-    return null;
+    return errors.isEmpty() ? null :
+        errors.stream().collect(Collectors.joining("', '")) + System.lineSeparator() + _stableValueJson;
   }
-   
+
 
   /**
    * validate the syntax. does not validate semantics (ie, compare against ontology).
-   * 
+   *
    * @return err message if any. null if valid
    */
   String validateSyntax() {
@@ -190,7 +201,7 @@ public class FilterParamNewStableValue {
           if (field == null) {
             return errPrefix + " does not specify an ontology term";
           }
-                    
+
           if (!jsFilter.has(FILTERS_IS_RANGE)) {
             return errPrefix + " does not specify isRange";
           }
@@ -201,7 +212,7 @@ public class FilterParamNewStableValue {
           }
           OntologyItemType type;
           try {
-            type = OntologyItemType.getType(jsFilter.getString(FILTERS_TYPE)); 
+            type = OntologyItemType.getType(jsFilter.getString(FILTERS_TYPE));
           } catch (WdkModelException e) {
             return errPrefix + " has an invalid type: " + jsFilter.getString(FILTERS_TYPE);
           }
@@ -225,7 +236,7 @@ public class FilterParamNewStableValue {
                 } else {
                   if (jsFilter.has(FILTERS_VALUE)) valueArr = jsFilter.getJSONArray(FILTERS_VALUE);
                   filter = new NumberMembersFilter(valueArr, includeUnknowns, field);
-                }               
+                }
                 break;
               case STRING:
                 if (jsFilter.has(FILTERS_VALUE)) valueArr = jsFilter.getJSONArray(FILTERS_VALUE);
@@ -257,8 +268,8 @@ public class FilterParamNewStableValue {
 
 
   /**
-   * @param user  
-   * @param contextParamValues 
+   * @param user
+   * @param contextParamValues
    */
   String getDisplayValue(User user, Map<String, String> contextParamValues) throws WdkModelException {
 
@@ -327,17 +338,22 @@ public class FilterParamNewStableValue {
       // at least one of `unknownClause` or `innerAndClause` will be non-empty, due to validation check above.
       return filterSelectSql + " WHERE " + whereClause + " AND (" + unknownClause + innerAndClause + ")";
     }
-    
+
     @Override
     public int compareTo(Filter f) {
       return field.compareTo(f.getField());
+    }
+
+    @Override
+    public String toString() {
+      return "Filter for field '" + field + "', signature: " + getSignature();
     }
   }
 
   abstract class RangeFilter extends Filter {
 
     /**
-     * 
+     *
      * @param jsValue
      *          the FILTERS_VALUE portion of the stable value
      * @param includeUnknowns
@@ -374,8 +390,8 @@ public class FilterParamNewStableValue {
       String maxStr = getMaxStringSql();
       String rowValue = metadataTableName + "." + columnName;
       List<String> conditions = new ListBuilder<String>()
-        .addIf(minStr != null, rowValue + " >= " + minStr)
-        .addIf(maxStr != null, rowValue + " <= " + maxStr)
+        .addIf(val -> minStr != null, rowValue + " >= " + minStr)
+        .addIf(val -> maxStr != null, rowValue + " <= " + maxStr)
         .toList();
       return (minStr == null && maxStr == null ?
           " 1=1 " : // return "true" because we want to retain all values (i.e. no filter on existing range)
@@ -516,7 +532,7 @@ public class FilterParamNewStableValue {
     }
 
     abstract void setMembers(JSONArray jsArray) throws JSONException;
-   
+
     abstract List<String> getMembersAsStrings();
 
     abstract List<?> getSortedMembers();
@@ -689,7 +705,7 @@ public class FilterParamNewStableValue {
       return _leafFilters.length() == 0 ? filterSelectSql + " WHERE  1 = 1" :
           "(" +
             getLeafFilters()
-                .map(toJavaFunction(fSwallow(leafFilter -> leafFilter.getFilterAsWhereClause(metadataTableName, ontology, filterSelectSql))))
+                .map(fSwallow(leafFilter -> leafFilter.getFilterAsWhereClause(metadataTableName, ontology, filterSelectSql)))
                 .collect(Collectors.joining(" " + _operation + " ")) +
           ")";
     }
@@ -709,11 +725,11 @@ public class FilterParamNewStableValue {
 
     private Stream<StringMembersFilter> getLeafFilters() {
       return StreamSupport.stream(JsonIterators.arrayIterable(_leafFilters).spliterator(), false)
-          .map(toJavaFunction(fSwallow(jsonType -> new StringMembersFilter(
+          .map(fSwallow(jsonType -> new StringMembersFilter(
               jsonType.getJSONObject().getJSONArray(FILTERS_VALUE),
               jsonType.getJSONObject().getBoolean(FILTERS_INCLUDE_UNKNOWN),
               jsonType.getJSONObject().getString(FILTERS_FIELD)
-          ))));
+          )));
     }
   }
 }

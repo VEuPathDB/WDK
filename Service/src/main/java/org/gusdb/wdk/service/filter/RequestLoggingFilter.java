@@ -18,12 +18,11 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.server.ContainerRequest;
-import org.gusdb.fgputil.FormatUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@Priority(30)
+@Priority(200)
 public class RequestLoggingFilter implements ContainerRequestFilter {
 
   private static final Logger LOG = Logger.getLogger(RequestLoggingFilter.class);
@@ -69,7 +68,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter {
   public static String queryToJson(MultivaluedMap<String, String> map) {
     JSONObject json = new JSONObject();
     for (Entry<String,List<String>> entry : map.entrySet()) {
-      json.put(entry.getKey(), FormatUtil.stringCollectionToJsonArray(entry.getValue()));
+      json.put(entry.getKey(), new JSONArray(entry.getValue()));
     }
     return json.toString(2);
   }
@@ -82,6 +81,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter {
       case MediaType.APPLICATION_FORM_URLENCODED:
         return FORM_ENTITY;
       case MediaType.APPLICATION_JSON:
+      case MediaType.APPLICATION_JSON + "; charset=UTF-8":
         return formatJson(getRequestBodyText(requestContext));
       case MediaType.TEXT_PLAIN:
       case MediaType.TEXT_XML:

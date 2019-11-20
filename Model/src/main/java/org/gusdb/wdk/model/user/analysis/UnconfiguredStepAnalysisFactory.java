@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -72,7 +73,7 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
-  public List<String> validateFormParams(StepAnalysisInstance instance) throws WdkModelException {
+  public ValidationBundle validateFormParams(StepAnalysisInstance instance) throws WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 

@@ -1,4 +1,0 @@
-{
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "$ref": "/schema/wdk/includes/strategy_listing-response.json"
-}

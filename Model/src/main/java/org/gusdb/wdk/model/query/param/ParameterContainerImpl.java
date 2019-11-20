@@ -14,7 +14,7 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
 
   // temp list, will be discarded after resolve references
   protected List<ParamReference> paramRefList;
-  protected Map<String, Param> paramMap;
+  protected LinkedHashMap<String, Param> paramMap;
 
   protected ParameterContainerImpl() {
     paramRefList = new ArrayList<>();
@@ -47,13 +47,6 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
   @Override
   public Map<String, Param> getParamMap() {
     return new LinkedHashMap<>(paramMap);
-  }
-
-  @Override
-  public Param[] getParams() {
-    Param[] array = new Param[paramMap.size()];
-    paramMap.values().toArray(array);
-    return array;
   }
 
   @Override
@@ -95,11 +88,9 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
   }
 
   /**
-   * Create or get an internal user param, which is a stringParam with a pre-defined name. This param will be
-   * added to all the queries, and the value of it will be the current user id, and is assigned automatically.
-   *
-   * @return
-   * @throws WdkModelException
+   * Create or get an internal user param, which is a stringParam with a
+   * pre-defined name. This param will be added to all the queries, and the
+   * value of it will be the current user id, and is assigned automatically.
    */
   public static Param getUserParam(WdkModel wdkModel) throws WdkModelException {
     // create the missing user_id param for the attribute query
@@ -113,7 +104,6 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
 
     userParam.excludeResources(wdkModel.getProjectId());
     userParam.resolveReferences(wdkModel);
-    userParam.setResources(wdkModel);
     paramSet.addParam(userParam);
     return userParam;
   }
@@ -130,7 +120,6 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
 
     userParam.excludeResources(_wdkModel.getProjectId());
     userParam.resolveReferences(_wdkModel);
-    userParam.setResources(_wdkModel);
     paramSet.addParam(userParam);
     return userParam;
   }

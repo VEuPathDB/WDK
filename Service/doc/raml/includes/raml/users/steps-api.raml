@@ -1,43 +1,22 @@
 # Users Steps API
-#
-# @path /users/{id}/steps
 
-# Methods
 post:
   description: |
-    * Creates a new step (including transforms/booleans!)
-    * AnswerParams must have empty string values (handled by /strategy)
-    * Strategy ID cannot be specified and is not assigned (handled by /strategy)
-    * If question has AnswerParams:
-        * Their values must be set to an empty string
-        * Other parameters are validated as much as possible
-        * answerSpecComplete set to false since AnswerParams not populated
-    * If question does not have AnswerParams
-        * Validates the answer spec
-        * answerSpecComplete set to true since this is a runnable answer spec
-    * If validation of non-answer params fails, no step is created and a 400/500 HTTP response will be returned
-    * Inputs: JSON containing AnswerSpec, name (optional- pulled from question if absent)
-        * Also, optional query param flag for whether to try to run step
-            * If answerSpecComplete = false and flag true, throw error 40x?
-            * If answerSpecComplete = true and flag true, run step and populate estimatedSize, last_run
-    * Outputs:
-        * JSON containing step ID + Location header with URL, OR
-        * Error document telling where and why request failed
-  queryParameters:
-    runStep:
-      description: Whether or not this step should be run immediately
-      type: boolean
-      required: false
-      default: false
+    * Creates a new search strategy step.  A Step is always created unattached to a strategy.  (Use the strategy/ endpoint to add the step to a strategy.  At that point, the step will be assigned its strategy ID.)
+    * If the associated search does not have step parameters all parameters are validated.
+    * If the associated search does have step parameters:
+        * In the request body, step parameter values must be set to an empty string, else validation will fail. (Step parameters are exclusively handled by /strategy)
+        * The other parameters will be validated as usual.
+    * If validation of any param fails, no step is created and a 400/500 HTTP response will be returned
   body:
     application/json:
-      type: !include ../../../../../src/main/resources/schema/wdk/users/steps/post-request.json
+      type: !include ../../../../schema/wdk/users/steps/post-request.json
   responses:
     200:
       description: Success
       body:
         application/json:
-          type: !include ../../../../../src/main/resources/schema/wdk/users/steps/post-response.json
+          type: !include ../../../../schema/wdk/standard-post-response.json
 
 /{step-id}:
   uriParameters:
@@ -45,242 +24,96 @@ post:
       type: integer
       format: int64
 
-  delete:
-    description: Delete step
-    responses:
-      204:
-        description: Success
-
   get:
     description: |
-      * Returns full JSON of the step
-          * This is to support revise question form and display of step's answer spec
-          * /answer service will still check validity of:
-              * step ownership (child steps must be owned by requester)
-              * dataset ownership (dataset params must be owned by requester)
-          * Includes:
-              * Name populated with default name if not sent in
-              * Strategy ID (always null)
-              * answerSpecComplete
-              * estimatedSize (unpopulated since step has not yet run)
-              * isValid (always true here since params had to have validated)
-              * Newly populated dates (creation, last_run)
-              * Step ID
-
+      * Returns full JSON of the step, including all parameter values.
+          * This is to support the revise-a-search form (to fill in initial values) and any display of the step's search configuration.
+	  * The following are only validated when the step is run, so are not guaranteed to be valid at the time of this GET:
+              * steps provided in step parameters are owned by the requester
+              * datasets provided in dataset parameters are owned by the requester
     responses:
       200:
         description: Success
         body:
           application/json:
-            type: !include ../../../../../src/main/resources/schema/wdk/users/steps/post-response.json
+            type: !include ../../../../schema/wdk/users/steps/id/get-response.json
 
   patch:
     description: |
-      * Used to modify step (but not its placement within its strategy)
+      * Used to modify the step (but not its searchConfig or placement within its strategy)
       * The only modifiable fields are:
-          * AnswerSpec (i.e. revise)
-              * Question can be changed, but RecordClasses of inputs/output can not, since doing so could invalidate parent steps (boolean/transform)
-              * AnswerParams cannot be modified and must contain their existing values or answer spec will not validate
-          * Name
-          * IsCollapsible
-          * CollapsedName
-      * New answer spec is validated
-          * if validation fails, 400/500 response is returned and step is not updated
-      * If answer spec sent and valid
-          * Estimate size is cleared for this and all downstream steps
-          * Step is not run
-
+          * customName
+          * isCollapsible
+          * collapsedName
+	  * displayPrefs
     body:
       application/json:
-        type: !include ../../../../../src/main/resources/schema/wdk/users/steps/id/patch-request.json
+        type: !include ../../../../schema/wdk/users/steps/id/patch-request.json
     responses:
-      200:
-        description: Success
+      204:
+        description: No Content
 
-  /answer:
-    get:
-      description: >
-        TODO: this endpoint does not appear in the step/strategy service doc
-      responses:
-        200:
-          description: Success
+  delete:
+    description: Delete the step.  Only allowed for steps that are not yet attached to a strategy.  Otherwise use the strategy/ service.
+    responses:
+      204:
+        description: No Content
+
+  /reports/standard:
     post:
       description: |
-        * Input JSON is identical to value of "formatting" property in answer service requests
-            * If body is empty, defaults are used; same as answer service
-        * Answer spec of the step is used to create answer
-        * Output is same as answer service (i.e. all normal reporters are supported)
-        * Step status fields (estimatedSize, isValid, last_run) are updated
-        * Branch steps (i.e. >0 answer params) not part of a strategy will error as invalid answer spec (since answer params should have empty string values)
-      responses:
-        200:
-          Success
-
-  /count:
-    get:
-      description: >
-        TODO: this endpoint does not appear in the step/strategy service doc
-      responses:
-        200:
-          description: ???
-
-  /filter:
-    get:
-      description: >
-        filters available on this step
-        TODO: this endpoint does not appear in the step/strategy service doc
-    /{name}:
-      uriParameters:
-        name:
-          type: string
-      put:
-        description: >
-          add or update a filter on this step
-          TODO: this endpoint does not appear in the step/strategy service doc
-
-  /params:
-    get:
-      description: >
-        TODO: this endpoint does not appear in the step/strategy service doc
+        GET by POST.  Get the result of this step as a report. 
+        * Input JSON is the same as the "reportConfig" property in searches/{searchName}/reports/standard requests
+            * If the body is empty, defaults are used
+        * Step status fields (estimatedSize, isValid, lastRunTime) are updated
+        * If the step has no strategy ID (i.e. is not yet part of a strategy) the request will fail.
+      body:
+        application/json:
+	  type: !include ../../../../schema/wdk/includes/answer-formatConfig-json-request.json
       responses:
         200:
           description: Success
 
-  /analyses:
-    get:
-      description: Retrieve a list of analyses that have been run on this step.
-      responses:
-        200:
-          body:
-            application/json:
-              type: !include ../../../../../src/main/resources/schema/wdk/users/steps/analyses/get-response.json
-              example: !include ../../example/users/steps/get-analyses-200.json
+  /reports/{reportName}:
     post:
-      description: Creates a new analysis (i.e. tab)
+      description: |
+        GET by POST.  Get the result of this step as a report. 
+        * Use the GET step/{stepId}/reports endpoint to get a listing of available reports and their request details (NOT IMPLEMENTED YET).
+        * Step status fields (estimatedSize, isValid, lastRunTime) are updated
+        * If the step has one or more step parameters but no strategy ID (i.e. is not yet part of a strategy) the request will fail.
       body:
         application/json:
-          example: !include ../../example/users-steps-analyses-post-request.json
+	  type: !include ../../../../schema/wdk/includes/answer-formatConfig-json-request.json
       responses:
         200:
-          body:
-            application/json:
-              type: !include ../../../../../src/main/resources/schema/wdk/users/steps/analyses/post-response.json
-              example: !include ../../example/StepAnalysisInstanceSummary.example.json
+          description: Success
 
-    /{analysis-id}:
-      uriParameters:
-        analysis-id:
-          description: Analysis instance id.
-          type: integer
-      delete:
-        description: Deletes this analysis and associated run if present
-      get:
-        description: Returns the resource above for form population
-      patch:
-        description: >
-          analysisType is not supported; if parameters is modified, then results
-          are cleared
-        body:
-          application/json:
-            example: !include ../../example/users-steps-analyses-patch-request.json
-        responses:
-          204:
-            description: No Content
-          422:
-            description: Unprocessable entry
-            body:
-               application/json:
-                  type: !include ../../../../../src/main/resources/schema/includes/string-array.json
+  /search-config:
+    put:
+      description: |
+        update the searchConfig of a step (but do not re-run the step)
+          * Any part of the searchConfig may be changed (to revise the step), except step parameter values, which will cause validation failure
+          * The new searchConfig is validated
+              * if validation fails, 400/500 response is returned and step is not updated
+              * If validation passes:
+                * estimatedSize is cleared for this and, if this step is part of a strategy, all downstream steps
+      body:
+        application/json:
+	  type: !include ../../../../schema/wdk/answer/answer-spec-request.json
+      responses:
+        204:
+          description: No Content
 
-      /resources:
-        get:
-          description: >
-            Returns the resource file at the specified path
-          queryParameters:
-            path:
-              description: Path to the resource
-              type: string
-          responses:
-            200:
-              description: OK
-            404:
-              description: Not found
-
-      /result:
-        get:
-          description: >
-            COMPLETE: return 200 + plugin-specific JSON object result, else 204:
-            No Content or some other code meaning use view for the current
-            status code rather than the custom component to display the result
-          responses:
-            200:
-            204:
-        post:
-          description: |
-            Kicks off a run
-
-            HTTP codes based on status:
-            ```none
-            - RUNNING: return 202: Accepted
-            - INVALID: 400 or 406
-            - Any of the other statuses (below), run it, return 202: Accepted
-                COMPLETE
-                NOT_YET_RUN
-                STEP_REVISED // new analysis, created as copy during step revise
-                INTERRUPTED // server shutdown or other interruption
-                ERROR // no longer running due to runtime error
-                EXPIRED // plugin ran too long and was shut down
-                OUT_OF_DATE // has been run but results cache purged
-            ```
-          responses:
-            202:
-              description: >
-                status `RUNNING`, `COMPLETE`, `NOT_YET_RUN`, `STEP_REVISED`,
-                `INTERRUPTED`, `ERROR`, `EXPIRED`, `OUT_OF_DATE`
-            400:
-              description: status `INVALID`
-            406:
-              description: status `INVALID`
-
-        /status:
-          get:
-            responses:
-              200:
-                description: |
-                  ```none
-                  status: enum
-                    NOT_YET_RUN  = user never submitted form and not auto-run
-                    STEP_REVISED = new analysis, created as copy during step revise
-                    INVALID      = made for a step it does not support; should never be run
-                    RUNNING      = currently running (or interrupted but not yet 'fixed')
-                    COMPLETE     = completed successfully
-                    INTERRUPTED  = server shutdown or other interruption
-                    ERROR        = no longer running due to runtime error
-                    EXPIRED      = plugin ran too long and was shut down
-                    OUT_OF_DATE  = has been run but results cache purged
-                  ```
-                body:
-                  application/json:
-                    type: !include ../../../../../src/main/resources/schema/wdk/users/steps/analyses/result/status/get-response.json
-
-  /analysis-types:
+  /reports/filter-summary/{filterName}:
+    uriParameters:
+      name:
+        type: string
     get:
-      description: Get names, display names, and icons of available tools.
+      description: >
+        return data needed to display a filter's UI
       responses:
         200:
-          body:
-            application/json:
-              type: !include ../../../../../src/main/resources/schema/wdk/users/steps/analysis-types/get-response.json
+          description: Success
 
-    /{analysis-type-name}:
-      uriParameters:
-        analysis-type-name:
-          type: string
-      get:
-        description: >
-          Get (possibly dynamic) form creation information + default
-          values.
-        responses:
-          200:
-            body:
-              application/json:
+
+

@@ -1,7 +1,5 @@
 package org.gusdb.wdk.service.service;
 
-import static org.gusdb.wdk.model.answer.request.AnswerFormattingParser.SPECIFIED_REPORTER_PARSER;
-
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -20,6 +18,7 @@ import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONObject;
@@ -32,9 +31,14 @@ public class TemporaryResultService extends AbstractWdkService {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response setTemporaryResult(String body)
-      throws RequestMisformatException, DataValidationException {
-    AnswerRequest request = AnswerService.parseAnswerRequest(body, getWdkModel(), getSessionUser(), SPECIFIED_REPORTER_PARSER);
+  public Response setTemporaryResult(JSONObject requestJson)
+      throws RequestMisformatException, DataValidationException, WdkModelException {
+    String questionName = requestJson.getString(JsonKeys.SEARCH_NAME);
+    Question question = getWdkModel().getQuestionByFullName(questionName)
+        .orElseThrow(() -> new DataValidationException(questionName + " is not a valid search name."));
+    String reporterName = requestJson.getString(JsonKeys.REPORT_NAME);
+    AnswerRequest request = AnswerService.parseAnswerRequest(
+        question, reporterName, requestJson, getWdkModel(), getSessionUser());
     String id = UUID.randomUUID().toString();
     CacheMgr.get().getAnswerRequestCache().put(id, request);
     return Response.ok(new JSONObject().put(JsonKeys.ID, id).toString())
@@ -54,6 +58,6 @@ public class TemporaryResultService extends AbstractWdkService {
       }
       throw new NotFoundException(formatNotFound("temporary result with ID '" + id + "'"));
     }
-    return AnswerService.getAnswerResponse(getSessionUser(), savedRequest);
+    return AnswerService.getAnswerResponse(getSessionUser(), savedRequest).getSecond();
   }
 }

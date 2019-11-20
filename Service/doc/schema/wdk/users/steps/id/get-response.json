@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "ownerId": {
+      "type": "integer"
+    },
+    "displayName": {
+      "description": "Name populated with default name if not sent in",
+      "type": "string"
+    },
+    "shortDisplayName": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "customName": {
+      "type": "string"
+    },
+    "baseCustomName": {
+      "type": "string"
+    },
+    "searchName": {
+	  "type": "string"
+    },
+    "searchConfig": {
+      "$ref": "../../../answer/answer-spec-request.json"
+    },
+      "validation": {
+        "$ref": "../../../includes/validation-bundle.json"
+      },
+    "expanded": {
+      "type": "boolean"
+    },
+    "expandedName": {
+      "type": "string"
+    },
+    "hasCompleteStepAnalyses": {
+      "type": "boolean"
+    },
+    "isFiltered": {
+      "type": "boolean"
+    },
+    "recordClassName": {
+      "type": "string"
+    },
+    "strategyId": {
+      "type": ["integer", "null"]
+    },
+    "estimatedSize": {
+      "type": "integer"
+    },
+    "createdTime": {
+      "type": "string"
+    },
+    "lastRunTime": {
+      "type": "string"
+    },
+    "displayPreferences": {
+      "$ref": "../includes/display-prefs.json"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+      "id",
+      "ownerId",
+      "validation",
+      "expanded",
+      "hasCompleteStepAnalyses",
+      "searchName",
+      "searchConfig",
+      "createdTime",
+      "lastRunTime"
+  ]
+}

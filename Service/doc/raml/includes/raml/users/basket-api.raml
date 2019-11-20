@@ -7,48 +7,41 @@
 
 # Methods
 get:
-  description: an array of string, names of user’s baskets
-  queryParameters:
-    expandBaskets:
-      description: >
-        makes service return array of “basket” objects, containing
-        recordclass of the basket, current count, maybe other stuff?
+  description: Get a list of the user's baskets.  Returns a JSON object mapping basket name to the number of records in that basket.  For now only one basket is supported per record-type, for those record-types that allow baskets.  All allowed baskets, including empty ones, are returned in this listing.
   responses:
     200:
       description: Success
       body:
         application/json:
-          type: !include ../../../../../src/main/resources/schema/wdk/users/baskets/get-response.json
-          example: !include ../../example/users/baskets/get-baskets-200.json
-
-post:
-  description: >
-    (new feature, TBR) create a new basket for the current user, inputs
-    include display name, recordclass.  RecordClass baskets will be created
-    for user by default.
+          type: !include ../../../../schema/wdk/users/baskets/get-response.json
 
 # Child Endpoints
 /{basketName}:
+  get:
+    description: Returns detailed information for the basket of the specified name.
+
+  patch:
+    description: >
+      Add and/or remove records to/from this basket.
+    responses:
+      204:
+
   delete:
+    description: > Removes all records from this basket.  The basket itself is not deleted.
+      
     responses:
       204:
         description: No content
-  get:
-    description: Returns expanded basket of this name
-  patch:
-    description: >
-      takes { add: [ pk_objects ], delete: [ pk_objects ] }, maybe?
-      Return number of records added and deleted?
-      Maybe check if IDs are valid for the recordclass of the basket?
-    responses:
-      204:
 
   /query:
     post:
       description: >
-        Takes array of PK objects, returns array of { primaryKey: object,
-        inBasket: boolean }
+        For the list of records provided in the body, discover which are in this basket.
 
-  /answer:
+  /reports/standard:
     post:
-      description: Normal answer request but with mods (TBD)
+      description: Runs a report on the records in this basket.  See the /reports endpoint under /searches.
+
+  /reports/{reportName}
+    post:
+      description: Runs a report on the records in this basket.  See the /reports endpoint under /searches.

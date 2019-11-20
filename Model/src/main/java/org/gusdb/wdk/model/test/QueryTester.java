@@ -24,10 +24,10 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
-import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
-import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 public class QueryTester {
@@ -43,27 +43,19 @@ public class QueryTester {
   }
 
   private String showSql(Query query, Map<String, String> paramHash)
-      throws WdkModelException, WdkUserException {
-    QueryInstance<?> instance = query.makeInstance(user, paramHash, true, 0,
-        new LinkedHashMap<String, String>());
+      throws WdkModelException {
+    QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+        .putAll(paramHash).buildRunnable(user, query, StepContainer.emptyContainer()));
     if (instance instanceof SqlQueryInstance) {
       return ((SqlQueryInstance) instance).getUncachedSql();
     } else return instance.getSql();
   }
 
   private String showResultTable(Query query, Map<String, String> paramHash)
-      throws WdkModelException, WdkUserException {
-    QueryInstance<?> instance = query.makeInstance(user, paramHash, true, 0,
-        new LinkedHashMap<String, String>());
-    //ResultFactory resultFactory = wdkModel.getResultFactory();
-    //CacheFactory cacheFactory = resultFactory.getCacheFactory();
-    long instanceId = instance.getInstanceId();
-    return "QueryResult" + instanceId;
-    /*
-    QueryInfo queryInfo = cacheFactory.getQueryInfo(instance.getQuery());
-    String cacheTable = queryInfo.getCacheTable();
-    return cacheTable + ":" + instanceId;
-    */
+      throws WdkModelException {
+    QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+        .putAll(paramHash).buildRunnable(user, query, StepContainer.emptyContainer()));
+    return instance.getCacheTableName();
   }
 
   // ////////////////////////////////////////////////////////////////////
@@ -75,11 +67,8 @@ public class QueryTester {
     System.out.println(newline + "Query: " + query.getFullName() + newline);
 
     System.out.println("Parameters");
-
-    Param[] params = query.getParams();
-
-    for (int i = 0; i < params.length; i++) {
-      System.out.println(formatParamPrompt(params[i]));
+    for (Param param : query.getParams()) {
+      System.out.println("  " + param.getName() + ": " + param.getClass().getSimpleName());
     }
     System.out.println("");
   }
@@ -107,36 +96,6 @@ public class QueryTester {
       }
     }
     return h;
-  }
-
-  private String formatParamPrompt(Param param) {
-    String newline = System.getProperty("line.separator");
-
-    String prompt = "  " + param.getPrompt();
-
-    if (param instanceof FlatVocabParam) {
-      FlatVocabParam enumParam = (FlatVocabParam) param;
-      prompt += " (choose one";
-      if (enumParam.getMultiPick()) prompt += " or more";
-      prompt += "):";
-      // assume independent param
-      Map<String, String> vocabs = enumParam.getVocabMap(null);
-      for (String term : vocabs.keySet()) {
-        String internal = vocabs.get(term);
-        prompt += newline + "    " + term + " (" + internal + ")";
-      }
-    } else if (param instanceof StringParam) {
-      StringParam stringParam = (StringParam) param;
-      if (stringParam.getPrompt() != null)
-        prompt += " (" + stringParam.getPrompt() + ")";
-      prompt += ":";
-    }
-
-    else {
-      prompt = param.getPrompt() + ":";
-    }
-
-    return prompt;
   }
 
   // ////////////////////////////////////////////////////////////////////
@@ -191,8 +150,8 @@ public class QueryTester {
           String table = tester.showResultTable(query, stableValues);
           System.out.println(table);
         } else {
-          QueryInstance<?> instance = query.makeInstance(tester.user, stableValues,
-              true, 0, new LinkedHashMap<String, String>());
+          QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+              .putAll(stableValues).buildRunnable(tester.user, query, StepContainer.emptyContainer()));
           try (ResultList rs = instance.getResults()) {
             print(query, rs);
           }

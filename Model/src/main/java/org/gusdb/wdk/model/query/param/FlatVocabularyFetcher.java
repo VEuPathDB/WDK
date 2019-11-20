@@ -12,12 +12,13 @@ import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,11 +40,11 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
   public FlatVocabularyFetcher(User user, FlatVocabParam param) {
     _user = user;
     _param = param;
-    _vocabQuery = param.getQuery();
+    _vocabQuery = param.getVocabularyQuery();
     logger.debug("constructor: fetcher created for param: " + _param.getFullName() );
   }
 
-  public String getCacheKey(Map<String, String> dependedParamValues) throws WdkModelException, JSONException {
+  public String getCacheKey(Map<String, String> dependedParamValues) throws JSONException {
     JSONObject cacheKeyJson = new JSONObject();
     logger.debug("IN FETCHER, getting cache key for:" + _param.getFullName());
     cacheKeyJson.put(PROJECT_ID, _vocabQuery.getWdkModel().getProjectId());
@@ -78,7 +79,7 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
   public EnumParamVocabInstance fetchItem(Map<String, String> dependedParamValues) throws ValueProductionException {
     // create and populate vocab instance
     logger.debug("fetchItem(): (when new or not cacheable)");
-    EnumParamVocabInstance vocabInstance = new EnumParamVocabInstance(dependedParamValues, _param);
+    EnumParamVocabInstance vocabInstance = new EnumParamVocabInstance(dependedParamValues);
     populateVocabInstance(vocabInstance);
     return vocabInstance;
   }
@@ -123,7 +124,9 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
           ", context Question: " + ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName()) +
           ", context Query: " + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
 
-      QueryInstance<?> instance = _vocabQuery.makeInstance(_user, values, false, 0, context);
+      // FIXME: Do we need to send context info above or is the way we are extracting it sufficient??
+      QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+          .putAll(values).buildRunnable(_user, _vocabQuery, StepContainer.emptyContainer()));
       try (ResultList result = instance.getResults()) {
         while (result.next()) {
           Object objTerm = result.get(FlatVocabParam.COLUMN_TERM);
@@ -160,7 +163,7 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
       if (vocabInstance.isEmpty()) {
         if (_vocabQuery instanceof SqlQuery)
           logger.warn("vocab query returned 0 rows:" + ((SqlQuery) _vocabQuery).getSql());
-        throw new WdkModelException("No item returned by the query [" + _vocabQuery.getFullName() +
+        throw new WdkEmptyEnumListException("No item returned by the query [" + _vocabQuery.getFullName() +
             "] of FlatVocabParam [" + _param.getFullName() + "].");
       }
       else {
@@ -170,14 +173,12 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
 
       _param.initTreeMap(vocabInstance);
 
-      logger.debug("IN populateVocabInstance(): to applySelectMode (default value or selectMode): ");
-      _param.applySelectMode(vocabInstance);
 
       logger.debug("Leaving populateVocabInstance: " + FormatUtil.prettyPrint(values) + ")");
-      logger.debug("Returning instance with default value '" + vocabInstance.getDefaultValue() +
-          "' out of possible terms: " + FormatUtil.arrayToString(vocabInstance.getTerms().toArray()));
+      logger.debug("Returning instance with possible terms: " +
+          FormatUtil.arrayToString(vocabInstance.getTerms().toArray()));
     }
-    catch (WdkModelException | WdkUserException e) {
+    catch (WdkModelException e) {
       throw new ValueProductionException(e);
     }
   }

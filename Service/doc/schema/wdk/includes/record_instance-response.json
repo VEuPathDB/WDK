@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "array",
+      "items": {
+        "$ref": "name-stringValue.json"
+      }
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "recordClassName": {
+      "type": "string"
+    },
+    "attributes": {
+      "type": "array",
+      "items": {
+        "$ref": "attribute_value-response.json"
+      }
+    },
+    "tables": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+            "^.+$": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "patternProperties": {
+                  "^.+$": {
+                    "$ref": "attribute_value-response.json"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "tableErrors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

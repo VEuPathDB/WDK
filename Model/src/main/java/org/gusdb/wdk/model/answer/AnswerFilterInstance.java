@@ -1,5 +1,8 @@
 package org.gusdb.wdk.model.answer;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.gusdb.fgputil.FormatUtil.join;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -9,13 +12,15 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.query.Query;
@@ -23,8 +28,12 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -36,7 +45,7 @@ import org.gusdb.wdk.model.user.User;
  * @author xingao
  * 
  */
-public class AnswerFilterInstance extends WdkModelBase {
+public class AnswerFilterInstance extends WdkModelBase implements NamedObject {
 
   private String _name;
   private boolean _isDefault;
@@ -55,7 +64,7 @@ public class AnswerFilterInstance extends WdkModelBase {
   private String _description;
 
   private List<WdkModelText> _paramValueList = new ArrayList<WdkModelText>();
-  private Map<String, String> _stableValues = new LinkedHashMap<String, String>();
+  private QueryInstanceSpec _partialParamStableValues; // omits answer param for step input to this filter
 
   private RecordClass _recordClass;
   private SqlQuery _filterQuery;
@@ -64,6 +73,7 @@ public class AnswerFilterInstance extends WdkModelBase {
   /**
    * @return the name
    */
+  @Override
   public String getName() {
     return _name;
   }
@@ -185,8 +195,8 @@ public class AnswerFilterInstance extends WdkModelBase {
     _answerParam = answerParam;
   }
 
-  public Map<String, Object> getParamValueMap() {
-    return new LinkedHashMap<String, Object>(_stableValues);
+  public Map<String, String> getParamValueMap() {
+    return new LinkedHashMap<>(_partialParamStableValues.toMap());
   }
 
   @Override
@@ -218,19 +228,22 @@ public class AnswerFilterInstance extends WdkModelBase {
     _descriptionList = null;
 
     // exclude the param values
+    QueryInstanceSpecBuilder paramBuilder = QueryInstanceSpec.builder();
     for (WdkModelText param : _paramValueList) {
       if (param.include(projectId)) {
         param.excludeResources(projectId);
         String paramName = param.getName();
         String paramValue = param.getText().trim();
  
-        if (_stableValues.containsKey(paramName))
+        if (paramBuilder.containsKey(paramName))
           throw new WdkModelException("The param [" + paramName
               + "] for answerFilterInstance [" + _name + "] of type "
               + _recordClass.getFullName() + "  is included more than once.");
-        _stableValues.put(paramName, paramValue);
+        paramBuilder.put(paramName, paramValue);
       }
     }
+    // build an invalid spec here since we know answer param will be missing; still get immutability
+    _partialParamStableValues = paramBuilder.buildInvalid();
     _paramValueList = null;
   }
 
@@ -243,7 +256,7 @@ public class AnswerFilterInstance extends WdkModelBase {
 
     // make sure the params provides match with those in the filter query
     Map<String, Param> params = _filterQuery.getParamMap();
-    for (String paramName : _stableValues.keySet()) {
+    for (String paramName : _partialParamStableValues.keySet()) {
       if (!params.containsKey(paramName))
         throw new WdkModelException("The param [" + paramName
             + "] declared in answerFilterInstance [" + _name + "] of type "
@@ -256,21 +269,15 @@ public class AnswerFilterInstance extends WdkModelBase {
     for (String paramName : params.keySet()) {
       if (_answerParam.getName().equals(paramName))
         continue;
-      if (!_stableValues.containsKey(paramName))
+      if (!_partialParamStableValues.containsKey(paramName))
         throw new WdkModelException("The required param value of [" + paramName
             + "] is not assigned to filter [" + getName() + "]");
-
-      // validate the paramValue for now; however EuPathDB won't be able
-      // to pass it
-      // Param param = params.get(paramName);
-      // String paramValue = paramValueMap.get(paramName);
-      // param.validate(user, paramValue);
     }
 
     _resolved = true;
   }
 
-  public ResultList getResults(AnswerValue answerValue) throws WdkModelException, WdkUserException {
+  public ResultList getResults(AnswerValue answerValue) throws WdkModelException {
     // use only the id query sql as input
     QueryInstance<?> idInstance = answerValue.getIdsQueryInstance();
     String sql = idInstance.getSql();
@@ -287,29 +294,24 @@ public class AnswerFilterInstance extends WdkModelBase {
   }
 
   public String applyFilter(User user, String sql, int assignedWeight)
-      throws WdkModelException, WdkUserException {
-    Map<String, Param> params = _filterQuery.getParamMap();
+      throws WdkModelException {
+    // validate params
+    RunnableObj<QueryInstanceSpec> validSpec = QueryInstanceSpec
+        .builder(_partialParamStableValues)
+        .buildValidated(user, _filterQuery, StepContainer.emptyContainer(),
+            ValidationLevel.RUNNABLE, FillStrategy.NO_FILL)
+        .getRunnable()
+        .getOrThrow(spec -> new WdkModelException(
+            "AnswerFilterInstance params failed semantic validation: " + NL +
+            join(spec.getValidationBundle().getAllErrors(), NL)));
 
+    // don't use QueryInstance here because of the way we are injecting the AnswerParam's SQL
     String filterSql = _filterQuery.getSql();
-    // replace the answer param
-    String answerName = _answerParam.getName();
-    filterSql = filterSql.replaceAll("\\$\\$" + answerName + "\\$\\$", "("
-        + sql + ")");
 
-    // replace the rest of the params; the answer param has been replaced
-    // and will be ignored here.
-    for (Param param : params.values()) {
-      if (param.getFullName().equals(_answerParam.getFullName()))
-        continue;
-
-      String stableValue = _stableValues.get(param.getName());
-      try {
-        param.validate(user, stableValue, _stableValues);
-      }
-      catch (WdkUserException ex) {
-        throw new WdkModelException(ex);
-      }
-      String internal = param.getInternalValue(user, stableValue, _stableValues);
+    // populate filter SQL with param values
+    for (Param param : _filterQuery.getParams()) {
+      String internal = param.getFullName().equals(_answerParam.getFullName()) ?
+          "(" + sql + ")" : param.getInternalValue(validSpec);
       filterSql = param.replaceSql(filterSql, internal);
     }
 

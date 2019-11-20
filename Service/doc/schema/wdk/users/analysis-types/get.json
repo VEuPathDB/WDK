@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "displayName": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "shortDescription": {
+        "type": "string"
+      },
+      "releaseVersion": {
+        "type": "string"
+      },
+      "customThumbnail": {
+        "type": "string"
+      },
+      "paramNames": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "groups": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "displayName": {
+              "type": "string"
+            },
+            "displayType": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "isVisible": {
+              "type": "boolean"
+            },
+            "parameters": {
+              "oneOf": [
+                {
+                  "$ref": "../../../includes/string-array.json"
+                }
+              ]
+            }
+          },
+          "required": [
+            "description",
+            "displayName",
+            "displayType",
+            "name",
+            "isVisible"
+          ]
+        }
+      }
+    },
+    "required": [
+      "name",
+      "displayName",
+      "description",
+      "shortDescription",
+      "releaseVersion",
+      "paramNames",
+      "groups"
+    ]
+  }
+}

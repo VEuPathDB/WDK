@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
@@ -84,7 +85,7 @@ public class ModelConfig implements OAuthConfig {
   /**
    * location of secret key file
    */
-  private final Path _secretKeyFile;
+  private final Optional<Path> _secretKeyFile;
 
   /**
    * cached secret key; value is assigned at construction or as soon as the
@@ -144,7 +145,7 @@ public class ModelConfig implements OAuthConfig {
   private final Path _wdkTempDir;
 
   public ModelConfig(String modelName, String projectId, Path gusHome, boolean caching, boolean useWeights,
-      String paramRegex, Path secretKeyFile, Path wdkTempDir, String webServiceUrl, String assetsUrl,
+      String paramRegex, Optional<Path> secretKeyFile, Path wdkTempDir, String webServiceUrl, String assetsUrl,
       String smtpServer, String supportEmail, List<String> adminEmails, String emailSubject,
       String emailContent, ModelConfigUserDB userDB, ModelConfigAppDB appDB, ModelConfigAccountDB accountDB,
       ModelConfigUserDatasetStore userDatasetStoreConfig, QueryMonitor queryMonitor,
@@ -308,8 +309,8 @@ public class ModelConfig implements OAuthConfig {
    * @return secret key
    */
   public String getSecretKey() {
-    if (_secretKey == null && _secretKeyFile != null) {
-      try (FileReader in = new FileReader(_secretKeyFile.toFile())) {
+    if (_secretKey == null && _secretKeyFile.isPresent()) {
+      try (FileReader in = new FileReader(_secretKeyFile.get().toFile())) {
         _secretKey = EncryptionUtil.md5(IoUtil.readAllChars(in));
       }
       catch (IOException e) {

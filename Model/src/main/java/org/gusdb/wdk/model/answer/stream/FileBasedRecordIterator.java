@@ -100,12 +100,11 @@ class FileBasedRecordIterator extends AbstractRecordIterator {
    * @param attributeFileMap
    * @param tableFileMap
    * @throws WdkModelException
-   * @throws WdkUserException
    */
   public FileBasedRecordIterator(AnswerValue answerValue,
       Map<Path, List<QueryColumnAttributeField>> attributeFileMap,
       Map<Path, TwoTuple<TableField,List<String>>> tableFileMap)
-          throws WdkModelException, WdkUserException {
+          throws WdkModelException {
     // Obtain the result list of primary keys from the raw paged id SQL.  This same paged id SQL was used in
     // the attribute SQL.  So the primary keys should correspond 1:1 with the rows in the attribute CSV files.
     super(answerValue, makeIdResultList(answerValue));
@@ -122,10 +121,10 @@ class FileBasedRecordIterator extends AbstractRecordIterator {
   private static SqlResultList makeIdResultList(AnswerValue answerValue) throws WdkModelException {
     try {
       return new SqlResultList(SqlUtils.executeQuery(
-          answerValue.getQuestion().getWdkModel().getAppDb().getDataSource(),
+          answerValue.getWdkModel().getAppDb().getDataSource(),
           answerValue.getPagedIdSql(), "id__attr-full"));
     }
-    catch (WdkUserException | SQLException e) {
+    catch (SQLException e) {
       throw new WdkModelException("Unable to run ID SQL", e);
     }
   }
@@ -136,7 +135,7 @@ class FileBasedRecordIterator extends AbstractRecordIterator {
     for (Entry<Path,List<QueryColumnAttributeField>> entry : attributeFileMap.entrySet()) {
 
       // Generate full list of columns to fetch, including both PK columns and requested columns
-      List<String> columnNames = new ListBuilder<String>(answerValue.getQuestion()
+      List<String> columnNames = new ListBuilder<String>(answerValue.getAnswerSpec().getQuestion()
           .getRecordClass().getPrimaryKeyDefinition().getColumnRefs())
           .addAll(Functions.mapToList(entry.getValue(), Named.TO_NAME))
           .toList();
@@ -255,7 +254,7 @@ class FileBasedRecordIterator extends AbstractRecordIterator {
    * table into the record instance being assembled, advance the SingleTableRecordInstanceStream iterator and save it and the resulting new
    * next record instance into the tuple kept in the tableIteratorMap.  Otherwise, just attach an empty version of the provided table
    * to the record instance being assembled.
-   * 
+   *
    * @param aggregateRecordInstance the record instance under assembly
    * @param tableData object containing table field and data stream for that table
    * @param pkValues primary key value of the current record instance

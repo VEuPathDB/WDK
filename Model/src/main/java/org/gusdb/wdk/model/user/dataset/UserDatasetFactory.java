@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.user.dataset;
 
 import static org.gusdb.fgputil.functional.Functions.fSwallow;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
-import static org.gusdb.fgputil.functional.Functions.toJavaFunction;
 import static org.gusdb.fgputil.functional.Functions.zipToList;
 
 import java.sql.Types;
@@ -13,7 +12,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.json.JsonType;
@@ -49,16 +47,17 @@ public class UserDatasetFactory {
   public Set<Long> getInstalledUserDatasets(long userId) throws WdkModelException {
     try {
       String sql = "select user_dataset_id from " + _userDatasetSchema + "userDatasetAccessControl where user_id = ?";
-      final Set<Long> datasetIds = new HashSet<>();
-      new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "installed-datasets-by-user")
+      return new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "installed-datasets-by-user")
         .executeQuery(new Object[] { userId }, new Integer[] { Types.BIGINT }, rs -> {
+          Set<Long> datasetIds = new HashSet<>();
           while (rs.next()) {
             datasetIds.add(rs.getLong(1));
-          }});
-      return datasetIds;
+          }
+          return datasetIds;
+        });
     }
     catch (SQLRunnerException e) {
-      return WdkModelException.unwrap(e, Set.class);
+      return WdkModelException.unwrap(e);
     }
   }
 
@@ -71,17 +70,11 @@ public class UserDatasetFactory {
   public boolean isUserDatasetInstalled(long datasetId) throws WdkModelException {
     try {
       String sql = "select user_dataset_id from " + _userDatasetSchema + "userDatasetAccessControl where dataset_id = ?";
-      Wrapper<Boolean> wrapper = new Wrapper<>();
-      wrapper.set(false);
-      new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "is-user-dataset-installed")
-        .executeQuery(new Object[] { datasetId }, new Integer[] { Types.BIGINT }, rs -> {
-          if (rs.next()) {
-            wrapper.set(true);
-          }});
-      return wrapper.get();
+      return new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, "is-user-dataset-installed")
+        .executeQuery(new Object[] { datasetId }, new Integer[] { Types.BIGINT }, rs -> rs.next());
     }
     catch (SQLRunnerException e) {
-      return WdkModelException.unwrap(e, Boolean.class);
+      return WdkModelException.unwrap(e);
     }
   }
 
@@ -89,9 +82,9 @@ public class UserDatasetFactory {
    * Adds (non-detailed) type-specific data to the passed user datasets.
    */
   public void addTypeSpecificData(WdkModel wdkModel, List<UserDatasetInfo> userDatasets, User user)
-      throws WdkModelException{
+      throws WdkModelException {
     UserDatasetStore store = wdkModel.getUserDatasetStore();
-    Function<UserDatasetInfo,UserDatasetType> f = toJavaFunction(fSwallow(ud -> ud.getDataset().getType()));
+    Function<UserDatasetInfo,UserDatasetType> f = fSwallow(ud -> ud.getDataset().getType());
     Set<UserDatasetType> types = userDatasets.stream().map(f).collect(Collectors.toSet());
     for (UserDatasetType type : types) {
       List<UserDatasetInfo> typedUdis = userDatasets.stream().filter(ud -> type.equals(f.apply(ud))).collect(Collectors.toList());

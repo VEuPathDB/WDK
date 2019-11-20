@@ -1,11 +1,17 @@
 package org.gusdb.wdk.model;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import javax.activation.DataHandler;
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import java.io.*;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.Date;
@@ -15,28 +21,11 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import javax.activation.DataHandler;
-import javax.mail.Address;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-
-import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 /**
  * This class provided constants that are shared among different WDK model
  * classes. Furthermore, it also provides utility functions to send
  * email, encrypt text, parse text, etc.
- * 
+ *
  * @author jerric
  */
 public class Utilities {
@@ -235,7 +224,7 @@ public class Utilities {
 			String subject, String content, String ccAddresses, String bccAddresses,
       Attachment[] attachments) throws WdkModelException {
 
-    logger.debug("Sending message to: " + sendTos + ", bcc to: " + bccAddresses + 
+    logger.debug("Sending message to: " + sendTos + ", bcc to: " + bccAddresses +
       ",reply: " + reply + ", using SMPT: " + smtpServer);
 
     // create properties and get the session
@@ -252,7 +241,7 @@ public class Utilities {
       message.setReplyTo(replyAddresses);
       message.setRecipients(Message.RecipientType.TO,
 				InternetAddress.parse(sendTos));
-      
+
       // add Cc addresses
       if (ccAddresses != null && !ccAddresses.isEmpty()) {
         message.setRecipients(Message.RecipientType.CC,
@@ -296,7 +285,7 @@ public class Utilities {
   public static void sendEmail(String smtpServer, String sendTos, String reply,
       String subject, String content, String ccAddresses,
       DataHandler[] attachmentDataHandlers) throws WdkModelException {
-    
+
     Attachment[] attachments = Stream
       .of(attachmentDataHandlers)
       .map(dataHandler -> new Attachment(dataHandler, dataHandler.getName()))
@@ -323,7 +312,7 @@ public class Utilities {
     stream.close();
     return buffer;
   }
-  
+
   public static <S,T> int createHashFromValueMap(Map<S,T> map) {
     StringBuilder buffer = new StringBuilder("{");
     for (S key : map.keySet()) {
@@ -335,7 +324,7 @@ public class Utilities {
     buffer.append("}");
     return buffer.toString().hashCode();
   }
-  
+
   public static Map<String, Boolean> parseSortList(String sortList) throws WdkModelException {
     Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>();
     String[] attrCombines = sortList.split(",");
@@ -350,7 +339,7 @@ public class Utilities {
       if (!sortingMap.containsKey(attrName))
         sortingMap.put(attrName, ascending);
     }
-    
+
     return sortingMap;
   }
 

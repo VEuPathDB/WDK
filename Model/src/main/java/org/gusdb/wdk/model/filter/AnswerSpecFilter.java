@@ -3,10 +3,12 @@ package org.gusdb.wdk.model.filter;
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
+import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
+import org.gusdb.wdk.model.question.Question;
 import org.json.JSONObject;
 
 public class AnswerSpecFilter extends StepFilter {
@@ -32,21 +34,15 @@ public class AnswerSpecFilter extends StepFilter {
 
   @Override
   public String getDisplayValue(AnswerValue answer, JSONObject jsValue)
-      throws WdkModelException, WdkUserException {
-    return answer.getQuestion().getName() + ", with parameters { " +
+      throws WdkModelException {
+    return answer.getAnswerSpec().getQuestion().getName() + ", with parameters { " +
       join(mapToList(answer.getParamDisplays().entrySet(),
           entry -> entry.getKey() + ": "  + entry.getValue()), ", ");
   }
 
   @Override
-  public FilterSummary getSummary(AnswerValue answer, String idSql)
-      throws WdkModelException, WdkUserException {
-    return new FilterSummary() { /* no UI for now; service only */ };
-  }
-
-  @Override
   public String getSql(AnswerValue answer, String idSql, JSONObject jsValue)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     // TODO: parse answer spec and write SQL for this filter;
     //   since AnswerSpecFactory lives in wdk-service on trunk, this is much
     //   easier on the strategy-loading branch, where we can use AnswerSpecBuilder
@@ -62,8 +58,14 @@ public class AnswerSpecFilter extends StepFilter {
    * Not fully implemented yet.
    */
   @Override
-  public boolean defaultValueEquals(Step step, JSONObject value)  throws WdkModelException {
+  public boolean defaultValueEquals(SimpleAnswerSpec answerSpec, JSONObject value)  throws WdkModelException {
     return false;
+  }
+
+  @Override
+  public ValidationBundle validate(Question question, JSONObject value, ValidationLevel validationLevel) {
+    // TODO: write validation on the incoming answer spec
+    return ValidationBundle.builder(ValidationLevel.SEMANTIC).build();
   }
 
 }

@@ -1,62 +1,60 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.SelectableItem;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
- * This class provides functions that are common among EnumParam and FlatVocabParam. The parameter of this
- * type can be rendered in the following ways:
+ * This class provides functions that are common among EnumParam and
+ * FlatVocabParam. The parameter of this type can be rendered in the following
+ * ways:
  * <ul>
- * <li>A radio button list, and user can choose only one value from it.</li>
- * <li>A dropdown menu, and user can choose only one value.</li>
- * <li>A checkbox list, and user can choose more than one values.</li>
- * <li>A checkbox tree, and user can choose branches with all the leaves.</li>
- * <li>A type-ahead input box, and when user starts typing, all the matched values will be suggested to the
- * user, and currently only one value is allowed to be chosen from the suggested list.</li>
+ *   <li>A radio button list, and user can choose only one value from it.
+ *   <li>A dropdown menu, and user can choose only one value.
+ *   <li>A checkbox list, and user can choose more than one values.
+ *   <li>A checkbox tree, and user can choose branches with all the leaves.
+ *   <li>A type-ahead input box, and when user starts typing, all the matched
+ *       values will be suggested to the user, and currently only one value is
+ *       allowed to be chosen from the suggested list.
  * </ul>
- * 
- * Furthermore, such a param can depend on another param, and if the value of that param is changed, the
- * allowed list of values of this enum/flatVocab param will also be changed on the fly. Currently, an
- * enum/flatVocab param can only depend on another enum or flatVocab param.
- * 
+ * <p>
+ * Furthermore, such a param can depend on another param, and if the value of
+ * that param is changed, the allowed list of values of this enum/flatVocab
+ * param will also be changed on the fly. Currently, an enum/flatVocab param can
+ * only depend on another enum or flatVocab param.
+ *
  * @author xingao
- * 
+ *
  *         The meaning of different param values, based on the processing stage:
- * 
+ *
  *         raw value: a String[] of term values;
- * 
+ *
  *         stable value: a comma separated list of terms;
- * 
+ *
  *         signature: a checksum of the list of terms, ordered alphabetically.
- * 
+ *
  *         internal value: a comma separated list of internals. If noTranslation is true, this will be a list
  *         of terms. If quoted is true, quotes are applied to each of the individual items.
- * 
+ *
  *         Note about dependent params: AbstractEnumParams can be dependent on other parameter values. Thus,
  *         this class provides two versions of many methods: one that takes a dependent value, and one that
  *         doesn't. If the version is called without a depended value, or the version requiring a depended
@@ -69,49 +67,6 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   private static final boolean INVALID_DEFAULT_IS_FATAL = true;
 
-  /**
-   * @author jerric
-   * 
-   *         The ParamValueMap is used to eliminate duplicate value tuplets.
-   */
-  private static class ParamValueMap extends LinkedHashMap<String, String> {
-
-    private static final long serialVersionUID = 8058527840525499401L;
-
-    public ParamValueMap() {
-      super();
-    }
-
-    public ParamValueMap(Map<? extends String, ? extends String> m) {
-      super(m);
-    }
-
-    @Override
-    public int hashCode() {
-      return Utilities.createHashFromValueMap(this);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (o instanceof ParamValueMap) {
-        ParamValueMap map = (ParamValueMap) o;
-        if (size() == map.size()) {
-          for (String key : keySet()) {
-            if (!map.containsKey(key))
-              return false;
-            if (!map.get(key).equals(get(key)))
-              return false;
-          }
-          return true;
-        }
-        else
-          return false;
-      }
-      else
-        return false;
-    }
-  }
-
   public static final String DISPLAY_SELECT = "select";
   public static final String DISPLAY_LISTBOX = "listBox"; // deprecated; use select
   public static final String DISPLAY_CHECKBOX = "checkBox";
@@ -122,34 +77,29 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   protected Boolean _multiPick = false;
   protected boolean _quote = true;
 
-  private String _displayType = null;
+  private String _displayType;
   private int _minSelectedCount = -1;
-  private int maxSelectedCount = -1;
+  private int _maxSelectedCount = -1;
   private boolean countOnlyLeaves = true;
 
   /**
-   * this property is only used by abstractEnumParams, but have to be initialized from suggest.
-   * it is an enum with values: NONE, ALL, FIRST
+   * this property is only used by abstractEnumParams, but have to be
+   * initialized from suggest. it is an enum with values: NONE, ALL, FIRST
    */
   protected SelectMode selectMode;
 
   /**
    * collapse single-child branches if set to true
    */
-  private boolean suppressNode = false;
-  
-  private boolean skipValidation = false;
+  private boolean suppressNode;
 
-  private int depthExpanded = 0;
+  private int depthExpanded;
 
-  protected abstract EnumParamVocabInstance createVocabInstance(User user, Map<String, String> dependedParamValues)
-      throws WdkModelException, WdkUserException;
-  
-  @Override
-  protected DependentParamInstance createDependentParamInstance (User user, Map<String, String> dependedParamValues)
-      throws WdkModelException, WdkUserException {
-    return createVocabInstance(user,  dependedParamValues);
-  }
+  // FIXME: this method is public only to support WdkQueryPlugin.java, which is
+  //    due to be retired when ApiFed starts using the WDK service (or UniDB is
+  //    in use).  When either of these happens, change this back to protected.
+  public abstract EnumParamVocabInstance getVocabInstance(User user, Map<String,String> stableValues)
+      throws WdkModelException;
 
   public AbstractEnumParam() {
     super();
@@ -166,34 +116,9 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     this.selectMode = param.selectMode;
     this.suppressNode = param.suppressNode;
     this._minSelectedCount = param._minSelectedCount;
-    this.maxSelectedCount = param.maxSelectedCount;
+    this._maxSelectedCount = param._maxSelectedCount;
     this.countOnlyLeaves = param.countOnlyLeaves;
     this.depthExpanded = param.depthExpanded;
-  }
-
-  /**
-   * Provides a vocabulary instance for this param, using contextParamValues to control depended values, if
-   * any. Along the way, ensure that contextParamValues contains values for all depended params (either those
-   * originally provided, or defaults). As a side-effect, depended param vocabularies are built (based on
-   * values in the context)
-   * 
-   * @param user
-   * @param contextParamValues
-   * @return
-   */
-  public EnumParamVocabInstance getVocabInstance(User user, Map<String, String> contextParamValues) {
-
-    // make sure context is populated with values we need (our depended params)
-    contextParamValues = ensureRequiredContext(user, contextParamValues);
-    
-    // now create the vocab instance, using that context
-    try {
-      return createVocabInstance(user, contextParamValues);
-    }
-    catch (WdkModelException | WdkUserException wme) {
-      throw new WdkRuntimeException("Unable to create EnumParamVocabInstance for param " + getName() + " with " +
-          "depended values " + FormatUtil.prettyPrint(contextParamValues), wme);
-    }
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -209,23 +134,14 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return _multiPick;
   }
 
-  public boolean isSkipValidation() {
-    return skipValidation;
-  }
-  
-  public void setSkipValidation(boolean skipValidation) {
-    this.skipValidation = skipValidation;
-  }
-
   public void setQuote(boolean quote) {
     this._quote = quote;
   }
 
   /**
-   * If the quote is true, WDK will escape all the single quotes from internal value, and then wrap those
-   * values around with single quotes. then the final value will be substituted into the SQL.
-   * 
-   * @return
+   * If the quote is true, WDK will escape all the single quotes from internal
+   * value, and then wrap those values around with single quotes. then the final
+   * value will be substituted into the SQL.
    */
   public boolean getQuote() {
     return _quote;
@@ -234,7 +150,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   /**
    * Returns display type configured if set.  Otherwise returns default, which
    * is checkbox if multi-pick, select if single-pick
-   * 
+   *
    * @return the displayType of this param
    */
   public String getDisplayType() {
@@ -263,45 +179,46 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   }
 
   /**
-   * @return The minimum number of allowed values for this param; if not set (i.e. no min), this method will
-   *         return -1.
+   * @return The minimum number of allowed values for this param; if not set
+   * (i.e. no min), this method will return -1.
    */
   public int getMinSelectedCount() {
     return _minSelectedCount;
   }
 
   /**
-   * @param maxSelectedCount
-   *          The minimum number of allowed values for this param. If not set, default is "no min"; any number
-   *          of values can be assigned.
+   * @param minSelectedCount
+   *   The minimum number of allowed values for this param. If not set, default
+   *   is "no min"; any number of values can be assigned.
    */
   public void setMinSelectedCount(int minSelectedCount) {
     this._minSelectedCount = minSelectedCount;
   }
 
   /**
-   * @return The maximum number of allowed values for this param; if not set (i.e. no max), this method will
-   *         return -1.
+   * @return The maximum number of allowed values for this param; if not set
+   * (i.e. no max), this method will return -1.
    */
   public int getMaxSelectedCount() {
     // only allow one value if multiPick set to false
     if (!getMultiPick())
       return 1;
-    return maxSelectedCount;
+    return _maxSelectedCount;
   }
 
   /**
    * @param maxSelectedCount
-   *          The maximum number of allowed values for this param. If not set, default is "no max"; any number
-   *          of values can be assigned.
+   *   The maximum number of allowed values for this param. If not set, default
+   *   is "no max"; any number of values can be assigned.
    */
   public void setMaxSelectedCount(int maxSelectedCount) {
-    this.maxSelectedCount = maxSelectedCount;
+    this._maxSelectedCount = maxSelectedCount;
   }
 
   /**
-   * @return true if, when validating min- and maxSelectedCount (see above), we should only count leaves
-   *         towards the total selected value count, or, if false, count both leaves and branch selections
+   * @return true if, when validating min- and maxSelectedCount (see above), we
+   * should only count leaves towards the total selected value count, or, if
+   * false, count both leaves and branch selections
    */
   public boolean getCountOnlyLeaves() {
     return countOnlyLeaves;
@@ -309,118 +226,50 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   /**
    * @param countOnlyLeaves
-   *          Set to true if, when validating min- and maxSelectedCount (see above), we should only count
-   *          leaves towards the total selected value count, or set to false if both leaves and branch
-   *          selections should be counted
+   *   Set to true if, when validating min- and maxSelectedCount (see above), we
+   *   should only count leaves towards the total selected value count, or set
+   *   to false if both leaves and branch selections should be counted
    */
   public void setCountOnlyLeaves(boolean countOnlyLeaves) {
     this.countOnlyLeaves = countOnlyLeaves;
   }
-  
+
   public void setDepthExpanded(int depthExpanded) {
     this.depthExpanded = depthExpanded;
   }
-  
+
   public int getDepthExpanded() {
     return this.depthExpanded;
   }
 
- 
-  /**
-   * Returns the default value. In the case that this is a dependent param, uses the default value of the
-   * depended param as the depended value (recursively).
-   */
-  @Override
-  public String getDefault() throws WdkModelException {
-    return getDefault(_wdkModel.getSystemUser(), new LinkedHashMap<String, String>());
+  private EnumParamVocabInstance getVocabInstance(PartiallyValidatedStableValues context)
+      throws WdkModelException {
+    return getVocabInstance(context.getUser(), context);
   }
 
-  /**
-   * @param contextParamValues
-   *          map<paramName, paramValues> of depended params and their values.
-   * @return
-   * @throws WdkModelException
-   */
+  public <T extends ParameterContainerInstanceSpec<T>> EnumParamVocabInstance getVocabInstance(DisplayablyValid<T> spec)
+      throws WdkModelException {
+    return getVocabInstance(spec.get().getUser(), spec.get().toMap());
+  }
+
   @Override
-  public String getDefault(User user, Map<String, String> contextParamValues) throws WdkModelException {
-    if (isDependentParam() && !contextParamValues.isEmpty()) {
-      LOG.debug("Default value requested for param " + getName() + " with context values " +
-          FormatUtil.prettyPrint(contextParamValues, Style.SINGLE_LINE));
-      String value = getVocabInstance(user, contextParamValues).getDefaultValue();
-      LOG.debug("Returning default value of '" + value + "' for dependent param " + getName());
-      return value;
-    }
-    else {
-      return getVocabInstance(user, contextParamValues).getDefaultValue();
-    }
+  protected String getDefault(PartiallyValidatedStableValues stableVals) throws WdkModelException {
+    LOG.debug("Default value requested for param " + getName() + " with context values " +
+        FormatUtil.prettyPrint(stableVals, Style.SINGLE_LINE));
+    String priorValue = stableVals.get(getName());
+    String value = getDefault(priorValue, getVocabInstance(stableVals));
+    LOG.debug("Returning default value of '" + value + "' for dependent param " + getName());
+    return value;
   }
 
   @Override
   public String getSanityDefault(User user, Map<String, String> contextParamValues,
-      SelectMode sanitySelectMode) {
-    return getVocabInstance(user, contextParamValues).getSanityDefaultValue(sanitySelectMode, getMultiPick(), getSanityDefault());
+      SelectMode sanitySelectMode) throws WdkModelException {
+    return getSanityDefaultValue(getVocabInstance(user, contextParamValues), sanitySelectMode, getMultiPick(), getSanityDefault());
   }
 
-  public EnumParamVocabInstance getVocabInstance(User user) {
-    return getVocabInstance(user, null);
-  }
-
-  public String[] getVocab(User user) {
-    return getVocab(user, null);
-  }
-
-  public String[] getVocab(User user, Map<String, String> dependedParamValues) throws WdkRuntimeException {
-    return getVocabInstance(user, dependedParamValues).getVocab();
-  }
-
-  public EnumParamTermNode[] getVocabTreeRoots(User user) {
-    return getVocabTreeRoots(user, null);
-  }
-
-  public EnumParamTermNode[] getVocabTreeRoots(User user, Map<String, String> dependedParamValues) {
-    return getVocabInstance(user, dependedParamValues).getVocabTreeRoots();
-  }
-
-  public String[] getVocabInternal(User user) {
-    return getVocabInternal(user, null);
-  }
-
-  public String[] getVocabInternal(User user, Map<String, String> dependedParamValues) {
-    return getVocabInstance(user, dependedParamValues).getVocabInternal(isNoTranslation());
-  }
-
-  /* not used
-  public String[] getDisplays(User user) {
-    return getDisplays(user, null);
-  }
-
-  public String[] getDisplays(User user, Map<String, String> dependedParamValues) {
-    return getVocabInstance(user, dependedParamValues).getDisplays();
-  }
-  */
-
-  public Map<String, String> getVocabMap(User user) {
-    return getVocabMap(user, null);
-  }
-
-  public Map<String, String> getVocabMap(User user, Map<String, String> contextParamValues) {
-    return getVocabInstance(user, contextParamValues).getVocabMap();
-  }
-
-  public Map<String, String> getDisplayMap(User user) {
-    return getDisplayMap(user, null);
-  }
-
-  public Map<String, String> getDisplayMap(User user, Map<String, String> dependedParamValues) {
-    return getVocabInstance(user, dependedParamValues).getDisplayMap();
-  }
-
-  public Map<String, String> getParentMap(User user) {
-    return getParentMap(user, null);
-  }
-
-  public Map<String, String> getParentMap(User user, Map<String, String> dependedParamValues) {
-    return getVocabInstance(user, dependedParamValues).getParentMap();
+  public Map<String, String> getDisplayMap(User user, Map<String, String> contextParamValues) throws WdkModelException {
+    return getVocabInstance(user, contextParamValues).getDisplayMap();
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -430,7 +279,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   protected void initTreeMap(EnumParamVocabInstance cache) {
 
     // construct index
-    Map<String, EnumParamTermNode> indexMap = new LinkedHashMap<String, EnumParamTermNode>();
+    Map<String, EnumParamTermNode> indexMap = new LinkedHashMap<>();
     for (String term : cache.getTerms()) {
       EnumParamTermNode node = new EnumParamTermNode(term);
       node.setDisplay(cache.getDisplay(term));
@@ -471,9 +320,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       if (grandChildren.length > 0) {
         LOG.debug(child.getTerm() + " suppressed.");
         children.remove(0);
-        for (EnumParamTermNode grandChild : grandChildren) {
-          children.add(grandChild);
-        }
+        children.addAll(Arrays.asList(grandChildren));
         // Also remove the suppressed node from term & internal map.
         // Disable the cache change, to have a correct tree on portal.
         // cache.removeTerm(child.getTerm());
@@ -494,7 +341,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     // the input is a list of terms
     if (stableValue == null)
       return new String[0];
-    
+
     String[] terms;
     if (_multiPick) {
       terms = stableValue.split("[,]+");
@@ -509,63 +356,64 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   }
 
   @Override
-  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
-    if (!isSkipValidation()) {
-      String[] terms = getTerms(user, stableValue);
-      LOG.debug("param=" + getFullName() + " - validating: " + stableValue +
-          ", with contextParamValues=" + FormatUtil.prettyPrint(contextParamValues));
+  protected ParamValidity validateValue(PartiallyValidatedStableValues ctxParamVals, ValidationLevel level)
+      throws WdkModelException {
 
-      if (terms.length == 0 && !_allowEmpty)
-        throw new WdkUserException("At least one value for " + getPrompt() + " must be selected.");
+    final String name = getName();
+    final String stableValue = ctxParamVals.get(name);
 
-      // verify that user did not select too few or too many values for this
-      // param
-      int numSelected = getNumSelected(user, terms, contextParamValues);
-      if ((maxSelectedCount > 0 && numSelected > maxSelectedCount) ||
-          (_minSelectedCount > 0 && numSelected < _minSelectedCount)) {
-        String range = (_minSelectedCount > 0 ? "[ " + _minSelectedCount : "( Inf") + ", " +
-            (maxSelectedCount > 0 ? maxSelectedCount + " ]" : "Inf )");
-        throw new WdkUserException("Number of selected values (" + numSelected + ") was not in range " +
-            range + " for parameter " + getPrompt());
-      }
+    if (LOG.isEnabledFor(Param.VALIDATION_LOG_PRIORITY))
+      LOG.log(Param.VALIDATION_LOG_PRIORITY, "param=" + getFullName() + " - validating: " + stableValue +
+        ", with contextParamValues=" + FormatUtil.prettyPrint(ctxParamVals));
 
-      Map<String, String> map = getVocabMap(user, contextParamValues);
-      boolean error = false;
-      StringBuilder message = new StringBuilder();
-      for (String term : terms) {
-        if (!map.containsKey(term)) {
-          error = true;
-          message.append("Invalid term for param [" + getFullName() + "]: " + term + ". \n");
-        }
-      }
-      if (error)
-        throw new WdkUserException(message.toString());
+    // all other validation requires a DB lookup, so exit here if displayable or less
+    if (level.isLessThanOrEqualTo(ValidationLevel.SYNTACTIC)) {
+      LOG.log(Param.VALIDATION_LOG_PRIORITY, "Don't need to check against vocab since validation level is syntactic or less; returning valid=true");
+      return ctxParamVals.setValid(name, level);
     }
-    else {
-      LOG.debug("param=" + getFullName() + " - skip validation");
+
+    // if semantic or runnable, must verify term counts and validity
+    EnumParamVocabInstance vocab = getVocabInstance(ctxParamVals);
+    List<String> selectedTerms = Arrays.asList(((EnumParamHandler)_handler)
+        .toRawValue(ctxParamVals.getUser(), stableValue));
+
+    // verify that user did not select too few or too many values for this param
+    int numSelected = getNumSelected(vocab, selectedTerms);
+    if ((_maxSelectedCount > 0 && numSelected > _maxSelectedCount) ||
+        (_minSelectedCount > 0 && numSelected < _minSelectedCount)) {
+      String range = (_minSelectedCount > 0 ? "[ " + _minSelectedCount : "( Inf") + ", " +
+          (_maxSelectedCount > 0 ? _maxSelectedCount + " ]" : "Inf )");
+      return ctxParamVals.setInvalid(name, level, "Number of selected values ("
+        + numSelected + ") was too few or too many.  Must be within " + range);
     }
-  }
-  
-  public String[] getTerms(User user, String stableValue) throws WdkModelException {
-    return (String[]) getRawValue(user, stableValue);
+
+    Set<String> allTerms = vocab.getTerms();
+    if (LOG.isEnabledFor(Param.VALIDATION_LOG_PRIORITY))
+      LOG.log(Param.VALIDATION_LOG_PRIORITY, "Validating " + getName() + NL +
+        "Valid terms: " + String.join(", ", allTerms) + NL +
+        "Found terms: " + String.join(", ", selectedTerms));
+    List<String> messages = new ArrayList<>();
+    for (String term : selectedTerms) {
+      if (!allTerms.contains(term)) {
+        messages.add("Invalid value '" + term + "'.");
+      }
+    }
+
+    return messages.isEmpty() ?
+        ctxParamVals.setValid(name, level) :
+        ctxParamVals.setInvalid(name, level, FormatUtil.join(messages, FormatUtil.NL));
   }
 
-  private int getNumSelected(User user, String[] terms, Map<String, String> contextParamValues) {
-    // if countOnlyLeaves is set, must generate original tree, set values, and
-    // count the leaves
-    //String displayType = getDisplayType();
-    //logger.debug("Checking whether num selected exceeds max on param " + getFullName() + " with values" +
-    //   ": displayType = " + displayType + ", maxSelectedCount = " + getMaxSelectedCount() +
-    //   ", countOnlyLeaves = " + getCountOnlyLeaves());
+  private int getNumSelected(EnumParamVocabInstance vocab, List<String> selectedTerms) {
+    // if countOnlyLeaves is set, must generate original tree, set values, and count the leaves
     if (_displayType != null && _displayType.equals(DISPLAY_TREEBOX) && getCountOnlyLeaves()) {
-      EnumParamTermNode[] rootNodes = getVocabInstance(user, contextParamValues).getVocabTreeRoots();
+      EnumParamTermNode[] rootNodes = vocab.getVocabTreeRoots();
       FieldTree tree = getParamTree(getName(), rootNodes);
-      populateParamTree(tree, terms);
+      populateParamTree(tree, selectedTerms);
       return tree.getSelectedLeaves().size();
     }
     // otherwise, just count up terms and compare to max
-    return terms.length;
+    return selectedTerms.size();
   }
 
   public static FieldTree getParamTree(String treeName, EnumParamTermNode[] rootNodes) {
@@ -582,11 +430,10 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return tree;
   }
 
-  public static void populateParamTree(FieldTree tree, String[] values) {
-    if (values != null && values.length > 0) {
-      List<String> currentValueList = Arrays.asList(values);
-      tree.setSelectedLeaves(currentValueList);
-      tree.addDefaultLeaves(currentValueList);
+  public static void populateParamTree(FieldTree tree, List<String> selectedTerms) {
+    if (!selectedTerms.isEmpty()) {
+      tree.setSelectedLeaves(selectedTerms);
+      tree.addDefaultLeaves(selectedTerms);
     }
   }
 
@@ -608,18 +455,21 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   /**
    * Builds the default value (and sanity default value) of the "current" enum values
    */
-  protected final void applySelectMode(EnumParamVocabInstance cache) throws WdkModelException {
-    // logger.debug("applySelectMode(): select mode: '" + selectMode + "', default from model = " +
-    //    super.getDefault());
-    String defaultFromModel = super.getDefault();
-
-    String errorMessage = "The default value from model, '" + defaultFromModel +
-        "', is not a valid term for param " + getFullName() + ", please double check this default value.";
+  // FIXME: this method is public only to support WdkQueryPlugin.java, which is
+  //    due to be retired when ApiFed starts using the WDK service (or UniDB is
+  //    in use).  When either of these happens, change this back to private.
+  public String getDefault(String existingStableValue, EnumParamVocabInstance cache) throws WdkModelException {
+    String trimmedExistingValue = trimInvalidValues(existingStableValue, cache);
+    if (!trimmedExistingValue.isEmpty()) {
+      return trimmedExistingValue;
+    }
+    String defaultFromModel = getXmlDefault();
+    LOG.debug("applySelectMode(): select mode: '" + selectMode + "', default from model = " + defaultFromModel);
     if (defaultFromModel != null) {
-      // default defined in the model, validate default values, and set it
-      // to the cache.
-      String[] defaults = getMultiPick() ? defaultFromModel.split("\\s*,\\s*")
-          : new String[] { defaultFromModel };
+      // default defined in the model, validate default values before returning
+      String[] defaults = getMultiPick() ?
+          defaultFromModel.split("\\s*,\\s*") :
+          new String[] { defaultFromModel };
       List<String> trimmedDefaults = new ArrayList<>();
       for (String def : defaults) {
         if (cache.getTerms().contains(def)) {
@@ -627,11 +477,13 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
         }
         else {
           // the given default doesn't match any term
+          String errorMessage = "The default value from model, '" +
+              defaultFromModel + "', is not a valid term for param " +
+              getFullName() + ", please double check this default value.";
           if (isDependentParam()) {
-            // need to investigate and make sure the default is as
-            // intended.
-            // Cannot throws exception here, since the default might
-            // not be valid for a different depended value.
+            // Need to investigate and make sure the default is as intended;
+            // cannot throw exception here, since the default might not be valid
+            // for a different depended value.
             LOG.warn(errorMessage);
           }
           else {
@@ -643,22 +495,55 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
           }
         }
       }
-      cache.setDefaultValue(FormatUtil.join(
-          trimmedDefaults.toArray(new String[trimmedDefaults.size()]), ","));
-      return;
+      return FormatUtil.join(trimmedDefaults.toArray(new String[trimmedDefaults.size()]), ",");
     }
 
-    String defaultFromSelectMode = getDefaultWithSelectMode(
+    return getDefaultWithSelectMode(
         cache.getTerms(), selectMode, _multiPick,
         cache.getTermTreeListRef().isEmpty() ? null :
           cache.getTermTreeListRef().get(0));
-
-    if (defaultFromSelectMode != null) {
-      cache.setDefaultValue(defaultFromSelectMode);
-    }
   }
 
-  public static String getDefaultWithSelectMode(Set<String> terms, SelectMode selectMode, boolean isMultiPick, EnumParamTermNode firstTreeNode) {
+  private String trimInvalidValues(String existingStableValue, EnumParamVocabInstance cache) {
+    if (existingStableValue == null || existingStableValue.isEmpty()) return "";
+    String[] values = getMultiPick() ?
+        existingStableValue.split("\\s*,\\s*") :
+        new String[] { existingStableValue };
+    List<String> trimmedValues = new ArrayList<>();
+    for (String value : values) {
+      if (cache.getTerms().contains(value)) {
+        // this value is valid
+        trimmedValues.add(value);
+      }
+    }
+    // if any values are valid, join them with commas; else return empty string
+    return trimmedValues.isEmpty() ? "" : trimmedValues.stream().collect(Collectors.joining(","));
+  }
+
+  /**
+   * Determines and returns the sanity default for this param in the following
+   * way: if sanitySelectMode is not null, use it to choose params; if it is,
+   * use default (i.e. however param normally gets default)
+   *
+   * @param sanitySelectMode
+   *   select mode form model (ParamValuesSet)
+   *
+   * @return default value for this param, based on cached vocab values
+   */
+  private String getSanityDefaultValue(EnumParamVocabInstance vocab,
+      SelectMode sanitySelectMode, boolean isMultiPick, String sanityDefaultNoSelectMode) throws WdkModelException {
+    LOG.info("Getting sanity default value with passed mode: " + sanitySelectMode);
+    if (sanitySelectMode != null) {
+      return getDefaultWithSelectMode(vocab.getTerms(), sanitySelectMode, isMultiPick,
+          vocab.getTermTreeListRef().isEmpty() ? null : vocab.getTermTreeListRef().get(0));
+    }
+    String defaultVal = getDefault(null, vocab);
+    LOG.info("Sanity select mode is null; using sanity default (" + sanityDefaultNoSelectMode +
+        ") or default (" + defaultVal + ")");
+    return sanityDefaultNoSelectMode != null ? sanityDefaultNoSelectMode : defaultVal;
+  }
+
+  private static String getDefaultWithSelectMode(Set<String> terms, SelectMode selectMode, boolean isMultiPick, EnumParamTermNode firstTreeNode) {
     // single pick can only select one value
     if (selectMode == null || !isMultiPick)
       selectMode = SelectMode.FIRST;
@@ -687,7 +572,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       }
       return builder.toString();
     }
-    return null;
+    return "";
   }
 
   @Override
@@ -714,7 +599,6 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
 
-
     // throw error if user selects treeBox displayType but multiSelect=false
     //   note: no technical reason not to allow this, but we think UX for this is bad
     if (!getMultiPick() && getDisplayType().equals(DISPLAY_TREEBOX)) {
@@ -725,79 +609,26 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     }
   }
 
+  /**
+   * Override version in param to consider selectMode when deciding if default
+   * conflicts with allowEmpty setting.
+   */
   @Override
-  public Set<String> getAllValues() throws WdkModelException {
-    User user = _wdkModel.getSystemUser();
-    Set<String> values = new LinkedHashSet<>();
-    if (isDependentParam()) {
-      // dependent param, need to get all the combinations of the depended
-      // param values.
-      Set<Param> dependedParams = getDependedParams();
-      Set<ParamValueMap> dependedValues = new LinkedHashSet<>();
-      dependedValues.add(new ParamValueMap());
-      for (Param dependedParam : dependedParams) {
-        Set<String> subValues = dependedParam.getAllValues();
-        Set<ParamValueMap> newDependedValues = new LinkedHashSet<>();
-        for (String subValue : subValues) {
-          for (ParamValueMap dependedValue : dependedValues) {
-            dependedValue = new ParamValueMap(dependedValue);
-            dependedValue.put(dependedParam.getName(), subValue);
-            newDependedValues.add(dependedValue);
-          }
-        }
-        dependedValues = newDependedValues;
-      }
-      // now for each dependedValue tuplet, get the possible values
-      for (Map<String, String> dependedValue : dependedValues) {
-        try {
-          values.addAll(getVocabMap(user, dependedValue).keySet());
-        }
-        catch (WdkRuntimeException ex) {
-          // if (ex.getMessage().startsWith("No item returned by")) {
-          // the enum param doeesn't return any row, ignore it.
-          continue;
-          // } else
-          // throw ex;
-        }
-      }
-    }
-    else {
-      values.addAll(getVocabMap(user).keySet());
-    }
-    return values;
+  protected boolean isInvalidEmptyDepended() {
+    return super.isInvalidEmptyDepended()
+      && SelectMode.NONE.equals(selectMode);
   }
 
-  protected String getValidStableValue(User user, String stableValue, EnumParamVocabInstance cache) throws WdkModelException {
-    if (stableValue == null)
-      return cache.getDefaultValue();
-
-    String[] terms = getTerms(user, stableValue);
-    // logger.debug("CORRECTING " + name + "=\"" + stableValue + "\"");
-    Map<String, String> termMap = cache.getVocabMap();
-    Set<String> validValues = new LinkedHashSet<>();
-    for (String term : terms) {
-      if (termMap.containsKey(term))
-        validValues.add(term);
-    }
-
-    // if no valid values exist, use default; otherwise, use valid values
-    if (validValues.size() > 0) {
-      StringBuilder buffer = new StringBuilder();
-      for (String term : validValues) {
-        if (buffer.length() > 0)
-          buffer.append(",");
-        buffer.append(term);
-      }
-      return buffer.toString();
-    }
-    else
-      return cache.getDefaultValue();
+  /**
+   * enum params are always stale if any depended param is stale
+   */
+  @Override
+  public boolean isStale(Set<String> staleDependedParamsFullNames) {
+    return true;
   }
-  
-
 
   @Override
-  public String getBriefRawValue(Object rawValue, int truncateLength) throws WdkModelException {
+  public String getBriefRawValue(Object rawValue, int truncateLength) {
     String[] terms = (String[]) rawValue;
     StringBuilder buffer = new StringBuilder();
     for (String term : terms) {
@@ -812,39 +643,8 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     return buffer.toString();
   }
 
-  @Override
-  protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
-    super.printDependencyContent(writer, indent);
-
-    // print out depended params, if any
-    if (isDependentParam()) {
-      List<Param> dependedParams = new ArrayList<>(getDependedParams());
-      writer.println(indent + "<dependedParams count=\"" + getDependedParams().size() + "\">");
-      Collections.sort(dependedParams, new Comparator<Param>() {
-        @Override
-        public int compare(Param param1, Param param2) {
-          return param1.getFullName().compareToIgnoreCase(param2.getFullName());
-        }
-      });
-      String indent1 = indent + WdkModel.INDENT;
-      for (Param param : dependedParams) {
-        param.printDependency(writer, indent1);
-      }
-      writer.println(indent + "</dependedParams>");
-    }
-  }
-
-  public JSONObject getJsonValues(User user, Map<String, String> contextParamValues) throws WdkModelException,
-      WdkUserException {
-    return getJsonValues(createVocabInstance(user, contextParamValues));
-  }
-
-  /**
-   * @throws WdkUserException
-   * @throws WdkModelException
-   */
   public JSONObject getJsonValues(EnumParamVocabInstance cache)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     JSONObject jsParam = new JSONObject();
     try {
       JSONArray jsValues = new JSONArray();
@@ -862,5 +662,4 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     }
     return jsParam;
   }
-  
 }

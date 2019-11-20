@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "allOf": [
+    { "$ref": "base-param.json"},
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [ "number" ]
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "increment": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "min",
+        "max",
+        "increment",
+        "type"
+      ]
+    }
+  ]
+}

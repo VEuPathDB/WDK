@@ -1,24 +1,60 @@
-# Users API
-#
-# This RAML doc is a draft.  The details below are pulled from the google doc
-# do not necessarily reflect the actual implementation.
-#
-# @path /users
-
 displayName: User API
-
-
-# Methods
-
-get:
-  description: list of all users (probably won’t implement)
-
+  
 post:
   description: >
-    register a new, unverified user, and return input JSON (but now id is
-    populated)
+    Register a new, unverified user, and return the user's new ID.
+  body:
+    application/json:
+    responses:
+      200:
+        body:
+          application/json:
+            type: !include ../../../schema/wdk/standard-post-response.json
+
+/{user-id}:
+  uriParameters:
+    user-id:
+      description: Either the ID of a user or the string "current" for the current user.
+      type: string
+      pattern: ^[0-9]+|current$
+
+  get:
+    description: >
+      Get the details of the current user or a user by ID.
+    responses:
+      200:
+        body:
+          application/json:
+            type: !include ../../../schema/wdk/users/id/get.json
+
+  patch:
+    description: >
+      Update one or more details about a user.  Only supplied fields are updated.
+    body:
+      application/json:
+    responses:
+      200:
+        body:
+          application/json:
+
+  put:
+    description: >
+      Replace all user details with those provided. 
+    body:
+      application/json:
+    responses:
+
+  delete:
+    description: Delete this user.
+
+  /baskets: !include ./users/basket-api.raml
+  /datasets: !include ./users/basket-api.raml
+  /favorites: !include ./users/favorites-api.raml
+  /preference: !include ./users/preference-api.raml
+  /steps: !include ./users/steps-api.raml
+  /steps/{stepId}/analyses: !include ./users/step-analyses-api.raml
+  /steps/{stepId}/analysis-types: !include ./users/step-analysis-types-api.raml
+  /strategy: !include ./users/strategy-api.raml
+  /user-datasets: !include ./users/user-datasets.raml
 
 
-# Child Endpoints
-
-/{user-id}: !include users/by-id.raml

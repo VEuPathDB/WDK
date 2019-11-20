@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -16,7 +17,8 @@ import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.question.Question;
@@ -54,34 +56,35 @@ public class ResultSizeFactory {
   /**
    * @return number of pages needed to display entire result given the current page size
    */
-  public int getPageCount() throws WdkModelException, WdkUserException {
+  public int getPageCount() throws WdkModelException {
     int total = getResultSize();
     int pageSize = _answerValue.getEndIndex() - _answerValue.getStartIndex() + 1;
     int pageCount = (int) Math.round(Math.ceil((float) total / pageSize));
     return pageCount;
   }
 
-  public int getResultSize() throws WdkModelException, WdkUserException {
+  public int getResultSize() throws WdkModelException {
     QueryInstance<?> idsQueryInstance = _answerValue.getIdsQueryInstance();
-    if (_resultSize == null || !idsQueryInstance.getIsCacheable()) {
+    boolean isCacheable = idsQueryInstance.getQuery().isCacheable();
+    if (_resultSize == null || !isCacheable) {
       _resultSize = new DefaultResultSizePlugin().getResultSize(_answerValue);
     }
-    LOG.debug("getting result size: cache=" + _resultSize + ", isCacheable=" + idsQueryInstance.getIsCacheable());
+    LOG.debug("getting result size: cache=" + _resultSize + ", isCacheable=" + isCacheable);
     return _resultSize;
   }
 
-  public int getDisplayResultSize() throws WdkModelException, WdkUserException {
-    ResultSize plugin = _answerValue.getQuestion().getRecordClass().getResultSizePlugin();
+  public int getDisplayResultSize() throws WdkModelException {
+    ResultSize plugin = _answerValue.getAnswerSpec().getQuestion().getRecordClass().getResultSizePlugin();
     LOG.debug("getting Display result size.");
     return plugin.getResultSize(_answerValue);
   }
 
-  public Map<String, Integer> getResultSizesByProject() throws WdkModelException, WdkUserException {
+  public Map<String, Integer> getResultSizesByProject() throws WdkModelException {
     if (_resultSizesByProject == null) {
       _resultSizesByProject = new LinkedHashMap<String, Integer>();
-      Question question = _answerValue.getQuestion();
+      Question question = _answerValue.getAnswerSpec().getQuestion();
       QueryInstance<?> queryInstance = _answerValue.getIdsQueryInstance();
-      AnswerFilterInstance filter = _answerValue.getFilter();
+      Optional<AnswerFilterInstance> filter = _answerValue.getAnswerSpec().getLegacyFilter();
 
       // make sure the project_id is defined in the record
       PrimaryKeyDefinition primaryKey = question.getRecordClass().getPrimaryKeyDefinition();
@@ -92,11 +95,11 @@ public class ResultSizeFactory {
       }
       else {
         // need to run the query first for portal
-        String message = queryInstance.getResultMessage();
-        try (ResultList resultList = (filter == null ? queryInstance.getResults() : filter.getResults(_answerValue))){
-          boolean hasMessage = (message != null && message.length() > 0);
+        Optional<String> message = queryInstance.getResultMessage();
+        try (ResultList resultList = (filter.isPresent() ? filter.get().getResults(_answerValue) : queryInstance.getResults())){
+          boolean hasMessage = (message.isPresent() && message.get().length() > 0);
           if (hasMessage) {
-            String[] sizes = message.split(",");
+            String[] sizes = message.get().split(",");
             for (String size : sizes) {
               String[] parts = size.split(":");
               if (parts.length > 1 && parts[1].matches("^\\d++$")) {
@@ -136,12 +139,12 @@ public class ResultSizeFactory {
 
 
   public int getFilterDisplaySize(String filterName)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     return getFilterSize(filterName, true);
   }
 
   public int getFilterSize(String filterName)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     return getFilterSize(filterName, false);
   }
 
@@ -162,7 +165,7 @@ public class ResultSizeFactory {
   }
 
   private Map<String, Integer> getFilterSizes(Collection<String> filterNames, boolean useDisplay) {
-    Question question = _answerValue.getQuestion();
+    Question question = _answerValue.getAnswerSpec().getQuestion();
     Map<String, AnswerFilterInstance> allFilters = question.getRecordClass().getFilterMap();
     if (filterNames == null) {
       // sizes requested for all filters
@@ -203,21 +206,23 @@ public class ResultSizeFactory {
   }
 
   private int getFilterSize(String filterName, boolean useDisplay)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     FilterSizeType sizeType = useDisplay ? FilterSizeType.DISPLAY : FilterSizeType.STANDARD;
     Integer size = _resultSizesByFilter.get(sizeType).get(filterName);
-    if (size != null && _answerValue.getIdsQueryInstance().getIsCacheable()) {
+    if (size != null && _answerValue.getIdsQueryInstance().getQuery().isCacheable()) {
       return size;
     }
 
     // create a copy of this AnswerValue, overriding current AnswerFilter with one passed in
-    AnswerValue modifiedAnswer = _answerValue.cloneWithNewPaging(_answerValue.getStartIndex(), _answerValue.getEndIndex());
-    modifiedAnswer.setFilterInstance(filterName);
+    AnswerValue modifiedAnswer = AnswerValueFactory.makeAnswer(_answerValue,
+        AnswerSpec.builder(_answerValue.getAnswerSpec())
+        .setLegacyFilterName(Optional.of(filterName))
+        .buildRunnable(_answerValue.getUser(), _answerValue.getAnswerSpec().getStepContainer()));
     String idSql = modifiedAnswer.getIdSql();
 
     // if display count requested, use custom plugin; else use default
     ResultSize countPlugin = (useDisplay ?
-        _answerValue.getQuestion().getRecordClass().getResultSizePlugin() :
+        _answerValue.getAnswerSpec().getQuestion().getRecordClass().getResultSizePlugin() :
         new DefaultResultSizePlugin());
 
     // get size, cache, and return

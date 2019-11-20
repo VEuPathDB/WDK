@@ -1,15 +1,21 @@
 package org.gusdb.wdk.model.filter;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.StepUtilities;
 import org.gusdb.wdk.model.user.Strategy;
-import org.gusdb.wdk.model.user.User;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class StrategyFilter extends StepFilter {
@@ -33,35 +39,48 @@ public class StrategyFilter extends StepFilter {
     return FILTER_NAME;
   }
 
-  /**
-   * @throws WdkModelException 
-   * @see org.gusdb.wdk.model.filter.Filter#getSummary(org.gusdb.wdk.model.answer.AnswerValue)
-   */
   @Override
-  public FilterSummary getSummary(AnswerValue answer, String idSql) throws WdkModelException {
-    User user = answer.getUser();
-    String rcName = answer.getQuestion().getRecordClass().getFullName();
-    Collection<Strategy> strategies = StepUtilities.getStrategiesMap(user, rcName).values();
-    return new StrategyFilterSummary(strategies);
+  public JSONObject getSummaryJson(AnswerValue answer, String idSql) throws WdkModelException {
+    String rcName = answer.getAnswerSpec().getQuestion().getRecordClass().getFullName();
+    List<Strategy> strategies = answer.getWdkModel().getStepFactory()
+        .getStrategies(answer.getUser().getUserId(), ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
+        .values()
+        .stream()
+        .filter(strategy -> strategy.isValid() && strategy.getRecordClass().get().getFullName().equals(rcName))
+        .collect(Collectors.toList());
+    return getStrategiesJson(strategies);
+  }
+
+  private JSONObject getStrategiesJson(List<Strategy> strategies) {
+    JSONArray arr = new JSONArray();
+    for (Strategy strat : strategies) {
+      arr.put(new JSONObject()
+        .put("id", strat.getStrategyId())
+        .put("name", strat.getName())
+        .put("size", strat.getEstimatedSize())
+        .put("recordClass", strat.getRecordClass().get().getFullName()));
+    }
+    return new JSONObject().put("strategies", arr);
   }
 
   /**
    * the options contains the id of the strategy chosen as the filter.
-   * @throws WdkUserException 
    * @throws WdkModelException 
    * 
    * @see org.gusdb.wdk.model.filter.Filter#getSql(org.gusdb.wdk.model.answer.AnswerValue, java.lang.String, java.lang.String)
    */
   @Override
-  public String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException, WdkUserException {
+  public String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException {
     Strategy strategy = getStrategy(answer, jsValue);
-    AnswerValue rootAnswer = strategy.getLatestStep().getAnswerValue();
+    RunnableObj<Step> step = strategy.getRootStep().getRunnable()
+        .getOrThrow(st -> new WdkModelException("Strategy specified must have a runnable root step."));
+    AnswerValue rootAnswer = AnswerValueFactory.makeAnswer(step);
 
     // make sure both answers are of the same type.
-    RecordClass recordClass = answer.getQuestion().getRecordClass();
-    String rootName = rootAnswer.getQuestion().getRecordClass().getFullName();
+    RecordClass recordClass = answer.getAnswerSpec().getQuestion().getRecordClass();
+    String rootName = rootAnswer.getAnswerSpec().getQuestion().getRecordClass().getFullName();
     if (!recordClass.getFullName().equals(rootName))
-      throw new WdkUserException("You cannot filter the result with a strategy of a different type.");
+      throw new WdkModelException("You cannot filter the result with a strategy of a different type.");
     
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     String filterSql = rootAnswer.getIdSql();
@@ -75,14 +94,15 @@ public class StrategyFilter extends StepFilter {
   }
 
   @Override
-  public String getDisplayValue(AnswerValue answerValue, JSONObject jsValue) throws WdkModelException, WdkUserException {
+  public String getDisplayValue(AnswerValue answerValue, JSONObject jsValue) throws WdkModelException {
     Strategy strategy = getStrategy(answerValue, jsValue);
     return strategy.getName();
   }
 
-  private Strategy getStrategy(AnswerValue answer, JSONObject jsValue) throws WdkModelException, WdkUserException {
+  private Strategy getStrategy(AnswerValue answer, JSONObject jsValue) throws WdkModelException {
     int strategyId = jsValue.getInt(KEY_STRATEGY);
-    return answer.getQuestion().getWdkModel().getStepFactory().getStrategyById(answer.getUser(), strategyId);
+    return answer.getWdkModel().getStepFactory().getStrategyById(strategyId, ValidationLevel.SEMANTIC, FillStrategy.FILL_PARAM_IF_MISSING)
+        .orElseThrow(() -> new WdkModelException("Passed ID (" + strategyId + ") does not correspond to a strategy."));
   }
 
   @Override
@@ -94,7 +114,13 @@ public class StrategyFilter extends StepFilter {
    * Not fully implemented yet.
    */
   @Override
-  public boolean defaultValueEquals(Step step, JSONObject value)  throws WdkModelException {
+  public boolean defaultValueEquals(SimpleAnswerSpec answerSpec, JSONObject value)  throws WdkModelException {
     return false;
+  }
+
+  @Override
+  public ValidationBundle validate(Question question, JSONObject value, ValidationLevel validationLevel) {
+    // TODO: make sure incoming strategy has a runnable root step
+    return ValidationBundle.builder(ValidationLevel.SEMANTIC).build();
   }
 }

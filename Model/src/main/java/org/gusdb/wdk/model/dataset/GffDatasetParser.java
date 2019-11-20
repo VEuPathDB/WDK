@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.dataset;
 
 import java.io.BufferedReader;
@@ -11,9 +8,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
 
 /**
@@ -32,14 +31,9 @@ public class GffDatasetParser extends AbstractDatasetParser {
     setDisplay("GFF");
     setDescription("The input is GFF file format. Only the record rows will be parsed.");
   }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.dataset.DatasetParser#parse(java.lang.String)
-   */
+
   @Override
-  public List<String[]> parse(String content) throws WdkDatasetException {
+  public List<String[]> parse(String content) throws WdkUserException {
     Set<String> types = getRecordTypes();
     Map<String, Integer> attributes = getAttributes();
     List<String[]> data = new ArrayList<>();
@@ -76,7 +70,7 @@ public class GffDatasetParser extends AbstractDatasetParser {
       }
     }
     catch (IOException ex) {
-      throw new WdkDatasetException(ex);
+      throw new WdkUserException(ex);
     }
 
     return data;
@@ -95,9 +89,9 @@ public class GffDatasetParser extends AbstractDatasetParser {
     String types = properties.get(PROP_RECORD_TYPES);
     Set<String> recordTypes = new HashSet<>();
     if (types == null) { // type is not specified, infer the types from record class
-      RecordClass recordClass = param.getRecordClass();
-      if (recordClass != null) {
-        String type = recordClass.getDisplayName().trim().toLowerCase();
+      Optional<RecordClass> recordClass = param.getRecordClass();
+      if (recordClass.isPresent()) {
+        String type = recordClass.get().getDisplayName().trim().toLowerCase();
         recordTypes.add(type);
       } // else, no type specified.
     }
@@ -119,7 +113,7 @@ public class GffDatasetParser extends AbstractDatasetParser {
    * @return
    * @throws WdkDatasetException
    */
-  private Map<String, Integer> getAttributes() throws WdkDatasetException {
+  private Map<String, Integer> getAttributes() throws WdkUserException {
     String attrs = properties.get(PROP_ATTRIBUTES);
     Map<String, Integer> attributes = new HashMap<>();
     int i = 0;
@@ -130,7 +124,7 @@ public class GffDatasetParser extends AbstractDatasetParser {
     }
     int allowedSize = DatasetFactory.MAX_VALUE_COLUMNS - 2;
     if (attributes.size() >= allowedSize)
-      throw new WdkDatasetException("Only " + allowedSize + " attributes are allowed, but " +
+      throw new WdkUserException("Only " + allowedSize + " attributes are allowed, but " +
           attributes.size() + " attributes are declared: " + attrs + " in datasetParam " +
           param.getFullName());
     return attributes;

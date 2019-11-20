@@ -6,8 +6,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Optional;
+
 import javax.servlet.http.Cookie;
 
+import org.gusdb.fgputil.web.CookieBuilder;
+import org.gusdb.wdk.controller.filter.CheckLoginFilter;
 import org.gusdb.wdk.session.LoginCookieFactory;
 import org.gusdb.wdk.session.LoginCookieFactory.LoginCookieParts;
 import org.junit.Test;
@@ -26,20 +30,20 @@ public class LoginCookieFactoryTest {
   
   @Test
   public void testFindCookie() {
-    Cookie c;
+    Optional<CookieBuilder> c;
     // test null
-    c = LoginCookieFactory.findLoginCookie(null);
+    c = CheckLoginFilter.findLoginCookie(null);
     assertNull(c);
     // test empty list
-    c = LoginCookieFactory.findLoginCookie(new Cookie[0]);
+    c = CheckLoginFilter.findLoginCookie(new Cookie[0]);
     assertNull(c);
     // test list not containing cookie
-    c = LoginCookieFactory.findLoginCookie(BAD_LIST);
+    c = CheckLoginFilter.findLoginCookie(BAD_LIST);
     assertNull(c);
     // test list not containing cookie
-    c = LoginCookieFactory.findLoginCookie(GOOD_LIST);
+    c = CheckLoginFilter.findLoginCookie(GOOD_LIST);
     assertNotNull(c);
-    assertEquals(c.getName(), LoginCookieFactory.WDK_LOGIN_COOKIE_NAME);
+    assertEquals(c.get().getName(), LoginCookieFactory.WDK_LOGIN_COOKIE_NAME);
   }
 
   public static final String[] EXCEPTION_CASES = {
@@ -73,12 +77,12 @@ public class LoginCookieFactoryTest {
     for (String[] successCase : PARSE_CASES) {
       LoginCookieParts parts = LoginCookieFactory.parseCookieValue(successCase[0]);
       assertEquals(parts.getUsername(), successCase[1]);
-      assertEquals(new Boolean(parts.isRemember()).toString(), successCase[2]);
+      assertEquals(Boolean.valueOf(parts.isRemember()).toString(), successCase[2]);
       assertEquals(parts.getChecksum(), successCase[3]);
     }
   }
   
-  public static final String REMEMBER_MAX_AGE = new Integer(java.lang.Integer.MAX_VALUE / 256).toString();
+  public static final String REMEMBER_MAX_AGE = Integer.valueOf(java.lang.Integer.MAX_VALUE / 256).toString();
   public static final String NO_REMEMBER_MAX_AGE = "-1";
   public static final String COOKIE_PATH = "/";
   
@@ -93,7 +97,7 @@ public class LoginCookieFactoryTest {
   public void testCreateCookie() throws Exception {
     LoginCookieFactory factory = new LoginCookieFactory(SECRET_KEY);
     for (String[] data : COOKIE_CASES) {
-      Cookie c = factory.createLoginCookie(data[0], Boolean.parseBoolean(data[1]));
+      CookieBuilder c = factory.createLoginCookie(data[0], Boolean.parseBoolean(data[1]));
       assertEquals(c.getMaxAge(), Integer.parseInt(data[2]));
       assertEquals(c.getValue(), data[3]);
       assertEquals(c.getPath(), COOKIE_PATH);

@@ -1,32 +1,33 @@
 package org.gusdb.wdk.model.query.param;
 
+import static org.gusdb.fgputil.FormatUtil.STANDARD_DATE_FORMAT;
+
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * The DateRangeParam is strictly a web service parameter
- * 
- * 
+ *
+ *
  *         raw value: a stringified json object containing a min and a max date,
- *         both in iso1806 format (yyyy-mm-dd);
- * 
+ *         both in iso-1806 format (yyyy-mm-dd);
+ *
  *         stable value: same as raw value;
- * 
+ *
  *         signature: a checksum of the stable value;
- * 
+ *
  *         internal value: same as stable value;
  */
 public class DateRangeParam extends Param {
@@ -46,7 +47,7 @@ public class DateRangeParam extends Param {
   public DateRangeParam(DateRangeParam param) {
     super(param);
     if (param._regexes != null)
-      _regexes = new ArrayList<WdkModelText>();
+      _regexes = new ArrayList<>();
     _regex = param._regex;
     _minDate = param._minDate;
     _maxDate = param._maxDate;
@@ -69,14 +70,14 @@ public class DateRangeParam extends Param {
   }
 
   @Override
-  public String getDefault() throws WdkModelException {
-    String defaultValue = super.getDefault();
+  public String getDefault(PartiallyValidatedStableValues stableVals) throws WdkModelException {
+    String defaultValue = super.getXmlDefault();
     try {
       return (defaultValue == null || defaultValue.isEmpty()) ?
           // if default not provided, default is the entire range
           new JSONObject().put("min", getMinDate()).put("max", getMaxDate()).toString() :
           // incoming value may be using single quotes around keys; allow, but translate to proper JSON
-          new JSONObject(defaultValue).toString();
+          new JSONObject(defaultValue).toString(); // FIXME bug!! move to override of setDefault()
     }
     catch (JSONException e) {
       throw new WdkModelException("Supplied default value (" + defaultValue + ") is not valid JSON.", e);
@@ -94,8 +95,8 @@ public class DateRangeParam extends Param {
    * @throws WdkModelException
    */
   public void setMinDate(String minDate) throws WdkModelException {
-    try {  
-      LocalDate.parse(minDate, DateTimeFormatter.ISO_DATE);
+    try {
+      LocalDate.parse(minDate, STANDARD_DATE_FORMAT);
     }
     catch(DateTimeParseException dtpe) {
       throw new WdkModelException(dtpe);
@@ -114,8 +115,8 @@ public class DateRangeParam extends Param {
    * @throws WdkModelException
    */
   public void setMaxDate(String maxDate) throws WdkModelException {
-    try {  
-      LocalDate.parse(maxDate, DateTimeFormatter.ISO_DATE);
+    try {
+      LocalDate.parse(maxDate, STANDARD_DATE_FORMAT);
     }
     catch(DateTimeParseException dtpe) {
       throw new WdkModelException(dtpe);
@@ -150,66 +151,59 @@ public class DateRangeParam extends Param {
     return new DateRangeParam(this);
   }
 
-  @Override
-  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
-    // nothing to be added
-  }
-
   /**
    * Ensure that the value provided by the user conforms to the parameter's requirements
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkUserException, WdkModelException {
+  protected ParamValidity validateValue(PartiallyValidatedStableValues ctxParamVals, ValidationLevel level) {
 
-    JSONObject stableValueJson = null;
-    LocalDate minValue;
-    LocalDate maxValue;
+    final String name = getName();
+    final String rawVal = ctxParamVals.get(name);
+    final JSONObject jsonVal;
+    final LocalDate minValue, maxValue;
 
     // Insure that the JSON Object format is valid.
     try {
-      stableValueJson = new JSONObject(stableValue);
-      minValue = LocalDate.parse(stableValueJson.getString("min"), DateTimeFormatter.ISO_DATE);
-      maxValue = LocalDate.parse(stableValueJson.getString("max"), DateTimeFormatter.ISO_DATE);
+      jsonVal = new JSONObject(rawVal);
+      minValue = LocalDate.parse(jsonVal.getString("min"), STANDARD_DATE_FORMAT);
+      maxValue = LocalDate.parse(jsonVal.getString("max"), STANDARD_DATE_FORMAT);
     }
     catch(JSONException je) {
-      throw new WdkUserException("Could not parse '" + stableValue + "'. "
-          + "The range should be is the format {'min':'min value','max':'max value'}");
+      return ctxParamVals.setInvalid(name, level, "'" + rawVal + "' must be in the format {'min':'min value','max':'max value'}");
     }
 
-    // Validate each value in the range against regex.  The regex could potentially be
-    // more restrictive than LocalDate.
+    // Validate each value in the range against regex.  The regex could
+    // potentially be more restrictive than LocalDate.
     if (_regex != null) {
-     if (!stableValueJson.getString("min").matches(_regex)) {
-       throw new WdkUserException("value '" + stableValueJson.getString("min") + "' is invalid. " +
-         "It must match the regular expression '" + _regex + "'");
+     if (!jsonVal.getString("min").matches(_regex)) {
+       return ctxParamVals.setInvalid(name, level, "'" + jsonVal.getString("min") + "' is an invalid format.  It must match the regular expression '" + _regex + "'");
      }
-     if (!stableValueJson.getString("max").matches(_regex)) {
-       throw new WdkUserException("value '" + stableValueJson.getString("max") + "' is invalid. " +
-         "It must match the regular expression '" + _regex + "'");
+     if (!jsonVal.getString("max").matches(_regex)) {
+       return ctxParamVals.setInvalid(name, level, "'" + jsonVal.getString("max") + "' is an invalid format.  It must match the regular expression '" + _regex + "'");
       }
     }
 
     // Ensure that the minimum date does not come after the maximum date
     if (minValue.isAfter(maxValue)) {
-      throw new WdkUserException("The minimum date '" + minValue + "' should " +
-          "come before, or equal, the maximum date '" + maxValue + "'");
+      return ctxParamVals.setInvalid(name, level, "The minimum date '" + minValue
+        + "' should come before, or equal, the maximum date '" + maxValue + "'");
     }
 
     // Ensure that the minimum date comes no earlier than the minimum allowed date
     if (_minDate != null &&
-        minValue.isBefore(LocalDate.parse(_minDate, DateTimeFormatter.ISO_DATE))) {
-      throw new WdkUserException("The date '" + minValue + "' should not be earlier than '" + _minDate + "'");
+        minValue.isBefore(LocalDate.parse(_minDate, STANDARD_DATE_FORMAT))) {
+      return ctxParamVals.setInvalid(name, level, "The date '" + minValue
+        + "' should not be earlier than '" + _minDate + "'");
     }
 
     // Ensure that the maximum data comes no later than the maximum allowed date
-    if (_maxDate != null && 
-        maxValue.isAfter(LocalDate.parse(_maxDate, DateTimeFormatter.ISO_DATE))) {
-      throw new WdkUserException("The date '" + maxValue + "' should not be after '" + _maxDate + "'");
+    if (_maxDate != null &&
+        maxValue.isAfter(LocalDate.parse(_maxDate, STANDARD_DATE_FORMAT))) {
+      return ctxParamVals.setInvalid(name, level, "The date '" + maxValue
+        + "' should not be after '" + _maxDate + "'");
     }
-    
+
+    return ctxParamVals.setValid(name, level);
   }
 
   /**
@@ -222,8 +216,8 @@ public class DateRangeParam extends Param {
   public String replaceSql(String sql, String internalValue) {
     JSONObject valueJson = new JSONObject(internalValue);
     LocalDate values[] = new LocalDate[2];
-    values[0] = LocalDate.parse(valueJson.getString("min"), DateTimeFormatter.ISO_DATE);
-    values[1] = LocalDate.parse(valueJson.getString("max"), DateTimeFormatter.ISO_DATE);
+    values[0] = LocalDate.parse(valueJson.getString("min"), STANDARD_DATE_FORMAT);
+    values[1] = LocalDate.parse(valueJson.getString("max"), STANDARD_DATE_FORMAT);
     String regex = "\\$\\$" + _name + ".min\\$\\$";
     String replacedSql = sql.replaceAll(regex, Matcher.quoteReplacement("date '"  + values[0].toString() + "'"));
     regex = "\\$\\$" + _name + ".max\\$\\$";

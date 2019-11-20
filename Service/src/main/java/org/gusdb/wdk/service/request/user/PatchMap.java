@@ -1,112 +1,105 @@
 package org.gusdb.wdk.service.request.user;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import static java.util.Arrays.stream;
 
-import org.gusdb.fgputil.FormatUtil;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
+import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
-import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Creates a map from action string to a list of IDs.  IDs can be of any type and are generated from
- * JSON with the passed converter.  Input JSON must be of the form:
+ * A pairing of action to optional list of identifiers to perform the action on.
+ * <p>
+ * IDs can be of any type and are generated from JSON with the passed converter.
+ * <p>
+ * Input JSON must be of the form:
+ * <pre>
  * {
- *   "action1": [ id1, id2 ],
- *   "action2": [ id3, id4 ]
+ *   action: K,
+ *   primaryKeys?: T[]
  * }
- * 
- * If actions are present in input JSON that do not exist in validActions, a DataValidationException
- * is thrown.  If any IDs are not parsable by the value converter, a DataValidationException (or possibly
- * WdkModelException) is thrown.
- * 
- * Once parsed, only strings in validActions can be requested;  Unrecognized strings will throw
- * IllegalArgumentException.
- * 
+ * </pre>
+ * <p>
+ * If actions are present in input JSON that do not exist in validActions, a
+ * DataValidationException is thrown.  If any IDs are not parsable by the
+ * value converter, a DataValidationException (or possibly WdkModelException)
+ * is thrown.
+ * <p>
+ * Once parsed, only strings in validActions can be requested;  Unrecognized
+ * strings will throw IllegalArgumentException.
+ *
  * @author rdoherty
  *
+ * @param <K> action key type
  * @param <T> type of IDs parsed by this PatchMap
  */
-public class PatchMap<T> extends HashMap<String,List<T>> {
+public abstract class PatchMap<K, T> {
 
-  private final List<String> _validActions;
+  private K _action;
 
-  public interface ValueConverter<T> extends FunctionWithException<JsonType, T> {
-    @Override
-    public T apply(JsonType idJson) throws DataValidationException, WdkModelException;
-  }
+  private Collection<T> _ids;
 
-  public PatchMap(JSONObject json, List<String> validActions, ValueConverter<T> valueConverter)
+  public PatchMap(JSONObject json, K[] validActions,
+      FunctionWithException<JsonType,K> actionParser,
+      FunctionWithException<JsonType,T> idParser)
       throws DataValidationException, WdkModelException, JSONException {
-    _validActions = validActions;
-    loadIds(json, valueConverter);
-  }
-
-  // create an empty patch map
-  protected PatchMap(List<String> validActions) {
-    _validActions = validActions;
-  }
-
-  private void loadIds(JSONObject json, ValueConverter<T> valueConverter)
-      throws DataValidationException, WdkModelException, JSONException {
-    // load IDs for each action and record unrecognized actions
-    List<Object> unrecognizedActions = new ArrayList<>();
-    for (String actionType : JsonUtil.getKeys(json)) {
-      if (_validActions.contains(actionType)) {
-        List<T> ids = new ArrayList<>();
-        JSONArray jsonArray = json.getJSONArray(actionType);
-        for (int i = 0; i < jsonArray.length(); i++) {
-          ids.add(valueConverter.apply(new JsonType(jsonArray.get(i))));
-        }
-        put(actionType, ids);
-      }
-      else {
-        unrecognizedActions.add(actionType);
+    try {
+      _action = validateAction(validActions,
+          actionParser.apply(new JsonType(json.get(JsonKeys.ACTION))));
+      _ids = new ArrayList<>();
+      for (JsonType rawId : JsonIterators.arrayIterable(json.getJSONArray(JsonKeys.PRIMARY_KEYS))) {
+        _ids.add(idParser.apply(rawId));
       }
     }
-    if(!unrecognizedActions.isEmpty()) {
-      String unrecognized = FormatUtil.join(unrecognizedActions.toArray(), ", ");
-      throw new DataValidationException("Unrecognized actions: " + unrecognized);
+    catch (DataValidationException | WdkModelException | JSONException e) {
+      throw e;
     }
-
-    // add empty ID lists if not supplied in request
-    for (String action : _validActions) {
-      if (!containsKey(action)) {
-        put(action, Collections.EMPTY_LIST);
-      }
+    catch (Exception e) {
+      throw new WdkModelException("Unable to parse patch request", e);
     }
   }
 
-  public void removeSharedIds(String action1, String action2) {
-    List<T> list1 = get(test(action1));
-    List<T> list2 = get(test(action2));
-    for (int j, i = 0; i < list1.size(); i++) {
-      T id = list1.get(i);
-      if ((j = list2.indexOf(id)) != -1) {
-        // found ID in both lists; remove from both
-        list2.remove(j);
-        list1.remove(i);
-        i--; // recheck at the current index
-      }
-    }
+  public PatchMap(K[] validActions, K action, Collection<T> ids) throws DataValidationException {
+    _action = validateAction(validActions, action);
+    _ids = ids;
   }
 
-  @Override
-  public List<T> get(Object action) {
-    return super.get(test(action));
+  /**
+   * Set or overwrite the internal action type value.  This value will be
+   * checked for validity.
+   *
+   * @param action new action type
+   *
+   * @throws DataValidationException thrown if the given action type is invalid.
+   */
+  private K validateAction(K[] validActions, K action) throws DataValidationException {
+    if (!stream(validActions).anyMatch(t -> t.equals(action)))
+      throw new DataValidationException("Unrecognized action: " + action);
+    return action;
   }
 
-  private String test(Object action) {
-    if (!(action instanceof String) || !_validActions.contains(action)) {
-      throw new IllegalArgumentException("Invalid action list requested: " + action);
-    }
-    return (String)action;
+  /**
+   * Gets the action type.
+   *
+   * @return the action type.
+   */
+  public K getAction() {
+    return _action;
+  }
+
+  /**
+   * Gets collection of identifier values.
+   *
+   * @return collection of identifier values
+   */
+  public Collection<T> getIdentifiers() {
+    return _ids;
   }
 }

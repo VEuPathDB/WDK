@@ -1,17 +1,16 @@
 package org.gusdb.wdk.events;
 
-import javax.servlet.http.HttpSession;
-
 import org.gusdb.fgputil.events.Event;
+import org.gusdb.fgputil.web.SessionProxy;
 import org.gusdb.wdk.model.user.User;
 
 public class NewUserEvent extends Event {
 
   private final User _newUser;
   private final User _oldUser;
-  private final HttpSession _session;
+  private final SessionProxy _session;
 
-  public NewUserEvent(User newUser, User oldUser, HttpSession session) {
+  public NewUserEvent(User newUser, User oldUser, SessionProxy session) {
     _newUser = newUser;
     _oldUser = oldUser;
     _session = session;
@@ -25,7 +24,7 @@ public class NewUserEvent extends Event {
     return _oldUser;
   }
 
-  public HttpSession getSession() {
+  public SessionProxy getSession() {
     return _session;
   }
 }

@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dependentParams": {
+      "type": "array",
+      "description": "TODO: type of array elements"
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "group": {
+      "type": "string"
+    },
+    "help": {
+      "type": "string"
+    },
+    "isReadOnly": {
+      "type": "boolean"
+    },
+    "isVisible": {
+      "type": "boolean"
+    },
+    "name": {
+      "type": "string"
+    },
+    "initialDisplayValue": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "dependentParams",
+    "displayName",
+    "help",
+    "group",
+    "isReadOnly",
+    "length",
+    "name"
+  ]
+}

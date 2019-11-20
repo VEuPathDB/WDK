@@ -12,7 +12,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -125,11 +124,6 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
         getPropertyAsInt(IFRAME_WIDTH_PROP_KEY),
         getPropertyAsInt(IFRAME_LENGTH_PROP_KEY));
   }
-   
-  @Override
-  public JSONObject getFormViewModelJson() throws WdkModelException {
-    return null;
-  }
 
   protected Integer getPropertyAsInt(String propertyName) {
     String propertyValue = getProperty(propertyName);
@@ -139,12 +133,11 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
 
   @Override
   public ExecutionStatus runAnalysis(AnswerValue answerValue, StatusLogger log)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
 
     // all files will be written to plugin instance's storage directory
     String storageDir = getStorageDirectory().toAbsolutePath().toString();
-    writeContentToFile(storageDir, LAST_RUN_FILE_NAME,
-        new SimpleDateFormat(FormatUtil.STANDARD_TIMESTAMP_FORMAT).format(new Date()) + NL);
+    writeContentToFile(storageDir, LAST_RUN_FILE_NAME, FormatUtil.formatDateTime(new Date()) + NL);
 
     // if dumpModelProp is set to true, dump model properties to disk
     if (determineBooleanProperty(DUMP_MODEL_PROPS_PROP_KEY, DUMP_MODEL_PROPS_BY_DEFAULT)) {
@@ -156,23 +149,29 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
 
     // if hasHeader and display value map requested, dump
     if (hasHeader && determineBooleanProperty(DUMP_HEADER_DISPLAY_MAP_PROP_KEY, DUMP_HEADER_DISPLAY_MAP_BY_DEFAULT)) {
-      dumpHeaderDisplayMap(answerValue.getQuestion().getRecordClass(), storageDir);
+      dumpHeaderDisplayMap(answerValue.getAnswerSpec().getQuestion().getRecordClass(), storageDir);
     }
 
-    // configure tabular reporter if attributes requested in config
-    List<String> attributes = getConfiguredFields(EXTRACTED_ATTRIBS_PROP_KEY);
-    if (!attributes.isEmpty()) {
-      Reporter reporter = new AttributesTabularReporter(answerValue);
-      reporter.configure(getConfig(StandardConfig.SELECTED_FIELDS, join(attributes, ","), hasHeader));
-      writeReport(reporter, Paths.get(storageDir, ATTRIBUTES_FILE_NAME));
+    try {
+      // configure tabular reporter if attributes requested in config
+      List<String> attributes = getConfiguredFields(EXTRACTED_ATTRIBS_PROP_KEY);
+      if (!attributes.isEmpty()) {
+        Reporter reporter = new AttributesTabularReporter(answerValue);
+        reporter.configure(getConfig(StandardConfig.SELECTED_FIELDS, join(attributes, ","), hasHeader));
+        writeReport(reporter, Paths.get(storageDir, ATTRIBUTES_FILE_NAME));
+      }
+  
+      // get array of requested tables
+      List<String> tables = getConfiguredFields(EXTRACTED_TABLES_PROP_KEY);
+      for (String table : tables) {
+        Reporter reporter = new TableTabularReporter(answerValue);
+        reporter.configure(getConfig(StandardConfig.SELECTED_TABLES, table, hasHeader));
+        writeReport(reporter, Paths.get(storageDir, table + FILE_NAME_SUFFIX));
+      }
     }
-
-    // get array of requested tables
-    List<String> tables = getConfiguredFields(EXTRACTED_TABLES_PROP_KEY);
-    for (String table : tables) {
-      Reporter reporter = new TableTabularReporter(answerValue);
-      reporter.configure(getConfig(StandardConfig.SELECTED_TABLES, table, hasHeader));
-      writeReport(reporter, Paths.get(storageDir, table + FILE_NAME_SUFFIX));
+    catch (WdkUserException e) {
+      // means attributes and tables defined in XML are invalid; should already have been checked
+      throw new WdkModelException(e);
     }
 
     return ExecutionStatus.COMPLETE;

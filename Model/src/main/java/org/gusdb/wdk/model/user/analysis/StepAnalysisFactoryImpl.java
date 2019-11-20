@@ -3,12 +3,10 @@ package org.gusdb.wdk.model.user.analysis;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,6 +19,8 @@ import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.events.Event;
 import org.gusdb.fgputil.events.EventListener;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.events.StepImportedEvent;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
@@ -31,7 +31,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins.ExecutionConfig;
 import org.gusdb.wdk.model.analysis.StepAnalyzer;
-import org.gusdb.wdk.model.analysis.ValidationErrors;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.analysis.FutureCleaner.RunningAnalysis;
@@ -152,27 +151,13 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   @Override
-  public List<String> validateFormParams(StepAnalysisInstance instance)
+  public ValidationBundle validateFormParams(StepAnalysisInstance instance)
       throws WdkModelException, WdkUserException {
-    List<String> errorList = new ArrayList<>();
-
     // this is a unique configuration; validate parameters
-    ValidationErrors errors = getConfiguredAnalyzer(instance, _fileStore)
-        .validateFormParamValues(instance.getFormParams());
-
-    // if no errors present; return empty error list
-    if (errors == null || errors.isEmpty()) return errorList;
-
-    // otherwise, add and return messages to client
-    errorList.addAll(errors.getMessages());
-    // FIXME: figure out display of these values; for now, translate param errors into strings
-    for (Entry<String,List<String>> paramErrors : errors.getParamMessages().entrySet()) {
-      for (String message : paramErrors.getValue()) {
-        errorList.add(paramErrors.getKey() + ": " + message);
-      }
-    }
-
-    return errorList;
+    // FIXME: perform regular param validation here
+    return ValidationBundle.builder(ValidationLevel.RUNNABLE).build();
+    //return getConfiguredAnalyzer(instance, _fileStore)
+    //    .validateFormParamValues(instance.getFormParams());
   }
 
   @Override
@@ -202,7 +187,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   private void copyAnalysisInstances(Step fromStep, Step toStep)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     LOG.info("Request made to copy analysis instances from step " + fromStep.getStepId() + " to " + toStep.getStepId());
     Map<Long, StepAnalysisInstance> fromInstances = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
     for (StepAnalysisInstance fromInstance : fromInstances.values()) {
@@ -213,7 +198,12 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       // non-new steps copied during revise have invalid results until run again
       // non-new steps copied during import should always have no_results
       toInstance.setState(StepAnalysisState.NO_RESULTS);
-      try {
+
+      // RRD 9/19: while copying, should not matter if fromStep is valid;
+      //   we can assume toStep is AS VALID as fromStep and thus can copy the
+      //   analysis configuration- it will be as valid or invalid as the
+      //   existing step+analysis combo
+      /*try {
         checkStepForValidity(toInstance);
         toInstance.setIsValidStep(true);
       }
@@ -221,7 +211,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
         // if answer value of toStep is not valid for the given analysis, mark as
         // such and save; user will not be shown form and will be unable to run analysis
         toInstance.setIsValidStep(false, e.getMessage());
-      }
+      }*/
+      toInstance.setIsValidStep(true);
       writeNewAnalysisInstance(toInstance, false);
       LOG.info("Wrote new duplicate context with ID " + toInstance.getAnalysisId() +
           " for revised step " + toInstance.getStep().getStepId() + ".  Copying properties...");
@@ -298,7 +289,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   private void checkStepForValidity(StepAnalysisInstance instance)
       throws WdkModelException, IllegalAnswerValueException, WdkUserException {
     // ensure this is a valid step to analyze
-    AnswerValue answer = instance.getStep().getAnswerValue();
+    AnswerValue answer = instance.getAnswerValue();
     if (answer.getResultSizeFactory().getResultSize() == 0) {
       throw new IllegalAnswerValueException("You cannot analyze a Step with zero results.");
     }
@@ -373,7 +364,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   /**
-   * Collects the data associated with a result and returns the aggregating
+   * Collects the data associated with a result and returns the aggregated
    * object.  This method is only to be called when a "recent" call to
    * getSavedInstance() has status COMPLETE.  No checks are done to ensure that
    * persistent storage mechanisms have not been cleared.
@@ -397,8 +388,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     StepAnalyzer analyzer = getConfiguredAnalyzer(instance, _fileStore);
     analyzer.setPersistentCharData(result.getStoredString());
     analyzer.setPersistentBinaryData(result.getStoredBytes());
-    result.setResultViewModelJson(analyzer.getResultViewModelJson());
     result.clearStoredData(); // only care about the view model
+    result.setResultViewModelJson(analyzer.getResultViewModelJson());
     return result;
   }
 
@@ -432,7 +423,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     StepAnalyzer analyzer = instance.getStepAnalysis().getAnalyzerInstance();
     analyzer.setStorageDirectory(fileStore.getStorageDirPath(instance.createHash()));
     analyzer.setFormParamValues(instance.getFormParams());
-    analyzer.setAnswerValue(instance.getStep().getAnswerValue());
+    analyzer.setAnswerValue(instance.getAnswerValue());
     return analyzer;
   }
 

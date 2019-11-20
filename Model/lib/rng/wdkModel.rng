@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
-<grammar xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
   <start>
     <element name="wdkModel">
       <oneOrMore>
@@ -61,9 +62,12 @@
           <ref name="uiConfig" />
 
           <ref name="stepAnalysisPlugins" />
-  
+
           <ref name="userDatasetStorePlugin"/>
 
+          <ref name="columnToolBundles" />
+
+          <ref name="defaultColumnToolBundle" />
         </choice>
       </oneOrMore>
     </element>
@@ -231,7 +235,6 @@
     </element>
   </define>
 
-
   <!-- Params -->
 
   <define name="paramSet">
@@ -299,13 +302,13 @@
           <data type="boolean" />
         </attribute>
       </element>
-        <element name="handler">
-          <ref name="IncludeExclude" />
-          <attribute name="implementation" />
-          <zeroOrMore>
-            <ref name="property" />
-          </zeroOrMore>
-        </element>
+      <element name="handler">
+        <ref name="IncludeExclude" />
+        <attribute name="implementation" />
+        <zeroOrMore>
+          <ref name="property" />
+        </zeroOrMore>
+      </element>
     </choice>
   </define>
 
@@ -359,7 +362,7 @@
       </zeroOrMore>
     </element>
   </define>
-  
+
   <define name="numberParam">
     <element name="numberParam">
       <ref name="ParamBaseProperties" />
@@ -375,7 +378,7 @@
         <data type="double" />
       </attribute>
       <optional>
-        <attribute name="step">
+        <attribute name="increment">
           <data type="double" />
         </attribute>
       </optional>
@@ -401,7 +404,7 @@
       </zeroOrMore>
     </element>
   </define>
-  
+
   <define name="numberRangeParam">
     <element name="numberRangeParam">
       <ref name="ParamBaseProperties" />
@@ -417,10 +420,10 @@
         <data type="double" />
       </attribute>
       <optional>
-        <attribute name="step">
+        <attribute name="increment">
           <data type="double" />
         </attribute>
-      </optional>  
+      </optional>
       <optional>
         <attribute name="numDecimalPlaces">
           <data type="integer" />
@@ -443,7 +446,7 @@
       </zeroOrMore>
     </element>
   </define>
-  
+
   <define name="dateParam">
     <element name="dateParam">
       <ref name="ParamBaseProperties" />
@@ -470,7 +473,7 @@
       </zeroOrMore>
     </element>
   </define>
-  
+
   <define name="dateRangeParam">
     <element name="dateRangeParam">
       <ref name="ParamBaseProperties" />
@@ -545,7 +548,7 @@
     <element name="datasetParam">
       <ref name="ParamBaseProperties" />
       <optional>
-      	<attribute name="recordClassRef" />
+        <attribute name="recordClassRef" />
       </optional>
       <zeroOrMore>
         <choice>
@@ -653,7 +656,7 @@
       </zeroOrMore>
     </element>
   </define>
- 
+
   <define name="filterParam">
     <element name="filterParam">
       <ref name="DependentParamBaseProperties" />
@@ -720,7 +723,7 @@
       </attribute>
     </optional>
   </define>
-  
+
   <define name="EnumParamBaseProperties">
     <ref name="DependentParamBaseProperties" />
     <optional>
@@ -788,7 +791,6 @@
     </attribute>
   </define>
 
-
   <!-- Schema grouping elements -->
   <define name="queries">
     <choice>
@@ -816,7 +818,6 @@
       <ref name="linkAttribute" />
     </choice>
   </define>
-
 
   <!-- Schema subtype shared elements -->
   <define name="ColumnBaseContents">
@@ -1105,7 +1106,7 @@
           <data type="boolean" />
         </attribute>
       </optional>
-     <oneOrMore>
+      <oneOrMore>
         <choice>
           <ref name="sqlColumns" />
           <ref name="sqlParamValue" />
@@ -1156,7 +1157,6 @@
     </element>
   </define>
 
-
   <!-- RecordClass -->
   <define name="recordClass">
     <element name="recordClass">
@@ -1177,7 +1177,7 @@
       <optional>
         <attribute name="iconName"/>
       </optional>
-       <optional>
+      <optional>
         <attribute name="description" />
       </optional>
       <optional>
@@ -1202,6 +1202,9 @@
       </optional>
       <optional>
         <attribute name="summaryAttributesList" />
+      </optional>
+      <optional>
+        <ref name="defaultColumnToolBundle" />
       </optional>
       <optional>
         <element name="resultSizeQueryRef">
@@ -1290,7 +1293,6 @@
             </zeroOrMore>
           </element>
 
-
           <!-- answerFilter definition -->
           <element name="answerFilter">
             <attribute name="queryRef" />
@@ -1335,13 +1337,12 @@
             </oneOrMore>
           </element>
 
-
           <!-- attribute query ref -->
           <element name="attributeQueryRef">
             <attribute name="ref" />
             <optional>
               <attribute name="attributeMetaQueryRef" />
-            </optional>  
+            </optional>
             <ref name="IncludeExclude" />
             <zeroOrMore>
               <ref name="attributes" />
@@ -1390,9 +1391,6 @@
       <attribute name="recordClassRef" />
       <attribute name="queryRef" />
       <ref name="IncludeExclude" />
-      <optional>
-        <attribute name="urlName" />
-      </optional>
       <optional>
         <attribute name="shortDisplayName" />
       </optional>
@@ -1457,10 +1455,10 @@
           <element name="suggestion">
             <ref name="IncludeExclude" />
             <optional>
-               <attribute name="newBuild" />
+              <attribute name="newBuild" />
             </optional>
             <optional>
-               <attribute name="reviseBuild" />
+              <attribute name="reviseBuild" />
             </optional>
           </element>
 
@@ -1589,8 +1587,10 @@
   <define name="columnAttribute">
     <element name="columnAttribute">
       <ref name="AttributeFieldContent" />
+      <ref name="columnToolBundleRef" />
       <zeroOrMore>
         <choice>
+          <!-- refers to column filters -->
           <element name="filterRef">
             <ref name="IncludeExclude" />
             <attribute name="name" />
@@ -1623,6 +1623,7 @@
   <define name="textAttribute">
     <element name="textAttribute">
       <ref name="AttributeFieldContent" />
+      <ref name="columnToolBundleRef" />
       <zeroOrMore>
         <choice>
           <element name="display">
@@ -1641,6 +1642,7 @@
   <define name="linkAttribute">
     <element name="linkAttribute">
       <ref name="AttributeFieldContent" />
+      <ref name="columnToolBundleRef" />
       <optional>
         <attribute name="newWindow">
           <data type="boolean" />
@@ -1678,13 +1680,13 @@
         <attribute name="attributeCategory" />
       </optional>
       <optional>
-	<!-- this is a hint to the client about a default sort. if not provided, client should keep order as delivered by server
-	     comma delimited list in the form: column_name1 ASC|DESC,  column_name2 ASC|DESC
-	-->
-        <attribute name="clientSortingOrder" /> 
+        <!-- this is a hint to the client about a default sort. if not provided, client should keep order as delivered by server
+             comma delimited list in the form: column_name1 ASC|DESC,  column_name2 ASC|DESC
+        -->
+        <attribute name="clientSortingOrder" />
       </optional>
-      <optional>  
-         <attribute name="attributeMetaQueryRef" />
+      <optional>
+        <attribute name="attributeMetaQueryRef" />
       </optional>
     </element>
   </define>
@@ -1829,10 +1831,7 @@
       <attribute name="name" />
       <ref name="IncludeExclude" />
       <zeroOrMore>
-        <choice>
-          <ref name="stepFilter" />
-          <ref name="columnFilter" />
-        </choice>
+        <ref name="stepFilter" />
       </zeroOrMore>
     </element>
   </define>
@@ -1843,12 +1842,6 @@
       <zeroOrMore>
         <ref name="property" />
       </zeroOrMore>
-    </element>
-  </define>
-
-  <define name="columnFilter">
-    <element name="columnFilter">
-      <ref name="filterBaseContent" />
     </element>
   </define>
 
@@ -1898,15 +1891,11 @@
   <define name="ViewBaseContent">
     <attribute name="name" />
     <attribute name="display" />
-    <attribute name="jsp" />
     <ref name="IncludeExclude" />
     <optional>
       <attribute name="default">
         <data type="boolean" />
       </attribute>
-    </optional>
-    <optional>
-      <attribute name="handlerClass" />
     </optional>
     <zeroOrMore>
       <element name="description">
@@ -2057,4 +2046,86 @@
     </element>
   </define>
 
+  <!-- Column Tool Bundles -->
+  <define name="columnToolBundles">
+    <element name="columnToolBundles">
+      <oneOrMore>
+        <ref name="columnToolBundle" />
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="columnToolBundle">
+    <element name="toolBundle">
+      <attribute name="name" />
+      <zeroOrMore>
+        <ref name="columnTool" />
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="defaultColumnToolBundle">
+    <element name="defaultColumnToolBundle">
+      <attribute name="ref" />
+    </element>
+  </define>
+
+  <define name="columnToolBundleRef">
+    <optional>
+      <attribute name="toolBundleRef" />
+    </optional>
+  </define>
+
+  <define name="columnTool">
+    <element name="tool">
+      <attribute name="name" />
+      <oneOrMore>
+        <choice>
+          <element name="string">
+            <ref name="columnToolType" />
+          </element>
+          <element name="number">
+            <ref name="columnToolType" />
+          </element>
+          <element name="date">
+            <ref name="columnToolType" />
+          </element>
+          <element name="default">
+            <ref name="columnToolType" />
+          </element>
+        </choice>
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="columnToolType">
+    <ref name="columnReporter" />
+    <optional>
+      <ref name="columnFilter" />
+    </optional>
+  </define>
+
+  <define name="columnFilter">
+    <element name="filter">
+      <attribute name="implementation" />
+      <zeroOrMore>
+        <element name="property">
+          <attribute name="name" />
+          <text />
+        </element>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="columnReporter">
+    <element name="reporter">
+      <attribute name="implementation" />
+      <zeroOrMore>
+        <element name="property">
+          <attribute name="name" />
+          <text />
+        </element>
+      </zeroOrMore>
+    </element>
+  </define>
 </grammar>

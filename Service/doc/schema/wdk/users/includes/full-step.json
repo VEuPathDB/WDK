@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "displayName": {
+      "description": "Name populated with default name if not sent in",
+      "type": "string"
+    },
+    "shortDisplayName": {
+      "type": "string"
+    },
+    "customName": {
+      "type": "string"
+    },
+    "baseCustomName": {
+      "type": "string"
+    },
+    "expanded": {
+      "type": "boolean"
+    },
+    "expandedName": {
+      "type": "string"
+    },
+    "hasCompleteStepAnalysis": {
+      "type": "boolean"
+    },
+    "recordClassName": {
+      "type": "string"
+    },
+    "isAnswerSpecComplete": {
+      "type": "boolean"
+    },
+    "strategyId": {
+      "type": "integer"
+    },
+    "estimatedSize": {
+      "type": "string"
+    },
+    "isValid": {
+      "type": "boolean",
+      "enum": ["true"]
+    },
+    "createdDate": {
+      "type": "string"
+    },
+    "lastRunTime": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "expanded",
+    "hasCompleteStepAnalysis",
+    "isAnswerSpecComplete",
+    "isValid"
+  ]
+}

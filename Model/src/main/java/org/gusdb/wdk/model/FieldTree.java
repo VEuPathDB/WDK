@@ -3,11 +3,11 @@ package org.gusdb.wdk.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.functional.TreeNode;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
 import org.gusdb.fgputil.functional.TreeNode.StructureMapper;
 import org.json.JSONArray;
@@ -105,7 +105,7 @@ public class FieldTree {
   public JSONObject toJson(TreeNode<SelectableItem> node) {
     return node.mapStructure(new StructureMapper<SelectableItem, JSONObject>() {
       @Override
-      public JSONObject map(SelectableItem item, List<JSONObject> mappedChildren) {
+      public JSONObject apply(SelectableItem item, List<JSONObject> mappedChildren) {
         JSONObject json = new JSONObject();
         json.put("name", item.getName());
         json.put("displayName", item.getDisplayName());

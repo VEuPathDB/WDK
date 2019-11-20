@@ -59,7 +59,7 @@ public abstract class AbstractRecordIterator extends ReadOnlyIterator<RecordInst
   protected StaticRecordInstance createInstanceTemplate(ResultList resultList) throws WdkModelException, WdkUserException {
 
     // Construct the primary key values for this record
-    Question question = _answerValue.getQuestion();
+    Question question = _answerValue.getAnswerSpec().getQuestion();
     PrimaryKeyDefinition pkDef = question.getRecordClass().getPrimaryKeyDefinition();
     Map<String, Object> pkValues = pkDef.getPrimaryKeyFromResultList(resultList).getRawValues();
 

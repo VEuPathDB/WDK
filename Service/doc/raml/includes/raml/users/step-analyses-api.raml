@@ -1,0 +1,102 @@
+get:
+  description: Retrieve a list of analyses that have been run on this step.
+  responses:
+    200:
+      body:
+        application/json:
+          type: !include ../../../../schema/wdk/users/steps/analyses/get-response.json
+          example: !include ../../example/users/steps/get-analyses-200.json
+	  
+post:
+  description: Creates a new analysis (i.e. tab)
+  body:
+    application/json:
+      example: !include ../../example/users-steps-analyses-post-request.json
+  responses:
+    200:
+      body:
+        application/json:
+          type: !include ../../../../schema/wdk/users/steps/analyses/post-response.json
+          example: !include ../../example/StepAnalysisInstanceSummary.example.json
+
+/{analysis-id}:
+  uriParameters:
+    analysis-id:
+      description: Analysis instance id.
+      type: integer
+  delete:
+    description: Deletes this analysis and associated run if present
+  get:
+    description: Returns the resource above for form population
+  patch:
+    description: >
+      analysisType is not supported; if parameters is modified, then results
+      are cleared
+    body:
+      application/json:
+        example: !include ../../example/users-steps-analyses-patch-request.json
+    responses:
+      204:
+        description: No Content
+      422:
+        description: Unprocessable entry
+        body:
+           application/json:
+              type: !include ../../../../schema/includes/string-array.json
+
+  /result:
+    get:
+      description: >
+        COMPLETE: return 200 + plugin-specific JSON object result, else 204:
+        No Content or some other code meaning use view for the current
+        status code rather than the custom component to display the result
+      responses:
+        200:
+        204:
+    post:
+      description: |
+        Kicks off a run
+
+        HTTP codes based on status:
+        ```none
+        - RUNNING: return 202: Accepted
+        - INVALID: 400 or 406
+        - Any of the other statuses (below), run it, return 202: Accepted
+            COMPLETE
+            NOT_YET_RUN
+            STEP_REVISED // new analysis, created as copy during step revise
+            INTERRUPTED // server shutdown or other interruption
+            ERROR // no longer running due to runtime error
+            EXPIRED // plugin ran too long and was shut down
+            OUT_OF_DATE // has been run but results cache purged
+        ```
+      responses:
+        202:
+          description: >
+            status `RUNNING`, `COMPLETE`, `NOT_YET_RUN`, `STEP_REVISED`,
+            `INTERRUPTED`, `ERROR`, `EXPIRED`, `OUT_OF_DATE`
+        400:
+          description: status `INVALID`
+        406:
+          description: status `INVALID`
+
+    /status:
+      get:
+        responses:
+          200:
+            description: |
+              ```none
+              status: enum
+                NOT_YET_RUN  = user never submitted form and not auto-run
+                STEP_REVISED = new analysis, created as copy during step revise
+                INVALID      = made for a step it does not support; should never be run
+                RUNNING      = currently running (or interrupted but not yet 'fixed')
+                COMPLETE     = completed successfully
+                INTERRUPTED  = server shutdown or other interruption
+                ERROR        = no longer running due to runtime error
+                EXPIRED      = plugin ran too long and was shut down
+                OUT_OF_DATE  = has been run but results cache purged
+              ```
+            body:
+              application/json:
+                type: !include ../../../../schema/wdk/users/steps/analyses/result/status/get-response.json

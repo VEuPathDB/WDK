@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.analysis;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -8,6 +9,8 @@ import java.util.Map.Entry;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParameterContainerImpl;
 import org.gusdb.wdk.model.question.Question;
 
@@ -177,7 +180,7 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
           _analyzerClass).asSubclass(StepAnalyzer.class);
 
       // instantiate instance and pass reference to model
-      StepAnalyzer analyzer = aClass.newInstance();
+      StepAnalyzer analyzer = aClass.getDeclaredConstructor().newInstance();
       analyzer.setWdkModel(getWdkModel());
 
       analyzer.validateParams(paramMap);
@@ -188,7 +191,9 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
 
       return analyzer;
     }
-    catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+    catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+        IllegalArgumentException | InvocationTargetException |
+        NoSuchMethodException | SecurityException ex) {
       throw new WdkModelException(ex);
     }
   }
@@ -239,6 +244,15 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
 
     // test to make sure we can create instance
     getAnalyzerInstance();
+
+    // ensure no answer params present (cannot be part of a strategy)
+    for (Param param : getParams()) {
+      if (param instanceof AnswerParam) {
+        throw new WdkModelException("Step analysis " + _name + " contains a " +
+            "reference to an answer param '" + param.getName() + "'. Step " +
+            "analysis plugins cannot have answer params.");
+      }
+    }
   }
 
   private void inheritParentProps(StepAnalysisXml parent) {

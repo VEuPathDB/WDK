@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "customName": {
+      "type": "string"
+    },
+    "expanded": {
+      "type": "boolean"
+    },
+    "expandedName": {
+      "type": "string"
+    },
+      "searchName": {
+	  "type": "string"
+    },
+    "searchConfig": {
+      "$ref": "../../answer/answer-spec-request.json"
+    },
+    "viewFilters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ]
+      }
+    },
+    "displayPreferences": {
+      "$ref": "includes/display-prefs.json"
+    }
+  },
+  "required": [
+      "searchConfig",
+    "searchName"
+  ]
+}

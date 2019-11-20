@@ -1,27 +1,5 @@
 package org.gusdb.wdk.model;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.Timer;
@@ -36,17 +14,14 @@ import org.gusdb.fgputil.runtime.Manageable;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
-import org.gusdb.wdk.model.config.ModelConfig;
-import org.gusdb.wdk.model.config.ModelConfigAccountDB;
-import org.gusdb.wdk.model.config.ModelConfigAppDB;
-import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
-import org.gusdb.wdk.model.config.QueryMonitor;
+import org.gusdb.wdk.model.toolbundle.ColumnToolBundle;
+import org.gusdb.wdk.model.toolbundle.ColumnToolBundles;
+import org.gusdb.wdk.model.toolbundle.DefaultAttributeToolBundleRef;
+import org.gusdb.wdk.model.toolbundle.impl.EmptyToolBundle;
+import org.gusdb.wdk.model.config.*;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
-import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.filter.FilterSet;
-import org.gusdb.wdk.model.ontology.EuPathCategoriesFactory;
 import org.gusdb.wdk.model.ontology.Ontology;
 import org.gusdb.wdk.model.ontology.OntologyFactory;
 import org.gusdb.wdk.model.ontology.OntologyFactoryImpl;
@@ -61,12 +36,8 @@ import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.question.SearchCategory;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
-import org.gusdb.wdk.model.user.BasketFactory;
-import org.gusdb.wdk.model.user.FavoriteFactory;
+import org.gusdb.wdk.model.user.*;
 import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
-import org.gusdb.wdk.model.user.StepFactory;
-import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
 import org.gusdb.wdk.model.user.analysis.UnconfiguredStepAnalysisFactory;
@@ -76,6 +47,20 @@ import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+
+import static java.util.Objects.isNull;
+import static org.gusdb.fgputil.FormatUtil.NL;
 
 /**
  * The top level WdkModel object provides a facade to access all the resources and functionalities provided by
@@ -133,7 +118,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   private Map<String, ModelSetI<? extends WdkModelBase>> allModelSets = new LinkedHashMap<>();
 
-  private List<GroupSet> groupSetList = new ArrayList<GroupSet>();
+  private List<GroupSet> groupSetList = new ArrayList<>();
   private Map<String, GroupSet> groupSets = new LinkedHashMap<>();
 
   private List<XmlQuestionSet> xmlQuestionSetList = new ArrayList<>();
@@ -145,23 +130,21 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private List<FilterSet> filterSetList = new ArrayList<>();
   private Map<String, FilterSet> filterSets = new LinkedHashMap<>();
 
-  private Map<String, String> _questionUrlSegmentMap = new HashMap<>();
   private Map<String, String> _recordClassUrlSegmentMap = new HashMap<>();
 
-  private List<WdkModelName> wdkModelNames = new ArrayList<WdkModelName>();
+  private List<WdkModelName> wdkModelNames = new ArrayList<>();
+
   private String displayName;
   private String version; // use default version
   private String releaseDate;
 
-  private List<WdkModelText> introductions = new ArrayList<WdkModelText>();
+  private List<WdkModelText> introductions = new ArrayList<>();
   private String _introduction;
 
-  private List<MacroDeclaration> macroList = new ArrayList<MacroDeclaration>();
-  private Set<String> modelMacroSet = new LinkedHashSet<String>();
-  private Set<String> jspMacroSet = new LinkedHashSet<String>();
-  private Set<String> perlMacroSet = new LinkedHashSet<String>();
-
-  private ResultFactory resultFactory;
+  private List<MacroDeclaration> macroList = new ArrayList<>();
+  private Set<String> modelMacroSet = new LinkedHashSet<>();
+  private Set<String> jspMacroSet = new LinkedHashSet<>();
+  private Set<String> perlMacroSet = new LinkedHashSet<>();
 
   private Map<String, String> properties;
 
@@ -186,17 +169,20 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private StepAnalysisFactory stepAnalysisFactory;
   private UserDatasetFactory userDatasetFactory;
 
-  private List<PropertyList> defaultPropertyLists = new ArrayList<PropertyList>();
-  private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<String, String[]>();
+  private List<PropertyList> defaultPropertyLists = new ArrayList<>();
+  private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<>();
 
-  private List<SearchCategory> categoryList = new ArrayList<SearchCategory>();
-  private Map<String, SearchCategory> categoryMap = new LinkedHashMap<String, SearchCategory>();
-  private Map<String, SearchCategory> rootCategoryMap = new LinkedHashMap<String, SearchCategory>();
+  private List<SearchCategory> categoryList = new ArrayList<>();
+  private Map<String, SearchCategory> categoryMap = new LinkedHashMap<>();
+  private Map<String, SearchCategory> rootCategoryMap = new LinkedHashMap<>();
 
   private List<OntologyFactoryImpl> ontologyFactoryList = new ArrayList<>();
   private Map<String, OntologyFactory> ontologyFactoryMap = new LinkedHashMap<>();
-  private EuPathCategoriesFactory eupathCategoriesFactory = null;
-  private String categoriesOntologyName = null;
+  private String categoriesOntologyName;
+
+  private ColumnToolBundles columnToolBundles = new ColumnToolBundles();
+  private ColumnToolBundle defaultColumnToolBundle = new EmptyToolBundle();
+  private String defaultColumnToolBundleRef;
 
   private ReentrantLock systemUserLock = new ReentrantLock();
   private User systemUser;
@@ -279,21 +265,32 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   /**
    * @param questionFullName question's full name (two-part name)
    * @return question with the passed name
-   * @throws WdkModelException if unable to resolve name to question
    */
-  public Question getQuestion(String questionFullName) throws WdkModelException {
-    // special case to fetch a single record of a recordClass (by primary keys)
-    if (SingleRecordQuestion.isSingleQuestionName(questionFullName, this)){
-      return new SingleRecordQuestion(questionFullName, this);
+  public Optional<Question> getQuestionByFullName(String questionFullName) {
+    try {
+      Reference r = new Reference(questionFullName);
+      return Optional.ofNullable(questionSets.get(r.getSetName()))
+          .flatMap(set -> set.getQuestion(r.getElementName()));
     }
-    Reference r = new Reference(questionFullName);
-    QuestionSet ss = getQuestionSet(r.getSetName());
-    return ss.getQuestion(r.getElementName());
+    catch (WdkModelException e) {
+      return Optional.empty();
+    }
+  }
+
+  public Optional<Question> getQuestionByName(String name) {
+    for (QuestionSet questionSet : questionSets.values()) {
+      for (Question question : questionSet.getQuestions()) {
+        if (question.getName().equals(name)) {
+          return Optional.of(question);
+        }
+      }
+    }
+    return Optional.empty();
   }
 
   public Question[] getQuestions(RecordClass recordClass) {
     String rcName = recordClass.getFullName();
-    List<Question> questions = new ArrayList<Question>();
+    List<Question> questions = new ArrayList<>();
     for (QuestionSet questionSet : questionSets.values()) {
       for (Question question : questionSet.getQuestions()) {
         if (question.getRecordClass().getFullName().equals(rcName))
@@ -305,14 +302,30 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return array;
   }
 
-  public RecordClass getRecordClass(String recordClassReference) throws WdkModelException {
-    Reference r = new Reference(recordClassReference);
-    RecordClassSet rs = getRecordClassSet(r.getSetName());
-    return rs.getRecordClass(r.getElementName());
+  public Optional<RecordClass> getRecordClassByName(String recordClassReference) {
+    try {
+      Reference r = new Reference(recordClassReference);
+      return Optional.ofNullable(recordClassSets.get(r.getSetName()))
+          .flatMap(set -> set.getRecordClass(r.getElementName()));
+    }
+    catch (WdkModelException e) {
+      return Optional.empty();
+    }
   }
 
-  public ResultFactory getResultFactory() {
-    return resultFactory;
+  /**
+   * Tries to find a configured recordclass by URL segment
+   *
+   * @param urlSegment of a record class
+   * @return optional containing record class if found, or empty optional if not
+   */
+  public Optional<RecordClass> getRecordClassByUrlSegment(String urlSegment) {
+    return Optional.ofNullable(_recordClassUrlSegmentMap.get(urlSegment)).map(name -> getRecordClassByName(name).get());
+  }
+
+  public Optional<RecordClass> getRecordClassByNameOrUrlSegment(String nameOrSegment) {
+    Optional<RecordClass> rc = getRecordClassByUrlSegment(nameOrSegment);
+    return rc.isPresent() ? rc : getRecordClassByName(nameOrSegment);
   }
 
   public void addWdkModelName(WdkModelName wdkModelName) {
@@ -354,6 +367,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return categoriesOntologyName;
   }
 
+  public void setDefaultColumnToolBundleRef(DefaultAttributeToolBundleRef ref) {
+    this.defaultColumnToolBundleRef = ref.getRef();
+  }
+
   public void setProperties(Map<String, String> properties, Set<String> replacedMacros)
       throws WdkModelException {
     // make sure all the declared model macros are present
@@ -382,38 +399,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   // RecordClass Sets
-
-  public RecordClassSet getRecordClassSet(String recordClassSetName) throws WdkModelException {
-
-    if (!recordClassSets.containsKey(recordClassSetName)) {
-      String err = "WDK Model " + _projectId + " does not contain a recordClass set with name " +
-          recordClassSetName;
-      throw new WdkModelException(err);
-    }
-    return recordClassSets.get(recordClassSetName);
-  }
-
-  public RecordClass[] getAllRecordClasses() {
-    List<RecordClass> allRecordClasses = new ArrayList<>();
-    for (RecordClassSet rcSet : getAllRecordClassSets()) {
-      for (RecordClass rc : rcSet.getRecordClasses()) {
-        allRecordClasses.add(rc);
-      }
-    }
-    return allRecordClasses.toArray(new RecordClass[0]);
-  }
-  // Start CWL 29JUN2016
-  /**
-   * Used to determine whether a record class set exists for the given reference
-   * @param recordClassReference
-   * @return - true if the record class set exists and false otherwise.
-   * @throws WdkModelException
-   */
-  public boolean isExistsRecordClassSet(String recordClassReference) throws WdkModelException {
-    Reference r = new Reference(recordClassReference);
-    return recordClassSets.containsKey(r.getSetName());
-  }
-  // End CWL 29JUN2016
 
   public RecordClassSet[] getAllRecordClassSets() {
     RecordClassSet sets[] = new RecordClassSet[recordClassSets.size()];
@@ -448,30 +433,16 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   // Question Sets
-  public QuestionSet getQuestionSet(String setName) throws WdkModelException {
-    if (!questionSets.containsKey(setName)) {
-      String err = "WDK Model " + _projectId + " does not contain a Question set with name " + setName;
-      throw new WdkModelException(err);
-    }
-    return questionSets.get(setName);
+  public Optional<QuestionSet> getQuestionSet(String setName) {
+    return Optional.ofNullable(questionSets.get(setName));
   }
 
   public boolean hasQuestionSet(String setName) {
     return questionSets.containsKey(setName);
   }
 
-  public boolean hasQuestion(String questionName) {
-    try {
-      getQuestion(questionName);
-      return true;
-    }
-    catch (WdkModelException e) {
-      return false;
-    }
-  }
-
   public Map<String, QuestionSet> getQuestionSetsMap() {
-    Map<String, QuestionSet> sets = new LinkedHashMap<String, QuestionSet>();
+    Map<String, QuestionSet> sets = new LinkedHashMap<>();
     for (String setName : questionSets.keySet()) {
       sets.put(setName, questionSets.get(setName));
     }
@@ -518,31 +489,29 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return filterSet;
   }
 
-  public Question getBooleanQuestion(RecordClass recordClass) throws WdkModelException {
+  public Question addBooleanQuestion(RecordClass recordClass) throws WdkModelException {
     // check if the boolean question already exists
     String qname = Question.BOOLEAN_QUESTION_PREFIX + recordClass.getFullName().replace('.', '_');
-    QuestionSet internalSet = getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
+    QuestionSet internalSet = getQuestionSet(Utilities.INTERNAL_QUESTION_SET).get();
 
-    Question booleanQuestion;
-    if (internalSet.contains(qname)) {
-      booleanQuestion = internalSet.getQuestion(qname);
+    Optional<Question> booleanQuestionOpt = internalSet.getQuestion(qname);
+    if (booleanQuestionOpt.isPresent()) {
+      throw new WdkModelException("Boolean questions should be created only once.");
     }
-    else {
-      booleanQuestion = new Question();
-      booleanQuestion.setName(qname);
-      booleanQuestion.setDisplayName("Combine " + recordClass.getDisplayName() + " results");
-      booleanQuestion.setRecordClassRef(recordClass.getFullName());
-      BooleanQuery booleanQuery = getBooleanQuery(recordClass);
-      booleanQuestion.setQueryRef(booleanQuery.getFullName());
-      booleanQuestion.excludeResources(_projectId);
-      booleanQuestion.resolveReferences(this);
 
-      internalSet.addQuestion(booleanQuestion);
-    }
-    return booleanQuestion;
+    Question question = new Question();
+    question.setName(qname);
+    question.setDisplayName("Combine " + recordClass.getDisplayName() + " results");
+    question.setRecordClassRef(recordClass.getFullName());
+    BooleanQuery booleanQuery = addBooleanQuery(recordClass);
+    question.setQueryRef(booleanQuery.getFullName());
+    question.excludeResources(_projectId);
+    question.resolveReferences(this);
+    internalSet.addQuestion(question);
+    return question;
   }
 
-  public BooleanQuery getBooleanQuery(RecordClass recordClass) throws WdkModelException {
+  private BooleanQuery addBooleanQuery(RecordClass recordClass) throws WdkModelException {
     // check if the boolean query already exists
     String queryName = BooleanQuery.getQueryName(recordClass);
     QuerySet internalQuerySet = getQuerySet(Utilities.INTERNAL_QUERY_SET);
@@ -565,6 +534,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       booleanQuery.setIsCacheable(true); // cache the boolean query
     }
     return booleanQuery;
+  }
+
+  private Question addSingleRecordQuestion(RecordClass recordClass) {
+    Question question = new SingleRecordQuestion(recordClass);
+    getQuestionSet(Utilities.INTERNAL_QUESTION_SET).get().addQuestion(question);
+    return question;
   }
 
   // ModelSetI's
@@ -628,7 +603,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       _userDatasetStoreStatus = UD_DISABLED;
     }
 
-    resultFactory = new ResultFactory(this);
     userFactory = new UserFactory(this);
     stepFactory = new StepFactory(this);
     datasetFactory = new DatasetFactory(this);
@@ -649,8 +623,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     // resolve references in the model objects
     resolveReferences();
 
-    // create boolean questions
-    createBooleanQuestions();
+    // create generated questions (boolean and single-record)
+    createGeneratedQuestions();
 
     validateDependentParams();
 
@@ -666,7 +640,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private void validateDependentParams() throws WdkModelException {
 
     // find names of all queries that are not owned by a parameter.  these are our "root" queries
-    Set<String> nonRootQueryNames = new HashSet<String>();
+    Set<String> nonRootQueryNames = new HashSet<>();
     for (ParamSet paramSet : paramSets.values()) {
       for (Param param : paramSet.getParams()) {
         if (param instanceof AbstractDependentParam) {
@@ -675,14 +649,18 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       }
     }
 
-    // gather all root queries (those that are not contained by a param).
-    Set<Query> rootQueries = new HashSet<Query>();
-    Set<String> rootQueryNames = new HashSet<String>();
+    // gather all root queries (those that are not contained by a param);
+    // also gather all queries for dependent param resolution
+    List<Query> allQueries = new ArrayList<>();
+    Set<Query> rootQueries = new HashSet<>();
+    Set<String> rootQueryNames = new HashSet<>();
+
     for (QuerySet querySet : querySets.values()) {
       for (Query query : querySet.getQueries()) {
+        allQueries.add(query);
         if (!nonRootQueryNames.contains(query.getFullName())) {
-        	rootQueries.add(query);
-            rootQueryNames.add(query.getFullName());
+          rootQueries.add(query);
+          rootQueryNames.add(query.getFullName());
         }
       }
     }
@@ -692,6 +670,13 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     // found in the context
     for (Query rootQuery : rootQueries) {
       rootQuery.validateDependentParams();
+    }
+
+    // finally, resolve depended param refs in all queries' parameters
+    for (Query query : allQueries) {
+      for (Param param : query.getParams()) {
+        param.resolveDependedParamRefs();
+      }
     }
   }
 
@@ -794,7 +779,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
     LOG.info("Resolving references...");
 
-    // NOTE: the order of set resolution matters; this sequence has been well thought out and is important
+    // NOTE: the order of set resolution matters; this sequence has been well
+    // thought out and is important
 
     for (GroupSet groupSet : groupSets.values()) {
       groupSet.resolveReferences(this);
@@ -808,6 +794,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     for (ParamSet paramSet : paramSets.values()) {
       paramSet.resolveReferences(this);
     }
+
+    columnToolBundles.resolveReferences(this);
+    if (!isNull(defaultColumnToolBundleRef))
+      defaultColumnToolBundle = getColumnToolBundle(defaultColumnToolBundleRef)
+        .orElseThrow(() -> new WdkModelException("Invalid columnToolBundle reference: " + defaultColumnToolBundleRef));
+
     for (RecordClassSet recordClassSet : recordClassSets.values()) {
       recordClassSet.resolveReferences(this);
     }
@@ -827,23 +819,29 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
         rootCategoryMap.put(category.getName(), category);
     }
 
+    // ensure question names are not duplicated
+    Set<String> names = new HashSet<>();
+    for (QuestionSet questionSet : questionSets.values()) {
+      for (Question question : questionSet.getQuestions()) {
+        if (!names.add(question.getName())) {
+          throw new WdkModelException("Duplicate question name '" + question.getName() + "' found in model XML.");
+        }
+      }
+    }
+
     LOG.info("Loading ontology...");
     Timer ontologyTime = new Timer();
     // resolve ontology references and determine WDK Categories ontology
     OntologyFactoryImpl ontologyFactory;
     switch (this.ontologyFactoryMap.size()) {
-
       case 0:
-        throw new WdkModelException(
-            "At least one ontology element must be specified in WDK Model XML.");
-
+        break;
       case 1:
         ontologyFactory = (OntologyFactoryImpl)this.ontologyFactoryMap.values().iterator().next();
         ontologyFactory.resolveReferences(this);
         ontologyFactory.setUseAsWdkCategories(true);
         this.categoriesOntologyName = ontologyFactory.getName();
         break;
-
       default: // more than one ontology
         String wdkCategoriesOntologyName = null;
         for (OntologyFactory ontology: this.ontologyFactoryMap.values()) {
@@ -862,16 +860,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
             }
           }
         }
-        if (wdkCategoriesOntologyName == null) {
-            throw new WdkModelException("You must specify an ontology as the WDK Categories " +
-                "Ontology.  Use the 'useAsWdkCategories' flag in the ontology XML tag.");
-        }
         this.categoriesOntologyName = wdkCategoriesOntologyName;
-    }
-
-    // comment out to use old categories
-    if (!ontologyFactoryMap.isEmpty() && !getProjectId().equals("OrthoMCL")) { // FIXME: remove ortho hardcode
-      eupathCategoriesFactory = new EuPathCategoriesFactory(this);
     }
 
     LOG.info("Total ontology load time: " + ontologyTime.getElapsedString());
@@ -1110,10 +1099,11 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     }
   }
 
-  private void createBooleanQuestions() throws WdkModelException {
+  private void createGeneratedQuestions() throws WdkModelException {
     for (RecordClassSet recordClassSet : getAllRecordClassSets()) {
       for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
-        getBooleanQuestion(recordClass);
+        addBooleanQuestion(recordClass);
+        addSingleRecordQuestion(recordClass);
       }
     }
   }
@@ -1182,6 +1172,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       filterSetList.add(filterSet);
     else
       addSet(filterSet, filterSets);
+  }
+
+  public void setColumnToolBundles(ColumnToolBundles bundles) {
+    columnToolBundles = bundles;
   }
 
   public void addXmlQuestionSet(XmlQuestionSet questionSet) throws WdkModelException {
@@ -1284,7 +1278,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   public Map<String, String[]> getDefaultPropertyLists() {
-    Map<String, String[]> propLists = new LinkedHashMap<String, String[]>();
+    Map<String, String[]> propLists = new LinkedHashMap<>();
     for (String plName : defaultPropertyListMap.keySet()) {
       String[] values = defaultPropertyListMap.get(plName);
       propLists.put(plName, Arrays.copyOf(values, values.length));
@@ -1305,9 +1299,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   public Map<String, SearchCategory> getCategories(String usedBy, boolean strict) {
-    if (eupathCategoriesFactory != null) {
-      return eupathCategoriesFactory.getCategories(usedBy);
-    }
     Map<String, SearchCategory> categories = new LinkedHashMap<>();
     for (String name : categoryMap.keySet()) {
       SearchCategory category = categoryMap.get(name);
@@ -1317,12 +1308,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return categories;
   }
 
-  public Map<String, SearchCategory> getRootCategories(String usedBy) {
-    if (eupathCategoriesFactory != null) {
-      return eupathCategoriesFactory.getRootCategories(usedBy);
-    }
+  public Map<String, SearchCategory> getRootCategories() {
 
-    Map<String, SearchCategory> roots = new LinkedHashMap<String, SearchCategory>();
+    Map<String, SearchCategory> roots = new LinkedHashMap<>();
     for (SearchCategory root : rootCategoryMap.values()) {
       String cusedBy = root.getUsedBy();
       if (root.isUsedBy(cusedBy))
@@ -1525,38 +1513,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     _recordClassUrlSegmentMap.put(urlSegment, rcFullName);
   }
 
-  /**
-   * Tries to find a configured recordclass, either by full name or URL segment
-   *
-   * @param urlSegment or record class name
-   * @return record class or null if not found
-   */
-  public RecordClass getRecordClassByUrlSegment(String urlSegment) {
-    try {
-      String recordClassFullName = _recordClassUrlSegmentMap.get(urlSegment);
-      // if segment mapped to recordclass full name, use result; otherwise treat segment as rc name itself
-      return getRecordClass(recordClassFullName != null ? recordClassFullName : urlSegment);
-    }
-    catch (WdkModelException e) {
-      return null;
-    }
-  }
-
-  public void registerQuestionUrlSegment(String urlSegment, String questionFullName) throws WdkModelException {
-    if (_questionUrlSegmentMap.containsKey(urlSegment) &&
-        !_questionUrlSegmentMap.get(urlSegment).equals(questionFullName)) { // protects from duplicate identical calls
-      throw new WdkModelException("Duplicate Question URL segment specified [" + urlSegment +
-          "]. You may need to specify a custom URL segment if you use have " +
-          "two questions with the same name in different Question Sets.");
-    }
-    _questionUrlSegmentMap.put(urlSegment, questionFullName);
-  }
-
-  public Question getQuestionByUrlSegment(String urlSegment) throws WdkModelException {
-    String questionFullName = _questionUrlSegmentMap.get(urlSegment);
-    return (questionFullName == null ? null : getQuestion(questionFullName));
-  }
-
   public static AutoCloseableList<WdkModel> loadMultipleModels(String gusHome, String[] projects) throws WdkModelException {
     AutoCloseableList<WdkModel> models = new AutoCloseableList<>();
     try {
@@ -1590,6 +1546,20 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return _userDatasetStoreStatus;
   }
 
+  public List<Question> getAllQuestions() {
+    List<Question> questions = new ArrayList<>();
+    for (QuestionSet qSet : getAllQuestionSets()) {
+      questions.addAll(Arrays.asList(qSet.getQuestions()));
+    }
+    return questions;
+  }
+
+  public List<RecordClass> getAllRecordClasses() {
+    return Arrays.stream(getAllRecordClassSets())
+        .flatMap(rcs -> Arrays.stream(rcs.getRecordClasses()))
+        .collect(Collectors.toList());
+  }
+
   /**
    * Checks for a valid question name and throws WdkUserException if param is
    * not valid.  For now we simply check that it is a valid two-part name
@@ -1607,7 +1577,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     String message = "The search '" + qFullName + "' is not or is no longer available.";
     try {
       // First check to see if this is a 'regular' question; if not, check XML questions
-      if (qFullName == null || getQuestion(qFullName) == null) {
+      if (qFullName == null || getQuestionByFullName(qFullName) == null) {
         throw new WdkModelException("Question name is null or resulting question is null");
       }
     }
@@ -1641,7 +1611,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     String message = "The record type '" + recordClassName + "' is not or is no longer available.";
     try {
       // First check to see if this is a 'regular' record class; if not, check XML record classes
-      if (recordClassName == null || getRecordClass(recordClassName) == null) {
+      if (recordClassName == null || getRecordClassByName(recordClassName) == null) {
         throw new WdkModelException("RecordClass name is null or resulting RecordClass is null");
       }
     }
@@ -1656,5 +1626,26 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
         throw new WdkUserException(message, e2);
       }
     }
+  }
+
+  public Optional<ColumnToolBundle> getColumnToolBundle(final String name) {
+    return columnToolBundles.getBundle(name);
+  }
+
+  public ColumnToolBundle getDefaultAttributeToolBundle() {
+    return defaultColumnToolBundle;
+  }
+
+  // TODO: cache at model creation time
+  public Map<String, List<Question>> getRecordClassQuestionMap() {
+    Map<String, List<Question>> recordClassQuestionMap = new HashMap<>();
+    for (Question q : getAllQuestions()) {
+      String rcName = q.getRecordClass().getFullName();
+      if (!recordClassQuestionMap.containsKey(rcName)) {
+        recordClassQuestionMap.put(rcName, new ArrayList<>());
+      }
+      recordClassQuestionMap.get(rcName).add(q);
+    }
+    return recordClassQuestionMap;
   }
 }

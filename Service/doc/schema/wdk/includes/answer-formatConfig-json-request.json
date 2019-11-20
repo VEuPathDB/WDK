@@ -1,0 +1,39 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "additionalProperties": false,
+      "properties": {
+        "pagination": {
+          "type": "object",
+          "properties": {
+            "offset": {
+              "type": "number"
+            },
+            "numRecords": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "offset",
+            "numRecords"
+          ],
+          "additionalProperties": false
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sorting": {
+	    "$ref": "sorting-spec.json"
+        }
+      }
+    }
+

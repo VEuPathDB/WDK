@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.gusdb.wdk.model.ModelSetI;
 import org.gusdb.wdk.model.WdkModel;
@@ -76,11 +77,8 @@ public class QuestionSet extends WdkModelBase implements ModelSetI<Question>, Op
     _internal = internal;
   }
 
-  public Question getQuestion(String name) throws WdkModelException {
-    Question question = _questionMap.get(name);
-    if (question == null)
-      throw new WdkModelException("Question Set " + getName() + " does not include question " + name);
-    return question;
+  public Optional<Question> getQuestion(String name) {
+    return Optional.ofNullable(_questionMap.get(name));
   }
 
   public boolean contains(String questionName) {

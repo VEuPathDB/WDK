@@ -1,16 +1,16 @@
 package org.gusdb.wdk.model.query;
 
-import java.util.Map;
-
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.EnumItem;
+import org.gusdb.wdk.model.query.param.EnumItemList;
+import org.gusdb.wdk.model.query.param.EnumParam;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.RecordClassReference;
-import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -61,7 +61,7 @@ public class BooleanQuery extends SqlQuery {
 
   private AnswerParam _leftOperand;
   private AnswerParam _rightOperand;
-  private StringParam _operator;
+  private EnumParam _operator;
   private RecordClass _recordClass;
 
   public BooleanQuery(RecordClass recordClass) throws WdkModelException {
@@ -70,6 +70,7 @@ public class BooleanQuery extends SqlQuery {
 
  /**
   * Need a no-arg constructor for easy construction using newInstance()
+  * FIXME: why? where are we using newInstance()?
   * @throws WdkModelException
   */
   public BooleanQuery() throws WdkModelException {
@@ -83,14 +84,12 @@ public class BooleanQuery extends SqlQuery {
     // create or get the historyParam for the query
     ParamSet internalParamSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
     _leftOperand = prepareOperand(internalParamSet, recordClass,
-        LEFT_OPERAND_PARAM_PREFIX + rcName);
-    _leftOperand.setPrompt("Left Operand");
+        LEFT_OPERAND_PARAM_PREFIX + rcName, "Left Operand");
     _rightOperand = prepareOperand(internalParamSet, recordClass,
-        RIGHT_OPERAND_PARAM_PREFIX + rcName);
-    _rightOperand.setPrompt("Right Operand");
+        RIGHT_OPERAND_PARAM_PREFIX + rcName, "Right Operand");
 
     // create the stringParam for the others
-    _operator = prepareStringParam(internalParamSet, OPERATOR_PARAM);
+    _operator = prepareOperatorParam(internalParamSet, OPERATOR_PARAM);
     _operator.setPrompt("Operator");
 
     // create the query
@@ -109,7 +108,7 @@ public class BooleanQuery extends SqlQuery {
 
     this._recordClass = query._recordClass;
     this._leftOperand = (AnswerParam) paramMap.get(query._leftOperand.getName());
-    this._operator = (StringParam) paramMap.get(query._operator.getName());
+    this._operator = (EnumParam) paramMap.get(query._operator.getName());
     this._rightOperand = (AnswerParam) paramMap.get(query._rightOperand.getName());
   }
 
@@ -137,12 +136,12 @@ public class BooleanQuery extends SqlQuery {
   /**
    * @return the operator
    */
-  public StringParam getOperatorParam() {
+  public EnumParam getOperatorParam() {
     return _operator;
   }
 
   private AnswerParam prepareOperand(ParamSet paramSet,
-      RecordClass recordClass, String paramName) throws WdkModelException {
+      RecordClass recordClass, String paramName, String prompt) throws WdkModelException {
     AnswerParam operand;
     if (paramSet.contains(paramName)) {
       operand = (AnswerParam) paramSet.getParam(paramName);
@@ -157,24 +156,35 @@ public class BooleanQuery extends SqlQuery {
       operand.setExposeAsAttribute(false);
       operand.addRecordClassRef(new RecordClassReference(rcName));
       paramSet.addParam(operand);
+      operand.excludeResources(_wdkModel.getProjectId());
       operand.resolveReferences(_wdkModel);
-      operand.setResources(_wdkModel);
+      operand.setPrompt(prompt);
     }
     return operand;
   }
 
-  private StringParam prepareStringParam(ParamSet paramSet, String paramName)
+  private EnumParam prepareOperatorParam(ParamSet paramSet, String paramName)
       throws WdkModelException {
-    StringParam param;
+    EnumParam param;
     if (paramSet.contains(paramName)) {
-      param = (StringParam) paramSet.getParam(paramName);
-    } else {
-      param = new StringParam();
+      param = (EnumParam) paramSet.getParam(paramName);
+    }
+    else {
+      param = new EnumParam();
       param.setName(paramName);
-      param.setNumber(false);
       param.setNoTranslation(true);
+      param.setDefault(BooleanOperator.INTERSECT.name());
+      EnumItemList items = new EnumItemList();
+      for (BooleanOperator value : BooleanOperator.values()) {
+        EnumItem item = new EnumItem();
+        item.setDisplay(value.name());
+        item.setTerm(value.getBaseOperator());
+        item.setInternal(value.getBaseOperator());
+        items.addEnumItem(item);
+      }
+      param.addEnumItemList(items);
+      param.excludeResources(_wdkModel.getProjectId());
       param.resolveReferences(_wdkModel);
-      param.setResources(_wdkModel);
       paramSet.addParam(param);
     }
     return param;
@@ -185,7 +195,7 @@ public class BooleanQuery extends SqlQuery {
       Column column = new Column();
       column.setName(columnName);
       column.setQuery(this);
-      columnMap.put(columnName, column);
+      _columnMap.put(columnName, column);
     }
   }
 
@@ -197,16 +207,13 @@ public class BooleanQuery extends SqlQuery {
   }
 
   @Override
-  public Query clone() {
+  public BooleanQuery clone() {
     return new BooleanQuery(this);
   }
 
   @Override
-  public BooleanQueryInstance makeInstance(User user, Map<String, String> values,
-      boolean validate, int assignedWeight, Map<String, String> context)
-      throws WdkModelException, WdkUserException {
-    return new BooleanQueryInstance(user, this, values, validate,
-        assignedWeight, context);
+  protected BooleanQueryInstance makeInstance(RunnableObj<QueryInstanceSpec> spec) {
+    return new BooleanQueryInstance(spec);
   }
 
   @Override

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "definitions": {
+    "step": {
+      "type": "object",
+      "properties": {
+        "stepId": {
+          "type": "integer"
+        },
+        "primaryInput": {
+          "$ref": "#/definitions/step"
+        },
+        "secondaryInput": {
+          "$ref": "#/definitions/step"
+        }
+      },
+	"required": [
+          "stepId"
+	],
+        "additionalProperties": false
+      }
+    },
+  "$ref": "#/definitions/step"
+}
+

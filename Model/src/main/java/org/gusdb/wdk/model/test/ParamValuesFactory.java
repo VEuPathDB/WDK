@@ -97,7 +97,7 @@ public class ParamValuesFactory {
     return remainingParams;
   }
 
-  private static String printParamMap(Param[] params, Map<String, String> contextParamValues) throws WdkModelException {
+  private static String printParamMap(Param[] params, Map<String, String> contextParamValues) {
     StringBuilder out = new StringBuilder("{").append(NL);
     for (Param param : params) {
       out.append("  ").append(param.getName()).append(" = ")
@@ -109,7 +109,7 @@ public class ParamValuesFactory {
     return out.append("}").toString();
   }
 
-  private static String getDependedValues(Param param) throws WdkModelException {
+  private static String getDependedValues(Param param) {
     return (param instanceof AbstractDependentParam && ((AbstractDependentParam)param).isDependentParam()) ?
         "depends on " + joinParamNames(((AbstractDependentParam)param).getDependedParams()) : "independent";
   }
@@ -168,7 +168,9 @@ public class ParamValuesFactory {
             defaultValue = param.getSanityDefault();
             if (defaultValue == null) {
               // need to pass context param values to get the default
-              defaultValue = dependentParam.getDefault(user, contextParamValues);
+              // FIXME: Broken; if we want to be serious about sanity testing, need to rework this code
+              //defaultValue = dependentParam.getDefault(user, contextParamValues);
+              defaultValue = dependentParam.getXmlDefault(); // put here just for compilation
             }
           }
 
@@ -187,7 +189,7 @@ public class ParamValuesFactory {
 
         // if no sanity default exists, use regular default
         if (defaultValue == null) {
-          defaultValue = param.getDefault();
+          defaultValue = param.getXmlDefault();
         }
 
         // throw if value cannot be populated, unless param is user_id
@@ -213,7 +215,7 @@ public class ParamValuesFactory {
   }
 
   private static boolean allDependenciesMet(AbstractDependentParam dependentParam,
-      Map<String, String> contextParamValues) throws WdkModelException {
+      Map<String, String> contextParamValues) {
     for (Param dependedParam : dependentParam.getDependedParams()) {
       if (!contextParamValues.containsKey(dependedParam.getName())) {
         return false;

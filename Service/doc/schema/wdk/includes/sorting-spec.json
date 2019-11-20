@@ -1,0 +1,24 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "attributeName": {
+                "type": "string"
+            },
+            "direction": {
+                "type": "string",
+                "enum": [
+                    "ASC",
+                    "DESC"
+                ]
+            }
+        },
+        "required": [
+            "attributeName",
+            "direction"
+        ],
+        "additionalProperties": false
+    }
+}

@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.record;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +20,6 @@ public class RecordView extends WdkView {
         RecordView view = new RecordView();
         view.setName("_default");
         view.setDisplay("Overview");
-        view.setJsp("/wdk/jsp/records/default.jsp");
         return view;
     }
 
@@ -42,13 +42,12 @@ public class RecordView extends WdkView {
             try {
                 Class<? extends RecordViewHandler> hClass = Class.forName(
                         handlerClass).asSubclass(RecordViewHandler.class);
-                handler = hClass.newInstance();
-            } catch (ClassNotFoundException ex) {
-                throw new WdkModelException(ex);
-            } catch (InstantiationException ex) {
-                throw new WdkModelException(ex);
-            } catch (IllegalAccessException ex) {
-                throw new WdkModelException(ex);
+                handler = hClass.getDeclaredConstructor().newInstance();
+            }
+            catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+                IllegalArgumentException | InvocationTargetException |
+                NoSuchMethodException | SecurityException ex) {
+              throw new WdkModelException(ex);
             }
         }
     }

@@ -35,16 +35,16 @@ public class StressTemplater {
 
     public class QuestionItem {
 
-        private String questionName;
+        private String questionFullName;
         private Map<String, Set<String>> params;
 
         public QuestionItem(String questionName) {
-            this.questionName = questionName;
+            this.questionFullName = questionName;
             this.params = new LinkedHashMap<String, Set<String>>();
         }
 
         public String getQuestionName() {
-            return this.questionName;
+            return questionFullName;
         }
 
         public void addParamValue(String paramName, String paramValue) {
@@ -121,7 +121,7 @@ public class StressTemplater {
         generateTemplate(file);
     }
 
-    private void loadFromModel() throws WdkModelException {
+    private void loadFromModel() {
         // get questions
         QuestionSet[] qsets = wdkModel.getAllQuestionSets();
         for (QuestionSet qset : qsets) {
@@ -133,8 +133,8 @@ public class StressTemplater {
 
             Question[] questions = qset.getQuestions();
             for (Question question : questions) {
-                String questionName = question.getFullName();
-                QuestionItem questionItem = new QuestionItem(questionName);
+                String questionFullName = question.getFullName();
+                QuestionItem questionItem = new QuestionItem(questionFullName);
 
                 // list all params
                 Param[] params = question.getParams();
@@ -149,14 +149,14 @@ public class StressTemplater {
                         break;
                     } else { // add the param into the list
                         String paramName = param.getName();
-                        String paramValue = param.getDefault();
+                        String paramValue = param.getXmlDefault();
                         questionItem.addParamValue(paramName, paramValue);
                     }
                 }
                 // add the question only if it has some params that requires
                 // user's input
                 if (!unusable && questionItem.getParams().size() > 0)
-                    questionItems.put(questionName, questionItem);
+                    questionItems.put(questionFullName, questionItem);
             }
         }
 

@@ -1,0 +1,45 @@
+displayName: Reports
+
+get:
+  description >
+    Get a listing of available reports, and their request details.  NOT IMPLEMENTED YET.
+
+/standard:
+  post:
+  description: |
+    GET by POST.  Run a search and get a standard JSON report as a response.
+    Request includes a search configuration and a report configuration. Step and dataset parameters, if any, must have values owned by the requester.
+  body:
+    application/json:
+      type: !include ../../../schema/wdk/answer/post-request.json
+    application/x-www-form-urlencoded:
+  responses:
+    200:
+      body:
+        application/json:
+          type: !include ../../../schema/wdk/answer/post-response.json
+
+/{reportName}:
+  post:
+  description: |
+    GET by POST.  Run a search and get the specified report as a response.
+    Request includes a search configuration and a report configuration. Step and dataset parameters, if any, must have values owned by the requester.
+    
+    See the parent GET endpoint for a list of available reports and their request details.
+  responses:
+    200:
+      description: success
+
+/filter-summary:
+  /{filterName}:
+    uriParameters:
+      filterName:
+        type: string
+    post:
+      body:
+        application/json:
+      responses:
+        200:
+          description: Success
+          body:
+            application/json:

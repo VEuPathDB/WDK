@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.gusdb.wdk.model.question;
 
@@ -14,9 +14,9 @@ import org.gusdb.wdk.model.WdkModelException;
 /**
  * This class represents the @{code <question>/<attributeList>} tag. It is used
  * to define summary attribute list and sorting attribute list.
- * 
+ *
  * @author Jerric
- * 
+ *
  */
 public class AttributeList extends WdkModelBase {
 
@@ -24,7 +24,7 @@ public class AttributeList extends WdkModelBase {
   private Map<String, Boolean> sortingAttributeMap;
 
   public AttributeList() {
-    sortingAttributeMap = new LinkedHashMap<String, Boolean>();
+    sortingAttributeMap = new LinkedHashMap<>();
   }
 
   public void setSummary(String summaryList) {
@@ -51,7 +51,7 @@ public class AttributeList extends WdkModelBase {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
    */
   @Override
@@ -61,7 +61,7 @@ public class AttributeList extends WdkModelBase {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.
    * WdkModel)

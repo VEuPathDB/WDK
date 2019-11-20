@@ -1,27 +1,30 @@
 displayName: Ontologies
 
 get:
+  description: >
+  Get a listing of available ontologies.  Returns a list of ontology names.
   responses:
     200:
       description: Success
       body:
         application/json:
-          type: !include ../../../../src/main/resources/schema/wdk/ontologies/get-response.json
-          example: !include ../example/get-ontologies-200.json
+          type: !include ../../../schema/wdk/ontologies/get-response.json
 
 /{ontologyName}:
   uriParameters:
     ontologyName:
       type: string
   get:
+    description: Get the details of the specified ontology.
     responses:
       200:
         description: Sucess
         body:
           application/json:
 
-  /path:
+  /filteredOntologyTerms:
     post:
+      description:  (This should be changed to a GET.)  Get a report of ontology terms, each shown as a path indicating the term's place in the ontology tree.  The filters are key-value pairs that are applied to the Properties of each term.  Terms that match the provided filters exactly are returned.
       body:
         application/json:
       responses:

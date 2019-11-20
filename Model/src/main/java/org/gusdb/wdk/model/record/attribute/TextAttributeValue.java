@@ -8,9 +8,9 @@ import org.gusdb.wdk.model.WdkUserException;
  * field for a given record instance. It will discover the values of the column
  * attribute that are embedded in the text attribute field, and substitute them
  * into the text and display.
- * 
+ *
  * @author Jerric Gao
- * 
+ *
  */
 public class TextAttributeValue extends DerivedAttributeValue {
 

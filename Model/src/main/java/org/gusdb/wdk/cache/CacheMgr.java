@@ -11,7 +11,6 @@ import org.gusdb.fgputil.db.cache.SqlCountCache;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
-import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamNewCache;
 import org.gusdb.wdk.model.query.param.FilterParamNew.MetadataNewCache;
 import org.gusdb.wdk.model.query.param.FilterParamNew.OntologyCache;
 
@@ -36,7 +35,6 @@ public class CacheMgr {
   private final InMemoryCache<String, List<Map<String,Object>>> _attributeMetaQueryCache = new InMemoryCache<>();
   private final MetadataNewCache _metadataNewCache = new MetadataNewCache();
   private final OntologyCache _ontologyCache = new OntologyCache();
-  private final FilterParamNewCache _filterParamNewCache = new FilterParamNewCache();
   private final ManagedMap<String, AnswerRequest> _answerRequestCache = new ManagedMap<>();
 
   private final Map<String,InMemoryCache<?,?>> _cacheRepo =
@@ -45,8 +43,7 @@ public class CacheMgr {
       .put("Vocab Instance Cache", _vocabCache)
       .put("Dynamic Attribute Cache", _attributeMetaQueryCache)
       .put("FilterParamNew Metadata Cache", _metadataNewCache)
-      .put("FilterParamNew Ontology Cache", _filterParamNewCache)
-      .put("FilterParamNew Cache", _filterParamNewCache)
+      .put("FilterParamNew Ontology Cache", _ontologyCache)
       .put("AnswerRequest Cache", _answerRequestCache)
       .toMap();
 
@@ -57,7 +54,6 @@ public class CacheMgr {
   public InMemoryCache<String, List<Map<String,Object>>> getAttributeMetaQueryCache() { return _attributeMetaQueryCache; }
   public MetadataNewCache getMetadataNewCache() { return _metadataNewCache; }
   public OntologyCache getOntologyNewCache() { return _ontologyCache; }
-  public FilterParamNewCache getFilterParamNewCache() { return _filterParamNewCache; }
   public ManagedMap<String, AnswerRequest> getAnswerRequestCache() { return _answerRequestCache; }
 
   // special getter lazily populates the repo with db-specific count caches

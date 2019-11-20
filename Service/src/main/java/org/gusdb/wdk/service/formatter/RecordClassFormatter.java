@@ -1,14 +1,14 @@
 package org.gusdb.wdk.service.formatter;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.gusdb.wdk.core.api.JsonKeys;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.record.RecordClassSet;
-import org.gusdb.wdk.model.record.attribute.AttributeCategory;
 import org.gusdb.wdk.model.report.ReporterRef;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -16,7 +16,7 @@ import org.json.JSONObject;
 /**
  * Formats WDK RecordClass objects into the following form:
  * {
- *   name: String,
+ *   fullName: String,
  *   displayName: String,
  *   displayNamePlural: String,
  *   shortDisplayName: String,
@@ -36,22 +36,31 @@ import org.json.JSONObject;
  */
 public class RecordClassFormatter {
 
-  public static Collection<Object> getRecordClassesJson(RecordClassSet[] recordClassSets,
-      boolean expand) {
-    final Collection<Object> out = new ArrayList<>();
-    for (RecordClassSet rcSet : recordClassSets) {
-      for (RecordClass rc : rcSet.getRecordClasses()) {
-        out.add(expand ? getRecordClassJson(rc, true, true, true) :
-              rc.getFullName());
-      }
-    }
-    return out;
+  public static JSONArray getRecordClassNamesJson(List<RecordClass> recordClasses) {
+    return new JSONArray(recordClasses.stream()
+        .map(rc -> rc.getUrlSegment())
+        .collect(Collectors.toList()));
+  }
+
+  public static JSONArray getExpandedRecordClassesJson(
+      List<RecordClass> recordClasses, Map<String, List<Question>> rcQuestionMap) {
+    return new JSONArray(recordClasses.stream()
+        .map(rc -> getExpandedRecordClassJson(rc, rcQuestionMap))
+        .collect(Collectors.toList()));
+  }
+
+  public static JSONObject getExpandedRecordClassJson(RecordClass rc, Map<String, List<Question>> rcQuestionMap) {
+    List<Question> rcQuestions = rcQuestionMap.get(rc.getFullName());
+    JSONArray questionsJson = QuestionFormatter.getQuestionsJsonWithoutParams(rcQuestions);
+    return getRecordClassJson(rc, true, true, true).put(JsonKeys.SEARCHES, questionsJson);
   }
 
   public static JSONObject getRecordClassJson(RecordClass recordClass,
       boolean expandAttributes, boolean expandTables, boolean expandTableAttributes) {
+
+
     return new JSONObject()
-      .put(JsonKeys.NAME, recordClass.getFullName())
+      .put(JsonKeys.FULL_NAME, recordClass.getFullName())
       .put(JsonKeys.DISPLAY_NAME, recordClass.getDisplayName())
       .put(JsonKeys.DISPLAY_NAME_PLURAL, recordClass.getDisplayNamePlural())
       .put(JsonKeys.SHORT_DISPLAY_NAME, recordClass.getShortDisplayName())
@@ -69,12 +78,12 @@ public class RecordClassFormatter {
       .put(JsonKeys.PRIMARY_KEY_REFS, new JSONArray(recordClass.getPrimaryKeyDefinition().getColumnRefs()))
       .put(JsonKeys.RECORD_ID_ATTRIBUTE_NAME, recordClass.getIdAttributeField().getName())
       .put(JsonKeys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
-        recordClass.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
+          recordClass.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
       .put(JsonKeys.TABLES, TableFieldFormatter.getTablesJson(recordClass.getTableFieldMap().values(),
-        FieldScope.ALL, expandTables, expandTableAttributes))
-      .put(JsonKeys.CATEGORIES, getAttributeCategoriesJson(recordClass));
+          FieldScope.ALL, expandTables, expandTableAttributes));
   }
 
+  // TODO:  add a new field containing the JSON schema for the request
   public static JSONArray getAnswerFormatsJson(Collection<? extends ReporterRef> reporters, FieldScope scope) {
     JSONArray array = new JSONArray();
     for (ReporterRef reporter : reporters) {
@@ -90,27 +99,5 @@ public class RecordClassFormatter {
       }
     }
     return array;
-  }
-
-  private static JSONArray getAttributeCategoriesJson(RecordClass recordClass) {
-    List<AttributeCategory> categories = recordClass.getAttributeCategoryTree(FieldScope.ALL).getTopLevelCategories();
-    JSONArray attributeCategoriesJson = new JSONArray();
-    for (AttributeCategory category : categories) {
-      attributeCategoriesJson.put(getAttributeCategoryJson(category));
-    }
-    return attributeCategoriesJson;
-  }
-
-  private static JSONObject getAttributeCategoryJson(AttributeCategory category) {
-    JSONObject attributeCategoryJson = new JSONObject()
-      .put(JsonKeys.NAME,  category.getName())
-      .put(JsonKeys.DISPLAY_NAME,  category.getDisplayName())
-      .put(JsonKeys.DESCRIPTION, category.getDescription());
-    JSONArray subCategoriesJson = new JSONArray();
-    for (AttributeCategory subCategory : category.getSubCategories()) {
-      subCategoriesJson.put(getAttributeCategoryJson(subCategory));
-    }
-    attributeCategoryJson.put(JsonKeys.CATEGORIES, subCategoriesJson);
-    return attributeCategoryJson;
   }
 }

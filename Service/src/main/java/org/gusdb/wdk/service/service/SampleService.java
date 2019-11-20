@@ -30,6 +30,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/*
+ * TODO: remove this file when this branch is merged to trunk
+ */
 @Path("/sample")
 public class SampleService {
 
@@ -156,11 +159,9 @@ public class SampleService {
     ID_SEQUENCE = new AtomicLong(1);
     STATE.clear();
     int numSamples = 5;
-    JSONObject json;
     for (int i = 1; i <= numSamples; i++) {
-     json = new JSONObject();
-     json.put("value", "some value for record #" + i);
-     STATE.put(ID_SEQUENCE.getAndIncrement(), new JsonType(json));
+      var json = new JSONObject().put("value", "some value for record #" + i);
+      STATE.put(ID_SEQUENCE.getAndIncrement(), new JsonType(json));
     }
   }
 }

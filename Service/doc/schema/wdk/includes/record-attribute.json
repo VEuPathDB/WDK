@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "properties": {
+    "align": {
+      "type": "string",
+      "enum": [
+        "center",
+        "left",
+        "right"
+      ]
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "formats": {
+      "$ref": "record-reporter-array.json"
+    },
+    "help": {
+      "type": "string"
+    },
+    "isDisplayable": {
+      "type": "boolean"
+    },
+    "isInReport": {
+      "type": "boolean"
+    },
+    "isRemovable": {
+      "type": "boolean"
+    },
+    "isSortable": {
+      "type": "boolean"
+    },
+    "name": {
+      "type": "string"
+    },
+    "properties": {
+      "additionalProperties": {
+        "$ref": "../../includes/string-array.json"
+      }
+    },
+    "truncateTo": {
+      "type": "integer"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

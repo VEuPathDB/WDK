@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
@@ -8,37 +5,38 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.dataset.DatasetParserReference;
 import org.gusdb.wdk.model.dataset.ListDatasetParser;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.user.StepUtilities;
-import org.gusdb.wdk.model.user.Strategy;
-import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Dataset param represents a list of user input ids. The list is readonly, and stored in persistence
  * instance, along with other user related data.
- * 
+ *
  * A dataset param is typed, and the author has to define a recordClass as the type of the input IDs. This
  * type is required as a function for getting a snapshot of user basket and make a step from it.
- * 
+ *
  * @author xingao
- * 
+ *
  *         raw value: Dataset object;
- * 
+ *
  *         stable value: dataset id;
- * 
+ *
  *         signature: content checksum;
- * 
+ *
  *         internal data: A SQL that represents the dataset values.
- * 
+ *
  */
 public class DatasetParam extends Param {
 
@@ -92,11 +90,6 @@ public class DatasetParam extends Param {
     parserReferences = new ArrayList<>(references.values());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
-   */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
@@ -120,50 +113,47 @@ public class DatasetParam extends Param {
     }
     for(DatasetParser p : parsers.values()) {
       p.setParam(this);
-    } 
+    }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#clone()
-   */
   @Override
   public Param clone() {
     return new DatasetParam(this);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
-   */
   @Override
-  protected void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException {
-    if (extra) {
-      jsParam.put("recordClass", recordClass.getFullName());
-    }
-  }
+  protected ParamValidity validateValue(PartiallyValidatedStableValues ctxParamVals, ValidationLevel level) {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#validateValue(org.gusdb.wdk.model .user.User,
-   * java.lang.String)
-   */
-  @Override
-  protected void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException {
-    // make sure the dataset exists
-    int datasetId = Integer.parseInt(stableValue);
-    _wdkModel.getDatasetFactory().getDataset(user, datasetId);
+    final String name = getName();
+    final String stableValue = ctxParamVals.get(name);
+
+    // value must be a positive integer (representing a dataset ID)
+    if (!FormatUtil.isInteger(stableValue)) {
+      return ctxParamVals.setInvalid(name, level, "'" + stableValue + "' must be a positive integer (Dataset ID).");
+    }
+
+    // that's all the validation we perform if level is syntactic
+    if (level.equals(ValidationLevel.SYNTACTIC)) {
+      return ctxParamVals.setValid(name, level);
+    }
+
+    // otherwise, make sure the dataset exists
+    try {
+      _wdkModel.getDatasetFactory().getDatasetWithOwner(
+          Long.parseLong(stableValue), ctxParamVals.getUser().getUserId());
+    }
+    catch (WdkModelException | WdkUserException | NumberFormatException e) {
+      return ctxParamVals.setInvalid(name, level, e.getMessage());
+    }
+
+    return ctxParamVals.setValid(name, level);
   }
 
   /**
    * @return the recordClass
    */
-  public RecordClass getRecordClass() {
-    return recordClass;
+  public Optional<RecordClass> getRecordClass() {
+    return Optional.ofNullable(recordClass);
   }
 
   /**
@@ -203,26 +193,6 @@ public class DatasetParam extends Param {
     return parser;
   }
 
-  public String getTypeSubParam() {
-    return getName() + "_type";
-  }
-
-  public String getFileSubParam() {
-    return getName() + "_file";
-  }
-
-  public String getDataSubParam() {
-    return getName() + "_data";
-  }
-
-  public String getStrategySubParam() {
-    return getName() + "_strategy";
-  }
-
-  public String getParserSubParam() {
-    return getName() + "_parser";
-  }
-
   @Override
   public String getBriefRawValue(Object rawValue, int truncateLength) throws WdkModelException {
     Dataset dataset = (Dataset) rawValue;
@@ -232,20 +202,14 @@ public class DatasetParam extends Param {
     return content;
   }
 
-  public Integer getBasketCount(User user) throws WdkModelException {
-    if (recordClass == null)
-      return null;
-    Map<RecordClass, Integer> counts = _wdkModel.getBasketFactory().getBasketCounts(user);
-    return counts.get(recordClass);
-  }
-
-  public Strategy[] getStrategies(User user) throws WdkModelException {
-    if (recordClass == null)
-      return null;
-    return StepUtilities.getStrategies(user, recordClass.getFullName());
-  }
-
   public void addParserReference(DatasetParserReference reference) {
     this.parserReferences.add(reference);
+  }
+
+  @Override
+  protected String getDefault(PartiallyValidatedStableValues stableValues) throws WdkModelException {
+    // default stable value for DatasetParam is always an empty string;
+    // XML default value is used to display a default set of IDs (i.e. raw value) in the user interface
+    return "";
   }
 }

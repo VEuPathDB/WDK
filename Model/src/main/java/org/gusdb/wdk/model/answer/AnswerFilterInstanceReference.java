@@ -60,29 +60,16 @@ public class AnswerFilterInstanceReference extends WdkModelBase {
     return instance;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     // nothing to exclude
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.
-   * WdkModel)
-   */
   @Override
   public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
     // resolve the instance reference
-    this.instance = recordClass.getFilterInstance(ref);
-    if (instance == null)
-      throw new WdkModelException("Filter doesn't exist: " + ref);
+    this.instance = recordClass.getFilterInstance(ref)
+        .orElseThrow(() -> new WdkModelException("Filter doesn't exist: " + ref));
     _resolved = true;
   }
 }

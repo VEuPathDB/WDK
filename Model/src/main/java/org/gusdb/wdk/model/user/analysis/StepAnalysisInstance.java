@@ -10,14 +10,16 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
@@ -92,7 +94,7 @@ public class StepAnalysisInstance {
    * @throws WdkModelException if something goes wrong during creation
    * @throws WdkUserException if the passed values do not refer to real objects
    */
-    static StepAnalysisInstance createNewInstance(Step step, StepAnalysis stepAnalysis, String answerValueChecksum) throws WdkModelException {
+  static StepAnalysisInstance createNewInstance(Step step, StepAnalysis stepAnalysis, String answerValueChecksum) throws WdkModelException {
 
     StepAnalysisInstance ctx = new StepAnalysisInstance();
     ctx._analysisId = -1;
@@ -114,14 +116,9 @@ public class StepAnalysisInstance {
     return ctx;
   }
 
-  public static StepAnalysisInstance createFromForm(Map<String,String[]> params, StepAnalysisFactory analysisMgr)
-      throws WdkUserException, WdkModelException {
-    int analysisId = getAnalysisIdParam(params);
-    StepAnalysisInstance ctx = createFromId(analysisId, analysisMgr);
-    // overwrite old set of form params and set new values
-    ctx._formParams = new HashMap<>(params);
-    ctx._formParams.remove(ANALYSIS_ID_KEY);
-    return ctx;
+  private static String getAnswerValueHash(Step step) throws WdkModelException {
+    return !step.isRunnable() ? "" :
+      AnswerValueFactory.makeAnswer(step.getRunnable().getLeft()).getChecksum();
   }
 
   public static StepAnalysisInstance createFromId(long analysisId, StepAnalysisFactory analysisMgr)
@@ -149,8 +146,8 @@ public class StepAnalysisInstance {
       JSONObject json = new JSONObject(serializedInstance);
       ctx._step = loadStep(ctx._wdkModel, stepId, new WdkModelException("Unable " +
           "to find step (ID=" + stepId + ") defined in step analysis instance (ID=" + analysisId + ")"));
-      ctx._answerValueHash = ctx._step.getAnswerValue().getChecksum();
-      Question question = ctx._step.getQuestion();
+      ctx._answerValueHash = getAnswerValueHash(ctx._step);
+      Question question = ctx._step.getAnswerSpec().getQuestion();
       ctx._stepAnalysis = question.getStepAnalysis(json.getString(JsonKey.analysisName.name()));
 
       ctx._formParams = new LinkedHashMap<>();
@@ -202,7 +199,7 @@ public class StepAnalysisInstance {
   private static <T extends WdkException> Step loadStep(WdkModel wdkModel, long stepId,
       T wdkUserException) throws T {
     try {
-      return wdkModel.getStepFactory().getStepByValidId(stepId);
+      return wdkModel.getStepFactory().getStepByValidId(stepId, ValidationLevel.RUNNABLE);
     }
     catch (WdkModelException e) {
       throw wdkUserException;
@@ -218,17 +215,6 @@ public class StepAnalysisInstance {
       }
     }
     return newParamMap;
-  }
-
-  private static int getAnalysisIdParam(Map<String, String[]> params) throws WdkUserException {
-    String[] values = params.get(ANALYSIS_ID_KEY);
-    if (values == null || values.length != 1)
-      throw new WdkUserException("Param '" + ANALYSIS_ID_KEY + "' is required.");
-    String value = values[0];
-    int analysisId;
-    if (!FormatUtil.isInteger(value) || (analysisId = Integer.parseInt(value)) <= 0)
-      throw new WdkUserException("Parameter '" + ANALYSIS_ID_KEY + "' must be a positive integer.");
-    return analysisId;
   }
 
   /**
@@ -357,6 +343,10 @@ public String getUserNotes() {
     return _formParams;
   }
 
+  public void setFormParams(Map<String,String[]> formParams) {
+    _formParams = formParams;
+  }
+
   public ExecutionStatus getStatus() {
     return _status;
   }
@@ -412,4 +402,12 @@ public String getUserNotes() {
   public String getAccessToken() throws WdkModelException {
     return EncryptionUtil.encrypt("__" + _analysisId + _step.getStepId() + _wdkModel.getModelConfig().getSecretKey(), true);
   }
+
+  public AnswerValue getAnswerValue() throws WdkUserException, WdkModelException {
+    if (!getStep().isRunnable()) {
+      throw new WdkUserException("Cannot execute an analysis on an unrunnable step.");
+    }
+    return AnswerValueFactory.makeAnswer(getStep().getRunnable().getLeft());
+  }
+
 }

@@ -3,72 +3,89 @@ package org.gusdb.wdk.model.query.param;
 import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
+import org.gusdb.fgputil.Named.NamedObject;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
- * The param is used by Query to provide inputs to the query. Each query holds a separate copy of each param,
- * since a param can be customized on query level, or even on question level, if the query is an ID query.
- * 
- * The param values will go through a life cycle in a following way. First, we gets the value from user input
+ * Params are used by Query objects and other ParamContainers to provide inputs
+ * to the container. Each container holds a separate copy of each param, since a
+ * param can be customized at the query/container level, or even at question
+ * level, if the query is an ID query.
+ *
+ * The param values will go through a life cycle in a following way. First, we get the value from user input
  * as raw value; then it is transformed into reference value, which is used in URLs, and saved in user's
  * steps. Then when the value is used to execute a query, the user-dependent value will be transformed into
  * internal value, and is fed to the query instance.
- * 
+ *
  * If the noTranslation is set to true, the last stage of the transform will be disabled, and the
  * user-dependent value will be used as internal value.
- * 
+ *
  * You could provide your own java handler code to process the values in each stage of the life cycle of the
  * param values.
- * 
+ *
  * @author xingao
- * 
+ *
  *         There are four possible inputs to a param:
- * 
+ *
  *         raw data: the data retrieved by processQuestion action, which can be very long, and needs to be
  *         compressed.
- * 
+ *
  *         stable data: the data used in URLs and saved in user's steps.
- * 
+ *
  *         Internal data: the data used in the SQL.
- * 
+ *
  *         signature: the data used to generate checksum, which will be used to index a cache. The signature
- *         should not contain any user related information to make sure the cache can be shared between used.
- * 
+ *         should not contain any user related information to make sure the cache can be shared between users.
+ *
  *         We define the following transformations between value types:
- * 
+ *
  *         raw -> stable
- * 
+ *
  *         stable -> raw
- * 
+ *
  *         stable -> internal
- * 
+ *
  *         stable -> signature
- * 
- * 
+ *
+ *
  */
-public abstract class Param extends WdkModelBase implements Cloneable, Comparable<Param> {
+public abstract class Param extends WdkModelBase implements Cloneable, Comparable<Param>, NamedObject {
 
-  public static final String RAW_VALUE_SUFFIX = "_raw";
-  public static final String INVALID_VALUE_SUFFIX = "_invalid";
+  private static final Logger LOG = Logger.getLogger(Param.class);
+
+  public static final Level VALIDATION_LOG_PRIORITY = Level.DEBUG;
+
+  protected static final boolean EMPTY_DESPITE_ALLOWEMPTY_FALSE_IS_FATAL = false;
 
   @Override
   public abstract Param clone();
@@ -78,23 +95,27 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   protected abstract void applySuggestion(ParamSuggestion suggest);
 
   /**
-   * The input the method can be either raw data or dependent data
-   * 
-   * @param user
-   * @param rawOrDependentValue
+   * Validates the value of this parameter only.
+   * <p>
+   * This method can assume that any depended/parent params are already present
+   * in contextParamValues; if not, this may throw a WdkModelException.  If
+   * validation fails, this method should not throw an exception, but call
+   * contextParamValues.setInvalid() with its parameter name and a reason for
+   * the failure. The only way to get a ParamValidity is by calling one of the
+   * setValid() methods on contextParamValues.
+   *
+   * @param contextParamValues
+   *   partially validated stable value set
+   * @param level
+   *   level of validation
+   *
+   * @return proper param validity value
+   *
+   * @throws WdkModelException
+   *   if application error happens while trying to validate
    */
-  protected abstract void validateValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException;
-
-  /**
-   * TODO: probably want to remove this method, and methods that call it.  it seems to be consumed only by 
-   * StepBean (but no jsp or tags), and by the model cacher in fix package, which writes it to db, but never
-   * reads it
-   * @param jsParam
-   * @param extra
-   * @throws JSONException
-   */
-  protected abstract void appendChecksumJSON(JSONObject jsParam, boolean extra) throws JSONException;
+  protected abstract ParamValidity validateValue(PartiallyValidatedStableValues contextParamValues, ValidationLevel level)
+      throws WdkModelException;
 
   protected String _id;
   protected String _name;
@@ -108,8 +129,8 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   protected String _visibleHelp;
 
   // both default value and empty values will be used to construct default raw value. these values themselves
-  // are neither valid raw values nor stable values.
-  protected String _defaultValue;
+  // are neither valid raw values nor stable values.  See FIXME below in getInternalValue()
+  protected String _xmlDefaultValue;
   private String _emptyValue;
 
   // sometimes different values are desired for normal operation vs. sanity test;
@@ -125,16 +146,17 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   protected boolean _allowEmpty;
 
   protected ParamSet _paramSet;
-  private Map<String, Param> _dependentParamsMap = new HashMap<String, Param>();
-  private Set<Param> _dependentParams = new HashSet<Param>();
+  private Map<String, Param> _dependentParamsMap = new HashMap<>();
+  private Set<Param> _dependentParams = new HashSet<>();
 
   private List<ParamConfiguration> _noTranslations;
 
   /**
-   * if this flag is set to true, the internal value will be the same as dependent value. This flag is useful
-   * when the dependent value is sent to other sites to process using ProcessQuery.
+   * if this flag is set to true, the internal value will be the same as
+   * dependent value. This flag is useful when the dependent value is sent to
+   * other sites to process using ProcessQuery.
    */
-  private boolean _noTranslation = false;
+  private boolean _noTranslation;
 
   protected Question _contextQuestion;
   protected ParameterContainer _container;
@@ -147,13 +169,15 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _visible = true;
     _readonly = false;
     _group = Group.Empty();
-    _helps = new ArrayList<WdkModelText>();
-    _visibleHelps = new ArrayList<WdkModelText>();
-    _suggestions = new ArrayList<ParamSuggestion>();
-    _noTranslations = new ArrayList<ParamConfiguration>();
+    _helps = new ArrayList<>();
+    _visibleHelps = new ArrayList<>();
+    _suggestions = new ArrayList<>();
+    _noTranslations = new ArrayList<>();
     _allowEmpty = false;
-    _emptyValue = null;
-    _defaultValue = null;
+    // in most cases empty string is preferable empty value to null
+    // TODO: determine if non-null, non-empty value should be required in XML if allowEmpty=true
+    _emptyValue = "";
+    _xmlDefaultValue = null;
     _sanityDefaultValue = null;
     _handlerReferences = new ArrayList<>();
   }
@@ -165,7 +189,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _prompt = param._prompt;
     _help = param._help;
     _visibleHelp = param._visibleHelp;
-    _defaultValue = param._defaultValue;
+    _xmlDefaultValue = param._xmlDefaultValue;
     _sanityDefaultValue = param._sanityDefaultValue;
     _visible = param._visible;
     _readonly = param._readonly;
@@ -187,8 +211,8 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
       _handler = param._handler.clone(this);
     _contextQuestion = param._contextQuestion;
     _container = param._container;
-    _dependentParamsMap = new HashMap<String, Param>(param._dependentParamsMap);
-    _dependentParams = new HashSet<Param>(param._dependentParams);
+    _dependentParamsMap = new HashMap<>(param._dependentParamsMap);
+    _dependentParams = new HashSet<>(param._dependentParams);
   }
 
   @Override
@@ -203,6 +227,10 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     return _id;
   }
 
+  public String getXmlDefault() {
+    return _xmlDefaultValue;
+  }
+
   /**
    * @param id
    *          the id to set
@@ -215,6 +243,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _name = name;
   }
 
+  @Override
   public String getName() {
     return _name;
   }
@@ -223,6 +252,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _paramSet = paramSet;
   }
 
+  @Override
   public String getFullName() {
     if (_name == null) return null;
     String paramSetName = (_paramSet == null ? "<unknown_param_set>" : _paramSet.getName());
@@ -253,13 +283,11 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _help = help;
   }
 
-public void addVisibleHelp(WdkModelText visibleHelp) {
+  public void addVisibleHelp(WdkModelText visibleHelp) {
     _visibleHelps.add(visibleHelp);
   }
 
   public String getVisibleHelp() {
-		// if (visibleHelp == null)
-		// return getHelp(); //should return empty???
     return _visibleHelp;
   }
 
@@ -267,16 +295,29 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     _visibleHelp = visibleHelp;
   }
 
-  public void setDefault(String defaultValue) {
-    _defaultValue = defaultValue;
+  /**
+   * Sets and validates a default value assigned in the model XML
+   *
+   * @param xmlDefaultValue incoming default value
+   * @throws WdkModelException if incoming value is invalid
+   */
+  public void setDefault(String xmlDefaultValue) throws WdkModelException {
+    _xmlDefaultValue = xmlDefaultValue;
   }
 
   /**
+   * Determines a default value for this parameter given the passed stable
+   * values.  It can be assumed that any depended param values required for this
+   * param have already been filled in and validated.
+   *
+   * @param stableValues
+   *   depended values (guaranteed to be present and already valid)
+   *
    * @throws WdkModelException
-   *           if unable to retrieve default value
+   *   if unable to retrieve default value
    */
-  public String getDefault() throws WdkModelException {
-    return _defaultValue;
+  protected String getDefault(PartiallyValidatedStableValues stableValues) throws WdkModelException {
+    return _xmlDefaultValue;
   }
 
   public void setSanityDefault(String sanityDefaultValue) {
@@ -372,7 +413,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
       .append("  prompt='").append(_prompt).append("'").append(NL)
       .append("  help='").append(_help).append("'").append(NL)
       .append("  visibleHelp='").append(_visibleHelp).append("'").append(NL)
-      .append("  default='").append(_defaultValue).append("'").append(NL)
+      .append("  xmlDefault='").append(_xmlDefaultValue).append("'").append(NL)
       .append("  sanityDefault='").append(_sanityDefaultValue).append("'").append(NL)
       .append("  readonly=").append(_readonly).append(NL)
       .append("  visible=").append(_visible).append(NL)
@@ -383,11 +424,6 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     return buf.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
@@ -433,7 +469,7 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
               " has more than one <suggest> for project " + projectId);
 
         suggest.excludeResources(projectId);
-        _defaultValue = suggest.getDefault();
+        _xmlDefaultValue = suggest.getDefault();
         _allowEmpty = suggest.isAllowEmpty();
         _emptyValue = suggest.getEmptyValue();
 
@@ -472,14 +508,6 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     _handlerReferences = null;
   }
 
-  public JSONObject getChecksumJSON(boolean extra) throws JSONException {
-    JSONObject jsParam = new JSONObject();
-    jsParam.put("name", getFullName());
-
-    appendChecksumJSON(jsParam, extra);
-    return jsParam;
-  }
-
   /**
    * @throws WdkModelException
    *           if unable to load resources from model
@@ -491,25 +519,180 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   public String replaceSql(String sql, String internalValue) {
     String regex = "\\$\\$" + _name + "\\$\\$";
     // escape all single quotes in the value
-
-    //logger.debug("\n\nPARAM SQL:\n\n" + sql.replaceAll(regex, Matcher.quoteReplacement(internalValue)) + "\n\n");
-
     return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
   }
 
-  public void validate(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
-    // handle the empty case
-    if (stableValue == null || stableValue.isEmpty()) {
-      if (!_allowEmpty) {
-        throw new WdkModelException("The parameter '" + getPrompt() + "' does not allow empty value");
-        // otherwise, got empty value and is allowed, no need for further validation
+  private void validationLog(SupplierWithException<String> logMessage) throws WdkModelException {
+    if (LOG.isEnabledFor(VALIDATION_LOG_PRIORITY)) {
+      try {
+        LOG.log(VALIDATION_LOG_PRIORITY, "Container '" + 
+            (getContainer() == null ? "null!!" : getContainer().getFullName()) +
+            "', Param '" + getName() + "': " + logMessage.get());
+      }
+      catch (Exception e) {
+        throw WdkModelException.translateFrom(e);
       }
     }
-    else {
-      // value is not empty, the sub classes will complete further validation
-      validateValue(user, stableValue, contextParamValues);
+  }
+
+  public ParamValidity validate(PartiallyValidatedStableValues stableValues, ValidationLevel level, FillStrategy fillStrategy)
+      throws WdkModelException {
+
+    validationLog(() -> "Beginning validation at level: " + level);
+
+    // check to see if this param has already been validated at at least this level
+    if (stableValues.hasParamBeenValidated(getName()) &&
+        stableValues.getParamValidity(getName()).getLevel().isGreaterThanOrEqualTo(level)) {
+      validationLog(() -> "Already validated! isValid = " + stableValues.getParamValidity(getName()).isValid());
+      return stableValues.getParamValidity(getName());
     }
+
+    // check if value is empty but empty value allowed
+    String value = stableValues.get(getName());
+    if ((value == null || value.isEmpty()) &&
+        isAllowEmpty() &&
+        !fillStrategy.shouldFillWhenMissing()) {
+      // make sure entry present (might have been missing);
+      //  empty value will be filled in at query execution time (internal value conversion)
+      validationLog(() -> "Has empty value but this is allowed here and we are not to fill.  Marking valid.");
+      return stableValues.setValid(getName(), level);
+    }
+
+    // Determine if a default value must be generated
+    boolean defaultValueRequired =
+        stableValues.get(getName()) == null &&
+        fillStrategy.shouldFillWhenMissing();
+
+    // Determine if we will need to run dependent queries within this param
+    //   (either to generate a default or simply produce results of depended
+    //   queries.  If so, and if running dependent queries requires runnable
+    //   values of dependent params, then any depended values will need to be
+    //   validated at the runnable level.
+    boolean dependedQueriesNeedToBeRun = defaultValueRequired ||
+        level.isGreaterThanOrEqualTo(ValidationLevel.DISPLAYABLE);
+
+    // validate any parent (depended) params; if a default for this param will
+    //   be generated, then these params MUST be validated at the RUNNABLE level
+    //   so that their values can be used to run dependent queries in the params
+    //   that depend on them
+    ValidationLevel parentLevel = dependedQueriesNeedToBeRun &&
+        runningDependedQueriesRequiresRunnableParents() ?
+            ValidationLevel.RUNNABLE : level;
+    Optional<ParamValidity> invalidityResult = validateDependedParams(stableValues, level, parentLevel, fillStrategy);
+    if (invalidityResult.isPresent()) {
+      return invalidityResult.get();
+    }
+
+    // all parents passed validation; handle case where empty value is always allowed (per flag)
+    validationLog(() -> "All parents were valid; continuing with validation...");
+
+    // empty value not generally allowed; fill with default value if required
+    if (defaultValueRequired) {
+      // fill in default value; value will still be validated below (cheap because vocabs are cached)
+      validationLog(() -> "Has empty value and we are to fill with default.");
+      stableValues.put(getName(), getDefault(stableValues));
+    }
+
+    // handle cases where value is still empty after possibly being populated by a default
+    value = stableValues.get(getName()); // refresh local var
+    Optional<ParamValidity> validityOpt = handleEmptyValueCases(value, defaultValueRequired, stableValues, level);
+    if (validityOpt.isPresent()) return validityOpt.get();
+
+    // sub-classes will complete further validation
+    validationLog(() -> "Passing validation to subclass " + getClass().getSimpleName()+ "; value = " + stableValues.get(getName()));
+    ParamValidity validity = validateValue(stableValues, level);
+
+    // if valid or (invalid but we were not asked to replace with default) return
+    if (validity.isValid() || !fillStrategy.shouldFillWhenInvalid()) {
+      validationLog(() -> "Is " + (validity.isValid() ? "valid" : "invalid") + "; returning status.");
+      return validity;
+    }
+
+    // invalid and asked to replace with default; do it, then revalidate, but first, must validate parents (again)
+    invalidityResult = validateDependedParams(stableValues, level, ValidationLevel.RUNNABLE, fillStrategy);
+    if (invalidityResult.isPresent()) {
+      return invalidityResult.get();
+    }
+
+    validationLog(() -> "Value was found invalid but we were asked to fill if invalid; getting default");
+    stableValues.put(getName(), getDefault(stableValues));
+    validationLog(() -> "Got default value: " + stableValues.get(getName()) + ", checking empty value cases...");
+
+    value = stableValues.get(getName()); // refresh local var
+    validityOpt = handleEmptyValueCases(value, defaultValueRequired, stableValues, level);
+    if (validityOpt.isPresent()) return validityOpt.get();
+
+    validationLog(() -> "Default value: " + stableValues.get(getName()) + " is not empty, will now validate.");
+    ParamValidity defaultsValidity = validateValue(stableValues, level);
+
+    validationLog(() -> "Populated default value is " + (defaultsValidity.isValid() ? "valid" : "invalid") + "; returning status.");
+    return defaultsValidity;
+  }
+
+  private Optional<ParamValidity> handleEmptyValueCases(String value, boolean defaultValueRequired,
+      PartiallyValidatedStableValues stableValues, ValidationLevel level) throws WdkModelException {
+    if (value == null || value.isEmpty()) {
+      String msgPrefix = "Is still empty (defaultUsed=" + defaultValueRequired + ") ";
+      // empty value is still allowed if param is not depended on and validation level is displayable or less
+      if (level.isLessThanOrEqualTo(ValidationLevel.DISPLAYABLE) && getDependentParams().isEmpty()) {
+        validationLog(() -> msgPrefix + "but allowed due to validation level.");
+        return Optional.of(stableValues.setValid(getName(), level));
+      }
+      if (isAllowEmpty()) {
+        validationLog(() -> msgPrefix + "but allowed because allowEmpty=true");
+        return Optional.of(stableValues.setValid(getName(), level));
+      }
+      else {
+        validationLog(() -> msgPrefix + "and cannot be empty; marking invalid.");
+        return Optional.of(stableValues.setInvalid(getName(), level, "Cannot be empty" +
+            (defaultValueRequired ? ", but no default value exists." : ".")));
+      }
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * @return true if the generation of this param's initial display value
+   * requires that its depended params have runnably valid values.  Typically
+   * this method will return false unless this param needs to run vocabulary
+   * queries in order to generate its initial display value
+   */
+  protected boolean runningDependedQueriesRequiresRunnableParents() {
+    return false;
+  }
+
+  private Optional<ParamValidity> validateDependedParams(
+      PartiallyValidatedStableValues stableValues, ValidationLevel level, ValidationLevel parentLevel, FillStrategy fillStrategy) throws WdkModelException {
+    Set<Param> dependedParams = getDependedParams();
+    validationLog(() -> "Checking " + dependedParams.size() + " depended params, will use validation level: " + parentLevel);
+    Map<String, String> dependedParamValidationErrors = new HashMap<>();
+    for (Param parent : dependedParams) {
+      validationLog(() -> "Found depended param " + parent.getName() + ", will validate it first...");
+      parent.validate(stableValues, parentLevel, fillStrategy);
+      validationLog(() -> "Back from parent validation.  Was " + parent.getName() + " valid? " + stableValues.isParamValid(parent.getName()));
+      if (!stableValues.isParamValid(parent.getName())) {
+        dependedParamValidationErrors.put(parent.getName(), stableValues.getParamValidity(parent.getName()).getMessage());
+        // continue to validate parents so caller has most complete information
+      }
+    }
+
+    if (!dependedParamValidationErrors.isEmpty()) {
+      // this param fails validation because its parents failed
+      validationLog(() -> "Not all parents were valid so marking invalid.");
+      return Optional.of(stableValues.setInvalid(getName(), level,
+          "At least one parameter that '" + getName() + "' depends on is invalid or missing. Errors: " + NL +
+          FormatUtil.prettyPrint(dependedParamValidationErrors, Style.MULTI_LINE)));
+    }
+
+    return Optional.empty();
+  }
+
+  /**
+   * Returns list of parameters this parameter depends on.  AbstractDependentParam overrides this
+   * method to return any depended params for dependent params.
+   */
+  public Set<Param> getDependedParams() {
+    return Collections.emptySet();
   }
 
   public void addNoTranslation(ParamConfiguration noTranslation) {
@@ -528,8 +711,8 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
    * Set the question where the param is used. The params in a question are always cloned when question is
    * initialized, therefore, each param object will refer to one question uniquely.
    * 
-   * @param question
-   * @throws WdkModelException
+   * @throws WdkModelException if error occurs assigning values related to the
+   * passed question
    */
   public void setContextQuestion(Question question) throws WdkModelException {
     _contextQuestion = question;
@@ -554,74 +737,50 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
 
   /**
    * Transform raw param value into stable value.
-   * 
-   * @param user
-   * @param rawValue
-   * @param contextParamValues
-   * @return
-   * @throws WdkUserException
-   * @throws WdkModelException
    */
   public String toStableValue(User user, Object rawValue)
       throws WdkModelException, WdkUserException {
     return _handler.toStableValue(user, rawValue);
   }
 
-  public String getStableValue(User user, RequestParams requestParams) throws WdkUserException,
-      WdkModelException {
-    return _handler.getStableValue(user, requestParams);
-  }
-
   /**
-   * Transform stable param value back to raw value;
-   * 
-   * @param user
-   * @param stableValue
-   * @param contextParamValues
-   * @return
-   * @throws WdkUserException
-   * @throws WdkModelException
+   * Transform stable param value into internal value. The noTranslation and
+   * quote flags should be handled by the plugin.
+   *
+   * @return internal value to be used to create query SQL
    */
-  public Object getRawValue(User user, String stableValue)
+  public String getInternalValue(RunnableObj<QueryInstanceSpec> queryInstanceSpec)
       throws WdkModelException {
-    return _handler.toRawValue(user, stableValue);
+    String stableValue = queryInstanceSpec.get().get(getName());
+    if ((stableValue == null || stableValue.isEmpty()) && isAllowEmpty()) {
+      // FIXME: RRD: need to determine if getEmptyValue really returns a stable
+      //             value or internal.  In another place (forget where- maybe
+      //             QueryInstance?) we seem to be popping the empty value in at
+      //             the last moment as an internal value during param
+      //             population (right before query execution).  Need to
+      //             discuss with DD.  For now return as if it is an internal value.
+      return getEmptyValue();
+    }
+    LOG.debug("\n  PARAM: " + getName() + "\n  QIS: " + queryInstanceSpec.get());
+    return _handler.toInternalValue(queryInstanceSpec);
   }
 
   /**
-   * Transform stable param value into internal value. The noTranslation and quote flags should be handled by
-   * the plugin.
-   * 
-   * @param user
-   * @param stableValue
-   *          if the value is empty, and if empty is allow, the assigned empty value will be used as stable
-   *          value to be transformed into the internal.
-   * @param contextParamValues
-   * @return
-   * @throws WdkUserException
+   * Creates and returns a signature representing the current value of this
+   * param
+   *
+   * @param spec
+   *   context (used by some handler subclasses)
+   *
+   * @return param value signature
+   *
    * @throws WdkModelException
+   *   if unable to create signature
    */
-  public String getInternalValue(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
-    if (stableValue == null || stableValue.length() == 0)
-      if (isAllowEmpty())
-        stableValue = getEmptyValue();
-
-    return _handler.toInternalValue(user, stableValue, contextParamValues);
-  }
-
-  /**
-   * 
-   * @param user
-   * @param stableValue
-   * @param contextParamValues context (used by some subclasses)
-   * @return
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
-  public String getSignature(User user, String stableValue, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
-    if (stableValue == null) return "";
-    return _handler.toSignature(user, stableValue, contextParamValues);
+  public String getSignature(RunnableObj<QueryInstanceSpec> spec)
+      throws WdkModelException {
+    String stableValue = spec.get().get(getName());
+    return stableValue == null ? "" : _handler.toSignature(spec);
   }
 
   @Override
@@ -638,10 +797,12 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
       try {
         Class<? extends ParamHandler> handlerClass = Class.forName(_handlerReference.getImplementation()).asSubclass(
             ParamHandler.class);
-        _handler = handlerClass.newInstance();
+        _handler = handlerClass.getDeclaredConstructor().newInstance();
         _handler.setProperties(_handlerReference.getProperties());
       }
-      catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+      catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+          IllegalArgumentException | InvocationTargetException |
+          NoSuchMethodException | SecurityException ex) {
         throw new WdkModelException(ex);
       }
       _handlerReference = null;
@@ -655,17 +816,6 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
     _handler.setWdkModel(wdkModel);
   }
 
-  public Set<String> getAllValues() throws WdkModelException {
-    Set<String> values = new LinkedHashSet<>();
-    values.add(getDefault());
-    return values;
-  }
-
-  public void prepareDisplay(User user, RequestParams requestParams, Map<String, String> contextParamValues)
-      throws WdkModelException, WdkUserException {
-    _handler.prepareDisplay(user, requestParams, contextParamValues);
-  }
-
   public final void printDependency(PrintWriter writer, String indent) throws WdkModelException {
     writer.println(indent + "<" + getClass().getSimpleName() + " name=\"" + getFullName() + "\">");
     printDependencyContent(writer, indent + WdkModel.INDENT);
@@ -673,25 +823,24 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   }
 
   /**
-   * @param writer
-   * @param indent
-   * @throws WdkModelException if unable to print dependency content 
+   * @param writer location to which dependencies should be written
+   * @param indent how much to indent at this "level"
+   * @throws WdkModelException if unable to print dependency content
    */
   protected void printDependencyContent(PrintWriter writer, String indent) throws WdkModelException {
     // by default, print nothing
   }
-  
+
   public void addHandler(ParamHandlerReference handlerReference) {
     _handlerReferences.add(handlerReference);
   }
-  
-  public String getDisplayValue(User user, String stableValue, Map<String, String> contextParamValues) throws WdkModelException {
-    return _handler.getDisplayValue(user, stableValue, contextParamValues);
+
+  public String getDisplayValue(QueryInstanceSpec paramValueSet) throws WdkModelException {
+    return _handler.getDisplayValue(paramValueSet);
   }
-  
+
   /**
    * Backlink to dependent params, set by dependent params.
-   * @param param
    */
   public void addDependentParam(Param param) {
     if (!_dependentParamsMap.containsKey(param.getName())) {
@@ -705,54 +854,62 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   }
 
   public Set<Param> getAllDependentParams() {
-    Set<Param> answer = new HashSet<Param>();
-    answer.addAll(_dependentParams);
-    for (Param dependent : _dependentParams) {
+    var answer = new HashSet<>(_dependentParams);
+    for (var dependent : _dependentParams)
       answer.addAll(dependent.getAllDependentParams());
-    }
     return answer;
   }
-  
+
   /**
-   * By default, params are not dependent, and so do not become stale.  must be overridden by dependent params
-   * The definition of stale is: given a possible changes in values of the depended params provided on input,
-   * this param is stale if a previous value for it might no longer be valid
+   * By default, params are not dependent, and so do not become stale.  It must
+   * be overridden by possibly dependent params.  The definition of stale is:
+   * given a possible changes in values of the depended params provided on
+   * input, this param is stale if a previous value for it might no longer be
+   * valid, e.g. vocabulary of acceptable values has changed.
+   * <p>
+   * This is more nuanced than simply asking if a depended param is in the
+   * passed list. Sometimes declare a dependency on a param for reasons other
+   * than vocabulary generation (e.g. internal value generation).
    * 
-   * @param staleDependedParamsFullNames
-   * @return
+   * @param staleDependedParamsFullNames a set of stale depended params used
+   * to inform logic deciding if this param's value is also stale
    */
   public boolean isStale(Set<String> staleDependedParamsFullNames) {
     return false;
   }
-  
+
   public Set<Param> getStaleDependentParams() {
-    Set<String> ss = new HashSet<String>();
+    Set<String> ss = new HashSet<>();
     ss.add(getFullName());
     return getStaleDependentParams(ss);
   }
 
-
   /**
-   * 
-   * given an input list of changed or stale params, return a list of (recursively) dependent params that
-   * are stale as a consequence. 
-   * @param staleDependedParamsFullNames the names of depended params whose value has changed, either directly or
-   * because they are stale.  
+   * given an input list of changed or stale params, return a list of
+   * (recursively) dependent params that are stale as a consequence.
+   *
+   * @param staleDependedParamNames
+   *   the names of depended params whose value has changed, either directly or
+   *   because they are stale.
+   *
    * @return a list of stale dependent params
    */
-  private Set<Param> getStaleDependentParams(Set<String> staleDependedParamsFullNames) {
+  private Set<Param> getStaleDependentParams(Set<String> staleDependedParamNames) {
 
-    Set<Param> staleDependentParams = new HashSet<Param>(); // return value
+    Set<Param> staleDependentParams = new HashSet<>(); // return value
 
     for (Param dependentParam : getDependentParams()) {
 
-      // if dependent param is stale, add it to stale depended list and recurse to find kids' stale dependents (unless already visited)
-      if (!staleDependedParamsFullNames.contains(dependentParam.getName()) && dependentParam.isStale(staleDependedParamsFullNames)) {
+      // if dependent param is stale, add it to stale depended list and recurse
+      // to find kids' stale dependents (unless already visited)
+      if (!staleDependedParamNames.contains(dependentParam.getName())
+        && dependentParam.isStale(staleDependedParamNames)) {
 
         staleDependentParams.add(dependentParam);
 
-        Set<String> newStaleDependedParams = new HashSet<String>(staleDependedParamsFullNames);
-        newStaleDependedParams.add(dependentParam.getFullName());
+        Set<String> newStaleDependedParams = new HashSet<>(
+            staleDependedParamNames);
+        newStaleDependedParams.add(getFullName());
 
         staleDependentParams.addAll(dependentParam.getStaleDependentParams(newStaleDependedParams));
       }
@@ -767,5 +924,42 @@ public void addVisibleHelp(WdkModelText visibleHelp) {
   @Override
   public int compareTo(Param other) {
     return this.getFullName().compareTo(other.getFullName());
+  }
+
+  /**
+   * @throws WdkModelException if depended param refs cannot be resolved
+   */
+  public void resolveDependedParamRefs() throws WdkModelException {
+    // nothing to do for most params; overridden by AbstractDependentParam
+  }
+
+  /**
+   * @throws WdkModelException
+   *   if is depended and default value conflicts with allowEmpty setting
+   */
+  public void checkAllowEmptyVsEmptyDefault() throws WdkModelException {
+    // make sure empty param value is either valid or does not happen
+    if (isInvalidEmptyDepended()) {
+      String containerName = getContainer() == null
+        ? "unknown"
+        : getContainer().getFullName();
+      String msg = "Default value for param '" + getFullName() +
+          "' in question '" + containerName + "' cannot be valid " +
+          "since the default value is empty but allowEmpty is false and " +
+          "the param is depended on by " + getDependentParams().stream()
+          .map(NamedObject::getName).collect(Collectors.joining(", "));
+      if (EMPTY_DESPITE_ALLOWEMPTY_FALSE_IS_FATAL) {
+        throw new WdkModelException(msg);
+      }
+      else {
+        LOG.warn(msg);
+      }
+    }
+  }
+
+  protected boolean isInvalidEmptyDepended() {
+    return !getDependentParams().isEmpty()
+      && (_xmlDefaultValue == null || _xmlDefaultValue.isEmpty())
+      && !_allowEmpty;
   }
 }

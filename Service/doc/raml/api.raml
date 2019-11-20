@@ -11,12 +11,7 @@ baseUri: //{siteUrl}/{webApp}/service
         description: success response
         body:
           application/json:
-            type: !include ../../src/main/resources/schema/wdk/get-response.json
-            example: !include ./includes/example/get-service-200.json
-
-/answer: !include ./includes/raml/answer-api.raml
-
-/api: !include ./includes/raml/api-api.raml
+            type: !include ../schema/wdk/get-response.json
 
 /client-errors: !include ./includes/raml/client-errors-api.raml
 
@@ -49,8 +44,10 @@ baseUri: //{siteUrl}/{webApp}/service
 
 /oauth: !include ./includes/raml/oauth-api.raml
 /ontologies: !include ./includes/raml/ontologies-api.raml
-/question: !include ./includes/raml/question-api.raml
-/records: !include ./includes/raml/record-api.raml
+/record-types: !include ./includes/raml/record-types-api.raml
+/record-types/{record-type}/searches: !include ./includes/raml/searches-api.raml
+/record-types/{record-type}/searches/{search-name}/reports: !include ./includes/raml/reports-api.raml
+
 /strategy: !include ./includes/raml/strategy-api.raml
 /strategy-list: !include ./includes/raml/strategy-list-api.raml
 /system: !include ./includes/raml/system-api.raml
@@ -70,21 +67,19 @@ baseUri: //{siteUrl}/{webApp}/service
   post:
     description: |
       Accepts an array of email addresses and attempts to locate the user ids
-      (if any) associated with them.  Retuns an array of objects containing a
+      (if any) associated with them.  Returns an array of objects containing a
       single email as a key mapped to the matching user id.
 
       If an email address is not in the system, it will be excluded from the
       output list.
     body:
       application/json:
-        type: !include ../../src/main/resources/schema/wdk/user-id-query/post-request.json
-        example: !include ./includes/example/post-user-id-query-input.json
+        type: !include ../schema/wdk/user-id-query/post-request.json
     responses:
       200:
         body:
           application/json:
-            type: !include ../../src/main/resources/schema/wdk/user-id-query/post-response.json
-            example: !include ./includes/example/post-user-id-query-200.json
+            type: !include ../schema/wdk/user-id-query/post-response.json
 
 /user-password-reset:
   displayName: User Password Reset
@@ -92,8 +87,7 @@ baseUri: //{siteUrl}/{webApp}/service
     description: Reset a user's password.
     body:
       application/json:
-        type: !include ../../src/main/resources/schema/wdk/user-password-reset/post-request.json
-        example: !include ./includes/example/post-user-password-reset-input.json
+        type: !include ../schema/wdk/user-password-reset/post-request.json
     responses:
       204:
 
@@ -105,6 +99,6 @@ baseUri: //{siteUrl}/{webApp}/service
         description: Success
         body:
           application/json:
-            example: !include ./includes/example/get-user-datasets-config-200.json
 
 /users: !include ./includes/raml/users-api.raml
+

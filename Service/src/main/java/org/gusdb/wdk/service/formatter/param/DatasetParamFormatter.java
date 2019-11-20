@@ -1,12 +1,13 @@
 package org.gusdb.wdk.service.formatter.param;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dataset.DatasetParser;
 import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public class DatasetParamFormatter extends ParamFormatter<DatasetParam> {
@@ -16,11 +17,11 @@ public class DatasetParamFormatter extends ParamFormatter<DatasetParam> {
   }
 
   @Override
-  public JSONObject getJson() throws JSONException, WdkModelException, WdkUserException {
-
-    JSONObject pJson = super.getJson();
+  public <S extends ParameterContainerInstanceSpec<S>> JSONObject getJson(DisplayablyValid<S> spec) throws WdkModelException {
+    JSONObject pJson = getBaseJson(spec);
     JSONArray parsersJson = new JSONArray();
-    pJson.put(JsonKeys.DEFAULT_ID_LIST, _param.getDefault());
+    pJson.put(JsonKeys.DEFAULT_ID_LIST, _param.getXmlDefault());
+    pJson.put(JsonKeys.RECORD_CLASS_NAME, _param.getRecordClass().map(RecordClass::getUrlSegment).orElse(null));
     pJson.put(JsonKeys.PARSERS, parsersJson);
     for (DatasetParser parser : _param.getParsers()) {
       JSONObject parserJson = new JSONObject();
@@ -33,8 +34,8 @@ public class DatasetParamFormatter extends ParamFormatter<DatasetParam> {
   }
 
   @Override
-  public String getDefault() throws WdkModelException {
-    return null;
+  public String getParamType() {
+    return JsonKeys.DATASET_PARAM_TYPE;
   }
 
 }

@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -33,7 +32,7 @@ public class SingleAttributeRecordStream implements RecordStream {
   public SingleAttributeRecordStream(
       AnswerValue answerValue,
       Collection<AttributeField> requestedFields
-  ) throws WdkModelException, WdkUserException {
+  ) throws WdkModelException {
     _answerValue = answerValue;
     _requiredFields = trimNonQueryAttrs(FileBasedRecordStream.getRequiredColumnAttributeFields(requestedFields, true));
     Query attributeQuery = getAttributeQuery(_requiredFields);
@@ -42,7 +41,7 @@ public class SingleAttributeRecordStream implements RecordStream {
         ? (performSort ? _answerValue.getSortedIdSql() : _answerValue.getIdSql())
         : AnswerValue.wrapToReturnOnlyPkAndSelectedCols(
             _answerValue.getFilteredAttributeSql(attributeQuery, performSort),
-            _answerValue.getQuestion().getRecordClass(), _requiredFields);
+            _answerValue.getAnswerSpec().getQuestion().getRecordClass(), _requiredFields);
   }
 
   private static List<QueryColumnAttributeField> trimNonQueryAttrs(Collection<ColumnAttributeField> attributes) {

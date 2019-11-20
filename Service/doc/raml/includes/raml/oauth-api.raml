@@ -2,6 +2,13 @@ displayName: OAuth
 
 /state-token:
   get:
+    description: >
+      Create an anti-forgery state token, add to the session, and return.  This is
+      requested by the client when the user tries to log in using an OAuth2
+      server.  The value generated will be used to check the state token passed
+      to the oauth processing action.  They must match for the login to succeed.
+      A new value is generated each time.  All but one of "overlapping" login
+      attempts by the same user will thus fail.
     responses: 
       200:
         description: Success

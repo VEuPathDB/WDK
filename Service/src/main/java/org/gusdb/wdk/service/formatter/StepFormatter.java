@@ -1,15 +1,23 @@
 package org.gusdb.wdk.service.formatter;
 
+import static org.gusdb.wdk.service.formatter.ValidationFormatter.getValidationBundleJson;
+
+import java.util.Set;
+
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * Formats WDK Step objects.  Step JSON will have the following form:
+ * <pre>
  * {
  *   id: Number,
  *   displayName: String,
@@ -23,10 +31,32 @@ import org.json.JSONObject;
  *   strategyId: Number (ID of containing strategy),
  *   estimatedSize: Number (last known number of results),
  *   hasCompleteStepAnalyses: Boolean,
- *   recordClass: String (RecordClass full name),
- *   answerSpecComplete: boolean (false for unattached steps)
- *   answerSpec: see AnswerRequest (input and output formats are the same)
+ *   recordClassName: String (RecordClass full name),
+ *   searchName: String (Question's full name),
+ *   searchConfig: {
+ *     parameters: Object,
+ *     filters: Array,
+ *     viewFilters: Array,
+ *     columnFilters: Map<String,Map<String,Array<Object>>
+ *     legacyFilter: String,
+ *     wdkWeight: Number
+ *   },
+ *   validation: {
+ *     level: enum[ValidationLevel],
+ *     isValid: boolean,
+ *     errors: {
+ *       general: Array&lt;String&gt;,
+ *       byKey: Object
+ *     }
+ *   },
+ *   displayPrefs: {
+ *     columnSelection: Array&lt;String&gt;,
+ *     sortColumns: {
+ *       [String]: enum[SortDirection]
+ *     }
+ *   }
  * }
+ * </pre>
  *
  * @author rdoherty
  */
@@ -40,52 +70,64 @@ public class StepFormatter {
         .put(JsonKeys.SHORT_DISPLAY_NAME, step.getShortDisplayName())
         .put(JsonKeys.CUSTOM_NAME, step.getCustomName())
         .put(JsonKeys.BASE_CUSTOM_NAME, step.getBaseCustomName())
-        .put(JsonKeys.IS_COLLAPSIBLE, step.isCollapsible())
-        .put(JsonKeys.COLLAPSED_NAME, step.getCollapsedName())
+        .put(JsonKeys.IS_EXPANDED, step.isExpanded())
+        .put(JsonKeys.EXPANDED_NAME, step.getExpandedName())
+        .put(JsonKeys.IS_FILTERED, step.isFiltered())
         .put(JsonKeys.DESCRIPTION, step.getDescription())
         .put(JsonKeys.OWNER_ID, step.getUser().getUserId())
-        .put(JsonKeys.STRATEGY_ID, JsonUtil.convertNulls(step.getStrategyId()))
+        .put(JsonKeys.STRATEGY_ID, JsonUtil.convertNulls(step.getStrategyId().orElse(null)))
         .put(JsonKeys.HAS_COMPLETE_STEP_ANALYSES, step.getHasCompleteAnalyses())
-        .put(JsonKeys.RECORD_CLASS_NAME, step.getType())
-        .put(JsonKeys.IS_ANSWER_SPEC_COMPLETE, step.isAnswerSpecComplete())
-        // FIXME: call AnswerSpecFactory.createFromStep() and pass to formatter;
-        //    to do so, must extract JSON formatting from Step and other classes
-        .put(JsonKeys.ANSWER_SPEC, createAnswerSpec(step))
-        .put(JsonKeys.IS_VALID, step.isValid())
-        .put(JsonKeys.CREATED_TIME, step.getCreatedTime())
-        .put(JsonKeys.LAST_RUN_TIME, step.getLastRunTime())
-
-        // DISPLAY PREFS
-        .put("displayPrefs", step.getDisplayPrefs());
-
-    }
-    catch (JSONException e) {
+        .put(JsonKeys.RECORD_CLASS_NAME, step.getRecordClass().map(RecordClass::getUrlSegment).orElse(null))
+        .put(JsonKeys.SEARCH_NAME, getQuestionUrlSegment(step.getAnswerSpec()))
+        .put(JsonKeys.SEARCH_CONFIG, AnswerSpecServiceFormat.format(step.getAnswerSpec()))
+        .put(JsonKeys.VALIDATION, getValidationBundleJson(step.getValidationBundle()))
+        .put(JsonKeys.CREATED_TIME, FormatUtil.formatDateTime(step.getCreatedTime()))
+        .put(JsonKeys.LAST_RUN_TIME, FormatUtil.formatDateTime(step.getLastRunTime()))
+        .put(JsonKeys.DISPLAY_PREFERENCES, JsonUtil.toJSONObject(step.getDisplayPrefs())
+            .valueOrElseThrow(e -> new WdkModelException(e)));
+    } catch (JSONException e) {
       throw new WdkModelException("Unable to convert Step to service JSON", e);
     }
   }
 
-  public static JSONObject getStepJsonWithCalculatedEstimateValue(Step step) throws WdkModelException {
-    return getStepJson(step)
-        .put(JsonKeys.ESTIMATED_SIZE, step.calculateEstimateSize());
+  private static String getQuestionUrlSegment(AnswerSpec answerSpec) {
+    return answerSpec.hasValidQuestion() ? answerSpec.getQuestion().getName() :
+      answerSpec.getQuestionName().substring(answerSpec.getQuestionName().indexOf('.') + 1);
   }
 
-  public static JSONObject getStepJsonWithRawEstimateValue(Step step) throws WdkModelException {
-    return getStepJson(step)
-        .put(JsonKeys.ESTIMATED_SIZE, step.getRawEstimateSize());
+  public static JSONObject getStepJsonWithResultSize(Step step) throws WdkModelException {
+    return getStepJson(step).put(
+        JsonKeys.ESTIMATED_SIZE,
+        translateEstimatedSize(step.getResultSize()));
   }
 
-  // FIXME: this method should convert AnswerSpec -> JSONObject
-  private static JSONObject createAnswerSpec(Step step) {
-    JSONObject json = new JSONObject()
-      .put(JsonKeys.QUESTION_NAME, step.getQuestionName())
-      .put(JsonKeys.PARAMETERS, step.getParamsJSON())
-      .put(JsonKeys.FILTERS, JsonUtil.getOrEmptyArray(step.getFilterOptionsJSON()))
-      .put(JsonKeys.VIEW_FILTERS, JsonUtil.getOrEmptyArray(step.getViewFilterOptionsJSON()))
-      .put(JsonKeys.WDK_WEIGHT, step.getAssignedWeight());
-    AnswerFilterInstance legacyFilter = step.getFilter();
-    if (legacyFilter != null) {
-      json.put(JsonKeys.LEGACY_FILTER_NAME, legacyFilter.getName());
-    }
-    return json;
+  public static JSONObject getStepJsonWithEstimatedSize(Step step) throws WdkModelException {
+    return getStepJson(step).put(
+        JsonKeys.ESTIMATED_SIZE,
+        translateEstimatedSize(step.getEstimatedSize()));
+  }
+
+  // NOTE: returning null here means the actuall property will be omitted due to JSONObject's API
+  public static Integer translateEstimatedSize(Integer estimatedSize) {
+    return estimatedSize == null || estimatedSize < 0 ? null : estimatedSize;
+  }
+
+  /**
+   * recursively build a step tree (IDs only) based on the provided step
+   * @param step include this step and its children in the tree
+   * @param accumulatedSteps a set to accumulate Steps included in the tree.  in initial call, should be empty
+   * @return
+   */
+  public static JSONObject formatAsStepTree(Step step, Set<Step> accumulatedSteps) {
+    accumulatedSteps.add(step);
+    final JSONObject out = new JSONObject()
+      .put(JsonKeys.STEP_ID, step.getStepId());
+
+    step.getPrimaryInputStep()
+      .ifPresent(s -> out.put(JsonKeys.PRIMARY_INPUT_STEP, formatAsStepTree(s, accumulatedSteps)));
+    step.getSecondaryInputStep()
+      .ifPresent(s -> out.put(JsonKeys.SECONDARY_INPUT_STEP, formatAsStepTree(s, accumulatedSteps)));
+
+    return out;
   }
 }

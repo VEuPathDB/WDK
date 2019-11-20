@@ -58,10 +58,10 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
   }
 
   @Override
-  public void setProperties(ReporterRef reporterRef) throws WdkModelException {
+  public void setProperties(ReporterInfo reporterRef) throws WdkModelException {
     if (!(reporterRef instanceof AttributeReporterRef)) {
       // this should never happen
-      throw new WdkModelException("Reporter ref passed to AbstractAttributeReporter is not an AttributeReporterRef");
+      throw new WdkModelException("Reporter ref passed to AbstractAttributeReporter is not an AttributeReporterRef!");
     }
     super.setProperties(reporterRef);
     _attributeField = ((AttributeReporterRef)reporterRef).getAttributeField();
@@ -71,14 +71,14 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
     return _attributeField;
   }
 
-  protected String getAttributeSql(AnswerValue answerValue) throws WdkModelException, WdkUserException {
-    WdkModel wdkModel = answerValue.getQuestion().getRecordClass().getWdkModel();
+  protected String getAttributeSql(AnswerValue answerValue) throws WdkModelException {
+    WdkModel wdkModel = answerValue.getAnswerSpec().getQuestion().getRecordClass().getWdkModel();
 
     // format the display of the attribute in sql
     Map<String, String> queries = new LinkedHashMap<String, String>();
     String column = formatColumn(answerValue, _attributeField, queries);
 
-    RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+    RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     String idSql = answerValue.getIdSql();
 
@@ -113,7 +113,7 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
 
     return sql.toString();
   }
-  
+
   private String formatColumn(AnswerValue answerValue, AttributeField attribute,
       Map<String, String> queries) throws WdkModelException {
 
@@ -149,7 +149,7 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
     // replace each attribute in the content
     StringBuilder builder = new StringBuilder("'");
     int pos = 0;
-    Map<String, AttributeField> fields = answerValue.getQuestion().getAttributeFieldMap();
+    Map<String, AttributeField> fields = answerValue.getAnswerSpec().getQuestion().getAttributeFieldMap();
     Matcher matcher = DerivedAttributeField.MACRO_PATTERN.matcher(content);
     while (matcher.find()) {
       String fieldName = matcher.group(1);
@@ -169,13 +169,13 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
   /**
    * @return the values of the associated attribute. the key of the map is the
    *         primary key of a record instance.
-   * @throws WdkUserException 
+   * @throws WdkUserException
    */
   protected Map<PrimaryKeyValue, Object> getAttributeValues(AnswerValue answerValue)
       throws WdkModelException, SQLException, WdkUserException {
-    WdkModel wdkModel = answerValue.getQuestion().getRecordClass().getWdkModel();
+    WdkModel wdkModel = answerValue.getWdkModel();
     Map<PrimaryKeyValue, Object> values = new LinkedHashMap<>();
-    RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+    RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
     PrimaryKeyDefinition pkDef = recordClass.getPrimaryKeyDefinition();
     String[] pkColumns = pkDef.getColumnRefs();
     String sql = getAttributeSql(answerValue);
@@ -183,7 +183,7 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
     ResultSet resultSet = null;
     try {
       resultSet = SqlUtils.executeQuery(dataSource, sql,
-          answerValue.getQuestion().getQuery().getFullName()
+          answerValue.getAnswerSpec().getQuestion().getQuery().getFullName()
               + "__attribute-plugin-combined", 5000);
       while (resultSet.next()) {
         Map<String, Object> pkValues = new LinkedHashMap<String, Object>();

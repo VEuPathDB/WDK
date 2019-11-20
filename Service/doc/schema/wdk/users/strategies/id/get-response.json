@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "definitions": {
+    "step": {
+      "type": "object",
+      "properties": {
+        "stepId": {
+          "type": "integer"
+        },
+        "primaryInput": {
+          "$ref": "#/definitions/step"
+        },
+        "secondaryInput": {
+          "$ref": "#/definitions/step"
+        }
+      },
+      "required": [
+          "stepId"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    { "$ref": "../../../includes/strategy-no-step-tree.json" },
+    {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "stepTree": {
+          "$ref": "#/definitions/step"
+        },
+        "steps": {
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+            "^[0-9]+$": {
+              "$ref": "../../steps/id/get-response.json"
+            }
+          }
+        }
+      },
+      "required": [
+        "stepTree",
+        "steps"
+      ]
+    }
+  ]
+}

@@ -28,29 +28,21 @@ public class WdkModelException extends WdkException {
     super(cause);
   }
 
-  public static void unwrap(Exception e) throws WdkModelException {
+  public static WdkModelException translateFrom(Exception e) {
+    return translateFrom(e, e.getMessage());
+  }
+
+  public static WdkModelException translateFrom(Exception e, String newMessage) {
     Throwable t = (e.getCause() != null ? e.getCause() : e);
-    throw (t instanceof WdkModelException ? (WdkModelException)t : new WdkModelException(t));
+    return (t instanceof WdkModelException ? (WdkModelException)t : new WdkModelException(newMessage, t));
   }
 
-  public static void unwrap(Exception e, String newMessage) throws WdkModelException {
-    Throwable t = (e.getCause() != null ? e.getCause() : e);
-    throw (t instanceof WdkModelException ? (WdkModelException)t : new WdkModelException(newMessage, t));
+  public static <T> T unwrap(Exception e) throws WdkModelException {
+    throw translateFrom(e, e.getMessage());
   }
 
-  /**
-   * @param returnClass class this method returns
-   */
-  public static <T> T unwrap(Exception e, Class<T> returnClass) throws WdkModelException {
-    unwrap(e);
-    return null;
+  public static <T> T unwrap(Exception e, String newMessage) throws WdkModelException {
+    throw translateFrom(e, newMessage);
   }
 
-  /**
-   * @param returnClass class this method returns
-   */
-  public static <T> T unwrap(Exception e, String newMessage, Class<T> returnClass) throws WdkModelException {
-    unwrap(e, newMessage);
-    return null;
-  }
 }

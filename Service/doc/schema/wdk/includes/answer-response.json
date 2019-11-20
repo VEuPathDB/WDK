@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "records": {
+      "type": "array",
+      "items": {
+        "$ref": "record_instance-response.json"
+      }
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "recordClassName": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer"
+        },
+        "responseCount": {
+          "type": "integer"
+        },
+        "tables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "tables",
+        "meta"
+      ]
+    }
+  },
+  "required": [
+    "records",
+    "meta"
+  ]
+}

@@ -1,11 +1,6 @@
 package org.gusdb.wdk.model.question;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.wdk.model.*;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -18,6 +13,12 @@ import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.report.AttributeReporterRef;
 import org.gusdb.wdk.model.report.reporter.HistogramAttributeReporter;
 
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 /**
  * An object representation of the {@code <question>/<dynamicAttributes>}. The
  * author of the model files can introduce new {@link AttributeField}s to a
@@ -25,17 +26,16 @@ import org.gusdb.wdk.model.report.reporter.HistogramAttributeReporter;
  * {@link AttributeField}s introduced in this way are called dynamic attributes,
  * and since they are specific to the defining {@link Question}, those
  * attributes won't be carried over to the boolean or transform steps.
- * 
+ *
  * @author jerric
- * 
  */
 public class DynamicAttributeSet extends WdkModelBase {
 
   // private static Logger logger =
   // Logger.getLogger(DynamicAttributeSet.class);
 
-  private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
-  private Map<String, AttributeField> attributeFieldMap = new LinkedHashMap<String, AttributeField>();
+  private List<AttributeField> attributeFieldList = new ArrayList<>();
+  private Map<String, AttributeField> attributeFieldMap = new LinkedHashMap<>();
 
   private Question question;
 
@@ -43,20 +43,19 @@ public class DynamicAttributeSet extends WdkModelBase {
 
   public void addAttributeField(AttributeField attributeField) {
 	// from XML parse, before excludeResources
-	  if (attributeFieldList != null) attributeFieldList.add(attributeField);  
-	  
+	  if (attributeFieldList != null) attributeFieldList.add(attributeField);
+
 	  // to support adding after excludeResources
 	  else attributeFieldMap.put(attributeField.getName(), attributeField);
   }
 
   @Override
   public String toString() {
-    String newline = System.getProperty("line.separator");
-    StringBuffer buf = new StringBuffer();
-    buf.append("  dynamicAttributes:" + newline);
+    StringBuilder buf = new StringBuilder();
+    buf.append("  dynamicAttributes:" + NL);
 
     for (String attrName : attributeFieldMap.keySet()) {
-      buf.append("    " + attrName + newline);
+      buf.append("    " + attrName + NL);
     }
     return buf.toString();
   }
@@ -68,9 +67,8 @@ public class DynamicAttributeSet extends WdkModelBase {
   public void setQuestion(Question question) {
     this.question = question;
     // question will be the container for this container's dynamic fields
-    for (AttributeField field : attributeFieldList) {
+    for (AttributeField field : attributeFieldList)
       field.setContainer(question);
-    }
   }
 
   public Question getQuestion() {
@@ -82,13 +80,10 @@ public class DynamicAttributeSet extends WdkModelBase {
   }
 
   public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
-    Map<String, AttributeField> map = new LinkedHashMap<String, AttributeField>();
-    for (AttributeField field : attributeFieldMap.values()) {
-      if (scope.isFieldInScope(field)) {
-        map.put(field.getName(), field);
-      }
-    }
-    return map;
+    return attributeFieldMap.values().stream()
+      .filter(scope::isFieldInScope)
+      .collect(Collectors.toMap(NamedObject::getName, Function.identity(),
+        (a, b) -> a, LinkedHashMap::new));
   }
 
   // /////////////////////////////////////////////////////////////////
@@ -122,8 +117,8 @@ public class DynamicAttributeSet extends WdkModelBase {
       attribute.setInternal(false);
       attribute.setInReportMaker(true);
       attribute.setSortable(true);
-      // attribute.setHelp("User-defined integer value; in a search strategy, 
-      // unions and intersects will sum the weights, giving higher scores to 
+      // attribute.setHelp("User-defined integer value; in a search strategy,
+      // unions and intersects will sum the weights, giving higher scores to
       // items found in multiple searches. ");
       attribute.setHelp("The *search result weight*. This is the sum of "
           + "the weights you specified for individual searches that "
@@ -142,8 +137,8 @@ public class DynamicAttributeSet extends WdkModelBase {
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     RecordClass recordClass = question.getRecordClass();
-    Query dynamicAttributeQuery = question.getDynamicAttributeQuery();
-    Map<String, Column> columns = dynamicAttributeQuery.getColumnMap();
+    Query query = question.getDynamicAttributeQuery();
+    Map<String, Column> columns = query.getColumnMap();
 
     // check if answer params exist; if so add their values as dynamic columns
     Set<String> rcAttributeNames = question.getRecordClass().getAttributeFieldMap().keySet();
@@ -190,8 +185,18 @@ public class DynamicAttributeSet extends WdkModelBase {
               + " have the column '" + fieldName + "'");
         ((QueryColumnAttributeField) field).setColumn(column);
       }
+
       field.resolveReferences(wdkModel);
     }
+
+    // Assign data types to the contained columns.
+    var types = query.resolveColumnTypes();
+    types.keySet()
+      .stream()
+      .map(attributeFieldMap::get)
+      .filter(ColumnAttributeField.class::isInstance)
+      .map(ColumnAttributeField.class::cast)
+      .forEach(field -> field.setDataType(types.get(field.getName())));
   }
 
   private AttributeReporterRef getHistogramAttributeReporterRef() {

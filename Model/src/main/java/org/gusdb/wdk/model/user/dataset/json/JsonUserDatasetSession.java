@@ -108,7 +108,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
       for (Path sharedWithPath : sharedWithPaths) {
         String userIdString = sharedWithPath.getFileName().toString();
         Long timestamp = adaptor.getModificationTime(sharedWithPath);
-        sharedWithItems.add(new JsonUserDatasetShare(new Long(userIdString), timestamp));
+        sharedWithItems.add(new JsonUserDatasetShare(Long.valueOf(userIdString), timestamp));
       }
       user.sharedWithUsers.put(datasetId, sharedWithItems);
     }
@@ -399,7 +399,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
         String line = adaptor.readSingleLineFile(userQuotaFile);
         if (line == null)
           throw new WdkModelException("Empty quota file " + userQuotaFile);
-        user.quota = new Long(line.trim());
+        user.quota = Long.valueOf(line.trim());
       } else user.quota = getDefaultQuota();
     }
     return TRACE.end(user.quota);
@@ -413,7 +413,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
       String line = adaptor.readSingleLineFile(quotaFile);
       if (line == null)
         throw new WdkModelException("Empty quota file " + quotaFile);
-      defaultQuota = new Long(line.trim());
+      defaultQuota = Long.valueOf(line.trim());
     }
     return TRACE.end(defaultQuota);
   }
@@ -748,7 +748,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
       String line = adaptor.readSingleLineFile(quotaFile);
       if (line == null)
         throw new WdkModelException("Empty quota file " + quotaFile);
-      defaultQuota = new Long(line.trim());
+      defaultQuota = Long.valueOf(line.trim());
     }
     return TRACE.end(defaultQuota);
   }

@@ -1,14 +1,12 @@
 package org.gusdb.wdk.model.report;
 
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
 
@@ -25,19 +23,19 @@ public abstract class AbstractReporter implements Reporter {
 
   protected AbstractReporter(AnswerValue answerValue) {
     _baseAnswer = answerValue;
-    _wdkModel = answerValue.getQuestion().getWdkModel();
+    _wdkModel = answerValue.getWdkModel();
   }
 
   @Override
-  public void setProperties(ReporterRef reporterRef) throws WdkModelException {
-    _properties = new HashMap<>(reporterRef.getProperties());
+  public void setProperties(ReporterInfo reporterInfo) throws WdkModelException {
+    _properties = reporterInfo.getProperties(); // don't need to copy; is already a copy
   }
 
   public String getPropertyInfo() {
     return FormatUtil.prettyPrint(_properties, Style.MULTI_LINE);
   }
 
-  protected int getResultSize() throws WdkModelException, WdkUserException {
+  protected int getResultSize() throws WdkModelException {
     return _baseAnswer.getResultSizeFactory().getResultSize();
   }
 
@@ -98,7 +96,11 @@ public abstract class AbstractReporter implements Reporter {
   // =========================================================================
 
   protected Question getQuestion() {
-    return _baseAnswer.getQuestion();
+    return _baseAnswer.getAnswerSpec().getQuestion();
   }
 
+  @Override
+  public Reporter configure(Map<String, String> config) throws ReporterConfigException, WdkModelException {
+    throw new UnsupportedOperationException();
+  }
 }

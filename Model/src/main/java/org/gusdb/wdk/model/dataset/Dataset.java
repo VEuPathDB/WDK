@@ -1,13 +1,9 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.dataset;
 
 import java.util.Date;
 import java.util.List;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.User;
 
 /**
  * @author xingao
@@ -18,7 +14,7 @@ public class Dataset {
   private DatasetFactory factory;
 
   private final long datasetId;
-  private final User user;
+  private final long ownerId;
 
   private String name;
   private String uploadFile;
@@ -28,14 +24,14 @@ public class Dataset {
   private String checksum;
   private int categoryId;
 
-  public Dataset(DatasetFactory factory, User user, long datasetId) {
+  public Dataset(DatasetFactory factory, long ownerId, long datasetId) {
     this.factory = factory;
-    this.user = user;
+    this.ownerId = ownerId;
     this.datasetId = datasetId;
   }
 
-  public User getUser() {
-    return user;
+  public long getOwnerId() {
+    return ownerId;
   }
 
   /**
@@ -100,7 +96,7 @@ public class Dataset {
   }
 
   public String getContent() throws WdkModelException {
-    return factory.getContent(datasetId);
+    return factory.getDatasetContent(datasetId);
   }
 
   public String getName() {

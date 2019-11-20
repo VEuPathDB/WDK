@@ -2,7 +2,6 @@ package org.gusdb.wdk.service.service;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -20,142 +19,73 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.wdk.core.api.JsonKeys;
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
-import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.report.util.RecordFormatter;
 import org.gusdb.wdk.service.annotation.OutSchema;
-import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
 import org.gusdb.wdk.service.formatter.RecordClassFormatter;
-import org.gusdb.wdk.service.formatter.TableFieldFormatter;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.statustype.MultipleChoicesStatusType;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@Path("/records")
+@Path(RecordService.RECORD_TYPES_PATH)
 public class RecordService extends AbstractWdkService {
+
+  public static final String RECORD_TYPES_PATH = "/record-types";
+  public static final String RECORD_TYPE_PATH_PARAM = "recordClassUrlSegment";
+  public static final String RECORD_TYPE_PARAM_SEGMENT = "{" + RECORD_TYPE_PATH_PARAM + "}";
+  public static final String NAMED_RECORD_TYPE_SEGMENT_PAIR = RECORD_TYPES_PATH + "/" + RECORD_TYPE_PARAM_SEGMENT;
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(RecordService.class);
 
   private static final String RECORDCLASS_RESOURCE = "RecordClass with name ";
-  private static final String TABLE_RESOURCE = "Table with name ";
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.records.get")
-  public Collection<Object> getRecordClassList(@QueryParam("format") String format) {
-    final boolean tmp = Optional.ofNullable(format)
+  public JSONArray getRecordClassList(@QueryParam("format") String format) {
+    List<RecordClass> allRecordClasses = getWdkModel().getAllRecordClasses();
+    return isExpandedFormat(format, false) ?
+        RecordClassFormatter.getExpandedRecordClassesJson(allRecordClasses, getWdkModel().getRecordClassQuestionMap()) :
+        RecordClassFormatter.getRecordClassNamesJson(allRecordClasses);
+  }
+
+  @GET
+  @Path(RECORD_TYPE_PARAM_SEGMENT)
+  @Produces(MediaType.APPLICATION_JSON)
+  @OutSchema("wdk.records.name.get")
+  public JSONObject getRecordClassInfo(
+      @PathParam(RECORD_TYPE_PATH_PARAM) String recordClassName,
+      @QueryParam("format") String format) {
+    RecordClass rc = getRecordClassOrNotFound(recordClassName);
+    return isExpandedFormat(format, true) ?
+        RecordClassFormatter.getExpandedRecordClassJson(rc, getWdkModel().getRecordClassQuestionMap()) :
+        RecordClassFormatter.getRecordClassJson(rc, true, true, true);
+  }
+
+  private static boolean isExpandedFormat(String format, boolean defaultValue) {
+    return Optional.ofNullable(format)
         .map(f -> f.equals("expanded"))
-        .orElse(false);
-
-    return RecordClassFormatter.getRecordClassesJson(
-        getWdkModel().getAllRecordClassSets(), tmp);
+        .orElse(defaultValue);
   }
 
-  @GET
-  @Path("{recordClassName}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getRecordClassInfo(
-      @PathParam("recordClassName") String recordClassName,
-      @QueryParam("expandAttributes") Boolean expandAttributes,
-      @QueryParam("expandTables") Boolean expandTables,
-      @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
-    return Response.ok(
-        RecordClassFormatter.getRecordClassJson(
-            getRecordClassOrNotFound(recordClassName, getWdkModel()), getFlag(expandAttributes),
-            getFlag(expandTables), getFlag(expandTableAttributes)).toString()
-    ).build();
-  }
-
-  @GET
-  @Path("{recordClassName}/attributes")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getAttributesInfo(
-      @PathParam("recordClassName") String recordClassName,
-      @QueryParam("expandAttributes") Boolean expandAttributes) {
-    return Response.ok(
-        AttributeFieldFormatter.getAttributesJson(
-            getRecordClassOrNotFound(recordClassName, getWdkModel()).getAttributeFieldMap().values(),
-            FieldScope.ALL, getFlag(expandAttributes)).toString()
-    ).build();
-  }
-
-  @GET
-  @Path("{recordClassName}/tables")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getTablesInfo(
-      @PathParam("recordClassName") String recordClassName,
-      @QueryParam("expandTables") Boolean expandTables,
-      @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
-    return Response.ok(
-        TableFieldFormatter.getTablesJson(
-            getRecordClassOrNotFound(recordClassName, getWdkModel()).getTableFieldMap().values(),
-            FieldScope.ALL, getFlag(expandTables), getFlag(expandTableAttributes)).toString()
-    ).build();
-  }
-
-  @GET
-  @Path("{recordClassName}/tables/{tableName}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getTableInfo(
-      @PathParam("recordClassName") String recordClassName,
-      @PathParam("tableName") String tableName,
-      @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
-    return getTableResponse(recordClassName, tableName, expandTableAttributes, false);
-  }
-
-  @GET
-  @Path("{recordClassName}/tables/{tableName}/attributes")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getTableAttributesInfo(
-      @PathParam("recordClassName") String recordClassName,
-      @PathParam("tableName") String tableName,
-      @QueryParam("expandTableAttributes") Boolean expandTableAttributes) {
-    return getTableResponse(recordClassName, tableName, expandTableAttributes, true);
-  }
-
-  @GET
-  @Path("{recordClassName}/answer-format")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getAnswerFormats(@PathParam("recordClassName") String recordClassName) {
-    return Response.ok(
-        RecordClassFormatter.getAnswerFormatsJson(
-            getRecordClassOrNotFound(recordClassName, getWdkModel()).getReporterMap().values(),
-            FieldScope.ALL).toString()
-    ).build();
-  }
-
-  @GET
-  @Path("{recordClassName}/count")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getRecordCount(@PathParam("recordClassName") String recordClassName) throws WdkModelException {
-    RecordClass recordClass = getRecordClassOrNotFound(recordClassName, getWdkModel());
-    if (!recordClass.hasAllRecordsQuery()) {
-      throw new NotFoundException(formatNotFound(RECORDCLASS_RESOURCE + recordClassName + "/count"));
-    }
-    long count = recordClass.getAllRecordsCount(getSessionUser());
-    JSONObject json = new JSONObject().put(JsonKeys.TOTAL_COUNT, count);
-    return Response.ok(json.toString()).build();
-  }
-
+  // TODO: replace this with a GET (using the path to encode the primary key)
   @POST
-  @Path("{recordClassName}/instance")
+  @Path(RECORD_TYPE_PARAM_SEGMENT + "/records")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response buildResult(@PathParam("recordClassName") String recordClassName, String body)
+  public Response buildResult(@PathParam(RECORD_TYPE_PATH_PARAM) String recordClassName, String body)
       throws WdkModelException, DataValidationException, RequestMisformatException {
     try {
       // get and parse request information
-      RecordClass recordClass = getRecordClassOrNotFound(recordClassName, getWdkModel());
+      RecordClass recordClass = getRecordClassOrNotFound(recordClassName);
       RecordRequest request = RecordRequest.createFromJson(recordClass, new JSONObject(body));
 
       // fetch a list of record instances the passed primary key maps to
@@ -193,28 +123,5 @@ public class RecordService extends AbstractWdkService {
       // due to checks above during request parsing, this should not happen
       throw new WdkModelException(e);
     }
-  }
-
-  private Response getTableResponse(String recordClassName, String tableName,
-      Boolean expandTableAttributes, boolean attributesOnly) {
-    RecordClass rc = getRecordClassOrNotFound(recordClassName, getWdkModel());
-    TableField table = rc.getTableFieldMap().get(tableName);
-    boolean expandAttributes = getFlag(expandTableAttributes);
-    if (table == null) {
-      throw new NotFoundException(formatNotFound(RECORDCLASS_RESOURCE + recordClassName + ", " + TABLE_RESOURCE + tableName));
-    }
-    return Response.ok((attributesOnly ?
-        AttributeFieldFormatter.getAttributesJson(
-            table.getAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, expandAttributes) :
-        TableFieldFormatter.getTableJson(table, expandAttributes)
-    ).toString()).build();
-  }
-
-  public static RecordClass getRecordClassOrNotFound(String recordClassName, WdkModel model) {
-    RecordClass rc = model.getRecordClassByUrlSegment(recordClassName);
-    if (rc == null) {
-      throw new NotFoundException(formatNotFound(RECORDCLASS_RESOURCE + recordClassName));
-    }
-    return rc;
   }
 }

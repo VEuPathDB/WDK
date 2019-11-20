@@ -1,6 +1,7 @@
 package org.gusdb.wdk.service;
 
 import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.ws.rs.core.Application;
 
@@ -9,15 +10,44 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.gusdb.fgputil.SetBuilder;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
+import org.gusdb.wdk.service.filter.CheckLoginRequestFilter;
+import org.gusdb.wdk.service.filter.CheckLoginResponseFilter;
 import org.gusdb.wdk.service.filter.ClientCacheExpirationFilter;
+import org.gusdb.wdk.service.filter.MDCRequestFilter;
+import org.gusdb.wdk.service.filter.MDCResponseFilter;
 import org.gusdb.wdk.service.filter.MethodRewritingFilter;
+import org.gusdb.wdk.service.filter.RequestCompleteFilter;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.provider.ExceptionMapper;
 import org.gusdb.wdk.service.provider.JsonSchemaProvider;
-import org.gusdb.wdk.service.provider.LoggingWriterInterceptor;
-import org.gusdb.wdk.service.service.*;
-import org.gusdb.wdk.service.service.user.*;
+import org.gusdb.wdk.service.service.AnswerService;
+import org.gusdb.wdk.service.service.ClientErrorReportingService;
+import org.gusdb.wdk.service.service.OAuthService;
+import org.gusdb.wdk.service.service.OntologyService;
+import org.gusdb.wdk.service.service.ProjectService;
+import org.gusdb.wdk.service.service.PublicStrategyService;
+import org.gusdb.wdk.service.service.QuestionService;
+import org.gusdb.wdk.service.service.RecordService;
+import org.gusdb.wdk.service.service.SampleService;
+import org.gusdb.wdk.service.service.SessionService;
+import org.gusdb.wdk.service.service.SystemService;
+import org.gusdb.wdk.service.service.TemporaryFileService;
+import org.gusdb.wdk.service.service.TemporaryResultService;
+import org.gusdb.wdk.service.service.XmlAnswerService;
+import org.gusdb.wdk.service.service.search.ColumnFilterService;
+import org.gusdb.wdk.service.service.search.ColumnReporterService;
+import org.gusdb.wdk.service.service.search.SearchColumnService;
+import org.gusdb.wdk.service.service.user.BasketService;
+import org.gusdb.wdk.service.service.user.DatasetService;
+import org.gusdb.wdk.service.service.user.FavoritesService;
+import org.gusdb.wdk.service.service.user.PreferenceService;
+import org.gusdb.wdk.service.service.user.ProfileService;
+import org.gusdb.wdk.service.service.user.StepAnalysisFormService;
+import org.gusdb.wdk.service.service.user.StepAnalysisInstanceService;
+import org.gusdb.wdk.service.service.user.StepService;
+import org.gusdb.wdk.service.service.user.StrategyService;
+import org.gusdb.wdk.service.service.user.UserDatasetService;
+import org.gusdb.wdk.service.service.user.UserUtilityServices;
 
 public class WdkServiceApplication extends Application {
 
@@ -41,23 +71,29 @@ public class WdkServiceApplication extends Application {
     // add provider classes
     .add(JsonSchemaProvider.class)
     .add(ExceptionMapper.class)
-    .add(LoggingWriterInterceptor.class)
 
     // add filter classes
+    .add(CheckLoginRequestFilter.class)
+    .add(CheckLoginResponseFilter.class)
+    .add(MDCRequestFilter.class)
+    .add(MDCResponseFilter.class)
     .add(MethodRewritingFilter.class)
     .add(RequestLoggingFilter.class)
+    .add(RequestCompleteFilter.class)
     .add(ClientCacheExpirationFilter.class)
     .addIf(compressResponses(), EncodingFilter.class)
 
     // add service classes
     .add(ProjectService.class)
-    .add(ApiService.class)
     .add(SystemService.class)
     .add(OAuthService.class)
     .add(ProfileService.class)
     .add(PreferenceService.class)
     .add(RecordService.class)
     .add(QuestionService.class)
+    .add(SearchColumnService.class)
+    .add(ColumnReporterService.class)
+    .add(ColumnFilterService.class)
     .add(AnswerService.class)
     .add(OntologyService.class)
     .add(StepService.class)
@@ -69,7 +105,8 @@ public class WdkServiceApplication extends Application {
     .add(PublicStrategyService.class)
     .add(SessionService.class)
     .add(StrategyService.class)
-    .add(StepAnalysisService.class)
+    .add(StepAnalysisInstanceService.class)
+    .add(StepAnalysisFormService.class)
     .add(ClientErrorReportingService.class)
     .add(TemporaryResultService.class)
     .add(TemporaryFileService.class)

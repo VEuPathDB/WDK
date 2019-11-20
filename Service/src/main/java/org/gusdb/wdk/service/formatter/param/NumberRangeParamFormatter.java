@@ -1,10 +1,10 @@
 package org.gusdb.wdk.service.formatter.param;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.NumberRangeParam;
-import org.json.JSONException;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.json.JSONObject;
 
 public class NumberRangeParamFormatter extends ParamFormatter<NumberRangeParam> {
@@ -14,12 +14,16 @@ public class NumberRangeParamFormatter extends ParamFormatter<NumberRangeParam> 
   }
 
   @Override
-  public JSONObject getJson()
-      throws JSONException, WdkModelException, WdkUserException {
-    return super.getJson()
-        .put(JsonKeys.DEFAULT_VALUE, this._param.getDefault())
-        .put(JsonKeys.MIN_VALUE, this._param.getMin())
-        .put(JsonKeys.MAX_VALUE, this._param.getMax())
-        .put(JsonKeys.STEP, this._param.getStep());
+  public <S extends ParameterContainerInstanceSpec<S>> JSONObject getJson(DisplayablyValid<S> spec) throws WdkModelException {
+    return getBaseJson(spec)
+        .put(JsonKeys.MIN_VALUE, _param.getMin())
+        .put(JsonKeys.MAX_VALUE, _param.getMax())
+        .put(JsonKeys.INCREMENT, _param.getStep());
   }
+  
+  @Override
+  public String getParamType() {
+    return JsonKeys.NUMBER_RANGE_PARAM_TYPE;
+  }
+
 }

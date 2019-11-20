@@ -47,6 +47,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.gusdb</groupId>
+      <artifactId>fgputil-server</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>javax.ws.rs</groupId>
       <artifactId>javax.ws.rs-api</artifactId>
     </dependency>
@@ -106,11 +111,15 @@
       <artifactId>msg-simple</artifactId>
     </dependency>
 
-
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
       <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jersey.containers</groupId>
+      <artifactId>jersey-container-grizzly2-http</artifactId>
     </dependency>
 
     <dependency>
@@ -127,6 +136,11 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.vulpine.lib</groupId>
+      <artifactId>json-schema-builder</artifactId>
     </dependency>
 
   </dependencies>

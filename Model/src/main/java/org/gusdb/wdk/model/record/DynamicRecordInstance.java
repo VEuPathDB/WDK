@@ -1,23 +1,24 @@
 package org.gusdb.wdk.model.record;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.DynamicRecordInstanceList;
+import org.gusdb.wdk.model.answer.factory.DynamicRecordInstanceList;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeValue;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -78,33 +79,28 @@ public class DynamicRecordInstance extends StaticRecordInstance {
 
     Map<String, String> paramValues = _primaryKey.getValues();
 
-    try {
-      // put user id in the attribute query
-      QueryInstance<?> instance = query.makeInstance(_user, paramValues, true, 0,
-          new LinkedHashMap<String, String>());
+    // put user id in the attribute query
+    QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+        .putAll(paramValues).buildRunnable(_user, query, StepContainer.emptyContainer()));
 
-      try (ResultList resultList = instance.getResults()) {
-        if (!resultList.next()) {
-          // throwing exception prevents proper handling in front end...just return?
-          _isValidRecord = false;
-          throw new WdkModelException("Attribute query " + queryName +
-              " doesn't return any row: \n" + instance.getSql());
-        }
-  
-        Map<String, AttributeField> fields = getAttributeFieldMap();
-        for (Column column : query.getColumns()) {
-          if (!fields.containsKey(column.getName())) continue;
-          AttributeField field = fields.get(column.getName());
-          if (!(field instanceof QueryColumnAttributeField)) continue;
-          Object objValue = resultList.get(column.getName());
-          ColumnAttributeValue value = new QueryColumnAttributeValue(
-              (QueryColumnAttributeField) field, objValue);
-          addAttributeValue(value);
-        }
+    try (ResultList resultList = instance.getResults()) {
+      if (!resultList.next()) {
+        // throwing exception prevents proper handling in front end...just return?
+        _isValidRecord = false;
+        throw new WdkModelException("Attribute query " + queryName +
+            " doesn't return any row: \n" + instance.getSql());
       }
-    }
-    catch (WdkUserException ex) {
-      throw new WdkModelException(ex);
+
+      Map<String, AttributeField> fields = getAttributeFieldMap();
+      for (Column column : query.getColumns()) {
+        if (!fields.containsKey(column.getName())) continue;
+        AttributeField field = fields.get(column.getName());
+        if (!(field instanceof QueryColumnAttributeField)) continue;
+        Object objValue = resultList.get(column.getName());
+        ColumnAttributeValue value = new QueryColumnAttributeValue(
+            (QueryColumnAttributeField) field, objValue);
+        addAttributeValue(value);
+      }
     }
     logger.debug("column attributes are cached.");
   }

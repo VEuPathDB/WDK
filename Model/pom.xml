@@ -36,6 +36,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.gusdb</groupId>
+      <artifactId>fgputil-server</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>com.lowagie</groupId>
       <artifactId>itext</artifactId>
     </dependency>
@@ -48,6 +53,11 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jersey.containers</groupId>
+      <artifactId>jersey-container-grizzly2-http</artifactId>
     </dependency>
 
     <dependency>
@@ -127,6 +137,16 @@
     <dependency>
       <groupId>com.github.fge</groupId>
       <artifactId>msg-simple</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.vulpine.lib</groupId>
+      <artifactId>Jackfish</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.vulpine.lib</groupId>
+      <artifactId>json-schema-builder</artifactId>
     </dependency>
 
   </dependencies>

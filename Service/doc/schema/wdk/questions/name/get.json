@@ -1,0 +1,232 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "definitions": {
+    "properties": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "../../../includes/string-array.json"
+      }
+    },
+    "filter-def-array": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "isViewOnly": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "isViewOnly"
+        ]
+      }
+    }
+  },
+  "properties": {
+    "defaultAttributes": {
+      "$ref": "../../../includes/string-array.json"
+    },
+    "defaultSummaryView": {
+      "type": "string"
+    },
+    "noSummaryOnSingleRecord": {
+      "type": "boolean"
+    },
+    "description": {
+      "type": "string"
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "fullName": {
+      "type": "string"
+    },
+    "newBuild": {
+      "type": "string"
+    },
+    "filters": {
+      "$ref": "../../../includes/string-array.json"
+    },
+    "isAnalyzable": {
+      "type": "boolean"
+    },
+    "allowedPrimaryInputRecordClassNames": {
+      "type": "array",
+      "items": {
+         "type": "string"
+      }
+    },
+    "allowedSecondaryInputRecordClassNames": {
+      "type": "array",
+      "items": {
+         "type": "string"
+      }
+    },
+    "dynamicAttributes": {
+      "type": "array",
+      "items": {
+        "$ref": "../../includes/record-attribute.json"
+      }
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "displayType": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "parameters": {
+            "oneOf": [
+              {
+                "$ref": "../../../includes/string-array.json"
+              }
+            ]
+          }
+        },
+        "required": [
+          "description",
+          "displayName",
+          "displayType",
+          "name",
+          "isVisible"
+        ]
+      }
+    },
+    "parameters": {
+          "type": "array",
+          "items": [
+            {
+              "$ref": "../../includes/params/filter-param.json"
+            },
+            {
+              "$ref": "../../includes/params/answer-param.json"
+            },
+            {
+              "$ref": "../../includes/params/enum-param.json"
+            },
+            {
+              "$ref": "../../includes/params/string-param.json"
+            },
+            {
+              "$ref": "../../includes/params/number-param.json"
+            },
+            {
+              "$ref": "../../includes/params/date-param.json"
+            },
+            {
+              "$ref": "../../includes/params/dataset-param.json"
+            },
+            {
+              "$ref": "../../includes/params/filter-param.json"
+            },
+            {
+              "$ref": "../../includes/params/string-param.json"
+            },
+            {
+              "$ref": "../../includes/params/timestamp-param.json"
+            }
+          ]
+    },
+    "properties": {
+      "$ref": "#/definitions/properties"
+    },
+    "outputRecordClassName": {
+      "type": "string"
+    },
+    "shortDisplayName": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "summaryViewPlugins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "urlSegment": {
+      "type": "string"
+    },
+    "iconName": {
+      "type": "string"
+    },
+    "help": {
+      "type": "string"
+    },
+    "reviseBuild": {
+      "type": "string"
+    },
+    "defaultSorting": {
+      "$ref": "../../includes/sorting-spec.json"
+    },
+    "filters": {
+      "$ref": "#/definitions/filter-def-array"
+    },
+    "paramNames": {
+      "type": "array",
+      "items": {
+         "type": "string"
+      }
+    },
+    "queryName": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "urlSegment",
+    "fullName",
+    "displayName",
+    "shortDisplayName",
+    "outputRecordClassName",
+    "defaultAttributes",
+    "defaultSorting",
+    "dynamicAttributes",
+    "defaultSummaryView",
+    "noSummaryOnSingleRecord",
+    "summaryViewPlugins",
+    "filters",
+    "isAnalyzable",
+    "properties",
+    "groups",
+    "paramNames"
+  ]
+}

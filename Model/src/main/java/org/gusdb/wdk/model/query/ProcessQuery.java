@@ -1,36 +1,33 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query;
 
-import java.util.Map;
-
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfig;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static java.util.Objects.isNull;
 
 /**
  * A ProcessQuery represents a WSF based Web Service resource. A process query
  * can only be used as ID query or param query.
- * 
+ * <p>
  * The columns defined in the ProcessQuery should also have type and width
  * defined, otherwise the default of type and width will be used; if your actual
  * result is larger than that, the value will be truncated.
- * 
+ * <p>
  * If you don't specify an web service URL in the <processQuery> tag, the
  * default web service url in model-config.xml will be used.
- * 
+ * <p>
  * If the local flag is true, WDK assumes that the WSF service is installed in
  * the same webapp as the site, and it will bypass any web service url, and try
  * to invoke the service within the webapp context.
- * 
+ * <p>
  * A ProcessQuery that is used as ID query is always cached, so that it can be
  * used to join with attribute queries for joining and pagination.
- * 
+ *
  * @author Jerric Gao
  */
 public class ProcessQuery extends Query {
@@ -38,7 +35,7 @@ public class ProcessQuery extends Query {
   private String processName;
   private String webServiceUrl;
   private int cacheInsertBatchSize = 1000;
-  private boolean local = false;
+  private boolean local;
 
   public ProcessQuery() {
     super();
@@ -52,6 +49,23 @@ public class ProcessQuery extends Query {
     this.local = query.local;
   }
 
+  @Override
+  public void addColumn(Column column) throws WdkModelException {
+    if (isNull(column.getType()))
+      column.setType(ColumnType.STRING);
+    super.addColumn(column);
+  }
+
+  @Override
+  protected ProcessQueryInstance makeInstance(RunnableObj<QueryInstanceSpec> spec) {
+    return new ProcessQueryInstance(spec);
+  }
+
+  @Override
+  public boolean isCacheable() {
+    return true;
+  }
+
   /**
    * @return the name of the WSF plugin that will be invoked by the service.
    */
@@ -59,10 +73,6 @@ public class ProcessQuery extends Query {
     return this.processName;
   }
 
-  /**
-   * @param processClass
-   *          the processClass to set
-   */
   public void setProcessName(String processName) {
     this.processName = processName;
   }
@@ -84,6 +94,7 @@ public class ProcessQuery extends Query {
   public int getCacheInsertBatchSize() {
     return cacheInsertBatchSize;
   }
+
   public void setCacheInsertBatchSize(int cacheInsertBatchSize) {
     this.cacheInsertBatchSize = cacheInsertBatchSize;
   }
@@ -95,23 +106,22 @@ public class ProcessQuery extends Query {
     return this.local;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#resolveReferences(org.gusdb.wdk.model
-   * .WdkModel)
-   */
   @Override
-  public void resolveQueryReferences(WdkModel wdkModel)
-      throws WdkModelException {
+  public void resolveQueryReferences(WdkModel wdkModel) {
     configureProcessLocation(wdkModel);
+
+    // Set default column type for columns that don't have a type defined in XML
+    _columnMap.values()
+      .stream()
+      .filter(c -> isNull(c.getType()))
+      .forEach(c -> c.setType(ColumnType.STRING));
   }
 
   /**
    * Configures how this ProcessQuery is run (i.e. local/remote, which service
    * is used).  First assess whether a webServiceUrl was provided; if so, use
    * it and assume remote execution.  If not, set url to null and run locally.
-   * 
+   *
    * @param wdkModel loaded wdk model
    */
   private void configureProcessLocation(WdkModel wdkModel) {
@@ -123,29 +133,11 @@ public class ProcessQuery extends Query {
     // if no default URL was set in model config, assume local execution
     if (webServiceUrl == null || webServiceUrl.isEmpty())
       webServiceUrl = ModelConfig.WSF_LOCAL;
-      
+
     // set local to true if no URL provided or local explicitly set
     local = webServiceUrl.equals(ModelConfig.WSF_LOCAL);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#makeInstance()
-   */
-  @Override
-  public ProcessQueryInstance makeInstance(User user, Map<String, String> values,
-      boolean validate, int assignedWeight, Map<String, String> context)
-      throws WdkModelException, WdkUserException {
-    return new ProcessQueryInstance(user, this, values, validate,
-        assignedWeight, context);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
-   */
   @Override
   protected void appendChecksumJSON(JSONObject jsQuery, boolean extra)
       throws JSONException {
@@ -155,21 +147,8 @@ public class ProcessQuery extends Query {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.Query#clone()
-   */
   @Override
   public Query clone() {
     return new ProcessQuery(this);
-  }
-
-  /**
-   * Process Query is always cached.
-   */
-  @Override
-  public boolean getIsCacheable() {
-    return true;
   }
 }

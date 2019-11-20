@@ -1,9 +1,8 @@
 package org.gusdb.wdk.session;
 
-import javax.servlet.http.Cookie;
-
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
@@ -21,7 +20,7 @@ import org.gusdb.wdk.model.WdkModelException;
 public class LoginCookieFactory {
 
   // package protected for unit test access
-  static final String WDK_LOGIN_COOKIE_NAME = "wdk_check_auth";
+  public static final String WDK_LOGIN_COOKIE_NAME = "wdk_check_auth";
   private static final String REMEMBER_SUFFIX = "-remember";
 
   /**
@@ -65,12 +64,16 @@ public class LoginCookieFactory {
    * @return new login cookie
    * @throws WdkModelException if a system problem occurs
    */
-  public Cookie createLoginCookie(String username, boolean remember) throws WdkModelException {
-    Cookie loginCookie = new Cookie(WDK_LOGIN_COOKIE_NAME, "");
-    loginCookie.setPath("/"); // set cookie for whole site, not just webapp
-    loginCookie.setMaxAge(remember ? java.lang.Integer.MAX_VALUE / 256 : -1);
+  public CookieBuilder createLoginCookie(String username, boolean remember) throws WdkModelException {
+    CookieBuilder loginCookie = new CookieBuilder(WDK_LOGIN_COOKIE_NAME, "");
+    loginCookie. setPath("/"); // set cookie for whole site, not just webapp
+    loginCookie.setMaxAge(remember ? getDefaultMaxAge() : -1);
     loginCookie.setValue(FormatUtil.urlEncodeUtf8(getCookieValue(username, remember)));
     return loginCookie;
+  }
+
+  public static int getDefaultMaxAge() {
+    return Integer.MAX_VALUE / 256;
   }
 
   /**
@@ -81,8 +84,8 @@ public class LoginCookieFactory {
    * @return new login cookie
    * @throws WdkModelException if a system problem occurs
    */
-  public Cookie createLoginCookie(String username, int maxAge) throws WdkModelException {
-    Cookie loginCookie = createLoginCookie(username, false);
+  public CookieBuilder createLoginCookie(String username, int maxAge) throws WdkModelException {
+    CookieBuilder loginCookie = createLoginCookie(username, false);
     loginCookie.setMaxAge(maxAge);
     return loginCookie;
   }
@@ -93,8 +96,8 @@ public class LoginCookieFactory {
    * 
    * @return logout cookie
    */
-  public static Cookie createLogoutCookie() {
-    Cookie cookie = new Cookie(WDK_LOGIN_COOKIE_NAME, "");
+  public static CookieBuilder createLogoutCookie() {
+    CookieBuilder cookie = new CookieBuilder(WDK_LOGIN_COOKIE_NAME, "");
     cookie.setMaxAge(0);
     cookie.setPath("/");
     return cookie;
@@ -143,23 +146,6 @@ public class LoginCookieFactory {
     String hashInput = addRemember(cookieParts.getUsername(), cookieParts.isRemember());
     String secretValue = getCookieHash(hashInput);
     return secretValue.equals(cookieParts.getChecksum());
-  }
-
-  /**
-   * Finds the login cookie in the passed array and returns it.
-   * 
-   * @param cookies array of cookies
-   * @return login cookie, or null if not found
-   */
-  public static Cookie findLoginCookie(Cookie[] cookies) {
-    if (cookies != null) {
-      for (Cookie cookie : cookies) {
-        if (WDK_LOGIN_COOKIE_NAME.equals(cookie.getName())) {
-          return cookie;
-        }
-      }
-    }
-    return null;
   }
 
   private String getCookieValue(String username, boolean remember) {

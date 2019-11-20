@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "definitions": {
+    "step": {
+      "type": "object",
+      "properties": {
+        "stepId": {
+          "type": "integer"
+        },
+        "primaryInput": {
+          "$ref": "#/definitions/step"
+        },
+        "secondaryInput": {
+          "$ref": "#/definitions/step"
+        }
+      },
+      "required": [
+        "stepId"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "description": "Strategy copy request",
+      "properties": {
+        "sourceStrategySignature": {
+          "description": "signature of the source strategy to copy",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "sourceStrategySignature"
+      ]
+    },
+    {
+      "type": "object",
+      "description": "New strategy request",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "savedName": {
+          "type": "string"
+        },
+        "isSaved": {
+          "type": "boolean"
+        },
+        "isPublic": {
+          "type": "boolean"
+        },
+        "stepTree": {
+          "$ref": "#/definitions/step"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "isSaved",
+        "isPublic",
+        "stepTree"
+      ]
+    }
+  ]
+}

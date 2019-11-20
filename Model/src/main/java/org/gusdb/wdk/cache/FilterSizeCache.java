@@ -1,5 +1,7 @@
 package org.gusdb.wdk.cache;
 
+import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,13 +14,14 @@ import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.events.Event;
 import org.gusdb.fgputil.events.EventListener;
 import org.gusdb.fgputil.events.Events;
-import org.gusdb.wdk.events.StepRevisedEvent;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
+import org.gusdb.wdk.events.StepRevisedEvent;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.user.Step;
 
 /**
@@ -65,13 +68,16 @@ public class FilterSizeCache {
     public FilterSizeGroup getUpdatedValue(Long stepId, FilterSizeGroup previousVersion)
         throws ValueProductionException {
       try {
-        Step step = _wdkModel.getStepFactory().getStepByValidId(stepId);
-        AnswerValue answerValue = step.getAnswerValue(false);
-        int size = answerValue.getResultSizeFactory().getFilterDisplaySize(_filterToFetch);
+        Step step = _wdkModel.getStepFactory().getStepByValidId(stepId, ValidationLevel.RUNNABLE);
+        int size = !step.isRunnable() ? 0 :
+          AnswerValueFactory
+            .makeAnswer(step.getUser(), step.getAnswerSpec().getRunnable().getLeft())
+            .getResultSizeFactory()
+            .getFilterDisplaySize(_filterToFetch);
         previousVersion.sizeMap.put(_filterToFetch, size);
         return previousVersion;
       }
-      catch (WdkUserException | WdkModelException e) {
+      catch (WdkModelException e) {
         throw new ValueProductionException(e);
       }
     }
@@ -101,14 +107,22 @@ public class FilterSizeCache {
     public FilterSizeGroup getUpdatedValue(Long stepId, FilterSizeGroup previousVersion)
         throws ValueProductionException {
       try {
-        Step step = _wdkModel.getStepFactory().getStepByValidId(stepId);
-        AnswerValue answer = step.getAnswerValue(false);
-        Map<String, Integer> sizes = answer.getResultSizeFactory().getFilterDisplaySizes();
+        Step step = _wdkModel.getStepFactory().getStepByValidId(stepId, ValidationLevel.RUNNABLE);
+        Map<String, Integer> sizes = step.isRunnable() ?
+            // if runnable, load filters from result size factory
+            AnswerValueFactory
+              .makeAnswer(step.getUser(), step.getAnswerSpec().getRunnable().getLeft())
+              .getResultSizeFactory()
+              .getFilterDisplaySizes() :
+            // otherwise, fill map with zeroes
+            getMapFromKeys(
+              step.getAnswerSpec().getQuestion().getRecordClass().getFilterMap().keySet(),
+              key -> 0);
         previousVersion.sizeMap = sizes;
         previousVersion.allFiltersLoaded = true;
         return previousVersion;
       }
-      catch (WdkUserException | WdkModelException e) {
+      catch (WdkModelException e) {
         throw new ValueProductionException(e);
       }
     }
@@ -144,7 +158,8 @@ public class FilterSizeCache {
       public void eventTriggered(Event event) throws Exception {
         if (event instanceof StepRevisedEvent) {
           long stepId = ((StepRevisedEvent)event).getRevisedStep().getStepId();
-          LOG.info("Notification of step revision, step ID: " + stepId + " and question: " + ((StepRevisedEvent)event).getRevisedStep().getQuestionName() );
+          LOG.info("Notification of step revision, step ID: " + stepId + " and question: " +
+              ((StepRevisedEvent)event).getRevisedStep().getAnswerSpec().getQuestionName() );
           _cache.expireEntries(stepId);
         }
         else if (event instanceof StepResultsModifiedEvent) {

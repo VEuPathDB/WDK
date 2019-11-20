@@ -1,14 +1,15 @@
 package org.gusdb.wdk.model.record.attribute;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.toolbundle.ColumnFilterInstance;
+import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
+import org.gusdb.wdk.model.toolbundle.ColumnToolSet;
 import org.gusdb.wdk.model.filter.ColumnFilter;
 import org.gusdb.wdk.model.filter.ColumnFilterDefinition;
 import org.gusdb.wdk.model.filter.FilterDefinition;
@@ -19,7 +20,7 @@ import org.gusdb.wdk.model.query.Query;
 /**
  * This is an {@link AttributeField} that maps an underlying {@link Column} from an attribute or table
  * {@link Query}.
- * 
+ *
  * @author jerric
  */
 public class QueryColumnAttributeField extends ColumnAttributeField {
@@ -74,8 +75,8 @@ public class QueryColumnAttributeField extends ColumnAttributeField {
 
     // verify the name
     if (!_name.equals(_column.getName())) {
-      throw new WdkModelException("The name of the ColumnAttributeField" + " '" + _name +
-          "' does not match the column name '" + _column.getName() + "'");
+      throw new WdkModelException("The name of the ColumnAttributeField '" +
+        _name + "' does not match the column name '" + _column.getName() + "'");
     }
 
     // resolve the column filters
@@ -100,5 +101,43 @@ public class QueryColumnAttributeField extends ColumnAttributeField {
 
   public Collection<ColumnFilter> getColumnFilters() {
     return _columnFilters.values();
+  }
+
+  @Override
+  public Collection<String> getColumnFilterNames() {
+    return getToolBundle().getTools()
+      .values()
+      .stream()
+      .filter(s -> s.hasFilterFor(this))
+      .map(ColumnToolSet::getName)
+      .collect(Collectors.toList());
+  }
+
+  @Override
+  public Optional<org.gusdb.wdk.model.toolbundle.ColumnFilter> getFilter(
+    final String name
+  ) {
+    return getToolBundle().getTool(name).flatMap(t -> t.getFilterFor(this));
+  }
+
+  @Override
+  public Optional<ColumnFilterInstance> makeFilterInstance(
+    final String name,
+    final AnswerValue val,
+    final ColumnToolConfig config
+  ) throws WdkModelException {
+    var set = getToolBundle().getTool(name);
+    if (set.isEmpty())
+      return Optional.empty();
+
+    return set.get().makeFilterInstance(this, val, config);
+  }
+
+  @Override
+  public boolean isFilterable() {
+    return getToolBundle().getTools()
+      .values()
+      .stream()
+      .anyMatch(s -> s.hasFilterFor(this));
   }
 }

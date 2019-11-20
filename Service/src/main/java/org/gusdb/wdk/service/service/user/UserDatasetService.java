@@ -68,9 +68,11 @@ public class UserDatasetService extends UserService {
   }
 
   public static JSONArray getAllUserDatasetsJson(WdkModel wdkModel, User user, UserDatasetsFormatter formatter) throws WdkModelException {
+
     UserFactory userFactory = wdkModel.getUserFactory();
     UserDatasetStore dsStore = getUserDatasetStore(wdkModel);
     long userId = user.getUserId();
+
     try (UserDatasetSession dsSession = dsStore.getSession()) {
 
       // get all the user datasets this user can see that are installed in this application db.
@@ -108,7 +110,7 @@ public class UserDatasetService extends UserService {
     long userId = user.getUserId();
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
     UserDatasetStore dsStore = getUserDatasetStore(getWdkModel());
-    String responseJson = null;
+    String responseJson;
     try (UserDatasetSession dsSession = dsStore.getSession()) {
       UserDataset userDataset =
         dsSession.getUserDatasetExists(userId, datasetId) ?
@@ -181,9 +183,12 @@ public class UserDatasetService extends UserService {
     }
   }
 
-  /*
-   * This service allows a WDK user to share/unshare owned datasets with
-   * other WDK users.  The JSON object accepted by the service should have the following form:
+  /**
+   * This service allows a WDK user to share/unshare owned datasets with other
+   * WDK users.
+   * <p>
+   * The JSON object accepted by the service should have the following form:
+   * <pre>
    *    {
    *      "add": {
    *        "dataset_id1": [ "user_id1", "user_id2" ]
@@ -193,9 +198,10 @@ public class UserDatasetService extends UserService {
    *        "dataset_id3": [ "user_id1", "user_id3" ]
    *      }
    *    }
+   * </pre>
    */
   @PATCH
-  @Path("user-datasets/sharing")
+  @Path("user-dataset-sharing")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public JSONObject manageShares(String body) throws WdkModelException, DataValidationException {
@@ -262,9 +268,11 @@ public class UserDatasetService extends UserService {
   }
 
   /**
-   * Determines whether set of target users is valid.  Any invalid user id throws a Not Found exception.
-   * @param targetUserIds - set of target user ids to check for validity
-   * @throws WdkModelException
+   * Determines whether set of target users is valid.  Any invalid user id
+   * throws a Not Found exception.
+   *
+   * @param targetUserIds
+   *   - set of target user ids to check for validity
    */
   private void validateTargetUserIds(Set<Long> targetUserIds) throws WdkModelException {
     for(Long targetUserId : targetUserIds) {

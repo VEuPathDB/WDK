@@ -4,7 +4,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author jerric
@@ -36,7 +35,7 @@ public abstract class AbstractParamHandler implements ParamHandler {
   }
 
   @Override
-  public void setProperties(Map<String, String> properties) throws WdkModelException {
+  public void setProperties(Map<String, String> properties) {
     _properties = properties;
   }
 }

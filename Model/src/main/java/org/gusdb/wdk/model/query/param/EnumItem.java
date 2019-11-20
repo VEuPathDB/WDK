@@ -112,11 +112,6 @@ public class EnumItem extends WdkModelBase {
     this.isDefault = isDefault;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     // exclude depended values. the depended values in the model are defined in
@@ -141,14 +136,8 @@ public class EnumItem extends WdkModelBase {
     dependedExpressions.clear();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
-   * .WdkModel)
-   */
   @Override
-  public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
+  public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     // do nothing.
   }
 

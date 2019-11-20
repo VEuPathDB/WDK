@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "customName": {
+      "type": "string"
+    },
+    "expanded": {
+      "type": "boolean"
+    },
+    "expandedName": {
+      "type": "string"
+    },
+    "displayPreferences": {
+      "$ref": "../includes/display-prefs.json"
+    }
+  }
+}

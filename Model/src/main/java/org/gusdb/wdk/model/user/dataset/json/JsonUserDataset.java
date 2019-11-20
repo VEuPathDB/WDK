@@ -146,7 +146,7 @@ public class JsonUserDataset implements UserDataset {
 
   @Override
   public Integer getPercentQuota(int quota) {
-    return size * 100 / quota;
+    return Integer.valueOf(size * 100 / quota);
   }
 
   /**

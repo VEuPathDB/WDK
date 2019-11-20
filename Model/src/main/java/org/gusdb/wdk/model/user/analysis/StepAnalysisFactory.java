@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
@@ -24,7 +25,7 @@ public interface StepAnalysisFactory {
    *
    * @return Form param validation errors.
    */
-  List<String> validateFormParams(StepAnalysisInstance instance) throws WdkModelException, WdkUserException;
+  ValidationBundle validateFormParams(StepAnalysisInstance instance) throws WdkModelException, WdkUserException;
 
   /**
    * Creates a valid new analysis instance (i.e. tab).  If successful,

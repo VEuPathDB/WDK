@@ -3,10 +3,15 @@ package org.gusdb.wdk.service.formatter;
 import static org.gusdb.fgputil.functional.Functions.rSwallow;
 import static org.gusdb.fgputil.functional.Functions.reduce;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
 import org.json.JSONArray;
@@ -15,40 +20,46 @@ import org.json.JSONObject;
 
 public class StrategyFormatter {
 
-  public static JSONArray getStrategiesJson(List<Strategy> strategies) {
+  public static JSONArray getStrategiesJson(Collection<Strategy> strategies) {
     return reduce(strategies, rSwallow(
         (strategiesJson, strategy) -> strategiesJson.put(getListingStrategyJson(strategy))
     ), new JSONArray());
   }
 
-  public static JSONObject getListingStrategyJson(Strategy strategy) throws WdkModelException, JSONException {
-    return new JSONObject() 
+  public static JSONObject getListingStrategyJson(Strategy strategy) throws JSONException {
+    Optional<String> recordClassName = strategy.getRecordClass().map(RecordClass::getUrlSegment);
+    return new JSONObject()
         .put(JsonKeys.STRATEGY_ID, strategy.getStrategyId())
-        .put(JsonKeys.DESCRIPTION, strategy.getDescription())
+        .put(JsonKeys.DESCRIPTION, Optional.ofNullable(strategy.getDescription()).orElse(""))
         .put(JsonKeys.NAME, strategy.getName())
         .put(JsonKeys.AUTHOR, strategy.getUser().getDisplayName())
-        .put(JsonKeys.LATEST_STEP_ID, strategy.getLatestStepId())
-        .put(JsonKeys.RECORD_CLASS_NAME, strategy.getLatestStep().getQuestion().getRecordClass().getFullName())
+        .put(JsonKeys.ROOT_STEP_ID, strategy.getRootStepId())
+        .put(JsonKeys.RECORD_CLASS_NAME, recordClassName.isPresent() ? recordClassName.get() :JSONObject.NULL)
         .put(JsonKeys.SIGNATURE, strategy.getSignature())
-        .put(JsonKeys.LAST_MODIFIED, strategy.getLastModifiedTime())
-        .put(JsonKeys.IS_PUBLIC, strategy.getIsPublic())
-        .put(JsonKeys.IS_SAVED, strategy.getIsSaved())
+        .put(JsonKeys.CREATED_TIME, FormatUtil.formatDateTime(strategy.getCreatedTime()))
+        .put(JsonKeys.LAST_MODIFIED, FormatUtil.formatDateTime(strategy.getLastModifiedTime()))
+        .put(JsonKeys.RELEASE_VERSION, strategy.getVersion())
+        .put(JsonKeys.IS_PUBLIC, strategy.isPublic())
+        .put(JsonKeys.IS_SAVED, strategy.isSaved())
         .put(JsonKeys.IS_VALID, strategy.isValid())
         .put(JsonKeys.IS_DELETED, strategy.isDeleted())
-        .put(JsonKeys.IS_PUBLIC, strategy.getIsPublic())
         .put(JsonKeys.ORGANIZATION, strategy.getUser().getProfileProperties().get("organization"))
-        .put(JsonKeys.ESTIMATED_SIZE, strategy.getLatestStep().getRawEstimateSize());
+        .put(JsonKeys.ESTIMATED_SIZE, StepFormatter.translateEstimatedSize(strategy.getEstimatedSize()))
+        .put(JsonKeys.NAME_OF_FIRST_STEP, strategy.getMostPrimaryLeafStep().getDisplayName())
+        .put(JsonKeys.LEAF_AND_TRANSFORM_STEP_COUNT, strategy.getLeafAndTransformStepCount());
   }
 
   public static JSONObject getDetailedStrategyJson(Strategy strategy) throws WdkModelException, JSONException {
+    Set<Step> stepsInTree = new HashSet<Step>(); // accumulate the steps found in the tree
+    JSONObject stepTreeJson = StepFormatter.formatAsStepTree(strategy.getRootStep(), stepsInTree);
+    JSONObject stepDetailsMap = new JSONObject();
+    for (Step step : stepsInTree) {
+      stepDetailsMap.put(Long.toString(step.getStepId()), StepFormatter.getStepJsonWithEstimatedSize(step));
+    }
     return getListingStrategyJson(strategy)
-        .put(JsonKeys.ROOT_STEP, getStepsJson(strategy.getLatestStep()));
+        .put(JsonKeys.STEP_TREE, stepTreeJson)
+        .put(JsonKeys.STEPS, stepDetailsMap)
+        .put(JsonKeys.ESTIMATED_SIZE, strategy.getResultSize()); // overwrite with real size
   }
-  
-  protected static JSONObject getStepsJson(Step step) throws WdkModelException, JSONException {
-    if(step == null) return new JSONObject();
-    return StepFormatter.getStepJsonWithRawEstimateValue(step)
-        .put(JsonKeys.LEFT_STEP, getStepsJson(step.getPreviousStep()))
-        .put(JsonKeys.RIGHT_STEP, getStepsJson(step.getChildStep()));
-  }
+
 }

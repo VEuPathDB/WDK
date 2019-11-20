@@ -1,32 +1,35 @@
 package org.gusdb.wdk.service.request.strategy;
 
-import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
 import static org.gusdb.fgputil.json.JsonUtil.getBooleanOrDefault;
+import static org.gusdb.fgputil.json.JsonUtil.getStringOrDefault;
+import static org.gusdb.wdk.model.user.StepContainer.withId;
 
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Optional;
+import java.util.Queue;
 
-import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.fgputil.Named.NamedObject;
+import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepFactory;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
-import org.gusdb.wdk.service.request.exception.RequestMisformatException;
-import org.gusdb.wdk.service.service.AbstractWdkService;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public class StrategyRequest {
+
   private String _name;
   private String _savedName;
   private String _description;
   private boolean _isSaved;
-  private boolean _isHidden;
   private boolean _isPublic;
-  private TreeNode<Step> _stepTree;
+  private long _rootStepId;
+  private Collection<StepBuilder> _steps;
 
   /**
    * Strategy Request JSON as follows:
@@ -35,18 +38,17 @@ public class StrategyRequest {
    *   savedName: saved strategy name (optional)
    *   description: strategy description (optional - default empty string)
    *   isSaved: whether strategy should be saved (optional - default false)
-   *   isHidden: whether strategy should be hidden (optional - default false)
    *   isPublic: whether strategy should be public (optional - default false)
    *   root: {
    *     id: 1234,
-   *     left: {
+   *     primaryInput: {
    *       id: 2345,
-   *       left: { id: 3456 },
-   *       right: { id: 4567 }
+   *       primaryInput: { id: 3456 },
+   *       secondaryInput: { id: 4567 }
    *     },
-   *     right: {
+   *     secondaryInput: {
    *       id: 5678,
-   *       left: { id: 6789 }
+   *       primaryInput: { id: 6789 }
    *     }
    *   }
    * }
@@ -55,126 +57,39 @@ public class StrategyRequest {
    * @param savedName
    * @param description
    * @param isSaved
-   * @param isHidden
    * @param isPublic
    * @param stepTree
    */
-  public StrategyRequest(String name,
-		                 String savedName,
-		                 String description,
-		                 boolean isSaved,
-		                 boolean isHidden,
-		                 boolean isPublic,
-		                 TreeNode<Step> stepTree) {
+  public StrategyRequest(
+      String name,
+      String savedName,
+      String description,
+      boolean isSaved,
+      boolean isPublic,
+      long rootStepId,
+      Collection<StepBuilder> steps) {
     _name = name;
     _savedName = savedName;
     _description = description;
     _isSaved = isSaved;
-    _isHidden = isHidden;
     _isPublic = isPublic;
-    _stepTree = stepTree;
+    _rootStepId = rootStepId;
+    _steps = steps;
   }
 
-  public static StrategyRequest createFromJson(JSONObject json, StepFactory stepFactory, User user, String projectId)
-      throws WdkModelException, RequestMisformatException, DataValidationException {
-    try {
-    	  String name = json.getString(JsonKeys.NAME);
-    	  String savedName = getStringOrDefault(json, JsonKeys.SAVED_NAME, "");
-    	  String description = getStringOrDefault(json, JsonKeys.DESCRIPTION, "");
-    	  boolean isSaved = getBooleanOrDefault(json, JsonKeys.IS_SAVED, false);
-    	  boolean isHidden = getBooleanOrDefault(json, JsonKeys.IS_HIDDEN, false);
-    	  boolean isPublic = getBooleanOrDefault(json, JsonKeys.IS_PUBLIC, false);
-    	  JSONObject rootStepJson = json.getJSONObject(JsonKeys.ROOT_STEP);
-        long rootStepId = rootStepJson.getLong(JsonKeys.ID);
-    	  Step rootStep = stepFactory.getStepById(rootStepId).orElseThrow(() -> new NotFoundException("Step ID not found: " + rootStepId));
-    	  TreeNode<Step> stepTree = buildStepTree(new TreeNode<Step>(rootStep), rootStepJson, stepFactory, user, projectId, new StringBuilder());
-      return new StrategyRequest(name, savedName, description, isSaved, isHidden, isPublic, stepTree);
-    }
-    catch (JSONException e) {
-      throw new RequestMisformatException(e.getMessage());
-    }
-    catch (WdkUserException e) {
-    	  throw new DataValidationException(e);
-    }
-  }
+  public static StrategyRequest createFromJson(Optional<Strategy> existingStrategy,
+      JSONObject json, StepFactory stepFactory)
+      throws WdkModelException, DataValidationException {
+    String name = json.getString(JsonKeys.NAME);
+    String savedName = getStringOrDefault(json, JsonKeys.SAVED_NAME, "");
+    String description = getStringOrDefault(json, JsonKeys.DESCRIPTION, "");
+    boolean isSaved = getBooleanOrDefault(json, JsonKeys.IS_SAVED, false);
+    boolean isPublic = getBooleanOrDefault(json, JsonKeys.IS_PUBLIC, false);
 
-  public static TreeNode<Step> buildStepTree(TreeNode<Step> stepTree,
-		  JSONObject stepJson,
-		  StepFactory stepFactory,
-		  User user,
-		  String projectId,
-		  StringBuilder errors)
-      throws WdkUserException, WdkModelException {
-    if(stepJson.length() == 0) return stepTree;
-    Step parentStep = stepTree.getContents();
-    errors.append(validateStep(parentStep, user, projectId));
-    if(stepJson.has(JsonKeys.LEFT_STEP)) {
-    	  JSONObject leftStepJson = stepJson.getJSONObject(JsonKeys.LEFT_STEP);
-    	  if(leftStepJson != null && leftStepJson.has(JsonKeys.ID)) {
-    	    long leftStepId = leftStepJson.getLong(JsonKeys.ID);
-    		Step leftStep = stepFactory.getStepById(leftStepId).orElseThrow(() -> new NotFoundException("Step ID not found: " + leftStepId));
-    		parentStep.setPreviousStep(leftStep);
-    	    TreeNode<Step> leftTreeNode = new TreeNode<>(leftStep);
-    	    if(leftStepJson.has(JsonKeys.LEFT_STEP)) {
-    	      stepTree.addChildNode(buildStepTree(leftTreeNode, leftStepJson.getJSONObject(JsonKeys.LEFT_STEP), stepFactory, user, projectId, errors));
-    	    }
-    	    else {
-    	    	  stepTree.addChildNode(leftTreeNode);
-    	    }
-    	  }
-    }
-    if(stepJson.has(JsonKeys.RIGHT_STEP)) {
-  	  JSONObject rightStepJson = stepJson.getJSONObject(JsonKeys.RIGHT_STEP);
-  	  if(rightStepJson != null && rightStepJson.has(JsonKeys.ID)) {
-        long rightStepId = rightStepJson.getLong(JsonKeys.ID);
-  		Step rightStep = stepFactory.getStepById(rightStepId).orElseThrow(() -> new NotFoundException("Step ID not found: " + rightStepId));
-  		parentStep.setChildStep(rightStep);
-  	    TreeNode<Step> rightTreeNode = new TreeNode<>(rightStep);
-  	    if(rightStepJson.has(JsonKeys.RIGHT_STEP)) {
-  	      stepTree.addChildNode(buildStepTree(rightTreeNode, rightStepJson.getJSONObject(JsonKeys.RIGHT_STEP), stepFactory, user, projectId, errors));
-  	    }
-	    else {
-	    	  stepTree.addChildNode(rightTreeNode);
-	    }
-  	  }
-    }
-    validateWiring(stepTree, errors);
-    if(errors.length() > 0) throw new WdkUserException(errors.toString());
-    return stepTree;
-  }
-
-  protected static String validateStep(Step step, User user, String projectId) throws WdkModelException {
-	StringBuilder errors = new StringBuilder();
-    if(step.getStrategyId() != null) {
-    	  errors.append("Step " + step.getStepId() + " is already embedded in strategy with id " + step.getStrategyId() + "." + System.lineSeparator());
-    }
-    if(!projectId.equals(step.getProjectId())) {
-    	  errors.append("Step " + step.getStepId() + " belongs to a project other than " + projectId + "." + System.lineSeparator());
-    }
-    if(step.getUser().getUserId() != user.getUserId()) {
-      throw new ForbiddenException(AbstractWdkService.PERMISSION_DENIED);
-    }
-    if(step.isDeleted()) {
-    	  errors.append("Step " + step.getStepId() + " is marked as deleted." + System.lineSeparator());
-    }
-    if(step.getPreviousStep() != null  || step.getPreviousStepId() != 0 ||
-    	    step.getChildStep() != null || step.getChildStepId() != 0) {
-    	  errors.append("Step " + step.getStepId() + " cannot already be wired." + System.lineSeparator());
-    }
-    return errors.toString();
-  }
-
-  protected static void validateWiring(TreeNode<Step> stepTree, StringBuilder errors) throws WdkUserException, WdkModelException {
-	Step step = stepTree.getContents();
-    if(step.isBoolean() && (step.getPreviousStep() == null || step.getChildStep() == null)) {
-      errors.append("The boolean step " + step.getStepId() + " requires two input steps." + System.lineSeparator());
-    }
-    if(step.isTransform() && (step.getPreviousStep() == null || step.getChildStep() != null)) {
-    	  errors.append("The transform step " + step.getStepId() + " requires exactly one input step." + System.lineSeparator());
-    }
-    for(TreeNode<Step> subTree : stepTree.getChildNodes()) {
-    	  validateWiring(subTree, errors);
-    }
+    TwoTuple<Long, Collection<StepBuilder>> treeInput =
+        treeToSteps(existingStrategy, json.getJSONObject(JsonKeys.STEP_TREE), stepFactory);
+    return new StrategyRequest(name, savedName, description, isSaved,
+        isPublic, treeInput.getFirst(), treeInput.getSecond());
   }
 
   public String getName() {
@@ -193,15 +108,108 @@ public class StrategyRequest {
     return _isSaved;
   }
 
-  public boolean isHidden() {
-    return _isHidden;
-  }
-
   public boolean isPublic() {
     return _isPublic;
   }
 
-  public TreeNode<Step> getStepTree() {
-    return _stepTree;
+  public long getRootStepId() {
+    return _rootStepId;
+  }
+
+  public Collection<StepBuilder> getSteps() {
+    return _steps;
+  }
+
+  /*
+   *    id: 1234,
+        primaryInput: {
+          id: 2345,
+          primaryInput: { id: 3456 },
+          secondaryInput: { id: 4567 }
+        },
+        secondaryInput: {
+          id: 5678,
+          primaryInput: { id: 6789 }
+        }
+      }
+
+   */
+  public static TwoTuple<Long, Collection<StepBuilder>> treeToSteps(
+    Optional<Strategy> existingStrategy,
+    JSONObject input,
+    StepFactory factory
+  ) throws WdkModelException, DataValidationException {
+
+    final Queue<StepBuilder> allBuilders = new LinkedList<>();
+    final Queue<JSONObject> next = new LinkedList<>();
+
+    next.add(input);
+
+    while(!next.isEmpty()) {
+
+      final JSONObject currentStepJson = next.poll();
+      final long stepId = currentStepJson.getLong(JsonKeys.STEP_ID);
+
+      // try to find step in the existing strategy if present
+      Optional<Step> stepOpt = existingStrategy
+        .flatMap(strat -> strat.findFirstStep(withId(stepId)));
+
+      // if not there, look up in DB
+      Step step = stepOpt.isPresent() ? stepOpt.get() :
+        factory.getStepById(stepId, ValidationLevel.NONE)
+          .orElseThrow(() -> new DataValidationException(stepId + " is not a valid step ID."));
+
+      // check that the step either already lives in the existing strategy or is unattached
+      Optional<Long> existingStrategyId = existingStrategy.map(Strategy::getStrategyId);
+      if (step.getStrategyId().isPresent() &&
+          (!existingStrategyId.isPresent() ||
+           existingStrategyId.isPresent() &&
+           !step.getStrategyId().get().equals(existingStrategyId.get()))) {
+        throw new DataValidationException("Step " + step.getStepId() +
+          " belongs to strategy " + step.getStrategyId().get() +
+          " so cannot be assigned to " + (existingStrategyId.isPresent() ?
+              "strategy " + existingStrategyId.get() : "a new strategy"));
+      }
+
+      // now that we know strategy IDs of incoming steps are missing or valid, clear for insertion into strat builder
+      final StepBuilder builder = Step.builder(step).removeStrategy();
+
+      if (currentStepJson.has(JsonKeys.PRIMARY_INPUT_STEP)) {
+        final JSONObject prim = currentStepJson.getJSONObject(JsonKeys.PRIMARY_INPUT_STEP);
+        builder.getAnswerSpec()
+          .setParamValue(
+            step.getPrimaryInputStepParam()
+              .map(NamedObject::getName)
+              .orElseThrow(() -> new DataValidationException(
+                  "Step " + stepId + " does not allow a primary input step.")),
+            Long.toString(prim.getLong(JsonKeys.STEP_ID))
+          );
+        next.add(prim);
+      }
+
+      if (currentStepJson.has(JsonKeys.SECONDARY_INPUT_STEP)) {
+        final JSONObject sec = currentStepJson.getJSONObject(JsonKeys.SECONDARY_INPUT_STEP);
+        builder.getAnswerSpec()
+          .setParamValue(
+            step.getSecondaryInputStepParam()
+              .map(NamedObject::getName)
+              .orElseThrow(() -> new DataValidationException(
+                "Step " + stepId + " does not allow a secondary input step.")),
+            Long.toString(sec.getLong(JsonKeys.STEP_ID))
+           );
+        next.add(sec);
+      }
+
+      // TODO: optimize!!!  We should only set this if:
+      //    1. step has answer params AND
+      //    2. answer params inputs have changed
+      // Easier to always set if #1 to start- save implementing #2 for later
+      if (step.getAnswerSpec().getAnswerParamCount() > 0) {
+        builder.setResultSizeDirty(true);
+      }
+      allBuilders.add(builder);
+    }
+
+    return new TwoTuple<>(allBuilders.peek().getStepId(), allBuilders);
   }
 }

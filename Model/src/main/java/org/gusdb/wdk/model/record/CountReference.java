@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.record;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -45,9 +47,11 @@ public class CountReference extends WdkModelBase {
     } else {    // initialize a custom plugin.
       try {
         Class<? extends CountPlugin> pluginClass = Class.forName(_pluginClassName).asSubclass(CountPlugin.class);
-        _plugin = pluginClass.newInstance();
+        _plugin = pluginClass.getDeclaredConstructor().newInstance();
       }
-      catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+      catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+          IllegalArgumentException | InvocationTargetException |
+          NoSuchMethodException | SecurityException ex) {
         throw new WdkModelException(ex);
       }
     }

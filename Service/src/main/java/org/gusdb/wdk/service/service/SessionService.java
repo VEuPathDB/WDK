@@ -5,8 +5,6 @@ import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -21,10 +19,11 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.fgputil.web.CookieBuilder;
+import org.gusdb.fgputil.web.SessionProxy;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.events.NewUserEvent;
 import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.WdkCookie;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -33,7 +32,6 @@ import org.gusdb.wdk.model.config.ModelConfig.AuthenticationMethod;
 import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
-import org.gusdb.wdk.service.CookieConverter;
 import org.gusdb.wdk.service.request.LoginRequest;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.statustype.MethodNotAllowedStatusType;
@@ -68,7 +66,6 @@ public class SessionService extends AbstractWdkService {
   private static final String EMAIL_KEY = "email";
 
   // redirect URLs
-  private static final String ALREADY_LOGGED_IN_URL = "/showApplicaton.do";
   private static final String OAUTH_ERROR_URL = "/app/user/message/login-error?requestUrl=";
 
   @GET
@@ -91,7 +88,7 @@ public class SessionService extends AbstractWdkService {
     // Is the user already logged in?
     User oldUser = getSessionUser();
     if (!oldUser.isGuest()) {
-      return createRedirectResponse(appUrl + ALREADY_LOGGED_IN_URL).build();
+      return createRedirectResponse(redirectUrl).build();
     }
 
     try {
@@ -116,11 +113,14 @@ public class SessionService extends AbstractWdkService {
 
       // Is there a matching user id for the auth code provided?
       long userId = client.getUserIdFromAuthCode(authCode, getContextUri());
-      User newUser = userFactory.login(oldUser, userId);
+      User newUser = userFactory.login(userId);
       if (newUser == null) {
         throw new WdkModelException("Unable to find user with ID " + userId +
             ", returned by OAuth service with auth code " + authCode);
       }
+
+      // transfer strategies from guest to logged-in user
+      wdkModel.getStepFactory().transferStrategyOwnership(oldUser, newUser);
 
       // login successful; create redirect response
       return getSuccessResponse(newUser, oldUser, redirectUrl, true);
@@ -155,11 +155,15 @@ public class SessionService extends AbstractWdkService {
       // Is the user already logged in?
       User oldUser = getSessionUser();
       if (!oldUser.isGuest()) {
-        return createRedirectResponse(appUrl + ALREADY_LOGGED_IN_URL).build();
+        return createRedirectResponse(redirectUrl).build();
       }
 
-      // log in the user and return JSON response
+      // log in the user
       User newUser = wdkModel.getUserFactory().login(oldUser, request.getEmail(), request.getPassword());
+
+      // transfer strategies from guest to logged-in user
+      wdkModel.getStepFactory().transferStrategyOwnership(oldUser, newUser);
+
       return getSuccessResponse(newUser, oldUser, redirectUrl, false);
 
     }
@@ -184,18 +188,18 @@ public class SessionService extends AbstractWdkService {
    */
   private Response getSuccessResponse(User newUser, User oldUser,
       String redirectUrl, boolean isRedirectResponse) throws WdkModelException {
-    HttpSession session = getSession();
-    synchronized(session) {
+    SessionProxy session = getSession();
+    synchronized(session.getUnderlyingSession()) {
       session.setAttribute(Utilities.WDK_USER_KEY, newUser);
       Events.triggerAndWait(new NewUserEvent(newUser, oldUser, session),
           new WdkRuntimeException("Unable to complete WDK user assignement."));
       LoginCookieFactory baker = new LoginCookieFactory(getWdkModel().getModelConfig().getSecretKey());
-      Cookie loginCookie = baker.createLoginCookie(newUser.getEmail(), true);
+      CookieBuilder loginCookie = baker.createLoginCookie(newUser.getEmail(), true);
       redirectUrl = getSuccessRedirectUrl(redirectUrl, newUser, loginCookie);
       return (isRedirectResponse ?
         createRedirectResponse(redirectUrl) :
         createJsonResponse(true, null, redirectUrl)
-      ).cookie(CookieConverter.toJaxRsCookie(loginCookie)).build();
+      ).cookie(loginCookie.toJaxRsCookie()).build();
     }
   }
 
@@ -207,7 +211,7 @@ public class SessionService extends AbstractWdkService {
    * @param cookie login cookie to be sent to the browser
    * @return page user should be redirected to after successful login
    */
-  protected String getSuccessRedirectUrl(String redirectUrl, User user, Cookie cookie) {
+  protected String getSuccessRedirectUrl(String redirectUrl, User user, CookieBuilder cookie) {
     return redirectUrl;
   }
 
@@ -220,7 +224,7 @@ public class SessionService extends AbstractWdkService {
     getSession().invalidate();
     
     // get a new session and add new guest user to it
-    HttpSession session = getSession();
+    SessionProxy session = getSession();
     User newUser = getWdkModel().getUserFactory().createUnregistedUser(UnregisteredUserType.GUEST);
     session.setAttribute(Utilities.WDK_USER_KEY, newUser);
 
@@ -229,17 +233,16 @@ public class SessionService extends AbstractWdkService {
         new WdkRuntimeException("Unable to complete WDK user assignement."));
 
     // create and append logout cookies to response
-    Set<Cookie> logoutCookies = new HashSet<>();
+    Set<CookieBuilder> logoutCookies = new HashSet<>();
     logoutCookies.add(LoginCookieFactory.createLogoutCookie());
-    for (WdkCookie wdkCookie : getWdkModel().getUiConfig().getExtraLogoutCookies()) {
-      Cookie extraCookie = new Cookie(wdkCookie.getName(), "");
-      extraCookie.setPath(wdkCookie.getPath());
+    for (CookieBuilder extraCookie : getWdkModel().getUiConfig().getExtraLogoutCookies()) {
+      extraCookie.setValue("");
       extraCookie.setMaxAge(-1);
       logoutCookies.add(extraCookie);
     }
     ResponseBuilder builder = createRedirectResponse(getContextUri());
-    for (Cookie logoutCookie : logoutCookies) {
-      builder.cookie(CookieConverter.toJaxRsCookie(logoutCookie));
+    for (CookieBuilder logoutCookie : logoutCookies) {
+      builder.cookie(logoutCookie.toJaxRsCookie());
     }
     return builder.build();
   }

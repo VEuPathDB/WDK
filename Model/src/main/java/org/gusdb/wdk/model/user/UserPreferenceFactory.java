@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.user;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.LinkedHashMap;
@@ -15,7 +14,6 @@ import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -145,32 +143,31 @@ public class UserPreferenceFactory {
    * @return a list of 2 elements, the first is a map of global preferences, the
    *         second is a map of project-specific preferences.
    */
-  public UserPreferences getPreferences(User user)
-      throws WdkModelException {
+  public UserPreferences getPreferences(User user) throws WdkModelException {
     try {
-      final UserPreferences prefs = new UserPreferences(user);
       String sql = "SELECT * FROM " + _userSchema + "preferences WHERE user_id = ?";
-      new SQLRunner(_userDb.getDataSource(), sql, "wdk-user-select-preference").executeQuery(
+      return new SQLRunner(_userDb.getDataSource(), sql, "wdk-user-select-preference")
+        .executeQuery(
           new Object[]{ user.getUserId() },
           new Integer[]{ Types.BIGINT },
-          new ResultSetHandler() {
-            @Override public void handleResult(ResultSet rs) throws SQLException {
-              while (rs.next()) {
-                String prefProjectId = rs.getString("project_id");
-                String prefName = rs.getString("preference_name");
-                String prefValue = rs.getString("preference_value");
-                if (prefProjectId.equals(GLOBAL_PREFERENCE_KEY)) {
-                  prefs.setGlobalPreference(prefName, prefValue);
-                }
-                else if (prefProjectId.equals(_wdkModel.getProjectId()))
-                  prefs.setProjectPreference(prefName, prefValue);
+          rs -> {
+            UserPreferences prefs = new UserPreferences(user);
+            while (rs.next()) {
+              String prefProjectId = rs.getString("project_id");
+              String prefName = rs.getString("preference_name");
+              String prefValue = rs.getString("preference_value");
+              if (prefProjectId.equals(GLOBAL_PREFERENCE_KEY)) {
+                prefs.setGlobalPreference(prefName, prefValue);
+              }
+              else if (prefProjectId.equals(_wdkModel.getProjectId())) {
+                prefs.setProjectPreference(prefName, prefValue);
               }
             }
+            return prefs;
           });
-      return prefs;
     }
     catch (Exception e) {
-      throw new WdkModelException("Error loading preferences for user " + user.getUserId(), e);
+      return WdkModelException.unwrap(e);
     }
   }
 }

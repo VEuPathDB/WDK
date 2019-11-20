@@ -1,17 +1,18 @@
 package org.gusdb.wdk.model.query.param;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.HashMap;
 
 import org.gusdb.fgputil.cache.ValueFactory;
 import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,8 +40,8 @@ public class MetaDataItemNewFetcher implements ValueFactory<String, Map<String, 
         if (query.getParamMap() != null && query.getParamMap().containsKey(paramName))
           requiredParamValues.put(paramName, paramValues.get(paramName));
 
-      QueryInstance<?> instance = query.makeInstance(user, requiredParamValues, true, 0,
-          new HashMap<String, String>());
+      QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+          .putAll(requiredParamValues).buildRunnable(user, query, StepContainer.emptyContainer()));
       Map<String, MetaDataItem> itemMap = new LinkedHashMap<>();
       ResultList resultList = instance.getResults();
       try {
@@ -61,7 +62,7 @@ public class MetaDataItemNewFetcher implements ValueFactory<String, Map<String, 
       }
       return itemMap;
     }
-    catch (WdkModelException | WdkUserException ex) {
+    catch (WdkModelException ex) {
       throw new ValueProductionException(ex);
     }
   }

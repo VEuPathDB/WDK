@@ -5,10 +5,10 @@ import static org.gusdb.fgputil.functional.Functions.mapToList;
 import static org.gusdb.fgputil.iterator.IteratorUtil.flatten;
 import static org.gusdb.fgputil.iterator.IteratorUtil.transform;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -30,7 +30,6 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.RowResult;
@@ -42,7 +41,7 @@ import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowWriter;
 /**
  * Provides threading and database logic to update an arbitrary DB table using procedures defined in a plugin.
  * Also provides main() method as a start-point for running updates with a given plugin.
- * 
+ *
  * How does it work?
  * 1.  On command line, user provides a plugin class and projectId, plus any args for the plugin
  * 2a. The plugin class tells this class what type of data (subclass of TableRow) it will be processing, AND
@@ -61,9 +60,9 @@ import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRowWriter;
  * 7.  Once all records have been removed from the queue, this class tells all threads to shut down after
  *     finishing the current record.
  * 8.  Once all threads have shut down, statistics are written and the program shuts down.
- * 
+ *
  * For interfaces needed to create an update implementation, see TableRowInterfaces in this package.
- * 
+ *
  * @author rdoherty
  *
  * @param <T> type of TableRow the configured plugin will be processing
@@ -164,9 +163,11 @@ public class TableRowUpdater<T extends TableRow> {
       @SuppressWarnings("unchecked")
       Class<? extends TableRowUpdaterPlugin<?>> pluginClass =
           (Class<? extends TableRowUpdaterPlugin<?>>) Class.forName(pluginClassName);
-      config.plugin = pluginClass.newInstance();
+      config.plugin = pluginClass.getDeclaredConstructor().newInstance();
     }
-    catch (ClassCastException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+    catch (ClassCastException | InstantiationException | IllegalAccessException |
+        ClassNotFoundException | IllegalArgumentException | InvocationTargetException |
+        NoSuchMethodException | SecurityException e) {
       throw new IllegalArgumentException("Unable to instantiate plugin class '" + pluginClassName + "'", e);
     }
     return config;
@@ -181,7 +182,7 @@ public class TableRowUpdater<T extends TableRow> {
   /**%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*
    *  Instance fields and methods for TableRowUpdater class
    **%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
-  
+
   private final TableRowFactory<T> _factory;
   private final List<TableRowWriter<T>> _writers;
   private final TableRowUpdaterPlugin<T> _plugin;
@@ -215,7 +216,7 @@ public class TableRowUpdater<T extends TableRow> {
     try {
       DatabaseInstance userDb = _wdkModel.getUserDb();
       RecordQueue<T> recordQueue = new RecordQueue<>();
-  
+
       // create and start threads that will listen to queue and pull off records to process
       for (int i = 0; i < NUM_THREADS; i++) {
         RowHandler<T> thread = new RowHandler<>(i + 1, recordQueue, _plugin, _writers, _wdkModel);
@@ -223,12 +224,12 @@ public class TableRowUpdater<T extends TableRow> {
         results.add(_exec.submit(thread));
       }
       _exec.shutdown();
-  
+
       // execute query to read all records from DB and submit them to handler threads
       String sql = _factory.getRecordsSql(getUserSchema(_wdkModel), _wdkModel.getProjectId());
       new SQLRunner(userDb.getDataSource(), sql, "select-records-to-migrate")
           .executeQuery(new RecordQueuer<T>(_wdkModel, _factory, recordQueue, threads));
-  
+
       // wait for queue to empty unless all threads exited early
       while (!recordQueue.isEmpty()) { /* wait */ }
 
@@ -293,7 +294,7 @@ public class TableRowUpdater<T extends TableRow> {
   }
 
   /**%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*
-   *  Static helper inner classes 
+   *  Static helper inner classes
    **%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
   private static class ThreadCollection<T extends TableRow> extends ArrayList<RowHandler<T>> {
@@ -310,7 +311,7 @@ public class TableRowUpdater<T extends TableRow> {
   /**
    * Provides a slightly clearer interface over a ConcurrentLinkedDeque, where records are pushed to the
    * tail of the queue and popped from the head (i.e. a queue).  If queue is empty, a null value is returned.
-   * 
+   *
    * @param <T> type of objects stored in this queue
    */
   private static class RecordQueue<T> extends ConcurrentLinkedDeque<T> {
@@ -326,10 +327,10 @@ public class TableRowUpdater<T extends TableRow> {
    * Provides a ResultSetHandler that appends records read from the result set onto a record queue, but only
    * while the queue is smaller than a maximum size.  This handler will then wait until the queue has
    * emptied before reading further records.
-   * 
+   *
    * @param <T> type of record that will be created from each row in the ResultSet (and subsequently added to the queue)
    */
-  private static class RecordQueuer<T extends TableRow> implements ResultSetHandler {
+  private static class RecordQueuer<T extends TableRow> implements ResultSetHandler<RecordQueuer<T>> {
 
     private final WdkModel _wdkModel;
     private final TableRowFactory<T> _factory;
@@ -344,7 +345,7 @@ public class TableRowUpdater<T extends TableRow> {
     }
 
     @Override
-    public void handleResult(ResultSet rs) throws SQLException {
+    public RecordQueuer<T> handleResult(ResultSet rs) throws SQLException {
       DBPlatform platform = _wdkModel.getUserDb().getPlatform();
       boolean exitEarly = false;
       while (rs.next() && !exitEarly) {
@@ -361,6 +362,7 @@ public class TableRowUpdater<T extends TableRow> {
           _recordQueue.pushRecord(_factory.newTableRow(rs, platform));
         }
       }
+      return this;
     }
   }
 
@@ -376,7 +378,7 @@ public class TableRowUpdater<T extends TableRow> {
 
     /**
      * Incorporates the stats contained in the passed object into this one.  Used to aggregate results.
-     * 
+     *
      * @param stats object to incorporate into this stats object
      */
     public void incorporate(Stats stats) {
@@ -398,7 +400,7 @@ public class TableRowUpdater<T extends TableRow> {
    * Modified records are collected into a batch, then written to the DB together in a single transaction
    * When the commitAndFinish() method is called, it will finish the current record and then exit its run
    * loop, print statistics, and return its stats (available in a Future for this Callable).
-   * 
+   *
    * @param <T> type of records being processed
    */
   private static class RowHandler<T extends TableRow> implements Callable<Stats> {
@@ -491,7 +493,7 @@ public class TableRowUpdater<T extends TableRow> {
 
   /**
    * Handles writing a batch of modified records
-   * 
+   *
    * @param <T> type of row being update
    */
   private static class BatchUpdater<T extends TableRow> {
@@ -501,14 +503,13 @@ public class TableRowUpdater<T extends TableRow> {
     private final List<Integer[]> _parameterTypes;
     private final DataSource _userDs;
     private final String _schema;
-    
+
     public BatchUpdater(RowHandler<T> parent, List<TableRowWriter<T>> writers, WdkModel wdkModel) {
       _parent = parent;
       _writers = writers;
       _userDs = wdkModel.getUserDb().getDataSource();
       _schema = getUserSchema(wdkModel);
-      _parameterTypes = mapToList(writers, new Function<TableRowWriter<T>, Integer[]>() {
-        @Override public Integer[] apply(TableRowWriter<T> writer) { return writer.getParameterTypes(); }});
+      _parameterTypes = mapToList(writers, TableRowWriter::getParameterTypes);
     }
 
     public void update(final List<T> modifiedRows) {
@@ -537,12 +538,7 @@ public class TableRowUpdater<T extends TableRow> {
 
         @Override
         public Iterator<Object[]> iterator() {
-          return flatten(transform(modifiedRows.iterator(),
-              new Function<T, Collection<Object[]>>() {
-                @Override public Collection<Object[]> apply(T obj) {
-                  return writer.toValues(obj);
-                }
-              }));
+          return flatten(transform(modifiedRows.iterator(), writer::toValues));
         }
 
         @Override

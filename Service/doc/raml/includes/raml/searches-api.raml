@@ -1,0 +1,61 @@
+displayName: Searches
+
+get:
+  description: Get a list of searches available for this record type.   The information returned here is sufficient to form a menu of available searches for this record type.  It does not include information about the parameters of each search.  (The record-types endpoint returns similar information for a comprehensive list of searches for all record types, suitable to build a comprehensive menu of searches.) 
+
+/{searchName}:
+  uriParameters:
+    searchName:
+      type: string
+  get:
+    description: >
+     Get detailed information about the specified search, including all parameters and the allowed values for them.
+     Some types of parameters (vocabulary and filter) might depend on the value of other parameters to determine their allowed values.
+     For example, the allowed values for a
+     City parameter might depend on the previously set value for a State/Province parameter.  This endpoint uses default parameter values
+     to resolve those dependencies.  The response has detailed parameter information, including vocabularies and metadata as appropriate.
+     This endpoint is typically used to render a "new" search page (i.e. filled with default parameter values).
+ 
+    responses:
+      200:
+        body:
+          application/json:
+
+  post:
+    description: >
+      Similar to the GET endpoint but uses supplied parameter values, rather than default parameter values.
+      Missing or invalid parameter values are replaced with valid default values.
+      Response is the same as the GET, but includes error messages for any invalid or missing parameter values.  This
+      endpoint is typically used to render a page to revise a search. 
+
+  /refreshed-dependent-params:
+    post:
+
+  /{paramName}:
+    uriParameters:
+      paramName:
+        type: string
+    get:
+      description: >
+        Get a get parameter's details, including vocab if appropriate.
+        For dependent params, if `stepId` provided, this is a step revise;  use
+        the step to get depended param values.  Otherwise, use defaults.
+        Client will need to call this to get filter params and enum params with
+        displayType="typeAhead".
+      queryParameters:
+        stepId:
+        displayType:
+    post:
+      description: >
+        GET by POST.  Get a dependent parameter's details, including vocab.. The
+        body must contain a JSON map of depended param values. (These will be
+        validated).  Because of complexity of dependent parameters' relationship,
+        the client must guarantee these calls are ordered correctly.
+
+    /ontology-term-summary:
+      post:
+      
+    /summary-counts:
+      post:
+      
+

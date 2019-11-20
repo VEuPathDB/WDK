@@ -67,7 +67,8 @@ public class UserDatasetInfo {
     try {
       User user = userCache.get(userId);
       if (user == null) {
-        user = userFactory.getUserById(userId);
+        user = userFactory.getUserById(userId)
+            .orElseThrow(() -> new WdkRuntimeException("No user exists with ID " + userId));
         userCache.put(userId, user);
       }
       return user;
