@@ -307,7 +307,11 @@ public class FilterParamNewStableValue {
 
     protected abstract String getValueSqlClause(String columnName, String metadataTableName) throws WdkModelException;
 
-    abstract String getSignature();
+    abstract String getValuesForSignature();
+    
+    String getSignature() {
+      return field + " " + getValuesForSignature();
+    }
 
     // include in where clause a filter by ontology_id
     String getFilterAsWhereClause(String metadataTableName, Map<String, OntologyItem> ontology, String filterSelectSql) throws WdkModelException {
@@ -383,7 +387,7 @@ public class FilterParamNewStableValue {
     }
 
     @Override
-    String getSignature() {
+    String getValuesForSignature() {
       return "" + getMinString() + "," + getMaxString() + "," + includeUnknowns;
     }
 
@@ -507,7 +511,7 @@ public class FilterParamNewStableValue {
     }
 
     @Override
-    String getSignature() {
+    String getValuesForSignature() {
       List<?> sortedMembers = getSortedMembers();
       String membersSig = sortedMembers == null
           ? "NULL"
@@ -701,7 +705,7 @@ public class FilterParamNewStableValue {
     }
 
     @Override
-    String getSignature() {
+    String getValuesForSignature() {
       return getLeafFilters()
           .map(StringMembersFilter::getSignature)
           .collect(Collectors.joining(" " + _operation + " "));
