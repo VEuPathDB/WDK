@@ -160,7 +160,15 @@ public class TableField extends Field implements AttributeFieldContainer {
     super.resolveReferences(wdkModel);
 
     // resolve Query
-    _unwrappedQuery = (SqlQuery) wdkModel.resolveReference(_queryTwoPartName);
+    try {
+      _unwrappedQuery = (SqlQuery)wdkModel.resolveReference(_queryTwoPartName);
+    }
+    catch (ClassCastException e) {
+      throw new WdkModelException("Query '" + _queryTwoPartName  +
+          "' referenced as a table query in table '" + getName() +
+          "' in record class '" + getRecordClass().getFullName() +
+          "' must be a SqlQuery.");
+    }
 
     // validate the table query
     _recordClass.validateBulkQuery(_unwrappedQuery);
