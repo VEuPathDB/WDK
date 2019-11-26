@@ -37,6 +37,7 @@ import org.json.JSONObject;
  *         this code extract the param values from steps, and put them into separate row. The result will be
  *         used to expedite the step validation.
  */
+@Deprecated
 public class StepParamExpander extends BaseCLI {
 
   private static final Logger logger = Logger.getLogger(StepParamExpander.class);
@@ -261,6 +262,11 @@ public class StepParamExpander extends BaseCLI {
             rawValue.toString() + " which is not a string.");
         continue;
       }
+      // FIXME: this is fundamentally broken since we can't determine the param
+      //    types at this point in the code; simply splitting on comma is not
+      //    enough to determine values any more since we have so many param
+      //    types with complex (JSON) values.  This class should probably be
+      //    deprecated since we validate in real time now anyway.
       String value = rawValue.getString();
        String[] terms = value.split(",");
       Set<String> termSet = new HashSet<>();

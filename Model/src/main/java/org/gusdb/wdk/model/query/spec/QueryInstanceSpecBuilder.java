@@ -7,6 +7,7 @@ import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
@@ -63,10 +64,19 @@ public class QueryInstanceSpecBuilder extends ParameterContainerInstanceSpecBuil
    */
   public QueryInstanceSpec buildValidated(User user, Query query, StepContainer stepContainer,
       ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
+    translateDbStableValues(query);
     TwoTuple<PartiallyValidatedStableValues, ValidationBundleBuilder> paramValidation =
         validateParams(user, query, stepContainer, validationLevel, fillStrategy);
     return new QueryInstanceSpec(user, query, paramValidation.getFirst(),
         _assignedWeight, paramValidation.getSecond().build(), stepContainer);
+  }
+
+  private void translateDbStableValues(Query query) {
+    for (Param param : query.getParams()) {
+      if (containsKey(param.getName())) {
+        put(param.getName(), param.translateDbStableValue(get(param.getName())));
+      }
+    }
   }
 
   /**

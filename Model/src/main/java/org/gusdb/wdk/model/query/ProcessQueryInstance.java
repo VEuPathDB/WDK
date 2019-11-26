@@ -82,7 +82,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     return insertResults(appDb, tableName, instanceId);
   }
 
-  private static void createCacheTable(DatabaseInstance appDb, String tableName, Query query) throws WdkModelException {
+  private static void createCacheTable(DatabaseInstance appDb, String tableName, ProcessQuery query) throws WdkModelException {
     LOG.debug("creating process query cache...");
     DBPlatform platform = appDb.getPlatform();
     Column[] columns = query.getColumns();

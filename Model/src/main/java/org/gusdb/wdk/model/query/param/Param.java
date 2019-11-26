@@ -549,7 +549,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
     // check if value is empty but empty value allowed
     String value = stableValues.get(getName());
-    if ((value == null || value.isEmpty()) &&
+    if (isEmptyValue(value) &&
         isAllowEmpty() &&
         !fillStrategy.shouldFillWhenMissing()) {
       // make sure entry present (might have been missing);
@@ -629,9 +629,13 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     return defaultsValidity;
   }
 
+  protected boolean isEmptyValue(String value) {
+    return value == null || value.isEmpty();
+  }
+
   private Optional<ParamValidity> handleEmptyValueCases(String value, boolean defaultValueRequired,
       PartiallyValidatedStableValues stableValues, ValidationLevel level) throws WdkModelException {
-    if (value == null || value.isEmpty()) {
+    if (isEmptyValue(value)) {
       String msgPrefix = "Is still empty (defaultUsed=" + defaultValueRequired + ") ";
       // empty value is still allowed if param is not depended on and validation level is displayable or less
       if (level.isLessThanOrEqualTo(ValidationLevel.DISPLAYABLE) && getDependentParams().isEmpty()) {
@@ -752,7 +756,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   public String getInternalValue(RunnableObj<QueryInstanceSpec> queryInstanceSpec)
       throws WdkModelException {
     String stableValue = queryInstanceSpec.get().get(getName());
-    if ((stableValue == null || stableValue.isEmpty()) && isAllowEmpty()) {
+    if ((stableValue == null || isEmptyValue(stableValue)) && isAllowEmpty()) {
       // FIXME: RRD: need to determine if getEmptyValue really returns a stable
       //             value or internal.  In another place (forget where- maybe
       //             QueryInstance?) we seem to be popping the empty value in at
@@ -833,10 +837,6 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   public void addHandler(ParamHandlerReference handlerReference) {
     _handlerReferences.add(handlerReference);
-  }
-
-  public String getDisplayValue(QueryInstanceSpec paramValueSet) throws WdkModelException {
-    return _handler.getDisplayValue(paramValueSet);
   }
 
   /**
@@ -961,5 +961,9 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     return !getDependentParams().isEmpty()
       && (_xmlDefaultValue == null || _xmlDefaultValue.isEmpty())
       && !_allowEmpty;
+  }
+
+  public String translateDbStableValue(String stableValue) {
+    return stableValue;
   }
 }

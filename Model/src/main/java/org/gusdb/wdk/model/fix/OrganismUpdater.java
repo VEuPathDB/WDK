@@ -19,6 +19,8 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -150,19 +152,17 @@ public class OrganismUpdater {
       for (int i = 0; i < lenParamOrg; i++) {
         if (name.equals(PARAM_ORGANISM[i])) {
           String organisms = jsParams.getString(name);
-          StringBuilder buffer = new StringBuilder();
-          for (String organism : organisms.split("\\s*,\\s*")) {
+          JSONArray newOrgs = new JSONArray();
+          for (String organism : AbstractEnumParam.convertToTerms(organisms)) {
             // logger.debug("Organism found: --" + organism + "\n\n");
             if (_mappings.containsKey(organism)) {
               logger.debug("FOUND param organism uncompressed with value that needs update...");
               organism = _mappings.get(organism);
               updated = true;
             }
-            if (buffer.length() > 0)
-              buffer.append(',');
-            buffer.append(organism);
+            newOrgs.put(organism);
           }
-          jsParams.put(name, buffer.toString());
+          jsParams.put(name, newOrgs.toString());
         }
       }
     }

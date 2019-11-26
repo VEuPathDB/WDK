@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.fix.table.TableRowUpdater;
 import org.gusdb.wdk.model.fix.table.steps.StepData;
 import org.gusdb.wdk.model.fix.table.steps.StepDataFactory;
 
+@Deprecated
 public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> {
 
   private static final Logger LOG = Logger.getLogger(StepParamExpanderPlugin.class);

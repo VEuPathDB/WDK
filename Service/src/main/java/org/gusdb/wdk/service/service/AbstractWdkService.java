@@ -24,7 +24,6 @@ import org.apache.log4j.Logger;
 import org.glassfish.grizzly.http.server.Request;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.events.Events;
-import org.gusdb.fgputil.web.ApplicationContext;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.fgputil.web.SessionProxy;
 import org.gusdb.wdk.controller.ContextLookup;
@@ -39,8 +38,8 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 
 /**
@@ -198,24 +197,20 @@ public abstract class AbstractWdkService {
    * @return error context for the current request
    */
   public ErrorContext getErrorContext(ErrorLocation errorLocation) {
-    return getErrorContext(ContextLookup.getApplicationContext(_servletContext), getRequest(), getWdkModel(), errorLocation);
+    return getErrorContext(getRequest(), getWdkModel(), errorLocation);
   }
 
   /**
    * Aggregate environment context data into an object for easy referencing
    *
-   * @param context current servlet context
    * @param request current HTTP servlet request
    * @param wdkModel this WDK Model
    * @return context data for this error
    */
-  public static ErrorContext getErrorContext(ApplicationContext context,
-          RequestData request, WdkModel wdkModel, ErrorLocation errorLocation) {
+  public static ErrorContext getErrorContext(RequestData request, WdkModel wdkModel, ErrorLocation errorLocation) {
     return new ErrorContext(
       wdkModel,
-      request,
-      context,
-      request.getAttributeMap(),
+      request.getSnapshot(),
       request.getSession().getAttributeMap(),
       errorLocation);
   }

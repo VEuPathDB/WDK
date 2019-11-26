@@ -2,10 +2,7 @@ package org.gusdb.wdk.model.query.param;
 
 import static org.gusdb.wdk.model.user.StepContainer.withId;
 
-import java.util.Optional;
-
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
-import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
@@ -31,17 +28,6 @@ public class AnswerParamHandler extends AbstractParamHandler {
   public String toStableValue(User user, Object rawValue) {
     Step step = (Step) rawValue;
     return Long.toString(step.getStepId());
-  }
-
-  /**
-   * the raw value is a step object.
-   */
-  @Override
-  public Optional<Step> toRawValue(User user, String stableValue) throws WdkModelException {
-    return AnswerParam.NULL_VALUE.equals(stableValue)
-        ? Optional.empty()
-        : user.getWdkModel().getStepFactory().getStepByIdAndUserId(
-            user.getUserId(), Long.valueOf(stableValue), ValidationLevel.NONE);
   }
 
   /**
@@ -95,12 +81,5 @@ public class AnswerParamHandler extends AbstractParamHandler {
   @Override
   public ParamHandler clone(Param param) {
     return new AnswerParamHandler(this, param);
-  }
-
-  @Override
-  public String getDisplayValue(QueryInstanceSpec ctxVals) throws WdkModelException {
-    return toRawValue(ctxVals.getUser(), ctxVals.get(_param.getName()))
-      .map(Step::getCustomName)
-      .orElse("unknown");
   }
 }

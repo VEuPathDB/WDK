@@ -2,10 +2,10 @@ package org.gusdb.wdk.errors;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-import org.gusdb.fgputil.web.RequestData;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
+import org.gusdb.fgputil.web.RequestSnapshot;
 import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.MDCUtil.MdcBundle;
 import org.gusdb.wdk.model.WdkModel;
@@ -23,24 +23,20 @@ public class ErrorContext {
     }
 
     private final WdkModel _wdkModel;
-    private final RequestData _requestData;
-    private final Map<String, Object> _servletContextAttributes;
-    private final Map<String, Object> _requestAttributeMap;
-    private final Map<String, Object> _sessionAttributeMap;
+    private final RequestSnapshot _requestData;
+    private final ReadOnlyMap<String, Object> _requestAttributeMap;
+    private final ReadOnlyMap<String, Object> _sessionAttributeMap;
     private final ErrorLocation _errorLocation;
     private final MdcBundle _mdcBundle;
     private final String _logMarker;
     private final Date _date;
 
-    public ErrorContext(WdkModel wdkModel, RequestData requestData,
-            Map<String, Object> servletContextAttributes,
-            Map<String, Object> requestAttributeMap,
-            Map<String, Object> sessionAttributeMap,
+    public ErrorContext(WdkModel wdkModel, RequestSnapshot requestData,
+            ReadOnlyMap<String, Object> sessionAttributeMap,
             ErrorLocation errorLocation) {
         _wdkModel = wdkModel;
         _requestData = requestData;
-        _servletContextAttributes = servletContextAttributes;
-        _requestAttributeMap = requestAttributeMap;
+        _requestAttributeMap = requestData.getAttributes();
         _sessionAttributeMap = sessionAttributeMap;
         _errorLocation = errorLocation;
         _mdcBundle = MDCUtil.getMdcBundle();
@@ -49,10 +45,9 @@ public class ErrorContext {
     }
 
     public WdkModel getWdkModel() { return _wdkModel; }
-    public RequestData getRequestData() { return _requestData; }
-    public Map<String, Object> getServletContextAttributes() { return _servletContextAttributes; }
-    public Map<String, Object> getRequestAttributeMap() { return _requestAttributeMap; }
-    public Map<String, Object> getSessionAttributeMap() { return _sessionAttributeMap; }
+    public RequestSnapshot getRequestData() { return _requestData; }
+    public ReadOnlyMap<String, Object> getRequestAttributeMap() { return _requestAttributeMap; }
+    public ReadOnlyMap<String, Object> getSessionAttributeMap() { return _sessionAttributeMap; }
 
     /**
      * A site is considered monitored if the administrator email from adminEmail in the model-config.xml has content.

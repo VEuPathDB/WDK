@@ -1,15 +1,14 @@
 package org.gusdb.wdk.model.query.param;
 
-import org.gusdb.fgputil.EncryptionUtil;
-import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
-import org.gusdb.wdk.model.user.User;
-import org.json.JSONObject;
-
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+
+import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.user.User;
+import org.json.JSONObject;
 
 public class NumberRangeParamHandler extends AbstractParamHandler {
 
@@ -25,14 +24,6 @@ public class NumberRangeParamHandler extends AbstractParamHandler {
   @Override
   public String toStableValue(User user, Object rawValue) {
     return (String) rawValue;
-  }
-
-  /**
-   * the raw value is the same as stable value.
-   */
-  @Override
-  public String toRawValue(User user, String stableValue) {
-    return stableValue;
   }
 
   /**
@@ -92,13 +83,5 @@ public class NumberRangeParamHandler extends AbstractParamHandler {
   @Override
   public ParamHandler clone(Param param) {
     return new NumberRangeParamHandler(this, param);
-  }
-
-  @Override
-  public String getDisplayValue(QueryInstanceSpec ctxVals) throws WdkModelException {
-    return toRawValue(ctxVals.getUser(), ctxVals.get(_param.getName()))
-      .replace("{", "")
-      .replace("}", "")
-      .replace("\"", "");
   }
 }

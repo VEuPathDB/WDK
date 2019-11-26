@@ -51,7 +51,7 @@ public class EnumParam extends AbstractEnumParam {
   public EnumParamVocabInstance getVocabInstance(User user, Map<String, String> dependedParamValues)
       throws WdkModelException {
     LOG.trace("Entering createEnumParamCache(" + FormatUtil.prettyPrint(dependedParamValues) + ")");
-    Set<Param> dependedParams = getDependedParams();
+    //Set<Param> dependedParams = getDependedParams();
     EnumParamVocabInstance cache = new EnumParamVocabInstance(dependedParamValues);
     EnumItem[] enumItems = _enumItemList.getEnumItems();
     for (EnumItem item : enumItems) {
@@ -64,11 +64,11 @@ public class EnumParam extends AbstractEnumParam {
       // term = term.replaceAll("[,]", "_");
       // if (parentTerm != null)
       // parentTerm = parentTerm.replaceAll("[,]", "_");
-      if (term.indexOf(',') >= 0 && dependedParams != null)
+/*      if (term.indexOf(',') >= 0 && dependedParams != null)
         throw new WdkModelException(this.getFullName() + ": The term cannot contain comma: '" + term + "'");
       if (parentTerm != null && parentTerm.indexOf(',') >= 0)
         throw new WdkModelException(this.getFullName() + ": The parent term cannot contain" + "comma: '" +
-            parentTerm + "'");
+            parentTerm + "'");*/
 
       if (isDependentParam()) {
         // if this is a dependent param, only include items that are

@@ -1,9 +1,21 @@
 package org.gusdb.wdk.model.query.param;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.FieldTree;
@@ -17,11 +29,6 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import static org.gusdb.fgputil.FormatUtil.NL;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This class provides functions that are common among EnumParam and
@@ -80,20 +87,20 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   private String _displayType;
   private int _minSelectedCount = -1;
   private int _maxSelectedCount = -1;
-  private boolean countOnlyLeaves = true;
+  private boolean _countOnlyLeaves = true;
 
   /**
    * this property is only used by abstractEnumParams, but have to be
    * initialized from suggest. it is an enum with values: NONE, ALL, FIRST
    */
-  protected SelectMode selectMode;
+  protected SelectMode _selectMode;
 
   /**
    * collapse single-child branches if set to true
    */
-  private boolean suppressNode;
+  private boolean _suppressNode;
 
-  private int depthExpanded;
+  private int _depthExpanded;
 
   // FIXME: this method is public only to support WdkQueryPlugin.java, which is
   //    due to be retired when ApiFed starts using the WDK service (or UniDB is
@@ -110,15 +117,15 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   public AbstractEnumParam(AbstractEnumParam param) {
     super(param);
-    this._multiPick = param._multiPick;
-    this._quote = param._quote;
-    this._displayType = param._displayType;
-    this.selectMode = param.selectMode;
-    this.suppressNode = param.suppressNode;
-    this._minSelectedCount = param._minSelectedCount;
-    this._maxSelectedCount = param._maxSelectedCount;
-    this.countOnlyLeaves = param.countOnlyLeaves;
-    this.depthExpanded = param.depthExpanded;
+    _multiPick = param._multiPick;
+    _quote = param._quote;
+    _displayType = param._displayType;
+    _selectMode = param._selectMode;
+    _suppressNode = param._suppressNode;
+    _minSelectedCount = param._minSelectedCount;
+    _maxSelectedCount = param._maxSelectedCount;
+    _countOnlyLeaves = param._countOnlyLeaves;
+    _depthExpanded = param._depthExpanded;
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -127,7 +134,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   // used only to initially set this property
   public void setMultiPick(boolean multiPick) {
-    this._multiPick = multiPick;
+    _multiPick = multiPick;
   }
 
   public boolean getMultiPick() {
@@ -135,7 +142,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   }
 
   public void setQuote(boolean quote) {
-    this._quote = quote;
+    _quote = quote;
   }
 
   /**
@@ -175,7 +182,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
           "' is deprecated.  Please use '" + DISPLAY_SELECT + "' instead.");
       displayType = DISPLAY_SELECT;
     }
-    this._displayType = displayType;
+    _displayType = displayType;
   }
 
   /**
@@ -192,7 +199,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    *   is "no min"; any number of values can be assigned.
    */
   public void setMinSelectedCount(int minSelectedCount) {
-    this._minSelectedCount = minSelectedCount;
+    _minSelectedCount = minSelectedCount;
   }
 
   /**
@@ -212,7 +219,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    *   is "no max"; any number of values can be assigned.
    */
   public void setMaxSelectedCount(int maxSelectedCount) {
-    this._maxSelectedCount = maxSelectedCount;
+    _maxSelectedCount = maxSelectedCount;
   }
 
   /**
@@ -221,7 +228,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    * false, count both leaves and branch selections
    */
   public boolean getCountOnlyLeaves() {
-    return countOnlyLeaves;
+    return _countOnlyLeaves;
   }
 
   /**
@@ -231,15 +238,15 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    *   to false if both leaves and branch selections should be counted
    */
   public void setCountOnlyLeaves(boolean countOnlyLeaves) {
-    this.countOnlyLeaves = countOnlyLeaves;
+    _countOnlyLeaves = countOnlyLeaves;
   }
 
   public void setDepthExpanded(int depthExpanded) {
-    this.depthExpanded = depthExpanded;
+    _depthExpanded = depthExpanded;
   }
 
   public int getDepthExpanded() {
-    return this.depthExpanded;
+    return _depthExpanded;
   }
 
   private EnumParamVocabInstance getVocabInstance(PartiallyValidatedStableValues context)
@@ -306,15 +313,14 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       parent.addChild(node);
     }
 
-    if (suppressNode)
+    if (_suppressNode)
       suppressChildren(cache, cache.getTermTreeListRef());
   }
 
   private void suppressChildren(EnumParamVocabInstance cache, List<EnumParamTermNode> children) {
     boolean suppressed = false;
     if (children.size() == 1) {
-      // has only one child, suppress it in the tree if it has
-      // grandchildren
+      // has only one child, suppress it in the tree if it has grandchildren
       EnumParamTermNode child = children.get(0);
       EnumParamTermNode[] grandChildren = child.getChildren();
       if (grandChildren.length > 0) {
@@ -337,22 +343,9 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     }
   }
 
-  public String[] convertToTerms(String stableValue) {
-    // the input is a list of terms
-    if (stableValue == null)
-      return new String[0];
-
-    String[] terms;
-    if (_multiPick) {
-      terms = stableValue.split("[,]+");
-      for (int i = 0; i < terms.length; i++) {
-        terms[i] = terms[i].trim();
-      }
-    }
-    else {
-      terms = new String[] { stableValue.trim() };
-    }
-    return terms;
+  public static List<String> convertToTerms(String stableValue) throws JSONException {
+    return stableValue == null ? Collections.emptyList() :
+      Arrays.asList(JsonUtil.toStringArray(new JSONArray(stableValue)));
   }
 
   @Override
@@ -374,8 +367,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
     // if semantic or runnable, must verify term counts and validity
     EnumParamVocabInstance vocab = getVocabInstance(ctxParamVals);
-    List<String> selectedTerms = Arrays.asList(((EnumParamHandler)_handler)
-        .toRawValue(ctxParamVals.getUser(), stableValue));
+    List<String> selectedTerms = AbstractEnumParam.convertToTerms(stableValue);
 
     // verify that user did not select too few or too many values for this param
     int numSelected = getNumSelected(vocab, selectedTerms);
@@ -442,14 +434,19 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    *          the selectMode to set
    */
   public void setSelectMode(SelectMode selectMode) {
-    this.selectMode = selectMode;
+    _selectMode = selectMode;
   }
 
   /**
    * @return the selectMode
    */
   public SelectMode getSelectModeEnum() {
-    return selectMode;
+    return _selectMode;
+  }
+
+  @Override
+  protected boolean isEmptyValue(String value) {
+    return super.isEmptyValue(value) || new JSONArray(value).length() == 0;
   }
 
   /**
@@ -460,11 +457,11 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   //    in use).  When either of these happens, change this back to private.
   public String getDefault(String existingStableValue, EnumParamVocabInstance cache) throws WdkModelException {
     String trimmedExistingValue = trimInvalidValues(existingStableValue, cache);
-    if (!trimmedExistingValue.isEmpty()) {
+    if (!isEmptyValue(trimmedExistingValue)) {
       return trimmedExistingValue;
     }
     String defaultFromModel = getXmlDefault();
-    LOG.debug("applySelectMode(): select mode: '" + selectMode + "', default from model = " + defaultFromModel);
+    LOG.debug("applySelectMode(): select mode: '" + _selectMode + "', default from model = " + defaultFromModel);
     if (defaultFromModel != null) {
       // default defined in the model, validate default values before returning
       String[] defaults = getMultiPick() ?
@@ -495,29 +492,37 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
           }
         }
       }
-      return FormatUtil.join(trimmedDefaults.toArray(new String[trimmedDefaults.size()]), ",");
+      return new JSONArray(trimmedDefaults).toString();
     }
 
     return getDefaultWithSelectMode(
-        cache.getTerms(), selectMode, _multiPick,
+        cache.getTerms(), _selectMode, _multiPick,
         cache.getTermTreeListRef().isEmpty() ? null :
           cache.getTermTreeListRef().get(0));
   }
 
+  /**
+   * Reads the existing stable value and tries to extract valid terms from the
+   * value, keeping them while discarding invalid terms.  Returns a value
+   * representing the remaining valid terms.
+   * 
+   * @param existingStableValue an existing stable value
+   * @param cache cache containing populated vocabulary
+   * @return a valid value containing any remaining valid terms
+   */
   private String trimInvalidValues(String existingStableValue, EnumParamVocabInstance cache) {
-    if (existingStableValue == null || existingStableValue.isEmpty()) return "";
-    String[] values = getMultiPick() ?
-        existingStableValue.split("\\s*,\\s*") :
-        new String[] { existingStableValue };
-    List<String> trimmedValues = new ArrayList<>();
+    JSONArray validValues = new JSONArray();
+    if (isEmptyValue(existingStableValue)) {
+      return validValues.toString();
+    }
+    String[] values = JsonUtil.toStringArray(new JSONArray(existingStableValue));
     for (String value : values) {
       if (cache.getTerms().contains(value)) {
         // this value is valid
-        trimmedValues.add(value);
+        validValues.put(value);
       }
     }
-    // if any values are valid, join them with commas; else return empty string
-    return trimmedValues.isEmpty() ? "" : trimmedValues.stream().collect(Collectors.joining(","));
+    return validValues.toString();
   }
 
   /**
@@ -548,43 +553,39 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     if (selectMode == null || !isMultiPick)
       selectMode = SelectMode.FIRST;
     if (selectMode.equals(SelectMode.ALL)) {
-      StringBuilder builder = new StringBuilder();
+      JSONArray array = new JSONArray();
       for (String term : terms) {
-        if (builder.length() > 0)
-          builder.append(",");
-        builder.append(term);
+        array.put(term);
       }
-      return builder.toString();
+      return array.toString();
     }
     else if (selectMode.equals(SelectMode.FIRST)) {
-      StringBuilder builder = new StringBuilder();
+      JSONArray array = new JSONArray();
       Stack<EnumParamTermNode> stack = new Stack<EnumParamTermNode>();
       if (firstTreeNode != null)
         stack.push(firstTreeNode);
       while (!stack.empty()) {
         EnumParamTermNode node = stack.pop();
-        if (builder.length() > 0)
-          builder.append(",");
-        builder.append(node.getTerm());
+        array.put(node.getTerm());
         for (EnumParamTermNode child : node.getChildren()) {
           stack.push(child);
         }
       }
-      return builder.toString();
+      return array.toString();
     }
-    return "";
+    return new JSONArray().toString();
   }
 
   @Override
   protected void applySuggestion(ParamSuggestion suggest) {
-    selectMode = ((EnumParamSuggestion) suggest).getSelectModeEnum();
+    _selectMode = ((EnumParamSuggestion) suggest).getSelectModeEnum();
   }
 
   /**
    * @return the suppressNode
    */
   public boolean isSuppressNode() {
-    return suppressNode;
+    return _suppressNode;
   }
 
   /**
@@ -592,7 +593,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    *          the suppressNode to set
    */
   public void setSuppressNode(boolean suppressNode) {
-    this.suppressNode = suppressNode;
+    _suppressNode = suppressNode;
   }
 
   @Override
@@ -616,7 +617,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   @Override
   protected boolean isInvalidEmptyDepended() {
     return super.isInvalidEmptyDepended()
-      && SelectMode.NONE.equals(selectMode);
+      && SelectMode.NONE.equals(_selectMode);
   }
 
   /**
@@ -661,5 +662,24 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       throw new WdkModelException(ex);
     }
     return jsParam;
+  }
+
+  /**
+   * Special case to support legacy values. Old DBs may contain comma-delimited
+   * values, which we will still try to convert into the new stable value
+   * format: JSON Array of String
+   */
+  @Override
+  public String translateDbStableValue(String stableValue) {
+    try {
+      return new JSONArray(stableValue).toString();
+    }
+    catch(JSONException e) {
+      // unable to convert to JSON; convert from old format
+      return (getMultiPick() ?
+        new JSONArray(stableValue.split(",")) :
+        new JSONArray(new String[]{ stableValue })
+      ).toString();
+    }
   }
 }

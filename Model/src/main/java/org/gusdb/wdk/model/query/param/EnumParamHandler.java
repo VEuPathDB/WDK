@@ -1,14 +1,16 @@
 package org.gusdb.wdk.model.query.param;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
-
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Map;
+import org.json.JSONArray;
 
 /**
  * @author jerric
@@ -26,31 +28,12 @@ public class EnumParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toStableValue(User user, Object rawValue) {
-    if (!(rawValue instanceof String[]))
-      new Exception().printStackTrace();
+    if (!(rawValue instanceof String[])) {
+      throw new IllegalStateException("toStableValue() called with wrong type of Object");
+    }
     String[] terms = (String[]) rawValue;
     Arrays.sort(terms);
-    StringBuilder buffer = new StringBuilder();
-    for (String term : terms) {
-      if (buffer.length() > 0)
-        buffer.append(",");
-      buffer.append(term);
-    }
-    return buffer.toString();
-  }
-
-  /**
-   * the raw value is String[] of terms, and comma separated list of terms in string representation.
-   */
-  @Override
-  public String[] toRawValue(User user, String stableValue) {
-    if (stableValue == null)
-      return null;
-    String[] rawValue = stableValue.split(",+");
-    for (int i = 0; i < rawValue.length; i++) {
-      rawValue[i] = rawValue[i].trim();
-    }
-    return rawValue;
+    return new JSONArray(terms).toString();
   }
 
   /**
@@ -63,19 +46,15 @@ public class EnumParamHandler extends AbstractParamHandler {
       throws WdkModelException {
     final var stableValue = ctxParamVals.get().get(_param.getName());
 
-    if (stableValue == null || stableValue.isEmpty()) {
-      return stableValue;
-    }
+    if (_param == null) return null;                 // emptyValue may be filled in
+    if (_param.isEmptyValue(stableValue)) return ""; // no values; will be an empty in clause
 
     final var enumParam = (AbstractEnumParam) _param;
     final var cache = enumParam.getVocabInstance(ctxParamVals);
 
-    // TODO: This validation should be in the param, not the handler
-    var terms = enumParam.convertToTerms(stableValue);
+    var terms = AbstractEnumParam.convertToTerms(stableValue);
     var internals = new LinkedHashSet<String>();
     for (var term : terms) {
-      if (!cache.containsTerm(term))
-        throw new WdkModelException("The term '" + term + "' is invalid for param " + _param.getPrompt());
 
       var internal = (_param.isNoTranslation()) ? term : cache.getInternal(term);
 
@@ -99,36 +78,13 @@ public class EnumParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toSignature(RunnableObj<QueryInstanceSpec> ctxParamVals) {
-
-    AbstractEnumParam enumParam = (AbstractEnumParam) _param;
-    // EnumParamCache cache = enumParam.getValueCache(user, contextParamValues);
-
-    String[] terms = enumParam.convertToTerms(ctxParamVals.get().get(_param.getName()));
-    // jerric - we should use terms to generate signature, not internal value. I don't remember
-    // when and why we switched to internal values. I will revert it back to term.
-    // Furthermore, I will skip validating the terms here, otherwise, it breaks the deep clone
-    // of the steps, which prevents us from revising saved invalid strategies.
-
-    Arrays.sort(terms);
-    return EncryptionUtil.encrypt(Arrays.toString(terms));
+    List<String> terms = AbstractEnumParam.convertToTerms(ctxParamVals.get().get(_param.getName()));
+    Collections.sort(terms);
+    return EncryptionUtil.encrypt(Arrays.toString(terms.toArray()));
   }
 
   @Override
   public ParamHandler clone(Param param) {
     return new EnumParamHandler(this, param);
-  }
-
-  @Override
-  public String getDisplayValue(QueryInstanceSpec ctxParamVals)
-      throws WdkModelException {
-    AbstractEnumParam aeParam = (AbstractEnumParam) _param;
-    Map<String, String> displays = aeParam.getDisplayMap(ctxParamVals.getUser(), ctxParamVals.toMap());
-    String[] terms = toRawValue(ctxParamVals.getUser(), ctxParamVals.get(_param.getName()));
-    StringBuilder buffer = new StringBuilder();
-    for (String term : terms) {
-      if (buffer.length() > 0) buffer.append(", ");
-      buffer.append(displays.get(term));
-    }
-    return buffer.toString();
   }
 }

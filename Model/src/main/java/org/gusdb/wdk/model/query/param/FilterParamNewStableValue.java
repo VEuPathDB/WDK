@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.query.param;
 
 import static org.gusdb.fgputil.functional.Functions.fSwallow;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
+import static org.gusdb.fgputil.iterator.IteratorUtil.toStream;
 import static org.gusdb.wdk.model.query.param.OntologyItemType.MULTIFILTER;
 
 import java.util.ArrayList;
@@ -13,7 +14,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
@@ -21,7 +21,6 @@ import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
-import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -265,34 +264,6 @@ public class FilterParamNewStableValue {
     }
     return null;
   }
-
-
-  /**
-   * @param user
-   * @param contextParamValues
-   */
-  String getDisplayValue(User user, Map<String, String> contextParamValues) throws WdkModelException {
-
-    initWithThrow();
-    Map<String, OntologyItem> ontology = _param.getOntology(user, contextParamValues);
-
-    String displayValue;
-    if (_filters.size() == 0) {
-      displayValue = "unspecified";
-    }
-    else {
-
-      List<String> filterDisplays = new ArrayList<String>();
-      for (Filter filter : _filters) {
-        OntologyItem ontoItem = ontology.get(filter.getField());
-        filterDisplays.add(
-            ontoItem.getDisplayName() + ": " + filter.getDisplayValue() + (filter.getIncludeUnknowns() ? " (include unknowns)" : ""));
-      }
-      displayValue = FormatUtil.join(filterDisplays, System.lineSeparator());
-    }
-    return displayValue;
-  }
-
 
   //////////////////// inner classes to represent different types of filter //////////////////////////
 
@@ -728,7 +699,7 @@ public class FilterParamNewStableValue {
     }
 
     private Stream<StringMembersFilter> getLeafFilters() {
-      return StreamSupport.stream(JsonIterators.arrayIterable(_leafFilters).spliterator(), false)
+      return toStream(JsonIterators.arrayIterable(_leafFilters))
           .map(fSwallow(jsonType -> new StringMembersFilter(
               jsonType.getJSONObject().getJSONArray(FILTERS_VALUE),
               jsonType.getJSONObject().getBoolean(FILTERS_INCLUDE_UNKNOWN),

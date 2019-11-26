@@ -26,14 +26,6 @@ public class StringParamHandler extends AbstractParamHandler {
   }
 
   /**
-   * the raw value is the same as stable value.
-   */
-  @Override
-  public String toRawValue(User user, String stableValue) {
-    return stableValue;
-  }
-
-  /**
    * the signature is a checksum of the stable value.
    *
    */
@@ -75,11 +67,5 @@ public class StringParamHandler extends AbstractParamHandler {
   @Override
   public ParamHandler clone(Param param) {
     return new StringParamHandler(this, param);
-  }
-
-  @Override
-  public String getDisplayValue(QueryInstanceSpec ctxVals)
-      throws WdkModelException {
-    return toRawValue(ctxVals.getUser(), ctxVals.get(_param.getName()));
   }
 }

@@ -39,14 +39,6 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   }
 
   /**
-   * the raw value is a JSON string, and same as the stable value.
-   */
-  @Override
-  public String toRawValue(User user, String stableValue) {
-    return stableValue;
-  }
-
-  /**
    * return SQL that runs the metadataQuery, including its depended params, and applies
    * the filters to it.
    *
@@ -157,14 +149,5 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   @Override
   public ParamHandler clone(Param param) {
     return new FilterParamNewHandler(this, param);
-  }
-
-  @Override
-  public String getDisplayValue(QueryInstanceSpec ctxParamVals)
-      throws WdkModelException {
-
-    FilterParamNew param = (FilterParamNew)_param;
-    FilterParamNewStableValue stableValue = new FilterParamNewStableValue(ctxParamVals.get(param.getName()), param);
-    return stableValue.getDisplayValue(ctxParamVals.getUser(), ctxParamVals.toMap());
   }
 }

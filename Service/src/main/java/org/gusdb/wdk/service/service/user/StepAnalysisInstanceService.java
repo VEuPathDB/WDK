@@ -210,7 +210,7 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
     //   For more explanation see: StepAnalysisFormatter.getStepAnalysisInstanceJson()
     return Functions.getMapFromKeys(inputParams.keySet(),
         key -> paramMap.get(key) instanceof AbstractEnumParam
-            ? inputParams.get(key).split(",")
+            ? AbstractEnumParam.convertToTerms(inputParams.get(key)).toArray(new String[0])
             : new String[]{inputParams.get(key)});
   }
 

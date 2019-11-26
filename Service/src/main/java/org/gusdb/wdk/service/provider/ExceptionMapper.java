@@ -19,7 +19,6 @@ import org.apache.log4j.Logger;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.jersey.server.ParamException.PathParamException;
 import org.gusdb.fgputil.events.Events;
-import org.gusdb.fgputil.web.ApplicationContext;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.errors.ErrorContext;
@@ -93,10 +92,9 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
 
     // Some other exception that must be handled by the application; send error event
     catch (Exception other) {
-      ApplicationContext context = ContextLookup.getApplicationContext(_servletContext);
       WdkModel wdkModel = ContextLookup.getWdkModel(_servletContext);
       RequestData request = ContextLookup.getRequest(_servletRequest.get(), _grizzlyRequest.get());
-      ErrorContext errorContext = AbstractWdkService.getErrorContext(context, request, wdkModel, ErrorLocation.WDK_SERVICE);
+      ErrorContext errorContext = AbstractWdkService.getErrorContext(request, wdkModel, ErrorLocation.WDK_SERVICE);
       LOG.error("log4j marker: " + errorContext.getLogMarker());
       Events.trigger(new ErrorEvent(new ServerErrorBundle(other), errorContext));
       return logResponse(e, Response.serverError()

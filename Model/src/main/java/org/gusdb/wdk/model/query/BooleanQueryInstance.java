@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.query;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -41,10 +42,9 @@ public class BooleanQueryInstance extends SqlQueryInstance {
   public String getUncachedSql() throws WdkModelException {
 
     // parse operator - special case: use stable value to determine operator
-    String operator = getParamStableValues().get(booleanQuery.getOperatorParam().getName());
-    BooleanOperator op = BooleanOperator.parse(operator);
+    BooleanOperator op = BooleanQuery.getOperator(_spec.get(), Optional.empty());
     DBPlatform platform = _wdkModel.getAppDb().getPlatform();
-    operator = op.getOperator(platform);
+    String operator = op.getOperator(platform);
 
     String leftSql = getLeftSql();
     String rightSql = getRightSql();

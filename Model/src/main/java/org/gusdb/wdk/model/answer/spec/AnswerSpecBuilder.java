@@ -115,6 +115,10 @@ public class AnswerSpecBuilder {
     return this;
   }
 
+  public QueryInstanceSpecBuilder getQueryInstanceSpecBuilder() {
+    return _queryInstanceSpec;
+  }
+
   public AnswerSpecBuilder setParamValue(String paramName, String stableValue) {
     _queryInstanceSpec.put(paramName, stableValue);
     return this;

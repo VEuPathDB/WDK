@@ -147,15 +147,17 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
             if (parent != null)
               parentTerm = parent.toString().trim();
           }
-  
+
+          /* 11/22/19 No longer disallow commas in terms- converting enum param stable values to JSON to support
           if (term.indexOf(',') >= 0 && dependedParams != null)
             throw new WdkModelException(_param.getFullName() + ":" +
                 "The term cannot contain comma: '" + term + "'");
-  
+
           if (parentTerm != null && parentTerm.indexOf(',') >= 0)
             throw new WdkModelException(_param.getFullName() +
                 ": The parent term cannot contain " + "comma: '" + parentTerm + "'");
-  
+          */
+
           vocabInstance.addTermValues(term, value, display, parentTerm);
         }
       }

@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.query.param;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
 
@@ -22,14 +21,6 @@ public class TimestampParamHandler extends AbstractParamHandler {
   @Override
   public String toStableValue(User user, Object rawValue) {
     return (String) rawValue;
-  }
-
-  /**
-   * The raw value is the same as stable value.
-   */
-  @Override
-  public String toRawValue(User user, String stableValue) {
-    return stableValue;
   }
 
   /**
@@ -56,10 +47,5 @@ public class TimestampParamHandler extends AbstractParamHandler {
   @Override
   public ParamHandler clone(Param param) {
     return new TimestampParamHandler(this, param);
-  }
-
-  @Override
-  public String getDisplayValue(QueryInstanceSpec ctxVals) throws WdkModelException {
-    return toRawValue(ctxVals.getUser(), ctxVals.get(_param.getName()));
   }
 }

@@ -27,21 +27,6 @@ public class DatasetParamHandler extends AbstractParamHandler {
   }
 
   /**
-   * The stable value is dataset id, and raw value is Dataset object.
-   */
-  @Override
-  public Dataset toRawValue(User user, String stableValue) throws WdkModelException {
-    try {
-      return user.getWdkModel()
-        .getDatasetFactory()
-        .getDatasetWithOwner(Long.valueOf(stableValue), user.getUserId());
-    }
-    catch (WdkUserException e) {
-      throw new WdkModelException("Dataset does not belong to current user", e);
-    }
-  }
-
-  /**
    * the internal value is an SQL that queries against the dataset values.
    */
   @Override
@@ -106,12 +91,5 @@ public class DatasetParamHandler extends AbstractParamHandler {
   @Override
   public ParamHandler clone(Param param) {
     return new DatasetParamHandler(this, param);
-  }
-
-  @Override
-  public String getDisplayValue(QueryInstanceSpec ctxParamVals)
-      throws WdkModelException {
-    return toRawValue(ctxParamVals.getUser(), ctxParamVals.get(_param.getName()))
-        .getContent();
   }
 }

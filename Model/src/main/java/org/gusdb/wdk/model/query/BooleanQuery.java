@@ -1,8 +1,13 @@
 package org.gusdb.wdk.model.query;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.EnumItem;
 import org.gusdb.wdk.model.query.param.EnumItemList;
@@ -10,6 +15,7 @@ import org.gusdb.wdk.model.query.param.EnumParam;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.RecordClassReference;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -221,4 +227,40 @@ public class BooleanQuery extends SqlQuery {
     return true;
   }
 
+  /**
+   * Pulls the current stable value of a boolean query operator param out of the
+   * passed query instance spec builder and converts it to an operator object
+   * 
+   * @param specBuilder
+   * @param stepId optional step ID used to add information when logging a problem
+   * @return
+   * @throws WdkModelException
+   */
+  public static BooleanOperator getOperator(QueryInstanceSpecBuilder specBuilder, Optional<Long> stepId) {
+    return getOperator(specBuilder.get(BooleanQuery.OPERATOR_PARAM), stepId);
+  }
+
+  /**
+   * Pulls the current stable value of a boolean query operator param out of the
+   * passed query instance spec and converts it to an operator object
+   * 
+   * @param spec
+   * @param stepId optional step ID used to add information when logging a problem
+   * @return
+   */
+  public static BooleanOperator getOperator(QueryInstanceSpec spec, Optional<Long> stepId) {
+    return getOperator(spec.get(BooleanQuery.OPERATOR_PARAM), stepId);
+  }
+
+  private static BooleanOperator getOperator(String stableValue, Optional<Long> stepId) {
+    String errorPrefix = "Found transcript boolen step " + stepId.map(id -> id + " ").orElse("");
+    if (stableValue == null) {
+      throw new WdkRuntimeException(errorPrefix + "without " + BooleanQuery.OPERATOR_PARAM + " parameter value.");
+    }
+    List<String> values = AbstractEnumParam.convertToTerms(stableValue);
+    if (values.isEmpty()|| values.size() > 1) {
+      throw new WdkRuntimeException(errorPrefix + "with zero or >1 values: " + stableValue);
+    }
+    return BooleanOperator.parse(values.get(0));
+  }
 }

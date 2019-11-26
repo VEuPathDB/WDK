@@ -35,27 +35,15 @@ public interface ParamHandler {
   String toStableValue(User user, Object rawValue)
       throws WdkUserException, WdkModelException;
 
-  /**
-   * convert
-   *
-   * @param user
-   * @param stableValue
-   * @return
-   * @throws WdkModelException
-   */
-  Object toRawValue(User user, String stableValue) throws WdkModelException;
-
   String toInternalValue(RunnableObj<QueryInstanceSpec> contextParamValues) throws WdkModelException;
 
   /**
    * Converts the param into an empty value which can be used to produce a
-   * syntactically correct parametrized query.
+   * syntactically correct parameterized query.
    */
   String toEmptyInternalValue();
 
   String toSignature(RunnableObj<QueryInstanceSpec> contextParamValues) throws WdkModelException;
-
-  String getDisplayValue(QueryInstanceSpec contextParamValues) throws WdkModelException;
 
   ParamHandler clone(Param param);
 
