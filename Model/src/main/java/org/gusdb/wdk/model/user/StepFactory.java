@@ -1135,8 +1135,8 @@ public class StepFactory {
   public void updateStrategyAndOtherSteps(Strategy newStrat, List<Step> orphanedSteps) throws WdkModelException {
     try(Connection connection = _userDbDs.getConnection()) {
       SqlUtils.performInTransaction(connection, conn -> {
-        updateStrategy(conn, newStrat);
         updateSteps(conn, orphanedSteps);
+        updateStrategy(conn, newStrat);
       });
     }
     catch (Exception e) {
