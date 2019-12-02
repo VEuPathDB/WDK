@@ -24,6 +24,7 @@ import org.json.JSONObject;
  *   urlSegment: String,
  *   useBasket: Boolean
  *   description: String,
+ *   properties: [ see getPropertyLists() ]
  *   formats: [ see getAnswerFormatsJson() ],
  *   primaryKeyColumnRefs: [ String ],
  *   recordIdAttributeName: String,
@@ -73,6 +74,7 @@ public class RecordClassFormatter {
       .put(JsonKeys.ICON_NAME, recordClass.getIconName())
       .put(JsonKeys.USE_BASKET, recordClass.isUseBasket())
       .put(JsonKeys.DESCRIPTION, recordClass.getDescription())
+      .put(JsonKeys.PROPERTIES, recordClass.getPropertyLists())
       .put(JsonKeys.FORMATS, getAnswerFormatsJson(recordClass.getReporterMap().values(), FieldScope.ALL))
       .put(JsonKeys.HAS_ALL_RECORDS_QUERY, recordClass.hasAllRecordsQuery())
       .put(JsonKeys.PRIMARY_KEY_REFS, new JSONArray(recordClass.getPrimaryKeyDefinition().getColumnRefs()))

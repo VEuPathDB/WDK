@@ -1124,7 +1124,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
-
+    super.excludeResources(projectId);
     // first add the default reporter; XML may want to override
     ReporterRef defaultReporterRef = DefaultJsonReporter.createReference();
     defaultReporterRef.excludeResources(projectId);

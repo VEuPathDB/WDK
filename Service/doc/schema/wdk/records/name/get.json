@@ -1,6 +1,14 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",
+  "definitions": {
+    "properties": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "../../../includes/string-array.json"
+      }
+    },
+  },
   "properties": {
     "fullName": {
       "type": "string"
@@ -43,6 +51,9 @@
     },
     "formats": {
       "$ref": "../../includes/record-reporter-array.json"
+    },
+    "properties": {
+      "$ref": "#/definitions/properties"
     },
     "hasAllRecordsQuery": {
       "type": "boolean"

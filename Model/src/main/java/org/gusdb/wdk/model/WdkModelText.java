@@ -67,4 +67,10 @@ public class WdkModelText extends WdkModelBase {
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     // have nothing to do
   }
+
+  @Override
+  public String toString() {
+    return "Name: " + name + " Text: " + text;
+  }
+
 }

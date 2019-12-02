@@ -644,6 +644,9 @@ public class ModelXmlParser extends XmlParser {
     configureParamValuesSet(digester, "wdkModel/recordClassSet/recordClass/testParamValues",
         "addParamValuesSet");
 
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/propertyList", PropertyList.class,
+        "addPropertyList");
+
     // reporter
     configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter", ReporterRef.class,
         "addReporterRef");

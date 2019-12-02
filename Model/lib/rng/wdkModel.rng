@@ -1228,6 +1228,9 @@
         </element>
       </optional>
       <optional>
+          <ref name="propertyList" />
+      </optional>
+      <optional>
         <element name="attributeCategories">
           <zeroOrMore>
             <ref name="attributeCategory" />
