@@ -9,6 +9,7 @@ import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam.SelectMode;
 
 /**
  * An object representation of a <paramRef> tag, It is used in query and
@@ -109,10 +110,10 @@ public class ParamReference extends Reference {
       // if the param has customized multi pick
       if (multiPick != null) {
         if (LOG.isDebugEnabled()) {
-          if (!enumParam.getMultiPick() != multiPick) {
+          if (!enumParam.isMultiPick() != multiPick) {
             LOG.debug("ParamRef to '" + enumParam.getFullName() +
                 "' in context query '" + container.getFullName() +
-                "' is overriding multi-pick: " + enumParam.getMultiPick() +
+                "' is overriding multi-pick: " + enumParam.isMultiPick() +
                 " -> " + multiPick + ", displayType: " + enumParam.getDisplayType() +
                 " -> " + (displayType == null ? "<inherited>" : displayType));
           }

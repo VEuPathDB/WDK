@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersDbColumnFormat;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.service.formatter.param.ParamContainerFormatter;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.filter.ColumnFilterServiceFormat;
 import org.json.JSONException;
@@ -114,7 +115,7 @@ public class AnswerSpecServiceFormat {
   public static JSONObject format(AnswerSpec answerSpec) {
     return new JSONObject()
         // params and filters are sent with the same format as in the DB
-        .put(JsonKeys.PARAMETERS, ParamsAndFiltersDbColumnFormat.formatParams(answerSpec.getQueryInstanceSpec()))
+        .put(JsonKeys.PARAMETERS, ParamContainerFormatter.formatExistingParamValues(answerSpec.getQueryInstanceSpec()))
         .put(JsonKeys.FILTERS, ParamsAndFiltersDbColumnFormat.formatFilters(answerSpec.getFilterOptions()))
         // NOTE: As of 8/20/19 we do not include view filters as part of the normal answer spec (StepService)
         //.put(JsonKeys.VIEW_FILTERS, ParamsAndFiltersDbColumnFormat.formatFilters(answerSpec.getViewFilterOptions()))
@@ -122,5 +123,4 @@ public class AnswerSpecServiceFormat {
         .put(JsonKeys.WDK_WEIGHT, answerSpec.getQueryInstanceSpec().getAssignedWeight())
         .put(JsonKeys.LEGACY_FILTER_NAME, answerSpec.getLegacyFilterName().orElse(null));
   }
-
 }

@@ -17,7 +17,7 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.AbstractDependentParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
-import org.gusdb.wdk.model.query.param.SelectMode;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam.SelectMode;
 import org.gusdb.wdk.model.user.User;
 
 public class ParamValuesFactory {

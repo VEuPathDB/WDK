@@ -55,7 +55,9 @@ public abstract class ParamFormatter<T extends Param> {
     pJson.put(JsonKeys.VISIBLE_HELP, _param.getVisibleHelp());
     pJson.put(JsonKeys.DEPENDENT_PARAMS, new JSONArray(
         mapToList(_param.getDependentParams(), NamedObject::getName)));
-    pJson.put(JsonKeys.INITIAL_DISPLAY_VALUE, spec.get().get(_param.getName()));
+    pJson.put(JsonKeys.INITIAL_DISPLAY_VALUE,
+        // convert to "external" stable value (i.e. stable value processable by clients)
+        _param.getExternalStableValue(spec.get().get(_param.getName())));
     return pJson;
   }
 

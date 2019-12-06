@@ -139,7 +139,8 @@ public class JsonKeys {
   public static final String DATE_RANGE_PARAM_TYPE = "date-range";
   public static final String NUMBER_PARAM_TYPE = "number";
   public static final String NUMBER_RANGE_PARAM_TYPE = "number-range";
-  public static final String VOCAB_PARAM_TYPE = "vocabulary";
+  public static final String SINGLE_VOCAB_PARAM_TYPE = "single-pick-vocabulary";
+  public static final String MULTI_VOCAB_PARAM_TYPE = "multi-pick-vocabulary";
   public static final String STEP_PARAM_TYPE = "input-step";
   public static final String DATASET_PARAM_TYPE = "input-dataset";
   public static final String FILTER_PARAM_TYPE = "filter";

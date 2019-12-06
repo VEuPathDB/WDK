@@ -71,6 +71,14 @@ public class ParameterContainerInstanceSpecBuilder<T extends ParameterContainerI
     return (T)super.putAll(values);
   }
 
+  protected void standardizeStableValues(ParameterContainer container) {
+    for (Param param : container.getParams()) {
+      if (containsKey(param.getName())) {
+        put(param.getName(), param.getStandardizedStableValue(get(param.getName())));
+      }
+    }
+  }
+
   protected TwoTuple<PartiallyValidatedStableValues, ValidationBundleBuilder>
   validateParams(User user, ParameterContainer paramContainer, StepContainer stepContainer,
       ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {

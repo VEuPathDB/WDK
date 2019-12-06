@@ -171,7 +171,9 @@ public class StepFactory {
     // insert step into the database
     insertStep(step);
 
-    return step.getSemanticallyValid().getLeft();
+    return step.getSemanticallyValid().getOrThrow(badStep -> new WdkModelException(
+        "Could not create semantically valid step from semantically valid answer spec. " +
+            badStep.getValidationBundle().toString(2)));
   }
 
   public long getNewStepId() throws WdkModelException {

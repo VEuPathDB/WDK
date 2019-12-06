@@ -24,6 +24,14 @@ import org.json.JSONObject;
 
 public class ParamContainerFormatter {
 
+  public static JSONObject formatExistingParamValues(ParameterContainerInstanceSpec<?> instanceSpec) {
+    JSONObject json = new JSONObject();
+    for (Param param : instanceSpec.getParameterContainer().getParams()) {
+      json.put(param.getName(), param.getExternalStableValue(instanceSpec.get(param.getName())));
+    }
+    return json;
+  }
+
   public static <T extends ParameterContainerInstanceSpec<T>> JSONArray getParamsJson(
       DisplayablyValid<T> spec, Predicate<Param> inclusionPredicate) throws WdkModelException {
     JSONArray paramsJson = new JSONArray();

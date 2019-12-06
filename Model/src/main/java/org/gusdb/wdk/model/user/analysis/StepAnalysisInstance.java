@@ -10,7 +10,9 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkException;
 import org.gusdb.wdk.model.WdkModel;
@@ -20,6 +22,11 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
+import org.gusdb.wdk.model.query.spec.StepAnalysisFormSpec;
+import org.gusdb.wdk.model.query.spec.StepAnalysisFormSpecBuilder;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
@@ -218,39 +225,6 @@ public class StepAnalysisInstance {
   }
 
   /**
-   * Returns JSON of the following spec (for public consumption):
-   * {
-   *   analysisId: int
-   *   analysisName: string
-   *   stepId: int
-   *   strategyId: int
-   *   displayName: string
-   *   description: string
-   *   userNotes: string
-   *   status: enumerated string, see org.gusdb.wdk.model.user.analysis.ExecutionStatus
-   *   params: key-value object of params
-   * }
-   */
-  public JSONObject getJsonSummary() {
-    try {
-      JSONObject json = getJsonForDigest();
-      json.put(JsonKey.analysisId.name(), _analysisId);
-      json.put(JsonKey.stepId.name(), _step.getStepId());
-      json.put(JsonKey.displayName.name(), _editableDisplayName);
-      json.put(JsonKey.shortDescription.name(), _stepAnalysis.getShortDescription());
-      json.put(JsonKey.description.name(), _stepAnalysis.getDescription());
-      json.put(JsonKey.userNotes.name(), _userNotes);
-      json.put(JsonKey.hasParams.name(), _hasParams);
-      json.put(JsonKey.status.name(), _status.name());
-      json.put(JsonKey.invalidStepReason.name(), (_invalidStepReason == null ? "null" : _invalidStepReason));
-      return json;
-    }
-    catch (JSONException e) {
-      throw new WdkRuntimeException("Unable to serialize instance.", e);
-    }
-  }
-
-  /**
    * Returns JSON of the following spec (for generating hash):
    * {
    *   analysisName: string
@@ -259,22 +233,23 @@ public class StepAnalysisInstance {
    */
   public String serializeInstance() {
     try {
-      return JsonUtil.serialize(getJsonForDigest());
+      JSONObject jsonForDigest = new JSONObject()
+          .put(JsonKey.analysisName.name(), _stepAnalysis.getName())
+          .put(JsonKey.answerValueHash.name(), _answerValueHash)
+          .put(JsonKey.formParams.name(), getRawParamsJson());
+
+      LOG.debug("Created the following digest JSON: " + jsonForDigest);
+      return JsonUtil.serialize(jsonForDigest);
     }
     catch (JSONException e) {
       throw new WdkRuntimeException("Unable to serialize instance.", e);
     }
   }
 
-  private JSONObject getJsonForDigest() throws JSONException {
-    JSONObject json = new JSONObject();
-    json.put(JsonKey.analysisName.name(), _stepAnalysis.getName());
-    json.put(JsonKey.answerValueHash.name(), _answerValueHash);
-
+  private JSONObject getRawParamsJson() {
     // Sort param names so JSON values produce identical hashes
     List<String> sortedParamNames = new ArrayList<>(_formParams.keySet());
     Collections.sort(sortedParamNames);
-
     JSONObject params = new JSONObject();
     for (String paramName : sortedParamNames) {
       // Sort param values so JSON values produce identical hashes
@@ -284,10 +259,7 @@ public class StepAnalysisInstance {
         params.append(paramName, value);
       }
     }
-    json.put(JsonKey.formParams.name(), params);
-
-    LOG.debug("Returning the following shared JSON: " + json);
-    return json;
+    return params;
   }
 
   public String createHash() {
@@ -341,10 +313,6 @@ public String getUserNotes() {
 
   public Map<String, String[]> getFormParams() {
     return _formParams;
-  }
-
-  public void setFormParams(Map<String,String[]> formParams) {
-    _formParams = formParams;
   }
 
   public ExecutionStatus getStatus() {
@@ -408,6 +376,43 @@ public String getUserNotes() {
       throw new WdkUserException("Cannot execute an analysis on an unrunnable step.");
     }
     return AnswerValueFactory.makeAnswer(getStep().getRunnable().getLeft());
+  }
+
+  public String getAnswerValueHash() {
+    return _answerValueHash;
+  }
+
+  public StepAnalysisFormSpec getFormSpec(ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
+    // FIXME: This is a hack to transform the current DB format for params into
+    //   our desired service API format.  The difference is that the DB currently
+    //   stores params as a Map<String,String[]>, conforming to the previous
+    //   Servlet form param map type.  To convert to a form spec, we need the
+    //   param values in a Map<String,String>, where the values are stable values
+    //   of WDK params.  See transformation below.
+
+    StepAnalysisFormSpecBuilder builder = StepAnalysisFormSpec.builder();
+    for (Param param : _stepAnalysis.getParams()) {
+      String[] values = _formParams.get(param.getName());
+      // handle empty case (param value missing)
+      if (values == null || values.length == 0) continue; // don't add any value; may fill later
+      // convert from array to old-style single "stable" value
+      if (values.length > 1) values[0] = FormatUtil.join(values, ",");
+      // get standardized value and add to builder
+      builder.put(param.getName(), param.getStandardizedStableValue(values[0]));
+    }
+    return builder.buildValidated(_step.getUser(), _stepAnalysis, validationLevel, fillStrategy);
+  }
+
+  public void setFormSpec(RunnableObj<StepAnalysisFormSpec> validFormSpec) {
+    // FIXME: Same hack for the same reason as getFormSpec() above, opposite direction
+    _formParams.clear();
+    for (Param param : _stepAnalysis.getParams()) {
+      String stableValue = validFormSpec.get().get(param.getName());
+      String[] arrayValue = (param instanceof AbstractEnumParam
+          ? AbstractEnumParam.convertToTerms(stableValue).toArray(new String[0])
+          : new String[]{ stableValue });
+      _formParams.put(param.getName(), arrayValue);
+    }
   }
 
 }

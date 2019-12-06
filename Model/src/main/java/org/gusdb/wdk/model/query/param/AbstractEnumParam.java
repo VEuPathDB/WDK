@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
@@ -22,6 +23,7 @@ import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.SelectableItem;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
@@ -74,17 +76,50 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   private static final boolean INVALID_DEFAULT_IS_FATAL = true;
 
-  public static final String DISPLAY_SELECT = "select";
-  public static final String DISPLAY_LISTBOX = "listBox"; // deprecated; use select
-  public static final String DISPLAY_CHECKBOX = "checkBox";
-  public static final String DISPLAY_RADIO = "radioBox"; // deprecated; use checkBox
-  public static final String DISPLAY_TREEBOX = "treeBox";
-  public static final String DISPLAY_TYPEAHEAD = "typeAhead";
+  public enum SelectMode {
+    NONE,   // select none of the available options
+    ALL,    // select all the available options
+    FIRST;  // select only the first value in the list of available options
+  }
+
+  public enum DisplayType {
+    SELECT("select"),
+    CHECKBOX("checkBox"),
+    TREEBOX("treeBox"),
+    TYPEAHEAD("typeAhead");
+
+    public static final String DEPRECATION_MESSAGE =
+        "NOTE: radioBox and listBox are no longer in use and should " +
+        "be replaced with checkBox and select respectively.";
+
+    private final String _value;
+
+    private DisplayType(String value) {
+      _value = value;
+    }
+
+    public String getValue() {
+      return _value;
+    }
+
+    public static DisplayType parse(String value) throws WdkModelException {
+      for (DisplayType type : values()) {
+        if (type._value.equals(value)) {
+          return type;
+        }
+      }
+      String validValues = Arrays.stream(values())
+          .map(val -> "'" + val._value + "'")
+          .collect(Collectors.joining(", "));
+      throw new WdkModelException("'" + value + "' is not a valid display type." +
+          " Only [" + validValues + "] allowed. " + DEPRECATION_MESSAGE);
+    }
+  }
 
   protected Boolean _multiPick = false;
   protected boolean _quote = true;
 
-  private String _displayType;
+  private DisplayType _displayType;
   private int _minSelectedCount = -1;
   private int _maxSelectedCount = -1;
   private boolean _countOnlyLeaves = true;
@@ -137,7 +172,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     _multiPick = multiPick;
   }
 
-  public boolean getMultiPick() {
+  public boolean isMultiPick() {
     return _multiPick;
   }
 
@@ -161,28 +196,16 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    * @return the displayType of this param
    */
   public String getDisplayType() {
-    return (_displayType != null ? _displayType :
-      (getMultiPick() ? DISPLAY_CHECKBOX : DISPLAY_SELECT));
+    return ((_displayType != null ? _displayType :
+      (isMultiPick() ? DisplayType.CHECKBOX : DisplayType.SELECT))).getValue();
   }
 
   /**
    * @param displayType
    *          the displayType to set
    */
-  public void setDisplayType(String displayType) {
-    String paramName = getFullName();
-    if (paramName == null) paramName = "<name_not_yet_set>";
-    if (displayType.equals(DISPLAY_RADIO)) {
-      LOG.warn("Param ['" + paramName + "']: displayType '" + DISPLAY_RADIO +
-          "' is deprecated.  Please use '" + DISPLAY_CHECKBOX + "' instead.");
-      displayType = DISPLAY_CHECKBOX;
-    }
-    else if (displayType.equals(DISPLAY_LISTBOX)) {
-      LOG.warn("Param ['" + paramName + "']: displayType '" + DISPLAY_LISTBOX +
-          "' is deprecated.  Please use '" + DISPLAY_SELECT + "' instead.");
-      displayType = DISPLAY_SELECT;
-    }
-    _displayType = displayType;
+  public void setDisplayType(String displayType) throws WdkModelException {
+    _displayType = DisplayType.parse(displayType);
   }
 
   /**
@@ -208,7 +231,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    */
   public int getMaxSelectedCount() {
     // only allow one value if multiPick set to false
-    if (!getMultiPick())
+    if (!isMultiPick())
       return 1;
     return _maxSelectedCount;
   }
@@ -272,7 +295,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   @Override
   public String getSanityDefault(User user, Map<String, String> contextParamValues,
       SelectMode sanitySelectMode) throws WdkModelException {
-    return getSanityDefaultValue(getVocabInstance(user, contextParamValues), sanitySelectMode, getMultiPick(), getSanityDefault());
+    return getSanityDefaultValue(getVocabInstance(user, contextParamValues), sanitySelectMode, isMultiPick(), getSanityDefault());
   }
 
   public Map<String, String> getDisplayMap(User user, Map<String, String> contextParamValues) throws WdkModelException {
@@ -398,7 +421,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   private int getNumSelected(EnumParamVocabInstance vocab, List<String> selectedTerms) {
     // if countOnlyLeaves is set, must generate original tree, set values, and count the leaves
-    if (_displayType != null && _displayType.equals(DISPLAY_TREEBOX) && getCountOnlyLeaves()) {
+    if (_displayType != null && _displayType.equals(DisplayType.TREEBOX) && getCountOnlyLeaves()) {
       EnumParamTermNode[] rootNodes = vocab.getVocabTreeRoots();
       FieldTree tree = getParamTree(getName(), rootNodes);
       populateParamTree(tree, selectedTerms);
@@ -464,7 +487,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     LOG.debug("applySelectMode(): select mode: '" + _selectMode + "', default from model = " + defaultFromModel);
     if (defaultFromModel != null) {
       // default defined in the model, validate default values before returning
-      String[] defaults = getMultiPick() ?
+      String[] defaults = isMultiPick() ?
           defaultFromModel.split("\\s*,\\s*") :
           new String[] { defaultFromModel };
       List<String> trimmedDefaults = new ArrayList<>();
@@ -602,7 +625,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
     // throw error if user selects treeBox displayType but multiSelect=false
     //   note: no technical reason not to allow this, but we think UX for this is bad
-    if (!getMultiPick() && getDisplayType().equals(DISPLAY_TREEBOX)) {
+    if (!isMultiPick() && DisplayType.TREEBOX.equals(_displayType)) {
       String contextQueryName = _container == null ? "null" : _container.getFullName();
       throw new WdkModelException("Param ['" + getFullName() +
           "'] in context query ['" + contextQueryName + "']: " +
@@ -666,20 +689,49 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   /**
    * Special case to support legacy values. Old DBs may contain comma-delimited
-   * values, which we will still try to convert into the new stable value
-   * format: JSON Array of String
+   * values for multi-pick, which we will still try to convert into the new
+   * stable value format: stringified JSON Array of String
    */
   @Override
-  public String translateDbStableValue(String stableValue) {
+  public String getStandardizedStableValue(String stableValue) {
     try {
       return new JSONArray(stableValue).toString();
     }
     catch(JSONException e) {
-      // unable to convert to JSON; convert from old format
-      return (getMultiPick() ?
-        new JSONArray(stableValue.split(",")) :
-        new JSONArray(new String[]{ stableValue })
-      ).toString();
+      // unable to convert to JSON; convert from single pick external value or old format
+      String[] values = isMultiPick() ? stableValue.split(",") : new String[] { stableValue };
+      return new JSONArray(values).toString();
+    }
+  }
+
+  /**
+   * Special case to support different external stable value formats for
+   * single-pick and multi-pick values.  Internal stable value is always a
+   * stringified JSON Array of String (see getStandardizedStableValue() above);
+   * keep as is (multi-pick) or convert to either raw string (single-pick).
+   * 
+   * @param standardizedStableValue stringified JSON array of string with 0 or 1
+   * values (single-pick) or any number of values (multi-pick)
+   * @return stable value expected by clients.  For single-pick this is a raw
+   * string value representing the single value, or an empty string for empty
+   * value.  For multi-pick, it's the same as the interal stable value: a
+   * stringified JSON array of terms (strings)
+   */
+  @Override
+  public String getExternalStableValue(String standardizedStableValue) {
+    try {
+      if (isMultiPick()) {
+        return standardizedStableValue;
+      }
+      JSONArray singleValueArray = new JSONArray(standardizedStableValue);
+      switch (singleValueArray.length()) {
+        case 0: return "";
+        case 1: return singleValueArray.getString(0);
+        default: throw new WdkRuntimeException("Single-pick enum param '" + _name + "' has multiple values: " + singleValueArray);
+      }
+    }
+    catch (JSONException e) {
+      throw new WdkRuntimeException("Passed value is not a standardized enum value: " + standardizedStableValue);
     }
   }
 }

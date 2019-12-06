@@ -7,22 +7,21 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import org.gusdb.fgputil.json.JsonIterators;
-import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.StepAnalysisFormSpec;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance.JsonKey;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisSupplementalParams;
 import org.gusdb.wdk.service.formatter.param.ParamContainerFormatter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.google.common.collect.Streams;
 
 public class StepAnalysisFormatter {
 
@@ -51,24 +50,39 @@ public class StepAnalysisFormatter {
     );
   }
 
-  public static JSONObject getStepAnalysisInstanceJson(StepAnalysisInstance instance) {
-    JSONObject baseObject = instance.getJsonSummary();
-    // FIXME: This is a hack to transform the current DB format for params into
-    //   our desired service API format.  The difference is that the DB currently
-    //   stores params as a Map<String,String[]>, conforming to the previous
-    //   servlet form param map type.  Instead, we want to send the client the
-    //   param values in a Map<String,String>, where the values are stable values
-    //   of WDK params.  See transformation below.
-    //   See also: StepAnalysisInstanceService.translateParamValues()
-    JSONObject paramsObject = baseObject.getJSONObject(StepAnalysisInstance.JsonKey.formParams.name());
-    for (String paramName: paramsObject.keySet()) {
-      JSONArray valueArray = paramsObject.getJSONArray(paramName);
-      paramsObject.put(paramName, Streams
-          .stream(JsonIterators.arrayIterable(valueArray))
-          .map(JsonType::getString)
-          .collect(Collectors.joining(",")));
-    }
-    return baseObject;
+  /**
+   * Returns JSON of the following spec (for public consumption):
+   * {
+   *   analysisId: int
+   *   analysisName: string
+   *   stepId: int
+   *   displayName: string
+   *   shortDescription: string
+   *   description: string
+   *   userNotes: string
+   *   hasParams: boolean
+   *   status: enumerated string, see org.gusdb.wdk.model.user.analysis.ExecutionStatus
+   *   invalidStepReason: string | null
+   *   formParams: key-value object of param values
+   * }
+   * @throws WdkModelException 
+   */
+  public static JSONObject getStepAnalysisInstanceJson(StepAnalysisInstance instance, ValidationLevel level) throws WdkModelException {
+    StepAnalysis analysis = instance.getStepAnalysis();
+    String invalidStepReason = instance.getInvalidStepReason();
+    StepAnalysisFormSpec formSpec = instance.getFormSpec(level, FillStrategy.FILL_PARAM_IF_MISSING);
+    return new JSONObject()
+        .put(JsonKey.analysisName.name(), analysis.getName())
+        .put(JsonKey.analysisId.name(), instance.getAnalysisId())
+        .put(JsonKey.stepId.name(), instance.getStep().getStepId())
+        .put(JsonKey.displayName.name(), instance.getDisplayName())
+        .put(JsonKey.shortDescription.name(), analysis.getShortDescription())
+        .put(JsonKey.description.name(), analysis.getDescription())
+        .put(JsonKey.userNotes.name(), instance.getUserNotes())
+        .put(JsonKey.hasParams.name(), instance.hasParams())
+        .put(JsonKey.status.name(), instance.getStatus().name())
+        .put(JsonKey.invalidStepReason.name(), (invalidStepReason == null ? JSONObject.NULL : invalidStepReason))
+        .put(JsonKey.formParams.name(), ParamContainerFormatter.formatExistingParamValues(formSpec));
   }
 
   public static JSONArray getStepAnalysisInstancesJson(

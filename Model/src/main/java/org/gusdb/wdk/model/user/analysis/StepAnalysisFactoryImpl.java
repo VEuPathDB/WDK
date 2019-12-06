@@ -107,7 +107,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     Map<Long, StepAnalysisInstance> instances = _dataStore.getAnalysesByStepId(stepId, _fileStore);
     for (StepAnalysisInstance instance : instances.values()) {
       LOG.info("Reassessing step analysis with ID " + instance.getAnalysisId());
-      LOG.trace("TRACE: " + instance.getJsonSummary());
 
       // non-new steps that have been revised have invalid results until run again
       if (!(instance.getState().equals(StepAnalysisState.NO_RESULTS) ||
@@ -192,7 +191,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     Map<Long, StepAnalysisInstance> fromInstances = _dataStore.getAnalysesByStepId(fromStep.getStepId(), _fileStore);
     for (StepAnalysisInstance fromInstance : fromInstances.values()) {
       LOG.info("Copying step analysis with ID " + fromInstance.getAnalysisId());
-      LOG.trace("TRACE: " + fromInstance.getJsonSummary());
       StepAnalysisInstance toInstance = StepAnalysisInstance.createCopy(fromInstance);
       toInstance.setStep(toStep);
       // non-new steps copied during revise have invalid results until run again
@@ -347,8 +345,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       return executeAnalysis(instance);
     }
 
-    // otherwise, no need to run since result already generated or plugin currently running;
-    LOG.info("Attempt made to run analysis, but it was unnecessary.  Here's the instance at that time:\n" + instance.getJsonSummary());
+    // otherwise, no need to run since result already generated or plugin currently running
     return instance;
   }
 

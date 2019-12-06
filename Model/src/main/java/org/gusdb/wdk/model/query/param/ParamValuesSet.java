@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam.SelectMode;
 
 /**
  * This set is used to provide test values and conditions in the model, and they

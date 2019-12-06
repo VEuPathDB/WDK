@@ -963,7 +963,11 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
       && !_allowEmpty;
   }
 
-  public String translateDbStableValue(String stableValue) {
+  public String getStandardizedStableValue(String stableValue) {
+    return stableValue;
+  }
+
+  public String getExternalStableValue(String stableValue) {
     return stableValue;
   }
 }

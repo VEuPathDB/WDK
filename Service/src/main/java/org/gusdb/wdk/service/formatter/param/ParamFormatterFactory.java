@@ -1,6 +1,7 @@
 package org.gusdb.wdk.service.formatter.param;
 
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam.DisplayType;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.DateParam;
@@ -21,8 +22,8 @@ public class ParamFormatterFactory {
     }
     if (param instanceof AbstractEnumParam) {
       AbstractEnumParam enumParam = (AbstractEnumParam)param;
-      return (enumParam.getDisplayType().equals(AbstractEnumParam.DISPLAY_TYPEAHEAD) ?
-          new TypeAheadParamFormatter(enumParam) :
+      return (enumParam.getDisplayType().equals(DisplayType.TREEBOX.getValue()) ?
+          new TreeBoxEnumParamFormatter(enumParam) :
           new EnumParamFormatter(enumParam));
     }
     if (param instanceof AnswerParam) {

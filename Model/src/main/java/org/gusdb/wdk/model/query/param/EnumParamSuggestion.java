@@ -1,6 +1,6 @@
 package org.gusdb.wdk.model.query.param;
 
-import org.gusdb.wdk.model.query.param.SelectMode;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam.SelectMode;
 
 public class EnumParamSuggestion extends ParamSuggestion {
 

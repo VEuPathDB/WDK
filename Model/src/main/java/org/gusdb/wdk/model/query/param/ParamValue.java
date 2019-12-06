@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.query.param;
 
 import org.gusdb.wdk.model.WdkModelBase;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam.SelectMode;
 
 public class ParamValue extends WdkModelBase {
 

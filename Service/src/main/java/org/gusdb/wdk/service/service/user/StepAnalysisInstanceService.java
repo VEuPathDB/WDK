@@ -25,15 +25,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.media.multipart.ContentDisposition;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
-import org.gusdb.wdk.model.query.param.AbstractEnumParam;
-import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
+import org.gusdb.wdk.model.query.spec.StepAnalysisFormSpec;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
@@ -117,15 +117,14 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
   @Path(ANALYSES_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public String createStepAnalysis(JSONObject json) throws WdkModelException {
+  public JSONObject createStepAnalysis(JSONObject json) throws WdkModelException {
     try {
       RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
       String analysisName = json.getString(ANALYSIS_NAME_KEY);
       String answerValueChecksum = AnswerValueFactory.makeAnswer(step).getChecksum();
       StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), analysisName);
       StepAnalysisInstance stepAnalysisInstance = getStepAnalysisInstance(step, stepAnalysis, answerValueChecksum);
-
-      return StepAnalysisFormatter.getStepAnalysisInstanceJson(stepAnalysisInstance).toString();
+      return StepAnalysisFormatter.getStepAnalysisInstanceJson(stepAnalysisInstance, ValidationLevel.DISPLAYABLE);
     }
     catch (JSONException | DataValidationException e) {
       throw new BadRequestException(e);
@@ -155,7 +154,7 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
   public JSONObject getStepAnalysisInstance(
       @PathParam(ANALYSIS_ID_PATH_PARAM) long analysisId,
       @QueryParam(ACCESS_TOKEN_QUERY_PARAM) String accessToken) throws WdkModelException {
-    return StepAnalysisFormatter.getStepAnalysisInstanceJson(getAnalysis(analysisId, accessToken));
+    return StepAnalysisFormatter.getStepAnalysisInstanceJson(getAnalysis(analysisId, accessToken), ValidationLevel.DISPLAYABLE);
   }
 
   //  TODO: Why is this so slow?
@@ -173,7 +172,7 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
   public void updateStepAnalysisInstance(
       @PathParam(ANALYSIS_ID_PATH_PARAM) long analysisId,
       @QueryParam(ACCESS_TOKEN_QUERY_PARAM) String accessToken,
-      String body) throws WdkModelException, WdkUserException {
+      String body) throws WdkModelException, DataValidationException {
     final ObjectMapper mapper = new ObjectMapper();
     final StepAnalysisFactory factory = getWdkModel().getStepAnalysisFactory();
     final StepAnalysisInstance instance = getAnalysis(analysisId, accessToken);
@@ -184,12 +183,25 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
         final Map<String, String> inputParams = mapper.readerFor(
             new TypeReference<Map<String, String>>() {}).readValue(json.get(ANALYSIS_PARAMS_KEY));
 
-        instance.setFormParams(translateParamValues(instance.getStepAnalysis().getParamMap(), inputParams));
+        StepAnalysisFormSpec spec = StepAnalysisFormSpec.builder()
+            .putAll(inputParams)
+            .buildValidated(instance.getStep().getUser(), instance.getStepAnalysis(),
+                ValidationLevel.RUNNABLE, FillStrategy.NO_FILL);
+        ValidationBundle validation = spec.getValidationBundle();
 
-        ValidationBundle validation = factory.validateFormParams(instance);
+        if (spec.isRunnable()) {
+          // further validate using the analyis plugin
+          instance.setFormSpec(spec.getRunnable().getLeft());
+          try {
+            validation = factory.validateFormParams(instance);
+          }
+          catch (WdkUserException e) {
+            validation = ValidationBundle.builder(ValidationLevel.RUNNABLE).addError(e.getMessage()).build();
+          }
+        }
 
         if(!validation.getStatus().isValid()) {
-          throw new WdkUserException(validation.toString(2));
+          throw new DataValidationException(validation.toString(2));
         }
 
         factory.setFormParams(instance);
@@ -203,15 +215,6 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
       instance.setDisplayName(json.get(ANALYSIS_DISPLAY_NAME_KEY).asText());
       factory.renameInstance(instance);
     }
-  }
-
-  private Map<String,String[]> translateParamValues(Map<String, Param> paramMap, Map<String, String> inputParams) {
-    // FIXME: try to get to where this method is not needed.  It is very flawed.
-    //   For more explanation see: StepAnalysisFormatter.getStepAnalysisInstanceJson()
-    return Functions.getMapFromKeys(inputParams.keySet(),
-        key -> paramMap.get(key) instanceof AbstractEnumParam
-            ? AbstractEnumParam.convertToTerms(inputParams.get(key)).toArray(new String[0])
-            : new String[]{inputParams.get(key)});
   }
 
   @GET
