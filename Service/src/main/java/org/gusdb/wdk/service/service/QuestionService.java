@@ -258,8 +258,8 @@ public class QuestionService extends AbstractWdkService {
         .getOrThrow(spec -> new WdkModelException("Unable to produce a valid spec from incoming param values"));
 
     // see if changed param value changed during build; if so, then it was invalid
-    if (!answerSpec.get().getQueryInstanceSpec()
-        .get(changedParam.getName()).equals(changedParamEntry.getValue())) {
+    if (!answerSpec.get().getQueryInstanceSpec().get(changedParam.getName())
+        .equals(changedParam.getStandardizedStableValue(changedParamEntry.getValue()))) {
       // means the build process determined the incoming changed param value to
       // be invalid and changed it to the default; this is disallowed, so throw
       // TODO: figure out an elegant way to tell the user WHY the value they entered is invalid
