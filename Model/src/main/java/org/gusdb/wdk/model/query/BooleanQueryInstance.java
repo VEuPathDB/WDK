@@ -54,9 +54,6 @@ public class BooleanQueryInstance extends SqlQueryInstance {
       sql = getUnionSql(leftSql, rightSql, operator);
     }
     else if (op == BooleanOperator.INTERSECT) {
-      // the union query is reused, and having count(*) > 1 is appended to
-      // last group by to get intersect results. the unioned sql has to
-      // have group by as the last clause.
       sql = getIntersectSql(leftSql, rightSql,
           BooleanOperator.UNION.getOperator(platform));
     }
@@ -207,28 +204,28 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     }
     return sql.toString();
   }
-  
+
   /**
    * get the columns to do the boolean operation on
    * subclasses can override to provide custom pk columns
    * @return
    */
   protected String[] getPkColumns() {
-	  RecordClass rc = booleanQuery.getRecordClass();
-	  return rc.getPrimaryKeyDefinition().getColumnRefs();
+    RecordClass rc = booleanQuery.getRecordClass();
+    return rc.getPrimaryKeyDefinition().getColumnRefs();
   }
-  
-    protected String getLeftSql()  throws WdkModelException {
-	Map<String, String> internalValues = getParamInternalValues();
-        AnswerParam leftParam = booleanQuery.getLeftOperandParam();
-	String leftSubSql = internalValues.get(leftParam.getName());
-	return constructOperandSql(leftSubSql);
-    }
 
-    protected String getRightSql()  throws WdkModelException {
-	Map<String, String> internalValues = getParamInternalValues();
-	AnswerParam rightParam = booleanQuery.getRightOperandParam();
-	String rightSubSql = internalValues.get(rightParam.getName());
-	return constructOperandSql(rightSubSql);
-    }
+  protected String getLeftSql()  throws WdkModelException {
+    Map<String, String> internalValues = getParamInternalValues();
+    AnswerParam leftParam = booleanQuery.getLeftOperandParam();
+    String leftSubSql = internalValues.get(leftParam.getName());
+    return constructOperandSql(leftSubSql);
+  }
+
+  protected String getRightSql()  throws WdkModelException {
+    Map<String, String> internalValues = getParamInternalValues();
+    AnswerParam rightParam = booleanQuery.getRightOperandParam();
+    String rightSubSql = internalValues.get(rightParam.getName());
+    return constructOperandSql(rightSubSql);
+  }
 }
