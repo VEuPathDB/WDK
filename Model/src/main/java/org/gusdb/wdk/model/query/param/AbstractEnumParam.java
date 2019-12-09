@@ -695,6 +695,9 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   @Override
   public String getStandardizedStableValue(String stableValue) {
     try {
+      if (stableValue == null) {
+        return "[]";
+      }
       return new JSONArray(stableValue).toString();
     }
     catch(JSONException e) {
@@ -723,11 +726,13 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       if (isMultiPick()) {
         return standardizedStableValue;
       }
-      JSONArray singleValueArray = new JSONArray(standardizedStableValue);
-      switch (singleValueArray.length()) {
-        case 0: return "";
-        case 1: return singleValueArray.getString(0);
-        default: throw new WdkRuntimeException("Single-pick enum param '" + _name + "' has multiple values: " + singleValueArray);
+      else {
+        JSONArray singleValueArray = new JSONArray(standardizedStableValue);
+        switch (singleValueArray.length()) {
+          case 0: return "";
+          case 1: return singleValueArray.getString(0);
+          default: throw new WdkRuntimeException("Single-pick enum param '" + _name + "' has multiple values: " + singleValueArray);
+        }
       }
     }
     catch (JSONException e) {
