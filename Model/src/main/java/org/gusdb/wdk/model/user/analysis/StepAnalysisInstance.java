@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
@@ -400,6 +401,10 @@ public String getUserNotes() {
       // get standardized value and add to builder
       builder.put(param.getName(), param.getStandardizedStableValue(values[0]));
     }
+    RunnableObj<AnswerSpec> runnableSpec = Step.getRunnableAnswerSpec(_step.getRunnable().getOrThrow(step ->
+        new WdkModelException("Request made to produce step analysis form spec on analysis owned " +
+            "by an unrunnable step. " + step.getValidationBundle().toString(2))));
+    builder.putAll(StepAnalysisSupplementalParams.getValues(_stepAnalysis, _step.getUser(), runnableSpec));
     return builder.buildValidated(_step.getUser(), _stepAnalysis, validationLevel, fillStrategy);
   }
 
