@@ -266,7 +266,7 @@ public class AnswerValue {
   }
 
   /**
-   * the checksum of the iq query, plus the filter information on the answer.
+   * the checksum of the id query, plus the filter information on the answer.
    */
   public String getChecksum() throws WdkModelException {
     if (_checksum == null) {
@@ -280,7 +280,9 @@ public class AnswerValue {
 
       // if filters have been applied, get the content for it
       jsContent.put("filters", ParamsAndFiltersDbColumnFormat.formatFilters(_answerSpec.getFilterOptions()));
-      // FIXME: decide whether view filters should also be added to checksum here
+
+      // TODO: decide whether view filters should also be added to checksum here
+      // FIXME: add column filters to JSON to create this hash!!!
 
       // encrypt the content to make step-independent checksum
       _checksum = EncryptionUtil.encrypt(JsonUtil.serialize(jsContent));
