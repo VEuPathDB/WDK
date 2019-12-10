@@ -695,7 +695,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   @Override
   public String getStandardizedStableValue(String stableValue) {
     try {
-      if (stableValue == null) {
+      if (stableValue == null || stableValue.isEmpty()) {
         return "[]";
       }
       return new JSONArray(stableValue).toString();
@@ -723,20 +723,44 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   @Override
   public String getExternalStableValue(String standardizedStableValue) {
     try {
+      JSONArray array = parseValue(standardizedStableValue, getName());
       if (isMultiPick()) {
-        return standardizedStableValue;
+        return array.toString();
       }
       else {
-        JSONArray singleValueArray = new JSONArray(standardizedStableValue);
-        switch (singleValueArray.length()) {
+        switch (array.length()) {
           case 0: return "";
-          case 1: return singleValueArray.getString(0);
-          default: throw new WdkRuntimeException("Single-pick enum param '" + _name + "' has multiple values: " + singleValueArray);
+          case 1: return array.getString(0);
+          default: throw new WdkRuntimeException("Single-pick enum param '" +
+              getName() + "' has multiple values: " + array);
         }
       }
     }
     catch (JSONException e) {
       throw new WdkRuntimeException("Passed value is not a standardized enum value: " + standardizedStableValue);
+    }
+  }
+
+  /**
+   * @param standardizedStableValue supposedly standardized value (will test)
+   * @param paramName name of parameter
+   * @return JSON array of string values if standardized
+   * @throws WdkRuntimeException if not a standardized enum param value
+   */
+  private static JSONArray parseValue(String standardizedStableValue, String paramName) {
+    if (standardizedStableValue == null) {
+      throw new WdkRuntimeException("Null value passed for param '" + paramName + "'.");
+    }
+    try {
+      JSONArray array = new JSONArray(standardizedStableValue);
+      for (int i = 0; i < array.length(); i++) {
+        array.getString(i);
+      }
+      return array;
+    }
+    catch (JSONException e) {
+      throw new WdkRuntimeException("Value passed for param '" + paramName +
+          "', '" + standardizedStableValue + "' is not a JSON array of strings.", e);
     }
   }
 }
