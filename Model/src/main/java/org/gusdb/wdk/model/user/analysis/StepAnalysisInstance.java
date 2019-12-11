@@ -411,11 +411,14 @@ public String getUserNotes() {
   public void setFormSpec(RunnableObj<StepAnalysisFormSpec> validFormSpec) {
     // FIXME: Same hack for the same reason as getFormSpec() above, opposite direction
     _formParams.clear();
+    LOG.info("Assigning param map of arrays from valid form spec");
     for (Param param : _stepAnalysis.getParams()) {
+      // get the standardized stable value from the spec
       String stableValue = validFormSpec.get().get(param.getName());
       String[] arrayValue = (param instanceof AbstractEnumParam
           ? AbstractEnumParam.convertToTerms(stableValue).toArray(new String[0])
           : new String[]{ stableValue });
+      LOG.info("Adding name: " + param.getName() + ", value: " + FormatUtil.join(arrayValue, ","));
       _formParams.put(param.getName(), arrayValue);
     }
   }
