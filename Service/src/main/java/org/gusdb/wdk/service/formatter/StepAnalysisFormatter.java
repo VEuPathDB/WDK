@@ -75,7 +75,7 @@ public class StepAnalysisFormatter {
         .put(JsonKey.analysisName.name(), analysis.getName())
         .put(JsonKey.analysisId.name(), instance.getAnalysisId())
         .put(JsonKey.stepId.name(), instance.getStep().getStepId())
-        .put(JsonKey.answerValueHash, instance.getAnswerValueHash())
+        .put(JsonKey.answerValueHash.name(), instance.getAnswerValueHash())
         .put(JsonKey.displayName.name(), instance.getDisplayName())
         .put(JsonKey.shortDescription.name(), analysis.getShortDescription())
         .put(JsonKey.description.name(), analysis.getDescription())
