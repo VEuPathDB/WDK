@@ -7,8 +7,10 @@ import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisSupplementalParams;
 
 public class StepAnalysisFormSpecBuilder extends ParameterContainerInstanceSpecBuilder<StepAnalysisFormSpecBuilder> {
 
@@ -34,31 +36,33 @@ public class StepAnalysisFormSpecBuilder extends ParameterContainerInstanceSpecB
   /**
    * Convenience method to create a runnable step analysis instance spec
    * 
-   * @param user user to glean any user params and to populate step analysis instance context
+   * @param step step from which dynamic params will be gleaned
    * @param stepAnalysis stepAnalysis for this instance spec
    * @return
    * @throws WdkModelException 
    */
-  public RunnableObj<StepAnalysisFormSpec> buildRunnable(User user, StepAnalysis stepAnalysis)
+  public RunnableObj<StepAnalysisFormSpec> buildRunnable(RunnableObj<Step> step, StepAnalysis stepAnalysis)
       throws WdkModelException {
     return ValidObjectFactory.getRunnable(buildValidated(
-        user, stepAnalysis, ValidationLevel.RUNNABLE, FillStrategy.NO_FILL));
+        step, stepAnalysis, ValidationLevel.RUNNABLE, FillStrategy.NO_FILL));
   }
 
   /**
    * Fills any missing parameters in the passed builder and builds a StepAnalysisFormSpec using the passed
    * validation level.
    * 
-   * @param user user to glean any user params and to populate query instance context
+   * @param step step from which dynamic params will be gleaned
    * @param stepAnalysis stepAnalysis for this instance spec
    * @param validationLevel a level to validate the spec against
    * @param fillStrategy whether to fill in missing param values with defaults
    * @return a built spec
    * @throws WdkModelException if unable to validate (e.g. DB query fails or other runtime exception)
    */
-  public StepAnalysisFormSpec buildValidated(User user, StepAnalysis stepAnalysis,
+  public StepAnalysisFormSpec buildValidated(RunnableObj<Step> step, StepAnalysis stepAnalysis,
       ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
+    User user = step.get().getUser();
     standardizeStableValues(stepAnalysis);
+    putAll(StepAnalysisSupplementalParams.getValues(stepAnalysis, step.get().getUser(), Step.getRunnableAnswerSpec(step)));
     TwoTuple<PartiallyValidatedStableValues, ValidationBundleBuilder> paramValidation =
         validateParams(user, stepAnalysis, StepContainer.emptyContainer(), validationLevel, fillStrategy);
     return new StepAnalysisFormSpec(user, stepAnalysis, paramValidation.getFirst(),

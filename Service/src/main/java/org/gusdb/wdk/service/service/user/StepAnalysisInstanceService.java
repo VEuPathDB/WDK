@@ -183,9 +183,11 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
         final Map<String, String> inputParams = mapper.readerFor(
             new TypeReference<Map<String, String>>() {}).readValue(json.get(ANALYSIS_PARAMS_KEY));
 
+        RunnableObj<Step> runnableStep = instance.getStep().getRunnable().getOrThrow(step ->
+            new DataValidationException("Step " + step.getStepId() + " is not runnable.  Cannot validate step analysis parameters."));
         StepAnalysisFormSpec spec = StepAnalysisFormSpec.builder()
             .putAll(inputParams)
-            .buildValidated(instance.getStep().getUser(), instance.getStepAnalysis(),
+            .buildValidated(runnableStep, instance.getStepAnalysis(),
                 ValidationLevel.RUNNABLE, FillStrategy.NO_FILL);
         ValidationBundle validation = spec.getValidationBundle();
 

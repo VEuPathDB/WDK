@@ -40,7 +40,6 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.StepAnalysisFormSpec;
 import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.analysis.StepAnalysisSupplementalParams;
 import org.gusdb.wdk.service.formatter.StepAnalysisFormatter;
 import org.gusdb.wdk.service.formatter.param.ParamContainerFormatter;
 import org.gusdb.wdk.service.request.ParamValueSetRequest;
@@ -116,8 +115,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
     StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), analysisName);
     DisplayablyValid<StepAnalysisFormSpec> formSpec = StepAnalysisFormSpec
         .builder()
-        .putAll(StepAnalysisSupplementalParams.getValues(stepAnalysis, step.get().getUser(), Step.getRunnableAnswerSpec(step)))
-        .buildValidated(step.get().getUser(), stepAnalysis, ValidationLevel.DISPLAYABLE, FillStrategy.FILL_PARAM_IF_MISSING)
+        .buildValidated(step, stepAnalysis, ValidationLevel.DISPLAYABLE, FillStrategy.FILL_PARAM_IF_MISSING)
         .getDisplayablyValid()
         .getOrThrow(spec -> new WdkModelException("Default values for step analysis type '" +
             analysisName + "' on step " + _stepId + " are not displayable. Validation " +
@@ -160,9 +158,8 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
     StepAnalysisFormSpec inputSpec = StepAnalysisFormSpec
         .builder()
         .putAll(request.getContextParamValues())
-        .putAll(StepAnalysisSupplementalParams.getValues(stepAnalysis, step.get().getUser(), Step.getRunnableAnswerSpec(step)))
         .buildValidated(
-            step.get().getUser(),
+            step,
             stepAnalysis,
             ValidationLevel.SEMANTIC,
             FillStrategy.NO_FILL);
@@ -176,7 +173,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
         StepAnalysisFormSpec.builder()
             .putAll(request.getContextParamValues())
             .buildValidated(
-                step.get().getUser(),
+                step,
                 stepAnalysis,
                 ValidationLevel.DISPLAYABLE,
                 FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID)
@@ -229,9 +226,8 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
     DisplayablyValid<StepAnalysisFormSpec> formSpec = StepAnalysisFormSpec
         .builder()
         .putAll(contextParams)
-        .putAll(StepAnalysisSupplementalParams.getValues(stepAnalysis, step.get().getUser(), Step.getRunnableAnswerSpec(step)))
         .buildValidated(
-            getSessionUser(),
+            step,
             stepAnalysis,
             ValidationLevel.DISPLAYABLE,
             FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID)
@@ -307,7 +303,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
         .builder()
         .putAll(contextParamValues)
         .buildValidated(
-            getSessionUser(),
+            step,
             stepAnalysis,
             ValidationLevel.SEMANTIC,
             FillStrategy.NO_FILL)
@@ -361,7 +357,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
         .builder()
         .putAll(contextParamValues)
         .buildValidated(
-            getSessionUser(),
+            step,
             stepAnalysis,
             ValidationLevel.SEMANTIC,
             FillStrategy.NO_FILL)
