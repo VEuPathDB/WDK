@@ -317,7 +317,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    *   if unable to retrieve default value
    */
   protected String getDefault(PartiallyValidatedStableValues stableValues) throws WdkModelException {
-    return _xmlDefaultValue;
+    return _xmlDefaultValue == null ? "" : _xmlDefaultValue;
   }
 
   public void setSanityDefault(String sanityDefaultValue) {
