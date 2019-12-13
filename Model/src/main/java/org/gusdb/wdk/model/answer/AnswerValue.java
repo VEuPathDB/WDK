@@ -662,15 +662,17 @@ public class AnswerValue {
   }
 
   private String applyColumnFilters(String sql) throws WdkModelException {
-    // Apply just the PK cols in the record class order (getIdSql can
-    // append columns)
+    LOG.info("RRD: pre-column-filter SQL: " + sql);
+    // Apply just the PK cols in the record class order (getIdSql can append columns)
     final var q = "SELECT\n"
       + Arrays.stream(getAnswerSpec().getQuestion().getRecordClass()
         .getPrimaryKeyDefinition().getColumnRefs())
         .collect(Collectors.joining("\n, ", "  ", "\n"))
       + "FROM (\n" + indent(sql) + "\n)";
 
-    return ColumnFilterSqlBuilder.buildFilteredSql(this, q);
+    String after = ColumnFilterSqlBuilder.buildFilteredSql(this, q);
+    LOG.info("RRD: post-column-filter SQL: " + after);
+    return after;
   }
 
   private static String applyAnswerParams(
