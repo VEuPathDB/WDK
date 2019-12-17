@@ -198,10 +198,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     sql.append("(" + leftSql + ") o, (");
     sql.append("(" + leftPiece + ") " + operator + "(" + rightPiece + ")");
     sql.append(") b WHERE ");
-    for (int i = 0; i < pkColumns.length; i++) {
-      if (i > 0) sql.append(" AND ");
-      sql.append("o." + pkColumns[i] + " = b." + pkColumns[i]);
-    }
+    sql.append(booleanQuery.getRecordClass().getPrimaryKeyDefinition().createJoinClause("o", "b"));
     return sql.toString();
   }
 

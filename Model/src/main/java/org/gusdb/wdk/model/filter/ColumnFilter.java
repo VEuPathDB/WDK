@@ -36,13 +36,9 @@ public abstract class ColumnFilter extends AbstractFilter {
     WdkModel wdkModel = _attribute.getWdkModel();
     Query query = (Query) wdkModel.resolveReference(queryName);
     String attributeSql = answer.getAttributeSql(query);
-    String[] pkColumns = answer.getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
     StringBuilder sql = new StringBuilder("SELECT aq.* ");
-    sql.append(" FROM (" + idSql + ") idq, (" + attributeSql + ") aq ");
-    for (int i = 0; i < pkColumns.length; i++) {
-      sql.append((i == 0) ? " WHERE " : " AND ");
-      sql.append(" idq." + pkColumns[i] + " = aq." + pkColumns[i]);
-    }
+    sql.append(" FROM (" + idSql + ") idq, (" + attributeSql + ") aq WHERE ");
+    sql.append(answer.getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().createJoinClause("idq", "aq"));
     return sql.toString();
   }
 

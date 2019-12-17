@@ -12,6 +12,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.json.JSONObject;
 
@@ -94,23 +95,17 @@ public abstract class SqlColumnFilter extends ColumnFilter {
     StringBuilder sql = new StringBuilder("SELECT idq.*, aq. " + columnName);
 
     // need to join with idsql here to get extra (dynamic) columns from idq
-    String[] pkColumns = answer.getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
-    sql.append(" FROM (" + idSql + ") idq, (" + attributeSql + ") aq ");
-    for (int i = 0; i < pkColumns.length; i++) {
-      sql.append((i == 0) ? " WHERE " : " AND ");
-      sql.append(" idq." + pkColumns[i] + " = aq." + pkColumns[i]);
-    }
+    PrimaryKeyDefinition pkDef = answer.getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition();
+    sql.append(" FROM (" + idSql + ") idq, (" + attributeSql + ") aq WHERE ");
+    sql.append(pkDef.createJoinClause("idq", "aq"));
 
     String filterSql = getFilterSql(sql.toString(), jsValue);
+    String finalSql =
+        "SELECT idq2.* from (" + idSql + ") idq2, " +
+        "(" + filterSql + ") filter WHERE " +
+        pkDef.createJoinClause("idq2", "filter");
 
-    StringBuilder finalSql = new StringBuilder(
-        "SELECT idq2.* from (" + idSql + ") idq2, (" + filterSql + ") filter ");
-    for (int i = 0; i < pkColumns.length; i++) {
-      finalSql.append((i == 0) ? " WHERE " : " AND ");
-      finalSql.append(" idq2." + pkColumns[i] + " = filter." + pkColumns[i]);
-    }
-
-    return finalSql.toString();
+    return finalSql;
 
   }
 

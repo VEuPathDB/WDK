@@ -50,6 +50,7 @@ import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.Fill
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
+import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
@@ -330,17 +331,9 @@ public class AnswerValue {
     StringBuilder sql = new StringBuilder(" /* the desired attributes, for a page of sorted results */ "
         + " SELECT aq.* FROM (");
     sql.append(idSql);
-    sql.append(") pidq, (/* attribute query that returns attributes in a page */ ").append(attributeSql).append(
-        ") aq WHERE ");
+    sql.append(") pidq, (/* attribute query that returns attributes in a page */ ").append(attributeSql).append(") aq WHERE ");
+    sql.append(getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().createJoinClause("aq", "pidq"));
 
-    boolean firstColumn = true;
-    for (String column : getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
-      if (firstColumn)
-        firstColumn = false;
-      else
-        sql.append(" AND ");
-      sql.append("aq.").append(column).append(" = pidq.").append(column);
-    }
     if (sortPage) {
       // sort by underlying idq row_index if requested
       sql.append(" ORDER BY pidq.row_index");
@@ -395,17 +388,9 @@ public class AnswerValue {
         .append(idSql)
         .append(") pidq, ")
         .append(tableSqlWithRowIndex)
-        .append(") tqi WHERE ");
-
-    boolean firstColumn = true;
-    for (String column : getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
-      if (firstColumn)
-        firstColumn = false;
-      else
-        sql.append(" AND ");
-      sql.append("tqi.").append(column).append(" = pidq.").append(column);
-    }
-    sql.append(" ORDER BY pidq.row_index, tqi.row_index");
+        .append(") tqi WHERE ")
+        .append(getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().createJoinClause("tqi", "pidq"))
+        .append(" ORDER BY pidq.row_index, tqi.row_index");
 
     // replace the id_sql macro.  this sql must include filters (but not view filters)
     String sqlWithIdSql = sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true, true));
@@ -560,20 +545,16 @@ public class AnswerValue {
     }
 
     // add primary key join conditions
-    boolean firstClause = true;
+    boolean firstJoin = true;
     for (String shortName : attributeSqls.keySet()) {
-      for (String column : pkColumns) {
-        if (firstClause) {
-          sql.append("\nWHERE\n  ");
-          firstClause = false;
-        }
-        else
-          sql.append("\n  AND ");
-
-        sql.append("idq.").append(column)
-          .append(" = ").append(shortName)
-          .append(".").append(column);
+      if (firstJoin) {
+        sql.append("\nWHERE\n  ");
+        firstJoin = false;
       }
+      else {
+        sql.append("\n AND ");
+      }
+      sql.append(_answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().createJoinClause("idq", shortName));
     }
 
     // add order clause
@@ -584,7 +565,7 @@ public class AnswerValue {
     for (String clause : orderClauses)
       sql.append(clause).append("\n, ");
 
-    firstClause = true;
+    boolean firstClause = true;
     for (String column : pkColumns) {
       if (firstClause)
         firstClause = false;
@@ -992,29 +973,18 @@ public class AnswerValue {
    * @return the joined SQL query.
    */
   private String joinToIds(final String sql, final String idSql) {
-    final String[] refs = _answerSpec.getQuestion().getRecordClass()
-      .getPrimaryKeyDefinition()
-      .getColumnRefs();
+    PrimaryKeyDefinition pkDef = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition();
 
-    final StringBuilder out = new StringBuilder("/* joinToIds */\nSELECT\n  "
+    return new StringBuilder("/* joinToIds */\nSELECT\n  "
       + QUERY_HANDLE + ".* \nFROM\n  (\n")
       .append(sql)
       .append("\n  ) " + QUERY_HANDLE + "\n, (\n")
       .append(idSql)
       .append("\n  ) " + ID_QUERY_HANDLE + "\nWHERE")
-      .append("\n  ");
-
-    for (int i = 0; i < refs.length; i++) {
-      if (i > 0)
-        out.append("\n  AND ");
-
-      out.append(QUERY_HANDLE + ".")
-        .append(refs[i])
-        .append(" = " + ID_QUERY_HANDLE + ".")
-        .append(refs[i]);
-    }
-
-    return out.append("\n").toString();
+      .append("\n  ")
+      .append(pkDef.createJoinClause(QUERY_HANDLE, ID_QUERY_HANDLE))
+      .append("\n")
+      .toString();
   }
 
   public boolean entireResultRequested() {

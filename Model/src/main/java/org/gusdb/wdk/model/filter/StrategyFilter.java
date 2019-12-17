@@ -82,15 +82,11 @@ public class StrategyFilter extends StepFilter {
     if (!recordClass.getFullName().equals(rootName))
       throw new WdkModelException("You cannot filter the result with a strategy of a different type.");
     
-    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     String filterSql = rootAnswer.getIdSql();
-    StringBuilder buffer = new StringBuilder("SELECT idQ.* FROM ");
-    buffer.append(" (" + idSql + ") idQ, (" + filterSql + ") filterQ ");
-    for (int i = 0; i < pkColumns.length; i++) {
-      buffer.append((i == 0)?" WHERE " : " AND ");
-      buffer.append("idQ." + pkColumns[i] + " = filterQ." + pkColumns[i]);
-    }
-    return buffer.toString();
+    return new StringBuilder("SELECT idQ.* FROM ")
+      .append(" (" + idSql + ") idQ, (" + filterSql + ") filterQ WHERE ")
+      .append(recordClass.getPrimaryKeyDefinition().createJoinClause("idQ", "filterQ"))
+      .toString();
   }
 
   @Override
