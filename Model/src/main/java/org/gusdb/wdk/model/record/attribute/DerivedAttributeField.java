@@ -257,7 +257,7 @@ public abstract class DerivedAttributeField extends AttributeField {
    * by column filters if the client chooses to apply a column filter to this
    * {@code DerivedAttributeField}.
    * <p>
-   * This {@code DerivedAttributeField} and it's filterable dependency must meet
+   * This {@code DerivedAttributeField} and its filterable dependency must meet
    * the following criteria:
    * <p>
    * <ul>
@@ -271,7 +271,7 @@ public abstract class DerivedAttributeField extends AttributeField {
    *   exists and satisfies the above criteria, or none if the above rules are
    *   not met.
    */
-  public Optional<QueryColumnAttributeField> getFilterDependencyField() {
+  public synchronized Optional<QueryColumnAttributeField> getFilterDependencyField() {
     if (checkedFilterDependency)
       return Optional.ofNullable(filterDependency);
 

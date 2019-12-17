@@ -2,17 +2,15 @@ package org.gusdb.wdk.model.filter;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
-import org.gusdb.wdk.model.toolbundle.ColumnFilter;
-import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSet;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.gusdb.wdk.model.toolbundle.ColumnFilter;
+import org.gusdb.wdk.model.toolbundle.config.ColumnConfig;
+import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSet;
 
 /**
  * Builder for an SQL query with {@link ColumnFilter}s applied.
@@ -26,8 +24,6 @@ public class ColumnFilterSqlBuilder {
   private final AnswerValue answer;
   private final Question question;
   private final ColumnFilterConfigSet configs;
-  private final Map<String, StringBuilder> queries;
-  private final String pkColumns;
 
   private ColumnFilterSqlBuilder(AnswerValue answer) {
     final var spec = answer.getAnswerSpec();
@@ -35,8 +31,6 @@ public class ColumnFilterSqlBuilder {
     this.answer    = answer;
     this.question  = spec.getQuestion();
     this.configs   = spec.getColumnFilterConfig();
-    this.queries   = new HashMap<>();
-    this.pkColumns = buildPkColString(question);
   }
 
   /**
@@ -61,9 +55,9 @@ public class ColumnFilterSqlBuilder {
   }
 
   /**
-   * Constructs a new SQL query out of the given {@code idSql} intersected with
-   * each unique {@link Query} backing the {@link #question}'s {@link
-   * AttributeField}s.
+   * Constructs a new SQL query out of the given {@code idSql} joined with
+   * the intersection of each unique attribute {@link Query} backing the
+   * {@link #question}'s {@link AttributeField}s.
    * <p>
    * This builder will check each {@code AttributeField} retrieved from the
    * target {@link Question} against the the {@link ColumnFilterConfigSet}
@@ -71,13 +65,16 @@ public class ColumnFilterSqlBuilder {
    * that are not being used in filters.
    * <p>
    * If an {@code AttributeField} <i>is</i> being used for a {@link
-   * ColumnFilter}, then it's backing query will be used to construct an SQL
-   * {@code INTERSECT} block on which the filters for that {@code
-   * AttributeFilter}/{@code Query} can be applied.
+   * ColumnFilter}, then its backing query will be used to construct an SQL
+   * block on which the filters for that {@code AttributeFilter}/{@code Query}
+   * can be applied.  These blocks will be {@code INTERSECT}ed together, then
+   * joined to the original {@code idSql} so as not to lose any dynamic columns
+   * returned by the {@code idSql}.
    * <p>
-   * Each unique {@code Query} will only have a single {@code INTERSECT} block
-   * and {@code AttributeField}s that share this {@code Query} will each have
-   * their filters applied to that {@code Query}'s {@code INTERSECT} block.
+   * Each attribute {@code Query} will contribute only a single
+   * {@code INTERSECT} block and {@code AttributeField}s that share this
+   * {@code Query} will each have their filters applied to that {@code Query}'s
+   * {@code INTERSECT} block as where clauses.
    *
    * @param idSql
    *   idSql to intersect on to apply the configured {@code ColumnFilter}s
@@ -90,63 +87,60 @@ public class ColumnFilterSqlBuilder {
    *   ColumnFilter#build()}.
    */
   private String build(final String idSql) throws WdkModelException {
+
+    if (configs.getColumnConfigs().isEmpty()) return idSql;
+
     final var allFields = question.getAttributeFieldMap();
 
-    final var out = new StringBuilder(idSql);
+    final var out = new StringBuilder("SELECT idsqlcf.* FROM ( " + idSql + " ) idsqlcf, (");
 
-    for (final var key : configs.getColumnConfigs().keySet()) {
-      final var field = allFields.get(key);
-      if (field == null)
-        continue;
+    boolean isFirstIntersectBlock = true;
 
-      final var sql = retrieveBuilder(field);
-      final var conf = configs.getColumnConfig(key);
+    for (String columnName : configs.getColumnConfigs().keySet()) {
+      AttributeField field = allFields.get(columnName);
+      if (field == null) {
+        throw new WdkModelException("Column '" + columnName + "' was configured " +
+            "as a column filter but that column does not exist on question " + question.getFullName());
+      }
+
+      if (isFirstIntersectBlock)
+        isFirstIntersectBlock = false;
+      else
+        out.append("\nINTERSECT\n");
+
+      StringBuilder attributeQueryBlock = startQuery(getAttributeSql(getQueryName(field)));
+
+      ColumnConfig conf = configs.getColumnConfig(columnName);
 
       for (final var entry : conf.entrySet()) {
         final var filter = field.makeFilterInstance(entry.getKey(), answer, entry.getValue()).get();
-        sql.append("  AND ")
+        attributeQueryBlock
+           .append("  AND ")
            .append(filter.buildSqlWhere())
            .append(" /* ")
            .append(filter.getClass().getSimpleName())
            .append(" */\n");
       }
+
+      // close paren added at beginning by startQuery(), then add block to out
+      attributeQueryBlock.append(" )");
+      out.append(attributeQueryBlock);
+      
     }
-    queries.values().forEach(out::append);
-    final var sql = out.toString();
-    return sql;
+
+    // close paren and label intersection subquery
+    out.append(" ) joinedfilterblocks ")
+
+    // join on PK cols
+    .append("WHERE ")
+    .append(question.getRecordClass().getPrimaryKeyDefinition().createJoinClause("idsqlcf", "joinedfilterblocks"));
+
+    return out.toString();
   }
 
   /**
-   * Retrieves the {@link StringBuilder} that the given {@link AttributeField}'s
-   * SQL filter predicates should be appended to.
-   * <p>
-   * If no such builder exists yet, one will be created via {@link
-   * #startQuery(String)} and that instance will be returned on subsequent calls
-   * to this function for {@code AttributeField}s backed by the same {@link
-   * Query}.
-   *
-   * @param field
-   *   field to use when looking up or creating an SQL populated {@code
-   *   StringBuilder}.
-   *
-   * @return a {@code StringBuilder} containing an SQL query prepped for filter
-   * predicates to be applied.
-   *
-   * @throws WdkModelException
-   *   potentially thrown by {@link #getQueryName(AttributeField)}
-   */
-  private StringBuilder retrieveBuilder(final AttributeField field)
-  throws WdkModelException {
-    final var qName = getQueryName(field);
-
-    if (!queries.containsKey(qName))
-      queries.put(qName, startQuery(getAttributeSql(qName)));
-
-    return queries.get(qName);
-  }
-
-  /**
-   * Builds the start of an SQL {@code INTERSECT} block for the given SQL.
+   * Builds the start of an attribute query SQL block for the given SQL, to
+   * which conditions will be added for each filter config.
    * <p>
    * Creates a new {@link StringBuilder} containing a {@code SELECT}, {@code
    * FROM}, and the start of a {@code WHERE} clause which can be appended to to
@@ -159,8 +153,8 @@ public class ColumnFilterSqlBuilder {
    * WHERE} predicates to be appended.
    */
   private StringBuilder startQuery(final String attrSql) {
-    return new StringBuilder("\nINTERSECT\nSELECT\n  ")
-      .append(this.pkColumns)
+    return new StringBuilder("(\nSELECT\n  ")
+      .append(buildPkColString(question))
       .append("\nFROM\n  (")
       .append(attrSql)
       .append("\n  ) attr\nWHERE\n  1 = 1\n");
@@ -208,8 +202,8 @@ public class ColumnFilterSqlBuilder {
   }
 
   /**
-   * Retrieves the full name of the {@link Query} backing the given {@link
-   * AttributeField}.
+   * Retrieves the full name of the attribute {@link Query} backing the given
+   * {@link AttributeField}.
    * <p>
    * The given {@code AttributeField} must be an instance of {@link
    * QueryColumnAttributeField} or a runtime {@link ClassCastException} will be

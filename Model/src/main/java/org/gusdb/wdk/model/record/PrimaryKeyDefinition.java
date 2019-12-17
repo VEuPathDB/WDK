@@ -1,11 +1,13 @@
 package org.gusdb.wdk.model.record;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
@@ -250,5 +252,11 @@ public class PrimaryKeyDefinition extends WdkModelBase {
     }
 
     return records;
+  }
+
+  public String createJoinClause(String subQuery1Name, String subQuery2Name) {
+    return Arrays.stream(getColumnRefs())
+        .map(colName -> " " + subQuery1Name + "." + colName + " = " + subQuery2Name + "." + colName + " ")
+        .collect(Collectors.joining(" AND "));
   }
 }

@@ -652,27 +652,14 @@ public class AnswerValue {
       innerSql = "\n/* new view filter applied on id query */\n" + innerSql;
     }
 
-    if (!_answerSpec.getColumnFilterConfig().isEmpty())
-      innerSql = applyColumnFilters(innerSql);
+    if (!_answerSpec.getColumnFilterConfig().isEmpty()) {
+      innerSql = ColumnFilterSqlBuilder.buildFilteredSql(this, innerSql);
+    }
 
     innerSql = "(\n" + indent(innerSql) + "\n)";
     LOG.debug("AnswerValue: getIdSql(): ID SQL constructed with all filters:\n" + innerSql);
 
     return innerSql;
-  }
-
-  private String applyColumnFilters(String sql) throws WdkModelException {
-    LOG.info("RRD: pre-column-filter SQL: " + sql);
-    // Apply just the PK cols in the record class order (getIdSql can append columns)
-    final var q = "SELECT\n"
-      + Arrays.stream(getAnswerSpec().getQuestion().getRecordClass()
-        .getPrimaryKeyDefinition().getColumnRefs())
-        .collect(Collectors.joining("\n, ", "  ", "\n"))
-      + "FROM (\n" + indent(sql) + "\n)";
-
-    String after = ColumnFilterSqlBuilder.buildFilteredSql(this, q);
-    LOG.info("RRD: post-column-filter SQL: " + after);
-    return after;
   }
 
   private static String applyAnswerParams(
