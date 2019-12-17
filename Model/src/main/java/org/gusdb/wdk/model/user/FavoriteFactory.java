@@ -9,7 +9,6 @@ import static org.gusdb.fgputil.functional.Functions.mapToListWithIndex;
 import static org.gusdb.wdk.model.Utilities.COLUMN_PK_PREFIX;
 import static org.gusdb.wdk.model.user.UserFactory.USER_SCHEMA_MACRO;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -335,13 +334,13 @@ public class FavoriteFactory {
   }
 
   private int setDeletedFlag(User user, Collection<Long> favoriteIds, boolean isDeletedValue) throws WdkModelException {
-    try(Connection connection =_userDb.getDataSource().getConnection()) {
+    try {
       Wrapper<Integer> updateCountWrapper = new Wrapper<>();
       String sql = SET_IS_DELETED_BY_ID_SQL
           .replace(USER_SCHEMA_MACRO, _userSchema)
           .replace(IS_DELETED_SETTER_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isDeletedValue).toString())
           .replace(IS_DELETED_CONDITIONAL_VALUE_MACRO, _userDb.getPlatform().convertBoolean(!isDeletedValue).toString());
-      SqlUtils.performInTransaction(connection, conn -> {
+      SqlUtils.performInTransaction(_userDb.getDataSource(), conn -> {
         BasicArgumentBatch batch = new BasicArgumentBatch();
         batch.setBatchSize(BATCH_SIZE);
         batch.setParameterTypes(new Integer[]{ Types.BIGINT, Types.BIGINT, Types.VARCHAR });
@@ -352,11 +351,8 @@ public class FavoriteFactory {
       });
       return updateCountWrapper.get();
     }
-    catch (SQLRunnerException sre) {
-      throw new WdkModelException(sre.getCause().getMessage(), sre.getCause());
-    }
-    catch(Exception ex) {
-      throw new WdkModelException(ex);
+    catch (Exception e) {
+      throw WdkModelException.translateFrom(e);
     }
   }
 

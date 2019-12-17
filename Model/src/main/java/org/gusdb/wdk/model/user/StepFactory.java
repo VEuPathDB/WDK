@@ -26,7 +26,6 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -395,12 +394,11 @@ public class StepFactory {
     }
 
     // write orphan steps to the DB to be used by caller
-    try (Connection connection = _userDbDs.getConnection()){
-      SqlUtils.performInTransaction(connection,
-          conn -> insertSteps(conn, orphanSteps));
+    try {
+      SqlUtils.performInTransaction(_userDbDs, conn -> insertSteps(conn, orphanSteps));
     }
     catch (Exception e) {
-      throw new WdkModelException("Unable to insert strategy or update steps.");
+      throw WdkModelException.translateFrom(e, "Unable to insert strategy or update steps.");
     }
 
     // now that steps are in DB, trigger step copied events to copy any other
@@ -455,14 +453,14 @@ public class StepFactory {
         WdkModelException::new);
 
     // persist new strategy and all steps to the DB
-    try (Connection connection = _userDbDs.getConnection()){
-      SqlUtils.performInTransaction(connection,
+    try {
+      SqlUtils.performInTransaction(_userDbDs,
         conn -> insertSteps(conn, newStrategy.getAllSteps()),
         conn -> insertStrategy(conn, newStrategy)
       );
     }
     catch (Exception e) {
-      throw new WdkModelException("Unable to insert strategy or update steps.");
+      throw WdkModelException.translateFrom(e, "Unable to insert strategy or update steps.");
     }
 
     // trigger copy events on all steps
@@ -605,14 +603,14 @@ public class StepFactory {
   }
 
   public void insertStrategy(Strategy newStrategy) throws WdkModelException {
-    try(Connection connection = _userDbDs.getConnection()) {
-      SqlUtils.performInTransaction(connection, conn -> {
+    try {
+      SqlUtils.performInTransaction(_userDbDs, conn -> {
         insertStrategy(conn, newStrategy);
         updateSteps(conn, newStrategy.getAllSteps());
       });
     }
     catch(Exception e) {
-      throw new WdkModelException(e);
+      throw WdkModelException.translateFrom(e);
     }
   }
 
@@ -719,33 +717,30 @@ public class StepFactory {
    *
    * @param strat
    *   Strategy to overwrite
-   *
-   * @return Whether or not that strategy was updated in the database.  A return
-   *   value of false indicates that the strategy has not been created in the
-   *   database.
    */
-  public boolean updateStrategy(Strategy strat) throws WdkModelException {
-    try(Connection con = _userDbDs.getConnection()) {
-      return updateStrategy(con, strat);
-    }
-    catch (SQLException e) {
-      throw new WdkModelException(e);
-    }
+  public void updateStrategy(Strategy strat) throws WdkModelException {
+    updateStrategies(ListBuilder.asList(strat));
   }
 
   public void updateStrategies(Collection<Strategy> toUpdate) throws WdkModelException {
-    try(Connection con = _userDbDs.getConnection()) {
-      con.setAutoCommit(false);
-      for(Strategy strat : toUpdate)
-        updateStrategy(con, strat);
-      con.commit();
-    } catch (SQLException e) {
-      throw new WdkModelException(e);
+    try {
+      SqlUtils.performInTransaction(_userDbDs, conn -> {
+        for (Strategy strat : toUpdate) {
+          updateStrategy(conn, strat);
+        }
+      });
+    }
+    catch (Exception e) {
+      throw WdkModelException.translateFrom(e);
     }
   }
 
   /**
    * Overwrite the given strategy in the strategies table.
+   *
+   * IMPORTANT NOTE: It is expected that the caller of this method call it
+   *   within a transaction so that both the strategy and its steps are updated
+   *   atomically.
    *
    * @param connection
    *   Open connection to the DB.  This can be used to run the step update
@@ -757,7 +752,7 @@ public class StepFactory {
    *   value of false indicates that the strategy has not been created in the
    *   database.
    */
-  public boolean updateStrategy(Connection connection, Strategy strat)
+  private boolean updateStrategy(Connection connection, Strategy strat)
       throws WdkModelException {
     final int boolType =_userDbPlatform.getBooleanType();
     final String sql = "UPDATE " + _userSchema + TABLE_STRATEGY + "\n" +
@@ -803,13 +798,10 @@ public class StepFactory {
     };
 
     try {
-      // update strategy and all its steps in one transaction
-      Wrapper<Boolean> stratUpdated = new Wrapper<>();
-      SqlUtils.performInTransaction(connection, conn -> {
-        stratUpdated.set(0 < new SQLRunner(conn, sql).executeUpdate(params, paramTypes));
-        updateSteps(conn, strat.getAllSteps());
-      });
-      return stratUpdated.get();
+      // update strategy and all its steps in one transaction (caller enforced)
+      boolean stratUpdated = (0 < new SQLRunner(connection, sql).executeUpdate(params, paramTypes));
+      updateSteps(connection, strat.getAllSteps());
+      return stratUpdated;
     }
     catch (Exception e) {
       return WdkModelException.unwrap(e);
@@ -1134,14 +1126,14 @@ public class StepFactory {
   }
 
   public void updateStrategyAndOtherSteps(Strategy newStrat, List<Step> orphanedSteps) throws WdkModelException {
-    try(Connection connection = _userDbDs.getConnection()) {
-      SqlUtils.performInTransaction(connection, conn -> {
+    try {
+      SqlUtils.performInTransaction(_userDbDs, conn -> {
         updateSteps(conn, orphanedSteps);
         updateStrategy(conn, newStrat);
       });
     }
     catch (Exception e) {
-      throw new WdkModelException("Could not update strategy and steps", e);
+      throw WdkModelException.translateFrom(e, "Could not update strategy and steps");
     }
   }
 
