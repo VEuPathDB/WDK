@@ -605,8 +605,7 @@ public class StepFactory {
   }
 
   public void insertStrategy(Strategy newStrategy) throws WdkModelException {
-    try {
-      Connection connection = _userDbDs.getConnection();
+    try(Connection connection = _userDbDs.getConnection()) {
       SqlUtils.performInTransaction(connection, conn -> {
         insertStrategy(conn, newStrategy);
         updateSteps(conn, newStrategy.getAllSteps());
