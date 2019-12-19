@@ -2,7 +2,10 @@ package org.gusdb.wdk.server;
 
 import java.net.URI;
 
+import javax.ws.rs.core.UriBuilder;
+
 import org.glassfish.jersey.server.ResourceConfig;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.fgputil.server.RESTServer;
@@ -43,11 +46,16 @@ public class Server extends RESTServer {
   protected ThreeTuple<String, Integer, JSONObject> parseConfig(String[] args) {
     // expected: projectId, port
     if (args.length != 2) {
-      System.err.println("USAGE: fgpJava " + getClass().getName() + " <projectId> <port>");
+      System.err.println("\nUSAGE: fgpJava " + getClass().getName() + " <projectId> [<serviceUri>|<port>]\n\n" +
+          "Note: If the second argument is an integer, service will be hosted at http://localhost:<port>\n");
       System.exit(1);
     }
     _projectId = args[0];
-    int port = Integer.parseInt(args[1]);
-    return new ThreeTuple<>("http://localhost/", port, new JSONObject());
+    if (FormatUtil.isInteger(args[1])) {
+      // caller sent a port number
+      return new ThreeTuple<>("http://localhost/", Integer.parseInt(args[1]), new JSONObject());
+    }
+    URI serviceUri = UriBuilder.fromUri(args[1]).build();
+    return new ThreeTuple<>(serviceUri.toString(), serviceUri.getPort(), new JSONObject());
   }
 }
