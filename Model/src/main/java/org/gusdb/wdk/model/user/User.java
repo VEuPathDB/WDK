@@ -1,17 +1,9 @@
 package org.gusdb.wdk.model.user;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.record.RecordClass;
 
 /**
  * Represents a WDK user.
@@ -22,8 +14,6 @@ import org.gusdb.wdk.model.record.RecordClass;
  * @author rdoherty
  */
 public abstract class User {
-
-  private static final Logger LOG = Logger.getLogger(User.class);
 
   protected WdkModel _wdkModel;
 
@@ -130,7 +120,7 @@ public abstract class User {
 
   @Override
   public int hashCode() {
-    return (int)getUserId();
+    return (getUserId() + getEmail() + getSignature() + getStableId()).hashCode();
   }
 
   @Override
@@ -147,109 +137,4 @@ public abstract class User {
     );
   }
 
-/**
- * This is a deprecated "trait" interface containing default methods previously
- * supplied by UserBean.  It is necessary since we now expose the User class
- * to JSPs but its getters are limited in scope (callers in Java land should be
- * calling the appropriate factory methods to get a user's data e.g. favorites).
- * 
- * Thus this is (hopefully) a temporary interface and can be removed when the
- * strategy-loading branch is merged back and we say good-bye to JSPs/beans.
- */
-
-  public String getFirstName() {
-    return getProfileProperties().get("firstName");
-  }
-
-  public String getMiddleName() {
-    return getProfileProperties().get("middleName");
-  }
-
-  public String getLastName() {
-    return getProfileProperties().get("lastName");
-  }
-
-  public String getOrganization() {
-    return getProfileProperties().get("organization");
-  }
-
-  public Map<String, String> getGlobalPreferences() {
-    return getPreferences().getGlobalPreferences();
-  }
-
-  public Map<String, String> getProjectPreferences() {
-    return getPreferences().getProjectPreferences();
-  }
-
-  public int getStrategyCount() throws WdkModelException {
-    return getWdkModel().getStepFactory().getStrategyCount(getUserId());
-  }
-
-  public int getPublicCount() throws WdkModelException {
-    int count = getWdkModel().getStepFactory().getPublicStrategyCount();
-    LOG.debug("Found number of public strats: " + count);
-    return count;
-  }
-
-  public int getItemsPerPage() {
-    return getPreferences().getItemsPerPage();
-  }
-
-  public void logFoundStrategies(Map<String, List<Strategy>> strategies, String condition) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Loaded map of " + strategies.size() + " " + condition + " strategy categories:");
-      int total = 0;
-      for (Entry<String, List<Strategy>> entry : strategies.entrySet()) {
-        LOG.debug("   " + entry.getKey() + ": " + entry.getValue().size() + " strategies.");
-        total += entry.getValue().size();
-      }
-      LOG.debug("   Total: " + total);
-    }
-  }
-
-  public Map<RecordClass, Integer> getBasketCounts() throws WdkModelException {
-    Map<RecordClass, Integer> counts = getWdkModel().getBasketFactory().getBasketCounts(this);
-    Map<RecordClass, Integer> beans = new LinkedHashMap<>();
-    for (RecordClass recordClass : counts.keySet()) {
-      int count = counts.get(recordClass);
-      beans.put(recordClass, count);
-    }
-    return beans;
-  }
-
-  public int getBasketCount() throws WdkModelException {
-    Map<RecordClass, Integer> baskets = getWdkModel().getBasketFactory().getBasketCounts(this);
-    int total = 0;
-    for (int count : baskets.values()) {
-      total += count;
-    }
-    return total;
-  }
-
-  static <T> Map<String, T> exposeAsMap(FunctionWithException<String,T> getter) {
-    return new HashMap<String, T>() {
-      @Override
-      public T get(Object objectName) {
-        try {
-          return getter.apply((String)objectName);
-        }
-        catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-    };
-  }
-
-  static Map<String, List<Strategy>> convertMap(Map<String, List<Strategy>> strategies) {
-    Map<String, List<Strategy>> category = new LinkedHashMap<>();
-    for (String type : strategies.keySet()) {
-      List<Strategy> list = strategies.get(type);
-      List<Strategy> beans = new ArrayList<>();
-      for (Strategy strategy : list) {
-        beans.add(strategy);
-      }
-      category.put(type, beans);
-    }
-    return category;
-  }
 }

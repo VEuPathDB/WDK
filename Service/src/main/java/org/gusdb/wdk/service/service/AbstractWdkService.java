@@ -339,6 +339,8 @@ public abstract class AbstractWdkService {
 
   protected Question getQuestionOrNotFound(String questionUrlSegment) {
     return getWdkModel().getQuestionByName(questionUrlSegment)
+      // disallow external access to internal-only questions (e.g. basket)
+      .filter(q -> !q.isInternallyCallableOnly())
       .orElseThrow(() ->
       // question of the name provided cannot be found
       new NotFoundException(formatNotFound("search: " + questionUrlSegment)));

@@ -40,6 +40,7 @@ public class JsonKeys {
   public static final String VIEW_TOTAL_COUNT = "viewTotalCount";
   public static final String DISPLAY_TOTAL_COUNT = "displayTotalCount";
   public static final String DISPLAY_VIEW_TOTAL_COUNT = "displayViewTotalCount";
+  public static final String INVALID_COUNT = "invalidCount";
   public static final String RECORD_CLASS_NAME = "recordClassName";
   public static final String SEARCH_NAME = "searchName";
   public static final String PARAMETER_NAME = "parameterName";

@@ -33,6 +33,7 @@ public class StrategyFormatter {
         .put(JsonKeys.DESCRIPTION, Optional.ofNullable(strategy.getDescription()).orElse(""))
         .put(JsonKeys.NAME, strategy.getName())
         .put(JsonKeys.AUTHOR, strategy.getUser().getDisplayName())
+        .put(JsonKeys.ORGANIZATION, strategy.getUser().getProfileProperties().get("organization"))
         .put(JsonKeys.ROOT_STEP_ID, strategy.getRootStepId())
         .put(JsonKeys.RECORD_CLASS_NAME, recordClassName.isPresent() ? recordClassName.get() :JSONObject.NULL)
         .put(JsonKeys.SIGNATURE, strategy.getSignature())
@@ -43,7 +44,6 @@ public class StrategyFormatter {
         .put(JsonKeys.IS_SAVED, strategy.isSaved())
         .put(JsonKeys.IS_VALID, strategy.isValid())
         .put(JsonKeys.IS_DELETED, strategy.isDeleted())
-        .put(JsonKeys.ORGANIZATION, strategy.getUser().getProfileProperties().get("organization"))
         .put(JsonKeys.ESTIMATED_SIZE, StepFormatter.translateEstimatedSize(strategy.getEstimatedSize()))
         .put(JsonKeys.NAME_OF_FIRST_STEP, strategy.getMostPrimaryLeafStep().getDisplayName())
         .put(JsonKeys.LEAF_AND_TRANSFORM_STEP_COUNT, strategy.getLeafAndTransformStepCount());

@@ -119,6 +119,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   private boolean _noSummaryOnSingleRecord = false;
 
   /**
+   * if set to true, WDK service should disallow access via normal answer service
+   */
+  private boolean _isInternallyCallableOnly = false;
+
+  /**
    * the default short name used in the step box in strategy workspace.
    */
   private String _shortDisplayName;
@@ -1146,6 +1151,14 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   @Override
   public String getNameForLogging() {
     return getFullName();
+  }
+
+  public void setInternallyCallableOnly(boolean isInternallyCallableOnly) {
+    _isInternallyCallableOnly = isInternallyCallableOnly;
+  }
+
+  public boolean isInternallyCallableOnly() {
+    return _isInternallyCallableOnly;
   }
 
 }

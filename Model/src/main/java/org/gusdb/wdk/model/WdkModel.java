@@ -706,10 +706,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     for (RecordClassSet rcSet : recordClassSets.values()) {
       for (RecordClass recordClass : rcSet.getRecordClasses()) {
         if (recordClass.isUseBasket()) {
-          basketFactory.createAttributeQueryRef(recordClass);
           basketFactory.createRealtimeBasketQuestion(recordClass);
-          basketFactory.createSnapshotBasketQuestion(recordClass);
-          basketFactory.createBasketAttributeQuery(recordClass);
         }
       }
     }
@@ -805,6 +802,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     }
     for (QuestionSet questionSet : questionSets.values()) {
       questionSet.resolveReferences(this);
+    }
+    for (RecordClassSet recordClassSet : recordClassSets.values()) {
+      recordClassSet.resolveQuestionReferences(this);
     }
     // resolve references for xml record classes and questions
     for (XmlRecordClassSet rcSet : xmlRecordClassSets.values()) {

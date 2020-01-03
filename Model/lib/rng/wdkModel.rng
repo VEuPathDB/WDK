@@ -1187,6 +1187,9 @@
         <attribute name="allRecordsQueryRef" />
       </optional>
       <optional>
+        <attribute name="byIdSearchQuestionRef" />
+      </optional>
+      <optional>
         <attribute name="doNotTest">
           <data type="boolean" />
         </attribute>
@@ -1553,10 +1556,9 @@
   <define name="primaryKey">
     <element name="primaryKey">
       <ref name="IncludeExclude" />
-      <choice>
+      <optional>
         <attribute name="aliasQueryRef" />
-        <attribute name="aliasPluginClassName" />
-      </choice>
+      </optional>
       <oneOrMore>
         <element name="columnRef">
           <ref name="IncludeExclude" />

@@ -5,19 +5,28 @@ import static org.gusdb.fgputil.functional.Functions.reduce;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -25,31 +34,25 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.query.*;
-import org.gusdb.wdk.model.query.param.DatasetParam;
-import org.gusdb.wdk.model.query.param.ParamSet;
+import org.gusdb.wdk.model.query.Column;
+import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QuerySet;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
-import org.gusdb.wdk.model.record.AttributeQueryReference;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.RecordNotFoundException;
 import org.gusdb.wdk.model.record.StaticRecordInstance;
-import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 
 public class BasketFactory {
 
-  public static final String REALTIME_BASKET_QUESTION_SUFFIX = "ByRealtimeBasket";
-  public static final String SNAPSHOT_BASKET_QUESTION_SUFFIX = "BySnapshotBasket";
-  private static final String REALTIME_BASKET_ID_QUERY_SUFFIX = "ByRealtimeBasket";
-  private static final String SNAPSHOT_BASKET_ID_QUERY_SUFFIX = "BySnapshotBasket";
-  static final String BASKET_ATTRIBUTE_QUERY_SUFFIX = "_basket_attrs";
-  public static final String BASKET_ATTRIBUTE = "in_basket";
+  private static final Logger LOG = Logger.getLogger(BasketFactory.class);
 
-  public static final String PARAM_USER_SIGNATURE = "user_signature";
-  public static final String PARAM_DATASET_SUFFIX = "Dataset";
+  private static final String REALTIME_BASKET_QUESTION_SUFFIX = "ByRealtimeBasket";
+  private static final String REALTIME_BASKET_ID_QUERY_SUFFIX = "ByRealtimeBasket";
 
   public static final String TABLE_BASKET = "user_baskets";
   public static final String COLUMN_BASKET_ID = "basket_id";
@@ -58,7 +61,7 @@ public class BasketFactory {
   public static final String COLUMN_RECORD_CLASS = "record_class";
   public static final String COLUMN_UNIQUE_ID = "pk_column_1";
 
-  private static final Logger LOG = Logger.getLogger(BasketFactory.class);
+  private static final String ALL_RECORDS_MACRO = "$$ALL_RECORDS_MACRO$$";
 
   private final WdkModel _wdkModel;
   private final String _userSchema;
@@ -255,51 +258,120 @@ public class BasketFactory {
     }
   }
 
-  public Map<RecordClass, Integer> getBasketCounts(User user) throws WdkModelException {
-    Map<RecordClass, Integer> counts = new LinkedHashMap<RecordClass, Integer>();
-    Map<String, RecordClass> recordClasses = new LinkedHashMap<String, RecordClass>();
+  /**
+   * Returns a map from record class to a tuple of integers:
+   * - first is total count of records saved to the basket
+   * - second is: if all IDs query present on RC, number of invalid rows, else 0
+   * @param user user whose baskets' contents should be counted
+   * @return map of basket counts
+   * @throws WdkModelException if error occurs during processing
+   */
+  public Map<String, TwoTuple<Integer,Integer>> getBasketCounts(User user) throws WdkModelException {
+
+    // initialize maps to contain entries for basket-supporting record classes and zero counts
+    Map<String, RecordClass> recordClasses = new LinkedHashMap<>();
+    Map<String, Integer> counts = new LinkedHashMap<>();
+    Map<String, Integer> invalidCounts = new LinkedHashMap<>();
     for (RecordClassSet rcSet : _wdkModel.getAllRecordClassSets()) {
       for (RecordClass recordClass : rcSet.getRecordClasses()) {
         if (recordClass.isUseBasket()) {
-          counts.put(recordClass, 0);
-          recordClasses.put(recordClass.getFullName(), recordClass);
+          String fullName = recordClass.getFullName();
+          recordClasses.put(fullName, recordClass);
+          counts.put(fullName, 0);
+          invalidCounts.put(fullName, 0);
         }
       }
     }
-    // load the unique counts
-    String sql = "SELECT " + COLUMN_RECORD_CLASS + ", count(*) AS record_size " + " FROM (SELECT " +
-        COLUMN_UNIQUE_ID + "," + COLUMN_RECORD_CLASS + " FROM " + _userSchema + TABLE_BASKET + " WHERE " +
-        COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ? GROUP BY " + COLUMN_UNIQUE_ID + "," +
-        COLUMN_RECORD_CLASS + " ) t " + " GROUP BY " + COLUMN_RECORD_CLASS;
-    DataSource ds = _wdkModel.getUserDb().getDataSource();
-    PreparedStatement ps = null;
-    ResultSet rs = null;
     try {
-      ps = SqlUtils.getPreparedStatement(ds, sql);
-      ps.setLong(1, user.getUserId());
-      ps.setString(2, _wdkModel.getProjectId());
-      rs = ps.executeQuery();
-      while (rs.next()) {
-        String rcName = rs.getString(COLUMN_RECORD_CLASS);
-        int size = rs.getInt("record_size");
+      // load the unique counts; this will only include baskets that have at least one row
+      String basketRecordsSubqueryMacro = "$$BASKET_RECORDS_SUBQUERY$$";
+      String genericBasketSelectionSql =
+          "SELECT " + COLUMN_UNIQUE_ID + "," + COLUMN_RECORD_CLASS +
+          " FROM " + basketRecordsSubqueryMacro +
+          " WHERE " + COLUMN_USER_ID + " = ?" +
+          " AND " + COLUMN_PROJECT_ID + " = ?";
+      String countColumn = "record_size";
+      String basketSelectionSql = genericBasketSelectionSql.replace(basketRecordsSubqueryMacro, _userSchema + TABLE_BASKET);
+      String sql =
+          "SELECT " + COLUMN_RECORD_CLASS + ", count(*) AS " + countColumn +
+          " FROM ( " + basketSelectionSql + " ) t " +
+          " GROUP BY " + COLUMN_RECORD_CLASS;
 
-        RecordClass recordClass = recordClasses.get(rcName);
-        if (recordClass != null && size > 0) {
-          counts.put(recordClass, size);
-        }
-        else {
-          LOG.info("Basket is disabled on record class [" + rcName + "], but user #" + user.getUserId() +
-              " has basket entries on it.");
+      new SQLRunner(_wdkModel.getUserDb().getDataSource(), sql).executeQuery(
+        new Object[] { user.getUserId(), _wdkModel.getProjectId() },
+        new Integer[] { Types.BIGINT, Types.VARCHAR },
+        rs -> {
+          while (rs.next()) {
+            String rcName = rs.getString(COLUMN_RECORD_CLASS);
+            int size = rs.getInt(countColumn);
+
+            RecordClass recordClass = recordClasses.get(rcName);
+            if (recordClass != null && size > 0) {
+              counts.put(rcName, size);
+            }
+            else {
+              LOG.warn("Basket is disabled on record class [" + rcName +
+                  "], but user #" + user.getUserId() + " has basket entries on it.");
+            }
+          }
+          return null;
+        });
+
+      // check each recordclass that has records in basket and, if the rc has an
+      //   allIdsQuery, use to find invalid rows in the basket and populate the
+      //   invalid ID count map
+      DataSource appDbDs = _wdkModel.getAppDb().getDataSource();
+      String dbLink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
+      for (Entry<String, Integer> entry : counts.entrySet()) {
+        RecordClass recordClass = recordClasses.get(entry.getKey());
+        Optional<SqlQuery> allRecordsQuery = recordClass.getAllRecordsQuery();
+        if (entry.getValue() > 0 && allRecordsQuery.isPresent()) {
+
+          String pkJoinedBasketWithAllRecordsSql =
+            "SELECT basket.*" +
+            " FROM " + _userSchema + TABLE_BASKET + dbLink + " basket, ( " + allRecordsQuery.get().getSql() + " ) arq" +
+            " WHERE basket." + COLUMN_RECORD_CLASS + " = '" + recordClass.getFullName() + "'" +
+            " AND " + getBasketToPkMatchCondition(recordClass, "basket", "arq");
+
+          String joinedSql =
+            "SELECT count(*) FROM ( " +
+            genericBasketSelectionSql.replace(basketRecordsSubqueryMacro, pkJoinedBasketWithAllRecordsSql) +
+            " )";
+
+          Optional<Long> filteredCount = new SQLRunner(appDbDs, joinedSql).executeQuery(
+              new Object[] { user.getUserId(), _wdkModel.getProjectId() },
+              new Integer[] { Types.BIGINT, Types.VARCHAR },
+              new SingleLongResultSetHandler());
+
+          if (filteredCount.isEmpty()) {
+            throw new WdkModelException("Filtered count query failed to produce count, args=[ " +
+                user.getUserId() + ", " + _wdkModel.getProjectId() + " ]. SQL = " + joinedSql);
+          }
+
+          // invalidCount = totalCount - filteredCount
+          int invalidCount = counts.get(entry.getKey()) - filteredCount.get().intValue();
+          invalidCounts.put(recordClass.getFullName(), invalidCount);
         }
       }
     }
-    catch (SQLException e) {
-      throw new WdkModelException("Cannot retrieve basket counts for user " + user.getEmail(), e);
+    catch (Exception e) {
+      throw WdkModelException.translateFrom(e, "Cannot retrieve basket counts for user " + user.getEmail());
     }
-    finally {
-      SqlUtils.closeResultSetAndStatement(rs, ps);
-    }
-    return counts;
+
+    // zip the counts and invalidCounts maps together into a map of tuples
+    return Functions.getMapFromKeys(counts.keySet(), key ->
+        new TwoTuple<Integer,Integer>(counts.get(key), invalidCounts.get(key)));
+  }
+
+  private String getBasketToPkMatchCondition(RecordClass recordClass, String basketSubqueryName, String namedPkSubqueryName) {
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
+    return IntStream
+      .range(0, pkColumns.length)
+      .mapToObj(i ->
+        basketSubqueryName + "." + Utilities.COLUMN_PK_PREFIX + (i + 1) +
+        " = " +
+        namedPkSubqueryName + "." + pkColumns[i])
+      .collect(Collectors.joining(" AND "));
   }
 
   public int getBasketCounts(User user, List<String[]> records, RecordClass recordClass) throws WdkModelException {
@@ -365,8 +437,22 @@ public class BasketFactory {
 
   public List<RecordInstance> getBasket(User user, RecordClass recordClass)
       throws WdkModelException {
-    String sql = "SELECT * FROM " + _userSchema + TABLE_BASKET + " WHERE " + COLUMN_PROJECT_ID + " = ? AND " +
-        COLUMN_USER_ID + " = ? AND " + COLUMN_RECORD_CLASS + " =?";
+    String sql = 
+      "SELECT basket.*" +
+      " FROM " + _userSchema + TABLE_BASKET + " basket" +
+      " " + ALL_RECORDS_MACRO +
+      " WHERE basket." + COLUMN_PROJECT_ID + " = ?" +
+      " AND basket." + COLUMN_USER_ID + " = ?" +
+      " AND basket." + COLUMN_RECORD_CLASS + " = ?";
+
+    // if allRecordsQuery present on this RC, then filter the basket results
+    //   to no longer include records not present in the DB
+    Optional<SqlQuery> allRecordsQuery = recordClass.getAllRecordsQuery();
+    sql = allRecordsQuery.isPresent()
+        ? sql.replace(ALL_RECORDS_MACRO, "( " + allRecordsQuery.get().getSql() + " ) arq") +
+            " AND " + getBasketToPkMatchCondition(recordClass, "basket", "arq")
+        : sql.replace(ALL_RECORDS_MACRO, "");
+
     DataSource ds = _wdkModel.getUserDb().getDataSource();
     PreparedStatement ps = null;
     ResultSet rs = null;
@@ -390,7 +476,7 @@ public class BasketFactory {
             pkValues.put(columns[i - 1], columnValue);
           }
           try {
-            RecordInstance record = new StaticRecordInstance(user, recordClass, recordClass, pkValues, true);
+            RecordInstance record = new StaticRecordInstance(user, recordClass, recordClass, pkValues, false);
             records.add(record);
           }
           catch (WdkUserException | RecordNotFoundException e) {
@@ -412,98 +498,17 @@ public class BasketFactory {
     }
   }
 
-  public static String getSnapshotBasketQuestionName(RecordClass recordClass) {
-    return Utilities.INTERNAL_QUESTION_SET + "." +
-        recordClass.getFullName().replace('.', '_') + SNAPSHOT_BASKET_QUESTION_SUFFIX;
-  }
-
   /**
-   * the method has to be called before the recordClasses are resolved.
-   *
-   * @param recordClass
+   * The real time question is used on the basket page to display the current
+   * records in the basket.
    */
-  public void createSnapshotBasketQuestion(RecordClass recordClass) throws WdkModelException {
-    // check if the basket question already exists
-    String qname = recordClass.getFullName().replace('.', '_') + SNAPSHOT_BASKET_QUESTION_SUFFIX;
-    QuestionSet questionSet = _wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET).get();
-    if (questionSet.contains(qname))
-      return;
-
-    String rcName = recordClass.getDisplayName();
-    Question question = new Question();
-    question.setName(qname);
-    question.setDisplayName("Copy of " + rcName + " Basket");
-    question.setShortDisplayName("Copy of Basket");
-    question.setRecordClass(recordClass);
-    Query query = getBasketSnapshotIdQuery(recordClass);
-    question.setQuery(query);
-    questionSet.addQuestion(question);
-    question.excludeResources(_wdkModel.getProjectId());
-  }
-
-  private Query getBasketSnapshotIdQuery(RecordClass recordClass) throws WdkModelException {
-    String projectId = _wdkModel.getProjectId();
-    String rcName = recordClass.getFullName();
-
-    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
-
-    // check if the boolean query already exists
-    String queryName = rcName.replace('.', '_') + SNAPSHOT_BASKET_ID_QUERY_SUFFIX;
-    QuerySet querySet = _wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
-    if (querySet.contains(queryName))
-      return querySet.getQuery(queryName);
-
-    SqlQuery query = new SqlQuery();
-    query.setName(queryName);
-    // create columns
-    for (String columnName : pkColumns) {
-      Column column = new Column();
-      column.setName(columnName);
-      query.addColumn(column);
-    }
-    // create params
-    DatasetParam datasetParam = getDatasetParam(recordClass);
-    query.addParam(datasetParam);
-
-    // make sure we create index on primary keys
-    query.setIndexColumns(recordClass.getIndexColumns());
-    query.setDoNotTest(true);
-    query.setIsCacheable(true);
-
-    // construct the sql
-    StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
-    for (int i = 0; i < pkColumns.length; i++) {
-      if (i > 0)
-        sql.append(", ");
-      sql.append(pkColumns[i]);
-    }
-    sql.append(" FROM ($$" + datasetParam.getName() + "$$)");
-    query.setSql(sql.toString());
-    querySet.addQuery(query);
-    query.excludeResources(projectId);
-    return query;
-  }
-
-  public static String getDatasetParamName(RecordClass recordClass) {
-    return recordClass.getFullName().replace('.', '_') + PARAM_DATASET_SUFFIX;
-  }
-
-  private DatasetParam getDatasetParam(RecordClass recordClass) throws WdkModelException {
-    String paramName = getDatasetParamName(recordClass);
-    ParamSet paramSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
-    if (paramSet.contains(paramName))
-      return (DatasetParam) paramSet.getParam(paramName);
-
-    DatasetParam param = new DatasetParam();
-    param.setName(paramName);
-    param.setId(paramName);
-    param.setAllowEmpty(false);
-    param.setPrompt(recordClass.getDisplayNamePlural() + " from");
-    param.setAllowEmpty(false);
-    param.setRecordClassRef(recordClass.getFullName());
-    paramSet.addParam(param);
-    param.excludeResources(_wdkModel.getProjectId());
-    return param;
+  public Question getRealtimeBasketQuestion(RecordClass recordClass) throws WdkModelException {
+    return (Question) _wdkModel.resolveReference(String.format(
+      "%s.%s%s",
+      Utilities.INTERNAL_QUESTION_SET,
+      recordClass.getFullName().replace('.', '_'),
+      BasketFactory.REALTIME_BASKET_QUESTION_SUFFIX
+    ));
   }
 
   /**
@@ -524,13 +529,14 @@ public class BasketFactory {
     question.setDisplayName("Current " + rcName + " Basket");
     question.setShortDisplayName(rcName + " Basket");
     question.setRecordClass(recordClass);
-    Query query = getBasketRealtimeIdQuery(recordClass);
+    question.setInternallyCallableOnly(true);
+    Query query = getRealtimeBasketIdQuery(recordClass);
     question.setQuery(query);
     questionSet.addQuestion(question);
     question.excludeResources(_wdkModel.getProjectId());
   }
 
-  private Query getBasketRealtimeIdQuery(RecordClass recordClass) throws WdkModelException {
+  private Query getRealtimeBasketIdQuery(RecordClass recordClass) throws WdkModelException {
     String dbLink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
     String projectId = _wdkModel.getProjectId();
     String rcName = recordClass.getFullName();
@@ -575,93 +581,6 @@ public class BasketFactory {
     querySet.addQuery(query);
     query.excludeResources(projectId);
     return query;
-  }
-
-  /**
-   * the method has to be called before the recordClasses are resolved.
-   *
-   * @param recordClass
-   * @return
-   */
-  public void createBasketAttributeQuery(RecordClass recordClass) throws WdkModelException {
-    String dbLink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
-    String projectId = _wdkModel.getProjectId();
-    String rcName = recordClass.getFullName();
-
-    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
-
-    // check if the boolean query already exists
-    String queryName = rcName.replace('.', '_') + BASKET_ATTRIBUTE_QUERY_SUFFIX;
-    QuerySet querySet = _wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
-    if (querySet.contains(queryName))
-      return;
-
-    SqlQuery query = new SqlQuery();
-    query.setName(queryName);
-
-    // create columns
-    for (String columnName : pkColumns) {
-      Column column = new Column();
-      column.setName(columnName);
-      column.setType(ColumnType.STRING); // TODO: Should this be string?
-      query.addColumn(column);
-    }
-    Column column = new Column();
-    column.setName(BASKET_ATTRIBUTE);
-    column.setType(ColumnType.BOOLEAN); // TODO: Should this be boolean?
-    query.addColumn(column);
-
-    // make sure we create index on primary keys
-    query.setIndexColumns(recordClass.getIndexColumns());
-    query.setDoNotTest(true);
-    query.setIsCacheable(false); // cache the boolean query
-    query.addParam(Query.getUserParam(_wdkModel));
-
-    String prefix = Utilities.COLUMN_PK_PREFIX;
-
-    // construct the sql
-    StringBuilder sql = new StringBuilder("SELECT ");
-    for (int i = 0; i < pkColumns.length; i++) {
-      sql.append("i." + pkColumns[i] + ", ");
-    }
-    // case clause works for both Oracle & PostgreSQL
-    sql.append("(CASE WHEN b." + prefix + "1 IS NULL THEN 0 ELSE 1 END) ")
-      .append(" AS " + BASKET_ATTRIBUTE)
-      .append(" FROM (##WDK_ID_SQL_NO_FILTERS##) i ")
-      .append(" LEFT JOIN " + _userSchema + TABLE_BASKET + dbLink + " b ");
-    for (int i = 0; i < pkColumns.length; i++) {
-      sql.append((i == 0) ? " ON " : " AND ")
-        .append(" i." + pkColumns[i] + " = b." + prefix + (i + 1));
-    }
-    sql.append(" AND b." + COLUMN_USER_ID + " = $$" + Utilities.PARAM_USER_ID + "$$ ")
-      .append(" AND b." + COLUMN_PROJECT_ID + " = '" + projectId + "'")
-      .append(" AND b." + COLUMN_RECORD_CLASS + " = '" + rcName + "'");
-
-    query.setSql(sql.toString());
-    querySet.addQuery(query);
-    query.excludeResources(projectId);
-  }
-
-  /**
-   * this method has to be called before resolving the model
-   */
-  public void createAttributeQueryRef(RecordClass recordClass) throws WdkModelException {
-    String rcName = recordClass.getFullName();
-    String queryName = Utilities.INTERNAL_QUERY_SET + "." + rcName.replace('.', '_') +
-        BASKET_ATTRIBUTE_QUERY_SUFFIX;
-
-    QueryColumnAttributeField attribute = new QueryColumnAttributeField();
-    attribute.setName(BASKET_ATTRIBUTE);
-    attribute.setDisplayName("In Basket");
-    attribute.setInternal(true);
-    attribute.setInReportMaker(false);
-    attribute.setSortable(true);
-
-    AttributeQueryReference reference = new AttributeQueryReference();
-    reference.setRef(queryName);
-    reference.addAttributeField(attribute);
-    recordClass.addAttributesQueryRef(reference);
-    reference.excludeResources(_wdkModel.getProjectId());
   }
 
   private void setParams(PreparedStatement ps, long userId, String projectId, String rcName, String[] pkValue)

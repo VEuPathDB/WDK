@@ -56,13 +56,11 @@ public class PrimaryKeyDefinition extends WdkModelBase {
    * query to get the new ids whenever a recordInstance is created.
    */
   private String _aliasQueryRef;
-  private String _aliasPluginClassName;
 
   /**
    * the reference to a query that returns a list of alias ids of the given gene id
    */
   private Query _aliasQuery;
-  private PrimaryKeyAliasPlugin _aliasPlugin;
 
   private List<WdkModelText> _columnRefList = new ArrayList<>();
   private Set<String> _columnRefSet = new LinkedHashSet<>();
@@ -89,10 +87,6 @@ public class PrimaryKeyDefinition extends WdkModelBase {
 
   public void setAliasQueryRef(String aliasQueryRef) {
     _aliasQueryRef = aliasQueryRef;
-  }
-
-  public void setAliasPluginClassName(String aliasPluginClassName) {
-    _aliasPluginClassName = aliasPluginClassName;
   }
 
   @Override
@@ -128,21 +122,8 @@ public class PrimaryKeyDefinition extends WdkModelBase {
 
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
-
     // resolve the alias query
     resolveAliasQuery(model);
-
-    // resolve the alias plugin
-    try {
-      if (_aliasPluginClassName != null && _aliasPlugin == null) {
-        Class<? extends PrimaryKeyAliasPlugin> pluginClass = Class.forName(_aliasPluginClassName).asSubclass(
-            PrimaryKeyAliasPlugin.class);
-        _aliasPlugin = pluginClass.getDeclaredConstructor().newInstance();
-      }
-    }
-    catch (Exception e) {
-      throw new WdkModelException("Failed instantiating aliasPlugin for class " + _aliasPluginClassName, e);
-    }
   }
 
   /**
@@ -187,9 +168,6 @@ public class PrimaryKeyDefinition extends WdkModelBase {
     if (_aliasQuery != null) {
       primaryKeys = getPrimaryKeyFromAliasQuery(user, pkValues);
     }
-    else if (_aliasPlugin != null) {
-      primaryKeys = getPrimaryKeyFromAliasPlugin(user, pkValues);
-    }
     if(primaryKeys.isEmpty()) {
       throw new RecordNotFoundException("No " + _recordClass.getDisplayName() + " record found for the primary key values: " + displayPkValues(pkValues));
     }
@@ -215,11 +193,6 @@ public class PrimaryKeyDefinition extends WdkModelBase {
       display.append(key + "=" + pkValues.get(key) + " ");
     }
     return display.toString();
-  }
-
-  private List<Map<String, Object>> getPrimaryKeyFromAliasPlugin(User user, Map<String, Object> pkValues)
-      throws WdkModelException, RecordNotFoundException {
-    return _aliasPlugin.getPrimaryKey(user, pkValues);
   }
 
   private List<Map<String, Object>> getPrimaryKeyFromAliasQuery(User user, Map<String, Object> pkValues)

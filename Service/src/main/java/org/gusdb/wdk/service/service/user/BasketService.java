@@ -27,6 +27,7 @@ import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.core.api.JsonKeys;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
@@ -79,10 +80,6 @@ import org.json.JSONObject;
  * 3. POST   /baskets/{recordClassOrUrlSegment}/query  queries basket status (presence) of multiple records at one time
  * 4. POST   /baskets/{recordClassOrUrlSegment}/answer same API as "format" property of answer service
  * </pre>
- *//*
- * TODO #1: Need to add option in POST /dataset endpoint to create from basket (i.e. basket snapshot)
- *            (Also- change RecordsByBasketSnapshot question to take dataset ID, maybe generalize to GenesByDataset, etc)
- * TODO #2: Disallow answer service access to basket questions (supported by /basket/{id}/answer)
  */
 public class BasketService extends UserService {
 
@@ -109,10 +106,17 @@ public class BasketService extends UserService {
   @Path(BASKETS_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getBaskets() throws WdkModelException {
+    WdkModel wdkModel = getWdkModel();
     return Response.ok(
       reduce(
-        getWdkModel().getBasketFactory().getBasketCounts(getPrivateRegisteredUser()).entrySet(),
-        (json, entry) -> json.put(entry.getKey().getUrlSegment(), entry.getValue()),
+        wdkModel.getBasketFactory().getBasketCounts(getPrivateRegisteredUser()).entrySet(),
+        (json, entry) -> {
+          String urlSegment = wdkModel.getRecordClassByName(entry.getKey()).get().getUrlSegment();
+          JSONObject countsObj = new JSONObject()
+            .put(JsonKeys.TOTAL_COUNT, entry.getValue().getFirst())
+            .put(JsonKeys.INVALID_COUNT, entry.getValue().getSecond());
+          return json.put(urlSegment, countsObj);
+        },
         new JSONObject()
       ).toString()
     ).build();

@@ -76,7 +76,7 @@ public class RecordClassFormatter {
       .put(JsonKeys.DESCRIPTION, recordClass.getDescription())
       .put(JsonKeys.PROPERTIES, recordClass.getPropertyLists())
       .put(JsonKeys.FORMATS, getAnswerFormatsJson(recordClass.getReporterMap().values(), FieldScope.ALL))
-      .put(JsonKeys.HAS_ALL_RECORDS_QUERY, recordClass.hasAllRecordsQuery())
+      .put(JsonKeys.HAS_ALL_RECORDS_QUERY, recordClass.getAllRecordsQuery().isPresent())
       .put(JsonKeys.PRIMARY_KEY_REFS, new JSONArray(recordClass.getPrimaryKeyDefinition().getColumnRefs()))
       .put(JsonKeys.RECORD_ID_ATTRIBUTE_NAME, recordClass.getIdAttributeField().getName())
       .put(JsonKeys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(

@@ -36,8 +36,8 @@ public class StaticRecordInstance extends AttributeValueContainer implements Rec
   public StaticRecordInstance(User user, RecordClass recordClass, AttributeFieldContainer fieldContainer,
       Map<String, Object> pkValues, boolean translatePk) throws WdkModelException, WdkUserException {
     super(fieldContainer.getAttributeFieldMap());
-    this._recordClass = recordClass;
-    this._isValidRecord = true;
+    _recordClass = recordClass;
+    _isValidRecord = true;
 
     if (translatePk) {
       List<Map<String, Object>> records = recordClass.lookupPrimaryKeys(user, pkValues);

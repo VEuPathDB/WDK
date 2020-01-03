@@ -164,10 +164,6 @@ public class DatasetParam extends Param {
     this.recordClassRef = recordClassRef;
   }
 
-  public void setRecordClass(RecordClass recordClass) {
-    this.recordClass = recordClass;
-  }
-
   public String getDefaultType() {
     return (defaultType != null) ? defaultType : TYPE_DATA;
   }

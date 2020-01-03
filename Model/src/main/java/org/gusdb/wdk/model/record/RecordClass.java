@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.toolbundle.DefaultAttributeToolBundleRef;
 import org.gusdb.wdk.model.toolbundle.impl.EmptyToolBundle;
 import org.gusdb.wdk.model.filter.*;
 import org.gusdb.wdk.model.query.*;
+import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
@@ -177,7 +178,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private RecordClassSet recordClassSet;
 
   private String allRecordsQueryRef;
-  private Query allRecordsQuery;
+  private SqlQuery allRecordsQuery;
+
+  private String byIdSearchQuestionRef;
+  private Question byIdSearchQuestion;
 
   private List<AttributeQueryReference> attributesQueryRefList = new ArrayList<>();
 
@@ -425,8 +429,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     allRecordsQueryRef = queryRef;
   }
 
-  public Query getAllRecordsQuery() {
-    return allRecordsQuery;
+  public Optional<SqlQuery> getAllRecordsQuery() {
+    return Optional.ofNullable(allRecordsQuery);
   }
 
   public ResultSize getResultSizePlugin() {
@@ -691,14 +695,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return tableField;
   }
 
-  public boolean hasAllRecordsQuery() {
-    return (allRecordsQuery != null);
-  }
-
   public Long getAllRecordsCount(User user) throws WdkModelException {
     try {
+      Query query = getAllRecordsQuery().orElseThrow(() -> new WdkModelException(
+          "This method should not be called if no allRecordsQuery is present.  This is a bug."));
       String baseSql = Query.makeQueryInstance(QueryInstanceSpec.builder()
-          .buildRunnable(user, allRecordsQuery, StepContainer.emptyContainer())).getSql();
+          .buildRunnable(user, query, StepContainer.emptyContainer())).getSql();
       String sql = "select count(*) from ( " + baseSql + " )";
       return new SQLRunner(_wdkModel.getAppDb().getDataSource(),
           sql, fullName + "-all-records-count")
@@ -751,10 +753,14 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     if (allRecordsQueryRef != null) {
-      allRecordsQuery = (Query) _wdkModel.resolveReference(allRecordsQueryRef);
+      String queryDefString = "allRecordsQuery '" + allRecordsQueryRef + "' configured for record class '" + fullName + "'";
+      Query resolvedQuery = (Query) _wdkModel.resolveReference(allRecordsQueryRef);
+      if (!(resolvedQuery instanceof SqlQuery)) {
+        throw new WdkModelException(queryDefString + " must be a SqlQuery");
+      }
+      allRecordsQuery = (SqlQuery)resolvedQuery;
       String[] expectedColumns = primaryKeyDefinition.getColumnRefs();
       Set<String> queryColumns = allRecordsQuery.getColumnMap().keySet();
-      String queryDefString = "allRecordsQuery '" + allRecordsQueryRef + "' configured for record class '" + fullName + "'";
       String badColsMsg = queryDefString + " has columns that do not match the record class's PK columns";
       if (expectedColumns.length != queryColumns.size()) {
         throw new WdkModelException(badColsMsg);
@@ -1083,6 +1089,40 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         throw new WdkModelException("The query " + query.getFullName() + " of " +
             getFullName() + " doesn't return the required primary key column " + column);
     }
+  }
+
+  public void resolveQuestionReferences(WdkModel model) throws WdkModelException {
+    if (byIdSearchQuestionRef != null) {
+      String refName = "Question referred to by byIdSearchQuestionRef " +
+          byIdSearchQuestionRef + ", found on record class " + getFullName() + ", ";
+      byIdSearchQuestion = model.getQuestionByFullName(byIdSearchQuestionRef)
+        .orElseThrow(() -> new WdkModelException(refName + "does not exist."));
+      // need to check that dataset param is compliant with the API:
+      //   only one param, must be dataset param, must have RC matching output of question
+      if (byIdSearchQuestion.getParams().length != 1) {
+        throw new WdkModelException(refName + "can have only one parameter: a dataset param.");
+      }
+      Param param = byIdSearchQuestion.getParams()[0];
+      if (param instanceof DatasetParam) {
+        String dsParamDesc = refName + " contains dataset param " + param.getName() + " ";
+        Optional<RecordClass> dsParamRecordClass = ((DatasetParam)param).getRecordClass();
+        if (dsParamRecordClass.isEmpty()) {
+          throw new WdkModelException(dsParamDesc + " which does not refer to the containing record class.");
+        }
+        String dsRecordClassName = dsParamRecordClass.get().getFullName();
+        // record class referred to in dataset param must match this record class
+        if (!dsRecordClassName.equals(getFullName())) {
+          throw new WdkModelException(dsParamDesc + " which refers to a different record class: " + dsRecordClassName);
+        }
+      }
+      else {
+        throw new WdkModelException(refName + " does not contain a dataset param.");
+      }
+    }
+  }
+
+  public Optional<Question> getByIdSearchQuestion() {
+    return Optional.ofNullable(byIdSearchQuestion);
   }
 
   public void setResources(WdkModel wdkModel) {
@@ -1539,33 +1579,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   /**
-   * The real time question is used on the basket page to display the current
-   * records in the basket.
-   */
-  public Question getRealtimeBasketQuestion() throws WdkModelException {
-    return (Question) _wdkModel.resolveReference(String.format(
-      "%s.%s%s",
-      Utilities.INTERNAL_QUESTION_SET,
-      getFullName().replace('.', '_'),
-      BasketFactory.REALTIME_BASKET_QUESTION_SUFFIX
-    ));
-  }
-
-  /**
-   * The snapshot question is used when exporting basket to a strategy, and the
-   * step will use this question to get a snapshot of those records in basket,
-   * and store them in the
-   */
-  public Question getSnapshotBasketQuestion() throws WdkModelException {
-    return (Question) _wdkModel.resolveReference(String.format(
-      "%s.%s%s",
-      Utilities.INTERNAL_QUESTION_SET,
-      getFullName().replace('.', '_'),
-      BasketFactory.SNAPSHOT_BASKET_QUESTION_SUFFIX
-    ));
-  }
-
-  /**
    * @return the shortDisplayName
    */
   public String getShortDisplayName() {
@@ -1816,5 +1829,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   @Override
   public String getNameForLogging() {
     return getFullName();
+  }
+
+  public Question getRealtimeBasketQuestion() throws WdkModelException {
+    return _wdkModel.getBasketFactory().getRealtimeBasketQuestion(this);
   }
 }

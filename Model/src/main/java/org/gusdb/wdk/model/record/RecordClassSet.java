@@ -83,10 +83,15 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI<RecordClas
       throw new WdkModelException("recordClassSet name cannot be empty "
           + "or having single quotes: " + _name);
 
-    Iterator<RecordClass> recordClassIterator = _recordClassMap.values().iterator();
-    while (recordClassIterator.hasNext()) {
-      RecordClass recordClass = recordClassIterator.next();
+    for (RecordClass recordClass : _recordClassMap.values()) {
       recordClass.resolveReferences(model);
+    }
+  }
+
+
+  public void resolveQuestionReferences(WdkModel model) throws WdkModelException {
+    for (RecordClass recordClass : _recordClassMap.values()) {
+      recordClass.resolveQuestionReferences(model);
     }
   }
 
