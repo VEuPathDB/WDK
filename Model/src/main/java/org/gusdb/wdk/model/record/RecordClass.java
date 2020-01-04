@@ -181,7 +181,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private String allRecordsQueryRef;
   private SqlQuery allRecordsQuery;
 
-  private List<QuestionReference> idSearchQuestionRefList;
+  private List<QuestionReference> idSearchQuestionRefList = new ArrayList<>();
   private Question idSearchQuestion;
 
   private List<AttributeQueryReference> attributesQueryRefList = new ArrayList<>();
