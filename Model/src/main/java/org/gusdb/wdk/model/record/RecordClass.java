@@ -31,6 +31,7 @@ import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.AttributeList;
 import org.gusdb.wdk.model.question.CategoryList;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.question.QuestionReference;
 import org.gusdb.wdk.model.record.attribute.*;
 import org.gusdb.wdk.model.report.ReporterRef;
 import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
@@ -180,8 +181,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private String allRecordsQueryRef;
   private SqlQuery allRecordsQuery;
 
-  private String byIdSearchQuestionRef;
-  private Question byIdSearchQuestion;
+  private List<QuestionReference> idSearchQuestionRefList;
+  private Question idSearchQuestion;
 
   private List<AttributeQueryReference> attributesQueryRefList = new ArrayList<>();
 
@@ -1091,18 +1092,23 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
   }
 
+  public void addIdSearchQuestion(QuestionReference questionRef) {
+    idSearchQuestionRefList.add(questionRef);
+  }
+
   public void resolveQuestionReferences(WdkModel model) throws WdkModelException {
-    if (byIdSearchQuestionRef != null) {
+    if (!idSearchQuestionRefList.isEmpty()) {
+      String idSearchQuestionRef = idSearchQuestionRefList.get(0).getQuestionRef();
       String refName = "Question referred to by byIdSearchQuestionRef " +
-          byIdSearchQuestionRef + ", found on record class " + getFullName() + ", ";
-      byIdSearchQuestion = model.getQuestionByFullName(byIdSearchQuestionRef)
+          idSearchQuestionRef + ", found on record class " + getFullName() + ", ";
+      idSearchQuestion = model.getQuestionByFullName(idSearchQuestionRef)
         .orElseThrow(() -> new WdkModelException(refName + "does not exist."));
       // need to check that dataset param is compliant with the API:
       //   only one param, must be dataset param, must have RC matching output of question
-      if (byIdSearchQuestion.getParams().length != 1) {
+      if (idSearchQuestion.getParams().length != 1) {
         throw new WdkModelException(refName + "can have only one parameter: a dataset param.");
       }
-      Param param = byIdSearchQuestion.getParams()[0];
+      Param param = idSearchQuestion.getParams()[0];
       if (param instanceof DatasetParam) {
         String dsParamDesc = refName + " contains dataset param " + param.getName() + " ";
         Optional<RecordClass> dsParamRecordClass = ((DatasetParam)param).getRecordClass();
@@ -1121,8 +1127,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
   }
 
-  public Optional<Question> getByIdSearchQuestion() {
-    return Optional.ofNullable(byIdSearchQuestion);
+  public Optional<Question> getIdSearchQuestion() {
+    return Optional.ofNullable(idSearchQuestion);
   }
 
   public void setResources(WdkModel wdkModel) {
@@ -1410,6 +1416,20 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     _filterReferences.clear();
     _filterReferences.addAll(references);
 
+    // exclude ID question references
+    for (int i = 0; i < idSearchQuestionRefList.size(); i++) {
+      // remove from list if not included in this project
+      if (!idSearchQuestionRefList.get(i).include(projectId)) {
+        idSearchQuestionRefList.remove(i);
+        i--;
+      }
+    }
+    // throw model exception if more than one remains
+    if (idSearchQuestionRefList.size() > 1) {
+      throw new WdkModelException("Only 0 or 1 ID question references can be " +
+          "used for a given project. Record class " + getFullName() + " has " +
+          idSearchQuestionRefList.size() + " for project ID " + projectId);
+    }
   }
 
   public void addFilter(AnswerFilter filter) {

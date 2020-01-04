@@ -92,6 +92,7 @@ import org.gusdb.wdk.model.question.CategoryList;
 import org.gusdb.wdk.model.question.CategoryQuestionRef;
 import org.gusdb.wdk.model.question.DynamicAttributeSet;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.question.QuestionReference;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.question.QuestionSuggestion;
 import org.gusdb.wdk.model.question.SearchCategory;
@@ -687,6 +688,10 @@ public class ModelXmlParser extends XmlParser {
         WdkModelText.class, "addParamValue");
     digester.addCallMethod("wdkModel/recordClassSet/recordClass/answerFilter/instance/paramValue", "setText",
         0);
+
+    // ID search question for this recordclass
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/byIdSearchQuestion",
+        QuestionReference.class, "addIdSearchQuestion");
 
     // Default attribute tool bundle
     configureNode(digester, "wdkModel/recordClassSet/recordClass/defaultColumnToolBundle",

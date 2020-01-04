@@ -1187,9 +1187,6 @@
         <attribute name="allRecordsQueryRef" />
       </optional>
       <optional>
-        <attribute name="byIdSearchQuestionRef" />
-      </optional>
-      <optional>
         <attribute name="doNotTest">
           <data type="boolean" />
         </attribute>
@@ -1209,6 +1206,14 @@
       <optional>
         <ref name="defaultColumnToolBundle" />
       </optional>
+      <zeroOrMore>
+        <element name="byIdSearchQuestion">
+          <ref name="IncludeExclude"/>
+          <attribute name="questionRef">
+            <data type="string"/>
+          </attribute>
+        </element>
+      </zeroOrMore>
       <optional>
         <element name="resultSizeQueryRef">
           <attribute name="recordDisplayName" />
