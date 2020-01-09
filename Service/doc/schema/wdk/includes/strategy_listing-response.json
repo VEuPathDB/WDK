@@ -21,6 +21,12 @@
     "organization": {
       "type": "string"
     },
+    "createdTime": {
+      "$ref": "../../includes/date-string-1.json"
+    },
+    "lastViewed": {
+      "$ref": "../../includes/date-string-1.json"
+    },
     "lastModified": {
       "$ref": "../../includes/date-string-1.json"
     },

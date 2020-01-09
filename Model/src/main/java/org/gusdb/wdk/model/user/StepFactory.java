@@ -148,7 +148,7 @@ public class StepFactory {
 
     // define creation time
     Date createTime = new Date();
-    // TODO lastRunTime should be made null once the last_run_time field in DB is nullable.
+    // TODO (maybe?) lastRunTime should be made null once the last_run_time field in DB is nullable
     Date lastRunTime = new Date(createTime.getTime());
 
     // create the Step
@@ -440,7 +440,7 @@ public class StepFactory {
         .setDescription(oldStrategy.getDescription())
         .setIsPublic(false)
         .setLastModifiedTime(null)
-        .setLastRunTime(null)
+        .setLastViewTime(null)
         .setName(name)
         .setProjectId(projectId)
         .setSaved(false)
@@ -653,7 +653,8 @@ public class StepFactory {
       .setStepId(getNewStepId())
       .setUserId(newUser.getUserId())
       .setStrategyId(Optional.empty())
-      .setEstimatedSize(Step.RESET_SIZE_FLAG); // always reset on copy
+      .setEstimatedSize(Step.RESET_SIZE_FLAG) // always reset on copy
+      .setCreatedTime(new Date());
 
     MapBuilder<Long,StepBuilder> childSteps =
       oldStep.getAnswerSpec().hasValidQuestion()
@@ -763,6 +764,7 @@ public class StepFactory {
       "  " + COLUMN_SAVED_NAME         + " = ?,\n" +
       "  " + COLUMN_IS_SAVED           + " = ?,\n" +
       "  " + COLUMN_DESCRIPTION        + " = ?,\n" +
+      "  " + COLUMN_LAST_VIEWED_TIME   + " = ?,\n" +
       "  " + COLUMN_LAST_MODIFIED_TIME + " = ?,\n" +
       "  " + COLUMN_SIGNATURE          + " = ?,\n" +
       "  " + COLUMN_IS_PUBLIC          + " = ?,\n" +
@@ -776,6 +778,7 @@ public class StepFactory {
       strat.getSavedName(),
       _userDbPlatform.convertBoolean(strat.isSaved()),
       strat.getDescription(),
+      new Timestamp(strat.getLastViewTime().getTime()),
       new Timestamp(strat.getLastModifiedTime().getTime()),
       strat.getSignature(),
       _userDbPlatform.convertBoolean(strat.isPublic()),
@@ -790,6 +793,7 @@ public class StepFactory {
       Types.VARCHAR,   // SAVED_NAME
       boolType,        // IS_SAVED
       Types.VARCHAR,   // DESCRIPTION
+      Types.TIMESTAMP, // LAST_VIEW_TIME
       Types.TIMESTAMP, // LAST_MODIFY_TIME
       Types.VARCHAR,   // SIGNATURE
       boolType,        // IS_PUBLIC

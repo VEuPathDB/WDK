@@ -52,7 +52,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     private boolean _isDeleted;
     private Date _createdTime = new Date();
     private Date _lastModifiedTime;
-    private Date _lastRunTime;
+    private Date _lastViewTime;
     private String _signature;
     private boolean _isPublic;
     private long _rootStepId;
@@ -80,7 +80,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
       _isDeleted = strategy._isDeleted;
       _createdTime = strategy._createdTime;
       _lastModifiedTime = strategy._lastModifiedTime;
-      _lastRunTime = strategy._lastRunTime;
+      _lastViewTime = strategy._lastViewTime;
       _signature = strategy._signature;
       _isPublic = strategy._isPublic;
       _rootStepId = strategy._rootStepId;
@@ -143,8 +143,8 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
       return this;
     }
 
-    public StrategyBuilder setLastRunTime(Date lastRunTime) {
-      _lastRunTime = lastRunTime;
+    public StrategyBuilder setLastViewTime(Date lastViewTime) {
+      _lastViewTime = lastViewTime;
       return this;
     }
 
@@ -230,7 +230,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
   private final boolean _isDeleted;
   private final Date _createdTime;
   private final Date _lastModifiedTime;
-  private final Date _lastRunTime;
+  private final Date _lastViewTime;
   private final String _signature;
   private final boolean _isPublic;
   private final long _rootStepId;
@@ -252,7 +252,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     _isDeleted = strategyBuilder._isDeleted;
     _createdTime = strategyBuilder._createdTime;
     _lastModifiedTime = strategyBuilder._lastModifiedTime;
-    _lastRunTime = strategyBuilder._lastRunTime;
+    _lastViewTime = strategyBuilder._lastViewTime;
     _signature = strategyBuilder._signature;
     _isPublic = strategyBuilder._isPublic;
     _rootStepId = strategyBuilder._rootStepId;
@@ -467,11 +467,8 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     return _validationBundle.getStatus().isValid();
   }
 
-  /**
-   * @return the lastRunTime
-   */
-  public Date getLastRunTime() {
-    return getRootStep().getLastRunTime();
+  public Date getLastViewTime() {
+    return _lastViewTime;
   }
 
   /**

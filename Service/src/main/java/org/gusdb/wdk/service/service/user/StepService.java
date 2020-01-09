@@ -28,6 +28,7 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
@@ -281,6 +282,7 @@ public class StepService extends UserService {
         getWdkModel().getStepFactory().updateStrategy(Strategy
             .builder(existingStep.getStrategy().get())
             .addStep(replacementBuilder)
+            .setLastModifiedTime(new Date())
             .build(new UserCache(user), ValidationLevel.SEMANTIC));
       }
       catch (InvalidStrategyStructureException e) {
@@ -363,12 +365,7 @@ public class StepService extends UserService {
     );
   }
 
-  private static DataValidationException getNotRunnableException(Step badStep) {
-    return new DataValidationException(
-        "This step is not runnable for the following reasons: " + badStep.getValidationBundle().toString());
-  }
-
-  private static DataValidationException getNotRunnableException(AnswerSpec badSpec) {
+  private static DataValidationException getNotRunnableException(Validateable<?> badSpec) {
     return new DataValidationException(
         "This step is not runnable for the following reasons: " + badSpec.getValidationBundle().toString());
   }

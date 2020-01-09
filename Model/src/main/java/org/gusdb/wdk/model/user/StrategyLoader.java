@@ -288,7 +288,7 @@ public class StrategyLoader {
         .setDeleted(rs.getBoolean(toStratCol(COLUMN_IS_DELETED)))
         .setRootStepId(rs.getLong(toStratCol(COLUMN_ROOT_STEP_ID)))
         .setSaved(rs.getBoolean(toStratCol(COLUMN_IS_SAVED)))
-        .setLastRunTime(rs.getTimestamp(toStratCol(COLUMN_LAST_VIEWED_TIME)))
+        .setLastViewTime(rs.getTimestamp(toStratCol(COLUMN_LAST_VIEWED_TIME)))
         .setLastModifiedTime(rs.getTimestamp(toStratCol(COLUMN_LAST_MODIFIED_TIME)))
         .setDescription(rs.getString(toStratCol(COLUMN_DESCRIPTION)))
         .setSignature(rs.getString(toStratCol(COLUMN_SIGNATURE)))

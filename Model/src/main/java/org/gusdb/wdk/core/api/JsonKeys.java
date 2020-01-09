@@ -188,7 +188,7 @@ public class JsonKeys {
   public static final String LEAF_AND_TRANSFORM_STEP_COUNT = "leafAndTransformStepCount";
   public static final String IS_EXPANDED = "expanded";
   public static final String EXPANDED_NAME = "expandedName";
-  public static final String OVERWRITE_WITH_OPERATION = "overwrite-with"; // PATCH operation
+  public static final String OVERWRITE_WITH_OPERATION = "overwriteWith"; // PATCH operation
 
   // step analysis keys
   public static final String ANALYSIS_ID = "analysisId"; // TODO convert to simply ID
@@ -250,6 +250,7 @@ public class JsonKeys {
   public static final String RECORD_CLASS_NAME_PLURAL = "recordClassNamePlural";
   public static final String SIGNATURE = "signature";
   public static final String SAVED_NAME = "savedName";
+  public static final String LAST_VIEW_TIME = "lastViewed";
   public static final String LAST_MODIFIED = "lastModified";
   public static final String IS_SAVED = "isSaved";
   public static final String IS_DELETED = "isDeleted";

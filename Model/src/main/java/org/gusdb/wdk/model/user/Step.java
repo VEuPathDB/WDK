@@ -86,9 +86,7 @@ public class Step implements Validateable<Step> {
       _strategyId = Optional.empty();
       _strategyId = step.getStrategyId();
       _stepId = step.getStepId();
-      _createdTime = new Date();
-      _createdTime = step.getCreatedTime();
-      _lastRunTime = new Date();
+      _createdTime = step._createdTime;
       _lastRunTime = step._lastRunTime;
       _customName = step._customName;
       _isDeleted = step.isDeleted();
