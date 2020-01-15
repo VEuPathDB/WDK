@@ -1618,6 +1618,7 @@
             <ref name="IncludeExclude" />
             <text />
           </element>
+          <ref name="propertyList" />
         </choice>
       </zeroOrMore>
     </element>
