@@ -710,6 +710,10 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/recordClassSet/recordClass/table/columnAttribute",
         QueryColumnAttributeField.class, "addAttributeField");
 
+    // attributeField's property list
+    configureNode(digester, "wdkModel/recordClassSet/recordClass/table/columnAttribute/propertyList", PropertyList.class,
+        "addPropertyList");
+
     // result size query ref
     configureNode(digester, "wdkModel/recordClassSet/recordClass/resultSizeQueryRef",
         ResultSizeQueryReference.class, "setResultSizeQueryRef");
@@ -927,6 +931,10 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/questionSet/question/dynamicAttributes/columnAttribute",
         QueryColumnAttributeField.class, "addAttributeField");
 
+    // attributeField's property list
+    configureNode(digester, "wdkModel/questionSet/question/dynamicAttributes/columnAttribute/propertyList",
+        PropertyList.class, "addPropertyList");
+
     configureNode(digester, "wdkModel/questionSet/question/paramRef", ParamReference.class, "addParamRef");
 
     configureNode(digester, "wdkModel/questionSet/question/sqlParamValue", WdkModelText.class,
@@ -1025,11 +1033,13 @@ public class ModelXmlParser extends XmlParser {
 
     // column attributes
     configureNode(digester, "*/columnAttribute", QueryColumnAttributeField.class, "addAttributeField");
+    configureNode(digester, "*/columnAttribute/propertyList", PropertyList.class, "addPropertyList");
     configureNode(digester, "*/columnAttribute/filterRef", FilterReference.class, "addFilterReference");
     configureAttributeReporters(digester, "columnAttribute");
 
     // link attribute
     configureNode(digester, "*/linkAttribute", LinkAttributeField.class, "addAttributeField");
+    configureNode(digester, "*/linkAttribute/propertyList", PropertyList.class, "addPropertyList");
     configureNode(digester, "*/linkAttribute/url", WdkModelText.class, "addUrl");
     digester.addCallMethod("*/linkAttribute/url", "setText", 0);
     configureNode(digester, "*/linkAttribute/displayText", WdkModelText.class, "addDisplayText");
@@ -1038,6 +1048,7 @@ public class ModelXmlParser extends XmlParser {
 
     // text attribute
     configureNode(digester, "*/textAttribute", TextAttributeField.class, "addAttributeField");
+    configureNode(digester, "*/textAttribute/propertyList", PropertyList.class, "addPropertyList");
     configureNode(digester, "*/textAttribute/text", WdkModelText.class, "addText");
     digester.addCallMethod("*/textAttribute/text", "setText", 0);
     configureNode(digester, "*/textAttribute/display", WdkModelText.class, "addDisplay");

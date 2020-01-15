@@ -1539,6 +1539,7 @@
     <zeroOrMore>
       <choice>
         <ref name="reporterRef" />
+        <ref name="propertyList" />
         <element name="filter">
           <ref name="IncludeExclude" />
           <attribute name="name" />
@@ -1618,7 +1619,6 @@
             <ref name="IncludeExclude" />
             <text />
           </element>
-          <ref name="propertyList" />
         </choice>
       </zeroOrMore>
     </element>
