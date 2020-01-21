@@ -25,19 +25,20 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.query.*;
+import org.gusdb.wdk.model.query.Column;
+import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QuerySet;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
-import org.gusdb.wdk.model.record.AttributeQueryReference;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.RecordNotFoundException;
 import org.gusdb.wdk.model.record.StaticRecordInstance;
-import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 
 public class BasketFactory {
 
@@ -45,8 +46,6 @@ public class BasketFactory {
   public static final String SNAPSHOT_BASKET_QUESTION_SUFFIX = "BySnapshotBasket";
   private static final String REALTIME_BASKET_ID_QUERY_SUFFIX = "ByRealtimeBasket";
   private static final String SNAPSHOT_BASKET_ID_QUERY_SUFFIX = "BySnapshotBasket";
-  static final String BASKET_ATTRIBUTE_QUERY_SUFFIX = "_basket_attrs";
-  public static final String BASKET_ATTRIBUTE = "in_basket";
 
   public static final String PARAM_USER_SIGNATURE = "user_signature";
   public static final String PARAM_DATASET_SUFFIX = "Dataset";
@@ -575,93 +574,6 @@ public class BasketFactory {
     querySet.addQuery(query);
     query.excludeResources(projectId);
     return query;
-  }
-
-  /**
-   * the method has to be called before the recordClasses are resolved.
-   *
-   * @param recordClass
-   * @return
-   */
-  public void createBasketAttributeQuery(RecordClass recordClass) throws WdkModelException {
-    String dbLink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
-    String projectId = _wdkModel.getProjectId();
-    String rcName = recordClass.getFullName();
-
-    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
-
-    // check if the boolean query already exists
-    String queryName = rcName.replace('.', '_') + BASKET_ATTRIBUTE_QUERY_SUFFIX;
-    QuerySet querySet = _wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
-    if (querySet.contains(queryName))
-      return;
-
-    SqlQuery query = new SqlQuery();
-    query.setName(queryName);
-
-    // create columns
-    for (String columnName : pkColumns) {
-      Column column = new Column();
-      column.setName(columnName);
-      column.setType(ColumnType.STRING); // TODO: Should this be string?
-      query.addColumn(column);
-    }
-    Column column = new Column();
-    column.setName(BASKET_ATTRIBUTE);
-    column.setType(ColumnType.BOOLEAN); // TODO: Should this be boolean?
-    query.addColumn(column);
-
-    // make sure we create index on primary keys
-    query.setIndexColumns(recordClass.getIndexColumns());
-    query.setDoNotTest(true);
-    query.setIsCacheable(false); // cache the boolean query
-    query.addParam(Query.getUserParam(_wdkModel));
-
-    String prefix = Utilities.COLUMN_PK_PREFIX;
-
-    // construct the sql
-    StringBuilder sql = new StringBuilder("SELECT ");
-    for (int i = 0; i < pkColumns.length; i++) {
-      sql.append("i." + pkColumns[i] + ", ");
-    }
-    // case clause works for both Oracle & PostgreSQL
-    sql.append("(CASE WHEN b." + prefix + "1 IS NULL THEN 0 ELSE 1 END) ")
-      .append(" AS " + BASKET_ATTRIBUTE)
-      .append(" FROM (##WDK_ID_SQL_NO_FILTERS##) i ")
-      .append(" LEFT JOIN " + _userSchema + TABLE_BASKET + dbLink + " b ");
-    for (int i = 0; i < pkColumns.length; i++) {
-      sql.append((i == 0) ? " ON " : " AND ")
-        .append(" i." + pkColumns[i] + " = b." + prefix + (i + 1));
-    }
-    sql.append(" AND b." + COLUMN_USER_ID + " = $$" + Utilities.PARAM_USER_ID + "$$ ")
-      .append(" AND b." + COLUMN_PROJECT_ID + " = '" + projectId + "'")
-      .append(" AND b." + COLUMN_RECORD_CLASS + " = '" + rcName + "'");
-
-    query.setSql(sql.toString());
-    querySet.addQuery(query);
-    query.excludeResources(projectId);
-  }
-
-  /**
-   * this method has to be called before resolving the model
-   */
-  public void createAttributeQueryRef(RecordClass recordClass) throws WdkModelException {
-    String rcName = recordClass.getFullName();
-    String queryName = Utilities.INTERNAL_QUERY_SET + "." + rcName.replace('.', '_') +
-        BASKET_ATTRIBUTE_QUERY_SUFFIX;
-
-    QueryColumnAttributeField attribute = new QueryColumnAttributeField();
-    attribute.setName(BASKET_ATTRIBUTE);
-    attribute.setDisplayName("In Basket");
-    attribute.setInternal(true);
-    attribute.setInReportMaker(false);
-    attribute.setSortable(true);
-
-    AttributeQueryReference reference = new AttributeQueryReference();
-    reference.setRef(queryName);
-    reference.addAttributeField(attribute);
-    recordClass.addAttributesQueryRef(reference);
-    reference.excludeResources(_wdkModel.getProjectId());
   }
 
   private void setParams(PreparedStatement ps, long userId, String projectId, String rcName, String[] pkValue)

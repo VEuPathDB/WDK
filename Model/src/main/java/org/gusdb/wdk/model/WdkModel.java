@@ -706,10 +706,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     for (RecordClassSet rcSet : recordClassSets.values()) {
       for (RecordClass recordClass : rcSet.getRecordClasses()) {
         if (recordClass.isUseBasket()) {
-          basketFactory.createAttributeQueryRef(recordClass);
           basketFactory.createRealtimeBasketQuestion(recordClass);
           basketFactory.createSnapshotBasketQuestion(recordClass);
-          basketFactory.createBasketAttributeQuery(recordClass);
         }
       }
     }
