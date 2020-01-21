@@ -1021,6 +1021,7 @@ public class ModelXmlParser extends XmlParser {
     // id attribute
     String prefixIdAttr = "wdkModel/recordClassSet/recordClass/idAttribute";
     configureNode(digester, prefixIdAttr, IdAttributeField.class, "addAttributeField");
+    configureNode(digester, prefixIdAttr + "/propertyList", PropertyList.class, "addPropertyList");
     configureNode(digester, prefixIdAttr + "/text", WdkModelText.class, "addText");
     digester.addCallMethod(prefixIdAttr + "/text", "setText", 0);
     configureNode(digester, prefixIdAttr + "/display", WdkModelText.class, "addDisplay");
@@ -1029,6 +1030,7 @@ public class ModelXmlParser extends XmlParser {
 
     // pk column attributes
     configureNode(digester, "*/pkColumnAttribute", PkColumnAttributeField.class, "addAttributeField");
+    configureNode(digester, "*/pkColumnAttribute/propertyList", PropertyList.class, "addPropertyList");
     configureAttributeReporters(digester, "pkColumnAttribute");
 
     // column attributes
