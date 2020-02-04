@@ -147,6 +147,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
 
     // prepare the sql
     String sql = buildCacheInsertSql(tableName, instanceId, columns, columnNames);
+    LOG.info("Built the following insertSql: " + sql);
 
     // get results and time process
     String resultMessage;
