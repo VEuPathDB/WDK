@@ -302,7 +302,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return array;
   }
 
-  public Optional<RecordClass> getRecordClassByName(String recordClassReference) {
+  public Optional<RecordClass> getRecordClassByFullName(String recordClassReference) {
     try {
       Reference r = new Reference(recordClassReference);
       return Optional.ofNullable(recordClassSets.get(r.getSetName()))
@@ -320,12 +320,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
    * @return optional containing record class if found, or empty optional if not
    */
   public Optional<RecordClass> getRecordClassByUrlSegment(String urlSegment) {
-    return Optional.ofNullable(_recordClassUrlSegmentMap.get(urlSegment)).map(name -> getRecordClassByName(name).get());
+    return Optional.ofNullable(_recordClassUrlSegmentMap.get(urlSegment)).map(name -> getRecordClassByFullName(name).get());
   }
 
   public Optional<RecordClass> getRecordClassByNameOrUrlSegment(String nameOrSegment) {
     Optional<RecordClass> rc = getRecordClassByUrlSegment(nameOrSegment);
-    return rc.isPresent() ? rc : getRecordClassByName(nameOrSegment);
+    return rc.isPresent() ? rc : getRecordClassByFullName(nameOrSegment);
   }
 
   public void addWdkModelName(WdkModelName wdkModelName) {
@@ -1609,7 +1609,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     String message = "The record type '" + recordClassName + "' is not or is no longer available.";
     try {
       // First check to see if this is a 'regular' record class; if not, check XML record classes
-      if (recordClassName == null || getRecordClassByName(recordClassName) == null) {
+      if (recordClassName == null || getRecordClassByFullName(recordClassName) == null) {
         throw new WdkModelException("RecordClass name is null or resulting RecordClass is null");
       }
     }
