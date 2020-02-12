@@ -392,8 +392,8 @@ public class SqlQuery extends Query {
     // just bad SQL
     if (!macro.find() && !param.find())
       throw new WdkModelException(String.format("Database error while "
-          + "attempting to parse sqlQuery %s",
-        getFullName()), ex);
+          + "attempting to parse sqlQuery %s: %s",
+        getFullName(), sql), ex);
 
     var invalid = _columnMap.values().stream()
       .anyMatch(not(Column::wasTypeSet));
