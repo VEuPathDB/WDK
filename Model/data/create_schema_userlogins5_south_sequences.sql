@@ -18,14 +18,14 @@ DROP SEQUENCE userlogins5.categories_pkseq;
 DROP SEQUENCE userlogins5.step_analysis_pkseq;
 
 /* Save for api-specific script
-DROP SEQUENCE userlogins5.commentStableId_pkseq; 
-DROP SEQUENCE userlogins5.commentTargetCategory_pkseq; 
-DROP SEQUENCE userlogins5.commentReference_pkseq; 
-DROP SEQUENCE userlogins5.commentFile_pkseq; 
-DROP SEQUENCE userlogins5.commentSequence_pkseq; 
-DROP SEQUENCE userlogins5.comments_pkseq; 
-DROP SEQUENCE userlogins5.locations_pkseq; 
-DROP SEQUENCE userlogins5.external_databases_pkseq; 
+DROP SEQUENCE userlogins5.commentStableId_pkseq;
+DROP SEQUENCE userlogins5.commentTargetCategory_pkseq;
+DROP SEQUENCE userlogins5.commentReference_pkseq;
+DROP SEQUENCE userlogins5.commentFile_pkseq;
+DROP SEQUENCE userlogins5.commentSequence_pkseq;
+DROP SEQUENCE userlogins5.comments_pkseq;
+DROP SEQUENCE userlogins5.locations_pkseq;
+DROP SEQUENCE userlogins5.external_databases_pkseq;
 */
 
 /*==============================================================================
@@ -38,9 +38,6 @@ GRANT SELECT ON userlogins5.user_baskets_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.favorites_pkseq INCREMENT BY 10 START WITH 100000003;
 GRANT SELECT ON userlogins5.favorites_pkseq TO COMM_WDK_W;
-
-CREATE SEQUENCE userlogins5.categories_pkseq INCREMENT BY 10 START WITH 100000003;
-GRANT SELECT ON userlogins5.categories_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.datasets_pkseq INCREMENT BY 10 START WITH 100000003;
 GRANT SELECT ON userlogins5.datasets_pkseq TO COMM_WDK_W;
