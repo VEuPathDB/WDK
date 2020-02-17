@@ -297,9 +297,6 @@ GRANT SELECT ON userlogins5.user_baskets_pkseq TO COMM_WDK_W;
 CREATE SEQUENCE userlogins5.favorites_pkseq INCREMENT BY 10 START WITH 100000000;
 GRANT SELECT ON userlogins5.favorites_pkseq TO COMM_WDK_W;
 
-CREATE SEQUENCE userlogins5.categories_pkseq INCREMENT BY 10 START WITH 100000000;
-GRANT SELECT ON userlogins5.categories_pkseq TO COMM_WDK_W;
-
 CREATE SEQUENCE userlogins5.datasets_pkseq INCREMENT BY 10 START WITH 100000000;
 GRANT SELECT ON userlogins5.datasets_pkseq TO COMM_WDK_W;
 
