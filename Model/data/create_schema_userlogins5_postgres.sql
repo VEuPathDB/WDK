@@ -120,25 +120,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.favorites TO COMM_WDK_W;
 
 --==============================================================================
 
-CREATE TABLE userlogins5.categories (
-  category_id       NUMERIC(12) NOT NULL,
-  user_id           NUMERIC(12) NOT NULL,
-  parent_id         NUMERIC(12),
-  category_type     VARCHAR(50) NOT NULL,
-  category_name     VARCHAR(100) NOT NULL,
-  description       VARCHAR(200),
-  prev_category_id  NUMERIC(12),
-  migration_id      NUMERIC(12),
-  CONSTRAINT "categories_pk" PRIMARY KEY (category_id),
-  CONSTRAINT "categories_uq01" UNIQUE (user_id, category_type, parent_id, category_name),
-  CONSTRAINT "categories_fk01" FOREIGN KEY (user_id)
-      REFERENCES userlogins5.users (user_id)
-);
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.categories TO COMM_WDK_W;
-
---==============================================================================
-
 CREATE TABLE userlogins5.datasets (
   dataset_id        NUMERIC(12) NOT NULL,
   user_id           NUMERIC(12),
@@ -304,9 +285,6 @@ GRANT SELECT ON userlogins5.user_baskets_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.favorites_pkseq INCREMENT BY 10; -- START WITH 100000000;
 GRANT SELECT ON userlogins5.favorites_pkseq TO COMM_WDK_W;
-
-CREATE SEQUENCE userlogins5.categories_pkseq INCREMENT BY 10; -- START WITH 100000000;
-GRANT SELECT ON userlogins5.categories_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE userlogins5.datasets_pkseq INCREMENT BY 10; -- START WITH 100000000;
 GRANT SELECT ON userlogins5.datasets_pkseq TO COMM_WDK_W;
