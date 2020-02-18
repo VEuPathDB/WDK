@@ -14,7 +14,6 @@ DROP SEQUENCE userlogins5.datasets_pkseq;
 DROP SEQUENCE userlogins5.dataset_values_pkseq;
 DROP SEQUENCE userlogins5.user_baskets_pkseq;
 DROP SEQUENCE userlogins5.favorites_pkseq;
-DROP SEQUENCE userlogins5.categories_pkseq;
 DROP SEQUENCE userlogins5.step_analysis_pkseq;
 
 /* Save for api-specific script
