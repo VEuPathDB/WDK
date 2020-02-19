@@ -30,14 +30,14 @@ import org.gusdb.wdk.model.record.attribute.AttributeValue;
  * @author jerric
  * 
  */
-public class TableValue implements Iterable<Map<String, AttributeValue>> {
+public class TableValue implements Iterable<TableValueRow> {
 
   protected final TableField _tableField;
-  protected List<Map<String, AttributeValue>> _rows;
+  protected List<TableValueRow> _rows;
 
   public TableValue(TableField tableField) {
     _tableField = tableField;
-    _rows = new ArrayList<Map<String, AttributeValue>>();
+    _rows = new ArrayList<>();
   }
 
   public TableField getTableField() {
@@ -101,14 +101,12 @@ public class TableValue implements Iterable<Map<String, AttributeValue>> {
   }
 
   public void initializeRow(ResultList resultList) throws WdkModelException {
-    TableValueRow row = new TableValueRow(getTableField());
-    row.initializeFromResultList(resultList);
-    _rows.add(row);
+    _rows.add(new TableValueRow(getTableField(), resultList));
   }
 
   @Override
-  public Iterator<Map<String, AttributeValue>> iterator() {
+  public Iterator<TableValueRow> iterator() {
     return _rows.iterator();
   }
-}
 
+}

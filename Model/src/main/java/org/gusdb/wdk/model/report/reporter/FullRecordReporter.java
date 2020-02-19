@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
+import org.gusdb.wdk.model.record.TableValueRow;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.report.ReporterInfo;
@@ -223,7 +224,7 @@ public class FullRecordReporter extends StandardReporter {
           TableValue tableValue = record.getTableValue(table.getName());
 
           // check if table is empty
-          Iterator<Map<String, AttributeValue>> iterator = tableValue.iterator();
+          Iterator<TableValueRow> iterator = tableValue.iterator();
           if (!includeEmptyTables && !iterator.hasNext()) {
             continue;
           }

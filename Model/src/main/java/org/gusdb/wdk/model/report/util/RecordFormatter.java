@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableValue;
+import org.gusdb.wdk.model.record.TableValueRow;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.record.attribute.LinkAttributeValue;
 import org.gusdb.wdk.model.record.attribute.TextAttributeValue;
@@ -77,7 +78,7 @@ public class RecordFormatter {
         JSONArray tableRowsJson = new JSONArray();
         // loop through rows
         TableValue tableValue = record.getTableValue(tableName);
-        for (Map<String, AttributeValue> row : tableValue) {
+        for (TableValueRow row : tableValue) {
           JSONObject tableAttrsJson = new JSONObject();
           // loop through columns
           for (Entry<String, AttributeValue> entry : row.entrySet()) {
