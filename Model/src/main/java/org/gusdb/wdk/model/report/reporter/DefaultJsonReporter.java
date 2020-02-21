@@ -2,6 +2,8 @@ package org.gusdb.wdk.model.report.reporter;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,6 +21,7 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStreamFactory;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.ReporterRef;
@@ -55,10 +58,19 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
   @Override
   protected void write(OutputStream out) throws WdkModelException {
 
+    // record formatter requires the ID attribute, so must add to stream request
+    //   if not already present and it contains non-PK columns
+    RecordClass recordClass = _baseAnswer.getAnswerSpec().getQuestion().getRecordClass();
+    AttributeField idField = recordClass.getIdAttributeField();
+    List<AttributeField> requiredAttributes = new ArrayList<>(_attributes.values());
+    if (!_attributes.containsKey(idField.getName()) && recordClass.idAttributeHasNonPkMacros()) {
+      requiredAttributes.add(idField);
+    }
+
     // create output writer and initialize record stream
     try (JsonWriter writer = new JsonWriter(out);
          RecordStream recordStream = RecordStreamFactory.getRecordStream(
-            _baseAnswer, _attributes.values(), _tables.values())) {
+            _baseAnswer, requiredAttributes, _tables.values())) {
 
       // start parent object and records array
       writer.object().key(JsonKeys.RECORDS).array();
