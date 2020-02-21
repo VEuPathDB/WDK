@@ -177,7 +177,7 @@ public class FavoriteFactory {
   private Favorite loadFavorite(User user, ResultSet resultSet)
       throws SQLException, WdkModelException {
     // Need to avoid showing favorite for defunct (per current wdk model) record class sets or record classes
-    Optional<RecordClass> recordClass = _wdkModel.getRecordClassByName(resultSet.getString(COLUMN_RECORD_CLASS));
+    Optional<RecordClass> recordClass = _wdkModel.getRecordClassByFullName(resultSet.getString(COLUMN_RECORD_CLASS));
     if (!recordClass.isPresent()) {
       return null;
     }

@@ -298,7 +298,7 @@ public class UserPreferences {
   }
 
   public RecordView getCurrentRecordView(String rcName) throws WdkUserException, WdkModelException {
-    return getCurrentRecordView(_wdkModel.getRecordClassByName(rcName).orElseThrow(
+    return getCurrentRecordView(_wdkModel.getRecordClassByFullName(rcName).orElseThrow(
         () -> new WdkModelException("No record class exists with name '" + rcName + "'.")));
   }
 
