@@ -4,7 +4,7 @@
  *============================================================================*/
 
 CREATE USER announce
-  IDENTIFIED BY DCB802868A9EF9F9 -- encoding of standard password
+--IDENTIFIED BY DCB802868A9EF9F9 -- deprecated
   QUOTA UNLIMITED ON gus
   DEFAULT TABLESPACE gus
   TEMPORARY TABLESPACE temp;
