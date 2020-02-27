@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.query.spec;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.collection.ReadOnlyHashMap;
@@ -49,8 +50,8 @@ public class ParameterContainerInstanceSpec<T extends ParameterContainerInstance
   /**
    * @return container used to create and validate this spec or null if the spec is unvalidated
    */
-  public ParameterContainer getParameterContainer() {
-    return _parameterContainer;
+  public Optional<ParameterContainer> getParameterContainer() {
+    return Optional.ofNullable(_parameterContainer);
   }
 
   public StepContainer getStepContainer() {

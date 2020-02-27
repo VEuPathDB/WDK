@@ -32,9 +32,10 @@ public class StepAnalysisFormatter {
   public static JSONObject getStepAnalysisTypeJsonWithParams(
       DisplayablyValid<StepAnalysisFormSpec> spec, ValidationBundle validation)
       throws JSONException, WdkModelException {
+    StepAnalysis sa = spec.get().getStepAnalysis().get();
     return ParamContainerFormatter.convertToValidatedParamContainerJson(
-      getStepAnalysisTypeJsonWithoutParams(spec.get().getStepAnalysis()),
-      spec, validation, StepAnalysisSupplementalParams.getNames(spec.get().getStepAnalysis()));
+      getStepAnalysisTypeJsonWithoutParams(sa),
+      spec, validation, StepAnalysisSupplementalParams.getNames(sa));
   }
 
   private static JSONObject getStepAnalysisTypeJsonWithoutParams(StepAnalysis analysis) {

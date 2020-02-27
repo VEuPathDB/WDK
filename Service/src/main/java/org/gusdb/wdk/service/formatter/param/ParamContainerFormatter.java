@@ -26,8 +26,17 @@ public class ParamContainerFormatter {
 
   public static JSONObject formatExistingParamValues(ParameterContainerInstanceSpec<?> instanceSpec) {
     JSONObject json = new JSONObject();
-    for (Param param : instanceSpec.getParameterContainer().getParams()) {
-      json.put(param.getName(), param.getExternalStableValue(instanceSpec.get(param.getName())));
+    // if container present, then return the values of the container's params
+    if (instanceSpec.getParameterContainer().isPresent()) {
+      for (Param param : instanceSpec.getParameterContainer().get().getParams()) {
+        json.put(param.getName(), param.getExternalStableValue(instanceSpec.get(param.getName())));
+      }
+    }
+    // if no container present then return the raw param values (no way to determine validity)
+    else {
+      for (Entry<String,String> entry : instanceSpec.entrySet()) {
+        json.put(entry.getKey(), entry.getValue());
+      }
     }
     return json;
   }
@@ -35,7 +44,7 @@ public class ParamContainerFormatter {
   public static <T extends ParameterContainerInstanceSpec<T>> JSONArray getParamsJson(
       DisplayablyValid<T> spec, Predicate<Param> inclusionPredicate) throws WdkModelException {
     JSONArray paramsJson = new JSONArray();
-    for (Param param : spec.get().getParameterContainer().getParams()) {
+    for (Param param : spec.get().getParameterContainer().get().getParams()) {
       if (inclusionPredicate.test(param)) {
         paramsJson.put(ParamFormatterFactory.getFormatter(param).getJson(spec));
       }

@@ -71,7 +71,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   protected QueryInstance(RunnableObj<QueryInstanceSpec> spec) {
     // can cast here since the only way to get to the instance subclass is via
     // the query subclass
-    _query = (T)spec.get().getQuery();
+    _query = (T)spec.get().getQuery().get();
     _user = spec.get().getUser();
     _wdkModel = _query.getWdkModel();
     _spec = spec;
@@ -174,7 +174,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
     // build JSON from signatures; slightly different than new JSONObject(map)
     try {
       JSONObject jsParams = new JSONObject();
-      for (String paramName : _spec.get().getQuery().getParamMap().keySet()) {
+      for (String paramName : _spec.get().getQuery().get().getParamMap().keySet()) {
         String value = signatures.get(paramName);
         if (value != null && !value.isEmpty())
           jsParams.put(paramName, value);

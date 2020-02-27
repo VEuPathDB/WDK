@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.query.spec;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
@@ -26,8 +27,11 @@ public class StepAnalysisFormSpec extends ParameterContainerInstanceSpec<StepAna
     super(paramValues);
   }
 
-  public StepAnalysis getStepAnalysis() {
-    return (StepAnalysis)getParameterContainer();
+  public Optional<StepAnalysis> getStepAnalysis() {
+    return Optional.ofNullable(
+      getParameterContainer()
+        .map(container -> (StepAnalysis)container)
+        .orElse(null));
   }
 
 }
