@@ -1,7 +1,9 @@
 package org.gusdb.wdk.model.query;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -198,7 +200,10 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     sql.append("(" + leftSql + ") o, (");
     sql.append("(" + leftPiece + ") " + operator + "(" + rightPiece + ")");
     sql.append(") b WHERE ");
-    sql.append(booleanQuery.getRecordClass().getPrimaryKeyDefinition().createJoinClause("o", "b"));
+    // don't use the primaryKeyDefinition utility to join since cols may be overridden
+    sql.append(Arrays.stream(pkColumns)
+      .map(colName -> " o." + colName + " = b." + colName + " ")
+      .collect(Collectors.joining(" AND ")));
     return sql.toString();
   }
 
