@@ -50,7 +50,6 @@ import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.Fill
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
-import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
@@ -267,7 +266,7 @@ public class AnswerValue {
   }
 
   /**
-   * the checksum of the id query, plus the filter information on the answer.
+   * the checksum of the iq query, plus the filter information on the answer.
    */
   public String getChecksum() throws WdkModelException {
     if (_checksum == null) {
@@ -281,9 +280,7 @@ public class AnswerValue {
 
       // if filters have been applied, get the content for it
       jsContent.put("filters", ParamsAndFiltersDbColumnFormat.formatFilters(_answerSpec.getFilterOptions()));
-
-      // TODO: decide whether view filters should also be added to checksum here
-      // FIXME: add column filters to JSON to create this hash!!!
+      // FIXME: decide whether view filters should also be added to checksum here
 
       // encrypt the content to make step-independent checksum
       _checksum = EncryptionUtil.encrypt(JsonUtil.serialize(jsContent));
@@ -331,9 +328,17 @@ public class AnswerValue {
     StringBuilder sql = new StringBuilder(" /* the desired attributes, for a page of sorted results */ "
         + " SELECT aq.* FROM (");
     sql.append(idSql);
-    sql.append(") pidq, (/* attribute query that returns attributes in a page */ ").append(attributeSql).append(") aq WHERE ");
-    sql.append(getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().createJoinClause("aq", "pidq"));
+    sql.append(") pidq, (/* attribute query that returns attributes in a page */ ").append(attributeSql).append(
+        ") aq WHERE ");
 
+    boolean firstColumn = true;
+    for (String column : getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
+      if (firstColumn)
+        firstColumn = false;
+      else
+        sql.append(" AND ");
+      sql.append("aq.").append(column).append(" = pidq.").append(column);
+    }
     if (sortPage) {
       // sort by underlying idq row_index if requested
       sql.append(" ORDER BY pidq.row_index");
@@ -388,12 +393,59 @@ public class AnswerValue {
         .append(idSql)
         .append(") pidq, ")
         .append(tableSqlWithRowIndex)
-        .append(") tqi WHERE ")
-        .append(getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().createJoinClause("tqi", "pidq"))
-        .append(" ORDER BY pidq.row_index, tqi.row_index");
+        .append(") tqi WHERE ");
+
+    boolean firstColumn = true;
+    for (String column : getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
+      if (firstColumn)
+        firstColumn = false;
+      else
+        sql.append(" AND ");
+      sql.append("tqi.").append(column).append(" = pidq.").append(column);
+    }
+    sql.append(" ORDER BY pidq.row_index, tqi.row_index");
 
     // replace the id_sql macro.  this sql must include filters (but not view filters)
     String sqlWithIdSql = sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true, true));
+    return sqlWithIdSql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, "(" + getNoFiltersIdSql() + ")");
+  }
+
+  public String getUnsortedUnpagedAttributeSql(Query attributeQuery) throws WdkModelException {
+    String attrSql = getAttributeSql(attributeQuery);
+    return getUnsortedUnpagedSql(attrSql);
+  }
+  
+  public String getUnsortedUnpagedTableSql(Query tableQuery) throws WdkModelException {
+
+    RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder()
+      .buildRunnable(_user, tableQuery, StepContainer.emptyContainer());
+    String tableSql = Query.makeQueryInstance(tableQuerySpec).getSql();
+    return getUnsortedUnpagedSql(tableSql);
+  }
+  
+  public String getUnsortedUnpagedSql(String embeddedSql) throws WdkModelException {
+    // get the unsorted and unpaged SQL of id query. 
+    String idSql = getIdSql(null, true);
+    
+    String[] pkColumns = getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
+    String pkColumnsString = String.join(", ", pkColumns);
+    
+    String[] sqlArray = { 
+        "WITH idsql as (",
+        idSql,
+        ")",
+        "select * from (",
+        "-- this is the embedded attribute or table query",
+        embeddedSql,
+        ") eq",
+        "where (" + pkColumnsString + ")", 
+        "IN (select " + pkColumnsString + "from idsql)",
+        "order by " + pkColumnsString
+    };
+    String sql = String.join(System.lineSeparator() , sqlArray);
+
+    // replace the id_sql macro.  this sql must include filters (but not view filters)
+    String sqlWithIdSql = sql.toString().replace(Utilities.MACRO_ID_SQL, idSql);
     return sqlWithIdSql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, "(" + getNoFiltersIdSql() + ")");
   }
 
@@ -545,16 +597,20 @@ public class AnswerValue {
     }
 
     // add primary key join conditions
-    boolean firstJoin = true;
+    boolean firstClause = true;
     for (String shortName : attributeSqls.keySet()) {
-      if (firstJoin) {
-        sql.append("\nWHERE\n  ");
-        firstJoin = false;
+      for (String column : pkColumns) {
+        if (firstClause) {
+          sql.append("\nWHERE\n  ");
+          firstClause = false;
+        }
+        else
+          sql.append("\n  AND ");
+
+        sql.append("idq.").append(column)
+          .append(" = ").append(shortName)
+          .append(".").append(column);
       }
-      else {
-        sql.append("\n AND ");
-      }
-      sql.append(_answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().createJoinClause("idq", shortName));
     }
 
     // add order clause
@@ -565,7 +621,7 @@ public class AnswerValue {
     for (String clause : orderClauses)
       sql.append(clause).append("\n, ");
 
-    boolean firstClause = true;
+    firstClause = true;
     for (String column : pkColumns) {
       if (firstClause)
         firstClause = false;
@@ -633,14 +689,25 @@ public class AnswerValue {
       innerSql = "\n/* new view filter applied on id query */\n" + innerSql;
     }
 
-    if (!_answerSpec.getColumnFilterConfig().isEmpty()) {
-      innerSql = ColumnFilterSqlBuilder.buildFilteredSql(this, innerSql);
-    }
+    if (!_answerSpec.getColumnFilterConfig().isEmpty())
+      innerSql = applyColumnFilters(innerSql);
 
     innerSql = "(\n" + indent(innerSql) + "\n)";
     LOG.debug("AnswerValue: getIdSql(): ID SQL constructed with all filters:\n" + innerSql);
 
     return innerSql;
+  }
+
+  private String applyColumnFilters(String sql) throws WdkModelException {
+    // Apply just the PK cols in the record class order (getIdSql can
+    // append columns)
+    final var q = "SELECT\n"
+      + Arrays.stream(getAnswerSpec().getQuestion().getRecordClass()
+        .getPrimaryKeyDefinition().getColumnRefs())
+        .collect(Collectors.joining("\n, ", "  ", "\n"))
+      + "FROM (\n" + indent(sql) + "\n)";
+
+    return ColumnFilterSqlBuilder.buildFilteredSql(this, q);
   }
 
   private static String applyAnswerParams(
@@ -973,18 +1040,29 @@ public class AnswerValue {
    * @return the joined SQL query.
    */
   private String joinToIds(final String sql, final String idSql) {
-    PrimaryKeyDefinition pkDef = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition();
+    final String[] refs = _answerSpec.getQuestion().getRecordClass()
+      .getPrimaryKeyDefinition()
+      .getColumnRefs();
 
-    return new StringBuilder("/* joinToIds */\nSELECT\n  "
+    final StringBuilder out = new StringBuilder("/* joinToIds */\nSELECT\n  "
       + QUERY_HANDLE + ".* \nFROM\n  (\n")
       .append(sql)
       .append("\n  ) " + QUERY_HANDLE + "\n, (\n")
       .append(idSql)
       .append("\n  ) " + ID_QUERY_HANDLE + "\nWHERE")
-      .append("\n  ")
-      .append(pkDef.createJoinClause(QUERY_HANDLE, ID_QUERY_HANDLE))
-      .append("\n")
-      .toString();
+      .append("\n  ");
+
+    for (int i = 0; i < refs.length; i++) {
+      if (i > 0)
+        out.append("\n  AND ");
+
+      out.append(QUERY_HANDLE + ".")
+        .append(refs[i])
+        .append(" = " + ID_QUERY_HANDLE + ".")
+        .append(refs[i]);
+    }
+
+    return out.append("\n").toString();
   }
 
   public boolean entireResultRequested() {
