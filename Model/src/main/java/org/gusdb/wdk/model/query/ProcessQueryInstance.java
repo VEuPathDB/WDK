@@ -20,7 +20,6 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.ServiceResolver;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
@@ -70,7 +69,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   }
 
   @Override
-  public String getSqlUnsorted() throws WdkModelException, WdkUserException {
+  public String getSqlUnsorted() throws WdkModelException {
     // always get sql that queries on the cached result
     return getCachedSql(false);
   }

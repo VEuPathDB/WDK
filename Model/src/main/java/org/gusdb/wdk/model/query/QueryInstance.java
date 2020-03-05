@@ -11,7 +11,6 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.InstanceInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultFactory.CacheTableCreator;
@@ -45,7 +44,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
 
   public abstract String getSql() throws WdkModelException;
 
-  public abstract String getSqlUnsorted() throws WdkModelException, WdkUserException;
+  public abstract String getSqlUnsorted() throws WdkModelException;
 
   protected abstract void appendJSONContent(JSONObject jsInstance) throws JSONException;
 
