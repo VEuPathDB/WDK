@@ -357,7 +357,10 @@ public class AnswerValue {
 
     // get and run the paged table query sql
     LOG.debug("AnswerValue: getTableFieldResultList(): going to getPagedTableSql()");
-    String sql = getPagedTableSql(tableQuery);
+
+    String sql = (_startIndex == 1 && _endIndex == UNBOUNDED_END_PAGE_INDEX && _sortingMap.isEmpty())
+        ? getPagedTableSql(tableQuery) : getUnsortedUnpagedTableSql(tableQuery);
+        
     LOG.debug("AnswerValue: getTableFieldResultList(): back from getPagedTableSql()");
     DatabaseInstance platform = wdkModel.getAppDb();
     DataSource dataSource = platform.getDataSource();
@@ -439,7 +442,7 @@ public class AnswerValue {
         embeddedSql,
         ") eq",
         "where (" + pkColumnsString + ")", 
-        "IN (select " + pkColumnsString + "from idsql)",
+        "IN (select " + pkColumnsString + " from idsql)",
         "order by " + pkColumnsString
     };
     String sql = String.join(System.lineSeparator() , sqlArray);
@@ -457,7 +460,7 @@ public class AnswerValue {
     if (dynaQuery != null && queryName.equals(dynaQuery.getFullName())) {
       // the dynamic query doesn't have sql defined, the sql will be
       // constructed from the id query cache table.
-      sql = getBaseIdSql();
+      sql = getBaseIdSql(true);
     } else {
       // Make an instance from the original attribute query; an attribute
       // query has only one param, user_id. Note that the original
@@ -527,7 +530,7 @@ public class AnswerValue {
     if (dynaQuery != null && queryName.equals(dynaQuery.getFullName())) {
       // the dynamic query doesn't have sql defined, the sql will be
       // constructed from the id query cache table.
-      sql = getBaseIdSql();
+      sql = getBaseIdSql(true);
     }
     else {
       // Make an instance from the original attribute query; an attribute
@@ -656,9 +659,10 @@ public class AnswerValue {
     return getIdSql(null, false);
   }
 
-  private String getBaseIdSql() throws WdkModelException {
+  private String getBaseIdSql(boolean sorted) throws WdkModelException {
+    String sql = sorted? _idsQueryInstance.getSql() : _idsQueryInstance.getSqlUnsorted();
     // get base ID sql from query instance
-    String innerSql = "\n/* the ID query */\n" + _idsQueryInstance.getSql();
+    String innerSql = "\n/* the ID query */\n" + sql;
 
     // add answer param columns
     return "\n/* answer param value cols applied on id query */\n"
@@ -669,7 +673,7 @@ public class AnswerValue {
   protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException {
 
     // get base ID sql from query instance and answer params
-    String innerSql = getBaseIdSql();
+    String innerSql = getBaseIdSql(false);
 
     // apply old-style answer filter
     if (_answerSpec.getLegacyFilter().isPresent()) {
