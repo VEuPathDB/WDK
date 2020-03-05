@@ -359,7 +359,7 @@ public class AnswerValue {
     ResultSet resultSet = null;
     try {
       LOG.debug("AnswerValue: getTableFieldResultList(): returning SQL for TableField '" + tableField.getName() + "': \n" + sql);
-      resultSet = SqlUtils.executeQuery(dataSource, sql, tableQuery.getFullName() + "_table-paged");
+      resultSet = SqlUtils.executeQuery(dataSource, sql, tableQuery.getFullName() + "_table");
     }
     catch (SQLException e) {
       throw new WdkModelException(e);
