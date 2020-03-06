@@ -748,9 +748,6 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    * @throws WdkRuntimeException if not a standardized enum param value
    */
   private static JSONArray parseValue(String standardizedStableValue, String paramName) {
-    if (standardizedStableValue == null) {
-      throw new WdkRuntimeException("Null value passed for param '" + paramName + "'.");
-    }
     try {
       JSONArray array = new JSONArray(standardizedStableValue);
       for (int i = 0; i < array.length(); i++) {

@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
@@ -92,10 +91,9 @@ public interface StepAnalyzer {
    * @param answerValue answer that might be analyzed by this analyzer
    * @throws IllegalAnswerValueException if answer cannot be analyzed by this analyzer
    * @throws WdkModelException if error occurs while determining validity of answer
-   * @throws WdkUserException
    */
   default void validateAnswerValue(AnswerValue answerValue)
-      throws IllegalAnswerValueException, WdkModelException, WdkUserException {}
+      throws IllegalAnswerValueException, WdkModelException {}
 
   /**
    * Runs an analysis of the passed AnswerValue.  In-process logging can be
