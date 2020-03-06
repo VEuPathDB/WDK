@@ -33,8 +33,7 @@ public class AnswerValueFactory {
     Question question = validSpec.get().getQuestion();
     int pageStart = 1;
     int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
-    Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>(question.getSortingAttributeMap());
-    AnswerValue answerValue = makeAnswer(user, validSpec, pageStart, pageEnd, sortingMap);
+    AnswerValue answerValue = makeAnswer(user, validSpec, pageStart, pageEnd, null);
     if (question.isFullAnswer()) {
       int resultSize = answerValue.getResultSizeFactory().getResultSize();
       if (resultSize > pageEnd)
