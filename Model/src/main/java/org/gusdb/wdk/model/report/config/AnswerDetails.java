@@ -10,7 +10,7 @@ import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 
 public class AnswerDetails {
 
-  static final Integer ALL_RECORDS = -1;
+  public static final Integer ALL_RECORDS = -1;
 
   // use factory method to construct from JSON
   AnswerDetails() {}

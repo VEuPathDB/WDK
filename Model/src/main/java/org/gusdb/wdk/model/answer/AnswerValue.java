@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -176,11 +177,7 @@ public class AnswerValue {
     _startIndex = startIndex;
     _endIndex = endIndex;
 
-    // get sorting columns
-    if (sortingMap == null) {
-      sortingMap = question.getSortingAttributeMap();
-    }
-    _sortingMap = sortingMap;
+    _sortingMap = sortingMap == null? new HashMap<String, Boolean>() : sortingMap;
 
     LOG.debug("AnswerValue created for question: " + question.getDisplayName());
   }
@@ -309,13 +306,15 @@ public class AnswerValue {
   public RecordStream getFullAnswer() {
     return new PagedAnswerRecordStream(this, 200);
   }
+  
+  public String getAnswerAttributeSql(Query attributeQuery, boolean sortPage)
+  throws WdkModelException {
+    return _startIndex == 1 && _endIndex == UNBOUNDED_END_PAGE_INDEX && _sortingMap.isEmpty()
+        ? getUnsortedUnpagedAttributeSql(attributeQuery) :
+          getPagedAttributeSql(attributeQuery, sortPage);
+  }
 
-  /**
-   * This method returns a paged attribute sql query.  It is
-   * now public because the FileBasedRecordStream object
-   * uses it to acquire an sql statement to execute.
-   */
-  public String getPagedAttributeSql(Query attributeQuery, boolean sortPage)
+  private String getPagedAttributeSql(Query attributeQuery, boolean sortPage)
   throws WdkModelException {
     LOG.debug("AnswerValue: getPagedAttributeSql(): " +
       attributeQuery.getFullName() + " --boolean sortPage: " + sortPage);
@@ -347,6 +346,13 @@ public class AnswerValue {
     return sql.toString();
 
   }
+  
+  public String getAnswerTableSql(Query tableQuery)
+  throws WdkModelException {
+    return _startIndex == 1 && _endIndex == UNBOUNDED_END_PAGE_INDEX && _sortingMap.isEmpty()
+        ? getUnsortedUnpagedTableSql(tableQuery) :
+          getPagedTableSql(tableQuery);
+  }
 
   public ResultList getTableFieldResultList(TableField tableField) throws WdkModelException {
 
@@ -358,8 +364,7 @@ public class AnswerValue {
     // get and run the paged table query sql
     LOG.debug("AnswerValue: getTableFieldResultList(): going to getPagedTableSql()");
 
-    String sql = (_startIndex == 1 && _endIndex == UNBOUNDED_END_PAGE_INDEX && _sortingMap.isEmpty())
-        ? getPagedTableSql(tableQuery) : getUnsortedUnpagedTableSql(tableQuery);
+    String sql = getAnswerTableSql(tableQuery);
         
     LOG.debug("AnswerValue: getTableFieldResultList(): back from getPagedTableSql()");
     DatabaseInstance platform = wdkModel.getAppDb();
@@ -376,7 +381,7 @@ public class AnswerValue {
     return new SqlResultList(resultSet);
   }
 
-  public String getPagedTableSql(Query tableQuery) throws WdkModelException {
+  private String getPagedTableSql(Query tableQuery) throws WdkModelException {
     // get the paged SQL of id query
     String idSql = getPagedIdSql(false, true);
 
@@ -434,15 +439,12 @@ public class AnswerValue {
     String pkColumnsString = String.join(", ", pkColumns);
     
     String[] sqlArray = { 
-        "WITH idsql as (",
-        idSql,
-        ")",
         "select * from (",
         "-- this is the embedded attribute or table query",
         embeddedSql,
         ") eq",
         "where (" + pkColumnsString + ")", 
-        "IN (select " + pkColumnsString + " from idsql)",
+        "IN (select " + pkColumnsString + " from " + idSql + " idsql)",
         "order by " + pkColumnsString
     };
     String sql = String.join(System.lineSeparator() , sqlArray);
