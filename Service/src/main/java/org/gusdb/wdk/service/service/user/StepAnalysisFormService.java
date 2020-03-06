@@ -33,6 +33,7 @@ import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
 import org.gusdb.wdk.model.query.param.OntologyItem;
@@ -40,6 +41,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.StepAnalysisFormSpec;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 import org.gusdb.wdk.service.formatter.StepAnalysisFormatter;
 import org.gusdb.wdk.service.formatter.param.ParamContainerFormatter;
 import org.gusdb.wdk.service.request.ParamValueSetRequest;
@@ -113,6 +115,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
       throws WdkModelException, DataValidationException {
     RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
     StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), analysisName);
+    validateAnswerValueForAnalysis(step, stepAnalysis);
     DisplayablyValid<StepAnalysisFormSpec> formSpec = StepAnalysisFormSpec
         .builder()
         .buildValidated(step, stepAnalysis, ValidationLevel.DISPLAYABLE, FillStrategy.FILL_PARAM_IF_MISSING)
@@ -121,6 +124,16 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
             analysisName + "' on step " + _stepId + " are not displayable. Validation " +
             "details: " + spec.getValidationBundle().toString(2)));
     return StepAnalysisFormatter.getStepAnalysisTypeJsonWithParams(formSpec, formSpec.get().getValidationBundle());
+  }
+
+  private void validateAnswerValueForAnalysis(RunnableObj<Step> step, StepAnalysis stepAnalysis)
+      throws WdkModelException, DataValidationException {
+    try {
+      stepAnalysis.getAnalyzerInstance().validateAnswerValue(AnswerValueFactory.makeAnswer(step));
+    }
+    catch (IllegalAnswerValueException e) {
+      throw new DataValidationException(e.getMessage());
+    }
   }
 
   /**
@@ -154,6 +167,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
       String body) throws WdkModelException, RequestMisformatException, DataValidationException {
     RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
     StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), analysisName);
+    validateAnswerValueForAnalysis(step, stepAnalysis);
     ParamValueSetRequest request = ParamValueSetRequest.parse(body, stepAnalysis);
     StepAnalysisFormSpec inputSpec = StepAnalysisFormSpec
         .builder()
@@ -211,6 +225,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
 
     RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
     StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), analysisName);
+    validateAnswerValueForAnalysis(step, stepAnalysis);
     ParamValueSetRequest request = ParamValueSetRequest.parse(body, stepAnalysis);
 
     // find the param object for the changed param
