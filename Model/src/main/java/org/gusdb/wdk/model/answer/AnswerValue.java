@@ -357,9 +357,8 @@ public class AnswerValue {
 
     // get and run the paged table query sql
     LOG.debug("AnswerValue: getTableFieldResultList(): going to getPagedTableSql()");
-
-    String sql = (_startIndex == 1 && _endIndex == UNBOUNDED_END_PAGE_INDEX && _sortingMap.isEmpty())
-        ? getPagedTableSql(tableQuery) : getUnsortedUnpagedTableSql(tableQuery);
+    String sql = _endIndex == UNBOUNDED_END_PAGE_INDEX
+        ? getUnsortedUnpagedTableSql(tableQuery) : getPagedTableSql(tableQuery);
         
     LOG.debug("AnswerValue: getTableFieldResultList(): back from getPagedTableSql()");
     DatabaseInstance platform = wdkModel.getAppDb();
