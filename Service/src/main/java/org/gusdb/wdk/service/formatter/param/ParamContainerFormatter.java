@@ -29,7 +29,12 @@ public class ParamContainerFormatter {
     // if container present, then return the values of the container's params
     if (instanceSpec.getParameterContainer().isPresent()) {
       for (Param param : instanceSpec.getParameterContainer().get().getParams()) {
-        json.put(param.getName(), param.getExternalStableValue(instanceSpec.get(param.getName())));
+        String value = instanceSpec.get(param.getName());
+        if (value != null) {
+          // skip if value not present; errors should tell client it's missing
+          // if present then convert to external format
+          json.put(param.getName(), param.getExternalStableValue(value));
+        }
       }
     }
     // if no container present then return the raw param values (no way to determine validity)
