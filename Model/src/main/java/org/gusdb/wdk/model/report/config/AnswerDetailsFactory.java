@@ -114,11 +114,11 @@ public class AnswerDetailsFactory {
     if (specJson.has("sorting")) {
       JSONArray sortingJson = specJson.getJSONArray("sorting");
       specs.setSorting(sortingJson.length() == 0 ?
-          getDefaultSorting(question) :
-          getIdSortingIfEmpty(parseSorting(sortingJson, question.getAttributeFieldMap()), question));
+          Collections.emptyList() :
+          parseSorting(sortingJson, question.getAttributeFieldMap()));
     }
     else {
-      specs.setSorting(getDefaultSorting(question));
+      specs.setSorting(Collections.emptyList());
     }
 
     // set content disposition
