@@ -1,10 +1,9 @@
 package org.gusdb.wdk.model.answer.factory;
 
-import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.Map;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.single.SingleRecordAnswerValue;
@@ -32,8 +31,8 @@ public class AnswerValueFactory {
       throws WdkModelException {
     Question question = validSpec.get().getQuestion();
     int pageStart = 1;
-    int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
-    AnswerValue answerValue = makeAnswer(user, validSpec, pageStart, pageEnd, null);
+    int pageEnd = AnswerValue.UNBOUNDED_END_PAGE_INDEX;
+    AnswerValue answerValue = makeAnswer(user, validSpec, pageStart, pageEnd, Collections.emptyMap());
     if (question.isFullAnswer()) {
       int resultSize = answerValue.getResultSizeFactory().getResultSize();
       if (resultSize > pageEnd)
