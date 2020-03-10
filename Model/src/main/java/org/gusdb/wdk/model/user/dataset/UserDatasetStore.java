@@ -56,6 +56,10 @@ public interface UserDatasetStore {
         .put("creationError", getCreationErrorMessage().orElse(null));
     }
 
+    public boolean hasStore() {
+      return _store.isPresent();
+    }
+
   }
 
   /**

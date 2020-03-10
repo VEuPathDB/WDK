@@ -76,7 +76,7 @@ public class UserDatasetService extends UserService {
     try (UserDatasetSession dsSession = dsStore.getSession()) {
 
       // get all the user datasets this user can see that are installed in this application db.
-      Set<Long> installedUserDatasets = wdkModel.getUserDatasetFactory().getInstalledUserDatasets(userId);
+      Set<Long> installedUserDatasets = wdkModel.getUserDatasetFactory().get().getInstalledUserDatasets(userId);
 
       // get all datasets owned by this user
       List<UserDatasetInfo> userDatasets = getDatasetInfo(dsSession.getUserDatasets(userId).values(),
@@ -96,7 +96,7 @@ public class UserDatasetService extends UserService {
       final UserFactory userFactory, final WdkModel wdkModel, User user) throws WdkModelException {
     List<UserDatasetInfo> list = mapToList(datasets, dataset -> new UserDatasetInfo(dataset,
         installedUserDatasets.contains(dataset.getUserDatasetId()), dsStore, dsSession, userFactory, wdkModel));
-    wdkModel.getUserDatasetFactory().addTypeSpecificData(wdkModel, list, user);
+    wdkModel.getUserDatasetFactory().get().addTypeSpecificData(wdkModel, list, user);
     return list;
   }
 
@@ -119,7 +119,7 @@ public class UserDatasetService extends UserService {
       if (userDataset == null) {
         throw new NotFoundException("user-dataset/" + datasetIdStr);
       }
-      Set<Long> installedUserDatasets = getWdkModel().getUserDatasetFactory().getInstalledUserDatasets(userId);
+      Set<Long> installedUserDatasets = getWdkModel().getUserDatasetFactory().get().getInstalledUserDatasets(userId);
       UserDatasetInfo dsInfo = new UserDatasetInfo(userDataset, installedUserDatasets.contains(datasetId),
         dsStore, dsSession, getWdkModel().getUserFactory(), getWdkModel());
       dsInfo.loadDetailedTypeSpecificData(user);

@@ -185,7 +185,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private BasketFactory basketFactory;
   private FavoriteFactory favoriteFactory;
   private StepAnalysisFactory stepAnalysisFactory;
-  private UserDatasetFactory userDatasetFactory;
+  private Optional<UserDatasetFactory> userDatasetFactory;
 
   private List<PropertyList> defaultPropertyLists = new ArrayList<>();
   private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<>();
@@ -573,7 +573,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     datasetFactory = new DatasetFactory(this);
     basketFactory = new BasketFactory(this);
     favoriteFactory = new FavoriteFactory(this);
-    userDatasetFactory = new UserDatasetFactory(this);
+    userDatasetFactory = _userDatasetStoreStatus.hasStore() ? Optional.of(new UserDatasetFactory(this)) : Optional.empty();
 
     // exclude resources that are not used by this project
     excludeResources();
@@ -706,7 +706,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return stepAnalysisFactory;
   }
 
-  public UserDatasetFactory getUserDatasetFactory() {
+  public Optional<UserDatasetFactory> getUserDatasetFactory() {
     return userDatasetFactory;
   }
 
@@ -1098,7 +1098,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public String toString() {
     String userDatasetStoreStr = _userDatasetStoreStatus.isConfigured()
         ? "No user dataset store configured"
-        : _userDatasetStoreStatus.getStore().isPresent()
+        : _userDatasetStoreStatus.hasStore()
         ? _userDatasetStoreStatus.getStore().get().toString()
         : "Unable to create user dataset store as configured. Error = " + _userDatasetStoreStatus.getCreationErrorMessage().orElse("");
     return new StringBuilder("WdkModel: ").append("projectId='").append(_projectId).append("'").append(NL).append(
