@@ -98,6 +98,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public static final String DB_INSTANCE_USER = "USER";
   public static final String DB_INSTANCE_ACCOUNT = "ACCT";
 
+  public static final String UD_ENABLED = "UD_ENABLED";
+  public static final String UD_DISABLED = "UD_DISABLED";
+  public static final String UD_BROKEN = "UD_BROKEN";
+
   public static final String INDENT = "  ";
 
   /**
@@ -114,13 +118,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private ModelConfig _modelConfig;
   private String _projectId;
   private long _startupTime;
-
+  private String _userDatasetStoreStatus;
 
   private DatabaseInstance appDb;
   private DatabaseInstance userDb;
   private DatabaseInstance accountDb;
-
-  private UserDatasetStore.Status _userDatasetStoreStatus;
+  private UserDatasetStore userDatasetStore;
 
   private List<QuerySet> querySetList = new ArrayList<>();
   private Map<String, QuerySet> querySets = new LinkedHashMap<>();
@@ -555,17 +558,17 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     userDb = new DatabaseInstance(userDbConfig, DB_INSTANCE_USER, true);
     accountDb = new DatabaseInstance(accountDbConfig, DB_INSTANCE_ACCOUNT, true);
 
-    if (udsConfig == null) {
-      _userDatasetStoreStatus = UserDatasetStore.Status.UNCONFIGURED;
-    }
-    else {
+    if (udsConfig != null) {
       try {
-        UserDatasetStore uds = udsConfig.getUserDatasetStore(modelConfig.getWdkTempDir());
-        _userDatasetStoreStatus = new UserDatasetStore.Status(uds);
+        userDatasetStore = udsConfig.getUserDatasetStore(modelConfig.getWdkTempDir());
+        _userDatasetStoreStatus = UD_ENABLED;
       }
       catch(WdkModelException wme) {
-        _userDatasetStoreStatus = new UserDatasetStore.Status(wme);
+        _userDatasetStoreStatus = UD_BROKEN;
       }
+    }
+    else {
+      _userDatasetStoreStatus = UD_DISABLED;
     }
 
     userFactory = new UserFactory(this);
@@ -1096,14 +1099,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   @Override
   public String toString() {
-    String userDatasetStoreStr = _userDatasetStoreStatus.isConfigured()
-        ? "No user dataset store configured"
-        : _userDatasetStoreStatus.getStore().isPresent()
-        ? _userDatasetStoreStatus.getStore().get().toString()
-        : "Unable to create user dataset store as configured. Error = " + _userDatasetStoreStatus.getCreationErrorMessage().orElse("");
+    String userDatasetStoreStr = getUserDatasetStore() == null? "" : getUserDatasetStore().toString() + "NL";
     return new StringBuilder("WdkModel: ").append("projectId='").append(_projectId).append("'").append(NL).append(
         "displayName='").append(displayName).append("'").append(NL).append("introduction='").append(
-        _introduction).append("'").append(NL).append(NL).append(userDatasetStoreStr).append(NL).append(uiConfig.toString()).append(
+        _introduction).append("'").append(NL).append(NL).append(userDatasetStoreStr).append(uiConfig.toString()).append(
         showSet("Param", paramSets)).append(showSet("Query", querySets)).append(
         showSet("RecordClass", recordClassSets)).append(showSet("XmlRecordClass", xmlRecordClassSets)).append(
         showSet("Question", questionSets)).append(showSet("XmlQuestion", xmlQuestionSets)).toString();
@@ -1234,8 +1233,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return xmlDataDir;
   }
 
-  public UserDatasetStore.Status getUserDatasetStore() {
-    return _userDatasetStoreStatus;
+  public UserDatasetStore getUserDatasetStore() {
+    return userDatasetStore;
   }
 
   public DatasetFactory getDatasetFactory() {
@@ -1530,6 +1529,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     XmlQuestion xmlQuestion = xmlQuestionSet.getQuestion(reference.getElementName());
     if(xmlQuestion == null) throw new WdkModelException("Cannot find xml question with the name " + xmlQuestionFullName);
     return xmlQuestion;
+  }
+
+  public String getUserDatasetStoreStatus() {
+    return _userDatasetStoreStatus;
   }
 
   public List<Question> getAllQuestions() {

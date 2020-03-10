@@ -3,10 +3,7 @@
   "userDatasetsEnabled": true,
   "releaseDate": "05 July 2018 12:59",
   "displayName": "PlasmoDB",
-  "userDatasetStoreStatus": {
-    "isConfigured": true,
-    "isAvailable": true
-  },
+  "userDatasetStoreStatus": "UD_ENABLED",
   "categoriesOntologyName": "Categories",
   "description": "Welcome to the WDK 3.0 Web Service",
   "startupTime": 1533756498246,

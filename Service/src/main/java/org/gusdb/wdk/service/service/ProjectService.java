@@ -12,7 +12,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.function.Supplier;
 
 import static org.gusdb.fgputil.StringUtil.rtrim;
 
@@ -80,14 +79,12 @@ public class ProjectService extends AbstractWdkService {
   @Path("user-datasets/config")
   @Produces(MediaType.APPLICATION_JSON)
   public JSONObject getDefaultQuota() throws WdkModelException {
-    UserDatasetStore.Status dsStore = getWdkModel().getUserDatasetStore();
-    if (!dsStore.isConfigured()) {
+    UserDatasetStore dsStore = getWdkModel().getUserDatasetStore();
+
+    if(dsStore == null)
       throw new NotFoundException("The user dataset store is not enabled.");
-    }
-    Supplier<WdkModelException> couldNotCreateUds = () -> new WdkModelException(
-        "Unable to create user dataset store. " + dsStore.getCreationErrorMessage().orElse(""));
-    try (UserDatasetSession dsSession = dsStore.getStore()
-        .orElseThrow(couldNotCreateUds).getSession()) {
+
+    try (UserDatasetSession dsSession = dsStore.getSession()) {
       return new JSONObject()
         .put("default_quota", dsSession.getDefaultQuota(true));
     }
