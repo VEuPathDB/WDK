@@ -82,7 +82,7 @@ public class ProjectService extends AbstractWdkService {
   public JSONObject getDefaultQuota() throws WdkModelException {
     UserDatasetStore.Status dsStore = getWdkModel().getUserDatasetStore();
     if (!dsStore.isConfigured()) {
-      throw new NotFoundException("The user dataset store is not enabled.");
+      throw new NotFoundException("User datasets are not enabled.");
     }
     Supplier<WdkModelException> couldNotCreateUds = () -> new WdkModelException(
         "Unable to create user dataset store. " + dsStore.getCreationErrorMessage().orElse(""));

@@ -4,9 +4,6 @@
     "changePasswordUrl": {
       "type": "string"
     },
-    "userDatasetsEnabled": {
-      "type": "boolean"
-    },
     "releaseDate": {
       "type": "string",
       "examples": [

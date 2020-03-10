@@ -1,6 +1,5 @@
 {
   "changePasswordUrl": "https://eupathdb.org/oauth/assets/eupathdb-changePassword.html?returnUrl={{returnUrl}}&suggestedUsername={{suggestedUsername}}",
-  "userDatasetsEnabled": true,
   "releaseDate": "05 July 2018 12:59",
   "displayName": "PlasmoDB",
   "userDatasetStoreStatus": {
