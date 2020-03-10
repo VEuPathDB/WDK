@@ -20,10 +20,18 @@
       ]
     },
     "userDatasetStoreStatus": {
-      "type": "string",
-      "examples": [
-        "UD_ENABLED"
-      ]
+      "type": "object",
+      "properties": {
+        "isConfigured": {
+          "type": "boolean"
+        },
+        "isAvailable": {
+          "type": "boolean"
+        },
+        "creationError": {
+          "type": "string"
+        }
+      }
     },
     "categoriesOntologyName": {
       "type": "string",
