@@ -23,12 +23,10 @@ public class UserDatasetFactory {
 
   private final WdkModel _wdkModel;
   private final String _userDatasetSchema;
-  private final UserDatasetStore _userDatasetStore;
 
-  public UserDatasetFactory(WdkModel wdkModel) throws WdkModelException {
+  public UserDatasetFactory(WdkModel wdkModel) {
+
     _wdkModel = wdkModel;
-    _userDatasetStore = wdkModel.getUserDatasetStore().getStore()
-        .orElseThrow(() -> new WdkModelException("Cannot create user dataset factory without user dataset store."));
     // TODO: put in model-config.xml + masterConfig.yaml and fetch from there
     _userDatasetSchema = "ApiDBUserDatasets.";
   }
@@ -85,6 +83,7 @@ public class UserDatasetFactory {
    */
   public void addTypeSpecificData(WdkModel wdkModel, List<UserDatasetInfo> userDatasets, User user)
       throws WdkModelException {
+    UserDatasetStore store = wdkModel.getUserDatasetStore();
     Function<UserDatasetInfo,UserDatasetType> f = fSwallow(ud -> ud.getDataset().getType());
     Set<UserDatasetType> types = userDatasets.stream().map(f).collect(Collectors.toSet());
     for (UserDatasetType type : types) {
@@ -92,7 +91,7 @@ public class UserDatasetFactory {
       List<UserDatasetInfo> installedTypedUdis = typedUdis.stream().filter(tudi -> tudi.isInstalled()).collect(Collectors.toList());
       List<JsonType> typeSpecificInfo = new ArrayList<>();
       if(!installedTypedUdis.isEmpty()) {
-        typeSpecificInfo = _userDatasetStore.getTypeHandler(type).getTypeSpecificData(wdkModel, mapToList(installedTypedUdis, udi -> udi.getDataset()), user);
+        typeSpecificInfo = store.getTypeHandler(type).getTypeSpecificData(wdkModel, mapToList(installedTypedUdis, udi -> udi.getDataset()), user);
       }
       zipToList(installedTypedUdis, typeSpecificInfo, (udi, json) -> { udi.setTypeSpecificData(json); return udi; }, false);
     }

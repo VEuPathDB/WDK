@@ -65,7 +65,7 @@ public class ProjectFormatter {
       .put(JsonKeys.STARTUP_TIME, wdkModel.getStartupTime())
       .put(JsonKeys.CHANGE_PASSWORD_URL, config.getChangePasswordUrl())
       .put(JsonKeys.USER_DATASETS_ENABLED, config.getUserDatasetStoreConfig() != null)
-      .put(JsonKeys.USER_DATASET_STORE_STATUS, wdkModel.getUserDatasetStore().toJson())
+      .put(JsonKeys.USER_DATASET_STORE_STATUS, wdkModel.getUserDatasetStoreStatus())
       .put(JsonKeys.CATEGORIES_ONTOLOGY_NAME, wdkModel.getCategoriesOntologyName())
       .put(JsonKeys.AUTHENTICATION, authConfig)
       .put(JsonKeys.USER_PROFILE_PROPERTIES, userProfileProps);

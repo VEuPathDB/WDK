@@ -255,12 +255,9 @@ public class UserDatasetService extends UserService {
   }
 
   private static UserDatasetStore getUserDatasetStore(WdkModel wdkModel) throws WdkModelException {
-    UserDatasetStore.Status userDatasetStore = wdkModel.getUserDatasetStore();
-    if (!userDatasetStore.isConfigured()) {
-      throw new NotFoundException("User datasets are not supported by this site.");
-    }
-    return userDatasetStore.getStore()
-      .orElseThrow(() -> new WdkModelException(userDatasetStore.getCreationErrorMessage().orElse("Unknown error")));
+    UserDatasetStore userDatasetStore = wdkModel.getUserDatasetStore();
+    if (userDatasetStore == null) throw new WdkModelException("There is no userDatasetStore installed in the WDK Model.");
+    return userDatasetStore;
   }
 
   private long parseLongId(String idStr, RuntimeException exception) {
