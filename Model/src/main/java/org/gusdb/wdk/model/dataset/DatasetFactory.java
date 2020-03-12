@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -459,5 +460,21 @@ public class DatasetFactory {
 
     // execute this dummy sql to make sure the remote table is sync-ed.
     SqlUtils.executeScalar(_wdkModel.getAppDb().getDataSource(), sql.toString(), "wdk-remote-dataset-dummy");
+  }
+
+  public void transferDatasetOwnership(User oldUser, User newUser) throws WdkModelException {
+    String sql =
+      "UPDATE " + _userSchema + TABLE_DATASETS +
+      " SET " + COLUMN_USER_ID + " = ?" +
+      " WHERE " + COLUMN_USER_ID + " = ?";
+    try {
+      new SQLRunner(_wdkModel.getUserDb().getDataSource(), sql, "update-dataset-owner").executeUpdate(
+        new Object[] { newUser.getUserId(), oldUser.getUserId() },
+        new Integer[] { Types.BIGINT, Types.BIGINT }
+      );
+    }
+    catch (Exception e) {
+      WdkModelException.unwrap(e);
+    }
   }
 }
