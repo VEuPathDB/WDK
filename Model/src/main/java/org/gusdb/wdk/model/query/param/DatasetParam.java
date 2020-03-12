@@ -133,7 +133,7 @@ public class DatasetParam extends Param {
     }
 
     // that's all the validation we perform if level is syntactic
-    if (level.equals(ValidationLevel.SYNTACTIC)) {
+    if (level.isLessThanOrEqualTo(ValidationLevel.SYNTACTIC)) {
       return ctxParamVals.setValid(name, level);
     }
 
