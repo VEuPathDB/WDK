@@ -9,9 +9,8 @@ import org.gusdb.fgputil.db.pool.ConnectionPoolConfig;
  * It defines the properties that are common in both {@code <appDB>} and
  * {@code <userDB>}, such as DB connection pool settings, login information, and
  * DB connection debugging parameters.
- * 
+ *
  * @author xingao
- * 
  */
 public abstract class ModelConfigDB implements ConnectionPoolConfig {
 
@@ -21,7 +20,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   protected static final String CONFIG_TABLE = "config";
   protected static final String CONFIG_NAME_COLUMN = "config_name";
   protected static final String CONFIG_VALUE_COLUMN = "config_value";
-  
+
   // required properties
   private String login;
   private String password;
@@ -109,7 +108,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   public void setPlatform(String platform) {
     this.platform = platform;
   }
-  
+
   /**
    * @return DB platform string for this configuration
    */
@@ -121,7 +120,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
 	return (platform == null ? null :
       SupportedPlatform.toPlatform(platform.toUpperCase()));
   }
-  
+
   /**
    * @return the maxActive
    */
@@ -219,7 +218,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   public void setDriverInitClass(String driverInitClass) {
 	this.driverInitClass = driverInitClass;
   }
-  
+
   /**
    * @return implementation class to initialize DB driver
    */
@@ -275,7 +274,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   public void setShowConnectionsDuration(long showConnectionsDuration) {
     this.showConnectionsDuration = showConnectionsDuration;
   }
-  
+
   @Override
   public String toString() {
     String defaultSchema = getPlatform() != null ? SupportedPlatform.toPlatform(getPlatform())
