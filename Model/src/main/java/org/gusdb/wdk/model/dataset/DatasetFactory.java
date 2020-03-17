@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.dataset;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -15,6 +16,8 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 
 import javax.sql.DataSource;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.sql.*;
 import java.util.Date;
 import java.util.*;
@@ -247,6 +250,44 @@ public class DatasetFactory {
       throw new WdkModelException("Could not retrieve dataset values.", e);
     }
     finally {
+      SqlUtils.closeResultSetAndStatement(resultSet, null);
+    }
+  }
+
+  public void writeOutDatasetValues(long datasetId, OutputStream stream) throws WdkModelException {
+    var sql = "SELECT * FROM " + _userSchema + TABLE_DATASET_VALUES
+      + " WHERE " + COLUMN_DATASET_ID + " = " + datasetId;
+    var fac = new JsonFactory();
+
+    ResultSet resultSet = null;
+    var userDs = _userDb.getDataSource();
+    try {
+      var gen = fac.createGenerator(stream);
+      gen.writeStartArray();
+
+      resultSet = SqlUtils.executeQuery(userDs, sql, "wdk-dataset-value-by-dataset-id");
+      var row = 0;
+      while (resultSet.next()) {
+        gen.writeStartArray();
+
+        for (int i = 1; i < MAX_VALUE_COLUMNS; i++) {
+          gen.writeString(resultSet.getString(COLUMN_DATA_PREFIX + i));
+        }
+
+        gen.writeEndArray();
+
+        row++;
+        if (row % 15 == 0)
+          gen.flush();
+      }
+
+      gen.writeEndArray();
+      gen.flush();
+    } catch (SQLException e) {
+      throw new WdkModelException("Could not retrieve dataset values.", e);
+    } catch (IOException e) {
+      throw new WdkModelException("Could not create JSON output stream", e);
+    } finally {
       SqlUtils.closeResultSetAndStatement(resultSet, null);
     }
   }

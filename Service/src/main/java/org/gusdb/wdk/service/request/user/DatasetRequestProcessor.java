@@ -115,8 +115,12 @@ public class DatasetRequestProcessor {
 
   }
 
-  public static Dataset createFromRequest(DatasetRequest request, User user, DatasetFactory factory, SessionProxy session)
-      throws WdkModelException, DataValidationException, RequestMisformatException {
+  public static Dataset createFromRequest(
+    DatasetRequest request,
+    User user,
+    DatasetFactory factory,
+    SessionProxy session
+  ) throws WdkModelException, DataValidationException, RequestMisformatException {
     JsonType value = request.getConfigValue();
     switch(request.getSourceType()) {
       case ID_LIST:  return createFromIdList(value.getJSONArray(), user, factory);
@@ -178,16 +182,22 @@ public class DatasetRequestProcessor {
     return createDataset(user, new ListDatasetParser(), joinIds(ids), null, factory);
   }
 
-  private static Dataset createFromStrategy(long strategyId, User user, DatasetFactory factory)
-      throws WdkModelException, DataValidationException {
+  private static Dataset createFromStrategy(
+    final long strategyId,
+    final User user,
+    final DatasetFactory factory
+  ) throws WdkModelException, DataValidationException {
+
     RunnableObj<Strategy> strategy = factory.getWdkModel().getStepFactory()
-        .getStrategyById(strategyId, ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
-        .orElseThrow(() -> new DataValidationException("Strategy with ID " + strategyId + " not found."))
-        .getRunnable()
-        .getOrThrow(strat -> new DataValidationException("Strategy with ID " +
-            strategyId + " not valid. " + strat.getValidationBundle().toString()));
+      .getStrategyById(strategyId, ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
+      .orElseThrow(() -> new DataValidationException("Strategy with ID " + strategyId + " not found."))
+      .getRunnable()
+      .getOrThrow(strat -> new DataValidationException("Strategy with ID " +
+        strategyId + " not valid. " + strat.getValidationBundle().toString()));
+
     AnswerValue answerValue = AnswerValueFactory.makeAnswer(
         Strategy.getRunnableStep(strategy, strategy.get().getRootStepId()).get());
+
     List<String[]> ids = answerValue.getAllIds();
     if (ids.isEmpty()) {
       throw new DataValidationException("Strategy '" + strategyId + "' does not contain any records.  No dataset can be made.");
