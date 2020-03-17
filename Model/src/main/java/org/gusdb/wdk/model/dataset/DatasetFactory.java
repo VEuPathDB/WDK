@@ -31,7 +31,7 @@ import org.json.JSONArray;
 
 /**
  * @author xingao
- * 
+ *
  */
 public class DatasetFactory {
 
@@ -166,7 +166,7 @@ public class DatasetFactory {
 
   /**
    * Get dataset by datasetId;
-   * 
+   *
    * @param datasetId ID of the requested dataset
    * @param ownerId ID of the requested owner of the dataset
    * @return dataset with the passed ID if owned by the user with ownerId
@@ -236,10 +236,8 @@ public class DatasetFactory {
   }
 
   public List<String[]> getDatasetValues(long datasetId) throws WdkModelException {
-    StringBuilder sqlBuffer = new StringBuilder("SELECT * ");
-    sqlBuffer.append(" FROM " + _userSchema + TABLE_DATASET_VALUES);
-    sqlBuffer.append(" WHERE " + COLUMN_DATASET_ID + " = " + datasetId);
-    String sql = sqlBuffer.toString();
+    var sql = "SELECT * FROM " + _userSchema + TABLE_DATASET_VALUES
+      + " WHERE " + COLUMN_DATASET_ID + " = " + datasetId;
 
     List<String[]> values = new ArrayList<>();
     ResultSet resultSet = null;
@@ -265,7 +263,7 @@ public class DatasetFactory {
 
   /**
    * This method is called when a dataset set is cloned from one user to another user.
-   * 
+   *
    * @param dataset
    * @throws WdkModelException
    */
@@ -429,7 +427,7 @@ public class DatasetFactory {
 
   /**
    * remove the duplicates from the list.
-   * 
+   *
    * @param values
    * @throws WdkUserException
    */

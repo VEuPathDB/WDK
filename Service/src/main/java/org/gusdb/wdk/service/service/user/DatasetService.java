@@ -13,9 +13,6 @@ import javax.ws.rs.core.Response;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dataset.Dataset;
-import org.gusdb.wdk.model.dataset.DatasetFactory;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -34,6 +31,7 @@ public class DatasetService extends UserService {
 
   /**
    * Input JSON is:
+   * <pre>
    * {
    *   "displayName": String (optional),
    *   "sourceType": Enum<IdList,Basket,Strategy,File> // more types to come...
@@ -47,11 +45,10 @@ public class DatasetService extends UserService {
    *     "questionName": String,      // name of question that contains the parameter associated w/ parameterName, only for file
    *   }
    * }
+   * </pre>
    *
    * @param input request body (JSON)
    * @return HTTP response for this request
-   * @throws RequestMisformatException
-   * @throws DataValidationException
    */
   @POST
   @Path("datasets")
@@ -62,14 +59,16 @@ public class DatasetService extends UserService {
   public Response addDatasetFromJson(JSONObject input)
       throws WdkModelException, RequestMisformatException, DataValidationException {
     try {
-      User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      DatasetFactory factory = getWdkModel().getDatasetFactory();
-      DatasetRequest request = new DatasetRequest(input);
-      Dataset dataset = DatasetRequestProcessor.createFromRequest(request, user, factory, getSession());
+      var user    = getUserBundle(Access.PRIVATE).getSessionUser();
+      var factory = getWdkModel().getDatasetFactory();
+      var request = new DatasetRequest(input);
+      var dataset = DatasetRequestProcessor.createFromRequest(request, user, factory, getSession());
+
       if (request.getDisplayName().isPresent()) {
         dataset.setName(request.getDisplayName().get());
         factory.saveDatasetMetadata(dataset);
       }
+
       return Response.ok(new JSONObject().put(JsonKeys.ID, dataset.getDatasetId())).build();
     }
     catch (JSONException e) {
@@ -84,7 +83,7 @@ public class DatasetService extends UserService {
   @Path("datasets/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray getDataset(@PathParam("id") long datasetId) throws WdkModelException {
-    DatasetFactory factory = getWdkModel().getDatasetFactory();
+    var factory = getWdkModel().getDatasetFactory();
     try {
       factory.getDatasetWithOwner(datasetId, getUserBundle(Access.PRIVATE).getTargetUser().getUserId());
     }
