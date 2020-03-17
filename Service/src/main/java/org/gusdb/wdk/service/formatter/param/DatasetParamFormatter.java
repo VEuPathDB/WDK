@@ -17,7 +17,7 @@ public class DatasetParamFormatter extends ParamFormatter<DatasetParam> {
   }
 
   @Override
-  public <S extends ParameterContainerInstanceSpec<S>> JSONObject getJson(DisplayablyValid<S> spec) throws WdkModelException {
+  public <S extends ParameterContainerInstanceSpec<S>> JSONObject getJson(DisplayablyValid<S> spec) {
     JSONObject pJson = getBaseJson(spec);
     JSONArray parsersJson = new JSONArray();
     pJson.put(JsonKeys.DEFAULT_ID_LIST, _param.getXmlDefault());
