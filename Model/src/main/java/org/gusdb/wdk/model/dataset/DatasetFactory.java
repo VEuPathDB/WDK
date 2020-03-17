@@ -1,20 +1,5 @@
 package org.gusdb.wdk.model.dataset;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.sql.DataSource;
-
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -28,6 +13,11 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
+
+import javax.sql.DataSource;
+import java.sql.*;
+import java.util.Date;
+import java.util.*;
 
 /**
  * @author xingao
@@ -90,7 +80,7 @@ public class DatasetFactory {
   public Dataset createOrGetDataset(User user, DatasetParser parser, String content, String uploadFile)
       throws WdkUserException, WdkModelException {
     // parse the content
-    List<String[]> values = parser.parse(content);
+    var values = parser.parse(content);
 
     // validate values
     validateValues(values);
@@ -167,7 +157,9 @@ public class DatasetFactory {
    *
    * @param datasetId ID of the requested dataset
    * @param ownerId ID of the requested owner of the dataset
+   *
    * @return dataset with the passed ID if owned by the user with ownerId
+   *
    * @throws WdkUserException if no dataset exists with the passed ID or exists but is not owned by the user with ownerId
    * @throws WdkModelException if error occurs while looking up dataset
    *           if the datasetId doesn't exist or doesn't belong to the given user.
@@ -189,7 +181,7 @@ public class DatasetFactory {
       if (!resultSet.next())
         throw new WdkUserException("Unable to get data set with ID: " + datasetId);
 
-      Dataset dataset = readDataset(resultSet);
+      var dataset = readDataset(resultSet);
       if (dataset.getOwnerId() != ownerId) {
         throw new WdkUserException("Dataset with ID " + datasetId + " does not belong to user " + ownerId);
       }
@@ -237,7 +229,7 @@ public class DatasetFactory {
     var sql = "SELECT * FROM " + _userSchema + TABLE_DATASET_VALUES
       + " WHERE " + COLUMN_DATASET_ID + " = " + datasetId;
 
-    List<String[]> values = new ArrayList<>();
+    var values = new ArrayList<String[]>();
     ResultSet resultSet = null;
     DataSource userDs = _userDb.getDataSource();
     try {
@@ -359,8 +351,8 @@ public class DatasetFactory {
 
   private void insertDatasetValues(Connection connection, long datasetId, List<String[]> data)
       throws SQLException {
-    int length = data.get(0).length;
-    StringBuilder sql = new StringBuilder("INSERT INTO ");
+    var length = data.get(0).length;
+    var sql    = new StringBuilder("INSERT INTO ");
 
     sql.append(_userSchema)
       .append(TABLE_DATASET_VALUES)
@@ -376,12 +368,11 @@ public class DatasetFactory {
 
     try (PreparedStatement psInsert = connection.prepareStatement(sql.toString())) {
       for (int i = 0; i < data.size(); i++) {
-        String[] value = data.get(i);
+        var value = data.get(i);
 
         // get a new value id.
-        long datasetValueId = _userDb.getPlatform()
-          .getNextId(_userDb.getDataSource(), _userSchema,
-            TABLE_DATASET_VALUES);
+        var datasetValueId = _userDb.getPlatform()
+          .getNextId(_userDb.getDataSource(), _userSchema, TABLE_DATASET_VALUES);
 
         psInsert.setLong(1, datasetValueId);
         psInsert.setLong(2, datasetId);
@@ -400,10 +391,10 @@ public class DatasetFactory {
 
   private void validateValues(List<String[]> values) throws WdkUserException {
     for (int i = values.size() - 1; i >= 0; i--) {
-      String[] row = values.get(i);
+      var row = values.get(i);
       // check the number of columns
       if (row.length > MAX_VALUE_COLUMNS) {
-        JSONArray jsArray = new JSONArray(Arrays.asList(row));
+        var jsArray = new JSONArray(Arrays.asList(row));
         throw new WdkUserException("The maximum allowed columns in datasets " + "are " + MAX_VALUE_COLUMNS +
             ", but the input has more: " + jsArray.toString());
       }
@@ -420,13 +411,14 @@ public class DatasetFactory {
    * remove the duplicates from the list.
    */
   private void removeDuplicates(List<String[]> values) {
-    Set<String> set = new HashSet<>();
+    var set = new HashSet<>();
     // starting from end so that when we remove an item, it won't affect the
     // index.
     for (int i = values.size() - 1; i >= 0; i--) {
-      String[] value = values.get(i);
-      JSONArray jsArray = new JSONArray(Arrays.asList(value));
-      String key = jsArray.toString();
+      var value   = values.get(i);
+      var jsArray = new JSONArray(Arrays.asList(value));
+      var key     = jsArray.toString();
+
       if (set.contains(key))
         values.remove(i);
       else
