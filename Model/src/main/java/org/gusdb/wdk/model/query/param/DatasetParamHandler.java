@@ -40,7 +40,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
       .getUser()
       .getWdkModel()
       .getDatasetFactory();
-    var dvSql = datasetFactory.getDatasetValueSqlForAppDb(Long.valueOf(value));
+    var dvSql = datasetFactory.getDatasetValueSqlForAppDb(Long.parseLong(value));
     var recordClassOpt = ((DatasetParam) _param).getRecordClass();
 
     if (recordClassOpt.isEmpty())
@@ -78,7 +78,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
         .getWdkModel()
         .getDatasetFactory()
         .getDatasetWithOwner(
-          Long.valueOf(spec.get(_param.getName())), 
+          Long.parseLong(spec.get(_param.getName())),
           spec.getUser().getUserId()
         );
       return dataset.getChecksum();
