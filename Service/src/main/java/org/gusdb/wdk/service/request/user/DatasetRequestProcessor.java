@@ -58,7 +58,7 @@ public class DatasetRequestProcessor {
     private final String _configJsonKey;
     private final ValueType _configValueType;
 
-    private DatasetSourceType(String jsonKey, String configJsonKey, ValueType configValueType) {
+    DatasetSourceType(String jsonKey, String configJsonKey, ValueType configValueType) {
       _jsonKey = jsonKey;
       _configJsonKey = configJsonKey;
       _configValueType = configValueType;
@@ -243,7 +243,7 @@ public class DatasetRequestProcessor {
     Optional<String> questionName = getStringOrFail(additionalConfig, JsonKeys.SEARCH_NAME);
     Optional<String> parameterName = getStringOrFail(additionalConfig, JsonKeys.PARAMETER_NAME);
 
-    if (!questionName.isPresent() || !parameterName.isPresent()) {
+    if (questionName.isEmpty() || parameterName.isEmpty()) {
       throw new DataValidationException("If '" + JsonKeys.PARSER + "' property is specified, '" +
           JsonKeys.SEARCH_NAME + "' and '" + JsonKeys.PARAMETER_NAME + "' must also be specified.");
     }
@@ -255,7 +255,7 @@ public class DatasetRequestProcessor {
     Param param = Optional.ofNullable(question.getParamMap().get(parameterName.get())).orElseThrow(
         () -> new DataValidationException(String.format(
             "Could not find parameter '%s' in question '%s'.", parameterName.get(), questionName.get())));
-    
+
     if (!(param instanceof DatasetParam)) {
       throw new DataValidationException(String.format(
           "Parameter '%s' must be a DatasetParam, is a %s.", parameterName.get(), param.getClass().getSimpleName()));
