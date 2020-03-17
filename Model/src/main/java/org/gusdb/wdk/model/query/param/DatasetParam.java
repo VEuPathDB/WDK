@@ -207,7 +207,7 @@ public class DatasetParam extends Param {
   }
 
   @Override
-  protected String getDefault(PartiallyValidatedStableValues stableValues) throws WdkModelException {
+  protected String getDefault(PartiallyValidatedStableValues stableValues) {
     // default stable value for DatasetParam is always an empty string;
     // XML default value is used to display a default set of IDs (i.e. raw value) in the user interface
     return "";
