@@ -3,7 +3,6 @@
   "releaseDate": "05 July 2018 12:59",
   "displayName": "PlasmoDB",
   "userDatasetStoreStatus": {
-    "isConfigured": true,
     "isAvailable": true
   },
   "categoriesOntologyName": "Categories",

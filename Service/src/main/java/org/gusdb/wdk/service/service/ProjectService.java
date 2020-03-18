@@ -1,20 +1,24 @@
 package org.gusdb.wdk.service.service;
 
+import static org.gusdb.fgputil.StringUtil.rtrim;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.gusdb.fgputil.Timer;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.service.formatter.ProjectFormatter;
+import org.gusdb.wdk.service.service.user.UserDatasetService;
 import org.json.JSONObject;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.function.Supplier;
-
-import static org.gusdb.fgputil.StringUtil.rtrim;
 
 @Path("/")
 public class ProjectService extends AbstractWdkService {
@@ -80,14 +84,8 @@ public class ProjectService extends AbstractWdkService {
   @Path("user-datasets/config")
   @Produces(MediaType.APPLICATION_JSON)
   public JSONObject getDefaultQuota() throws WdkModelException {
-    UserDatasetStore.Status dsStore = getWdkModel().getUserDatasetStore();
-    if (!dsStore.isConfigured()) {
-      throw new NotFoundException("User datasets are not enabled.");
-    }
-    Supplier<WdkModelException> couldNotCreateUds = () -> new WdkModelException(
-        "Unable to create user dataset store. " + dsStore.getCreationErrorMessage().orElse(""));
-    try (UserDatasetSession dsSession = dsStore.getStore()
-        .orElseThrow(couldNotCreateUds).getSession()) {
+    UserDatasetStore dsStore = UserDatasetService.getUserDatasetStore(getWdkModel());
+    try (UserDatasetSession dsSession = dsStore.getSession()) {
       return new JSONObject()
         .put("default_quota", dsSession.getDefaultQuota(true));
     }

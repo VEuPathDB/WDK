@@ -120,7 +120,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private DatabaseInstance userDb;
   private DatabaseInstance accountDb;
 
-  private UserDatasetStore.Status _userDatasetStoreStatus;
+  private Optional<UserDatasetStore> _userDatasetStore;
 
   private List<QuerySet> querySetList = new ArrayList<>();
   private Map<String, QuerySet> querySets = new LinkedHashMap<>();
@@ -556,16 +556,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     accountDb = new DatabaseInstance(accountDbConfig, DB_INSTANCE_ACCOUNT, true);
 
     if (udsConfig == null) {
-      _userDatasetStoreStatus = UserDatasetStore.Status.UNCONFIGURED;
+      _userDatasetStore = Optional.empty();
     }
     else {
-      try {
-        UserDatasetStore uds = udsConfig.getUserDatasetStore(modelConfig.getWdkTempDir());
-        _userDatasetStoreStatus = new UserDatasetStore.Status(uds);
-      }
-      catch(WdkModelException wme) {
-        _userDatasetStoreStatus = new UserDatasetStore.Status(wme);
-      }
+      _userDatasetStore = Optional.of(udsConfig.getUserDatasetStore(modelConfig.getWdkTempDir()));
     }
 
     userFactory = new UserFactory(this);
@@ -573,7 +567,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     datasetFactory = new DatasetFactory(this);
     basketFactory = new BasketFactory(this);
     favoriteFactory = new FavoriteFactory(this);
-    userDatasetFactory = _userDatasetStoreStatus.hasStore() ? Optional.of(new UserDatasetFactory(this)) : Optional.empty();
+    userDatasetFactory = _userDatasetStore.isPresent() ? Optional.of(new UserDatasetFactory(this)) : Optional.empty();
 
     // exclude resources that are not used by this project
     excludeResources();
@@ -1096,11 +1090,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   @Override
   public String toString() {
-    String userDatasetStoreStr = _userDatasetStoreStatus.isConfigured()
+    String userDatasetStoreStr = _userDatasetStore.isEmpty()
         ? "No user dataset store configured"
-        : _userDatasetStoreStatus.hasStore()
-        ? _userDatasetStoreStatus.getStore().get().toString()
-        : "Unable to create user dataset store as configured. Error = " + _userDatasetStoreStatus.getCreationErrorMessage().orElse("");
+        : _userDatasetStore.get().toString();
     return new StringBuilder("WdkModel: ").append("projectId='").append(_projectId).append("'").append(NL).append(
         "displayName='").append(displayName).append("'").append(NL).append("introduction='").append(
         _introduction).append("'").append(NL).append(NL).append(userDatasetStoreStr).append(NL).append(uiConfig.toString()).append(
@@ -1234,8 +1226,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return xmlDataDir;
   }
 
-  public UserDatasetStore.Status getUserDatasetStore() {
-    return _userDatasetStoreStatus;
+  public Optional<UserDatasetStore> getUserDatasetStore() {
+    return _userDatasetStore;
   }
 
   public DatasetFactory getDatasetFactory() {

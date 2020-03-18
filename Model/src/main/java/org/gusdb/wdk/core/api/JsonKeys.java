@@ -82,6 +82,7 @@ public class JsonKeys {
   public static final String IS_DISPLAYABLE = "isDisplayable";
   public static final String IS_IN_REPORT = "isInReport";
   public static final String IS_VIEW_ONLY = "isViewOnly";
+  public static final String IS_AVAILABLE = "isAvailable";
   public static final String NEW_BUILD = "newBuild";
   public static final String REVISE_BUILD = "reviseBuild";
 

@@ -27,7 +27,7 @@ public class UserDatasetFactory {
 
   public UserDatasetFactory(WdkModel wdkModel) throws WdkModelException {
     _wdkModel = wdkModel;
-    _userDatasetStore = wdkModel.getUserDatasetStore().getStore()
+    _userDatasetStore = wdkModel.getUserDatasetStore()
         .orElseThrow(() -> new WdkModelException("Cannot create user dataset factory without user dataset store."));
     // TODO: put in model-config.xml + masterConfig.yaml and fetch from there
     _userDatasetSchema = "ApiDBUserDatasets.";
