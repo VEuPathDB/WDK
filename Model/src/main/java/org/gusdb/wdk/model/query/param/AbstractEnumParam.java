@@ -694,6 +694,10 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    */
   @Override
   public String getStandardizedStableValue(String stableValue) {
+    return standardizeStableValue(stableValue, isMultiPick());
+  }
+
+  public static String standardizeStableValue(String stableValue, boolean isMultiPick) {
     try {
       if (stableValue == null || stableValue.isEmpty()) {
         return "[]";
@@ -702,7 +706,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     }
     catch(JSONException e) {
       // unable to convert to JSON; convert from single pick external value or old format
-      String[] values = isMultiPick() ? stableValue.split(",") : new String[] { stableValue };
+      String[] values = isMultiPick ? stableValue.split(",") : new String[] { stableValue };
       return new JSONArray(values).toString();
     }
   }
