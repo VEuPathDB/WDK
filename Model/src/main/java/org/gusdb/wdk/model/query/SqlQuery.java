@@ -364,7 +364,7 @@ public class SqlQuery extends Query {
       return sql;
     var param = params.next();
     var value = param.getParamHandler().toEmptyInternalValue();
-    return applyParams(param.replaceSql(sql, value), params);
+    return applyParams(param.replaceSql(sql, "", value), params);
   }
 
   private Map<String, AttributeFieldDataType> handleEmptySql()

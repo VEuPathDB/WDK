@@ -516,7 +516,14 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _wdkModel = model;
   }
 
-  public String replaceSql(String sql, String internalValue) {
+  /**
+   * 
+   * @param sql template SQL containing param macros
+   * @param stableValue stable value of this param
+   * @param internalValue internal value of this param
+   * @return
+   */
+  public String replaceSql(String sql, String stableValue, String internalValue) {
     String regex = "\\$\\$" + _name + "\\$\\$";
     // escape all single quotes in the value
     return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
