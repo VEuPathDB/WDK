@@ -59,6 +59,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   protected final ReadOnlyMap<String, String> _context;
 
   // fields lazily loaded post-construction
+  private Boolean _cachePreviouslyExistedForSpec;
   private Map<String, String> _paramInternalValues;
   private String _checksum;
   private InstanceInfo _instanceInfo;
@@ -125,10 +126,20 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   }
 
   private InstanceInfo getInstanceInfo() throws WdkModelException {
-    if (_instanceInfo == null)
-      _instanceInfo = new ResultFactory(_wdkModel.getAppDb())
-        .cacheResults(getChecksum(), this);
+    if (_instanceInfo == null) {
+      ResultFactory factory = new ResultFactory(_wdkModel.getAppDb());
+      String checksum = getChecksum();
+      _cachePreviouslyExistedForSpec = factory.getInstanceInfo(checksum).isPresent();
+      _instanceInfo = factory.cacheResults(checksum, this);
+    }
     return _instanceInfo;
+  }
+
+  public boolean cacheInitiallyExistedForSpec() throws WdkModelException {
+    if (_cachePreviouslyExistedForSpec == null) {
+      getInstanceInfo(); // will set the value
+    }
+    return _cachePreviouslyExistedForSpec;
   }
 
   public String getChecksum() throws WdkModelException {

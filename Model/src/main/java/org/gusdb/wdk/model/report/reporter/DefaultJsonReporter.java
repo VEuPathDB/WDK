@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStreamFactory;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
@@ -117,20 +118,21 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
       Set<String> includedAttributes, Set<String> includedTables, int numRecordsReturned)
       throws WdkModelException {
     AnswerValue answerValueWithoutViewFilters = getAnswerValueWithoutViewFilters(answerValue);
-    JSONObject meta = new JSONObject();
-    meta.put(JsonKeys.RECORD_CLASS_NAME, answerValue.getAnswerSpec().getQuestion().getRecordClass().getUrlSegment());
-    meta.put(JsonKeys.TOTAL_COUNT, answerValueWithoutViewFilters.getResultSizeFactory().getResultSize());
-    meta.put(JsonKeys.DISPLAY_TOTAL_COUNT, answerValueWithoutViewFilters.getResultSizeFactory().getDisplayResultSize());
-    meta.put(JsonKeys.VIEW_TOTAL_COUNT, answerValue.getResultSizeFactory().getResultSize());
-    meta.put(JsonKeys.DISPLAY_VIEW_TOTAL_COUNT, answerValue.getResultSizeFactory().getDisplayResultSize());
-    meta.put(JsonKeys.RESPONSE_COUNT, numRecordsReturned);
-    meta.put(JsonKeys.PAGINATION, new JSONObject()
+    Question question = answerValue.getAnswerSpec().getQuestion();
+    JSONObject meta = new JSONObject()
+      .put(JsonKeys.RECORD_CLASS_NAME, question.getRecordClass().getUrlSegment())
+      .put(JsonKeys.TOTAL_COUNT, answerValueWithoutViewFilters.getResultSizeFactory().getResultSize())
+      .put(JsonKeys.DISPLAY_TOTAL_COUNT, answerValueWithoutViewFilters.getResultSizeFactory().getDisplayResultSize())
+      .put(JsonKeys.VIEW_TOTAL_COUNT, answerValue.getResultSizeFactory().getResultSize())
+      .put(JsonKeys.DISPLAY_VIEW_TOTAL_COUNT, answerValue.getResultSizeFactory().getDisplayResultSize())
+      .put(JsonKeys.RESPONSE_COUNT, numRecordsReturned)
+      .put(JsonKeys.PAGINATION, new JSONObject()
         .put(JsonKeys.OFFSET, answerValue.getStartIndex() - 1)
-        .put(JsonKeys.NUM_RECORDS, answerValue.getEndIndex() - (answerValue.getStartIndex() - 1)));
-    meta.put(JsonKeys.ATTRIBUTES, new JSONArray(includedAttributes));
-    meta.put(JsonKeys.TABLES, new JSONArray(includedTables));
-    meta.put(JsonKeys.SORTING, formatSorting(answerValue.getSortingMap(),
-        answerValue.getAnswerSpec().getQuestion().getAttributeFieldMap()));
+        .put(JsonKeys.NUM_RECORDS, answerValue.getEndIndex() - (answerValue.getStartIndex() - 1)))
+      .put(JsonKeys.ATTRIBUTES, new JSONArray(includedAttributes))
+      .put(JsonKeys.TABLES, new JSONArray(includedTables))
+      .put(JsonKeys.SORTING, formatSorting(answerValue.getSortingMap(), question.getAttributeFieldMap()))
+      .put(JsonKeys.CACHE_PREVIOUSLY_EXISTED, answerValue.getIdsQueryInstance().cacheInitiallyExistedForSpec());
     return meta;
   }
 

@@ -278,4 +278,5 @@ public class JsonKeys {
   public static final String DATA_TYPE = "columnDataType";
   public static final String TOOLS = "tools";
   public static final String COLUMN_FILTERS = "columnFilters";
+  public static final String CACHE_PREVIOUSLY_EXISTED = "cachePreviouslyExisted";
 }
