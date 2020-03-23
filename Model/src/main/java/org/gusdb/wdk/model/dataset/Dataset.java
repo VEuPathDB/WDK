@@ -7,7 +7,7 @@ import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author xingao
- * 
+ *
  */
 public class Dataset {
 
@@ -95,7 +95,7 @@ public class Dataset {
     return factory.getDatasetValues(datasetId);
   }
 
-  public String getContent() throws WdkModelException {
+  public DatasetContents getContent() throws WdkModelException {
     return factory.getDatasetContent(datasetId);
   }
 

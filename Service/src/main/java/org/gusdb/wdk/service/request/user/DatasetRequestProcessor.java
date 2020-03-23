@@ -1,11 +1,10 @@
 package org.gusdb.wdk.service.request.user;
 
 import static org.gusdb.fgputil.FormatUtil.join;
+import static org.gusdb.fgputil.json.JsonIterators.arrayStream;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -26,17 +25,11 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
-import org.gusdb.wdk.model.dataset.AbstractDatasetParser;
-import org.gusdb.wdk.model.dataset.Dataset;
-import org.gusdb.wdk.model.dataset.DatasetFactory;
-import org.gusdb.wdk.model.dataset.DatasetParser;
-import org.gusdb.wdk.model.dataset.ListDatasetParser;
+import org.gusdb.wdk.model.dataset.*;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.record.RecordClass;
-import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -139,47 +132,44 @@ public class DatasetRequestProcessor {
     throw new DataValidationException(value.toString() + " is not a valid strategy ID.  Must be a positive integer.");
   }
 
-  private static Dataset createFromIdList(JSONArray jsonIds, User user, DatasetFactory factory)
-      throws DataValidationException, WdkModelException {
-    if (jsonIds.length() == 0) {
+  private static Dataset createFromIdList(
+    final JSONArray jsonIds,
+    final User user,
+    final DatasetFactory factory
+  ) throws DataValidationException, WdkModelException {
+
+    if (jsonIds.length() == 0)
       throw new DataValidationException("At least 1 ID must be submitted");
-    }
-    final List<String> ids = new ArrayList<>();
-    for (int i = 0; i < jsonIds.length(); i++) {
-      ids.add(jsonIds.getString(i));
-    }
-    // FIXME: this is a total hack to comply with the dataset factory API
-    //   We are closing over the JSON array we already parsed and will return
-    //   a List<String> version of that array
-    DatasetParser parser = new AbstractDatasetParser() {
-      @Override
-      public List<String[]> parse(String content) {
-        return Functions.mapToList(ids, str -> new String[]{ str });
-      }
-      @Override
-      public String getName() {
-        return "anonymous";
-      }
-    };
-    return createDataset(user, parser, join(ids.toArray(), " "), null, factory);
+
+    final var ids = arrayStream(jsonIds)
+      .map(JsonType::getString)
+      .collect(Collectors.toList());
+
+    DatasetParser parser = new DatasetPassThroughParser(ids);
+    return createDataset(user, parser, new DatasetListContents(ids), factory);
   }
 
-  private static Dataset createFromBasket(String recordClassName, User user, DatasetFactory factory)
-      throws WdkModelException, DataValidationException {
-    WdkModel wdkModel = factory.getWdkModel();
-    RecordClass recordClass = wdkModel.getRecordClassByUrlSegment(recordClassName)
-        .orElseThrow(() -> new DataValidationException(
-            "No record class exists with name '" + recordClassName + "'."));
+  private static Dataset createFromBasket(
+    final String recordClassName,
+    final User user,
+    final DatasetFactory factory
+  ) throws WdkModelException, DataValidationException {
+    var recordClass = factory.getWdkModel()
+      .getRecordClassByUrlSegment(recordClassName)
+      .orElseThrow(() -> new DataValidationException(
+        "No record class exists with name '" + recordClassName + "'."));
 
-    BasketFactory basketFactory = factory.getWdkModel().getBasketFactory();
+    var basketFactory = factory.getWdkModel().getBasketFactory();
     List<String[]> ids = basketFactory.getBasket(user, recordClass).stream()
         .map(ri -> ri.getPrimaryKey().getValues().values().toArray(new String[0]))
         .collect(Collectors.toList());
 
-    if (ids.isEmpty()) {
-      throw new DataValidationException("Basket '" + recordClassName + "' does not contain any records.  No dataset can be made.");
-    }
-    return createDataset(user, new ListDatasetParser(), joinIds(ids), null, factory);
+    if (ids.isEmpty())
+      throw new DataValidationException("Basket '" + recordClassName + "' does "
+        + "not contain any records.  No dataset can be made.");
+
+    return createDataset(user, new ListDatasetParser(),
+      new DatasetListContents(joinIds(ids)), factory);
   }
 
   private static Dataset createFromStrategy(
@@ -199,46 +189,56 @@ public class DatasetRequestProcessor {
         Strategy.getRunnableStep(strategy, strategy.get().getRootStepId()).get());
 
     List<String[]> ids = answerValue.getAllIds();
-    if (ids.isEmpty()) {
-      throw new DataValidationException("Strategy '" + strategyId + "' does not contain any records.  No dataset can be made.");
-    }
-    return createDataset(user, new ListDatasetParser(), joinIds(ids), null, factory);
+
+    if (ids.isEmpty())
+      throw new DataValidationException("Strategy '" + strategyId + "' does not"
+        + " contain any records.  No dataset can be made.");
+
+    return createDataset(user, new ListDatasetParser(),
+      new DatasetListContents(joinIds(ids)), factory);
   }
 
-  private static String joinIds(List<String[]> ids) {
+  private static List<String> joinIds(List<String[]> ids) {
     return ids.stream()
         .map(idArray -> join(idArray, ListDatasetParser.DATASET_COLUMN_DIVIDER))
-        .collect(Collectors.joining("\n"));
+        .collect(Collectors.toList());
   }
 
-  private static Dataset createDataset(User user, DatasetParser parser,
-      String content, String uploadFileName, DatasetFactory factory)
-          throws WdkModelException, DataValidationException {
+  private static Dataset createDataset(
+    final User            user,
+    final DatasetParser   parser,
+    final DatasetContents content,
+    final DatasetFactory  factory
+  ) throws WdkModelException, DataValidationException {
     try {
       return factory.createOrGetDataset(user, parser, content, uploadFileName);
-    }
-    catch (WdkUserException e) {
+    } catch (WdkUserException e) {
       throw new DataValidationException(e.getMessage());
     }
   }
 
-  private static Dataset createFromTemporaryFile(String tempFileId, User user, DatasetFactory factory,
-      Map<String, JsonType> additionalConfig, SessionProxy session)
-          throws DataValidationException, WdkModelException, RequestMisformatException {
-    Optional<String> parserName = getStringOrFail(additionalConfig, JsonKeys.PARSER);
-    DatasetParser parser = parserName.isPresent() ?
-        findDatasetParser(parserName.get(), additionalConfig, factory.getWdkModel()) :
-        new ListDatasetParser();
+  private static Dataset createFromTemporaryFile(
+    final String                tempFileId,
+    final User                  user,
+    final DatasetFactory        factory,
+    final Map<String, JsonType> additionalConfig,
+    final SessionProxy          session
+  ) throws DataValidationException, WdkModelException, RequestMisformatException {
+    var parserName = getStringOrFail(additionalConfig, JsonKeys.PARSER);
 
     Path tempFilePath = TemporaryFileService.getTempFileFactory(factory.getWdkModel(), session)
       .apply(tempFileId)
       .orElseThrow(() -> new DataValidationException("Temporary file with the ID '" + tempFileId + "' could not be found in this session."));
 
+    var contents = new DatasetFileContents(tempFileId, tempFilePath.toFile());
+    var parser   = parserName.isPresent()
+      ? findDatasetParser(parserName.get(), additionalConfig, factory.getWdkModel())
+      : new ListDatasetParser(contents);
+
     try {
-      String contents = new String(Files.readAllBytes(tempFilePath));
-      if (contents.isEmpty()) {
-        throw new DataValidationException("The file submitted is empty.  No dataset can be made.");
-      }
+//      if (contents.isEmpty()) {
+//        throw new DataValidationException("The file submitted is empty.  No dataset can be made.");
+//      }
       return createDataset(user, parser, contents, tempFileId, factory);
     }
     catch (IOException e) {
@@ -246,29 +246,41 @@ public class DatasetRequestProcessor {
     }
   }
 
-  private static DatasetParser findDatasetParser(String parserName,
-      Map<String, JsonType> additionalConfig, WdkModel model)
-          throws DataValidationException, RequestMisformatException, WdkModelException {
+  private static DatasetParser findDatasetParser(
+    final String parserName,
+    final Map<String, JsonType> additionalConfig,
+    final WdkModel model
+  ) throws DataValidationException, RequestMisformatException, WdkModelException {
 
-    Optional<String> questionName = getStringOrFail(additionalConfig, JsonKeys.SEARCH_NAME);
+    Optional<String> questionName  = getStringOrFail(additionalConfig, JsonKeys.SEARCH_NAME);
     Optional<String> parameterName = getStringOrFail(additionalConfig, JsonKeys.PARAMETER_NAME);
 
     if (questionName.isEmpty() || parameterName.isEmpty()) {
-      throw new DataValidationException("If '" + JsonKeys.PARSER + "' property is specified, '" +
-          JsonKeys.SEARCH_NAME + "' and '" + JsonKeys.PARAMETER_NAME + "' must also be specified.");
+      throw new DataValidationException("If '" + JsonKeys.PARSER + "' property "
+        + "is specified, '" + JsonKeys.SEARCH_NAME + "' and '"
+        + JsonKeys.PARAMETER_NAME + "' must also be specified.");
     }
 
-    Question question = model.getQuestionByFullName(questionName.get()).orElseThrow(
+    Question question = model.getQuestionByFullName(questionName.get())
+      .orElseThrow(
         () -> new DataValidationException(String.format(
-            "Could not find question with name '%s'.", questionName.get())));
+          "Could not find question with name '%s'.", questionName.get()
+        )));
 
-    Param param = Optional.ofNullable(question.getParamMap().get(parameterName.get())).orElseThrow(
+    Param param = Optional.ofNullable(question.getParamMap().get(parameterName.get()))
+      .orElseThrow(
         () -> new DataValidationException(String.format(
-            "Could not find parameter '%s' in question '%s'.", parameterName.get(), questionName.get())));
+          "Could not find parameter '%s' in question '%s'.",
+          parameterName.get(),
+          questionName.get()
+        )));
 
     if (!(param instanceof DatasetParam)) {
       throw new DataValidationException(String.format(
-          "Parameter '%s' must be a DatasetParam, is a %s.", parameterName.get(), param.getClass().getSimpleName()));
+        "Parameter '%s' must be a DatasetParam, is a %s.",
+        parameterName.get(),
+        param.getClass().getSimpleName()
+      ));
     }
 
     DatasetParser parser = ((DatasetParam) param).getParser(parserName);

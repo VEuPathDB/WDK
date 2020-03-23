@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.dataset;
 
 import java.util.LinkedHashMap;
@@ -10,7 +7,6 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
 
 /**
  * @author jerric
- * 
  */
 public abstract class AbstractDatasetParser implements DatasetParser {
 
@@ -24,10 +20,10 @@ public abstract class AbstractDatasetParser implements DatasetParser {
   public void setParam(DatasetParam param) {
     this.param = param;
   }
-  
+
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.user.DatasetParser#getName()
    */
   @Override
@@ -37,7 +33,7 @@ public abstract class AbstractDatasetParser implements DatasetParser {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.user.DatasetParser#setName(java.lang.String)
    */
   @Override
@@ -47,7 +43,7 @@ public abstract class AbstractDatasetParser implements DatasetParser {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.user.DatasetParser#getDisplay()
    */
   @Override
@@ -57,7 +53,7 @@ public abstract class AbstractDatasetParser implements DatasetParser {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.user.DatasetParser#setDisplay(java.lang.String)
    */
   @Override
@@ -67,7 +63,7 @@ public abstract class AbstractDatasetParser implements DatasetParser {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.user.DatasetParser#getDescription()
    */
   @Override
@@ -77,7 +73,7 @@ public abstract class AbstractDatasetParser implements DatasetParser {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.user.DatasetParser#setDescription(java.lang.String)
    */
   @Override
@@ -87,7 +83,7 @@ public abstract class AbstractDatasetParser implements DatasetParser {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.user.DatasetParser#setProperties(java.util.Map)
    */
   @Override

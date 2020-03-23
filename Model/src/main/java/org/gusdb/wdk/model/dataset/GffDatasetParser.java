@@ -1,23 +1,14 @@
 package org.gusdb.wdk.model.dataset;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
 
+import java.util.*;
+import java.util.regex.Pattern;
+
 /**
  * @author jerric
- * 
  */
 public class GffDatasetParser extends AbstractDatasetParser {
 
@@ -33,56 +24,67 @@ public class GffDatasetParser extends AbstractDatasetParser {
   }
 
   @Override
-  public List<String[]> parse(String content) throws WdkUserException {
-    Set<String> types = getRecordTypes();
-    Map<String, Integer> attributes = getAttributes();
-    List<String[]> data = new ArrayList<>();
-
-    logger.debug("types: " + types);
-    logger.debug("attributes: " + attributes);
-
-    BufferedReader reader = new BufferedReader(new StringReader(content));
-    String line;
-    try {
-      while ((line = reader.readLine()) != null) {
-        line = line.trim();
-        if (line.length() == 0 || line.startsWith("#"))
-          continue;
-        if (line.startsWith(">")) // reaching sequence section, stop.
-          break;
-        String[] columns = line.split("\t");
-        if (types.isEmpty() || types.contains(columns[2].toLowerCase())) {
-          String[] row = new String[attributes.size() + 2];
-          row[1] = columns[1];
-
-          // parsing attributes
-            for (String tuple : columns[8].split(";")) {
-              String[] pieces = tuple.split("=");
-              String attr = pieces[0].toLowerCase();
-              if (attr.equals("id")) 
-                row[0] = pieces[1];
-              if (attributes.containsKey(attr)) {
-                row[attributes.get(attr) + 2] = pieces[1];
-              }
-            }
-          data.add(row);
-        }
-      }
-    }
-    catch (IOException ex) {
-      throw new WdkUserException(ex);
-    }
-
-    return data;
+  public DatasetIterator iterator(final DatasetContents contents) {
+    return new Iterator(contents);
   }
+
+  private class Iterator extends AbstractDatasetIterator {
+    private final Pattern COL_DIV_PAT = Pattern.compile("\t");
+
+    Iterator(DatasetContents contents) {
+      super(contents, "\r\n?|\n");
+    }
+
+    @Override
+    protected boolean rowFilter(final String row) {
+      if (row.isEmpty() || row.charAt(0) != '#')
+        return false;
+
+      var types = getRecordTypes();
+
+      if (types.isEmpty())
+        return true;
+
+      return types.contains(COL_DIV_PAT.split(row)[2].toLowerCase());
+    }
+
+    @Override
+    protected boolean atEndOfInput(final String row) {
+      return row.charAt(0) == '>';
+    }
+
+    @Override
+    protected String[] parseRow(final String row) throws WdkUserException {
+      var types      = getRecordTypes();
+      var attributes = getAttributes();
+
+      logger.debug("types: " + types);
+      logger.debug("attributes: " + attributes);
+
+      var columns = COL_DIV_PAT.split(row);
+      var out     = new String[attributes.size() + 2];
+      out[1] = columns[1];
+      for (var tuple : columns[8].split(";")) {
+        var pieces = tuple.split("=");
+        var attr = pieces[0].toLowerCase();
+
+        if (attr.equals("id"))
+          out[0] = pieces[1];
+
+        if (attributes.containsKey(attr))
+          out[attributes.get(attr) + 2] = pieces[1];
+      }
+
+      return out;
+    }
 
   /**
    * Look up the record type to be extracted from the GFF file. It will first check the properties provided by
    * the model author, if not present, will use the recordClass from the param; if none of them available,
    * will simply get all records.
-   * 
+   *
    * all the types are converted to lower case.
-   * 
+   *
    * @return a set with acceptable types; if the set is empty, will accept all types.
    */
   private Set<String> getRecordTypes() {
@@ -98,7 +100,7 @@ public class GffDatasetParser extends AbstractDatasetParser {
     else { // user specified types
       for (String type : types.split(",")) {
         type = type.trim().toLowerCase();
-        if (type.length() > 0)
+        if (!type.isEmpty())
           recordTypes.add(type);
       }
     }
@@ -106,12 +108,11 @@ public class GffDatasetParser extends AbstractDatasetParser {
   }
 
   /**
-   * get the acceptable attribute names to be parsed. if the set is empty, don't parse any attribute.
-   * 
+   * get the acceptable attribute names to be parsed.
+   *
+   * if the set is empty, don't parse any attribute.
+   *
    * the attribute names are converted to lower case.
-   * 
-   * @return
-   * @throws WdkDatasetException
    */
   private Map<String, Integer> getAttributes() throws WdkUserException {
     String attrs = properties.get(PROP_ATTRIBUTES);
@@ -119,14 +120,17 @@ public class GffDatasetParser extends AbstractDatasetParser {
     int i = 0;
     for (String attr : attrs.split(",")) {
       attr = attr.trim().toLowerCase();
-      if (attr.length() > 0)
+      if (!attr.isEmpty())
         attributes.put(attr, i++);
     }
     int allowedSize = DatasetFactory.MAX_VALUE_COLUMNS - 2;
     if (attributes.size() >= allowedSize)
-      throw new WdkUserException("Only " + allowedSize + " attributes are allowed, but " +
-          attributes.size() + " attributes are declared: " + attrs + " in datasetParam " +
-          param.getFullName());
+      throw new WdkUserException(
+        "Only " + allowedSize + " attributes are allowed, but "
+          + attributes.size() + " attributes are declared: " + attrs
+          + " in datasetParam " + param.getFullName()
+      );
     return attributes;
+  }
   }
 }
