@@ -236,7 +236,7 @@ public class AnswerService extends AbstractWdkService {
 
     return createCustomReportAnswer(report, new JSONObject()
       .put(JsonKeys.SEARCH_CONFIG, searchConfig)
-      .put(JsonKeys.REPORT_CONFIG, Optional.of(params.getFirst(JsonKeys.REPORT_CONFIG))
+      .put(JsonKeys.REPORT_CONFIG, Optional.ofNullable(params.getFirst(JsonKeys.REPORT_CONFIG))
         .map(JSONObject::new)
         .orElseGet(JSONObject::new)));
   }
