@@ -25,9 +25,16 @@ public class ProjectService extends AbstractWdkService {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public JSONObject getServiceApi() {
+  public JSONObject getServiceApi() throws WdkModelException {
     String serviceEndpoint = rtrim(getUriInfo().getBaseUri().toString(), '/');
-    return ProjectFormatter.getWdkProjectInfo(getWdkModel(), serviceEndpoint);
+    return addSupplementalProjectInfo(ProjectFormatter.getWdkProjectInfo(getWdkModel(), serviceEndpoint));
+  }
+
+  /**
+   * @throws WdkModelException if error occurs while fetching supplemental info 
+   */
+  protected JSONObject addSupplementalProjectInfo(JSONObject projectJson) throws WdkModelException {
+    return projectJson;
   }
 
   @GET
