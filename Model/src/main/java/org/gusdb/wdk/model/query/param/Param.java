@@ -347,7 +347,14 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   }
 
   /**
-   * @return Returns the visible.
+   * @return whether param is known to service clients (i.e. is not internal-only)
+   */
+  public boolean isVisibleToClient() {
+    return true;
+  }
+
+  /**
+   * @return whether param should be visible in the UI
    */
   public boolean isVisible() {
     return _visible;

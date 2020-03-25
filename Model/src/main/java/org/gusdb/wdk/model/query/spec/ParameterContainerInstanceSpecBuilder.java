@@ -73,7 +73,10 @@ public class ParameterContainerInstanceSpecBuilder<T extends ParameterContainerI
 
   protected void standardizeStableValues(ParameterContainer container) {
     for (Param param : container.getParams()) {
-      if (containsKey(param.getName())) {
+      if (containsKey(param.getName()) ||
+          (!containsKey(param.getName()) && !param.isVisibleToClient())) {
+        // replace with standardized value if present, or if not present but not
+        //   expected (because invisible to client), fill with standard value
         put(param.getName(), param.getStandardizedStableValue(get(param.getName())));
       }
     }
