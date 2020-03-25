@@ -408,8 +408,8 @@ public class StepFactory {
         strategy.findFirstStep(withId(entry.getKey())).get(),
         stratStub.findFirstStep(withId(entry.getValue().getStepId())).get()))
       .collect(Collectors.toList()));
-          
-    
+
+
     // return the strategy's root step- will be used to create a branch for
     // adding to another strat
     return stratStub.getRootStep();
@@ -698,7 +698,7 @@ public class StepFactory {
       long oldDatasetId = Long.parseLong(oldStableValue);
       DatasetFactory datasetFactory = _wdkModel.getDatasetFactory();
       Dataset oldDataset = datasetFactory.getDatasetWithOwner(oldDatasetId, oldUser.getUserId());
-      Dataset newDataset = datasetFactory.cloneDataset(oldDataset, newUser);
+      Dataset newDataset = datasetFactory.cloneDataset(oldDatasetId, oldUser.getUserId(), newUser);
       return Long.toString(newDataset.getDatasetId());
     }
     catch (WdkUserException e) {
@@ -1153,7 +1153,7 @@ public class StepFactory {
   /**
    * Transfers ownership of all the strategies belonging to one user to another
    * user.
-   * 
+   *
    * @param fromUser user strats will be transferred from
    * @param toUser  user strats will be transferred to
    * @throws WdkModelException

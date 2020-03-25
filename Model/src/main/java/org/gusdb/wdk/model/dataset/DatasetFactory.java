@@ -2,9 +2,9 @@ package org.gusdb.wdk.model.dataset;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.WdkModel;
@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.sql.*;
 import java.util.Date;
 import java.util.*;
@@ -194,11 +195,19 @@ public class DatasetFactory {
    * This method is called when a dataset set is cloned from one user to another
    * user.
    */
-  public Dataset cloneDataset(Dataset dataset, User newUser) throws WdkModelException {
+  public Dataset cloneDataset(long oldDsId, long oldUserId, User newUser)
+  throws WdkModelException {
+    var con = _userDb.getDataSource().getConnection();
+    con.setAutoCommit(false);
+
+    var newId = copyDataset(con, oldDsId, oldUserId, newUser.getUserId());
+    copyDatasetValues(con, oldDsId, newId);
+
     var content = dataset.getContent();
-    List<String[]> values = dataset.getValues();
-    String uploadFile = dataset.getUploadFile();
-    String parserName = dataset.getParserName();
+    var values = dataset.getValues();
+    var uploadFile = dataset.getUploadFile();
+    var parserName = dataset.getParserName();
+
     return createOrGetDataset(newUser, content, values, uploadFile, parserName);
   }
 
@@ -399,6 +408,118 @@ public class DatasetFactory {
     }
   }
 
+  private String buildDatasetValuesInsertQuery(int size) {
+    var sql = new StringBuilder("INSERT INTO ");
+
+    sql.append(_userSchema)
+      .append(TABLE_DATASET_VALUES)
+      .append(" (" + COLUMN_DATASET_VALUE_ID + ", " + COLUMN_DATASET_ID);
+
+    for (int i = 1; i <= size; i++) {
+      sql.append(", " + COLUMN_DATA_PREFIX).append(i);
+    }
+
+    sql.append(") VALUES (?, ?")
+      .append(", ?".repeat(size))
+      .append(")");
+
+    return sql.toString();
+  }
+
+  private long copyDataset(
+    final Connection con,
+    final long       oldDsId,
+    final long       oldUserId,
+    final long       newUserId
+  ) throws WdkModelException {
+    long newDsId;
+    try {
+      newDsId = _userDb.getPlatform()
+        .getNextId(_userDb.getDataSource(), _userSchema, TABLE_DATASETS);
+    } catch (SQLException e) {
+      throw new WdkModelException(e);
+    }
+
+    var sql = "INSERT INTO " + _userSchema + TABLE_DATASETS + " (\n"
+      + "  "  + COLUMN_DATASET_ID       + "\n"
+      + "  ," + COLUMN_NAME             + "\n"
+      + "  ," + COLUMN_USER_ID          + "\n"
+      + "  ," + COLUMN_CONTENT_CHECKSUM + "\n"
+      + "  ," + COLUMN_DATASET_SIZE     + "\n"
+      + "  ," + COLUMN_CREATED_TIME     + "\n"
+      + "  ," + COLUMN_PARSER           + "\n"
+      + "  ," + COLUMN_UPLOAD_FILE      + "\n"
+      + "  ," + COLUMN_CONTENT
+      + ")\n"
+      + "SELECT\n"
+      + "  "  + newDsId                 + "\n"
+      + "  ," + COLUMN_NAME             + "\n"
+      + "  ," + newUserId     + "\n"
+      + "  ," + COLUMN_CONTENT_CHECKSUM + "\n"
+      + "  ," + COLUMN_DATASET_SIZE     + "\n"
+      + "  ," + COLUMN_CREATED_TIME     + "\n"
+      + "  ," + COLUMN_PARSER           + "\n"
+      + "  ," + COLUMN_UPLOAD_FILE      + "\n"
+      + "  ," + COLUMN_CONTENT          + "\n"
+      + "FROM\n"
+      + "  " + _userSchema + TABLE_DATASETS + "\n"
+      + "WHERE"
+      + "  " + COLUMN_DATASET_ID + " = " + oldDsId + "\n"
+      + "  AND " + COLUMN_USER_ID + " = " + oldUserId;
+
+    new SQLRunner(con, sql).executeStatement();
+
+    return newDsId;
+  }
+
+  private void copyDatasetValues(Connection con, long oldDsId, long newDsId) {
+    var sql = "SELECT *\n"
+      + "FROM " + _userSchema + TABLE_DATASET_VALUES + "\n"
+      + "WHERE dataset_id = ?";
+
+    new SQLRunner(_userDb.getDataSource(), sql).executeQuery(
+      new Object[] {oldDsId},
+      new Integer[] {Types.BIGINT},
+      copyDatasetValues(con, newDsId)
+    );
+  }
+
+  private ResultSetHandler<Void> copyDatasetValues(
+    final Connection con,
+    final long       newDsId
+  ) {
+    var sql = buildDatasetValuesInsertQuery(MAX_VALUE_COLUMNS);
+
+    return rs -> {
+      try (PreparedStatement psInsert = con.prepareStatement(sql)) {
+        var row = 0;
+        while (rs.next()) {
+
+          // get a new value id.
+          var datasetValueId = _userDb.getPlatform()
+            .getNextId(_userDb.getDataSource(), _userSchema, TABLE_DATASET_VALUES);
+
+          psInsert.setLong(1, datasetValueId);
+          psInsert.setLong(2, newDsId);
+          for (int j = 0, k = 3; j < MAX_VALUE_COLUMNS; j++, k++) {
+            psInsert.setString(k, rs.getString(k));
+          }
+          psInsert.addBatch();
+
+          row++;
+          if (row >= 1000) {
+            psInsert.executeBatch();
+            row = 0;
+          }
+        }
+        if (row > 0)
+          psInsert.executeBatch();
+      }
+
+      return null;
+    };
+  }
+
   private void insertDatasetValues(
     final Connection connection,
     final long datasetId,
@@ -406,21 +527,9 @@ public class DatasetFactory {
     final int length
   ) throws SQLException, WdkModelException, WdkUserException {
 
-    var sql = new StringBuilder("INSERT INTO ");
+    var sql = buildDatasetValuesInsertQuery(length);
 
-    sql.append(_userSchema)
-      .append(TABLE_DATASET_VALUES)
-      .append(" (" + COLUMN_DATASET_VALUE_ID + ", " + COLUMN_DATASET_ID);
-
-    for (int i = 1; i <= length; i++) {
-      sql.append(", " + COLUMN_DATA_PREFIX).append(i);
-    }
-
-    sql.append(") VALUES (?, ?")
-      .append(", ?".repeat(length))
-      .append(")");
-
-    try (PreparedStatement psInsert = connection.prepareStatement(sql.toString())) {
+    try (PreparedStatement psInsert = connection.prepareStatement(sql)) {
       //      for (int i = 0; i < data.size(); i++) {
       var row = 0;
       while (data.hasNext()) {
@@ -478,9 +587,16 @@ public class DatasetFactory {
       "SELECT count(*) FROM " + table, "wdk-remote-dataset-dummy");
   }
 
-  private DatasetContents getDatasetContentAsFile(final ResultSet rs) {
-
+  private DatasetContents getDatasetContentAsFile(final ResultSet rs)
+  throws SQLException {
+    try {
+      return new DatasetFileContents(rs.getString(COLUMN_UPLOAD_FILE),
+        rs.getClob(COLUMN_CONTENT).getCharacterStream());
+    } catch (IOException e) {
+      throw new WdkRuntimeException(e);
+    }
   }
+
   private DatasetContents getDatasetContentAsString(final ResultSet rs)
   throws SQLException {
     return new DatasetStringContents(rs.getString(COLUMN_UPLOAD_FILE),

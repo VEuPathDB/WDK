@@ -291,7 +291,6 @@ public class DatasetRequestProcessor {
     }
 
     return parser;
-
   }
 
   private static Optional<String> getStringOrFail(Map<String, JsonType> map, String key) throws RequestMisformatException {
