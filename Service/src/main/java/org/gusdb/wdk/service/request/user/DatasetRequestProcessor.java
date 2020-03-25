@@ -1,16 +1,5 @@
 package org.gusdb.wdk.service.request.user;
 
-import static org.gusdb.fgputil.FormatUtil.join;
-import static org.gusdb.fgputil.json.JsonIterators.arrayStream;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonType;
@@ -37,6 +26,16 @@ import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.service.TemporaryFileService;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static org.gusdb.fgputil.FormatUtil.join;
+import static org.gusdb.fgputil.json.JsonIterators.arrayStream;
 
 public class DatasetRequestProcessor {
 
@@ -211,7 +210,7 @@ public class DatasetRequestProcessor {
     final DatasetFactory  factory
   ) throws WdkModelException, DataValidationException {
     try {
-      return factory.createOrGetDataset(user, parser, content, uploadFileName);
+      return factory.createOrGetDataset(user, parser, content);
     } catch (WdkUserException e) {
       throw new DataValidationException(e.getMessage());
     }
@@ -233,17 +232,12 @@ public class DatasetRequestProcessor {
     var contents = new DatasetFileContents(tempFileId, tempFilePath.toFile());
     var parser   = parserName.isPresent()
       ? findDatasetParser(parserName.get(), additionalConfig, factory.getWdkModel())
-      : new ListDatasetParser(contents);
+      : new ListDatasetParser();
 
-    try {
-//      if (contents.isEmpty()) {
-//        throw new DataValidationException("The file submitted is empty.  No dataset can be made.");
-//      }
-      return createDataset(user, parser, contents, tempFileId, factory);
-    }
-    catch (IOException e) {
-      throw new WdkModelException("Unable to read temporary file with ID '" + tempFileId + "'.", e);
-    }
+    //      if (contents.isEmpty()) {
+    //        throw new DataValidationException("The file submitted is empty.  No dataset can be made.");
+    //      }
+    return createDataset(user, parser, contents, factory);
   }
 
   private static DatasetParser findDatasetParser(
