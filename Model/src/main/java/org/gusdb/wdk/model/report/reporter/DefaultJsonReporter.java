@@ -161,6 +161,7 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
     ReporterRef ref = new ReporterRef();
     ref.setName(RESERVED_NAME);
     ref.setDisplayName("Standard JSON");
+    ref.setScopes("results");
     ref.setDescription(new WdkModelText(null, "Converts your result to the standard JSON used by the web service."));
     ref.setImplementation(DefaultJsonReporter.class.getName());
     return ref;
