@@ -4,7 +4,7 @@ import org.gusdb.wdk.model.WdkUserException;
 
 import java.util.regex.Pattern;
 
-@SuppressWarnings("unused")
+@SuppressWarnings("unused") // used reflectively
 public class FastaDatasetParser extends AbstractDatasetParser {
 
   private static final int SEQUENCE_LENGTH = 1999;

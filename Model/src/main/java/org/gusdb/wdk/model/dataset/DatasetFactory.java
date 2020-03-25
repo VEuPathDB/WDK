@@ -197,18 +197,18 @@ public class DatasetFactory {
    */
   public Dataset cloneDataset(long oldDsId, long oldUserId, User newUser)
   throws WdkModelException {
-    var con = _userDb.getDataSource().getConnection();
-    con.setAutoCommit(false);
+    try (final var con = _userDb.getDataSource().getConnection()) {
+      con.setAutoCommit(false);
 
-    var newId = copyDataset(con, oldDsId, oldUserId, newUser.getUserId());
-    copyDatasetValues(con, oldDsId, newId);
+      var newId = copyDataset(con, oldDsId, oldUserId, newUser.getUserId());
+      copyDatasetValues(con, oldDsId, newId);
 
-    var content = dataset.getContent();
-    var values = dataset.getValues();
-    var uploadFile = dataset.getUploadFile();
-    var parserName = dataset.getParserName();
+      con.commit();
 
-    return createOrGetDataset(newUser, content, values, uploadFile, parserName);
+      return getDatasetWithOwner(newId, newUser.getUserId());
+    } catch (SQLException | WdkUserException e) {
+      throw new WdkModelException(e);
+    }
   }
 
   public void transferDatasetOwnership(User oldUser, User newUser) throws WdkModelException {
@@ -333,30 +333,20 @@ public class DatasetFactory {
         " WHERE d." + COLUMN_CONTENT_CHECKSUM + " = ?" +
         "   AND d." + COLUMN_USER_ID + " = ?";
 
-    PreparedStatement statement = null;
-    ResultSet resultSet = null;
-    try {
-      statement = connection.prepareStatement(sql);
+    try(final var statement = connection.prepareStatement(sql)) {
+
       long start = System.currentTimeMillis();
       statement.setString(1, checksum);
       statement.setLong(2, user.getUserId());
-      resultSet = statement.executeQuery();
-      QueryLogger.logEndStatementExecution(sql, "wdk-dataset-by-content-checksum", start);
 
-      return resultSet.next() ? readDataset(resultSet) : null;
-    }
-    catch (SQLException ex) {
-      throw new WdkModelException(ex);
-    }
-    finally {
-      try {
-        if (resultSet != null)
-          resultSet.close();
-        if (statement != null)
-          statement.close();
-      } catch(SQLException ex) {
-        throw new WdkModelException(ex);
+      try(final var resultSet = statement.executeQuery()) {
+        QueryLogger.logEndStatementExecution(sql,
+          "wdk-dataset-by-content-checksum", start);
+
+        return resultSet.next() ? readDataset(resultSet) : null;
       }
+    } catch (SQLException ex) {
+      throw new WdkModelException(ex);
     }
   }
 
@@ -454,7 +444,7 @@ public class DatasetFactory {
       + "SELECT\n"
       + "  "  + newDsId                 + "\n"
       + "  ," + COLUMN_NAME             + "\n"
-      + "  ," + newUserId     + "\n"
+      + "  ," + newUserId               + "\n"
       + "  ," + COLUMN_CONTENT_CHECKSUM + "\n"
       + "  ," + COLUMN_DATASET_SIZE     + "\n"
       + "  ," + COLUMN_CREATED_TIME     + "\n"

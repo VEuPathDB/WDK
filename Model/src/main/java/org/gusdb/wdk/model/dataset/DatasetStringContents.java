@@ -1,7 +1,10 @@
 package org.gusdb.wdk.model.dataset;
 
 import org.gusdb.fgputil.EncryptionUtil;
+import org.gusdb.wdk.model.WdkModelException;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 

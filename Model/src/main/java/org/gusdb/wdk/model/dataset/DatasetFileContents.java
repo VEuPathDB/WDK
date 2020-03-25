@@ -38,7 +38,7 @@ public class DatasetFileContents extends DatasetContents {
     this.owned = false;
   }
 
-  public DatasetFileContents(
+  DatasetFileContents(
     final String fileName,
     final Reader stream
   ) throws IOException {
@@ -71,7 +71,7 @@ public class DatasetFileContents extends DatasetContents {
    */
   @Override
   @SuppressWarnings({ "ResultOfMethodCallIgnored", "deprecation" })
-  protected void finalize() throws Throwable {
+  protected void finalize() {
     if (owned)
       contents.delete();
   }
@@ -88,6 +88,15 @@ public class DatasetFileContents extends DatasetContents {
   public Reader getContentReader() throws WdkModelException {
     try {
       return new FileReader(contents);
+    } catch (FileNotFoundException e) {
+      throw new WdkModelException(e);
+    }
+  }
+
+  @Override
+  public InputStream getContentStream() throws WdkModelException {
+    try {
+      return new FileInputStream(contents);
     } catch (FileNotFoundException e) {
       throw new WdkModelException(e);
     }

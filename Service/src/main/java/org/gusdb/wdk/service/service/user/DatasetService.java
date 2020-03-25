@@ -7,6 +7,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
@@ -87,10 +88,23 @@ public class DatasetService extends UserService {
     }
 
     return output -> {
+      var buf  = new byte[8192];
+      var read = 0;
       try {
-        factory.writeOutDatasetValues(datasetId, output);
-      } catch (WdkModelException e) {
-        throw new WebApplicationException(e);
+        var stream = factory.getDatasetWithOwner(
+          datasetId,
+          getUserBundle(Access.PRIVATE).getTargetUser().getUserId()
+        )
+          .getContent()
+          .getContentStream();
+
+        do {
+          read = stream.read(buf, 0, buf.length);
+          output.write(buf, 0, read);
+        } while (read > 0);
+
+      } catch (WdkModelException | WdkUserException e) {
+        throw new WdkRuntimeException(e);
       }
     };
   }

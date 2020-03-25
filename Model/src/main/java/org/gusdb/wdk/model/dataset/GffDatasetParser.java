@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 /**
  * @author jerric
  */
+@SuppressWarnings("unused") // used reflectively
 public class GffDatasetParser extends AbstractDatasetParser {
 
   private static final String PROP_RECORD_TYPES = "gff.record.types";
