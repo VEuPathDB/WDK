@@ -189,6 +189,8 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
         if (value != null && !value.isEmpty())
           jsParams.put(paramName, value);
       }
+      if (LOG.isDebugEnabled())
+        LOG.debug("Produced the following param signatures (query=" + _query.getFullName() + "): " + jsParams.toString(2));
       return jsParams;
     }
     catch (JSONException e) {
