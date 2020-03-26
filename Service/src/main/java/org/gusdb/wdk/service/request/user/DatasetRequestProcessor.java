@@ -19,6 +19,8 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.PrimaryKeyValue;
+import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -27,11 +29,12 @@ import org.gusdb.wdk.service.service.TemporaryFileService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.gusdb.fgputil.FormatUtil.join;
@@ -159,16 +162,47 @@ public class DatasetRequestProcessor {
         "No record class exists with name '" + recordClassName + "'."));
 
     var basketFactory = factory.getWdkModel().getBasketFactory();
-    List<String[]> ids = basketFactory.getBasket(user, recordClass).stream()
-        .map(ri -> ri.getPrimaryKey().getValues().values().toArray(new String[0]))
-        .collect(Collectors.toList());
+    var wasEmpty = true;
 
-    if (ids.isEmpty())
-      throw new DataValidationException("Basket '" + recordClassName + "' does "
-        + "not contain any records.  No dataset can be made.");
+    try {
+      var file = Files.createTempFile("dataset-",
+        "-" + user.getStableId() + "-" + recordClassName).toFile();
 
-    return createDataset(user, new ListDatasetParser(),
-      new DatasetListContents(joinIds(ids)), factory);
+      file.deleteOnExit();
+
+      try (
+        var write  = new BufferedWriter(new FileWriter(file));
+        var stream = basketFactory.getBasket(user, recordClass)
+      ) {
+        var it = stream
+          .map(RecordInstance::getPrimaryKey)
+          .map(PrimaryKeyValue::getValues)
+          .map(Map::values)
+          .map(c -> c.toArray(new String[0]))
+          .map(a -> join(a, ListDatasetParser.DATASET_COLUMN_DIVIDER))
+          .iterator();
+
+        if (it.hasNext()) {
+          wasEmpty = false;
+          while (it.hasNext()) {
+            write.write(it.next());
+            write.write('\n');
+          }
+
+          write.flush();
+        }
+      }
+
+      if (wasEmpty)
+        throw new DataValidationException("Basket '" + recordClassName + "' does "
+          + "not contain any records.  No dataset can be made.");
+
+      return createDataset(user, new ListDatasetParser(),
+        new DatasetFileContents(null, file), factory);
+
+    } catch (IOException e) {
+      throw new WdkModelException(e);
+    }
   }
 
   private static Dataset createFromStrategy(
