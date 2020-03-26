@@ -435,9 +435,18 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     return _createdTime;
   }
 
+  /**
+   * Counts the number of steps in this strategy that are either leaf steps or
+   * transforms.  This corresponds to the "number of steps" in the UI, which is
+   * a linear display rather than tree-based.  If a step does not have a valid
+   * question, we also count it under the assumption that a step with an invalid
+   * question name is more likely to be a leaf/transform than boolean.
+   *
+   * @return number of leaf and transform steps, and those with invalid question names
+   */
   public long getLeafAndTransformStepCount() {
     return getAllSteps().stream()
-        .filter(step -> step.hasValidQuestion() &&
+        .filter(step -> !step.hasValidQuestion() ||
             step.getAnswerSpec().getQuestion().getQuery().getAnswerParamCount() < 2)
         .collect(Collectors.counting());
   }
