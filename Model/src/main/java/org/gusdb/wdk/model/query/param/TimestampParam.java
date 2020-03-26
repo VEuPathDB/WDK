@@ -70,23 +70,18 @@ public class TimestampParam extends Param {
   }
 
   /**
-   * @return whether param is known to service clients (i.e. is not internal-only)
+   * @return true.  Timestamp param value is not used.  Its signature is used
+   * to invalidate old cache tables for query instance specs even if other param
+   * values have not changed
    */
   @Override
-  public boolean isVisibleToClient() {
-    return false;
+  public boolean isForInternalUseOnly() {
+    return true;
   }
 
   @Override
   public String getDefault(PartiallyValidatedStableValues contextParamValues) {
     return "";
-  }
-
-  // called by ParameterContainerInstanceSpecBuilder to fill value when there is
-  //   none so that the answer spec passes validation
-  @Override
-  public String getStandardizedStableValue(String stableValue) {
-    return getDefault(null);
   }
 
   @Override
@@ -100,5 +95,21 @@ public class TimestampParam extends Param {
     if (value.length() > truncateLength)
       value = value.substring(0, truncateLength) + "...";
     return value;
+  }
+
+  /**
+   * @return true; is allowed to be empty.  Any value can be filled in
+   */
+  @Override
+  public boolean isAllowEmpty() {
+    return true;
+  }
+
+  /**
+   * @return the emptyValue
+   */
+  @Override
+  public String getEmptyValue() {
+    return "";
   }
 }

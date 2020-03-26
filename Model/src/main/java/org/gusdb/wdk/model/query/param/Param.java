@@ -347,10 +347,11 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   }
 
   /**
-   * @return whether param is known to service clients (i.e. is not internal-only)
+   * @return whether param value is for internal use only; if so, it will be
+   * omitted in both service use and DB
    */
-  public boolean isVisibleToClient() {
-    return true;
+  public boolean isForInternalUseOnly() {
+    return false;
   }
 
   /**

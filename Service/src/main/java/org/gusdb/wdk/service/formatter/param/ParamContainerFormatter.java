@@ -31,7 +31,7 @@ public class ParamContainerFormatter {
     if (instanceSpec.getParameterContainer().isPresent()) {
       for (Param param : instanceSpec.getParameterContainer().get().getParams()) {
         String value = instanceSpec.get(param.getName());
-        if (param.isVisibleToClient() && value != null) {
+        if (!param.isForInternalUseOnly() && value != null) {
           // skip if value not present; errors should tell client it's missing
           // if present then convert to external format
           json.put(param.getName(), param.getExternalStableValue(value));
@@ -51,7 +51,7 @@ public class ParamContainerFormatter {
       DisplayablyValid<T> spec, Predicate<Param> inclusionPredicate) throws WdkModelException {
     JSONArray paramsJson = new JSONArray();
     for (Param param : spec.get().getParameterContainer().get().getParams()) {
-      if (param.isVisibleToClient() && inclusionPredicate.test(param)) {
+      if (!param.isForInternalUseOnly() && inclusionPredicate.test(param)) {
         paramsJson.put(ParamFormatterFactory.getFormatter(param).getJson(spec));
       }
     }
@@ -120,7 +120,7 @@ public class ParamContainerFormatter {
   private static Set<String> filterNames(Collection<Param> params, Set<String> namesToExclude) {
     Set<String> filteredNames = new LinkedHashSet<>(); // maintain order
     params.stream()
-      .filter(p -> p.isVisibleToClient() && !namesToExclude.contains(p.getName()))
+      .filter(p -> !p.isForInternalUseOnly() && !namesToExclude.contains(p.getName()))
       .forEach(p -> filteredNames.add(p.getName()));
     return filteredNames;
   }
