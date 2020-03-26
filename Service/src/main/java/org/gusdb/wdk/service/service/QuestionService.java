@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
@@ -39,6 +40,7 @@ import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.StepContainer;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.formatter.QuestionFormatter;
 import org.gusdb.wdk.service.formatter.param.ParamContainerFormatter;
 import org.gusdb.wdk.service.request.ParamValueSetRequest;
@@ -123,20 +125,26 @@ public class QuestionService extends AbstractWdkService {
   public JSONObject getQuestionNew(
       @PathParam(SEARCH_PATH_PARAM) String questionUrlSegment)
           throws WdkModelException {
-    DisplayablyValid<AnswerSpec> validSpec = AnswerSpec.builder(getWdkModel())
-        .setQuestionFullName(getQuestionOrNotFound(questionUrlSegment).getFullName())
-        .build(
-            getSessionUser(),
-            StepContainer.emptyContainer(),
-            ValidationLevel.DISPLAYABLE,
-            FillStrategy.FILL_PARAM_IF_MISSING)
-        .getDisplayablyValid()
-        .getOrThrow(spec -> new WdkModelException("Default values for question '" +
-            questionUrlSegment + "' are not displayable. Validation " +
-            "details: " + spec.getValidationBundle().toString(2)));
+    DisplayablyValid<AnswerSpec> validSpec = getDisplayableAnswerSpec(
+        questionUrlSegment, getWdkModel(), getSessionUser(), name -> getQuestionOrNotFound(name));
     JSONObject result = QuestionFormatter.getQuestionJsonWithParams(validSpec, validSpec.get().getValidationBundle());
     if (LOG.isDebugEnabled()) LOG.debug("Returning JSON: " + result.toString(2));
     return result;
+  }
+
+  public static DisplayablyValid<AnswerSpec> getDisplayableAnswerSpec(
+      String questionUrlSegment, WdkModel wdkModel, User user, Function<String, Question> questionLookup) throws WdkModelException {
+    return AnswerSpec.builder(wdkModel)
+      .setQuestionFullName(questionLookup.apply(questionUrlSegment).getFullName())
+      .build(
+          user,
+          StepContainer.emptyContainer(),
+          ValidationLevel.DISPLAYABLE,
+          FillStrategy.FILL_PARAM_IF_MISSING)
+      .getDisplayablyValid()
+      .getOrThrow(spec -> new WdkModelException("Default values for question '" +
+          questionUrlSegment + "' are not displayable. Validation " +
+          "details: " + spec.getValidationBundle().toString(2)));
   }
 
   /**

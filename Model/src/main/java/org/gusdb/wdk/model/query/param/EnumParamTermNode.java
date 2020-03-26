@@ -1,11 +1,9 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.wdk.model.FieldTree;
 import org.gusdb.wdk.model.SelectableItem;
@@ -89,5 +87,18 @@ public class EnumParamTermNode {
       }
     }
     return tree;
+  }
+
+  public List<String> getLeafTerms() {
+    if (children.isEmpty()) {
+      return ListBuilder.asList(term);
+    }
+    else {
+      List<String> list = new ArrayList<>();
+      for (EnumParamTermNode child : children) {
+        list.addAll(child.getLeafTerms());
+      }
+      return list;
+    }
   }
 }
