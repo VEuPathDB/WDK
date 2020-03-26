@@ -79,7 +79,7 @@ public class TimestampParam extends Param {
 
   @Override
   public String getDefault(PartiallyValidatedStableValues contextParamValues) {
-    return String.valueOf(System.currentTimeMillis());
+    return "";
   }
 
   // called by ParameterContainerInstanceSpecBuilder to fill value when there is
