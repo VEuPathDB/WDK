@@ -382,7 +382,7 @@ public class BasketFactory {
 
         try {
           return Optional.of(
-            new StaticRecordInstance(user, recordClass, recordClass, pkValues, true));
+            new StaticRecordInstance(user, recordClass, recordClass, pkValues, false));
         } catch (WdkUserException | RecordNotFoundException e) {
           // FIXME: thrown because pkValues either:
           //    WdkUserException: mapped to more than one record
