@@ -382,7 +382,7 @@ public class BasketFactory {
 
         try {
           return Optional.of(
-            new StaticRecordInstance(user, recordClass, recordClass, pkValues, false));
+            new StaticRecordInstance(user, recordClass, recordClass, pkValues, true));
         } catch (WdkUserException | RecordNotFoundException e) {
           // FIXME: thrown because pkValues either:
           //    WdkUserException: mapped to more than one record
@@ -407,8 +407,6 @@ public class BasketFactory {
 
   /**
    * the method has to be called before the recordClasses are resolved.
-   *
-   * @param recordClass
    */
   public void createSnapshotBasketQuestion(RecordClass recordClass) throws WdkModelException {
     // check if the basket question already exists
@@ -496,8 +494,6 @@ public class BasketFactory {
 
   /**
    * the method has to be called before the recordClasses are resolved.
-   *
-   * @param recordClass
    */
   public void createRealtimeBasketQuestion(RecordClass recordClass) throws WdkModelException {
     // check if the basket question already exists
