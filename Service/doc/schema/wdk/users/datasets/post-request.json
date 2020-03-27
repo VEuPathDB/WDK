@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema",
   "oneOf": [
     {
-      "title": "Dataset from ID List",
+      "id": "dataset-from-id-list",
       "type": "object",
       "properties": {
         "sourceType": {
@@ -32,7 +32,7 @@
       "additionalProperties": false
     },
     {
-      "title": "Dataset from Basket",
+      "id": "dataset-from-basket",
       "type": "object",
       "properties": {
         "sourceType": {
@@ -59,7 +59,7 @@
       "additionalProperties": false
     },
     {
-      "title": "Dataset from Strategy",
+      "id": "dataset-from-strategy",
       "type": "object",
       "properties": {
         "sourceType": {
@@ -86,7 +86,7 @@
       "additionalProperties": false
     },
     {
-      "title": "Dataset from File",
+      "id": "dataset-from-file",
       "type": "object",
       "properties": {
         "sourceType": {
@@ -105,7 +105,7 @@
             "parameterName": {
               "type": "string"
             },
-            "questionName": {
+            "searchName": {
               "type": "string"
             }
           },
