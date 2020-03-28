@@ -132,7 +132,7 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
       .put(JsonKeys.ATTRIBUTES, new JSONArray(includedAttributes))
       .put(JsonKeys.TABLES, new JSONArray(includedTables))
       .put(JsonKeys.SORTING, formatSorting(answerValue.getSortingMap(), question.getAttributeFieldMap()))
-      .put(JsonKeys.CACHE_PREVIOUSLY_EXISTED, answerValue.getIdsQueryInstance().cacheInitiallyExistedForSpec());
+      .put(JsonKeys.CACHE_PREVIOUSLY_EXISTED, answerValue.cacheInitiallyExistedForSpec());
     return meta;
   }
 

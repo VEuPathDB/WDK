@@ -119,4 +119,10 @@ public class SingleRecordAnswerValue extends AnswerValue {
   public void setSortingMap(Map<String, Boolean> sortingMap) {
     // no-op since sorting is irrelevant in a single record answer
   }
+
+  @Override
+  public boolean cacheInitiallyExistedForSpec() throws WdkModelException {
+    // does not use WDK cache
+    return false;
+  }
 }

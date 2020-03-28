@@ -249,6 +249,10 @@ public class AnswerValue {
     return _resultSizeFactory;
   }
 
+  public boolean cacheInitiallyExistedForSpec() throws WdkModelException {
+    return _idsQueryInstance.cacheInitiallyExistedForSpec();
+  }
+
   /**
    * @return Map where key is param display name and value is param value
    */

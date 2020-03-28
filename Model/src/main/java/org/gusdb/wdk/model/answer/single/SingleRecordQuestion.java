@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.answer.single;
 import java.util.Map;
 
 import org.gusdb.fgputil.MapBuilder;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.Param;
@@ -32,10 +33,15 @@ public class SingleRecordQuestion extends Question {
 
   @Override
   public Query getQuery() {
+    WdkModel wdkModel = _wdkModel;
     return new SqlQuery(){
       @Override
       public Map<String, Param> getParamMap() {
         return new MapBuilder<String,Param>(_param.getName(), _param).toMap();
+      }
+      @Override
+      public WdkModel getWdkModel() {
+        return wdkModel;
       }
     };
   }
