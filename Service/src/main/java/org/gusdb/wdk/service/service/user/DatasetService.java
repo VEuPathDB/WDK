@@ -1,17 +1,13 @@
 package org.gusdb.wdk.service.service.user;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
@@ -19,9 +15,9 @@ import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.DatasetRequestProcessor;
 import org.gusdb.wdk.service.request.user.DatasetRequestProcessor.DatasetRequest;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 
 public class DatasetService extends UserService {
 
@@ -82,7 +78,7 @@ public class DatasetService extends UserService {
   @GET
   @Path("datasets/{id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray getDataset(@PathParam("id") long datasetId) throws WdkModelException {
+  public StreamingOutput getDataset(@PathParam("id") long datasetId) throws WdkModelException {
     var factory = getWdkModel().getDatasetFactory();
     try {
       factory.getDatasetWithOwner(datasetId, getUserBundle(Access.PRIVATE).getTargetUser().getUserId());
@@ -90,6 +86,26 @@ public class DatasetService extends UserService {
     catch (WdkUserException e) {
       throw new NotFoundException(formatNotFound("Dataset with ID " + datasetId));
     }
-    return new JSONArray(factory.getDatasetValues(datasetId));
+
+    return output -> {
+      var buf  = new byte[8192];
+      var read = 0;
+      try {
+        var stream = factory.getDatasetWithOwner(
+          datasetId,
+          getUserBundle(Access.PRIVATE).getTargetUser().getUserId()
+        )
+          .getContent()
+          .getContentStream();
+
+        do {
+          read = stream.read(buf, 0, buf.length);
+          output.write(buf, 0, read);
+        } while (read > 0);
+
+      } catch (WdkModelException | WdkUserException e) {
+        throw new WdkRuntimeException(e);
+      }
+    };
   }
 }

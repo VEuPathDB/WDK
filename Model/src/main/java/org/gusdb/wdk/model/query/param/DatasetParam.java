@@ -195,11 +195,8 @@ public class DatasetParam extends Param {
 
   @Override
   public String getBriefRawValue(Object rawValue, int truncateLength) throws WdkModelException {
-    Dataset dataset = (Dataset) rawValue;
-    String content = dataset.getContent();
-    if (content.length() > truncateLength)
-      content = content.substring(0, truncateLength) + "...";
-    return content;
+    return ((Dataset) rawValue).getContent()
+      .truncate(truncateLength);
   }
 
   public void addParserReference(DatasetParserReference reference) {
