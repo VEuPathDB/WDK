@@ -32,8 +32,10 @@ public interface DatasetParser {
     Logger.getLogger(getClass()).info("datasetContentSize");
     var out = 0;
     var it = iterator(contents);
-    while (it.hasNext())
+    while (it.hasNext()) {
+      it.next();
       out++;
+    }
     return out;
   }
 
