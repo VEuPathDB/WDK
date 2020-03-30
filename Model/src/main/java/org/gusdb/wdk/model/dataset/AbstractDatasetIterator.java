@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.dataset;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dataset.DatasetParser.DatasetIterator;
@@ -96,6 +97,7 @@ public abstract class AbstractDatasetIterator implements DatasetIterator {
         break;
     }
 
+    Logger.getLogger(getClass()).info("Reached end of list input");
     exhausted = true;
   }
 
