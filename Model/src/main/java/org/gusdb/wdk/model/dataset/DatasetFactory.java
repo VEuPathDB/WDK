@@ -361,7 +361,6 @@ public class DatasetFactory {
     final String parserName,
     final String uploadFile
   ) throws WdkModelException {
-    LOG.info("insertDataset");
     var sql = "INSERT INTO " + _userSchema + TABLE_DATASETS + " ("
       + COLUMN_DATASET_ID+ ", " + COLUMN_NAME + ", " + COLUMN_USER_ID + ", "
       + COLUMN_CONTENT_CHECKSUM + ", " + COLUMN_DATASET_SIZE + ", "
@@ -517,14 +516,16 @@ public class DatasetFactory {
     final DatasetIterator data,
     final int length
   ) throws SQLException, WdkModelException, WdkUserException {
-
+    LOG.info("insertDatasetValues");
     var sql = buildDatasetValuesInsertQuery(length);
+    LOG.info("- sql");
 
     try (PreparedStatement psInsert = connection.prepareStatement(sql)) {
       //      for (int i = 0; i < data.size(); i++) {
       var row = 0;
       while (data.hasNext()) {
         var value = data.next();
+        LOG.info("- value");
 
         // get a new value id.
         var datasetValueId = _userDb.getPlatform()
@@ -539,12 +540,15 @@ public class DatasetFactory {
 
         row++;
         if (row >= 1000) {
+          LOG.info("- batch");
           psInsert.executeBatch();
           row = 0;
         }
       }
-      if (row > 0)
+      if (row > 0) {
+        LOG.info("- remainder");
         psInsert.executeBatch();
+      }
     }
   }
 
