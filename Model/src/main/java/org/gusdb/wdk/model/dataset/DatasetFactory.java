@@ -263,10 +263,13 @@ public class DatasetFactory {
         Date createdTime = new Date();
 
         // get a new dataset id
+        LOG.info("datasetId");
         var datasetId = _userDb.getPlatform()
           .getNextId(_userDb.getDataSource(), _userSchema, TABLE_DATASETS);
         var name = "My dataset#" + datasetId;
+        LOG.info("name");
         var size = parser.datasetContentSize(content);
+        LOG.info("size");
 
         LOG.info("INSERTING DATASET");
 
