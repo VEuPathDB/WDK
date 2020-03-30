@@ -280,8 +280,8 @@ public class DatasetRequestProcessor {
     final WdkModel model
   ) throws DataValidationException, RequestMisformatException, WdkModelException {
 
-    Optional<String> questionName  = getStringOrFail(additionalConfig, JsonKeys.SEARCH_NAME);
-    Optional<String> parameterName = getStringOrFail(additionalConfig, JsonKeys.PARAMETER_NAME);
+    var questionName  = getStringOrFail(additionalConfig, JsonKeys.SEARCH_NAME);
+    var parameterName = getStringOrFail(additionalConfig, JsonKeys.PARAMETER_NAME);
 
     if (questionName.isEmpty() || parameterName.isEmpty()) {
       throw new DataValidationException("If '" + JsonKeys.PARSER + "' property "
