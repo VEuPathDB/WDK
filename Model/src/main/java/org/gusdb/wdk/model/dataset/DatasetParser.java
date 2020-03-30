@@ -29,7 +29,6 @@ public interface DatasetParser {
 
   default int datasetContentSize(final DatasetContents contents)
   throws WdkModelException, WdkUserException {
-    Logger.getLogger(getClass()).info("datasetContentSize");
     var out = 0;
     var it = iterator(contents);
     while (it.hasNext()) {
@@ -37,6 +36,12 @@ public interface DatasetParser {
       out++;
     }
     return out;
+  }
+
+  default int datasetContentWidth(final DatasetContents contents)
+  throws WdkModelException, WdkUserException {
+    var it = iterator(contents);
+    return it.hasNext() ? it.next().length : 0;
   }
 
   /**

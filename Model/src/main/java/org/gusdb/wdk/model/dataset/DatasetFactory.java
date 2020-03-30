@@ -251,27 +251,21 @@ public class DatasetFactory {
         connection.setAutoCommit(false);
 
         // check if dataset exists
-        LOG.info("Checking if dataset exists");
         String checksum = content.getChecksum();
         Dataset dataset = getDataset(user, connection, checksum);
         if (dataset != null)
           return dataset;
 
-        LOG.info("Creating dataset for user#" + user.getUserId() + ": " + checksum);
+        LOG.debug("Creating dataset for user#" + user.getUserId() + ": " + checksum);
 
         // insert dataset and its values
         Date createdTime = new Date();
 
         // get a new dataset id
-        LOG.info("datasetId");
         var datasetId = _userDb.getPlatform()
           .getNextId(_userDb.getDataSource(), _userSchema, TABLE_DATASETS);
         var name = "My dataset#" + datasetId;
-        LOG.info("name");
         var size = parser.datasetContentSize(content);
-        LOG.info("size");
-
-        LOG.info("INSERTING DATASET");
 
         insertDataset(
           user,
@@ -285,12 +279,9 @@ public class DatasetFactory {
           uploadFile
         );
 
-        LOG.info("INSERTING DATASET VALUES");
-
-        insertDatasetValues(connection, datasetId, parser.iterator(content), size);
+        insertDatasetValues(connection, datasetId, parser.iterator(content),
+          parser.datasetContentWidth(content));
         connection.commit();
-
-        LOG.info("DONE INSERTING");
 
         // create and insert user dataset.
         dataset = new Dataset(this, user.getUserId(), datasetId);
