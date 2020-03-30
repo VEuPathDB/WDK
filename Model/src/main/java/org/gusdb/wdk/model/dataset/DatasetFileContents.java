@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.dataset;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -103,6 +104,7 @@ public class DatasetFileContents extends DatasetContents {
   }
 
   private static String genChecksum(final File file) {
+    Logger.getLogger(DatasetFileContents.class).info("genChecksum");
     try {
       var dig  = EncryptionUtil.newMd5Digester();
       var str  = new BufferedInputStream(new FileInputStream(file), BUF_SIZE);

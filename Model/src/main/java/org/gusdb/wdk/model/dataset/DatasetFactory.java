@@ -366,6 +366,7 @@ public class DatasetFactory {
     final String parserName,
     final String uploadFile
   ) throws WdkModelException {
+    LOG.info("insertDataset");
     var sql = "INSERT INTO " + _userSchema + TABLE_DATASETS + " ("
       + COLUMN_DATASET_ID+ ", " + COLUMN_NAME + ", " + COLUMN_USER_ID + ", "
       + COLUMN_CONTENT_CHECKSUM + ", " + COLUMN_DATASET_SIZE + ", "
