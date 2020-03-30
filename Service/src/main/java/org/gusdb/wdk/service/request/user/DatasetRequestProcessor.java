@@ -289,7 +289,7 @@ public class DatasetRequestProcessor {
         + JsonKeys.PARAMETER_NAME + "' must also be specified.");
     }
 
-    Question question = model.getQuestionByFullName(questionName.get())
+    Question question = model.getQuestionByName(questionName.get())
       .orElseThrow(
         () -> new DataValidationException(String.format(
           "Could not find question with name '%s'.", questionName.get()
