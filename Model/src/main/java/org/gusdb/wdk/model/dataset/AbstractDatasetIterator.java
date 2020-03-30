@@ -90,6 +90,7 @@ public abstract class AbstractDatasetIterator implements DatasetIterator {
 
       if (rowFilter(tmp)) {
         next = tmp;
+        Logger.getLogger(getClass()).info("Row " + tmp);
         return;
       }
 
