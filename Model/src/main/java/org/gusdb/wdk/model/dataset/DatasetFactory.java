@@ -267,6 +267,7 @@ public class DatasetFactory {
         var name = "My dataset#" + datasetId;
         var size = parser.datasetContentSize(content);
 
+        LOG.info("INSERTING DATASET");
 
         insertDataset(
           user,
@@ -280,8 +281,12 @@ public class DatasetFactory {
           uploadFile
         );
 
+        LOG.info("INSERTING DATASET VALUES");
+
         insertDatasetValues(connection, datasetId, parser.iterator(content), size);
         connection.commit();
+
+        LOG.info("DONE INSERTING");
 
         // create and insert user dataset.
         dataset = new Dataset(this, user.getUserId(), datasetId);
