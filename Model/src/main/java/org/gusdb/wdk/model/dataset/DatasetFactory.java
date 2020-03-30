@@ -251,12 +251,13 @@ public class DatasetFactory {
         connection.setAutoCommit(false);
 
         // check if dataset exists
+        LOG.info("Checking if dataset exists");
         String checksum = content.getChecksum();
         Dataset dataset = getDataset(user, connection, checksum);
         if (dataset != null)
           return dataset;
 
-        LOG.debug("Creating dataset for user#" + user.getUserId() + ": " + checksum);
+        LOG.info("Creating dataset for user#" + user.getUserId() + ": " + checksum);
 
         // insert dataset and its values
         Date createdTime = new Date();

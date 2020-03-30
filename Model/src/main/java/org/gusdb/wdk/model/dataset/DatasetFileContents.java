@@ -112,7 +112,7 @@ public class DatasetFileContents extends DatasetContents {
 
       var read = 0;
       read = str.read(buf);
-      while (read > -1) {
+      while (read > 0) {
         dig.update(buf, 0, read);
         read = str.read(buf);
       }
