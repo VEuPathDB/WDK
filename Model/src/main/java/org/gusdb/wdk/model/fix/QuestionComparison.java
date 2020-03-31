@@ -53,34 +53,32 @@ public class QuestionComparison {
   }
 
   private static class QuestionReference extends ThreeTuple<List<String>,Map<String,String>,Map<String,List<String>>> {
-    public QuestionReference(
+    QuestionReference(
         List<String> questionNames,
         Map<String, String> recordClassMap,
         Map<String,List<String>> paramNamesMap) {
       super(questionNames, recordClassMap, paramNamesMap);
     }
-    public List<String> sortedNames() { return getFirst(); }
-    public String getRecordType(String questionName) { return getSecond().get(questionName); }
-    public List<String> getParamNames(String questionName) { return getThird().get(questionName); }
+    List<String> sortedNames() { return getFirst(); }
+    String getRecordType(String questionName) { return getSecond().get(questionName); }
+    List<String> getParamNames(String questionName) { return getThird().get(questionName); }
   }
 
-  private ComparisonBean questionNameComparison = null;
-  private ComparisonBean organismComparison = null;
+  private ComparisonBean questionNameComparison;
+  private ComparisonBean organismComparison;
 
-  private List<ComparisonBean> parameterNameComparisons = new ArrayList<>();
-  private List<ComparisonBean> parameterValueComparisons = new ArrayList<>();
-  private List<ComparisonBean> parameterValueOptionComparisons = new ArrayList<>();
+  private final List<ComparisonBean> parameterNameComparisons = new ArrayList<>();
+  private final List<ComparisonBean> parameterValueComparisons = new ArrayList<>();
+  private final List<ComparisonBean> parameterValueOptionComparisons = new ArrayList<>();
 
-  private Map<String, List<String>> commonParameterMap = new HashMap<>();
+  private final Map<String, List<String>> commonParameterMap = new HashMap<>();
 
-  private List<Error> errors = new ArrayList<>();
+  private final List<Error> errors = new ArrayList<>();
 
   /**
    * Command line method for comparing various elements of the WDK model between sites. The first site (the
    * first arg) is expected to be the site with newer data whereas the second site (the second arg) is
    * expected to be the site with current data.
-   * 
-   * @param args
    */
   public static void main(String[] args) {
     if (args.length < 2 || args.length > 3) {
@@ -103,11 +101,6 @@ public class QuestionComparison {
    * Runs the site comparison. Provides some logging to indicate progress, follows by a report of differences
    * between the sites provided. The assumption is that the first site is typically a qa site and the second
    * is typically a production site.
-   * 
-   * @param qaUrl
-   * @param prodUrl
-   * @throws WdkModelException 
-   * @throws Exception
    */
   private void execute(String qaUrl, String prodUrl, String displayOption) throws WdkModelException {
 
@@ -135,13 +128,13 @@ public class QuestionComparison {
       questionNameComparison.display(displayOption);
     if (organismComparison != null)
       organismComparison.display(displayOption);
-    parameterNameComparisons.stream().forEach(comparison -> comparison.display(displayOption));
-    parameterValueComparisons.stream().forEach(comparison -> comparison.display(displayOption));
-    parameterValueOptionComparisons.stream().forEach(comparison -> comparison.display(displayOption));
+    parameterNameComparisons.forEach(comparison -> comparison.display(displayOption));
+    parameterValueComparisons.forEach(comparison -> comparison.display(displayOption));
+    parameterValueOptionComparisons.forEach(comparison -> comparison.display(displayOption));
 
     // Display errors
     System.out.println(NL + "Trapped Errors");
-    errors.stream().forEach(error -> error.display());
+    errors.forEach(Error::display);
 
     Instant end = Instant.now();
     System.out.println("Site comparison\t" + Duration.between(start, end).toNanos() / 1E9 + "\tsec");
@@ -162,10 +155,6 @@ public class QuestionComparison {
   /**
    * Finds the names of those questions in one url and not in the other and uses that data to populate a
    * comparison object for eventual display.
-   * 
-   * @param qaUrl
-   * @param prodUrl
-   * @throws WdkModelException
    */
   private Map<String,String> compareQuestionAndParamNames(String qaUrl, String prodUrl) throws WdkModelException {
 
@@ -213,7 +202,7 @@ public class QuestionComparison {
     // use param name data from the GET to compare names
     compareParameterNames(commonQuestionList, qaQuestionRef, prodQuestionRef);
 
-    return Functions.getMapFromKeys(commonQuestionList, qName -> qaQuestionRef.getRecordType(qName));
+    return Functions.getMapFromKeys(commonQuestionList, qaQuestionRef::getRecordType);
   }
 
   /**
@@ -229,7 +218,7 @@ public class QuestionComparison {
       .map(rcJson -> rcJson.getJSONObject().getJSONArray(JsonKeys.SEARCHES))
       .forEach(searchesArray -> arrayStream(searchesArray)
         // map each search json to its name
-        .map(searchJson -> new ThreeTuple<String,String,List<String>>(
+        .map(searchJson -> new ThreeTuple<>(
             searchJson.getJSONObject().getString(JsonKeys.URL_SEGMENT),
             searchJson.getJSONObject().getString(JsonKeys.OUTPUT_RECORD_CLASS_NAME),
             Arrays.asList(JsonUtil.toStringArray(searchJson.getJSONObject().getJSONArray(JsonKeys.PARAM_NAMES)))))
@@ -248,12 +237,8 @@ public class QuestionComparison {
   /**
    * Finds those organisms in one url and not in the other and uses that data to populate a comparison object
    * for eventual display.
-   * 
-   * @param qaUrl
-   * @param prodUrl
-   * @throws WdkModelException
    */
-  private void compareOrganisms(String qaUrl, String prodUrl) throws WdkModelException {
+  private void compareOrganisms(String qaUrl, String prodUrl) {
     System.out.println("Starting organism comparison");
     Instant start = Instant.now();
     JSONObject organismRequest = getOrganismRequest();
@@ -293,7 +278,7 @@ public class QuestionComparison {
 
   /**
    * Creates the body for a post service call to retrieve organism data.
-   * 
+   *
    * @return - request object for post
    */
   private static JSONObject getOrganismRequest() {
@@ -308,9 +293,6 @@ public class QuestionComparison {
   /**
    * Creates an alphabetically sorted list of organisms given the JSONObject returned by an answer service
    * call for a question that returns organisms
-   * 
-   * @param data
-   * @return
    */
   private static List<String> createOrganismList(JSONObject data) {
     List<String> organisms = new ArrayList<>();
@@ -444,9 +426,9 @@ public class QuestionComparison {
 
         // Pull the string values out of the ParameterValue objects for comparison.
         List<String> qaParameterValues = qaParameterMap.get(parameter).stream()
-            .map(v -> v.getValue()).collect(Collectors.toList());
+            .map(ParameterValue::getValue).collect(Collectors.toList());
         List<String> prodParameterValues = prodParameterMap.get(parameter).stream()
-            .map(v -> v.getValue()).collect(Collectors.toList());
+            .map(ParameterValue::getValue).collect(Collectors.toList());
 
         // Contains qa parameter values not in prod
         List<String> newParameterValueList = new ArrayList<>(qaParameterValues);
@@ -533,7 +515,7 @@ public class QuestionComparison {
    * For a given question, create a map of parameter values, keyed on parameter name for those parameters that
    * are (1) common to both of the provided urls (2) not dependent on other parameters and (3) are either flat
    * vocabulary parameters or enum parameters.
-   * 
+   *
    * @param question
    *          - question to which the parameter values map applies
    * @param parameters
@@ -580,7 +562,7 @@ public class QuestionComparison {
             if (ontologyItem.has("type")) {
               String term = ontologyItem.getString("term");
               if (ontologyItem.getBoolean("isRange")) {
-                parameterValues.add(new FilterParamNewValue(term, true, new ArrayList<String>()));
+                parameterValues.add(new FilterParamNewValue(term, true, new ArrayList<>()));
               }
               else {
                 JSONArray termValueArray = new JSONArray();
@@ -608,7 +590,7 @@ public class QuestionComparison {
 
   /**
    * Populate a tree box flat vocabulary parameter's list of values with leaves only.
-   * 
+   *
    * @param item
    *          - parent node
    * @param leaves
@@ -628,10 +610,6 @@ public class QuestionComparison {
 
   /**
    * Issues a generic GET call to the designated service endpoint.
-   * 
-   * @param serviceUrl
-   * @return
-   * @throws WdkModelException
    */
   private static String callGetService(String serviceUrl) throws WdkModelException {
     Client client = ClientBuilder.newBuilder().build();
@@ -660,11 +638,6 @@ public class QuestionComparison {
   /**
    * Issues a generic POST call to the designated service endpoint with the provided JSONObject as the request
    * body.
-   * 
-   * @param serviceUrl
-   * @param body
-   * @return
-   * @throws WdkModelException
    */
   private static String callPostService(String serviceUrl, JSONObject body) throws WdkModelException {
     Client client = ClientBuilder.newBuilder().build();
@@ -693,14 +666,13 @@ public class QuestionComparison {
 
   /**
    * Simple class to use to allow polymorphism for parameter values.
-   * 
-   * @author crisl-adm
    *
+   * @author crisl-adm
    */
   private static class ParameterValue {
-    private String _value;
+    private final String _value;
 
-    public ParameterValue(String value) {
+    ParameterValue(String value) {
       _value = value;
     }
 
@@ -710,16 +682,15 @@ public class QuestionComparison {
   }
 
   /**
-   * Extension of ParaeterValue class that can also hold value options
-   * 
-   * @author crisl-adm
+   * Extension of ParameterValue class that can also hold value options
    *
+   * @author crisl-adm
    */
   private static class FilterParamNewValue extends ParameterValue {
-    private boolean _histogram;
-    private List<String> _ontologyTermValues;
+    private final boolean _histogram;
+    private final List<String> _ontologyTermValues;
 
-    public FilterParamNewValue(String value, boolean histogram, List<String> ontologyTermValues) {
+    FilterParamNewValue(String value, boolean histogram, List<String> ontologyTermValues) {
       super(value);
       _histogram = histogram;
       _ontologyTermValues = ontologyTermValues;
@@ -729,7 +700,7 @@ public class QuestionComparison {
       return _histogram;
     }
 
-    public List<String> getOntologyTermValues() {
+    List<String> getOntologyTermValues() {
       return _ontologyTermValues;
     }
   }
@@ -737,15 +708,14 @@ public class QuestionComparison {
   /**
    * Simple error class to gather error messages and the context in which they occur and salt away for later
    * presentation.
-   * 
-   * @author crisl-adm
    *
+   * @author crisl-adm
    */
   private static class Error {
-    private String _context;
-    private String _message;
+    private final String _context;
+    private final String _message;
 
-    public Error(String context, String message) {
+    Error(String context, String message) {
       _context = context;
       _message = message;
     }
@@ -762,7 +732,5 @@ public class QuestionComparison {
       System.out.println(NL + "Error context: " + getContext());
       System.out.println("Error message: " + getMessage());
     }
-
   }
-
 }
