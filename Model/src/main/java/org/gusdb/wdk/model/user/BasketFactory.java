@@ -18,8 +18,12 @@ import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.db.stream.ResultSetStream;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.*;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.answer.stream.PrimaryKeyRecordStream;
+import org.gusdb.wdk.model.answer.stream.RecordStream;
+import org.gusdb.wdk.model.answer.stream.RecordStreamFactory;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
@@ -63,8 +67,11 @@ public class BasketFactory {
   }
 
   public void addEntireResultToBasket(User user, RunnableObj<AnswerSpec> spec) throws WdkModelException {
-    List<String[]> pkValues = AnswerValueFactory.makeAnswer(user, spec).getAllIds();
-    addToBasket(user, spec.get().getQuestion().getRecordClass(), pkValues);
+    AnswerValue answer = AnswerValueFactory.makeAnswer(user, spec);
+    int recordCount = answer.getResultSizeFactory().getResultSize();
+    try (RecordStream records = RecordStreamFactory.getRecordStream(answer, Collections.EMPTY_LIST, Collections.EMPTY_LIST)) {
+      addToBasket(user, spec.get().getQuestion().getRecordClass(), recordCount, records);
+    }
   }
 
   public void removeEntireResultFromBasket(User user, RunnableObj<AnswerSpec> spec) throws WdkModelException {
@@ -73,7 +80,7 @@ public class BasketFactory {
   }
 
   public void addPksToBasket(User user, RecordClass recordClass, Collection<PrimaryKeyValue> recordsToAdd) throws WdkModelException {
-    addToBasket(user, recordClass, PrimaryKeyValue.toStringArrays(recordsToAdd));
+    addToBasket(user, recordClass, recordsToAdd.size(), new PrimaryKeyRecordStream(user, recordClass, recordsToAdd));
   }
 
   public void removePksFromBasket(User user, RecordClass recordClass, Collection<PrimaryKeyValue> recordsToDelete) throws WdkModelException {
@@ -86,7 +93,7 @@ public class BasketFactory {
    * @param pkValues a list of primary key values. the inner map is a primary-key column-value map
    * @throws WdkModelException
    */
-  public void addToBasket(User user, RecordClass recordClass, Collection<String[]> pkValues)
+  public void addToBasket(User user, RecordClass recordClass, int recordCount, RecordStream records)
       throws WdkModelException {
     long userId = user.getUserId();
     String projectId = _wdkModel.getProjectId();
@@ -107,14 +114,13 @@ public class BasketFactory {
     DBPlatform platform = _wdkModel.getUserDb().getPlatform();
     PreparedStatement psInsert = null, psCount = null;
     try {
+      List<Long> basketRecordIds = platform.getNextNIds(dataSource, _userSchema, TABLE_BASKET, recordCount);
       psInsert = SqlUtils.getPreparedStatement(dataSource, sqlInsert);
       psCount = SqlUtils.getPreparedStatement(dataSource, sqlCount);
       int count = 0;
-      for (String[] row : pkValues) {
-        // fill or truncate the pk columns
-        String[] pkValue = new String[pkColumns.length];
-        int length = Math.min(row.length, pkValue.length);
-        System.arraycopy(row, 0, pkValue, 0, length);
+      for (RecordInstance record : records) {
+        // get pkValues out of record
+        String[] pkValue = record.getPrimaryKey().getValues().values().toArray(new String[pkColumns.length]);
 
         // check if the record already exists.
         setParams(psCount, userId, projectId, rcName, pkValue);
@@ -137,7 +143,7 @@ public class BasketFactory {
           continue;
 
         // insert new record
-        long basketId = platform.getNextId(dataSource, _userSchema, TABLE_BASKET);
+        long basketId = basketRecordIds.get(count);
         psInsert.setLong(1, basketId);
         psInsert.setLong(2, userId);
         psInsert.setString(3, projectId);
