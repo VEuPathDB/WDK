@@ -52,7 +52,7 @@ public class DatasetListContents extends DatasetContents {
    */
   private class ListReader extends Reader {
     private int index;
-    private int off;
+    private int offset;
     private boolean done;
     private boolean sep;
 
@@ -90,22 +90,22 @@ public class DatasetListContents extends DatasetContents {
         return ' ';
       }
 
-      var out = idList.get(index).charAt(off);
+      var out = idList.get(index).charAt(offset);
       inc();
       return out;
     }
 
     private void inc() {
       // More characters in this list entry
-      if (off + 1 < idList.get(index).length()) {
-        off++;
+      if (offset + 1 < idList.get(index).length()) {
+        offset++;
         return;
       }
 
       // More list entries
       if (index + 1 < idList.size()) {
         index++;
-        off = 0;
+        offset = 0;
         sep = true;
         return;
       }

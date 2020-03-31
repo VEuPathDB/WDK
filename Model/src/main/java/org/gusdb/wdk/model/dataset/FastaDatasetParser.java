@@ -37,7 +37,7 @@ public class FastaDatasetParser extends AbstractDatasetParser {
 
     // Silently skips sequences without headers as per previous implementation.
     @Override
-    protected boolean rowFilter(final String row) throws WdkUserException {
+    protected boolean rowFilter(final String row) {
       if (!super.rowFilter(row))
         return false;
 

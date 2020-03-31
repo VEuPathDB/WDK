@@ -70,7 +70,7 @@ public class DatasetFileContents extends DatasetContents {
    * hardware reboot.
    */
   @Override
-  @SuppressWarnings({ "ResultOfMethodCallIgnored", "deprecation" })
+  @SuppressWarnings({ "ResultOfMethodCallIgnored" })
   protected void finalize() {
     if (owned)
       contents.delete();

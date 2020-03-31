@@ -1,8 +1,5 @@
 package org.gusdb.wdk.model.dataset;
 
-import java.util.Scanner;
-
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
 public class ListDatasetParser extends AbstractDatasetParser {

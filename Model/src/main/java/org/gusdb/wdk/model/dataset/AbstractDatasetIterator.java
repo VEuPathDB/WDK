@@ -55,7 +55,7 @@ public abstract class AbstractDatasetIterator implements DatasetIterator {
    * @return true if the row is usable, false if it should
    *         be skipped.
    */
-  protected boolean rowFilter(final String row) throws WdkUserException {
+  protected boolean rowFilter(final String row) {
     return !row.isBlank();
   }
 
@@ -72,7 +72,7 @@ public abstract class AbstractDatasetIterator implements DatasetIterator {
     return false;
   }
 
-  private void nextRow() throws WdkUserException {
+  private void nextRow() {
     if (exhausted)
       return;
 
