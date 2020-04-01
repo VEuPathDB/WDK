@@ -93,7 +93,7 @@ public class BasketFactory {
   }
 
   public void addPksToBasket(User user, RecordClass recordClass, Collection<PrimaryKeyValue> recordsToAdd) throws WdkModelException {
-    addToBasket(user, recordClass, recordsToAdd.size(), new PrimaryKeyRecordStream(user, recordClass, recordsToAdd));
+    addToBasket(user, recordClass, recordsToAdd.size(), new PrimaryKeyRecordStream(recordClass, recordsToAdd));
   }
 
   public void removePksFromBasket(User user, RecordClass recordClass, Collection<PrimaryKeyValue> recordsToDelete) throws WdkModelException {
@@ -482,7 +482,7 @@ public class BasketFactory {
 
         try {
           return Optional.of(
-              new StaticRecordInstance(user, recordClass, recordClass, pkValues, true));
+            new StaticRecordInstance(recordClass, recordClass, pkValues, true));
         }
         catch (WdkUserException | RecordNotFoundException e) {
           // FIXME: thrown because pkValues either:
@@ -503,17 +503,12 @@ public class BasketFactory {
     }
   }
 
-  /**
-   * The real time question is used on the basket page to display the current
-   * records in the basket.
-   */
-  public Question getRealtimeBasketQuestion(RecordClass recordClass) throws WdkModelException {
-    return (Question) _wdkModel.resolveReference(String.format(
-      "%s.%s%s",
-      Utilities.INTERNAL_QUESTION_SET,
-      recordClass.getFullName().replace('.', '_'),
-      BasketFactory.REALTIME_BASKET_QUESTION_SUFFIX
-    ));
+  private String getRealtimeBasketQuestionName(RecordClass recordClass) {
+    return recordClass.getFullName().replace('.', '_') + REALTIME_BASKET_QUESTION_SUFFIX;
+  }
+
+  public String getRealtimeBasketQuestionFullName(RecordClass recordClass) {
+    return Utilities.INTERNAL_QUESTION_SET + "." + getRealtimeBasketQuestionName(recordClass);
   }
 
   /**
@@ -521,7 +516,7 @@ public class BasketFactory {
    */
   public void createRealtimeBasketQuestion(RecordClass recordClass) throws WdkModelException {
     // check if the basket question already exists
-    String qname = recordClass.getFullName().replace('.', '_') + REALTIME_BASKET_QUESTION_SUFFIX;
+    String qname = getRealtimeBasketQuestionName(recordClass);
     QuestionSet questionSet = _wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET).get();
     if (questionSet.contains(qname))
       return;
