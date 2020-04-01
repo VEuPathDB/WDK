@@ -40,13 +40,13 @@ public class DynamicRecordInstance extends StaticRecordInstance {
 
   public DynamicRecordInstance(User user, RecordClass recordClass, Map<String, Object> pkValues)
       throws WdkModelException, WdkUserException {
-    super(user, recordClass, recordClass, pkValues, true);
+    super(recordClass, recordClass, pkValues, true);
     _user = user;
   }
 
   public DynamicRecordInstance(User user, Question question, DynamicRecordInstanceList container, Map<String, Object> pkValues)
       throws WdkModelException, WdkUserException {
-    super(user, question.getRecordClass(), question, pkValues, false);
+    super(question.getRecordClass(), question, pkValues, false);
     _user = user;
     _container = container;
   }

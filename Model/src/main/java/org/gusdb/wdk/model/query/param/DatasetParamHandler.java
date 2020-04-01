@@ -63,6 +63,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
 
   @Override
   public String toEmptyInternalValue() {
+    // FIXME: should be using appDb(?) platform to fetch dummy table (not just use dual)
     return "SELECT * FROM dual";
   }
 

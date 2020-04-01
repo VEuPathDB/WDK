@@ -1561,9 +1561,6 @@
   <define name="primaryKey">
     <element name="primaryKey">
       <ref name="IncludeExclude" />
-      <optional>
-        <attribute name="aliasQueryRef" />
-      </optional>
       <oneOrMore>
         <element name="columnRef">
           <ref name="IncludeExclude" />

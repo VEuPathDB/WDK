@@ -25,14 +25,14 @@ public class Favorite extends RecordIdentity implements NoteAndGroup {
       super(recordClass, primaryKey);
       _favoriteId = favoriteId;
       _user = user;
-      _display = createDisplay(user, recordClass, primaryKey);
+      _display = createDisplay(recordClass, primaryKey);
     }
 
-    private static String createDisplay(User user, RecordClass recordClass, PrimaryKeyValue pkValue) {
+    private static String createDisplay(RecordClass recordClass, PrimaryKeyValue pkValue) {
       try {
         if (!recordClass.idAttributeHasNonPkMacros()) {
           // can use PK values to generate ID display
-          StaticRecordInstance record = new StaticRecordInstance(user, recordClass, recordClass, pkValue.getRawValues(), false);
+          StaticRecordInstance record = new StaticRecordInstance(recordClass, recordClass, pkValue.getRawValues(), false);
           // can only do the following cheaply if ID attribute only requires to PK values (not other attribs)
           return record.getIdAttributeValue().getDisplay();
         }

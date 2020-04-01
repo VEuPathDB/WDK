@@ -19,7 +19,6 @@ import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeValue;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeValue;
-import org.gusdb.wdk.model.user.User;
 
 public class StaticRecordInstance extends AttributeValueContainer implements RecordInstance {
 
@@ -33,14 +32,14 @@ public class StaticRecordInstance extends AttributeValueContainer implements Rec
 
   protected boolean _isValidRecord;
 
-  public StaticRecordInstance(User user, RecordClass recordClass, AttributeFieldContainer fieldContainer,
+  public StaticRecordInstance(RecordClass recordClass, AttributeFieldContainer fieldContainer,
       Map<String, Object> pkValues, boolean translatePk) throws WdkModelException, WdkUserException {
     super(fieldContainer.getAttributeFieldMap());
     _recordClass = recordClass;
     _isValidRecord = true;
 
     if (translatePk) {
-      List<Map<String, Object>> records = recordClass.lookupPrimaryKeys(user, pkValues);
+      List<Map<String, Object>> records = recordClass.lookupPrimaryKeys(pkValues);
       if (records.size() != 1) {
         throw new WdkUserException("The primary key doesn't map to singular record: " + pkValues);
       }

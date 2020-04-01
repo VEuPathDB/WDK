@@ -73,7 +73,7 @@ public class SingleTableRecordStream implements RecordStream {
             // start new record instance
             Map<String, Object> currentRecordPkValues = _lastPkValues.get();
             Question question = _answerValue.getAnswerSpec().getQuestion();
-            StaticRecordInstance record = new StaticRecordInstance(_answerValue.getUser(),
+            StaticRecordInstance record = new StaticRecordInstance(
                 question.getRecordClass(), question, currentRecordPkValues, false);
             TableValue tableValue = new TableValue(_tableField);
             record.addTableValue(tableValue);

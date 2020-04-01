@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.record;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.Named.NamedObject;
@@ -85,7 +86,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     try {
       RecordClass recordClass = pkValue.getPrimaryKeyDefinition().getRecordClass();
       return mapToList(
-          recordClass.lookupPrimaryKeys(user, pkValue.getRawValues()),
+          recordClass.lookupPrimaryKeys(pkValue.getRawValues()),
           fSwallow(idMap -> new DynamicRecordInstance(user, recordClass, pkValue.getRawValues())));
     }
     catch (RecordNotFoundException rnfe) {
@@ -1103,6 +1104,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
           idSearchQuestionRef + ", found on record class " + getFullName() + ", ";
       idSearchQuestion = model.getQuestionByFullName(idSearchQuestionRef)
         .orElseThrow(() -> new WdkModelException(refName + "does not exist."));
+      if (!(idSearchQuestion.getQuery() instanceof SqlQuery)) {
+        // to see the reason for this requirement and how to resolve if ProcessQueries become required, see IdSearchRunner class
+        throw new WdkModelException(refName + "must be backed by a SqlQuery (not ProcessQuery).");
+      }
       // need to check that dataset param is compliant with the API:
       //   only one param, must be dataset param, must have RC matching output of question
       if (idSearchQuestion.getParams().length != 1) {
@@ -1699,18 +1704,18 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       recordViewList.add(view);
   }
 
-  public boolean hasMultipleRecords(User user, Map<String, Object> pkValues)
+  public boolean hasMultipleRecords(Map<String, Object> pkValues)
       throws WdkModelException, RecordNotFoundException {
-    List<Map<String, Object>> records = lookupPrimaryKeys(user, pkValues);
+    List<Map<String, Object>> records = lookupPrimaryKeys(pkValues);
     return records.size() > 1;
   }
 
   /**
    * use alias query to lookup old ids and convert to new ids
    */
-  public List<Map<String, Object>> lookupPrimaryKeys(User user, Map<String, Object> pkValues)
+  public List<Map<String, Object>> lookupPrimaryKeys(Map<String, Object> pkValues)
       throws WdkModelException, RecordNotFoundException {
-    return primaryKeyDefinition.lookUpPrimaryKeys(user, pkValues);
+    return idSearchQuestion == null ? ListBuilder.asList(pkValues) : IdSearchRunner.runSearch(idSearchQuestion, pkValues);
   }
 
   public String[] getIndexColumns() {

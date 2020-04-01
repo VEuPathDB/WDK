@@ -64,7 +64,7 @@ public abstract class AbstractRecordIterator extends ReadOnlyIterator<RecordInst
     Map<String, Object> pkValues = pkDef.getPrimaryKeyFromResultList(resultList).getRawValues();
 
     // Create a new instance containing the current row's PK values
-    return new StaticRecordInstance(_answerValue.getUser(), question.getRecordClass(), question, pkValues, false);
+    return new StaticRecordInstance(question.getRecordClass(), question, pkValues, false);
   }
 
   /**
