@@ -2,6 +2,8 @@ package org.gusdb.wdk.model.report.reporter;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,6 +21,8 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStreamFactory;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.ReporterRef;
@@ -55,10 +59,19 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
   @Override
   protected void write(OutputStream out) throws WdkModelException {
 
+    // record formatter requires the ID attribute, so must add to stream request
+    //   if not already present and it contains non-PK columns
+    RecordClass recordClass = _baseAnswer.getAnswerSpec().getQuestion().getRecordClass();
+    AttributeField idField = recordClass.getIdAttributeField();
+    List<AttributeField> requiredAttributes = new ArrayList<>(_attributes.values());
+    if (!_attributes.containsKey(idField.getName()) && recordClass.idAttributeHasNonPkMacros()) {
+      requiredAttributes.add(idField);
+    }
+
     // create output writer and initialize record stream
     try (JsonWriter writer = new JsonWriter(out);
          RecordStream recordStream = RecordStreamFactory.getRecordStream(
-            _baseAnswer, _attributes.values(), _tables.values())) {
+            _baseAnswer, requiredAttributes, _tables.values())) {
 
       // start parent object and records array
       writer.object().key(JsonKeys.RECORDS).array();
@@ -105,20 +118,21 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
       Set<String> includedAttributes, Set<String> includedTables, int numRecordsReturned)
       throws WdkModelException {
     AnswerValue answerValueWithoutViewFilters = getAnswerValueWithoutViewFilters(answerValue);
-    JSONObject meta = new JSONObject();
-    meta.put(JsonKeys.RECORD_CLASS_NAME, answerValue.getAnswerSpec().getQuestion().getRecordClass().getUrlSegment());
-    meta.put(JsonKeys.TOTAL_COUNT, answerValueWithoutViewFilters.getResultSizeFactory().getResultSize());
-    meta.put(JsonKeys.DISPLAY_TOTAL_COUNT, answerValueWithoutViewFilters.getResultSizeFactory().getDisplayResultSize());
-    meta.put(JsonKeys.VIEW_TOTAL_COUNT, answerValue.getResultSizeFactory().getResultSize());
-    meta.put(JsonKeys.DISPLAY_VIEW_TOTAL_COUNT, answerValue.getResultSizeFactory().getDisplayResultSize());
-    meta.put(JsonKeys.RESPONSE_COUNT, numRecordsReturned);
-    meta.put(JsonKeys.PAGINATION, new JSONObject()
+    Question question = answerValue.getAnswerSpec().getQuestion();
+    JSONObject meta = new JSONObject()
+      .put(JsonKeys.RECORD_CLASS_NAME, question.getRecordClass().getUrlSegment())
+      .put(JsonKeys.TOTAL_COUNT, answerValueWithoutViewFilters.getResultSizeFactory().getResultSize())
+      .put(JsonKeys.DISPLAY_TOTAL_COUNT, answerValueWithoutViewFilters.getResultSizeFactory().getDisplayResultSize())
+      .put(JsonKeys.VIEW_TOTAL_COUNT, answerValue.getResultSizeFactory().getResultSize())
+      .put(JsonKeys.DISPLAY_VIEW_TOTAL_COUNT, answerValue.getResultSizeFactory().getDisplayResultSize())
+      .put(JsonKeys.RESPONSE_COUNT, numRecordsReturned)
+      .put(JsonKeys.PAGINATION, new JSONObject()
         .put(JsonKeys.OFFSET, answerValue.getStartIndex() - 1)
-        .put(JsonKeys.NUM_RECORDS, answerValue.getEndIndex() - (answerValue.getStartIndex() - 1)));
-    meta.put(JsonKeys.ATTRIBUTES, new JSONArray(includedAttributes));
-    meta.put(JsonKeys.TABLES, new JSONArray(includedTables));
-    meta.put(JsonKeys.SORTING, formatSorting(answerValue.getSortingMap(),
-        answerValue.getAnswerSpec().getQuestion().getAttributeFieldMap()));
+        .put(JsonKeys.NUM_RECORDS, answerValue.getEndIndex() - (answerValue.getStartIndex() - 1)))
+      .put(JsonKeys.ATTRIBUTES, new JSONArray(includedAttributes))
+      .put(JsonKeys.TABLES, new JSONArray(includedTables))
+      .put(JsonKeys.SORTING, formatSorting(answerValue.getSortingMap(), question.getAttributeFieldMap()))
+      .put(JsonKeys.CACHE_PREVIOUSLY_EXISTED, answerValue.cacheInitiallyExistedForSpec());
     return meta;
   }
 
@@ -147,6 +161,7 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
     ReporterRef ref = new ReporterRef();
     ref.setName(RESERVED_NAME);
     ref.setDisplayName("Standard JSON");
+    ref.setScopes("results");
     ref.setDescription(new WdkModelText(null, "Converts your result to the standard JSON used by the web service."));
     ref.setImplementation(DefaultJsonReporter.class.getName());
     return ref;

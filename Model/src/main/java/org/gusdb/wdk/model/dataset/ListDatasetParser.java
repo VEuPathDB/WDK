@@ -1,99 +1,98 @@
 package org.gusdb.wdk.model.dataset;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkUserException;
 
 public class ListDatasetParser extends AbstractDatasetParser {
-  
+
+  // scrum Feb 2 2016: we allow all these characters as row dividers, do not expect columns
+  private static final String ROW_DIVIDER = "[\\s,;]+";
+
   public static final String NAME = "list";
-
-  public static final String PROP_ROW_DIVIDER = "row.divider";
   public static final String PROP_COLUMN_DIVIDER = "column.divider";
-
   public static final String DATASET_COLUMN_DIVIDER = "______";
-
-  private static final Logger logger = Logger.getLogger(ListDatasetParser.class);
 
   public ListDatasetParser() {
     setName(NAME);
     setDisplay("List");
-    setDescription("The input is a list of records, one record in each row, and each record can have multiple columns.");
+    setDescription("The input is a list of records, one record in each row, "
+      + "and each record can have multiple columns.");
   }
 
   @Override
-  public List<String[]> parse(String rawValue) throws WdkUserException {
-    //String rowDivider = getRowDivider(rawValue);
-    // scrum Feb 2 2016: we allow all these characters as row dividers, do not expect columns
-    String rowDivider = "[\\s,;]+";
-    String[] rows = rawValue.split(rowDivider);
-    String columnDivider = getColumnDivider(rows[0]);
+  public DatasetIterator iterator(final DatasetContents contents) {
+    return new Iterator(contents);
+  }
 
-    logger.debug("row divider='" + rowDivider + "', col divider='" + columnDivider + "' for content '" + rawValue);
+  private class Iterator extends AbstractDatasetIterator {
+    /**
+     * Column divider.
+     *
+     * This value is determined dynamically on parsing the
+     * first input row.
+     */
+    private String colDivider;
 
-    List<String[]> records = new ArrayList<String[]>();
-    int columnCount = 0;
-    for (String row : rows) {
-      row = row.trim();
-      if (row.length() == 0)
-        continue;
+    /**
+     * Number of columns expected per row.
+     *
+     * This value is determined by the column count of the
+     * first row.  If subsequent rows have a different number
+     * of columns, an error will be thrown.
+     */
+    private int colCount;
 
-      String[] columns = row.split(columnDivider);
-      if (columnCount == 0)
-        columnCount = columns.length;
-      else if (columnCount != columns.length)
-        throw new WdkUserException("The input data for datasetParam has various columns at row #" +
-            records.size() + ". " + "The number of columns has to be the same for all the rows.");
-      records.add(columns);
+    /**
+     * Track the current input row number for error reporting.
+     */
+    private int rowNum;
+
+    Iterator(final DatasetContents contents) {
+      super(contents, ROW_DIVIDER);
     }
-    return records;
+
+    @Override
+    protected boolean rowFilter(final String row) {
+      return !row.isBlank();
+    }
+
+    @Override
+    protected String[] parseRow(final String row) throws WdkUserException {
+      if (colDivider == null)
+        colDivider = getColumnDivider(row);
+
+      var columns = row.trim().split(colDivider);
+      if (colCount == 0)
+        colCount = columns.length;
+      else if (colCount != columns.length)
+        throw new WdkUserException(
+          "The input data for datasetParam has various columns at row #" + rowNum
+            + ". The number of columns must be the same for all the rows."
+        );
+
+      rowNum++;
+      return columns;
+    }
+
+    private String getColumnDivider(String row) {
+      // use the user specified one, if any;
+      String columnDivider = properties.get(PROP_COLUMN_DIVIDER);
+      if (columnDivider != null)
+        return columnDivider;
+
+      // determine the divider by content, starting with DATASET_COLUMN_DIVIDER
+      if (row.indexOf(DATASET_COLUMN_DIVIDER) > 0)
+        return DATASET_COLUMN_DIVIDER;
+
+      // then tab
+      if (row.indexOf('\t') > 0)
+        return " *\t *";
+
+      // then comma
+      if (row.indexOf(',') >= 0)
+        return "\\s*,\\s*";
+
+      // then white space
+      return "\\s+";
+    }
   }
-
-  // TODO Decide on long-term API for dataset uploads (currently only allow IDs and 
-  @SuppressWarnings("unused")
-  private String getRowDivider(String rawValue) {
-    // use the user specified one, if any
-    String rowDivider = properties.get(PROP_ROW_DIVIDER);
-    if (rowDivider != null)
-      return rowDivider;
-
-    // determine the divider by content, starting with newline
-    if (rawValue.indexOf('\n') > 0)
-      return "\n";
-
-    // then semi-colon
-    if (rawValue.indexOf(';') >= 0)
-      return ";";
-
-    // then comma
-    if (rawValue.indexOf(',') >= 0)
-      return ",";
-
-    // then white space
-    return "\\s+";
-  }
-
-  private String getColumnDivider(String row) {
-    // use the user specified one, if any;
-    String columnDivider = properties.get(PROP_COLUMN_DIVIDER);
-    if (columnDivider != null)
-      return columnDivider;
-
-    // determine the divider by content, starting with DATASET_COLUMN_DIVIDER
-    if (row.indexOf(DATASET_COLUMN_DIVIDER) > 0)
-      return DATASET_COLUMN_DIVIDER;
-
-    // then tab
-    if (row.indexOf('\t') > 0)
-      return "\t";
-
-    // then comma
-    if (row.indexOf(',') >= 0)
-      return ",";
-
-    // then white space
-    return "\\s+";
-  }
-
 }

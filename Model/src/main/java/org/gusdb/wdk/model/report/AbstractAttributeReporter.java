@@ -13,7 +13,6 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.SqlQuery;
@@ -75,7 +74,7 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
     WdkModel wdkModel = answerValue.getAnswerSpec().getQuestion().getRecordClass().getWdkModel();
 
     // format the display of the attribute in sql
-    Map<String, String> queries = new LinkedHashMap<String, String>();
+    Map<String, String> queries = new LinkedHashMap<>();
     String column = formatColumn(answerValue, _attributeField, queries);
 
     RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
@@ -90,12 +89,12 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
     sql.append(column).append(" AS ").append(ATTRIBUTE_COLUMN);
 
     // construct the from clause
-    sql.append(" FROM (" + idSql + ") idq");
+    sql.append(" FROM (").append(idSql).append(") idq");
     for (String queryName : queries.keySet()) {
       String sqlId = queries.get(queryName);
       SqlQuery query = (SqlQuery) wdkModel.resolveReference(queryName);
       String attrSql = answerValue.getAttributeSql(query);
-      sql.append(", (" + attrSql + ") " + sqlId);
+      sql.append(", (").append(attrSql).append(") ").append(sqlId);
     }
 
     // construct the where clause
@@ -107,7 +106,8 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
           first = false;
         } else
           sql.append(" AND ");
-        sql.append("idq." + pkColumn + " = " + sqlId + "." + pkColumn);
+        sql.append("idq.").append(pkColumn)
+          .append(" = ").append(sqlId).append(".").append(pkColumn);
       }
     }
 
@@ -157,8 +157,8 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
       String fieldContent = formatColumn(answerValue, field, queries);
 
       if (matcher.start() > pos)
-        builder.append(content.substring(pos, matcher.start()));
-      builder.append("' || " + fieldContent + " || '");
+        builder.append(content, pos, matcher.start());
+      builder.append("' || ").append(fieldContent).append(" || '");
       pos = matcher.end();
     }
     if (pos < content.length() - 1)
@@ -169,10 +169,9 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
   /**
    * @return the values of the associated attribute. the key of the map is the
    *         primary key of a record instance.
-   * @throws WdkUserException
    */
   protected Map<PrimaryKeyValue, Object> getAttributeValues(AnswerValue answerValue)
-      throws WdkModelException, SQLException, WdkUserException {
+      throws WdkModelException, SQLException {
     WdkModel wdkModel = answerValue.getWdkModel();
     Map<PrimaryKeyValue, Object> values = new LinkedHashMap<>();
     RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
@@ -186,7 +185,7 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
           answerValue.getAnswerSpec().getQuestion().getQuery().getFullName()
               + "__attribute-plugin-combined", 5000);
       while (resultSet.next()) {
-        Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+        Map<String, Object> pkValues = new LinkedHashMap<>();
         for (String pkColumn : pkColumns) {
           pkValues.put(pkColumn, resultSet.getObject(pkColumn));
         }

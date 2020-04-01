@@ -87,7 +87,7 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
       throws WdkModelException {
     // unwrap the spec and use to create an instance of the proper type
     QueryInstanceSpec spec = validSpec.get();
-    return spec.getQuery().makeInstance(validSpec);
+    return spec.getQuery().get().makeInstance(validSpec);
   }
 
   private String _name;

@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.record;
 
 import java.util.Iterator;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
@@ -10,7 +9,6 @@ import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
-import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
@@ -43,7 +41,7 @@ public class DynamicTableValue extends TableValue {
   }
 
   @Override
-  public Iterator<Map<String, AttributeValue>> iterator() {
+  public Iterator<TableValueRow> iterator() {
     if (!_rowsLoaded) {
       loadRowsFromQuery();
       _rowsLoaded = true;

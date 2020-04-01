@@ -4,7 +4,7 @@
  *============================================================================*/
 
 CREATE USER userlogins5
-  IDENTIFIED BY DCB802868A9EF9F9 -- encoding of standard password
+--IDENTIFIED BY DCB802868A9EF9F9 -- deprecated
   QUOTA UNLIMITED ON users
   DEFAULT TABLESPACE users
   TEMPORARY TABLESPACE temp;

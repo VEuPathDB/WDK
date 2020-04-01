@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.formatter.param;
 
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,8 +27,22 @@ public class ParamContainerFormatter {
 
   public static JSONObject formatExistingParamValues(ParameterContainerInstanceSpec<?> instanceSpec) {
     JSONObject json = new JSONObject();
-    for (Param param : instanceSpec.getParameterContainer().getParams()) {
-      json.put(param.getName(), param.getExternalStableValue(instanceSpec.get(param.getName())));
+    // if container present, then return the values of the container's params
+    if (instanceSpec.getParameterContainer().isPresent()) {
+      for (Param param : instanceSpec.getParameterContainer().get().getParams()) {
+        String value = instanceSpec.get(param.getName());
+        if (!param.isForInternalUseOnly() && value != null) {
+          // skip if value not present; errors should tell client it's missing
+          // if present then convert to external format
+          json.put(param.getName(), param.getExternalStableValue(value));
+        }
+      }
+    }
+    // if no container present then return the raw param values (no way to determine validity)
+    else {
+      for (Entry<String,String> entry : instanceSpec.entrySet()) {
+        json.put(entry.getKey(), entry.getValue());
+      }
     }
     return json;
   }
@@ -35,8 +50,8 @@ public class ParamContainerFormatter {
   public static <T extends ParameterContainerInstanceSpec<T>> JSONArray getParamsJson(
       DisplayablyValid<T> spec, Predicate<Param> inclusionPredicate) throws WdkModelException {
     JSONArray paramsJson = new JSONArray();
-    for (Param param : spec.get().getParameterContainer().getParams()) {
-      if (inclusionPredicate.test(param)) {
+    for (Param param : spec.get().getParameterContainer().get().getParams()) {
+      if (!param.isForInternalUseOnly() && inclusionPredicate.test(param)) {
         paramsJson.put(ParamFormatterFactory.getFormatter(param).getJson(spec));
       }
     }
@@ -90,23 +105,23 @@ public class ParamContainerFormatter {
       ParameterContainer container, JSONObject baseObject, Set<String> paramsToExclude) {
     return baseObject
       .put(JsonKeys.GROUPS, getGroupsJson(container.getParamMapByGroups(), paramsToExclude))
-      .put(JsonKeys.PARAM_NAMES, filterNames(container.getParamMap().keySet(), paramsToExclude));
+      .put(JsonKeys.PARAM_NAMES, filterNames(container.getParamMap().values(), paramsToExclude));
   }
 
   private static JSONArray getGroupsJson(Map<Group, Map<String, Param>> paramsByGroup, Set<String> paramsToExclude) {
     JSONArray groups = new JSONArray();
     for (Group group: paramsByGroup.keySet()) {
       Map<String, Param> entry = paramsByGroup.get(group);
-      groups.put(getGroupJson(group, filterNames(entry.keySet(), paramsToExclude)));
+      groups.put(getGroupJson(group, filterNames(entry.values(), paramsToExclude)));
     }
     return groups;
   }
 
-  private static Set<String> filterNames(Set<String> setOfNames, Set<String> namesToExclude) {
-    Set<String> filteredNames = new LinkedHashSet<>();
-    setOfNames.stream()
-      .filter(p -> !namesToExclude.contains(p))
-      .forEach(p -> filteredNames.add(p));
+  private static Set<String> filterNames(Collection<Param> params, Set<String> namesToExclude) {
+    Set<String> filteredNames = new LinkedHashSet<>(); // maintain order
+    params.stream()
+      .filter(p -> !p.isForInternalUseOnly() && !namesToExclude.contains(p.getName()))
+      .forEach(p -> filteredNames.add(p.getName()));
     return filteredNames;
   }
 

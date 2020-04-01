@@ -42,7 +42,9 @@ public abstract class AnswerDetailsReporter extends AbstractReporter {
 
   private static AnswerValue getConfiguredAnswer(AnswerValue answerValue, AnswerDetails config) {
     int startIndex = config.getOffset() + 1;
-    int endIndex = startIndex + config.getNumRecords() - 1;
+    int endIndex = config.getNumRecords() == AnswerDetails.ALL_RECORDS? 
+        AnswerValue.UNBOUNDED_END_PAGE_INDEX : startIndex + config.getNumRecords() - 1;
+    
     AnswerValue configuredAnswer = answerValue.cloneWithNewPaging(startIndex, endIndex);
     Map<String, Boolean> sorting = SortDirectionSpec.convertSorting(
         config.getSorting(), UserPreferences.MAX_NUM_SORTING_COLUMNS);

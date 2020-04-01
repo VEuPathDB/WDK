@@ -54,7 +54,7 @@ public class OntologyItemNewFetcher implements ValueFactory<String, Map<String, 
 
           if (ontologyItemMap.containsKey(oItem.getOntologyId()))
             throw new WdkModelException("FilterParamNew Ontology Query " +
-                _queryInstanceSpec.get().getQuery().getFullName() +
+                _queryInstanceSpec.get().getQuery().get().getFullName() +
                 " has duplicate " + FilterParamNew.COLUMN_ONTOLOGY_ID + ": " +
                 oItem.getOntologyId());
  
@@ -122,7 +122,7 @@ public class OntologyItemNewFetcher implements ValueFactory<String, Map<String, 
 
   public String getCacheKey() throws JSONException {
     QueryInstanceSpec spec = _queryInstanceSpec.get();
-    Query query = spec.getQuery();
+    Query query = spec.getQuery().get();
     JSONObject cacheKeyJson = new JSONObject();
     cacheKeyJson.put(QUERY_NAME_KEY, query.getName());
     JSONObject paramValuesJson = new JSONObject();

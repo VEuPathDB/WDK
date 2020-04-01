@@ -1,5 +1,30 @@
 package org.gusdb.wdk.model;
 
+import static java.util.Objects.isNull;
+import static org.gusdb.fgputil.FormatUtil.NL;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.Timer;
@@ -9,35 +34,45 @@ import org.gusdb.fgputil.events.Event;
 import org.gusdb.fgputil.events.EventListener;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.events.ListenerExceptionEvent;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.gusdb.fgputil.runtime.InstanceManager;
 import org.gusdb.fgputil.runtime.Manageable;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
-import org.gusdb.wdk.model.toolbundle.ColumnToolBundle;
-import org.gusdb.wdk.model.toolbundle.ColumnToolBundles;
-import org.gusdb.wdk.model.toolbundle.DefaultAttributeToolBundleRef;
-import org.gusdb.wdk.model.toolbundle.impl.EmptyToolBundle;
-import org.gusdb.wdk.model.config.*;
+import org.gusdb.wdk.model.config.ModelConfig;
+import org.gusdb.wdk.model.config.ModelConfigAccountDB;
+import org.gusdb.wdk.model.config.ModelConfigAppDB;
+import org.gusdb.wdk.model.config.ModelConfigUserDB;
+import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
+import org.gusdb.wdk.model.config.QueryMonitor;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
 import org.gusdb.wdk.model.filter.FilterSet;
 import org.gusdb.wdk.model.ontology.Ontology;
 import org.gusdb.wdk.model.ontology.OntologyFactory;
 import org.gusdb.wdk.model.ontology.OntologyFactoryImpl;
-import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.param.AbstractDependentParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
+import org.gusdb.wdk.model.question.BooleanQuestion;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.question.SearchCategory;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
-import org.gusdb.wdk.model.user.*;
+import org.gusdb.wdk.model.toolbundle.ColumnToolBundle;
+import org.gusdb.wdk.model.toolbundle.ColumnToolBundles;
+import org.gusdb.wdk.model.toolbundle.DefaultAttributeToolBundleRef;
+import org.gusdb.wdk.model.toolbundle.impl.EmptyToolBundle;
+import org.gusdb.wdk.model.user.BasketFactory;
+import org.gusdb.wdk.model.user.FavoriteFactory;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
+import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
 import org.gusdb.wdk.model.user.analysis.UnconfiguredStepAnalysisFactory;
@@ -47,20 +82,6 @@ import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 import org.xml.sax.SAXException;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-
-import static java.util.Objects.isNull;
-import static org.gusdb.fgputil.FormatUtil.NL;
 
 /**
  * The top level WdkModel object provides a facade to access all the resources and functionalities provided by
@@ -76,10 +97,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public static final String DB_INSTANCE_APP = "APP";
   public static final String DB_INSTANCE_USER = "USER";
   public static final String DB_INSTANCE_ACCOUNT = "ACCT";
-
-  public static final String UD_ENABLED = "UD_ENABLED";
-  public static final String UD_DISABLED = "UD_DISABLED";
-  public static final String UD_BROKEN = "UD_BROKEN";
 
   public static final String INDENT = "  ";
 
@@ -97,12 +114,13 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private ModelConfig _modelConfig;
   private String _projectId;
   private long _startupTime;
-  private String _userDatasetStoreStatus;
+
 
   private DatabaseInstance appDb;
   private DatabaseInstance userDb;
   private DatabaseInstance accountDb;
-  private UserDatasetStore userDatasetStore;
+
+  private Optional<UserDatasetStore> _userDatasetStore;
 
   private List<QuerySet> querySetList = new ArrayList<>();
   private Map<String, QuerySet> querySets = new LinkedHashMap<>();
@@ -167,7 +185,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private BasketFactory basketFactory;
   private FavoriteFactory favoriteFactory;
   private StepAnalysisFactory stepAnalysisFactory;
-  private UserDatasetFactory userDatasetFactory;
+  private Optional<UserDatasetFactory> userDatasetFactory;
 
   private List<PropertyList> defaultPropertyLists = new ArrayList<>();
   private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<>();
@@ -302,7 +320,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return array;
   }
 
-  public Optional<RecordClass> getRecordClassByName(String recordClassReference) {
+  public Optional<RecordClass> getRecordClassByFullName(String recordClassReference) {
     try {
       Reference r = new Reference(recordClassReference);
       return Optional.ofNullable(recordClassSets.get(r.getSetName()))
@@ -320,12 +338,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
    * @return optional containing record class if found, or empty optional if not
    */
   public Optional<RecordClass> getRecordClassByUrlSegment(String urlSegment) {
-    return Optional.ofNullable(_recordClassUrlSegmentMap.get(urlSegment)).map(name -> getRecordClassByName(name).get());
+    return Optional.ofNullable(_recordClassUrlSegmentMap.get(urlSegment)).map(name -> getRecordClassByFullName(name).get());
   }
 
   public Optional<RecordClass> getRecordClassByNameOrUrlSegment(String nameOrSegment) {
     Optional<RecordClass> rc = getRecordClassByUrlSegment(nameOrSegment);
-    return rc.isPresent() ? rc : getRecordClassByName(nameOrSegment);
+    return rc.isPresent() ? rc : getRecordClassByFullName(nameOrSegment);
   }
 
   public void addWdkModelName(WdkModelName wdkModelName) {
@@ -489,59 +507,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return filterSet;
   }
 
-  public Question addBooleanQuestion(RecordClass recordClass) throws WdkModelException {
-    // check if the boolean question already exists
-    String qname = Question.BOOLEAN_QUESTION_PREFIX + recordClass.getFullName().replace('.', '_');
-    QuestionSet internalSet = getQuestionSet(Utilities.INTERNAL_QUESTION_SET).get();
-
-    Optional<Question> booleanQuestionOpt = internalSet.getQuestion(qname);
-    if (booleanQuestionOpt.isPresent()) {
-      throw new WdkModelException("Boolean questions should be created only once.");
-    }
-
-    Question question = new Question();
-    question.setName(qname);
-    question.setDisplayName("Combine " + recordClass.getDisplayName() + " results");
-    question.setRecordClassRef(recordClass.getFullName());
-    BooleanQuery booleanQuery = addBooleanQuery(recordClass);
-    question.setQueryRef(booleanQuery.getFullName());
-    question.excludeResources(_projectId);
-    question.resolveReferences(this);
-    internalSet.addQuestion(question);
-    return question;
-  }
-
-  private BooleanQuery addBooleanQuery(RecordClass recordClass) throws WdkModelException {
-    // check if the boolean query already exists
-    String queryName = BooleanQuery.getQueryName(recordClass);
-    QuerySet internalQuerySet = getQuerySet(Utilities.INTERNAL_QUERY_SET);
-
-    BooleanQuery booleanQuery;
-    if (internalQuerySet.contains(queryName)) {
-      booleanQuery = (BooleanQuery) internalQuerySet.getQuery(queryName);
-    }
-    else {
-      booleanQuery = recordClass.getBooleanQuery();
-
-      // make sure we create index on primary keys
-      booleanQuery.setIndexColumns(recordClass.getIndexColumns());
-
-      internalQuerySet.addQuery(booleanQuery);
-
-      booleanQuery.excludeResources(_projectId);
-      booleanQuery.resolveReferences(this);
-      booleanQuery.setDoNotTest(true);
-      booleanQuery.setIsCacheable(true); // cache the boolean query
-    }
-    return booleanQuery;
-  }
-
-  private Question addSingleRecordQuestion(RecordClass recordClass) {
-    Question question = new SingleRecordQuestion(recordClass);
-    getQuestionSet(Utilities.INTERNAL_QUESTION_SET).get().addQuestion(question);
-    return question;
-  }
-
   // ModelSetI's
   private <T extends ModelSetI<? extends WdkModelBase>> void addSet(T set, Map<String, T> setMap)
       throws WdkModelException {
@@ -590,17 +555,11 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     userDb = new DatabaseInstance(userDbConfig, DB_INSTANCE_USER, true);
     accountDb = new DatabaseInstance(accountDbConfig, DB_INSTANCE_ACCOUNT, true);
 
-    if (udsConfig != null) {
-      try {
-        userDatasetStore = udsConfig.getUserDatasetStore(modelConfig.getWdkTempDir());
-        _userDatasetStoreStatus = UD_ENABLED;
-      }
-      catch(WdkModelException wme) {
-        _userDatasetStoreStatus = UD_BROKEN;
-      }
+    if (udsConfig == null) {
+      _userDatasetStore = Optional.empty();
     }
     else {
-      _userDatasetStoreStatus = UD_DISABLED;
+      _userDatasetStore = Optional.of(udsConfig.getUserDatasetStore(modelConfig.getWdkTempDir()));
     }
 
     userFactory = new UserFactory(this);
@@ -608,7 +567,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     datasetFactory = new DatasetFactory(this);
     basketFactory = new BasketFactory(this);
     favoriteFactory = new FavoriteFactory(this);
-    userDatasetFactory = new UserDatasetFactory(this);
+    userDatasetFactory = _userDatasetStore.isPresent() ? Optional.of(new UserDatasetFactory(this)) : Optional.empty();
 
     // exclude resources that are not used by this project
     excludeResources();
@@ -624,7 +583,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     resolveReferences();
 
     // create generated questions (boolean and single-record)
-    createGeneratedQuestions();
+    addGeneratedQuestions();
 
     validateDependentParams();
 
@@ -740,7 +699,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return stepAnalysisFactory;
   }
 
-  public UserDatasetFactory getUserDatasetFactory() {
+  public Optional<UserDatasetFactory> getUserDatasetFactory() {
     return userDatasetFactory;
   }
 
@@ -1099,21 +1058,46 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     }
   }
 
-  private void createGeneratedQuestions() throws WdkModelException {
+  private void addGeneratedQuestions() throws WdkModelException {
     for (RecordClassSet recordClassSet : getAllRecordClassSets()) {
       for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
-        addBooleanQuestion(recordClass);
-        addSingleRecordQuestion(recordClass);
+        addGeneratedQuestion(
+          BooleanQuestion.getQuestionName(recordClass),
+          () -> new BooleanQuestion(recordClass));
+        addGeneratedQuestion(
+          SingleRecordQuestion.getQuestionName(recordClass),
+          () -> new SingleRecordQuestion(recordClass));
       }
+    }
+  }
+
+  public void addGeneratedQuestion(String questionName, SupplierWithException<Question> questionSupplier) throws WdkModelException {
+    
+    // check if question already exists
+    QuestionSet internalSet = getQuestionSet(Utilities.INTERNAL_QUESTION_SET).get();
+    if (internalSet.getQuestion(questionName).isPresent()) {
+      throw new WdkModelException("Generated questions should be created only " +
+          "once and their names cannot be used in WDK Model XML. Found " +
+          questionName + " in call to create it.");
+    }
+
+    // not yet added; add
+    try {
+      internalSet.addQuestion(questionSupplier.get());
+    }
+    catch (Exception e) {
+      throw WdkModelException.translateFrom(e);
     }
   }
 
   @Override
   public String toString() {
-    String userDatasetStoreStr = getUserDatasetStore() == null? "" : getUserDatasetStore().toString() + "NL";
+    String userDatasetStoreStr = _userDatasetStore.isEmpty()
+        ? "No user dataset store configured"
+        : _userDatasetStore.get().toString();
     return new StringBuilder("WdkModel: ").append("projectId='").append(_projectId).append("'").append(NL).append(
         "displayName='").append(displayName).append("'").append(NL).append("introduction='").append(
-        _introduction).append("'").append(NL).append(NL).append(userDatasetStoreStr).append(uiConfig.toString()).append(
+        _introduction).append("'").append(NL).append(NL).append(userDatasetStoreStr).append(NL).append(uiConfig.toString()).append(
         showSet("Param", paramSets)).append(showSet("Query", querySets)).append(
         showSet("RecordClass", recordClassSets)).append(showSet("XmlRecordClass", xmlRecordClassSets)).append(
         showSet("Question", questionSets)).append(showSet("XmlQuestion", xmlQuestionSets)).toString();
@@ -1244,8 +1228,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return xmlDataDir;
   }
 
-  public UserDatasetStore getUserDatasetStore() {
-    return userDatasetStore;
+  public Optional<UserDatasetStore> getUserDatasetStore() {
+    return _userDatasetStore;
   }
 
   public DatasetFactory getDatasetFactory() {
@@ -1542,10 +1526,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return xmlQuestion;
   }
 
-  public String getUserDatasetStoreStatus() {
-    return _userDatasetStoreStatus;
-  }
-
   public List<Question> getAllQuestions() {
     List<Question> questions = new ArrayList<>();
     for (QuestionSet qSet : getAllQuestionSets()) {
@@ -1611,7 +1591,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     String message = "The record type '" + recordClassName + "' is not or is no longer available.";
     try {
       // First check to see if this is a 'regular' record class; if not, check XML record classes
-      if (recordClassName == null || getRecordClassByName(recordClassName) == null) {
+      if (recordClassName == null || getRecordClassByFullName(recordClassName) == null) {
         throw new WdkModelException("RecordClass name is null or resulting RecordClass is null");
       }
     }

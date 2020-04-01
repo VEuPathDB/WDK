@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.report.reporter;
 
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -10,8 +11,6 @@ import java.util.function.Function;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
-import org.gusdb.fgputil.MapBuilder;
-import org.gusdb.fgputil.SortDirection;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -55,13 +54,10 @@ public abstract class StandardReporter extends AbstractReporter {
   private static void standardizeAnswerValue(AnswerValue answerValue) {
 
     // always return all records; user cannot select a subset of records
-    answerValue.setPageIndex(1, -1);
+    answerValue.setPageIndex(1, AnswerValue.UNBOUNDED_END_PAGE_INDEX);
 
-    // disable custom sorting - always sort by ID column
-    String idAttributeFieldName = answerValue.getAnswerSpec()
-        .getQuestion().getRecordClass().getIdAttributeField().getName();
-    answerValue.setSortingMap(new MapBuilder<String,Boolean>(
-        idAttributeFieldName, SortDirection.ASC.isAscending()).toMap());
+    // disable custom sorting - (always sort by primary key)
+    answerValue.setSortingMap(Collections.emptyMap());
   }
 
   @Override

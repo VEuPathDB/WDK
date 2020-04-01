@@ -5,7 +5,6 @@ import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.*;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
@@ -85,17 +84,12 @@ public class FilterParamNewHandler extends AbstractParamHandler {
   }
 
   private String getCachedFilteredSql(User user, String filteredSql, WdkModel wdkModel) throws WdkModelException {
-     try {
-       // get an sqlquery so we can cache this internal value. it is parameterized by the sql itself
-       SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel);
-       Map<String, String> paramValues = new MapBuilder<>("sql", filteredSql).toMap();
-       QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+    // get an sqlquery so we can cache this internal value. it is parameterized by the sql itself
+    SqlQuery sqlQuery = getSqlQueryForInternalValue(wdkModel);
+    Map<String, String> paramValues = new MapBuilder<>("sql", filteredSql).toMap();
+    QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
            .putAll(paramValues).buildRunnable(user, sqlQuery, null));
-       return instance.getSqlUnsorted(); // because isCacheable=true, we get the cached sql
-     }
-     catch (WdkUserException e) {
-       throw new WdkModelException(e);
-     }
+    return instance.getSqlUnsorted(); // because isCacheable=true, we get the cached sql
   }
 
   private SqlQuery getSqlQueryForInternalValue(WdkModel wdkModel) throws WdkModelException {

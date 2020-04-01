@@ -196,15 +196,22 @@ public class StrategyLoader {
           stratsWithBuildErrors.add(new TwoTuple<>(stratBuilder, e));
         }
       }
-      if (propagateBuildErrors && !stratsWithBuildErrors.isEmpty()) {
-        throw new WdkModelException("At least one strategy could not be build due to WdkModelException: " + NL +
-            stratsWithBuildErrors.stream()
+      if (!stratsWithBuildErrors.isEmpty()) {
+        String buildErrorMessages = "At least one strategy could not be built" +
+          " due to WdkModelException: " + NL + stratsWithBuildErrors
+            .stream()
             .map(tuple ->
               "Strategy " + tuple.getFirst().getStrategyId() +
               ", owned by " + tuple.getFirst().getUserId() + NL +
               tuple.getSecond().toString() + NL +
               FormatUtil.getStackTrace(tuple.getSecond()))
-            .collect(Collectors.joining(NL)));
+            .collect(Collectors.joining(NL));
+        if (propagateBuildErrors) {
+          throw new WdkModelException(buildErrorMessages);
+        }
+        else {
+          LOG.warn(buildErrorMessages);
+        }
       }
 
       // only build orphan steps; attached steps will be built by their strategy
@@ -232,6 +239,7 @@ public class StrategyLoader {
       String sql, Object[] paramValues, Integer[] paramTypes) {
     List<StrategyBuilder> strategies = new ArrayList<>();
     List<StepBuilder> orphanSteps = new ArrayList<>();
+    LOG.debug("Executing strategy search SQL:\n" + sql + "\nPARAMS: " + FormatUtil.join(paramValues, ", "));
     new SQLRunner(_userDbDs, sql, "search-steps-strategies").executeQuery(paramValues, paramTypes, rs -> {
       StrategyBuilder currentStrategy = null;
       while(rs.next()) {
@@ -288,7 +296,7 @@ public class StrategyLoader {
         .setDeleted(rs.getBoolean(toStratCol(COLUMN_IS_DELETED)))
         .setRootStepId(rs.getLong(toStratCol(COLUMN_ROOT_STEP_ID)))
         .setSaved(rs.getBoolean(toStratCol(COLUMN_IS_SAVED)))
-        .setLastRunTime(rs.getTimestamp(toStratCol(COLUMN_LAST_VIEWED_TIME)))
+        .setLastViewTime(rs.getTimestamp(toStratCol(COLUMN_LAST_VIEWED_TIME)))
         .setLastModifiedTime(rs.getTimestamp(toStratCol(COLUMN_LAST_MODIFIED_TIME)))
         .setDescription(rs.getString(toStratCol(COLUMN_DESCRIPTION)))
         .setSignature(rs.getString(toStratCol(COLUMN_SIGNATURE)))
@@ -427,9 +435,8 @@ public class StrategyLoader {
   Optional<Strategy> getStrategyBySignature(String strategySignature) throws WdkModelException {
     String sql = prepareSql(FIND_STRATEGIES_SQL
         .replace(SEARCH_CONDITIONS_MACRO, "and sr." + COLUMN_SIGNATURE + " = ?"));
-    return doSearch(sql, false, new Object[]{ strategySignature }, new Integer[]{ Types.VARCHAR })
+    return doSearch(sql, true, new Object[]{ strategySignature }, new Integer[]{ Types.VARCHAR })
         .getOnlyStrategy("with strategy signature = " + strategySignature);
-
   }
 
   @SuppressWarnings("UseOfObsoleteDateTimeApi")

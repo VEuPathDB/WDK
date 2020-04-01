@@ -17,7 +17,6 @@ public class WdkInitializer {
   private static final Logger LOG = Logger.getLogger(WdkInitializer.class);
 
   public static final String GUS_HOME_KEY = "GUS_HOME";
-  public static final String WDK_MODEL_KEY = "wdkModel";
   public static final String WDK_ASSETS_URL_KEY = "assetsUrl";
 
   public static void initializeWdk(ApplicationContext context) {

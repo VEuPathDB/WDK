@@ -20,19 +20,33 @@
           "additionalProperties": false
         },
         "attributes": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "oneOf": [
+            {
+              "enum": [ "__ALL_ATTRIBUTES__" ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
         },
         "tables": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "oneOf": [
+            {
+              "enum": [ "__ALL_TABLES__" ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
         },
         "sorting": {
-	    "$ref": "sorting-spec.json"
+          "$ref": "sorting-spec.json"
         }
       }
     }

@@ -127,7 +127,6 @@ abstract class AbstractQueryRunner implements ICatQueryRunner {
 
   private IRODSQueryResultSet continueQuery() throws WdkModelException {
     TRACE.start();
-    close();
     try {
       return TRACE.end(getDb().getMoreResults(currRs));
     } catch (JargonException | JargonQueryException e) {

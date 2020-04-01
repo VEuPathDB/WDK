@@ -119,8 +119,8 @@ public class SessionService extends AbstractWdkService {
             ", returned by OAuth service with auth code " + authCode);
       }
 
-      // transfer strategies from guest to logged-in user
-      wdkModel.getStepFactory().transferStrategyOwnership(oldUser, newUser);
+      // transfer ownership from guest to logged-in user
+      transferOwnership(oldUser, newUser, wdkModel);
 
       // login successful; create redirect response
       return getSuccessResponse(newUser, oldUser, redirectUrl, true);
@@ -161,8 +161,8 @@ public class SessionService extends AbstractWdkService {
       // log in the user
       User newUser = wdkModel.getUserFactory().login(oldUser, request.getEmail(), request.getPassword());
 
-      // transfer strategies from guest to logged-in user
-      wdkModel.getStepFactory().transferStrategyOwnership(oldUser, newUser);
+      // transfer ownership from guest to logged-in user
+      transferOwnership(oldUser, newUser, wdkModel);
 
       return getSuccessResponse(newUser, oldUser, redirectUrl, false);
 
@@ -174,6 +174,13 @@ public class SessionService extends AbstractWdkService {
       LOG.error("Could not authenticate user's identity.  Exception thrown: ", ex);
       return createJsonResponse(false, "Invalid username or password", null).build();
     }
+  }
+
+  private void transferOwnership(User oldUser, User newUser, WdkModel wdkModel) throws WdkModelException {
+    // transfer dataset ownership
+    wdkModel.getDatasetFactory().transferDatasetOwnership(oldUser, newUser);
+    // transfer strategy ownership
+    wdkModel.getStepFactory().transferStrategyOwnership(oldUser, newUser);
   }
 
   /**

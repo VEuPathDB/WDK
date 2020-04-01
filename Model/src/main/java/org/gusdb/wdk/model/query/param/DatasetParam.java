@@ -133,7 +133,7 @@ public class DatasetParam extends Param {
     }
 
     // that's all the validation we perform if level is syntactic
-    if (level.equals(ValidationLevel.SYNTACTIC)) {
+    if (level.isLessThanOrEqualTo(ValidationLevel.SYNTACTIC)) {
       return ctxParamVals.setValid(name, level);
     }
 
@@ -164,6 +164,10 @@ public class DatasetParam extends Param {
     this.recordClassRef = recordClassRef;
   }
 
+  public void setRecordClass(RecordClass recordClass) {
+    this.recordClass = recordClass;
+  }
+
   public String getDefaultType() {
     return (defaultType != null) ? defaultType : TYPE_DATA;
   }
@@ -191,11 +195,8 @@ public class DatasetParam extends Param {
 
   @Override
   public String getBriefRawValue(Object rawValue, int truncateLength) throws WdkModelException {
-    Dataset dataset = (Dataset) rawValue;
-    String content = dataset.getContent();
-    if (content.length() > truncateLength)
-      content = content.substring(0, truncateLength) + "...";
-    return content;
+    return ((Dataset) rawValue).getContent()
+      .truncate(truncateLength);
   }
 
   public void addParserReference(DatasetParserReference reference) {
@@ -203,7 +204,7 @@ public class DatasetParam extends Param {
   }
 
   @Override
-  protected String getDefault(PartiallyValidatedStableValues stableValues) throws WdkModelException {
+  protected String getDefault(PartiallyValidatedStableValues stableValues) {
     // default stable value for DatasetParam is always an empty string;
     // XML default value is used to display a default set of IDs (i.e. raw value) in the user interface
     return "";

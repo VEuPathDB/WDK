@@ -37,11 +37,14 @@ public class TimestampParamHandler extends AbstractParamHandler {
   }
 
   /**
-   * The stable value is the same as signature.
+   * Returns the number of full intervals that have occurred since midnight on
+   * January 1, 1970 UTC.  By doing this, the signature changes over time so
+   * that cache lookups expire each time an interval passes.
    */
   @Override
   public String toSignature(RunnableObj<QueryInstanceSpec> ctxVals) {
-    return ctxVals.get().get(_param.getName());
+    long interval = ((TimestampParam)_param).getInterval();
+    return Long.toString(System.currentTimeMillis() / (1000 * interval));
   }
 
   @Override

@@ -1,5 +1,11 @@
 package org.gusdb.wdk.model.report.config;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.SortDirection;
@@ -12,8 +18,6 @@ import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.*;
 
 public class AnswerDetailsFactory {
 
@@ -112,13 +116,7 @@ public class AnswerDetailsFactory {
 
     // set requested sorting
     if (specJson.has("sorting")) {
-      JSONArray sortingJson = specJson.getJSONArray("sorting");
-      specs.setSorting(sortingJson.length() == 0 ?
-          getDefaultSorting(question) :
-          getIdSortingIfEmpty(parseSorting(sortingJson, question.getAttributeFieldMap()), question));
-    }
-    else {
-      specs.setSorting(getDefaultSorting(question));
+      specs.setSorting(parseSorting(specJson.getJSONArray("sorting"), question.getAttributeFieldMap()));
     }
 
     // set content disposition

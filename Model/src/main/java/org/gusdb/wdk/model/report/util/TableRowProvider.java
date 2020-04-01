@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.report.util;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import org.gusdb.fgputil.iterator.IteratorUtil;
@@ -13,6 +12,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.model.record.TableValueRow;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.report.reporter.AbstractTabularReporter.RowsProvider;
@@ -39,7 +39,7 @@ public class TableRowProvider implements RowsProvider {
     }
   }
 
-  private static Function<Map<String,AttributeValue>,List<Object>> getTableRowConverter(
+  private static Function<TableValueRow,List<Object>> getTableRowConverter(
       final RecordInstance record, final TableField tableField) {
     return tableRow -> {
       try {

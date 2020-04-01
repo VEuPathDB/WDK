@@ -76,7 +76,7 @@ public class InstanceInfoFetcher implements ValueFactory<String, Optional<Instan
         );
     }
     catch(Exception e) {
-      return WdkModelException.unwrap(e, "Unable to check instance ID.");
+      throw WdkModelException.translateFrom(e, "Error while trying to find WDK cache instance info.  Erroring SQL: \n" + sql);
     }
   }
 }
