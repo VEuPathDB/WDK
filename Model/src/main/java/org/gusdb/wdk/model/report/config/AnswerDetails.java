@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.report.config;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +11,7 @@ import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 
 public class AnswerDetails {
 
-  static final Integer ALL_RECORDS = -1;
+  public static final Integer ALL_RECORDS = -1;
 
   // use factory method to construct from JSON
   AnswerDetails() {}
@@ -18,9 +19,9 @@ public class AnswerDetails {
   // all fields are private
   private int _offset = 0; // default start at first record
   private int _numRecords = ALL_RECORDS; // default to all records
-  private Map<String, AttributeField> _attributes;
-  private Map<String, TableField> _tables;
-  private List<SortDirectionSpec<AttributeField>> _sorting;
+  private Map<String, AttributeField> _attributes = Collections.emptyMap();
+  private Map<String, TableField> _tables = Collections.emptyMap();
+  private List<SortDirectionSpec<AttributeField>> _sorting = Collections.emptyList();
   private ContentDisposition _contentDisposition = ContentDisposition.INLINE;
 
   // all getters are public

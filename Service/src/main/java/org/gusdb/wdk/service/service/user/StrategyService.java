@@ -5,6 +5,7 @@ import static org.gusdb.fgputil.functional.Functions.not;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -149,6 +150,17 @@ public class StrategyService extends UserService {
     Strategy strategy = getStrategyForCurrentUser(strategyId, ValidationLevel.SEMANTIC);
     // update result sizes for all runnable steps that need refreshing
     strategy.updateStaleResultSizesOnRunnableSteps();
+    // update last view time on this strategy
+    try {
+      strategy = Strategy.builder(strategy)
+        .setLastViewTime(new Date())
+        .build(new UserCache(strategy.getUser()), ValidationLevel.SEMANTIC);
+      getWdkModel().getStepFactory().updateStrategy(strategy);
+    }
+    catch(InvalidStrategyStructureException e) {
+      // this should not happen since strategy was already constructed above
+      // if it does somehow(?), ignore since last view time is not that important
+    }
     return StrategyFormatter.getDetailedStrategyJson(strategy);
   }
 
@@ -214,7 +226,8 @@ public class StrategyService extends UserService {
       StrategyBuilder newStratBuilder = Strategy.builder(oldStrat)
         .clearSteps()
         .setRootStepId(parsedTree.getFirst())
-        .addSteps(parsedTree.getSecond());
+        .addSteps(parsedTree.getSecond())
+        .setLastModifiedTime(new Date());
       additionalChanges.accept(newStratBuilder);
       Strategy newStrat = newStratBuilder.build(new UserCache(oldStrat.getUser()), ValidationLevel.NONE);
   
@@ -343,13 +356,18 @@ public class StrategyService extends UserService {
     JSONObject change
   ) throws WdkModelException, InvalidStrategyStructureException, DataValidationException {
 
-    // apply overwrite-with first if present, then apply other changes
+    // apply overwriteWith first if present, then apply other changes
     if (change.has(JsonKeys.OVERWRITE_WITH_OPERATION)) {
       long sourceStrategyId = change.getLong(JsonKeys.OVERWRITE_WITH_OPERATION);
       strat = applyOverwriteChanges(strat, sourceStrategyId);
     }
 
     StrategyBuilder builder = Strategy.builder(strat);
+
+    // update modified date if any changes requested (otherwise no-op)
+    if (!change.keySet().isEmpty()) {
+      builder.setLastModifiedTime(new Date());
+    }
 
     // apply any other changes
     for (final String key : change.keySet()) {

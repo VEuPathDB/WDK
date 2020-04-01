@@ -152,7 +152,7 @@ public class NumberRangeParam extends Param {
    * in the query.
    */
   @Override
-  public String replaceSql(String sql, String internalValue) {
+  public String replaceSql(String sql, String stableValue, String internalValue) {
     JSONObject valueJson = new JSONObject(internalValue);
     Double values[] = new Double[2];
     values[0] = valueJson.getDouble("min");

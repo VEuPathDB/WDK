@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.service;
 
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.runtime.BuildStatus;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -10,6 +11,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import java.util.Date;
 
 @Path("system")
@@ -60,5 +63,12 @@ public class SystemService extends AbstractWdkService {
     }
 
     return array.toString(2);
+  }
+
+  @GET
+  @Path("/build-status")
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response getBuildStatus() {
+    return Response.ok(BuildStatus.getLatestBuildStatus()).build();
   }
 }

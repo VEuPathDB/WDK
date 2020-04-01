@@ -11,7 +11,6 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.InstanceInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultFactory.CacheTableCreator;
@@ -45,7 +44,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
 
   public abstract String getSql() throws WdkModelException;
 
-  public abstract String getSqlUnsorted() throws WdkModelException, WdkUserException;
+  public abstract String getSqlUnsorted() throws WdkModelException;
 
   protected abstract void appendJSONContent(JSONObject jsInstance) throws JSONException;
 
@@ -60,6 +59,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   protected final ReadOnlyMap<String, String> _context;
 
   // fields lazily loaded post-construction
+  private Boolean _cachePreviouslyExistedForSpec;
   private Map<String, String> _paramInternalValues;
   private String _checksum;
   private InstanceInfo _instanceInfo;
@@ -71,7 +71,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   protected QueryInstance(RunnableObj<QueryInstanceSpec> spec) {
     // can cast here since the only way to get to the instance subclass is via
     // the query subclass
-    _query = (T)spec.get().getQuery();
+    _query = (T)spec.get().getQuery().get();
     _user = spec.get().getUser();
     _wdkModel = _query.getWdkModel();
     _spec = spec;
@@ -126,10 +126,20 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   }
 
   private InstanceInfo getInstanceInfo() throws WdkModelException {
-    if (_instanceInfo == null)
-      _instanceInfo = new ResultFactory(_wdkModel.getAppDb())
-        .cacheResults(getChecksum(), this);
+    if (_instanceInfo == null) {
+      ResultFactory factory = new ResultFactory(_wdkModel.getAppDb());
+      String checksum = getChecksum();
+      _cachePreviouslyExistedForSpec = factory.getInstanceInfo(checksum).isPresent();
+      _instanceInfo = factory.cacheResults(checksum, this);
+    }
     return _instanceInfo;
+  }
+
+  public boolean cacheInitiallyExistedForSpec() throws WdkModelException {
+    if (_cachePreviouslyExistedForSpec == null) {
+      getInstanceInfo(); // will set the value
+    }
+    return _cachePreviouslyExistedForSpec;
   }
 
   public String getChecksum() throws WdkModelException {
@@ -174,11 +184,13 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
     // build JSON from signatures; slightly different than new JSONObject(map)
     try {
       JSONObject jsParams = new JSONObject();
-      for (String paramName : _spec.get().getQuery().getParamMap().keySet()) {
+      for (String paramName : _spec.get().getQuery().get().getParamMap().keySet()) {
         String value = signatures.get(paramName);
         if (value != null && !value.isEmpty())
           jsParams.put(paramName, value);
       }
+      if (LOG.isDebugEnabled())
+        LOG.debug("Produced the following param signatures (query=" + _query.getFullName() + "): " + jsParams.toString(2));
       return jsParams;
     }
     catch (JSONException e) {

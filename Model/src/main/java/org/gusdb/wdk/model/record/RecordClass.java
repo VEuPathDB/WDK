@@ -1857,6 +1857,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public Question getRealtimeBasketQuestion() throws WdkModelException {
-    return _wdkModel.getBasketFactory().getRealtimeBasketQuestion(this);
+    return _wdkModel.getBasketFactory().get.getBasketRealtimeQuestion(this);
   }
 }

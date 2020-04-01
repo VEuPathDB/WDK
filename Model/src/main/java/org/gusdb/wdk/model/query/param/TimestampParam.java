@@ -5,57 +5,49 @@ import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
 
 /**
- * The timestamp param represents a flag that use the current timestamp as input value every time a search is
- * run from question page, or a step is revised. However, if a step is reloaded, such as when user re-opens a
- * previous strategy, the value of the timestamp param stays the same.
+ * The timestamp param represents a flag which causes a WDK cache table (result)
+ * to become invalid (no longer referenced).  The actual param value is not used
+ * and thus any value will do.  The configured interval length (in seconds) is
+ * the maximum length of time a cache will be used.  It may be used for less
+ * time, however.
+ * 
+ * Here's how it works: the signature of a timestamp param is the number of
+ * full intervals of the given interval length that have occurred between the
+ * epoch (midnight, January 1, 1970 UTC) and "now".  This value contributes to
+ * the calculation of the cache lookup hash and thus when time "rolls over" to
+ * the next interval, a new cache will be created, even though none of the param
+ * values have changed.
  *
- * The timestamp param is always hidden, and user is not allowed to input value to it. This param is used when
- * the data of the resource can be changed over time, while the query to the data is cached. We can use the
- * cache when the step is simply reloaded, but start a new cache when user runs a search or revise a step with
- * the same param values.
+ * The timestamp param is always hidden, and user is not allowed to assign a
+ * value to it.  This param should be used when the data of the resource can be
+ * changed over time, but the results must still be cached (either for
+ * performance or because the parent query is a ProcessQuery).
  *
- * the raw, stable value, signature, and internal value for a timestampParam is the same.
+ * the raw, stable, and internal values for a timestampParam are the same
  *
  * @author xingao
- *
- *         the four types of values are identical.
  */
 public class TimestampParam extends Param {
 
-  private long interval = 1;
+  private long _intervalLengthSecs = 1;
 
-  /**
-     *
-     */
   public TimestampParam() {
     setHandler(new TimestampParamHandler());
   }
 
-  /**
-   * @param param
-   */
   public TimestampParam(TimestampParam param) {
     super(param);
-    this.interval = param.interval;
+    _intervalLengthSecs = param._intervalLengthSecs;
   }
 
-  /**
-   * The interval that the default value of timestampParam will be updated.
-   *
-   * @return the interval
-   */
   public long getInterval() {
-    return interval;
+    return _intervalLengthSecs;
   }
 
-  /**
-   * @param interval
-   *          the interval to set
-   */
   public void setInterval(long interval) {
     if (interval <= 0)
       interval = 1;
-    this.interval = interval;
+    _intervalLengthSecs = interval;
   }
 
   @Override
@@ -66,25 +58,30 @@ public class TimestampParam extends Param {
   @Override
   protected ParamValidity validateValue(PartiallyValidatedStableValues contextParamValues, ValidationLevel level) {
     // nothing to validate. the value of timestamp can be any string
-    // TODO: is the above statement correct?
     return contextParamValues.setValid(getName(), level);
   }
 
   /**
-   * it is always false (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.query.param.Param#isVisible()
+   * @return whether param should be visible in the UI
    */
   @Override
   public boolean isVisible() {
     return false;
   }
 
+  /**
+   * @return true.  Timestamp param value is not used.  Its signature is used
+   * to invalidate old cache tables for query instance specs even if other param
+   * values have not changed
+   */
+  @Override
+  public boolean isForInternalUseOnly() {
+    return true;
+  }
+
   @Override
   public String getDefault(PartiallyValidatedStableValues contextParamValues) {
-    long time = System.currentTimeMillis();
-    String value = Long.toString(time / (1000 * interval));
-    return value;
+    return "";
   }
 
   @Override
@@ -98,5 +95,21 @@ public class TimestampParam extends Param {
     if (value.length() > truncateLength)
       value = value.substring(0, truncateLength) + "...";
     return value;
+  }
+
+  /**
+   * @return true; is allowed to be empty.  Any value can be filled in
+   */
+  @Override
+  public boolean isAllowEmpty() {
+    return true;
+  }
+
+  /**
+   * @return the emptyValue
+   */
+  @Override
+  public String getEmptyValue() {
+    return "";
   }
 }

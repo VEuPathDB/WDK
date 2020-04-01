@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.query.spec;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -34,8 +35,11 @@ public class QueryInstanceSpec extends ParameterContainerInstanceSpec<QueryInsta
     _assignedWeight = assignedWeight;
   }
 
-  public Query getQuery() {
-    return (Query)getParameterContainer();
+  public Optional<Query> getQuery() {
+    return Optional.ofNullable(
+      getParameterContainer()
+        .map(container -> (Query)container)
+        .orElse(null));
   }
 
   public int getAssignedWeight() {

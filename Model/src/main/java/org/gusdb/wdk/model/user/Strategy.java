@@ -52,7 +52,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     private boolean _isDeleted;
     private Date _createdTime = new Date();
     private Date _lastModifiedTime;
-    private Date _lastRunTime;
+    private Date _lastViewTime;
     private String _signature;
     private boolean _isPublic;
     private long _rootStepId;
@@ -80,7 +80,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
       _isDeleted = strategy._isDeleted;
       _createdTime = strategy._createdTime;
       _lastModifiedTime = strategy._lastModifiedTime;
-      _lastRunTime = strategy._lastRunTime;
+      _lastViewTime = strategy._lastViewTime;
       _signature = strategy._signature;
       _isPublic = strategy._isPublic;
       _rootStepId = strategy._rootStepId;
@@ -143,8 +143,8 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
       return this;
     }
 
-    public StrategyBuilder setLastRunTime(Date lastRunTime) {
-      _lastRunTime = lastRunTime;
+    public StrategyBuilder setLastViewTime(Date lastViewTime) {
+      _lastViewTime = lastViewTime;
       return this;
     }
 
@@ -230,7 +230,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
   private final boolean _isDeleted;
   private final Date _createdTime;
   private final Date _lastModifiedTime;
-  private final Date _lastRunTime;
+  private final Date _lastViewTime;
   private final String _signature;
   private final boolean _isPublic;
   private final long _rootStepId;
@@ -252,7 +252,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     _isDeleted = strategyBuilder._isDeleted;
     _createdTime = strategyBuilder._createdTime;
     _lastModifiedTime = strategyBuilder._lastModifiedTime;
-    _lastRunTime = strategyBuilder._lastRunTime;
+    _lastViewTime = strategyBuilder._lastViewTime;
     _signature = strategyBuilder._signature;
     _isPublic = strategyBuilder._isPublic;
     _rootStepId = strategyBuilder._rootStepId;
@@ -435,9 +435,18 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     return _createdTime;
   }
 
+  /**
+   * Counts the number of steps in this strategy that are either leaf steps or
+   * transforms.  This corresponds to the "number of steps" in the UI, which is
+   * a linear display rather than tree-based.  If a step does not have a valid
+   * question, we also count it under the assumption that a step with an invalid
+   * question name is more likely to be a leaf/transform than boolean.
+   *
+   * @return number of leaf and transform steps, and those with invalid question names
+   */
   public long getLeafAndTransformStepCount() {
     return getAllSteps().stream()
-        .filter(step -> step.hasValidQuestion() &&
+        .filter(step -> !step.hasValidQuestion() ||
             step.getAnswerSpec().getQuestion().getQuery().getAnswerParamCount() < 2)
         .collect(Collectors.counting());
   }
@@ -467,11 +476,8 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     return _validationBundle.getStatus().isValid();
   }
 
-  /**
-   * @return the lastRunTime
-   */
-  public Date getLastRunTime() {
-    return getRootStep().getLastRunTime();
+  public Date getLastViewTime() {
+    return _lastViewTime;
   }
 
   /**

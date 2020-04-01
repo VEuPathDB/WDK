@@ -111,7 +111,7 @@ public class BasketService extends UserService {
       reduce(
         wdkModel.getBasketFactory().getBasketCounts(getPrivateRegisteredUser()).entrySet(),
         (json, entry) -> {
-          String urlSegment = wdkModel.getRecordClassByName(entry.getKey()).get().getUrlSegment();
+          String urlSegment = wdkModel.getRecordClassByFullName(entry.getKey()).get().getUrlSegment();
           JSONObject countsObj = new JSONObject()
             .put(JsonKeys.TOTAL_COUNT, entry.getValue().getFirst())
             .put(JsonKeys.INVALID_COUNT, entry.getValue().getSecond());

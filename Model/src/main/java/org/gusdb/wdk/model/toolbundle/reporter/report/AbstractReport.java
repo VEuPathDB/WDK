@@ -119,15 +119,16 @@ public abstract class AbstractReport<T extends Comparable<T>> {
     if (limited)
       return;
 
-    // FIXME: Had to temporarily disable because even organism filter was "too big".
-    //        Need to assess this code and see if it is adding too much or if
-    //        size limit is simply too small.
-    //limiter(sizeOf(val));
-    if (limited)
-      return;
-
     var pair = index.get(val);
     if (pair == null) {
+
+      // On new unique values, invoke the size limiter to
+      // prevent OOMs on reports with a large number of
+      // distinct values.
+      limiter(sizeOf(val));
+      if (limited)
+        return;
+
       pair = new Pair<>(val, 1L);
       index.put(val, pair);
       vals.add(pair);

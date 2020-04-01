@@ -27,7 +27,7 @@ public class IdSearchRunner {
     String paramInternalValue = "select " + pkValues.entrySet().stream()
         .map(pk -> "'" + pk.getValue() + "' as " + pk.getKey())
         .collect(Collectors.joining(", ")) + " from " + appDb.getPlatform().getDummyTable();
-    String sql = dsParam.replaceSql(rawSql, paramInternalValue);
+    String sql = dsParam.replaceSql(rawSql, "0", paramInternalValue);
     PrimaryKeyDefinition pkDef = idSearch.getRecordClass().getPrimaryKeyDefinition();
     List<Map<String,Object>> foundIds = new SQLRunner(appDb.getDataSource(), sql).executeQuery(rs -> {
       List<Map<String,Object>> ids = new ArrayList<>();

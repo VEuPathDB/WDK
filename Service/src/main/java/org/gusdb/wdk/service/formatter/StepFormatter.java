@@ -4,7 +4,9 @@ import static org.gusdb.wdk.service.formatter.ValidationFormatter.getValidationB
 
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
@@ -62,7 +64,12 @@ import org.json.JSONObject;
  */
 public class StepFormatter {
 
+  private static final Logger LOG = Logger.getLogger(StepFormatter.class);
+
   private static JSONObject getStepJson(Step step) throws WdkModelException {
+    LOG.debug("Formatting step " + step.getStepId() + ".  ValidationBundle: " +
+        step.getValidationBundle().toString(2) + "\nStepParams: " +
+        FormatUtil.prettyPrint(step.getAnswerSpec().getQueryInstanceSpec(), Style.MULTI_LINE));
     try {
       return new JSONObject()
         .put(JsonKeys.ID, step.getStepId())

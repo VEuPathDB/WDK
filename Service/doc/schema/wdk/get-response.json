@@ -4,9 +4,6 @@
     "changePasswordUrl": {
       "type": "string"
     },
-    "userDatasetsEnabled": {
-      "type": "boolean"
-    },
     "releaseDate": {
       "type": "string",
       "examples": [
@@ -20,10 +17,12 @@
       ]
     },
     "userDatasetStoreStatus": {
-      "type": "string",
-      "examples": [
-        "UD_ENABLED"
-      ]
+      "type": "object",
+      "properties": {
+        "isAvailable": {
+          "type": "boolean"
+        }
+      }
     },
     "categoriesOntologyName": {
       "type": "string",

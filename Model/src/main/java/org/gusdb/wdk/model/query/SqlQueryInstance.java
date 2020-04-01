@@ -123,7 +123,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
           + " in query " + _query.getFullName());
         value = "";
       }
-      sql = param.replaceSql(sql, value);
+      sql = param.replaceSql(sql, _spec.get().get(paramName), value);
     }
 
     var buffer = new StringBuilder("SELECT o.* ");

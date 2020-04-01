@@ -945,7 +945,24 @@ public class FilterParamNew extends AbstractDependentParam {
    */
   @Override
   protected String getDefault(PartiallyValidatedStableValues stableValues) {
+    return getNoFiltersValue();
+  }
+
+  private static String getNoFiltersValue() {
     return new JSONObject().put(FilterParamNewHandler.FILTERS_KEY, new JSONArray()).toString();
+  }
+
+  @Override
+  public String replaceSql(String sql, String stableValue, String internalValue) {
+
+    // replace regular param value
+    sql = super.replaceSql(sql, stableValue, internalValue);
+
+    // replace special meta value
+    String filtersPresent = getNoFiltersValue().equals(stableValue) ? "0" : "1";
+    String regex = "\\$\\$" + _name + ".filters_present\\$\\$";
+    return sql.replaceAll(regex, filtersPresent);
+
   }
 
   @Override

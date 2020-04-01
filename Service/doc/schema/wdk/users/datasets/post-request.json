@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema",
   "oneOf": [
     {
+      "id": "dataset-from-id-list",
       "type": "object",
       "properties": {
         "sourceType": {
@@ -31,6 +32,7 @@
       "additionalProperties": false
     },
     {
+      "id": "dataset-from-basket",
       "type": "object",
       "properties": {
         "sourceType": {
@@ -57,6 +59,7 @@
       "additionalProperties": false
     },
     {
+      "id": "dataset-from-strategy",
       "type": "object",
       "properties": {
         "sourceType": {
@@ -83,6 +86,7 @@
       "additionalProperties": false
     },
     {
+      "id": "dataset-from-file",
       "type": "object",
       "properties": {
         "sourceType": {
@@ -101,7 +105,7 @@
             "parameterName": {
               "type": "string"
             },
-            "questionName": {
+            "searchName": {
               "type": "string"
             }
           },
@@ -109,7 +113,7 @@
             "temporaryFileId",
             "parser",
             "parameterName",
-            "questionName"
+            "searchName"
           ],
           "additionalProperties": false
         }

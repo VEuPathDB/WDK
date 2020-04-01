@@ -68,8 +68,9 @@ public class UserCreationScript {
          BufferedReader in = new BufferedReader(new InputStreamReader(System.in))) {
       List<UserPropertyName> userProps = model.getModelConfig().getAccountDB().getUserPropertyNames();
       int newUserCount = 0, modifiedUserCount = 0, invalidLineCount = 0;
-      while (in.ready()) {
-        UserLine parsedLine = parseLine(in.readLine(), userProps);
+      String line;
+      while ((line = in.readLine()) != null) {
+        UserLine parsedLine = parseLine(line, userProps);
         if (parsedLine.shouldWriteUser()) {
           try {
             // create or edit user

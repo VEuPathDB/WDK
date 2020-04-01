@@ -312,7 +312,7 @@ public class AnswerFilterInstance extends WdkModelBase implements NamedObject {
     for (Param param : _filterQuery.getParams()) {
       String internal = param.getFullName().equals(_answerParam.getFullName()) ?
           "(" + sql + ")" : param.getInternalValue(validSpec);
-      filterSql = param.replaceSql(filterSql, internal);
+      filterSql = param.replaceSql(filterSql, validSpec.get().get(param.getName()), internal);
     }
 
     // if the filter doesn't return weight, assigned weight will be used

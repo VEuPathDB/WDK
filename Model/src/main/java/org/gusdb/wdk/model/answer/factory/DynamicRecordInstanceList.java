@@ -125,7 +125,7 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
       LOG.trace("column: '" + column.getName() + "'");
     }
 
-    String sql = _answerValue.getPagedAttributeSql(attributeQuery, false);
+    String sql = _answerValue.getAnswerAttributeSql(attributeQuery, false);
     int count = 0;
 
     // get and run the paged attribute query sql
@@ -222,7 +222,7 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
         error.append("] returned rows that doesn't match the paged ");
         error.append("records. (");
         error.append(primaryKey.getValuesAsString());
-        error.append(").\nPaged table SQL:\n" + _answerValue.getPagedTableSql(tableQuery));
+        error.append(").\nPaged table SQL:\n" + _answerValue.getAnswerTableSql(tableQuery));
         error.append("\n" + "Paged ID SQL:\n" + _answerValue.getPagedIdSql());
         throw new WdkModelException(error.toString());
       }

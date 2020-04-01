@@ -38,6 +38,7 @@ public class StrategyFormatter {
         .put(JsonKeys.RECORD_CLASS_NAME, recordClassName.isPresent() ? recordClassName.get() :JSONObject.NULL)
         .put(JsonKeys.SIGNATURE, strategy.getSignature())
         .put(JsonKeys.CREATED_TIME, FormatUtil.formatDateTime(strategy.getCreatedTime()))
+        .put(JsonKeys.LAST_VIEW_TIME, FormatUtil.formatDateTime(strategy.getLastViewTime()))
         .put(JsonKeys.LAST_MODIFIED, FormatUtil.formatDateTime(strategy.getLastModifiedTime()))
         .put(JsonKeys.RELEASE_VERSION, strategy.getVersion())
         .put(JsonKeys.IS_PUBLIC, strategy.isPublic())

@@ -103,16 +103,16 @@ public class StaticRecordInstance extends AttributeValueContainer implements Rec
 
   @Override
   public TableValue getTableValue(String tableName) throws WdkModelException, WdkUserException {
-    if (_tableValueCache.containsKey(tableName)) {
-      return _tableValueCache.get(tableName);
+    if (!_tableValueCache.containsKey(tableName)) {
+      throw new WdkModelException("Requested table attribute [" + tableName + "] is not loaded into container.");
     }
-    throw new WdkModelException("Requested table attribute [" + tableName + "] is not loaded into container.");
+    return _tableValueCache.get(tableName);
   }
 
   @Override
   public QueryColumnAttributeValue getQueryColumnAttributeValue(QueryColumnAttributeField field)
       throws WdkModelException, WdkUserException {
-    if (containsKey(field.getName())) {
+    if (!containsKey(field.getName())) {
       throw new WdkModelException("Requested column attribute [" + field.getName() + "] is not loaded into container.");
     }
     return (QueryColumnAttributeValue)get(field.getName());

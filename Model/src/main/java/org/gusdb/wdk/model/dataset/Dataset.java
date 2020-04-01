@@ -3,11 +3,9 @@ package org.gusdb.wdk.model.dataset;
 import java.util.Date;
 import java.util.List;
 
-import org.gusdb.wdk.model.WdkModelException;
-
 /**
  * @author xingao
- * 
+ *
  */
 public class Dataset {
 
@@ -88,14 +86,11 @@ public class Dataset {
     this.uploadFile = uploadFile;
   }
 
-  /**
-   * @return
-   */
-  public List<String[]> getValues() throws WdkModelException {
+  public List<String[]> getValues() {
     return factory.getDatasetValues(datasetId);
   }
 
-  public String getContent() throws WdkModelException {
+  public DatasetContents getContent() {
     return factory.getDatasetContent(datasetId);
   }
 

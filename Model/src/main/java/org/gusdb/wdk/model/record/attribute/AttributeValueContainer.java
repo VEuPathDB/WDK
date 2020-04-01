@@ -1,14 +1,8 @@
 package org.gusdb.wdk.model.record.attribute;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.gusdb.fgputil.ImmutableEntry;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -98,11 +92,6 @@ public abstract class AttributeValueContainer extends LinkedHashMap<String, Attr
   }
 
   @Override
-  public boolean containsKey(Object key) {
-    return _attributeFieldMap.containsKey(key);
-  }
-
-  @Override
   public AttributeValue get(Object key) {
     try {
       return getAttributeValue((String) key);
@@ -110,38 +99,5 @@ public abstract class AttributeValueContainer extends LinkedHashMap<String, Attr
     catch (WdkModelException | WdkUserException ex) {
       throw new WdkRuntimeException(ex);
     }
-  }
-
-  @Override
-  public boolean isEmpty() {
-    return _attributeFieldMap.isEmpty();
-  }
-
-  @Override
-  public int size() {
-    return _attributeFieldMap.size();
-  }
-
-  @Override
-  public Set<String> keySet() {
-    return _attributeFieldMap.keySet();
-  }
-
-  @Override
-  public Set<Entry<String,AttributeValue>> entrySet() {
-    Set<Entry<String, AttributeValue>> entries = new HashSet<>();
-    for (String name : _attributeFieldMap.keySet()) {
-      entries.add(new ImmutableEntry<String, AttributeValue>(name, get(name)));
-    }
-    return entries;
-  }
-
-  @Override
-  public Collection<AttributeValue> values() {
-    List<AttributeValue> values = new ArrayList<AttributeValue>();
-    for (String name : _attributeFieldMap.keySet()) {
-      values.add(get(name));
-    }
-    return values;
   }
 }

@@ -307,7 +307,7 @@ public class FileBasedRecordStream implements RecordStream {
       LOG.debug("writeAttributeFile(): Starting query " + query.getName());
 
       // Getting the paged attribute SQL but in fact, getting a SQL statement requesting with all records.
-      String sql = answerValue.getPagedAttributeSql(query, true);
+      String sql = answerValue.getAnswerAttributeSql(query, true);
 
       // Get the result list for the current attribute query
       DataSource dataSource = answerValue.getWdkModel().getAppDb().getDataSource();

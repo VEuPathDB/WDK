@@ -83,6 +83,7 @@ public class JsonKeys {
   public static final String IS_DISPLAYABLE = "isDisplayable";
   public static final String IS_IN_REPORT = "isInReport";
   public static final String IS_VIEW_ONLY = "isViewOnly";
+  public static final String IS_AVAILABLE = "isAvailable";
   public static final String NEW_BUILD = "newBuild";
   public static final String REVISE_BUILD = "reviseBuild";
 
@@ -189,7 +190,7 @@ public class JsonKeys {
   public static final String LEAF_AND_TRANSFORM_STEP_COUNT = "leafAndTransformStepCount";
   public static final String IS_EXPANDED = "expanded";
   public static final String EXPANDED_NAME = "expandedName";
-  public static final String OVERWRITE_WITH_OPERATION = "overwrite-with"; // PATCH operation
+  public static final String OVERWRITE_WITH_OPERATION = "overwriteWith"; // PATCH operation
 
   // step analysis keys
   public static final String ANALYSIS_ID = "analysisId"; // TODO convert to simply ID
@@ -210,7 +211,6 @@ public class JsonKeys {
   public static final String CHANGE_PASSWORD_URL = "changePasswordUrl";
   public static final String CATEGORIES_ONTOLOGY_NAME = "categoriesOntologyName";
   public static final String USER_PROFILE_PROPERTIES = "userProfileProperties";
-  public static final String USER_DATASETS_ENABLED = "userDatasetsEnabled";
   public static final String USER_DATASET_STORE_STATUS = "userDatasetStoreStatus";
 
   // authentication keys
@@ -251,6 +251,7 @@ public class JsonKeys {
   public static final String RECORD_CLASS_NAME_PLURAL = "recordClassNamePlural";
   public static final String SIGNATURE = "signature";
   public static final String SAVED_NAME = "savedName";
+  public static final String LAST_VIEW_TIME = "lastViewed";
   public static final String LAST_MODIFIED = "lastModified";
   public static final String IS_SAVED = "isSaved";
   public static final String IS_DELETED = "isDeleted";
@@ -278,4 +279,5 @@ public class JsonKeys {
   public static final String DATA_TYPE = "columnDataType";
   public static final String TOOLS = "tools";
   public static final String COLUMN_FILTERS = "columnFilters";
+  public static final String CACHE_PREVIOUSLY_EXISTED = "cachePreviouslyExisted";
 }

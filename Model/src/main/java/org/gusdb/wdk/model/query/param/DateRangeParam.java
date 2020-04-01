@@ -213,7 +213,7 @@ public class DateRangeParam extends Param {
    * in the query.
    */
   @Override
-  public String replaceSql(String sql, String internalValue) {
+  public String replaceSql(String sql, String stableValue, String internalValue) {
     JSONObject valueJson = new JSONObject(internalValue);
     LocalDate values[] = new LocalDate[2];
     values[0] = LocalDate.parse(valueJson.getString("min"), STANDARD_DATE_FORMAT);

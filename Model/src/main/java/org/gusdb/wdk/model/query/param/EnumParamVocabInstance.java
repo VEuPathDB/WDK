@@ -116,6 +116,14 @@ public class EnumParamVocabInstance {
     return new EnumParamTermNode[0];
   }
 
+  public List<String> getVocabTreeLeafTerms() {
+    List<String> terms = new ArrayList<>();
+    for (EnumParamTermNode node : _termTreeList) {
+      terms.addAll(node.getLeafTerms());
+    }
+    return terms;
+  }
+
   public String[] getVocabInternal(boolean isNoTranslation) {
     String[] array = new String[_termInternalMap.size()];
     if (isNoTranslation)

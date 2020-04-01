@@ -25,10 +25,13 @@
       "type": "string"
     },
     "createdTime": {
-      "type": "string"
+      "$ref": "../../includes/date-string-1.json"
+    },
+    "lastViewed": {
+      "$ref": "../../includes/date-string-1.json"
     },
     "lastModified": {
-      "type": "string"
+      "$ref": "../../includes/date-string-1.json"
     },
     "releaseVersion": {
       "type": "string"

@@ -1,28 +1,40 @@
 package org.gusdb.wdk.service.service;
 
+import static org.gusdb.fgputil.StringUtil.rtrim;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.gusdb.fgputil.Timer;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.service.formatter.ProjectFormatter;
+import org.gusdb.wdk.service.service.user.UserDatasetService;
 import org.json.JSONObject;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import static org.gusdb.fgputil.StringUtil.rtrim;
 
 @Path("/")
 public class ProjectService extends AbstractWdkService {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public JSONObject getServiceApi() {
+  public JSONObject getServiceApi() throws WdkModelException {
     String serviceEndpoint = rtrim(getUriInfo().getBaseUri().toString(), '/');
-    return ProjectFormatter.getWdkProjectInfo(getWdkModel(), serviceEndpoint);
+    return addSupplementalProjectInfo(ProjectFormatter.getWdkProjectInfo(getWdkModel(), serviceEndpoint));
+  }
+
+  /**
+   * @throws WdkModelException if error occurs while fetching supplemental info 
+   */
+  protected JSONObject addSupplementalProjectInfo(JSONObject projectJson) throws WdkModelException {
+    return projectJson;
   }
 
   @GET
@@ -79,11 +91,7 @@ public class ProjectService extends AbstractWdkService {
   @Path("user-datasets/config")
   @Produces(MediaType.APPLICATION_JSON)
   public JSONObject getDefaultQuota() throws WdkModelException {
-    UserDatasetStore dsStore = getWdkModel().getUserDatasetStore();
-
-    if(dsStore == null)
-      throw new NotFoundException("The user dataset store is not enabled.");
-
+    UserDatasetStore dsStore = UserDatasetService.getUserDatasetStore(getWdkModel());
     try (UserDatasetSession dsSession = dsStore.getSession()) {
       return new JSONObject()
         .put("default_quota", dsSession.getDefaultQuota(true));
