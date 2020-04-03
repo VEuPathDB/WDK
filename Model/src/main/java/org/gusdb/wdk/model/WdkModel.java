@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -197,6 +198,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private List<OntologyFactoryImpl> ontologyFactoryList = new ArrayList<>();
   private Map<String, OntologyFactory> ontologyFactoryMap = new LinkedHashMap<>();
   private String categoriesOntologyName;
+
+  // 4/3/20 Cache ontologies on the server
+  private Map<String, Ontology> _ontologyCache = new ConcurrentHashMap<>();
 
   private ColumnToolBundles columnToolBundles = new ColumnToolBundles();
   private ColumnToolBundle defaultColumnToolBundle = new EmptyToolBundle();
@@ -1314,9 +1318,16 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   public Ontology getOntology(String name) throws WdkModelException {
-    OntologyFactory factory = getOntologyFactory(name);
-    if (factory == null) return null;
-    return factory.getOntology(this);
+    Ontology ontology = _ontologyCache.get(name);
+    if (ontology == null) {
+      OntologyFactory factory = getOntologyFactory(name);
+      if (factory != null) {
+        ontology = factory.getOntology(this);
+        _ontologyCache.put(name, ontology);
+      }
+    }
+    // may still be null if no factory exists for this name
+    return ontology;
   }
 
   public void addMacroDeclaration(MacroDeclaration macro) {
