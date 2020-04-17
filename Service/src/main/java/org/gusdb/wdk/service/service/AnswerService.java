@@ -157,8 +157,7 @@ public class AnswerService extends AbstractWdkService {
   @OutSchema("wdk.answer.post-response")
   public Response createStandardReportAnswerFromForm(@FormParam("data") String data)
       throws WdkModelException, DataValidationException, RequestMisformatException {
-    preHandleFormRequest(getUriInfo(), data);
-    return createCustomReportAnswer(DefaultJsonReporter.RESERVED_NAME, new JSONObject(data));
+    return createCustomReportAnswerFromForm(DefaultJsonReporter.RESERVED_NAME, data);
   }
 
   /**

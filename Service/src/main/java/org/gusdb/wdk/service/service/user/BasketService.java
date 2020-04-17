@@ -266,8 +266,7 @@ public class BasketService extends UserService {
   public Response createStandardReportAnswerFromForm(@PathParam(BASKET_NAME_PATH_PARAM) final String basketName,
       @FormParam("data") String data)
           throws WdkModelException, DataValidationException, RequestMisformatException {
-    AnswerService.preHandleFormRequest(getUriInfo(), data);
-    return createCustomReportAnswer(basketName, DefaultJsonReporter.RESERVED_NAME, new JSONObject(data));
+    return createCustomReportAnswerFromForm(basketName, DefaultJsonReporter.RESERVED_NAME, data);
   }
 
   @POST
