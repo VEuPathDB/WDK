@@ -23,6 +23,7 @@ import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.cache.SqlCountCache;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
+import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -428,7 +429,7 @@ public class FilterParamNew extends AbstractDependentParam {
    *          (in stable value format)
    * @return { totalCount: number; filteredCount: number; }
    */
-  public <S extends ParameterContainerInstanceSpec<S>> FilterParamSummaryCounts getTotalsSummary(SemanticallyValid<S> validSpec,
+  public <S extends ParameterContainerInstanceSpec<S>> FilterParamSummaryCounts getTotalsSummary(DisplayablyValid<S> validSpec,
       JSONObject appliedFilters) throws WdkModelException {
 
     ////////////////////////////////////////
@@ -506,7 +507,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @throws WdkModelException
    * TODO: MULTI-FILTER upgrade:  take a list of ontology terms, and return a map of maps, one per term.
    */
-  public <T, S extends ParameterContainerInstanceSpec<S>> OntologyTermSummary<T> getOntologyTermSummary(SemanticallyValid<S> validSpec,
+  public <T, S extends ParameterContainerInstanceSpec<S>> OntologyTermSummary<T> getOntologyTermSummary(DisplayablyValid<S> validSpec,
       OntologyItem ontologyItem, JSONObject appliedFilters, Class<T> ontologyItemClass)
           throws WdkModelException {
 
@@ -676,7 +677,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return
    * @throws WdkModelException
    */
-  private <T,S extends ParameterContainerInstanceSpec<S>> Map<T, Long> countMetaDataForOntologyTerm(SemanticallyValid<S> spec,
+  private <T,S extends ParameterContainerInstanceSpec<S>> Map<T, Long> countMetaDataForOntologyTerm(DisplayablyValid<S> spec,
       OntologyItem ontologyItem, String metaDataSql, Class<T> ontologyItemClass)
           throws WdkModelException {
 
@@ -829,7 +830,7 @@ public class FilterParamNew extends AbstractDependentParam {
    * @return sql
    * @throws WdkModelException
    */
-  <S extends ParameterContainerInstanceSpec<S>> String getFilteredFilterItemIdsSql(SemanticallyValid<S> validSpec,
+  <S extends ParameterContainerInstanceSpec<S>> String getFilteredFilterItemIdsSql(DisplayablyValid<S> validSpec,
       FilterParamNewStableValue stableValue, Query metadataQuery,
       String idColumn, String defaultFilterClause)
           throws WdkModelException {
@@ -849,7 +850,7 @@ public class FilterParamNew extends AbstractDependentParam {
   /**
    * Apply provided filters to metadata sql, returning all three value columns
    */
-  <S extends ParameterContainerInstanceSpec<S>> String getFilteredMetadataSql(SemanticallyValid<S> validSpec,
+  <S extends ParameterContainerInstanceSpec<S>> String getFilteredMetadataSql(DisplayablyValid<S> validSpec,
       FilterParamNewStableValue stableValue, Query metadataQuery, String defaultFilterClause)
           throws WdkModelException {
     // get sql that selects the full set of distinct internals from the metadata query
@@ -862,7 +863,7 @@ public class FilterParamNew extends AbstractDependentParam {
     return getFilteredIdsSql(validSpec, stableValue, metadataTableName, filterSelectSql, defaultFilterClause);
   }
 
-  private <S extends ParameterContainerInstanceSpec<S>> String getFilteredIdsSql(SemanticallyValid<S> validSpec,
+  private <S extends ParameterContainerInstanceSpec<S>> String getFilteredIdsSql(DisplayablyValid<S> validSpec,
       FilterParamNewStableValue stableValue, String metadataTableAbbrev,
       String filterSelectSql, String defaultFilterClause)
           throws WdkModelException {
