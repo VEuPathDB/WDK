@@ -43,9 +43,8 @@ import org.json.JSONObject;
  * GET    /favorites              returns list of all favorites for the user
  * POST   /favorites              creates a new favorite (or returns existing if present or even deleted)
  * PATCH  /favorites              allows deletion and undeletion of multiple favorites in one request
- * DELETE /favorites              deletes all a user's favorites
  * GET    /favorites/{favoriteId} gets a favorite by ID
- * PUT    /favorites/{favoriteId} updates a favorite by ID
+ * PATCH  /favorites/{favoriteId} updates the note/group of a favorite by ID
  * DELETE /favorites/{favoriteId} deletes a favorite by ID
  * POST   /favorites/query        queries favorite status (presence) of multiple records at one time
  *
