@@ -226,7 +226,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   public WdkModel getInstance(String projectId, String gusHome) throws WdkModelException {
     Date now = new Date();
     LOG.info("Constructing WDK Model for " + projectId + " with GUS_HOME=" + gusHome);
-    LOG.info("WDK Model constructed by class: " + getCallingClass());
+    LOG.info("WDK Model constructor called by class: " + getCallingClass());
     LOG.info("Startup date " + now + " [" + now.getTime() + "]");
 
     startEvents();
