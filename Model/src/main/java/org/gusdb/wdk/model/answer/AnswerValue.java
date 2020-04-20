@@ -711,7 +711,7 @@ public class AnswerValue {
   private String applyColumnFilters(String sql) throws WdkModelException {
     // Apply just the PK cols in the record class order (getIdSql can
     // append columns)
-    final var q = "SELECT\n"
+    final var q = "SELECT\n" + Utilities.COLUMN_WEIGHT + ",\n"
       + Arrays.stream(getAnswerSpec().getQuestion().getRecordClass()
         .getPrimaryKeyDefinition().getColumnRefs())
         .collect(Collectors.joining("\n, ", "  ", "\n"))
