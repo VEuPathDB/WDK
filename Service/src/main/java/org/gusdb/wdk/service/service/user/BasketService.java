@@ -240,6 +240,35 @@ public class BasketService extends UserService {
     return createCustomReportAnswer(basketName, DefaultJsonReporter.RESERVED_NAME, requestJson);
   }
 
+  /**
+   * Similar to the standard report endpoint that takes JSON, but gets its data
+   * from a form instead of JSON. It is used by the client to push the provided
+   * data to a new http target (ie, a tab), for example, a download report
+   *
+   * @param data
+   *   JSON data representing an answer request, passed in the 'data' form
+   *   param
+   *
+   * @return standard WDK answer JSON
+   *
+   * @throws RequestMisformatException
+   *   if request body is not JSON or has incorrect JSON structure
+   * @throws DataValidationException
+   *   if JSON structure is correct but values contained are invalid
+   * @throws WdkModelException
+   *   if an error occurs while processing the request
+   */
+  @POST
+  @Path(NAMED_BASKET_PATH + STANDARD_REPORT_SEGMENT_PAIR)
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  @Produces(MediaType.APPLICATION_JSON)
+  @OutSchema("wdk.answer.post-response")
+  public Response createStandardReportAnswerFromForm(@PathParam(BASKET_NAME_PATH_PARAM) final String basketName,
+      @FormParam("data") String data)
+          throws WdkModelException, DataValidationException, RequestMisformatException {
+    return createCustomReportAnswerFromForm(basketName, DefaultJsonReporter.RESERVED_NAME, data);
+  }
+
   @POST
   @Path(NAMED_BASKET_PATH + CUSTOM_REPORT_SEGMENT_PAIR)
   @Consumes(MediaType.APPLICATION_JSON)
