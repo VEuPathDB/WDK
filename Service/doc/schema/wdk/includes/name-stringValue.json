@@ -1,17 +1,17 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object",
-    "additionalProperties": false,
-    "properties": {
-	"name": {
-	    "type": "string"
-	},
-	"value": {
-	    "type": "string"
-	}
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string"
     },
-    "required": [
-	"name",
-	"value"
-    ]
+    "value": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "value"
+  ]
 }
