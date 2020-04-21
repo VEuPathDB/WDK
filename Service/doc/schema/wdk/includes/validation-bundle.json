@@ -1,48 +1,48 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object",
-    "additionalProperties": false,
-    "properties": {
-	"level": {
-	    "type": "string",
-	    "enum": [
-                "NONE",
-                "UNSPECIFIED",
-                "SYNTACTIC",
-                "SEMANTIC",
-                "RUNNABLE"
-            ]
-	},
-	"isValid": {
-	    "type": "boolean"
-	},
-	"errors": {
-	    "type": "object",
-            "additionalProperties": false,
-            "properties": {
-   		"general": {
-		    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-		},
-		"byKey": {
-		    "type": "object",
-		    "additionalProperties": false,
-		    "patternProperties": {
-			"^.+$": {
-			    "type": "array",
-			    "items": {
-				"type": "string"
-			    }
-			}
-		    }
-		}
-            }
-	}
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "level": {
+      "type": "string",
+      "enum": [
+        "NONE",
+        "UNSPECIFIED",
+        "SYNTACTIC",
+        "SEMANTIC",
+        "RUNNABLE"
+      ]
     },
-    "required": [
-	"level",
-	"isValid"
-    ]
+    "isValid": {
+      "type": "boolean"
+    },
+    "errors": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "general": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "byKey": {
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+            "^.+$": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "level",
+    "isValid"
+  ]
 }
