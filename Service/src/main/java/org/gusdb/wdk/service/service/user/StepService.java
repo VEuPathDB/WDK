@@ -160,6 +160,33 @@ public class StepService extends UserService {
         .build(new UserCache(step.getUser()), ValidationLevel.NONE, Optional.empty()));
   }
 
+  @GET
+  @Path(NAMED_STEP_PATH + STANDARD_REPORT_SEGMENT_PAIR)
+  @Produces(MediaType.APPLICATION_JSON)
+  @OutSchema("wdk.answer.post-response")
+  public Response createStandardReportAnswerFromGet(
+      @PathParam(STEP_ID_PATH_PARAM) long stepId)
+          throws WdkModelException, RequestMisformatException, DataValidationException {
+    return createCustomReportAnswerFromGet(stepId, DefaultJsonReporter.RESERVED_NAME);
+  }
+
+  @GET
+  @Path(NAMED_STEP_PATH + CUSTOM_REPORT_SEGMENT_PAIR)
+  @Consumes(MediaType.APPLICATION_JSON)
+  // Produces an unknown media type; varies depending on reporter selected
+  public Response createCustomReportAnswerFromGet(
+      @PathParam(STEP_ID_PATH_PARAM) long stepId,
+      @PathParam(REPORT_NAME_PATH_PARAM) String reporterName)
+          throws WdkModelException, RequestMisformatException, DataValidationException {
+
+    var params = getUriInfo().getQueryParameters();
+    return createCustomReportAnswer(stepId, reporterName,
+      new JSONObject().put(JsonKeys.REPORT_CONFIG,
+        Optional.ofNullable(params.getFirst(JsonKeys.REPORT_CONFIG))
+          .map(JSONObject::new)
+          .orElseGet(JSONObject::new)));
+  }
+
   @POST
   @Path(NAMED_STEP_PATH + STANDARD_REPORT_SEGMENT_PAIR)
   @Consumes(MediaType.APPLICATION_JSON)
@@ -170,6 +197,35 @@ public class StepService extends UserService {
       @PathParam(STEP_ID_PATH_PARAM) long stepId, JSONObject requestJson)
           throws WdkModelException, RequestMisformatException, DataValidationException {
     return createCustomReportAnswer(stepId, DefaultJsonReporter.RESERVED_NAME, requestJson);
+  }
+
+  /**
+   * Similar to the standard report endpoint that takes JSON, but gets its data
+   * from a form instead of JSON. It is used by the client to push the provided
+   * data to a new http target (ie, a tab), for example, a download report
+   *
+   * @param data
+   *   JSON data representing an answer request, passed in the 'data' form
+   *   param
+   *
+   * @return standard WDK answer JSON
+   *
+   * @throws RequestMisformatException
+   *   if request body is not JSON or has incorrect JSON structure
+   * @throws DataValidationException
+   *   if JSON structure is correct but values contained are invalid
+   * @throws WdkModelException
+   *   if an error occurs while processing the request
+   */
+  @POST
+  @Path(NAMED_STEP_PATH + STANDARD_REPORT_SEGMENT_PAIR)
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  @Produces(MediaType.APPLICATION_JSON)
+  @OutSchema("wdk.answer.post-response")
+  public Response createStandardReportAnswerFromForm(@PathParam(STEP_ID_PATH_PARAM) long stepId,
+      @FormParam("data") String data)
+          throws WdkModelException, DataValidationException, RequestMisformatException {
+    return createCustomReportAnswerFromForm(stepId, DefaultJsonReporter.RESERVED_NAME, data);
   }
 
   @POST

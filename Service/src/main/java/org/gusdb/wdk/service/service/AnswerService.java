@@ -133,6 +133,34 @@ public class AnswerService extends AbstractWdkService {
   }
 
   /**
+   * Similar to the standard report endpoint that takes JSON, but gets its data
+   * from a form instead of JSON. It is used by the client to push the provided
+   * data to a new http target (ie, a tab), for example, a download report
+   *
+   * @param data
+   *   JSON data representing an answer request, passed in the 'data' form
+   *   param
+   *
+   * @return standard WDK answer JSON
+   *
+   * @throws RequestMisformatException
+   *   if request body is not JSON or has incorrect JSON structure
+   * @throws DataValidationException
+   *   if JSON structure is correct but values contained are invalid
+   * @throws WdkModelException
+   *   if an error occurs while processing the request
+   */
+  @POST
+  @Path(STANDARD_REPORT_SEGMENT)
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  @Produces(MediaType.APPLICATION_JSON)
+  @OutSchema("wdk.answer.post-response")
+  public Response createStandardReportAnswerFromForm(@FormParam("data") String data)
+      throws WdkModelException, DataValidationException, RequestMisformatException {
+    return createCustomReportAnswerFromForm(DefaultJsonReporter.RESERVED_NAME, data);
+  }
+
+  /**
    * Processes an answer request (answer spec + formatting information) by
    * creating an answer from the answer spec, then calling the specified
    * reporter, passing a configuration, and streaming back the reporter's

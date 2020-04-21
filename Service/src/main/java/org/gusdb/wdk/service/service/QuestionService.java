@@ -23,7 +23,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
-import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
@@ -332,16 +331,16 @@ public class QuestionService extends AbstractWdkService {
     String ontologyId = jsonBody.getString("ontologyId");
 
     // build a query instance spec from passed values
-    SemanticallyValid<QueryInstanceSpec> validSpec = QueryInstanceSpec
+    DisplayablyValid<QueryInstanceSpec> validSpec = QueryInstanceSpec
         .builder()
         .putAll(contextParamValues)
         .buildValidated(
             getSessionUser(),
             question.getQuery(),
             StepContainer.emptyContainer(),
-            ValidationLevel.SEMANTIC,
+            ValidationLevel.DISPLAYABLE,
             FillStrategy.NO_FILL)
-        .getSemanticallyValid()
+        .getDisplayablyValid()
         .getOrThrow(spec -> new DataValidationException(spec.getValidationBundle().toString()));
 
     // try to look up ontology term with this ID
@@ -387,16 +386,16 @@ public class QuestionService extends AbstractWdkService {
     JSONObject jsonBody = new JSONObject(body);
 
     // build a query instance spec from passed values
-    SemanticallyValid<QueryInstanceSpec> validSpec = QueryInstanceSpec
+    DisplayablyValid<QueryInstanceSpec> validSpec = QueryInstanceSpec
         .builder()
         .putAll(contextParamValues)
         .buildValidated(
             getSessionUser(),
             question.getQuery(),
             StepContainer.emptyContainer(),
-            ValidationLevel.SEMANTIC,
+            ValidationLevel.DISPLAYABLE,
             FillStrategy.NO_FILL)
-        .getSemanticallyValid()
+        .getDisplayablyValid()
         .getOrThrow(spec -> new DataValidationException(spec.getValidationBundle().toString()));
 
     FilterParamSummaryCounts counts = filterParam.getTotalsSummary(validSpec, jsonBody);
