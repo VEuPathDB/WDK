@@ -1,53 +1,57 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema",
-    "type": "object",
-    "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "pagination": {
+      "type": "object",
       "properties": {
-        "pagination": {
-          "type": "object",
-          "properties": {
-            "offset": {
-              "type": "number"
-            },
-            "numRecords": {
-              "type": "number"
-            }
-          },
-          "required": [
-            "offset",
-            "numRecords"
-          ],
-          "additionalProperties": false
+        "offset": {
+          "type": "number"
         },
-        "attributes": {
-          "oneOf": [
-            {
-              "enum": [ "__ALL_ATTRIBUTES__" ]
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
-        },
-        "tables": {
-          "oneOf": [
-            {
-              "enum": [ "__ALL_TABLES__" ]
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
-        },
-        "sorting": {
-          "$ref": "sorting-spec.json"
+        "numRecords": {
+          "type": "number"
         }
-      }
+      },
+      "required": [
+        "offset",
+        "numRecords"
+      ],
+      "additionalProperties": false
+    },
+    "attributes": {
+      "oneOf": [
+        {
+          "enum": [
+            "__ALL_ATTRIBUTES__"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "tables": {
+      "oneOf": [
+        {
+          "enum": [
+            "__ALL_TABLES__"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "sorting": {
+      "$ref": "sorting-spec.json"
     }
+  }
+}
 
