@@ -5,6 +5,8 @@ import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.Utilities;
@@ -13,32 +15,42 @@ import org.gusdb.wdk.model.WdkModelException;
 public class PrimaryKeyValue {
 
   private final PrimaryKeyDefinition _pkDef;
-  private final Map<String, ? extends Object> _pkValues;
+  private final Map<String, Object> _pkValues;
 
   public PrimaryKeyValue(PrimaryKeyDefinition pkDef, Map<String, ? extends Object> pkValues) throws WdkModelException {
     _pkDef = pkDef;
-    _pkValues = pkValues;
     // make sure incoming values match columns in definition
-    validateValues(pkDef, pkValues);
+    _pkValues = parseValues(pkDef, pkValues);
   }
 
-  private void validateValues(PrimaryKeyDefinition pkDef, Map<String, ? extends Object> pkValues) throws WdkModelException {
-    String errorMessage = null;
+  private static Map<String, Object> parseValues(PrimaryKeyDefinition pkDef, Map<String, ? extends Object> pkValues)
+      throws WdkModelException {
+    Function<String, WdkModelException> error = message -> new WdkModelException(message +
+        " Expected: " + FormatUtil.arrayToString(pkDef.getColumnRefs()) +
+        ", Received: " + FormatUtil.prettyPrint(pkValues));
+
     if (pkDef.getColumnRefs().length != pkValues.size()) {
-      errorMessage = "More PK values passed than expected.";
+      throw error.apply("More PK values passed than expected.");
     }
     else {
+      Map<String, Object> copyOfPassedValues = new HashMap<>(pkValues);
+      Map<String, Object> parsedValues = new LinkedHashMap<>();
       for (String expectedCol : pkDef.getColumnRefs()) {
-        if (!pkValues.containsKey(expectedCol)) {
-          errorMessage = "Expected PK value '" + expectedCol + "' not present in passed values.";
-          break;
+        if (!copyOfPassedValues.containsKey(expectedCol)) {
+          throw error.apply("Expected PK value '" + expectedCol + "' not present in passed values.");
         }
+        parsedValues.put(expectedCol, copyOfPassedValues.get(expectedCol));
+        copyOfPassedValues.remove(expectedCol);
       }
-    }
-    if (errorMessage != null) {
-      throw new WdkModelException(errorMessage +
-          " Expected: " + FormatUtil.arrayToString(pkDef.getColumnRefs()) +
-          ", Received: " + FormatUtil.prettyPrint(pkValues));
+      if (copyOfPassedValues.isEmpty()) {
+        // all values found and no extras
+        return parsedValues;
+      }
+      else {
+        return parsedValues;
+        //throw error.apply("Unexpected PK value(s) passed: " +
+        //    copyOfPassedValues.keySet().stream().collect(Collectors.joining(", ")));
+      }
     }
   }
 
