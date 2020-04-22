@@ -59,6 +59,9 @@
     "filters": {
       "$ref": "../../../includes/string-array.json"
     },
+    "filters": {
+      "$ref": "#/definitions/filter-def-array"
+    },
     "isAnalyzable": {
       "type": "boolean"
     },
@@ -191,9 +194,6 @@
     },
     "defaultSorting": {
       "$ref": "../../includes/sorting-spec.json"
-    },
-    "filters": {
-      "$ref": "#/definitions/filter-def-array"
     },
     "paramNames": {
       "type": "array",
