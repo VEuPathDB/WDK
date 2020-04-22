@@ -65,13 +65,13 @@
     "allowedPrimaryInputRecordClassNames": {
       "type": "array",
       "items": {
-         "type": "string"
+        "type": "string"
       }
     },
     "allowedSecondaryInputRecordClassNames": {
       "type": "array",
       "items": {
-         "type": "string"
+        "type": "string"
       }
     },
     "dynamicAttributes": {
@@ -119,39 +119,39 @@
       }
     },
     "parameters": {
-          "type": "array",
-          "items": [
-            {
-              "$ref": "../../includes/params/filter-param.json"
-            },
-            {
-              "$ref": "../../includes/params/answer-param.json"
-            },
-            {
-              "$ref": "../../includes/params/enum-param.json"
-            },
-            {
-              "$ref": "../../includes/params/string-param.json"
-            },
-            {
-              "$ref": "../../includes/params/number-param.json"
-            },
-            {
-              "$ref": "../../includes/params/date-param.json"
-            },
-            {
-              "$ref": "../../includes/params/dataset-param.json"
-            },
-            {
-              "$ref": "../../includes/params/filter-param.json"
-            },
-            {
-              "$ref": "../../includes/params/string-param.json"
-            },
-            {
-              "$ref": "../../includes/params/timestamp-param.json"
-            }
-          ]
+      "type": "array",
+      "items": [
+        {
+          "$ref": "../../includes/params/filter-param.json"
+        },
+        {
+          "$ref": "../../includes/params/answer-param.json"
+        },
+        {
+          "$ref": "../../includes/params/enum-param.json"
+        },
+        {
+          "$ref": "../../includes/params/string-param.json"
+        },
+        {
+          "$ref": "../../includes/params/number-param.json"
+        },
+        {
+          "$ref": "../../includes/params/date-param.json"
+        },
+        {
+          "$ref": "../../includes/params/dataset-param.json"
+        },
+        {
+          "$ref": "../../includes/params/filter-param.json"
+        },
+        {
+          "$ref": "../../includes/params/string-param.json"
+        },
+        {
+          "$ref": "../../includes/params/timestamp-param.json"
+        }
+      ]
     },
     "properties": {
       "$ref": "#/definitions/properties"
@@ -204,7 +204,7 @@
     "paramNames": {
       "type": "array",
       "items": {
-         "type": "string"
+        "type": "string"
       }
     },
     "queryName": {
