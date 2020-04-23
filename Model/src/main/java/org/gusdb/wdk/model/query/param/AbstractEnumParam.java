@@ -5,6 +5,7 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -396,10 +397,10 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     int numSelected = getNumSelected(vocab, selectedTerms);
     if ((_maxSelectedCount > 0 && numSelected > _maxSelectedCount) ||
         (_minSelectedCount > 0 && numSelected < _minSelectedCount)) {
-      String range = (_minSelectedCount > 0 ? "[ " + _minSelectedCount : "( Inf") + ", " +
-          (_maxSelectedCount > 0 ? _maxSelectedCount + " ]" : "Inf )");
+      String range = (_minSelectedCount > 0 ? "( " + _minSelectedCount : "( 0") + ", " +
+          (_maxSelectedCount > 0 ? _maxSelectedCount + " )" : "unlimited )");
       return ctxParamVals.setInvalid(name, level, "Number of selected values ("
-        + numSelected + ") was too few or too many.  Must be within " + range);
+        + numSelected + ") is not allowed.  Must be within " + range);
     }
 
     Set<String> allTerms = vocab.getTerms();
