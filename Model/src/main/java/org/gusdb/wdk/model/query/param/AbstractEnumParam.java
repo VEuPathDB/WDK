@@ -210,11 +210,21 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   }
 
   /**
-   * @return The minimum number of allowed values for this param; if not set
-   * (i.e. no min), this method will return -1.
+   * Returns the minimun number of selections allowed for this param; the value
+   * in the model is intertwined with allowEmpty, which always takes precedence
+   * in a conflict with this value.  Note that if this value is greater than
+   * that returned by getMaxSelectedCount(), there may be an empty range of the
+   * number of allowed values.
+   *
+   * min-sel  -1  0  >0
+   * --------------------
+   * allow 1   0  0  min
+   * empty 0   1  1  min
+   *
+   * @return The minimum number of allowed values for this param
    */
   public int getMinSelectedCount() {
-    return _minSelectedCount;
+    return _minSelectedCount > 1 ? _minSelectedCount : _allowEmpty ? 0 : 1;
   }
 
   /**
@@ -227,6 +237,12 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   }
 
   /**
+   * Returns the maximum number of selections allowed for this param; the value
+   * in the model is intertwined with isMultiPick, which always takes precedence
+   * in a conflict with this value.  Note that if this value is smaller than
+   * that returned by getMinSelectedCount(), there may be an empty range of the
+   * number of allowed values.
+   *
    * @return The maximum number of allowed values for this param; if not set
    * (i.e. no max), this method will return -1.
    */
@@ -395,10 +411,12 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
     // verify that user did not select too few or too many values for this param
     int numSelected = getNumSelected(vocab, selectedTerms);
-    if ((_maxSelectedCount > 0 && numSelected > _maxSelectedCount) ||
-        (_minSelectedCount > 0 && numSelected < _minSelectedCount)) {
-      String range = (_minSelectedCount > 0 ? "( " + _minSelectedCount : "( 0") + ", " +
-          (_maxSelectedCount > 0 ? _maxSelectedCount + " )" : "unlimited )");
+    int minSelectedCount = getMinSelectedCount();
+    int maxSelectedCount = getMaxSelectedCount();
+    if ((maxSelectedCount > 0 && numSelected > maxSelectedCount) ||
+        numSelected < getMinSelectedCount()) {
+      String range = "( " + minSelectedCount + ", " +
+          (maxSelectedCount >= 0 ? maxSelectedCount : "unlimited") + " )";
       return ctxParamVals.setInvalid(name, level, "Number of selected values ("
         + numSelected + ") is not allowed.  Must be within " + range);
     }
