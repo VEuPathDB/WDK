@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.report;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ public abstract class AbstractReporter implements Reporter {
   /**
    * Writes reporter result to the passed output stream
    */
-  protected abstract void write(OutputStream out) throws WdkModelException;
+  protected abstract void write(OutputStream out) throws IOException, WdkModelException;
 
   protected AbstractReporter(AnswerValue answerValue) {
     _baseAnswer = answerValue;
@@ -67,6 +68,9 @@ public abstract class AbstractReporter implements Reporter {
     initialize();
     try {
       write(out);
+    }
+    catch (IOException e) {
+      throw new WdkModelException("Could not write report", e);
     }
     finally {
       complete();
