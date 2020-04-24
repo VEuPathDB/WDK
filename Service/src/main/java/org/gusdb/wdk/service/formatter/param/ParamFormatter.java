@@ -6,7 +6,6 @@ import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.json.JSONArray;
@@ -22,7 +21,7 @@ public abstract class ParamFormatter<T extends Param> {
   }
 
   /**
-   * @throws WdkModelException if error occurs while collecting information 
+   * @throws WdkModelException if error occurs while collecting information
    */
   public <S extends ParameterContainerInstanceSpec<S>> JSONObject getJson(DisplayablyValid<S> spec) throws WdkModelException {
     return getBaseJson(spec);
@@ -36,11 +35,9 @@ public abstract class ParamFormatter<T extends Param> {
 
   /**
    * Formats this param into JSON.
-   * 
+   *
    * @return This param's data as JSON
    * @throws JSONException if problem generating JSON
-   * @throws WdkModelException if system problem occurs
-   * @throws WdkUserException if data in param is invalid for some reason
    */
   protected <S extends ParameterContainerInstanceSpec<S>> JSONObject getBaseJson(DisplayablyValid<S> spec) {
     JSONObject pJson = new JSONObject();
