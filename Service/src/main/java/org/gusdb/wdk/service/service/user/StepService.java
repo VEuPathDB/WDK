@@ -24,6 +24,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
@@ -66,6 +67,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class StepService extends UserService {
+
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger.getLogger(StepService.class);
 
   private static final String STEPS_SEGMENT = "steps";
   public static final String STEP_ID_PATH_PARAM = "stepId";
@@ -158,6 +162,33 @@ public class StepService extends UserService {
       .updateStep(Step.builder(step)
         .setDeleted(true)
         .build(new UserCache(step.getUser()), ValidationLevel.NONE, Optional.empty()));
+  }
+
+  @GET
+  @Path(NAMED_STEP_PATH + STANDARD_REPORT_SEGMENT_PAIR)
+  @Produces(MediaType.APPLICATION_JSON)
+  @OutSchema("wdk.answer.post-response")
+  public Response createStandardReportAnswerFromGet(
+      @PathParam(STEP_ID_PATH_PARAM) long stepId)
+          throws WdkModelException, RequestMisformatException, DataValidationException {
+    return createCustomReportAnswerFromGet(stepId, DefaultJsonReporter.RESERVED_NAME);
+  }
+
+  @GET
+  @Path(NAMED_STEP_PATH + CUSTOM_REPORT_SEGMENT_PAIR)
+  @Consumes(MediaType.APPLICATION_JSON)
+  // Produces an unknown media type; varies depending on reporter selected
+  public Response createCustomReportAnswerFromGet(
+      @PathParam(STEP_ID_PATH_PARAM) long stepId,
+      @PathParam(REPORT_NAME_PATH_PARAM) String reporterName)
+          throws WdkModelException, RequestMisformatException, DataValidationException {
+
+    var params = getUriInfo().getQueryParameters();
+    return createCustomReportAnswer(stepId, reporterName,
+      new JSONObject().put(JsonKeys.REPORT_CONFIG,
+        Optional.ofNullable(params.getFirst(JsonKeys.REPORT_CONFIG))
+          .map(JSONObject::new)
+          .orElseGet(JSONObject::new)));
   }
 
   @POST
