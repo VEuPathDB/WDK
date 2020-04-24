@@ -11,6 +11,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.ValidationUtil;
 import org.gusdb.fgputil.json.JsonUtil;
@@ -39,6 +41,8 @@ import org.json.JSONObject;
  */
 @SuppressWarnings("UseOfObsoleteDateTimeApi")
 public class Step implements Validateable<Step> {
+
+  private static final Logger LOG = Logger.getLogger(Step.class);
 
   public static final int RESET_SIZE_FLAG = -1;
 
@@ -163,6 +167,9 @@ public class Step implements Validateable<Step> {
     }
 
     public StepBuilder setResultSizeDirty(boolean isResultSizeDirty) {
+      if (isResultSizeDirty) {
+        LOG.info("Setting result size dirty on step: " + _stepId + "\n" + FormatUtil.getCurrentStackTrace());
+      }
       _isResultSizeDirty = isResultSizeDirty;
       return this;
     }

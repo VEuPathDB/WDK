@@ -279,9 +279,14 @@ public class AnswerValue {
         jsContent.put("legacy-filter", _answerSpec.getLegacyFilterName().get());
       }
 
-      // if filters have been applied, get the content for it
+      // if filters have been applied, get the content for them
       jsContent.put("filters", ParamsAndFiltersDbColumnFormat.formatFilters(_answerSpec.getFilterOptions()));
-      // FIXME: decide whether view filters should also be added to checksum here
+
+      // if view filters have been applied, get the content for them
+      jsContent.put("viewFilters", ParamsAndFiltersDbColumnFormat.formatFilters(_answerSpec.getViewFilterOptions()));
+
+      // if column filters have been applied, get the content for them
+      jsContent.put("columnFilters", ParamsAndFiltersDbColumnFormat.formatColumnFilters(_answerSpec.getColumnFilterConfig()));
 
       // encrypt the content to make step-independent checksum
       _checksum = EncryptionUtil.encrypt(JsonUtil.serialize(jsContent));

@@ -555,7 +555,8 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
         try {
           // getResultSize() will update the size in the step and write the size to the DB
           int resultSize = runnableStep.getResultSize();
-          LOG.debug("Refreshing size of step " + runnableStep.getStepId() + ": " + resultSize + ", DB has been updated.");
+          LOG.debug("Tried to update result size of step " + runnableStep.getStepId() +
+              "; value returned: " + resultSize + ", estimatedSize=" + runnableStep.getEstimatedSize());
           // need to set it in the this strategy object's step (local memory copy)
           findFirstStep(withId(runnableStep.getStepId())).get().setRefreshedResultSize(resultSize);
         }

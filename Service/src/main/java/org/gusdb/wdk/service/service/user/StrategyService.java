@@ -147,7 +147,7 @@ public class StrategyService extends UserService {
   @OutSchema("wdk.users.strategies.id.get-response")
   public JSONObject getStrategy(@PathParam(ID_PARAM) long strategyId)
       throws WdkModelException {
-    Strategy strategy = getStrategyForCurrentUser(strategyId, ValidationLevel.SEMANTIC);
+    Strategy strategy = getStrategyForCurrentUser(strategyId, ValidationLevel.RUNNABLE);
     // update result sizes for all runnable steps that need refreshing
     strategy.updateStaleResultSizesOnRunnableSteps();
     // update last view time on this strategy
