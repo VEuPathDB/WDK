@@ -1,13 +1,5 @@
 package org.gusdb.wdk.service.formatter;
 
-import static org.gusdb.fgputil.functional.Functions.reduce;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -23,6 +15,14 @@ import org.gusdb.wdk.service.formatter.param.ParamContainerFormatter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static org.gusdb.fgputil.functional.Functions.reduce;
 
 /**
  * Formats WDK Question objects.  Question JSON will have the following form:
@@ -76,7 +76,6 @@ public class QuestionFormatter {
         .put(JsonKeys.NEW_BUILD, q.getNewBuild())
         .put(JsonKeys.REVISE_BUILD, q.getReviseBuild())
         .put(JsonKeys.OUTPUT_RECORD_CLASS_NAME, q.getRecordClass().getUrlSegment())
-        .put(JsonKeys.FILTERS, new JSONArray(q.getFilters().keySet()))
         .put(JsonKeys.DEFAULT_ATTRIBUTES, new JSONArray(q.getSummaryAttributeFieldMap().keySet()))
         .put(JsonKeys.DEFAULT_SORTING, DefaultJsonReporter.formatSorting(q.getSortingAttributeMap(), q.getAttributeFieldMap()))
         .put(JsonKeys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
@@ -98,7 +97,7 @@ public class QuestionFormatter {
   /**
    * Returns the names of any allowed recordclasses for the param as a
    * JSONArray, or null if the optional is empty.
-   * 
+   *
    * @param answerParam answer param for which allowed RCs should be returned
    * @return array of allowed names or null if no param present
    */
