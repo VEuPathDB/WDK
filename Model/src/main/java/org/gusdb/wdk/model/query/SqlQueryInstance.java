@@ -78,9 +78,10 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
   @Override
   public Optional<String> createCacheTableAndInsertResult(DatabaseInstance appDb, String tableName, long instanceId)
       throws WdkModelException {
-    LOG.debug("creating cache table for query " + _query.getFullName());
+    LOG.debug("Creating cache table for query " + _query.getFullName());
     // get the sql with param values applied.
     var sql = getUncachedSql();
+    LOG.debug("Uncached SQL for query " + _query.getFullName() + ": " + sql);
     var rowNumber = appDb.getPlatform().getRowNumberColumn();
     var buffer = new StringBuilder("CREATE TABLE " + tableName)
       .append(" AS SELECT ")
