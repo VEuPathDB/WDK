@@ -246,6 +246,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   private BooleanQuery booleanQuery;
 
+  private String _customSnapshotBasketQueryPluginClassName;
+  
   private String attributeOrdering;
 
   private AttributeCategoryTree attributeCategoryTree;
@@ -513,7 +515,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   @SuppressWarnings("unused") // XML Digester (attribute)
   public void setCustomBooleanQueryClassName(String className) {
-    this.customBooleanQueryClassName = className;
+    customBooleanQueryClassName = className;
+  }
+
+  @SuppressWarnings("unused") // XML Digester (attribute)
+  public void setCustomSnapshotBasketQueryPluginClassName(String className) {
+    _customSnapshotBasketQueryPluginClassName = className;
   }
 
   // ////////////////////////////////////////////////////////////
@@ -786,7 +793,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     if (customBooleanQueryClassName != null) {
-      String errmsg = "Can't create java class for customBooleanQueryClassName from class name '" + customBooleanQueryClassName + "'";
       try {
         Class<? extends BooleanQuery> clazz =
             Class.forName(customBooleanQueryClassName).asSubclass(BooleanQuery.class);
@@ -796,7 +802,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
           IllegalArgumentException | InvocationTargetException |
           NoSuchMethodException | SecurityException ex) {
-        throw new WdkModelException(errmsg, ex);
+        throw new WdkModelException("Can't create java class for " +
+            "customBooleanQueryClassName from class name '" +
+            customBooleanQueryClassName + "'", ex);
       }
     }
     else {
@@ -1816,5 +1824,34 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   @Override
   public String getNameForLogging() {
     return getFullName();
+  }
+
+  /**
+   * Resolves any custom snapshot plugin and returns it or, if none specified,
+   * returns an instance of the default plugin.  This code should probably live
+   * in resolveReferences() but cannot since the snapshot query is needed
+   * before resolveReferences is called.
+   * 
+   * @return basket snapshot query plugin for this record class
+   * @throws WdkModelException if unable to resolve class
+   */
+  public BasketSnapshotQueryPlugin getBasketSnapshotQueryPlugin() throws WdkModelException {
+    if (_customSnapshotBasketQueryPluginClassName == null) {
+      return new BasketSnapshotQueryPlugin().setRecordClass(this);
+    }
+    else {
+      try {
+        Class<? extends BasketSnapshotQueryPlugin> clazz =
+            Class.forName(_customSnapshotBasketQueryPluginClassName).asSubclass(BasketSnapshotQueryPlugin.class);
+        return clazz.getDeclaredConstructor().newInstance().setRecordClass(this);
+      }
+      catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+          IllegalArgumentException | InvocationTargetException |
+          NoSuchMethodException | SecurityException ex) {
+        throw new WdkModelException("Can't create java class for " +
+            "customSnapshotBasketQueryPluginClassName from class name '" +
+            _customSnapshotBasketQueryPluginClassName + "'", ex);
+      }
+    }
   }
 }
