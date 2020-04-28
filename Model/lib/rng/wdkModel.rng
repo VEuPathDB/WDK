@@ -1184,6 +1184,9 @@
         <attribute name="customBooleanQueryClassName" />
       </optional>
       <optional>
+        <attribute name="customSnapshotBasketQueryPluginClassName" />
+      </optional>
+      <optional>
         <attribute name="allRecordsQueryRef" />
       </optional>
       <optional>

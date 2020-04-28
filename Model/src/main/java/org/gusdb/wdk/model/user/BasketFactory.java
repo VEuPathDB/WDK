@@ -44,7 +44,7 @@ public class BasketFactory {
   public static final String REALTIME_BASKET_QUESTION_SUFFIX = "ByRealtimeBasket";
   public static final String SNAPSHOT_BASKET_QUESTION_SUFFIX = "BySnapshotBasket";
   private static final String REALTIME_BASKET_ID_QUERY_SUFFIX = "ByRealtimeBasket";
-  private static final String SNAPSHOT_BASKET_ID_QUERY_SUFFIX = "BySnapshotBasket";
+  static final String SNAPSHOT_BASKET_ID_QUERY_SUFFIX = "BySnapshotBasket";
 
   public static final String PARAM_USER_SIGNATURE = "user_signature";
   public static final String PARAM_DATASET_SUFFIX = "Dataset";
@@ -427,62 +427,19 @@ public class BasketFactory {
     question.setDisplayName("Copy of " + rcName + " Basket");
     question.setShortDisplayName("Copy of Basket");
     question.setRecordClass(recordClass);
-    Query query = getBasketSnapshotIdQuery(recordClass);
+    Query query = recordClass.getBasketSnapshotQueryPlugin().getBasketSnapshotIdQuery(_wdkModel);
     question.setQuery(query);
     questionSet.addQuestion(question);
     question.excludeResources(_wdkModel.getProjectId());
-  }
-
-  private Query getBasketSnapshotIdQuery(RecordClass recordClass) throws WdkModelException {
-    String projectId = _wdkModel.getProjectId();
-    String rcName = recordClass.getFullName();
-
-    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
-
-    // check if the boolean query already exists
-    String queryName = rcName.replace('.', '_') + SNAPSHOT_BASKET_ID_QUERY_SUFFIX;
-    QuerySet querySet = _wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
-    if (querySet.contains(queryName))
-      return querySet.getQuery(queryName);
-
-    SqlQuery query = new SqlQuery();
-    query.setName(queryName);
-    // create columns
-    for (String columnName : pkColumns) {
-      Column column = new Column();
-      column.setName(columnName);
-      query.addColumn(column);
-    }
-    // create params
-    DatasetParam datasetParam = getDatasetParam(recordClass);
-    query.addParam(datasetParam);
-
-    // make sure we create index on primary keys
-    query.setIndexColumns(recordClass.getIndexColumns());
-    query.setDoNotTest(true);
-    query.setIsCacheable(true);
-
-    // construct the sql
-    StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
-    for (int i = 0; i < pkColumns.length; i++) {
-      if (i > 0)
-        sql.append(", ");
-      sql.append(pkColumns[i]);
-    }
-    sql.append(" FROM ($$" + datasetParam.getName() + "$$)");
-    query.setSql(sql.toString());
-    querySet.addQuery(query);
-    query.excludeResources(projectId);
-    return query;
   }
 
   public static String getDatasetParamName(RecordClass recordClass) {
     return recordClass.getFullName().replace('.', '_') + PARAM_DATASET_SUFFIX;
   }
 
-  private DatasetParam getDatasetParam(RecordClass recordClass) throws WdkModelException {
+  static DatasetParam getDatasetParam(RecordClass recordClass, WdkModel wdkModel) throws WdkModelException {
     String paramName = getDatasetParamName(recordClass);
-    ParamSet paramSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
+    ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
     if (paramSet.contains(paramName))
       return (DatasetParam) paramSet.getParam(paramName);
 
@@ -494,7 +451,7 @@ public class BasketFactory {
     param.setAllowEmpty(false);
     param.setRecordClassRef(recordClass.getFullName());
     paramSet.addParam(param);
-    param.excludeResources(_wdkModel.getProjectId());
+    param.excludeResources(wdkModel.getProjectId());
     return param;
   }
 
