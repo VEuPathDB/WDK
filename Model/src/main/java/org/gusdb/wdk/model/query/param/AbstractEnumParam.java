@@ -138,6 +138,8 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   private int _depthExpanded;
 
+  private boolean _allowEmptyVocabulary = false;
+
   // FIXME: this method is public only to support WdkQueryPlugin.java, which is
   //    due to be retired when ApiFed starts using the WDK service (or UniDB is
   //    in use).  When either of these happens, change this back to protected.
@@ -162,6 +164,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     _maxSelectedCount = param._maxSelectedCount;
     _countOnlyLeaves = param._countOnlyLeaves;
     _depthExpanded = param._depthExpanded;
+    _allowEmptyVocabulary = param._allowEmptyVocabulary;
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -287,6 +290,14 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   public int getDepthExpanded() {
     return _depthExpanded;
+  }
+
+  public void setAllowEmptyVocabulary(boolean allowEmptyVocabulary) {
+    _allowEmptyVocabulary = allowEmptyVocabulary;
+  }
+
+  public boolean isAllowEmptyVocabulary() {
+    return _allowEmptyVocabulary;
   }
 
   private EnumParamVocabInstance getVocabInstance(PartiallyValidatedStableValues context)

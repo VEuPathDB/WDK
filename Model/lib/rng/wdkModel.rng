@@ -764,6 +764,11 @@
         <data type="unsignedShort"/>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="allowEmptyVocabulary">
+        <data type="boolean"/>
+      </attribute>
+    </optional>
   </define>
 
   <define name="EnumParamDisplayType">
