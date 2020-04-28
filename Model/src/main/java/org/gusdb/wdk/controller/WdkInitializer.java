@@ -51,8 +51,11 @@ public class WdkInitializer {
       // start up thread monitor
       ThreadMonitor.start(getThreadMonitorConfig(wdkModel));
 
-      // cache the categories ontology
-      wdkModel.getOntology(wdkModel.getCategoriesOntologyName());
+      // cache the categories ontology if one is present
+      String categoriesOntologyName = wdkModel.getCategoriesOntologyName();
+      if (categoriesOntologyName != null) {
+        wdkModel.getOntology(categoriesOntologyName);
+      }
 
       LOG.info("WDK web application initialization complete.");
     }
