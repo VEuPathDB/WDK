@@ -47,8 +47,9 @@ public class PrimaryKeyValue {
         return parsedValues;
       }
       else {
-        throw error.apply("Unexpected PK value(s) passed: " +
-            copyOfPassedValues.keySet().stream().collect(Collectors.joining(", ")));
+        return parsedValues;
+        //throw error.apply("Unexpected PK value(s) passed: " +
+        //    copyOfPassedValues.keySet().stream().collect(Collectors.joining(", ")));
       }
     }
   }
