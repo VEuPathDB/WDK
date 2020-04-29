@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.formatter;
 
 import java.util.Collection;
 
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.TableField;
@@ -25,7 +26,7 @@ import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
  *   properties: Object,
  *   attributes: [ see AttributeFieldFormatter ]
  * }
- * 
+ *
  * @author rdoherty
  */
 public class TableFieldFormatter {

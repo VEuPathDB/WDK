@@ -25,10 +25,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Handles conversion back and forth from the JSON contained in the
  * param_filters CLOB column of the STEPS table (in user DB) to the aggregate
  * parts of an answer spec (param values, filter values, column filter values).
- * 
+ *
  * Note there are subtle differences between this JSON format and the one
  * handled by AnswerSpecServiceFormat (in WDK/Service).
- * 
+ *
  * @rdoherty
  */
 public class ParamsAndFiltersDbColumnFormat {
@@ -150,7 +150,7 @@ public class ParamsAndFiltersDbColumnFormat {
 
   public static JSONObject formatColumnFilters(ColumnFilterConfigSet columnFilterConfig) {
     JSONObject json = new JSONObject();
-    for (Entry<String, ColumnConfig> column: columnFilterConfig.getColumnConfigs().entrySet()) {
+    for (var column: columnFilterConfig.getColumnConfigs().entrySet()) {
       JSONObject columnObj = new JSONObject();
       for (Entry<String, ColumnToolConfig> filter : column.getValue().entrySet()) {
         columnObj.put(filter.getKey(), filter.getValue().getConfigAsJSONObject());
