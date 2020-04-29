@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.wdk.model.user.UserCreationScript.UserLine;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class UserCreationScriptTest {
 
