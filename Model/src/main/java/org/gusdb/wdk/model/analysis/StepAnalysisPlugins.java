@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.analysis;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -13,26 +15,7 @@ import org.gusdb.wdk.model.WdkModelException;
 public class StepAnalysisPlugins extends WdkModelBase {
 
   public static final Logger LOG = Logger.getLogger(StepAnalysisPlugins.class);
-  
-  public static class ViewConfig {
-    
-    private String _prefix;
-    private String _suffix;
-    
-    public String getPrefix() {
-      return _prefix;
-    }
-    public void setPrefix(String prefix) {
-      _prefix = prefix;
-    }
-    public String getSuffix() {
-      return _suffix;
-    }
-    public void setSuffix(String suffix) {
-      _suffix = suffix;
-    }
-  }
-  
+
   public static class ExecutionConfig {
 
     private String _fileStoreDirectory;
@@ -60,22 +43,14 @@ public class StepAnalysisPlugins extends WdkModelBase {
       _expirationMinutes = expirationMinutes;
     }
   }
-  
-  private ViewConfig _viewConfig = new ViewConfig();
+
   private ExecutionConfig _executionConfig = new ExecutionConfig();
   private Map<String, StepAnalysisXml> _stepAnalysisMap = new HashMap<>();
 
-  
-  public ViewConfig getViewConfig() {
-    return _viewConfig;
-  }
-  public void setViewConfig(ViewConfig viewConfig) {
-    _viewConfig = viewConfig;
-  }
-  
   public ExecutionConfig getExecutionConfig() {
     return _executionConfig;
   }
+
   public void setExecutionConfig(ExecutionConfig executionConfig) {
     _executionConfig = executionConfig;
   }
@@ -91,10 +66,11 @@ public class StepAnalysisPlugins extends WdkModelBase {
     }
     _stepAnalysisMap.put(analysis.getName(), analysis);
   }
+
   public StepAnalysisXml getStepAnalysis(String name) {
     return _stepAnalysisMap.get(name);
   }
-  
+
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
@@ -113,13 +89,10 @@ public class StepAnalysisPlugins extends WdkModelBase {
       _stepAnalysisMap.remove(value);
     }
   }
-  
+
   @Override
   public String toString() {
-    String NL = System.getProperty("line.separator");
     StringBuilder sb = new StringBuilder("StepAnalysisPlugins {").append(NL)
-        .append("  Prefix         : ").append(getViewConfig().getPrefix()).append(NL)
-        .append("  Suffix         : ").append(getViewConfig().getSuffix()).append(NL)
         .append("  ThreadPoolSize : ").append(getExecutionConfig().getThreadPoolSize()).append(NL)
         .append("  StepAnalyses   {").append(NL);
     for (StepAnalysis sa : _stepAnalysisMap.values()) {
