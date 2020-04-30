@@ -1,27 +1,22 @@
 package org.gusdb.wdk.model.user;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.wdk.model.user.UserCreationScript.UserLine;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class UserCreationScriptTest {
 
-  private static final String[] TEST_CASES = {
-      "\ta\tb\tc\td",
-      "email\ta\t\tc\td",
-      "email\t\tb\tc\td",
-      "email\ta\tb\t\t\t\t"
-  };
+  private static final String[] TEST_CASES = { "\ta\tb\tc\td",
+    "email\ta\t\tc\td", "email\t\tb\tc\td", "email\ta\tb\t\t\t\t" };
 
   private static final UserPropertyName[] USER_PROPS = {
-      new UserPropertyName("firstName", null, true),
-      new UserPropertyName("middleName", null, false),
-      new UserPropertyName("lastName", null, true),
-      new UserPropertyName("organization", null, true)
-  };
+    new UserPropertyName("firstName", null, true),
+    new UserPropertyName("middleName", null, false),
+    new UserPropertyName("lastName", null, true),
+    new UserPropertyName("organization", null, true) };
 
   @Test
   public void testParsing() {
