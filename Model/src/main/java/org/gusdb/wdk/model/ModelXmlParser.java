@@ -1088,8 +1088,6 @@ public class ModelXmlParser extends XmlParser {
   private static void configureStepAnalysis(Digester digester) {
     configureNode(digester, "wdkModel/stepAnalysisPlugins", StepAnalysisPlugins.class,
         "setStepAnalysisPlugins");
-    configureNode(digester, "wdkModel/stepAnalysisPlugins/viewConfig", StepAnalysisPlugins.ViewConfig.class,
-        "setViewConfig");
     configureNode(digester, "wdkModel/stepAnalysisPlugins/executionConfig",
         StepAnalysisPlugins.ExecutionConfig.class, "setExecutionConfig");
     configureStepAnalysisNode(digester, "wdkModel/stepAnalysisPlugins/stepAnalysisPlugin");

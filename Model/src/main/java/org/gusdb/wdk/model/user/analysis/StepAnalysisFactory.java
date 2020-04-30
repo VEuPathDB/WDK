@@ -65,8 +65,6 @@ public interface StepAnalysisFactory {
 
   void setUserNotesContext(StepAnalysisInstance context) throws WdkModelException;
 
-  StepAnalysisViewResolver getViewResolver();
-
   void clearResultsCache() throws WdkModelException;
 
   Path getResourcePath(StepAnalysisInstance instance, String relativePath);

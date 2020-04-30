@@ -61,7 +61,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   static final boolean USE_DB_PERSISTENCE = true;
 
   private final ExecutionConfig _execConfig;
-  private final StepAnalysisViewResolver _viewResolver;
   private final StepAnalysisDataStore _dataStore;
   private final StepAnalysisFileStore _fileStore;
   private ExecutorService _threadPool;
@@ -69,7 +68,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   private volatile ConcurrentLinkedDeque<RunningAnalysis> _threadResults;
 
   public StepAnalysisFactoryImpl(WdkModel wdkModel) throws WdkModelException {
-    _viewResolver = new StepAnalysisViewResolver(wdkModel.getStepAnalysisPlugins().getViewConfig());
     _execConfig = wdkModel.getStepAnalysisPlugins().getExecutionConfig();
     _dataStore = (USE_DB_PERSISTENCE ?
         new StepAnalysisPersistentDataStore(wdkModel) :
@@ -422,11 +420,6 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     analyzer.setFormParamValues(instance.getFormParams());
     analyzer.setAnswerValue(instance.getAnswerValue());
     return analyzer;
-  }
-
-  @Override
-  public StepAnalysisViewResolver getViewResolver() {
-    return _viewResolver;
   }
 
   @Override

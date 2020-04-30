@@ -119,11 +119,6 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
-  public StepAnalysisViewResolver getViewResolver() {
-    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
-  }
-
-  @Override
   public void clearResultsCache() throws WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
