@@ -1938,16 +1938,6 @@
   <define name="stepAnalysisPlugins">
     <optional>
       <element name="stepAnalysisPlugins">
-        <optional>
-          <element name="viewConfig">
-            <optional>
-              <attribute name="prefix" />
-            </optional>
-            <optional>
-              <attribute name="suffix" />
-            </optional>
-          </element>
-        </optional>
         <element name="executionConfig">
           <attribute name="fileStoreDirectory" />
           <optional>
