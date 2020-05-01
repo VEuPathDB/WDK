@@ -29,6 +29,16 @@
         <artifactId>wsf-client</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.gusdb</groupId>
+        <artifactId>wsf-plugin</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gusdb</groupId>
+        <artifactId>wsf-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
