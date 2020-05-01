@@ -45,11 +45,16 @@ public class ProjectService extends AbstractWdkService {
 
   @GET
   @Path("teapot")
-  @Produces(MediaType.TEXT_HTML)
+  @Produces(MediaType.TEXT_PLAIN)
   public Response getTeapot() {
-    String imageLink = getContextUri() + "/wdk/images/r2d2_ceramic_teapot.jpg";
-    String html = "<!DOCTYPE html><html><body><img src=\"" + imageLink + "\"/></body></html>";
-    return Response.status(418).entity(html).build();
+    String teapot = "" +
+     "                 ;,'\n" +
+     "     _o_    ;:;'\n" +
+     " ,-.'---`.__ ;\n" +
+     "((j`=====',-'\n" +
+     " `-\\     /\n" +
+     "    `-=-' \n";
+    return Response.status(418).entity(teapot).build();
   }
 
   @GET
