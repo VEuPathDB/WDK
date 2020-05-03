@@ -17,6 +17,7 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.accountdb.UserPropertyName;
+import org.gusdb.fgputil.web.LoginCookieFactory;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
@@ -28,7 +29,6 @@ import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.PasswordChangeRequest;
 import org.gusdb.wdk.service.request.user.UserProfileRequest;
-import org.gusdb.wdk.session.LoginCookieFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 

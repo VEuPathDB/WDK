@@ -7,18 +7,17 @@ import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.ApplicationContext;
 import org.gusdb.fgputil.web.CookieBuilder;
+import org.gusdb.fgputil.web.LoginCookieFactory;
+import org.gusdb.fgputil.web.LoginCookieFactory.LoginCookieParts;
 import org.gusdb.fgputil.web.SessionProxy;
 import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.events.NewUserEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
-import org.gusdb.wdk.session.LoginCookieFactory;
-import org.gusdb.wdk.session.LoginCookieFactory.LoginCookieParts;
 
 public class CheckLoginFilterShared {
 
@@ -159,7 +158,7 @@ public class CheckLoginFilterShared {
         cookieMatches = cookieValid ? (wdkUser != null && cookieParts.getUsername().equals(wdkUser.getEmail())) : false;
       }
     }
-    catch (IllegalArgumentException | WdkModelException e) {
+    catch (IllegalArgumentException e) {
       /* negative values already set */
     }
 

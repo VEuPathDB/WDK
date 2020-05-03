@@ -18,10 +18,10 @@ import javax.ws.rs.core.Cookie;
 import org.glassfish.grizzly.http.server.Request;
 import org.gusdb.fgputil.web.ApplicationContext;
 import org.gusdb.fgputil.web.CookieBuilder;
+import org.gusdb.fgputil.web.LoginCookieFactory;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.controller.filter.CheckLoginFilterShared;
-import org.gusdb.wdk.session.LoginCookieFactory;
 
 @PreMatching
 @Priority(200)

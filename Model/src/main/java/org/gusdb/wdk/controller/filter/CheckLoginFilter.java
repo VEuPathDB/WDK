@@ -16,10 +16,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.gusdb.fgputil.web.ApplicationContext;
 import org.gusdb.fgputil.web.CookieBuilder;
+import org.gusdb.fgputil.web.LoginCookieFactory;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.fgputil.web.servlet.HttpRequestData;
 import org.gusdb.wdk.controller.ContextLookup;
-import org.gusdb.wdk.session.LoginCookieFactory;
 
 public class CheckLoginFilter implements Filter {
 

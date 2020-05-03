@@ -11,9 +11,9 @@ import java.util.Optional;
 import javax.servlet.http.Cookie;
 
 import org.gusdb.fgputil.web.CookieBuilder;
+import org.gusdb.fgputil.web.LoginCookieFactory;
+import org.gusdb.fgputil.web.LoginCookieFactory.LoginCookieParts;
 import org.gusdb.wdk.controller.filter.CheckLoginFilter;
-import org.gusdb.wdk.session.LoginCookieFactory;
-import org.gusdb.wdk.session.LoginCookieFactory.LoginCookieParts;
 import org.junit.Test;
 
 public class LoginCookieFactoryTest {

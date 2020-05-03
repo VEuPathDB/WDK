@@ -29,9 +29,9 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   private String driverInitClass;
 
   // optional properties
-  private short maxActive = 20;
-  private short maxIdle = 1;
-  private short minIdle = 0;
+  private int maxActive = 20;
+  private int maxIdle = 1;
+  private int minIdle = 0;
   private long maxWait = 50;
   private int defaultFetchSize = 0;
   private boolean defaultReadOnly = DEFAULT_READ_ONLY;
@@ -125,7 +125,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    * @return the maxActive
    */
   @Override
-  public short getMaxActive() {
+  public int getMaxActive() {
     return maxActive;
   }
 
@@ -141,7 +141,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    * @return the maxIdle
    */
   @Override
-  public short getMaxIdle() {
+  public int getMaxIdle() {
     return maxIdle;
   }
 
@@ -157,7 +157,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    * @return the minIdle
    */
   @Override
-  public short getMinIdle() {
+  public int getMinIdle() {
     return minIdle;
   }
 
