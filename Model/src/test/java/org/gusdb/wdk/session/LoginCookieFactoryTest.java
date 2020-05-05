@@ -21,13 +21,10 @@ public class LoginCookieFactoryTest {
   private static final String SECRET_KEY = "123aSecretKey!";
   private static final String ANOTHER_KEY = "345TakeADive!";
 
-  private static final String TRUE = "true";
-  private static final String FALSE = "false";
-  
   // cookie lists
   private static final Cookie[] BAD_LIST = { new Cookie("a","1"), new Cookie("b", "2") };
   private static final Cookie[] GOOD_LIST = { new Cookie("a", "1"), new Cookie(LoginCookieFactory.WDK_LOGIN_COOKIE_NAME, "value") };
-  
+
   @Test
   public void testFindCookie() {
     Optional<CookieBuilder> c;
@@ -53,14 +50,13 @@ public class LoginCookieFactoryTest {
 
   public static final String[][] PARSE_CASES = {
     // obvious success cases
-    { "email-checksum", "email", FALSE, "checksum" },
-    { "email-remember-checksum", "email", TRUE, "checksum" },
+    { "email-checksum", "email", "checksum" },
 
     // more tricky "success" cases
-    { "--word", "-", FALSE, "word" },
-    { "email--checksum", "email-", FALSE, "checksum" },
-    { "-word-word", "-word", FALSE, "word" },
-    { "blah-word--remember-checksum", "blah-word-", TRUE, "checksum" }
+    { "--word", "-", "word" },
+    { "email--checksum", "email-", "checksum" },
+    { "-word-word", "-word", "word" },
+    { "blah-word---checksum", "blah-word-", "checksum" }
   };
   
   @Test
@@ -77,29 +73,25 @@ public class LoginCookieFactoryTest {
     for (String[] successCase : PARSE_CASES) {
       LoginCookieParts parts = LoginCookieFactory.parseCookieValue(successCase[0]);
       assertEquals(parts.getUsername(), successCase[1]);
-      assertEquals(Boolean.valueOf(parts.isRemember()).toString(), successCase[2]);
-      assertEquals(parts.getChecksum(), successCase[3]);
+      assertEquals(parts.getChecksum(), successCase[2]);
     }
   }
-  
+
   public static final String REMEMBER_MAX_AGE = Integer.valueOf(java.lang.Integer.MAX_VALUE / 256).toString();
-  public static final String NO_REMEMBER_MAX_AGE = "-1";
   public static final String COOKIE_PATH = "/";
-  
+
   public static final String[][] COOKIE_CASES = {
-    { "rdoherty@pcbi.upenn.edu", "true", REMEMBER_MAX_AGE,
-      "rdoherty%40pcbi.upenn.edu-remember-b9f3b04fca9893df7a486b68f42db8e8" },
-    { "rdoherty@pcbi.upenn.edu", "false", NO_REMEMBER_MAX_AGE,
+    { "rdoherty@pcbi.upenn.edu", "false", REMEMBER_MAX_AGE,
       "rdoherty%40pcbi.upenn.edu-2bcea64085894809f6828969f4ea1c27" }
   };
-  
+
   @Test
   public void testCreateCookie() throws Exception {
     LoginCookieFactory factory = new LoginCookieFactory(SECRET_KEY);
     for (String[] data : COOKIE_CASES) {
-      CookieBuilder c = factory.createLoginCookie(data[0], Boolean.parseBoolean(data[1]));
-      assertEquals(c.getMaxAge(), Integer.parseInt(data[2]));
-      assertEquals(c.getValue(), data[3]);
+      CookieBuilder c = factory.createLoginCookie(data[0]);
+      assertEquals(c.getMaxAge(), Integer.parseInt(data[1]));
+      assertEquals(c.getValue(), data[2]);
       assertEquals(c.getPath(), COOKIE_PATH);
     }
   }
@@ -108,14 +100,14 @@ public class LoginCookieFactoryTest {
   public void testValidateCookie() throws Exception {
     LoginCookieFactory factory = new LoginCookieFactory(SECRET_KEY);
     for (String[] data : COOKIE_CASES) {
-      LoginCookieParts parts = LoginCookieFactory.parseCookieValue(data[3]);
+      LoginCookieParts parts = LoginCookieFactory.parseCookieValue(data[2]);
       assertTrue(factory.isValidCookie(parts));
     }
     
     // when we salt with a different key, all should fail
     factory = new LoginCookieFactory(ANOTHER_KEY);
     for (String[] data : COOKIE_CASES) {
-      LoginCookieParts parts = LoginCookieFactory.parseCookieValue(data[3]);
+      LoginCookieParts parts = LoginCookieFactory.parseCookieValue(data[2]);
       assertFalse(factory.isValidCookie(parts));
     }
   }

@@ -311,7 +311,7 @@ public class ModelConfig implements OAuthConfig {
   public String getSecretKey() {
     if (_secretKey == null && _secretKeyFile.isPresent()) {
       try (FileReader in = new FileReader(_secretKeyFile.get().toFile())) {
-        _secretKey = EncryptionUtil.md5(IoUtil.readAllChars(in));
+        _secretKey = EncryptionUtil.md5(IoUtil.readAllChars(in).strip());
       }
       catch (IOException e) {
         // log error but otherwise ignore so null is returned; problem may be remedied in the future

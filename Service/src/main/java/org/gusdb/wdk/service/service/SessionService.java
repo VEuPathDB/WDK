@@ -201,7 +201,7 @@ public class SessionService extends AbstractWdkService {
       Events.triggerAndWait(new NewUserEvent(newUser, oldUser, session),
           new WdkRuntimeException("Unable to complete WDK user assignement."));
       LoginCookieFactory baker = new LoginCookieFactory(getWdkModel().getModelConfig().getSecretKey());
-      CookieBuilder loginCookie = baker.createLoginCookie(newUser.getEmail(), true);
+      CookieBuilder loginCookie = baker.createLoginCookie(newUser.getEmail());
       redirectUrl = getSuccessRedirectUrl(redirectUrl, newUser, loginCookie);
       return (isRedirectResponse ?
         createRedirectResponse(redirectUrl) :
