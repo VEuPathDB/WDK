@@ -2,8 +2,6 @@ package org.gusdb.wdk.session;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Optional;
@@ -30,16 +28,16 @@ public class LoginCookieFactoryTest {
     Optional<CookieBuilder> c;
     // test null
     c = CheckLoginFilter.findLoginCookie(null);
-    assertNull(c);
+    assertFalse(c.isPresent());
     // test empty list
     c = CheckLoginFilter.findLoginCookie(new Cookie[0]);
-    assertNull(c);
+    assertFalse(c.isPresent());
     // test list not containing cookie
     c = CheckLoginFilter.findLoginCookie(BAD_LIST);
-    assertNull(c);
+    assertFalse(c.isPresent());
     // test list not containing cookie
     c = CheckLoginFilter.findLoginCookie(GOOD_LIST);
-    assertNotNull(c);
+    assertTrue(c.isPresent());
     assertEquals(c.get().getName(), LoginCookieFactory.WDK_LOGIN_COOKIE_NAME);
   }
 
@@ -56,7 +54,7 @@ public class LoginCookieFactoryTest {
     { "--word", "-", "word" },
     { "email--checksum", "email-", "checksum" },
     { "-word-word", "-word", "word" },
-    { "blah-word---checksum", "blah-word-", "checksum" }
+    { "blah-word--checksum", "blah-word-", "checksum" }
   };
   
   @Test
@@ -81,7 +79,7 @@ public class LoginCookieFactoryTest {
   public static final String COOKIE_PATH = "/";
 
   public static final String[][] COOKIE_CASES = {
-    { "rdoherty@pcbi.upenn.edu", "false", REMEMBER_MAX_AGE,
+    { "rdoherty@pcbi.upenn.edu", REMEMBER_MAX_AGE,
       "rdoherty%40pcbi.upenn.edu-2bcea64085894809f6828969f4ea1c27" }
   };
 
