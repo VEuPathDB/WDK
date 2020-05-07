@@ -517,7 +517,7 @@ public class FilterParamNewStableValue {
   private class NumberMembersFilter extends MembersFilter {
 
     // This is used to keep the raw JSON.org values to preserve the raw user
-    // value. Conversion to Double will change the string reprensentation.
+    // value. Conversion to Double will change the string representation.
     // This is used by getMembersAsStrings().
     private List<Object> rawMembers;
 
