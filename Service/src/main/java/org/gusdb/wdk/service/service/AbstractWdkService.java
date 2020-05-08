@@ -356,7 +356,7 @@ public abstract class AbstractWdkService {
     Question question = getQuestionOrNotFound(searchName);
     if (!question.getRecordClassName().equals(record.getFullName()))
       throw new NotFoundException(format(
-        "Search \"%s\" does not belong to record type \"%s\"",
+        "There is no search \"%s\" associated with record type \"%s\"",
         question.getName(),
         record.getName()
       ));
