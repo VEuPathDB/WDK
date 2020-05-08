@@ -125,7 +125,7 @@ public class QuestionService extends AbstractWdkService {
       @PathParam(SEARCH_PATH_PARAM) String questionUrlSegment)
           throws WdkModelException {
     DisplayablyValid<AnswerSpec> validSpec = getDisplayableAnswerSpec(
-        questionUrlSegment, getWdkModel(), getSessionUser(), name -> getQuestionOrNotFound(name));
+        questionUrlSegment, getWdkModel(), getSessionUser(), name -> getQuestionOrNotFound(_recordClassUrlSegment, name));
     JSONObject result = QuestionFormatter.getQuestionJsonWithParams(validSpec, validSpec.get().getValidationBundle());
     if (LOG.isDebugEnabled()) LOG.debug("Returning JSON: " + result.toString(2));
     return result;
@@ -180,7 +180,7 @@ public class QuestionService extends AbstractWdkService {
       @PathParam(SEARCH_PATH_PARAM) String questionUrlSegment,
       String body)
           throws WdkModelException, RequestMisformatException, DataValidationException {
-    Question question = getQuestionOrNotFound(questionUrlSegment);
+    Question question = getQuestionOrNotFound(_recordClassUrlSegment, questionUrlSegment);
     ParamValueSetRequest request = ParamValueSetRequest.parse(body, question.getQuery());
     AnswerSpec answerSpec = AnswerSpec.builder(getWdkModel())
         .setQuestionFullName(question.getFullName())
@@ -237,7 +237,7 @@ public class QuestionService extends AbstractWdkService {
           throws WdkUserException, WdkModelException, DataValidationException {
 
     // get requested question and throw not found if invalid
-    Question question = getQuestionOrNotFound(questionUrlSegment);
+    Question question = getQuestionOrNotFound(_recordClassUrlSegment, questionUrlSegment);
 
     // parse incoming JSON into existing and changed values
     ParamValueSetRequest request = ParamValueSetRequest.parse(body, question.getQuery());
@@ -323,7 +323,7 @@ public class QuestionService extends AbstractWdkService {
           throws WdkModelException, DataValidationException, RequestMisformatException {
 
     // parse elements of the request
-    Question question = getQuestionOrNotFound(questionUrlSegment);
+    Question question = getQuestionOrNotFound(_recordClassUrlSegment, questionUrlSegment);
     FilterParamNew filterParam = getFilterParam(question.getQuery(), paramName);
     Map<String, String> contextParamValues = ParamValueSetRequest.parse(
         body, question.getQuery()).getContextParamValues();
@@ -379,7 +379,7 @@ public class QuestionService extends AbstractWdkService {
           throws WdkModelException, RequestMisformatException, DataValidationException {
 
     // parse elements of the request
-    Question question = getQuestionOrNotFound(questionUrlSegment);
+    Question question = getQuestionOrNotFound(_recordClassUrlSegment, questionUrlSegment);
     FilterParamNew filterParam = getFilterParam(question.getQuery(), paramName);
     Map<String, String> contextParamValues = ParamValueSetRequest.parse
         (body, question.getQuery()).getContextParamValues();
