@@ -117,6 +117,7 @@ public class JsonKeys {
   public static final String ALLOWED_SECONDARY_INPUT_RECORD_CLASS_NAMES = "allowedSecondaryInputRecordClassNames";
   public static final String PARAM_NAMES = "paramNames";
   public static final String QUERY_NAME = "queryName";
+  public static final String IS_CACHEABLE = "isCacheable";
 
   // record class specific keys
   public static final String HAS_ALL_RECORDS_QUERY = "hasAllRecordsQuery";

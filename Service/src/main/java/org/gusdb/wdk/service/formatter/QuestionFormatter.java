@@ -75,6 +75,7 @@ public class QuestionFormatter {
         .put(JsonKeys.HELP, q.getHelp())
         .put(JsonKeys.NEW_BUILD, q.getNewBuild())
         .put(JsonKeys.REVISE_BUILD, q.getReviseBuild())
+        .put(JsonKeys.IS_CACHEABLE, !q.getQuery().hasParamWithUncacheableQuery())
         .put(JsonKeys.OUTPUT_RECORD_CLASS_NAME, q.getRecordClass().getUrlSegment())
         .put(JsonKeys.DEFAULT_ATTRIBUTES, new JSONArray(q.getSummaryAttributeFieldMap().keySet()))
         .put(JsonKeys.DEFAULT_SORTING, DefaultJsonReporter.formatSorting(q.getSortingAttributeMap(), q.getAttributeFieldMap()))

@@ -985,4 +985,8 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   public String getExternalStableValue(String stableValue) {
     return stableValue;
   }
+
+  public boolean hasUncacheableQuery() {
+    return false;
+  }
 }

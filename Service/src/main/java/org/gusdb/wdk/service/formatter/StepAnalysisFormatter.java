@@ -46,7 +46,8 @@ public class StepAnalysisFormatter {
         .put(JsonKeys.SHORT_DESCRIPTION, analysis.getShortDescription())
         .put(JsonKeys.DESCRIPTION, analysis.getDescription())
         .put(JsonKeys.RELEASE_VERSION, analysis.getReleaseVersion())
-        .put(JsonKeys.CUSTOM_THUMBNAIL, analysis.getCustomThumbnail()),
+        .put(JsonKeys.CUSTOM_THUMBNAIL, analysis.getCustomThumbnail())
+        .put(JsonKeys.IS_CACHEABLE, analysis.hasParamWithUncacheableQuery()),
       StepAnalysisSupplementalParams.getNames(analysis)
     );
   }
