@@ -203,6 +203,9 @@
     },
     "queryName": {
       "type": "string"
+    },
+    "isCacheable": {
+      "type": "boolean"
     }
   },
   "required": [
@@ -221,6 +224,7 @@
     "isAnalyzable",
     "properties",
     "groups",
-    "paramNames"
+    "paramNames",
+    "isCacheable"
   ]
 }
