@@ -1055,4 +1055,10 @@ public class FilterParamNew extends AbstractDependentParam {
     return queries;
   }
 
+  @Override
+  public boolean hasUncacheableQuery() {
+    return !_metadataQuery.isCacheable() ||
+           !_ontologyQuery.isCacheable() ||
+           !_backgroundQuery.isCacheable();
+  }
 }

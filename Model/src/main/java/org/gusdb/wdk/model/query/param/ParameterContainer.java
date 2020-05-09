@@ -42,4 +42,12 @@ public interface ParameterContainer {
     return paramGroups;
   }
 
+  default boolean hasParamWithUncacheableQuery() {
+    for (Param param : getParams()) {
+      if (param.hasUncacheableQuery()) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

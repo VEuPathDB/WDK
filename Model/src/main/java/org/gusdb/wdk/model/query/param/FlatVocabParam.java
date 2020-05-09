@@ -159,4 +159,9 @@ public class FlatVocabParam extends AbstractEnumParam {
     vocabQuery.printDependency(writer, indent);
   }
 
+  @Override
+  public boolean hasUncacheableQuery() {
+    return !vocabQuery.isCacheable();
+  }
+
 }
