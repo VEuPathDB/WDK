@@ -611,7 +611,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     try {
       long start = System.currentTimeMillis();
-      LOG.info(filteredDistinctFilterItemsSql);
+      LOG.debug(filteredDistinctFilterItemsSql);
       ps = SqlUtils.getPreparedStatement(dataSource, filteredDistinctFilterItemsSql);
       ps.setString(1, ontologyId);
       resultSet = ps.executeQuery();
