@@ -32,7 +32,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.digester.Digester;
+import org.apache.commons.digester3.Digester;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.fgputil.web.CookieBuilder;

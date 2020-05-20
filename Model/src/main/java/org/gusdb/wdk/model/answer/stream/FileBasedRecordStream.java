@@ -50,7 +50,7 @@ public class FileBasedRecordStream implements RecordStream {
   public static final int BUFFER_SIZE = 32768;
 
   /** Determines whether temporary directory and containing files are deleted on close */
-  private static final boolean DELETE_TEMPORARY_FILES = false;
+  private static final boolean DELETE_TEMPORARY_FILES = true;
 
   /**
    * Suffix for temporary CSV files constructed from table queries. Done in part to avoid conflicts with

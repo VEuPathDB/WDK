@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import org.apache.commons.digester.Digester;
+import org.apache.commons.digester3.Digester;
 import org.gusdb.wdk.model.WdkModelException;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
