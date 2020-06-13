@@ -391,7 +391,7 @@ public class Step implements Validateable<Step> {
     // sanity checks regarding answer param values vs strategy present
     for (String answerParamName : getAnswerParamNames()) {
       String paramValue = _answerSpec.getQueryInstanceSpec().get(answerParamName);
-      // Confirm left and right child null if strategyId = null
+      // Confirm left and right child null iff strategyId = null
       if (_strategy.isEmpty() && !AnswerParam.NULL_VALUE.equals(paramValue)) {
         throw new WdkModelException("Step " + _stepId + " does not have a strategy but answer param " + answerParamName + " has a value.");
       }
