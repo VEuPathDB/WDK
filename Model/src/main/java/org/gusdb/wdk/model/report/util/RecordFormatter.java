@@ -75,18 +75,7 @@ public class RecordFormatter {
     // loop through tables
     for (String tableName : tableNames) {
       try {
-        JSONArray tableRowsJson = new JSONArray();
-        // loop through rows
-        TableValue tableValue = record.getTableValue(tableName);
-        for (TableValueRow row : tableValue) {
-          JSONObject tableAttrsJson = new JSONObject();
-          // loop through columns
-          for (Entry<String, AttributeValue> entry : row.entrySet()) {
-            tableAttrsJson.put(entry.getKey(), getAttributeValueJson(entry.getValue()));
-          }
-          tableRowsJson.put(tableAttrsJson);
-        }
-        tables.put(tableName, tableRowsJson);
+        tables.put(tableName, getTableRowsJson(record, tableName));
       }
       /* Sometimes individual tables fail due to bad SQL or other reasons; in this event, we don't want the
        * whole request to fail since most of the data is probably fine.  Record the tables that fail and send
@@ -100,6 +89,21 @@ public class RecordFormatter {
       }
     }
     return new ThreeTuple<JSONObject,JSONArray,List<Exception>>(tables, badTables, exceptionList);
+  }
+
+  public static JSONArray getTableRowsJson(RecordInstance record, String tableName) throws WdkModelException, WdkUserException {
+    JSONArray tableRowsJson = new JSONArray();
+    // loop through rows
+    TableValue tableValue = record.getTableValue(tableName);
+    for (TableValueRow row : tableValue) {
+      JSONObject tableAttrsJson = new JSONObject();
+      // loop through columns
+      for (Entry<String, AttributeValue> entry : row.entrySet()) {
+        tableAttrsJson.put(entry.getKey(), getAttributeValueJson(entry.getValue()));
+      }
+      tableRowsJson.put(tableAttrsJson);
+    }
+    return tableRowsJson;
   }
 
   private static Object getAttributeValueJson(AttributeValue attr) throws WdkModelException, WdkUserException {
