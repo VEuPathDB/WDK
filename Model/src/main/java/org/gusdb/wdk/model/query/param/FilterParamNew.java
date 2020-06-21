@@ -926,6 +926,7 @@ public class FilterParamNew extends AbstractDependentParam {
         jsOntoItem.put(COLUMN_TYPE, item.getType());
         jsOntoItem.put(COLUMN_UNITS, item.getUnits());
         jsOntoItem.put(COLUMN_PRECISION, item.getPrecision());
+        jsOntoItem.put(COLUMN_VARIABLE_NAME, item.getVariableName());
         jsOntology.put(itemName, jsOntoItem);
       }
       jsParam.put("ontology", jsOntology);

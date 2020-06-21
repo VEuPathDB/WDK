@@ -50,6 +50,9 @@
               },
               "precision": {
                 "type": "integer"
+              },
+              "variableName": {
+                "type": "string"
               }
             }
           }

@@ -42,7 +42,8 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
         .put("type", item.getType().getIdentifier())
         .put("units", item.getUnits())
         .put("precision", item.getPrecision())
-        .put("isRange", item.getIsRange()));
+        .put("isRange", item.getIsRange())
+        .put("variableName", item.getVariableName()));
     }
     return ontologyJson;
   }

@@ -17,6 +17,7 @@ public class OntologyItem {
   private String units;
   private long precision;  // TODO: this is long only because jdbc gives us a big decimal.
   private boolean isRange;
+  private String variableName;
 
   // package-protect constructor
   OntologyItem(){}
@@ -54,6 +55,10 @@ public class OntologyItem {
     this.precision = precision;
   }
 
+  public void setVariableName(String variableName) {
+    this.variableName = variableName;
+  }
+
   public String getOntologyId() {
     return ontologyId;
   }
@@ -84,6 +89,10 @@ public class OntologyItem {
   
   public Boolean getIsRange() {
     return isRange;
+  }
+
+  public String getVariableName() {
+    return variableName;
   }
 
   @Override
