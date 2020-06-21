@@ -102,6 +102,7 @@ public class FilterParamNew extends AbstractDependentParam {
   static final String COLUMN_UNITS = "units";
   static final String COLUMN_PRECISION = "precision";
   static final String COLUMN_IS_RANGE = "is_range";
+  static final String COLUMN_VARIABLE_NAME= "variable_name";
 
   // metadata query columns
   static final String COLUMN_INTERNAL = "internal"; // similar to the internal column in a flat vocab param
@@ -337,9 +338,21 @@ public class FilterParamNew extends AbstractDependentParam {
       // validate columns
       String errMsgPrefix = "The ontologyQuery " + _ontologyQueryRef + " in filterParam " + getFullName();
       Map<String, Column> columns = _ontologyQuery.getColumnMap();
-      String[] cols = { COLUMN_ONTOLOGY_ID, COLUMN_PARENT_ONTOLOGY_ID, COLUMN_DISPLAY_NAME, COLUMN_DESCRIPTION,
-                COLUMN_TYPE, COLUMN_UNITS, COLUMN_PRECISION,COLUMN_IS_RANGE };
-      if (columns.size() != cols.length)
+      //      String[] cols = { COLUMN_ONTOLOGY_ID, COLUMN_PARENT_ONTOLOGY_ID, COLUMN_DISPLAY_NAME, COLUMN_DESCRIPTION,
+      //                COLUMN_TYPE, COLUMN_UNITS, COLUMN_PRECISION,COLUMN_IS_RANGE };
+      List<String> cols = new ArrayList<>();
+      cols.add(COLUMN_ONTOLOGY_ID);
+      cols.add(COLUMN_PARENT_ONTOLOGY_ID);
+      cols.add(COLUMN_DISPLAY_NAME);
+      cols.add(COLUMN_DESCRIPTION);
+      cols.add(COLUMN_TYPE);
+      cols.add(COLUMN_UNITS);
+      cols.add(COLUMN_PRECISION);
+      cols.add(COLUMN_IS_RANGE);
+      if (columns.containsKey(COLUMN_VARIABLE_NAME)) { // if model includes this optional column, use it
+          cols.add(COLUMN_VARIABLE_NAME);
+      }
+      if (columns.size() != cols.size())
         throw new WdkModelException(errMsgPrefix + " has the wrong number of columns (" + columns.size() + ").  It should have " + String.join(",", cols));
       for (String col : cols)
         if (!columns.containsKey(col))
