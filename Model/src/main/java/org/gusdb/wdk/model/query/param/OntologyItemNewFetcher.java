@@ -45,6 +45,8 @@ public class OntologyItemNewFetcher implements ValueFactory<String, Map<String, 
           oItem.setDescription((String) resultList.get(FilterParamNew.COLUMN_DESCRIPTION));
           oItem.setType(OntologyItemType.getType((String)resultList.get(FilterParamNew.COLUMN_TYPE)));
           oItem.setUnits((String) resultList.get(FilterParamNew.COLUMN_UNITS));
+          try { oItem.setVariableName((String) resultList.get(FilterParamNew.COLUMN_VARIABLE_NAME)); }
+          catch (WdkModelException e) {}
 
           BigDecimal precision = (BigDecimal)resultList.get(FilterParamNew.COLUMN_PRECISION);
           if (precision != null) oItem.setPrecision(precision.toBigInteger().longValue() );
