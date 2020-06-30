@@ -40,6 +40,8 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
 
   private static final Logger LOG = Logger.getLogger(ExceptionMapper.class);
 
+  private static final String LOG_MARKER_HEADER = "x-log-marker";
+
   @Context
   private ServletContext _servletContext;
 
@@ -98,6 +100,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
       LOG.error("log4j marker: " + errorContext.getLogMarker());
       Events.trigger(new ErrorEvent(new ServerErrorBundle(other), errorContext));
       return logResponse(e, Response.serverError()
+          .header(LOG_MARKER_HEADER, errorContext.getLogMarker())
           .type(MediaType.TEXT_PLAIN).entity("Internal Error").build());
     }
   }
