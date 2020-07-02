@@ -1,5 +1,22 @@
 package org.gusdb.wdk.model.dataset;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
+import javax.sql.DataSource;
+
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -14,12 +31,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dataset.DatasetParser.DatasetIterator;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
-
-import javax.sql.DataSource;
-import java.io.IOException;
-import java.sql.*;
-import java.util.Date;
-import java.util.*;
 
 /**
  * @author xingao
@@ -182,7 +193,7 @@ public class DatasetFactory {
           var values = new ArrayList<String[]>();
           while (rs.next()) {
             String[] row = new String[MAX_VALUE_COLUMNS];
-            for (int i = 1; i < MAX_VALUE_COLUMNS; i++) {
+            for (int i = 1; i <= MAX_VALUE_COLUMNS; i++) {
               row[i - 1] = rs.getString(COLUMN_DATA_PREFIX + i);
             }
             values.add(row);
@@ -589,5 +600,59 @@ public class DatasetFactory {
   throws SQLException {
     return new DatasetStringContents(rs.getString(COLUMN_UPLOAD_FILE),
       rs.getString(COLUMN_CONTENT));
+  }
+
+  public void streamIdsAsJson(long datasetId, OutputStream out) throws WdkModelException {
+    var sql =
+        "SELECT *" +
+        " FROM " + _userSchema + TABLE_DATASET_VALUES +
+        " WHERE " + COLUMN_DATASET_ID + " = ?";
+    try {
+      new SQLRunner(_userDb.getDataSource(), sql)
+        .executeQuery(
+          new Object[] { datasetId },
+          new Integer[] { Types.BIGINT },
+          rs -> {
+            try {
+              BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out));
+              writer.write("[");
+              boolean firstRow = true;
+              while (rs.next()) {
+                // get IDs for cols where they exist
+                int highestNonNullIndex = 0;
+                String[] row = new String[MAX_VALUE_COLUMNS];
+                for (int i = 0; i < MAX_VALUE_COLUMNS; i++) {
+                  row[i] = rs.getString(COLUMN_DATA_PREFIX + (i + 1));
+                  if (row[i] != null) {
+                    highestNonNullIndex = i;
+                  }
+                }
+                // write comma between records
+                if (firstRow) {
+                  firstRow = false;
+                }
+                else {
+                  writer.write(",");
+                }
+                // make a JSON array only as big as the IDs
+                JSONArray arr = new JSONArray();
+                for (int i = 0; i <= highestNonNullIndex; i++) {
+                  arr.put(row[i]);
+                }
+                writer.write(arr.toString());
+                
+              }
+              writer.write("]");
+              writer.flush();
+              return null;
+            }
+            catch (IOException e) {
+              throw new SQLRunnerException(e);
+            }
+          });
+    }
+    catch (Exception e) {
+      WdkModelException.unwrap(e);
+    }
   }
 }
