@@ -44,7 +44,7 @@ public class ListDatasetParser extends AbstractDatasetParser {
     /**
      * Track the current input row number for error reporting.
      */
-    private int rowNum;
+    private int parsedRowNum;
 
     Iterator(final DatasetContents contents) {
       super(contents, ROW_DIVIDER);
@@ -65,11 +65,11 @@ public class ListDatasetParser extends AbstractDatasetParser {
         colCount = columns.length;
       else if (colCount != columns.length)
         throw new WdkUserException(
-          "The input data for datasetParam has various columns at row #" + rowNum
+          "The input data for datasetParam has various columns at row #" + parsedRowNum
             + ". The number of columns must be the same for all the rows."
         );
 
-      rowNum++;
+      parsedRowNum++;
       return columns;
     }
 

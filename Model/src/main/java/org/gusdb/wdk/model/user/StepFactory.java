@@ -697,7 +697,7 @@ public class StepFactory {
     try {
       long oldDatasetId = Long.parseLong(oldStableValue);
       DatasetFactory datasetFactory = _wdkModel.getDatasetFactory();
-      Dataset oldDataset = datasetFactory.getDatasetWithOwner(oldDatasetId, oldUser.getUserId());
+      datasetFactory.getDatasetWithOwner(oldDatasetId, oldUser.getUserId());
       Dataset newDataset = datasetFactory.cloneDataset(oldDatasetId, oldUser.getUserId(), newUser);
       return Long.toString(newDataset.getDatasetId());
     }
