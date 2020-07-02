@@ -1,14 +1,26 @@
 package org.gusdb.wdk.service.service.user;
 
-import javax.ws.rs.*;
+import java.io.IOException;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dataset.Dataset;
+import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -18,8 +30,12 @@ import org.gusdb.wdk.service.request.user.DatasetRequestProcessor.DatasetRequest
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
 public class DatasetService extends UserService {
+
+  private enum DatasetFormat {
+    PARSED_IDS,
+    RAW_DATA
+  }
 
   public DatasetService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
@@ -77,35 +93,34 @@ public class DatasetService extends UserService {
 
   @GET
   @Path("datasets/{id}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public StreamingOutput getDataset(@PathParam("id") long datasetId) throws WdkModelException {
-    var factory = getWdkModel().getDatasetFactory();
+  public StreamingOutput getDataset(@PathParam("id") long datasetId,
+      @QueryParam("format") DatasetFormat requestedFormat) throws WdkModelException {
     try {
-      factory.getDatasetWithOwner(datasetId, getUserBundle(Access.PRIVATE).getTargetUser().getUserId());
+      // use parsed ID format by default
+      DatasetFormat format = requestedFormat == null ? DatasetFormat.PARSED_IDS : requestedFormat;
+
+      // find the dataset with ID for this user
+      DatasetFactory factory = getWdkModel().getDatasetFactory();
+      Dataset dataset = factory.getDatasetWithOwner(datasetId,
+          getUserBundle(Access.PRIVATE).getTargetUser().getUserId());
+
+      // stream data out in format requested
+      return out -> {
+        try {
+          if (DatasetFormat.RAW_DATA.equals(format)) {
+            IoUtil.transferStream(out, dataset.getContent().getContentStream());
+          }
+          else {
+            factory.streamIdsAsJson(dataset.getDatasetId(), out);
+          }
+        }
+        catch (IOException | WdkModelException e) {
+          throw new WdkRuntimeException(e);
+        }
+      };
     }
     catch (WdkUserException e) {
       throw new NotFoundException(formatNotFound("Dataset with ID " + datasetId));
     }
-
-    return output -> {
-      var buf  = new byte[8192];
-      var read = 0;
-      try {
-        var stream = factory.getDatasetWithOwner(
-          datasetId,
-          getUserBundle(Access.PRIVATE).getTargetUser().getUserId()
-        )
-          .getContent()
-          .getContentStream();
-
-        do {
-          read = stream.read(buf, 0, buf.length);
-          output.write(buf, 0, read);
-        } while (read > 0);
-
-      } catch (WdkModelException | WdkUserException e) {
-        throw new WdkRuntimeException(e);
-      }
-    };
   }
 }
