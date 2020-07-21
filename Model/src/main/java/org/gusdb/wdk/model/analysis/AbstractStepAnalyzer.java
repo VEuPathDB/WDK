@@ -21,7 +21,7 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
   private WdkModel _wdkModel;
   private AnswerValue _answerValue;
   private Map<String, String> _properties = new HashMap<>();
-  private Map<String, String[]> _formParams = new HashMap<>();
+  private Map<String, String> _formParams = new HashMap<>();
   private Path _storageDirectory;
   private String _charData;
   private byte[] _binaryData;
@@ -100,12 +100,12 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
     _properties.put(key, value);
   }
 
-  protected Map<String,String[]> getFormParams() {
+  protected Map<String,String> getFormParams() {
     return _formParams;
   }
 
   @Override
-  public void setFormParamValues(Map<String,String[]> formParams) {
+  public void setFormParamValues(Map<String,String> formParams) {
     _formParams = formParams;
   }
 

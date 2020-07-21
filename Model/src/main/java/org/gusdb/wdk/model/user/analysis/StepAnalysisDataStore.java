@@ -1,106 +1,36 @@
 package org.gusdb.wdk.model.user.analysis;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
-
 import java.io.InputStream;
-import java.util.*;
-import java.util.Map.Entry;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
-import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.analysis.StepAnalysis;
-import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
+import org.gusdb.wdk.model.user.Step;
 
-public abstract class StepAnalysisDataStore {
+public interface StepAnalysisDataStore {
 
-  private static final Logger LOG = Logger.getLogger(StepAnalysisDataStore.class);
+  // methods to manage analysis information
+  void createAnalysisTableAndSequence() throws WdkModelException;
+  long getNextId() throws WdkModelException;
+  void insertAnalysis(long analysisId, long stepId, String displayName, RevisionStatus revisionStatus, String serializedContext, String userNotes) throws WdkModelException;
+  void updateAnalysis(long analysisId, String displayName, RevisionStatus revisionStatus, String serializedContext, String userNotes) throws WdkModelException;
+  void setStepsDirty(Long... stepIds) throws WdkModelException;
+  void deleteAnalysisById(long analysisId) throws WdkModelException;
+  void deleteAnalysesByStepId(long stepId) throws WdkModelException;
 
-  protected static class AnalysisInfo {
+  // searches for analysis instances
+  Optional<StepAnalysisInstance> getInstanceById(long analysisId, Step step, ValidationLevel level) throws WdkModelException;
+  List<StepAnalysisInstance> getInstancesByStep(Step step, ValidationLevel level) throws WdkModelException;
 
-    long analysisId;
-    long stepId;
-    String displayName;
-    String userNotes;
-    StepAnalysisState state;
-    boolean hasParams;
-    String invalidStepReason;
-    String contextHash;
-    String serializedContext;
+  // methods to manage properties
+  InputStream getProperties(long analysisId) throws WdkModelException;
+  boolean setProperties(long analysisId, InputStream propertiesStream) throws WdkModelException;
 
-    public AnalysisInfo(long analysisId, long stepId, String displayName, String userNotes, StepAnalysisState state,
-        boolean hasParams, String invalidStepReason, String contextHash, String serializedContext) {
-      this.analysisId = analysisId;
-      this.stepId = stepId;
-      this.displayName = displayName;
-      this.userNotes = userNotes;
-      this.state = state;
-      this.hasParams = hasParams;
-      this.invalidStepReason = invalidStepReason;
-      this.contextHash = contextHash;
-      this.serializedContext = serializedContext;
-    }
-
-    @Override
-    public String toString() {
-      return new StringBuilder("AnalysisInfo {").append(NL)
-          .append("analysisId: ").append(analysisId).append(NL)
-          .append("stepId: ").append(stepId).append(NL)
-          .append("displayName: ").append(displayName).append(NL)
-          .append("userNotes: ").append(userNotes).append(NL)
-          .append("isNew: ").append(state).append(NL)
-          .append("hasParams: ").append(hasParams).append(NL)
-          .append("invalidStepReason: ").append(invalidStepReason).append(NL)
-          .append("contextHash: ").append(contextHash).append(NL)
-          .append("serializedContext: ").append(serializedContext).append(NL)
-          .append("}").append(NL).toString();
-    }
-  }
-
-  protected static class AnalysisInfoPlusStatus {
-    AnalysisInfo analysisInfo;
-    ExecutionStatus status;
-    public AnalysisInfoPlusStatus(AnalysisInfo info) {
-      analysisInfo = info;
-    }
-  }
-
-  protected static class ExecutionInfo {
-    String contextHash;
-    ExecutionStatus status;
-    Date startDate;
-    Date updateDate;
-    public ExecutionInfo(String contextHash, ExecutionStatus status, Date startDate, Date updateDate) {
-      this.contextHash = contextHash;
-      this.status = status;
-      this.startDate = startDate;
-      this.updateDate = updateDate;
-    }
-  }
-
-  // abstract methods to manage analysis information
-  public abstract void createAnalysisTableAndSequence() throws WdkModelException;
-  public abstract long getNextId() throws WdkModelException;
-  public abstract void insertAnalysis(long analysisId, long stepId, String displayName, StepAnalysisState state, boolean hasParams, String invalidStepReason, String contextHash, String serializedContext, String userNotes) throws WdkModelException;
-  public abstract void deleteAnalysis(long analysisId) throws WdkModelException;
-  public abstract void renameAnalysis(long analysisId, String displayName) throws WdkModelException;
-  public abstract void setUserNotes(long analysisId, String userNotes) throws WdkModelException;
-  public abstract void setState(long analysisId, StepAnalysisState state) throws WdkModelException;
-  public abstract void setHasParams(long analysisId, boolean hasParams) throws WdkModelException;
-  public abstract void setInvalidStepReason(long analysisId, String invalidStepReason) throws WdkModelException;
-  public abstract void updateInstance(long analysisId, String contextHash, String serializedContext) throws WdkModelException;
-  public abstract InputStream getProperties(long analysisId) throws WdkModelException;
-  public abstract boolean setProperties(long analysisId, InputStream propertiesStream) throws WdkModelException;
-  protected abstract List<Long> getAnalysisIdsByHash(String contextHash) throws WdkModelException;
-  protected abstract List<Long> getAnalysisIdsByStepId(long stepId) throws WdkModelException;
-  protected abstract List<Long> getAllAnalysisIds() throws WdkModelException;
-  // contract is: analysisInfo will be null if ID does not exist; status will be null if execution does not exist
-  protected abstract Map<Long, AnalysisInfoPlusStatus> getAnalysisInfoForIds(List<Long> analysisIds) throws WdkModelException;
-
-  // abstract methods to manage result/status information
-  public abstract void createExecutionTable() throws WdkModelException;
-  public abstract void deleteExecutionTable(boolean purge) throws WdkModelException;
+  // methods to manage result/status information (cache)
+  void createExecutionTable() throws WdkModelException;
+  void deleteExecutionTable(boolean purge) throws WdkModelException;
 
   /**
    * Inserts a step analysis results record for the given analysis hash if one
@@ -110,153 +40,24 @@ public abstract class StepAnalysisDataStore {
    *                    creation of a new record
    * @param status      Execution status, used if a new record is created
    * @param startDate   Execution start date, used if a new record is created
+   * @param timeoutMinutes number of minutes this execution should be allowed to run before it is expire
    *
    * @return <code>false</code> if a record matching the given hash already
    * existed, <code>true</code> if a new record was created.
    */
-  public abstract boolean insertExecution(String contextHash, ExecutionStatus status, Date startDate) throws WdkModelException;  
-  public abstract void updateExecution(String contextHash, ExecutionStatus status, Date updateDate, String charData, byte[] binData) throws WdkModelException;
-  public abstract void resetStartDate(String contextHash, Date startDate) throws WdkModelException;
-  public abstract void deleteExecution(String contextHash) throws WdkModelException;
-  public abstract void deleteAllExecutions() throws WdkModelException;
-  protected abstract ExecutionStatus getRawExecutionStatus(String contextHash) throws WdkModelException;
-  public abstract AnalysisResult getRawAnalysisResult(String contextHash) throws WdkModelException;
-  public abstract List<ExecutionInfo> getAllRunningExecutions() throws WdkModelException;
-  public abstract String getAnalysisLog(String contextHash) throws WdkModelException;
-  public abstract void setAnalysisLog(String contextHash, String str) throws WdkModelException;
+  Optional<ExecutionInfo> insertExecution(String contextHash, ExecutionStatus status, Date startDate, int timeoutMinutes) throws WdkModelException;  
+  void updateExecution(String contextHash, ExecutionStatus status, Date modifiedDate, String charData, byte[] binData) throws WdkModelException;
+  void resetExecution(String contextHash, ExecutionStatus status, Date newStartDate) throws WdkModelException;
+  void deleteExecution(String contextHash) throws WdkModelException;
+  void deleteAllExecutions() throws WdkModelException;
+  List<ExecutionInfo> getAllRunningExecutions() throws WdkModelException;
 
-  private final WdkModel _wdkModel;
+  // methods to query execution status
+  Optional<ExecutionInfo> getAnalysisStatus(String contextHash) throws WdkModelException;
+  Optional<ExecutionResult> getAnalysisResult(String contextHash) throws WdkModelException;
 
-  // constructor requires WdkModel
-  protected StepAnalysisDataStore(WdkModel wdkModel) {
-    _wdkModel = wdkModel;
-  }
+  // methods to manage execution logs
+  String getAnalysisLog(String contextHash) throws WdkModelException;
+  void setAnalysisLog(String contextHash, String str) throws WdkModelException;
 
-  protected WdkModel getWdkModel() {
-    return _wdkModel;
-  }
-
-  // helper methods that contain only business logic
-  public void resetExecution(String contextHash, ExecutionStatus status) throws WdkModelException {
-    Date newStartDate = new Date();
-    resetStartDate(contextHash, newStartDate);
-    updateExecution(contextHash, status, newStartDate, null, null);
-  }
-
-  public StepAnalysisInstance getAnalysisById(long analysisId, StepAnalysisFileStore fileStore) throws WdkModelException, WdkUserException {
-    Map<Long, AnalysisInfoPlusStatus> rawValues = getAnalysisInfoForIds(Arrays.asList(new Long[]{ analysisId }));
-    if (!rawValues.containsKey(analysisId))
-      throw new WdkUserException("No analysis exists with id: " + analysisId);
-    if (rawValues.get(analysisId).analysisInfo == null)
-      throw new WdkModelException("Did not find exactly" +
-        " one record for analysis ID " + analysisId + "; found " + rawValues.size());
-    return getContexts(rawValues, fileStore).iterator().next();
-  }
-
-  public List<StepAnalysisInstance> getContextsByHash(String contextHash, StepAnalysisFileStore fileStore) throws WdkModelException {
-    return getContexts(getAnalysisInfoForIds(getAnalysisIdsByHash(contextHash)), fileStore);
-  }
-
-  public Map<Long, StepAnalysisInstance> getAnalysesByStepId(long stepId,
-      StepAnalysisFileStore fileStore) throws WdkModelException {
-    List<StepAnalysisInstance> values = getContexts(
-        getAnalysisInfoForIds(getAnalysisIdsByStepId(stepId)), fileStore);
-    Map<Long,StepAnalysisInstance> contextMap = new LinkedHashMap<>();
-    for (StepAnalysisInstance context : values) {
-      contextMap.put(context.getAnalysisId(), context);
-    }
-    return contextMap;
-  }
-
-  public List<StepAnalysisInstance> getAllAnalyses(StepAnalysisFileStore fileStore)
-      throws WdkModelException {
-    return getContexts(getAnalysisInfoForIds(getAllAnalysisIds()), fileStore);
-  }
-
-  private List<StepAnalysisInstance> getContexts(Map<Long, AnalysisInfoPlusStatus> dataMap, 
-      StepAnalysisFileStore fileStore) throws WdkModelException {
-    List<StepAnalysisInstance> contextList = new ArrayList<>();
-    for (Entry<Long, AnalysisInfoPlusStatus> entry : dataMap.entrySet()) {
-      if (entry.getValue().analysisInfo == null) {
-        throw new WdkModelException("Unable to find record for analysis ID: " + entry.getKey());
-      }
-      StepAnalysisInstance context = convertToContext(entry.getValue(), fileStore);
-      // skip null contexts
-      if (context != null) contextList.add(context);
-    }
-    return contextList;
-  }
-
-  private StepAnalysisInstance convertToContext(AnalysisInfoPlusStatus data,
-      StepAnalysisFileStore fileStore) throws WdkModelException {
-
-    AnalysisInfo info = data.analysisInfo;
-    StepAnalysisInstance context;
-    try {
-      context = StepAnalysisInstance.createFromStoredData(
-          _wdkModel, info.analysisId, info.stepId, info.state, info.hasParams,
-          info.invalidStepReason, info.displayName, info.userNotes, info.serializedContext);
-    }
-    catch (DeprecatedAnalysisException e) {
-      LOG.warn("Previously stored step analysis with ID " + info.analysisId +
-          " could not be loaded", e);
-      return null;
-    }
-
-    // if analysis was created from a step its analyzer did not approve, then status is always INVALID
-    if (!context.getIsValidStep()) {
-      context.setStatus(ExecutionStatus.INVALID);
-      return context;
-    }
-
-    // if analysis is new or invalid, don't care about cache; just set appropriate status and return
-    switch(info.state) {
-      case INVALID_RESULTS:
-        context.setStatus(ExecutionStatus.STEP_REVISED);
-        return context;
-      case NO_RESULTS:
-        context.setStatus(ExecutionStatus.CREATED);
-        return context;
-      default:
-        // pass on to the code below
-    }
-
-    // check status of our data caches
-    boolean dataCacheIntact = (data.status != null);
-    boolean fileCacheIntact = fileStore.storageDirExists(info.contextHash);
-
-    // if both are intact, then return status of execution as is
-    if (dataCacheIntact && fileCacheIntact) {
-      context.setStatus(data.status);
-      return context;
-    }
-
-    // if got here then the analysis has been run but one or both caches are bad
-    context.setStatus(ExecutionStatus.OUT_OF_DATE);
-    return context;
-  }
-
-  // go through all running/pending analysis runs in DB, and mark expired if expired
-  public void expireLongRunningExecutions(StepAnalysisFileStore fileStore) throws WdkModelException {
-    long currentTime = System.currentTimeMillis();
-    List<ExecutionInfo> execList = getAllRunningExecutions();
-    StepAnalysisPlugins plugins = _wdkModel.getStepAnalysisPlugins();
-    for (ExecutionInfo exec : execList) {
-      String analysisName = getAnalysisNameForHash(exec.contextHash, fileStore);
-      // skip runs that no longer have analysis records referencing them
-      if (analysisName == null) continue;
-      StepAnalysis analysis = plugins.getStepAnalysis(analysisName);
-      if (StepAnalysisFactoryImpl.isRunExpired(analysis, currentTime, exec.startDate)) {
-        updateExecution(exec.contextHash, ExecutionStatus.EXPIRED, new Date(), null, null);
-      }
-    }
-  }
-
-  // returns null if unable to find analysis record for this hash
-  private String getAnalysisNameForHash(String contextHash, StepAnalysisFileStore fileStore)
-      throws WdkModelException {
-    List<StepAnalysisInstance> contextList = getContextsByHash(contextHash, fileStore);
-    if (contextList.isEmpty()) return null;
-    return contextList.iterator().next().getStepAnalysis().getName();
-  }
 }

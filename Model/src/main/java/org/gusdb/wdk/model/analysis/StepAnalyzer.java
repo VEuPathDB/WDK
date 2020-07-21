@@ -75,7 +75,7 @@ public interface StepAnalyzer {
    *
    * @param formParams name->values map of submitted form parameters
    */
-  void setFormParamValues(Map<String,String[]> formParams);
+  void setFormParamValues(Map<String,String> formParams);
 
   /**
    * Sets answer value retrieved from the step being analyzed

@@ -2,13 +2,14 @@ package org.gusdb.wdk.model.user.analysis;
 
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -35,9 +36,7 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   private final StepAnalysisDataStore _dataStore;
 
   public UnconfiguredStepAnalysisFactory(WdkModel wdkModel) {
-    _dataStore = (StepAnalysisFactoryImpl.USE_DB_PERSISTENCE ?
-        new StepAnalysisPersistentDataStore(wdkModel) :
-        new StepAnalysisInMemoryDataStore(wdkModel));
+    _dataStore = new StepAnalysisPersistentDataStore(wdkModel);
   }
 
   @Override
@@ -58,43 +57,12 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
-  public List<StepAnalysisInstance> getAllAnalyses() throws WdkModelException {
-    return new ArrayList<>();
-  }
-
-  @Override
-  public Map<Long, StepAnalysisInstance> getAppliedAnalyses(Step step) throws WdkModelException {
-    return new HashMap<>();
-  }
-
-  @Override
   public boolean hasCompleteAnalyses(Step step) throws WdkModelException {
     return false;
   }
 
   @Override
-  public ValidationBundle validateFormParams(StepAnalysisInstance instance) throws WdkModelException {
-    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public StepAnalysisInstance createAnalysisInstance(Step step, StepAnalysis stepAnalysis, String answerValueChecksum) throws WdkModelException,
-      IllegalAnswerValueException {
-    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public StepAnalysisInstance copyAnalysisInstance(StepAnalysisInstance instance) throws WdkModelException {
-    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public StepAnalysisInstance runAnalysis(StepAnalysisInstance instance) throws WdkModelException {
-    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public AnalysisResult getAnalysisResult(StepAnalysisInstance instance) throws WdkModelException {
+  public void saveNewInstance(RunnableObj<StepAnalysisInstance> stepAnalysisInstance) throws WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
@@ -104,38 +72,13 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
-  public void renameInstance(StepAnalysisInstance instance) throws WdkModelException {
-    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public void setUserNotesContext(StepAnalysisInstance context) throws WdkModelException {
-    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public StepAnalysisInstance getSavedAnalysisInstance(long analysisId) throws WdkUserException, WdkModelException {
-    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
-  }
-
-  @Override
   public void clearResultsCache() throws WdkModelException {
-    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public Path getResourcePath(StepAnalysisInstance instance, String relativePath) {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
   @Override
   public void shutDown() {
     // nothing to shut down
-  }
-
-  @Override
-  public void expireLongRunningExecutions() throws WdkModelException {
-    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
   @Override
@@ -149,8 +92,53 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
-  public void setFormParams(StepAnalysisInstance instance)
+  public List<StepAnalysisInstance> getAppliedAnalyses(Step step, ValidationLevel level)
       throws WdkModelException {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public ValidationBundle validateStep(RunnableObj<Step> step, StepAnalysis analysis)
+      throws WdkModelException {
+    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
+  }
+
+  @Override
+  public void updateInstance(StepAnalysisInstance instance) throws WdkModelException {
+    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
+  }
+
+  @Override
+  public ExecutionStatus runAnalysis(RunnableObj<StepAnalysisInstance> instance) throws WdkModelException {
+    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
+  }
+
+  @Override
+  public Optional<ExecutionInfo> getExecutionInfo(RunnableObj<StepAnalysisInstance> instance)
+      throws WdkModelException {
+    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
+  }
+
+  @Override
+  public Optional<ExecutionResult> getExecutionResult(RunnableObj<StepAnalysisInstance> instance)
+      throws WdkModelException {
+    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
+  }
+
+  @Override
+  public ExecutionStatus calculateStatus(StepAnalysisInstance instance) throws WdkModelException {
+    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
+  }
+
+  @Override
+  public Optional<StepAnalysisInstance> getInstanceById(long analysisId, Step step,
+      ValidationLevel validationLevel) throws WdkModelException {
+    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
+  }
+
+  @Override
+  public Path getResourcePath(RunnableObj<StepAnalysisInstance> instance, String relativePath)
+      throws WdkModelException, WdkUserException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 }

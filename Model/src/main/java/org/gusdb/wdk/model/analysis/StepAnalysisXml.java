@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -12,7 +13,9 @@ import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParameterContainerImpl;
+import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.user.analysis.StepAnalysisSupplementalParams;
 
 public class StepAnalysisXml extends ParameterContainerImpl implements StepAnalysis  {
 
@@ -245,12 +248,19 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
     // test to make sure we can create instance
     getAnalyzerInstance();
 
-    // ensure no answer params present (cannot be part of a strategy)
+    Set<String> reservedNames = StepAnalysisSupplementalParams.getAllNames();
     for (Param param : getParams()) {
+      // ensure no answer params present (cannot be part of a strategy)
       if (param instanceof AnswerParam) {
         throw new WdkModelException("Step analysis " + _name + " contains a " +
             "reference to an answer param '" + param.getName() + "'. Step " +
             "analysis plugins cannot have answer params.");
+      }
+
+      // ensure any reserved names refer to string params
+      if (reservedNames.contains(param.getName()) && !(param instanceof StringParam)) {
+        throw new WdkModelException("Special param '" + param.getName() +
+            "' in step analysis " + _name + " must be a StringParam.");
       }
     }
   }

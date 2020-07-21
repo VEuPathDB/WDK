@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.user.analysis;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,27 +9,27 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
+import org.gusdb.fgputil.db.runner.BasicArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.stream.BlobValueInputStream;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
+import org.gusdb.wdk.model.user.Step;
 
 /**
  * Implementation of StepAnalysisDataStore that stores information in the
@@ -46,7 +45,7 @@ import org.gusdb.wdk.model.WdkRuntimeException;
  *
  * @author rdoherty
  */
-public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
+public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(StepAnalysisPersistentDataStore.class);
@@ -54,38 +53,30 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   private static final String ANALYSIS_TABLE = "STEP_ANALYSIS";
   private static final String ANALYSIS_SEQUENCE_NAME = ANALYSIS_TABLE + "_PKSEQ";
   private static final String EXECUTION_TABLE = "STEP_ANALYSIS_RESULTS";
-  private static final String IN_CLAUSE_KEY = "${SOME_VALUES}";
 
   // SQL to update and query analysis table
   private String ANALYSIS_SEQUENCE;
   private String CREATE_ANALYSIS_TABLE_SQL;
   private String INSERT_ANALYSIS_SQL;
-  private String UPDATE_NAME_SQL;
-  private String UPDATE_USERNOTES_SQL;
-  private String UPDATE_NEW_FLAG_SQL;
-  private String UPDATE_HAS_PARAMS_FLAG_SQL;
-  private String UPDATE_INVALID_STEP_REASON;
-  private String UPDATE_CONTEXT_SQL;
-  private String DELETE_ANALYSIS_SQL;
-  private String GET_ANALYSIS_IDS_BY_STEP_SQL;
-  private String GET_ANALYSIS_IDS_BY_HASH_SQL;
-  private String GET_ALL_ANALYSIS_IDS_SQL;
-  private String GET_ANALYSES_BY_IDS_SQL;
+  private String UPDATE_ANALYSIS_SQL;
+  private String SET_STEPS_DIRTY_BY_STEP_ID_SQL;
+  private String DELETE_ANALYSIS_BY_ID_SQL;
+  private String DELETE_ANALYSIS_BY_STEP_ID_SQL;
+  private String GET_ANALYSIS_BY_ID_SQL;
+  private String GET_ANALYSES_BY_STEP_ID_SQL;
   private String GET_ANALYSIS_PROPERTIES;
   private String SET_ANALYSIS_PROPERTIES;
 
   // SQL to update and query execution table
   private String CREATE_EXECUTION_TABLE_SQL;
-  private String FIND_EXECUTION_SQL;
   private String INSERT_EXECUTION_SQL;
   private String UPDATE_EXECUTION_SQL;
-  private String RESET_START_DATE_SQL;
+  private String RESET_EXECUTION_SQL;
   private String DELETE_EXECUTION_SQL;
   private String DELETE_ALL_EXECUTIONS_SQL;
-  private String GET_STATUS_BY_HASH_SQL;
-  private String GET_STATUSES_BY_HASHES_SQL;
-  private String GET_RESULTS_BY_HASH_SQL;
-  private String GET_RUNNING_EXECUTIONS_SQL;
+  private String GET_EXECUTION_INFO_BY_HASH_SQL;
+  private String GET_EXECUTION_RESULTS_BY_HASH_SQL;
+  private String GET_RUNNING_EXECUTION_INFOS_SQL;
   private String SET_EXECUTION_LOG_SQL;
   private String GET_EXECUTION_LOG_SQL;
 
@@ -99,10 +90,9 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   private final DBPlatform _appPlatform;
   private final DataSource _appDs;
 
-  private static ReentrantLock CONTEXT_INSERTION_LOCK = new ReentrantLock();
+  private static ReentrantLock EXECUTION_INSERTION_LOCK = new ReentrantLock();
 
   public StepAnalysisPersistentDataStore(WdkModel wdkModel) {
-    super(wdkModel);
 
     _userDb = wdkModel.getUserDb();
     _userPlatform = _userDb.getPlatform();
@@ -134,8 +124,10 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
    * }
    */
   private void createUserSql() {
+    ANALYSIS_SEQUENCE = _userSchema + ANALYSIS_SEQUENCE_NAME;
     String table = _userSchema + ANALYSIS_TABLE;
     String idType = _userPlatform.getNumberDataType(12);
+    String intType = _appPlatform.getNumberDataType(2);
     String userStringType = _userPlatform.getStringDataType(1024);
     String userBigStringType = _userPlatform.getStringDataType(4000);
     String hashType = _userPlatform.getStringDataType(96);
@@ -146,50 +138,44 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         "  ANALYSIS_ID          " + idType + " NOT NULL," +
         "  STEP_ID              " + idType + "," +
         "  DISPLAY_NAME         " + userStringType + "," +
-        "  IS_NEW               " + boolType + "," +
-        "  HAS_PARAMS           " + boolType + "," +
-        "  INVALID_STEP_REASON  " + userStringType + "," +
-        "  CONTEXT_HASH         " + hashType + "," +
+        "  IS_NEW               " + intType + "," +        // repurposed to store revision status
+        "  HAS_PARAMS           " + boolType + "," +       // deprecated
+        "  INVALID_STEP_REASON  " + userStringType + "," + // deprecated
+        "  CONTEXT_HASH         " + hashType + "," +       // deprecated
         "  CONTEXT              " + clobType + "," +
         "  PROPERTIES           " + clobType + "," +
         "  USER_NOTES           " + userBigStringType + "," +
         "  PRIMARY KEY (ANALYSIS_ID)" +
         ")";
-    ANALYSIS_SEQUENCE = _userSchema + ANALYSIS_SEQUENCE_NAME;
     INSERT_ANALYSIS_SQL =
         "INSERT INTO " + table +
         " (ANALYSIS_ID, STEP_ID, DISPLAY_NAME, IS_NEW, HAS_PARAMS," +
         "  INVALID_STEP_REASON, CONTEXT_HASH, CONTEXT, USER_NOTES)" +
         " VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? )";
-    UPDATE_NAME_SQL =
-        "UPDATE " + table + " SET DISPLAY_NAME = ? WHERE ANALYSIS_ID = ?";
-    UPDATE_USERNOTES_SQL =
-        "UPDATE " + table + " SET USER_NOTES = ? WHERE ANALYSIS_ID = ?";
-    UPDATE_NEW_FLAG_SQL =
-        "UPDATE " + table + " SET IS_NEW = ? WHERE ANALYSIS_ID = ?";
-    UPDATE_HAS_PARAMS_FLAG_SQL =
-        "UPDATE " + table + " SET HAS_PARAMS = ? WHERE ANALYSIS_ID = ?";
-    UPDATE_INVALID_STEP_REASON =
-        "UPDATE " + table + " SET INVALID_STEP_REASON = ? WHERE ANALYSIS_ID = ?";
-    UPDATE_CONTEXT_SQL =
-        "UPDATE " + table + " SET CONTEXT_HASH = ?, CONTEXT = ? WHERE ANALYSIS_ID = ?";
-    DELETE_ANALYSIS_SQL =
+    UPDATE_ANALYSIS_SQL =
+        "UPDATE " + table +
+        " SET DISPLAY_NAME = ?, IS_NEW = ?, CONTEXT = ?, USER_NOTES = ?" +
+        " WHERE ANALYSIS_ID = ?";
+    SET_STEPS_DIRTY_BY_STEP_ID_SQL =
+        "UPDATE " + table +
+        " SET IS_NEW = " + RevisionStatus.STEP_DIRTY.getDbValue() +
+        " WHERE STEP_ID = ?";
+    DELETE_ANALYSIS_BY_ID_SQL =
         "DELETE FROM " + table + " WHERE ANALYSIS_ID = ?";
-    GET_ANALYSIS_IDS_BY_STEP_SQL =
-        "SELECT ANALYSIS_ID FROM " + table + " WHERE STEP_ID = ? ORDER BY ANALYSIS_ID ASC";
-    GET_ANALYSIS_IDS_BY_HASH_SQL =
-        "SELECT ANALYSIS_ID FROM " + table + " WHERE CONTEXT_HASH = ? ORDER BY ANALYSIS_ID ASC";
-    GET_ALL_ANALYSIS_IDS_SQL =
-        "SELECT ANALYSIS_ID FROM " + table;
-    GET_ANALYSES_BY_IDS_SQL =
-        "SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, USER_NOTES, IS_NEW, HAS_PARAMS," +
-        " INVALID_STEP_REASON, CONTEXT_HASH, CONTEXT FROM " + table +
-        " WHERE ANALYSIS_ID IN (" + IN_CLAUSE_KEY + ") ORDER BY ANALYSIS_ID";
+    DELETE_ANALYSIS_BY_STEP_ID_SQL =
+        "DELETE FROM " + table + " WHERE STEP_ID = ?";
+    GET_ANALYSIS_BY_ID_SQL =
+        "SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, USER_NOTES, IS_NEW, CONTEXT" +
+        " FROM " + table +
+        " WHERE ANALYSIS_ID = ?";
+    GET_ANALYSES_BY_STEP_ID_SQL =
+        "SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, USER_NOTES, IS_NEW, CONTEXT" +
+        " FROM " + table +
+        " WHERE STEP_ID = ? ORDER BY ANALYSIS_ID ASC";
     GET_ANALYSIS_PROPERTIES =
         "SELECT PROPERTIES FROM " + table + " WHERE ANALYSIS_ID = ?";
     SET_ANALYSIS_PROPERTIES =
         "UPDATE " + table + " SET PROPERTIES = ? WHERE ANALYSIS_ID = ?";
-
   }
 
   /**
@@ -210,6 +196,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     String hashType = _appPlatform.getStringDataType(96);
     String statusType = _appPlatform.getStringDataType(96);
     String timestampType = _appPlatform.getDateDataType();
+    String intType = _appPlatform.getNumberDataType(10);
     String clobType = _appPlatform.getClobDataType();
     String blobType = _appPlatform.getBlobDataType();
     CREATE_EXECUTION_TABLE_SQL =
@@ -218,38 +205,37 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
         "  STATUS        " + statusType + "," +
         "  START_DATE    " + timestampType + "," +
         "  UPDATE_DATE   " + timestampType + "," +
+        "  TIMEOUT_MINS  " + intType + "," +
         "  LOG           " + clobType + "," +
         "  CHAR_DATA     " + clobType + "," +
         "  BIN_DATA      " + blobType + "," +
         "  PRIMARY KEY (CONTEXT_HASH)" +
         ")";
-    FIND_EXECUTION_SQL =
-        "SELECT 1 FROM " + table + " WHERE EXISTS" +
-        " (SELECT 1 FROM " + table + " WHERE CONTEXT_HASH = ?)";
     INSERT_EXECUTION_SQL =
         "INSERT INTO " + table +
-        " (CONTEXT_HASH, STATUS, START_DATE, UPDATE_DATE)" +
-        " VALUES (?, ?, ?, ?)";
+        " (CONTEXT_HASH, STATUS, START_DATE, UPDATE_DATE, TIMEOUT_MINS)" +
+        " VALUES (?, ?, ?, ?, ?)";
     UPDATE_EXECUTION_SQL =
         "UPDATE " + table +
         " SET STATUS = ?, UPDATE_DATE = ?, CHAR_DATA = ?, BIN_DATA = ?" +
         " WHERE CONTEXT_HASH = ?";
-    RESET_START_DATE_SQL =
-        "UPDATE " + table + " SET START_DATE = ? WHERE CONTEXT_HASH = ?";
+    RESET_EXECUTION_SQL =
+        "UPDATE " + table +
+        " SET STATUS = ?, START_DATE = ?, UPDATE_DATE = ?, CHAR_DATA = null, BIN_DATA = null, LOG = null" +
+        " WHERE CONTEXT_HASH = ?";
     DELETE_EXECUTION_SQL =
         "DELETE FROM " + table + " WHERE CONTEXT_HASH = ?";
     DELETE_ALL_EXECUTIONS_SQL =
         "DELETE FROM " + table;
-    GET_STATUS_BY_HASH_SQL =
-        "SELECT STATUS FROM " + table + " WHERE CONTEXT_HASH = ?";
-    GET_STATUSES_BY_HASHES_SQL =
-        "SELECT CONTEXT_HASH, STATUS FROM " + table +
-        " WHERE CONTEXT_HASH IN ( " + IN_CLAUSE_KEY + " )";
-    GET_RESULTS_BY_HASH_SQL =
-        "SELECT STATUS, START_DATE, UPDATE_DATE, LOG, CHAR_DATA, BIN_DATA" +
+    GET_EXECUTION_INFO_BY_HASH_SQL =
+        "SELECT CONTEXT_HASH, STATUS, START_DATE, UPDATE_DATE, TIMEOUT_MINS" +
         " FROM " + table + " WHERE CONTEXT_HASH = ?";
-    GET_RUNNING_EXECUTIONS_SQL =
-        "SELECT CONTEXT_HASH, STATUS, START_DATE, UPDATE_DATE FROM " + table +
+    GET_EXECUTION_RESULTS_BY_HASH_SQL =
+        "SELECT CONTEXT_HASH, STATUS, START_DATE, UPDATE_DATE, TIMEOUT_MINS, CHAR_DATA, BIN_DATA, LOG" +
+        " FROM " + table + " WHERE CONTEXT_HASH = ?";
+    GET_RUNNING_EXECUTION_INFOS_SQL =
+        "SELECT CONTEXT_HASH, STATUS, START_DATE, UPDATE_DATE, TIMEOUT_MINS" +
+        " FROM " + table +
         " WHERE STATUS = 'PENDING' OR STATUS = 'RUNNING'";
     SET_EXECUTION_LOG_SQL =
         "UPDATE " + table + " SET LOG = ? WHERE CONTEXT_HASH = ?";
@@ -280,14 +266,22 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
 
   @Override
   public void insertAnalysis(long analysisId, long stepId, String displayName,
-      StepAnalysisState state, boolean hasParams, String invalidStepReason,
-		  String contextHash, String serializedContext, String userNotes) throws WdkModelException {
+      RevisionStatus revisionStatus, String serializedContext, String userNotes) throws WdkModelException {
     try {
       new SQLRunner(_userDs, INSERT_ANALYSIS_SQL, "insert-step-analysis").executeStatement(
-          new Object[] { analysisId, stepId, displayName, state.getDbValue(), hasParams,
-              invalidStepReason, contextHash, serializedContext, userNotes },
-          new Integer[] { Types.INTEGER, Types.INTEGER, Types.VARCHAR, _userBoolType,
-              _userBoolType, Types.VARCHAR, Types.VARCHAR, Types.CLOB, Types.VARCHAR });
+        new Object[] {
+          analysisId,
+          stepId,
+          displayName,
+          revisionStatus.getDbValue(),
+          _userPlatform.convertBoolean(true),
+          "",
+          "",
+          serializedContext,
+          userNotes
+        },
+        new Integer[] { Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.INTEGER,
+          _userBoolType, Types.VARCHAR, Types.VARCHAR, Types.CLOB, Types.VARCHAR });
     }
     catch (SQLRunnerException e) {
       WdkModelException.unwrap(e);
@@ -295,38 +289,18 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void renameAnalysis(long analysisId, String displayName) throws WdkModelException {
+  public void updateAnalysis(long analysisId, String displayName, RevisionStatus revisionStatus,
+      String serializedContext, String userNotes) throws WdkModelException {
     try {
-      int changed = new SQLRunner(_userDs, UPDATE_NAME_SQL, "update-step-analysis-name")
-          .executeUpdate(new Object[] { displayName, analysisId });
-      if (changed == 0) {
-        throw new WdkModelException("Could not find analysis with id " + analysisId);
-      }
-    }
-    catch (SQLRunnerException e) {
-      WdkModelException.unwrap(e);
-    }
-  }
-
- @Override
-  public void setUserNotes(long analysisId, String userNotes) throws WdkModelException {
-    try {
-      int changed = new SQLRunner(_userDs, UPDATE_USERNOTES_SQL, "update-step-analysis-usernotes")
-          .executeUpdate(new Object[] { userNotes, analysisId });
-      if (changed == 0) {
-        throw new WdkModelException("Could not find analysis with id " + analysisId);
-      }
-    }
-    catch (SQLRunnerException e) {
-      WdkModelException.unwrap(e);
-    }
-  }
-
-  @Override
-  public void setHasParams(long analysisId, boolean hasParams) throws WdkModelException {
-    try {
-      int changed = new SQLRunner(_userDs, UPDATE_HAS_PARAMS_FLAG_SQL, "update-step-analysis-param-flag")
-          .executeUpdate( new Object[] { hasParams, analysisId }, new Integer[] { _userBoolType, Types.INTEGER });
+      int changed = new SQLRunner(_userDs, UPDATE_ANALYSIS_SQL, "update-step-analysis").executeUpdate(
+        new Object[] {
+          displayName,
+          revisionStatus.getDbValue(),
+          serializedContext,
+          userNotes,
+          analysisId
+        },
+        new Integer[] { Types.VARCHAR, Types.INTEGER, Types.CLOB, Types.VARCHAR, Types.BIGINT });
       if (changed == 0) {
         throw new WdkModelException("Could not find analysis with id " + analysisId);
       }
@@ -337,11 +311,28 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void setInvalidStepReason(long analysisId, String invalidStepReason) throws WdkModelException {
+  public void setStepsDirty(Long... stepIds) throws WdkModelException {
     try {
-      int changed = new SQLRunner(_userDs, UPDATE_INVALID_STEP_REASON, "update-step-analysis-invalid-step-reason").executeUpdate(
-          new Object[] { invalidStepReason, analysisId }, new Integer[] { Types.VARCHAR, Types.INTEGER });
-      if (changed == 0) {
+      BasicArgumentBatch idBatch = new BasicArgumentBatch()
+        .setBatchSize(100)
+        .setParameterTypes(new Integer[]{ Types.BIGINT });
+      Arrays.stream(stepIds)
+        .map(id -> new Object[]{ id })
+        .forEach(arr -> idBatch.add(arr));
+      new SQLRunner(_userDs, SET_STEPS_DIRTY_BY_STEP_ID_SQL, "set-analysis-steps-dirty")
+        .executeStatementBatch(idBatch);
+    }
+    catch (SQLRunnerException e) {
+      WdkModelException.unwrap(e);
+    }
+  }
+
+  @Override
+  public void deleteAnalysisById(long analysisId) throws WdkModelException {
+    try {
+      int deleted = new SQLRunner(_userDs, DELETE_ANALYSIS_BY_ID_SQL, "delete-analysis-by-id")
+          .executeUpdate(new Object[] { analysisId }, new Integer[] { Types.BIGINT });
+      if (deleted == 0) {
         throw new WdkModelException("Could not find analysis with id " + analysisId);
       }
     }
@@ -351,13 +342,10 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void setState(long analysisId, StepAnalysisState state) throws WdkModelException {
+  public void deleteAnalysesByStepId(long stepId) throws WdkModelException {
     try {
-      int changed = new SQLRunner(_userDs, UPDATE_NEW_FLAG_SQL, "update-step-analysis-new-flag").executeUpdate(
-          new Object[] { state.getDbValue(), analysisId }, new Integer[] { _userBoolType, Types.INTEGER });
-      if (changed == 0) {
-        throw new WdkModelException("Could not find analysis with id " + analysisId);
-      }
+      new SQLRunner(_userDs, DELETE_ANALYSIS_BY_STEP_ID_SQL, "delete-analyses-by-step-id")
+          .executeUpdate(new Object[] { stepId }, new Integer[] { Types.BIGINT });
     }
     catch (SQLRunnerException e) {
       WdkModelException.unwrap(e);
@@ -365,19 +353,78 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void updateInstance(long analysisId, String contextHash, String serializedContext)
+  public Optional<StepAnalysisInstance> getInstanceById(long analysisId, Step step, ValidationLevel level)
       throws WdkModelException {
     try {
-      int changed = new SQLRunner(_userDs, UPDATE_CONTEXT_SQL, "update-step-analysis-context").executeUpdate(
-          new Object[] { contextHash, serializedContext, analysisId },
-          new Integer[] { Types.VARCHAR, Types.CLOB, Types.INTEGER });
-      if (changed == 0) {
-        throw new WdkModelException("Could not find analysis with id " + analysisId);
-      }
+      return new SQLRunner(_userDs, GET_ANALYSIS_BY_ID_SQL, "find-analysis-by-id")
+        .executeQuery(new Object[] { analysisId }, new Integer[] { Types.BIGINT }, rs -> {
+          try {
+            if (!rs.next()) {
+              // no rows found
+              return Optional.empty();
+            }
+            StepAnalysisInstance instance = readInstance(rs, step, level);
+            if (rs.next()) {
+              // more than one row
+              throw new SQLRunnerException("Found more than one row for analysisId " +
+                  analysisId + ". This should be prevented by PK constraint.");
+            }
+            return Optional.of(instance);
+          }
+          catch (DeprecatedAnalysisException e) {
+            // analysis no longer supported; just disappear it
+            return Optional.empty();
+          }
+          catch (WdkModelException e) {
+            throw new SQLRunnerException(e);
+          }
+        });
     }
     catch (SQLRunnerException e) {
-      WdkModelException.unwrap(e);
+      return WdkModelException.unwrap(e);
     }
+  }
+
+  @Override
+  public List<StepAnalysisInstance> getInstancesByStep(Step step, ValidationLevel level)
+      throws WdkModelException {
+    try {
+      return new SQLRunner(_userDs, GET_ANALYSES_BY_STEP_ID_SQL, "find-analysis-by-step-id")
+        .executeQuery(new Object[] { step.getStepId() }, new Integer[] { Types.BIGINT }, rs -> {
+          try {
+            List<StepAnalysisInstance> instanceList = new ArrayList<>();
+            while(rs.next()) {
+              try {
+                instanceList.add(readInstance(rs, step, level));
+              }
+              catch (DeprecatedAnalysisException e) {
+                // analysis no longer supported; just disappear it
+              }
+            }
+            return instanceList;
+          }
+          catch (WdkModelException e) {
+            throw new SQLRunnerException(e);
+          }
+        });
+    }
+    catch (SQLRunnerException e) {
+      return WdkModelException.unwrap(e);
+    }
+  }
+
+  // SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, USER_NOTES, IS_NEW, CONTEXT
+  private StepAnalysisInstance readInstance(ResultSet rs, Step step, ValidationLevel level)
+      throws WdkModelException, DeprecatedAnalysisException, SQLException {
+    return StepAnalysisInstance.createFromStoredData(
+        step.getAnswerSpec().getWdkModel(),
+        rs.getLong(1),
+        rs.getLong(2),
+        RevisionStatus.valueOf(rs.getInt(3)),
+        rs.getString(3),
+        rs.getString(4),
+        _userPlatform.getClobData(rs, "CONTEXT"),
+        level);
   }
 
   /**
@@ -419,138 +466,6 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public void deleteAnalysis(long analysisId) throws WdkModelException {
-    try {
-      int deleted = new SQLRunner(_userDs, DELETE_ANALYSIS_SQL, "delete-step-analysis")
-          .executeUpdate(new Object[] { analysisId });
-      if (deleted == 0) {
-        throw new WdkModelException("Could not find analysis with id " + analysisId);
-      }
-    }
-    catch (SQLRunnerException e) {
-      WdkModelException.unwrap(e);
-    }
-
-  }
-
-  @Override
-  protected List<Long> getAnalysisIdsByStepId(long stepId) throws WdkModelException {
-    try {
-      return new SQLRunner(_userDs, GET_ANALYSIS_IDS_BY_STEP_SQL, "select-step-analysis-ids-by-step")
-        .executeQuery(new Object[] { stepId }, rs -> {
-          List<Long> ids = new ArrayList<>();
-          while (rs.next()) {
-            ids.add(rs.getLong(1));
-          }
-          return ids;
-        });
-    }
-    catch (SQLRunnerException e) {
-      return WdkModelException.unwrap(e);
-    }
-  }
-
-  @Override
-  protected List<Long> getAnalysisIdsByHash(String contextHash) throws WdkModelException {
-    try {
-      return new SQLRunner(_userDs, GET_ANALYSIS_IDS_BY_HASH_SQL, "select-step-analyses-by-hash")
-        .executeQuery(new Object[] { contextHash }, rs -> {
-          List<Long> ids = new ArrayList<>();
-          while (rs.next()) {
-            ids.add(rs.getLong(1));
-          }
-          return ids;
-        });
-    }
-    catch (SQLRunnerException e) {
-      return WdkModelException.unwrap(e);
-    }
-  }
-
-  @Override
-  protected List<Long> getAllAnalysisIds() throws WdkModelException {
-    try {
-      return new SQLRunner(_userDs, GET_ALL_ANALYSIS_IDS_SQL, "select-all-step-analysis-ids")
-        .executeQuery(rs -> {
-          List<Long> ids = new ArrayList<>();
-          while (rs.next()) {
-            ids.add(rs.getLong(1));
-          }
-          return ids;
-        });
-    }
-    catch (SQLRunnerException e) {
-      return WdkModelException.unwrap(e);
-    }
-  }
-
-  @Override
-  protected Map<Long, AnalysisInfoPlusStatus> getAnalysisInfoForIds(List<Long> analysisIds)
-      throws WdkModelException {
-    try {
-      // data structures to build result
-      final Map<String, List<Long>> hashToIdsMap = new LinkedHashMap<>();
-      final Map<Long, AnalysisInfoPlusStatus> result = new LinkedHashMap<>();
-
-      // don't query DB if no IDs passed
-      if (analysisIds.isEmpty()) return result;
-
-      // read data about analysis instances from user DB
-      String valuesForIn = FormatUtil.join(analysisIds.toArray(), ", ");
-      String sql = GET_ANALYSES_BY_IDS_SQL.replace(IN_CLAUSE_KEY, valuesForIn);
-      new SQLRunner(_userDs, sql, "select-step-analysis-by-id").executeQuery(rs -> {
-        while (rs.next()) {
-          try {
-            // read result row into an AnalysisInfo object
-            Reader contextReader = rs.getCharacterStream(9);
-            AnalysisInfo info = new AnalysisInfo(rs.getInt(1), rs.getInt(2), rs.getString(3), rs.getString(4),
-                StepAnalysisState.valueOf(rs.getBoolean(5) ? 1 : 0), rs.getBoolean(6), rs.getString(7), rs.getString(8),
-                contextReader == null ? null : IoUtil.readAllChars(contextReader));
-
-            // add to result map
-            result.put(info.analysisId, new AnalysisInfoPlusStatus(info));
-
-            // add analysisId to list we'll later use to populate statuses
-            List<Long> idListForContext = hashToIdsMap.get(info.contextHash);
-            if (idListForContext == null) {
-              idListForContext = new ArrayList<>();
-              hashToIdsMap.put(info.contextHash, idListForContext);
-            }
-            idListForContext.add(info.analysisId);
-          }
-          catch (IllegalArgumentException | IOException ioe) {
-            throw new SQLException("Unable to read context value.", ioe);
-          }
-        }
-        return null;
-      });
-
-      if (result.isEmpty()) return result;
-
-      // read data about status from app DB (results cache table) and add to result
-      valuesForIn = "'" + FormatUtil.join(hashToIdsMap.keySet().toArray(), "','") + "'";
-      sql = GET_STATUSES_BY_HASHES_SQL.replace(IN_CLAUSE_KEY, valuesForIn);
-      new SQLRunner(_appDs, sql, "select-step-analysis-by-ids").executeQuery(rs -> {
-        while (rs.next()) {
-          String hash = rs.getString(1);
-          ExecutionStatus status = parseStatus(rs.getString(2), hash);
-          for (long analysisId : hashToIdsMap.get(hash)) {
-            result.get(analysisId).status = status;
-          }
-        }
-        return null;
-      });
-
-      // any statuses we couldn't find have been purged somehow; null is the
-      //   appropriate value in that case and has already been set (by default)
-      return result;
-    }
-    catch (SQLRunnerException e) {
-      return WdkModelException.unwrap(e);
-    }
-  }
-
-  @Override
   public void createExecutionTable() throws WdkModelException {
     try {
       new SQLRunner(_appDs, CREATE_EXECUTION_TABLE_SQL, "create-step-analysis-cache-table").executeStatement();
@@ -571,28 +486,31 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public boolean insertExecution(String contextHash, ExecutionStatus status, Date startDate) throws WdkModelException {
+  public Optional<ExecutionInfo> insertExecution(String contextHash, ExecutionStatus status, Date startDate, int timeoutMinutes) throws WdkModelException {
     try {
       // lock to avoid multiple insertion race condition; DB will save
       //    us with a PK violation, but this is much cleaner
-      CONTEXT_INSERTION_LOCK.lock();
+      EXECUTION_INSERTION_LOCK.lock();
 
-      // check to see if execution already exists for this context hash; if so, return false
-      BasicResultSetHandler result = new BasicResultSetHandler();
-      new SQLRunner(_appDs, FIND_EXECUTION_SQL, "select-step-analysis-run").executeQuery(new Object[] { contextHash }, result);
-      if (result.getNumRows() > 0) return false;
+      // check to see if execution already exists for this context hash; if so, return it
+      Optional<ExecutionInfo> existingStatus = getAnalysisStatus(contextHash);
+
+      if (existingStatus.isPresent()) {
+        return existingStatus;
+      }
 
       // execution does not exist; create and return true
       new SQLRunner(_appDs, INSERT_EXECUTION_SQL, "insert-step-analysis-run").executeStatement(
-          new Object[]{ contextHash,  status.name(), getTimestamp(startDate), getTimestamp(startDate) },
-          new Integer[]{ Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.TIMESTAMP });
-      return true;
+          new Object[]{ contextHash,  status.name(), getTimestamp(startDate), getTimestamp(startDate), timeoutMinutes },
+          new Integer[]{ Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.TIMESTAMP, Types.INTEGER });
+
+      return Optional.empty();
     }
     catch (SQLRunnerException e) {
       return WdkModelException.unwrap(e);
     }
     finally {
-      CONTEXT_INSERTION_LOCK.unlock();
+      EXECUTION_INSERTION_LOCK.unlock();
     }
   }
 
@@ -610,14 +528,16 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     catch (SQLRunnerException e) {
       WdkModelException.unwrap(e);
     }
-
   }
 
   @Override
-  public void resetStartDate(String contextHash, Date startDate) throws WdkModelException {
+  public void resetExecution(String contextHash, ExecutionStatus status, Date newStartDate)
+      throws WdkModelException {
     try {
-      int changed = new SQLRunner(_appDs, RESET_START_DATE_SQL, "update-step-analysis-run-start").executeUpdate(
-          new Object[]{ getTimestamp(startDate), contextHash }, new Integer[]{ Types.TIMESTAMP, Types.VARCHAR });
+      Timestamp newTimestamp = getTimestamp(newStartDate);
+      int changed = new SQLRunner(_appDs, RESET_EXECUTION_SQL, "reset-step-analysis-run").executeUpdate(
+          new Object[]{ status.name(), newTimestamp, newTimestamp, contextHash },
+          new Integer[]{ Types.VARCHAR, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR });
       if (changed == 0) {
         throw new WdkModelException("Unable to find execution with context hash " + contextHash);
       }
@@ -631,7 +551,7 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   public void deleteExecution(String contextHash) throws WdkModelException {
     try {
       int changed = new SQLRunner(_appDs, DELETE_EXECUTION_SQL, "delete-step-analysis-run")
-          .executeUpdate(new Object[] { contextHash });
+          .executeUpdate(new Object[] { contextHash }, new Integer[] { Types.VARCHAR });
       if (changed == 0) {
         throw new WdkModelException("Unable to find execution with context hash " + contextHash);
       }
@@ -639,7 +559,6 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     catch (SQLRunnerException e) {
       WdkModelException.unwrap(e);
     }
-
   }
 
   @Override
@@ -650,18 +569,24 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     catch (SQLRunnerException e) {
       WdkModelException.unwrap(e);
     }
-
   }
 
   @Override
-  protected ExecutionStatus getRawExecutionStatus(String contextHash) throws WdkModelException {
+  public Optional<ExecutionInfo> getAnalysisStatus(String contextHash) throws WdkModelException {
     try {
-      BasicResultSetHandler result = new BasicResultSetHandler();
-      new SQLRunner(_appDs, GET_STATUS_BY_HASH_SQL, "select-step-analysis-status").executeQuery(new Object[]{ contextHash }, result);
-      if (result.getNumRows() == 0) {
-        throw new WdkModelException("Unable to find execution with context hash " + contextHash);
-      }
-      return parseStatus((String)result.getResults().get(0).values().iterator().next(), contextHash);
+      return new SQLRunner(_appDs, GET_EXECUTION_INFO_BY_HASH_SQL, "select-step-analysis-status")
+        .executeQuery(new Object[]{ contextHash }, new Integer[]{ Types.VARCHAR }, rs -> {
+          if (!rs.next()) {
+            return Optional.empty();
+          }
+          ExecutionInfo info = parseInfo(rs);
+          if (rs.next()) {
+            // more than one row
+            throw new SQLRunnerException("Found more than one row for contextHash " +
+                contextHash + ". This should be prevented by PK constraint.");
+          }
+          return Optional.of(info);
+        });
     }
     catch (SQLRunnerException e) {
       return WdkModelException.unwrap(e);
@@ -669,24 +594,21 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   }
 
   @Override
-  public AnalysisResult getRawAnalysisResult(final String contextHash) throws WdkModelException {
+  public Optional<ExecutionResult> getAnalysisResult(String contextHash) throws WdkModelException {
     try {
-      return new SQLRunner(_appDs, GET_RESULTS_BY_HASH_SQL, "select-step-analysis-run").executeQuery(
-        new Object[]{ contextHash }, new Integer[]{ Types.VARCHAR }, rs -> {
+      return new SQLRunner(_appDs, GET_EXECUTION_RESULTS_BY_HASH_SQL, "select-step-analysis-results")
+        .executeQuery(new Object[]{ contextHash }, new Integer[]{ Types.VARCHAR }, rs -> {
           try {
-            if (rs.next()) {
-              // parse values retrieved from database
-              ExecutionStatus status = parseStatus(rs.getString(1), contextHash);
-              Date startDate = new Date(rs.getTimestamp(2).getTime());
-              Date updateDate = new Date(rs.getTimestamp(3).getTime());
-              String log = IoUtil.readAllChars(rs.getCharacterStream(4));
-              String charData = IoUtil.readAllChars(rs.getCharacterStream(5));
-              byte[] binData = IoUtil.readAllBytes(rs.getBinaryStream(6));
-
-              // construct result object and return
-              return new AnalysisResult(status, startDate, updateDate, charData, binData, log);
+            if (!rs.next()) {
+              return Optional.empty();
             }
-            return null;
+            ExecutionResult result = parseResult(rs);
+            if (rs.next()) {
+              // more than one row
+              throw new SQLRunnerException("Found more than one row for contextHash " +
+                  contextHash + ". This should be prevented by PK constraint.");
+            }
+            return Optional.of(result);
           }
           catch (IOException e) {
             throw new SQLException("Unable to read data from DB over stream field", e);
@@ -702,22 +624,46 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
   @Override
   public List<ExecutionInfo> getAllRunningExecutions() throws WdkModelException {
     try {
-      return new SQLRunner(_appDs, GET_RUNNING_EXECUTIONS_SQL, "select-all-step-analysis-runs").executeQuery(rs -> {
-        List<ExecutionInfo> results = new ArrayList<>();
-        while (rs.next()) {
-          // parse values retrieved from database
-          String contextHash = rs.getString(1);
-          ExecutionStatus status = parseStatus(rs.getString(2), contextHash);
-          Date startDate = new Date(rs.getTimestamp(3).getTime());
-          Date updateDate = new Date(rs.getTimestamp(4).getTime());
-          results.add(new ExecutionInfo(contextHash, status, startDate, updateDate));
-        }
-        return results;
-      });
+      return new SQLRunner(_appDs, GET_RUNNING_EXECUTION_INFOS_SQL, "select-all-running-analysis-executions")
+        .executeQuery(rs -> {
+          List<ExecutionInfo> results = new ArrayList<>();
+          while (rs.next()) {
+            results.add(parseInfo(rs));
+          }
+          return results;
+        });
     }
     catch (SQLRunnerException e) {
       return WdkModelException.unwrap(e);
     }
+  }
+
+  private static ExecutionInfo parseInfo(ResultSet rs) throws SQLException {
+    return new ExecutionInfo(
+      rs.getString(1),
+      ExecutionStatus.valueOf(rs.getString(2)),
+      new Date(rs.getTimestamp(3).getTime()),
+      new Date(rs.getTimestamp(4).getTime()),
+      rs.getInt(5));
+  }
+
+  private static ExecutionResult parseResult(ResultSet rs) throws IOException, SQLException {
+    // parse fields common to ExecutionInfo class
+    ExecutionInfo info = parseInfo(rs);
+    // read extra result fields
+    String charData = IoUtil.readAllChars(rs.getCharacterStream(6));
+    byte[] binData = IoUtil.readAllBytes(rs.getBinaryStream(7));
+    String log = IoUtil.readAllChars(rs.getCharacterStream(8));
+    return new ExecutionResult(
+      info.getContextHash(),
+      info.getStatus(),
+      info.getStartDate(),
+      info.getUpdateDate(),
+      info.getTimeoutMins(),
+      charData,
+      binData,
+      log
+    );
   }
 
   @Override
@@ -755,18 +701,8 @@ public class StepAnalysisPersistentDataStore extends StepAnalysisDataStore {
     }
   }
 
-  private Timestamp getTimestamp(Date date) {
+  private static Timestamp getTimestamp(Date date) {
     return new Timestamp(date.getTime());
   }
 
-  private ExecutionStatus parseStatus(String status, String hash) {
-    if (status == null) return null;
-    try {
-      return ExecutionStatus.valueOf(status);
-    }
-    catch (IllegalArgumentException e) {
-      throw new WdkRuntimeException("Status value [" + status + "] of hash [" +
-          hash + "] is not a valid status value.  DB must be patched.");
-    }
-  }
 }

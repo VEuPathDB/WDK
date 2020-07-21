@@ -44,8 +44,12 @@ public class StepAnalysisSupplementalParams {
 
     }};
 
+  public static Set<String> getAllNames() {
+    return PARAM_VALUE_GENERATORS.keySet();
+  }
+
   public static Set<String> getNames(StepAnalysis analysis) {
-    return PARAM_VALUE_GENERATORS.keySet().stream()
+    return getAllNames().stream()
       .filter(name -> analysis.getParamMap().keySet().contains(name))
       .collect(Collectors.toSet());
   }

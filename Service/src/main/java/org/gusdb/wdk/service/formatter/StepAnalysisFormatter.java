@@ -3,20 +3,18 @@ package org.gusdb.wdk.service.formatter;
 import static org.gusdb.fgputil.functional.Functions.reduce;
 
 import java.util.Collection;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidationBundle;
-import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
-import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.StepAnalysisFormSpec;
+import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
-import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance.JsonKey;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisSupplementalParams;
 import org.gusdb.wdk.service.formatter.param.ParamContainerFormatter;
 import org.json.JSONArray;
@@ -47,7 +45,7 @@ public class StepAnalysisFormatter {
         .put(JsonKeys.DESCRIPTION, analysis.getDescription())
         .put(JsonKeys.RELEASE_VERSION, analysis.getReleaseVersion())
         .put(JsonKeys.CUSTOM_THUMBNAIL, analysis.getCustomThumbnail())
-        .put(JsonKeys.IS_CACHEABLE, analysis.hasParamWithUncacheableQuery()),
+        .put(JsonKeys.IS_CACHEABLE, !analysis.hasParamWithUncacheableQuery()),
       StepAnalysisSupplementalParams.getNames(analysis)
     );
   }
@@ -56,48 +54,44 @@ public class StepAnalysisFormatter {
    * Returns JSON of the following spec (for public consumption):
    * {
    *   analysisId: int
-   *   analysisName: string
    *   stepId: int
+   *   analysisName: string
    *   displayName: string
    *   shortDescription: string
    *   description: string
    *   userNotes: string
-   *   hasParams: boolean
    *   status: enumerated string, see org.gusdb.wdk.model.user.analysis.ExecutionStatus
-   *   invalidStepReason: string | null
-   *   formParams: key-value object of param values
+   *   formParams: key-value object of param stable values
+   *   validation: validation bundle for the step analysis instance
    * }
    * @throws WdkModelException 
    */
-  public static JSONObject getStepAnalysisInstanceJson(StepAnalysisInstance instance, ValidationLevel level) throws WdkModelException {
-    StepAnalysis analysis = instance.getStepAnalysis();
-    String invalidStepReason = instance.getInvalidStepReason();
-    StepAnalysisFormSpec formSpec = instance.getFormSpec(level, FillStrategy.FILL_PARAM_IF_MISSING);
+  public static JSONObject getStepAnalysisInstanceJson(StepAnalysisInstance instance, ExecutionStatus runStatus) throws WdkModelException {
+    Optional<StepAnalysis> analysis = instance.getStepAnalysis();
     return new JSONObject()
-        .put(JsonKey.analysisName.name(), analysis.getName())
-        .put(JsonKey.analysisId.name(), instance.getAnalysisId())
-        .put(JsonKey.stepId.name(), instance.getStep().getStepId())
-        .put(JsonKey.answerValueHash.name(), instance.getAnswerValueHash())
-        .put(JsonKey.displayName.name(), instance.getDisplayName())
-        .put(JsonKey.shortDescription.name(), analysis.getShortDescription())
-        .put(JsonKey.description.name(), analysis.getDescription())
-        .put(JsonKey.userNotes.name(), instance.getUserNotes())
-        .put(JsonKey.hasParams.name(), instance.hasParams())
-        .put(JsonKey.status.name(), instance.getStatus().name())
-        .put(JsonKey.invalidStepReason.name(), (invalidStepReason == null ? JSONObject.NULL : invalidStepReason))
-        .put(JsonKey.formParams.name(), ParamContainerFormatter.formatExistingParamValues(formSpec));
+        .put(JsonKeys.ANALYSIS_ID, instance.getAnalysisId())
+        .put(JsonKeys.STEP_ID, instance.getStep().getStepId())
+        .put(JsonKeys.ANALYSIS_NAME, instance.getAnalysisName())
+        .put(JsonKeys.DISPLAY_NAME, instance.getDisplayName())
+        .put(JsonKeys.SHORT_DESCRIPTION, analysis.map(a -> a.getShortDescription()).orElse(null))
+        .put(JsonKeys.DESCRIPTION, analysis.map(a -> a.getDescription()).orElse(null))
+        .put(JsonKeys.USER_NOTES, instance.getUserNotes())
+        .put(JsonKeys.STATUS, runStatus.name())
+        .put(JsonKeys.PARAMETERS, instance.getFormSpecJson())
+        .put(JsonKeys.VALIDATION, ValidationFormatter.getValidationBundleJson(instance.getValidationBundle()));
+    
   }
 
   public static JSONArray getStepAnalysisInstancesJson(
-      Map<Long, StepAnalysisInstance> instances) {
-    return new JSONArray(instances.entrySet().stream()
+      List<StepAnalysisInstance> instances) {
+    return new JSONArray(instances.stream()
       .map(StepAnalysisFormatter::instanceSummaryJson)
       .collect(Collectors.toList()));
   }
 
-  private static JSONObject instanceSummaryJson(Entry<Long, StepAnalysisInstance> entry) {
+  private static JSONObject instanceSummaryJson(StepAnalysisInstance instance) {
     return new JSONObject()
-      .put(JsonKeys.ANALYSIS_ID, entry.getKey())
-      .put(JsonKeys.DISPLAY_NAME, entry.getValue().getDisplayName());
+      .put(JsonKeys.ANALYSIS_ID, instance.getAnalysisId())
+      .put(JsonKeys.DISPLAY_NAME, instance.getDisplayName());
   }
 }

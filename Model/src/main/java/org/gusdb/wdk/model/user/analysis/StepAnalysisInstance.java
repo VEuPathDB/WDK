@@ -1,33 +1,30 @@
 package org.gusdb.wdk.model.user.analysis;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
-import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.Validateable;
+import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.answer.spec.ParamsAndFiltersDbColumnFormat;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.StepAnalysisFormSpec;
 import org.gusdb.wdk.model.query.spec.StepAnalysisFormSpecBuilder;
-import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,132 +46,130 @@ import org.json.JSONObject;
  *
  * @author rdoherty
  */
-public class StepAnalysisInstance {
+public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> {
 
   public static final Logger LOG = Logger.getLogger(StepAnalysisInstance.class);
 
-  public static final String ANALYSIS_ID_KEY = "analysisId";
+  public static final long UNSAVED_ID = -1;
 
   public static enum JsonKey {
 
-    // the following values define the hashable serialized instance
+    // the following values define the serialized instance
     analysisName,
-    answerValueHash,
     formParams,
 
-    // the following values are included with JSON returned to client
+    // the following values (in addition to those above) are included with JSON returned to client
     analysisId,
     stepId,
     displayName,
     shortDescription,
     description,
     status,
-    hasParams,
-    invalidStepReason,
     userNotes
   }
 
   private WdkModel _wdkModel;
+
   private long _analysisId;
+  private String _analysisName;
+  private Step _step;
+  private StepAnalysisFormSpec _spec;
+
   private String _editableDisplayName;
   private String _userNotes;
-  private Step _step;
-  private String _answerValueHash;
-  private StepAnalysis _stepAnalysis;
-  private StepAnalysisState _state;
-  private boolean _hasParams;
-  private String _invalidStepReason;
-  private ExecutionStatus _status;
-  private Map<String, String[]> _formParams;
+
+  private RevisionStatus _revisionStatus;
+
+  private ValidationBundle _validationBundle;
 
   private StepAnalysisInstance() { }
 
-  /**
-   * Creates a step analysis instance.   Does not yet have an analysis id and
-   * will receive one when it is written to the database.
-   *
-   * This is package scope, and should be called only by the factory.
-   *
-   * @param stepAnalysis descriptor of the step analysis that will be invoked
-   * @param step step referred to by this analysis
-   * @param answerValueChecksum the checksum provided by answerValue.getChecksum()
-   * @throws WdkModelException if something goes wrong during creation
-   * @throws WdkUserException if the passed values do not refer to real objects
-   */
-  static StepAnalysisInstance createNewInstance(Step step, StepAnalysis stepAnalysis, String answerValueChecksum) throws WdkModelException {
+  public static StepAnalysisInstance createUnsavedInstance(
+      RunnableObj<Step> runnableStep,
+      StepAnalysis stepAnalysis,
+      RunnableObj<StepAnalysisFormSpec> validFormParams) throws WdkModelException {
 
-    StepAnalysisInstance ctx = new StepAnalysisInstance();
-    ctx._analysisId = -1;
-    ctx._wdkModel = step.getUser().getWdkModel();
-    ctx._step = step;
-    ctx._answerValueHash = answerValueChecksum;
+    StepAnalysisInstance instance = new StepAnalysisInstance();
+    instance._wdkModel = runnableStep.get().getAnswerSpec().getWdkModel();
+    instance._analysisId = UNSAVED_ID;
+    instance._analysisName = stepAnalysis.getName();
+    instance._step = runnableStep.get();
+    instance._spec = validFormParams.get();
+    instance._editableDisplayName = null;
+    instance._userNotes = null;
+    instance._revisionStatus = RevisionStatus.NEW;
 
-    ctx._stepAnalysis = stepAnalysis;
+    // already know step and form params are runnable, so we can use bundle from answer validity check
+    instance._validationBundle = runnableStep.get()
+        .getAnswerSpec().getQuestion().getWdkModel()
+        .getStepAnalysisFactory().validateStep(runnableStep, stepAnalysis);
 
-    if (ctx._stepAnalysis == null) throw new WdkModelException ("Null stepAnalysis");
-
-    ctx._editableDisplayName = ctx._stepAnalysis.getDisplayName();
-    ctx._formParams = new HashMap<>();
-    ctx._state = StepAnalysisState.NO_RESULTS;
-    ctx._hasParams = false;
-    ctx._invalidStepReason = null;
-    ctx._status = ExecutionStatus.CREATED;
-
-    return ctx;
+    return instance;
   }
 
-  private static String getAnswerValueHash(Step step) throws WdkModelException {
-    return !step.isRunnable() ? "" :
-      AnswerValueFactory.makeAnswer(step.getRunnable().getLeft()).getChecksum();
-  }
-
-  public static StepAnalysisInstance createFromId(long analysisId, StepAnalysisFactory analysisMgr)
-      throws WdkUserException, WdkModelException {
-    return analysisMgr.getSavedAnalysisInstance(analysisId);
-  }
-
-  public static StepAnalysisInstance createFromStoredData(WdkModel wdkModel,
-      long analysisId, long stepId, StepAnalysisState state, boolean hasParams, String invalidStepReason,
-      String displayName, String userNotes, String serializedInstance) throws WdkModelException, DeprecatedAnalysisException {
+  // should only be called by StepAnalysisFactory
+  static StepAnalysisInstance createFromStoredData(WdkModel wdkModel,
+      long analysisId, long stepId, RevisionStatus revisionStatus,
+      String displayName, String userNotes, String serializedInstance, ValidationLevel validationLevel)
+          throws WdkModelException, DeprecatedAnalysisException {
     try {
-      StepAnalysisInstance ctx = new StepAnalysisInstance();
-      ctx._wdkModel = wdkModel;
-      ctx._analysisId = analysisId;
-      ctx._editableDisplayName = displayName;
-      ctx._userNotes = userNotes;
-      ctx._state = state;
-      ctx._hasParams = hasParams;
-      ctx._invalidStepReason = invalidStepReason;
-      ctx._status = ExecutionStatus.UNKNOWN;
+      StepAnalysisInstance instance = new StepAnalysisInstance();
+      instance._wdkModel = wdkModel;
+      instance._analysisId = analysisId;
+      instance._editableDisplayName = displayName;
+      instance._userNotes = userNotes;
+      instance._revisionStatus = revisionStatus;
 
       LOG.debug("Got the following serialized instance from the DB: " + serializedInstance);
 
-      // deserialize hashable instance values
+      // deserialize analysis info
       JSONObject json = new JSONObject(serializedInstance);
-      ctx._step = loadStep(ctx._wdkModel, stepId, new WdkModelException("Unable " +
-          "to find step (ID=" + stepId + ") defined in step analysis instance (ID=" + analysisId + ")"));
-      ctx._answerValueHash = getAnswerValueHash(ctx._step);
-      Question question = ctx._step.getAnswerSpec().getQuestion();
-      ctx._stepAnalysis = question.getStepAnalysis(json.getString(JsonKey.analysisName.name()));
-
-      ctx._formParams = new LinkedHashMap<>();
+      instance._analysisName = json.getString(JsonKey.analysisName.name());
       JSONObject formObj = json.getJSONObject(JsonKey.formParams.name());
-      LOG.debug("Retrieved the following params JSON from the DB: " + formObj);
 
-      for (String key : JsonUtil.getKeys(formObj)) {
-        JSONArray array = formObj.getJSONArray(key);
-        String[] values = new String[array.length()];
-        for (int i=0; i < array.length(); i++) {
-          values[i] = array.getString(i);
+      // load the owning step and validate
+      Step step = loadStep(instance._wdkModel, stepId, new WdkModelException("Unable " +
+          "to find step (ID=" + stepId + ") defined in step analysis instance (ID=" + analysisId + ")"));
+      instance._step = step;
+
+      // validation bundle will be at the level of the analysis even though step is always checked at Runnable level
+      ValidationBundleBuilder validation = ValidationBundle.builder(validationLevel);
+
+      // formObj will be parsed differently depending on whether we know what types of Params are expected
+      if (instance._step.hasValidQuestion()) {
+        // find analysis (null if not found)
+        StepAnalysis stepAnalysis = step.getAnswerSpec().getQuestion().getStepAnalyses().get(instance._analysisName);
+
+        if (stepAnalysis == null) {
+          validation.addError("Illegal step analysis plugin name for analysis with ID: " + analysisId);
+          instance._spec = parseFormParams(formObj).buildInvalid();
         }
-        ctx._formParams.put(key, values);
+        else if (!step.isRunnable()) {
+          validation.addError("Step is not currently runnable; when it is repaired, step analysis parameters can be validated");
+          instance._spec = parseFormParams(formObj, stepAnalysis).buildInvalid();
+        }
+        else {
+          // valid step analysis and runnable step; perform two main validations
+          RunnableObj<Step> runnableStep = step.getRunnable().getLeft();
+
+          // 1. validate instance's form parameters
+          instance._spec = parseFormParams(formObj, stepAnalysis)
+              .buildValidated(runnableStep, stepAnalysis,
+                  validationLevel, FillStrategy.FILL_PARAM_IF_MISSING);
+          validation.aggregateStatus(instance._spec);
+
+          // 2. validate step against analysis
+          validation.aggregateStatus(wdkModel.getStepAnalysisFactory().validateStep(runnableStep, stepAnalysis));
+        }
+      }
+      else {
+        validation.addError("Step does not have a valid question; all its analyses are defunct.");
+        instance._spec = parseFormParams(formObj).buildInvalid();
       }
 
-      return ctx;
-    }
-    catch (WdkUserException e) {
-      throw new DeprecatedAnalysisException("Illegal step analysis plugin " +
-          "name for analysis with ID: " + analysisId, e);
+      instance._validationBundle = validation.build();
+
+      return instance;
     }
     catch (WdkModelException e) {
       throw new DeprecatedAnalysisException("Unable to construct instance " +
@@ -185,22 +180,96 @@ public class StepAnalysisInstance {
     }
   }
 
-  public static StepAnalysisInstance createCopy(StepAnalysisInstance oldInstance) {
-    StepAnalysisInstance ctx = new StepAnalysisInstance();
-    ctx._wdkModel = oldInstance._wdkModel;
-    ctx._analysisId = oldInstance._analysisId;
-    ctx._editableDisplayName = oldInstance._editableDisplayName;
-    ctx._userNotes = oldInstance._userNotes;
-    ctx._step = oldInstance._step;
-    ctx._answerValueHash = oldInstance._answerValueHash;
-    ctx._stepAnalysis = oldInstance._stepAnalysis;
-    // deep copy params
-    ctx._formParams = getDuplicateMap(oldInstance._formParams);
-    ctx._state = oldInstance._state;
-    ctx._hasParams = oldInstance._hasParams;
-    ctx._invalidStepReason = oldInstance._invalidStepReason;
-    ctx._status = oldInstance._status;
-    return ctx;
+  /**
+   * Parses parameter values from the passed JSON object without the benefit of
+   * knowing the names and types of expected params.  Supports both old (array)
+   * and new (WDK stable value) formats.
+   * 
+   * @param formObj JSON object containing param values (format may be old or new)
+   * @return form builder containing parsed param values
+   */
+  private static StepAnalysisFormSpecBuilder parseFormParams(JSONObject formObj) {
+    StepAnalysisFormSpecBuilder formSpec = StepAnalysisFormSpec.builder();
+    for (String paramName : formObj.keySet()) {
+      formSpec.put(paramName, parseParamValue(formObj, paramName, false));
+    }
+    return formSpec;
+  }
+
+  /**
+   * The code below parses params in multiple formats to support existing
+   * saved parameters which used to be stored at array of values to more
+   * closely match the old Servlet params type (Map<String,String[]>. Any new
+   * saves to the DB are using standard WDK stable values format (strings),
+   * so the code supports that format as well.
+   * 
+   * @param formObj JSON object containing param values (format may be old or new)
+   * @param stepAnalysis step analysis containing the param definitions
+   * @return form builder containing parsed param values
+   */
+  private static StepAnalysisFormSpecBuilder parseFormParams(JSONObject formObj, StepAnalysis stepAnalysis) {
+    StepAnalysisFormSpecBuilder formSpec = StepAnalysisFormSpec.builder();
+    for (Param param : stepAnalysis.getParams()) {
+      boolean isEnumParam = param instanceof AbstractEnumParam;
+      String parsedValue = parseParamValue(formObj, param.getName(), isEnumParam);
+      // get standardized value and add to builder
+      formSpec.put(param.getName(), param.getStandardizedStableValue(parsedValue));
+    }
+    return formSpec;
+  }
+
+  private static String parseParamValue(JSONObject formObj, String name, boolean alwaysUseArrayStringValue) {
+    JsonType paramValueWrapper = new JsonType(formObj.opt(name));
+    switch (paramValueWrapper.getType()) {
+      case NULL:
+        // actual JSON null or missing; skip either way
+        return null;
+      case STRING:
+        // traditional WDK stable value
+        return paramValueWrapper.getString();
+      case ARRAY:
+        // deprecated step analysis-specific formatting
+        JSONArray array = paramValueWrapper.getJSONArray();
+        if (alwaysUseArrayStringValue) {
+          return array.toString();
+        }
+        else {
+          switch (array.length()) {
+            case 0:  return "";
+            case 1:  return array.getString(0);
+            default: return array.toString();
+          }
+        }
+      default:
+        // not a recognized type, but try to coerce
+        return paramValueWrapper.get().toString();
+    }
+  }
+
+  public static StepAnalysisInstance createCopy(StepAnalysisInstance oldInstance, Step toStep) throws WdkModelException {
+    StepAnalysisInstance instance = new StepAnalysisInstance();
+    instance._wdkModel = oldInstance._wdkModel;
+    instance._analysisId = UNSAVED_ID;
+    instance._analysisName = oldInstance._analysisName;
+    instance._step = toStep;
+    instance._editableDisplayName = oldInstance._editableDisplayName;
+    instance._userNotes = oldInstance._userNotes;
+
+    if (instance._step.isRunnable() &&
+        instance.getStepAnalysis().isPresent()) {
+      instance._spec = StepAnalysisFormSpec.builder(oldInstance._spec).buildValidated(
+          instance._step.getRunnable().getLeft(), instance.getStepAnalysis().get(), ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING);
+    }
+    else {
+      instance._spec = StepAnalysisFormSpec.builder(oldInstance._spec).buildInvalid();
+    }
+
+    instance._revisionStatus = RevisionStatus.NEW;
+
+    // use the old version's validation bundle; should be OK since we only copy when copying the whole strategy
+    instance._validationBundle = oldInstance.getValidationBundle();
+
+    return instance;
   }
 
   private static <T extends WdkException> Step loadStep(WdkModel wdkModel, long stepId,
@@ -213,65 +282,32 @@ public class StepAnalysisInstance {
     }
   }
 
-  private static Map<String, String[]> getDuplicateMap(Map<String, String[]> formParams) {
-    Map<String, String[]> newParamMap = new HashMap<>(formParams);
-    for (String key : newParamMap.keySet()) {
-      String[] old = newParamMap.get(key);
-      if (old != null) {
-        newParamMap.put(key, Arrays.copyOf(old, old.length));
-      }
-    }
-    return newParamMap;
+  public String getAnalysisName() {
+    return _analysisName;
+  }
+
+  public JSONObject getFormSpecJson() {
+    return ParamsAndFiltersDbColumnFormat.formatParams(
+        _spec, StepAnalysisSupplementalParams.getAllNames());
   }
 
   /**
-   * Returns JSON of the following spec (for generating hash):
+   * Returns JSON of the following spec:
    * {
    *   analysisName: string
-   *   answerValueHash: string
-   *   params: key-value object of params
+   *   formParams: key-value object of params (does not include supplemental params)
    */
-  public String serializeInstance() {
+  public String getContextJson() {
     try {
       JSONObject jsonForDigest = new JSONObject()
-          .put(JsonKey.analysisName.name(), _stepAnalysis.getName())
-          .put(JsonKey.answerValueHash.name(), _answerValueHash)
-          .put(JsonKey.formParams.name(), getRawParamsJson());
+          .put(JsonKey.analysisName.name(), _analysisName)
+          .put(JsonKey.formParams.name(), getFormSpecJson());
 
       LOG.debug("Created the following digest JSON: " + jsonForDigest);
       return JsonUtil.serialize(jsonForDigest);
     }
     catch (JSONException e) {
       throw new WdkRuntimeException("Unable to serialize instance.", e);
-    }
-  }
-
-  private JSONObject getRawParamsJson() {
-    // Sort param names so JSON values produce identical hashes
-    List<String> sortedParamNames = new ArrayList<>(_formParams.keySet());
-    Collections.sort(sortedParamNames);
-    JSONObject params = new JSONObject();
-    for (String paramName : sortedParamNames) {
-      // Sort param values so JSON values produce identical hashes
-      List<String> paramValues = Arrays.asList(_formParams.get(paramName));
-      Collections.sort(paramValues);
-      for (String value : paramValues) {
-        params.append(paramName, value);
-      }
-    }
-    return params;
-  }
-
-  public String createHash() {
-    return createHashFromString(serializeInstance());
-  }
-
-  public static String createHashFromString(String serializedInstance) {
-    try {
-      return EncryptionUtil.encrypt(serializedInstance);
-    }
-    catch (Exception e) {
-      throw new WdkRuntimeException("Unable to generate checksum from serialized instance.", e);
     }
   }
 
@@ -291,7 +327,7 @@ public class StepAnalysisInstance {
     _editableDisplayName = displayName;
   }
 
-public String getUserNotes() {
+  public String getUserNotes() {
     return _userNotes;
   }
 
@@ -303,60 +339,62 @@ public String getUserNotes() {
     return _step;
   }
 
-  public void setStep(Step step) {
-    _step = step;
+  /**
+   * @return step analysis plugin for this instance, or empty optional if:
+   *   a) step does not have a valid question
+   *   b) step analysis name is no longer valid on the step's question
+   */
+  public Optional<StepAnalysis> getStepAnalysis() {
+    return !_step.hasValidQuestion() ? Optional.empty() :
+      Optional.ofNullable(_step.getAnswerSpec().getQuestion().getStepAnalyses().get(_analysisName));
   }
 
-  public StepAnalysis getStepAnalysis() {
-    return _stepAnalysis;
+  public void setFormParams(RunnableObj<StepAnalysisFormSpec> formSpec, ValidationLevel newValidationLevel) throws WdkModelException {
+    _spec = formSpec.get();
+    revalidate(newValidationLevel);
   }
 
-  public Map<String, String[]> getFormParams() {
-    return _formParams;
+  public Map<String, String> getFormParams() {
+    return _spec.toMap();
   }
 
-  public ExecutionStatus getStatus() {
-    return _status;
+  // similar to validation done in createFromStoredData but do not need to parse params
+  private void revalidate(ValidationLevel newValidationLevel) throws WdkModelException {
+    // validate at the previous level
+    ValidationBundleBuilder validation = ValidationBundle.builder(newValidationLevel);
+    if (_step.hasValidQuestion()) {
+      // find analysis (null if not found)
+      StepAnalysis stepAnalysis = _step.getAnswerSpec().getQuestion().getStepAnalyses().get(_analysisName);
+
+      if (stepAnalysis == null) {
+        validation.addError("Illegal step analysis plugin name for analysis with ID: " + _analysisId);
+      }
+      else if (!_step.isRunnable()) {
+        validation.addError("Step is not currently runnable; when it is repaired, step analysis parameters can be validated");
+      }
+      else {
+        // valid step analysis and runnable step; perform two main validations
+        RunnableObj<Step> runnableStep = _step.getRunnable().getLeft();
+
+        // 1. validate instance's form parameters
+        validation.aggregateStatus(_spec);
+
+        // 2. validate step against analysis
+        validation.aggregateStatus(_wdkModel.getStepAnalysisFactory().validateStep(runnableStep, stepAnalysis));
+      }
+    }
+    else {
+      validation.addError("Step does not have a valid question; all its analyses are defunct.");
+    }
+    _validationBundle = validation.build();
   }
 
-  public void setStatus(ExecutionStatus status) {
-    _status = status;
+  public RevisionStatus getRevisionStatus() {
+    return _revisionStatus;
   }
 
-  public StepAnalysisState getState() {
-    return _state;
-  }
-
-  public void setState(StepAnalysisState state) {
-    _state = state;
-  }
-
-  public boolean hasParams() {
-    return _hasParams;
-  }
-
-  public void setHasParams(boolean hasParams) {
-    _hasParams = hasParams;
-  }
-
-  public boolean getIsValidStep() {
-    return (_invalidStepReason == null || _invalidStepReason.isEmpty());
-  }
-
-  public String getInvalidStepReason() {
-    return _invalidStepReason;
-  }
-
-  public void setIsValidStep(boolean isValidStep) {
-    setIsValidStep(isValidStep, null);
-  }
-
-  public void setIsValidStep(boolean isValidStep, String invalidReason) {
-    // valid steps have no invalid reasons; set to null
-    _invalidStepReason = (isValidStep ? null :
-      // invalid steps must give a reason or one will be provided
-      (invalidReason == null || invalidReason.isEmpty()) ?
-          "Unable to determine." : invalidReason);
+  public void setRevisionStatus(RevisionStatus revisionStatus) {
+    _revisionStatus = revisionStatus;
   }
 
   /**
@@ -371,54 +409,24 @@ public String getUserNotes() {
     return EncryptionUtil.encrypt("__" + _analysisId + _step.getStepId() + _wdkModel.getModelConfig().getSecretKey(), true);
   }
 
-  public AnswerValue getAnswerValue() throws WdkUserException, WdkModelException {
-    if (!getStep().isRunnable()) {
-      throw new WdkUserException("Cannot execute an analysis on an unrunnable step.");
-    }
-    return AnswerValueFactory.makeAnswer(getStep().getRunnable().getLeft());
+  @Override
+  public ValidationBundle getValidationBundle() {
+    return _validationBundle;
   }
 
-  public String getAnswerValueHash() {
-    return _answerValueHash;
+  /**
+   * @return context hash used to look up step analysis results
+   * @throws WdkModelException if error occurs while creating answer value checksum
+   */
+  public static String getContextHash(RunnableObj<StepAnalysisInstance> instance) throws WdkModelException {
+    return EncryptionUtil.encrypt(instance.get().getContextJson() + "_" + getAnswerValue(instance).getChecksum());
   }
 
-  public StepAnalysisFormSpec getFormSpec(ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
-    // FIXME: This is a hack to transform the current DB format for params into
-    //   our desired service API format.  The difference is that the DB currently
-    //   stores params as a Map<String,String[]>, conforming to the previous
-    //   Servlet form param map type.  To convert to a form spec, we need the
-    //   param values in a Map<String,String>, where the values are stable values
-    //   of WDK params.  See transformation below.
-
-    StepAnalysisFormSpecBuilder builder = StepAnalysisFormSpec.builder();
-    for (Param param : _stepAnalysis.getParams()) {
-      String[] values = _formParams.get(param.getName());
-      // handle empty case (param value missing)
-      if (values == null || values.length == 0) continue; // don't add any value; may fill later
-      // convert from array to old-style single "stable" value
-      if (values.length > 1) values[0] = FormatUtil.join(values, ",");
-      // get standardized value and add to builder
-      builder.put(param.getName(), param.getStandardizedStableValue(values[0]));
+  public static AnswerValue getAnswerValue(RunnableObj<StepAnalysisInstance> instance) throws WdkModelException {
+    if (!instance.get().getStep().isRunnable()) {
+      throw new WdkModelException("Cannot access referenced step's results because the step is not runnable.");
     }
-    RunnableObj<Step> runnableStep = _step.getRunnable().getOrThrow(step ->
-        new WdkModelException("Request made to produce step analysis form spec on analysis owned " +
-            "by an unrunnable step. " + step.getValidationBundle().toString(2)));
-    return builder.buildValidated(runnableStep, _stepAnalysis, validationLevel, fillStrategy);
-  }
-
-  public void setFormSpec(RunnableObj<StepAnalysisFormSpec> validFormSpec) {
-    // FIXME: Same hack for the same reason as getFormSpec() above, opposite direction
-    _formParams.clear();
-    LOG.info("Assigning param map of arrays from valid form spec");
-    for (Param param : _stepAnalysis.getParams()) {
-      // get the standardized stable value from the spec
-      String stableValue = validFormSpec.get().get(param.getName());
-      String[] arrayValue = (param instanceof AbstractEnumParam
-          ? AbstractEnumParam.convertToTerms(stableValue).toArray(new String[0])
-          : new String[]{ stableValue });
-      LOG.info("Adding name: " + param.getName() + ", value: " + FormatUtil.join(arrayValue, ","));
-      _formParams.put(param.getName(), arrayValue);
-    }
+    return AnswerValueFactory.makeAnswer(instance.get().getStep().getRunnable().getLeft());
   }
 
 }

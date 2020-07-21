@@ -348,7 +348,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   /**
    * @return whether param value is for internal use only; if so, it will be
-   * omitted in both service use and DB
+   * omitted in both service use and DB storage
    */
   public boolean isForInternalUseOnly() {
     return false;

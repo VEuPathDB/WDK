@@ -1,13 +1,16 @@
 package org.gusdb.wdk.model.answer.spec;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
+import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
 import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
@@ -56,11 +59,17 @@ public class ParamsAndFiltersDbColumnFormat {
     return jsContent;
   }
 
-  public static JSONObject formatParams(QueryInstanceSpec paramValues) {
+  public static JSONObject formatParams(ParameterContainerInstanceSpec<?> paramValues) {
+    return formatParams(paramValues, Collections.emptySet());
+  }
+
+  public static JSONObject formatParams(ParameterContainerInstanceSpec<?> paramValues, Set<String> paramsToExclude) {
     // convert params
     JSONObject jsParams = new JSONObject();
     for (String paramName : paramValues.keySet()) {
-      jsParams.put(paramName, paramValues.get(paramName));
+      if (!paramsToExclude.contains(paramName)) {
+        jsParams.put(paramName, paramValues.get(paramName));
+      }
     }
     return jsParams;
   }

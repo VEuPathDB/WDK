@@ -29,7 +29,6 @@ public class QueryInstanceSpecBuilder extends ParameterContainerInstanceSpecBuil
    * 
    * @return invalid query instance spec (no validation performed)
    */
-  
   public QueryInstanceSpec buildInvalid() {
     return new QueryInstanceSpec(toMap(), _assignedWeight);
   }

@@ -51,11 +51,11 @@ public class ParameterContainerInstanceSpecBuilder<T extends ParameterContainerI
     }
   }
 
-  ParameterContainerInstanceSpecBuilder() {
+  protected ParameterContainerInstanceSpecBuilder() {
     super(new LinkedHashMap<>());
   }
 
-  ParameterContainerInstanceSpecBuilder(ParameterContainerInstanceSpec<?> spec) {
+  protected ParameterContainerInstanceSpecBuilder(ParameterContainerInstanceSpec<?> spec) {
     super(new LinkedHashMap<>(spec.toMap()));
   }
 

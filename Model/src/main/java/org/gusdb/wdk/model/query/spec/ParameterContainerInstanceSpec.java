@@ -31,7 +31,7 @@ public class ParameterContainerInstanceSpec<T extends ParameterContainerInstance
     _validationBundle = validationBundle;
   }
 
-  ParameterContainerInstanceSpec(Map<String, String> paramValues) {
+  protected ParameterContainerInstanceSpec(Map<String, String> paramValues) {
     super(paramValues);
     _user = null;
     _parameterContainer = null;

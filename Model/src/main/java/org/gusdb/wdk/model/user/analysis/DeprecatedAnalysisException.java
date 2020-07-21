@@ -7,5 +7,9 @@ public class DeprecatedAnalysisException extends Exception {
   public DeprecatedAnalysisException(String message, Exception cause) {
     super(message, cause);
   }
+
+  public DeprecatedAnalysisException(String message) {
+    super(message);
+  }
   
 }

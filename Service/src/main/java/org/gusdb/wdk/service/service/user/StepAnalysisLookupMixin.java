@@ -5,14 +5,13 @@ import java.util.Optional;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 
-import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -29,9 +28,10 @@ public interface StepAnalysisLookupMixin {
    * Retrieve and validate the step analysis instance identified by the given
    * analysis id.
    *
-   * @param analysisId Analysis ID from user input
-   * @param userBundle    User details
-   * @param accessToken   ?
+   * @param analysisId analysis ID from user input
+   * @param userBundle user details
+   * @param step step that owns this analysis
+   * @param accessToken optional token that can allow access to non-owner
    * @return The step analysis instance that matches the input criteria
    * @throws WdkModelException if the step analysis instance could not be
    *                           loaded, the user could not be loaded, or the access token could not be
@@ -40,48 +40,22 @@ public interface StepAnalysisLookupMixin {
   default StepAnalysisInstance getAnalysis(
     long analysisId,
     UserBundle userBundle,
-    String accessToken
+    Step step,
+    String accessToken,
+    ValidationLevel validationLevel
   ) throws WdkModelException {
-    try {
-      StepAnalysisInstance instance = getWdkModel().getStepAnalysisFactory()
-          .getSavedAnalysisInstance(analysisId);
-      if (userBundle.getTargetUser().getUserId() != instance.getStep().getUser().getUserId()) {
-        // owner of this step does not match user in URL
-        throw new NotFoundException("User " + userBundle.getTargetUser().getUserId() + " does not own step analysis " + instance.getAnalysisId());
-      }
-      if (userBundle.isSessionUser() || instance.getAccessToken().equals(accessToken)) {
-        return instance;
-      }
-      throw new ForbiddenException();
+    StepAnalysisInstance instance = getWdkModel()
+        .getStepAnalysisFactory()
+        .getInstanceById(analysisId, step, validationLevel)
+        .orElseThrow(() -> new NotFoundException(AbstractWdkService.formatNotFound("step analysis: " + analysisId)));
+    if (userBundle.getTargetUser().getUserId() != instance.getStep().getUser().getUserId()) {
+      // owner of this step does not match user in URL
+      throw new NotFoundException("User " + userBundle.getTargetUser().getUserId() + " does not own step analysis " + instance.getAnalysisId());
     }
-    catch (WdkUserException e) {
-      throw new NotFoundException(AbstractWdkService.formatNotFound("step analysis: " + analysisId));
+    if (userBundle.isSessionUser() || instance.getAccessToken().equals(accessToken)) {
+      return instance;
     }
-  }
-
-  /**
-   * Creates StepAnalysisInstance from given step, analysis name, and answer
-   * value checksum.
-   *
-   * @param step          The step for which a new analysis instance will be
-   *                      created
-   * @param analysis      The analysis type for the new analysis instance
-   * @param answerValHash Hash of the relevant current state of the answer that
-   *                      this analysis is based on.
-   *
-   * @return A new StepAnalysisInstance
-   */
-  default StepAnalysisInstance getStepAnalysisInstance(
-      RunnableObj<Step> step,
-      StepAnalysis analysis,
-      String answerValHash) throws DataValidationException {
-    try {
-      return getWdkModel().getStepAnalysisFactory()
-          .createAnalysisInstance(step.get(), analysis, answerValHash);
-    }
-    catch (WdkUserException | IllegalAnswerValueException | WdkModelException e) {
-      throw new DataValidationException("Can't create valid step analysis", e);
-    }
+    throw new ForbiddenException();
   }
 
   default StepAnalysis getStepAnalysisFromQuestion(Question question,
@@ -99,12 +73,13 @@ public interface StepAnalysisLookupMixin {
     }
   }
 
-  default StepAnalysisInstance getAnalysis(long analysisId, String accessToken)
+  default StepAnalysisInstance getAnalysis(long analysisId, String accessToken, ValidationLevel validationLevel)
       throws WdkModelException {
 
     UserBundle userBundle = getUserBundle(Access.PUBLIC);
-    StepAnalysisInstance instance = getAnalysis(analysisId, userBundle, accessToken);
-    Step step = instance.getStep();
+    Step step = getWdkModel().getStepFactory().getStepById(getStepId(), ValidationLevel.RUNNABLE)
+        .orElseThrow(() -> new NotFoundException(String.format("Cannot find step with id %d", getStepId())));
+    StepAnalysisInstance instance = getAnalysis(analysisId, userBundle, step, accessToken, validationLevel);
     long targetUser = userBundle.getTargetUser().getUserId();
 
     // Step cannot be found under the current user id path.

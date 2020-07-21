@@ -9,6 +9,7 @@ public class JsonKeys {
   // response status keys
   public static final String SUCCESS = "success";
   public static final String ERRORS = "errors";
+  public static final String STATUS = "status";
   public static final String MESSAGE = "message";
   public static final String TABLE_ERRORS = "tableErrors";
   public static final String NUMBER_PROCESSED = "numberProcessed";
@@ -194,8 +195,10 @@ public class JsonKeys {
 
   // step analysis keys
   public static final String ANALYSIS_ID = "analysisId"; // TODO convert to simply ID
+  public static final String ANALYSIS_NAME = "analysisName";
   public static final String CUSTOM_THUMBNAIL = "customThumbnail";
   public static final String HAS_PARAMETERS = "hasParameters";
+  public static final String USER_NOTES = "userNotes";
 
   // site-level keys
   public static final String PROJECT_ID = "projectId";

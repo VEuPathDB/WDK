@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.user.analysis;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -9,9 +10,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 
 public class FutureCleaner implements Callable<Boolean> {
 
@@ -22,20 +23,24 @@ public class FutureCleaner implements Callable<Boolean> {
   private static final int FUTURE_CLEANER_SLEEP_SECS = 2;
 
   public static class RunningAnalysis {
-    public long analysisId;
+    public RunnableObj<StepAnalysisInstance> instance;
     public Future<ExecutionStatus> future;
-    public RunningAnalysis(long analysisId, Future<ExecutionStatus> future) {
-      this.analysisId = analysisId;
+    public RunningAnalysis(RunnableObj<StepAnalysisInstance> instance, Future<ExecutionStatus> future) {
+      this.instance = instance;
       this.future = future;
     }
   }
 
-  private volatile StepAnalysisFactory _analysisMgr;
+  private volatile StepAnalysisFactory _analysisFactory;
+  private volatile StepAnalysisDataStore _dataStore;
   private volatile ConcurrentLinkedDeque<RunningAnalysis> _threadResults;
 
-  public FutureCleaner(StepAnalysisFactory analysisMgr,
+  public FutureCleaner(
+      StepAnalysisFactory analysisFactory,
+      StepAnalysisDataStore dataStore,
       ConcurrentLinkedDeque<RunningAnalysis> threadResults) {
-    _analysisMgr = analysisMgr;
+    _analysisFactory = analysisFactory;
+    _dataStore = dataStore;
     _threadResults = threadResults;
   }
 
@@ -52,9 +57,9 @@ public class FutureCleaner implements Callable<Boolean> {
         if (waitedSecs >= timeToWait) {
           try {
             // do the business of this thread
-            _analysisMgr.expireLongRunningExecutions();
-            removeCompletedThreads();
-            removeExpiredThreads();
+            expireLongRunningExecutions(); // writes to appDb
+            removeCompletedThreads();      // cleans up memory
+            removeExpiredThreads();        // cleans up memory
             mostRecentAttemptSucceeded = true;
           }
           catch (Exception e) {
@@ -89,19 +94,34 @@ public class FutureCleaner implements Callable<Boolean> {
     }
   }
 
-  private void removeExpiredThreads() throws WdkUserException, WdkModelException {
+  // go through all running/pending analysis runs in DB, and mark expired if expired
+  private void expireLongRunningExecutions() throws WdkModelException {
+    long currentTime = System.currentTimeMillis();
+    List<ExecutionInfo> execList = _dataStore.getAllRunningExecutions();
+    for (ExecutionInfo exec : execList) {
+      if (isRunExpired(exec.getTimeoutMins(), currentTime, exec.getStartDate())) {
+        _dataStore.updateExecution(exec.getContextHash(), ExecutionStatus.EXPIRED, new Date(), null, null);
+      }
+    }
+  }
+
+  private static boolean isRunExpired(long timeoutMinutes, long currentTime, Date startTime) {
+    long expirationDuration = timeoutMinutes * 60 * 1000;
+    long currentDuration = currentTime - startTime.getTime();
+    return (currentDuration > expirationDuration);
+  }
+
+  private void removeExpiredThreads() throws WdkModelException {
     long currentTime = System.currentTimeMillis();
     List<RunningAnalysis> futuresToRemove = new ArrayList<>();
     for (RunningAnalysis run : _threadResults) {
       // see if this thread has been running too long; if so, cancel the job
-      long analysisId = run.analysisId;
-      StepAnalysisInstance context = _analysisMgr.getSavedAnalysisInstance(analysisId);
-      if (context.getStatus().equals(ExecutionStatus.RUNNING) ||
-          context.getStatus().equals(ExecutionStatus.PENDING)) {
+      ExecutionInfo info = _analysisFactory.getExecutionInfo(run.instance).orElse(null);
+      if (info != null &&
+          (info.getStatus().equals(ExecutionStatus.RUNNING) ||
+           info.getStatus().equals(ExecutionStatus.PENDING))) {
         // check to see if it's been running too long
-        AnalysisResult result = _analysisMgr.getAnalysisResult(context);
-        if (StepAnalysisFactoryImpl.isRunExpired(context.getStepAnalysis(),
-            currentTime, result.getStartDate())) {
+        if (isRunExpired(info.getTimeoutMins(), currentTime, info.getStartDate())) {
           run.future.cancel(true);
           futuresToRemove.add(run);
         }
@@ -109,7 +129,7 @@ public class FutureCleaner implements Callable<Boolean> {
       else {
         // any other status means Future should be cleaned up
         LOG.warn("Step Analysis Future found referencing discontinued analysis " +
-            "with status: " + context.getStatus() + ".  Cancelling thread.");
+            "with status: " + (info == null ? "unknown" : info.getStatus()) + ".  Cancelling thread.");
         run.future.cancel(true);
         futuresToRemove.add(run);
       }
@@ -127,7 +147,7 @@ public class FutureCleaner implements Callable<Boolean> {
       if (future.isDone() || future.isCancelled()) {
         try {
           LOG.info("Step Analysis run for step analysis with ID " +
-              run.analysisId + " completed with status: " + future.get());
+              run.instance.get().getAnalysisId() + " completed with status: " + future.get());
         }
         catch (ExecutionException | CancellationException | InterruptedException e) {
           LOG.error("Exception thrown while retrieving step analysis status (on completion)", e);

@@ -62,7 +62,7 @@ public class StepAnalysisFormSpecBuilder extends ParameterContainerInstanceSpecB
       ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
     User user = step.get().getUser();
     standardizeStableValues(stepAnalysis);
-    putAll(StepAnalysisSupplementalParams.getValues(stepAnalysis, step.get().getUser(), Step.getRunnableAnswerSpec(step)));
+    putAll(StepAnalysisSupplementalParams.getValues(stepAnalysis, user, Step.getRunnableAnswerSpec(step)));
     TwoTuple<PartiallyValidatedStableValues, ValidationBundleBuilder> paramValidation =
         validateParams(user, stepAnalysis, StepContainer.emptyContainer(), validationLevel, fillStrategy);
     return new StepAnalysisFormSpec(user, stepAnalysis, paramValidation.getFirst(),

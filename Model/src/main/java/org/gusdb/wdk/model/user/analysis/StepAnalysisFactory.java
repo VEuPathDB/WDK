@@ -3,9 +3,11 @@ package org.gusdb.wdk.model.user.analysis;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
@@ -13,36 +15,34 @@ import org.gusdb.wdk.model.user.Step;
 
 public interface StepAnalysisFactory {
 
-  List<StepAnalysisInstance> getAllAnalyses() throws WdkModelException;
-
-  Map<Long, StepAnalysisInstance> getAppliedAnalyses(Step step) throws WdkModelException;
+  List<StepAnalysisInstance> getAppliedAnalyses(Step step, ValidationLevel level) throws WdkModelException;
 
   boolean hasCompleteAnalyses(Step step) throws WdkModelException;
 
-  /**
-   * Validates the form params for a given Step Analysis Instance and returns
-   * a list of validation errors.
-   *
-   * @return Form param validation errors.
-   */
-  ValidationBundle validateFormParams(StepAnalysisInstance instance) throws WdkModelException, WdkUserException;
+  ValidationBundle validateStep(RunnableObj<Step> step, StepAnalysis analysis) throws WdkModelException;
 
   /**
-   * Creates a valid new analysis instance (i.e. tab).  If successful,
-   * this method will assign an ID to the constructed instance, save it in the
-   * database, and may modify the display name to ensure a step's tabs have
+   * Assigns a (sequence-generated) ID to the instance passed and save it in the
+   * database.  May also modify the display name to ensure a step's tabs have
    * unique names.
    *
-   * @throws WdkModelException if error occurs while instantiating instance or writing to persistent store
-   * @throws IllegalAnswerValueException if answer cannot be used to create an analysis with the passed instance
-   * @throws WdkUserException if answer is OK but analysis params fail validation in another way
+   * @param instance instance to be inserted
+   * @throws WdkModelException if error occurs while interacting with the database
    */
-  StepAnalysisInstance createAnalysisInstance(Step step,
-      StepAnalysis stepAnalysis, String answerValueChecksum) throws WdkModelException, IllegalAnswerValueException, WdkUserException;
+  void saveNewInstance(RunnableObj<StepAnalysisInstance> instance) throws WdkModelException;
 
-  StepAnalysisInstance copyAnalysisInstance(StepAnalysisInstance instance) throws WdkModelException;
+  /**
+   * Passed instance must have a valid ID.  Display name will not be adjusted,
+   * but all "meta" fields (and params) will be saved.
+   * 
+   * @param instance instance to be saved
+   * @throws WdkModelException
+   */
+  void updateInstance(StepAnalysisInstance instance) throws WdkModelException;
 
-  StepAnalysisInstance runAnalysis(StepAnalysisInstance instance) throws WdkModelException;
+  ExecutionStatus runAnalysis(RunnableObj<StepAnalysisInstance> instance) throws WdkModelException;
+
+  Optional<ExecutionInfo> getExecutionInfo(RunnableObj<StepAnalysisInstance> instance) throws WdkModelException;
 
   /**
    * Collects the data associated with a result and returns the aggregating
@@ -52,26 +52,21 @@ public interface StepAnalysisFactory {
    *
    * @param instance step analysis instance for this result
    * @return result
-   * @throws WdkModelException if inconsistent data is found or other error occurs
-   * @throws WdkUserException
+   * @throws WdkModelException if error occurs
    */
-  AnalysisResult getAnalysisResult(StepAnalysisInstance instance) throws WdkModelException, WdkUserException;
+  Optional<ExecutionResult> getExecutionResult(RunnableObj<StepAnalysisInstance> instance) throws WdkModelException;
+
+  ExecutionStatus calculateStatus(StepAnalysisInstance instance) throws WdkModelException;
 
   StepAnalysisInstance deleteAnalysis(StepAnalysisInstance instance) throws WdkModelException;
 
-  void renameInstance(StepAnalysisInstance instance) throws WdkModelException;
-
-  StepAnalysisInstance getSavedAnalysisInstance(long analysisId) throws WdkUserException, WdkModelException;
-
-  void setUserNotesContext(StepAnalysisInstance context) throws WdkModelException;
+  Optional<StepAnalysisInstance> getInstanceById(long analysisId, Step step, ValidationLevel validationLevel) throws WdkModelException;
 
   void clearResultsCache() throws WdkModelException;
 
-  Path getResourcePath(StepAnalysisInstance instance, String relativePath);
+  Path getResourcePath(RunnableObj<StepAnalysisInstance> instance, String relativePath) throws WdkModelException, WdkUserException;
 
   void shutDown();
-
-  void expireLongRunningExecutions() throws WdkModelException;
 
   void createResultsTable() throws WdkModelException;
 
@@ -101,6 +96,4 @@ public interface StepAnalysisFactory {
       throw new WdkModelException(e);
     }
   }
-
-  void setFormParams(StepAnalysisInstance instance) throws WdkModelException;
 }
