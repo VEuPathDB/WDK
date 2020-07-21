@@ -216,7 +216,11 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
 
     // apply display name modification
     if (json.has(JsonKeys.DISPLAY_NAME)) {
-      instance.setDisplayName(json.getString(JsonKeys.DISPLAY_NAME));
+      String newDisplayName = json.getString(JsonKeys.DISPLAY_NAME).trim();
+      if (newDisplayName.isEmpty()) {
+        throw new DataValidationException("Display name field cannot be empty.");
+      }
+      instance.setDisplayName(newDisplayName);
     }
 
     // apply user notes modification

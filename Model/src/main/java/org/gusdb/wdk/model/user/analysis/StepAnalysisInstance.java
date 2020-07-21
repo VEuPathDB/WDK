@@ -75,7 +75,7 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
   private Step _step;
   private StepAnalysisFormSpec _spec;
 
-  private String _editableDisplayName;
+  private String _displayName;
   private String _userNotes;
 
   private RevisionStatus _revisionStatus;
@@ -95,7 +95,7 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
     instance._analysisName = stepAnalysis.getName();
     instance._step = runnableStep.get();
     instance._spec = validFormParams.get();
-    instance._editableDisplayName = null;
+    instance._displayName = stepAnalysis.getName();
     instance._userNotes = null;
     instance._revisionStatus = RevisionStatus.NEW;
 
@@ -116,7 +116,7 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
       StepAnalysisInstance instance = new StepAnalysisInstance();
       instance._wdkModel = wdkModel;
       instance._analysisId = analysisId;
-      instance._editableDisplayName = displayName;
+      instance._displayName = displayName;
       instance._userNotes = userNotes;
       instance._revisionStatus = revisionStatus;
 
@@ -252,7 +252,7 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
     instance._analysisId = UNSAVED_ID;
     instance._analysisName = oldInstance._analysisName;
     instance._step = toStep;
-    instance._editableDisplayName = oldInstance._editableDisplayName;
+    instance._displayName = oldInstance._displayName;
     instance._userNotes = oldInstance._userNotes;
 
     if (instance._step.isRunnable() &&
@@ -320,13 +320,11 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
   }
 
   public String getDisplayName() {
-    // FIXME: should not need this
-    return _editableDisplayName != null ? _editableDisplayName :
-      getStepAnalysis().map(sa -> sa.getName()).orElse("My Analysis");
+    return _displayName;
   }
 
   public void setDisplayName(String displayName) {
-    _editableDisplayName = displayName;
+    _displayName = displayName;
   }
 
   public String getUserNotes() {
