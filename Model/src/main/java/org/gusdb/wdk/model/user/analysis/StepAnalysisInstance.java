@@ -320,7 +320,9 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
   }
 
   public String getDisplayName() {
-    return _editableDisplayName;
+    // FIXME: should not need this
+    return _editableDisplayName != null ? _editableDisplayName :
+      getStepAnalysis().map(sa -> sa.getName()).orElse("My Analysis");
   }
 
   public void setDisplayName(String displayName) {

@@ -79,7 +79,6 @@ public class StepAnalysisFormatter {
         .put(JsonKeys.STATUS, runStatus.name())
         .put(JsonKeys.PARAMETERS, instance.getFormSpecJson())
         .put(JsonKeys.VALIDATION, ValidationFormatter.getValidationBundleJson(instance.getValidationBundle()));
-    
   }
 
   public static JSONArray getStepAnalysisInstancesJson(
