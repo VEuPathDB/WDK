@@ -79,7 +79,7 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
 
   @Override
   public String getDisplayName() {
-    return _displayName;
+    return _displayName == null ? _name : _displayName;
   }
   public void setDisplayName(String displayName) {
     _displayName = displayName;

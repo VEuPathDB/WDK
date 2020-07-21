@@ -95,7 +95,7 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
     instance._analysisName = stepAnalysis.getName();
     instance._step = runnableStep.get();
     instance._spec = validFormParams.get();
-    instance._displayName = stepAnalysis.getName();
+    instance._displayName = stepAnalysis.getDisplayName();
     instance._userNotes = null;
     instance._revisionStatus = RevisionStatus.NEW;
 
