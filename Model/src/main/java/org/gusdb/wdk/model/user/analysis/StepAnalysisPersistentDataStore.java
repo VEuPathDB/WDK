@@ -127,7 +127,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
     ANALYSIS_SEQUENCE = _userSchema + ANALYSIS_SEQUENCE_NAME;
     String table = _userSchema + ANALYSIS_TABLE;
     String idType = _userPlatform.getNumberDataType(12);
-    String intType = _appPlatform.getNumberDataType(2);
+    String intType = _userPlatform.getNumberDataType(2);
     String userStringType = _userPlatform.getStringDataType(1024);
     String userBigStringType = _userPlatform.getStringDataType(4000);
     String hashType = _userPlatform.getStringDataType(96);
