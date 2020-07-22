@@ -414,13 +414,14 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
   }
 
   // SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, USER_NOTES, IS_NEW, CONTEXT
+  // WdkModel wdkModel, long analysisId, long stepId, RevisionStatus revisionStatus, String displayName, String userNotes, String serializedInstance, ValidationLevel validationLevel
   private StepAnalysisInstance readInstance(ResultSet rs, Step step, ValidationLevel level)
       throws WdkModelException, DeprecatedAnalysisException, SQLException {
     return StepAnalysisInstance.createFromStoredData(
         step.getAnswerSpec().getWdkModel(),
         rs.getLong(1),
         rs.getLong(2),
-        RevisionStatus.valueOf(rs.getInt(3)),
+        RevisionStatus.valueOf(rs.getInt(5)),
         rs.getString(3),
         rs.getString(4),
         _userPlatform.getClobData(rs, "CONTEXT"),

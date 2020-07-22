@@ -9,11 +9,13 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
@@ -256,29 +258,26 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   private String getAdjustedDisplayName(StepAnalysisInstance instance) throws WdkModelException {
     Collection<StepAnalysisInstance> stepInstances =
         _dataStore.getInstancesByStep(instance.getStep(), ValidationLevel.NONE);
-    if (stepInstances.isEmpty()) return instance.getDisplayName();
-    String displayNameToAttempt = instance.getDisplayName();
-    boolean displayNameUnique = false;
-    int index = 1;
-    while (!displayNameUnique) {
-      displayNameUnique = true;
-      LOG.info("Attempting name: " + displayNameToAttempt);
-      for (StepAnalysisInstance otherInstance : stepInstances) {
-        LOG.info("Comparing candidate name '" + displayNameToAttempt +
-            "' for instance " + instance.getAnalysisId() + " to analysis " +
-            otherInstance.getAnalysisId() + " with name " +
-            otherInstance.getDisplayName());
-        if (otherInstance.getDisplayName().equals(displayNameToAttempt)) {
-          LOG.info("Found instance " + otherInstance.getAnalysisId() + " that already has name: " + displayNameToAttempt);
-          displayNameUnique = false;
-          index++;
-          displayNameToAttempt = instance.getDisplayName() + " (" + index + ")";
-          break;
-        }
-      }
-      LOG.info("Result of '" + displayNameToAttempt + "': unique = " + displayNameUnique);
+    // no conflict if no other analyses on this step
+    if (stepInstances.isEmpty()) {
+      return instance.getDisplayName();
     }
-    return displayNameToAttempt;
+    Set<String> takenNames = stepInstances.stream().map(i -> i.getDisplayName()).collect(Collectors.toSet());
+    String baseName = instance.getDisplayName();
+    // no conflict if no analyses have the current name
+    if (!takenNames.contains(baseName)) {
+      return baseName;
+    }
+    // add an increasing index to the back of the given name until no conflict
+    int index = 1;
+    while (true) {
+      String adjustedName = baseName + " (" + index + ")";
+      if (!takenNames.contains(adjustedName)) {
+        LOG.info("To ensure uniqueness, adjusted display name of analysis from '" + baseName + "' to  " + adjustedName);
+        return adjustedName;
+      }
+      index++;
+    }
   }
 
   @Override
