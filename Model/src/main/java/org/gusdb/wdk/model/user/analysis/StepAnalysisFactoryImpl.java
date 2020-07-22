@@ -506,41 +506,38 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   @Override
   public ExecutionStatus calculateStatus(StepAnalysisInstance instance) throws WdkModelException {
 
-    switch(instance.getRevisionStatus()) {
-      case NEW:        return ExecutionStatus.CREATED;
-      case STEP_DIRTY: return ExecutionStatus.STEP_REVISED;
-      case STEP_CLEAN: // need to look up execution and calculate status
-
-        // check if passed instance validated at runnable level
-        if (!instance.getValidationBundle().getLevel().isGreaterThanOrEqualTo(ValidationLevel.RUNNABLE)) {
-          throw new WdkModelException("This method must be called with an analysis validated at the runnable level.");
-        }
-
-        // if not runnable after runnable validation, return invalid
-        if (!instance.isRunnable()) {
-          return ExecutionStatus.INVALID;
-        }
-
-        // look up execution for this instance
-        RunnableObj<StepAnalysisInstance> runnableInstance = instance.getRunnable().getLeft();
-        Optional<ExecutionInfo> executionInfo = getExecutionInfo(runnableInstance);
-
-        // If unable to find execution for this hash then one of the following conditions is true:
-        //   1. step has been revised since the last run despite clean revision status
-        //         (this is possible because of timestamp params and also possibly dependent steps TODO: check)
-        //   2. cache has been cleared
-        // In both cases, return out-of-date (needs rerun)
-        // Also return out-of-date if file store has been deleted (may contain results)
-        boolean resultsDirExists = _fileStore.storageDirExists(StepAnalysisInstance.getContextHash(runnableInstance));
-        if (executionInfo.isEmpty() || !resultsDirExists) {
-          return ExecutionStatus.OUT_OF_DATE;
-        }
-
-        // if db cache and file store are intact, then return status of execution as is
-        return executionInfo.get().getStatus();
-
-      default:
-        throw new WdkModelException("New RevisionStatus value added but not handled here.");
+    // check if passed instance validated at runnable level
+    if (!instance.getValidationBundle().getLevel().isGreaterThanOrEqualTo(ValidationLevel.RUNNABLE)) {
+      throw new WdkModelException("This method must be called with an analysis validated at the runnable level.");
     }
+
+    // if not runnable after runnable validation, return invalid
+    if (!instance.isRunnable()) {
+      return ExecutionStatus.INVALID;
+    }
+
+    // look up execution evidence for this instance
+    RunnableObj<StepAnalysisInstance> runnableInstance = instance.getRunnable().getLeft();
+    Optional<ExecutionInfo> executionInfo = getExecutionInfo(runnableInstance);
+    boolean resultsDirExists = _fileStore.storageDirExists(StepAnalysisInstance.getContextHash(runnableInstance));
+
+    // If unable to find execution for this hash OR file store at this hash
+    // cannot be found, then one of the following conditions is true:
+    //   1. this analysis has never been run
+    //   2. step has been revised since the last run despite clean revision status
+    //         (this is possible because of timestamp params and also possibly dependent steps TODO: check)
+    //   3. cache has been cleared
+    if (executionInfo.isEmpty() || !resultsDirExists) {
+      switch(instance.getRevisionStatus()) {
+        case NEW:        return ExecutionStatus.CREATED;
+        case STEP_DIRTY: return ExecutionStatus.STEP_REVISED;
+        case STEP_CLEAN: return ExecutionStatus.OUT_OF_DATE;
+        default:
+          throw new WdkModelException("New RevisionStatus value added but not handled here.");
+      }
+    }
+
+    // if db cache and file store are intact, then return status of execution as is
+    return executionInfo.get().getStatus();
   }
 }
