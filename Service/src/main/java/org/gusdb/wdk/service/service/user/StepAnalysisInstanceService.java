@@ -105,7 +105,8 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
    * Create a new step analysis; expects JSON in the following format:
    * {
    *   analysisName: string
-   *   parameters: map<string,string>
+   *   parameters:   object<string,string>
+   *   displayName?: string
    * }
    * @param body input JSON string
    * @return Details of the newly created step analysis instance as JSON
@@ -136,6 +137,9 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
           .createUnsavedInstance(step, stepAnalysis, formSpec)
           .getRunnable().getOrThrow(inst -> new DataValidationException(inst.getValidationBundle()));
 
+      // add custom display name if specified
+      getValidDisplayName(json).ifPresent(validName -> instance.get().setDisplayName(validName));
+
       // save instance to database
       getWdkModel().getStepAnalysisFactory().saveNewInstance(instance);
 
@@ -145,6 +149,15 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage());
     }
+  }
+
+  private static Optional<String> getValidDisplayName(JSONObject json) throws DataValidationException {
+    if (!json.has(JsonKeys.DISPLAY_NAME)) return Optional.empty();
+    String newDisplayName = json.getString(JsonKeys.DISPLAY_NAME).trim();
+    if (newDisplayName.isEmpty()) {
+      throw new DataValidationException("Display name field cannot be empty.");
+    }
+    return Optional.of(newDisplayName);
   }
 
   /**
@@ -214,14 +227,8 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
       instance.setFormParams(formSpec, ValidationLevel.SYNTACTIC);
     }
 
-    // apply display name modification
-    if (json.has(JsonKeys.DISPLAY_NAME)) {
-      String newDisplayName = json.getString(JsonKeys.DISPLAY_NAME).trim();
-      if (newDisplayName.isEmpty()) {
-        throw new DataValidationException("Display name field cannot be empty.");
-      }
-      instance.setDisplayName(newDisplayName);
-    }
+    // apply display name modification if present and valid
+    getValidDisplayName(json).ifPresent(validName -> instance.setDisplayName(validName));
 
     // apply user notes modification
     if (json.has(JsonKeys.USER_NOTES)) {
