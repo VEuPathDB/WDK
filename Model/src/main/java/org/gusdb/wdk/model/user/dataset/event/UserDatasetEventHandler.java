@@ -89,7 +89,6 @@ public class UserDatasetEventHandler {
           // insert into the type-specific tables
           // the method should close dsSession when done with it
           typeHandler.installInAppDb(dsSession, userDataset, tmpDir, projectId);
-          dsSession = null;
 
           // grant access to the owner, by installing into the ownerTable
           grantAccess(event.getOwnerUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
@@ -100,9 +99,7 @@ public class UserDatasetEventHandler {
         }
       }
     } catch (Exception e){
-      if(dsSession != null){
-        dsSession.close();
-      }
+      dsSession.close();
       throw e;
     }
     closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
