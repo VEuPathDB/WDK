@@ -94,7 +94,6 @@ public abstract class UserDatasetTypeHandler {
       Path tmpFile = udf.getLocalCopy(dsSession, workingDir);
       nameToTempFileMap.put(userDatasetFileName, tmpFile);
     }
-    dsSession.close();
     String[] command = getInstallInAppDbCommand(userDataset, nameToTempFileMap, projectId);
     // For the case where no user dataset file data is installed into the DB
     if(command.length > 0) {
