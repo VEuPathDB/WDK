@@ -63,8 +63,8 @@ public class UserDatasetEventHandler {
     LOG.info("Installing user dataset " + event.getUserDatasetId());
     openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
 
-    try(UserDatasetSession dsSession = dsStore.getSession()) {
-
+    UserDatasetSession dsSession = dsStore.getSession();
+    try {
       // there is a theoretical race condition here, because this check is not in the same
       // transaction as the rest of this method.   but that risk is very small.
       if (!dsSession.getUserDatasetExists(event.getOwnerUserId(), event.getUserDatasetId())) {
@@ -86,7 +86,9 @@ public class UserDatasetEventHandler {
           sqlRunner.executeUpdate(args);
 
           // insert into the type-specific tables
+          // the method should close dsSession when done with it
           typeHandler.installInAppDb(dsSession, userDataset, tmpDir, projectId);
+          dsSession = null;
 
           // grant access to the owner, by installing into the ownerTable
           grantAccess(event.getOwnerUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
@@ -96,6 +98,11 @@ public class UserDatasetEventHandler {
           LOG.info("User dataset " + event.getUserDatasetId() + " deemed obsolete: " + compatibility.notCompatibleReason() + ".  Skipping install.");
         }
       }
+    } catch (Exception e){
+      if(dsSession != null){
+        dsSession.close();
+      }
+      throw e;
     }
     closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
   }
