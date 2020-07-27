@@ -1,6 +1,6 @@
 package org.gusdb.wdk.service;
 
-import static org.gusdb.fgputil.FormatUtil.isInteger;
+import static org.gusdb.fgputil.FormatUtil.isLong;
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.wdk.service.service.AbstractWdkService.getStreamingOutput;
 
@@ -30,6 +30,7 @@ public class FileRanges {
   private static final String SIZE_UNITS = "bytes";
   private static final String RANGE_HEADER_VALUE_PREFIX = SIZE_UNITS + "=";
 
+  //"2651586560 2652372991"
   public static Range<Long> parseRangeHeaderValue(String rangeStr) {
     LOG.debug("Incoming range string: " + rangeStr);
     if (rangeStr == null) {
@@ -47,7 +48,7 @@ public class FileRanges {
       throw new BadRequestException("Currently only a single range is supported");
     }
     LOG.debug("Received " + tokens.length + " tokens [" + join(tokens, ",") + "]");
-    if (isInteger(tokens[0]) && (tokens.length == 1 || isInteger(tokens[1]))) {
+    if (isLong(tokens[0]) && (tokens.length == 1 || isLong(tokens[1]))) {
       try {
         Range<Long> range = new Range<>(Long.parseLong(tokens[0]),
             tokens.length == 1 ? null : Long.parseLong(tokens[1]));
