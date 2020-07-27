@@ -140,6 +140,8 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   protected boolean _visible;
   protected boolean _readonly;
 
+  private boolean _isForInternalUseOnly = false;
+
   private Group _group;
 
   private List<ParamSuggestion> _suggestions;
@@ -193,6 +195,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _sanityDefaultValue = param._sanityDefaultValue;
     _visible = param._visible;
     _readonly = param._readonly;
+    _isForInternalUseOnly = param._isForInternalUseOnly;
     _group = param._group;
     _allowEmpty = param._allowEmpty;
     _emptyValue = param._emptyValue;
@@ -351,7 +354,11 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
    * omitted in both service use and DB storage
    */
   public boolean isForInternalUseOnly() {
-    return false;
+    return _isForInternalUseOnly;
+  }
+
+  public void setForInternalUseOnly(boolean isForInternalUseOnly) {
+    _isForInternalUseOnly = isForInternalUseOnly;
   }
 
   /**

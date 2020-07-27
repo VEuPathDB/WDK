@@ -286,11 +286,6 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
     return _analysisName;
   }
 
-  public JSONObject getFormSpecJson() {
-    return ParamsAndFiltersDbColumnFormat.formatParams(
-        _spec, StepAnalysisSupplementalParams.getAllNames());
-  }
-
   /**
    * Returns JSON of the following spec:
    * {
@@ -301,7 +296,9 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
     try {
       JSONObject jsonForDigest = new JSONObject()
           .put(JsonKey.analysisName.name(), _analysisName)
-          .put(JsonKey.formParams.name(), getFormSpecJson());
+          .put(JsonKey.formParams.name(),
+              ParamsAndFiltersDbColumnFormat.formatParams(
+                  _spec, StepAnalysisSupplementalParams.getAllNames()));
 
       LOG.debug("Created the following digest JSON: " + jsonForDigest);
       return JsonUtil.serialize(jsonForDigest);
@@ -352,6 +349,10 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
   public void setFormParams(RunnableObj<StepAnalysisFormSpec> formSpec, ValidationLevel newValidationLevel) throws WdkModelException {
     _spec = formSpec.get();
     revalidate(newValidationLevel);
+  }
+
+  public StepAnalysisFormSpec getFormSpec() {
+    return _spec;
   }
 
   public Map<String, String> getFormParams() {

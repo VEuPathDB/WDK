@@ -257,10 +257,14 @@ public class StepAnalysisXml extends ParameterContainerImpl implements StepAnaly
             "analysis plugins cannot have answer params.");
       }
 
-      // ensure any reserved names refer to string params
-      if (reservedNames.contains(param.getName()) && !(param instanceof StringParam)) {
-        throw new WdkModelException("Special param '" + param.getName() +
-            "' in step analysis " + _name + " must be a StringParam.");
+      // ensure any reserved names refer to string params and are for internal use only
+      if (reservedNames.contains(param.getName())) {
+        if (!(param instanceof StringParam)) {
+          throw new WdkModelException("Special param '" + param.getName() +
+              "' in step analysis " + _name + " must be a StringParam.");
+        }
+        // reserved names refer to internally used params (not to be stored in DB or exposed to service
+        param.setForInternalUseOnly(true);
       }
     }
   }

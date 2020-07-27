@@ -77,7 +77,7 @@ public class StepAnalysisFormatter {
         .put(JsonKeys.DESCRIPTION, analysis.map(a -> a.getDescription()).orElse(null))
         .put(JsonKeys.USER_NOTES, instance.getUserNotes())
         .put(JsonKeys.STATUS, runStatus.name())
-        .put(JsonKeys.PARAMETERS, instance.getFormSpecJson())
+        .put(JsonKeys.PARAMETERS, ParamContainerFormatter.formatExistingParamValues(instance.getFormSpec()))
         .put(JsonKeys.VALIDATION, ValidationFormatter.getValidationBundleJson(instance.getValidationBundle()));
   }
 
