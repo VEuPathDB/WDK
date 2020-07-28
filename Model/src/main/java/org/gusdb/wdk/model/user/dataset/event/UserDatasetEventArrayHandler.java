@@ -13,7 +13,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigParser;
-import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.*;
 import org.gusdb.wdk.model.user.dataset.event.UserDatasetShareEvent.ShareAction;
 import org.json.JSONArray;
@@ -29,19 +28,18 @@ import java.util.*;
  *
  * @author crisl-adm
  */
-public class UserDatasetEventArrayHandler {
-
-  protected static final String ARG_PROJECT = "project";
-
-  private UserDatasetStore userDatasetStore;
-  private ModelConfig modelConfig;
-  private String projectId;
-
+public class UserDatasetEventArrayHandler
+{
   private static final Logger logger = Logger.getLogger(UserDatasetEventArrayHandler.class);
 
-  public UserDatasetEventArrayHandler(String projectId) throws WdkModelException {
-    this.projectId = projectId;
-    modelConfig = getModelConfig();
+  private UserDatasetStore userDatasetStore;
+  private ModelConfig      modelConfig;
+  private String           projectId;
+
+  public UserDatasetEventArrayHandler(String projectId)
+  throws WdkModelException {
+    this.projectId   = projectId;
+    modelConfig      = getModelConfig();
     userDatasetStore = getUserDatasetStore();
   }
 
@@ -50,15 +48,24 @@ public class UserDatasetEventArrayHandler {
    * handled to date are processed.  The nature of the processing is defined by
    * the user dataset event object (install, uninstall, share).
    *
-   * @param eventList
-   *   list of user dataset event to be processed. database records in tables.
+   * @param eventList list of user dataset event to be processed. database
+   *                  records in tables.
    */
-  public void handleEventList(List<UserDatasetEvent> eventList) throws WdkModelException {
+  public void handleEventList(List < UserDatasetEvent > eventList)
+  throws WdkModelException {
 
-    try (DatabaseInstance appDb = new DatabaseInstance(getModelConfig().getAppDB(), WdkModel.DB_INSTANCE_APP, true)) {
+    try (
+      final var appDb = new DatabaseInstance(
+        getModelConfig().getAppDB(),
+        WdkModel.DB_INSTANCE_APP, true
+      )
+    ) {
 
-      DataSource appDbDataSource = appDb.getDataSource();
-      Long lastHandledEventId = findLastHandledEvent(appDbDataSource, getUserDatasetSchemaName());
+      final var appDbDataSource = appDb.getDataSource();
+      final var lastHandledEventId = findLastHandledEvent(
+        appDbDataSource,
+        getUserDatasetSchemaName()
+      );
       int count = 0;
 
       // If the subject user dataset does not have a currently supported type
@@ -66,58 +73,83 @@ public class UserDatasetEventArrayHandler {
       // In theory, no user dataset with an unsupported type handler should ever
       // be installed on the system as type handlers should only be added and
       // removed at release time when the UD database is emptied.
-      for (UserDatasetEvent event : eventList) {
+      for (final var event : eventList) {
 
         // If this event was handled before, skip to the next event - this
         // really shouldn't happen.
-        if ((lastHandledEventId != null && event.getEventId() <= lastHandledEventId)) continue;
+        if (lastHandledEventId != null && event.getEventId() <= lastHandledEventId)
+          continue;
 
         // If the event does not apply to this project, complete the event
         // handling and skip to the next event.
-        if(!event.getProjectsFilter().contains(getProjectId())) {
-          UserDatasetEventHandler.completeEventHandling(event.getEventId(), appDbDataSource, getUserDatasetSchemaName());
+        if (!event.getProjectsFilter().contains(getProjectId())) {
+          UserDatasetEventHandler.completeEventHandling(
+            event.getEventId(),
+            appDbDataSource,
+            getUserDatasetSchemaName()
+          );
           count++;
           continue;
         }
 
         if (event instanceof UserDatasetInstallEvent) {
-          UserDatasetTypeHandler typeHandler = userDatasetStore.getTypeHandler(event.getUserDatasetType());
+          final var typeHandler = userDatasetStore.getTypeHandler(event.getUserDatasetType());
           if (UnsupportedTypeHandler.NAME.equals(typeHandler.getUserDatasetType().getName())) {
-            logger.warn("Install event " + event.getEventId() + " refers to typeHandler " +
-              event.getUserDatasetType() + " which is not present in the wdk configuration." +
-              "Skipping the install but declaring the event as handled.");
-            UserDatasetEventHandler.completeEventHandling(event.getEventId(), appDbDataSource, getUserDatasetSchemaName());
-            continue;
-          }
-          else {
-            UserDatasetEventHandler.handleInstallEvent((UserDatasetInstallEvent) event, typeHandler, getUserDatasetStore(),
-              appDbDataSource, getUserDatasetSchemaName(), getModelConfig().getWdkTempDir(), getModelConfig().getProjectId());
-          }
-        }
-        else if (event instanceof UserDatasetUninstallEvent) {
-          UserDatasetTypeHandler typeHandler = userDatasetStore.getTypeHandler(event.getUserDatasetType());
-          if (UnsupportedTypeHandler.NAME.equals(typeHandler.getUserDatasetType().getName())) {
-            logger.warn("Uninstall event " + event.getEventId() + " refers to typeHandler " +
-              event.getUserDatasetType() + " which is not present in the wdk configuration." +
-              "Skipping the uninstall but declaring the event as handled.");
-            UserDatasetEventHandler.completeEventHandling(event.getEventId(), appDbDataSource, getUserDatasetSchemaName());
-          }
-          else {
-            UserDatasetEventHandler.handleUninstallEvent((UserDatasetUninstallEvent) event, typeHandler,
-              appDbDataSource, getUserDatasetSchemaName(), getModelConfig().getWdkTempDir(), getModelConfig().getProjectId());
-          }
-        }
+            logger.warn("Install event " + event.getEventId()
+              + " refers to typeHandler " + event.getUserDatasetType()
+              + " which is not present in the wdk configuration."
+              + "Skipping the install but declaring the event as handled.");
 
-        else if (event instanceof UserDatasetShareEvent) {
+            UserDatasetEventHandler.completeEventHandling(
+              event.getEventId(),
+              appDbDataSource,
+              getUserDatasetSchemaName()
+            );
+            continue;
+          } else {
+            UserDatasetEventHandler.handleInstallEvent(
+              (UserDatasetInstallEvent) event,
+              typeHandler,
+              getUserDatasetStore(),
+              appDbDataSource,
+              getUserDatasetSchemaName(),
+              getModelConfig().getWdkTempDir(),
+              getModelConfig().getProjectId()
+            );
+          }
+        } else if (event instanceof UserDatasetUninstallEvent) {
+          final var typeHandler = userDatasetStore.getTypeHandler(event.getUserDatasetType());
+          if (UnsupportedTypeHandler.NAME.equals(typeHandler.getUserDatasetType().getName())) {
+            logger.warn("Uninstall event " + event.getEventId()
+              + " refers to typeHandler " + event.getUserDatasetType()
+              + " which is not present in the wdk configuration."
+              + "Skipping the uninstall but declaring the event as handled.");
+
+            UserDatasetEventHandler.completeEventHandling(
+              event.getEventId(),
+              appDbDataSource,
+              getUserDatasetSchemaName()
+            );
+          } else {
+            UserDatasetEventHandler.handleUninstallEvent(
+              (UserDatasetUninstallEvent) event,
+              typeHandler,
+              appDbDataSource,
+              getUserDatasetSchemaName(),
+              getModelConfig().getWdkTempDir(),
+              getModelConfig().getProjectId()
+            );
+          }
+        } else if (event instanceof UserDatasetShareEvent) {
           UserDatasetEventHandler.handleShareEvent((UserDatasetShareEvent) event,
-            appDbDataSource, getUserDatasetSchemaName());
+            appDbDataSource, getUserDatasetSchemaName()
+          );
         }
 
         count++;
       }
       logger.info("Handled " + count + " new events");
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new WdkModelException(e);
     }
   }
@@ -126,32 +158,43 @@ public class UserDatasetEventArrayHandler {
    * Find the highest event id in the app db's handled events log.  Null if
    * none.
    *
-   * @throws WdkModelException
-   *   if the log has a failed event (no complete date) from a previous run.
+   * @throws WdkModelException if the log has a failed event (no complete date)
+   *                           from a previous run.
    */
-  public Long findLastHandledEvent(DataSource appDbDataSource, String userDatasetSchemaName) throws WdkModelException {
+  public Long findLastHandledEvent(
+    DataSource appDbDataSource,
+    String userDatasetSchemaName
+  ) throws WdkModelException {
 
-    SingleLongResultSetHandler handler = new SingleLongResultSetHandler();
+    final var handler = new SingleLongResultSetHandler();
 
     // first confirm there are no failed events from the last run.  (They'll
     // have a null completed time)
-    String sql = "select min(event_id) from " + userDatasetSchemaName + "UserDatasetEvent where completed is null";
-    SQLRunner sqlRunner = new SQLRunner(appDbDataSource, sql, "find-earliest-incomplete-event-id");
+    var sql = "select min(event_id) from " + userDatasetSchemaName
+      + "UserDatasetEvent where completed is null";
+    var sqlRunner = new SQLRunner(appDbDataSource, sql,
+      "find-earliest-incomplete-event-id");
+
     sqlRunner.executeQuery(handler);
+
     if (!handler.getStatus().equals(Status.NULL_VALUE)) {
-      throw new WdkModelException("Event id " + handler.getRetrievedValue() + " failed to complete in a previous run");
+      throw new WdkModelException("Event id " + handler.getRetrievedValue()
+        + " failed to complete in a previous run");
     }
 
     // find highest previously handled event id
-    sql = "select max(event_id) from " + userDatasetSchemaName + "UserDatasetEvent";
+    sql = "select max(event_id) from " + userDatasetSchemaName
+      + "UserDatasetEvent";
+
     sqlRunner = new SQLRunner(appDbDataSource, sql, "find-latest-event-id");
     sqlRunner.executeQuery(handler);
+
     return handler.getRetrievedValue();
   }
 
   public UserDatasetStore getUserDatasetStore() throws WdkModelException {
     if (userDatasetStore == null) {
-      ModelConfigUserDatasetStore udsConfig= getModelConfig().getUserDatasetStoreConfig();
+      var udsConfig = getModelConfig().getUserDatasetStoreConfig();
       userDatasetStore = udsConfig.getUserDatasetStore(getModelConfig().getWdkTempDir());
     }
     return userDatasetStore;
@@ -159,18 +202,18 @@ public class UserDatasetEventArrayHandler {
 
   // TODO: get from model config
   public String getUserDatasetSchemaName() {
-    return  "ApiDBUserDatasets.";
+    return "ApiDBUserDatasets.";
   }
 
-  public ModelConfig getModelConfig() throws  WdkModelException {
+  public ModelConfig getModelConfig() throws WdkModelException {
     if (modelConfig == null) {
       try {
-        String gusHome = GusHome.getGusHome();
-        ModelConfigParser parser = new ModelConfigParser(gusHome);
+        var gusHome = GusHome.getGusHome();
+        var parser  = new ModelConfigParser(gusHome);
+
         modelConfig = parser.parseConfig(getProjectId()).build();
         QueryLogger.initialize(modelConfig.getQueryMonitor());
-      }
-      catch (SAXException | IOException e) {
+      } catch (SAXException | IOException e) {
         throw new WdkModelException(e);
       }
     }
@@ -182,15 +225,15 @@ public class UserDatasetEventArrayHandler {
    * content a series of event files containing json objects into a single json
    * array and returns a corresponding list of UserDatasetEvent objects.
    *
-   * @param eventJsonArray
-   *   JSONArray containing an array of event JSONObjects
+   * @param eventJsonArray JSONArray containing an array of event JSONObjects
    *
    * @return - a list of UserDatasetEvents corresponding to
    */
-  public static List<UserDatasetEvent> parseEventsArray(JSONArray eventJsonArray) throws WdkModelException {
-    List<UserDatasetEvent> events = new ArrayList<UserDatasetEvent>();
-    for(int i = 0; i < eventJsonArray.length(); i++) {
-      JSONObject eventJson = eventJsonArray.getJSONObject(i);
+  public static List < UserDatasetEvent > parseEventsArray(JSONArray eventJsonArray)
+  throws WdkModelException {
+    var events = new ArrayList < UserDatasetEvent >();
+    for (int i = 0; i < eventJsonArray.length(); i++) {
+      var eventJson = eventJsonArray.getJSONObject(i);
       parseEventObject(eventJson, events);
     }
     return events;
@@ -201,80 +244,118 @@ public class UserDatasetEventArrayHandler {
    * appropriate event handler based on the information contained within that
    * object.
    *
-   * @param eventJson
-   *   JSONObject representing the event
-   * @param events
-   *   a list of UserDatasetEvents to which new events are added.
+   * @param eventJson JSONObject representing the event
+   * @param events    a list of UserDatasetEvents to which new events are added.
    */
-  protected static void parseEventObject(JSONObject eventJson, List<UserDatasetEvent> events) throws WdkModelException {
-    Long eventId = eventJson.getLong("eventId");
-    String event = eventJson.getString("event");
+  protected static void parseEventObject(
+    JSONObject eventJson,
+    List < UserDatasetEvent > events
+  ) throws WdkModelException {
+    var eventId = eventJson.getLong("eventId");
+    var event   = eventJson.getString("event");
 
     // Extract an array of projects relevant to the event and add them to a
     // project filter.
-    String projectsJson = eventJson.getJSONArray("projects").toString();
-    ObjectMapper mapper = new ObjectMapper();
-    TypeReference<Set<String>> setType = new TypeReference<Set<String>>() {};
-    Set<String> projects;
+    var projectsJson = eventJson.getJSONArray("projects").toString();
+    var mapper       = new ObjectMapper();
+    var setType = new TypeReference < Set < String > >()
+    {
+    };
+
+    Set < String > projects;
     try {
       projects = mapper.readValue(projectsJson, setType);
-    }
-    catch(IOException ioe) {
+    } catch (IOException ioe) {
       throw new WdkModelException(ioe);
     }
-    Set<String> projectsFilter = new HashSet<>();
-    projectsFilter.addAll(projects);
 
-    Long userDatasetId = eventJson.getLong("datasetId");
-    TypeReference<Map<String,String>> mapType  = new TypeReference<Map<String,String>>() {};
-    String typeJson = eventJson.getJSONObject("type").toString();
-    Map<String, String> type = null;
+    var projectsFilter = new HashSet <>(projects);
+
+    var userDatasetId = eventJson.getLong("datasetId");
+    var mapType = new TypeReference < Map < String, String > >()
+    {
+    };
+    var typeJson = eventJson.getJSONObject("type").toString();
+
+    Map < String, String > type;
     try {
       type = mapper.readValue(typeJson, mapType);
-    }
-    catch(IOException ioe) {
+    } catch (IOException ioe) {
       throw new WdkModelException(ioe);
     }
-    UserDatasetType userDatasetType = UserDatasetTypeFactory.getUserDatasetType(type.get("name"), type.get("version"));
+
+    var userDatasetType = UserDatasetTypeFactory.getUserDatasetType(type.get(
+      "name"), type.get("version"));
 
     // Dataset is in the user's workspace and now needs to be installed into the
     // database.
     if ("install".equals(event)) {
-      Long ownerUserId = eventJson.getLong("owner");
+      var ownerUserId = eventJson.getLong("owner");
 
       // A dataset may have multiple dependencies
-      Set<UserDatasetDependency> dependencies = new HashSet<UserDatasetDependency>();
-      JSONArray dependencyJsonArray = eventJson.getJSONArray("dependencies");
-      for(int i = 0; i < dependencyJsonArray.length(); i++) {
-        JSONObject dependencyJson = dependencyJsonArray.getJSONObject(i);
-        dependencies.add(new UserDatasetDependency(dependencyJson.getString("resourceIdentifier"),
-          dependencyJson.getString("resourceVersion"), dependencyJson.getString("resourceDisplayName")));
+      var dependencies        = new HashSet < UserDatasetDependency >();
+      var dependencyJsonArray = eventJson.getJSONArray("dependencies");
+
+      for (int i = 0; i < dependencyJsonArray.length(); i++) {
+        var dependencyJson = dependencyJsonArray.getJSONObject(i);
+        dependencies.add(new UserDatasetDependency(
+          dependencyJson.getString(
+            "resourceIdentifier"),
+          dependencyJson.getString("resourceVersion"),
+          dependencyJson.getString("resourceDisplayName")
+        ));
       }
-      events.add(new UserDatasetInstallEvent(eventId, projectsFilter, userDatasetId, userDatasetType, ownerUserId, dependencies));
-    }
 
-    // Dataset has been deleted from the workspace and now needs to be removed
-    // from the database.
-    else if ("uninstall".equals(event)) {
-      events.add(new UserDatasetUninstallEvent(eventId, projectsFilter, userDatasetId, userDatasetType));
-    }
+      events.add(new UserDatasetInstallEvent(
+        eventId,
+        projectsFilter,
+        userDatasetId,
+        userDatasetType,
+        ownerUserId,
+        dependencies
+      ));
 
-    // Dataset sharing has either been granted or revoked in the workspace and
-    // now must be reflected in the database
-    else if ("share".equals(event)) {
-      Long ownerId = eventJson.getLong("owner");
-      Long recipientId = eventJson.getLong("recipient");
-      ShareAction action = "grant".equals(eventJson.getString("action")) ?
-        ShareAction.GRANT : ShareAction.REVOKE;
-      events.add(new UserDatasetShareEvent(eventId, projectsFilter, userDatasetId, userDatasetType, ownerId, recipientId, action));
-    }
+    } else if ("uninstall".equals(event)) {
+      // Dataset has been deleted from the workspace and now needs to be removed
+      // from the database.
 
-    else {
-      throw new WdkModelException("Unrecognized user dataset event type: " + event);
+      events.add(new UserDatasetUninstallEvent(
+        eventId,
+        projectsFilter,
+        userDatasetId,
+        userDatasetType
+      ));
+    } else if ("share".equals(event)) {
+      // Dataset sharing has either been granted or revoked in the workspace and
+      // now must be reflected in the database
+
+      var ownerId     = eventJson.getLong("owner");
+      var recipientId = eventJson.getLong("recipient");
+      var action = "grant".equals(eventJson.getString("action"))
+        ? ShareAction.GRANT
+        : ShareAction.REVOKE;
+
+      events.add(new UserDatasetShareEvent(
+        eventId,
+        projectsFilter,
+        userDatasetId,
+        userDatasetType,
+        ownerId,
+        recipientId,
+        action
+      ));
+    } else {
+      throw new WdkModelException("Unrecognized user dataset event type: "
+        + event);
     }
 
   }
 
-  public void setProjectId(String projectId) {this.projectId = projectId;}
-  private String getProjectId() { return projectId;}
+  public void setProjectId(String projectId) {
+    this.projectId = projectId;
+  }
+
+  private String getProjectId() {
+    return projectId;
+  }
 }
