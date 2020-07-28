@@ -25,14 +25,14 @@ public class UserDatasetEventListHandler extends BaseCLI {
   }
 
   public static void main(String[] args) {
-    String cmdName = System.getProperty("cmdName");
-    UserDatasetEventListHandler handler = new UserDatasetEventListHandler(cmdName);
+    var cmdName = System.getProperty("cmdName");
+    var handler = new UserDatasetEventListHandler(cmdName);
+
     try {
       handler.invoke(args);
       logger.info("done.");
       System.exit(0);
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       ex.printStackTrace();
       System.exit(1);
     }
@@ -40,13 +40,15 @@ public class UserDatasetEventListHandler extends BaseCLI {
 
   @Override
   protected void execute() throws Exception {
-    String projectId = (String) getOptionValue(ARG_PROJECT);
-    UserDatasetEventArrayHandler handler = new UserDatasetEventArrayHandler(projectId);
-    File eventFile = new File((String)getOptionValue(ARG_EVENTS_FILE));
+    var projectId = (String) getOptionValue(ARG_PROJECT);
+    var handler = new UserDatasetEventArrayHandler(projectId);
+    var eventFile = new File((String)getOptionValue(ARG_EVENTS_FILE));
+
     JSONArray eventJsonArray;
     try (FileInputStream fileInputStream = new FileInputStream(eventFile)) {
       eventJsonArray = new JSONArray(fileInputStream.toString());
     }
+
     handler.handleEventList(UserDatasetEventArrayHandler.parseEventsArray(eventJsonArray));
   }
 
