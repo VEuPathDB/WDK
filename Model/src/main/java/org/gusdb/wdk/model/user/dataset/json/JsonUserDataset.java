@@ -36,17 +36,18 @@ public class JsonUserDataset implements UserDataset {
   public static final String NAME  = "name";
   public static final String DATA_FILES  = "dataFiles";
 
-  private long userDatasetId;
+  private final Map<Long, JsonUserDatasetShare> sharesMap = new HashMap<>();
+  private final Map<String, UserDatasetFile> dataFiles = new HashMap<>();
+  private final Set<UserDatasetDependency> dependencies = new HashSet<>();
+  private final Set<String> projects = new HashSet<>();
+  private final long userDatasetId;
+  private final JSONObject datasetJsonObject;
+
   private JsonUserDatasetMeta meta;
   private UserDatasetType type;
   private long ownerId;
   private long created;
   private int size;
-  private Map<Long, JsonUserDatasetShare> sharesMap = new HashMap<>();
-  private Map<String, UserDatasetFile> dataFiles = new HashMap<>();
-  private Set<UserDatasetDependency> dependencies = new HashSet<>();
-  private Set<String> projects = new HashSet<>();
-  private JSONObject datasetJsonObject;
   private JSONObject metaJsonObject;
 
   /**
@@ -61,11 +62,17 @@ public class JsonUserDataset implements UserDataset {
   ) throws WdkModelException {
     this.userDatasetId = userDatasetId;
     this.datasetJsonObject = datasetJsonObject;
+
     unpackJson(datasetJsonObject, metaJsonObject, dataFilesDir, session);
   }
 
   // TODO: consider active validation of the JSONObject
-  private void unpackJson(JSONObject datasetJsonObj, JSONObject metaJsonObj, Path dataFilesDir, JsonUserDatasetSession session) throws WdkModelException {
+  private void unpackJson(
+    JSONObject datasetJsonObj,
+    JSONObject metaJsonObj,
+    Path dataFilesDir,
+    JsonUserDatasetSession session
+  ) throws WdkModelException {
     try {
       this.meta = new JsonUserDatasetMeta(metaJsonObj);
       this.type = JsonUserDatasetTypeFactory.getUserDatasetType(datasetJsonObj.getJSONObject(TYPE));
@@ -73,19 +80,19 @@ public class JsonUserDataset implements UserDataset {
       this.size = datasetJsonObj.getInt(SIZE);
       this.created = datasetJsonObj.getLong(CREATED);
 
-      JSONArray dependenciesJson = datasetJsonObj.getJSONArray(DEPENDENCIES);
+      var dependenciesJson = datasetJsonObj.getJSONArray(DEPENDENCIES);
       for (int i=0; i<dependenciesJson.length(); i++)
         dependencies.add(new JsonUserDatasetDependency(dependenciesJson.getJSONObject(i)));
 
-      JSONArray projectsJson = datasetJsonObj.getJSONArray(PROJECTS);
+      var projectsJson = datasetJsonObj.getJSONArray(PROJECTS);
       for (int i=0; i<projectsJson.length(); i++)
         projects.add(projectsJson.getString(i));
 
-      JSONArray dataFilesJson = datasetJsonObj.getJSONArray(DATA_FILES);
+      var dataFilesJson = datasetJsonObj.getJSONArray(DATA_FILES);
       for (int i=0; i<dataFilesJson.length(); i++) {
-        JSONObject dataFileJson = dataFilesJson.getJSONObject(i);
-        String name = dataFileJson.getString(NAME);
-        UserDatasetFile udf = session.getUserDatasetFile(dataFilesDir.resolve(name), userDatasetId);
+        var dataFileJson = dataFilesJson.getJSONObject(i);
+        var name = dataFileJson.getString(NAME);
+        var udf  = session.getUserDatasetFile(dataFilesDir.resolve(name), userDatasetId);
         dataFiles.put(name, udf);
       }
 
@@ -146,7 +153,7 @@ public class JsonUserDataset implements UserDataset {
 
   @Override
   public Integer getPercentQuota(int quota) {
-    return Integer.valueOf(size * 100 / quota);
+    return size * 100 / quota;
   }
 
   /**
@@ -170,7 +177,7 @@ public class JsonUserDataset implements UserDataset {
   }
 
   @Override
-  public Set<String> getProjects() throws WdkModelException {
-    return  Collections.unmodifiableSet(projects);
+  public Set<String> getProjects() {
+    return Collections.unmodifiableSet(projects);
   }
 }

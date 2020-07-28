@@ -70,30 +70,32 @@ public class UserDatasetEventHandler {
 
     var dsSession = dsStore.getSession();
     try {
-      // there is a theoretical race condition here, because this check is not in the same
-      // transaction as the rest of this method.   but that risk is very small.
+      // there is a theoretical race condition here, because this check is not
+      // in the same transaction as the rest of this method.
+      // but that risk is very small.
       if (!dsSession.getUserDatasetExists(event.getOwnerUserId(), event.getUserDatasetId())) {
         LOG.info("User dataset " + event.getUserDatasetId() + " not found in store.  Was probably deleted.  Skipping install.");
       }
 
       else {
-        var userDataset = dsSession.getUserDataset(event.getOwnerUserId(), event.getUserDatasetId());
+        var userDataset = dsSession.getUserDataset(event.getOwnerUserId(),
+          event.getUserDatasetId());
 
         // Weeding out obsolete user datasets - skipped but completed.
-        var compatibility = typeHandler.getCompatibility(userDataset, appDbDataSource);
+        var compatibility = typeHandler.getCompatibility(userDataset,
+          appDbDataSource);
 
         if(compatibility.isCompatible()) {
 
           // insert into the installedTable
           var sql = "insert into " + userDatasetSchemaName + installedTable +
             " (user_dataset_id, name) values (?, ?)";
-          var sqlRunner = new SQLRunner(appDbDataSource, sql, "insert-user-dataset-row");
-          var args = new Object[]{
-            event.getUserDatasetId(),
-            userDataset.getMeta().getName()
-          };
 
-          sqlRunner.executeUpdate(args);
+          new SQLRunner(appDbDataSource, sql, "insert-user-dataset-row")
+            .executeUpdate(new Object[]{
+              event.getUserDatasetId(),
+              userDataset.getMeta().getName()
+            });
 
           // insert into the type-specific tables
           // the method should close dsSession when done with it
