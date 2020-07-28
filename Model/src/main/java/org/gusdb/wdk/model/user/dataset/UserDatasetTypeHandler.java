@@ -57,7 +57,7 @@ public abstract class UserDatasetTypeHandler {
   /**
    * Returns detailed type-specific data for a single user dataset for use in a
    * detailed display page
-   * 
+   *
    * @param wdkModel
    * @param userDataset
    * @param user
@@ -71,37 +71,53 @@ public abstract class UserDatasetTypeHandler {
   /**
    * Returns small-scale type-specific data for a collection of user datasets
    * for use in a non-detailed user dataset listing page
-   * 
-   * @param wdkModel
-   * @param userDatasets
-   * @param user
-   * @return
-   * @throws WdkModelException
    */
-  public List<JsonType> getTypeSpecificData(WdkModel wdkModel, List<UserDataset> userDatasets, User user) throws WdkModelException {
+  public List<JsonType> getTypeSpecificData(
+    final WdkModel wdkModel,
+    final List<UserDataset> userDatasets,
+    final User user
+  ) throws WdkModelException {
     return mapToList(userDatasets, fSwallow(ud -> getDetailedTypeSpecificData(wdkModel, ud, user)));
   }
 
-  public void installInAppDb(UserDatasetSession dsSession, UserDataset userDataset, Path tmpDir, String projectId) throws WdkModelException {
+  public Map<String, Path> copyFilesToTemp(
+    final UserDatasetSession session,
+    final UserDataset dataset,
+    final Path cwd
+  ) throws WdkModelException {
+    final var out = new HashMap<String, Path>();
 
-    Map<String, Path> nameToTempFileMap = new HashMap<>();
+    for (var userDatasetFileName : getInstallInAppDbFileNames(dataset)) {
+      var udf = dataset.getFile(session, userDatasetFileName);
 
-    Path workingDir = createWorkingDir(tmpDir, userDataset.getUserDatasetId());
+      if (udf == null)
+        throw new WdkModelException(
+          "File name requested by type handler, '" + userDatasetFileName
+            + "' is not found in user dataset " + dataset.getUserDatasetId()
+            + " of type " + dataset.getType()
+        );
 
-    for (String userDatasetFileName : getInstallInAppDbFileNames(userDataset)) {
-      UserDatasetFile udf = userDataset.getFile(dsSession, userDatasetFileName);
-      if (udf == null) throw new WdkModelException("File name requested by type handler, '" + userDatasetFileName + "' is not found in user dataset " + userDataset.getUserDatasetId() + " of type " + userDataset.getType());
-      Path tmpFile = udf.getLocalCopy(dsSession, workingDir);
-      nameToTempFileMap.put(userDatasetFileName, tmpFile);
+      var tmpFile = udf.getLocalCopy(session, cwd);
+      out.put(userDatasetFileName, tmpFile);
     }
-    dsSession.close();
+
+    return out;
+  }
+
+  public void installInAppDb(
+    final UserDataset userDataset,
+    final Path workingDir,
+    final String projectId
+  ) throws WdkModelException {
+    var nameToTempFileMap = new HashMap<String, Path>();
+
     String[] command = getInstallInAppDbCommand(userDataset, nameToTempFileMap, projectId);
+
     // For the case where no user dataset file data is installed into the DB
     if(command.length > 0) {
       runCommand(command, workingDir);
     }
-    deleteWorkingDir(workingDir);
-   }
+  }
 
   public void uninstallInAppDb(Long userDatasetId, Path tmpDir, String projectId) throws WdkModelException {
     Path workingDir = createWorkingDir(tmpDir, userDatasetId);
@@ -111,6 +127,14 @@ public abstract class UserDatasetTypeHandler {
       runCommand(command, workingDir);
     }
     deleteWorkingDir(workingDir);
+  }
+
+  public Path createWorkingDir(Path tmpDir, Long userDatasetId) throws WdkModelException {
+    try {
+      return Files.createTempDirectory(tmpDir, "ud_" + userDatasetId + "_");
+    } catch (IOException e) {
+      throw new WdkModelException(e);
+    }
   }
 
   private void runCommand(String[] command, Path workingDir) throws WdkModelException {
@@ -141,18 +165,7 @@ public abstract class UserDatasetTypeHandler {
    }
   }
 
-  private Path createWorkingDir(Path tmpDir, Long userDatasetId) throws WdkModelException {
-    Path workingDir;
-    try {
-      workingDir = Files.createTempDirectory(tmpDir, "ud_" + userDatasetId + "_");
-    }
-    catch (IOException e) {
-      throw new WdkModelException(e);
-    }
-    return workingDir;
-  }
-
-  private void deleteWorkingDir(Path workingDir) throws WdkModelException {
+  public void deleteWorkingDir(Path workingDir) throws WdkModelException {
     try {
       Files.walkFileTree(workingDir, new SimpleFileVisitor<Path>() {
         @Override

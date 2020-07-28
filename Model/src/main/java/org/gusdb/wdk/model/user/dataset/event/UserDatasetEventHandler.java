@@ -1,6 +1,9 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
 import java.nio.file.Path;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.sql.DataSource;
 
@@ -8,6 +11,8 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.dataset.UserDataset;
+import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.gusdb.wdk.model.user.dataset.event.UserDatasetShareEvent.ShareAction;
@@ -55,6 +60,8 @@ public class UserDatasetEventHandler {
   private static final String sharedTable = "UserDatasetSharedWith";
   private static final String eventTable = "UserDatasetEvent";
 
+  private static final int copyTimeoutMinutes = 10;
+
   public static void handleInstallEvent (
     UserDatasetInstallEvent event,
     UserDatasetTypeHandler typeHandler,
@@ -64,59 +71,17 @@ public class UserDatasetEventHandler {
     Path tmpDir,
     String projectId
   ) throws WdkModelException {
+    final var datasetId = event.getUserDatasetId();
+    final var eventId = event.getEventId();
 
-    LOG.info("Installing user dataset " + event.getUserDatasetId());
-    openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
+    LOG.info("Installing user dataset " + datasetId);
 
-    var dsSession = dsStore.getSession();
-    try {
-      // there is a theoretical race condition here, because this check is not
-      // in the same transaction as the rest of this method.
-      // but that risk is very small.
-      if (!dsSession.getUserDatasetExists(event.getOwnerUserId(), event.getUserDatasetId())) {
-        LOG.info("User dataset " + event.getUserDatasetId() + " not found in store.  Was probably deleted.  Skipping install.");
-      }
+    openEventHandling(eventId, appDbDataSource, userDatasetSchemaName);
+    handleInstallEvent(typeHandler, dsStore, appDbDataSource,
+      userDatasetSchemaName, tmpDir, projectId, event.getOwnerUserId(),
+      datasetId);
 
-      else {
-        var userDataset = dsSession.getUserDataset(event.getOwnerUserId(),
-          event.getUserDatasetId());
-
-        // Weeding out obsolete user datasets - skipped but completed.
-        var compatibility = typeHandler.getCompatibility(userDataset,
-          appDbDataSource);
-
-        if(compatibility.isCompatible()) {
-
-          // insert into the installedTable
-          var sql = "insert into " + userDatasetSchemaName + installedTable +
-            " (user_dataset_id, name) values (?, ?)";
-
-          new SQLRunner(appDbDataSource, sql, "insert-user-dataset-row")
-            .executeUpdate(new Object[]{
-              event.getUserDatasetId(),
-              userDataset.getMeta().getName()
-            });
-
-          // insert into the type-specific tables
-          // the method should close dsSession when done with it
-          typeHandler.installInAppDb(dsSession, userDataset, tmpDir, projectId);
-          dsSession = null;
-
-          // grant access to the owner, by installing into the ownerTable
-          grantAccess(event.getOwnerUserId(), event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
-            ownerTable);
-        }
-        else {
-          LOG.info("User dataset " + event.getUserDatasetId() + " deemed obsolete: " + compatibility.notCompatibleReason() + ".  Skipping install.");
-        }
-      }
-    } catch (Exception e){
-      if(dsSession != null){
-        dsSession.close();
-      }
-      throw e;
-    }
-    closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
+    closeEventHandling(eventId, appDbDataSource, userDatasetSchemaName);
   }
 
   public static void handleUninstallEvent (
@@ -159,6 +124,121 @@ public class UserDatasetEventHandler {
           sharedTable);
     }
     closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
+  }
+
+  /**
+   * Method to handle an event that is either not relevant to this wdk project
+   * or is related to an unsupported type.  The event is not installed but it is
+   * noted in the dataset as handled so that the event is not repeatedly and
+   * unnecessarily processed.
+   */
+  public static void completeEventHandling(Long eventId, DataSource appDbDataSource, String userDatasetSchemaName) {
+    openEventHandling(eventId, appDbDataSource, userDatasetSchemaName);
+    closeEventHandling(eventId, appDbDataSource, userDatasetSchemaName);
+  }
+
+  private static void handleInstallEvent(
+    final UserDatasetTypeHandler typeHandler,
+    final UserDatasetStore dsStore,
+    final DataSource dataSource,
+    final String userDatasetSchemaName,
+    final Path tmpDir,
+    final String projectId,
+    final Long ownerUserId,
+    final Long datasetId
+  ) throws WdkModelException {
+    final Path cwd;
+    final UserDataset userDataset;
+
+    try(var dsSession = dsStore.getSession()) {
+      // there is a theoretical race condition here, because this check is not
+      // in the same transaction as the rest of this method.
+      // but that risk is very small.
+      if (!dsSession.getUserDatasetExists(ownerUserId, datasetId)) {
+        LOG.info("User dataset " + datasetId + " not found in store.  Was probably deleted.  Skipping install.");
+        return;
+      }
+
+      userDataset = dsSession.getUserDataset(ownerUserId, datasetId);
+
+      // Weeding out obsolete user datasets - skipped but completed.
+      var compatibility = typeHandler.getCompatibility(userDataset, dataSource);
+
+      if (!compatibility.isCompatible()) {
+        LOG.info("User dataset " + datasetId + " deemed obsolete: " + compatibility.notCompatibleReason() + ".  Skipping install.");
+        return;
+      }
+
+      cwd = copyToLocalTimeout(dsSession, userDataset, typeHandler, tmpDir);
+    }
+
+    // insert into the installedTable
+    var sql = "insert into " + userDatasetSchemaName + installedTable +
+      " (user_dataset_id, name) values (?, ?)";
+
+    new SQLRunner(dataSource, sql, "insert-user-dataset-row")
+      .executeUpdate(new Object[]{
+        datasetId,
+        userDataset.getMeta().getName()
+      });
+
+    // insert into the type-specific tables
+    typeHandler.installInAppDb(userDataset, tmpDir, projectId);
+    typeHandler.deleteWorkingDir(cwd);
+
+    // grant access to the owner, by installing into the ownerTable
+    grantAccess(ownerUserId, datasetId, dataSource, userDatasetSchemaName,
+      ownerTable);
+  }
+
+  /**
+   * Copies the contents of a user dataset from iRODS to a temporary working dir
+   * under the given path {@code tmpDir} or fails if the copy takes longer than
+   * {@link #copyTimeoutMinutes}.
+   *
+   * @param session active iRODS session
+   * @param dataset user dataset from which the files should be copied.
+   * @param typeHandler dataset type handler.  Used to create the working
+   *        directory and perform the file copy.
+   * @param tmpDir root tmp directory in which the new working directory should
+   *        be created.
+   *
+   * @return the path to the new working directory.
+   *
+   * @throws WdkModelException if an error occurs during the file copy, or if
+   *         the copy request times out.
+   */
+  private static Path copyToLocalTimeout(
+    final UserDatasetSession session,
+    final UserDataset dataset,
+    final UserDatasetTypeHandler typeHandler,
+    final Path tmpDir
+  ) throws WdkModelException {
+    final var cwd = typeHandler.createWorkingDir(tmpDir, dataset.getUserDatasetId());
+    final var exec =  Executors.newSingleThreadExecutor();
+    final var err = new AtomicReference<WdkModelException>();
+
+    exec.execute(() -> {
+      try {
+        typeHandler.copyFilesToTemp(session, dataset, cwd);
+      } catch (WdkModelException e) {
+        err.set(e);
+      }
+    });
+
+    exec.shutdown();
+    try {
+      if (!exec.awaitTermination(copyTimeoutMinutes, TimeUnit.MINUTES)) {
+        throw new WdkModelException("Copy from iRODS to temp directory timed out after " + copyTimeoutMinutes + " minutes.");
+      }
+    } catch (InterruptedException e) {
+      throw new WdkModelException(e);
+    }
+
+    if (err.get() != null)
+      throw err.get();
+
+    return cwd;
   }
 
   /**
@@ -261,16 +341,4 @@ public class UserDatasetEventHandler {
 
     LOG.info("Done handling event: " + eventId);
   }
-
-  /**
-   * Method to handle an event that is either not relevant to this wdk project
-   * or is related to an unsupported type.  The event is not installed but it is
-   * noted in the dataset as handled so that the event is not repeatedly and
-   * unnecessarily processed.
-   */
-  public static void completeEventHandling(Long eventId, DataSource appDbDataSource, String userDatasetSchemaName) {
-    openEventHandling(eventId, appDbDataSource, userDatasetSchemaName);
-    closeEventHandling(eventId, appDbDataSource, userDatasetSchemaName);
-  }
-
 }
