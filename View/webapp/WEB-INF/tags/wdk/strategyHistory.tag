@@ -17,11 +17,6 @@
               description="Currently active user object"
 %>
 
-<c:set var="releaseDate" value="${applicationScope.wdkModel.releaseDate}" />
-<c:set var="inputDateFormat" value="dd MMMM yyyy HH:mm"/>
-<fmt:setLocale value="en-US"/>
-<fmt:parseDate pattern="${inputDateFormat}" var="rlsDate" value="${releaseDate}"/> 
-<fmt:formatDate var="releaseDate_formatted" value="${rlsDate}" pattern="d MMM yyyy"/>
 
 <!--strategyHistory.tag-->
 <c:set var="unsavedStrategiesMap" value="${user.unsavedStrategiesByCategory}"/>
