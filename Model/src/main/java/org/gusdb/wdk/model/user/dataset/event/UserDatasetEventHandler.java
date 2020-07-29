@@ -172,7 +172,7 @@ public class UserDatasetEventHandler {
       }
 
       cwd = typeHandler.createWorkingDir(tmpDir, userDataset.getUserDatasetId());
-      files = copyToLocalTimeout(dsSession, userDataset, typeHandler, tmpDir);
+      files = copyToLocalTimeout(dsSession, userDataset, typeHandler, cwd);
     }
 
     // insert into the installedTable
