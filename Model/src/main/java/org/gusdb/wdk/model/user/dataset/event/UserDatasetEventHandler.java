@@ -148,6 +148,7 @@ public class UserDatasetEventHandler {
     final Long ownerUserId,
     final Long datasetId
   ) throws WdkModelException {
+    LOG.trace("UserDatasetEventHandler#handleInstallEvent");
     final Path cwd;
     final UserDataset userDataset;
     final Map<String, Path> files;
@@ -217,6 +218,8 @@ public class UserDatasetEventHandler {
     final UserDatasetTypeHandler typeHandler,
     final Path cwd
   ) throws WdkModelException {
+    LOG.trace("UserDatasetEventHandler#copyToLocalTimeout");
+
     final var exec =  Executors.newSingleThreadExecutor();
     final var err = new AtomicReference<WdkModelException>();
     final var out = new AtomicReference<Map<String, Path>>();

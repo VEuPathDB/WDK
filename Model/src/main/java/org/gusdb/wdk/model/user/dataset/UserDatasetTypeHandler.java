@@ -110,6 +110,7 @@ public abstract class UserDatasetTypeHandler {
     final String projectId,
     final Map<String, Path> files
   ) throws WdkModelException {
+    LOG.trace("UserDatasetTypeHandler#installInAppDb");
     String[] command = getInstallInAppDbCommand(userDataset, files, projectId);
 
     // For the case where no user dataset file data is installed into the DB
@@ -158,6 +159,7 @@ public abstract class UserDatasetTypeHandler {
       throw new WdkModelException(e);
     } finally {
       if (p != null) p.destroy();
+      LOG.debug("Command execution completed.");
     }
     if (!success) {
       throw new WdkModelException("Failed running command: " + builder + ". For details, see " + workingDir + "/stderr");
