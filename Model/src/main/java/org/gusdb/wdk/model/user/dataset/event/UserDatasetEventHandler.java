@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -149,6 +150,7 @@ public class UserDatasetEventHandler {
   ) throws WdkModelException {
     final Path cwd;
     final UserDataset userDataset;
+    final Map<String, Path> files;
 
     try(var dsSession = dsStore.getSession()) {
       // there is a theoretical race condition here, because this check is not
@@ -169,7 +171,8 @@ public class UserDatasetEventHandler {
         return;
       }
 
-      cwd = copyToLocalTimeout(dsSession, userDataset, typeHandler, tmpDir);
+      cwd = typeHandler.createWorkingDir(tmpDir, userDataset.getUserDatasetId());
+      files = copyToLocalTimeout(dsSession, userDataset, typeHandler, tmpDir);
     }
 
     // insert into the installedTable
@@ -183,7 +186,7 @@ public class UserDatasetEventHandler {
       });
 
     // insert into the type-specific tables
-    typeHandler.installInAppDb(userDataset, tmpDir, projectId);
+    typeHandler.installInAppDb(userDataset, tmpDir, projectId, files);
     typeHandler.deleteWorkingDir(cwd);
 
     // grant access to the owner, by installing into the ownerTable
@@ -200,27 +203,27 @@ public class UserDatasetEventHandler {
    * @param dataset user dataset from which the files should be copied.
    * @param typeHandler dataset type handler.  Used to create the working
    *        directory and perform the file copy.
-   * @param tmpDir root tmp directory in which the new working directory should
-   *        be created.
+   * @param cwd working directory path.  All relevant dataset files will be
+   *        copied from iRODS to this directory.
    *
-   * @return the path to the new working directory.
+   * @return a map of dataset file names to their path in the filesystem.
    *
    * @throws WdkModelException if an error occurs during the file copy, or if
    *         the copy request times out.
    */
-  private static Path copyToLocalTimeout(
+  private static Map<String, Path> copyToLocalTimeout(
     final UserDatasetSession session,
     final UserDataset dataset,
     final UserDatasetTypeHandler typeHandler,
-    final Path tmpDir
+    final Path cwd
   ) throws WdkModelException {
-    final var cwd = typeHandler.createWorkingDir(tmpDir, dataset.getUserDatasetId());
     final var exec =  Executors.newSingleThreadExecutor();
     final var err = new AtomicReference<WdkModelException>();
+    final var out = new AtomicReference<Map<String, Path>>();
 
     exec.execute(() -> {
       try {
-        typeHandler.copyFilesToTemp(session, dataset, cwd);
+        out.set(typeHandler.copyFilesToTemp(session, dataset, cwd));
       } catch (WdkModelException e) {
         err.set(e);
       }
@@ -238,7 +241,7 @@ public class UserDatasetEventHandler {
     if (err.get() != null)
       throw err.get();
 
-    return cwd;
+    return out.get();
   }
 
   /**

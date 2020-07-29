@@ -107,11 +107,10 @@ public abstract class UserDatasetTypeHandler {
   public void installInAppDb(
     final UserDataset userDataset,
     final Path workingDir,
-    final String projectId
+    final String projectId,
+    final Map<String, Path> files
   ) throws WdkModelException {
-    var nameToTempFileMap = new HashMap<String, Path>();
-
-    String[] command = getInstallInAppDbCommand(userDataset, nameToTempFileMap, projectId);
+    String[] command = getInstallInAppDbCommand(userDataset, files, projectId);
 
     // For the case where no user dataset file data is installed into the DB
     if(command.length > 0) {
