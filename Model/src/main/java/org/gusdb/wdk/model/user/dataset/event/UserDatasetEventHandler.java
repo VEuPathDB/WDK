@@ -186,7 +186,7 @@ public class UserDatasetEventHandler {
       });
 
     // insert into the type-specific tables
-    typeHandler.installInAppDb(userDataset, tmpDir, projectId, files);
+    typeHandler.installInAppDb(userDataset, cwd, projectId, files);
     typeHandler.deleteWorkingDir(cwd);
 
     // grant access to the owner, by installing into the ownerTable
