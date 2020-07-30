@@ -76,9 +76,9 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
 
   @Override
   public void close() {
-    TRACE.start();
+    LOG.debug("Closing iRODS connection.");
     getIrodsAdaptor().close();
-    TRACE.end();
+    LOG.debug("iRODS connection closed.");
   }
 
   @Override
