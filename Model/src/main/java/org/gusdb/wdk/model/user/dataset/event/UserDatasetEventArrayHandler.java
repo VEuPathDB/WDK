@@ -58,7 +58,8 @@ public class UserDatasetEventArrayHandler
       final var appDb = new DatabaseInstance(
         getModelConfig().getAppDB(),
         WdkModel.DB_INSTANCE_APP, true
-      )
+      );
+      final var dsSession = getUserDatasetStore().getSession()
     ) {
 
       final var appDbDataSource = appDb.getDataSource();
@@ -66,6 +67,15 @@ public class UserDatasetEventArrayHandler
         appDbDataSource,
         getUserDatasetSchemaName()
       );
+
+      final var handler = new UserDatasetEventHandler(
+        dsSession,
+        appDbDataSource,
+        getModelConfig().getWdkTempDir(),
+        getUserDatasetSchemaName(),
+        getProjectId()
+      );
+
       int count = 0;
 
       // If the subject user dataset does not have a currently supported type
@@ -83,11 +93,7 @@ public class UserDatasetEventArrayHandler
         // If the event does not apply to this project, complete the event
         // handling and skip to the next event.
         if (!event.getProjectsFilter().contains(getProjectId())) {
-          UserDatasetEventHandler.completeEventHandling(
-            event.getEventId(),
-            appDbDataSource,
-            getUserDatasetSchemaName()
-          );
+          handler.completeEventHandling(event.getEventId());
           count++;
           continue;
         }
@@ -100,22 +106,10 @@ public class UserDatasetEventArrayHandler
               + " which is not present in the wdk configuration."
               + "Skipping the install but declaring the event as handled.");
 
-            UserDatasetEventHandler.completeEventHandling(
-              event.getEventId(),
-              appDbDataSource,
-              getUserDatasetSchemaName()
-            );
+            handler.completeEventHandling(event.getEventId());
             continue;
           } else {
-            UserDatasetEventHandler.handleInstallEvent(
-              (UserDatasetInstallEvent) event,
-              typeHandler,
-              getUserDatasetStore(),
-              appDbDataSource,
-              getUserDatasetSchemaName(),
-              getModelConfig().getWdkTempDir(),
-              getModelConfig().getProjectId()
-            );
+            handler.handleInstallEvent((UserDatasetInstallEvent) event, typeHandler);
           }
         } else if (event instanceof UserDatasetUninstallEvent) {
           final var typeHandler = userDatasetStore.getTypeHandler(event.getUserDatasetType());
@@ -125,25 +119,12 @@ public class UserDatasetEventArrayHandler
               + " which is not present in the wdk configuration."
               + "Skipping the uninstall but declaring the event as handled.");
 
-            UserDatasetEventHandler.completeEventHandling(
-              event.getEventId(),
-              appDbDataSource,
-              getUserDatasetSchemaName()
-            );
+            handler.completeEventHandling(event.getEventId());
           } else {
-            UserDatasetEventHandler.handleUninstallEvent(
-              (UserDatasetUninstallEvent) event,
-              typeHandler,
-              appDbDataSource,
-              getUserDatasetSchemaName(),
-              getModelConfig().getWdkTempDir(),
-              getModelConfig().getProjectId()
-            );
+            handler.handleUninstallEvent((UserDatasetUninstallEvent) event, typeHandler);
           }
         } else if (event instanceof UserDatasetShareEvent) {
-          UserDatasetEventHandler.handleShareEvent((UserDatasetShareEvent) event,
-            appDbDataSource, getUserDatasetSchemaName()
-          );
+          handler.handleShareEvent((UserDatasetShareEvent) event);
         }
 
         count++;
