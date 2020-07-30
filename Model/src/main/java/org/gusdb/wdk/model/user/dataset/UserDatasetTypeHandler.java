@@ -57,12 +57,6 @@ public abstract class UserDatasetTypeHandler {
   /**
    * Returns detailed type-specific data for a single user dataset for use in a
    * detailed display page
-   *
-   * @param wdkModel
-   * @param userDataset
-   * @param user
-   * @return
-   * @throws WdkModelException
    */
   public JsonType getDetailedTypeSpecificData(WdkModel wdkModel, UserDataset userDataset, User user) throws WdkModelException {
     return new JsonType(null);
@@ -168,7 +162,7 @@ public abstract class UserDatasetTypeHandler {
 
   public void deleteWorkingDir(Path workingDir) throws WdkModelException {
     try {
-      Files.walkFileTree(workingDir, new SimpleFileVisitor<Path>() {
+      Files.walkFileTree(workingDir, new SimpleFileVisitor<>() {
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
           Files.delete(file);

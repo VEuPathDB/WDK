@@ -14,7 +14,6 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
-import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.gusdb.wdk.model.user.dataset.event.UserDatasetShareEvent.ShareAction;
 
@@ -56,75 +55,82 @@ public class UserDatasetEventHandler {
 
   private static final Logger LOG = Logger.getLogger(UserDatasetEventHandler.class);
 
-  private static final String installedTable = "InstalledUserDataset";
-  private static final String ownerTable = "UserDatasetOwner";
-  private static final String sharedTable = "UserDatasetSharedWith";
-  private static final String eventTable = "UserDatasetEvent";
+  private static final String
+    installedTable = "InstalledUserDataset",
+    ownerTable = "UserDatasetOwner",
+    sharedTable = "UserDatasetSharedWith",
+    eventTable = "UserDatasetEvent";
 
-  private static final int copyTimeoutMinutes = 10;
+  private static final int copyTimeoutMinutes = 180;
 
-  public static void handleInstallEvent (
+  private final UserDatasetSession dsSession;
+  private final DataSource dataSource;
+  private final Path tmpDir;
+  private final String dsSchema;
+  private final String projectId;
+
+  public UserDatasetEventHandler(
+    final UserDatasetSession dsSession,
+    final DataSource dataSource,
+    final Path tmpDir,
+    final String dsSchema,
+    final String projectId
+  ) {
+    this.dataSource = dataSource;
+    this.tmpDir = tmpDir;
+    this.dsSchema = dsSchema;
+    this.projectId = projectId;
+    this.dsSession = dsSession;
+  }
+
+  public void handleInstallEvent (
     UserDatasetInstallEvent event,
-    UserDatasetTypeHandler typeHandler,
-    UserDatasetStore dsStore,
-    DataSource appDbDataSource,
-    String userDatasetSchemaName,
-    Path tmpDir,
-    String projectId
+    UserDatasetTypeHandler typeHandler
   ) throws WdkModelException {
     final var datasetId = event.getUserDatasetId();
     final var eventId = event.getEventId();
 
     LOG.info("Installing user dataset " + datasetId);
 
-    openEventHandling(eventId, appDbDataSource, userDatasetSchemaName);
-    handleInstallEvent(typeHandler, dsStore, appDbDataSource,
-      userDatasetSchemaName, tmpDir, projectId, event.getOwnerUserId(),
-      datasetId);
-
-    closeEventHandling(eventId, appDbDataSource, userDatasetSchemaName);
+    openEventHandling(eventId);
+    handleInstallEvent(typeHandler, event.getOwnerUserId(), datasetId);
+    closeEventHandling(eventId);
   }
 
-  public static void handleUninstallEvent (
+  public void handleUninstallEvent (
     UserDatasetUninstallEvent event,
-    UserDatasetTypeHandler typeHandler,
-    DataSource appDbDataSource,
-    String userDatasetSchemaName,
-    Path tmpDir,
-    String projectId
+    UserDatasetTypeHandler typeHandler
   ) throws WdkModelException {
 
     LOG.info("Uninstalling user dataset " + event.getUserDatasetId());
-    openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
+    openEventHandling(event.getEventId());
 
-    revokeAllAccess(event.getUserDatasetId(), appDbDataSource,userDatasetSchemaName);
+    revokeAllAccess(event.getUserDatasetId());
     typeHandler.uninstallInAppDb(event.getUserDatasetId(), tmpDir, projectId);
-    var sql = "delete from " + userDatasetSchemaName + installedTable + " where user_dataset_id = ?";
+    var sql = "delete from " + dsSchema + installedTable + " where user_dataset_id = ?";
 
-    var sqlRunner = new SQLRunner(appDbDataSource, sql, "delete-user-dataset-row");
+    var sqlRunner = new SQLRunner(dataSource, sql, "delete-user-dataset-row");
     sqlRunner.executeUpdate(new Object[]{event.getUserDatasetId()});
-    closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
+    closeEventHandling(event.getEventId());
   }
 
-  public static void handleShareEvent (UserDatasetShareEvent event, DataSource appDbDataSource, String userDatasetSchemaName) {
+  public void handleShareEvent(UserDatasetShareEvent event) {
 
     LOG.info("Updating share of user dataset " + event.getUserDatasetId() );
-    openEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
+    openEventHandling(event.getEventId());
 
-    if (!checkUserDatasetInstalled(event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName)) {
+    if (!checkUserDatasetInstalled(event.getUserDatasetId())) {
       // this can happen if the install was skipped, because the ud was deleted first
       LOG.info("User dataset " + event.getUserDatasetId() + " is not installed. Skipping share.");
     } else {
       if (event.getAction() == ShareAction.GRANT)
         grantShareAccess(event.getOwnerId(), event.getRecipientId(),
-          event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
-          sharedTable);
+          event.getUserDatasetId());
       else
         revokeShareAccess(event.getOwnerId(), event.getRecipientId(),
-          event.getUserDatasetId(), appDbDataSource, userDatasetSchemaName,
-          sharedTable);
+          event.getUserDatasetId());
     }
-    closeEventHandling(event.getEventId(), appDbDataSource, userDatasetSchemaName);
+    closeEventHandling(event.getEventId());
   }
 
   /**
@@ -133,18 +139,13 @@ public class UserDatasetEventHandler {
    * noted in the dataset as handled so that the event is not repeatedly and
    * unnecessarily processed.
    */
-  public static void completeEventHandling(Long eventId, DataSource appDbDataSource, String userDatasetSchemaName) {
-    openEventHandling(eventId, appDbDataSource, userDatasetSchemaName);
-    closeEventHandling(eventId, appDbDataSource, userDatasetSchemaName);
+  public void completeEventHandling(Long eventId) {
+    openEventHandling(eventId);
+    closeEventHandling(eventId);
   }
 
-  private static void handleInstallEvent(
+  private void handleInstallEvent(
     final UserDatasetTypeHandler typeHandler,
-    final UserDatasetStore dsStore,
-    final DataSource dataSource,
-    final String userDatasetSchemaName,
-    final Path tmpDir,
-    final String projectId,
     final Long ownerUserId,
     final Long datasetId
   ) throws WdkModelException {
@@ -153,31 +154,29 @@ public class UserDatasetEventHandler {
     final UserDataset userDataset;
     final Map<String, Path> files;
 
-    try(var dsSession = dsStore.getSession()) {
-      // there is a theoretical race condition here, because this check is not
-      // in the same transaction as the rest of this method.
-      // but that risk is very small.
-      if (!dsSession.getUserDatasetExists(ownerUserId, datasetId)) {
-        LOG.info("User dataset " + datasetId + " not found in store.  Was probably deleted.  Skipping install.");
-        return;
-      }
-
-      userDataset = dsSession.getUserDataset(ownerUserId, datasetId);
-
-      // Weeding out obsolete user datasets - skipped but completed.
-      var compatibility = typeHandler.getCompatibility(userDataset, dataSource);
-
-      if (!compatibility.isCompatible()) {
-        LOG.info("User dataset " + datasetId + " deemed obsolete: " + compatibility.notCompatibleReason() + ".  Skipping install.");
-        return;
-      }
-
-      cwd = typeHandler.createWorkingDir(tmpDir, userDataset.getUserDatasetId());
-      files = copyToLocalTimeout(dsSession, userDataset, typeHandler, cwd);
+    // there is a theoretical race condition here, because this check is not
+    // in the same transaction as the rest of this method.
+    // but that risk is very small.
+    if (!dsSession.getUserDatasetExists(ownerUserId, datasetId)) {
+      LOG.info("User dataset" + datasetId + " not found in store.  Was probably deleted.  Skipping install.");
+      return;
     }
 
+    userDataset = dsSession.getUserDataset(ownerUserId, datasetId);
+
+    // Weeding out obsolete user datasets - skipped but completed.
+    var compatibility = typeHandler.getCompatibility(userDataset, dataSource);
+
+    if (!compatibility.isCompatible()) {
+      LOG.info("User dataset " + datasetId + " deemed obsolete: " + compatibility.notCompatibleReason() + ".  Skipping install.");
+      return;
+    }
+
+    cwd = typeHandler.createWorkingDir(tmpDir, userDataset.getUserDatasetId());
+    files = copyToLocalTimeout(dsSession, userDataset, typeHandler, cwd);
+
     // insert into the installedTable
-    var sql = "insert into " + userDatasetSchemaName + installedTable +
+    var sql = "insert into " + dsSchema + installedTable +
       " (user_dataset_id, name) values (?, ?)";
 
     new SQLRunner(dataSource, sql, "insert-user-dataset-row")
@@ -191,8 +190,7 @@ public class UserDatasetEventHandler {
     typeHandler.deleteWorkingDir(cwd);
 
     // grant access to the owner, by installing into the ownerTable
-    grantAccess(ownerUserId, datasetId, dataSource, userDatasetSchemaName,
-      ownerTable);
+    grantAccess(ownerUserId, datasetId);
   }
 
   /**
@@ -212,7 +210,7 @@ public class UserDatasetEventHandler {
    * @throws WdkModelException if an error occurs during the file copy, or if
    *         the copy request times out.
    */
-  private static Map<String, Path> copyToLocalTimeout(
+  private Map<String, Path> copyToLocalTimeout(
     final UserDatasetSession session,
     final UserDataset dataset,
     final UserDatasetTypeHandler typeHandler,
@@ -254,12 +252,14 @@ public class UserDatasetEventHandler {
    * uninstalled in the intervening millisecond is small, not worth engineering
    * for.
    */
-  private static boolean checkUserDatasetInstalled(Long userDatasetId, DataSource appDbDataSource, String userDatasetSchemaName) {
+  private boolean checkUserDatasetInstalled(Long userDatasetId) {
     LOG.info("Checking if user dataset " + userDatasetId + " is installed");
     var handler = new BasicResultSetHandler();
-    var sql = "select user_dataset_id from " + userDatasetSchemaName + installedTable + " where user_dataset_id = ?";
+    var sql = "SELECT user_dataset_id"
+      + " FROM " + dsSchema + installedTable
+      + " WHERE user_dataset_id = ?";
 
-    new SQLRunner(appDbDataSource, sql, "check-user-dataset-exists")
+    new SQLRunner(dataSource, sql, "check-user-dataset-exists")
       .executeQuery(new Object[]{userDatasetId}, handler);
 
     return handler.getNumRows() > 0;
@@ -268,81 +268,62 @@ public class UserDatasetEventHandler {
   /**
    * Adds a share to the UserDatasetSharedWith table.
    */
-  private static void grantShareAccess(
-    Long ownerId,
-    Long recipientId,
-    Long userDatasetId,
-    DataSource appDbDataSource,
-    String userDatasetSchemaName,
-    String tableName
-  ) {
-    LOG.info("Granting recipient " + recipientId + " access to user dataset " + userDatasetId + " belonging to owner " + ownerId + " in table " + tableName);
-    var sql = "insert into " + userDatasetSchemaName + tableName + " (owner_user_id, recipient_user_id, user_dataset_id) values (?, ?, ?)";
-    var sqlRunner = new SQLRunner(appDbDataSource, sql, "grant-user-dataset-" + tableName);
+  private void grantShareAccess(Long ownerId, Long recipientId, Long userDatasetId) {
+    LOG.info("Granting recipient " + recipientId + " access to user dataset " + userDatasetId + " belonging to owner " + ownerId + " in table " + sharedTable);
+    var sql = "INSERT INTO " + dsSchema + sharedTable + " (owner_user_id, recipient_user_id, user_dataset_id) VALUES (?, ?, ?)";
+    var sqlRunner = new SQLRunner(dataSource, sql, "grant-user-dataset-" + sharedTable);
 
     sqlRunner.executeUpdate(new Object[]{ownerId, recipientId, userDatasetId});
   }
 
-  private static void grantAccess(
-    Long userId,
-    Long userDatasetId,
-    DataSource appDbDataSource,
-    String userDatasetSchemaName,
-    String tableName
-  ) {
-    LOG.info("Granting access to user dataset " + userDatasetId + " to user " + userId + " in table " + tableName);
-    var sql = "insert into " + userDatasetSchemaName + tableName + " (user_id, user_dataset_id) values (?, ?)";
-    var sqlRunner = new SQLRunner(appDbDataSource, sql, "grant-user-dataset-" + tableName);
+  private void grantAccess(Long userId, Long userDatasetId) {
+    LOG.info("Granting access to user dataset " + userDatasetId + " to user " + userId + " in table " + ownerTable);
+    var sql = "INSERT INTO " + dsSchema + ownerTable + " (user_id, user_dataset_id) VALUES (?, ?)";
+    var sqlRunner = new SQLRunner(dataSource, sql, "grant-user-dataset-" + ownerTable);
 
     sqlRunner.executeUpdate(new Object[]{userId, userDatasetId});
   }
 
-  private static void revokeShareAccess(
+  private void revokeShareAccess(
     Long ownerId,
     Long recipientId,
-    Long userDatasetId,
-    DataSource appDbDataSource,
-    String userDatasetSchemaName,
-    String tableName
+    Long userDatasetId
   ) {
     LOG.info("Revoking access by recipient " + recipientId + " to user dataset " + userDatasetId + " belonging to owner " + ownerId);
-    var sql = "delete from " + userDatasetSchemaName + tableName + " where owner_user_id = ? and recipient_user_id = ? and user_dataset_id = ?";
-    var sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-user-dataset-" + tableName);
+    var sql = "DELETE FROM " + dsSchema + sharedTable
+      + " WHERE owner_user_id = ?"
+      + " AND recipient_user_id = ?"
+      + " AND user_dataset_id = ?";
+    var sqlRunner = new SQLRunner(dataSource, sql, "revoke-user-dataset-" + sharedTable);
 
     sqlRunner.executeUpdate(new Object[]{ownerId, recipientId, userDatasetId});
   }
 
-  private static void revokeAllAccess(
-    Long userDatasetId,
-    DataSource appDbDataSource,
-    String userDatasetSchemaName
-  ) {
+  private void revokeAllAccess(Long userDatasetId) {
     LOG.info("Revoking all access to user dataset " + userDatasetId);
     var args = new Object[]{userDatasetId};
-    var sql = "delete from " + userDatasetSchemaName + ownerTable + " where user_dataset_id = ?";
-    var sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-all-user-dataset-access-1");
+    var sql = "DELETE FROM " + dsSchema + ownerTable + " WHERE user_dataset_id = ?";
+    var sqlRunner = new SQLRunner(dataSource, sql, "revoke-all-user-dataset-access-1");
 
     sqlRunner.executeUpdate(args);
 
-    sql = "delete from " + userDatasetSchemaName + sharedTable + " where user_dataset_id = ?";
-    sqlRunner = new SQLRunner(appDbDataSource, sql, "revoke-all-user-dataset-access-1");
+    sql = "DELETE FROM " + dsSchema + sharedTable + " WHERE user_dataset_id = ?";
+    sqlRunner = new SQLRunner(dataSource, sql, "revoke-all-user-dataset-access-1");
     sqlRunner.executeUpdate(args);
   }
 
-  private static void openEventHandling(Long eventId, DataSource appDbDataSource, String userDatasetSchemaName) {
+  private void openEventHandling(Long eventId) {
     LOG.info("Start handling event: " + eventId);
-    var sql = "insert into " + userDatasetSchemaName + eventTable + " (event_id) values (?)";
-    var sqlRunner = new SQLRunner(appDbDataSource, sql, "insert-user-dataset-event");
+    var sql = "INSERT INTO " + dsSchema + eventTable + " (event_id) VALUES (?)";
+    var sqlRunner = new SQLRunner(dataSource, sql, "insert-user-dataset-event");
     sqlRunner.executeUpdate(new Object[]{eventId});
   }
 
-  private static void closeEventHandling(
-    Long eventId,
-    DataSource appDbDataSource,
-    String userDatasetSchemaName
-  ) {
-    var sql = "update " + userDatasetSchemaName + eventTable + " set completed = sysdate where event_id = ?";
-    var sqlRunner = new SQLRunner(appDbDataSource, sql, "complete-user-dataset-event-handling");
+  private void closeEventHandling(Long eventId) {
+    var sql = "UPDATE " + dsSchema + eventTable
+      + " SET completed = sysdate"
+      + " WHERE event_id = ?";
+    var sqlRunner = new SQLRunner(dataSource, sql, "complete-user-dataset-event-handling");
     sqlRunner.executeUpdate(new Object[]{eventId});
 
     LOG.info("Done handling event: " + eventId);
