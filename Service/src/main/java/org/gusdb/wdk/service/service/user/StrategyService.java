@@ -96,7 +96,7 @@ public class StrategyService extends UserService {
   @InSchema("wdk.users.strategies.post-request")
   @OutSchema("wdk.standard-post-response")
   public Response createStrategy(JSONObject body)
-      throws WdkModelException, DataValidationException {
+      throws WdkModelException, DataValidationException, WdkUserException {
     try {
       User user = getUserBundle(Access.PRIVATE).getSessionUser();
       StepFactory stepFactory = getWdkModel().getStepFactory();
@@ -111,7 +111,7 @@ public class StrategyService extends UserService {
     catch (WdkModelException wme) {
       throw new WdkModelException("Unable to create the strategy.", wme);
     }
-    catch (WdkUserException | InvalidStrategyStructureException wue) {
+    catch (InvalidStrategyStructureException wue) {
       throw new DataValidationException(wue);
     }
   }
