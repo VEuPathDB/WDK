@@ -65,6 +65,7 @@ public abstract class UserDatasetTypeHandler {
   /**
    * Returns small-scale type-specific data for a collection of user datasets
    * for use in a non-detailed user dataset listing page
+   * @throws WdkModelException if unable to generate type-specific data
    */
   public List<JsonType> getTypeSpecificData(
     final WdkModel wdkModel,
