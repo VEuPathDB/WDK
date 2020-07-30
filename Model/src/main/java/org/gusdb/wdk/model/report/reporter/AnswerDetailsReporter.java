@@ -32,7 +32,7 @@ public abstract class AnswerDetailsReporter extends AbstractReporter {
     return configure(AnswerDetailsFactory.createFromJson(config, _baseAnswer.getAnswerSpec().getQuestion()));
   }
 
-  private Reporter configure(AnswerDetails config) {
+  protected Reporter configure(AnswerDetails config) {
     _baseAnswer = getConfiguredAnswer(_baseAnswer, config);
     _attributes = config.getAttributes();
     _tables = config.getTables();

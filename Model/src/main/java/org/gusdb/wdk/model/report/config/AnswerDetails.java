@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.report.config;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,7 @@ public class AnswerDetails {
   private int _numRecords = ALL_RECORDS; // default to all records
   private Map<String, AttributeField> _attributes = Collections.emptyMap();
   private Map<String, TableField> _tables = Collections.emptyMap();
-  private List<SortDirectionSpec<AttributeField>> _sorting = Collections.emptyList();
+  private List<SortDirectionSpec<AttributeField>> _sorting = new ArrayList<>();
   private ContentDisposition _contentDisposition = ContentDisposition.INLINE;
 
   // all getters are public
