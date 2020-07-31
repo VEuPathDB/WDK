@@ -61,7 +61,7 @@
     <ant target="WDK-Service-Schema"/>
   </target>
 
-  <target name="WDK-Service-Schema" depends="installYarnBin">
+  <target name="WDK-Service-Schema" depends="installYarnDependencies">
     <echo message="Resolving and merging JSON Schema files"/>
     <exec dir="${targetDir}/bin"
           executable="installSchema.sh"
