@@ -390,7 +390,7 @@ public class DatasetFactory {
       psInsert.setTimestamp(6, new Timestamp(createdDate.getTime()));
       psInsert.setString(7, parserName);
       psInsert.setString(8, uploadFile);
-      psInsert.setClob(9, content.getContentReader());
+      psInsert.setCharacterStream(9, content.getContentReader());
       SqlUtils.executePreparedStatement(psInsert, sql, "wdk-dataset-insert-dataset");
 
       return datasetId;
