@@ -48,6 +48,9 @@
     "isDeleted": {
       "type": "boolean"
     },
+    "isExample": {
+      "type": "boolean"
+    },
     "organization": {
       "type": "string"
     },
@@ -66,7 +69,8 @@
     "isDeleted",
     "isSaved",
     "isValid",
-    "isPublic"
+    "isPublic",
+    "isExample"
   ]
 }
 
