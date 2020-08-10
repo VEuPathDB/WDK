@@ -415,6 +415,13 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     return _isPublic;
   }
 
+  public boolean isExample() {
+    String userDisplayName = _user.getDisplayName();
+    String exampleStratsAuthorName = _wdkModel.getExampleStratsAuthor().getName();
+
+    return userDisplayName.equals(exampleStratsAuthorName);
+  }
+
   public String getProjectId() {
     return _projectId;
   }
