@@ -258,6 +258,7 @@ public class JsonKeys {
   public static final String LAST_MODIFIED = "lastModified";
   public static final String IS_SAVED = "isSaved";
   public static final String IS_DELETED = "isDeleted";
+  public static final String IS_EXAMPLE = "isExample";
   public static final String STEP_TREE = "stepTree";
   public static final String STEP_ID = "stepId";
   public static final String STEPS = "steps";
