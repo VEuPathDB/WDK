@@ -109,6 +109,7 @@
                                   configLink,
                                   binLink,
                                   dataLink,
+                                  testLink,
                                   buildlogLink,
                                   rngLink,
                                   perlLink,
@@ -124,6 +125,8 @@
                property="binLinkExists" />
     <available file="${webappTargetDir}/WEB-INF/wdk-model/data"
                property="dataLinkExists" />
+    <available file="${webappTargetDir}/WEB-INF/wdk-model/test"
+               property="testLinkExists" />
     <available file="${webappTargetDir}/WEB-INF/wdk-model/.buildlog"
                property="buildlogLinkExists" />
     <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/rng"
@@ -159,6 +162,11 @@
   <target name="dataLink" unless="dataLinkExists">
     <symlink link="${webappTargetDir}/WEB-INF/wdk-model/data"
              resource="${targetDir}/data" />
+  </target>
+
+  <target name="testLink" unless="testLinkExists">
+    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/test"
+             resource="${targetDir}/test" />
   </target>
 
   <target name="buildlogLink" unless="buildlogLinkExists">
