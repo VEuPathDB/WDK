@@ -831,21 +831,8 @@ public class StepFactory {
    *   if a connection to the database cannot be opened.
    */
   public void updateStep(Step step) throws WdkModelException {
-    updateSteps(ListBuilder.asList(step));
-  }
-
-  /**
-   * Overwrite the details of a collection of steps in the database.
-   *
-   * @param steps
-   *   The collection of steps that will be updated in the database.
-   *
-   * @throws WdkModelException
-   *   if a connection to the database cannot be opened.
-   */
-  public void updateSteps(Collection<Step> steps) throws WdkModelException {
     try(Connection con = _userDbDs.getConnection()) {
-      updateSteps(con, steps);
+      updateSteps(con, ListBuilder.asList(step));
     } catch (SQLException e) {
       throw new WdkModelException(e);
     }
@@ -861,6 +848,25 @@ public class StepFactory {
    *   The collection of steps that will be updated in the database.
    */
   private void updateSteps(Connection con, Collection<Step> steps) throws WdkModelException {
+
+    // no need to do anything if passed an empty collection
+    if (steps.isEmpty()) return;
+
+    // Because we may be working with immediate constraint application, and
+    // we're not sure in which order steps will be updated, nullify previous and
+    // child step IDs to avoid unique constraint violation.
+    final String stepIdList = steps.stream()
+        .map(st -> String.valueOf(st.getStepId()))
+        .collect(Collectors.joining(","));
+    LOG.debug("stepIdList should have " + steps.size() + " values: " + stepIdList);
+    final String nullificationSql = "UPDATE " + _userSchema + TABLE_STEP + " SET " +
+        COLUMN_PREVIOUS_STEP_ID + " = null, " +
+        COLUMN_CHILD_STEP_ID + " = null " +
+        "WHERE " + COLUMN_STEP_ID + " in (" + stepIdList + ")";
+    int rowsNullified = new SQLRunner(con, nullificationSql).executeUpdate();
+    LOG.debug("Nullified the previous and child step IDs of " + rowsNullified + " steps.");
+
+    // now perform the actual updates
     final String sql = "UPDATE " + _userSchema + TABLE_STEP + "\n" +
         "SET\n" +
         "  " + COLUMN_USER_ID          + " = ?,\n" +

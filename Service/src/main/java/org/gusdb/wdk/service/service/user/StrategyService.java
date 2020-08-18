@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -60,6 +62,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 public class StrategyService extends UserService {
+
+  private static final Logger LOG = Logger.getLogger(StrategyService.class);
 
   public static final String BASE_PATH = "strategies";
   public static final String ID_PARAM  = "strategyId";
@@ -241,6 +245,16 @@ public class StrategyService extends UserService {
           .map(fSwallow(orphan -> Step.builder(orphan).removeStrategy().build(
               new UserCache(oldStrat.getUser()), ValidationLevel.NONE, Optional.empty())))
           .collect(Collectors.toList());
+
+      if (LOG.isDebugEnabled()) {
+        Function<Step, String> logChildren = st -> "id=" + st.getStepId() +
+            ", left=" + st.getPrimaryInputStep().map(left -> left.getStepId()).orElse(0L) +
+            ", right=" + st.getSecondaryInputStep().map(right -> right.getStepId()).orElse(0L);
+        LOG.debug("Orphan steps:");
+        orphanedSteps.stream().forEach(st -> LOG.debug(logChildren.apply(st)));
+        LOG.debug("Strategy steps:");
+        newStrat.getAllSteps().stream().forEach(st -> LOG.debug(logChildren.apply(st)));
+      }
 
       // update strategy and newly orphaned steps
       stepFactory.updateStrategyAndOtherSteps(newStrat, orphanedSteps);
