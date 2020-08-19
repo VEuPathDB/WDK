@@ -21,6 +21,8 @@ import org.gusdb.wdk.model.user.dataset.irods.icat.ICatNode;
 import org.gusdb.wdk.model.user.dataset.json.JsonUserDataset;
 import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetSession;
 import org.gusdb.wdk.model.user.dataset.json.JsonUserDatasetShare;
+import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.domain.AvuData;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -274,6 +276,36 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     return TRACE.start(userId, datasetId).end(loadUserDir(userId, false)
       .map(c -> c.containsCollection(resolvePath(DATASETS_DIR, datasetId)))
       .orElse(false));
+  }
+
+  @Override
+  public void updateMetaFromJson(
+    Long userId,
+    Long datasetId,
+    JSONObject metaJson
+  ) throws WdkModelException {
+    super.updateMetaFromJson(userId, datasetId, metaJson);
+
+    var path = requireUserDatasetsDir(userId)
+      .resolve(datasetId.toString())
+      .resolve(META_JSON_FILE);
+
+    var ds = getUserDataset(userId, datasetId);
+    var oldAvu = new AvuData();
+    oldAvu.setAttribute(META_JSON_FILE);
+    oldAvu.setValue(ds.getMetaJsonObject().toString());
+
+    var newAvu = new AvuData();
+    newAvu.setAttribute(META_JSON_FILE);
+    newAvu.setValue(metaJson.toString());
+
+    try {
+      getIrodsAdaptor()
+        .getCollectionAccessObject()
+        .modifyAVUMetadata(path.toString(), oldAvu, newAvu);
+    } catch (JargonException e) {
+      throw new WdkModelException(e);
+    }
   }
 
   /*⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺*\

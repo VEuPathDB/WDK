@@ -521,6 +521,14 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
     TRACE.end();
   }
 
+  public CollectionAO getCollectionAccessObject() throws WdkModelException {
+    try {
+      return getIrodsAccessFac().getCollectionAO(account);
+    } catch (JargonException e) {
+      throw new WdkModelException(e);
+    }
+  }
+
   @SuppressWarnings("unused")
   private String readFileContents2(Path file) throws WdkModelException {
     TRACE.start(file);

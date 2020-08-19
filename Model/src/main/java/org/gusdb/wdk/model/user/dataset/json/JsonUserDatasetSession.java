@@ -766,7 +766,7 @@ public class JsonUserDatasetSession implements UserDatasetSession {
   /**
    * Given a user ID, return a Path to that user's datasets dir.
    */
-  private Path requireUserDatasetsDir(long userId) throws WdkModelException {
+  protected Path requireUserDatasetsDir(long userId) throws WdkModelException {
     return TRACE.start(userId).end(getUserDatasetsDir(userId)
       .orElseThrow(() -> new WdkModelException("User datasets dir does not"
         + "exist for user: " + userId)));

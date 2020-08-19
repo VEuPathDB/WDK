@@ -62,6 +62,7 @@ public class JsonUserDataset implements UserDataset {
   ) throws WdkModelException {
     this.userDatasetId = userDatasetId;
     this.datasetJsonObject = datasetJsonObject;
+    this.metaJsonObject = metaJsonObject;
 
     unpackJson(datasetJsonObject, metaJsonObject, dataFilesDir, session);
   }
