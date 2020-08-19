@@ -285,6 +285,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     JSONObject metaJson
   ) throws WdkModelException {
     super.updateMetaFromJson(userId, datasetId, metaJson);
+    TRACE.start(userId, datasetId, metaJson);
 
     var path = requireUserDatasetsDir(userId)
       .resolve(datasetId.toString());
@@ -304,6 +305,8 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
         .modifyAVUMetadata(path.toString(), oldAvu, newAvu);
     } catch (JargonException e) {
       throw new WdkModelException(e);
+    } finally {
+      TRACE.end();
     }
   }
 
