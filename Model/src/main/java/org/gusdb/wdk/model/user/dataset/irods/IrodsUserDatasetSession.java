@@ -287,8 +287,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     super.updateMetaFromJson(userId, datasetId, metaJson);
 
     var path = requireUserDatasetsDir(userId)
-      .resolve(datasetId.toString())
-      .resolve(META_JSON_FILE);
+      .resolve(datasetId.toString());
 
     var ds = getUserDataset(userId, datasetId);
     var oldAvu = new AvuData();
