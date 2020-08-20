@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -11,7 +12,10 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.json.JSONException;
 
 public abstract class AbstractStepAnalyzer implements StepAnalyzer {
 
@@ -148,6 +152,26 @@ public abstract class AbstractStepAnalyzer implements StepAnalyzer {
       throw new WdkModelException("Optional property '" + propName +
           "' in instance of Step Analysis Plugin '" +
           getClass().getName() + "' must have value 'true' or 'false'.");
+    }
+  }
+
+  /*%%%%%%%%%%%%%% Helper functions for Parameter validation %%%%%%%%%%%%%%*/
+
+  protected static String getSingleValue(Map<String, String> params, String enumParamName) throws WdkUserException {
+    String errPrefix = "Enum Parameter '" + enumParamName + "': ";
+    String enumParamStableValue = params.get(enumParamName);
+    try {
+      if (enumParamStableValue == null) {
+        throw new WdkUserException(errPrefix + "Value is required.");
+      }
+      List<String> terms = AbstractEnumParam.convertToTerms(enumParamStableValue);
+      if (terms.size() != 1) {
+        throw new WdkUserException(errPrefix + "Expected exactly one value but received " + enumParamStableValue);
+      }
+      return terms.get(0);
+    }
+    catch (JSONException e) {
+      throw new WdkUserException(errPrefix + "Stable value '" + enumParamStableValue + "' is not JSON.");
     }
   }
 }
