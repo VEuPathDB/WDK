@@ -57,6 +57,10 @@ public abstract class UserDatasetTypeHandler {
   /**
    * Returns detailed type-specific data for a single user dataset for use in a
    * detailed display page
+   * @param wdkModel WDK model
+   * @param userDataset user data for which type-specific data should be fetched
+   * @param user user currently accessing this user dataset (not necessarily owner- may be shared)
+   * @throws WdkModelException if error occurs generating type-specific data
    */
   public JsonType getDetailedTypeSpecificData(WdkModel wdkModel, UserDataset userDataset, User user) throws WdkModelException {
     return new JsonType(null);
