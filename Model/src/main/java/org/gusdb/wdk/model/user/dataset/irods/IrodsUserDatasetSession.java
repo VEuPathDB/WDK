@@ -302,7 +302,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     try {
       getIrodsAdaptor()
         .getCollectionAccessObject()
-        .modifyAVUMetadata(path.toString(), oldAvu, newAvu);
+        .setAVUMetadata(path.toString(), newAvu);
     } catch (JargonException e) {
       throw new WdkModelException(e);
     } finally {

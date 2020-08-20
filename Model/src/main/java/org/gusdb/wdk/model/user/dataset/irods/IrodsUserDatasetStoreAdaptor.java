@@ -523,7 +523,7 @@ public class IrodsUserDatasetStoreAdaptor implements UserDatasetStoreAdaptor {
 
   public CollectionAO getCollectionAccessObject() throws WdkModelException {
     try {
-      return getIrodsAccessFac().getCollectionAO(account);
+      return TRACE.getter(getIrodsAccessFac().getCollectionAO(account));
     } catch (JargonException e) {
       throw new WdkModelException(e);
     }
