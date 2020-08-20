@@ -42,7 +42,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
   /**
    * Root node for an internal temporary local cache of the iRODS state.
    */
-  private ICatCollection iCatMirror;
+  private final ICatCollection iCatMirror;
 
   /**
    * Paths for which metadata has already been fetched.
@@ -178,7 +178,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
 
     // If the user's directory is not present even after attempting to load it
     // then it does not exist, return an empty map
-    if (!optCol.isPresent())
+    if (optCol.isEmpty())
       return TRACE.end(Collections.emptyMap());
 
     final ICatCollection col = optCol.get();
@@ -211,7 +211,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     final Optional<ICatCollection> optCol = iCatMirror.getCollection(
       makeExternalDsDirPath(userId));
 
-    if (!optCol.isPresent())
+    if (optCol.isEmpty())
       return TRACE.end(Collections.emptyMap());
 
     final Iterator<ExternalDatasetLink> links = optCol.get()
@@ -235,7 +235,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
       final ExternalDatasetLink link = links.next();
       final Optional<ICatCollection> extDs = loadShare(link, userId);
 
-      if (!extDs.isPresent())
+      if (extDs.isEmpty())
         continue;
 
       loadCollectionMeta(extDs.get(), false);
@@ -358,7 +358,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
 
     // if the user does not have an external datasets directory
     // then stop here
-    if (!optDir.isPresent())
+    if (optDir.isEmpty())
       return TRACE.end(Optional.empty());
 
     // Attempt to locate a file in the user's external datasets directory that
@@ -480,7 +480,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
 
     Optional<ICatCollection> optCol = iCatMirror.getCollection(path);
 
-    if (!optCol.isPresent()) {
+    if (optCol.isEmpty()) {
       optCol = getIrodsAdaptor().readFullPath(path);
     } else if (force) {
       iCatMirror.remove(path);
@@ -709,16 +709,6 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     return TRACE.end(tmp);
   }
 
-  // TODO: Replace me with a call to StringUtil.lpad once the strategy loading
-  //   branch is merged in.
-  private static String lPad(final String str, final char with, final int to) {
-    TRACE.start(str, with, to);
-    final StringBuilder sb = new StringBuilder(to);
-    for (int i = to - str.length(); i > 0; i--)
-      sb.append(with);
-    return TRACE.end(sb.append(str).toString());
-  }
-
   private static final class Err {
 
     private static final String
@@ -727,8 +717,6 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
       MALFORMED_META = "Failed to parse JSON metadata for item %s at key %s",
       LINK_TO_DEAD_DS = "User %d has an external dataset link to an unreachable"
         + " dataset (dataset: %d, owner: %d)",
-      ILLEGAL_PATH = "Attempted to load the iRODS path \"%s\" which is outside "
-        + "of the user directory root.",
       DS_NOT_FOUND = "Dataset %d not found for user %d",
       BROKEN_DS = "Dataset %d for user %d does not contain both a dataset.json"
         + " file and a meta.json file";
@@ -755,11 +743,6 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
       final ExternalDatasetLink link
     ) {
       return () -> new WdkModelException(String.format(LINK_TO_DEAD_DS, targetId, link.datasetId, link.externalUserId));
-    }
-
-    // TODO: determine if this method is still needed
-    static WdkModelException illegalPath(final Path path) {
-      return new WdkModelException(String.format(ILLEGAL_PATH, path));
     }
 
     static Supplier<WdkModelException> datasetNotFound(
