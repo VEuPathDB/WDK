@@ -34,7 +34,7 @@ public class MDCRequestFilter implements ContainerRequestFilter {
     RequestData request = ContextLookup.getRequest(_servletRequest.get(), _grizzlyRequest.get());
 
     MDCUtil.setRequestStartTime(System.currentTimeMillis());
-    MDCUtil.setIpAddress(request.getRealRemoteIpAddress());
+    MDCUtil.setIpAddress(request.getRemoteIpAddress());
     MDCUtil.setRequestedDomain(request.getServerName());
     MDCUtil.setRequestId(String.valueOf(requestId.getAndIncrement()));
     MDCUtil.setSessionId(request.getSession().getId());
