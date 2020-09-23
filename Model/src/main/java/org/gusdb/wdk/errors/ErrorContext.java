@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.gusdb.fgputil.collection.ReadOnlyMap;
+import org.gusdb.fgputil.logging.MDCUtil;
+import org.gusdb.fgputil.logging.MDCUtil.MdcBundle;
 import org.gusdb.fgputil.web.RequestSnapshot;
-import org.gusdb.wdk.model.MDCUtil;
-import org.gusdb.wdk.model.MDCUtil.MdcBundle;
 import org.gusdb.wdk.model.WdkModel;
 
 public class ErrorContext {

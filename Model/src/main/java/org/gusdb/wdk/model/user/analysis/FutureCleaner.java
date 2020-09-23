@@ -10,8 +10,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.logging.MDCUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
-import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.WdkModelException;
 
 public class FutureCleaner implements Callable<Boolean> {

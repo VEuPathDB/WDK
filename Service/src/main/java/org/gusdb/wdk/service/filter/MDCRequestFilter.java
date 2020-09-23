@@ -12,9 +12,9 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 
 import org.glassfish.grizzly.http.server.Request;
+import org.gusdb.fgputil.logging.MDCUtil;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.wdk.controller.ContextLookup;
-import org.gusdb.wdk.model.MDCUtil;
 
 @PreMatching
 @Priority(30)

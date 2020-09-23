@@ -3,9 +3,9 @@ package org.gusdb.wdk.controller;
 import static org.gusdb.wdk.model.ThreadMonitor.getThreadMonitorConfig;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.logging.MDCUtil;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.fgputil.web.ApplicationContext;
-import org.gusdb.wdk.model.MDCUtil;
 import org.gusdb.wdk.model.ThreadMonitor;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;

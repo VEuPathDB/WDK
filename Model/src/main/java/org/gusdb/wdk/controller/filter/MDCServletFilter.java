@@ -12,7 +12,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.gusdb.wdk.model.MDCUtil;
+import org.gusdb.fgputil.logging.MDCUtil;
 
 /**
  * A filter that adds (and removes) MDC variables for log4j.  Added to MDC by

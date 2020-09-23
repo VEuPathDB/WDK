@@ -13,6 +13,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
+import org.gusdb.fgputil.logging.MDCUtil;
 import org.gusdb.fgputil.runtime.ThreadUtil;
 import org.gusdb.wdk.model.config.ModelConfig;
 

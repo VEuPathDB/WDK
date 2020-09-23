@@ -7,7 +7,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 
-import org.gusdb.wdk.model.MDCUtil;
+import org.gusdb.fgputil.logging.MDCUtil;
 
 @Priority(30)
 public class MDCResponseFilter implements ContainerResponseFilter {
