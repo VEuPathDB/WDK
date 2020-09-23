@@ -16,6 +16,16 @@
 
     <dependency>
       <groupId>org.gusdb</groupId>
+      <artifactId>wsf-plugin</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.gusdb</groupId>
+      <artifactId>wsf-common</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.gusdb</groupId>
       <artifactId>wsf-client</artifactId>
       <exclusions>
         <exclusion>
@@ -77,6 +87,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-client</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
     </dependency>
@@ -103,8 +118,13 @@
     </dependency>
 
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-1.2-api</artifactId>
     </dependency>
 
     <dependency>
