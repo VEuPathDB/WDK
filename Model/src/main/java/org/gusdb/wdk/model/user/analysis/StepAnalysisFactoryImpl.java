@@ -286,6 +286,14 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     StepAnalysisInstance instance = runnableInstance.get();
     String hash = StepAnalysisInstance.getContextHash(runnableInstance);
 
+    // mark this analysis as clean (clears new or dirty status)
+    _dataStore.updateAnalysis(
+        instance.getAnalysisId(),
+        instance.getDisplayName(),
+        RevisionStatus.STEP_CLEAN,
+        instance.getContextJson(),
+        instance.getUserNotes());
+
     // returns an empty optional if new execution inserted; filled with existing if one already there
     Optional<ExecutionInfo> existingExecution = _dataStore.insertExecution(
         hash, ExecutionStatus.PENDING, new Date(),
@@ -301,23 +309,16 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
         ", newlyCreated = " + existingExecution.isEmpty() + ", status = " +
         existingExecution.map(e -> e.getStatus()).orElse(ExecutionStatus.PENDING));
 
+    // if freshly inserted or requires rerun
     if (existingExecution.isEmpty() || existingExecution.get().getStatus().requiresRerun()) {
 
       // empty file stores if present and create dir
       _fileStore.recreateStore(hash);
 
-      // reset execution
+      // reset execution if previously existed
       if (existingExecution.isPresent()) {
         _dataStore.resetExecution(hash, ExecutionStatus.PENDING, new Date());
       }
-
-      // mark this analysis as clean
-      _dataStore.updateAnalysis(
-          instance.getAnalysisId(),
-          instance.getDisplayName(),
-          RevisionStatus.STEP_CLEAN,
-          instance.getContextJson(),
-          instance.getUserNotes());
 
       // run the analysis
       try {
