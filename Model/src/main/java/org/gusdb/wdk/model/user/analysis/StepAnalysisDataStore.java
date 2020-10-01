@@ -42,8 +42,8 @@ public interface StepAnalysisDataStore {
    * @param startDate   Execution start date, used if a new record is created
    * @param timeoutMinutes number of minutes this execution should be allowed to run before it is expire
    *
-   * @return <code>false</code> if a record matching the given hash already
-   * existed, <code>true</code> if a new record was created.
+   * @return optional containing an exe info if a record matching the given hash
+   * already exists, empty optional if a new record was inserted
    */
   Optional<ExecutionInfo> insertExecution(String contextHash, ExecutionStatus status, Date startDate, int timeoutMinutes) throws WdkModelException;  
   void updateExecution(String contextHash, ExecutionStatus status, Date modifiedDate, String charData, byte[] binData) throws WdkModelException;
