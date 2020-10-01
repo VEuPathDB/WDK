@@ -299,9 +299,12 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
         hash, ExecutionStatus.PENDING, new Date(),
         instance.getStepAnalysis().get().getExecutionTimeoutThresholdInMinutes());
 
+    boolean resultsDirExists = _fileStore.storageDirExists(hash);
+
     // Run analysis plugin under the following conditions:
     //   1. new execution was created (i.e. none ever existed before or cache was cleared)
     //   2. previous run present but failed due to error, interruption, etc.
+    //   3. results dir does not exist (may have been deleted by cache clear or manually, or "disappeared" during proxy swap)
     //
     // NOTE: There is a race condition here in between the check of the store and the creation
     //       (first line inside if).  Use combination of lock and createNewFile() to fix.
@@ -309,8 +312,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
         ", newlyCreated = " + existingExecution.isEmpty() + ", status = " +
         existingExecution.map(e -> e.getStatus()).orElse(ExecutionStatus.PENDING));
 
-    // if freshly inserted or requires rerun
-    if (existingExecution.isEmpty() || existingExecution.get().getStatus().requiresRerun()) {
+    // if freshly inserted, data dir missing, or requires rerun
+    if (existingExecution.isEmpty() || existingExecution.get().getStatus().requiresRerun() || !resultsDirExists) {
 
       // empty file stores if present and create dir
       _fileStore.recreateStore(hash);
