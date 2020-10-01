@@ -500,7 +500,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
         return existingStatus;
       }
 
-      // execution does not exist; create and return true
+      // execution does not exist; insert empty run and return an empty optional
       new SQLRunner(_appDs, INSERT_EXECUTION_SQL, "insert-step-analysis-run").executeStatement(
           new Object[]{ contextHash,  status.name(), getTimestamp(startDate), getTimestamp(startDate), timeoutMinutes },
           new Integer[]{ Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.TIMESTAMP, Types.INTEGER });
