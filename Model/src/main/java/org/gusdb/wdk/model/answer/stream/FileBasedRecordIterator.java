@@ -233,8 +233,9 @@ class FileBasedRecordIterator extends AbstractRecordIterator {
     if (resultList.next()) {
       PrimaryKeyValue attrListPk = pkDef.getPrimaryKeyFromResultList(resultList);
       if (PrimaryKeyValue.rawValuesDiffer(expectedPkValues, attrListPk.getRawValues())) {
-        throw new WdkModelException("Record ordering in attribute query data [" + attributeData.fileName +
-            "] does not match ID query.  Expected: " + FormatUtil.prettyPrint(expectedPkValues) +
+        throw new WdkModelException("There is a discrepancy between the ID query and " +
+            "attribute query [" + attributeData.fileName + "].  Either the counts disagree " +
+            "or the order of the IDs disagree.  Expected: " + FormatUtil.prettyPrint(expectedPkValues) +
             ", Found: " + FormatUtil.prettyPrint(attrListPk.getRawValues()));
       }
       for (QueryColumnAttributeField field : attributeData.attributes) {

@@ -79,6 +79,7 @@ public abstract class AbstractRecordIterator extends ReadOnlyIterator<RecordInst
       return (_lastRecord != null);
     }
     catch(WdkModelException | WdkUserException e) {
+      LOG.error("Failed to load next record", e);
       throw new WdkRuntimeException("Failed to load next record", e);
     }
   }
