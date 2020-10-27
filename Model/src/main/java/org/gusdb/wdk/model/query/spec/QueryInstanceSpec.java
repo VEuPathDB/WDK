@@ -3,13 +3,12 @@ package org.gusdb.wdk.model.query.spec;
 import java.util.Map;
 import java.util.Optional;
 
-import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
-public class QueryInstanceSpec extends ParameterContainerInstanceSpec<QueryInstanceSpec> implements Validateable<QueryInstanceSpec> {
+public class QueryInstanceSpec extends ParameterContainerInstanceSpec<QueryInstanceSpec> {
 
   @SuppressWarnings("unchecked")
   public static QueryInstanceSpecBuilder builder() {

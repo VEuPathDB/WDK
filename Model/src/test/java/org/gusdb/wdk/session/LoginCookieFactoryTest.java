@@ -95,7 +95,7 @@ public class LoginCookieFactoryTest {
   }
   
   @Test
-  public void testValidateCookie() throws Exception {
+  public void testValidateCookie() {
     LoginCookieFactory factory = new LoginCookieFactory(SECRET_KEY);
     for (String[] data : COOKIE_CASES) {
       LoginCookieParts parts = LoginCookieFactory.parseCookieValue(data[2]);
