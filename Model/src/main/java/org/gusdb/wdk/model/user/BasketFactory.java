@@ -5,7 +5,14 @@ import static org.gusdb.fgputil.functional.Functions.reduce;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.sql.DataSource;
@@ -15,9 +22,13 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
-import org.gusdb.fgputil.db.stream.ResultSetStream;
+import org.gusdb.fgputil.db.stream.ResultSets;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
-import org.gusdb.wdk.model.*;
+import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
@@ -363,22 +374,22 @@ public class BasketFactory {
     }
   }
 
-  public Stream<RecordInstance> getBasket(User user, RecordClass recordClass)
-      throws WdkModelException {
+  public Stream<RecordInstance> getBasket(User user, RecordClass recordClass) {
 
-    final var sql = "SELECT * FROM " + _userSchema + TABLE_BASKET + " WHERE " + COLUMN_PROJECT_ID + " = ? AND " +
-        COLUMN_USER_ID + " = ? AND " + COLUMN_RECORD_CLASS + " =?";
+    final var sql =
+        "SELECT * FROM " + _userSchema + TABLE_BASKET +
+        " WHERE " + COLUMN_PROJECT_ID + " = ?" +
+        " AND " + COLUMN_USER_ID + " = ?" +
+        " AND " + COLUMN_RECORD_CLASS + " =?";
 
     final var columns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
 
-    try {
-      var ps = SqlUtils.getPreparedStatement(_wdkModel.getUserDb().getDataSource(), sql);
+    return ResultSets.openStream(_wdkModel.getUserDb().getDataSource(), sql,
+      // SQL argument values
+      new Object[] { _wdkModel.getProjectId(), user.getUserId(), recordClass.getFullName() },
+      // SQL argument types
+      new Integer[] { Types.VARCHAR, Types.BIGINT, Types.VARCHAR }, rs -> {
 
-      ps.setString(1, _wdkModel.getProjectId());
-      ps.setLong(2, user.getUserId());
-      ps.setString(3, recordClass.getFullName());
-
-      return new ResultSetStream<>(ps.executeQuery(), rs -> {
         var pkValues = new LinkedHashMap<String, Object>();
 
         for (int i = 1; i <= columns.length; i++) {
@@ -387,23 +398,21 @@ public class BasketFactory {
         }
 
         try {
-          return Optional.of(
-            new StaticRecordInstance(user, recordClass, recordClass, pkValues, true));
-        } catch (WdkUserException | RecordNotFoundException e) {
+          return Optional.of(new StaticRecordInstance(user, recordClass, recordClass, pkValues, true));
+        }
+        catch (WdkUserException | RecordNotFoundException e) {
           // FIXME: thrown because pkValues either:
           //    WdkUserException: mapped to more than one record
           //    RecordNotFoundException: did not map to any records
           // Skip both for now but probably want to convert the multiple case
           // IDs to records and add all those records to the result.
           return Optional.empty();
-        } catch (WdkModelException e) {
-          rs.close();
+        }
+        catch (WdkModelException e) {
           throw new WdkRuntimeException(e);
         }
-      });
-    } catch (SQLException ex) {
-      throw new WdkModelException(ex);
-    }
+      }
+    );
   }
 
   public static String getSnapshotBasketQuestionName(RecordClass recordClass) {
