@@ -90,8 +90,7 @@ public class UserPreferenceFactory {
         psDelete.addBatch();
       }
       psDelete.executeBatch();
-      QueryLogger.logEndStatementExecution(sqlDelete, "wdk-user-delete-preference",
-          start);
+      QueryLogger.logEndStatementExecution(sqlDelete, "wdk-user-delete-preference", start);
 
       // insert preferences
       String sqlInsert = "INSERT INTO " + _userSchema + "preferences "
@@ -100,7 +99,6 @@ public class UserPreferenceFactory {
       psInsert = SqlUtils.getPreparedStatement(_userDb.getDataSource(), sqlInsert);
       start = System.currentTimeMillis();
       for (String key : toInsert.keySet()) {
-        start = System.currentTimeMillis();
         psInsert.setLong(1, userId);
         psInsert.setString(2, prefProjectId);
         psInsert.setString(3, key);
@@ -108,8 +106,7 @@ public class UserPreferenceFactory {
         psInsert.addBatch();
       }
       psInsert.executeBatch();
-      QueryLogger.logEndStatementExecution(sqlInsert, "wdk-user-insert-preference",
-          start);
+      QueryLogger.logEndStatementExecution(sqlInsert, "wdk-user-insert-preference", start);
 
       // update preferences
       String sqlUpdate = "UPDATE " + _userSchema + "preferences "
@@ -118,7 +115,6 @@ public class UserPreferenceFactory {
       psUpdate = SqlUtils.getPreparedStatement(_userDb.getDataSource(), sqlUpdate);
       start = System.currentTimeMillis();
       for (String key : toUpdate.keySet()) {
-        start = System.currentTimeMillis();
         psUpdate.setString(1, toUpdate.get(key));
         psUpdate.setLong(2, userId);
         psUpdate.setString(3, prefProjectId);
@@ -126,12 +122,13 @@ public class UserPreferenceFactory {
         psUpdate.addBatch();
       }
       psUpdate.executeBatch();
-      QueryLogger.logEndStatementExecution(sqlUpdate, "wdk-user-update-preference",
-          start);
-    } catch (SQLException e) {
+      QueryLogger.logEndStatementExecution(sqlUpdate, "wdk-user-update-preference", start);
+    }
+    catch (SQLException e) {
       throw new WdkModelException("Unable to update user (id=" + userId
           + ") preferences", e);
-    } finally {
+    }
+    finally {
       SqlUtils.closeStatement(psDelete);
       SqlUtils.closeStatement(psInsert);
       SqlUtils.closeStatement(psUpdate);

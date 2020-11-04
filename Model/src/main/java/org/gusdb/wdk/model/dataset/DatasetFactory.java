@@ -23,7 +23,6 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
-import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -338,26 +337,20 @@ public class DatasetFactory {
   }
 
   private Dataset getDataset(User user, Connection connection, String checksum) throws WdkModelException  {
-    String sql =
-      "SELECT d.*" +
-        " FROM " + _userSchema + TABLE_DATASETS + " d" +
-        " WHERE d." + COLUMN_CONTENT_CHECKSUM + " = ?" +
-        "   AND d." + COLUMN_USER_ID + " = ?";
+    try {
+      String sql =
+        "SELECT d.*" +
+          " FROM " + _userSchema + TABLE_DATASETS + " d" +
+          " WHERE d." + COLUMN_CONTENT_CHECKSUM + " = ?" +
+          "   AND d." + COLUMN_USER_ID + " = ?";
 
-    try(final var statement = connection.prepareStatement(sql)) {
-
-      long start = System.currentTimeMillis();
-      statement.setString(1, checksum);
-      statement.setLong(2, user.getUserId());
-
-      try(final var resultSet = statement.executeQuery()) {
-        QueryLogger.logEndStatementExecution(sql,
-          "wdk-dataset-by-content-checksum", start);
-
-        return resultSet.next() ? readDataset(resultSet) : null;
-      }
-    } catch (SQLException ex) {
-      throw new WdkModelException(ex);
+      return new SQLRunner(connection, sql).executeQuery(
+          new Object[]{ checksum, user.getUserId() },
+          new Integer[]{ Types.VARCHAR, Types.BIGINT },
+          rs -> rs.next() ? readDataset(rs) : null);
+    }
+    catch (Exception e) {
+      throw WdkModelException.translateFrom(e);
     }
   }
 

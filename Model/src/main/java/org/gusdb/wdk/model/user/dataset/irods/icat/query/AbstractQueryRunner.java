@@ -70,8 +70,7 @@ abstract class AbstractQueryRunner implements ICatQueryRunner {
     } while (fetchAll && currRs.isHasMoreRecords());
     close();
 
-    QueryLogger.logEndStatementExecution(QUERY_NAME, getClass().getSimpleName(),
-      start);
+    QueryLogger.logEndStatementExecution(QUERY_NAME, getClass().getSimpleName(), start);
 
     return TRACE.end(this);
   }

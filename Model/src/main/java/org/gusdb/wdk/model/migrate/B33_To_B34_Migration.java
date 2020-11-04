@@ -10,7 +10,6 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.pool.SimpleDbConfig;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
-import org.gusdb.fgputil.db.slowquery.QueryLogger;
 
 /**
  * This script has two options: create and drop
@@ -241,7 +240,6 @@ public class B33_To_B34_Migration {
     String operation = args[0];
     String dbUser = args[1];
     String dbPassword = args[2];
-    QueryLogger.setInactive();
     try (DatabaseInstance accountDb = getDb(PRIMARY_ACCTDB_CONNECTION_URL, dbUser, dbPassword)) {
       switch (operation) {
         case "create":
