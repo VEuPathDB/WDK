@@ -29,7 +29,6 @@ import org.gusdb.wsf.client.ClientUserException;
 import org.gusdb.wsf.client.WsfClient;
 import org.gusdb.wsf.client.WsfClientFactory;
 import org.gusdb.wsf.client.WsfResponseListener;
-import org.gusdb.wsf.plugin.DelayedResultException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -59,25 +58,25 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   }
 
   @Override
-  protected ResultList getResults(boolean performSorting) throws WdkModelException, DelayedResultException {
+  protected ResultList getResults(boolean performSorting) throws WdkModelException {
     return getCachedResults(performSorting);
   }
 
   @Override
-  public String getSql() throws WdkModelException, DelayedResultException {
+  public String getSql() throws WdkModelException {
     // always get sql that queries on the cached result
     return getCachedSql(true);
   }
 
   @Override
-  public String getSqlUnsorted() throws WdkModelException, DelayedResultException {
+  public String getSqlUnsorted() throws WdkModelException {
     // always get sql that queries on the cached result
     return getCachedSql(false);
   }
 
   @Override
   public Optional<String> createCacheTableAndInsertResult(DatabaseInstance appDb, String tableName, long instanceId)
-      throws WdkModelException, DelayedResultException {
+      throws WdkModelException {
     createCacheTable(appDb, tableName, _query);
     return insertResults(appDb, tableName, instanceId);
   }
@@ -140,7 +139,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     }
   }
 
-  private Optional<String> insertResults(DatabaseInstance appDb, String tableName, long instanceId) throws WdkModelException, DelayedResultException {
+  private Optional<String> insertResults(DatabaseInstance appDb, String tableName, long instanceId) throws WdkModelException {
     LOG.debug("inserting process query result to cache...");
     List<Column> columns = Arrays.asList(_query.getColumns());
     Set<String> columnNames = _query.getColumnMap().keySet();
@@ -219,7 +218,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     return sql.append(")").toString();
   }
 
-  private void invokeWsf(WsfResponseListener listener) throws WdkModelException, DelayedResultException {
+  private void invokeWsf(WsfResponseListener listener) throws WdkModelException {
     long start = System.currentTimeMillis();
 
     // prepare request.

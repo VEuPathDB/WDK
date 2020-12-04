@@ -35,7 +35,6 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wsf.plugin.DelayedResultException;
 
 /**
  * An object representation of {@code <answerFilter>/<instance>}; object. This
@@ -279,18 +278,17 @@ public class AnswerFilterInstance extends WdkModelBase implements NamedObject {
   }
 
   public ResultList getResults(AnswerValue answerValue) throws WdkModelException {
+    // use only the id query sql as input
+    QueryInstance<?> idInstance = answerValue.getIdsQueryInstance();
+    String sql = idInstance.getSql();
+    int assignedWeight = idInstance.getAssignedWeight();
+    sql = applyFilter(answerValue.getUser(), sql, assignedWeight);
+    DataSource dataSource = _wdkModel.getAppDb().getDataSource();
     try {
-      // use only the id query sql as input
-      QueryInstance<?> idInstance = answerValue.getIdsQueryInstance();
-      String sql = idInstance.getSql();
-      int assignedWeight = idInstance.getAssignedWeight();
-      sql = applyFilter(answerValue.getUser(), sql, assignedWeight);
-      DataSource dataSource = _wdkModel.getAppDb().getDataSource();
       ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
           idInstance.getQuery().getFullName() + "__" + _name + "-filtered");
       return new SqlResultList(resultSet);
-    }
-    catch (DelayedResultException | SQLException e) {
+    } catch (SQLException e) {
       throw new WdkModelException("Could not get answer results.", e);
     }
   }
