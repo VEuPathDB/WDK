@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wsf.plugin.DelayedResultException;
 import org.json.JSONObject;
 
 import java.sql.SQLException;
@@ -36,23 +37,23 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
   }
 
   @Override
-  protected ResultList getResults(boolean performSorting) throws WdkModelException {
+  protected ResultList getResults(boolean performSorting) throws WdkModelException, DelayedResultException {
     return _query.isCacheable()
       ? getCachedResults(performSorting)
       : getUncachedResults();
   }
 
   @Override
-  public String getSql() throws WdkModelException {
+  public String getSql() throws WdkModelException, DelayedResultException {
     return getSql(true);
   }
 
   @Override
-  public String getSqlUnsorted() throws WdkModelException {
+  public String getSqlUnsorted() throws WdkModelException, DelayedResultException {
     return getSql(false);
   }
 
-  private String getSql(boolean performSorting) throws WdkModelException {
+  private String getSql(boolean performSorting) throws WdkModelException, DelayedResultException {
     return _query.isCacheable()
       ? getCachedSql(performSorting)
       : getUncachedSql();

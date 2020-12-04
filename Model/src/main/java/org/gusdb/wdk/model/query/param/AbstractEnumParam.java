@@ -410,7 +410,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       LOG.log(Param.VALIDATION_LOG_PRIORITY, "param=" + getFullName() + " - validating: " + stableValue +
         ", with contextParamValues=" + FormatUtil.prettyPrint(ctxParamVals));
 
-    // all other validation requires a DB lookup, so exit here if displayable or less
+    // all other validation requires a DB lookup, so exit here if syntactic or less
     if (level.isLessThanOrEqualTo(ValidationLevel.SYNTACTIC)) {
       LOG.log(Param.VALIDATION_LOG_PRIORITY, "Don't need to check against vocab since validation level is syntactic or less; returning valid=true");
       return ctxParamVals.setValid(name, level);
@@ -428,8 +428,10 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
         numSelected < getMinSelectedCount()) {
       String range = "( " + minSelectedCount + ", " +
           (maxSelectedCount >= 0 ? maxSelectedCount : "unlimited") + " )";
-      return ctxParamVals.setInvalid(name, level, "Number of selected values ("
-        + numSelected + ") is not allowed.  Must be within " + range);
+      String message = "Number of selected values ("
+          + numSelected + ") is not allowed.  Must be within " + range;
+      LOG.log(Param.VALIDATION_LOG_PRIORITY, message);
+      return ctxParamVals.setInvalid(name, level, message);
     }
 
     Set<String> allTerms = vocab.getTerms();
@@ -444,6 +446,9 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
       }
     }
 
+    if (!messages.isEmpty() && LOG.isEnabledFor(Param.VALIDATION_LOG_PRIORITY)) {
+      LOG.log(Param.VALIDATION_LOG_PRIORITY, String.join(NL, messages));
+    }
     return messages.isEmpty() ?
         ctxParamVals.setValid(name, level) :
         ctxParamVals.setInvalid(name, level, FormatUtil.join(messages, FormatUtil.NL));

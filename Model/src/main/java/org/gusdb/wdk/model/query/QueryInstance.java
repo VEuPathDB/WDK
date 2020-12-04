@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wsf.plugin.DelayedResultException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -42,13 +43,13 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
 
   private static final Logger LOG = Logger.getLogger(QueryInstance.class);
 
-  public abstract String getSql() throws WdkModelException;
+  public abstract String getSql() throws WdkModelException, DelayedResultException;
 
-  public abstract String getSqlUnsorted() throws WdkModelException;
+  public abstract String getSqlUnsorted() throws WdkModelException, DelayedResultException;
 
   protected abstract void appendJSONContent(JSONObject jsInstance) throws JSONException;
 
-  protected abstract ResultList getResults(boolean performSorting) throws WdkModelException;
+  protected abstract ResultList getResults(boolean performSorting) throws WdkModelException, DelayedResultException;
 
 
   // fields created by the constructor
@@ -113,19 +114,19 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
     return _spec.get().getAssignedWeight();
   }
 
-  public long getInstanceId() throws WdkModelException {
+  public long getInstanceId() throws WdkModelException, DelayedResultException {
     return getInstanceInfo().getInstanceId();
   }
 
-  public Optional<String> getResultMessage() throws WdkModelException {
+  public Optional<String> getResultMessage() throws WdkModelException, DelayedResultException {
     return getInstanceInfo().getResultMessage();
   }
 
-  public String getCacheTableName() throws WdkModelException {
+  public String getCacheTableName() throws WdkModelException, DelayedResultException {
     return getInstanceInfo().getTableName();
   }
 
-  private InstanceInfo getInstanceInfo() throws WdkModelException {
+  private InstanceInfo getInstanceInfo() throws WdkModelException, DelayedResultException {
     if (_instanceInfo == null) {
       ResultFactory factory = new ResultFactory(_wdkModel.getAppDb());
       String checksum = getChecksum();
@@ -135,7 +136,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
     return _instanceInfo;
   }
 
-  public boolean cacheInitiallyExistedForSpec() throws WdkModelException {
+  public boolean cacheInitiallyExistedForSpec() throws WdkModelException, DelayedResultException {
     if (_cachePreviouslyExistedForSpec == null) {
       getInstanceInfo(); // will set the value
     }
@@ -198,15 +199,15 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
     }
   }
 
-  public ResultList getResults() throws WdkModelException {
+  public ResultList getResults() throws WdkModelException, DelayedResultException {
     return getResults(true);
   }
 
-  public ResultList getResultsUnsorted() throws WdkModelException {
+  public ResultList getResultsUnsorted() throws WdkModelException, DelayedResultException {
     return getResults(false);
   }
 
-  public int getResultSize() throws WdkModelException {
+  public int getResultSize() throws WdkModelException, DelayedResultException {
     try {
       return Integer.parseInt(SqlUtils.executeScalar(
         _wdkModel.getAppDb().getDataSource(),
@@ -214,12 +215,12 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
         _query.getFullName() + "__count"
       ).toString());
     }
-    catch (SQLException e) {
+    catch (SQLException | NumberFormatException e) {
       throw new WdkModelException(e);
     }
   }
 
-  protected ResultList getCachedResults(boolean performSorting) throws WdkModelException {
+  protected ResultList getCachedResults(boolean performSorting) throws WdkModelException, DelayedResultException {
     var factory = new ResultFactory(_wdkModel.getAppDb());
     var instanceId = getInstanceInfo().getInstanceId();
     return performSorting
@@ -227,7 +228,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
       : factory.getCachedResults(instanceId);
   }
 
-  protected String getCachedSql(boolean performSorting) throws WdkModelException {
+  protected String getCachedSql(boolean performSorting) throws WdkModelException, DelayedResultException {
     var factory = new ResultFactory(_wdkModel.getAppDb());
     var instanceId = getInstanceInfo().getInstanceId();
     return performSorting

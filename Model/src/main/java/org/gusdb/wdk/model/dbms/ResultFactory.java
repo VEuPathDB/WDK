@@ -16,6 +16,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wsf.plugin.DelayedResultException;
 
 public class ResultFactory {
 
@@ -35,8 +36,9 @@ public class ResultFactory {
      * @param tableName name of table
      * @param instanceId id of query cache table
      * @return result message, if any
+     * @throws DelayedResultException 
      */
-    Optional<String> createCacheTableAndInsertResult(DatabaseInstance appDb, String tableName, long instanceId) throws WdkModelException;
+    Optional<String> createCacheTableAndInsertResult(DatabaseInstance appDb, String tableName, long instanceId) throws WdkModelException, DelayedResultException;
 
     /**
      * @return list of columns on which an index should be added after table creation
@@ -55,7 +57,7 @@ public class ResultFactory {
     _appDb = appDb;
   }
 
-  public InstanceInfo cacheResults(String checksum, CacheTableCreator tableCreator) throws WdkModelException {
+  public InstanceInfo cacheResults(String checksum, CacheTableCreator tableCreator) throws WdkModelException, DelayedResultException {
 
     Optional<InstanceInfo> instanceInfo = getInstanceInfo(checksum);
     if (instanceInfo.isPresent()) {
@@ -83,7 +85,7 @@ public class ResultFactory {
   }
 
   private InstanceInfo createCache(String checksum, CacheTableCreator tableCreator)
-      throws WdkModelException {
+      throws WdkModelException, DelayedResultException {
     try {
       DataSource dataSource = _appDb.getDataSource();
       long instanceId = _appDb.getPlatform().getNextId(dataSource, null, CacheFactory.TABLE_INSTANCE);
