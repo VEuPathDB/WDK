@@ -29,6 +29,7 @@ import org.gusdb.wsf.client.ClientUserException;
 import org.gusdb.wsf.client.WsfClient;
 import org.gusdb.wsf.client.WsfClientFactory;
 import org.gusdb.wsf.client.WsfResponseListener;
+import org.gusdb.wsf.plugin.DelayedResultException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -271,7 +272,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
       //        validation happens correctly in WDK and throw model exception here
       throw new WdkModelException(ex);
     }
-    catch (ClientModelException | URISyntaxException ex) {
+    catch (ClientModelException | DelayedResultException | URISyntaxException ex) {
       throw new WdkModelException(ex);
     }
     long end = System.currentTimeMillis();
