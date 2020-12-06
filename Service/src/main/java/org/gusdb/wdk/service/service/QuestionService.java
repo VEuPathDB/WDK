@@ -3,6 +3,7 @@ package org.gusdb.wdk.service.service;
 import static org.gusdb.fgputil.functional.Functions.f0Swallow;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -248,7 +249,7 @@ public class QuestionService extends AbstractWdkService {
     Param changedParam = question.getParamMap().get(changedParamEntry.getKey());
 
     // set incoming values to reflect changed value
-    Map<String,String> contextParams = new MapBuilder<>(request.getContextParamValues()).put(changedParamEntry).toMap();
+    Map<String,String> contextParams = new MapBuilder<>(new HashMap<>(request.getContextParamValues())).put(changedParamEntry).toMap();
 
     // Build an answer spec with the passed values but replace missing/invalid
     // values with defaults.  Will remove unaffected params below.
