@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
@@ -60,7 +61,7 @@ public interface StepAnalysisFactory {
 
   StepAnalysisInstance deleteAnalysis(StepAnalysisInstance instance) throws WdkModelException;
 
-  Optional<StepAnalysisInstance> getInstanceById(long analysisId, Step step, ValidationLevel validationLevel) throws WdkModelException;
+  Optional<StepAnalysisInstance> getInstanceById(long analysisId, WdkModel wdkModel, ValidationLevel validationLevel) throws WdkModelException;
 
   void clearResultsCache() throws WdkModelException;
 

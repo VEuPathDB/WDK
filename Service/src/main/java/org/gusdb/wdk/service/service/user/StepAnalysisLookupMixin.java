@@ -46,7 +46,7 @@ public interface StepAnalysisLookupMixin {
   ) throws WdkModelException {
     StepAnalysisInstance instance = getWdkModel()
         .getStepAnalysisFactory()
-        .getInstanceById(analysisId, step, validationLevel)
+        .getInstanceById(analysisId, getWdkModel(), validationLevel)
         .orElseThrow(() -> new NotFoundException(AbstractWdkService.formatNotFound("step analysis: " + analysisId)));
     if (userBundle.getTargetUser().getUserId() != instance.getStep().getUser().getUserId()) {
       // owner of this step does not match user in URL
@@ -88,7 +88,7 @@ public interface StepAnalysisLookupMixin {
           targetUser, getStepId()));
 
     // Analysis cannot be found under the current step id path.
-    if (getStepId() != step.getStepId())
+    if (getStepId() != instance.getStep().getStepId())
       throw new NotFoundException(String.format(
         "Step %d does not contain analysis %d", getStepId(), analysisId));
 

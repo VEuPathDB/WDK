@@ -353,7 +353,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
   }
 
   @Override
-  public Optional<StepAnalysisInstance> getInstanceById(long analysisId, Step step, ValidationLevel level)
+  public Optional<StepAnalysisInstance> getInstanceById(long analysisId, WdkModel wdkModel, ValidationLevel level)
       throws WdkModelException {
     try {
       return new SQLRunner(_userDs, GET_ANALYSIS_BY_ID_SQL, "find-analysis-by-id")
@@ -363,7 +363,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
               // no rows found
               return Optional.empty();
             }
-            StepAnalysisInstance instance = readInstance(rs, step, level);
+            StepAnalysisInstance instance = readInstance(rs, wdkModel, level);
             if (rs.next()) {
               // more than one row
               throw new SQLRunnerException("Found more than one row for analysisId " +
@@ -395,7 +395,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
             List<StepAnalysisInstance> instanceList = new ArrayList<>();
             while(rs.next()) {
               try {
-                instanceList.add(readInstance(rs, step, level));
+                instanceList.add(readInstance(rs, step.getAnswerSpec().getWdkModel(), level));
               }
               catch (DeprecatedAnalysisException e) {
                 // analysis no longer supported; just disappear it
@@ -415,10 +415,10 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
 
   // SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, USER_NOTES, IS_NEW, CONTEXT
   // WdkModel wdkModel, long analysisId, long stepId, RevisionStatus revisionStatus, String displayName, String userNotes, String serializedInstance, ValidationLevel validationLevel
-  private StepAnalysisInstance readInstance(ResultSet rs, Step step, ValidationLevel level)
+  private StepAnalysisInstance readInstance(ResultSet rs, WdkModel wdkModel, ValidationLevel level)
       throws WdkModelException, DeprecatedAnalysisException, SQLException {
     return StepAnalysisInstance.createFromStoredData(
-        step.getAnswerSpec().getWdkModel(),
+        wdkModel,
         rs.getLong(1),
         rs.getLong(2),
         RevisionStatus.valueOf(rs.getInt(5)),

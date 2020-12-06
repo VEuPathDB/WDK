@@ -382,8 +382,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   @Override
-  public Optional<StepAnalysisInstance> getInstanceById(long analysisId, Step step, ValidationLevel validationLevel) throws WdkModelException {
-    return _dataStore.getInstanceById(analysisId, step, validationLevel);
+  public Optional<StepAnalysisInstance> getInstanceById(long analysisId, WdkModel wdkModel, ValidationLevel validationLevel) throws WdkModelException {
+    return _dataStore.getInstanceById(analysisId, wdkModel, validationLevel);
   }
 
   static StepAnalyzer getConfiguredAnalyzer(RunnableObj<StepAnalysisInstance> instance,

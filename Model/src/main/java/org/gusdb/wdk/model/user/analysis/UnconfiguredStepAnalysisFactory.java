@@ -131,7 +131,7 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
-  public Optional<StepAnalysisInstance> getInstanceById(long analysisId, Step step,
+  public Optional<StepAnalysisInstance> getInstanceById(long analysisId, WdkModel wdkModel,
       ValidationLevel validationLevel) throws WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
