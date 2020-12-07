@@ -81,6 +81,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter {
       case MediaType.APPLICATION_FORM_URLENCODED:
         return FORM_ENTITY;
       case MediaType.APPLICATION_JSON:
+      case MediaType.APPLICATION_JSON + "; charset=utf-8":
       case MediaType.APPLICATION_JSON + "; charset=UTF-8":
         return formatJson(getRequestBodyText(requestContext));
       case MediaType.TEXT_PLAIN:
