@@ -417,6 +417,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
     }
 
     // if semantic or runnable, must verify term counts and validity
+    LOG.debug("Context used to create vocab in validateValue: " + FormatUtil.prettyPrint(ctxParamVals, Style.MULTI_LINE));
     EnumParamVocabInstance vocab = getVocabInstance(ctxParamVals);
     List<String> selectedTerms = AbstractEnumParam.convertToTerms(stableValue);
 
@@ -514,10 +515,28 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   //    due to be retired when ApiFed starts using the WDK service (or UniDB is
   //    in use).  When either of these happens, change this back to private.
   public String getDefault(String existingStableValue, EnumParamVocabInstance cache) throws WdkModelException {
-    String trimmedExistingValue = trimInvalidValues(existingStableValue, cache);
-    if (!isEmptyValue(trimmedExistingValue)) {
-      return trimmedExistingValue;
+
+    if (LOG.isDebugEnabled()) { // expensive so check
+      LOG.debug("In getDefault(); tree nodes used to trim existing terms are: " +
+          getParamTree(getName(), cache.getVocabTreeRoots()).getRoot().findAll(n -> true)
+            .stream().map(i -> i.getContents().getName()).collect(Collectors.joining(", ")));
     }
+
+    // 1. trim invalid values
+    List<String> trimmedValues = trimInvalidValues(existingStableValue, cache);
+
+    // 2. get count of remaining values (use getNumSelected so we count leaves)
+    int numSelected = getNumSelected(cache, trimmedValues);
+
+    // 3. if count > 0, return trimmed value
+    String trimmedStableValue = new JSONArray(trimmedValues).toString();
+    LOG.debug("In getDefault(): Trimmed exising value is: " + trimmedStableValue);
+    if (!isEmptyValue(trimmedStableValue) && numSelected > 0) {
+      LOG.debug("TrimmedExistingValue is non-empty; returning");
+      return trimmedStableValue;
+    }
+
+    // 4. Cannot use existing values; calculate default from new vocabulary
     String defaultFromModel = getXmlDefault();
     LOG.debug("applySelectMode(): select mode: '" + _selectMode + "', default from model = " + defaultFromModel);
     if (defaultFromModel != null) {
@@ -568,19 +587,19 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    * @param cache cache containing populated vocabulary
    * @return a valid value containing any remaining valid terms
    */
-  private String trimInvalidValues(String existingStableValue, EnumParamVocabInstance cache) {
-    JSONArray validValues = new JSONArray();
+  private List<String> trimInvalidValues(String existingStableValue, EnumParamVocabInstance cache) {
+    List<String> validValues = new ArrayList<>();
     if (isEmptyValue(existingStableValue)) {
-      return validValues.toString();
+      return validValues;
     }
     String[] values = JsonUtil.toStringArray(new JSONArray(existingStableValue));
     for (String value : values) {
       if (cache.getTerms().contains(value)) {
         // this value is valid
-        validValues.put(value);
+        validValues.add(value);
       }
     }
-    return validValues.toString();
+    return validValues;
   }
 
   /**
