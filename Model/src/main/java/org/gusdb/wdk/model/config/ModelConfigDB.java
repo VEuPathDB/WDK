@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.config;
 
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.platform.SupportedPlatform;
 import org.gusdb.fgputil.db.platform.UnsupportedPlatformException;
 import org.gusdb.fgputil.db.pool.ConnectionPoolConfig;
@@ -279,13 +278,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   public String toString() {
     String defaultSchema = getPlatform() != null ? SupportedPlatform.toPlatform(getPlatform())
         .getPlatformInstance().getDefaultSchema(getLogin()) : "Unknown";
-    return new StringBuilder("ModelConfigDB {").append(FormatUtil.NL)
-        .append("  platform:      ").append(getPlatform()).append(FormatUtil.NL)
-        .append("  connectionUrl: ").append(getConnectionUrl()).append(FormatUtil.NL)
-        .append("  login:         ").append(getLogin()).append(FormatUtil.NL)
-        .append("  defaultSchema: ").append(defaultSchema).append(FormatUtil.NL)
-        .append("}").append(FormatUtil.NL)
-        .toString();
+    return toJson().put("defaultSchema", defaultSchema).toString(2);
   }
 
   public boolean isSameConnectionInfoAs(ModelConfigDB config) {
