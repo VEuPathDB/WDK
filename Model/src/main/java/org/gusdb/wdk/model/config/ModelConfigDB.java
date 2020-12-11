@@ -132,7 +132,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    * @param maxActive
    *          the maxActive to set
    */
-  public void setMaxActive(short maxActive) {
+  public void setMaxActive(int maxActive) {
     this.maxActive = maxActive;
   }
 
@@ -148,7 +148,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    * @param maxIdle
    *          the maxIdle to set
    */
-  public void setMaxIdle(short maxIdle) {
+  public void setMaxIdle(int maxIdle) {
     this.maxIdle = maxIdle;
   }
 
@@ -164,7 +164,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    * @param minIdle
    *          the minIdle to set
    */
-  public void setMinIdle(short minIdle) {
+  public void setMinIdle(int minIdle) {
     this.minIdle = minIdle;
   }
 
