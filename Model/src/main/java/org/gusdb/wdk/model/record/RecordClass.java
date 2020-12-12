@@ -1181,7 +1181,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         }
         // make sure PK column fields and only PK column fields match PK columns
         if (field instanceof PkColumnAttributeField && !primaryKeyDefinition.hasColumn(fieldName)) {
-          throw new WdkModelException("PkColumnAttributes can only be defined with the name of a PK column.");
+          throw new WdkModelException("PkColumnAttributes can only be defined with the name of a PK column, not " + fieldName + " in recordClass " + getFullName());
         }
         if (!(field instanceof PkColumnAttributeField) && primaryKeyDefinition.hasColumn(fieldName)) {
           throw new WdkModelException("Only PkColumnAttributes can be defined with the name of a PK column.");
