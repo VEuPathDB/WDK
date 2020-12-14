@@ -60,7 +60,6 @@ abstract class AbstractQueryRunner implements ICatQueryRunner {
     do {
       currRs = currRs == null ? initQuery() : continueQuery();
       try {
-        if (i == 1)
         handleResultSet(currRs);
       } catch (final Exception e) {
         throw new WdkModelException(String.format(ERR_HANDLE_RS_FAIL, i, query,
