@@ -23,6 +23,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
@@ -67,6 +68,8 @@ import org.json.JSONObject;
  * @author eharper
  */
 public class StepAnalysisInstanceService extends UserService implements StepAnalysisLookupMixin {
+
+  private static final Logger LOG = Logger.getLogger(StepAnalysisInstanceService.class);
 
   // endpoints to handle analysis instances for a given step
   private static final String ANALYSES_PATH = StepService.NAMED_STEP_PATH + "/analyses";
@@ -323,8 +326,10 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
     File resourceFile = resourcePath.toFile();
     if (resourceFile.exists() && resourceFile.isFile() && resourceFile.canRead()) {
       InputStream resourceStream = new BufferedInputStream(new FileInputStream(resourceFile));
+      String contentType = Files.probeContentType(resourcePath);
+      LOG.info("Streaming file " + resourcePath + " with content type " + contentType);
       return Response.ok(getStreamingOutput(resourceStream))
-        .type(Files.probeContentType(resourcePath))
+        .type(contentType)
         .header(
           "Content-Disposition",
           ContentDisposition.type("attachment").fileName(
