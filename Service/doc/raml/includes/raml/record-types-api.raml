@@ -9,7 +9,7 @@ get:
     Individual records serve their data through "attributes," which are single-valued (e.g. "age") and "tables," which are multi-valued (e.g. "friends").
 
   queryParameters:
-    expand: if false, just return an array of record type names (url segments).  If true return full details of each record type, as well as full details of all searches, and available reports.  This is the only endpoint that offers a full listing of  record types, searches and reports.
+    format: (optional) if omitted or not equal to "expanded", just return an array of record type names (url segments).  If "expanded", return full details of each record type, as well as full details of all searches, and available reports.  This is the only endpoint that offers a full listing of record types, searches and reports.
   body:
     application/json:
       type: !include ../../../schema/wdk/records/get.json
