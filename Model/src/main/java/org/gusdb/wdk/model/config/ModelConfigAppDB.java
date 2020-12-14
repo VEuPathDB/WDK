@@ -19,7 +19,7 @@ public class ModelConfigAppDB extends ModelConfigDB {
 
   private String userDbLink;
   private String acctDbLink;
-  private short maxPkColumnWidth = 150;
+  private int maxPkColumnWidth = 150;
 
   /**
    * @return the userDbLink
@@ -63,11 +63,11 @@ public class ModelConfigAppDB extends ModelConfigDB {
    * 
    * @return
    */
-  public short getMaxPkColumnWidth() {
+  public int getMaxPkColumnWidth() {
     return maxPkColumnWidth;
   }
 
-  public void setMaxPkColumnWidth(short maxPkColumnWidth) {
+  public void setMaxPkColumnWidth(int maxPkColumnWidth) {
     this.maxPkColumnWidth = maxPkColumnWidth;
   }
 
