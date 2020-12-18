@@ -30,13 +30,14 @@ public class CheckLoginRequestFilter implements ContainerRequestFilter {
   public static final String SESSION_COOKIE_TO_SET = "sessionCookieToSet";
 
   @Context
+  protected
   ServletContext _servletContext;
 
   @Inject
-  private Provider<HttpServletRequest> _servletRequest;
+  protected Provider<HttpServletRequest> _servletRequest;
 
   @Inject
-  private Provider<Request> _grizzlyRequest;
+  protected Provider<Request> _grizzlyRequest;
 
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -53,7 +54,7 @@ public class CheckLoginRequestFilter implements ContainerRequestFilter {
     }
   }
 
-  private Optional<CookieBuilder> findLoginCookie(Map<String, Cookie> cookies) {
+  protected Optional<CookieBuilder> findLoginCookie(Map<String, Cookie> cookies) {
     return Optional.ofNullable(cookies.get(LoginCookieFactory.WDK_LOGIN_COOKIE_NAME))
         .map(cookie -> new CookieBuilder(cookie.getName(), cookie.getValue()));
   }
