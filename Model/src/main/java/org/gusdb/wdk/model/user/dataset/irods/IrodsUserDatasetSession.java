@@ -103,7 +103,22 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     if (lastEventId < 1) {
       final List<Path> out = loadCollection(Paths.get(eventsDirectory), false)
         .map(col -> col.streamObjectsShallow()
-          .sorted(Comparator.comparingLong(ICatNode::getLastModified))
+          // Sort the files by event timestamp.  The event timestamp can be
+          // parsed from the event file name.  The date created/modified times
+          // on the file can't be trusted as the files may be changed or
+          // recreated by replication or other services.
+          //
+          // The event file name can be broken down as follows:
+          //
+          // event_154903724300013245
+          //
+          // 0        6               19
+          // | event_ | 1549037243000 | 13245
+          //
+          // [0..6)   = prefix     = "event_"
+          // [6..19)  = timestamp  = 1549037243000
+          // [19..24) = process id = 13245
+          .sorted(Comparator.comparingLong(node -> Long.parseLong(node.getName().substring(6, 19))))
           .map(ICatNode::getPath)
           .collect(Collectors.toList()))
         .orElseGet(Collections::emptyList);
