@@ -138,8 +138,6 @@ sub dateFilter {
   return 0 if ($startDate && ($y < $startY || $m < $startM || $d < $startD));
   return 0 if ($endDate && ($y > $endY || $m > $endM || $d > $endD));
 
-  print STDOUT "found a date\n";
-
   return 1;
 }
 
