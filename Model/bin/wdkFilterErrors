@@ -4,6 +4,7 @@ use strict;
 use Getopt::Long;
 use JSON;
 
+# UNTIL FIXED, please keep start and end dates within the SAME year
 my ($startDate, $endDate, $report, $singleFilter, $filtersFile);
 
 &GetOptions('sd=s' => \$startDate,
@@ -53,7 +54,8 @@ while(<STDIN>) {
     @currentError = ();
   }
   else {
-    $currentDate = $1 if (/Date: (\d+\/\d+\/\d+)/);
+ #   $currentDate = $1 if (/Date: (\d+\/\d+\/\d+)/);
+    $currentDate = $1 if (/Date: (\d+\-\d+\-\d+)/);
     push(@currentError, $_);
   }
 }
@@ -70,7 +72,7 @@ if ($report) {
 
   my $unmatchedErrors = $totalErrors - $matchedErrors;
   print "
-Total errors in date range: $totalErrors
+Total errorsssss in date range: $totalErrors
                  # matched: $matchedErrors
                # unmatched: $unmatchedErrors
 ";
@@ -124,12 +126,19 @@ sub parseFilterJson {
 sub dateFilter {
   my ($date) = @_;
 
-  $date =~ /(\d+)\/(\d+)\/(\d+)/;
+#  $date =~ /(\d+)\/(\d+)\/(\d+)/;
+  $date =~ /(\d+)\-(\d+)\-(\d+)/; 
   my ($y, $m, $d) = ($1, $2, $3);
+
+#  print STDOUT "Date: $date $y $m $d \n";
+#  print STDOUT "Start Date: $startDate $startY $startM $startD \n";
+#  print STDOUT "End Date: $endDate $endY $endM $endD \n";
 
   # note: these comparisons are imperfect and will fail around year boundaries
   return 0 if ($startDate && ($y < $startY || $m < $startM || $d < $startD));
   return 0 if ($endDate && ($y > $endY || $m > $endM || $d > $endD));
+
+  print STDOUT "found a date\n";
 
   return 1;
 }
