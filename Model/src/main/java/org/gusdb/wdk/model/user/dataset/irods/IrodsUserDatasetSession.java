@@ -103,23 +103,8 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     if (lastEventId < 1) {
       final List<Path> out = loadCollection(Paths.get(eventsDirectory), false)
         .map(col -> col.streamObjectsShallow()
-          // Sort the files by event timestamp.  The event timestamp can be
-          // parsed from the event file name.  The date created/modified times
-          // on the file can't be trusted as the files may be changed or
-          // recreated by replication or other services.
-          //
-          // The event file name can be broken down as follows:
-          //
-          // event_154903724300013245
-          //
-          // 0        6               19
-          // | event_ | 1549037243000 | 13245
-          //
-          // [0..6)   = prefix     = "event_"
-          // [6..19)  = timestamp  = 1549037243000
-          // [19..24) = process id = 13245
-          .sorted(Comparator.comparingLong(node -> Long.parseLong(node.getName().substring(6, 19))))
           .map(ICatNode::getPath)
+          .sorted(IrodsUserDatasetSession::filenameTimestampComparator)
           .collect(Collectors.toList()))
         .orElseGet(Collections::emptyList);
 
@@ -138,6 +123,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
       .executeIrodsQuery(queryString)
       .stream()
       .map(eventFileName -> Paths.get(eventsDirectory, eventFileName))
+      .sorted(IrodsUserDatasetSession::filenameTimestampComparator)
       .collect(Collectors.toList()));
   }
 
@@ -687,6 +673,39 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
   ▏  Static Internal Helpers                               ▕
   ▏                                                        ▕
   \*⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽*/
+
+  /**
+   * Sort the given files by event timestamp.
+   * <p>
+   * The event timestamp can be parsed from the event file name.  The date
+   * created/modified times on the files can't be trusted as the files may be
+   * changed or recreated by replication or other services.
+   * <p>
+   * The event file name can be broken down as follows:
+   * <pre>
+   * event_154903724300013245
+   *
+   * 0        6               19
+   * | event_ | 1549037243000 | 13245
+   *
+   * [0..6)   = prefix     = "event_"
+   * [6..19)  = timestamp  = 1549037243000
+   * [19..24) = process id = 13245
+   * </pre>
+   *
+   * @param a first file to use in comparison
+   * @param b second file to use in comparison
+   *
+   * @return -1 if the first file timestamp is before the second, 0 if the
+   *         timestamps are equal, and 1 if the first file timestamp is after
+   *         the second.
+   */
+  private static int filenameTimestampComparator(final Path a, final Path b) {
+    var first  = Long.parseLong(a.getFileName().toString().substring(6, 19));
+    var second = Long.parseLong(b.getFileName().toString().substring(6, 19));
+
+    return Long.compare(first, second);
+  }
 
   /**
    * Resolves a {@link Path} instance from the given root name followed by the
