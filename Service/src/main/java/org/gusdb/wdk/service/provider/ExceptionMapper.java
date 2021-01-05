@@ -112,7 +112,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
    * @param response response to be returned to the client
    * @return unmodified response
    */
-  private Response logResponse(Exception e, Response response) {
+  protected Response logResponse(Exception e, Response response) {
     LOG.error("Caught service error [ responseCode: " + response.getStatus() + " ]", e);
     return response;
   }
@@ -147,7 +147,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
    * @param e = top level exception
    * @return - string of concatenated exception messages
    */
-  private static String createCompositeExceptionMessage(Exception e) {
+  protected static String createCompositeExceptionMessage(Exception e) {
     StringBuilder messages = new StringBuilder(e.getMessage() + System.lineSeparator());
     String compositeMessage = e.getMessage();
     Throwable t;
