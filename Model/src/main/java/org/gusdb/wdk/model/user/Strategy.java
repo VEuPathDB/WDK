@@ -567,7 +567,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
           // need to set it in the this strategy object's step (local memory copy)
           findFirstStep(withId(runnableStep.getStepId())).get().setRefreshedResultSize(resultSize);
         }
-        catch (WdkModelException e) {
+        catch (Exception e) {
           // ignore; result size will simply not be updated
           LOG.error("Runnably valid step could not fetch result size", e);
         }
