@@ -309,6 +309,7 @@
           <ref name="property" />
         </zeroOrMore>
       </element>
+      <ref name="propertyList" />
     </choice>
   </define>
 

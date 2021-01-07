@@ -899,6 +899,7 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, paramPath + "/handler", ParamHandlerReference.class, "addHandler");
     configureNode(digester, paramPath + "/handler/property", WdkModelText.class, "addProperty");
     digester.addCallMethod(paramPath + "/handler/property", "setText", 0);
+    configureNode(digester, paramPath + "/propertyList", PropertyList.class, "addPropertyList");
   }
 
   private static void configureQuestionSet(Digester digester) {
