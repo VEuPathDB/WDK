@@ -13,6 +13,7 @@ import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -38,7 +39,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
   private Map<String, Object> _pkMap;
 
   public SingleRecordAnswerValue(User user, RunnableObj<AnswerSpec> validSpec) throws WdkModelException {
-    super(user, validSpec, 1, 1, Collections.EMPTY_MAP);
+    super(user, validSpec, 1, UNBOUNDED_END_PAGE_INDEX, Collections.EMPTY_MAP);
     SingleRecordQuestion question = (SingleRecordQuestion)validSpec.get().getQuestion();
     SingleRecordQuestionParam param = question.getParam();
     _recordClass = question.getRecordClass();
@@ -77,6 +78,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
           "'" + DBPlatform.normalizeString(valueObj.toString()) + "'");
         return value + " as " + pkColumnValue.getKey();
       }).toArray(), ", "))
+      .append(", 10 as " + Utilities.COLUMN_WEIGHT)
       .append(platform.getDummyTable())
       .append(" )")
       .toString();
