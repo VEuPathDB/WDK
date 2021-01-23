@@ -72,7 +72,7 @@ if ($report) {
 
   my $unmatchedErrors = $totalErrors - $matchedErrors;
   print "
-Total errorsssss in date range: $totalErrors
+Total errors in date range: $totalErrors
                  # matched: $matchedErrors
                # unmatched: $unmatchedErrors
 ";
