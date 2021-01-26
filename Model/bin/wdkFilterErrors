@@ -4,7 +4,6 @@ use strict;
 use Getopt::Long;
 use JSON;
 
-# UNTIL FIXED, please keep start and end dates within the SAME year
 my ($startDate, $endDate, $report, $singleFilter, $filtersFile);
 
 &GetOptions('sd=s' => \$startDate,
@@ -40,22 +39,30 @@ else {
 
 #
 # scan errors file, apply filters, and output appropriate errors
+# skip repeated errors (same error, same IP, immediately following)
 #
 my @currentError;
-my $currentDate;
+my $currentErrorDate;
+my $currentErrorIp;
 my $totalErrors;
+my $prevFilter;
+my $prevIp;
 my $matchedErrors;
 while(<STDIN>) {
   if (/$errorDelim/) {
-    if (&dateFilter($currentDate)) {
-      $totalErrors++;
-      $matchedErrors += &handleError(\@currentError, \@filtersAsStrings, \%filtersInfo, $errorDelim, $singleFilter, $report);
+    if (&dateFilter($currentErrorDate)) {
+      my $sameIpAsPrev = $currentErrorIp eq $prevIp;
+      my ($didMatch, $matchedFilter, $rejected) = &handleError(\@currentError, \@filtersAsStrings, \%filtersInfo, $errorDelim, $singleFilter, $report, $prevFilter, $sameIpAsPrev);
+      $totalErrors++ unless $rejected;
+      $matchedErrors += $didMatch;
+      $prevFilter = $matchedFilter;
+      $prevIp = $currentErrorIp;
     }
     @currentError = ();
   }
   else {
- #   $currentDate = $1 if (/Date: (\d+\/\d+\/\d+)/);
-    $currentDate = $1 if (/Date: (\d+\-\d+\-\d+)/);
+    $currentErrorIp = $1 if (/Remote Host: (\S+)/);
+    $currentErrorDate = $1 if (/Date: (\d+\-\d+\-\d+)/);
     push(@currentError, $_);
   }
 }
@@ -67,7 +74,8 @@ close(F);
 if ($report) {
   foreach my $filterAsString (@filtersAsStrings) {
     my $fixed = $filtersInfo{$filterAsString}->{fixed};
-    print STDOUT $filtersInfo{$filterAsString}->{count} . "\t$fixed\t" . $filtersInfo{$filterAsString}->{orig} . "\n";
+    my $comment = $filtersInfo{$filterAsString}->{comment};
+    print STDOUT $filtersInfo{$filterAsString}->{count} . "\t$fixed\t" . $filtersInfo{$filterAsString}->{orig} . "\t$comment\t" ."\n";
   }
 
   my $unmatchedErrors = $totalErrors - $matchedErrors;
@@ -117,9 +125,10 @@ sub parseFilterJson {
   foreach my $category (@$filtersArray) {
     my $matchStrings = $category->{'matchStrings'};
     my $fixed = $category->{'fixed'}? $category->{'fixed'} : "";
+    my $comment = $category->{'comment'}? $category->{'comment'} : "";
     my $joinedMatchString = join(' && ', @$matchStrings);
     push(@$filtersAsStringsRef, $joinedMatchString);
-    $filtersInfoRef->{$joinedMatchString} = {orig => $joinedMatchString, terms => \@$matchStrings, count => 0, fixed => $fixed};
+    $filtersInfoRef->{$joinedMatchString} = {orig => $joinedMatchString, terms => \@$matchStrings, count => 0, fixed => $fixed, comment => $comment};
   }
 }
 
@@ -134,22 +143,35 @@ sub dateFilter {
 #  print STDOUT "Start Date: $startDate $startY $startM $startD \n";
 #  print STDOUT "End Date: $endDate $endY $endM $endD \n";
 
-  # note: these comparisons are imperfect and will fail around year boundaries
-  return 0 if ($startDate && ($y < $startY || $m < $startM || $d < $startD));
-  return 0 if ($endDate && ($y > $endY || $m > $endM || $d > $endD));
+  if ($startDate) {
+    return 0 if $y < $startY;
+    return 0 if ($y == $startY && $m < $startM);
+    return 0 if ($y == $startY && $m == $startM && $d < $startD);
+  }
+
+  if ($endDate) {
+    return 0 if $y > $endY;
+    return 0 if ($y == $endY && $m > $endM);
+    return 0 if ($y == $endY && $m == $endM && $d > $endD);
+  }
 
   return 1;
 }
 
+# return (isMatched, theMatchedFilterAsString, isRejected)
 sub handleError {
-  my ($errorArray, $filtersAsStringsRef, $filtersInfoRef, $errorDelim, $printIfMatch, $report) = @_;
+  my ($errorArray, $filtersAsStringsRef, $filtersInfoRef, $errorDelim, $printIfMatch, $report, $prevFilterAsString, $sameIpAsPrev) = @_;
 
-  my $matched;
+  my $matched; #0 or 1
+  my $matchedFilter; # matched filter as string
+
   foreach my $filterAsString (@$filtersAsStringsRef) {
     my $filterInfo = $filtersInfoRef->{$filterAsString};
     $matched = matchesFilter($filterInfo->{terms}, $errorArray);
     if ($matched) {
+      return (0, undef, 1) if $sameIpAsPrev && $filterAsString eq $prevFilterAsString;
       $filterInfo->{count} += 1 ;
+      $matchedFilter = $filterAsString;
       last;
     }
   }
@@ -157,7 +179,7 @@ sub handleError {
   if (!$report && (($printIfMatch && $matched) || (!$printIfMatch && !$matched)))  {
     print STDOUT join("", @$errorArray) . $errorDelim . "\n";
   }
-  return $matched;
+  return ($matched, $matchedFilter, 0);
 }
 
 sub matchesFilter {
