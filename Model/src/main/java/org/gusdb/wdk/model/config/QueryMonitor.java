@@ -22,8 +22,8 @@ import org.gusdb.fgputil.db.slowquery.QueryLogConfig;
  */
 public class QueryMonitor implements QueryLogConfig {
 
-  private double baseline = 0.1;
-  private double slow = 5;
+  private double baseline = DEFAULT_BASELINE;
+  private double slow = DEFAULT_SLOW;
 
   private Set<Pattern> ignoreSlowRegexes = new LinkedHashSet<Pattern>();
   private Set<Pattern> ignoreBaselineRegexes = new LinkedHashSet<Pattern>();
