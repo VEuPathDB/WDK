@@ -242,6 +242,10 @@ public class StepService extends UserService {
       JSONObject requestJson)
           throws WdkModelException, RequestMisformatException, DataValidationException {
 
+    if (requestJson == null) {
+      throw new RequestMisformatException("A request body is required at this endpoint.");
+    }
+
     // don't validate step right away; do it after we clean filters and add any view filters
     Step step = getStepForCurrentUser(stepId, ValidationLevel.RUNNABLE);
 
