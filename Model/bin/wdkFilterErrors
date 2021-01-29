@@ -53,9 +53,11 @@ while(<STDIN>) {
     if (&dateFilter($currentErrorDate)) {
       my $sameIpAsPrev = $currentErrorIp eq $prevIp;
       my ($didMatch, $matchedFilter, $rejected) = &handleError(\@currentError, \@filtersAsStrings, \%filtersInfo, $errorDelim, $singleFilter, $report, $prevFilter, $sameIpAsPrev);
-      $totalErrors++ unless $rejected;
-      $matchedErrors += $didMatch;
-      $prevFilter = $matchedFilter;
+      if (!$rejected) {
+        $totalErrors++;
+        $matchedErrors += $didMatch;
+      }
+      $prevFilter = $didMatch? $matchedFilter : "";
       $prevIp = $currentErrorIp;
     }
     @currentError = ();
@@ -163,14 +165,19 @@ sub handleError {
   my ($errorArray, $filtersAsStringsRef, $filtersInfoRef, $errorDelim, $printIfMatch, $report, $prevFilterAsString, $sameIpAsPrev) = @_;
 
   my $matched; #0 or 1
+  my $rejected;  # same filter and IP as last error
   my $matchedFilter; # matched filter as string
 
   foreach my $filterAsString (@$filtersAsStringsRef) {
     my $filterInfo = $filtersInfoRef->{$filterAsString};
     $matched = matchesFilter($filterInfo->{terms}, $errorArray);
     if ($matched) {
-      return (0, undef, 1) if $sameIpAsPrev && $filterAsString eq $prevFilterAsString;
-      $filterInfo->{count} += 1 ;
+      print STDERR "\n***** IP: $sameIpAsPrev  prev: $prevFilterAsString\n" if $filterAsString eq 'RodMalPhenotype';
+
+      #reject this matched error if a repeat of the previous error
+      return (1, $filterAsString, 1) if $sameIpAsPrev && $filterAsString eq $prevFilterAsString;
+
+      $filterInfo->{count} += 1;
       $matchedFilter = $filterAsString;
       last;
     }
@@ -179,7 +186,7 @@ sub handleError {
   if (!$report && (($printIfMatch && $matched) || (!$printIfMatch && !$matched)))  {
     print STDOUT join("", @$errorArray) . $errorDelim . "\n";
   }
-  return ($matched, $matchedFilter, 0);
+  return ($matched, $matchedFilter, $rejected);
 }
 
 sub matchesFilter {

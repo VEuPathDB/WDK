@@ -54,7 +54,7 @@ public class StandardConfig {
   private boolean allAttributes = false;
   private List<String> tables = new ArrayList<String>(); // table and attribute field names
   private boolean allTables = false;
-  private String attachmentType = null;
+  private String attachmentType = "text";
   protected StreamStrategy streamStrategy = StreamStrategy.SMART;
 
   public StandardConfig(Question question) {
