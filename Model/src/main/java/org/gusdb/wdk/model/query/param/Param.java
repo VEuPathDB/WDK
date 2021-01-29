@@ -200,7 +200,6 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _allowEmpty = param._allowEmpty;
     _emptyValue = param._emptyValue;
     _paramSet = param._paramSet;
-    _wdkModel = param._wdkModel;
     _noTranslation = param._noTranslation;
     _resolved = param._resolved;
     if (param._handlerReferences != null) {
@@ -216,11 +215,6 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _container = param._container;
     _dependentParamsMap = new HashMap<>(param._dependentParamsMap);
     _dependentParams = new HashSet<>(param._dependentParams);
-  }
-
-  @Override
-  public WdkModel getWdkModel() {
-    return _wdkModel;
   }
 
   /**
@@ -524,11 +518,15 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   }
 
   /**
+   * Sets the wdk model on this param; this is also done in resolveReferences;
+   * however, sometimes operations need to be executed BEFORE resolveRefs is
+   * called and this provides a model to be used in those cases.
+   * 
    * @throws WdkModelException
    *           if unable to load resources from model
    */
-  public void setResources(WdkModel model) throws WdkModelException {
-    _wdkModel = model;
+  public void setResources(WdkModel wdkModel) throws WdkModelException {
+    _wdkModel = wdkModel;
   }
 
   /**
@@ -816,13 +814,12 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
     super.resolveReferences(wdkModel);
 
-    _wdkModel = wdkModel;
-
     // resolve reference for handler
     if (_handlerReference != null) {
       try {
-        Class<? extends ParamHandler> handlerClass = Class.forName(_handlerReference.getImplementation()).asSubclass(
-            ParamHandler.class);
+        Class<? extends ParamHandler> handlerClass = Class
+            .forName(_handlerReference.getImplementation())
+            .asSubclass(ParamHandler.class);
         _handler = handlerClass.getDeclaredConstructor().newInstance();
         _handler.setProperties(_handlerReference.getProperties());
       }
