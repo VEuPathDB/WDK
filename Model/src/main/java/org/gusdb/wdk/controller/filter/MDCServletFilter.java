@@ -12,7 +12,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.gusdb.fgputil.logging.MDCUtil;
+import org.gusdb.fgputil.logging.ThreadLocalLoggingVars;
 
 /**
  * A filter that adds (and removes) MDC variables for log4j.  Added to MDC by
@@ -55,21 +55,21 @@ public class MDCServletFilter implements Filter {
       FilterChain chain) throws IOException, ServletException {
     try {
 
-      MDCUtil.setRequestStartTime(System.currentTimeMillis());
-      MDCUtil.setIpAddress(request.getRemoteAddr());
-      MDCUtil.setRequestedDomain(request.getServerName());
-      MDCUtil.setRequestId(String.valueOf(requestId.getAndIncrement()));
+      ThreadLocalLoggingVars.setRequestStartTime(System.currentTimeMillis());
+      ThreadLocalLoggingVars.setIpAddress(request.getRemoteAddr());
+      ThreadLocalLoggingVars.setRequestedDomain(request.getServerName());
+      ThreadLocalLoggingVars.setRequestId(String.valueOf(requestId.getAndIncrement()));
 
       HttpSession session = ((HttpServletRequest)request).getSession(false);
       if (session != null) {
-        MDCUtil.setSessionId(session.getId());
+        ThreadLocalLoggingVars.setSessionId(session.getId());
       }
 
       // Continue processing the rest of the filter chain.
       chain.doFilter(request, response);
     }
     finally {
-      MDCUtil.clearValues();
+      ThreadLocalLoggingVars.clearValues();
     }
   }
 }

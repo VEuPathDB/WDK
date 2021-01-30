@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.UUID;
 
 import org.gusdb.fgputil.collection.ReadOnlyMap;
-import org.gusdb.fgputil.logging.MDCUtil;
-import org.gusdb.fgputil.logging.MDCUtil.MdcBundle;
+import org.gusdb.fgputil.logging.ThreadLocalLoggingVars;
+import org.gusdb.fgputil.logging.ThreadLocalLoggingVars.ThreadContextBundle;
 import org.gusdb.fgputil.web.RequestSnapshot;
 import org.gusdb.wdk.model.WdkModel;
 
@@ -27,7 +27,7 @@ public class ErrorContext {
     private final ReadOnlyMap<String, Object> _requestAttributeMap;
     private final ReadOnlyMap<String, Object> _sessionAttributeMap;
     private final ErrorLocation _errorLocation;
-    private final MdcBundle _mdcBundle;
+    private final ThreadContextBundle _mdcBundle;
     private final String _logMarker;
     private final Date _date;
 
@@ -39,7 +39,7 @@ public class ErrorContext {
         _requestAttributeMap = requestData.getAttributes();
         _sessionAttributeMap = sessionAttributeMap;
         _errorLocation = errorLocation;
-        _mdcBundle = MDCUtil.getMdcBundle();
+        _mdcBundle = ThreadLocalLoggingVars.getThreadContextBundle();
         _logMarker = UUID.randomUUID().toString();
         _date = new Date();
     }
@@ -77,9 +77,9 @@ public class ErrorContext {
     }
 
     /**
-     * @return snapshot of set MDC values in the current thread
+     * @return snapshot of set log4j2 ThreadContext values in the current thread
      */
-    public MdcBundle getMdcBundle() {
+    public ThreadContextBundle getThreadContextBundle() {
       return _mdcBundle;
     }
 

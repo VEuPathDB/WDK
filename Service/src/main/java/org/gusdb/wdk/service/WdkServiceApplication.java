@@ -11,10 +11,8 @@ import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.gusdb.fgputil.SetBuilder;
 import org.gusdb.wdk.service.filter.CheckLoginRequestFilter;
-import org.gusdb.wdk.service.filter.CheckLoginResponseFilter;
 import org.gusdb.wdk.service.filter.ClientCacheExpirationFilter;
 import org.gusdb.wdk.service.filter.MDCRequestFilter;
-import org.gusdb.wdk.service.filter.MDCResponseFilter;
 import org.gusdb.wdk.service.filter.MethodRewritingFilter;
 import org.gusdb.wdk.service.filter.RequestCompleteFilter;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
@@ -74,9 +72,7 @@ public class WdkServiceApplication extends Application {
 
     // add filter classes
     .add(CheckLoginRequestFilter.class)
-    .add(CheckLoginResponseFilter.class)
     .add(MDCRequestFilter.class)
-    .add(MDCResponseFilter.class)
     .add(MethodRewritingFilter.class)
     .add(RequestLoggingFilter.class)
     .add(RequestCompleteFilter.class)

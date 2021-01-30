@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.logging.MDCUtil;
+import org.gusdb.fgputil.logging.ThreadLocalLoggingVars;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -47,7 +47,7 @@ public class FutureCleaner implements Callable<Boolean> {
   @Override
   public Boolean call() throws Exception {
     try {
-      MDCUtil.setNonRequestThreadVars("safc"); // safc = step analysis future cleaner
+      ThreadLocalLoggingVars.setNonRequestThreadVars("safc"); // safc = step analysis future cleaner
       LOG.info("Step Analysis Thread Monitor initialized and running.");
       int waitedSecs = 0;
       boolean mostRecentAttemptSucceeded = true;

@@ -13,7 +13,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
-import org.gusdb.fgputil.logging.MDCUtil;
+import org.gusdb.fgputil.logging.ThreadLocalLoggingVars;
 import org.gusdb.fgputil.runtime.ThreadUtil;
 import org.gusdb.wdk.model.config.ModelConfig;
 
@@ -72,7 +72,7 @@ public class ThreadMonitor implements Runnable {
 
   @Override
   public void run() {
-    MDCUtil.setNonRequestThreadVars("thrm");
+    ThreadLocalLoggingVars.setNonRequestThreadVars("thrm");
     if (!_config.isActive()) {
       LOG.info("Thread monitor not configured to run.  Monitor returning.");
       return;

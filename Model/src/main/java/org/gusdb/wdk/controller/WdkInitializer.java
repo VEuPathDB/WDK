@@ -3,7 +3,7 @@ package org.gusdb.wdk.controller;
 import static org.gusdb.wdk.model.ThreadMonitor.getThreadMonitorConfig;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.logging.MDCUtil;
+import org.gusdb.fgputil.logging.ThreadLocalLoggingVars;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.fgputil.web.ApplicationContext;
 import org.gusdb.wdk.model.ThreadMonitor;
@@ -21,7 +21,7 @@ public class WdkInitializer {
 
   public static void initializeWdk(ApplicationContext context) {
     try {
-      MDCUtil.setNonRequestThreadVars("init");
+      ThreadLocalLoggingVars.setNonRequestThreadVars("init");
       LOG.info("Initializing WDK web application");
 
       // get gus home and set on context
@@ -65,13 +65,13 @@ public class WdkInitializer {
       throw new RuntimeException("Unable to initialize WDK web application.", e);
     }
     finally {
-      MDCUtil.clearValues();
+      ThreadLocalLoggingVars.clearValues();
     }
   }
 
   public static void terminateWdk(ApplicationContext applicationScope) {
     try {
-      MDCUtil.setNonRequestThreadVars("term");
+      ThreadLocalLoggingVars.setNonRequestThreadVars("term");
       LOG.info("Terminating WDK web application");
 
       // shut down thread monitor
@@ -92,7 +92,7 @@ public class WdkInitializer {
       throw new RuntimeException(ex);
     }
     finally {
-      MDCUtil.clearValues();
+      ThreadLocalLoggingVars.clearValues();
     }
   }
 
