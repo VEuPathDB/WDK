@@ -20,7 +20,7 @@ import org.gusdb.wdk.controller.ContextLookup;
 
 @PreMatching
 @Priority(30)
-public class MDCRequestFilter implements ContainerRequestFilter, ContainerResponseFilter {
+public class LoggingContextFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
   private static final AtomicInteger requestId = new AtomicInteger(1);
 

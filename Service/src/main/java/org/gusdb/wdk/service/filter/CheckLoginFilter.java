@@ -28,7 +28,7 @@ import org.gusdb.wdk.controller.filter.CheckLoginFilterShared;
 
 @PreMatching
 @Priority(200)
-public class CheckLoginRequestFilter implements ContainerRequestFilter, ContainerResponseFilter {
+public class CheckLoginFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
   public static final String SESSION_COOKIE_TO_SET = "sessionCookieToSet";
 

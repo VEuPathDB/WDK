@@ -11,6 +11,8 @@ import javax.annotation.Priority;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
@@ -23,7 +25,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 @Priority(200)
-public class RequestLoggingFilter implements ContainerRequestFilter {
+public class RequestLoggingFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
   private static final Logger LOG = Logger.getLogger(RequestLoggingFilter.class);
 
@@ -129,5 +131,11 @@ public class RequestLoggingFilter implements ContainerRequestFilter {
       }
     }
     return EMPTY_ENTITY;
+  }
+
+  @Override
+  public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext)
+      throws IOException {
+    LOG.log(LOG_LEVEL, "Request complete");
   }
 }
