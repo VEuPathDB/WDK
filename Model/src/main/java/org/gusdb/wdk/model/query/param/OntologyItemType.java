@@ -131,7 +131,10 @@ public enum OntologyItemType {
   }
 
   private static String formatDate(Date dateValue) {
-    return dateValue == null ? null : FormatUtil.formatDate(dateValue);
+    return dateValue == null ? null :
+      FormatUtil.formatDateTimezoneFree(dateValue);
+      // FIXME: do not use standard date formatter because of timestamp problems
+      //FormatUtil.formatDate(dateValue);
   }
 
 }
