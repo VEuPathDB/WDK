@@ -146,6 +146,16 @@ public abstract class AbstractTabularReporter extends StandardReporter {
     }
   }
 
+  /**
+   * Ensures values are uniformly formatted across output types
+   *
+   * @param value value read from record
+   * @return value to be appended to report
+   */
+  private static String getOutputValue(Object value) {
+    return (value == null) ? "N/A" : String.valueOf(value);
+  }
+
   private void format2CSV(OutputStream out) throws WdkModelException, WdkUserException {
     try (CSVWriter writer = new CSVWriter(new BufferedWriter(new OutputStreamWriter(out),
         FileBasedRecordStream.BUFFER_SIZE), CsvResultList.COMMA, CsvResultList.QUOTE, CsvResultList.ESCAPE)) {
@@ -158,7 +168,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
         for (RecordInstance record : records) {
           LOG.debug("format2CSV() - looping on records: one record: ");
           for (List<Object> row : getRowsProvider(record)) {
-            writer.writeNext(Functions.mapToList(row, obj -> String.valueOf(obj)).toArray(new String[colNames.size()]));
+            writer.writeNext(Functions.mapToList(row, obj -> getOutputValue(obj)).toArray(new String[colNames.size()]));
           }
         }
       }
@@ -184,7 +194,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
       for (RecordInstance record : records) {
         for (List<Object> row : getRowsProvider(record)) {
           for (Object value : row) {
-            writer.print((value == null) ? "N/A" : value);
+            writer.print(getOutputValue(value));
             writer.print(_divider);
           }
           writer.println();
@@ -224,7 +234,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
             }
 
             for (Object value : row) {
-              datatable.addCell("" + value);
+              datatable.addCell(getOutputValue(value));
             }
 
             if (count % 2 == 1) {
@@ -282,7 +292,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
           writer.println("<tr>");
           count += 5;
           for (Object value : row) {
-            String val = "<td>" + value + "</td>";
+            String val = "<td>" + getOutputValue(value) + "</td>";
             writer.print(val);
             count += val.length();
           }
