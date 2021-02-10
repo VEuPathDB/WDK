@@ -33,6 +33,7 @@ import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.query.param.FilterParamNew;
 import org.gusdb.wdk.model.query.param.FilterParamNew.FilterParamSummaryCounts;
 import org.gusdb.wdk.model.query.param.OntologyItem;
@@ -40,6 +41,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.StepAnalysisFormSpec;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 import org.gusdb.wdk.service.formatter.StepAnalysisFormatter;
 import org.gusdb.wdk.service.formatter.param.ParamContainerFormatter;
 import org.gusdb.wdk.service.request.ParamValueSetRequest;
@@ -111,8 +113,19 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
   public JSONObject getStepAnalysisTypeDataFromName(
       @PathParam(ANALYSIS_TYPE_PATH_PARAM) String analysisName)
       throws WdkModelException, DataValidationException {
+
+    // get step and analysis plugin specified by caller
     RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
     StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), analysisName);
+
+    // make sure answer value is valid for this plugin
+    try {
+      stepAnalysis.getAnalyzerInstance().validateAnswerValue(AnswerValueFactory.makeAnswer(step));
+    }
+    catch (IllegalAnswerValueException e) {
+      throw new DataValidationException(e.getMessage()); // will throw 422
+    }
+
     DisplayablyValid<StepAnalysisFormSpec> formSpec = StepAnalysisFormSpec
         .builder()
         .buildValidated(step, stepAnalysis, ValidationLevel.DISPLAYABLE, FillStrategy.FILL_PARAM_IF_MISSING)
