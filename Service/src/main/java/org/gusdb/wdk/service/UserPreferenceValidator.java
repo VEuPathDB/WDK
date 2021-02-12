@@ -14,7 +14,7 @@ import org.gusdb.wdk.service.request.exception.DataValidationException;
  */
 public class UserPreferenceValidator {
 
-  private static final int PREFERENCE_NAME_MAX_LENGTH = 200;
+  private static final int PREFERENCE_NAME_MAX_LENGTH = 4000;
   private static final int PREFERENCE_VALUE_MAX_LENGTH = 4000;
 
   private static final String PROPERTIES_TOO_LONG = "The following property names and/or values exceed their maximum allowed lengths of ";
