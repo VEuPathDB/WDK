@@ -95,7 +95,20 @@ public class ParamReference extends Reference {
     String maxDate = paramRef.getMaxDate();
     Double min = paramRef.getMin();
     Double max = paramRef.getMax();
-    
+    String dependedParamRef = paramRef.getDependedParamRef();
+
+    if (param instanceof AbstractDependentParam) {
+      AbstractDependentParam dependentParam = (AbstractDependentParam)param;
+      if (dependedParamRef != null)
+        dependentParam.setDependedParamRef(dependedParamRef);
+    }
+    else {
+      if (dependedParamRef != null) {
+        throw new WdkModelException("The 'dependedParamRef' property is not "
+            + "allowed in param '" + twoPartName + "'");
+      }
+    }
+
     if (param instanceof AbstractEnumParam) {
       AbstractEnumParam enumParam = (AbstractEnumParam) param;
       // check those invalid properties
@@ -257,6 +270,7 @@ public class ParamReference extends Reference {
   private String _maxDate;
   private Double _min;
   private Double _max;
+  private String _dependedParamRef;
 
   private List<WdkModelText> _helps = new ArrayList<WdkModelText>();
   private String _help;
@@ -499,6 +513,14 @@ public class ParamReference extends Reference {
 
   public void setMax(Double max) {
     _max = max;
+  }
+
+  public String getDependedParamRef() {
+    return _dependedParamRef;
+  }
+
+  public void setDependedParamRef(String dependedParamRef) {
+    _dependedParamRef = dependedParamRef;
   }
 
   public Boolean getMultiPick() {

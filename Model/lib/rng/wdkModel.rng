@@ -954,6 +954,9 @@
       </optional>
       <ref name="EnumParamDisplayType"/>
       <optional>
+        <attribute name="dependedParamRef"/>
+      </optional>
+      <optional>
         <attribute name="prompt" />
       </optional>
       <optional>
