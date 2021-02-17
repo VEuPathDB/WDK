@@ -4,15 +4,42 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Optional;
+
+import javax.servlet.http.Cookie;
+
 import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.web.LoginCookieFactory;
 import org.gusdb.fgputil.web.LoginCookieFactory.LoginCookieParts;
+import org.gusdb.wdk.controller.filter.CheckLoginFilter;
 import org.junit.Test;
 
 public class LoginCookieFactoryTest {
 
   private static final String SECRET_KEY = "123aSecretKey!";
   private static final String ANOTHER_KEY = "345TakeADive!";
+
+  // cookie lists
+  private static final Cookie[] BAD_LIST = { new Cookie("a","1"), new Cookie("b", "2") };
+  private static final Cookie[] GOOD_LIST = { new Cookie("a", "1"), new Cookie(LoginCookieFactory.WDK_LOGIN_COOKIE_NAME, "value") };
+
+  @Test
+  public void testFindCookie() {
+    Optional<CookieBuilder> c;
+    // test null
+    c = CheckLoginFilter.findLoginCookie(null);
+    assertFalse(c.isPresent());
+    // test empty list
+    c = CheckLoginFilter.findLoginCookie(new Cookie[0]);
+    assertFalse(c.isPresent());
+    // test list not containing cookie
+    c = CheckLoginFilter.findLoginCookie(BAD_LIST);
+    assertFalse(c.isPresent());
+    // test list not containing cookie
+    c = CheckLoginFilter.findLoginCookie(GOOD_LIST);
+    assertTrue(c.isPresent());
+    assertEquals(c.get().getName(), LoginCookieFactory.WDK_LOGIN_COOKIE_NAME);
+  }
 
   public static final String[] EXCEPTION_CASES = {
     // failure cases
