@@ -44,6 +44,10 @@ public class SingleAttributeRecordStream implements RecordStream {
             _answerValue.getAnswerSpec().getQuestion().getRecordClass(), _requiredFields);
   }
 
+  public String getSql() {
+    return _sql;
+  }
+
   private static List<QueryColumnAttributeField> trimNonQueryAttrs(Collection<ColumnAttributeField> attributes) {
     return attributes.stream()
         .filter(field -> field instanceof QueryColumnAttributeField)

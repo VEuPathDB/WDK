@@ -114,7 +114,7 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
     return writer;
   }
 
-  private static JSONObject getMetaData(AnswerValue answerValue,
+  protected static JSONObject getMetaData(AnswerValue answerValue,
       Set<String> includedAttributes, Set<String> includedTables, int numRecordsReturned)
       throws WdkModelException {
     AnswerValue answerValueWithoutViewFilters = getAnswerValueWithoutViewFilters(answerValue);
