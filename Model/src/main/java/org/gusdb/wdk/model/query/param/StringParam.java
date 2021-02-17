@@ -1,8 +1,11 @@
 package org.gusdb.wdk.model.query.param;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
@@ -119,7 +122,8 @@ public class StringParam extends Param {
   }
 
   /**
-   * Whether this param will render as a textarea instead of a textbox
+   * Whether this param will render as a textarea instead of a textbox.  Also
+   * controls whether the validation regex matches across multiple lines.
    *
    * @param multiLine
    *          set to true if textarea is desired (default false)
@@ -140,11 +144,10 @@ public class StringParam extends Param {
 
   @Override
   public String toString() {
-    String newline = System.getProperty("line.separator");
     return new StringBuilder(super.toString())
-    // .append("  sample='").append(sample).append("'").append(newline)
-      .append("  regex='").append(_regex).append("'").append(newline)
-      .append("  length='").append(_length).append("'").append(newline)
+    // .append("  sample='").append(sample).append("'").append(NL)
+      .append("  regex='").append(_regex).append("'").append(NL)
+      .append("  length='").append(_length).append("'").append(NL)
       .append("  multiLine='").append(_multiLine).append("'").toString();
   }
 
@@ -179,13 +182,18 @@ public class StringParam extends Param {
       }
     }
 
-    if (_regex != null && !value.matches(_regex))
-      return value.equals("*")
-        ? contextParamValues.setInvalid(name, level, "'" + value +
-          "' cannot be used on its own; it needs to be part of a word.")
-        : contextParamValues.setInvalid(name, level, "'" + value + "' is " +
-          "invalid (it might contain illegal characters). It must match " +
-          "the regular expression '" + _regex + "'");
+    if (_regex != null) {
+      Pattern p = _multiLine
+        ? Pattern.compile(_regex, Pattern.DOTALL)
+        : Pattern.compile(_regex);
+      if (!p.matcher(value).matches())
+        return value.equals("*")
+          ? contextParamValues.setInvalid(name, level, "'" + value +
+            "' cannot be used on its own; it needs to be part of a word.")
+          : contextParamValues.setInvalid(name, level, "'" + value + "' is " +
+            "invalid (it might contain illegal characters). It must match " +
+            "the regular expression '" + _regex + "'");
+    }
 
     if (_length != 0 && value.length() > _length)
       return contextParamValues.setInvalid(name, level, "'" + value + "' must not be longer than "
