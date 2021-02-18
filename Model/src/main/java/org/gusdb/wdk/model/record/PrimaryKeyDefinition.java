@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.record;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -202,6 +204,19 @@ public class PrimaryKeyDefinition extends WdkModelBase {
       pkValues.put(column, resultList.get(column));
     }
     return new PrimaryKeyValue(this, pkValues);
+  }
+
+  public PrimaryKeyValue getPrimaryKeyFromResultSet(ResultSet resultSet) throws WdkModelException {
+    try {
+      Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+      for (String column : getColumnRefs()) {
+        pkValues.put(column, resultSet.getObject(column));
+      }
+      return new PrimaryKeyValue(this, pkValues);
+    }
+    catch (SQLException e) {
+      throw new WdkModelException("Unable to read expected primary key value from result set.", e);
+    }
   }
 
   /**

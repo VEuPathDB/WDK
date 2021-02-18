@@ -50,7 +50,7 @@ public class RecordFormatter {
     return new TwoTuple<JSONObject,List<Exception>>(recordJson,tableResult.getThird());
   }
 
-  private static JSONArray getRecordPrimaryKeyJson(RecordInstance record) {
+  public static JSONArray getRecordPrimaryKeyJson(RecordInstance record) {
     Map<String,String> pkValues = record.getPrimaryKey().getValues();
     JSONArray pkJson = new JSONArray();
     for (String column : record.getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
