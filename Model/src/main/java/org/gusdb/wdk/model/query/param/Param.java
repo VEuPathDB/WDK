@@ -582,6 +582,8 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     boolean defaultValueRequired =
         stableValues.get(getName()) == null &&
         fillStrategy.shouldFillWhenMissing();
+    validationLog(() -> "defaultValueRequired = " + defaultValueRequired + " because value = " +
+        stableValues.get(getName()) + " and fillWhenMissing = " + fillStrategy.shouldFillWhenMissing());
 
     // Determine if we will need to run dependent queries within this param
     //   (either to generate a default or simply produce results of depended
@@ -590,6 +592,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     //   validated at the runnable level.
     boolean dependedQueriesNeedToBeRun = defaultValueRequired ||
         level.isGreaterThanOrEqualTo(ValidationLevel.DISPLAYABLE);
+    validationLog(() -> "dependedQueriesNeedToBeRun = " + dependedQueriesNeedToBeRun);
 
     // validate any parent (depended) params; if a default for this param will
     //   be generated, then these params MUST be validated at the RUNNABLE level
