@@ -74,9 +74,17 @@ public class ParameterContainerInstanceSpecBuilder<T extends ParameterContainerI
   protected void standardizeStableValues(ParameterContainer container) {
     for (Param param : container.getParams()) {
       if (containsKey(param.getName())) {
-        // replace with standardized value if present, or if not present but not
-        //   expected (because invisible to client), fill with standard value
-        put(param.getName(), param.getStandardizedStableValue(get(param.getName())));
+        String value = get(param.getName());
+        // parent class supports null values, but null values should be treated
+        //   as not-set, so remove any entries containing null values
+        if (value == null ) {
+          remove(param.getName());
+        }
+        else {
+          // replace with standardized value if present, or if not present but not
+          //   expected (because invisible to client), fill with standard value
+          put(param.getName(), param.getStandardizedStableValue(value));
+        }
       }
     }
   }
