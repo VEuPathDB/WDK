@@ -185,10 +185,23 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
   @Produces(MediaType.APPLICATION_JSON)
   public JSONObject getStepAnalysisInstance(
       @PathParam(ANALYSIS_ID_PATH_PARAM) long analysisId,
-      @QueryParam(ACCESS_TOKEN_QUERY_PARAM) String accessToken) throws WdkModelException {
+      @QueryParam(ACCESS_TOKEN_QUERY_PARAM) String accessToken) throws WdkModelException, DataValidationException {
+
     StepAnalysisFactory factory = getWdkModel().getStepAnalysisFactory();
-    ExecutionStatus status = factory.calculateStatus(getAnalysis(analysisId, accessToken, ValidationLevel.RUNNABLE));
-    // TODO: could really use a nice way to upgrade displayable to runnable or vice-versa; right now need to validate twice
+
+    // make sure the chosen analysis is still compatible with this step
+    RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
+
+    // validate this analysis is still valid for the results of this step (no validation in case not valid for step)
+    StepAnalysisInstance checkStepInstance = getAnalysis(analysisId, accessToken, ValidationLevel.NONE);
+    StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), checkStepInstance.getAnalysisName());
+    validStepForAnalysisOrThrow(step, stepAnalysis);
+
+    // get execution status of this instance; need runnably validated (but not necessarily valid) instance
+    StepAnalysisInstance checkStatusInstance = getAnalysis(analysisId, accessToken, ValidationLevel.RUNNABLE);
+    ExecutionStatus status = factory.calculateStatus(checkStatusInstance);
+
+    // create a displayable instance for population of the form
     StepAnalysisInstance returnInstance = getAnalysis(analysisId, accessToken, ValidationLevel.DISPLAYABLE);
     return StepAnalysisFormatter.getStepAnalysisInstanceJson(returnInstance, status);
   }

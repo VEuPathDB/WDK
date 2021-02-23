@@ -371,10 +371,6 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
             }
             return Optional.of(instance);
           }
-          catch (DeprecatedAnalysisException e) {
-            // analysis no longer supported; just disappear it
-            return Optional.empty();
-          }
           catch (WdkModelException e) {
             throw new SQLRunnerException(e);
           }
@@ -394,12 +390,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
           try {
             List<StepAnalysisInstance> instanceList = new ArrayList<>();
             while(rs.next()) {
-              try {
-                instanceList.add(readInstance(rs, step.getAnswerSpec().getWdkModel(), level));
-              }
-              catch (DeprecatedAnalysisException e) {
-                // analysis no longer supported; just disappear it
-              }
+              instanceList.add(readInstance(rs, step.getAnswerSpec().getWdkModel(), level));
             }
             return instanceList;
           }
@@ -416,7 +407,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
   // SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, USER_NOTES, IS_NEW, CONTEXT
   // WdkModel wdkModel, long analysisId, long stepId, RevisionStatus revisionStatus, String displayName, String userNotes, String serializedInstance, ValidationLevel validationLevel
   private StepAnalysisInstance readInstance(ResultSet rs, WdkModel wdkModel, ValidationLevel level)
-      throws WdkModelException, DeprecatedAnalysisException, SQLException {
+      throws WdkModelException, SQLException {
     return StepAnalysisInstance.createFromStoredData(
         wdkModel,
         rs.getLong(1),

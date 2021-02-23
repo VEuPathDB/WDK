@@ -111,7 +111,7 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
   static StepAnalysisInstance createFromStoredData(WdkModel wdkModel,
       long analysisId, long stepId, RevisionStatus revisionStatus,
       String displayName, String userNotes, String serializedInstance, ValidationLevel validationLevel)
-          throws WdkModelException, DeprecatedAnalysisException {
+          throws WdkModelException {
     try {
       StepAnalysisInstance instance = new StepAnalysisInstance();
       instance._wdkModel = wdkModel;
@@ -170,10 +170,6 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
       instance._validationBundle = validation.build();
 
       return instance;
-    }
-    catch (WdkModelException e) {
-      throw new DeprecatedAnalysisException("Unable to construct instance " +
-          "from analysis with ID: " + analysisId, e);
     }
     catch (JSONException e) {
       throw new WdkModelException("Unable to deserialize instance.", e);
@@ -255,12 +251,24 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
     instance._displayName = oldInstance._displayName;
     instance._userNotes = oldInstance._userNotes;
 
+    // if we can, fill param values for return to client and runnably validate
     if (instance._step.isRunnable() &&
         instance.getStepAnalysis().isPresent()) {
-      instance._spec = StepAnalysisFormSpec.builder(oldInstance._spec).buildValidated(
-          instance._step.getRunnable().getLeft(), instance.getStepAnalysis().get(), ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING);
+      try {
+        instance.getStepAnalysis().get()
+          .getAnalyzerInstance()
+          .validateAnswerValue(AnswerValueFactory.makeAnswer(instance._step.getRunnable().getLeft()));
+
+        instance._spec = StepAnalysisFormSpec.builder(oldInstance._spec).buildValidated(
+            instance._step.getRunnable().getLeft(), instance.getStepAnalysis().get(), ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING);
+      }
+      catch (IllegalAnswerValueException e) {
+        // cannot validate if step's answer value is not compatible with this analysis plugin
+        instance._spec = StepAnalysisFormSpec.builder(oldInstance._spec).buildInvalid();
+      }
     }
     else {
+      // cannot validate if step is not runnable or step analysis plugin is no longer present
       instance._spec = StepAnalysisFormSpec.builder(oldInstance._spec).buildInvalid();
     }
 

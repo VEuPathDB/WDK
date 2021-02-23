@@ -165,16 +165,43 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     // now that step is validated at the runnable level, see if it is runnable and if not, return false
     if (!step.isRunnable()) return false;
 
-    List<StepAnalysisInstance> instances = getAppliedAnalyses(step, ValidationLevel.RUNNABLE);
-    for (StepAnalysisInstance instance : instances) {
-      if (!instance.isRunnable()) continue;
-      Optional<ExecutionInfo> info = getExecutionInfo(instance.getRunnable().getLeft());
-      if (info.isEmpty()) continue;
-      if (info.get().getStatus().equals(ExecutionStatus.COMPLETE)) {
-        return true;
+    // loop through a list of unvalidated instances
+    for (StepAnalysisInstance instance : getAppliedAnalyses(step, ValidationLevel.NONE)) {
+
+      // if no longer compatible with the step, skip (any existing results are out-of-date)
+      if (!isAnalysisCompatibleWithStep(step.getRunnable().getLeft(), instance.getAnalysisName())) {
+        continue;
+      }
+
+      // build a instance with runnable validation
+      Optional<StepAnalysisInstance> runnableInstance = getInstanceById(instance.getAnalysisId(),
+          step.getAnswerSpec().getWdkModel(), ValidationLevel.RUNNABLE);
+
+      // if runnable and has a complete result, return true
+      if (runnableInstance.isPresent() && runnableInstance.get().isRunnable()) {
+        Optional<ExecutionInfo> info = getExecutionInfo(runnableInstance.get().getRunnable().getLeft());
+        if (!info.isEmpty() && info.get().getStatus().equals(ExecutionStatus.COMPLETE)) {
+          return true;
+        }
       }
     }
+
+    // no complete instances found
     return false;
+  }
+
+  private static boolean isAnalysisCompatibleWithStep(RunnableObj<Step> step, String analysisName) throws WdkModelException {
+    StepAnalysis stepAnalysis = step.get().getAnswerSpec().getQuestion().getStepAnalyses().get(analysisName);
+    if (stepAnalysis == null) {
+      return false;
+    }
+    try {
+      stepAnalysis.getAnalyzerInstance().validateAnswerValue(AnswerValueFactory.makeAnswer(step));
+      return true;
+    }
+    catch (IllegalAnswerValueException e) {
+      return false;
+    }
   }
 
   @Override
@@ -196,6 +223,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       throws WdkModelException {
     LOG.info("Request made to copy analysis instances from step " + fromStep.getStepId() + " to " + toStep.getStepId());
     List<StepAnalysisInstance> fromInstances = _dataStore.getInstancesByStep(fromStep, ValidationLevel.NONE);
+    LOG.info("Will copy " + fromInstances.size() + " step analysis instances from step " +
+        fromStep.getStepId() + " to step " + toStep.getStepId());
     for (StepAnalysisInstance fromInstance : fromInstances) {
       LOG.info("Copying step analysis with ID " + fromInstance.getAnalysisId());
       // RRD 9/19: while copying, should not matter if fromStep is valid;
@@ -204,8 +233,9 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       //   existing step+analysis combo
       StepAnalysisInstance toInstance = StepAnalysisInstance.createCopy(fromInstance, toStep);
       writeNewAnalysisInstance(toInstance, false);
-      LOG.info("Wrote new duplicate context with ID " + toInstance.getAnalysisId() +
-          " for revised step " + toInstance.getStep().getStepId() + ".  Copying properties...");
+      LOG.info("Wrote new copy of step analysis with ID " + fromInstance.getAnalysisId() +
+          " to duplicate instance with ID " + toInstance.getAnalysisId() +
+          " for step " + toInstance.getStep().getStepId() + ".  Copying properties...");
       // copy properties of old context to new and make sure to close- not closing is a connection leak!
       copyProperties(fromInstance, toInstance);
     }

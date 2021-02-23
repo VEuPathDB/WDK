@@ -6,12 +6,15 @@ import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 
 import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
+import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -93,5 +96,15 @@ public interface StepAnalysisLookupMixin {
         "Step %d does not contain analysis %d", getStepId(), analysisId));
 
     return instance;
+  }
+
+  default void validStepForAnalysisOrThrow(RunnableObj<Step> step, StepAnalysis stepAnalysis) throws DataValidationException, WdkModelException {
+    // make sure answer value is valid for this plugin
+    try {
+      stepAnalysis.getAnalyzerInstance().validateAnswerValue(AnswerValueFactory.makeAnswer(step));
+    }
+    catch (IllegalAnswerValueException e) {
+      throw new DataValidationException(e.getMessage()); // will throw 422
+    }
   }
 }
