@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
@@ -20,6 +22,13 @@ public class SingleRecordQuestionParam extends StringParam {
     _recordClass = recordClass;
     setName(PRIMARY_KEY_PARAM_NAME);
     setAllowEmpty(false);
+    try {
+      resolveReferences(recordClass.getWdkModel());
+    }
+    catch (WdkModelException e) {
+      // this should never happen; record class should already be resolved
+      throw new WdkRuntimeException(e);
+    }
   }
 
   @Override
