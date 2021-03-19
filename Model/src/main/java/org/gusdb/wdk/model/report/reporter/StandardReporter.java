@@ -21,7 +21,6 @@ import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStreamFactory;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
-import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
@@ -137,7 +136,7 @@ public abstract class StandardReporter extends AbstractReporter {
    */
   private static Set<Field> validateColumns(Question question, StandardConfig stdConfig) throws ReporterConfigException {
     // get a map of report maker fields
-    Map<String, Field> fieldMap = question.getFields(FieldScope.ALL);
+    Map<String, Field> fieldMap = question.getFields();
     // the config map contains a list of column names;
     Set<Field> columns = new LinkedHashSet<Field>();
     if (stdConfig.getIsAllFields()) {

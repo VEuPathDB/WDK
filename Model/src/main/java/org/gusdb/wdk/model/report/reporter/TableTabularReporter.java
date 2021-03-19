@@ -17,7 +17,6 @@ import org.gusdb.wdk.model.answer.stream.FileBasedRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.answer.stream.SingleRecordStream;
 import org.gusdb.wdk.model.answer.stream.SingleTableRecordStream;
-import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
@@ -29,6 +28,7 @@ import org.json.JSONObject;
 public class TableTabularReporter extends AbstractTabularReporter {
 
   private TableField _tableField;
+  private Collection<AttributeField> _tableAttributes;
 
   public TableTabularReporter(AnswerValue answerValue) {
     super(answerValue);
@@ -52,6 +52,7 @@ public class TableTabularReporter extends AbstractTabularReporter {
       throw new ReporterConfigException("This report supports exactly one table and no attributes.");
     }
     _tableField = tables.iterator().next();
+    _tableAttributes = _tableField.getReporterAttributeFieldMap().values();
     return this;
   }
 
@@ -96,10 +97,9 @@ public class TableTabularReporter extends AbstractTabularReporter {
 
   @Override
   protected List<String> getHeader() throws WdkUserException, WdkModelException {
-    AttributeField[] fields = _tableField.getAttributeFields(FieldScope.REPORT_MAKER);
     List<String> list = new ArrayList<String>();
     list.add(_baseAnswer.getAnswerSpec().getQuestion().getRecordClass().getIdAttributeField().getDisplayName());
-    for (AttributeField field : fields) {
+    for (AttributeField field : _tableAttributes) {
       list.add(field.getDisplayName());
     }
     return list;

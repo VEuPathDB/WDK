@@ -146,7 +146,7 @@ public class UserFactory {
       user.setProfileProperties(profile.getProperties());
 
       // set and save preferences
-      UserPreferences prefs = new UserPreferences(user);
+      UserPreferences prefs = new UserPreferences();
       if (globalPreferences != null) prefs.setGlobalPreferences(globalPreferences);
       if (projectPreferences != null) prefs.setProjectPreferences(projectPreferences);
       user.setPreferences(prefs);

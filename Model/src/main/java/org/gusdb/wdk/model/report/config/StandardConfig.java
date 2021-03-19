@@ -10,7 +10,6 @@ import java.util.Map;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
-import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -114,7 +113,7 @@ public class StandardConfig {
 
     // TODO:  we are no longer using the inReportMaker flag.  we need to purge all the
     //        options that include xxxx_ALL_xxxx soon)
-    Map<String, Field> fieldMap = _question.getFields(FieldScope.ALL);
+    Map<String, Field> fieldMap = _question.getFields();
 
     // TODO: this option should be removed, as well as all xxxx_ALL_xxxx options
     if (config.has(SELECT_ALL_FIELDS)) {
@@ -180,7 +179,7 @@ public class StandardConfig {
       includeEmptyTables = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true : false;
     }
 
-    Map<String, Field> fieldMap = _question.getFields(FieldScope.ALL);
+    Map<String, Field> fieldMap = _question.getFields();
 
     if (config.containsKey(SELECTED_FIELDS)) {
       String flds = config.get(SELECTED_FIELDS);

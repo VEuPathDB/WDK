@@ -1,5 +1,9 @@
 package org.gusdb.wdk.model.record;
 
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
 /**
  * The scope of a {@link Field}, which will affect the availability of the
  * {@link Field} in certain functions on the website.  This is a convenient
@@ -10,15 +14,15 @@ package org.gusdb.wdk.model.record;
  */
 public enum FieldScope {
   /**
-   * A field is available in all places.
+   * All fields (no exclusions)
    */
-  ALL(false, false), /**
-   * A field is available in the summary page, but not in
-   * download report.
+  ALL(false, false),
+  /**
+   * Excludes fields where internal=true
    */
-  NON_INTERNAL(true, false), /**
-   * A field is available in download report, but not
-   * in summary page.
+  NON_INTERNAL(true, false),
+  /**
+   * Excludes fields where inReportMaker=false
    */
   REPORT_MAKER(false, true);
 
@@ -38,5 +42,11 @@ public enum FieldScope {
       return false;
     }
     return true;
+  }
+
+  public <T extends ScopedField> Map<String, T> filter(Map<String, T> fields) {
+    return fields.entrySet().stream()
+      .filter(entry -> isFieldInScope(entry.getValue()))
+      .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
   }
 }

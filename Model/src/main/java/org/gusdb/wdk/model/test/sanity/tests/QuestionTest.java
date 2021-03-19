@@ -64,7 +64,7 @@ public class QuestionTest implements ElementTest {
     int resultSize = answerValue.getResultSizeFactory().getResultSize();
 
     // get the summary attribute list
-    Map<String, AttributeField> summary = answerValue.getAttributes().getSummaryAttributeFieldMap();
+    Map<String, AttributeField> summary = _question.getSummaryAttributeFieldMap();
 
     // iterate through the page and try every summary attribute of each record
     for (RecordInstance record : answerValue.getRecordInstances()) {

@@ -8,7 +8,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
-import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.service.formatter.AttributeFieldFormatter;
 import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.gusdb.wdk.service.service.QuestionService;
@@ -45,7 +44,6 @@ public class SearchColumnService extends AbstractWdkService {
   ) {
     return AttributeFieldFormatter.getAttributesJson(
       getQuestionOrNotFound(_recordType, _searchName).getAttributeFieldMap().values(),
-      FieldScope.ALL,
       "expanded".equals(format)
     );
   }

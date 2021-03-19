@@ -140,7 +140,6 @@ public class AnswerValue {
   // values derived from basic info
   private final WdkModel _wdkModel;
   private final QueryInstance<?> _idsQueryInstance;
-  private final AnswerValueAttributes _attributes;
   protected ResultSizeFactory _resultSizeFactory; // may be reassigned by subclasses
 
   // sorting and paging for this answer- may be modified externally
@@ -171,7 +170,6 @@ public class AnswerValue {
     _wdkModel = _answerSpec.getWdkModel();
     _idsQueryInstance = Query.makeQueryInstance(_answerSpec.getQueryInstanceSpec().getRunnable().getLeft());
     Question question = _answerSpec.getQuestion();
-    _attributes = new AnswerValueAttributes(_user, question);
     _resultSizeFactory = new ResultSizeFactory(this);
 
     _startIndex = startIndex;
@@ -211,7 +209,6 @@ public class AnswerValue {
     _answerSpec = answerValue._answerSpec;
     _wdkModel = answerValue._wdkModel;
     _idsQueryInstance = answerValue._idsQueryInstance;
-    _attributes = new AnswerValueAttributes(_user, _answerSpec.getQuestion());
     // Note: do not copy result size data (i.e. _resultSizesByFilter and
     //   _resultSizesByProject); they are essentially caches and should be
     //   rebuilt by each new AnswerValue
@@ -239,10 +236,6 @@ public class AnswerValue {
 
   public QueryInstance<?> getIdsQueryInstance() {
     return _idsQueryInstance;
-  }
-
-  public AnswerValueAttributes getAttributes() {
-    return _attributes;
   }
 
   public ResultSizeFactory getResultSizeFactory() {

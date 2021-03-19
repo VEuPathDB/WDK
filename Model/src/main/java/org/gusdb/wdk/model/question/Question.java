@@ -40,11 +40,8 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.record.Field;
-import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.TableField;
-import org.gusdb.wdk.model.record.attribute.AttributeCategory;
-import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.report.ReporterRef;
@@ -119,9 +116,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   private List<DynamicAttributeSet> _dynamicAttributeSets = new ArrayList<>();
   protected DynamicAttributeSet _dynamicAttributeSet;
   private Query _dynamicAttributeQuery;
-
-  // cached map of all attributes of this question
-  private Map<String, AttributeField> _allAttributeFieldsMap;
 
   /**
    * if set to true, if the result of the question has only 1 row, the strategy
@@ -317,10 +311,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     _dynamicAttributeSets.add(dynamicAttributes);
   }
 
-  public Map<String, Field> getFields(FieldScope scope) {
+  public Map<String, Field> getFields() {
     Map<String, Field> fields = new LinkedHashMap<>();
-    Map<String, AttributeField> attributes = getAttributeFieldMap(scope);
-    Map<String, TableField> tables = _recordClass.getTableFieldMap(scope);
+    Map<String, AttributeField> attributes = getAttributeFieldMap();
+    Map<String, TableField> tables = _recordClass.getTableFieldMap();
 
     fields.putAll(attributes);
     fields.putAll(tables);
@@ -423,7 +417,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   public String toString() {
     StringBuilder saNames = new StringBuilder();
     if (_recordClass != null) {
-      Map<String, AttributeField> summaryFields = getAttributeFieldMap(FieldScope.NON_INTERNAL);
+      Map<String, AttributeField> summaryFields = getAttributeFieldMap();
       for (String saName : summaryFields.keySet()) {
         saNames.append(saName + ", ");
       }
@@ -531,58 +525,29 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   }
 
   @Override
-  public Map<String, AttributeField> getAttributeFieldMap() {
-    return (_allAttributeFieldsMap != null
-        ? _allAttributeFieldsMap // cached value not yet set (done at end of resolveRefs)
-        : getAttributeFieldMap(FieldScope.ALL));
+  public Optional<AttributeField> getAttributeField(String name) {
+    return Optional.ofNullable(_recordClass.getAttributeField(name)
+        .orElse(_dynamicAttributeSet.getAttributeFieldMap().get(name)));
   }
 
   @Override
-  public AttributeField[] getAttributeFields() {
-    return getAttributeFieldMap(FieldScope.ALL)
-      .values().toArray(new AttributeField[0]);
-  }
+  public Map<String, AttributeField> getAttributeFieldMap() {
 
-  public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
     Map<String, AttributeField> attributeFields = new LinkedHashMap<>();
 
     // always put primary key as the first field
     AttributeField pkField = _recordClass.getIdAttributeField();
     attributeFields.put(pkField.getName(), pkField);
 
-    attributeFields.putAll(_recordClass.getAttributeFieldMap(scope));
+    attributeFields.putAll(_recordClass.getAttributeFieldMap());
 
-    attributeFields.putAll(_dynamicAttributeSet.getAttributeFieldMap(scope));
+    attributeFields.putAll(_dynamicAttributeSet.getAttributeFieldMap());
 
     return attributeFields;
   }
 
-  public Map<String, AttributeField> getDynamicAttributeFieldMap(FieldScope scope) {
-    return _dynamicAttributeSet.getAttributeFieldMap(scope);
-  }
-
-  public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope)
-      throws WdkModelException {
-
-    // get trimmed copy of category tree
-    AttributeCategoryTree tree = _recordClass.getAttributeCategoryTree(scope);
-
-    // integrate dynamic attributes into tree as first root node
-    AttributeCategory dynamic = new AttributeCategory();
-    dynamic.setName("dynamic");
-    dynamic.setDisplayName("Search-Specific");
-    for (AttributeField field : _dynamicAttributeSet.getAttributeFieldMap(scope).values()) {
-      if (field.getName().equals(Utilities.COLUMN_WEIGHT)) {
-        tree.addAttributeToCategories(field);
-      } else {
-        dynamic.addField(field);
-      }
-    }
-    if (!dynamic.getFields().isEmpty()) {
-      tree.prependAttributeCategory(dynamic);
-    }
-
-    return tree;
+  public Map<String, AttributeField> getDynamicAttributeFieldMap() {
+    return _dynamicAttributeSet.getAttributeFieldMap();
   }
 
   @Override
@@ -685,10 +650,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
               "' required by record class '" + _recordClass.getFullName() + "'.");
         }
       }
-
-      // cache "ALL" attributes for efficient access- can be expensive if done
-      // many times
-      _allAttributeFieldsMap = getAttributeFieldMap(FieldScope.ALL);
     }
     catch (WdkModelException ex) {
       LOG.error("resolving question '" + getFullName() + " failed. " + ex);

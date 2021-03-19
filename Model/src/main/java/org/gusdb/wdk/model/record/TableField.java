@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.gusdb.fgputil.SortDirection;
 import org.gusdb.fgputil.SortDirectionSpec;
@@ -110,18 +111,6 @@ public class TableField extends Field implements AttributeFieldContainer {
     _attributeFieldList.add(attributeField);
   }
 
-  @Override
-  public AttributeField[] getAttributeFields() {
-    return getAttributeFields(FieldScope.ALL);
-  }
-
-  public AttributeField[] getAttributeFields(FieldScope scope) {
-    Map<String, AttributeField> fieldMap = getAttributeFieldMap(scope);
-    AttributeField[] array = new AttributeField[fieldMap.size()];
-    fieldMap.values().toArray(array);
-    return array;
-  }
-
   public void addDescription(WdkModelText description) {
     _descriptions.add(description);
   }
@@ -135,22 +124,21 @@ public class TableField extends Field implements AttributeFieldContainer {
   }
 
   @Override
+  public Optional<AttributeField> getAttributeField(String key) {
+    return Optional.ofNullable(_attributeFieldMap.get(key));
+  }
+
+  @Override
   public Map<String, AttributeField> getAttributeFieldMap() {
-    return getAttributeFieldMap(FieldScope.ALL);
+    return _attributeFieldMap;
+  }
+
+  public Map<String, AttributeField> getReporterAttributeFieldMap() {
+    return FieldScope.REPORT_MAKER.filter(getAttributeFieldMap());
   }
 
   public String getDescription() {
     return (_description == null) ? "" : _description;
-  }
-
-  public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
-    Map<String, AttributeField> map = new LinkedHashMap<>();
-    for (AttributeField field : _attributeFieldMap.values()) {
-      if (scope.isFieldInScope(field)) {
-        map.put(field.getName(), field);
-      }
-    }
-    return map;
   }
 
   @Override

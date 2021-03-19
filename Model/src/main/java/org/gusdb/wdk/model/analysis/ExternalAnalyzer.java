@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
@@ -201,12 +202,12 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     try (BufferedWriter out = new BufferedWriter(new FileWriter(mappingOutFile))) {
       writeField(out, recordClass.getIdAttributeField(), "");
       for (String attributeName : attributeNames) {
-        AttributeField attr = recordClass.getAttributeFieldMap().get(attributeName);
-        if (attr == null) {
+        Optional<AttributeField> attr = recordClass.getAttributeField(attributeName);
+        if (attr.isEmpty()) {
           LOG.warn("Attribute '" + attributeName + "', specified in analysis plugin, is not valid for record class '" + recordClass.getFullName() + "'.");
           continue;
         }
-        writeField(out, attr, "");
+        writeField(out, attr.get(), "");
       }
       for (String tableName : tableNames) {
         TableField table = recordClass.getTableFieldMap().get(tableName);
@@ -215,7 +216,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
           continue;
         }
         writeField(out, table, "");
-        for (AttributeField attribute : table.getAttributeFields()) {
+        for (AttributeField attribute : table.getAttributeFieldMap().values()) {
           writeField(out, attribute, table.getName() + ":");
         }
       }

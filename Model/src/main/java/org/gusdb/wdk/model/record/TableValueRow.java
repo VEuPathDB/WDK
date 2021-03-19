@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.fgputil.ImmutableEntry;
@@ -22,16 +23,13 @@ public class TableValueRow extends AttributeValueContainer {
 
   private static final long serialVersionUID = 1L;
 
-  private final TableField _tableField;
-
-  public TableValueRow(TableField tableField, ResultList resultList) throws WdkModelException {
-    super(tableField.getAttributeFieldMap());
-    _tableField = tableField;
+  public TableValueRow(Map<String,AttributeField> fieldMap, ResultList resultList) throws WdkModelException {
+    super(fieldMap);
     initializeFromResultList(resultList);
   }
 
   private void initializeFromResultList(ResultList resultList) throws WdkModelException {
-    for (AttributeField field : _tableField.getAttributeFields()) {
+    for (AttributeField field : _attributeFieldMap.values()) {
       if (!(field instanceof QueryColumnAttributeField)) {
         continue;
       }

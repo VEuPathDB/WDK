@@ -67,8 +67,7 @@ public class TableValue implements Iterable<TableValueRow> {
 
   public void write(StringBuilder buf) {
     // display the headers of the table
-    AttributeField[] fields = _tableField.getAttributeFields();
-    for (AttributeField attributeField : fields) {
+    for (AttributeField attributeField : _tableField.getAttributeFieldMap().values()) {
       buf.append('[');
       buf.append(attributeField.getDisplayName());
       buf.append("]\t");
@@ -101,7 +100,7 @@ public class TableValue implements Iterable<TableValueRow> {
   }
 
   public void initializeRow(ResultList resultList) throws WdkModelException {
-    _rows.add(new TableValueRow(getTableField(), resultList));
+    _rows.add(new TableValueRow(_tableField.getAttributeFieldMap(), resultList));
   }
 
   @Override

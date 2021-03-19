@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -18,7 +19,6 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
-import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
@@ -138,10 +138,11 @@ public class XMLReporter extends StandardReporter {
       StringBuilder sb = new StringBuilder();
       sb.append("      <table name=\"" + table.getDisplayName() + "\">" + NL);
       int tableSize = 0;
+      Collection<AttributeField> reportTableFields = table.getReporterAttributeFieldMap().values();
       for (Map<String, AttributeValue> row : tableValue) {
         tableSize++;
         sb.append("        <row>" + NL);
-        for (AttributeField field : table.getAttributeFields(FieldScope.REPORT_MAKER)) {
+        for (AttributeField field : reportTableFields) {
           String fieldName = field.getName();
           AttributeValue value = row.get(fieldName);
           sb.append("          <field name=\"" + fieldName + "\"><![CDATA[" + value.getValue() + "]]></field>" + NL);

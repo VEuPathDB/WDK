@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,7 +14,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
-import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
@@ -172,7 +172,7 @@ public class JSONReporter extends StandardReporter {
     TableField table = tableValue.getTableField();
     JSONObject tableObject = new JSONObject().put("name", table.getDisplayName());
     JSONArray rowsArray = new JSONArray();
-    AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
+    Collection<AttributeField> fields = table.getReporterAttributeFieldMap().values();
 
     // output table header
     int tableSize = 0;

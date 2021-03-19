@@ -1,5 +1,13 @@
 package org.gusdb.wdk.service.formatter;
 
+import static org.gusdb.fgputil.functional.Functions.reduce;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -8,21 +16,12 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.service.formatter.param.ParamContainerFormatter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static org.gusdb.fgputil.functional.Functions.reduce;
 
 /**
  * Formats WDK Question objects.  Question JSON will have the following form:
@@ -80,7 +79,7 @@ public class QuestionFormatter {
         .put(JsonKeys.DEFAULT_ATTRIBUTES, new JSONArray(q.getSummaryAttributeFieldMap().keySet()))
         .put(JsonKeys.DEFAULT_SORTING, DefaultJsonReporter.formatSorting(q.getSortingAttributeMap(), q.getAttributeFieldMap()))
         .put(JsonKeys.DYNAMIC_ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
-            q.getDynamicAttributeFieldMap(FieldScope.ALL).values(), FieldScope.ALL, true))
+            q.getDynamicAttributeFieldMap().values(), true))
         .put(JsonKeys.DEFAULT_SUMMARY_VIEW, q.getDefaultSummaryView().getName())
         .put(JsonKeys.SUMMARY_VIEW_PLUGINS, SummaryViewPluginFormatter.getSummaryViewPluginsJson(q.getOrderedSummaryViews()))
         .put(JsonKeys.IS_ANALYZABLE, q.getStepAnalyses().size() > 0)

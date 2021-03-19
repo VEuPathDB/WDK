@@ -17,12 +17,10 @@ public interface AttributeFieldContainer {
 
   Map<String, AttributeField> getAttributeFieldMap();
 
-  default Optional<AttributeField> getAttributeField(String key) {
-    return Optional.ofNullable(getAttributeFieldMap().get(key));
-  }
+  Optional<AttributeField> getAttributeField(String key);
 
-  AttributeField[] getAttributeFields();
   Map<String, Boolean> getSortingAttributeMap();
+
   String getNameForLogging();
 
 }

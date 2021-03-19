@@ -1,23 +1,27 @@
 package org.gusdb.wdk.model.question;
 
-import org.gusdb.fgputil.Named.NamedObject;
-import org.gusdb.wdk.model.*;
+import static org.gusdb.fgputil.FormatUtil.NL;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelBase;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.report.AttributeReporterRef;
 import org.gusdb.wdk.model.report.reporter.HistogramAttributeReporter;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static org.gusdb.fgputil.FormatUtil.NL;
 
 /**
  * An object representation of the {@code <question>/<dynamicAttributes>}. The
@@ -76,14 +80,7 @@ public class DynamicAttributeSet extends WdkModelBase {
   }
 
   public Map<String, AttributeField> getAttributeFieldMap() {
-    return getAttributeFieldMap(FieldScope.ALL);
-  }
-
-  public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
-    return attributeFieldMap.values().stream()
-      .filter(scope::isFieldInScope)
-      .collect(Collectors.toMap(NamedObject::getName, Function.identity(),
-        (a, b) -> a, LinkedHashMap::new));
+    return attributeFieldMap;
   }
 
   // /////////////////////////////////////////////////////////////////

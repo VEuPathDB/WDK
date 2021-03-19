@@ -80,7 +80,7 @@ public class RecordClassFormatter {
       .put(JsonKeys.PRIMARY_KEY_REFS, new JSONArray(recordClass.getPrimaryKeyDefinition().getColumnRefs()))
       .put(JsonKeys.RECORD_ID_ATTRIBUTE_NAME, recordClass.getIdAttributeField().getName())
       .put(JsonKeys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
-          recordClass.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
+          recordClass.getAttributeFieldMap().values(), expandAttributes))
       .put(JsonKeys.TABLES, TableFieldFormatter.getTablesJson(recordClass.getTableFieldMap().values(),
           FieldScope.ALL, expandTables, expandTableAttributes));
   }

@@ -148,7 +148,7 @@ public class UserPreferenceFactory {
           new Object[]{ user.getUserId() },
           new Integer[]{ Types.BIGINT },
           rs -> {
-            UserPreferences prefs = new UserPreferences(user);
+            UserPreferences prefs = new UserPreferences();
             while (rs.next()) {
               String prefProjectId = rs.getString("project_id");
               String prefName = rs.getString("preference_name");

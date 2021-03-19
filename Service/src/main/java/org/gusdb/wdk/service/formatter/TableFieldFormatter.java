@@ -43,7 +43,7 @@ public class TableFieldFormatter {
   public static JSONObject getTableJson(TableField table, boolean expandAttributes) {
     return new JSONObject()
         .put(JsonKeys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
-            table.getAttributeFieldMap().values(), FieldScope.ALL, expandAttributes))
+            table.getAttributeFieldMap().values(), expandAttributes))
 //        .put(JsonKeys.CATEGORY, table.getAttributeCategory())
         .put(JsonKeys.CLIENT_SORT_SPEC, getClientSortSpecJson(table))
         .put(JsonKeys.DESCRIPTION, table.getDescription())

@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -19,7 +20,6 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
-import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
@@ -175,7 +175,7 @@ public class FullRecordReporter extends StandardReporter {
   private static TwoTuple<Integer,String> formatTable(TableValue tableValue) {
     try {
       TableField table = tableValue.getTableField();
-      AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
+      Collection<AttributeField> fields = table.getReporterAttributeFieldMap().values();
       // output table header
       StringBuffer sb = new StringBuffer();
       sb.append("Table: " + table.getDisplayName() + NL);
@@ -229,12 +229,12 @@ public class FullRecordReporter extends StandardReporter {
             continue;
           }
 
-          AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
+          Collection<AttributeField> fields = table.getReporterAttributeFieldMap().values();
 
           // output table header
           document.add(new Paragraph("Table: " + table.getDisplayName()));
-          int NumColumns = fields.length;
-          PdfPTable datatable = new PdfPTable(NumColumns);
+          int numColumns = fields.size();
+          PdfPTable datatable = new PdfPTable(numColumns);
           for (AttributeField attribute : fields) {
             datatable.addCell("" + attribute.getDisplayName() + "");
           }

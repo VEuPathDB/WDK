@@ -30,14 +30,11 @@ import org.json.JSONObject;
  */
 public class AttributeFieldFormatter {
 
-  public static JSONArray getAttributesJson(Collection<AttributeField> attributes,
-      FieldScope scope, boolean expandAttributes) {
+  public static JSONArray getAttributesJson(Collection<AttributeField> attributes, boolean expandAttributes) {
     JSONArray attributesJson = new JSONArray();
     for (AttributeField attribute : attributes) {
-      if (scope.isFieldInScope(attribute)) {
-        attributesJson.put(expandAttributes ?
-            getAttributeJson(attribute) : attribute.getName());
-      }
+      attributesJson.put(expandAttributes ?
+          getAttributeJson(attribute) : attribute.getName());
     }
     return attributesJson;
   }

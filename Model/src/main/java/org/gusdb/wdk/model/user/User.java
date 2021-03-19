@@ -60,7 +60,7 @@ public abstract class User {
     _email = email;
     _signature = signature;
     _stableId = stableId;
-    _preferences = new UserPreferences(this);
+    _preferences = new UserPreferences();
   }
 
   public long getUserId() {
@@ -189,10 +189,6 @@ public abstract class User {
     int count = getWdkModel().getStepFactory().getPublicStrategyCount();
     LOG.debug("Found number of public strats: " + count);
     return count;
-  }
-
-  public int getItemsPerPage() {
-    return getPreferences().getItemsPerPage();
   }
 
   public void logFoundStrategies(Map<String, List<Strategy>> strategies, String condition) {
