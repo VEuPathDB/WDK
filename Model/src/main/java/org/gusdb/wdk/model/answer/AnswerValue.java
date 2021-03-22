@@ -318,7 +318,7 @@ public class AnswerValue {
   
   public String getAnswerAttributeSql(Query attributeQuery, boolean sortPage)
   throws WdkModelException {
-    return _startIndex == 1 && _endIndex == UNBOUNDED_END_PAGE_INDEX && _sortingMap.isEmpty()
+    return _startIndex == 1 && _endIndex == UNBOUNDED_END_PAGE_INDEX && !sortPage
         ? getUnsortedUnpagedAttributeSql(attributeQuery) :
           getPagedAttributeSql(attributeQuery, sortPage);
   }
