@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
@@ -308,6 +309,7 @@ public class FileBasedRecordStream implements RecordStream {
 
       // Getting the paged attribute SQL but in fact, getting a SQL statement requesting with all records.
       String sql = answerValue.getAnswerAttributeSql(query, true);
+      LOG.debug("Merged attribute SQL for query '" + query.getFullName() + "': " + FormatUtil.NL + sql);
 
       // Get the result list for the current attribute query
       DataSource dataSource = answerValue.getWdkModel().getAppDb().getDataSource();

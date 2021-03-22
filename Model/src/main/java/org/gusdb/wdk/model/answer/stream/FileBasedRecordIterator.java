@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
@@ -35,6 +36,8 @@ import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeValue;
 
 class FileBasedRecordIterator extends AbstractRecordIterator {
+
+  private static final Logger LOG = Logger.getLogger(FileBasedRecordIterator.class);
 
   /** Buffer size for the buffered writer use to write CSV files */
   private static final int BUFFER_SIZE = 32768;
@@ -120,9 +123,11 @@ class FileBasedRecordIterator extends AbstractRecordIterator {
 
   private static SqlResultList makeIdResultList(AnswerValue answerValue) throws WdkModelException {
     try {
+      String sql = answerValue.getPagedIdSql();
+      LOG.debug("Paged SQL (basis for stream): " + FormatUtil.NL + sql);
       return new SqlResultList(SqlUtils.executeQuery(
           answerValue.getWdkModel().getAppDb().getDataSource(),
-          answerValue.getPagedIdSql(), "id__attr-full"));
+          sql, "id__attr-full"));
     }
     catch (SQLException e) {
       throw new WdkModelException("Unable to run ID SQL", e);
