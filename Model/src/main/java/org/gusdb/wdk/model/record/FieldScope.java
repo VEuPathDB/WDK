@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.record;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -47,6 +48,10 @@ public enum FieldScope {
   public <T extends ScopedField> Map<String, T> filter(Map<String, T> fields) {
     return fields.entrySet().stream()
       .filter(entry -> isFieldInScope(entry.getValue()))
-      .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+      .collect(Collectors.toMap(
+          Entry::getKey,
+          Entry::getValue,
+          (val1, val2) -> val2,
+          LinkedHashMap::new));
   }
 }
