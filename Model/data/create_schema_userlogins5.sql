@@ -70,8 +70,7 @@ CREATE TABLE userlogins5.preferences
   user_id           NUMBER(12) NOT NULL,
   project_id        VARCHAR2(50) NOT NULL,
   preference_name   VARCHAR2(4000) NOT NULL,
-  preference_value  VARCHAR2(4000),
-  migration_id      NUMBER(12),
+  preference_value  CLOB,
   CONSTRAINT "preferences_pk" PRIMARY KEY (user_id, project_id, preference_name),
   CONSTRAINT "preferences_fk01" FOREIGN KEY (user_id)
       REFERENCES userlogins5.users (user_id)
