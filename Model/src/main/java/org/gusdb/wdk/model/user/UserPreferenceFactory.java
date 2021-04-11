@@ -24,6 +24,11 @@ public class UserPreferenceFactory {
 
   private static final String GLOBAL_PREFERENCE_KEY = "[Global]";
 
+  // even though we store value as a CLOB, the entire value is stored in memory
+  //   at once (no streaming), so we must still be conscious of size
+  public static final long MAX_PREFERENCE_VALUE_SIZE = 200000;
+  public static final long MAX_PREFERENCE_KEY_SIZE = 4000;
+
   private final WdkModel _wdkModel;
   private final DatabaseInstance _userDb;
   private final String _userSchema;
