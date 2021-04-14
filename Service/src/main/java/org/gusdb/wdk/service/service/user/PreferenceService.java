@@ -13,7 +13,6 @@ import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferences;
-import org.gusdb.wdk.service.UserPreferenceValidator;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
@@ -103,25 +102,19 @@ public class PreferenceService extends UserService {
     }
   }
 
-  private void updateGlobalPreferences(UserPreferences prefs, UserPreferencesRequest request) throws DataValidationException {
-    UserPreferenceValidator.validatePreferenceSizes(request.getPreferenceUpdates());
-
+  private void updateGlobalPreferences(UserPreferences prefs, UserPreferencesRequest request) {
     for (String key : request.getPreferenceUpdates().keySet()) {
       prefs.setGlobalPreference(key, request.getPreferenceUpdates().get(key));
     }
-
     for (String key : request.getPreferenceDeletes()) {
       prefs.unsetGlobalPreference(key);
     }
   }
   
-  private void updateProjectPreferences(UserPreferences prefs, UserPreferencesRequest request) throws DataValidationException {
-    UserPreferenceValidator.validatePreferenceSizes(request.getPreferenceUpdates());
-
+  private void updateProjectPreferences(UserPreferences prefs, UserPreferencesRequest request) {
     for (String key : request.getPreferenceUpdates().keySet()) {
       prefs.setProjectPreference(key, request.getPreferenceUpdates().get(key));
     }
-
     for (String key : request.getPreferenceDeletes()) {
       prefs.unsetProjectPreference(key);
     }
