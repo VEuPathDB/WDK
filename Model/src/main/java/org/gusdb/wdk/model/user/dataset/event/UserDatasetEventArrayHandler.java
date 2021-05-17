@@ -264,8 +264,8 @@ public class UserDatasetEventArrayHandler
       var ownerUserId = eventJson.getLong("owner");
 
       // A dataset may have multiple dependencies
-      var dependencies        = new HashSet<UserDatasetDependency>();
       var dependencyJsonArray = eventJson.getJSONArray("dependencies");
+      var dependencies        = new HashSet<UserDatasetDependency>(dependencyJsonArray.length());
 
       for (int i = 0; i < dependencyJsonArray.length(); i++) {
         var dependencyJson = dependencyJsonArray.getJSONObject(i);

@@ -19,8 +19,14 @@ public class UserDatasetDependency {
     this.resourceDisplayName = resourceDisplayName;
   }
 
-  public void setResourceIdentifier(String resourceIdentifier) { this.resourceIdentifier = resourceIdentifier; }
-  public void setResourceVersion(String resourceVersion) { this.resourceVersion = resourceVersion; }
+  public void setResourceIdentifier(String resourceIdentifier) {
+    this.resourceIdentifier = resourceIdentifier;
+  }
+
+  public void setResourceVersion(String resourceVersion) {
+    this.resourceVersion = resourceVersion;
+  }
+
   public void setResourceDisplayName(String resourceDisplayName) {
     this.resourceDisplayName = resourceDisplayName;
   }
