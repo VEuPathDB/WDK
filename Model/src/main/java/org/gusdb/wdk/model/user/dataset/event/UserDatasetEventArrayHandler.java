@@ -211,10 +211,10 @@ public class UserDatasetEventArrayHandler
   public static List<UserDatasetEvent> parseEventsArray(JSONArray eventJsonArray)
   throws WdkModelException {
     var events = new ArrayList<UserDatasetEvent>();
-    for (int i = 0; i < eventJsonArray.length(); i++) {
-      var eventJson = eventJsonArray.getJSONObject(i);
-      parseEventObject(eventJson, events);
-    }
+
+    for (int i = 0; i < eventJsonArray.length(); i++)
+      parseEventObject(eventJsonArray.getJSONObject(i), events);
+
     return events;
   }
 
@@ -270,8 +270,7 @@ public class UserDatasetEventArrayHandler
       for (int i = 0; i < dependencyJsonArray.length(); i++) {
         var dependencyJson = dependencyJsonArray.getJSONObject(i);
         dependencies.add(new UserDatasetDependency(
-          dependencyJson.getString(
-            "resourceIdentifier"),
+          dependencyJson.getString("resourceIdentifier"),
           dependencyJson.getString("resourceVersion"),
           dependencyJson.getString("resourceDisplayName")
         ));
