@@ -1,14 +1,26 @@
 package org.gusdb.wdk.service.service.user;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.db.stream.ResultSets;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
@@ -120,4 +132,20 @@ public class PreferenceService extends UserService {
     }
   }
 
+  @GET
+  @Path("preferences/bulk")
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response getBulkPrefs() {
+    return Response.ok(new StreamingOutput() {
+      @Override
+      public void write(OutputStream output) throws IOException, WebApplicationException {
+        try (Stream<String[]> rows = ResultSets.openStream(getWdkModel().getUserDb().getDataSource(),
+            "select user_id, project_id, preference_name from userlogins5.preferences where rownum <= 1000",
+            rs -> Optional.of(new String[] { rs.getString(1), rs.getString(2), rs.getString(3) }));
+            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(output))) {
+          rows.forEach(Functions.cSwallow(row -> out.write(FormatUtil.join(row, FormatUtil.TAB) + FormatUtil.NL)));
+        }
+      }
+    }).build();
+  }
 }
