@@ -51,8 +51,7 @@ public class UserDatasetEventArrayHandler
    * @param eventList list of user dataset event to be processed. database
    *                  records in tables.
    */
-  public void handleEventList(List<UserDatasetEvent> eventList)
-  throws WdkModelException {
+  public void handleEventList(List<UserDatasetEvent> eventList) throws WdkModelException {
 
     try (
       final var appDb = new DatabaseInstance(
@@ -142,10 +141,8 @@ public class UserDatasetEventArrayHandler
    * @throws WdkModelException if the log has a failed event (no complete date)
    *                           from a previous run.
    */
-  public Long findLastHandledEvent(
-    DataSource appDbDataSource,
-    String userDatasetSchemaName
-  ) throws WdkModelException {
+  public Long findLastHandledEvent(DataSource appDbDataSource, String userDatasetSchemaName)
+  throws WdkModelException {
 
     final var handler = new SingleLongResultSetHandler();
 
@@ -229,10 +226,8 @@ public class UserDatasetEventArrayHandler
    * @param eventJson JSONObject representing the event
    * @param events    a list of UserDatasetEvents to which new events are added.
    */
-  protected static void parseEventObject(
-    JSONObject eventJson,
-    List<UserDatasetEvent> events
-  ) throws WdkModelException {
+  protected static void parseEventObject(JSONObject eventJson, List<UserDatasetEvent> events)
+  throws WdkModelException {
     var eventId = eventJson.getLong("eventId");
     var event   = eventJson.getString("event");
 
@@ -240,9 +235,7 @@ public class UserDatasetEventArrayHandler
     // project filter.
     var projectsJson = eventJson.getJSONArray("projects").toString();
     var mapper       = new ObjectMapper();
-    var setType = new TypeReference<Set<String>>()
-    {
-    };
+    var setType      = new TypeReference<Set<String>>() {};
 
     Set<String> projects;
     try {
@@ -254,10 +247,8 @@ public class UserDatasetEventArrayHandler
     var projectsFilter = new HashSet<>(projects);
 
     var userDatasetId = eventJson.getLong("datasetId");
-    var mapType = new TypeReference<Map<String, String>>()
-    {
-    };
-    var typeJson = eventJson.getJSONObject("type").toString();
+    var mapType       = new TypeReference<Map<String, String>>() {};
+    var typeJson      = eventJson.getJSONObject("type").toString();
 
     Map<String, String> type;
     try {
