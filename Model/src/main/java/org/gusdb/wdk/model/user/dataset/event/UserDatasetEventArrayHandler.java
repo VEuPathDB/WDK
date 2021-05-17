@@ -1,7 +1,12 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.sql.DataSource;
+
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
@@ -13,15 +18,14 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigParser;
-import org.gusdb.wdk.model.user.dataset.*;
+import org.gusdb.wdk.model.user.dataset.UnsupportedTypeHandler;
+import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
+import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
+import org.gusdb.wdk.model.user.dataset.UserDatasetTypeFactory;
 import org.gusdb.wdk.model.user.dataset.event.UserDatasetShareEvent.ShareAction;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.xml.sax.SAXException;
-
-import javax.sql.DataSource;
-import java.io.IOException;
-import java.util.*;
 
 /**
  * This object accepts and events file in the form of a json array
@@ -213,7 +217,7 @@ public class UserDatasetEventArrayHandler
     var events = new ArrayList<UserDatasetEvent>();
 
     for (int i = 0; i < eventJsonArray.length(); i++)
-      parseEventObject(eventJsonArray.getJSONObject(i), events);
+         parseEventObject(eventJsonArray.getJSONObject(i), events);
 
     return events;
   }
@@ -233,30 +237,10 @@ public class UserDatasetEventArrayHandler
 
     // Extract an array of projects relevant to the event and add them to a
     // project filter.
-    var projectsJson = eventJson.getJSONArray("projects").toString();
-    var mapper       = new ObjectMapper();
-
-    HashSet<String> projectsFilter;
-    try {
-      projectsFilter = mapper.readValue(projectsJson, new TypeReference<HashSet<String>>() {});
-    } catch (IOException ioe) {
-      throw new WdkModelException(ioe);
-    }
-
-    var userDatasetId = eventJson.getLong("datasetId");
-    var typeJson      = eventJson.getJSONObject("type").toString();
-
-    Map<String, String> type;
-    try {
-      type = mapper.readValue(typeJson, new TypeReference<Map<String, String>>() {});
-    } catch (IOException ioe) {
-      throw new WdkModelException(ioe);
-    }
-
-    var userDatasetType = UserDatasetTypeFactory.getUserDatasetType(
-      type.get("name"),
-      type.get("version")
-    );
+    var projectsFilter  = parseProjectsFilter(eventJson.getJSONArray("projects"));
+    var userDatasetId   = eventJson.getLong("datasetId");
+    var type            = parseType(eventJson.getJSONObject("type"));
+    var userDatasetType = UserDatasetTypeFactory.getUserDatasetType(type.name, type.version);
 
     // Dataset is in the user's workspace and now needs to be installed into the
     // database.
@@ -321,5 +305,32 @@ public class UserDatasetEventArrayHandler
 
   private String getProjectId() {
     return projectId;
+  }
+
+  private static Set<String> parseProjectsFilter(JSONArray arr) {
+    var out = new HashSet<String>(arr.length());
+
+    for (Object o : arr)
+      out.add((String) o);
+
+    return out;
+  }
+
+  private static Type parseType(JSONObject obj) {
+    return new Type(obj.getString(Type.KeyName), obj.getString(Type.KeyVersion));
+  }
+
+  private static final class Type
+  {
+    private static final String KeyName    = "name";
+    private static final String KeyVersion = "version";
+
+    public final String name;
+    public final String version;
+
+    public Type(String name, String version) {
+      this.name    = name;
+      this.version = version;
+    }
   }
 }
