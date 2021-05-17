@@ -148,8 +148,8 @@ public class UserDatasetEventArrayHandler
 
     // first confirm there are no failed events from the last run.  (They'll
     // have a null completed time)
-    var sql = "select min(event_id) from " + userDatasetSchemaName
-      + "UserDatasetEvent where completed is null";
+    var sql = "SELECT min(event_id) FROM " + userDatasetSchemaName
+      + "UserDatasetEvent WHERE completed IS NULL";
     var sqlRunner = new SQLRunner(appDbDataSource, sql,
       "find-earliest-incomplete-event-id"
     );
@@ -257,8 +257,10 @@ public class UserDatasetEventArrayHandler
       throw new WdkModelException(ioe);
     }
 
-    var userDatasetType = UserDatasetTypeFactory.getUserDatasetType(type.get(
-      "name"), type.get("version"));
+    var userDatasetType = UserDatasetTypeFactory.getUserDatasetType(
+      type.get("name"),
+      type.get("version")
+    );
 
     // Dataset is in the user's workspace and now needs to be installed into the
     // database.
@@ -318,8 +320,7 @@ public class UserDatasetEventArrayHandler
         action
       ));
     } else {
-      throw new WdkModelException("Unrecognized user dataset event type: "
-        + event);
+      throw new WdkModelException("Unrecognized user dataset event type: " + event);
     }
 
   }
