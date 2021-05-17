@@ -36,8 +36,7 @@ public class UserDatasetEventArrayHandler
   private ModelConfig      modelConfig;
   private String           projectId;
 
-  public UserDatasetEventArrayHandler(String projectId)
-  throws WdkModelException {
+  public UserDatasetEventArrayHandler(String projectId) throws WdkModelException {
     this.projectId   = projectId;
     modelConfig      = getModelConfig();
     userDatasetStore = getUserDatasetStore();
@@ -235,24 +234,20 @@ public class UserDatasetEventArrayHandler
     // project filter.
     var projectsJson = eventJson.getJSONArray("projects").toString();
     var mapper       = new ObjectMapper();
-    var setType      = new TypeReference<Set<String>>() {};
 
-    Set<String> projects;
+    HashSet<String> projectsFilter;
     try {
-      projects = mapper.readValue(projectsJson, setType);
+      projectsFilter = mapper.readValue(projectsJson, new TypeReference<HashSet<String>>() {});
     } catch (IOException ioe) {
       throw new WdkModelException(ioe);
     }
 
-    var projectsFilter = new HashSet<>(projects);
-
     var userDatasetId = eventJson.getLong("datasetId");
-    var mapType       = new TypeReference<Map<String, String>>() {};
     var typeJson      = eventJson.getJSONObject("type").toString();
 
     Map<String, String> type;
     try {
-      type = mapper.readValue(typeJson, mapType);
+      type = mapper.readValue(typeJson, new TypeReference<Map<String, String>>() {});
     } catch (IOException ioe) {
       throw new WdkModelException(ioe);
     }
@@ -303,21 +298,16 @@ public class UserDatasetEventArrayHandler
     } else if ("share".equals(event)) {
       // Dataset sharing has either been granted or revoked in the workspace and
       // now must be reflected in the database
-
-      var ownerId     = eventJson.getLong("owner");
-      var recipientId = eventJson.getLong("recipient");
-      var action = "grant".equals(eventJson.getString("action"))
-        ? ShareAction.GRANT
-        : ShareAction.REVOKE;
-
       events.add(new UserDatasetShareEvent(
         eventId,
         projectsFilter,
         userDatasetId,
         userDatasetType,
-        ownerId,
-        recipientId,
-        action
+        eventJson.getLong("owner"),
+        eventJson.getLong("recipient"),
+        "grant".equals(eventJson.getString("action"))
+          ? ShareAction.GRANT
+          : ShareAction.REVOKE
       ));
     } else {
       throw new WdkModelException("Unrecognized user dataset event type: " + event);

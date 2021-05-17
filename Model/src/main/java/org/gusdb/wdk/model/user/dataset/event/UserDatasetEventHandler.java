@@ -337,7 +337,7 @@ public class UserDatasetEventHandler
   private void openEventHandling(Long eventId) {
     LOG.info("Start handling event: " + eventId);
 
-    var sql       = "INSERT INTO " + dsSchema + eventTable + " (event_id) VALUES (?)";
+    var sql = "INSERT INTO " + dsSchema + eventTable + " (event_id) VALUES (?)";
 
     new SQLRunner(dataSource, sql, "insert-user-dataset-event")
       .executeUpdate(new Object[]{eventId});
