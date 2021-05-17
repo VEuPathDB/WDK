@@ -154,11 +154,9 @@ public class UserDatasetEventArrayHandler
     // have a null completed time)
     var sql = "SELECT min(event_id) FROM " + userDatasetSchemaName
       + "UserDatasetEvent WHERE completed IS NULL";
-    var sqlRunner = new SQLRunner(appDbDataSource, sql,
-      "find-earliest-incomplete-event-id"
-    );
 
-    sqlRunner.executeQuery(handler);
+    new SQLRunner(appDbDataSource, sql, "find-earliest-incomplete-event-id")
+      .executeQuery(handler);
 
     if (!handler.getStatus().equals(Status.NULL_VALUE)) {
       throw new WdkModelException("Event id " + handler.getRetrievedValue()
@@ -166,21 +164,20 @@ public class UserDatasetEventArrayHandler
     }
 
     // find highest previously handled event id
-    sql = "select max(event_id) from " + userDatasetSchemaName
-      + "UserDatasetEvent";
+    sql = "SELECT max(event_id) FROM " + userDatasetSchemaName + "UserDatasetEvent";
 
-    sqlRunner = new SQLRunner(appDbDataSource, sql, "find-latest-event-id");
-    sqlRunner.executeQuery(handler);
+    new SQLRunner(appDbDataSource, sql, "find-latest-event-id")
+      .executeQuery(handler);
 
     return handler.getRetrievedValue();
   }
 
   public UserDatasetStore getUserDatasetStore() throws WdkModelException {
-    if (userDatasetStore == null) {
-      var udsConfig = getModelConfig().getUserDatasetStoreConfig();
-      userDatasetStore = udsConfig.getUserDatasetStore(getModelConfig().getWdkTempDir());
-    }
-    return userDatasetStore;
+    return userDatasetStore == null
+      ? (userDatasetStore = getModelConfig()
+        .getUserDatasetStoreConfig()
+        .getUserDatasetStore(getModelConfig().getWdkTempDir()))
+      : userDatasetStore;
   }
 
   // TODO: get from model config
