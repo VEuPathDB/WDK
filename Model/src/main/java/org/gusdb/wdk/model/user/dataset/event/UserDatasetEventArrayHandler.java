@@ -51,7 +51,7 @@ public class UserDatasetEventArrayHandler
    * @param eventList list of user dataset event to be processed. database
    *                  records in tables.
    */
-  public void handleEventList(List < UserDatasetEvent > eventList)
+  public void handleEventList(List<UserDatasetEvent> eventList)
   throws WdkModelException {
 
     try (
@@ -154,7 +154,8 @@ public class UserDatasetEventArrayHandler
     var sql = "select min(event_id) from " + userDatasetSchemaName
       + "UserDatasetEvent where completed is null";
     var sqlRunner = new SQLRunner(appDbDataSource, sql,
-      "find-earliest-incomplete-event-id");
+      "find-earliest-incomplete-event-id"
+    );
 
     sqlRunner.executeQuery(handler);
 
@@ -210,9 +211,9 @@ public class UserDatasetEventArrayHandler
    *
    * @return - a list of UserDatasetEvents corresponding to
    */
-  public static List < UserDatasetEvent > parseEventsArray(JSONArray eventJsonArray)
+  public static List<UserDatasetEvent> parseEventsArray(JSONArray eventJsonArray)
   throws WdkModelException {
-    var events = new ArrayList < UserDatasetEvent >();
+    var events = new ArrayList<UserDatasetEvent>();
     for (int i = 0; i < eventJsonArray.length(); i++) {
       var eventJson = eventJsonArray.getJSONObject(i);
       parseEventObject(eventJson, events);
@@ -230,7 +231,7 @@ public class UserDatasetEventArrayHandler
    */
   protected static void parseEventObject(
     JSONObject eventJson,
-    List < UserDatasetEvent > events
+    List<UserDatasetEvent> events
   ) throws WdkModelException {
     var eventId = eventJson.getLong("eventId");
     var event   = eventJson.getString("event");
@@ -239,26 +240,26 @@ public class UserDatasetEventArrayHandler
     // project filter.
     var projectsJson = eventJson.getJSONArray("projects").toString();
     var mapper       = new ObjectMapper();
-    var setType = new TypeReference < Set < String > >()
+    var setType = new TypeReference<Set<String>>()
     {
     };
 
-    Set < String > projects;
+    Set<String> projects;
     try {
       projects = mapper.readValue(projectsJson, setType);
     } catch (IOException ioe) {
       throw new WdkModelException(ioe);
     }
 
-    var projectsFilter = new HashSet <>(projects);
+    var projectsFilter = new HashSet<>(projects);
 
     var userDatasetId = eventJson.getLong("datasetId");
-    var mapType = new TypeReference < Map < String, String > >()
+    var mapType = new TypeReference<Map<String, String>>()
     {
     };
     var typeJson = eventJson.getJSONObject("type").toString();
 
-    Map < String, String > type;
+    Map<String, String> type;
     try {
       type = mapper.readValue(typeJson, mapType);
     } catch (IOException ioe) {
@@ -274,7 +275,7 @@ public class UserDatasetEventArrayHandler
       var ownerUserId = eventJson.getLong("owner");
 
       // A dataset may have multiple dependencies
-      var dependencies        = new HashSet < UserDatasetDependency >();
+      var dependencies        = new HashSet<UserDatasetDependency>();
       var dependencyJsonArray = eventJson.getJSONArray("dependencies");
 
       for (int i = 0; i < dependencyJsonArray.length(); i++) {
