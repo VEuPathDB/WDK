@@ -55,7 +55,8 @@ public class UserDatasetEventArrayHandler
     try (
       final var appDb = new DatabaseInstance(
         getModelConfig().getAppDB(),
-        WdkModel.DB_INSTANCE_APP, true
+        WdkModel.DB_INSTANCE_APP,
+        true
       );
       final var dsSession = getUserDatasetStore().getSession()
     ) {
