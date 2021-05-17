@@ -214,7 +214,7 @@ public class UserDatasetEventArrayHandler
     var events = new ArrayList<UserDatasetEvent>();
 
     for (int i = 0; i < eventJsonArray.length(); i++)
-         parseEventObject(eventJsonArray.getJSONObject(i), events);
+      parseEventObject(eventJsonArray.getJSONObject(i), events);
 
     return events;
   }

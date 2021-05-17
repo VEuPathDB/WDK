@@ -41,7 +41,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
   @Override
   protected void execute() throws Exception {
     var projectId = (String) getOptionValue(ARG_PROJECT);
-    var handler = new UserDatasetEventArrayHandler(projectId);
+    var handler   = new UserDatasetEventArrayHandler(projectId);
     var eventFile = new File((String)getOptionValue(ARG_EVENTS_FILE));
 
     JSONArray eventJsonArray;
