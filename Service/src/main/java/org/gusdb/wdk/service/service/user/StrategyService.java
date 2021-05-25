@@ -90,7 +90,7 @@ public class StrategyService extends UserService {
         // keep strategy if >1 step or its single step's question is valid
         .filter(strat -> strat.getAllSteps().size() > 1 || strat.getAllSteps().get(0).hasValidQuestion())
         .collect(Collectors.toList());
-    return StrategyFormatter.getStrategiesJson(strategies);
+    return StrategyFormatter.getStrategiesJson(strategies, false);
   }
 
   @POST

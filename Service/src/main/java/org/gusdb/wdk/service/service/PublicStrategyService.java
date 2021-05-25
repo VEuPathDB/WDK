@@ -43,7 +43,8 @@ public class PublicStrategyService extends AbstractWdkService {
   @GET
   public JSONArray getPublicStrategies(
       @QueryParam("userEmail") List<String> userEmails,
-      @QueryParam("invalid") @DefaultValue("false") Boolean returnInvalid)
+      @QueryParam("invalid") @DefaultValue("false") Boolean returnInvalid,
+      @QueryParam("validationObjects") @DefaultValue("false") Boolean includeValidationObjects)
   throws JSONException, WdkModelException {
     Stream<Strategy> strategies = getWdkModel()
       .getStepFactory()
@@ -59,7 +60,7 @@ public class PublicStrategyService extends AbstractWdkService {
           .getEmail()
           .equals(userEmail)));
 
-    return StrategyFormatter.getStrategiesJson(strategies.collect(Collectors.toList()));
+    return StrategyFormatter.getStrategiesJson(strategies.collect(Collectors.toList()), includeValidationObjects);
   }
 
   /**
