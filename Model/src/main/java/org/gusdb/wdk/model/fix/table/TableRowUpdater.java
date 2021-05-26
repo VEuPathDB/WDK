@@ -31,6 +31,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.runtime.GusHome;
+import org.gusdb.fgputil.server.LoggingInitializer;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.RowResult;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.TableRow;
@@ -93,6 +94,7 @@ public class TableRowUpdater<T extends TableRow> {
    **%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
   public static void main(String[] args) {
+    LoggingInitializer.initialize();
     System.exit(run(args));
   }
 
