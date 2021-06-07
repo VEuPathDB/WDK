@@ -10,6 +10,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
@@ -41,7 +42,7 @@ public class PublicStrategyService extends AbstractWdkService {
    * developers to review invalid strategies
    */
   @GET
-  public JSONArray getPublicStrategies(
+  public Response getPublicStrategies(
       @QueryParam("userEmail") List<String> userEmails,
       @QueryParam("invalid") @DefaultValue("false") Boolean returnInvalid)
   throws JSONException, WdkModelException {
@@ -59,7 +60,13 @@ public class PublicStrategyService extends AbstractWdkService {
           .getEmail()
           .equals(userEmail)));
 
-    return StrategyFormatter.getStrategiesJson(strategies.collect(Collectors.toList()));
+    // slightly different response if requesting valid vs invalid; if invalid:
+    //   1. include validation object as additional property on each strat
+    //   2. format JSON into more human-readable string for viewing in a browser/terminal
+    boolean includeValidationObjects = returnInvalid;
+    JSONArray responseJson = StrategyFormatter.getStrategiesJson(
+        strategies.collect(Collectors.toList()), includeValidationObjects);
+    return Response.ok(returnInvalid ? responseJson.toString(2) : responseJson.toString()).build();
   }
 
   /**

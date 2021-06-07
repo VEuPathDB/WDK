@@ -20,13 +20,13 @@ import org.json.JSONObject;
 
 public class StrategyFormatter {
 
-  public static JSONArray getStrategiesJson(Collection<Strategy> strategies) {
+  public static JSONArray getStrategiesJson(Collection<Strategy> strategies, boolean includeValidationObjects) {
     return reduce(strategies, rSwallow(
-        (strategiesJson, strategy) -> strategiesJson.put(getListingStrategyJson(strategy))
+        (strategiesJson, strategy) -> strategiesJson.put(getListingStrategyJson(strategy, includeValidationObjects))
     ), new JSONArray());
   }
 
-  public static JSONObject getListingStrategyJson(Strategy strategy) throws JSONException {
+  private static JSONObject getListingStrategyJson(Strategy strategy, boolean includeValidationObject) throws JSONException {
     Optional<String> recordClassName = strategy.getRecordClass().map(RecordClass::getUrlSegment);
     return new JSONObject()
         .put(JsonKeys.STRATEGY_ID, strategy.getStrategyId())
@@ -48,7 +48,9 @@ public class StrategyFormatter {
         .put(JsonKeys.ORGANIZATION, strategy.getUser().getProfileProperties().get("organization"))
         .put(JsonKeys.ESTIMATED_SIZE, StepFormatter.translateEstimatedSize(strategy.getEstimatedSize()))
         .put(JsonKeys.NAME_OF_FIRST_STEP, strategy.getMostPrimaryLeafStep().getDisplayName())
-        .put(JsonKeys.LEAF_AND_TRANSFORM_STEP_COUNT, strategy.getLeafAndTransformStepCount());
+        .put(JsonKeys.LEAF_AND_TRANSFORM_STEP_COUNT, strategy.getLeafAndTransformStepCount())
+        .put(JsonKeys.VALIDATION, !includeValidationObject ? null :
+          ValidationFormatter.getValidationBundleJson(strategy.getValidationBundle()));
   }
 
   public static JSONObject getDetailedStrategyJson(Strategy strategy) throws WdkModelException, JSONException {
@@ -58,7 +60,7 @@ public class StrategyFormatter {
     for (Step step : stepsInTree) {
       stepDetailsMap.put(Long.toString(step.getStepId()), StepFormatter.getStepJsonWithEstimatedSize(step));
     }
-    return getListingStrategyJson(strategy)
+    return getListingStrategyJson(strategy, false) // individual steps will contain validation
         .put(JsonKeys.STEP_TREE, stepTreeJson)
         .put(JsonKeys.STEPS, stepDetailsMap)
         .put(JsonKeys.ESTIMATED_SIZE, strategy.getResultSize()); // overwrite with real size

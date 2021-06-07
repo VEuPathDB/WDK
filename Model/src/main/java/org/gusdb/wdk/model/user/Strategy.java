@@ -557,7 +557,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
 
     LOG.debug("Updating stale result sizes on runnable steps");
     strat.getAllSteps().stream()
-      .filter(step -> step.isRunnable() && step.getEstimatedSize() == Step.RESET_SIZE_FLAG)
+      .filter(step -> step.isRunnable())
       .forEach(runnableStep -> {
         try {
           // getResultSize() will update the size in the step and write the size to the DB
