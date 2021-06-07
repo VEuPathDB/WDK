@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.user.dataset.event;
+package org.gusdb.wdk.model.user.dataset.event.model;
 
 import java.util.Collections;
 import java.util.Set;

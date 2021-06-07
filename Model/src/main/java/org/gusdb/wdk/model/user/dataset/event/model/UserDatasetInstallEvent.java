@@ -1,10 +1,11 @@
-package org.gusdb.wdk.model.user.dataset.event;
+package org.gusdb.wdk.model.user.dataset.event.model;
 
 import java.util.Collections;
 import java.util.Set;
 
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
+import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEvent;
 
 public class UserDatasetInstallEvent extends UserDatasetEvent
 {

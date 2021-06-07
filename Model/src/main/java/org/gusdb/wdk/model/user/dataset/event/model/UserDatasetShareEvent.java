@@ -1,10 +1,12 @@
-package org.gusdb.wdk.model.user.dataset.event;
+package org.gusdb.wdk.model.user.dataset.event.model;
 
 import java.util.Set;
 
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
+import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEvent;
 
-public class UserDatasetShareEvent extends UserDatasetEvent {
+public class UserDatasetShareEvent extends UserDatasetEvent
+{
 
   public enum ShareAction {
     GRANT,
@@ -15,7 +17,7 @@ public class UserDatasetShareEvent extends UserDatasetEvent {
   private final Long        recipientId;
   private final ShareAction action;
 
-  UserDatasetShareEvent(
+  public UserDatasetShareEvent(
     Long eventId,
     Set < String > projectsFilter,
     Long userDatasetId,
