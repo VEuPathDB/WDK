@@ -5,8 +5,7 @@ import java.util.Set;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEvent;
 
-public class UserDatasetShareEvent extends UserDatasetEvent
-{
+public class UserDatasetShareEvent extends UserDatasetEvent {
 
   public enum ShareAction {
     GRANT,
