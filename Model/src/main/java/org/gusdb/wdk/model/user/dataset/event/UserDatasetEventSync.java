@@ -4,7 +4,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.dataset.*;
@@ -22,7 +23,7 @@ import org.gusdb.wdk.model.user.dataset.event.repo.UserDatasetEventRepo;
  */
 public class UserDatasetEventSync extends UserDatasetEventProcessor
 {
-  private static final Logger logger = Logger.getLogger(UserDatasetEventSync.class);
+  private static final Logger LOG = LogManager.getLogger(UserDatasetEventSync.class);
 
   private static final String LogStrSkipEvent = "%s event %d refers to typeHandler %s which is not"
     + " present in the wdk configuration. Skipping the install but declaring the event as handled.";
@@ -56,6 +57,7 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
       // be installed on the system as type handlers should only be added and
       // removed at release time when the UD database is emptied.
       for (final var event : eventList) {
+        LOG.info("Processing event {}", event.getEventId());
 
         final var eventRow = new EventRow(
           event.getEventId(),
@@ -64,13 +66,17 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
         );
 
         // see handler method for event skipping criteria.
-        if (handler.shouldHandleEvent(eventRow))
+        if (handler.shouldHandleEvent(eventRow)) {
+          LOG.debug("Skipping event: previous failure or already handled");
           continue;
+        }
 
         // Exceptions thrown here are considered a catastrophic failure and all
         // processing should stop.
-        if (!handler.acquireEventLock(eventRow))
+        if (!handler.acquireEventLock(eventRow)) {
+          LOG.debug("Skipping event: claimed by another process");
           continue;
+        }
 
         // Exceptions thrown in this try block are considered "recoverable" and
         // should not stop event processing.  Instead, the individual events
@@ -80,6 +86,7 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
           // If the event does not apply to this project, complete the event
           // handling and skip to the next event.
           if (!event.getProjectsFilter().contains(getProjectId())) {
+            LOG.debug("No-op event: Event is not for project {}", getProjectId());
             handler.handleNoOpEvent(eventRow);
             count++;
             continue;
@@ -92,7 +99,7 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
             if (UnsupportedTypeHandler.NAME.equals(typeHandler.getUserDatasetType().getName())) {
 
               // Write out a warning that we are skipping this install event.
-              logger.warn(skipLog("Install", event));
+              LOG.warn(skipLog("Install", event));
 
               // Mark the event as "completed"
               handler.handleNoOpEvent(eventRow);
@@ -108,7 +115,7 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
             if (UnsupportedTypeHandler.NAME.equals(typeHandler.getUserDatasetType().getName())) {
 
               // Write out a warning that we are skipping this uninstall event.
-              logger.warn(skipLog("Uninstall", event));
+              LOG.warn(skipLog("Uninstall", event));
 
               // Mark the event as "completed"
               handler.handleNoOpEvent(eventRow);
@@ -122,14 +129,14 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
 
           count++;
         } catch (Exception e) {
-          logger.warn("Event processing failed for event " + event.getEventId(), e);
+          LOG.warn("Event processing failed for event " + event.getEventId(), e);
 
           // If this call fails, it is a catastrophic failure, the outer try
           // block will catch it and all processing will stop.
           handler.markEventAsFailed(eventRow);
         }
       }
-      logger.info("Handled " + count + " new events");
+      LOG.info("Handled " + count + " new events");
     } catch (Exception e) {
       throw new WdkModelException(e);
     }
