@@ -105,6 +105,7 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
               handler.handleNoOpEvent(eventRow);
 
             } else {
+              LOG.debug("Handling install");
               handler.handleInstallEvent((UserDatasetInstallEvent) event, typeHandler);
             }
 
@@ -121,9 +122,11 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
               handler.handleNoOpEvent(eventRow);
 
             } else {
+              LOG.debug("Handling uninstall");
               handler.handleUninstallEvent((UserDatasetUninstallEvent) event, typeHandler);
             }
           } else if (event instanceof UserDatasetShareEvent) {
+            LOG.debug("Handling share");
             handler.handleShareEvent((UserDatasetShareEvent) event);
           }
 
