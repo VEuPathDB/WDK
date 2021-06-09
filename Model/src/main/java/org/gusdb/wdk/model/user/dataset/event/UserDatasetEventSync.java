@@ -67,7 +67,7 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
 
         // see handler method for event skipping criteria.
         if (!handler.shouldHandleEvent(eventRow)) {
-          LOG.info("Skipping event: previous failure or already handled");
+          LOG.debug("Skipping event: previous failure or already handled");
           continue;
         }
 
