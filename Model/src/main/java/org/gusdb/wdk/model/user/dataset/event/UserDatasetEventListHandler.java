@@ -45,11 +45,13 @@ public class UserDatasetEventListHandler extends BaseCLI
     switch ((String) getOptionValue(ARG_RUN_MODE)) {
       case "cleanup":
         new UserDatasetEventCleanup(projectID).cleanupFailedInstalls();
+        break;
       case "sync":
         new UserDatasetEventSync(projectID)
           .handleEventList(UserDatasetEventSync.parseEventsArray(EventParser.parseList(
             new File((String) getOptionValue(ARG_EVENTS_FILE))
           )));
+        break;
       default:
         throw new Exception("Unknown run mode, must be one of \"sync\" or \"cleanup\"");
     }
@@ -64,5 +66,6 @@ public class UserDatasetEventListHandler extends BaseCLI
       null,
       "File containing an ordered JSON Array of user dataset events"
     );
+    addSingleValueOption(ARG_RUN_MODE, true, null, "One of 'sync' or 'cleanup'.");
   }
 }
