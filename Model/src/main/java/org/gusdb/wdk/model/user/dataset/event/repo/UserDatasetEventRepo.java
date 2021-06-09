@@ -84,7 +84,7 @@ public class UserDatasetEventRepo
 
     var ret = new SQLRunner(ds, sql).executeQuery(rs -> rs.next() ? rs.getLong(1) : 0);
 
-    LOG.debug("Last completed event ID = {}", ret);
+    LOG.info("Last completed event ID = {}", ret);
 
     return ret;
   }
@@ -123,7 +123,7 @@ public class UserDatasetEventRepo
       return out;
     });
 
-    LOG.debug("Fetched {} recovered events", ret.size());
+    LOG.info("Fetched {} recovered events", ret.size());
 
     return ret;
   }
@@ -203,7 +203,7 @@ public class UserDatasetEventRepo
       return out;
     });
 
-    LOG.debug("Fetched {} ignorable dataset IDs", ret.size());
+    LOG.info("Fetched {} ignorable dataset IDs", ret.size());
 
     return ret;
   }

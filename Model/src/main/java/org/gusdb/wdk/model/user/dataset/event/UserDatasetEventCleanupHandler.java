@@ -11,6 +11,8 @@ import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEventStatus;
 
 public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
 {
+  private static final Logger LOG = LogManager.getLogger(UserDatasetEventCleanupHandler.class);
+
   public UserDatasetEventCleanupHandler(
     DataSource ds,
     Path tmpDir,
@@ -45,5 +47,13 @@ public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
   public void markEventAsFailed(EventRow row) {
     row.setStatus(UserDatasetEventStatus.CLEANUP_FAILED);
     getEventRepo().updateEventStatus(row);
+  }
+
+  @Override
+  protected void closeEventHandling(EventRow row) {
+    row.setStatus(UserDatasetEventStatus.CLEANUP_COMPLETE);
+    getEventRepo().updateEventStatus(row);
+
+    LOG.info("Done handling event: " + row.getEventID());
   }
 }

@@ -189,10 +189,5 @@ public abstract class UserDatasetEventHandler
     );
   }
 
-  protected void closeEventHandling(EventRow row) {
-    row.setStatus(UserDatasetEventStatus.COMPLETE);
-    eventRepo.updateEventStatus(row);
-
-    LOG.info("Done handling event: " + row.getEventID());
-  }
+  protected abstract void closeEventHandling(EventRow row);
 }

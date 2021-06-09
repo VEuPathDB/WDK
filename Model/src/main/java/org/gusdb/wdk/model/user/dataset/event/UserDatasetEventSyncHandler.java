@@ -263,4 +263,11 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
     return out.get();
   }
 
+  @Override
+  protected void closeEventHandling(EventRow row) {
+    row.setStatus(UserDatasetEventStatus.COMPLETE);
+    getEventRepo().updateEventStatus(row);
+
+    LOG.info("Done handling event: " + row.getEventID());
+  }
 }
