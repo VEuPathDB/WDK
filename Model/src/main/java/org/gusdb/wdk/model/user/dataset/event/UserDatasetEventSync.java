@@ -155,8 +155,10 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
     final var db = new UserDatasetEventRepo(getUserDatasetSchemaName(), appDbDataSource);
     final var opt = db.getEarliestCleanupCompleteEvent();
 
-    if (opt.isPresent())
-      return opt.get();
+    if (opt.isPresent()) {
+      // Subtract 1 to include the cleanup_complete event in the handling.
+      return opt.get() - 1;
+    }
 
     final var out = db.getLastHandledEvent();
 
