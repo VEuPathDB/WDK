@@ -128,6 +128,8 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
           } else if (event instanceof UserDatasetShareEvent) {
             LOG.debug("Handling share");
             handler.handleShareEvent((UserDatasetShareEvent) event);
+          } else {
+            LOG.debug("Unknown event type");
           }
 
           count++;
@@ -171,6 +173,8 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
    * @return - a list of UserDatasetEvents corresponding to
    */
   public static List<UserDatasetEvent> parseEventsArray(List<UDEvent> rawEvents) {
+    LOG.debug("Parsing events array");
+
     return rawEvents.stream()
       .map(UserDatasetEventSync::parseEventObject)
       .collect(Collectors.toList());
