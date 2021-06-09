@@ -11,7 +11,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.gusdb.wdk.model.user.dataset.event.model.EventRow;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEvent;
-import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEventStatus;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetUninstallEvent;
 import org.gusdb.wdk.model.user.dataset.event.repo.InstalledUserDatasetRepo;
 import org.gusdb.wdk.model.user.dataset.event.repo.UserDatasetEventRepo;

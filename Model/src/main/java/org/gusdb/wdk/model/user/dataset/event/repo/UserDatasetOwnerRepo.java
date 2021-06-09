@@ -7,6 +7,22 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 
 /**
  * Repo for DB operations on the "userdatasetowner" table.
+ * <p>
+ * UserDatasetOwner table:
+ * <table>
+ *   <tr>
+ *     <th>Column</th>
+ *     <th>Type</th>
+ *   </tr>
+ *   <tr>
+ *     <td><code>USER_ID</code></td>
+ *     <td><code>long</code></td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>USER_DATASET_ID</code></td>
+ *     <td><code>long</code></td>
+ *   </tr>
+ * </table>
  */
 public class UserDatasetOwnerRepo
 {

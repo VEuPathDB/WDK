@@ -5,6 +5,29 @@ import javax.sql.DataSource;
 
 import org.gusdb.fgputil.db.runner.SQLRunner;
 
+/**
+ * Repository for DB actions relating to user dataset shares.
+ * <p>
+ * UserDatasetSharedWith table:
+ * <table>
+ *   <tr>
+ *     <th>Column</th>
+ *     <th>Type</th>
+ *   </tr>
+ *   <tr>
+ *     <td><code>OWNER_USER_ID</code></td>
+ *     <td><code>long</code></td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>RECIPIENT_USER_ID</code></td>
+ *     <td><code>long</code></td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>USER_DATASET_ID</code></td>
+ *     <td><code>long</code></td>
+ *   </tr>
+ * </table>
+ */
 public class UserDatasetShareRepo
 {
   private static final String TABLE_USER_DATASET_SHARE = "userdatasetsharedwith";

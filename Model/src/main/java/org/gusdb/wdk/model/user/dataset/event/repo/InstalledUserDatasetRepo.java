@@ -2,16 +2,39 @@ package org.gusdb.wdk.model.user.dataset.event.repo;
 
 import javax.sql.DataSource;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 
+/**
+ * Repository for DB actions relating to installed user datasets.
+ * <p>
+ * InstalledUserDataset table:
+ * <table>
+ *   <tr>
+ *     <th>Column</th>
+ *     <th>Type</th>
+ *   </tr>
+ *   <tr>
+ *     <td><code>USER_DATASET_ID</code></td>
+ *     <td><code>long</code></td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>NAME</code></td>
+ *     <td><code>String</code></td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>IS_INVALID</code></td>
+ *     <td><code>boolean</code></td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>INVALID_REASON</code></td>
+ *     <td><code>String</code></td>
+ *   </tr>
+ * </table>
+ */
 public class InstalledUserDatasetRepo
 {
   private static final String TABLE_INSTALLED_USER_DATASET = "installeduserdataset";
-
-  private static final Logger LOG = LogManager.getLogger(InstalledUserDatasetRepo.class);
 
   private final String     schema;
   private final DataSource ds;

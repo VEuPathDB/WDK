@@ -128,6 +128,14 @@ public class UserDatasetEventRepo
     return ret;
   }
 
+  /**
+   * Fetches the event ID for the first sequential event in the
+   * {@link UserDatasetEventStatus#CLEANUP_COMPLETE} status.
+   *
+   * @return An option containing the first event ID for an event that is
+   * {@code CLEANUP_COMPLETE}.  If no records were found in this status, an
+   * empty option is returned.
+   */
   public Optional<Long> getEarliestCleanupCompleteEvent() {
     var sql = "SELECT MIN(event_id) FROM " + schema + TABLE_USER_DATASET_EVENT
       + " WHERE status = '" + UserDatasetEventStatus.CLEANUP_COMPLETE + "'";
