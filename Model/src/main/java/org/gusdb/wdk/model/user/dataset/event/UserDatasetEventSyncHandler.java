@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -26,6 +27,7 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
   // be fast and cheap.
   private final Set<Long> failedDatasets;
   private final Set<Long> recoveredEvents;
+  private final Set<Long> externallyClaimedDatasets;
 
   private final long previousLastHandled;
 
@@ -45,23 +47,13 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
     failedDatasets      = getEventRepo().getIgnoredDatasetIDs();
     recoveredEvents     = getEventRepo().getRecoveredEventIDs();
     previousLastHandled = getEventRepo().getLastHandledEvent();
+
+    externallyClaimedDatasets = new HashSet<>();
   }
 
   @Override
-  public boolean acquireEventLock(EventRow row) {
-    var out = getEventRepo().lockSyncEvent(row);
-
-    // If someone else has claimed this event, add the dataset ID to the list of
-    // ignored datasets to prevent this process from handling any further events
-    // for that dataset.
-    //
-    // This is done to prevent race conditions such as an install event starting
-    // in process 1 and a share event starting in process 2.  The share event in
-    // process 2 will fail if process 1 does not complete the install first.
-    if (!out)
-      failedDatasets.add(row.getUserDatasetID());
-
-    return out;
+  public boolean attemptEventLock(EventRow row) {
+    return getEventRepo().lockSyncEvent(row);
   }
 
   public void handleShareEvent(UserDatasetShareEvent event) {

@@ -1,9 +1,12 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
 import org.gusdb.wdk.model.user.dataset.event.model.EventRow;
@@ -59,8 +62,7 @@ import org.gusdb.wdk.model.user.dataset.event.repo.UserDatasetShareRepo;
 //       installed UDs, since there is no event to convey that.
 public abstract class UserDatasetEventHandler
 {
-  private static final Logger LOG = Logger.getLogger(UserDatasetEventHandler.class);
-
+  private static final Logger LOG = LogManager.getLogger(UserDatasetEventHandler.class);
 
   private final DataSource dataSource;
 
@@ -68,6 +70,8 @@ public abstract class UserDatasetEventHandler
   private final InstalledUserDatasetRepo installRepo;
   private final UserDatasetShareRepo     shareRepo;
   private final UserDatasetOwnerRepo     ownerRepo;
+
+  private final Set<Long> externallyClaimedDatasets;
 
   private final Path   tmpDir;
   private final String projectId;
@@ -87,6 +91,8 @@ public abstract class UserDatasetEventHandler
     this.installRepo = new InstalledUserDatasetRepo(dsSchema, ds);
     this.shareRepo   = new UserDatasetShareRepo(dsSchema, ds);
     this.ownerRepo   = new UserDatasetOwnerRepo(dsSchema, ds);
+
+    this.externallyClaimedDatasets = new HashSet<>();
   }
 
   /**
@@ -112,7 +118,7 @@ public abstract class UserDatasetEventHandler
    * process.  {@code false} if another process has already claimed this event
    * row.
    */
-  public abstract boolean acquireEventLock(EventRow row);
+  public abstract boolean attemptEventLock(EventRow row);
 
   /**
    * Marks an event as failed in the DB.  All future events for this UD should
@@ -130,6 +136,30 @@ public abstract class UserDatasetEventHandler
    */
   public void handleNoOpEvent(EventRow row) {
     closeEventHandling(row);
+  }
+
+  public boolean acquireEventLock(EventRow row) {
+    // Dataset has been marked as claimed by another process.  Cannot acquire a
+    // lock without potential race conditions so don't bother trying.
+    // (See comment below)
+    if (externallyClaimedDatasets.contains(row.getUserDatasetID()))
+      return false;
+
+    LOG.info("Attempting to acquire a lock on UD {}", row.getUserDatasetID());
+
+    var out = attemptEventLock(row);
+
+    // If someone else has claimed this event, add the dataset ID to the list of
+    // ignored datasets to prevent this process from handling any further events
+    // for that dataset.
+    //
+    // This is done to prevent race conditions such as an install event starting
+    // in process 1 and a share event starting in process 2.  The share event in
+    // process 2 will fail if process 1 does not complete the install first.
+    if (!out)
+      externallyClaimedDatasets.add(row.getUserDatasetID());
+
+    return out;
   }
 
   public void handleUninstallEvent(

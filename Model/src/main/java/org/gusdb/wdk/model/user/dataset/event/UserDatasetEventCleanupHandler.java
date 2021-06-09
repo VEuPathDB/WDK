@@ -15,8 +15,6 @@ public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
 {
   private static final Logger LOG = LogManager.getLogger(UserDatasetEventCleanupHandler.class);
 
-  private final Set<Long> ignoredDatasets;
-
   public UserDatasetEventCleanupHandler(
     DataSource ds,
     Path tmpDir,
@@ -24,8 +22,6 @@ public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
     String projectId
   ) {
     super(ds, tmpDir, dsSchema, projectId);
-
-    ignoredDatasets = new HashSet<>();
   }
 
   /**
@@ -37,24 +33,12 @@ public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
    */
   @Override
   public boolean shouldHandleEvent(EventRow row) {
-    return !ignoredDatasets.contains(row.getUserDatasetID());
+    return true;
   }
 
   @Override
-  public boolean acquireEventLock(EventRow row) {
-    var out = getEventRepo().lockCleanupEvent(row);
-
-    // If someone else has claimed this event, add the dataset ID to the list of
-    // ignored datasets to prevent this process from handling any further events
-    // for that dataset.
-    //
-    // This is done to prevent race conditions such as an install event starting
-    // in process 1 and a share event starting in process 2.  The share event in
-    // process 2 will fail if process 1 does not complete the install first.
-    if (!out)
-      ignoredDatasets.add(row.getUserDatasetID());
-
-    return out;
+  public boolean attemptEventLock(EventRow row) {
+    return getEventRepo().lockCleanupEvent(row);
   }
 
   public List<EventRow> getCleanableEvents() {
