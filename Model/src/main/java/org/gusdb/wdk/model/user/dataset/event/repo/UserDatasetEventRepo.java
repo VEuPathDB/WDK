@@ -175,7 +175,7 @@ public class UserDatasetEventRepo
         return out;
       });
 
-    LOG.debug("Fetched {} cleanup ready events.", ret.size());
+    LOG.info("Fetched {} cleanup ready events from the DB.", ret.size());
 
     return ret;
   }

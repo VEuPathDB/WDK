@@ -24,8 +24,6 @@ public class UserDatasetEventCleanup extends UserDatasetEventProcessor
       var handler = initHandler(appDb.getDataSource());
       var events  = handler.getCleanableEvents();
 
-      LOG.info("Found {} cleanable events.", events.size());
-
       for (var event : events) {
         LOG.info("Processing event: " + event.getEventID());
 
