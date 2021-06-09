@@ -4,11 +4,15 @@ import java.nio.file.Path;
 import java.util.List;
 import javax.sql.DataSource;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.wdk.model.user.dataset.event.model.EventRow;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEventStatus;
 
 public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
 {
+  private static final Logger LOG = LogManager.getLogger(UserDatasetEventCleanupHandler.class);
+
   public UserDatasetEventCleanupHandler(
     DataSource ds,
     Path tmpDir,
@@ -36,7 +40,9 @@ public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
   }
 
   public List<EventRow> getCleanableEvents() {
-    return getEventRepo().getCleanupReadyEvents();
+    var out = getEventRepo().getCleanupReadyEvents();
+    LOG.info("Found {} cleanable events.", out.size());
+    return out;
   }
 
   @Override
