@@ -12,11 +12,11 @@ import org.gusdb.wdk.model.user.dataset.event.raw.EventParser;
  *
  * @author crisl-adm
  */
-public class UserDatasetEventListHandler extends BaseCLI
-{
-  protected static final String ARG_PROJECT     = "project";
+public class UserDatasetEventListHandler extends BaseCLI {
+
+  protected static final String ARG_PROJECT = "project";
   protected static final String ARG_EVENTS_FILE = "eventsFile";
-  protected static final String ARG_RUN_MODE    = "mode";
+  protected static final String ARG_RUN_MODE = "mode";
 
   private static final Logger logger = Logger.getLogger(UserDatasetEventListHandler.class);
 
@@ -40,14 +40,14 @@ public class UserDatasetEventListHandler extends BaseCLI
 
   @Override
   protected void execute() throws Exception {
-    var projectID = (String) getOptionValue(ARG_PROJECT);
+    var projectId = (String) getOptionValue(ARG_PROJECT);
 
     switch ((String) getOptionValue(ARG_RUN_MODE)) {
       case "cleanup":
-        new UserDatasetEventCleanup(projectID).cleanupFailedInstalls();
+        new UserDatasetEventCleanup(projectId).cleanupFailedInstalls();
         break;
       case "sync":
-        new UserDatasetEventSync(projectID)
+        new UserDatasetEventSync(projectId)
           .handleEventList(UserDatasetEventSync.parseEventsArray(EventParser.parseList(
             new File((String) getOptionValue(ARG_EVENTS_FILE))
           )));
@@ -60,12 +60,7 @@ public class UserDatasetEventListHandler extends BaseCLI
   @Override
   protected void declareOptions() {
     addSingleValueOption(ARG_PROJECT, true, null, "The project of the app db");
-    addSingleValueOption(
-      ARG_EVENTS_FILE,
-      true,
-      null,
-      "File containing an ordered JSON Array of user dataset events"
-    );
+    addSingleValueOption(ARG_EVENTS_FILE, true, null, "File containing an ordered JSON Array of user dataset events");
     addSingleValueOption(ARG_RUN_MODE, true, null, "One of 'sync' or 'cleanup'.");
   }
 }

@@ -117,7 +117,7 @@ public abstract class UserDatasetEventHandler
    * process.  {@code false} if another process has already claimed this event
    * row.
    */
-  public abstract boolean attemptEventLock(EventRow row);
+  protected abstract boolean attemptEventLock(EventRow row);
 
   /**
    * Marks an event as failed in the DB.  All future events for this UD should

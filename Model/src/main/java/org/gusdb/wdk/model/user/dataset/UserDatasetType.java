@@ -7,8 +7,8 @@ package org.gusdb.wdk.model.user.dataset;
  */
 public class UserDatasetType {
 
-  private final String _name;
-  private final String _version;
+  private String _name;
+  private String _version;
 
   public UserDatasetType(String name, String version) {
     _name = name;
@@ -50,9 +50,11 @@ public class UserDatasetType {
     else if (!_name.equals(other._name))
       return false;
     if (_version == null) {
-      return other._version == null;
+      if (other._version != null)
+        return false;
     }
-    else
-      return _version.equals(other._version);
+    else if (!_version.equals(other._version))
+      return false;
+    return true;
   }
 }

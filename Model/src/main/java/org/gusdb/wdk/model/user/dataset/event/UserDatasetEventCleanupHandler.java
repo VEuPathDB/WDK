@@ -37,7 +37,7 @@ public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
   }
 
   @Override
-  public boolean attemptEventLock(EventRow row) {
+  protected boolean attemptEventLock(EventRow row) {
     return getEventRepo().lockCleanupEvent(row);
   }
 

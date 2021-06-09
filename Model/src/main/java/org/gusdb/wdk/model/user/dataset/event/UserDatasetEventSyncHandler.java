@@ -52,7 +52,7 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
   }
 
   @Override
-  public boolean attemptEventLock(EventRow row) {
+  protected boolean attemptEventLock(EventRow row) {
     return getEventRepo().lockSyncEvent(row);
   }
 
