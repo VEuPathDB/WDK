@@ -11,8 +11,6 @@ import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEventStatus;
 
 public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
 {
-  private static final Logger LOG = LogManager.getLogger(UserDatasetEventCleanupHandler.class);
-
   public UserDatasetEventCleanupHandler(
     DataSource ds,
     Path tmpDir,
@@ -40,9 +38,7 @@ public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
   }
 
   public List<EventRow> getCleanableEvents() {
-    var out = getEventRepo().getCleanupReadyEvents();
-    LOG.info("Found {} cleanable events.", out.size());
-    return out;
+    return getEventRepo().getCleanupReadyEvents();
   }
 
   @Override
