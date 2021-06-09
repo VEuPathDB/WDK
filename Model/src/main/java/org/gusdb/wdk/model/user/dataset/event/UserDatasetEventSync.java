@@ -67,14 +67,14 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
 
         // see handler method for event skipping criteria.
         if (!handler.shouldHandleEvent(eventRow)) {
-          LOG.info("Skipping event: previous failure or already handled");
+          LOG.debug("Skipping event: previous failure or already handled");
           continue;
         }
 
         // Exceptions thrown here are considered a catastrophic failure and all
         // processing should stop.
         if (!handler.acquireEventLock(eventRow)) {
-          LOG.info("Skipping event: claimed by another process");
+          LOG.debug("Skipping event: claimed by another process");
           continue;
         }
 
@@ -86,7 +86,7 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
           // If the event does not apply to this project, complete the event
           // handling and skip to the next event.
           if (!event.getProjectsFilter().contains(getProjectId())) {
-            LOG.info("No-op event: Event is not for project {}", getProjectId());
+            LOG.debug("No-op event: Event is not for project {}", getProjectId());
             handler.handleNoOpEvent(eventRow);
             count++;
             continue;
@@ -105,7 +105,7 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
               handler.handleNoOpEvent(eventRow);
 
             } else {
-              LOG.info("Handling install");
+              LOG.debug("Handling install");
               handler.handleInstallEvent((UserDatasetInstallEvent) event, typeHandler);
             }
 
@@ -122,14 +122,14 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
               handler.handleNoOpEvent(eventRow);
 
             } else {
-              LOG.info("Handling uninstall");
+              LOG.debug("Handling uninstall");
               handler.handleUninstallEvent((UserDatasetUninstallEvent) event, typeHandler);
             }
           } else if (event instanceof UserDatasetShareEvent) {
-            LOG.info("Handling share");
+            LOG.debug("Handling share");
             handler.handleShareEvent((UserDatasetShareEvent) event);
           } else {
-            LOG.info("Unknown event type");
+            LOG.debug("Unknown event type");
           }
 
           count++;

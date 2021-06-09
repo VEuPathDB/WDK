@@ -25,15 +25,15 @@ public class UserDatasetEventCleanup extends UserDatasetEventProcessor
       var events  = handler.getCleanableEvents();
 
       for (var event : events) {
-        LOG.debug("Processing event: " + event.getEventID());
+        LOG.info("Processing event: " + event.getEventID());
 
         if (!handler.shouldHandleEvent(event)) {
-          LOG.debug("Skipping event");
+          LOG.info("Skipping event");
           continue;
         }
 
         if (!handler.acquireEventLock(event)) {
-          LOG.debug("Event already claimed.");
+          LOG.info("Event already claimed.");
           continue;
         }
 
@@ -51,7 +51,7 @@ public class UserDatasetEventCleanup extends UserDatasetEventProcessor
             continue;
           }
 
-          LOG.debug("Attempting to run event cleanup.");
+          LOG.info("Attempting to run event cleanup.");
 
           handler.handleUninstallEvent(new UserDatasetUninstallEvent(
             event.getEventID(),
