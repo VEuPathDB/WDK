@@ -256,6 +256,7 @@ public abstract class UserDatasetEventHandler
     closeEventHandling(new EventRow(
         event.getEventId(),
         event.getUserDatasetId(),
+        event.getEventType(),
         event.getUserDatasetType()
       )
     );
