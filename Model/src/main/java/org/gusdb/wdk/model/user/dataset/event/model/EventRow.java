@@ -11,15 +11,22 @@ public class EventRow
 {
   private final long            eventID;
   private final long            userDatasetID;
-  private final UserDatasetType type;
+  private final UserDatasetType userDatasetType;
 
+  private UserDatasetEventType   eventType;
   private LocalDateTime          handledTime;
   private UserDatasetEventStatus status;
 
-  public EventRow(long eventID, long userDatasetID, UserDatasetType type) {
-    this.eventID       = eventID;
-    this.userDatasetID = userDatasetID;
-    this.type          = type;
+  public EventRow(
+    long eventID,
+    long userDatasetID,
+    UserDatasetEventType eventType,
+    UserDatasetType userDatasetType
+  ) {
+    this.eventID         = eventID;
+    this.userDatasetID   = userDatasetID;
+    this.eventType       = eventType;
+    this.userDatasetType = userDatasetType;
 
     this.handledTime = LocalDateTime.now();
     this.status      = UserDatasetEventStatus.PROCESSING;
@@ -30,13 +37,15 @@ public class EventRow
     long userDatasetID,
     LocalDateTime handledTime,
     UserDatasetEventStatus status,
-    UserDatasetType type
+    UserDatasetEventType eventType,
+    UserDatasetType userDatasetType
   ) {
-    this.eventID       = eventID;
-    this.userDatasetID = userDatasetID;
-    this.handledTime   = handledTime;
-    this.status        = status;
-    this.type          = type;
+    this.eventID         = eventID;
+    this.userDatasetID   = userDatasetID;
+    this.handledTime     = handledTime;
+    this.status          = status;
+    this.eventType       = eventType;
+    this.userDatasetType = userDatasetType;
   }
 
   public long getEventID() {
@@ -47,8 +56,12 @@ public class EventRow
     return userDatasetID;
   }
 
-  public UserDatasetType getType() {
-    return type;
+  public UserDatasetEventType getEventType() {
+    return eventType;
+  }
+
+  public UserDatasetType getUserDatasetType() {
+    return userDatasetType;
   }
 
   public LocalDateTime getHandledTime() {

@@ -22,7 +22,7 @@ public class UserDatasetInstallEvent extends UserDatasetEvent
     Long ownerUserId,
     Set < UserDatasetDependency > dependencies
   ) {
-    super(eventId, projectsFilter, userDatasetId, userDatasetType);
+    super(eventId, UserDatasetEventType.INSTALL, projectsFilter, userDatasetId, userDatasetType);
     this.dependencies = dependencies;
     this.ownerUserId  = ownerUserId;
   }

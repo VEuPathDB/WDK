@@ -25,7 +25,7 @@ public class UserDatasetShareEvent extends UserDatasetEvent {
     Long recipientId,
     ShareAction action
   ) {
-    super(eventId, projectsFilter, userDatasetId, userDatasetType);
+    super(eventId, UserDatasetEventType.SHARE, projectsFilter, userDatasetId, userDatasetType);
     this.ownerId     = ownerId;
     this.recipientId = recipientId;
     this.action      = action;

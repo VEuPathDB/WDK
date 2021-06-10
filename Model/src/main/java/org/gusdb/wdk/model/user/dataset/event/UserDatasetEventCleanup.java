@@ -41,12 +41,12 @@ public class UserDatasetEventCleanup extends UserDatasetEventProcessor
         // processing.  Instead when an error occurs, the event will be marked
         // with an error status and the process will continue.
         try {
-          var typeHandler = getUserDatasetStore().getTypeHandler(event.getType());
+          var typeHandler = getUserDatasetStore().getTypeHandler(event.getUserDatasetType());
 
           // A type handler was removed after the event was "installed".  This
           // should never happen, but safety first.
           if (UnsupportedTypeHandler.NAME.equals(typeHandler.getUserDatasetType().getName())) {
-            var error = "Type handler for type " + event.getType().getName() + " has been removed.";
+            var error = "Type handler for type " + event.getUserDatasetType().getName() + " has been removed.";
             LOG.error(error + "  Marking cleanup as failed.");
             handler.failEvent(event, new Exception(error));
             continue;
@@ -58,7 +58,7 @@ public class UserDatasetEventCleanup extends UserDatasetEventProcessor
             event.getEventID(),
             null, // null as this value is not known, but is also not used for uninstalls.
             event.getUserDatasetID(),
-            event.getType()
+            event.getUserDatasetType()
           ), typeHandler);
         } catch (Exception ex) {
           LOG.warn("Exception occurred while attempting to process event cleanup.  Marking cleanup as failed.", ex);

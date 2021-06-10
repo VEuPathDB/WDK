@@ -12,6 +12,6 @@ public class UserDatasetUninstallEvent extends UserDatasetEvent {
     Long userDatasetId,
     UserDatasetType userDatasetType
   ) {
-    super(eventId, projectsFilter, userDatasetId, userDatasetType);
+    super(eventId, UserDatasetEventType.UNINSTALL, projectsFilter, userDatasetId, userDatasetType);
   }
 }

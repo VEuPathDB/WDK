@@ -62,6 +62,7 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
         final var eventRow = new EventRow(
           event.getEventId(),
           event.getUserDatasetId(),
+          event.getEventType(),
           event.getUserDatasetType()
         );
 
@@ -92,44 +93,51 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
             continue;
           }
 
-          if (event instanceof UserDatasetInstallEvent) {
-            final var typeHandler = getUserDatasetStore().getTypeHandler(event.getUserDatasetType());
+          switch (event.getEventType()) {
 
-            // If the user dataset type is unsupported:
-            if (UnsupportedTypeHandler.NAME.equals(typeHandler.getUserDatasetType().getName())) {
+            case INSTALL: {
+              final var typeHandler = getUserDatasetStore().getTypeHandler(event.getUserDatasetType());
 
-              // Write out a warning that we are skipping this install event.
-              LOG.warn(skipLog("Install", event));
+              // If the user dataset type is unsupported:
+              if (UnsupportedTypeHandler.NAME.equals(typeHandler.getUserDatasetType().getName())) {
 
-              // Mark the event as "completed"
-              handler.handleNoOpEvent(eventRow);
+                // Write out a warning that we are skipping this install event.
+                LOG.warn(skipLog("Install", event));
 
-            } else {
-              LOG.info("Handling install");
-              handler.handleInstallEvent((UserDatasetInstallEvent) event, typeHandler);
+                // Mark the event as "completed"
+                handler.handleNoOpEvent(eventRow);
+
+              } else {
+                LOG.info("Handling install");
+                handler.handleInstallEvent((UserDatasetInstallEvent) event, typeHandler);
+              }
             }
+            break;
 
-          } else if (event instanceof UserDatasetUninstallEvent) {
-            final var typeHandler = getUserDatasetStore().getTypeHandler(event.getUserDatasetType());
+            case UNINSTALL: {
+              final var typeHandler = getUserDatasetStore().getTypeHandler(event.getUserDatasetType());
 
-            // If the user dataset type is unsupported:
-            if (UnsupportedTypeHandler.NAME.equals(typeHandler.getUserDatasetType().getName())) {
+              // If the user dataset type is unsupported:
+              if (UnsupportedTypeHandler.NAME.equals(typeHandler.getUserDatasetType().getName())) {
 
-              // Write out a warning that we are skipping this uninstall event.
-              LOG.warn(skipLog("Uninstall", event));
+                // Write out a warning that we are skipping this uninstall event.
+                LOG.warn(skipLog("Uninstall", event));
 
-              // Mark the event as "completed"
-              handler.handleNoOpEvent(eventRow);
+                // Mark the event as "completed"
+                handler.handleNoOpEvent(eventRow);
 
-            } else {
-              LOG.info("Handling uninstall");
-              handler.handleUninstallEvent((UserDatasetUninstallEvent) event, typeHandler);
+              } else {
+                LOG.info("Handling uninstall");
+                handler.handleUninstallEvent((UserDatasetUninstallEvent) event, typeHandler);
+              }
             }
-          } else if (event instanceof UserDatasetShareEvent) {
-            LOG.info("Handling share");
-            handler.handleShareEvent((UserDatasetShareEvent) event);
-          } else {
-            LOG.warn("Unknown event type");
+            break;
+
+            case SHARE: {
+              LOG.info("Handling share");
+              handler.handleShareEvent((UserDatasetShareEvent) event);
+            }
+            break;
           }
 
           count++;

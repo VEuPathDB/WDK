@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEventStatus;
 import org.gusdb.wdk.model.user.dataset.event.model.EventRow;
+import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEventType;
 
 /**
  * Repository for DB actions related to user dataset events.
@@ -28,17 +29,12 @@ import org.gusdb.wdk.model.user.dataset.event.model.EventRow;
  *   <tr>
  *     <td><code>EVENT_ID</code></td>
  *     <td><code>long</code></td>
- *     <td><code>iRODS generated event ID.</code></td>
+ *     <td>iRODS generated event ID.</td>
  *   </tr>
  *   <tr>
- *     <td><code>USER_DATASET_ID</code></td>
- *     <td><code>long</code></td>
- *     <td>ID for the user dataset this event relates to.</td>
- *   </tr>
- *   <tr>
- *     <td><code>HANDLED_TIME</code></td>
- *     <td>{@link java.time.LocalDateTime}</td>
- *     <td>Timestamp for when the event was first handled.</td>
+ *     <td><code>EVENT_TYPE</code></td>
+ *     <td><code>{@link UserDatasetEventType}</code></td>
+ *     <td>Type of the event in iRODS</td>
  *   </tr>
  *   <tr>
  *     <td><code>STATUS</code></td>
@@ -46,14 +42,24 @@ import org.gusdb.wdk.model.user.dataset.event.model.EventRow;
  *     <td>Last updated status for the event.</td>
  *   </tr>
  *   <tr>
- *     <td><code>TYPE_NAME</code></td>
+ *     <td><code>USER_DATASET_ID</code></td>
+ *     <td><code>long</code></td>
+ *     <td>ID for the user dataset this event relates to.</td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>USER_DATASET_TYPE_NAME</code></td>
  *     <td>{@link String}</td>
  *     <td>Name of the user dataset type.</td>
  *   </tr>
  *   <tr>
- *     <td><code>TYPE_VERSION</code></td>
+ *     <td><code>USER_DATASET_TYPE_VERSION</code></td>
  *     <td>{@link String}</td>
  *     <td>Version of the user dataset type.</td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>HANDLED_TIME</code></td>
+ *     <td>{@link java.time.LocalDateTime}</td>
+ *     <td>Timestamp for when the event was first handled.</td>
  *   </tr>
  * </table>
  */
@@ -159,10 +165,11 @@ public class UserDatasetEventRepo
   public List<EventRow> getCleanupReadyEvents() {
     var sql = "SELECT\n"
       + "  event_id\n"
+      + ", event_type\n"
       + ", user_dataset_id\n"
+      + ", user_dataset_type_name\n"
+      + ", user_dataset_type_version\n"
       + ", handled_time\n"
-      + ", type_name\n"
-      + ", type_version\n"
       + "FROM " + schema + TABLE_USER_DATASET_EVENT + "\n"
       + "WHERE status = '" + UserDatasetEventStatus.CLEANUP_READY + "'";
 
@@ -173,9 +180,10 @@ public class UserDatasetEventRepo
         while (rs.next()) {
           out.add(new EventRow(
             rs.getLong(1),
-            rs.getLong(2),
-            rs.getObject(3, LocalDateTime.class),
+            rs.getLong(3),
+            rs.getObject(6, LocalDateTime.class),
             UserDatasetEventStatus.CLEANUP_READY,
+            UserDatasetEventType.fromString(rs.getString(2)),
             new UserDatasetType(rs.getString(4), rs.getString(5))
           ));
         }
@@ -371,22 +379,24 @@ public class UserDatasetEventRepo
     var sql = "INSERT INTO\n"
       + "  " + schema + TABLE_USER_DATASET_EVENT + "(\n"
       + "    event_id\n"
-      + "  , user_dataset_id\n"
-      + "  , handled_time\n"
+      + "  , event_type\n"
       + "  , status\n"
-      + "  , type_name\n"
-      + "  , type_version\n"
+      + "  , user_dataset_id\n"
+      + "  , user_dataset_type_name\n"
+      + "  , user_dataset_type_version\n"
+      + "  , handled_time\n"
       + "  )"
       + "VALUES\n"
-      + "  (?, ?, ?, ?, ?, ?)";
+      + "  (?, ?, ?, ?, ?, ?, ?)";
 
     try (var stmt = con.prepareStatement(sql)) {
       stmt.setLong(1, row.getEventID());
-      stmt.setLong(2, row.getUserDatasetID());
-      stmt.setObject(3, row.getHandledTime(), Types.TIMESTAMP);
-      stmt.setString(4, row.getStatus().internalValue());
-      stmt.setString(5, row.getType().getName());
-      stmt.setString(6, row.getType().getVersion());
+      stmt.setString(2, row.getEventType().internalValue());
+      stmt.setString(3, row.getStatus().internalValue());
+      stmt.setLong(4, row.getUserDatasetID());
+      stmt.setString(5, row.getUserDatasetType().getName());
+      stmt.setString(6, row.getUserDatasetType().getVersion());
+      stmt.setObject(7, row.getHandledTime(), Types.TIMESTAMP);
 
       stmt.executeUpdate();
     }

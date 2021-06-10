@@ -13,16 +13,29 @@ public class EventError
   }
 
   public void toString(StringBuilder out) {
-    out.append("<hr>\n<b>Event ID:</b>&nbsp;");
-    out.append(event.getEventID());
-    out.append("\n<br>\n<b>User Dataset ID:</b>&nbsp;");
-    out.append(event.getUserDatasetID());
-    out.append("\n<br>\n<b>Type Name:</b>&nbsp;");
-    out.append(event.getType().getName());
-    out.append("\n<br>\n<b>Type Version:</b>&nbsp;");
-    out.append(event.getType().getVersion());
-    out.append("\n<br>\n<b>Error:</b>\n<pre>\n");
-    out.append(ExceptionUtils.getStackTrace(this.exception));
-    out.append("\n</pre>");
+    // Event ID
+    out.append("<hr><b>Event ID:</b>&nbsp;")
+      .append(event.getEventID());
+
+    // Event Type
+    out.append("<br><b>Event Type:</b>&nbsp;")
+      .append(event.getEventType().internalValue());
+
+    // User Dataset ID
+    out.append("<br><b>User Dataset ID:</b>&nbsp;")
+      .append(event.getUserDatasetID());
+
+    // User Dataset Type Name
+    out.append("<br><b>Type Name:</b>&nbsp;")
+      .append(event.getUserDatasetType().getName());
+
+    // User Dataset Type Version
+    out.append("<br><b>Type Version:</b>&nbsp;")
+      .append(event.getUserDatasetType().getVersion());
+
+    // Error Stacktrace
+    out.append("<br><b>Error:</b><pre>")
+      .append(ExceptionUtils.getStackTrace(this.exception))
+      .append("</pre>");
   }
 }
