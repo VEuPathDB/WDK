@@ -17,6 +17,10 @@ public class EventError
     out.append(event.getEventID());
     out.append("\n<br>\n<b>User Dataset ID:</b>&nbsp;");
     out.append(event.getUserDatasetID());
+    out.append("\n<br>\n<b>Type Name:</b>&nbsp;");
+    out.append(event.getType().getName());
+    out.append("\n<br>\n<b>Type Version:</b>&nbsp;");
+    out.append(event.getType().getVersion());
     out.append("\n<br>\n<b>Error:</b>\n<pre>\n");
     out.append(ExceptionUtils.getStackTrace(this.exception));
     out.append("\n</pre>");

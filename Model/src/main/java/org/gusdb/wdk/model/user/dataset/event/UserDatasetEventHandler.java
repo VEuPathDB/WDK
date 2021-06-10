@@ -263,7 +263,13 @@ public abstract class UserDatasetEventHandler
 
   private String buildErrorEmailBody() {
     var body = new StringBuilder();
-    body.append("<body><h1>Event processing errors</h1>");
+    body.append("<body><h1>Event processing errors for ")
+      .append(projectId)
+      .append("</h1>");
+
+    body.append("<p><b>URL:</b>")
+      .append(modelConfig.getWebServiceUrl())
+      .append("</p>");
 
     for (var err : this.errors) {
       err.toString(body);
