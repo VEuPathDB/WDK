@@ -46,8 +46,9 @@ public class UserDatasetEventCleanup extends UserDatasetEventProcessor
           // A type handler was removed after the event was "installed".  This
           // should never happen, but safety first.
           if (UnsupportedTypeHandler.NAME.equals(typeHandler.getUserDatasetType().getName())) {
-            LOG.error("Type handler for type {} has been removed.  Marking cleanup as failed.", event.getType().getName());
-            handler.markEventAsFailed(event);
+            var error = "Type handler for type " + event.getType().getName() + " has been removed.";
+            LOG.error(error + "  Marking cleanup as failed.");
+            handler.failEvent(event, new Exception(error));
             continue;
           }
 
@@ -61,9 +62,11 @@ public class UserDatasetEventCleanup extends UserDatasetEventProcessor
           ), typeHandler);
         } catch (Exception ex) {
           LOG.warn("Exception occurred while attempting to process event cleanup.  Marking cleanup as failed.", ex);
-          handler.markEventAsFailed(event);
+          handler.failEvent(event, ex);
         }
       }
+
+      handler.sendErrorNotifications();
     } catch (Exception ex) {
       LOG.error("Fatal error occurred, halting event processing.");
       throw new WdkModelException(ex);
@@ -73,9 +76,9 @@ public class UserDatasetEventCleanup extends UserDatasetEventProcessor
   protected UserDatasetEventCleanupHandler initHandler(DataSource appDbDs) {
     return new UserDatasetEventCleanupHandler(
       appDbDs,
-      getModelConfig().getWdkTempDir(),
       getUserDatasetSchemaName(),
-      getProjectId()
+      getProjectId(),
+      getModelConfig()
     );
   }
 }

@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
 import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -12,6 +11,7 @@ import javax.sql.DataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
@@ -27,7 +27,6 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
   // be fast and cheap.
   private final Set<Long> failedDatasets;
   private final Set<Long> recoveredEvents;
-  private final Set<Long> externallyClaimedDatasets;
 
   private final long previousLastHandled;
 
@@ -36,19 +35,17 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
   public UserDatasetEventSyncHandler(
     UserDatasetSession dsSession,
     DataSource ds,
-    Path tmpDir,
     String dsSchema,
-    String projectId
+    String projectId,
+    ModelConfig modelConfig
   ) {
-    super(ds, tmpDir, dsSchema, projectId);
+    super(ds, dsSchema, projectId, modelConfig);
 
     this.dsSession  = dsSession;
 
     failedDatasets      = getEventRepo().getIgnoredDatasetIDs();
     recoveredEvents     = getEventRepo().getRecoveredEventIDs();
     previousLastHandled = getEventRepo().getLastHandledEvent();
-
-    externallyClaimedDatasets = new HashSet<>();
   }
 
   @Override
@@ -109,7 +106,7 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
    * @param row Row representing the event to mark as failed.
    */
   @Override
-  public void markEventAsFailed(EventRow row) {
+  protected void _markEventAsFailed(EventRow row) {
     row.setStatus(UserDatasetEventStatus.FAILED);
 
     // Update the event status in the DB

@@ -138,10 +138,12 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
 
           // If this call fails, it is a catastrophic failure, the outer try
           // block will catch it and all processing will stop.
-          handler.markEventAsFailed(eventRow);
+          handler.failEvent(eventRow, e);
         }
       }
       LOG.info("Handled " + count + " new events");
+
+      handler.sendErrorNotifications();
     } catch (Exception e) {
       throw new WdkModelException(e);
     }
@@ -189,9 +191,9 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
     return new UserDatasetEventSyncHandler(
       udSession,
       appDbDs,
-      getModelConfig().getWdkTempDir(),
       getUserDatasetSchemaName(),
-      getProjectId()
+      getProjectId(),
+      getModelConfig()
     );
   }
 

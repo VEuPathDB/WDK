@@ -1,14 +1,19 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
+import org.gusdb.wdk.model.user.dataset.event.model.EventError;
 import org.gusdb.wdk.model.user.dataset.event.model.EventRow;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEvent;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetUninstallEvent;
@@ -70,21 +75,24 @@ public abstract class UserDatasetEventHandler
   private final UserDatasetShareRepo     shareRepo;
   private final UserDatasetOwnerRepo     ownerRepo;
 
-  private final Set<Long> externallyClaimedDatasets;
+  private final Set<Long>        externallyClaimedDatasets;
+  private final List<EventError> errors;
 
-  private final Path   tmpDir;
-  private final String projectId;
+  private final Path        tmpDir;
+  private final String      projectId;
+  private final ModelConfig modelConfig;
 
 
   public UserDatasetEventHandler(
     final DataSource ds,
-    final Path tmpDir,
     final String dsSchema,
-    final String projectId
+    final String projectId,
+    final ModelConfig model
   ) {
-    this.dataSource = ds;
-    this.tmpDir     = tmpDir;
-    this.projectId  = projectId;
+    this.dataSource  = ds;
+    this.tmpDir      = model.getWdkTempDir();
+    this.projectId   = projectId;
+    this.modelConfig = model;
 
     this.eventRepo   = new UserDatasetEventRepo(dsSchema, ds);
     this.installRepo = new InstalledUserDatasetRepo(dsSchema, ds);
@@ -92,6 +100,8 @@ public abstract class UserDatasetEventHandler
     this.ownerRepo   = new UserDatasetOwnerRepo(dsSchema, ds);
 
     this.externallyClaimedDatasets = new HashSet<>();
+
+    this.errors = new ArrayList<>();
   }
 
   /**
@@ -125,7 +135,18 @@ public abstract class UserDatasetEventHandler
    *
    * @param row Row representing the event to mark as failed.
    */
-  public abstract void markEventAsFailed(EventRow row);
+  protected abstract void _markEventAsFailed(EventRow row);
+
+  /**
+   * Marks an event as failed in the DB and records it for error reporting.
+   *
+   * @param row   Row representing the event to mark as failed.
+   * @param cause Exception thrown that caused this event processing failure.
+   */
+  public void failEvent(EventRow row, Exception cause) {
+    this.errors.add(new EventError(row, cause));
+    this._markEventAsFailed(row);
+  }
 
   /**
    * Method to handle an event that is either not relevant to this WDK project
@@ -135,6 +156,26 @@ public abstract class UserDatasetEventHandler
    */
   public void handleNoOpEvent(EventRow row) {
     closeEventHandling(row);
+  }
+
+  /**
+   * Send an error email containing details about all the events that could not
+   * be processed.
+   */
+  public void sendErrorNotifications() throws WdkModelException {
+    // No errors, no notifications to send.
+    if (errors.isEmpty())
+      return;
+
+    LOG.info("Sending error email");
+
+    Utilities.sendEmail(
+      modelConfig.getSmtpServer(),
+      "epharper@upenn.edu", //modelConfig.getAdminEmail(),
+      "do-not-reply@apidb.org",
+      "User Dataset Event Processing Errors",
+      buildErrorEmailBody()
+    );
   }
 
   public boolean acquireEventLock(EventRow row) {
@@ -209,6 +250,8 @@ public abstract class UserDatasetEventHandler
     shareRepo.deleteAllShares(userDatasetId);
   }
 
+  protected abstract void closeEventHandling(EventRow row);
+
   protected void closeEventHandling(UserDatasetEvent event) {
     closeEventHandling(new EventRow(
         event.getEventId(),
@@ -218,5 +261,16 @@ public abstract class UserDatasetEventHandler
     );
   }
 
-  protected abstract void closeEventHandling(EventRow row);
+  private String buildErrorEmailBody() {
+    var body = new StringBuilder();
+    body.append("<body><h1>Event processing errors</h1>");
+
+    for (var err : this.errors) {
+      err.toString(body);
+    }
+
+    body.append("</body>");
+
+    return body.toString();
+  }
 }

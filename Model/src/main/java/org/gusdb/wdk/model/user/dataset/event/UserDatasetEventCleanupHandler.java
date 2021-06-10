@@ -1,13 +1,11 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
-import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.user.dataset.event.model.EventRow;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEventStatus;
 
@@ -17,11 +15,11 @@ public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
 
   public UserDatasetEventCleanupHandler(
     DataSource ds,
-    Path tmpDir,
     String dsSchema,
-    String projectId
+    String projectId,
+    ModelConfig modelConfig
   ) {
-    super(ds, tmpDir, dsSchema, projectId);
+    super(ds, dsSchema, projectId, modelConfig);
   }
 
   /**
@@ -46,7 +44,7 @@ public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
   }
 
   @Override
-  public void markEventAsFailed(EventRow row) {
+  protected void _markEventAsFailed(EventRow row) {
     row.setStatus(UserDatasetEventStatus.CLEANUP_FAILED);
     getEventRepo().updateEventStatus(row);
   }
