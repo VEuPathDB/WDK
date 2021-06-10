@@ -173,7 +173,7 @@ public abstract class UserDatasetEventHandler
       modelConfig.getSmtpServer(),
       "epharper@upenn.edu", //modelConfig.getAdminEmail(),
       "do-not-reply@apidb.org",
-      "User Dataset Event Processing Errors",
+      projectId + " User Dataset Event Processing Errors",
       buildErrorEmailBody()
     );
   }
@@ -267,10 +267,6 @@ public abstract class UserDatasetEventHandler
     body.append("<body><h1>Event processing errors for ")
       .append(projectId)
       .append("</h1>");
-
-    body.append("<p><b>URL:</b>")
-      .append(modelConfig.getWebServiceUrl())
-      .append("</p>");
 
     for (var err : this.errors) {
       err.toString(body);
