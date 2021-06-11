@@ -173,7 +173,7 @@ public abstract class UserDatasetEventHandler
       modelConfig.getSmtpServer(),
       modelConfig.getAdminEmail(),
       "do-not-reply@apidb.org",
-      projectId + " User Dataset Event Processing Errors",
+      projectId + " User Dataset Event " + getRunModeName() + " Errors",
       buildErrorEmailBody()
     );
   }
@@ -262,9 +262,13 @@ public abstract class UserDatasetEventHandler
     );
   }
 
+  protected abstract String getRunModeName();
+
   private String buildErrorEmailBody() {
     var body = new StringBuilder();
-    body.append("<body><h1>Event processing errors for ")
+    body.append("<body><h1>Event ")
+      .append(getRunModeName())
+      .append(" Processing Errors for ")
       .append(projectId)
       .append("</h1>");
 

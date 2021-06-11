@@ -271,4 +271,9 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
 
     LOG.info("Done handling event: " + row.getEventID());
   }
+
+  @Override
+  protected String getRunModeName() {
+    return "Sync";
+  }
 }

@@ -56,4 +56,9 @@ public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
 
     LOG.info("Done handling event: " + row.getEventID());
   }
+
+  @Override
+  protected String getRunModeName() {
+    return "Cleanup";
+  }
 }
