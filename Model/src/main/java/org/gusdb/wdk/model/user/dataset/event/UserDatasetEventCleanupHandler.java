@@ -39,6 +39,17 @@ public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
     return getEventRepo().lockCleanupEvent(row);
   }
 
+  /**
+   * Fetches a list of events from the DB that are in the
+   * {@link UserDatasetEventStatus#CLEANUP_READY} status.
+   * <p>
+   * As this tool may be run with more than one simultaneous execution, the
+   * status of these events may have changed by the time the processing reaches
+   * them.  Attempting to lock the event will return false if the status has
+   * changed.
+   *
+   * @return A list of events presently in the {@code CLEANUP_READY} status.
+   */
   public List<EventRow> getCleanableEvents() {
     return getEventRepo().getCleanupReadyEvents();
   }
