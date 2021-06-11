@@ -266,12 +266,28 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
     return UserDatasetTypeFactory.getUserDatasetType(raw.getName(), raw.getVersion());
   }
 
+  /**
+   * Converts a list of JSON POJO representations of dependency entries into the
+   * form used internally by this tooling.
+   *
+   * @param raw A list of POJO representations of the raw dependencies' JSON.
+   *
+   * @return A set of converted internal types.
+   */
   private static Set<UserDatasetDependency> convertDeps(Collection<UDDependency> raw) {
     return raw.stream()
       .map(UserDatasetEventSync::convertDep)
       .collect(Collectors.toSet());
   }
 
+  /**
+   * Converts the JSON POJO representation of a dependency entry into the form
+   * used internally by this tooling.
+   *
+   * @param raw POJO representation of the raw dependency JSON object.
+   *
+   * @return The converted internal type.
+   */
   private static UserDatasetDependency convertDep(UDDependency raw) {
     return new UserDatasetDependency(raw.getIdentifier(), raw.getVersion(), raw.getDisplayName());
   }
