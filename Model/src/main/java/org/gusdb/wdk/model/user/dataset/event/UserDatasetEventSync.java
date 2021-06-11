@@ -158,8 +158,15 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
   }
 
   /**
-   * Find the highest event id in the app db's handled events log.  Null if
-   * none.
+   * Find the highest event ID that can be ignored or {@code null} if the
+   * DB events table is empty.
+   * <p>
+   * The returned event ID will either be 1 before the earliest
+   * {@link UserDatasetEventStatus#CLEANUP_COMPLETE} event or the ID of the last
+   * {@link UserDatasetEventStatus#COMPLETE} event.
+   * <p>
+   * Callers should begin processing events with IDs greater than the returned
+   * value (or 0 if the return is null).
    */
   public Long findLastHandledEvent(DataSource appDbDataSource) {
     final var db = new UserDatasetEventRepo(getUserDatasetSchemaName(), appDbDataSource);
