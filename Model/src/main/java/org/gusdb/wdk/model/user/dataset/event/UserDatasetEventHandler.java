@@ -171,7 +171,7 @@ public abstract class UserDatasetEventHandler
 
     Utilities.sendEmail(
       modelConfig.getSmtpServer(),
-      "epharper@upenn.edu", //modelConfig.getAdminEmail(),
+      modelConfig.getAdminEmail(),
       "do-not-reply@apidb.org",
       projectId + " User Dataset Event Processing Errors",
       buildErrorEmailBody()
