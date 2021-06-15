@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.user.dataset.event.repo;
+package org.gusdb.wdk.model.user.dataset.event.datastore;
 
 import java.sql.Types;
 import javax.sql.DataSource;
@@ -6,9 +6,9 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 
 /**
- * Repo for DB operations on the "userdatasetowner" table.
+ * Repo for DB operations on the {@code UserDatasetOwner} table.
  * <p>
- * UserDatasetOwner table:
+ * {@code UserDatasetOwner} table:
  * <table>
  *   <tr>
  *     <th>Column</th>
@@ -24,14 +24,14 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
  *   </tr>
  * </table>
  */
-public class UserDatasetOwnerRepo
+public class UserDatasetOwnerDBActions
 {
   private static final String TABLE_USER_DATASET_OWNER = "userdatasetowner";
 
   private final String     schema;
   private final DataSource ds;
 
-  public UserDatasetOwnerRepo(String schema, DataSource ds) {
+  public UserDatasetOwnerDBActions(String schema, DataSource ds) {
     this.schema = schema;
     this.ds     = ds;
   }

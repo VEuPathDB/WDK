@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.user.dataset.event.repo;
+package org.gusdb.wdk.model.user.dataset.event.datastore;
 
 import javax.sql.DataSource;
 
@@ -6,9 +6,10 @@ import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 
 /**
- * Repository for DB actions relating to installed user datasets.
+ * Repository for DB actions relating to the {@code InstalledUserDataset} DB
+ * table.
  * <p>
- * InstalledUserDataset table:
+ * {@code InstalledUserDataset} table:
  * <table>
  *   <tr>
  *     <th>Column</th>
@@ -32,14 +33,14 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
  *   </tr>
  * </table>
  */
-public class InstalledUserDatasetRepo
+public class InstalledUserDatasetDBActions
 {
   private static final String TABLE_INSTALLED_USER_DATASET = "installeduserdataset";
 
   private final String     schema;
   private final DataSource ds;
 
-  public InstalledUserDatasetRepo(String schema, DataSource ds) {
+  public InstalledUserDatasetDBActions(String schema, DataSource ds) {
     this.schema = schema;
     this.ds     = ds;
   }

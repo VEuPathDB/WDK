@@ -6,8 +6,21 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UnsupportedTypeHandler;
+import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEventStatus;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetUninstallEvent;
 
+/**
+ * Processes events in the {@link UserDatasetEventStatus#CLEANUP_READY} status
+ * and attempts to uninstall those events.
+ * <p>
+ * Events that fail when attempting to uninstall will be updated to be in the
+ * {@link UserDatasetEventStatus#CLEANUP_FAILED}.  Events in this status will
+ * be ignored by future sync and cleanup runs.
+ * <p>
+ * Events that succeed when attempting to uninstall will be updated to the
+ * {@link UserDatasetEventStatus#CLEANUP_COMPLETE} status.  Events in this
+ * status will be picked up by the next sync run.
+ */
 public class UserDatasetEventCleanup extends UserDatasetEventProcessor
 {
   private static final Logger LOG = LogManager.getLogger(UserDatasetEventCleanup.class);

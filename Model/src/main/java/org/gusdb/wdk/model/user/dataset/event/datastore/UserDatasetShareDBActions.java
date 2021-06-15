@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.user.dataset.event.repo;
+package org.gusdb.wdk.model.user.dataset.event.datastore;
 
 import java.sql.Types;
 import javax.sql.DataSource;
@@ -6,9 +6,10 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 
 /**
- * Repository for DB actions relating to user dataset shares.
+ * Repository for DB actions relating to the {@code UserDatasetSharedWith} DB
+ * table.
  * <p>
- * UserDatasetSharedWith table:
+ * {@code UserDatasetSharedWith} table:
  * <table>
  *   <tr>
  *     <th>Column</th>
@@ -28,14 +29,14 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
  *   </tr>
  * </table>
  */
-public class UserDatasetShareRepo
+public class UserDatasetShareDBActions
 {
   private static final String TABLE_USER_DATASET_SHARE = "userdatasetsharedwith";
 
   private final String     schema;
   private final DataSource ds;
 
-  public UserDatasetShareRepo(String schema, DataSource ds) {
+  public UserDatasetShareDBActions(String schema, DataSource ds) {
     this.schema = schema;
     this.ds     = ds;
   }

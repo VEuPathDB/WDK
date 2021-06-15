@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.user.dataset.event.repo;
+package org.gusdb.wdk.model.user.dataset.event.datastore;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -17,9 +17,9 @@ import org.gusdb.wdk.model.user.dataset.event.model.EventRow;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEventType;
 
 /**
- * Repository for DB actions related to user dataset events.
+ * Repository for DB actions related to the {@code UserDatasetEvent} DB table.
  * <p>
- * UserDatasetEvent Table:
+ * {@code UserDatasetEvent} Table:
  * <table>
  *   <tr>
  *     <th>Column</th>
@@ -63,16 +63,16 @@ import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEventType;
  *   </tr>
  * </table>
  */
-public class UserDatasetEventRepo
+public class UserDatasetEventDBActions
 {
-  private static final Logger LOG = LogManager.getLogger(UserDatasetEventRepo.class);
+  private static final Logger LOG = LogManager.getLogger(UserDatasetEventDBActions.class);
 
   private static final String TABLE_USER_DATASET_EVENT = "userdatasetevent";
 
   private final String     schema;
   private final DataSource ds;
 
-  public UserDatasetEventRepo(String schema, DataSource ds) {
+  public UserDatasetEventDBActions(String schema, DataSource ds) {
     this.schema = schema;
     this.ds     = ds;
   }

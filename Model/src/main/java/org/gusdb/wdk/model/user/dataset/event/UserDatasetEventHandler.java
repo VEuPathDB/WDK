@@ -17,10 +17,10 @@ import org.gusdb.wdk.model.user.dataset.event.model.EventError;
 import org.gusdb.wdk.model.user.dataset.event.model.EventRow;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEvent;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetUninstallEvent;
-import org.gusdb.wdk.model.user.dataset.event.repo.InstalledUserDatasetRepo;
-import org.gusdb.wdk.model.user.dataset.event.repo.UserDatasetEventRepo;
-import org.gusdb.wdk.model.user.dataset.event.repo.UserDatasetOwnerRepo;
-import org.gusdb.wdk.model.user.dataset.event.repo.UserDatasetShareRepo;
+import org.gusdb.wdk.model.user.dataset.event.datastore.InstalledUserDatasetDBActions;
+import org.gusdb.wdk.model.user.dataset.event.datastore.UserDatasetEventDBActions;
+import org.gusdb.wdk.model.user.dataset.event.datastore.UserDatasetOwnerDBActions;
+import org.gusdb.wdk.model.user.dataset.event.datastore.UserDatasetShareDBActions;
 
 /**
  * Handle events that impact which user datasets a user can use in this website.
@@ -70,10 +70,10 @@ public abstract class UserDatasetEventHandler
 
   private final DataSource dataSource;
 
-  private final UserDatasetEventRepo     eventRepo;
-  private final InstalledUserDatasetRepo installRepo;
-  private final UserDatasetShareRepo     shareRepo;
-  private final UserDatasetOwnerRepo     ownerRepo;
+  private final UserDatasetEventDBActions     eventRepo;
+  private final InstalledUserDatasetDBActions installRepo;
+  private final UserDatasetShareDBActions     shareRepo;
+  private final UserDatasetOwnerDBActions     ownerRepo;
 
   private final Set<Long>        externallyClaimedDatasets;
   private final List<EventError> errors;
@@ -94,10 +94,10 @@ public abstract class UserDatasetEventHandler
     this.projectId   = projectId;
     this.modelConfig = model;
 
-    this.eventRepo   = new UserDatasetEventRepo(dsSchema, ds);
-    this.installRepo = new InstalledUserDatasetRepo(dsSchema, ds);
-    this.shareRepo   = new UserDatasetShareRepo(dsSchema, ds);
-    this.ownerRepo   = new UserDatasetOwnerRepo(dsSchema, ds);
+    this.eventRepo   = new UserDatasetEventDBActions(dsSchema, ds);
+    this.installRepo = new InstalledUserDatasetDBActions(dsSchema, ds);
+    this.shareRepo   = new UserDatasetShareDBActions(dsSchema, ds);
+    this.ownerRepo   = new UserDatasetOwnerDBActions(dsSchema, ds);
 
     this.externallyClaimedDatasets = new HashSet<>();
 
@@ -216,19 +216,19 @@ public abstract class UserDatasetEventHandler
     closeEventHandling(event);
   }
 
-  protected UserDatasetShareRepo getShareRepo() {
+  protected UserDatasetShareDBActions getShareRepo() {
     return shareRepo;
   }
 
-  protected UserDatasetOwnerRepo getOwnerRepo() {
+  protected UserDatasetOwnerDBActions getOwnerRepo() {
     return ownerRepo;
   }
 
-  protected InstalledUserDatasetRepo getInstallRepo() {
+  protected InstalledUserDatasetDBActions getInstallRepo() {
     return installRepo;
   }
 
-  protected UserDatasetEventRepo getEventRepo() {
+  protected UserDatasetEventDBActions getEventRepo() {
     return eventRepo;
   }
 

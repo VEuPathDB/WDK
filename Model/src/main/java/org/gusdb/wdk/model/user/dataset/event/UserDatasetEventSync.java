@@ -14,7 +14,7 @@ import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetShareEvent.ShareA
 import org.gusdb.wdk.model.user.dataset.event.raw.UDDependency;
 import org.gusdb.wdk.model.user.dataset.event.raw.UDEvent;
 import org.gusdb.wdk.model.user.dataset.event.raw.UDType;
-import org.gusdb.wdk.model.user.dataset.event.repo.UserDatasetEventRepo;
+import org.gusdb.wdk.model.user.dataset.event.datastore.UserDatasetEventDBActions;
 
 /**
  * This object accepts and events file in the form of a json array
@@ -169,7 +169,7 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
    * value (or 0 if the return is null).
    */
   public Long findLastHandledEvent(DataSource appDbDataSource) {
-    final var db = new UserDatasetEventRepo(getUserDatasetSchemaName(), appDbDataSource);
+    final var db = new UserDatasetEventDBActions(getUserDatasetSchemaName(), appDbDataSource);
     final var opt = db.getEarliestCleanupCompleteEvent();
 
     if (opt.isPresent()) {
