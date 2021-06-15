@@ -69,7 +69,7 @@ public class UserDatasetEventCleanup extends UserDatasetEventProcessor
 
           handler.handleUninstallEvent(new UserDatasetUninstallEvent(
             event.getEventID(),
-            null, // null as this value is not known, but is also not used for uninstalls.
+            null, // null as the set of projects is not known, but is also not used for uninstalls.
             event.getUserDatasetID(),
             event.getUserDatasetType()
           ), typeHandler);
