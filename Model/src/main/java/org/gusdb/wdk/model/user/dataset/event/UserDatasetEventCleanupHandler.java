@@ -26,6 +26,11 @@ public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
    * Verifies that the given event row should be processed.
    * <p>
    * In the case of the cleanup handler, the event should always be processed.
+   * This is because sync processing for a user dataset halts at the first
+   * error, meaning there should only ever be one {@code CLEANUP_READY} event
+   * for any given user dataset.  Since this class is operating on all
+   * {@code CLEANUP_READY} events, there is presently no need to pre-filter out
+   * any event records.
    *
    * @return {@code true}
    */
