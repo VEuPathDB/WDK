@@ -1,8 +1,8 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -23,10 +23,8 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
 
   private static final int copyTimeoutMinutes = 180;
 
-  // These Sets are HashSets (backed by HashMaps) thus "contains" calls should
-  // be fast and cheap.
-  private final Set<Long> failedDatasets;
-  private final Set<Long> recoveredEvents;
+  private final HashSet<Long> failedDatasets;
+  private final HashSet<Long> recoveredEvents;
 
   private final long previousLastHandled;
 

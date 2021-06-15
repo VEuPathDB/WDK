@@ -118,11 +118,11 @@ public class UserDatasetEventDBActions
    *
    * @return Set of event IDs.
    */
-  public Set<Long> getRecoveredEventIDs() {
+  public HashSet<Long> getRecoveredEventIDs() {
     var sql = "SELECT event_id FROM " + schema + TABLE_USER_DATASET_EVENT
       + " WHERE status = '" + UserDatasetEventStatus.CLEANUP_COMPLETE + "'";
 
-    var ret = new SQLRunner(ds, sql).executeQuery((SQLRunner.ResultSetHandler<Set<Long>>) rs -> {
+    var ret = new SQLRunner(ds, sql).executeQuery(rs -> {
       var out = new HashSet<Long>();
       while (rs.next())
         out.add(rs.getLong(1));
@@ -205,14 +205,14 @@ public class UserDatasetEventDBActions
    *
    * @return Set of dataset IDs.
    */
-  public Set<Long> getIgnoredDatasetIDs() {
+  public HashSet<Long> getIgnoredDatasetIDs() {
     var sql = "SELECT user_dataset_id FROM " + schema + TABLE_USER_DATASET_EVENT
       + " WHERE status NOT IN ("
       + "'" + UserDatasetEventStatus.COMPLETE + "',"
       + "'" + UserDatasetEventStatus.CLEANUP_COMPLETE + "'"
       + ")";
 
-    var ret = new SQLRunner(ds, sql).executeQuery((SQLRunner.ResultSetHandler<Set<Long>>) rs -> {
+    var ret = new SQLRunner(ds, sql).executeQuery(rs -> {
       var out = new HashSet<Long>();
       while (rs.next())
         out.add(rs.getLong(1));
