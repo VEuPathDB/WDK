@@ -19,7 +19,7 @@ public enum UDEventType
       case "uninstall":
         return UNINSTALL;
       default:
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("Unrecognized UDEventType value " + value);
     }
   }
 

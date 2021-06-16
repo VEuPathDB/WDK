@@ -16,7 +16,7 @@ public enum UDShareAction
       case "revoke":
         return REVOKE;
       default:
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("Unrecognized UDShareAction value " + val);
     }
   }
 
