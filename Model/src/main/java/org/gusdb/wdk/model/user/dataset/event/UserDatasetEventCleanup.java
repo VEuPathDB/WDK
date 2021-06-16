@@ -20,6 +20,9 @@ import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetUninstallEvent;
  * Events that succeed when attempting to uninstall will be updated to the
  * {@link UserDatasetEventStatus#CLEANUP_COMPLETE} status.  Events in this
  * status will be picked up by the next sync run.
+ * <p>
+ * Events are placed in the {@code CLEANUP_READY} status after they have been
+ * investigated and whatever the cause is resolved.
  */
 public class UserDatasetEventCleanup extends UserDatasetEventProcessor
 {
