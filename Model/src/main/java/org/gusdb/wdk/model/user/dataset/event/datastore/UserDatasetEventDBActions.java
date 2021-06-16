@@ -232,7 +232,7 @@ public class UserDatasetEventDBActions
    * up-to-date status from the DB or
    * {@link UserDatasetEventStatus#PROCESSING}.
    *
-   * @param event row to lock
+   * @param event row to claim
    *
    * @return {@code true} if the event was successfully claimed and is safe to
    * process further.  {@code false} if the event has already been claimed by
@@ -254,7 +254,7 @@ public class UserDatasetEventDBActions
         // Return true to indicate that this row has been "locked"
         if (optStat.isEmpty()) {
           event.setStatus(UserDatasetEventStatus.PROCESSING);
-          insertEventLock(con, event);
+          insertClaimedEvent(con, event);
           unlockEventTable(con);
           return true;
         }
@@ -271,7 +271,7 @@ public class UserDatasetEventDBActions
         // "cleanup_complete" status.  Update the status and return true to
         // indicate the row is "claimed"
         event.setStatus(UserDatasetEventStatus.PROCESSING);
-        updateEventLock(con, event);
+        updateEventStatus(con, event);
         unlockEventTable(con);
         return true;
 
@@ -293,7 +293,7 @@ public class UserDatasetEventDBActions
    * up-to-date status from the DB or
    * {@link UserDatasetEventStatus#CLEANUP_PROCESSING}.
    *
-   * @param event row to lock
+   * @param event row to claim
    *
    * @return {@code true} if the event was successfully claimed and is safe to
    * process further.  {@code false} if the event has already been claimed by
@@ -328,7 +328,7 @@ public class UserDatasetEventDBActions
         // If we've made it this far, the row is in the "cleanup_ready" status.
         // Update the status and return true to indicate the row is "claimed"
         event.setStatus(UserDatasetEventStatus.CLEANUP_PROCESSING);
-        updateEventLock(con, event);
+        updateEventStatus(con, event);
         unlockEventTable(con);
         return true;
 
@@ -369,13 +369,13 @@ public class UserDatasetEventDBActions
   }
 
   /**
-   * Inserts a new locked event row in the "processing" status.  Additionally
-   * updates the given row instance to be in the "processing" status.
+   * Inserts a new "claimed" event row in the
+   * {@link UserDatasetEventStatus#PROCESSING} status.
    *
    * @param con Open JDBC transaction.
    * @param row Row to insert.
    */
-  private void insertEventLock(Connection con, EventRow row) throws SQLException {
+  private void insertClaimedEvent(Connection con, EventRow row) throws SQLException {
     var sql = "INSERT INTO\n"
       + "  " + schema + TABLE_USER_DATASET_EVENT + "(\n"
       + "    event_id\n"
@@ -409,7 +409,7 @@ public class UserDatasetEventDBActions
    * @param con Open JDBC transaction.
    * @param row Row to update.
    */
-  private void updateEventLock(Connection con, EventRow row) throws SQLException {
+  private void updateEventStatus(Connection con, EventRow row) throws SQLException {
     var sql = "UPDATE " + schema + TABLE_USER_DATASET_EVENT
       + " SET status = ?"
       + " WHERE event_id = ?";
