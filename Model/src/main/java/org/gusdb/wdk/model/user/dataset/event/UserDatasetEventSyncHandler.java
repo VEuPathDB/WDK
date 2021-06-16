@@ -42,7 +42,7 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
     this.dsSession  = dsSession;
 
     failedDatasets      = getEventRepo().getIgnoredDatasetIDs();
-    recoveredEvents     = getEventRepo().getRecoveredEventIDs();
+    recoveredEvents     = getEventRepo().getCleanupCompleteEventIDs();
     previousLastHandled = getEventRepo().getLastHandledEvent();
   }
 

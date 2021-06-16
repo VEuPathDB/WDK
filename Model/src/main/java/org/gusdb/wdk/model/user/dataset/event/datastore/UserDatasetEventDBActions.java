@@ -118,7 +118,7 @@ public class UserDatasetEventDBActions
    *
    * @return Set of event IDs.
    */
-  public HashSet<Long> getRecoveredEventIDs() {
+  public HashSet<Long> getCleanupCompleteEventIDs() {
     var sql = "SELECT event_id FROM " + schema + TABLE_USER_DATASET_EVENT
       + " WHERE status = '" + UserDatasetEventStatus.CLEANUP_COMPLETE + "'";
 
