@@ -74,7 +74,7 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
 
         // Exceptions thrown here are considered a catastrophic failure and all
         // processing should stop.
-        if (!handler.acquireEventLock(eventRow)) {
+        if (!handler.claimEvent(eventRow)) {
           LOG.info("Skipping event: claimed by another process");
           continue;
         }

@@ -45,7 +45,7 @@ public class UserDatasetEventCleanup extends UserDatasetEventProcessor
           continue;
         }
 
-        if (!handler.acquireEventLock(event)) {
+        if (!handler.claimEvent(event)) {
           LOG.info("Event already claimed.");
           continue;
         }

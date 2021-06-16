@@ -127,7 +127,7 @@ public abstract class UserDatasetEventHandler
    * process.  {@code false} if another process has already claimed this event
    * row.
    */
-  protected abstract boolean attemptEventLock(EventRow row);
+  protected abstract boolean attemptEventClaim(EventRow row);
 
   /**
    * Marks an event as failed in the DB.  All future events for this UD should
@@ -178,16 +178,16 @@ public abstract class UserDatasetEventHandler
     );
   }
 
-  public boolean acquireEventLock(EventRow row) {
-    // Dataset has been marked as claimed by another process.  Cannot acquire a
-    // lock without potential race conditions so don't bother trying.
+  public boolean claimEvent(EventRow row) {
+    // Dataset has been marked as claimed by another process.  Cannot claim
+    // event without potential race conditions so don't bother trying.
     // (See comment below)
     if (externallyClaimedDatasets.contains(row.getUserDatasetID()))
       return false;
 
-    LOG.info("Attempting to acquire a lock on UD {}", row.getUserDatasetID());
+    LOG.info("Attempting to claim UD {}", row.getUserDatasetID());
 
-    var out = attemptEventLock(row);
+    var out = attemptEventClaim(row);
 
     // If someone else has claimed this event, add the dataset ID to the list of
     // ignored datasets to prevent this process from handling any further events

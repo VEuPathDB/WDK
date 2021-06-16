@@ -157,7 +157,7 @@ public class UserDatasetEventDBActions
    * This method returns a snapshot at the time of the call and makes no
    * guarantee that any individual row will be in the {@code CLEANUP_READY}
    * status once it is time to process that event.  The row should be locked
-   * before processing using the {@link #lockCleanupEvent(EventRow)} method.
+   * before processing using the {@link #claimCleanupEvent(EventRow)} method.
    *
    * @return A list of zero or more event rows that were in the
    * {@code CLEANUP_READY} status as of the time this method was called.
@@ -225,8 +225,8 @@ public class UserDatasetEventDBActions
   }
 
   /**
-   * Attempts to lock the given event row (creating it if it wasn't previously
-   * in the DB).
+   * Attempts to claim the given sync event row (creating it if it wasn't
+   * previously in the DB).
    * <p>
    * Additionally updates the passed row instance status field to either an
    * up-to-date status from the DB or
@@ -234,11 +234,11 @@ public class UserDatasetEventDBActions
    *
    * @param event row to lock
    *
-   * @return {@code true} if the event was successfully locked and is safe to
+   * @return {@code true} if the event was successfully claimed and is safe to
    * process further.  {@code false} if the event has already been claimed by
    * another process.
    */
-  public boolean lockSyncEvent(EventRow event) {
+  public boolean claimSyncEvent(EventRow event) {
     try (var con = ds.getConnection()) {
       // Begin connection rollback block. (Rolls back if a failure occurs)
       try {
@@ -259,7 +259,7 @@ public class UserDatasetEventDBActions
           return true;
         }
 
-        // If someone else has updated (or "locked") the row, return false as
+        // If someone else has updated (or "claimed") the row, return false as
         // another process has this event and it should not be processed.
         if (optStat.get() != UserDatasetEventStatus.CLEANUP_COMPLETE) {
           event.setStatus(optStat.get());
@@ -269,14 +269,14 @@ public class UserDatasetEventDBActions
 
         // If we've made it this far, the row previously existed in the
         // "cleanup_complete" status.  Update the status and return true to
-        // indicate the row is "locked"
+        // indicate the row is "claimed"
         event.setStatus(UserDatasetEventStatus.PROCESSING);
         updateEventLock(con, event);
         unlockEventTable(con);
         return true;
 
       } catch (SQLException ex) {
-        LOG.warn("Exception caught while attempting to lock event row.  Rolling back transaction.");
+        LOG.warn("Exception caught while attempting to claim event row.  Rolling back transaction.");
         con.rollback();
         throw new WdkRuntimeException(ex);
       }
@@ -286,7 +286,7 @@ public class UserDatasetEventDBActions
   }
 
   /**
-   * Attempts to lock the given event row by setting the event status to
+   * Attempts to claim the given event row by setting the event status to
    * {@link UserDatasetEventStatus#CLEANUP_PROCESSING}.
    * <p>
    * Additionally updates the passed row instance status field to either an
@@ -295,11 +295,11 @@ public class UserDatasetEventDBActions
    *
    * @param event row to lock
    *
-   * @return {@code true} if the event was successfully locked and is safe to
+   * @return {@code true} if the event was successfully claimed and is safe to
    * process further.  {@code false} if the event has already been claimed by
    * another process.
    */
-  public boolean lockCleanupEvent(EventRow event) {
+  public boolean claimCleanupEvent(EventRow event) {
     try (var con = ds.getConnection()) {
       // Begin connection rollback block. (Rolls back if a failure occurs)
       try {
@@ -317,7 +317,7 @@ public class UserDatasetEventDBActions
           return true;
         }
 
-        // If someone else has updated (or "locked") the row, return false as
+        // If someone else has updated (or "claimed") the row, return false as
         // another process has this event and it should not be processed.
         if (optStat.get() != UserDatasetEventStatus.CLEANUP_READY) {
           event.setStatus(optStat.get());
@@ -326,7 +326,7 @@ public class UserDatasetEventDBActions
         }
 
         // If we've made it this far, the row is in the "cleanup_ready" status.
-        // Update the status and return true to indicate the row is "locked"
+        // Update the status and return true to indicate the row is "claimed"
         event.setStatus(UserDatasetEventStatus.CLEANUP_PROCESSING);
         updateEventLock(con, event);
         unlockEventTable(con);
