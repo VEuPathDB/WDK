@@ -24,8 +24,27 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
   private static final int copyTimeoutMinutes = 180;
 
   private final HashSet<Long> failedDatasets;
+
+  /**
+   * Recovered Event IDs.
+   * <p>
+   * A set of all the IDs of events in the DB that are in the
+   * {@link UserDatasetEventStatus#CLEANUP_COMPLETE} status.
+   */
   private final HashSet<Long> recoveredEvents;
 
+  /**
+   * Previous Last Handled Event ID.
+   * <p>
+   * This is the event ID for the last event in the DB in the
+   * {@link UserDatasetEventStatus#COMPLETE} status.
+   * <p>
+   * This value is unrelated to the value returned by the method
+   * {@link UserDatasetEventSync#findLastHandledEvent(DataSource)}.  That value
+   * is used to determine what to pull from iRODS but this value is what is
+   * actually used to determine if a non-{@code CLEANUP_READY} event should be
+   * handled.
+   */
   private final long previousLastHandled;
 
   private final UserDatasetSession dsSession;
@@ -79,7 +98,6 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
    *   marked as "cleanup_complete".</li>
    *   <li>The event user dataset ID has no previous failures associated.</li>
    * </ul>
-   * <p>
    */
   @Override
   public boolean shouldHandleEvent(EventRow row) {
