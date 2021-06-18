@@ -105,12 +105,13 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
     if (failedDatasets.contains(row.getUserDatasetID()))
       return false;
 
-    // Event has been marked as retryable, process if we can lock it.
+    // Event has been marked as retryable, process this event if we are able to
+    // claim it.
     if (recoveredEvents.contains(row.getEventID()))
       return true;
 
-    // Event is after the last run's last handled event, process if we can lock
-    // it.
+    // Event is after the last run's last COMPLETED event, process if we can
+    // claim it.
     return row.getEventID() > previousLastHandled;
   }
 
