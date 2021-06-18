@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.dataset.UnsupportedTypeHandler;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEventStatus;
+import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEventType;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetUninstallEvent;
 
 /**
@@ -57,6 +58,28 @@ public class UserDatasetEventCleanup extends UserDatasetEventProcessor
         // processing.  Instead when an error occurs, the event will be marked
         // with an error status and the process will continue.
         try {
+          // We only want to actually attempt to uninstall events of the
+          // "install" type.  Calling uninstall on other event types will leave
+          // the DB in a bad state.
+          //
+          // For example, calling uninstall on a SHARE event, will cause the
+          // successfully installed UD to be uninstalled even though it had no
+          // issues.  This would result in the UD's INSTALL event being undone
+          // without updating it's status.  Only the SHARE event would be marked
+          // as CLEANUP_COMPLETE.  This means the DB would say the UD is
+          // installed (and would prevent the UD being reinstalled) when it
+          // actually is not in the DB at all.
+          //
+          // Since the other event types are effectively idempotent, rerunning
+          // those events without doing any "cleanup" shouldn't cause any
+          // issues.  Instead we just mark the event as CLEANUP_COMPLETE and
+          // let the re-run of the event fix the issue.
+          if (event.getEventType() != UserDatasetEventType.INSTALL) {
+            LOG.info("Non-install event, marking as completed.");
+            handler.handleNoOpEvent(event);
+            continue;
+          }
+
           var typeHandler = getUserDatasetStore().getTypeHandler(event.getUserDatasetType());
 
           // A type handler was removed after the event was "installed".  This
