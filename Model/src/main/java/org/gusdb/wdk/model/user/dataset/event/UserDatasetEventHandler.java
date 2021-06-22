@@ -1,21 +1,26 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
-import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
-import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.dataset.UserDataset;
-import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
+import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.user.dataset.UserDatasetTypeHandler;
-import org.gusdb.wdk.model.user.dataset.event.UserDatasetShareEvent.ShareAction;
+import org.gusdb.wdk.model.user.dataset.event.model.EventError;
+import org.gusdb.wdk.model.user.dataset.event.model.EventRow;
+import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEvent;
+import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetUninstallEvent;
+import org.gusdb.wdk.model.user.dataset.event.datastore.InstalledUserDatasetDBActions;
+import org.gusdb.wdk.model.user.dataset.event.datastore.UserDatasetEventDBActions;
+import org.gusdb.wdk.model.user.dataset.event.datastore.UserDatasetOwnerDBActions;
+import org.gusdb.wdk.model.user.dataset.event.datastore.UserDatasetShareDBActions;
 
 /**
  * Handle events that impact which user datasets a user can use in this website.
@@ -59,51 +64,142 @@ import org.gusdb.wdk.model.user.dataset.event.UserDatasetShareEvent.ShareAction;
 //       InstalledUserDatasets table, and lose the Owner table, since they are 1-1
 // TODO: if the user changes the name of their UD, this will not be reflected in
 //       installed UDs, since there is no event to convey that.
-public class UserDatasetEventHandler
+public abstract class UserDatasetEventHandler
 {
+  private static final Logger LOG = LogManager.getLogger(UserDatasetEventHandler.class);
 
-  private static final Logger LOG = Logger.getLogger(UserDatasetEventHandler.class);
+  private final DataSource dataSource;
 
-  private static final String
-    installedTable = "InstalledUserDataset",
-    ownerTable     = "UserDatasetOwner",
-    sharedTable    = "UserDatasetSharedWith",
-    eventTable     = "UserDatasetEvent";
+  private final UserDatasetEventDBActions     eventRepo;
+  private final InstalledUserDatasetDBActions installRepo;
+  private final UserDatasetShareDBActions     shareRepo;
+  private final UserDatasetOwnerDBActions     ownerRepo;
 
-  private static final int copyTimeoutMinutes = 180;
+  private final Set<Long>        externallyClaimedDatasets;
+  private final List<EventError> errors;
 
-  private final UserDatasetSession dsSession;
-  private final DataSource         dataSource;
-  private final Path               tmpDir;
-  private final String             dsSchema;
-  private final String             projectId;
+  private final Path        tmpDir;
+  private final String      projectId;
+  private final ModelConfig modelConfig;
+
 
   public UserDatasetEventHandler(
-    final UserDatasetSession dsSession,
-    final DataSource dataSource,
-    final Path tmpDir,
+    final DataSource ds,
     final String dsSchema,
-    final String projectId
+    final String projectId,
+    final ModelConfig model
   ) {
-    this.dataSource = dataSource;
-    this.tmpDir     = tmpDir;
-    this.dsSchema   = dsSchema;
-    this.projectId  = projectId;
-    this.dsSession  = dsSession;
+    this.dataSource  = ds;
+    this.tmpDir      = model.getWdkTempDir();
+    this.projectId   = projectId;
+    this.modelConfig = model;
+
+    this.eventRepo   = new UserDatasetEventDBActions(dsSchema, ds);
+    this.installRepo = new InstalledUserDatasetDBActions(dsSchema, ds);
+    this.shareRepo   = new UserDatasetShareDBActions(dsSchema, ds);
+    this.ownerRepo   = new UserDatasetOwnerDBActions(dsSchema, ds);
+
+    this.externallyClaimedDatasets = new HashSet<>();
+
+    this.errors = new ArrayList<>();
   }
 
-  public void handleInstallEvent(
-    UserDatasetInstallEvent event,
-    UserDatasetTypeHandler typeHandler
-  ) throws WdkModelException {
-    final var datasetId = event.getUserDatasetId();
-    final var eventId   = event.getEventId();
+  /**
+   * Checks if the given event should be handled.
+   * <p>
+   * See specific implementations for criteria handleable events must meet.
+   */
+  public abstract boolean shouldHandleEvent(EventRow row);
 
-    LOG.info("Installing user dataset " + datasetId);
+  /**
+   * Attempts to acquire a process lock on the event row.  When locked, other
+   * simultaneous executions of this tool will ignore the event.
+   * <p>
+   * If another process has claimed the event this method will do nothing and
+   * return false.
+   * <p>
+   * When claimed, the event will be recorded or updated in the DB with an
+   * 'in progress' status.
+   *
+   * @param row Row to attempt to lock.
+   *
+   * @return {@code true} if the row could be locked and now "belongs to" this
+   * process.  {@code false} if another process has already claimed this event
+   * row.
+   */
+  protected abstract boolean attemptEventClaim(EventRow row);
 
-    openEventHandling(eventId);
-    handleInstallEvent(typeHandler, event.getOwnerUserId(), datasetId);
-    closeEventHandling(eventId);
+  /**
+   * Marks an event as failed in the DB.  All future events for this UD should
+   * be ignored.
+   *
+   * @param row Row representing the event to mark as failed.
+   */
+  protected abstract void _markEventAsFailed(EventRow row);
+
+  /**
+   * Marks an event as failed in the DB and records it for error reporting.
+   *
+   * @param row   Row representing the event to mark as failed.
+   * @param cause Exception thrown that caused this event processing failure.
+   */
+  public void failEvent(EventRow row, Exception cause) {
+    this.errors.add(new EventError(row, cause));
+    this._markEventAsFailed(row);
+  }
+
+  /**
+   * Method to handle an event that is either not relevant to this WDK project
+   * or is related to an unsupported type.  The event is not installed but it is
+   * noted in the dataset as handled so that the event is not repeatedly and
+   * unnecessarily processed.
+   */
+  public void handleNoOpEvent(EventRow row) {
+    closeEventHandling(row);
+  }
+
+  /**
+   * Send an error email containing details about all the events that could not
+   * be processed.
+   */
+  public void sendErrorNotifications() throws WdkModelException {
+    // No errors, no notifications to send.
+    if (errors.isEmpty())
+      return;
+
+    LOG.info("Sending error email");
+
+    Utilities.sendEmail(
+      modelConfig.getSmtpServer(),
+      modelConfig.getAdminEmail(),
+      "do-not-reply@apidb.org",
+      projectId + " User Dataset Event " + getRunModeName() + " Errors",
+      buildErrorEmailBody()
+    );
+  }
+
+  public boolean claimEvent(EventRow row) {
+    // Dataset has been marked as claimed by another process.  Cannot claim
+    // event without potential race conditions so don't bother trying.
+    // (See comment below)
+    if (externallyClaimedDatasets.contains(row.getUserDatasetID()))
+      return false;
+
+    LOG.info("Attempting to claim UD {}", row.getUserDatasetID());
+
+    var out = attemptEventClaim(row);
+
+    // If someone else has claimed this event, add the dataset ID to the list of
+    // ignored datasets to prevent this process from handling any further events
+    // for that dataset.
+    //
+    // This is done to prevent race conditions such as an install event starting
+    // in process 1 and a share event starting in process 2.  The share event in
+    // process 2 will fail if process 1 does not complete the install first.
+    if (!out)
+      externallyClaimedDatasets.add(row.getUserDatasetID());
+
+    return out;
   }
 
   public void handleUninstallEvent(
@@ -112,245 +208,76 @@ public class UserDatasetEventHandler
   ) throws WdkModelException {
     LOG.info("Uninstalling user dataset " + event.getUserDatasetId());
 
-    openEventHandling(event.getEventId());
-    {
-      revokeAllAccess(event.getUserDatasetId());
-      typeHandler.uninstallInAppDb(event.getUserDatasetId(), tmpDir, projectId);
-      var sql = "DELETE FROM " + dsSchema + installedTable + " WHERE user_dataset_id = ?";
+    revokeAllAccess(event.getUserDatasetId());
+    typeHandler.uninstallInAppDb(event.getUserDatasetId(), getTmpDir(), getProjectId());
 
-      new SQLRunner(dataSource, sql, "delete-user-dataset-row")
-        .executeUpdate(new Object[]{event.getUserDatasetId()});
-    }
-    closeEventHandling(event.getEventId());
+    installRepo.deleteUserDataset(event.getUserDatasetId());
+
+    closeEventHandling(event);
   }
 
-  public void handleShareEvent(UserDatasetShareEvent event) {
-    LOG.info("Updating share of user dataset " + event.getUserDatasetId());
-
-    openEventHandling(event.getEventId());
-    {
-      if (!checkUserDatasetInstalled(event.getUserDatasetId())) {
-        // this can happen if the install was skipped, because the ud was deleted first
-        LOG.info("User dataset " + event.getUserDatasetId() + " is not installed. Skipping share.");
-      } else {
-        if (event.getAction() == ShareAction.GRANT)
-          grantShareAccess(event.getOwnerId(), event.getRecipientId(),
-            event.getUserDatasetId()
-          );
-        else
-          revokeShareAccess(event.getOwnerId(), event.getRecipientId(),
-            event.getUserDatasetId()
-          );
-      }
-    }
-    closeEventHandling(event.getEventId());
+  protected UserDatasetShareDBActions getShareRepo() {
+    return shareRepo;
   }
 
-  /**
-   * Method to handle an event that is either not relevant to this wdk project
-   * or is related to an unsupported type.  The event is not installed but it is
-   * noted in the dataset as handled so that the event is not repeatedly and
-   * unnecessarily processed.
-   */
-  public void completeEventHandling(Long eventId) {
-    openEventHandling(eventId);
-    closeEventHandling(eventId);
+  protected UserDatasetOwnerDBActions getOwnerRepo() {
+    return ownerRepo;
   }
 
-  private void handleInstallEvent(
-    final UserDatasetTypeHandler typeHandler,
-    final Long ownerUserId,
-    final Long datasetId
-  ) throws WdkModelException {
-    LOG.trace("UserDatasetEventHandler#handleInstallEvent");
-    final Path              cwd;
-    final UserDataset       userDataset;
-    final Map<String, Path> files;
-
-    // there is a theoretical race condition here, because this check is not
-    // in the same transaction as the rest of this method.
-    // but that risk is very small.
-    if (!dsSession.getUserDatasetExists(ownerUserId, datasetId)) {
-      LOG.info("User dataset" + datasetId
-        + " not found in store.  Was probably deleted.  Skipping install.");
-      return;
-    }
-
-    userDataset = dsSession.getUserDataset(ownerUserId, datasetId);
-
-    // Weeding out obsolete user datasets - skipped but completed.
-    var compatibility = typeHandler.getCompatibility(userDataset, dataSource);
-
-    if (!compatibility.isCompatible()) {
-      LOG.info("User dataset " + datasetId + " deemed obsolete: "
-        + compatibility.notCompatibleReason() + ".  Skipping install.");
-      return;
-    }
-
-    cwd   = typeHandler.createWorkingDir(tmpDir, userDataset.getUserDatasetId());
-    files = copyToLocalTimeout(dsSession, userDataset, typeHandler, cwd);
-
-    // insert into the installedTable
-    var sql = "INSERT INTO " + dsSchema + installedTable +
-      " (user_dataset_id, name) VALUES (?, ?)";
-
-    new SQLRunner(dataSource, sql, "insert-user-dataset-row")
-      .executeUpdate(new Object[]{
-        datasetId,
-        userDataset.getMeta().getName()
-      });
-
-    // insert into the type-specific tables
-    typeHandler.installInAppDb(userDataset, cwd, projectId, files);
-    typeHandler.deleteWorkingDir(cwd);
-
-    // grant access to the owner, by installing into the ownerTable
-    grantAccess(ownerUserId, datasetId);
+  protected InstalledUserDatasetDBActions getInstallRepo() {
+    return installRepo;
   }
 
-  /**
-   * Copies the contents of a user dataset from iRODS to a temporary working dir
-   * under the given path {@code tmpDir} or fails if the copy takes longer than
-   * {@link #copyTimeoutMinutes}.
-   *
-   * @param session     active iRODS session
-   * @param dataset     user dataset from which the files should be copied.
-   * @param typeHandler dataset type handler.  Used to create the working
-   *                    directory and perform the file copy.
-   * @param cwd         working directory path.  All relevant dataset files will
-   *                    be copied from iRODS to this directory.
-   *
-   * @return a map of dataset file names to their path in the filesystem.
-   *
-   * @throws WdkModelException if an error occurs during the file copy, or if
-   *                           the copy request times out.
-   */
-  private Map<String, Path> copyToLocalTimeout(
-    final UserDatasetSession session,
-    final UserDataset dataset,
-    final UserDatasetTypeHandler typeHandler,
-    final Path cwd
-  ) throws WdkModelException {
-    LOG.trace("UserDatasetEventHandler#copyToLocalTimeout");
-
-    final var exec = Executors.newSingleThreadExecutor();
-    final var err  = new AtomicReference<WdkModelException>();
-    final var out  = new AtomicReference<Map<String, Path>>();
-
-    exec.execute(() -> {
-      try {
-        out.set(typeHandler.copyFilesToTemp(session, dataset, cwd));
-      } catch (WdkModelException e) {
-        err.set(e);
-      }
-    });
-
-    exec.shutdown();
-    try {
-      if (!exec.awaitTermination(copyTimeoutMinutes, TimeUnit.MINUTES)) {
-        throw new WdkModelException("Copy from iRODS to temp directory timed out after "
-          + copyTimeoutMinutes
-          + " minutes.");
-      }
-    } catch (InterruptedException e) {
-      throw new WdkModelException(e);
-    }
-
-    if (err.get() != null)
-      throw err.get();
-
-    return out.get();
+  protected UserDatasetEventDBActions getEventRepo() {
+    return eventRepo;
   }
 
-  /**
-   * Checks if a user dataset is installed (in the installed table).
-   * <p>
-   * Operations that call this method are at theoretical risk of a race
-   * condition, since this check is in its own transaction.  However, the chance
-   * that a UD will be uninstalled in the intervening millisecond is small, not
-   * worth engineering for.
-   */
-  private boolean checkUserDatasetInstalled(Long userDatasetId) {
-    LOG.info("Checking if user dataset " + userDatasetId + " is installed");
-    var handler = new BasicResultSetHandler();
-    var sql = "SELECT user_dataset_id"
-      + " FROM " + dsSchema + installedTable
-      + " WHERE user_dataset_id = ?";
-
-    new SQLRunner(dataSource, sql, "check-user-dataset-exists")
-      .executeQuery(new Object[]{userDatasetId}, handler);
-
-    return handler.getNumRows() > 0;
+  protected Path getTmpDir() {
+    return tmpDir;
   }
 
-  /**
-   * Adds a share to the UserDatasetSharedWith table.
-   */
-  private void grantShareAccess(Long ownerId, Long recipientId, Long userDatasetId) {
-    LOG.info("Granting recipient " + recipientId + " access to user dataset "
-      + userDatasetId + " belonging to owner " + ownerId + " in table " + sharedTable);
-
-    var sql = "INSERT INTO " + dsSchema + sharedTable
-      + " (owner_user_id, recipient_user_id, user_dataset_id) VALUES (?, ?, ?)";
-
-    new SQLRunner(dataSource, sql, "grant-user-dataset-" + sharedTable)
-      .executeUpdate(new Object[]{ownerId, recipientId, userDatasetId});
+  protected String getProjectId() {
+    return projectId;
   }
 
-  private void grantAccess(Long userId, Long userDatasetId) {
-    LOG.info("Granting access to user dataset " + userDatasetId + " to user " + userId
-      + " in table " + ownerTable);
-
-    var sql = "INSERT INTO " + dsSchema + ownerTable + " (user_id, user_dataset_id) VALUES (?, ?)";
-
-    new SQLRunner(dataSource, sql, "grant-user-dataset-" + ownerTable)
-      .executeUpdate(new Object[]{userId, userDatasetId});
+  protected DataSource getDataSource() {
+    return dataSource;
   }
 
-  private void revokeShareAccess(Long ownerId, Long recipientId, Long userDatasetId) {
-    LOG.info("Revoking access by recipient " + recipientId + " to user dataset "
-      + userDatasetId + " belonging to owner " + ownerId);
-
-    var sql = "DELETE FROM " + dsSchema + sharedTable
-      + " WHERE owner_user_id = ?"
-      + " AND recipient_user_id = ?"
-      + " AND user_dataset_id = ?";
-
-    new SQLRunner(dataSource, sql, "revoke-user-dataset-" + sharedTable)
-      .executeUpdate(new Object[]{ownerId, recipientId, userDatasetId});
-  }
-
-  private void revokeAllAccess(Long userDatasetId) {
+  protected void revokeAllAccess(long userDatasetId) {
     LOG.info("Revoking all access to user dataset " + userDatasetId);
-    var args = new Object[]{userDatasetId};
-    var sql  = "DELETE FROM " + dsSchema + ownerTable + " WHERE user_dataset_id = ?";
-
-    new SQLRunner(dataSource, sql, "revoke-all-user-dataset-access-1")
-      .executeUpdate(args);
-
-    sql = "DELETE FROM " + dsSchema + sharedTable + " WHERE user_dataset_id = ?";
-
-    new SQLRunner(dataSource, sql, "revoke-all-user-dataset-access-1")
-      .executeUpdate(args);
+    ownerRepo.deleteAllOwners(userDatasetId);
+    shareRepo.deleteAllShares(userDatasetId);
   }
 
-  private void openEventHandling(Long eventId) {
-    LOG.info("Start handling event: " + eventId);
+  protected abstract void closeEventHandling(EventRow row);
 
-    var sql = "INSERT INTO " + dsSchema + eventTable + " (event_id) VALUES (?)";
-
-    new SQLRunner(dataSource, sql, "insert-user-dataset-event")
-      .executeUpdate(new Object[]{eventId});
+  protected void closeEventHandling(UserDatasetEvent event) {
+    closeEventHandling(new EventRow(
+        event.getEventId(),
+        event.getUserDatasetId(),
+        event.getEventType(),
+        event.getUserDatasetType()
+      )
+    );
   }
 
-  private void closeEventHandling(Long eventId) {
-    var sql = "UPDATE " + dsSchema + eventTable
-      + " SET completed = sysdate"
-      + " WHERE event_id = ?";
+  protected abstract String getRunModeName();
 
-    new SQLRunner(dataSource, sql, "complete-user-dataset-event-handling")
-      .executeUpdate(new Object[]{eventId});
+  private String buildErrorEmailBody() {
+    var body = new StringBuilder();
+    body.append("<body><h1>Event ")
+      .append(getRunModeName())
+      .append(" Processing Errors for ")
+      .append(projectId)
+      .append("</h1>");
 
-    LOG.info("Done handling event: " + eventId);
+    for (var err : this.errors) {
+      err.toString(body);
+    }
+
+    body.append("</body>");
+
+    return body.toString();
   }
 }

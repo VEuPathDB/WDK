@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.user.dataset.event;
+package org.gusdb.wdk.model.user.dataset.event.model;
 
 import java.util.Collections;
 import java.util.Set;
@@ -14,13 +14,17 @@ public class UserDatasetEvent {
 
   private final Long eventId;
 
+  private final UserDatasetEventType eventType;
+
   public UserDatasetEvent(
     Long eventId,
+    UserDatasetEventType eventType,
     Set < String > projectsFilter,
     Long userDatasetId,
     UserDatasetType userDatasetType
   ) {
     this.eventId         = eventId;
+    this.eventType       = eventType;
     this.projectsFilter  = projectsFilter;
     this.userDatasetId   = userDatasetId;
     this.userDatasetType = userDatasetType;
@@ -40,5 +44,9 @@ public class UserDatasetEvent {
 
   public Long getEventId() {
     return eventId;
+  }
+
+  public UserDatasetEventType getEventType() {
+    return eventType;
   }
 }

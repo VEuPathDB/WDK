@@ -1,11 +1,10 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
 import java.io.File;
-import java.io.FileInputStream;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
-import org.json.JSONArray;
+import org.gusdb.wdk.model.user.dataset.event.raw.EventParser;
 
 /**
  * A wrapper around the UserDatasetEventArrayHandler library to allow it to be
@@ -17,6 +16,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
 
   protected static final String ARG_PROJECT = "project";
   protected static final String ARG_EVENTS_FILE = "eventsFile";
+  protected static final String ARG_RUN_MODE = "mode";
 
   private static final Logger logger = Logger.getLogger(UserDatasetEventListHandler.class);
 
@@ -41,20 +41,26 @@ public class UserDatasetEventListHandler extends BaseCLI {
   @Override
   protected void execute() throws Exception {
     var projectId = (String) getOptionValue(ARG_PROJECT);
-    var handler   = new UserDatasetEventArrayHandler(projectId);
-    var eventFile = new File((String)getOptionValue(ARG_EVENTS_FILE));
 
-    JSONArray eventJsonArray;
-    try (FileInputStream fileInputStream = new FileInputStream(eventFile)) {
-      eventJsonArray = new JSONArray(fileInputStream.toString());
+    switch ((String) getOptionValue(ARG_RUN_MODE)) {
+      case "cleanup":
+        new UserDatasetEventCleanup(projectId).cleanupFailedInstalls();
+        break;
+      case "sync":
+        new UserDatasetEventSync(projectId)
+          .handleEventList(UserDatasetEventSync.parseEventsArray(EventParser.parseList(
+            new File((String) getOptionValue(ARG_EVENTS_FILE))
+          )));
+        break;
+      default:
+        throw new Exception("Unknown run mode, must be one of \"sync\" or \"cleanup\"");
     }
-
-    handler.handleEventList(UserDatasetEventArrayHandler.parseEventsArray(eventJsonArray));
   }
 
   @Override
   protected void declareOptions() {
     addSingleValueOption(ARG_PROJECT, true, null, "The project of the app db");
     addSingleValueOption(ARG_EVENTS_FILE, true, null, "File containing an ordered JSON Array of user dataset events");
+    addSingleValueOption(ARG_RUN_MODE, true, null, "One of 'sync' or 'cleanup'.");
   }
 }
