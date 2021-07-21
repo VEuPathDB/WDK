@@ -147,7 +147,14 @@ public class UserDatasetEventDBActions
       + " WHERE status = '" + UserDatasetEventStatus.CLEANUP_COMPLETE + "'";
 
     return new SQLRunner(ds, sql)
-      .executeQuery(rs -> rs.next() ? Optional.of(rs.getLong(1)) : Optional.empty());
+      .executeQuery(rs -> {
+        if (!rs.next())
+          return Optional.empty();
+
+        final var id = rs.getLong(1);
+
+        return rs.wasNull() ? Optional.empty() : Optional.of(id);
+      });
   }
 
   /**
