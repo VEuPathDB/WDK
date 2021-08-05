@@ -68,6 +68,7 @@ public class JsonKeys {
   public static final String IS_SORTABLE = "isSortable";
   public static final String IS_REMOVABLE = "isRemovable";
   public static final String IS_REQUIRED = "isRequired";
+  public static final String IS_MULTILINE = "isMultiLine";
   public static final String IS_PUBLIC = "isPublic";
   public static final String USE_BASKET = "useBasket";
   public static final String SCOPES = "scopes";

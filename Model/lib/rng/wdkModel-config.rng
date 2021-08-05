@@ -118,6 +118,11 @@
                               <data type="boolean"/>
                             </attribute>
                           </optional>
+                          <optional>
+                            <attribute name="multiLine">
+                              <data type="boolean"/>
+                            </attribute>
+                          </optional>
                         </element>
                     </zeroOrMore>
                 </element>

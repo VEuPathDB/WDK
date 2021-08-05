@@ -179,10 +179,12 @@ site_vars file: {{ site_vars }}
             {% endif %}
       >
 
+      <userProperty name="username" displayName="Username" dbKey="username"/>
       <userProperty name="firstName" displayName="First Name" dbKey="first_name" required="true"/>
       <userProperty name="middleName" displayName="Middle Name" dbKey="middle_name"/>
       <userProperty name="lastName" displayName="Last Name" dbKey="last_name" required="true"/>
       <userProperty name="organization" displayName="Organization" dbKey="organization" required="true"/>
+      <userProperty name="interests" displayName="Interests" dbKey="interests" multiLine="true"/>
 
     </accountDb>
 

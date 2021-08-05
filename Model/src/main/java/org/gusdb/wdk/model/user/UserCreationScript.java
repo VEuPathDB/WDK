@@ -107,7 +107,7 @@ public class UserCreationScript {
               }
             }
           }
-          catch (InvalidEmailException e) {
+          catch (InvalidUsernameOrEmailException e) {
             System.err.println("Invalid email '" + parsedLine.getEmail() + "': " + e.getMessage());
             invalidLineCount++;
           }

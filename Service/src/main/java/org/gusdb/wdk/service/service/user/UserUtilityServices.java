@@ -22,7 +22,7 @@ import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfigAccountDB;
-import org.gusdb.wdk.model.user.InvalidEmailException;
+import org.gusdb.wdk.model.user.InvalidUsernameOrEmailException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -38,7 +38,7 @@ public class UserUtilityServices extends AbstractWdkService {
 
   public static final String USERS_PATH = "/users";
 
-  private static final String NO_USER_BY_THAT_EMAIL = "No user exists with the email you submitted.";
+  private static final String NO_USER_BY_THAT_LOGIN = "No user exists with the login name or email you submitted.";
 
   /**
    * Creates a new user (i.e. user registration)
@@ -69,7 +69,7 @@ public class UserUtilityServices extends AbstractWdkService {
           .location(getUriInfo().getAbsolutePathBuilder().build(newUser.getUserId()))
           .build();
     }
-    catch (InvalidEmailException e) {
+    catch (InvalidUsernameOrEmailException e) {
       throw new DataValidationException(e.getMessage(), e);
     }
     catch (JSONException e) {
@@ -78,10 +78,10 @@ public class UserUtilityServices extends AbstractWdkService {
   }
 
   /**
-   * Resets a user's forgotten password to a random string.  Request contains a user's email who
+   * Resets a user's forgotten password to a random string.  Request contains a user's email or login name who
    * forgot their password.  No response is returned but an email is sent to the user with their new password.
    *
-   * @param body JSON object with email property containing email of user whose password needs reset
+   * @param body JSON object with email property containing email or login name of user whose password needs reset
    * @return no content or error code corresponding to a problem
    * @throws WdkModelException if error occurs checking for user or sending email
    * @throws DataValidationException if no user exists with that email
@@ -94,13 +94,13 @@ public class UserUtilityServices extends AbstractWdkService {
       throws WdkModelException, DataValidationException, RequestMisformatException {
     try {
       JSONObject json = new JSONObject(body);
-      String email = json.getString(JsonKeys.EMAIL);
+      String emailOrLoginName = json.getString(JsonKeys.EMAIL);
       UserFactory userMgr = getWdkModel().getUserFactory();
       try {
-        userMgr.resetPassword(email);
+        userMgr.resetPassword(emailOrLoginName);
       }
       catch (WdkUserException e) {
-        throw new DataValidationException(NO_USER_BY_THAT_EMAIL);
+        throw new DataValidationException(NO_USER_BY_THAT_LOGIN);
       }
       return Response.noContent().build();
     }

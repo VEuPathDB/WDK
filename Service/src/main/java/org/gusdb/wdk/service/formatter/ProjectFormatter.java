@@ -52,6 +52,7 @@ public class ProjectFormatter {
           .put(JsonKeys.NAME, prop.getName())
           .put(JsonKeys.DISPLAY_NAME, prop.getDisplayName())
           .put(JsonKeys.IS_REQUIRED, prop.isRequired())
+          .put(JsonKeys.IS_MULTILINE, prop.isMultiLine())
           .put(JsonKeys.IS_PUBLIC, prop.isPublic()));
     }
 

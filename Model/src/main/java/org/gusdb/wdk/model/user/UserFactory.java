@@ -113,7 +113,7 @@ public class UserFactory {
       Map<String, String> profileProperties,
       Map<String, String> globalPreferences,
       Map<String, String> projectPreferences)
-          throws WdkModelException, InvalidEmailException {
+          throws WdkModelException, InvalidUsernameOrEmailException {
     String dontEmailProp = _wdkModel.getProperties().get("DONT_EMAIL_NEW_USER");
     boolean sendWelcomeEmail = (dontEmailProp == null || !dontEmailProp.equals("true"));
     return createUser(email, profileProperties, globalPreferences, projectPreferences, true, sendWelcomeEmail);
@@ -124,10 +124,19 @@ public class UserFactory {
       Map<String, String> globalPreferences,
       Map<String, String> projectPreferences,
       boolean addUserDbReference, boolean sendWelcomeEmail)
-          throws WdkModelException, InvalidEmailException {
+          throws WdkModelException, InvalidUsernameOrEmailException {
     try {
       // check email for uniqueness and format
       email = validateAndFormatEmail(email, _accountManager);
+
+      // if user supplied a username, make sure it is unique
+      if (profileProperties.containsKey(AccountManager.USERNAME_PROPERTY_KEY)) {
+        String username = profileProperties.get(AccountManager.USERNAME_PROPERTY_KEY);
+        // check whether the username exists in the database already; if so, the operation fails
+        if (_accountManager.getUserProfileByUsername(username) != null) {
+          throw new InvalidUsernameOrEmailException("The username '" + username + "' is already in use. " + "Please choose another one.");
+        }
+      }
 
       // generate temporary password for user
       String password = generateTemporaryPassword();
@@ -159,7 +168,7 @@ public class UserFactory {
 
       return user;
     }
-    catch (WdkModelException | InvalidEmailException e) {
+    catch (WdkModelException | InvalidUsernameOrEmailException e) {
       // do not wrap known exceptions
       throw e;
     }
@@ -226,20 +235,20 @@ public class UserFactory {
     Utilities.sendEmail(smtpServer, user.getEmail(), supportEmail, emailSubject, emailContent);
   }
 
-  private static String validateAndFormatEmail(String email, AccountManager accountMgr) throws InvalidEmailException {
+  private static String validateAndFormatEmail(String email, AccountManager accountMgr) throws InvalidUsernameOrEmailException {
     // trim and validate passed email address and extract stable name
     if (email == null)
-      throw new InvalidEmailException("The user's email cannot be empty.");
+      throw new InvalidUsernameOrEmailException("The user's email cannot be empty.");
     // format the info
-    email = email.trim().toLowerCase();
+    email = AccountManager.trimAndLowercase(email);
     if (email.isEmpty())
-      throw new InvalidEmailException("The user's email cannot be empty.");
+      throw new InvalidUsernameOrEmailException("The user's email cannot be empty.");
     int atSignIndex = email.indexOf("@");
     if (atSignIndex < 1) // must be present and not the first char
-      throw new InvalidEmailException("The user's email address is invalid.");
+      throw new InvalidUsernameOrEmailException("The user's email address is invalid.");
     // check whether the user exist in the database already; if email exists, the operation fails
-    if (accountMgr.getUserProfile(email) != null)
-      throw new InvalidEmailException("The email '" + email + "' has already been registered. " + "Please choose another one.");
+    if (accountMgr.getUserProfileByEmail(email) != null)
+      throw new InvalidUsernameOrEmailException("The email '" + email + "' has already been registered. " + "Please choose another one.");
     return email;
   }
 
@@ -314,17 +323,17 @@ public class UserFactory {
   /**
    * Returns whether email and password are a correct credentials combination.
    * 
-   * @param email user email
+   * @param usernameOrEmail user email
    * @param password user password
    * @return true email corresponds to user and password is correct, else false
    * @throws WdkModelException if error occurs while determining result
    */
-  public boolean isCorrectPassword(String email, String password) throws WdkModelException {
-    return authenticate(email, password) != null;
+  public boolean isCorrectPassword(String usernameOrEmail, String password) throws WdkModelException {
+    return authenticate(usernameOrEmail, password) != null;
   }
 
-  private User authenticate(String email, String password) throws WdkModelException {
-    return populateRegisteredUser(_accountManager.getUserProfile(email, password));
+  private User authenticate(String usernameOrEmail, String password) throws WdkModelException {
+    return populateRegisteredUser(_accountManager.getUserProfile(usernameOrEmail, password));
   }
 
   /**
@@ -358,7 +367,11 @@ public class UserFactory {
   }
 
   public User getUserByEmail(String email) throws WdkModelException {
-    return populateRegisteredUser(_accountManager.getUserProfile(email));
+    return populateRegisteredUser(_accountManager.getUserProfileByEmail(email));
+  }
+
+  private User getUserProfileByUsernameOrEmail(String usernameOrEmail) throws WdkModelException {
+    return populateRegisteredUser(_accountManager.getUserProfileByUsernameOrEmail(usernameOrEmail));
   }
 
   public User getUserBySignature(String signature) throws WdkModelException, WdkUserException {
@@ -386,16 +399,29 @@ public class UserFactory {
    */
   public void saveUser(User user) throws WdkModelException {
     try {
-      // Two integrity checks:
+
+      // Three integrity checks:
+
       // 1. Check if user exists in the database. if not, fail and ask to create the user first
       UserProfile oldProfile = _accountManager.getUserProfile(user.getUserId());
       if (oldProfile == null) {
         throw new WdkModelException("Cannot update user; no user exists with ID " + user.getUserId());
       }
+
       // 2. Check if another user exists with this email (PK will protect us but want better message)
-      UserProfile emailUser = _accountManager.getUserProfile(user.getEmail());
+      UserProfile emailUser = _accountManager.getUserProfileByEmail(user.getEmail());
       if (emailUser != null && emailUser.getUserId() != user.getUserId()) {
         throw new WdkModelException("This email is already in use by another account.  Please choose another.");
+      }
+
+      // 3. Check if another user exists with this username (if supplied)
+      if (user.getProfileProperties().containsKey(AccountManager.USERNAME_PROPERTY_KEY)) {
+        String username = user.getProfileProperties().get(AccountManager.USERNAME_PROPERTY_KEY);
+        
+        UserProfile usernameUser = _accountManager.getUserProfileByUsername(username);
+        if (usernameUser != null && user.getUserId() != usernameUser.getUserId()) {
+          throw new InvalidUsernameOrEmailException("The username '" + username + "' is already in use. " + "Please choose another one.");
+        }
       }
 
       // save off other data to user profile
@@ -413,10 +439,10 @@ public class UserFactory {
     }
   }
 
-  public void resetPassword(String email) throws WdkUserException, WdkModelException {
-    User user = getUserByEmail(email);
+  public void resetPassword(String emailOrLoginName) throws WdkUserException, WdkModelException {
+    User user = getUserProfileByUsernameOrEmail(emailOrLoginName);
     if (user == null) {
-      throw new WdkUserException("Cannot find user with email: " + email);
+      throw new WdkUserException("Cannot find user with email or login name: " + emailOrLoginName);
     }
     // create new temporary password
     String newPassword = generateTemporaryPassword();
