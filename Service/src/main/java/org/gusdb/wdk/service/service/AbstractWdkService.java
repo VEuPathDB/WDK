@@ -226,7 +226,7 @@ public abstract class AbstractWdkService {
     return outputStream -> {
       try {
         IoUtil.transferStream(outputStream, content);
-        LOG.info("Finished transferring streaming output");
+        LOG.debug("Finished transferring streaming output");
       }
       catch (IOException e) {
         LOG.error("Unable to complete data stream transfer", e);
@@ -249,7 +249,7 @@ public abstract class AbstractWdkService {
     return outputStream -> {
       try {
         IoUtil.transferStream(outputStream, process.getInputStream());
-        LOG.info("Finished transferring streaming output");
+        LOG.debug("Finished transferring streaming output");
         try {
           if (process.waitFor(5, TimeUnit.SECONDS)) {
             // process completed; check exit value
