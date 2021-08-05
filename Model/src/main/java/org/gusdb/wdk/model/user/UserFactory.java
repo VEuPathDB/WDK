@@ -397,7 +397,7 @@ public class UserFactory {
    * 
    * @param user
    */
-  public void saveUser(User user) throws WdkModelException {
+  public void saveUser(User user) throws WdkModelException, InvalidUsernameOrEmailException {
     try {
 
       // Three integrity checks:
@@ -411,7 +411,7 @@ public class UserFactory {
       // 2. Check if another user exists with this email (PK will protect us but want better message)
       UserProfile emailUser = _accountManager.getUserProfileByEmail(user.getEmail());
       if (emailUser != null && emailUser.getUserId() != user.getUserId()) {
-        throw new WdkModelException("This email is already in use by another account.  Please choose another.");
+        throw new InvalidUsernameOrEmailException("This email is already in use by another account.  Please choose another.");
       }
 
       // 3. Check if another user exists with this username (if supplied)
@@ -434,6 +434,10 @@ public class UserFactory {
       // save preferences
       _preferenceFactory.savePreferences(user);
     }
+    catch (InvalidUsernameOrEmailException e) {
+      throw e;
+    }
+    // wrap any other exception in WdkModelException
     catch (Exception e) {
       throw new WdkModelException("Unable to update user profile for ID " + user.getUserId(), e);
     }
