@@ -82,7 +82,7 @@ public class PrimaryKeyDefinition extends WdkModelBase {
   }
 
   public String[] getColumnRefs() {
-    return _columnRefSet.toArray(new String[0]);
+    return _columnRefSet.toArray(new String[_columnRefSet.size()]);
   }
 
   public boolean hasColumn(String columnName) {
@@ -198,12 +198,9 @@ public class PrimaryKeyDefinition extends WdkModelBase {
     return primaryKeys;
   }
 
+  @Deprecated // use new PrimaryKeyValue constructor
   public PrimaryKeyValue getPrimaryKeyFromResultList(ResultList resultList) throws WdkModelException {
-    Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
-    for (String column : getColumnRefs()) {
-      pkValues.put(column, resultList.get(column));
-    }
-    return new PrimaryKeyValue(this, pkValues);
+    return new PrimaryKeyValue(this, resultList);
   }
 
   public PrimaryKeyValue getPrimaryKeyFromResultSet(ResultSet resultSet) throws WdkModelException {
