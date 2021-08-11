@@ -33,11 +33,19 @@ public class StaticRecordInstance extends AttributeValueContainer implements Rec
 
   protected boolean _isValidRecord;
 
+  public StaticRecordInstance(RecordClass recordClass, PrimaryKeyValue primaryKey, Map<String, AttributeField> attributeFieldMap) {
+    super(attributeFieldMap);
+    _recordClass = recordClass;
+    _primaryKey = primaryKey;
+    _isValidRecord = true;
+    addPrimaryKeyAttributes(primaryKey);
+  }
+
   public StaticRecordInstance(User user, RecordClass recordClass, AttributeFieldContainer fieldContainer,
       Map<String, Object> pkValues, boolean translatePk) throws WdkModelException, WdkUserException {
     super(fieldContainer.getAttributeFieldMap());
-    this._recordClass = recordClass;
-    this._isValidRecord = true;
+    _recordClass = recordClass;
+    _isValidRecord = true;
 
     if (translatePk) {
       List<Map<String, Object>> records = recordClass.lookupPrimaryKeys(user, pkValues);
@@ -47,11 +55,15 @@ public class StaticRecordInstance extends AttributeValueContainer implements Rec
       pkValues = records.get(0);
     }
 
-    // set primary key value and PK column attribute values
     _primaryKey = new PrimaryKeyValue(recordClass.getPrimaryKeyDefinition(), pkValues);
-    for (String columnRef : recordClass.getPrimaryKeyDefinition().getColumnRefs()) {
+    addPrimaryKeyAttributes(_primaryKey);
+  }
+
+  private void addPrimaryKeyAttributes(PrimaryKeyValue primaryKey) {
+    // set primary key value and PK column attribute values
+    for (String columnRef : _recordClass.getPrimaryKeyDefinition().getColumnRefs()) {
       PkColumnAttributeField pkColumnField = (PkColumnAttributeField)_attributeFieldMap.get(columnRef);
-      addAttributeValue(new PkColumnAttributeValue(pkColumnField, pkValues.get(columnRef)));
+      addAttributeValue(new PkColumnAttributeValue(pkColumnField, primaryKey.getRawValues().get(columnRef)));
     }
   }
 

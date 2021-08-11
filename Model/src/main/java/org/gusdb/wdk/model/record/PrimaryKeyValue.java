@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.dbms.ResultList;
 
 public class PrimaryKeyValue {
 
@@ -26,6 +27,14 @@ public class PrimaryKeyValue {
     _pkDef = pkDef;
     // make sure incoming values match columns in definition
     _pkValues = parseValues(pkDef, pkValues);
+  }
+
+  public PrimaryKeyValue(PrimaryKeyDefinition pkDef, ResultList resultList) throws WdkModelException {
+    _pkDef = pkDef;
+    _pkValues = new LinkedHashMap<String, Object>();
+    for (String column : pkDef.getColumnRefs()) {
+      _pkValues.put(column, resultList.get(column));
+    }
   }
 
   private static Map<String, Object> parseValues(PrimaryKeyDefinition pkDef, Map<String, ? extends Object> pkValues)

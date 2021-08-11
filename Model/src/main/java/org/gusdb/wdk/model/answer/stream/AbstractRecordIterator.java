@@ -14,9 +14,11 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
+import org.gusdb.wdk.model.record.PrimaryKeyValue;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.StaticRecordInstance;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
 
 public abstract class AbstractRecordIterator extends ReadOnlyIterator<RecordInstance> implements Closeable {
 
@@ -38,6 +40,10 @@ public abstract class AbstractRecordIterator extends ReadOnlyIterator<RecordInst
   // answer value source of these records
   private final AnswerValue _answerValue;
 
+  // cache values needed to create each record
+  private final RecordClass _recordClass;
+  private final Map<String, AttributeField> _attributeFieldMap;
+
   // id query result list
   private final SqlResultList _resultList;
 
@@ -50,21 +56,20 @@ public abstract class AbstractRecordIterator extends ReadOnlyIterator<RecordInst
   protected AbstractRecordIterator(AnswerValue answerValue, SqlResultList resultList) {
     _answerValue = answerValue;
     _resultList = resultList;
+    // cache values looked up for each row
+    Question question = _answerValue.getAnswerSpec().getQuestion();
+    _recordClass = question.getRecordClass();
+    _attributeFieldMap = question.getAttributeFieldMap();
   }
 
   protected void performAdditionalClosingOps() {
     // by default, no addition closing operations
   }
 
-  protected StaticRecordInstance createInstanceTemplate(ResultList resultList) throws WdkModelException, WdkUserException {
-
-    // Construct the primary key values for this record
-    Question question = _answerValue.getAnswerSpec().getQuestion();
-    PrimaryKeyDefinition pkDef = question.getRecordClass().getPrimaryKeyDefinition();
-    Map<String, Object> pkValues = pkDef.getPrimaryKeyFromResultList(resultList).getRawValues();
-
+  protected StaticRecordInstance createInstanceTemplate(ResultList resultList) throws WdkModelException {
     // Create a new instance containing the current row's PK values
-    return new StaticRecordInstance(_answerValue.getUser(), question.getRecordClass(), question, pkValues, false);
+    PrimaryKeyValue pkValue = new PrimaryKeyValue(_recordClass.getPrimaryKeyDefinition(), resultList);
+    return new StaticRecordInstance(_recordClass, pkValue, _attributeFieldMap);
   }
 
   /**
