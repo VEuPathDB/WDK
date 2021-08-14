@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
+import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.StaticRecordInstance;
 import org.gusdb.wdk.model.record.TableField;
@@ -54,7 +55,7 @@ public class SingleTableRecordStream implements RecordStream {
     _iteratorCalled = true;
     try {
       if (_resultList.next()) {
-        Map<String, Object> firstPk = _pkDef.getPrimaryKeyFromResultList(_resultList).getRawValues();
+        Map<String, Object> firstPk = new PrimaryKeyValue(_pkDef, _resultList).getRawValues();
         //LOG.debug("RecordInstance Iterator(): First row PK = " + FormatUtil.prettyPrint(firstPk));
         _lastPkValues.set(firstPk);
       }
@@ -84,7 +85,7 @@ public class SingleTableRecordStream implements RecordStream {
 
             // loop through the ResultList's rows and add to table until PK values differ
             while (_resultList.next()) {
-              Map<String,Object> rowPkValues = _pkDef.getPrimaryKeyFromResultList(_resultList).getRawValues();
+              Map<String,Object> rowPkValues = new PrimaryKeyValue(_pkDef, _resultList).getRawValues();
               if (rawValuesDiffer(currentRecordPkValues, rowPkValues)) {
                 // save off next record's primary keys and return this record
                 _lastPkValues.set(rowPkValues);

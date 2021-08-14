@@ -198,11 +198,6 @@ public class PrimaryKeyDefinition extends WdkModelBase {
     return primaryKeys;
   }
 
-  @Deprecated // use new PrimaryKeyValue constructor
-  public PrimaryKeyValue getPrimaryKeyFromResultList(ResultList resultList) throws WdkModelException {
-    return new PrimaryKeyValue(this, resultList);
-  }
-
   public PrimaryKeyValue getPrimaryKeyFromResultSet(ResultSet resultSet) throws WdkModelException {
     try {
       Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
