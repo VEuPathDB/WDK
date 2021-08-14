@@ -872,6 +872,7 @@
     </optional>
     <zeroOrMore>
       <element name="postCacheUpdateSql">
+        <ref name="IncludeExclude" />
         <element name="sql">
           <text/>
         </element>

@@ -335,6 +335,12 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
     _paramValuesSets = _paramValuesSets.stream()
       .filter(p -> p.include(projectId))
       .collect(Collectors.toList());
+
+    // exclude postCacheUpdateSqls
+    _postCacheUpdateSqls = _postCacheUpdateSqls == null ? null :
+      _postCacheUpdateSqls.stream()
+        .filter(sql -> sql.include(projectId))
+        .collect(Collectors.toList());
   }
 
   @Override
