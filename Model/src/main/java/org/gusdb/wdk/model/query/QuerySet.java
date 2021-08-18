@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.ModelSetI;
@@ -213,11 +214,6 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query>, Optional
     return buf.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-   */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     // exclude queries
@@ -256,7 +252,14 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query>, Optional
 
       }
     }
+
+    // exclude postCacheUpdateSqls
+    _postCacheUpdateSqls = _postCacheUpdateSqls.stream()
+        .filter(sql -> sql.include(projectId))
+        .collect(Collectors.toList());
+
   }
+
   // ///////////////////////////////////////////////////////////////
   // ///// protected
   // ///////////////////////////////////////////////////////////////

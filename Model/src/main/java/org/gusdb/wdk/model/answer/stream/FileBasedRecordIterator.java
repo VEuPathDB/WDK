@@ -236,7 +236,7 @@ class FileBasedRecordIterator extends AbstractRecordIterator {
     // be satisfied.  Since primary keys are not included in the attribute CSV files, no direct comparison can be made.
     ResultList resultList = attributeData.resultList;
     if (resultList.next()) {
-      PrimaryKeyValue attrListPk = pkDef.getPrimaryKeyFromResultList(resultList);
+      PrimaryKeyValue attrListPk = new PrimaryKeyValue(pkDef, resultList);
       if (PrimaryKeyValue.rawValuesDiffer(expectedPkValues, attrListPk.getRawValues())) {
         throw new WdkModelException("There is a discrepancy between the ID query and " +
             "attribute query [" + attributeData.fileName + "].  Either the counts disagree " +

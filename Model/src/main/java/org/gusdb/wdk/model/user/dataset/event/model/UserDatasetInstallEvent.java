@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.gusdb.wdk.model.user.dataset.UserDatasetDependency;
 import org.gusdb.wdk.model.user.dataset.UserDatasetType;
-import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEvent;
 
 public class UserDatasetInstallEvent extends UserDatasetEvent
 {

@@ -142,7 +142,7 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
       Map<String, AttributeField> fields = question.getAttributeFieldMap();
 
       while (resultList.next()) {
-        PrimaryKeyValue primaryKey = pkDef.getPrimaryKeyFromResultList(resultList);
+        PrimaryKeyValue primaryKey = new PrimaryKeyValue(pkDef, resultList);
         DynamicRecordInstance record = get(primaryKey);
 
         if (record == null) {
@@ -213,7 +213,7 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
     Query tableQuery = tableField.getWrappedQuery();
 
     while (resultList.next()) {
-      PrimaryKeyValue primaryKey = pkDef.getPrimaryKeyFromResultList(resultList);
+      PrimaryKeyValue primaryKey = new PrimaryKeyValue(pkDef, resultList);
       DynamicRecordInstance record = get(primaryKey);
 
       if (record == null) {
