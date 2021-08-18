@@ -8,6 +8,7 @@ use Time::Local;
 use FgpUtil::Util::SlowQueryReport;
 
 usage() unless scalar(@ARGV);
+
 my ($threshold, $genepage, $notgenepage, $time_filter, $sort_column, $plotOutputFile, $logTailSize, $logDeathImmunity, $debug, $tabfile, $brief);
 
 $sort_column=2;
@@ -23,7 +24,6 @@ $sort_column=2;
             'b' => \$brief,
             'f=s' => \$tabfile,
 	   );
-
 
 my $parseLogRecord = sub {
   my ($logRecord, $debug) = @_;
@@ -65,23 +65,12 @@ my $parseLogRecord = sub {
 
   my ($day, $mon, $year, $hour, $min, $sec, $name, $execSeconds, $lastSeconds, $timestamp);
 
-  # 70863     [15/Jun/2016:16:20:14]   128.91.84.248 -      QUERY LOG first:    0.102 last:    0.103 [GeneAttributes.DnaGTracks__select-uncached] 
-  if (/\[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d)\] .*QUERY LOG .* last:\s+([0-9.]*) \[(.*)\]/) {
+#[18/Aug/2021|04:46:13] sid:safc  rid: safc 584314347ms <no_ip_address> - WARN  - org.gusdb.fgputil.db.slowquery.QueryLogger:131 -      QUERY LOG first:    0.175 last:    0.175 [select-all-running-analysis-executions]
+  if (/\[(\d+)\/(.+)\/(\d+)\|(\d\d):(\d\d):(\d\d)\] .*QUERY LOG .* last:\s+([0-9.]*) \[(.*)\]/) {
     ($day, $mon, $year, $hour, $min, $sec, $lastSeconds, $name) = ($1, $2, $3, $4, $5, $6, $7, $8);
-
     my $monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
     $timestamp = timelocal($sec, $min, $hour, $day, $monthNumber, $year - 1900);
-  }
-
-  # previous format.  can be retired after gus4 release
-  elsif (/\[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d)\] .*QUERY LOG \[(.*)\] .* last page: ([0-9.]*)/) {
-    ($day, $mon, $year, $hour, $min, $sec, $name, $lastSeconds) = ($1, $2, $3, $4, $5, $6, $7, $8);
-
-    my $monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
-    $timestamp = timelocal($sec, $min, $hour, $day, $monthNumber, $year - 1900);
-  }
-
-  else {
+  }  else {
     $reject = 1;
   }
   return ($reject, $timestamp, $lastSeconds, $name);
