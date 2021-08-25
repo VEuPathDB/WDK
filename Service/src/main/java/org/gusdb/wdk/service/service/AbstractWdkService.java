@@ -81,8 +81,12 @@ public abstract class AbstractWdkService {
   @Context
   private ServletContext _servletContext;
 
+  // NOTE: allowing protected access because in certain cases we want to
+  //   directly read JkEnvVar values forwarded from Apache.  These values are
+  //   unfortunately not available via HttpServletRequest.getAttributeNames(),
+  //   used to generate RequestData wrapper objects
   @Context
-  private HttpServletRequest _servletRequest;
+  protected HttpServletRequest _servletRequest;
 
   @Context
   private Request _grizzlyRequest;

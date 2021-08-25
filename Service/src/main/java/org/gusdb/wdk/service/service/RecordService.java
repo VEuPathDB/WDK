@@ -2,6 +2,8 @@ package org.gusdb.wdk.service.service;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,6 +21,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -50,11 +53,21 @@ public class RecordService extends AbstractWdkService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.records.get")
-  public JSONArray getRecordClassList(@QueryParam("format") String format) {
-    List<RecordClass> allRecordClasses = getWdkModel().getAllRecordClasses();
-    return isExpandedFormat(format, false) ?
-        RecordClassFormatter.getExpandedRecordClassesJson(allRecordClasses, getWdkModel().getRecordClassQuestionMap()) :
-        RecordClassFormatter.getRecordClassNamesJson(allRecordClasses);
+  public Response getRecordClassList(@QueryParam("format") String format) {
+    WdkModel wdkModel = getWdkModel();
+    return Response.ok(
+      isExpandedFormat(format, false)
+        ?
+          // stream expanded format, which may be large (subclasses may override to cache, etc.)
+          getStreamingOutput(getExpandedRecordClassesJsonStream(wdkModel))
+        :
+          // build smaller JSON directly and use string as entity
+          RecordClassFormatter.getRecordClassNamesJson(wdkModel.getAllRecordClasses()).toString()).build();
+  }
+
+  protected InputStream getExpandedRecordClassesJsonStream(WdkModel wdkModel) {
+    JSONArray allRecordClassesJson = RecordClassFormatter.getExpandedRecordClassesJson(wdkModel.getAllRecordClasses(), wdkModel.getRecordClassQuestionMap());
+    return new ByteArrayInputStream(allRecordClassesJson.toString().getBytes());
   }
 
   @GET
