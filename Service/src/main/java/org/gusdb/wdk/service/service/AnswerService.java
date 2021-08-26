@@ -8,8 +8,10 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -86,6 +88,8 @@ public class AnswerService extends AbstractWdkService {
 
   private static final Logger LOG = Logger.getLogger(AnswerService.class);
 
+  private static final String AVOID_CACHE_HIT_HEADER = "avoid-cache-hit";
+
   public static final String REPORTS_URL_SEGMENT = "reports";
   public static final String REPORTS_PATH = QuestionService.NAMED_SEARCH_PATH + "/" + REPORTS_URL_SEGMENT;
   public static final String REPORT_NAME_PATH_PARAM = "reportName";
@@ -96,12 +100,15 @@ public class AnswerService extends AbstractWdkService {
 
   private final String _recordClassUrlSegment;
   private final String _questionUrlSegment;
+  private final boolean _avoidCacheHit;
 
   public AnswerService(
       @PathParam(RecordService.RECORD_TYPE_PATH_PARAM) String recordClassUrlSegment,
-      @PathParam(QuestionService.SEARCH_PATH_PARAM) String questionUrlSegment) {
+      @PathParam(QuestionService.SEARCH_PATH_PARAM) String questionUrlSegment,
+      @HeaderParam(AVOID_CACHE_HIT_HEADER) @DefaultValue("false") boolean avoidCacheHit) {
     _recordClassUrlSegment = recordClassUrlSegment;
     _questionUrlSegment = questionUrlSegment;
+    _avoidCacheHit = avoidCacheHit;
   }
 
   /**
@@ -182,12 +189,10 @@ public class AnswerService extends AbstractWdkService {
   @Path(CUSTOM_REPORT_SEGMENT)
   @Consumes(MediaType.APPLICATION_JSON)
   // Produces an unknown media type; varies depending on reporter selected
-  public Response createCustomReportAnswer(
-      @PathParam(REPORT_NAME_PATH_PARAM) String reportName,
-      JSONObject body)
+  public Response createCustomReportAnswer(@PathParam(REPORT_NAME_PATH_PARAM) String reportName, JSONObject body)
           throws WdkModelException, DataValidationException, RequestMisformatException {
     AnswerRequest request = parseAnswerRequest(getQuestionOrNotFound(_recordClassUrlSegment, _questionUrlSegment), reportName,
-        body, getWdkModel(), getSessionUser());
+        body, getWdkModel(), getSessionUser(), _avoidCacheHit);
     return getAnswerResponse(getSessionUser(), request).getSecond();
   }
 
@@ -270,7 +275,7 @@ public class AnswerService extends AbstractWdkService {
   }
 
   static AnswerRequest parseAnswerRequest(Question question,
-      String reporterName, JSONObject requestBody, WdkModel wdkModel, User sessionUser)
+      String reporterName, JSONObject requestBody, WdkModel wdkModel, User sessionUser, boolean avoidCacheHit)
           throws RequestMisformatException, DataValidationException, WdkModelException {
 
     // parse view filters
@@ -285,7 +290,7 @@ public class AnswerService extends AbstractWdkService {
         requestBody.getJSONObject(JsonKeys.REPORT_CONFIG));
 
     // create request
-    return new AnswerRequest(answerSpec, formatting);
+    return new AnswerRequest(answerSpec, formatting, avoidCacheHit);
   }
 
   private static RunnableObj<AnswerSpec> parseAnswerSpec(Question question,
@@ -396,7 +401,7 @@ public class AnswerService extends AbstractWdkService {
       throws RequestMisformatException, WdkModelException, DataValidationException {
 
     // create base answer value from answer spec
-    AnswerValue answerValue = AnswerValueFactory.makeAnswer(sessionUser, request.getAnswerSpec());
+    AnswerValue answerValue = AnswerValueFactory.makeAnswer(sessionUser, request.getAnswerSpec(), request.avoidCacheHit());
 
     // parse (optional) request details (columns, pagination, etc.- format dependent on reporter) and configure reporter
     Reporter reporter = getConfiguredReporter(answerValue, request.getFormatting());

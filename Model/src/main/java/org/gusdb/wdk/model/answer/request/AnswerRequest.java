@@ -10,11 +10,13 @@ public class AnswerRequest {
   private final Date _creationDate;
   private final RunnableObj<AnswerSpec> _answerSpec;
   private final AnswerFormatting _formatting;
+  private final boolean _avoidCacheHit;
 
-  public AnswerRequest(RunnableObj<AnswerSpec> answerSpec, AnswerFormatting formatting) {
+  public AnswerRequest(RunnableObj<AnswerSpec> answerSpec, AnswerFormatting formatting, boolean avoidCacheHit) {
     _creationDate = new Date();
     _answerSpec = answerSpec;
     _formatting = formatting;
+    _avoidCacheHit = avoidCacheHit;
   }
 
   public Date getCreationDate() {
@@ -27,5 +29,9 @@ public class AnswerRequest {
 
   public AnswerFormatting getFormatting() {
     return _formatting;
+  }
+
+  public boolean avoidCacheHit() {
+    return _avoidCacheHit;
   }
 }

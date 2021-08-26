@@ -133,7 +133,7 @@ public class SummaryTester {
             .buildRunnable(user, StepContainer.emptyContainer());
 
         AnswerValue answerValue = AnswerValueFactory.makeAnswer(
-            user, validSpec, nextStartRowIndex, nextEndRowIndex, sortingMap);
+            user, validSpec, nextStartRowIndex, nextEndRowIndex, sortingMap, false);
 
         // this is wrong. it only shows one attribute query, not
         // all. Fix this in Answer by saving a list of attribute
@@ -212,9 +212,9 @@ public class SummaryTester {
         .setLegacyFilterName(filter.map(NamedObject::getName))
         .buildRunnable(user, StepContainer.emptyContainer());
     Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
-    AnswerValue answerValue = AnswerValueFactory.makeAnswer(user, answerSpec, 1, 2, sortingMap);
+    AnswerValue answerValue = AnswerValueFactory.makeAnswer(user, answerSpec, 1, 2, sortingMap, false);
     int resultSize = answerValue.getResultSizeFactory().getResultSize();
-    answerValue = AnswerValueFactory.makeAnswer(user, answerSpec, 1, resultSize, sortingMap);
+    answerValue = AnswerValueFactory.makeAnswer(user, answerSpec, 1, resultSize, sortingMap, false);
     FileWriter fw = new FileWriter(new File(xmlFile), false);
 
     String newline = System.getProperty("line.separator");

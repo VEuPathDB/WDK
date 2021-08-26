@@ -161,14 +161,15 @@ public class AnswerValue {
    * @param endIndex
    *   The index of the last <code>RecordInstance</code> in the page,
    *   inclusive.
+   * @param avoidCacheHit 
    */
   public AnswerValue(User user, RunnableObj<AnswerSpec> validAnswerSpec, int startIndex,
-      int endIndex, Map<String, Boolean> sortingMap) throws WdkModelException {
+      int endIndex, Map<String, Boolean> sortingMap, boolean avoidCacheHit) throws WdkModelException {
     _user = user;
     _validAnswerSpec = validAnswerSpec;
     _answerSpec = validAnswerSpec.get();
     _wdkModel = _answerSpec.getWdkModel();
-    _idsQueryInstance = Query.makeQueryInstance(_answerSpec.getQueryInstanceSpec().getRunnable().getLeft());
+    _idsQueryInstance = Query.makeQueryInstance(_answerSpec.getQueryInstanceSpec().getRunnable().getLeft(), avoidCacheHit);
     Question question = _answerSpec.getQuestion();
     _resultSizeFactory = new ResultSizeFactory(this);
 

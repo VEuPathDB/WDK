@@ -29,10 +29,15 @@ public class AnswerValueFactory {
    */
   public static AnswerValue makeAnswer(User user, RunnableObj<AnswerSpec> validSpec)
       throws WdkModelException {
+    return makeAnswer(user, validSpec, false);
+  }
+
+  public static AnswerValue makeAnswer(User user, RunnableObj<AnswerSpec> validSpec,
+      boolean avoidCacheHit) throws WdkModelException {
     Question question = validSpec.get().getQuestion();
     int pageStart = 1;
     int pageEnd = AnswerValue.UNBOUNDED_END_PAGE_INDEX;
-    AnswerValue answerValue = makeAnswer(user, validSpec, pageStart, pageEnd, Collections.emptyMap());
+    AnswerValue answerValue = makeAnswer(user, validSpec, pageStart, pageEnd, Collections.emptyMap(), avoidCacheHit);
     if (question.isFullAnswer()) {
       int resultSize = answerValue.getResultSizeFactory().getResultSize();
       if (resultSize > pageEnd)
@@ -42,20 +47,20 @@ public class AnswerValueFactory {
   }
 
   public static AnswerValue makeAnswer(User user, RunnableObj<AnswerSpec> validSpec,
-      int startIndex, int endIndex, Map<String, Boolean> sortingMap) throws WdkModelException {
+      int startIndex, int endIndex, Map<String, Boolean> sortingMap, boolean avoidCacheHit) throws WdkModelException {
     Question question = validSpec.get().getQuestion();
     if (question instanceof SingleRecordQuestion) {
       return new SingleRecordAnswerValue(user, validSpec);
     }
     else {
-      return new AnswerValue(user, validSpec, startIndex, endIndex, sortingMap);
+      return new AnswerValue(user, validSpec, startIndex, endIndex, sortingMap, avoidCacheHit);
     }
   }
 
   public static AnswerValue makeAnswer(AnswerValue answerValue,
       RunnableObj<AnswerSpec> modifiedSpec) throws WdkModelException {
     return makeAnswer(answerValue.getUser(), modifiedSpec, answerValue.getStartIndex(),
-        answerValue.getEndIndex(), answerValue.getSortingMap());
+        answerValue.getEndIndex(), answerValue.getSortingMap(), false);
   }
 
 }

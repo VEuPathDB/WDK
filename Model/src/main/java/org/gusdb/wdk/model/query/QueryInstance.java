@@ -58,6 +58,10 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   protected final RunnableObj<QueryInstanceSpec> _spec;
   protected final ReadOnlyMap<String, String> _context;
 
+  // fields that may be set after construction
+  //   this is meant to override isCacheable to intentionally degrade performance during testing
+  protected boolean _avoidCacheHit = false;
+
   // fields lazily loaded post-construction
   private Boolean _cachePreviouslyExistedForSpec;
   private Map<String, String> _paramInternalValues;
@@ -261,5 +265,9 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
         throw new WdkModelException("Unable to run postCacheinsertSql:  " + sql, ex);
       }
     }
+  }
+
+  public void setAvoidCacheHit(boolean avoidCacheHit) {
+    _avoidCacheHit = avoidCacheHit;
   }
 }

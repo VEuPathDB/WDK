@@ -264,7 +264,7 @@ public class StepService extends UserService {
 
     // execute reporter against the answer spec
     AnswerRequest request = new AnswerRequest(runnableSpec,
-        new AnswerFormatting(reporterName, requestJson.getJSONObject(JsonKeys.REPORT_CONFIG)));
+        new AnswerFormatting(reporterName, requestJson.getJSONObject(JsonKeys.REPORT_CONFIG)), false);
     TwoTuple<AnswerValue, Response> result = AnswerService.getAnswerResponse(step.getUser(), request);
 
     // update the estimated size and last-run time on this step

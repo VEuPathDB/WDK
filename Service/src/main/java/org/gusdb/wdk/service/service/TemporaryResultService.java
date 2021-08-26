@@ -38,7 +38,7 @@ public class TemporaryResultService extends AbstractWdkService {
         .orElseThrow(() -> new DataValidationException(questionName + " is not a valid search name."));
     String reporterName = requestJson.getString(JsonKeys.REPORT_NAME);
     AnswerRequest request = AnswerService.parseAnswerRequest(
-        question, reporterName, requestJson, getWdkModel(), getSessionUser());
+        question, reporterName, requestJson, getWdkModel(), getSessionUser(), false);
     String id = UUID.randomUUID().toString();
     CacheMgr.get().getAnswerRequestCache().put(id, request);
     return Response.ok(new JSONObject().put(JsonKeys.ID, id).toString())
