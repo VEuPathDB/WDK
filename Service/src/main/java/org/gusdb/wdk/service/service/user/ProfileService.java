@@ -97,7 +97,7 @@ public class ProfileService extends UserService {
       throw new BadRequestException(e);
     }
     catch (InvalidUsernameOrEmailException e) {
-      throw new DataValidationException(e.getMessage(), e);
+      throw new DataValidationException(e.getMessage());
     }
   }
 

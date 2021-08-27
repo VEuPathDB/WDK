@@ -70,7 +70,7 @@ public class UserUtilityServices extends AbstractWdkService {
           .build();
     }
     catch (InvalidUsernameOrEmailException e) {
-      throw new DataValidationException(e.getMessage(), e);
+      throw new DataValidationException(e.getMessage());
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage(), e);
