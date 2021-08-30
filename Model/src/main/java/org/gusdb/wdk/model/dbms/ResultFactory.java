@@ -55,15 +55,17 @@ public class ResultFactory {
     _appDb = appDb;
   }
 
-  public InstanceInfo cacheResults(String checksum, CacheTableCreator tableCreator) throws WdkModelException {
+  public InstanceInfo cacheResults(String checksum, CacheTableCreator tableCreator, boolean avoidCacheHit) throws WdkModelException {
 
-    Optional<InstanceInfo> instanceInfo = getInstanceInfo(checksum);
-    if (instanceInfo.isPresent()) {
-      // results with this checksum already cached
-      return instanceInfo.get();
+    if (!avoidCacheHit) {
+      Optional<InstanceInfo> instanceInfo = getInstanceInfo(checksum);
+      if (instanceInfo.isPresent()) {
+        // results with this checksum already cached
+        return instanceInfo.get();
+      }
     }
 
-    // instance doesn't exist; create cache
+    // instance doesn't exist or asked to not use; create cache
     InstanceInfo newInstanceRow = createCache(checksum, tableCreator);
     insertInstanceRow(newInstanceRow);
     return newInstanceRow;

@@ -134,7 +134,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
       ResultFactory factory = new ResultFactory(_wdkModel.getAppDb());
       String checksum = getChecksum();
       _cachePreviouslyExistedForSpec = factory.getInstanceInfo(checksum).isPresent();
-      _instanceInfo = factory.cacheResults(checksum, this);
+      _instanceInfo = factory.cacheResults(checksum, this, _avoidCacheHit);
     }
     return _instanceInfo;
   }
