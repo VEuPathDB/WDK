@@ -19,7 +19,7 @@ import org.gusdb.wdk.model.WdkModelException;
 
 public class ResultFactory {
 
-  private static Logger logger = Logger.getLogger(ResultFactory.class);
+  private static Logger LOG = Logger.getLogger(ResultFactory.class);
 
   private static final boolean USE_INSTANCE_INFO_CACHE = true;
   private static final boolean COMPUTE_CACHE_TABLE_STATISTICS = false;
@@ -57,10 +57,14 @@ public class ResultFactory {
 
   public InstanceInfo cacheResults(String checksum, CacheTableCreator tableCreator, boolean avoidCacheHit) throws WdkModelException {
 
-    if (!avoidCacheHit) {
-      Optional<InstanceInfo> instanceInfo = getInstanceInfo(checksum);
-      if (instanceInfo.isPresent()) {
+    Optional<InstanceInfo> instanceInfo = getInstanceInfo(checksum);
+    if (instanceInfo.isPresent()) {
+      if (avoidCacheHit) {
+        LOG.info("Found result associated with " + checksum + " but ignoring per request.");
+      }
+      else {
         // results with this checksum already cached
+        LOG.info("Found result associated with " + checksum + ", located in " + instanceInfo.get().getTableName());
         return instanceInfo.get();
       }
     }
@@ -68,6 +72,7 @@ public class ResultFactory {
     // instance doesn't exist or asked to not use; create cache
     InstanceInfo newInstanceRow = createCache(checksum, tableCreator);
     insertInstanceRow(newInstanceRow);
+    LOG.info("Created new result associated with " + checksum + ", located in " + newInstanceRow.getTableName());
     return newInstanceRow;
   }
 
@@ -215,7 +220,7 @@ public class ResultFactory {
 
   private ResultList getResult(long instanceId, String sql) throws WdkModelException {
     try {
-      logger.debug("Performing the following SQL against WDK Cache: " + sql);
+      LOG.debug("Performing the following SQL against WDK Cache: " + sql);
       DataSource dataSource = _appDb.getDataSource();
       ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql, "select-cache-id-" + instanceId);
       return new SqlResultList(resultSet);
