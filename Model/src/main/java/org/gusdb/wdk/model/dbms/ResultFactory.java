@@ -60,11 +60,11 @@ public class ResultFactory {
     Optional<InstanceInfo> instanceInfo = getInstanceInfo(checksum);
     if (instanceInfo.isPresent()) {
       if (avoidCacheHit) {
-        LOG.info("Found result associated with " + checksum + " but ignoring per request.");
+        LOG.debug("Found result associated with " + checksum + " but ignoring per request.");
       }
       else {
         // results with this checksum already cached
-        LOG.info("Found result associated with " + checksum + ", located in " + instanceInfo.get().getTableName());
+        LOG.debug("Found result associated with " + checksum + ", located in " + instanceInfo.get().getTableName());
         return instanceInfo.get();
       }
     }
@@ -72,7 +72,7 @@ public class ResultFactory {
     // instance doesn't exist or asked to not use; create cache
     InstanceInfo newInstanceRow = createCache(checksum, tableCreator);
     insertInstanceRow(newInstanceRow);
-    LOG.info("Created new result associated with " + checksum + ", located in " + newInstanceRow.getTableName());
+    LOG.debug("Created new result associated with " + checksum + ", located in " + newInstanceRow.getTableName());
     return newInstanceRow;
   }
 
