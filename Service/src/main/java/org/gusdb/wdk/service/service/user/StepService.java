@@ -25,6 +25,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
@@ -43,6 +44,7 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
+import org.gusdb.wdk.model.toolbundle.ColumnReporterInstance;
 import org.gusdb.wdk.model.user.InvalidStrategyStructureException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
@@ -398,6 +400,9 @@ public class StepService extends UserService {
       final JSONObject requestJson)
           throws WdkModelException, DataValidationException, NotFoundException, WdkUserException {
 
+    // start timer
+    Timer t = new Timer();
+
     // validate step at runnable level so that its container will contain runnable steps
     Step step = getStepForCurrentUser(stepId, ValidationLevel.RUNNABLE);
 
@@ -419,14 +424,17 @@ public class StepService extends UserService {
     Question question = trimmedSpec.get().getQuestion();
     AttributeField attribute = requireColumn(question, columnName);
 
+    // create reporter instance for this step and config
+    ColumnReporterInstance reporter = attribute.makeReporterInstance(
+        reporterName,
+        AnswerValueFactory.makeAnswer(step.getUser(), trimmedSpec),
+        JsonUtil.toJsonNode(requestJson.getJSONObject(JsonKeys.REPORT_CONFIG))
+    ).orElseThrow(ColumnReporterService.makeNotFound(attribute, reporterName));
+
+    LOG.info("Prepared column reporter for column " + columnName + " in " + t.getElapsedString());
+
     // execute reporter against the runnable answer spec
-    return AnswerService.getAnswerAsStream(
-        attribute.makeReporterInstance(
-            reporterName,
-            AnswerValueFactory.makeAnswer(step.getUser(), trimmedSpec),
-            JsonUtil.toJsonNode(requestJson.getJSONObject(JsonKeys.REPORT_CONFIG))
-        ).orElseThrow(ColumnReporterService.makeNotFound(attribute, reporterName))
-    );
+    return AnswerService.getAnswerAsStream(reporter);
   }
 
   private static DataValidationException getNotRunnableException(Validateable<?> badSpec) {
