@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class AbstractColumnToolInstance implements ColumnToolInstance {
 
-  private AnswerValue _answer;
+  protected AnswerValue _answer;
 
   private AttributeField _column;
 
