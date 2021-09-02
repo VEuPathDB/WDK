@@ -59,15 +59,16 @@ public class RecordStreamFactory {
       if (answerValue instanceof SingleRecordAnswerValue)
         out = new SingleRecordStream((SingleRecordAnswerValue) answerValue);
 
+      // if only need one attribute query, then use SingleAttributeQueryRecordStream
+      else if (requiresExactlyOneAttrQuery(answerValue, attributes, tables, true) &&
+               answerValue.entireResultRequested())
+        out = new SingleAttributeRecordStream(answerValue, attributes);
+
       // if result is smaller than maxPageSize, load entire
       // answer into memory and lazy load attributes/tables
       else if (answerValue.getResultSizeFactory().getResultSize() <= MAX_PAGE_SIZE)
         out = new PagedAnswerRecordStream(answerValue,
           answerValue.getResultSizeFactory().getResultSize());
-
-      else if (requiresExactlyOneAttrQuery(answerValue, attributes, tables, true) &&
-               answerValue.entireResultRequested())
-        out = new SingleAttributeRecordStream(answerValue, attributes);
 
       // otherwise, use file-based; most efficient method for large results where we already know attrs/tables
       else
