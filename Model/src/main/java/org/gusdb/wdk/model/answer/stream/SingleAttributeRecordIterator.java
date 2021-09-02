@@ -17,13 +17,15 @@ import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeValue;
 
 public class SingleAttributeRecordIterator extends AbstractRecordIterator {
 
+  private static final int FETCH_SIZE = 2000;
+
   private final Collection<QueryColumnAttributeField> _fields;
 
   public SingleAttributeRecordIterator(AnswerValue answerValue,
       List<QueryColumnAttributeField> fields, String sql) throws SQLException {
     super(answerValue, new SqlResultList(SqlUtils.executeQuery(
         answerValue.getWdkModel().getAppDb().getDataSource(),
-        sql, "single-attribute-query-iterator-sql")));
+        sql, "single-attribute-query-iterator-sql", FETCH_SIZE)));
     _fields = fields;
   }
 
