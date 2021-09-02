@@ -31,6 +31,7 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.toolbundle.ColumnReporterInstance;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -151,11 +152,12 @@ public class ColumnReporterService extends AbstractWdkService {
     FilterOptionListBuilder viewFilters = AnswerSpecServiceFormat
         .parseViewFilters(JsonUtil.toJSONObject(body)
             .valueOrElseThrow(() -> new RequestMisformatException("Passed body is not a JSON object.")));
-    return AnswerService.getAnswerAsStream(column.makeReporterInstance(
+    ColumnReporterInstance reporter = column.makeReporterInstance(
       toolName,
       makeAnswer(body.get(JsonKeys.SEARCH_CONFIG), toolName, viewFilters),
       body.get(JsonKeys.REPORT_CONFIG)
-    ).orElseThrow(makeNotFound(column, toolName)));
+    ).orElseThrow(makeNotFound(column, toolName));
+    return AnswerService.getAnswerAsStream(reporter);
   }
 
   /**
