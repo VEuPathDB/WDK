@@ -26,6 +26,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -462,7 +463,9 @@ public class AnswerService extends AbstractWdkService {
   public static StreamingOutput getAnswerAsStream(final Reporter reporter) {
     return stream -> {
       try {
+        Timer t = new Timer();
         reporter.report(stream);
+        LOG.info("Wrote report of type " + reporter.getClass().getSimpleName() + " in " + t.getElapsedString());
       }
       catch (WdkModelException | WdkRuntimeException e) {
         stream.write((
