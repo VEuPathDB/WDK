@@ -7,11 +7,12 @@ import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.PreMatching;
+import javax.ws.rs.ext.WriterInterceptor;
+import javax.ws.rs.ext.WriterInterceptorContext;
 
 import org.glassfish.grizzly.http.server.Request;
 import org.gusdb.fgputil.logging.ThreadLocalLoggingVars;
@@ -20,7 +21,7 @@ import org.gusdb.wdk.controller.ContextLookup;
 
 @PreMatching
 @Priority(30)
-public class LoggingContextFilter implements ContainerRequestFilter, ContainerResponseFilter {
+public class LoggingContextFilter implements ContainerRequestFilter, WriterInterceptor {
 
   private static final AtomicInteger requestId = new AtomicInteger(1);
 
@@ -44,7 +45,8 @@ public class LoggingContextFilter implements ContainerRequestFilter, ContainerRe
   }
 
   @Override
-  public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+  public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
+    context.proceed();
     ThreadLocalLoggingVars.clearValues();
   }
 

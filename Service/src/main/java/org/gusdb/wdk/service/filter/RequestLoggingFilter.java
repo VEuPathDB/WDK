@@ -9,13 +9,14 @@ import java.util.Map.Entry;
 
 import javax.annotation.Priority;
 import javax.ws.rs.ProcessingException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.ext.WriterInterceptor;
+import javax.ws.rs.ext.WriterInterceptorContext;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -25,7 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 @Priority(200)
-public class RequestLoggingFilter implements ContainerRequestFilter, ContainerResponseFilter {
+public class RequestLoggingFilter implements ContainerRequestFilter, WriterInterceptor {
 
   private static final Logger LOG = Logger.getLogger(RequestLoggingFilter.class);
 
@@ -134,8 +135,8 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
   }
 
   @Override
-  public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext)
-      throws IOException {
+  public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
+    context.proceed();
     LOG.log(LOG_LEVEL, "Request complete");
   }
 }
