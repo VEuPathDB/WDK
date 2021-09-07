@@ -19,6 +19,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.ServiceResolver;
 import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkDelayedResultException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
@@ -266,13 +267,16 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
       LOG.debug("Invoking " + request.getPluginClass() + "...");
       _signal = client.invoke(request);
     }
+    catch (DelayedResultException ex) {
+      throw new WdkDelayedResultException(ex.getMessage());
+    }
     catch (ClientUserException ex) {
       // FIXME: We need to figure out what kind of exception to throw here- does parameter validation for
       //        WSF plugins (i.e. process queries) happen in WDK or on the plugin side?  For now, assume
       //        validation happens correctly in WDK and throw model exception here
       throw new WdkModelException(ex);
     }
-    catch (ClientModelException | DelayedResultException | URISyntaxException ex) {
+    catch (ClientModelException | URISyntaxException ex) {
       throw new WdkModelException(ex);
     }
     long end = System.currentTimeMillis();
