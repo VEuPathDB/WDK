@@ -1,11 +1,30 @@
-StrategiesWDK: a powerful search platform and GUI for 'omics' databases
-=======================================================================
+# Strategies Website Development Kit (WDK)
 
-The Strategies WDK is a powerful search platform and GUI for 'omics' databases. Mining the data in GUS can be performed using the Strategies-WDK (Fischer et al. Database 2011) to provide a workspace for generating, combining, saving, and sharing “strategies.” Strategies are graphical workflows of database searches of record types (such as genes, SNPs, studies) that can be selected (favorites, baskets), combined, and transformed (SNPs to genes, genes to pathways, pathways to chemical compounds). It provides a workspace for generating, combining, saving, and sharing “strategies".
+Strategies WDK is a powerful Java-based search platform and REST API to access data stored in a relational database.  When combined with the [WDKClient](https://github.com/VEuPathDB/WDKClient) web client, it provides an online workspace for exposing relational and other data through a pre-configured set of parameterized queries.  These queries can be saved, edited, and shared.  They can also be combined to form a complex search “strategy”, a tree-based flow of search results.
 
-This system has proved highly popular and successful in enabling sophisticating data-mining by a diverse group of end users, and has recently been updated so as to provide the ability to browse extensive metadata (e.g., clinical epidemiology variables), inspired by the Harvest data discovery platform (Pennington et. al., JAMIA 2014). Also new is the introduction of an analysis tab for the records returned by Strategy searches. For example, a list of returned genes can be analyzed for Gene Ontology or KEGG pathway enrichment without having to leave the Strategies workspace page. Soon a refactored combined Strategies-WDK system will be released based on a REST-API backend and react-redux based frontend, making easier for other projects and communities to install and customize.
+Features include:
+- XML configuration of:
+    - Record types (Record Classes)
+    - Parameterized searches (Questions)
+    - Record-based attributes and data tables
+- Plugin APIs to support:
+    - configurable result filters
+    - configurable reports/formats
+    - asynchronous result analysis (Step Analysis)
+    - non-RDBMS search (Process Queries)
+    - result type transformation (e.g. genes to pathways)
+- Finding and bookmarking a particular record (Record Pages, Favorites)
+- Saving off a set of records (Baskets)
+- User login and preference storage
+- Widescale result caching
+- Extensible coding APIs for customized websites
 
-Exploiting the GUS/Strategies-WDK system, our group has successfully developed and deployed such a system in support of functional genomics data for diverse user communities, including the NIAID VEuPathDB Bioinformatics Resource Center (http://veupathdb.org), the NIDDK Beta Cell Biology Consortium Genomics Resource (http://genomics.betacell.org), and the NIA NIAGADS Genomics database (www.niagads.org/genomics). Although thus far used primarily for functional genomics datasets, our system is inherently generalizable beyond omics data, including clinical records.
+Legacy documentation can be found [here](https://docs.google.com/document/d/1kmNWkkcInKoxxiuUJqbc4QPWuySQud0OuECJ2TmEMTo/pub).
 
-Explore [PlasmoDB.org](https://plasmodb.org), a large scale production site powered by the WDK.
-See the [Documentation](https://docs.google.com/document/d/1kmNWkkcInKoxxiuUJqbc4QPWuySQud0OuECJ2TmEMTo/pub)
+Full up-to-date technical documentation (in progress) can be found [here]().
+
+This system has proved highly successful in enabling sophisticated data-mining of 'omics' data (e.g. genes, SNPs, studies) by a diverse group of end users.  For VEuPathDB, it has primarily been used to mine data in the [GUS Schema](https://github.com/VEuPathDB/GusSchema) (Fischer et al. Database 2011), but has recently been updated so as to provide the ability to browse extensive metadata, e.g. [clinical epidemiology variables](https://clinepidb.org), inspired by the Harvest data discovery platform (Pennington et. al., JAMIA 2014).
+
+Exploiting the GUS/Strategies-WDK system, our group has successfully developed and deployed a system in support of functional genomics data for diverse user communities, including the [NIAID VEuPathDB Bioinformatics Resource Center](http://veupathdb.org), the [NIDDK Beta Cell Biology Consortium Genomics Resource](http://genomics.betacell.org), and the [NIA NIAGADS Genomics database](www.niagads.org/genomics). Although thus far used primarily for functional genomics datasets, our system is inherently generalizable beyond omics data, including clinical records.
+
+Explore [plasmodb.org](https://plasmodb.org), a large scale production site powered by the WDK.
