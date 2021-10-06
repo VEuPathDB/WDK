@@ -19,9 +19,12 @@ Features include:
 - Widescale result caching
 - Extensible coding APIs for customized websites
 
+Full up-to-date technical documentation (in progress) can be found [here](https://veupathdb.github.io/WDK).
+
+Original GUS/WDK project description is [here](https://www.cbil.upenn.edu/node/86).
+
 Legacy documentation can be found [here](https://docs.google.com/document/d/1kmNWkkcInKoxxiuUJqbc4QPWuySQud0OuECJ2TmEMTo/pub).
 
-Full up-to-date technical documentation (in progress) can be found [here]().
 
 This system has proved highly successful in enabling sophisticated data-mining of 'omics' data (e.g. genes, SNPs, studies) by a diverse group of end users.  For VEuPathDB, it has primarily been used to mine data in the [GUS Schema](https://github.com/VEuPathDB/GusSchema) (Fischer et al. Database 2011), but has recently been updated so as to provide the ability to browse extensive metadata, e.g. [clinical epidemiology variables](https://clinepidb.org), inspired by the Harvest data discovery platform (Pennington et. al., JAMIA 2014).
 
