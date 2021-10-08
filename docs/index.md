@@ -1,37 +1,38 @@
-## Welcome to GitHub Pages
+# WDK Technical Documentation
 
-You can use the [editor on GitHub](https://github.com/VEuPathDB/WDK/edit/master/docs/index.md) to maintain and preview the content for your website in Markdown files.
+## What is WDK?
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+WDK is a search and access platform for data stored in an RDBMS.  You define the record types to be searched, the parameterized SQL queries used to return a set of record IDs, the columns (aka attributes) that can be joined to the result and displayed, and much more.  WDK supports a variety of parameter types, including enum params whose vocabularies are also defined by configured queries, string params, range params, and more.  Dataset parameters allow the user to upload a set of IDs from which a result can be derived.  Users can join the results of two queries using set operations like union, intersect, minus, and even custom joining of results.  A user's search history, including these result trees (strategies), is saved off, editable later, sharable, etc.
 
-### Markdown
+## Configuration
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+Configuration is handled through one or more XML files, referred to as the WDK Model.  These files define:
 
-```markdown
-Syntax highlighted code block
+- The data types available for search
+- Available attributes and data tables associated with records of those types
+- Available searches and associated SQL queries for those types
+- Parameters for each search, used to configure the associated query
+- Transformation queries (converting one data type to another)
+- Output format and data aggregation/statistics plugins
+- Result analysis plugins
+- Available result filters
+- etc.
 
-# Header 1
-## Header 2
-### Header 3
+See [Configuring the WDK](configuring-the-wdk.html) for more details, or the [WDK Model XML RelaxNG (RNG) Schema](https://github.com/VEuPathDB/WDK/blob/master/Model/lib/rng/wdkModel.rng) for all available options.
 
-- Bulleted
-- List
+On startup, WDK reads and processes these XML files into an in-memory data structure, which it uses to deliver, via REST service, metadata about the configured data types and their properties.  Incoming HTTP requests to query, process, combine, and analyze data reference the in-memory model to inform how to perform the requested actions.
 
-1. Numbered
-2. List
+A secondary XML file (model-config.xml) defines:
 
-**Bold** and _Italic_ and `Code` text
+- The databases WDK will use, namely:
+  - AppDb: application domain data
+  - UserDb: saved user data (search history, bookmarked records, analysis configurations, user preferences, etc.)
+  - AccountDb: user identity information (soon to be deprecated by full OpenIDConnect compliance and external service calls)
+- Query performance monitoring config
+- User authentication scheme
+- etc.
 
-[Link](url) and ![Image](src)
-```
+## Record Classes
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+The record class is the fundamental record type in WDK.  You can think of this as an "object" in OOP-speak.  Record instances are defined by a one- or more- column primary key, which must be unique.  Record classes have attributes (fields) associated with them, 
 
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/VEuPathDB/WDK/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
