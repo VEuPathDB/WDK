@@ -8,29 +8,29 @@ WDK is a search and access platform for data stored in an RDBMS.  You define the
 
 Configuration is handled through one or more XML files, referred to as the WDK Model.  These files define:
 
-- The data types available for search
-- Available attributes and data tables associated with records of those types
-- Available searches and associated SQL queries for those types
-- Parameters for each search, used to configure the associated query
-- Transformation queries (converting one data type to another)
-- Output format and data aggregation/statistics plugins
-- Result analysis plugins
-- Available result filters
-- etc.
+* The data types available for search
+* Available attributes and data tables associated with records of those types
+* Available searches and associated SQL queries for those types
+* Parameters for each search, used to configure the associated query
+* Transformation queries (converting one data type to another)
+* Output format and data aggregation/statistics plugins
+* Result analysis plugins
+* Available result filters
+* etc.
 
-See [Configuring the WDK](configuring-the-wdk.html) for more details, or the [WDK Model XML RelaxNG (RNG) Schema](https://github.com/VEuPathDB/WDK/blob/master/Model/lib/rng/wdkModel.rng) for all available options.
+See link:configuring-the-wdk.html[Configuring the WDK] for more details, or the https://github.com/VEuPathDB/WDK/blob/master/Model/lib/rng/wdkModel.rng[WDK Model XML RelaxNG (RNG) Schema] for all available options.
 
 On startup, WDK reads and processes these XML files into an in-memory data structure, which it uses to deliver, via REST service, metadata about the configured data types and their properties.  Incoming HTTP requests to query, process, combine, and analyze data reference the in-memory model to inform how to perform the requested actions.
 
 A secondary XML file (model-config.xml) defines:
 
-- The databases WDK will use, namely:
-  - AppDb: application domain data
-  - UserDb: saved user data (search history, bookmarked records, analysis configurations, user preferences, etc.)
-  - AccountDb: user identity information (soon to be deprecated by full OpenIDConnect compliance and external service calls)
-- Query performance monitoring config
-- User authentication scheme
-- etc.
+* The databases WDK will use, namely:
+** AppDb: application domain data
+** UserDb: saved user data (search history, bookmarked records, analysis configurations, user preferences, etc.)
+** AccountDb: user identity information (soon to be deprecated by full OpenIDConnect compliance and external service calls)
+* Query performance monitoring config
+* User authentication scheme
+* etc.
 
 ## Record Classes
 
