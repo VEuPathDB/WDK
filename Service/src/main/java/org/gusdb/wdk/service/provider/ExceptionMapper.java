@@ -96,8 +96,14 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     }
 
     catch (WdkDelayedResultException ex) {
-      return logResponse(e, Response.status(Status.CONFLICT)
-          .type(MediaType.TEXT_PLAIN).entity(DELAYED_RESULT_MESSAGE).build());
+      return logResponse(e, Response.status(Status.ACCEPTED)
+          .type(MediaType.TEXT_PLAIN)
+          .entity(
+            new JSONObject()
+              .put("status", "accepted")
+              .put("message", DELAYED_RESULT_MESSAGE)
+              .toString()
+          ).build());
     }
 
     // Some other exception that must be handled by the application; send error event
