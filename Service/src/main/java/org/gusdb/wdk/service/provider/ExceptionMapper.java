@@ -25,6 +25,7 @@ import org.gusdb.wdk.errors.ErrorContext;
 import org.gusdb.wdk.errors.ErrorContext.ErrorLocation;
 import org.gusdb.wdk.errors.ServerErrorBundle;
 import org.gusdb.wdk.events.ErrorEvent;
+import org.gusdb.wdk.model.WdkDelayedResultException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.service.request.exception.ConflictException;
@@ -41,6 +42,8 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
   private static final Logger LOG = Logger.getLogger(ExceptionMapper.class);
 
   private static final String LOG_MARKER_HEADER = "x-log-marker";
+
+  private static final String DELAYED_RESULT_MESSAGE = "WDK-DELAYED-RESULT";
 
   @Context
   private ServletContext _servletContext;
@@ -90,6 +93,17 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
         return logResponse(e, Response.status(eApp.getResponse().getStatus())
           .type(MediaType.TEXT_PLAIN).entity(eApp.getMessage()).build());
       }
+    }
+
+    catch (WdkDelayedResultException ex) {
+      return logResponse(e, Response.status(Status.ACCEPTED)
+          .type(MediaType.TEXT_PLAIN)
+          .entity(
+            new JSONObject()
+              .put("status", "accepted")
+              .put("message", DELAYED_RESULT_MESSAGE)
+              .toString()
+          ).build());
     }
 
     // Some other exception that must be handled by the application; send error event
