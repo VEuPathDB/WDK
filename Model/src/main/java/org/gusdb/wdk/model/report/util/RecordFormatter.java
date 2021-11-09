@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.record.TableValueRow;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.record.attribute.LinkAttributeValue;
 import org.gusdb.wdk.model.record.attribute.TextAttributeValue;
+import org.gusdb.wdk.model.report.config.AnswerDetails.AttributeFormat;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -37,14 +38,14 @@ public class RecordFormatter {
 
   private static final Logger LOG = Logger.getLogger(RecordFormatter.class);
 
-  public static TwoTuple<JSONObject,List<Exception>> getRecordJson(RecordInstance record, Collection<String> attributeNames, Collection<String> tableNames)
+  public static TwoTuple<JSONObject,List<Exception>> getRecordJson(RecordInstance record, Collection<String> attributeNames, Collection<String> tableNames, AttributeFormat attributeFormat)
       throws WdkModelException, WdkUserException {
     JSONObject recordJson = new JSONObject()
       .put(JsonKeys.DISPLAY_NAME, record.getIdAttributeValue().getDisplay())
       .put(JsonKeys.ID, getRecordPrimaryKeyJson(record))
       .put(JsonKeys.RECORD_CLASS_NAME, record.getRecordClass().getFullName())
-      .put(JsonKeys.ATTRIBUTES, getRecordAttributesJson(record, attributeNames));
-    ThreeTuple<JSONObject,JSONArray,List<Exception>> tableResult = getRecordTablesJson(record, tableNames);
+      .put(JsonKeys.ATTRIBUTES, getRecordAttributesJson(record, attributeNames, attributeFormat));
+    ThreeTuple<JSONObject,JSONArray,List<Exception>> tableResult = getRecordTablesJson(record, tableNames, attributeFormat);
     recordJson.put(JsonKeys.TABLES, tableResult.getFirst());
     recordJson.put(JsonKeys.TABLE_ERRORS, tableResult.getSecond());
     return new TwoTuple<JSONObject,List<Exception>>(recordJson,tableResult.getThird());
@@ -59,23 +60,23 @@ public class RecordFormatter {
     return pkJson;
   }
 
-  private static JSONObject getRecordAttributesJson(RecordInstance record, Collection<String> attributeNames) throws WdkModelException, WdkUserException {
+  private static JSONObject getRecordAttributesJson(RecordInstance record, Collection<String> attributeNames, AttributeFormat attributeFormat) throws WdkModelException, WdkUserException {
     JSONObject attributes = new JSONObject();
     LOG.debug("Outputting record attributes: " + FormatUtil.arrayToString(attributeNames.toArray()));
     for (String attributeName : attributeNames) {
-      attributes.put(attributeName, getAttributeValueJson(record.getAttributeValue(attributeName)));
+      attributes.put(attributeName, getAttributeValueJson(record.getAttributeValue(attributeName), attributeFormat));
     }
     return attributes;
   }
 
-  private static ThreeTuple<JSONObject,JSONArray,List<Exception>> getRecordTablesJson(RecordInstance record, Collection<String> tableNames) {
+  private static ThreeTuple<JSONObject,JSONArray,List<Exception>> getRecordTablesJson(RecordInstance record, Collection<String> tableNames, AttributeFormat attributeFormat) {
     JSONObject tables = new JSONObject();
     JSONArray badTables = new JSONArray();
     List<Exception> exceptionList = new ArrayList<>();
     // loop through tables
     for (String tableName : tableNames) {
       try {
-        tables.put(tableName, getTableRowsJson(record, tableName));
+        tables.put(tableName, getTableRowsJson(record, tableName, attributeFormat));
       }
       /* Sometimes individual tables fail due to bad SQL or other reasons; in this event, we don't want the
        * whole request to fail since most of the data is probably fine.  Record the tables that fail and send
@@ -91,7 +92,7 @@ public class RecordFormatter {
     return new ThreeTuple<JSONObject,JSONArray,List<Exception>>(tables, badTables, exceptionList);
   }
 
-  public static JSONArray getTableRowsJson(RecordInstance record, String tableName) throws WdkModelException, WdkUserException {
+  public static JSONArray getTableRowsJson(RecordInstance record, String tableName, AttributeFormat attributeFormat) throws WdkModelException, WdkUserException {
     JSONArray tableRowsJson = new JSONArray();
     // loop through rows
     TableValue tableValue = record.getTableValue(tableName);
@@ -99,33 +100,41 @@ public class RecordFormatter {
       JSONObject tableAttrsJson = new JSONObject();
       // loop through columns
       for (Entry<String, AttributeValue> entry : row.entrySet()) {
-        tableAttrsJson.put(entry.getKey(), getAttributeValueJson(entry.getValue()));
+        tableAttrsJson.put(entry.getKey(), getAttributeValueJson(entry.getValue(), attributeFormat));
       }
       tableRowsJson.put(tableAttrsJson);
     }
     return tableRowsJson;
   }
 
-  private static Object getAttributeValueJson(AttributeValue attr) throws WdkModelException, WdkUserException {
+  private static Object getAttributeValueJson(AttributeValue attr, AttributeFormat attributeFormat) throws WdkModelException, WdkUserException {
 
-    if (attr instanceof LinkAttributeValue) {
-      LinkAttributeValue linkAttr = (LinkAttributeValue) attr;
-      String displayText = linkAttr.getDisplayText();
+    if (attributeFormat == AttributeFormat.DISPLAY) {
+      // for display format, show 
+      if (attr instanceof LinkAttributeValue) {
+        LinkAttributeValue linkAttr = (LinkAttributeValue)attr;
+        String displayText = linkAttr.getDisplayText();
 
-      // Treat an empty displayText as null
-      if (displayText == null || displayText.isEmpty()) {
-        return JSONObject.NULL;
+        // Treat an empty displayText as null
+        if (displayText == null || displayText.isEmpty()) {
+          return JSONObject.NULL;
+        }
+
+        return new JSONObject()
+          .put(JsonKeys.URL, linkAttr.getUrl())
+          .put(JsonKeys.DISPLAY_TEXT, displayText);
       }
-
-      return new JSONObject()
-        .put(JsonKeys.URL, linkAttr.getUrl())
-        .put(JsonKeys.DISPLAY_TEXT, displayText);
+  
+      if (attr instanceof TextAttributeValue){
+        return attr.getDisplay();
+      }
     }
-
-    if (attr instanceof TextAttributeValue){
-      return attr.getDisplay();
+    else {
+      if (attr instanceof LinkAttributeValue) {
+        return ((LinkAttributeValue)attr).getUrl();
+      }
     }
-
+    // outside of above cases, return value of attribute or JSON null if empty
     String value = attr.getValue();
     return value == null ? JSONObject.NULL : value;
   }

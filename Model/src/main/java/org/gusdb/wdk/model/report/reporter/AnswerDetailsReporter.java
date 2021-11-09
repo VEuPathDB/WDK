@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.report.AbstractReporter;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.gusdb.wdk.model.report.config.AnswerDetails;
+import org.gusdb.wdk.model.report.config.AnswerDetails.AttributeFormat;
 import org.gusdb.wdk.model.report.config.AnswerDetailsFactory;
 import org.gusdb.wdk.model.user.UserPreferences;
 import org.json.JSONObject;
@@ -22,6 +23,7 @@ public abstract class AnswerDetailsReporter extends AbstractReporter {
   protected Map<String,AttributeField> _attributes;
   protected Map<String,TableField> _tables;
   private ContentDisposition _contentDisposition;
+  protected AttributeFormat _attributeFormat;
 
   protected AnswerDetailsReporter(AnswerValue answerValue) {
     super(answerValue);
@@ -37,6 +39,7 @@ public abstract class AnswerDetailsReporter extends AbstractReporter {
     _attributes = config.getAttributes();
     _tables = config.getTables();
     _contentDisposition = config.getContentDisposition();
+    _attributeFormat = config.getAttributeFormat();
     return this;
   }
 

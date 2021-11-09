@@ -26,6 +26,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.report.config.AnswerDetails.AttributeFormat;
 import org.gusdb.wdk.model.report.util.RecordFormatter;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.formatter.RecordClassFormatter;
@@ -124,7 +125,7 @@ public class RecordService extends AbstractWdkService {
       // PK represents only one record; fetch, format, and return
       else {
         TwoTuple<JSONObject,List<Exception>> recordJsonResult = RecordFormatter.getRecordJson(
-            records.get(0), request.getAttributeNames(), request.getTableNames());
+            records.get(0), request.getAttributeNames(), request.getTableNames(), AttributeFormat.DISPLAY);
         triggerErrorEvents(recordJsonResult.getSecond());
         return Response.ok(recordJsonResult.getFirst().toString()).build();
       }

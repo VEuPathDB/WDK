@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
+import org.gusdb.wdk.model.report.config.AnswerDetails.AttributeFormat;
 import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -80,6 +81,7 @@ public class AnswerDetailsFactory {
    *       tables: [ tableName: String ], or special string,
    *       sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ],
    *       contentDisposition: 'inline' (default) OR 'attachment'
+   *       attributeFormat: 'display' (default) OR 'text'
    *     }
    *   </pre>
    *   All values are optional.
@@ -122,6 +124,11 @@ public class AnswerDetailsFactory {
     // set content disposition
     if (specJson.has("contentDisposition")) {
       specs.setContentDisposition(ContentDisposition.valueOf(specJson.getString("contentDisposition").toUpperCase()));
+    }
+
+    // set attribute format
+    if (specJson.has("attributeFormat")) {
+      specs.setAttributeFormat(AttributeFormat.valueOf(specJson.getString("attributeFormat").toUpperCase()));
     }
 
     return specs;

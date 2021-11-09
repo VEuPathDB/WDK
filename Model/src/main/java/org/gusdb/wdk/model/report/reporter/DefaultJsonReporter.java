@@ -79,7 +79,7 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
       // write records
       int numRecordsReturned = 0;
       for (RecordInstance record : recordStream) {
-        writer.value(RecordFormatter.getRecordJson(record, _attributes.keySet(), _tables.keySet()).getFirst());
+        writer.value(RecordFormatter.getRecordJson(record, _attributes.keySet(), _tables.keySet(), _attributeFormat).getFirst());
         numRecordsReturned++;
       }
 

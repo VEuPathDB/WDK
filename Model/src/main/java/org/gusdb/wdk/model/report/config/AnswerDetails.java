@@ -14,6 +14,10 @@ public class AnswerDetails {
 
   public static final Integer ALL_RECORDS = -1;
 
+  public enum AttributeFormat {
+    TEXT, DISPLAY;
+  }
+
   // use factory method to construct from JSON
   AnswerDetails() {}
 
@@ -24,6 +28,7 @@ public class AnswerDetails {
   private Map<String, TableField> _tables = Collections.emptyMap();
   private List<SortDirectionSpec<AttributeField>> _sorting = new ArrayList<>();
   private ContentDisposition _contentDisposition = ContentDisposition.INLINE;
+  private AttributeFormat _attributeFormat = AttributeFormat.DISPLAY;
 
   // all getters are public
   public int getOffset() { return _offset; }
@@ -32,6 +37,7 @@ public class AnswerDetails {
   public Map<String, TableField> getTables() { return _tables; }
   public List<SortDirectionSpec<AttributeField>> getSorting() { return _sorting; }
   public ContentDisposition getContentDisposition() { return _contentDisposition; }
+  public AttributeFormat getAttributeFormat() { return _attributeFormat; }
 
   // all setters are package-private, available only to factory
   void setOffset(int offset) { _offset = offset; }
@@ -40,5 +46,6 @@ public class AnswerDetails {
   void setTables(Map<String, TableField> tables) { _tables = tables; }
   void setSorting(List<SortDirectionSpec<AttributeField>> sorting) { _sorting = sorting; }
   void setContentDisposition(ContentDisposition contentDisposition) { _contentDisposition = contentDisposition; }
+  void setAttributeFormat(AttributeFormat attributeFormat) { _attributeFormat = attributeFormat; }
 
 }
