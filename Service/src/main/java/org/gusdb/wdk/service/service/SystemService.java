@@ -1,19 +1,31 @@
 package org.gusdb.wdk.service.service;
 
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.runtime.BuildStatus;
 import org.gusdb.wdk.cache.CacheMgr;
+import org.gusdb.wdk.model.WdkModelException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.sql.DataSource;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.Date;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 @Path("system")
 public class SystemService extends AbstractWdkService {
@@ -71,4 +83,56 @@ public class SystemService extends AbstractWdkService {
   public Response getBuildStatus() {
     return Response.ok(BuildStatus.getLatestBuildStatus()).build();
   }
+
+  @GET
+  @Path("/metrics/searches")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getQuestionMetrics(
+      @QueryParam("startDate") String startDate,
+      @QueryParam("endDate") String endDate) throws WdkModelException {
+    try {
+      DateFormat format = FormatUtil.STANDARD_DATE_TEXT_FORMAT.get();
+      if (startDate != null)
+        startDate = format.format(format.parse(startDate));
+      if (endDate != null)
+        endDate = format.format(format.parse(endDate));
+      String sql =
+          "select question_name, count(question_name) as cnt" +
+          " from userlogins5.steps" +
+          " where project_id = ?" +
+          (startDate == null ? "" : " and last_run_time >= TO_DATE(?, 'YYYY-MM-DD')") +
+          (endDate == null ? "" : " and last_run_time <= TO_DATE(?, 'YYYY-MM-DD')") +
+          " group by question_name" +
+          " order by cnt desc";
+      Object[] args = new ListBuilder<Object>()
+          .add(getWdkModel().getProjectId())
+          .addIf(Predicate.not(Objects::isNull), startDate)
+          .addIf(Predicate.not(Objects::isNull), endDate)
+          .toList().toArray();
+      DataSource appDb = getWdkModel().getUserDb().getDataSource();
+      JSONArray result = new SQLRunner(appDb, sql, "question-metrics").executeQuery(args, rs -> {
+        JSONArray arr = new JSONArray();
+        while (rs.next()) {
+          arr.put(new JSONObject()
+            .put("questionName", rs.getString("question_name"))
+            .put("count", rs.getInt("cnt")));
+        }
+        return arr;
+      });
+      return Response.ok(result.toString(2)).build();
+    }
+    catch (ParseException e) {
+      throw new BadRequestException("Date formats must be in the form YYYY-MM-DD");
+    }
+    catch (SQLRunnerException e) {
+      throw WdkModelException.translateFrom(e);
+    }
+  }
 }
+
+
+
+
+
+
+
