@@ -96,16 +96,22 @@ public class SystemService extends AbstractWdkService {
         startDate = format.format(format.parse(startDate));
       if (endDate != null)
         endDate = format.format(format.parse(endDate));
+      boolean hasDate = (startDate != null || endDate != null);
+      String lastRunTimeCondition = getDateRangeCondition("last_run_time", startDate, endDate);
+      String creationDateCondition = getDateRangeCondition("create_time", startDate, endDate);
+      String fullDateCondition = !hasDate ? "" :
+        " and ( " + lastRunTimeCondition + " or " + creationDateCondition + " )";
       String sql =
           "select question_name, count(question_name) as cnt" +
           " from userlogins5.steps" +
           " where project_id = ?" +
-          (startDate == null ? "" : " and last_run_time >= TO_DATE(?, 'YYYY-MM-DD')") +
-          (endDate == null ? "" : " and last_run_time <= TO_DATE(?, 'YYYY-MM-DD')") +
+          fullDateCondition +
           " group by question_name" +
           " order by cnt desc";
       Object[] args = new ListBuilder<Object>()
           .add(getWdkModel().getProjectId())
+          .addIf(Predicate.not(Objects::isNull), startDate)
+          .addIf(Predicate.not(Objects::isNull), endDate)
           .addIf(Predicate.not(Objects::isNull), startDate)
           .addIf(Predicate.not(Objects::isNull), endDate)
           .toList().toArray();
@@ -128,11 +134,21 @@ public class SystemService extends AbstractWdkService {
       throw WdkModelException.translateFrom(e);
     }
   }
+
+  private String getDateRangeCondition(String columnName, String startDate, String endDate) {
+    String startCondition = (startDate == null ? "" : columnName + " >= TO_DATE(?, 'YYYY-MM-DD')");
+    String endCondition = (endDate == null ? "" : columnName + " <= TO_DATE(?, 'YYYY-MM-DD')");
+    if (startDate != null && endDate != null) {
+      return "( " + startCondition + " and " + endCondition + " )";
+    }
+    else if (startDate != null) {
+      return startCondition;
+    }
+    else if (endDate != null) {
+      return endCondition;
+    }
+    else {
+      return null;
+    }
+  }
 }
-
-
-
-
-
-
-
