@@ -14,6 +14,7 @@ import org.gusdb.wdk.service.filter.CheckLoginFilter;
 import org.gusdb.wdk.service.filter.ClientCacheExpirationFilter;
 import org.gusdb.wdk.service.filter.LoggingContextFilter;
 import org.gusdb.wdk.service.filter.MethodRewritingFilter;
+import org.gusdb.wdk.service.filter.PrometheusFilter;
 import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.provider.ExceptionMapper;
 import org.gusdb.wdk.service.provider.JsonSchemaProvider;
@@ -70,6 +71,7 @@ public class WdkServiceApplication extends Application {
     .add(ExceptionMapper.class)
 
     // add filter classes
+    .add(PrometheusFilter.class)
     .add(CheckLoginFilter.class)
     .add(LoggingContextFilter.class)
     .add(MethodRewritingFilter.class)

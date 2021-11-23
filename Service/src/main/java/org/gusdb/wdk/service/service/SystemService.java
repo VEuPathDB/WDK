@@ -12,6 +12,9 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.exporter.common.TextFormat;
+
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
@@ -20,7 +23,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
+import java.io.OutputStreamWriter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
@@ -82,6 +87,17 @@ public class SystemService extends AbstractWdkService {
   @Produces(MediaType.TEXT_PLAIN)
   public Response getBuildStatus() {
     return Response.ok(BuildStatus.getLatestBuildStatus()).build();
+  }
+
+  @GET
+  @Path("/metrics/prometheus")
+  @Produces(MediaType.TEXT_PLAIN)
+  public StreamingOutput getMetrics() {
+    return output -> {
+      try (var write = new OutputStreamWriter(output)) {
+        TextFormat.write004(write, CollectorRegistry.defaultRegistry.metricFamilySamples());
+      }
+    };
   }
 
   @GET
