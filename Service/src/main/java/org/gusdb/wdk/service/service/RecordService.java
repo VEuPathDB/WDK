@@ -38,6 +38,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import io.prometheus.client.Counter;
+
 @Path(RecordService.RECORD_TYPES_PATH)
 public class RecordService extends AbstractWdkService {
 
@@ -50,6 +52,12 @@ public class RecordService extends AbstractWdkService {
   private static final Logger LOG = Logger.getLogger(RecordService.class);
 
   private static final String RECORDCLASS_RESOURCE = "RecordClass with name ";
+
+  private static final Counter TABLE_REQUEST_COUNTER = Counter.build()
+      .name("wdk_table_requests")
+      .help("Times individual tables are requested at the /records endpoint")
+      .labelNames("table")
+      .register();
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -124,6 +132,12 @@ public class RecordService extends AbstractWdkService {
 
       // PK represents only one record; fetch, format, and return
       else {
+
+        // update metrics; increment entries for requested tables
+        request.getTableNames().stream()
+            .map(tableName -> recordClass.getUrlSegment() + "." + tableName)
+            .forEach(key -> TABLE_REQUEST_COUNTER.labels(key).inc());
+
         TwoTuple<JSONObject,List<Exception>> recordJsonResult = RecordFormatter.getRecordJson(
             records.get(0), request.getAttributeNames(), request.getTableNames(), AttributeFormat.DISPLAY);
         triggerErrorEvents(recordJsonResult.getSecond());
