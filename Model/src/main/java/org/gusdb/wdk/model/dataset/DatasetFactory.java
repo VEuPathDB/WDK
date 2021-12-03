@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
@@ -60,6 +62,8 @@ public class DatasetFactory {
   public static final int MAX_VALUE_COLUMNS = 20;
   public static final int MAX_VALUE_LENGTH = 1000;
   public static final int UPLOAD_FILE_MAX_SIZE = 2000;
+
+  public static final List<String> ALL_VALUE_COLUMN_NAMES = getValueColumnNames(MAX_VALUE_COLUMNS);
 
   private final WdkModel _wdkModel;
   private final DatabaseInstance _userDb;
@@ -175,8 +179,9 @@ public class DatasetFactory {
 
   public String getDatasetValueSqlForAppDb(long datasetId) {
     var dbLink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
-    return "SELECT dv.* FROM " + _userSchema + TABLE_DATASET_VALUES + dbLink
-      + " dv " + " WHERE dv." + COLUMN_DATASET_ID + " = " + datasetId;
+    return "SELECT " + getValueColumnNames(MAX_VALUE_COLUMNS) +
+        " FROM " + _userSchema + TABLE_DATASET_VALUES + dbLink +
+        " WHERE " + COLUMN_DATASET_ID + " = " + datasetId;
   }
 
   public List<String[]> getDatasetValues(long datasetId) {
@@ -190,10 +195,11 @@ public class DatasetFactory {
         new Integer[] {Types.BIGINT},
         rs -> {
           var values = new ArrayList<String[]>();
+          var valueCols = getValueColumnNames(MAX_VALUE_COLUMNS);
           while (rs.next()) {
             String[] row = new String[MAX_VALUE_COLUMNS];
-            for (int i = 1; i <= MAX_VALUE_COLUMNS; i++) {
-              row[i - 1] = rs.getString(COLUMN_DATA_PREFIX + i);
+            for (int i = 0; i < MAX_VALUE_COLUMNS; i++) {
+              row[i] = rs.getString(valueCols.get(i));
             }
             values.add(row);
           }
@@ -242,6 +248,13 @@ public class DatasetFactory {
   // Internal Methods
   //
   //--------------------------------------------------------
+
+  private static List<String> getValueColumnNames(int numColumns) {
+    return IntStream
+      .range(1, numColumns + 1)
+      .mapToObj(i -> COLUMN_DATA_PREFIX + i)
+      .collect(Collectors.toList());
+  }
 
   private Dataset createOrGetDataset(
     final User user,
@@ -403,21 +416,16 @@ public class DatasetFactory {
   }
 
   private String buildDatasetValuesInsertQuery(int size) {
-    var sql = new StringBuilder("INSERT INTO ");
-
-    sql.append(_userSchema)
+    return new StringBuilder()
+      .append("INSERT INTO ")
+      .append(_userSchema)
       .append(TABLE_DATASET_VALUES)
-      .append(" (" + COLUMN_DATASET_VALUE_ID + ", " + COLUMN_DATASET_ID);
-
-    for (int i = 1; i <= size; i++) {
-      sql.append(", " + COLUMN_DATA_PREFIX).append(i);
-    }
-
-    sql.append(") VALUES (?, ?")
+      .append(" (" + COLUMN_DATASET_VALUE_ID + ", " + COLUMN_DATASET_ID + ", ")
+      .append(String.join(", ", getValueColumnNames(size)))
+      .append(" ) VALUES (?, ?")
       .append(", ?".repeat(size))
-      .append(")");
-
-    return sql.toString();
+      .append(")")
+      .toString();
   }
 
   private long copyDataset(
