@@ -31,16 +31,16 @@ public class DatasetParamHandler extends AbstractParamHandler {
    */
   @Override
   public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxParamVals) {
-    final var value = ctxParamVals.get().get(_param.getName());
+    final var datasetId = ctxParamVals.get().get(_param.getName());
 
     if (_param.isNoTranslation())
-      return value;
+      return datasetId;
 
     var datasetFactory = ctxParamVals.get()
       .getUser()
       .getWdkModel()
       .getDatasetFactory();
-    var dvSql = datasetFactory.getDatasetValueSqlForAppDb(Long.parseLong(value));
+    var dvSql = datasetFactory.getDatasetValueSqlForAppDb(Long.parseLong(datasetId));
     var recordClassOpt = ((DatasetParam) _param).getRecordClass();
 
     if (recordClassOpt.isEmpty())
