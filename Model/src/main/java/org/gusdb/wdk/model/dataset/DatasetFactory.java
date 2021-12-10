@@ -141,7 +141,7 @@ public class DatasetFactory {
       resultSet = SqlUtils.executeQuery(userDs, sql.toString(), "wdk-dataset-by-dataset-id");
 
       if (!resultSet.next())
-        throw new WdkUserException("Unable to get data set with ID: " + datasetId);
+        throw new WdkUserException("Unable to find Dataset with ID: " + datasetId);
 
       var dataset = readDataset(resultSet);
       if (dataset.getOwnerId() != ownerId) {
