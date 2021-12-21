@@ -649,12 +649,14 @@ public class StepFactory {
 
   private MapBuilder<Long, StepBuilder> copyStepTree(User newUser, Step oldStep) throws WdkModelException {
 
+    Date now = new Date();
     StepBuilder newStep = Step.builder(oldStep)
       .setStepId(getNewStepId())
       .setUserId(newUser.getUserId())
       .setStrategyId(Optional.empty())
       .setEstimatedSize(Step.RESET_SIZE_FLAG) // always reset on copy
-      .setCreatedTime(new Date());
+      .setCreatedTime(now)
+      .setLastRunTime(now);
 
     MapBuilder<Long,StepBuilder> childSteps =
       oldStep.getAnswerSpec().hasValidQuestion()
