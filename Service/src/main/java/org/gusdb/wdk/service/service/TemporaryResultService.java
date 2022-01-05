@@ -34,7 +34,7 @@ public class TemporaryResultService extends AbstractWdkService {
   public Response setTemporaryResult(JSONObject requestJson)
       throws RequestMisformatException, DataValidationException, WdkModelException {
     String questionName = requestJson.getString(JsonKeys.SEARCH_NAME);
-    Question question = getWdkModel().getQuestionByFullName(questionName)
+    Question question = getWdkModel().getQuestionByName(questionName)
         .orElseThrow(() -> new DataValidationException(questionName + " is not a valid search name."));
     String reporterName = requestJson.getString(JsonKeys.REPORT_NAME);
     AnswerRequest request = AnswerService.parseAnswerRequest(
