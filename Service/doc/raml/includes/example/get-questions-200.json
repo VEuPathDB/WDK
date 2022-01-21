@@ -5,6 +5,7 @@
   "GeneQuestions.GenesByLocation",
   "GeneQuestions.GenesByGeneType",
   "GeneQuestions.GenesByPhenotype_pfal3D7_phenotype_pB_mutagenesis_MIS_MFS_RSRC",
+  "GeneQuestions.GenesByPhenotype_pfal3D7_phenotype_HS_Response_Phenotype_RSRC",
   "GeneQuestions.GenesByPhenotype_pberANKA_phenotype_Bushnell_functional_profiling_RSRC",
   "GeneQuestions.GenesWithUpdatedAnnotation",
   "GeneQuestions.GenesByExonCount",
