@@ -280,7 +280,7 @@ public class FileBasedRecordStream implements RecordStream {
         getAttributeQueryMap(getRequiredColumnAttributeFields(attributes, true));
     LOG.debug("assembleAttributeFiles(): Assembled required queries: " + t.getElapsedString());
 
-    long numExpectedRows = answerValue.getResultSizeFactory().getResultSize();
+    long numExpectedRows = answerValue.getPageSize();
 
     // Iterate over all the queries needed to return all the requested attributes
     for (TwoTuple<Query,List<QueryColumnAttributeField>> queryData : requiredQueries) {
