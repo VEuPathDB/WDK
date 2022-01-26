@@ -228,7 +228,7 @@ public class FileBasedRecordStream implements RecordStream {
    *          - the query results
    * @throws WdkModelException
    */
-  private static void assembleCsvFile(Path filePath, List<String> columnNames, ResultList resultList)
+  private static long assembleCsvFile(Path filePath, List<String> columnNames, ResultList resultList)
       throws WdkModelException {
 
     try (CSVWriter writer = new CSVWriter(new BufferedWriter(new FileWriter(filePath.toString()), BUFFER_SIZE),
@@ -240,13 +240,16 @@ public class FileBasedRecordStream implements RecordStream {
       String[] inputs = new String[columnNames.size()];
 
       // For each record in the result list
+      long count = 0;
       while (resultList.next()) {
+        count++;
         for (int i = 0; i < columnNames.size(); i++) {
           Object result = resultList.get(columnNames.get(i));
           inputs[i] = (result == null) ? CsvResultList.NULL_REPRESENTATION : String.valueOf(result);
         }
         writer.writeNext(inputs);
       }
+      return count;
     }
     catch (IOException ioe) {
       throw new WdkModelException("Unable to write CSV file", ioe);
@@ -255,13 +258,15 @@ public class FileBasedRecordStream implements RecordStream {
 
   /**
    * Writes out one file per executed query to the temporary directory. A map of attribute file paths to their
-   * associated list of attribute fields is created to facilitate later population of a record instance.
+   * associated list of attribute fields is created to facilitate later population of a record instance. Each
+   * attribute query result will be checked against the result size of the AnswerValue; they should match, and
+   * if they don't, an exception will be thrown.
    *
    * @param answerValue answer value to write files for
    * @param tempDir temporary directory in which to write the files
    * @param attributes collection of attributes that are required by the caller
    * @return map from temporary file path to the ordered list of columns that can be found in that file
-   * @throws WdkModelException if something goes wrong
+   * @throws WdkModelException if something goes wrong, including cardinality mismatch between ID query and joined attribute query
    */
   private static Map<Path, List<QueryColumnAttributeField>> assembleAttributeFiles(AnswerValue answerValue, Path tempDir,
       Collection<AttributeField> attributes) throws WdkModelException {
@@ -275,9 +280,11 @@ public class FileBasedRecordStream implements RecordStream {
         getAttributeQueryMap(getRequiredColumnAttributeFields(attributes, true));
     LOG.debug("assembleAttributeFiles(): Assembled required queries: " + t.getElapsedString());
 
+    long numExpectedRows = answerValue.getResultSizeFactory().getResultSize();
+
     // Iterate over all the queries needed to return all the requested attributes
     for (TwoTuple<Query,List<QueryColumnAttributeField>> queryData : requiredQueries) {
-      pathMap.put(writeAttributeFile(answerValue, queryData.getFirst(),
+      pathMap.put(writeAttributeFile(answerValue, numExpectedRows, queryData.getFirst(),
           queryData.getSecond(), tempDir), queryData.getSecond());
     }
 
@@ -290,13 +297,14 @@ public class FileBasedRecordStream implements RecordStream {
    * only those columns requested to the temporary directory
    *
    * @param answerValue answer value to write file for
+   * @param numExpectedRows number of rows expected in the result
    * @param query attribute query to be executed
    * @param attributeFields column attribute fields to be fetched
    * @param tempDir temporary directory in which to write the file
    * @return path to the file containing the attribute query data
-   * @throws WdkModelException if something goes wrong
+   * @throws WdkModelException if something goes wrong, including cardinality mismatch between ID query and joined attribute query
    */
-  private static Path writeAttributeFile(AnswerValue answerValue, Query query,
+  private static Path writeAttributeFile(AnswerValue answerValue, long numExpectedRows, Query query,
       List<QueryColumnAttributeField> attributeFields, Path tempDir) throws WdkModelException {
 
     // Obtain path to CSV file that will hold the results of the current query.
@@ -323,8 +331,15 @@ public class FileBasedRecordStream implements RecordStream {
 
       // Transfer the result list content to the CSV file provided
       LOG.debug("writeAttributeFile(): Starting iteration over result list for query " + query.getName() + ": " + t.getElapsedString());
-      assembleCsvFile(filePath, columnsToTransfer, resultList);
+      long rowsWritten = assembleCsvFile(filePath, columnsToTransfer, resultList);
       LOG.debug("writeAttributeFile(): Finished iteration over result list for query " + query.getName() + ": " + t.getElapsedString());
+
+      // check number of rows written against expected
+      if (rowsWritten != numExpectedRows) {
+        throw new WdkModelException("Joined attribute query '" + query.getFullName() +
+            "' returned a different number of rows (" + rowsWritten +
+            ") than the ID query alone (" + numExpectedRows + ").");
+      }
 
       // open file permissions and return the path to the temporary CSV file
       filePath.toFile().setWritable(true, false);
@@ -470,7 +485,7 @@ public class FileBasedRecordStream implements RecordStream {
       // close each iterator; will disallow further record reading
       iter.close();
     }
-    // remove temporary dir and resident files created to populate on the fly record instances
+    // remove temporary dir and resident files created to populate on-the-fly record instances
     if (DELETE_TEMPORARY_FILES) {
       try {
         IoUtil.deleteDirectoryTree(_temporaryDirectory);
