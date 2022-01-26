@@ -179,7 +179,7 @@ public class DatasetFactory {
 
   public String getDatasetValueSqlForAppDb(long datasetId) {
     var dbLink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
-    return "SELECT " + String.join(", ", getValueColumnNames(MAX_VALUE_COLUMNS)) +
+    return "SELECT " + String.join(", ", getValueColumnNames(MAX_VALUE_COLUMNS)) + ", " + COLUMN_DATASET_VALUE_ID +
         " FROM " + _userSchema + TABLE_DATASET_VALUES + dbLink +
         " WHERE " + COLUMN_DATASET_ID + " = " + datasetId;
   }
