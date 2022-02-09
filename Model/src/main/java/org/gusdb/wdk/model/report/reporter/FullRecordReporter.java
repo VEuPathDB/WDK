@@ -29,12 +29,13 @@ import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.gusdb.wdk.model.report.ReporterInfo;
 import org.gusdb.wdk.model.report.util.TableCache;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+
 
 /**
  * @author xingao
