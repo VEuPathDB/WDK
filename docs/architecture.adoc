@@ -9,5 +9,11 @@
 ** multi-part primary key
 ** attributes
 ** tables
-* A Record Class defines the schema of instances of the class.
+* A Record Class defines the information available in instances of the record class.
+** It defines an exposed API for the record class
+** It specifies how the system can acquire the information needed to form instances of the class.
+** The specific types of information it provides are:
+*** The display name for the type of this record, eg *Gene*
+*** The url segment name for this type of record, to be used in the path of endpoints that refer to records.  Eg `gene`
+*** A primary key definition.  
 
