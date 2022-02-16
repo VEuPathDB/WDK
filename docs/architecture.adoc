@@ -16,4 +16,11 @@
 *** The display name for the type of this record, eg *Gene*
 *** The url segment name for this type of record, to be used in the path of endpoints that refer to records.  Eg `gene`
 *** A primary key definition.  
+**** a reference to a data source (SQL query) that returns one or more row for every record of this type
+***** this provides for:
+****** a single source of truth for valid primary keys of this record type, used in validation contexts
+****** a mapping of deprecated versions of a primary key to the current version of the primary key.
+***** the columns returned are:
+****** one each for the one or more parts of the primary key.  
+****** parallel columns with the `_old` suffix.  There will be one row returned for each record in which these columns contain the "identity" mapping:  the "old" primary key is the same as the current one.  There may be additional rows for deprecated primary keys, if there are any for a given record.
 
