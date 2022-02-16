@@ -4,11 +4,14 @@
 * There are subsystems.
 
 == Records and Record Classes
-* A Record corresponds to a page in a website.  It is an instance of a Record Class
-** type
-** multi-part primary key
-** attributes
-** tables
+* A _Record_ is the WDK's concept of a document. It is an instance of a Record Class.  
+** It typically manifests in a website:
+*** as a page displaying a single record
+*** in contexts, such as search results, displaying a collection of record summaries.
+** It provides information such as
+*** multi-part primary key
+*** attributes (single-valued properties)
+*** tables (tabular-valued properties)
 * A Record Class defines the information available in instances of the record class.
 ** It defines an exposed API for the record class
 ** It specifies how the system can acquire the information needed to form instances of the class.
