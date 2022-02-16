@@ -1,0 +1,12 @@
+== Overview
+* This describes the backend.  There is client.
+* There is a REST service
+* There are subsystems.
+== Records and Record Classes
+* A Record corresponds to a page in a website.  It is an instance of a Record Class
+** type
+** multi-part primary key
+** attributes
+** tables
+* A Record Class defines the schema of instances of the class.
+
