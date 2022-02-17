@@ -28,7 +28,7 @@
 **** a reference to a data source (SQL query) that returns one or more row for every record of this type
 ***** this provides for:
 ****** a single source of truth for valid primary keys of this record type, used in validation contexts
-****** a mapping of deprecated versions of a primary key to the current version of the primary key.
+****** a mapping of deprecated versions of a primary key for a given record to the current version of its primary key.
 ***** the columns returned are:
 ****** one each for the one or more parts of the primary key.  
 ****** parallel columns with the `_old` suffix.  
