@@ -19,6 +19,9 @@ class Pair<T extends Comparable<T>> implements Comparable<Pair<T>> {
     this.count = count;
   }
 
+  /**
+   * Sort by count, descending, then by value, ascending
+   */
   @Override
   public int compareTo(Pair<T> o) {
     var x = Long.compare(count, o.count);
