@@ -1,6 +1,9 @@
 == Overview
 * This describes the backend.  There is client.
 * There is a REST service
+* There is a WDK Model that:
+** is created dynamically at startup, by reading a set of XML model configuration files
+** describes the data and data processing that is available in this running instance of the WDK.
 * There are subsystems.
 
 == Records and Record Classes
@@ -13,8 +16,11 @@
 *** attributes (single-valued properties)
 *** tables (tabular-valued properties)
 * A _Record Class_ defines the information available in instances of the record class.
-** It defines an exposed API for the record class
-** It specifies how the system can acquire the information needed to form instances of the class.
+** A record class is specified in one or more XML files that are part of the WDK model configuration.  The XML file provides:
+*** An interface to this record class.  The interface is exposed to clients as a REST API for the record class
+*** Implementation details on how to:
+**** acquire data called for by the interface, and
+**** process that data for display and peripheral analysis
 ** The specific types of information it provides are:
 *** The display name for the type of this record, eg *Gene*
 *** The url segment name for this type of record, to be used in the path of endpoints that refer to records.  Eg `gene`
