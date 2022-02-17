@@ -12,7 +12,7 @@
 *** multi-part primary key
 *** attributes (single-valued properties)
 *** tables (tabular-valued properties)
-* A Record Class defines the information available in instances of the record class.
+* A _Record Class_ defines the information available in instances of the record class.
 ** It defines an exposed API for the record class
 ** It specifies how the system can acquire the information needed to form instances of the class.
 ** The specific types of information it provides are:
