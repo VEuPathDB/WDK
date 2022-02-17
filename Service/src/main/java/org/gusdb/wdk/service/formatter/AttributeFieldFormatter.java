@@ -42,7 +42,6 @@ public class AttributeFieldFormatter {
   public static JSONObject getAttributeJson(AttributeField attribute) {
     return new JSONObject()
       .put(JsonKeys.ALIGN, attribute.getAlign())
-//      .put(JsonKeys.CATEGORY, attribute.getAttributeCategory())
       .put(JsonKeys.DISPLAY_NAME, attribute.getDisplayName())
       .put(JsonKeys.FORMATS, RecordClassFormatter.getAnswerFormatsJson(attribute.getReporters().values(), FieldScope.ALL))
       .put(JsonKeys.HELP, attribute.getHelp())
