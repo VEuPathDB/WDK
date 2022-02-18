@@ -1,18 +1,19 @@
 * outline
 ** Records and record classes
-** ID Streams
-*** Searches
-*** Search parameters
-*** Filters
-**** Step filters
-**** Column filters
-*** Strategies
+** Processing
+*** Process parameters
+*** ID Streams
+**** Searches
+**** Filters
+***** Step filters
+***** Column filters
+****** View filters
+**** Strategies
+*** Step analysis
 ** Reports
-*** Search results
-** Search summary views
-** Step analysis
+*** Different types of reporters
+*** Search summary views
 ** User datasets
 ** Favorites
 ** Baskets
-** View filters
 ** Ontology
