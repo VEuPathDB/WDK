@@ -17,13 +17,19 @@
 *** tables (tabular-valued properties)
 * A _Record Class_ defines the information available in instances of the record class.
 ** A record class is specified in one or more XML files that are part of the WDK model configuration.  The XML file provides:
-*** An interface to this record class.  The interface is exposed to clients as a REST API for the record class
+*** An interface for this record class.  The interface is exposed to clients as a REST API for the record class
 *** Implementation details on how to:
 **** acquire data called for by the interface, and
 **** process that data for display and peripheral analysis
-** The specific types of information it provides are:
+** The information provided by the interface is:
 *** The display name for the type of this record, eg *Gene*
 *** The url segment name for this type of record, to be used in the path of endpoints that refer to records.  Eg `gene`
+*** The specification of the primary key for this type of record.  
+*** a specification for the attributes this record has.  This includes properties:
+**** the attribute name
+**** the display name
+**** help text describing the attribute
+**** optionally available _reporters_ that provide a means to process a collection of attributes of this type (across a set of records) and produce a summarizing report.
 *** A primary key definition.  
 **** a reference to a data source (SQL query) that returns one or more row for every record of this type
 ***** this provides for:
