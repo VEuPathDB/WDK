@@ -25,6 +25,7 @@
 *** the schema of the record class.  What data is available.
 *** metadata about that schema, targeted to end-users.  EG, help text.
 *** reports and processes available for that data
+
 === Details of Record Classes
 * the info provided is:
 *** The display name for the type of this record, eg *Gene*
