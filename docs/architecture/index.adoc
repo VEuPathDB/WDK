@@ -1,8 +1,7 @@
 * outline
 ** WDK Model and its Configuration
 ** Records and record classes
-*** Records and record classes
-**** WDK Model for Record Classes
+*** WDK Model for Record Classes
 *** Reports
 **** Different types of reporters
 **** Search summary views
