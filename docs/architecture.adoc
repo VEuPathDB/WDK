@@ -22,6 +22,11 @@
 **** acquire data called for by the interface, and
 **** process that data for display and peripheral analysis
 ** The information provided by the interface is:
+*** the schema of the record class.  What data is available.
+*** metadata about that schema, targeted to end-users.  EG, help text.
+*** reports and processes available for that data
+=== Details of Record Classes
+* the info provided is:
 *** The display name for the type of this record, eg *Gene*
 *** The url segment name for this type of record, to be used in the path of endpoints that refer to records.  Eg `gene`
 *** The specification of the primary key for this type of record.  
