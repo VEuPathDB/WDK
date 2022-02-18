@@ -1,5 +1,8 @@
 * outline
 ** Records and record classes
+*** Reports
+**** Different types of reporters
+**** Search summary views
 ** Processing
 *** Process parameters
 **** Types of parameters
@@ -13,9 +16,6 @@
 ****** View filters
 **** Strategies
 *** Step analysis
-** Reports
-*** Different types of reporters
-*** Search summary views
 ** User datasets
 ** Favorites
 ** Baskets
