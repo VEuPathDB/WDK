@@ -10,14 +10,17 @@
 **** Types of parameters
 **** Dependent parameters
 **** Validation
+**** WDK Model for Parameters
 *** ID Streams
 **** Searches
+***** WDK Model for Searches
 **** Filters
 ***** Step filters
 ***** Column filters
 ****** View filters
 **** Strategies
 *** Step analysis
+**** WDK Model for Step Analysis
 ** User datasets
 ** Favorites
 ** Baskets
