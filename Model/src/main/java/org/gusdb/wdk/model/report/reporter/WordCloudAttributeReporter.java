@@ -37,10 +37,6 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
   private boolean excludeNumbers = true;
   private Set<String> commonWords;
 
-  public WordCloudAttributeReporter(AnswerValue answerValue) {
-    super(answerValue);
-  }
-
   @Override
   public JSONObject getJsonResult(AnswerValue answerValue) throws WdkModelException {
     List<WordTag> tags = loadTags(answerValue);
@@ -237,6 +233,5 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
             return plural;
     }
   }
-
 
 }

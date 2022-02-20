@@ -1,5 +1,21 @@
 package org.gusdb.wdk.model.record;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.gusdb.fgputil.functional.Functions.fSwallow;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
+import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
@@ -9,7 +25,12 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.functional.Functions;
-import org.gusdb.wdk.model.*;
+import org.gusdb.wdk.model.Reference;
+import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelBase;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml.StepAnalysisContainer;
@@ -17,11 +38,17 @@ import org.gusdb.wdk.model.answer.AnswerFilter;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.SummaryView;
-import org.gusdb.wdk.model.toolbundle.ColumnToolBundle;
-import org.gusdb.wdk.model.toolbundle.DefaultAttributeToolBundleRef;
-import org.gusdb.wdk.model.toolbundle.impl.EmptyToolBundle;
-import org.gusdb.wdk.model.filter.*;
-import org.gusdb.wdk.model.query.*;
+import org.gusdb.wdk.model.columntool.DefaultColumnToolBundle;
+import org.gusdb.wdk.model.filter.Filter;
+import org.gusdb.wdk.model.filter.FilterDefinition;
+import org.gusdb.wdk.model.filter.FilterReference;
+import org.gusdb.wdk.model.filter.StepFilter;
+import org.gusdb.wdk.model.filter.StepFilterDefinition;
+import org.gusdb.wdk.model.query.BooleanQuery;
+import org.gusdb.wdk.model.query.Column;
+import org.gusdb.wdk.model.query.ColumnType;
+import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
@@ -30,20 +57,22 @@ import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.AttributeList;
 import org.gusdb.wdk.model.question.CategoryList;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.record.attribute.*;
+import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
+import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.IdAttributeField;
+import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.report.ReporterRef;
 import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.model.test.sanity.OptionallyTestable;
-import org.gusdb.wdk.model.user.*;
-
-import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-
-import static java.util.Objects.isNull;
-import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.gusdb.fgputil.functional.Functions.fSwallow;
-import static org.gusdb.fgputil.functional.Functions.mapToList;
+import org.gusdb.wdk.model.user.BasketFactory;
+import org.gusdb.wdk.model.user.BasketSnapshotQueryPlugin;
+import org.gusdb.wdk.model.user.FavoriteReference;
+import org.gusdb.wdk.model.user.StepContainer;
+import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserPreferences;
 
 /**
  * RecordClass is the core entity in WDK, and it defined the type of the data
@@ -302,8 +331,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   private String _urlSegment;
 
-  private String defaultToolBundleRef;
-  private ColumnToolBundle defaultToolBundle = new EmptyToolBundle();
+  private String defaultColumnToolBundleRef;
 
   // ////////////////////////////////////////////////////////////////////
   // Called at model creation time
@@ -411,12 +439,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   @SuppressWarnings("unused") // ModelXmlParser
-  public void setDefaultToolBundleRef(final DefaultAttributeToolBundleRef ref) {
-    this.defaultToolBundleRef = ref.getRef();
+  public void setDefaultColumnToolBundleRef(DefaultColumnToolBundle ref) {
+    defaultColumnToolBundleRef = ref.getRef();
   }
 
-  public ColumnToolBundle getDefaultToolBundle() {
-    return this.defaultToolBundle;
+  public String getDefaultColumnToolBundleRef() {
+    return defaultColumnToolBundleRef;
   }
 
   public void setAllRecordsQueryRef(String queryRef) {
@@ -731,14 +759,16 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     // create column attribute fields for primary key columns if they don't already exist
     createPrimaryKeySubFields(model.getProjectId());
 
-    // Retrieve default column tool bundle implementation if specified, or
-    // default to global definition.
-    // This must be done before resolving references for the attribute fields.
-    defaultToolBundle = isNull(defaultToolBundleRef)
-      ? _wdkModel.getDefaultAttributeToolBundle()
-      : _wdkModel.getColumnToolBundle(defaultToolBundleRef)
-        .orElseThrow(() -> new WdkModelException(
-          "Invalid columnToolBundle reference: " + defaultToolBundleRef));
+    // Resolve default column tool bundle for this recordclass;
+    //   this must be done before resolving references for the attribute fields.
+    if (defaultColumnToolBundleRef == null) {
+      // assign system-wide default, which is validated in WdkModel
+      defaultColumnToolBundleRef = model.getDefaultColumnToolBundleRef();
+    }
+    else {
+      // make sure default set here refers to a registered tool bundle
+      model.getColumnToolBundleMap().getToolBundle(defaultColumnToolBundleRef);
+    }
 
     // resolve the references for attribute queries
     resolveAttributeQueryReferences(model);
@@ -927,7 +957,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
         // intentionally using unprepared query
         assignAttributeFieldDataTypes(query);
-      } catch (WdkModelException e) {
+      }
+      catch (WdkModelException e) {
         throw new WdkModelException("Error while resolving attribute query " +
           "reference \"" + reference.getTwoPartName() + "\" in record type \"" +
           getFullName() + "\"", e);
@@ -1713,27 +1744,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    * @return null if not found
    */
   public Filter getFilter(String key) {
-    Filter filter = getStepFilter(key);
-    if (filter == null)
-      filter = getColumnFilter(key);
-    return filter;
-  }
-
-  public StepFilter getStepFilter(String key) {
     return _stepFilters.get(key);
-  }
-
-  public ColumnFilter getColumnFilter(String key) {
-    for (AttributeField attribute : attributeFieldMap.values()) {
-      if (attribute instanceof QueryColumnAttributeField) {
-        QueryColumnAttributeField columnAttribute = (QueryColumnAttributeField) attribute;
-        for (ColumnFilter filter : columnAttribute.getColumnFilters()) {
-          if (filter.getKey().equals(key))
-            return filter;
-        }
-      }
-    }
-    return null;
   }
 
   public Map<String, StepFilter> getStepFilters() {
@@ -1755,17 +1766,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       if (!filter.getFilterType().isViewOnly()) {
         LOG.debug("RECORDCLASS: filter name: " + filter.getKey());
         filters.put(filter.getKey(), filter);
-      }
-    }
-
-    // get all column filters
-    for (AttributeField attribute : attributeFieldMap.values()) {
-      if (attribute instanceof QueryColumnAttributeField) {
-        QueryColumnAttributeField columnAttribute = (QueryColumnAttributeField) attribute;
-        for (ColumnFilter filter : columnAttribute.getColumnFilters()) {
-          if (!filter.getFilterType().isViewOnly())
-            filters.put(filter.getKey(), filter);
-        }
       }
     }
     return filters;

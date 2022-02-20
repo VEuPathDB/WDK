@@ -19,14 +19,6 @@ public class ListColumnFilterSummary {
     _maxCount = max;
   }
 
-  public Map<String, Integer> getCounts() {
-    return _counts;
-  }
-
-  public int getMaxCount() {
-    return _maxCount;
-  }
-
   public JSONObject toJson() {
     return new JSONObject().put("maxCount", _maxCount).put("counts", _counts);
   }

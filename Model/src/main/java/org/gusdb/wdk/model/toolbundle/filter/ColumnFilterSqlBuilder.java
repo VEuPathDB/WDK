@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.filter;
+package org.gusdb.wdk.model.toolbundle.filter;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;

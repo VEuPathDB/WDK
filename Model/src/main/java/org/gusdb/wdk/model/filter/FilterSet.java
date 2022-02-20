@@ -22,7 +22,6 @@ public class FilterSet extends WdkModelBase implements ModelSetI<FilterDefinitio
     // also create the default filters provided by WDK
     filterSet.addStepFilter(StrategyFilter.getDefinition());
     filterSet.addStepFilter(AnswerSpecFilter.getDefinition());
-    filterSet.addColumnFilter(ListColumnFilter.getDefinition());
 
     return filterSet;
 
@@ -54,10 +53,6 @@ public class FilterSet extends WdkModelBase implements ModelSetI<FilterDefinitio
   }
 
   public void addStepFilter(StepFilterDefinition definition) {
-    _filterDefinitionList.add(definition);
-  }
-
-  public void addColumnFilter(ColumnFilterDefinition definition) {
     _filterDefinitionList.add(definition);
   }
 

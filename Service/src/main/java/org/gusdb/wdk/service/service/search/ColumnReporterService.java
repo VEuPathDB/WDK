@@ -29,6 +29,7 @@ import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
+import org.gusdb.wdk.model.columntool.ToolInterfaces.ColumnReporter;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.toolbundle.ColumnReporterInstance;
@@ -48,14 +49,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 /**
  * Endpoints for getting info about or running column reporters.
  */
-@Path(ColumnReporterService.NAMED_COLUMN_REPORTS_PATH)
-public class ColumnReporterService extends AbstractWdkService {
+@Path(ColumnReporterService.COLUMN_REPORTS_PATH)
+public class ColumnReporterService extends ColumnToolService {
 
   /**
    * API Paths
    */
-  public static final String NAMED_COLUMN_REPORTS_PATH =
-      SearchColumnService.NAMED_COLUMN_PATH + "/" + AnswerService.REPORTS_URL_SEGMENT;
+  public static final String COLUMN_REPORTS_PATH =
+      ColumnService.NAMED_COLUMN_PATH + "/" + AnswerService.REPORTS_URL_SEGMENT;
 
   /**
    * Reporter not found message.
@@ -63,26 +64,12 @@ public class ColumnReporterService extends AbstractWdkService {
   private static final String ERR_404 =
     "Invalid reporter \"%s\" for column " + "\"%s\".";
 
-  private final String _recordType;
-  private final String _searchName;
-  private final String _columnName;
-
   public ColumnReporterService(
     @PathParam(RecordService.RECORD_TYPE_PATH_PARAM) final String recordType,
     @PathParam(QuestionService.SEARCH_PATH_PARAM) final String searchName,
-    @PathParam(SearchColumnService.COLUMN_PATH_PARAM) final String columnName
+    @PathParam(ColumnService.COLUMN_PATH_PARAM) final String columnName
   ) {
-    _recordType = recordType;
-    _searchName = searchName;
-    _columnName = columnName;
-  }
-
-  private Question getQuestion() {
-    return getQuestionOrNotFound(_recordType, _searchName);
-  }
-
-  private AttributeField getColumn() {
-    return requireColumn(getQuestion(), _columnName);
+    super(recordType, searchName, columnName);
   }
 
   /**
@@ -101,25 +88,30 @@ public class ColumnReporterService extends AbstractWdkService {
    * Retrieves and returns the input spec for the named reporter on the current
    * column.
    *
-   * @param reporter
-   *   name of the reporter for which the input spec was requested.
+   * @param toolName
+   *   name of the column tool whose reporter's input spec was requested.
    *
    * @return Input specification for what the named reporter expects as config
    * input on run
+   * @throws WdkModelException 
    */
   @GET
-  @Path(AnswerService.CUSTOM_REPORT_SEGMENT)
+  @Path(COLUMN_TOOL_PARAM_SEGMENT)
   @Produces(MediaType.APPLICATION_JSON)
-  public JsonNode getReporterDetails(@PathParam(REPORT_NAME_PATH_PARAM) final String reporter) {
+  public JsonNode getReporterDetails(@PathParam(COLUMN_TOOL_PATH_PARAM) final String toolName) throws WdkModelException {
     AttributeField column = getColumn();
-    var rep = column.getReporter(reporter)
-      .orElseThrow(makeNotFound(column, reporter));
+    if (!column.getColumnReporterNames().contains(toolName)) {
+      throw new NotFoundException(format(ERR_404, getColumn().getName(), toolName));
+    }
+    ColumnReporter<?> rep = getWdkModel()
+        .getColumnToolFactory()
+        .getColumnReporterInstance(column, toolName);
 
     return Jackson.createObjectNode()
-      .put(JsonKeys.NAME, rep.getKey())
+      .put(JsonKeys.NAME, toolName)
       .set("schema", Jackson.createObjectNode()
-        .putPOJO("input", rep.getInputSpec(column.getDataType()))
-        .putPOJO("output", rep.outputSpec(column.getDataType()).build()));
+        .putPOJO("input", rep.getInputSpec())
+        .putPOJO("output", rep.getOutputSpec().build()));
   }
 
   /**

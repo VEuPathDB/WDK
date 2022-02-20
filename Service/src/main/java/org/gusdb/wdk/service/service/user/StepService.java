@@ -3,7 +3,7 @@ package org.gusdb.wdk.service.service.user;
 import static org.gusdb.wdk.service.service.AnswerService.CUSTOM_REPORT_SEGMENT_PAIR;
 import static org.gusdb.wdk.service.service.AnswerService.REPORT_NAME_PATH_PARAM;
 import static org.gusdb.wdk.service.service.AnswerService.STANDARD_REPORT_SEGMENT_PAIR;
-import static org.gusdb.wdk.service.service.search.SearchColumnService.NAMED_COLUMN_SEGMENT_PAIR;
+import static org.gusdb.wdk.service.service.search.ColumnService.NAMED_COLUMN_SEGMENT_PAIR;
 
 import java.util.Date;
 import java.util.Optional;
@@ -64,7 +64,7 @@ import org.gusdb.wdk.service.request.strategy.StepRequestParser.NewStepRequest;
 import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.search.ColumnReporterService;
-import org.gusdb.wdk.service.service.search.SearchColumnService;
+import org.gusdb.wdk.service.service.search.ColumnService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -395,7 +395,7 @@ public class StepService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   public StreamingOutput getColumnReporterResponse(
       @PathParam(STEP_ID_PATH_PARAM) final long stepId,
-      @PathParam(SearchColumnService.COLUMN_PATH_PARAM) final String columnName,
+      @PathParam(ColumnService.COLUMN_PATH_PARAM) final String columnName,
       @PathParam(REPORT_NAME_PATH_PARAM) final String reporterName,
       final JSONObject requestJson)
           throws WdkModelException, DataValidationException, NotFoundException, WdkUserException {
@@ -422,7 +422,7 @@ public class StepService extends UserService {
 
     // make sure passed column is valid for this question
     Question question = trimmedSpec.get().getQuestion();
-    AttributeField attribute = requireColumn(question, columnName);
+    AttributeField attribute = getColumnOrNotFound(question, columnName);
 
     // create reporter instance for this step and config
     ColumnReporterInstance reporter = attribute.makeReporterInstance(

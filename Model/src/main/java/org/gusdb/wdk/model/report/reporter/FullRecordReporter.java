@@ -7,7 +7,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +17,6 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
@@ -26,7 +24,7 @@ import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.TableValueRow;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
-import org.gusdb.wdk.model.report.ReporterInfo;
+import org.gusdb.wdk.model.report.PropertiesProvider;
 import org.gusdb.wdk.model.report.util.TableCache;
 
 import com.itextpdf.text.Document;
@@ -35,7 +33,6 @@ import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-
 
 /**
  * @author xingao
@@ -48,14 +45,11 @@ public class FullRecordReporter extends StandardReporter {
 
   private TableCache _tableCache = null;
 
-  public FullRecordReporter(AnswerValue answerValue) {
-    super(answerValue);
-  }
-
   @Override
-  public void setProperties(ReporterInfo reporterRef) throws WdkModelException {
+  public FullRecordReporter setProperties(PropertiesProvider reporterRef) throws WdkModelException {
     super.setProperties(reporterRef);
     setTableCache();
+    return this;
   }
 
   private void setTableCache() {
@@ -63,13 +57,6 @@ public class FullRecordReporter extends StandardReporter {
     if (cacheTableName != null) {
       _tableCache = new TableCache(getQuestion().getRecordClass(), _wdkModel.getAppDb(), cacheTableName);
     }
-  }
-
-  // special case to support model-independent code in FullRecordFileCreator.java
-  // TODO: find out if that file is still in use; if not, delete and delete this method
-  public void setProperties(Map<String, String> properties) {
-    _properties = new HashMap<>(properties);
-    setTableCache();
   }
 
   @Override

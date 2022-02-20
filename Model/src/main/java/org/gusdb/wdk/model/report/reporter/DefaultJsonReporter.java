@@ -46,10 +46,6 @@ import org.json.JSONObject;
 public class DefaultJsonReporter extends AnswerDetailsReporter {
 
   public static final String RESERVED_NAME = "standard";
-  
-  public DefaultJsonReporter(AnswerValue answerValue) {
-    super(answerValue);
-  }
 
   @Override
   public String getDownloadFileName() {

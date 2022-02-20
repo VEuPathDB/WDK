@@ -6,15 +6,10 @@ import java.util.List;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.report.util.AttributesRowProvider;
 
 public class AttributesTabularReporter extends AbstractTabularReporter {
-
-  public AttributesTabularReporter(AnswerValue answerValue) {
-    super(answerValue);
-  }
 
   @Override
   protected List<String> getHeader() throws WdkUserException, WdkModelException {

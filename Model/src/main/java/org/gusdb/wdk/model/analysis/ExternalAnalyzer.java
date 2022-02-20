@@ -157,16 +157,18 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
       // configure tabular reporter if attributes requested in config
       List<String> attributes = getConfiguredFields(EXTRACTED_ATTRIBS_PROP_KEY);
       if (!attributes.isEmpty()) {
-        Reporter reporter = new AttributesTabularReporter(answerValue);
-        reporter.configure(getConfig(StandardConfig.SELECTED_FIELDS, join(attributes, ","), hasHeader));
+        Reporter reporter = new AttributesTabularReporter()
+            .setAnswerValue(answerValue)
+            .configure(getConfig(StandardConfig.SELECTED_FIELDS, join(attributes, ","), hasHeader));
         writeReport(reporter, Paths.get(storageDir, ATTRIBUTES_FILE_NAME));
       }
   
       // get array of requested tables
       List<String> tables = getConfiguredFields(EXTRACTED_TABLES_PROP_KEY);
       for (String table : tables) {
-        Reporter reporter = new TableTabularReporter(answerValue);
-        reporter.configure(getConfig(StandardConfig.SELECTED_TABLES, table, hasHeader));
+        Reporter reporter = new TableTabularReporter()
+            .setAnswerValue(answerValue)
+            .configure(getConfig(StandardConfig.SELECTED_TABLES, table, hasHeader));
         writeReport(reporter, Paths.get(storageDir, table + FILE_NAME_SUFFIX));
       }
     }

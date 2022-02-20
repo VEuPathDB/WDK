@@ -2098,7 +2098,7 @@
           <element name="date">
             <ref name="columnToolType" />
           </element>
-          <element name="default">
+          <element name="other">
             <ref name="columnToolType" />
           </element>
         </choice>

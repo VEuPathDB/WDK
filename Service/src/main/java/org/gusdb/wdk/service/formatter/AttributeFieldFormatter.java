@@ -60,7 +60,9 @@ public class AttributeFieldFormatter {
 
   private static JSONObject formatToolsJson(AttributeField field) {
     return new JSONObject()
+      // all tools must have a reporter per the RNG
       .put(JsonKeys.REPORTS, field.getColumnReporterNames())
+      // but only some tools have a filter; find which ones
       .put(JsonKeys.FILTERS, field.getColumnFilterNames());
   }
 }

@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.report.util;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +59,7 @@ public class DumperHelp {
       AnswerValue answer = AnswerValueFactory.makeAnswer(user, AnswerSpec.builder(wdkModel)
           .setQuestionFullName(questionName).setParamValues(params).buildRunnable(user, StepContainer.emptyContainer()));
       Reporter reporter = ReporterFactory.getReporter(answer, reporterName, emptyConfig);
-  
+
       System.out.println("Help for reporter: " + reporterName + NL);
       System.out.println();
       System.out.println(reporter.getHelp());

@@ -17,14 +17,13 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.TableValue;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
-import org.gusdb.wdk.model.report.ReporterInfo;
+import org.gusdb.wdk.model.report.PropertiesProvider;
 import org.gusdb.wdk.model.report.util.TableCache;
 
 /**
@@ -38,17 +37,14 @@ public class XMLReporter extends StandardReporter {
 
   private TableCache _tableCache;
 
-  public XMLReporter(AnswerValue answerValue) {
-    super(answerValue);
-  }
-
   @Override
-  public void setProperties(ReporterInfo reporterRef) throws WdkModelException {
+  public XMLReporter setProperties(PropertiesProvider reporterRef) throws WdkModelException {
     super.setProperties(reporterRef);
     String cacheTableName = TableCache.getCacheTableName(_properties);
     if (cacheTableName != null) {
       _tableCache = new TableCache(getQuestion().getRecordClass(), _wdkModel.getAppDb(), cacheTableName);
     }
+    return this;
   }
 
   @Override

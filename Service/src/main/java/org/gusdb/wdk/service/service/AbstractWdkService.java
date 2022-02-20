@@ -386,7 +386,7 @@ public abstract class AbstractWdkService {
    *   Throw if either the {@code RecordClass} or {@code AttributeField} could
    *   not be found.
    */
-  protected static AttributeField requireColumn(
+  protected static AttributeField getColumnOrNotFound(
     final AttributeFieldContainer container,
     final String column
   ) {

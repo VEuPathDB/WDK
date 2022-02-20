@@ -16,10 +16,6 @@ import org.json.JSONObject;
 
 public class HistogramAttributeReporter extends AbstractAttributeReporter {
 
-  public HistogramAttributeReporter(AnswerValue answerValue) {
-    super(answerValue);
-  }
-
   public static final String PROP_TYPE = "type";
 
   public static final String TYPE_CATEGORY = "category";

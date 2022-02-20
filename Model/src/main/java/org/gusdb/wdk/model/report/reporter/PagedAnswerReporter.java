@@ -1,11 +1,10 @@
 package org.gusdb.wdk.model.report.reporter;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.PagedAnswerRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
 import org.gusdb.wdk.model.report.AbstractReporter;
-import org.gusdb.wdk.model.report.ReporterInfo;
+import org.gusdb.wdk.model.report.PropertiesProvider;
 
 /**
  * A PagedReporter outputs a result in a paged fashion in order to avoid memory problems.  To do so, it
@@ -23,12 +22,8 @@ public abstract class PagedAnswerReporter extends AbstractReporter {
 
   protected int _pageSize = DEFAULT_PAGE_SIZE;
 
-  protected PagedAnswerReporter(AnswerValue answerValue) {
-    super(answerValue);
-  }
-
   @Override
-  public void setProperties(ReporterInfo reporterRef) throws WdkModelException {
+  public PagedAnswerReporter setProperties(PropertiesProvider reporterRef) throws WdkModelException {
     super.setProperties(reporterRef);
     if (_properties.containsKey(PROPERTY_PAGE_SIZE)) {
       try {
@@ -38,6 +33,7 @@ public abstract class PagedAnswerReporter extends AbstractReporter {
         throw new WdkModelException("Reporter property '" + PROPERTY_PAGE_SIZE + "' must be a positive integer.");
       }
     }
+    return this;
   }
 
   public RecordStream getRecords() {
@@ -46,7 +42,7 @@ public abstract class PagedAnswerReporter extends AbstractReporter {
 
   @Override
   public String getHelp() {
-    return super.getHelp() + "Optional property: '" + PROPERTY_PAGE_SIZE +
+    return "Optional property: '" + PROPERTY_PAGE_SIZE +
         "': specifies page size, defaults to " + DEFAULT_PAGE_SIZE;
   }
 

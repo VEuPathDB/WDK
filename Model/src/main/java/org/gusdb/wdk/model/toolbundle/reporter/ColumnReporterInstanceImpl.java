@@ -4,7 +4,6 @@ import static org.gusdb.fgputil.functional.Functions.mapException;
 
 import java.io.OutputStream;
 import java.util.Collections;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Timer;
@@ -12,9 +11,9 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.RecordStreamFactory;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.report.PropertiesProvider;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.ReporterConfigException;
-import org.gusdb.wdk.model.report.ReporterInfo;
 import org.gusdb.wdk.model.toolbundle.ColumnReporter;
 import org.gusdb.wdk.model.toolbundle.ColumnReporterInstance;
 import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
@@ -34,6 +33,13 @@ public class ColumnReporterInstanceImpl extends AbstractColumnToolInstance imple
     super(answerValue, column, config);
     _reporter = reporter;
     _processor = processor;
+  }
+
+  @Override
+  public ColumnReporterInstanceImpl setAnswerValue(AnswerValue answerValue) {
+    // not called; required for Reporter interface
+    _answer = answerValue;
+    return this;
   }
 
   @Override
@@ -81,13 +87,9 @@ public class ColumnReporterInstanceImpl extends AbstractColumnToolInstance imple
   }
 
   @Override
-  public void setProperties(ReporterInfo reporterInfo) throws WdkModelException {
+  public ColumnReporterInstanceImpl setProperties(PropertiesProvider reporterInfo) throws WdkModelException {
     // no-op; properties are accessible via column reporter
-  }
-
-  @Override
-  public Reporter configure(Map<String, String> config) throws ReporterConfigException, WdkModelException {
-    throw new UnsupportedOperationException("Configuration handled via constructor.");
+    return this;
   }
 
   @Override

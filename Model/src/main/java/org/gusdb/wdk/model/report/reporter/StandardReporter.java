@@ -45,9 +45,11 @@ public abstract class StandardReporter extends AbstractReporter {
   private Set<AttributeField> _attributes;
   private Set<TableField> _tables;
 
-  protected StandardReporter(AnswerValue answerValue) {
-    super(answerValue);
+  @Override
+  public StandardReporter setAnswerValue(AnswerValue answerValue) {
+    super.setAnswerValue(answerValue);
     standardizeAnswerValue(_baseAnswer);
+    return this;
   }
 
   private static void standardizeAnswerValue(AnswerValue answerValue) {

@@ -4,7 +4,7 @@ import static org.gusdb.fgputil.functional.Functions.reduce;
 import static org.gusdb.wdk.service.service.AnswerService.CUSTOM_REPORT_SEGMENT_PAIR;
 import static org.gusdb.wdk.service.service.AnswerService.REPORT_NAME_PATH_PARAM;
 import static org.gusdb.wdk.service.service.AnswerService.STANDARD_REPORT_SEGMENT_PAIR;
-import static org.gusdb.wdk.service.service.search.SearchColumnService.NAMED_COLUMN_SEGMENT_PAIR;
+import static org.gusdb.wdk.service.service.search.ColumnService.NAMED_COLUMN_SEGMENT_PAIR;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +49,7 @@ import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.BasketRequests.BasketActions;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.search.ColumnReporterService;
-import org.gusdb.wdk.service.service.search.SearchColumnService;
+import org.gusdb.wdk.service.service.search.ColumnService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -325,13 +325,13 @@ public class BasketService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   public StreamingOutput getColumnReporterResponse(
       @PathParam(BASKET_NAME_PATH_PARAM) final String basketName,
-      @PathParam(SearchColumnService.COLUMN_PATH_PARAM) final String columnName,
+      @PathParam(ColumnService.COLUMN_PATH_PARAM) final String columnName,
       @PathParam(REPORT_NAME_PATH_PARAM) final String reportName,
       final JSONObject requestJson)
           throws WdkModelException, NotFoundException, WdkUserException {
     User user = getPrivateRegisteredUser();
     RecordClass recordClass = getRecordClassOrNotFound(basketName);
-    AttributeField attribute = requireColumn(recordClass, columnName);
+    AttributeField attribute = getColumnOrNotFound(recordClass, columnName);
     RunnableObj<AnswerSpec> basketAnswerSpec = AnswerSpec
       .builder(getWdkModel())
       .setQuestionFullName(recordClass.getRealtimeBasketQuestion().getFullName())

@@ -2,7 +2,8 @@ package org.gusdb.wdk.model.report;
 
 import java.util.Map;
 
-public interface ReporterInfo {
+@FunctionalInterface
+public interface PropertiesProvider {
 
   Map<String,String> getProperties();
 

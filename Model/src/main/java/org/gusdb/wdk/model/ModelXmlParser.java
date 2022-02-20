@@ -46,13 +46,16 @@ import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterInstanceReference;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.SummaryView;
-import org.gusdb.wdk.model.toolbundle.*;
-import org.gusdb.wdk.model.toolbundle.impl.*;
+import org.gusdb.wdk.model.columntool.ColumnTool;
+import org.gusdb.wdk.model.columntool.ColumnToolBundle;
+import org.gusdb.wdk.model.columntool.ColumnToolBundleMap;
+import org.gusdb.wdk.model.columntool.DefaultColumnToolBundle;
+import org.gusdb.wdk.model.columntool.ImplementationRef;
+import org.gusdb.wdk.model.columntool.ColumnToolElementPair;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigBuilder;
 import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.gusdb.wdk.model.dataset.DatasetParserReference;
-import org.gusdb.wdk.model.filter.ColumnFilterDefinition;
 import org.gusdb.wdk.model.filter.FilterReference;
 import org.gusdb.wdk.model.filter.FilterSet;
 import org.gusdb.wdk.model.filter.StepFilterDefinition;
@@ -575,45 +578,31 @@ public class ModelXmlParser extends XmlParser {
     // Configure attribute tool bundles
     configureToolBundlesNode(digester);
     configureNode(digester, "wdkModel/defaultColumnToolBundle",
-      DefaultAttributeToolBundleRef.class, "setDefaultColumnToolBundleRef");
+      DefaultColumnToolBundle.class, "setDefaultColumnToolBundleRef");
   }
 
-  private static void configureToolBundlesNode(final Digester dig) {
+  private static void configureToolBundlesNode(final Digester digester) {
     final String root = "wdkModel/columnToolBundles";
     final String bundle = root + "/toolBundle";
     final String tool = bundle + "/tool";
-    configureNode(dig, root, ColumnToolBundles.class,
-      "setColumnToolBundles");
 
-    configureNode(dig, bundle, StandardToolBundleBuilder.class, "addBundle");
-    configureNode(dig, tool, StandardToolSetBuilder.class, "addTool");
+    configureNode(digester, root, ColumnToolBundleMap.class, "setColumnToolLibrary");
+    configureNode(digester, bundle, ColumnToolBundle.class, "addToolBundle");
+    configureNode(digester, tool, ColumnTool.class, "addTool");
 
-    configureColumnReporter(dig, tool + "/string/reporter", "setStringReporter");
-    configureColumnReporter(dig, tool + "/date/reporter", "setDateReporter");
-    configureColumnReporter(dig, tool + "/number/reporter", "setNumberReporter");
-    configureColumnReporter(dig, tool + "/default/reporter", "setOtherReporter");
-
-    configureColumnFilter(dig, tool + "/string/filter", "setStringFilter");
-    configureColumnFilter(dig, tool + "/date/filter", "setDateFilter");
-    configureColumnFilter(dig, tool + "/number/filter", "setNumberFilter");
-    configureColumnFilter(dig, tool + "/default/filter", "setOtherFilter");
+    String[] dataTypes = new String[] { "String", "Date", "Number", "Other" };
+    for (String dataType : dataTypes) {
+      String typePath = tool + "/" + dataType.toLowerCase();
+      configureNode(digester, typePath, ColumnToolElementPair.class, "set" + dataType + "Pair");
+      configureToolImplementation(digester, typePath + "/reporter", "setReporter");
+      configureToolImplementation(digester, typePath + "/filter", "setFilter");
+    }
   }
 
-  private static void configureColumnReporter(Digester dig, String path, String method) {
-    configureColumnTool(dig, path, method, ColumnReporterBuilder.class);
-  }
-
-  private static void configureColumnFilter(Digester dig, String path, String method) {
-    configureColumnTool(dig, path, method, ColumnFilterBuilder.class);
-  }
-
-  private static
-  <S extends ColumnToolInstance, T extends ColumnTool<S>, R extends ColumnToolBuilder<S,T>>
-  void configureColumnTool(Digester dig, String path,
-      String method, Class<R> type) {
-    configureNode(dig, path, type, method);
-    dig.addCallMethod(path, "setImplementation", 1);
-    dig.addCallParam(path, 0, "implementation");
+  private static void configureToolImplementation(Digester digester, String path, String setter) {
+    configureNode(digester, path, ImplementationRef.class, setter);
+    configureNode(digester, path + "/property", WdkModelText.class, "addProperty");
+    digester.addCallMethod(path + "/property", "setText", 0);
   }
 
   private static void configureRecordClassSet(Digester digester) {
@@ -690,7 +679,7 @@ public class ModelXmlParser extends XmlParser {
 
     // Default attribute tool bundle
     configureNode(digester, "wdkModel/recordClassSet/recordClass/defaultColumnToolBundle",
-      DefaultAttributeToolBundleRef.class, "setDefaultToolBundleRef");
+        DefaultColumnToolBundle.class, "setDefaultColumnToolBundleRef");
 
     // attribute query ref
     configureNode(digester, "wdkModel/recordClassSet/recordClass/attributeQueryRef",
@@ -1115,14 +1104,6 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod("wdkModel/filterSet/stepFilter/description", "setText", 0);
     configureNode(digester, "wdkModel/filterSet/stepFilter/property", WdkModelText.class, "addProperty");
     digester.addCallMethod("wdkModel/filterSet/stepFilter/property", "setText", 0);
-
-    // load column filter
-    configureNode(digester, "wdkModel/filterSet/columnFilter", ColumnFilterDefinition.class, "addColumnFilter");
-    configureNode(digester, "wdkModel/filterSet/columnFilter/display", WdkModelText.class, "addDisplay");
-    digester.addCallMethod("wdkModel/filterSet/columnFilter/display", "setText", 0);
-    configureNode(digester, "wdkModel/filterSet/columnFilter/description", WdkModelText.class,
-        "addDescription");
-    digester.addCallMethod("wdkModel/filterSet/columnFilter/description", "setText", 0);
   }
 
   public static void main(String[] args) {
