@@ -28,7 +28,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -43,8 +42,8 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
-import org.gusdb.wdk.model.toolbundle.ColumnReporterInstance;
 import org.gusdb.wdk.model.user.InvalidStrategyStructureException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
@@ -412,8 +411,8 @@ public class StepService extends UserService {
     }
 
     // trim off a filter linked to this reporter if present and apply view filters
-    AnswerSpecBuilder specBuilder = ColumnReporterService.trimColumnFilter(
-        new AnswerSpecBuilder(step.getAnswerSpec()), columnName, reporterName);
+    AnswerSpecBuilder specBuilder = new AnswerSpecBuilder(step.getAnswerSpec());
+    ColumnReporterService.trimColumnFilter(specBuilder, columnName, reporterName);
     RunnableObj<AnswerSpec> trimmedSpec = specBuilder
         .setViewFilterOptions(AnswerSpecServiceFormat.parseViewFilters(requestJson))
         .build(step.getUser(), step.getContainer(), ValidationLevel.RUNNABLE)
@@ -425,11 +424,9 @@ public class StepService extends UserService {
     AttributeField attribute = getColumnOrNotFound(question, columnName);
 
     // create reporter instance for this step and config
-    ColumnReporterInstance reporter = attribute.makeReporterInstance(
-        reporterName,
-        AnswerValueFactory.makeAnswer(step.getUser(), trimmedSpec),
-        JsonUtil.toJsonNode(requestJson.getJSONObject(JsonKeys.REPORT_CONFIG))
-    ).orElseThrow(ColumnReporterService.makeNotFound(attribute, reporterName));
+    Reporter reporter = ColumnReporterService.getColumnReporter(attribute, reporterName)
+        .setAnswerValue(AnswerValueFactory.makeAnswer(step.getUser(), trimmedSpec))
+        .configure(requestJson.getJSONObject(JsonKeys.REPORT_CONFIG));
 
     LOG.info("Prepared column reporter for column " + columnName + " in " + t.getElapsedString());
 
