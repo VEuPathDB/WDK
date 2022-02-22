@@ -1,6 +1,6 @@
 package org.gusdb.wdk.model.columntool;
 
-public class DefaultColumnToolBundle {
+public class DefaultColumnToolBundleRef {
 
   private String _ref;
 

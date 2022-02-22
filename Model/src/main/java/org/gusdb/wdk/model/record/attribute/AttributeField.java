@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.columntool.ColumnTool;
 import org.gusdb.wdk.model.columntool.ColumnToolBundle;
-import org.gusdb.wdk.model.columntool.ColumnToolElementPair;
+import org.gusdb.wdk.model.columntool.ColumnToolElementRefPair;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -52,7 +52,7 @@ public abstract class AttributeField extends Field implements Cloneable {
   private Map<String, AttributeReporterRef> _reporterMap;
 
   private String _toolBundleRef;
-  protected Map<String,ColumnToolElementPair> _columnToolElementPairs = new HashMap<>();
+  protected Map<String,ColumnToolElementRefPair> _columnToolElementPairs = new HashMap<>();
 
   public abstract Map<String, ColumnAttributeField> getColumnAttributeFields() throws WdkModelException;
 
@@ -216,7 +216,7 @@ public abstract class AttributeField extends Field implements Cloneable {
    *
    * @return list of available column tools by name
    */
-  public Map<String, ColumnToolElementPair> getColumnToolElementPairs() {
+  public Map<String, ColumnToolElementRefPair> getColumnToolElementPairs() {
     return Collections.emptyMap();
   }
 
@@ -235,7 +235,7 @@ public abstract class AttributeField extends Field implements Cloneable {
     if (_toolBundleRef != null) {
       ColumnToolBundle toolBundle = wdkModel.getColumnToolBundleMap().getToolBundle(_toolBundleRef);
       for (ColumnTool tool : toolBundle.getTools()) {
-        ColumnToolElementPair elements = tool.getElementPair(_dataType);
+        ColumnToolElementRefPair elements = tool.getElementPair(_dataType);
         if (elements != null) {
           _columnToolElementPairs.put(tool.getName(), elements);
         }

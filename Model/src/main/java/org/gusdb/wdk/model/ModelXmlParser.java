@@ -49,9 +49,9 @@ import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.columntool.ColumnTool;
 import org.gusdb.wdk.model.columntool.ColumnToolBundle;
 import org.gusdb.wdk.model.columntool.ColumnToolBundleMap;
-import org.gusdb.wdk.model.columntool.DefaultColumnToolBundle;
-import org.gusdb.wdk.model.columntool.ImplementationRef;
-import org.gusdb.wdk.model.columntool.ColumnToolElementPair;
+import org.gusdb.wdk.model.columntool.DefaultColumnToolBundleRef;
+import org.gusdb.wdk.model.columntool.ColumnToolElementRef;
+import org.gusdb.wdk.model.columntool.ColumnToolElementRefPair;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigBuilder;
 import org.gusdb.wdk.model.config.ModelConfigParser;
@@ -578,7 +578,7 @@ public class ModelXmlParser extends XmlParser {
     // Configure attribute tool bundles
     configureToolBundlesNode(digester);
     configureNode(digester, "wdkModel/defaultColumnToolBundle",
-      DefaultColumnToolBundle.class, "setDefaultColumnToolBundleRef");
+      DefaultColumnToolBundleRef.class, "setDefaultColumnToolBundleRef");
   }
 
   private static void configureToolBundlesNode(final Digester digester) {
@@ -593,14 +593,14 @@ public class ModelXmlParser extends XmlParser {
     String[] dataTypes = new String[] { "String", "Date", "Number", "Other" };
     for (String dataType : dataTypes) {
       String typePath = tool + "/" + dataType.toLowerCase();
-      configureNode(digester, typePath, ColumnToolElementPair.class, "set" + dataType + "Pair");
+      configureNode(digester, typePath, ColumnToolElementRefPair.class, "set" + dataType + "Pair");
       configureToolImplementation(digester, typePath + "/reporter", "setReporter");
       configureToolImplementation(digester, typePath + "/filter", "setFilter");
     }
   }
 
   private static void configureToolImplementation(Digester digester, String path, String setter) {
-    configureNode(digester, path, ImplementationRef.class, setter);
+    configureNode(digester, path, ColumnToolElementRef.class, setter);
     configureNode(digester, path + "/property", WdkModelText.class, "addProperty");
     digester.addCallMethod(path + "/property", "setText", 0);
   }
@@ -679,7 +679,7 @@ public class ModelXmlParser extends XmlParser {
 
     // Default attribute tool bundle
     configureNode(digester, "wdkModel/recordClassSet/recordClass/defaultColumnToolBundle",
-        DefaultColumnToolBundle.class, "setDefaultColumnToolBundleRef");
+        DefaultColumnToolBundleRef.class, "setDefaultColumnToolBundleRef");
 
     // attribute query ref
     configureNode(digester, "wdkModel/recordClassSet/recordClass/attributeQueryRef",

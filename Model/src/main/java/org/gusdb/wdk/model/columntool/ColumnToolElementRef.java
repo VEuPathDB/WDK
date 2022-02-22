@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelText;
 
-public class ImplementationRef {
+public class ColumnToolElementRef {
 
   private String _implementationClass;
   private Map<String,String> _properties = new HashMap<>();

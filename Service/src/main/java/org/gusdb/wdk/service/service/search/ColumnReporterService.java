@@ -26,7 +26,7 @@ import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
-import org.gusdb.wdk.model.columntool.ToolInterfaces.ColumnReporter;
+import org.gusdb.wdk.model.columntool.ColumnReporter;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -97,8 +97,8 @@ public class ColumnReporterService extends ColumnToolService {
     return Jackson.createObjectNode()
       .put(JsonKeys.NAME, toolName)
       .set("schema", Jackson.createObjectNode()
-        .putPOJO("input", rep.getInputSpec())
-        .putPOJO("output", rep.getOutputSpec().build()));
+        .putPOJO("input", rep.getInputSchema())
+        .putPOJO("output", rep.getOutputSchema().build()));
   }
 
   /**

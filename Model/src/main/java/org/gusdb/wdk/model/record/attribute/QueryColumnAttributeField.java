@@ -5,7 +5,7 @@ import java.util.Map;
 import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.columntool.ColumnToolElementPair;
+import org.gusdb.wdk.model.columntool.ColumnToolElementRefPair;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 
@@ -57,7 +57,7 @@ public class QueryColumnAttributeField extends ColumnAttributeField {
   }
 
   @Override
-  public Map<String, ColumnToolElementPair> getColumnToolElementPairs() {
+  public Map<String, ColumnToolElementRefPair> getColumnToolElementPairs() {
     return _columnToolElementPairs;
   }
 

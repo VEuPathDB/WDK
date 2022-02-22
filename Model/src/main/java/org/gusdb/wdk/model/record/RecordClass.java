@@ -38,7 +38,7 @@ import org.gusdb.wdk.model.answer.AnswerFilter;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.SummaryView;
-import org.gusdb.wdk.model.columntool.DefaultColumnToolBundle;
+import org.gusdb.wdk.model.columntool.DefaultColumnToolBundleRef;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.filter.FilterDefinition;
 import org.gusdb.wdk.model.filter.FilterReference;
@@ -439,7 +439,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   @SuppressWarnings("unused") // ModelXmlParser
-  public void setDefaultColumnToolBundleRef(DefaultColumnToolBundle ref) {
+  public void setDefaultColumnToolBundleRef(DefaultColumnToolBundleRef ref) {
     defaultColumnToolBundleRef = ref.getRef();
   }
 

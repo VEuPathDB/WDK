@@ -43,7 +43,7 @@ import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
 import org.gusdb.wdk.model.columntool.ColumnToolFactory;
 import org.gusdb.wdk.model.columntool.ColumnToolBundleMap;
-import org.gusdb.wdk.model.columntool.DefaultColumnToolBundle;
+import org.gusdb.wdk.model.columntool.DefaultColumnToolBundleRef;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigAccountDB;
 import org.gusdb.wdk.model.config.ModelConfigAppDB;
@@ -387,7 +387,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return categoriesOntologyName;
   }
 
-  public void setDefaultColumnToolBundleRef(DefaultColumnToolBundle ref) {
+  public void setDefaultColumnToolBundleRef(DefaultColumnToolBundleRef ref) {
     defaultColumnToolBundleRef = ref.getRef();
   }
 

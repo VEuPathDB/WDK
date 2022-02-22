@@ -75,7 +75,7 @@ public class ColumnFilterService extends ColumnToolService {
     return getWdkModel()
         .getColumnToolFactory()
         .getColumnFilterInstance(column, toolName)
-        .getInputSpec();
+        .getInputSchema();
   }
 
 }
