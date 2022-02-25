@@ -63,19 +63,25 @@ public class PrometheusFilter implements ContainerRequestFilter, ContainerRespon
   @Override
   public void filter(ContainerRequestContext request, ContainerResponseContext response) {
 
-    // retrieve timer child and tell it to report request duration, then remove
-    ((Timer)request.getProperty(TIMER_KEY)).observeDuration();
-    request.removeProperty(TIMER_KEY);
+    String matchedUrlTemplate = (String)request.getProperty(MATCHED_URL_KEY);
 
-    // increment count for requests of this type
-    REQUEST_COUNTER
-        .labels(
-            (String)request.getProperty(MATCHED_URL_KEY),
-            request.getMethod(),
-            String.valueOf(response.getStatus()))
-        .inc();
+    // response filter executes for all responses, but only matched requests were
+    //   processed by the request filter above; unmatched requests can be safely ignored
+    if (matchedUrlTemplate != null) {
 
-    request.removeProperty(MATCHED_URL_KEY);
+      // retrieve timer child and tell it to report request duration, then remove
+      ((Timer)request.getProperty(TIMER_KEY)).observeDuration();
+      request.removeProperty(TIMER_KEY);
+
+      // increment count for requests of this type
+      REQUEST_COUNTER
+          .labels(
+              matchedUrlTemplate,
+              request.getMethod(),
+              String.valueOf(response.getStatus()))
+          .inc();
+      request.removeProperty(MATCHED_URL_KEY);
+    }
   }
 
   private String getPathTemplate(ContainerRequestContext request) {
