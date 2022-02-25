@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -145,7 +146,7 @@ public class Utilities {
   public static String replaceMacros(String text, Map<String, Object> tokens) {
     for (String token : tokens.keySet()) {
       Object object = tokens.get(token);
-      String value = (object == null) ? "" : object.toString();
+      String value = (object == null) ? "" : Matcher.quoteReplacement(object.toString());
       String macro = Pattern.quote("$$" + token + "$$");
       text = text.replaceAll(macro, value);
     }
