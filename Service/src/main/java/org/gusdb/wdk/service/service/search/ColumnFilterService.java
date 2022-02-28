@@ -10,6 +10,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.columntool.ColumnToolFactory;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.service.service.QuestionService;
 import org.gusdb.wdk.service.service.RecordService;
@@ -72,8 +73,7 @@ public class ColumnFilterService extends ColumnToolService {
     if (!column.getColumnFilterNames().contains(toolName)) {
       throw new NotFoundException(format(ERR_404, getColumn().getName(), toolName));
     }
-    return getWdkModel()
-        .getColumnToolFactory()
+    return ColumnToolFactory
         .getColumnFilterInstance(column, toolName)
         .getInputSchema();
   }

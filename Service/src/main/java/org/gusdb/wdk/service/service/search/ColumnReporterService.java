@@ -27,6 +27,7 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.columntool.ColumnReporter;
+import org.gusdb.wdk.model.columntool.ColumnToolFactory;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -39,6 +40,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.util.RawValue;
 
 /**
  * Endpoints for getting info about or running column reporters.
@@ -93,12 +95,12 @@ public class ColumnReporterService extends ColumnToolService {
   @Path(COLUMN_TOOL_PARAM_SEGMENT)
   @Produces(MediaType.APPLICATION_JSON)
   public JsonNode getReporterDetails(@PathParam(COLUMN_TOOL_PATH_PARAM) final String toolName) throws WdkModelException {
-    ColumnReporter<?> rep = getColumnReporter(getColumn(), toolName);
+    ColumnReporter rep = getColumnReporter(getColumn(), toolName);
     return Jackson.createObjectNode()
       .put(JsonKeys.NAME, toolName)
       .set("schema", Jackson.createObjectNode()
-        .putPOJO("input", rep.getInputSchema())
-        .putPOJO("output", rep.getOutputSchema().build()));
+        .putRawValue("input", new RawValue(rep.getInputSchema().build()))
+        .putRawValue("output", new RawValue(rep.getOutputSchema().build())));
   }
 
   /**
@@ -132,7 +134,7 @@ public class ColumnReporterService extends ColumnToolService {
 
       // try to find and create a column reporter for this tool
       //   (could validate this after answer spec, etc. but cheap and feel this error should be emitted first)
-      ColumnReporter<?> reporter = getColumnReporter(getColumn(), toolName);
+      ColumnReporter reporter = getColumnReporter(getColumn(), toolName);
   
       // parse any requested view filters
       FilterOptionListBuilder viewFilters = AnswerSpecServiceFormat.parseViewFilters(requestJson);
@@ -167,13 +169,11 @@ public class ColumnReporterService extends ColumnToolService {
    * @throws NotFoundException if reporter for that tool does not exist on this column
    * @throws WdkModelException if something goes wrong
    */
-  public static ColumnReporter<?> getColumnReporter(AttributeField column, String toolName) throws WdkModelException {
+  public static ColumnReporter getColumnReporter(AttributeField column, String toolName) throws WdkModelException {
     if (!column.getColumnReporterNames().contains(toolName)) {
       throw new NotFoundException(format(ERR_404, column.getName(), toolName));
     }
-    return column.getWdkModel()
-        .getColumnToolFactory()
-        .getColumnReporterInstance(column, toolName);
+    return ColumnToolFactory.getColumnReporterInstance(column, toolName);
   }
 
   /**

@@ -15,10 +15,8 @@ import java.util.stream.Stream;
 import javax.sql.DataSource;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.db.stream.ResultSetStream;
 import org.gusdb.fgputil.db.stream.ResultSets;
 import org.gusdb.fgputil.distribution.AbstractDistribution;
-import org.gusdb.fgputil.distribution.DistributionResult;
 import org.gusdb.fgputil.distribution.DistributionStreamProvider;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModelException;
@@ -26,23 +24,28 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.SingleAttributeRecordStream;
 import org.gusdb.wdk.model.columntool.ColumnReporter;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.report.Reporter;
+import org.gusdb.wdk.model.report.ReporterConfigException;
+import org.json.JSONObject;
 
 import io.vulpine.lib.json.schema.Schema;
 import io.vulpine.lib.json.schema.SchemaBuilder;
 import io.vulpine.lib.json.schema.v4.UntypedSchema;
 
-public abstract class AbstractByValueReporter implements ColumnReporter {
+public abstract class AbstractByValueReporter implements ColumnReporter, DistributionStreamProvider {
 
-  protected static final int DEFAULT_BIN_COUNT = 20;
-  protected static final int MAX_BIN_COUNT = 1000;
+  protected static final int MAX_BIN_COUNT = 5000;
 
-  protected abstract void initialize(String jointAttributeIdSql) throws WdkModelException;
   protected abstract String convertToStringValue(ResultSet rs, String valueColumn) throws SQLException;
-  protected abstract AbstractDistribution createDistribution(DistributionStreamProvider distributionStreamProvider);
+  protected abstract AbstractDistribution createDistribution(JSONObject config) throws WdkModelException, ReporterConfigException;
 
   protected AnswerValue _answerValue;
   protected DataSource _appDb;
   protected AttributeField _attributeField;
+  protected int _resultSize;
+  protected String _jointAttributeSql;
+  protected AbstractDistribution _distribution;
+  private Stream<TwoTuple<String, Long>> _groupStream;
 
   @Override
   public AbstractByValueReporter setProperties(Map<String,String> properties) {
@@ -54,6 +57,7 @@ public abstract class AbstractByValueReporter implements ColumnReporter {
   public AbstractByValueReporter setAnswerValue(AnswerValue answerValue) throws WdkModelException {
     _answerValue = answerValue;
     _appDb = answerValue.getWdkModel().getAppDb().getDataSource();
+    _resultSize = _answerValue.getResultSizeFactory().getResultSize();
     return this;
   }
 
@@ -64,40 +68,48 @@ public abstract class AbstractByValueReporter implements ColumnReporter {
   }
 
   @Override
-  public void report(OutputStream out) throws WdkModelException {
+  public long getRecordCount() {
+    return _resultSize;
+  }
+
+  @Override
+  public Stream<TwoTuple<String, Long>> getDistributionStream() {
+    String colName = _attributeField.getName();
+    String orderedGroupingSql =
+        "select * from (" +
+        "  select " + colName + " as key, count(" + colName + ") as value" +
+        "  from (" + _jointAttributeSql + ")" +
+        "  group by " + colName +
+        ") " +
+        "order by " + colName + " asc";
+    _groupStream = ResultSets.openStream(_appDb, orderedGroupingSql, "attribute-value-distribution",
+        row -> Optional.of(new TwoTuple<>(convertToStringValue(row, "key"), row.getLong("value"))));
+    return _groupStream;
+  }
+
+  @Override
+  public final Reporter configure(JSONObject config) throws ReporterConfigException, WdkModelException {
+    // build base SQL for this answer
     try (SingleAttributeRecordStream attrStream = new SingleAttributeRecordStream(_answerValue, List.of(_attributeField))) {
-      String baseSql = attrStream.getSql();
-      initialize(baseSql);
-      String colName = _attributeField.getName();
-      String orderedGroupingSql =
-          "select * from (" +
-          "  select " + colName + " as key, count(" + colName + ") as value" +
-          "  from (" + baseSql + ")" +
-          "  group by " + colName +
-          ") " +
-          "order by " + colName + " asc";
+      _jointAttributeSql = attrStream.getSql();
+    }
+    _distribution = createDistribution(config);
+    return this;
+  }
 
-      try (ResultSetStream<TwoTuple<String,Long>> groups =
-          ResultSets.openStream(_appDb, orderedGroupingSql, "attribute-value-distribution",
-              row -> Optional.of(new TwoTuple<>(convertToStringValue(row, "key"), row.getLong("value"))))) {
-
-        // get the overall result size
-        int resultSize = _answerValue.getResultSizeFactory().getResultSize();
-
-        // create the distribution result using stream of value counts
-        DistributionResult distribution = createDistribution(new DistributionStreamProvider() {
-          @Override public Stream<TwoTuple<String, Long>> getDistributionStream() { return groups; }
-          @Override public long getRecordCount() { return resultSize; }
-        }).generateDistribution();
-
-        // write distribution response to out
-        Writer writer = new BufferedWriter(new OutputStreamWriter(out));
-        writer.write(JsonUtil.serializeObject(distribution));
-        writer.flush();
-      }
-      catch (IOException e) {
-        throw new WdkModelException("Unable to write distribution response", e);
-      }
+  @Override
+  public final void report(OutputStream out) throws WdkModelException {
+    try {
+      // write distribution response to out
+      Writer writer = new BufferedWriter(new OutputStreamWriter(out));
+      writer.write(JsonUtil.serializeObject(_distribution.generateDistribution()));
+      writer.flush();
+    }
+    catch (IOException e) {
+      throw new WdkModelException("Unable to write distribution response", e);
+    }
+    finally {
+      _groupStream.close();
     }
   }
 

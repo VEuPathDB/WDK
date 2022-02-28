@@ -41,7 +41,6 @@ import org.gusdb.fgputil.runtime.Manageable;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
-import org.gusdb.wdk.model.columntool.ColumnToolFactory;
 import org.gusdb.wdk.model.columntool.ColumnToolBundleMap;
 import org.gusdb.wdk.model.columntool.DefaultColumnToolBundleRef;
 import org.gusdb.wdk.model.config.ModelConfig;
@@ -201,7 +200,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   // 4/3/20 Cache ontologies on the server
   private Map<String, Ontology> _ontologyCache = new ConcurrentHashMap<>();
 
-  private ColumnToolBundleMap columnToolLibrary = new ColumnToolBundleMap();
+  private ColumnToolBundleMap columnToolBundleMap = new ColumnToolBundleMap();
   private String defaultColumnToolBundleRef;
 
   private ReentrantLock systemUserLock = new ReentrantLock();
@@ -758,10 +757,10 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       paramSet.resolveReferences(this);
     }
 
-    columnToolLibrary.resolveReferences(this);
+    columnToolBundleMap.resolveReferences(this);
     if (!isNull(defaultColumnToolBundleRef)) {
       // make sure default (if present) refers to a registered tool bundle
-      columnToolLibrary.getToolBundle(defaultColumnToolBundleRef);
+      columnToolBundleMap.getToolBundle(defaultColumnToolBundleRef);
     }
 
     for (RecordClassSet recordClassSet : recordClassSets.values()) {
@@ -1164,7 +1163,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   public void setColumnToolLibrary(ColumnToolBundleMap columnToolLibrary) {
-    this.columnToolLibrary = columnToolLibrary;
+    this.columnToolBundleMap = columnToolLibrary;
   }
 
   public void addXmlQuestionSet(XmlQuestionSet questionSet) throws WdkModelException {
@@ -1621,11 +1620,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   public ColumnToolBundleMap getColumnToolBundleMap() {
-    return columnToolLibrary;
-  }
-
-  public ColumnToolFactory getColumnToolFactory() {
-    return new ColumnToolFactory(this);
+    return columnToolBundleMap;
   }
 
   // TODO: cache at model creation time
