@@ -9,18 +9,22 @@ post:
     The POST createsa and validates a temporary result specification and stores it
     in the answer request cache.  The submitted JSON must contain either a step ID
     or a search name+config, i.e.
-    > {
-    >   stepId: integer,      // valid step ID for this user
-    >   reportName: string,   // name of report
-    >   reportConfig: object  // configuration of this report
-    > }
-    >   - OR -
-    > {
-    >   searchName: string,   // question name = url segment
-    >   searchConfig: object, // standard answer spec object
-    >   reportName: string,   // name of report
-    >   reportConfig: object  // configuration of this report
-    > }
+
+        {
+          stepId: integer,      // valid step ID for this user
+          reportName: string,   // name of report
+          reportConfig: object  // configuration of this report
+        }
+
+    OR
+
+        {
+          searchName: string,   // question name = url segment
+          searchConfig: object, // standard answer spec object
+          reportName: string,   // name of report
+          reportConfig: object  // configuration of this report
+        }
+
   body:
     application/json:
   responses: 
