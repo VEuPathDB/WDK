@@ -1,15 +1,44 @@
 displayName: Temporary Results
 
 post:
+  description: |
+    This service provides the ability to store a combination of the specification
+    for a search + a specification for a report (i.e. everything WDK needs to
+    produce a reporter output data stream), to be accessed later via a produced ID.
+
+    The POST createsa and validates a temporary result specification and stores it
+    in the answer request cache.  The submitted JSON must contain either a step ID
+    or a search name+config, i.e.
+
+         {
+           stepId: integer,      // valid step ID for this user
+           reportName: string,   // name of report
+           reportConfig: object  // configuration of this report
+         }
+
+    OR
+
+         {
+           searchName: string,   // question name = url segment
+           searchConfig: object, // standard answer spec object
+           reportName: string,   // name of report
+           reportConfig: object  // configuration of this report
+         }
   body:
     application/json:
-  responses: 
+  responses:
     200:
       description: Success
-      body: 
+      body:
         application/json:
 
 /{id}:
-  uriParameters: 
-    id: 
+  uriParameters:
+    id:
+      description: ID returned by a temporary results POST request
       type: string
+  get:
+    description: Looks up the spec, executes the search, creates the specified report, and streams the result
+    responses:
+      200:
+        description: Success

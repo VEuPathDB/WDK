@@ -35,22 +35,33 @@ public class RequestLoggingFilter implements ContainerRequestFilter, WriterInter
   private static final String EMPTY_ENTITY = "<empty>";
   private static final String FORM_ENTITY = "<form_data>";
 
+  private static final String OMIT_REQUEST_LOGGING_PROP_KEY = "omitRequestLogging";
+  private static final String PROMETHEUS_ENDPOINT_PATH = "system/metrics/prometheus";
+
   public static boolean isLogEnabled() {
     return LOG.isEnabledFor(LOG_LEVEL);
   }
 
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
-    // don't impact performance if logging is turned off
-    if (isLogEnabled()) {
+
+    // skip logging for prometheus metrics endpoint which overwhelms the logs
+    boolean omitRequestLogging = requestContext.getUriInfo().getPath().equals(PROMETHEUS_ENDPOINT_PATH);
+
+    // tell the WriterInterceptor whether to skip logging
+    requestContext.setProperty(OMIT_REQUEST_LOGGING_PROP_KEY, omitRequestLogging);
+
+    // explicitly check if enabled to not impact performance if logging is turned off
+    if (!omitRequestLogging && isLogEnabled()) {
       logRequest(
           requestContext.getMethod(),
           requestContext.getUriInfo(),
           getRequestBody(requestContext));
     }
   }
-  
+
   public static void logRequest(String method, UriInfo uriInfo, String body) {
+
     StringBuilder log = new StringBuilder("HTTP ")
       .append(method).append(" /").append(uriInfo.getPath());
 
@@ -75,7 +86,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, WriterInter
     }
     return json.toString(2);
   }
-  
+
   private static String getRequestBody(ContainerRequestContext requestContext) {
     String contentType = requestContext.getHeaderString("Content-Type");
     if (contentType == null)
@@ -137,6 +148,12 @@ public class RequestLoggingFilter implements ContainerRequestFilter, WriterInter
   @Override
   public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
     context.proceed();
-    LOG.log(LOG_LEVEL, "Request complete");
+    Boolean omitRequestLogging = (Boolean)context.getProperty(OMIT_REQUEST_LOGGING_PROP_KEY);
+
+    // if property not found, then this request went unmatched; can ignore.  If present, omit as requested.
+    if (omitRequestLogging != null && !omitRequestLogging) {
+      context.removeProperty(OMIT_REQUEST_LOGGING_PROP_KEY);
+      LOG.log(LOG_LEVEL, "Request complete");
+    }
   }
 }
