@@ -1,8 +1,10 @@
 package org.gusdb.wdk.model.columntool;
 
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
 
 import io.vulpine.lib.json.schema.SchemaBuilder;
 
@@ -36,5 +38,12 @@ public interface ColumnToolElement<T extends ColumnToolElement<T>> {
    * @return schema for configuration of this element
    */
   SchemaBuilder getInputSchema();
+
+  /**
+   * Returns the data types of attributes this column tool supports
+   *
+   * @return supported types
+   */
+  List<AttributeFieldDataType> getSupportedDataTypes();
 
 }

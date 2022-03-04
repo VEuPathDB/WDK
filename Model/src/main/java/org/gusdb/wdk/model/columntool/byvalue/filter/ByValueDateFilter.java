@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.columntool.byvalue.filter;
 
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -22,6 +23,7 @@ public class ByValueDateFilter extends AbstractByValueFilter {
 
   public ByValueDateFilter() {
     super(
+      List.of(AttributeFieldDataType.DATE),
       new DateValuesColumnFilter(),
       new DateRangeColumnFilter()
     );
@@ -30,7 +32,6 @@ public class ByValueDateFilter extends AbstractByValueFilter {
   public static class DateValuesColumnFilter extends AbstractByValueFilterSubtype {
     public DateValuesColumnFilter() {
       super(
-        AttributeFieldDataType.DATE,
         ByValueConfigStyle.VALUES,
         ByValueDateFilter.getSchemaNode,
         ByValueDateFilter.toExpressionSql
@@ -41,7 +42,6 @@ public class ByValueDateFilter extends AbstractByValueFilter {
   public static class DateRangeColumnFilter extends AbstractByValueFilterSubtype {
     public DateRangeColumnFilter() {
       super(
-        AttributeFieldDataType.DATE,
         ByValueConfigStyle.RANGE,
         ByValueDateFilter.getSchemaNode,
         ByValueDateFilter.toExpressionSql);

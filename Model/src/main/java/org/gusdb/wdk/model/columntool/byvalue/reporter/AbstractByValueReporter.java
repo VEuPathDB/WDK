@@ -24,6 +24,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.stream.SingleAttributeRecordStream;
 import org.gusdb.wdk.model.columntool.ColumnReporter;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.json.JSONObject;
@@ -39,6 +40,7 @@ public abstract class AbstractByValueReporter implements ColumnReporter, Distrib
   protected abstract String convertToStringValue(ResultSet rs, String valueColumn) throws SQLException;
   protected abstract AbstractDistribution createDistribution(JSONObject config) throws WdkModelException, ReporterConfigException;
 
+  private final List<AttributeFieldDataType> _supportedDataTypes;
   protected AnswerValue _answerValue;
   protected DataSource _appDb;
   protected AttributeField _attributeField;
@@ -46,6 +48,15 @@ public abstract class AbstractByValueReporter implements ColumnReporter, Distrib
   protected String _jointAttributeSql;
   protected AbstractDistribution _distribution;
   private Stream<TwoTuple<String, Long>> _groupStream;
+
+  protected AbstractByValueReporter(List<AttributeFieldDataType> supportedDataTypes) {
+    _supportedDataTypes = supportedDataTypes;
+  }
+
+  @Override
+  public List<AttributeFieldDataType> getSupportedDataTypes() {
+    return _supportedDataTypes;
+  }
 
   @Override
   public AbstractByValueReporter setModelProperties(Map<String,String> properties) {

@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.columntool;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -13,7 +14,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
 public class ColumnTool extends WdkModelBase implements NamedObject {
 
   private String _name;
-  private Map<AttributeFieldDataType, ColumnToolElementRefPair> _typeMap;
+  private Map<AttributeFieldDataType, ColumnToolElementRefPair> _typeMap = new HashMap<>();
 
   public void setName(String name) {
     _name = name;
@@ -68,5 +69,11 @@ public class ColumnTool extends WdkModelBase implements NamedObject {
     if (!isCorrectType.test(o)) {
       throw new WdkModelException("Invalid implementation class for " + columnType + " column " + toolType + ": " + ref.getImplementation());
     }
+    // we know it is a ColumnReporter or ColumnFilter
+    ColumnToolElement<?> element = (ColumnToolElement<?>)o;
+    if (!element.getSupportedDataTypes().contains(columnType)) {
+      throw new WdkModelException(element.getClass().getName() + " is assigned to attribute of type " + columnType + " but does not support this type.");
+    }
+    
   }
 }

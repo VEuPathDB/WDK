@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.columntool.byvalue.filter;
 
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -19,6 +20,7 @@ public class ByValueNumberFilter extends AbstractByValueFilter {
 
   public ByValueNumberFilter() {
     super(
+      List.of(AttributeFieldDataType.NUMBER),
       new NumberValuesColumnFilter(),
       new NumberRangeColumnFilter()
     );
@@ -27,7 +29,6 @@ public class ByValueNumberFilter extends AbstractByValueFilter {
   public static class NumberRangeColumnFilter extends AbstractByValueFilterSubtype {
     public NumberRangeColumnFilter() {
       super(
-        AttributeFieldDataType.NUMBER,
         ByValueConfigStyle.RANGE,
         getSchemaNode,
         toExpressionSql
@@ -38,7 +39,6 @@ public class ByValueNumberFilter extends AbstractByValueFilter {
   public static class NumberValuesColumnFilter extends AbstractByValueFilterSubtype {
     public NumberValuesColumnFilter() {
       super(
-        AttributeFieldDataType.NUMBER,
         ByValueConfigStyle.VALUES,
         getSchemaNode,
         toExpressionSql

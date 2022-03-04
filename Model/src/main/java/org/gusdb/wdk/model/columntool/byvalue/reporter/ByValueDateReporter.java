@@ -6,6 +6,7 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.ComparableLocalDateTime;
@@ -16,6 +17,7 @@ import org.gusdb.fgputil.distribution.AbstractDistribution.ValueSpec;
 import org.gusdb.fgputil.distribution.DateBinDistribution;
 import org.gusdb.fgputil.distribution.DateBinDistribution.DateBinSpec;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
 import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,6 +38,10 @@ public class ByValueDateReporter extends AbstractByValueReporter {
       DateBinDistribution.ALLOWED_UNITS.stream()
       .map(u -> u.name().toLowerCase()).collect(Collectors.toList())
       .toArray(new String[DateBinDistribution.ALLOWED_UNITS.size()]);
+
+  public ByValueDateReporter() {
+    super(List.of(AttributeFieldDataType.DATE));
+  }
 
   @Override
   public SchemaBuilder getInputSchema() {

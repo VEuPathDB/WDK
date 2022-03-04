@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.columntool.byvalue.reporter;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.gusdb.fgputil.Range;
 import org.gusdb.fgputil.distribution.AbstractDistribution;
@@ -9,6 +10,7 @@ import org.gusdb.fgputil.distribution.AbstractDistribution.ValueSpec;
 import org.gusdb.fgputil.distribution.FloatingPointBinDistribution;
 import org.gusdb.fgputil.distribution.NumberBinDistribution.NumberBinSpec;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
 import org.gusdb.wdk.model.report.ReporterConfigException;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,6 +24,10 @@ public class ByValueNumberReporter extends AbstractByValueReporter {
   private static final int DEFAULT_BIN_COUNT = 20;
 
   private static final String PROP_BIN_SIZE = "binSize";
+
+  public ByValueNumberReporter() {
+    super(List.of(AttributeFieldDataType.NUMBER));
+  }
 
   @Override
   public SchemaBuilder getInputSchema() {

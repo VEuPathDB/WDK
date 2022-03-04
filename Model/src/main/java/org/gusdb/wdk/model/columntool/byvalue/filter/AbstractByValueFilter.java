@@ -9,23 +9,33 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.columntool.ColumnFilter;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
 import org.json.JSONObject;
 
 import io.vulpine.lib.json.schema.Schema;
 import io.vulpine.lib.json.schema.SchemaBuilder;
 import io.vulpine.lib.json.schema.v4.MultiSchema;
 
-public class AbstractByValueFilter implements ColumnFilter {
+public abstract class AbstractByValueFilter implements ColumnFilter {
 
-  private List<AbstractByValueFilterSubtype> _subtypes;
+  private final List<AttributeFieldDataType> _supportedDataTypes;
+  private final List<AbstractByValueFilterSubtype> _subtypes;
   private AttributeField _field;
   private JSONObject _config;
 
-  public AbstractByValueFilter(AbstractByValueFilterSubtype... subtypes) {
+  protected AbstractByValueFilter(
+      List<AttributeFieldDataType> supportedDataTypes,
+      AbstractByValueFilterSubtype... subtypes) {
+    _supportedDataTypes = supportedDataTypes;
     _subtypes = Arrays.asList(subtypes);
     if (_subtypes.isEmpty()) {
-      throw new IllegalStateException("At least one delegatee must be supplied.");
+      throw new IllegalStateException("At least one subtype must be supplied.");
     }
+  }
+
+  @Override
+  public List<AttributeFieldDataType> getSupportedDataTypes() {
+    return _supportedDataTypes;
   }
 
   @Override

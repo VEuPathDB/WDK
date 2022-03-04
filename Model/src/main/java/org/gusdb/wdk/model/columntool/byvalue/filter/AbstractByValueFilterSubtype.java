@@ -4,7 +4,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.AttributeFieldDataType;
 import org.json.JSONObject;
 
 import io.vulpine.lib.json.schema.Schema;
@@ -14,24 +13,17 @@ import io.vulpine.lib.json.schema.v4.UntypedSchema;
 
 public abstract class AbstractByValueFilterSubtype {
 
-  private final AttributeFieldDataType _acceptedColumnType;
   private final ByValueConfigStyle _acceptedConfigStyle;
   private final Function<UntypedSchema,SchemaNode> _schemaProducer;
   private final BiFunction<String,JSONObject,String> _expressionNodeSyntaxToSql;
 
   protected AbstractByValueFilterSubtype(
-      AttributeFieldDataType acceptedColumnType,
       ByValueConfigStyle acceptedConfigStyle,
       Function<UntypedSchema,SchemaNode> schemaProducer,
       BiFunction<String,JSONObject,String> expressionNodeSyntaxToSql) {
-    _acceptedColumnType = acceptedColumnType;
     _acceptedConfigStyle = acceptedConfigStyle;
     _schemaProducer = schemaProducer;
     _expressionNodeSyntaxToSql = expressionNodeSyntaxToSql;
-  }
-
-  public boolean isCompatibleWith(AttributeFieldDataType type) {
-    return type.equals(_acceptedColumnType);
   }
 
   public boolean isCompatibleWith(JSONObject js) {
