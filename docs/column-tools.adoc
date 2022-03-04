@@ -1,0 +1,53 @@
+# Column Tools and Tool Bundles
+
+WDK offers the ability to report statistics on a result pertaining to a single
+column (column reporter), and also to filter a result on that column (column filter).
+The report can be used by a user interface to inform a configuration of a column filter.
+
+## XML Configuration
+
+A summary of the XML involved in configuring column tools is below.
+
+```
+<wdkModel>
+
+  <!-- Set of all column tool bundles in the system -->
+  <columnToolBundles>
+    <!-- Tool Bundle = Set of tools for a column -->
+    <toolBundle name="xxx">
+      <!-- Tool: single tool for a column 
+        (contains reporter and optional filter; may vary based on data type) -->
+      <tool name="xxx">
+        <!-- The reporter/filter combo for string columns -->
+        <string>
+          <!-- implementation must implement org.gusdb.wdk.model.columntool.ColumnReporter -->
+          <reporter implementation="xxx">
+            <property name="xxx">text</property>
+          </reporter>
+          <!-- implementation must implement org.gusdb.wdk.model.columntool.ColumnFilter -->
+          <filter implementation="xxx"> (optional)
+            <property name="xxx">text</property>
+          </filter>
+        </string>
+        <number>...</number>
+        <date>...</date>
+        <default>...</default>
+      </tool>
+    </toolBundle>
+  </columnToolBundles>    
+
+  <!-- Default tool bundle for the entire application -->
+  <defaultColumnToolBundle ref="xxx"/>
+
+  <!-- Tool bundle overrides for all attributes in a record class -->
+  <recordClass>
+    <defaultColumnToolBundle ref="xxx"/>
+  </recordClass
+
+  <!-- Tool bundle overrides for specific attributes -->
+  <columnAttribute toolBundleRef="xxx"/>
+  <textAttribute toolBundleRef="xxx"/>
+  <linkAttribute toolBundleRef="xxx"/>
+
+</wdkModel>
+```
