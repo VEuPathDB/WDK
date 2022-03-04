@@ -120,7 +120,9 @@ public abstract class AbstractByValueReporter implements ColumnReporter, Distrib
       throw new WdkModelException("Unable to write distribution response", e);
     }
     finally {
-      _groupStream.close();
+      if (_groupStream != null) {
+        _groupStream.close();
+      }
     }
   }
 
