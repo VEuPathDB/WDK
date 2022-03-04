@@ -28,19 +28,19 @@ public class ColumnTool extends WdkModelBase implements NamedObject {
     return _typeMap.get(dataType);
   }
 
-  public void addStringPair(ColumnToolElementRefPair pair) {
+  public void setStringPair(ColumnToolElementRefPair pair) {
     _typeMap.put(AttributeFieldDataType.STRING, pair);
   }
 
-  public void addDatePair(ColumnToolElementRefPair pair) {
+  public void setDatePair(ColumnToolElementRefPair pair) {
     _typeMap.put(AttributeFieldDataType.DATE, pair);
   }
 
-  public void addNumberPair(ColumnToolElementRefPair pair) {
+  public void setNumberPair(ColumnToolElementRefPair pair) {
     _typeMap.put(AttributeFieldDataType.NUMBER, pair);
   }
 
-  public void addOtherPair(ColumnToolElementRefPair pair) {
+  public void setOtherPair(ColumnToolElementRefPair pair) {
     _typeMap.put(AttributeFieldDataType.OTHER, pair);
   }
 
