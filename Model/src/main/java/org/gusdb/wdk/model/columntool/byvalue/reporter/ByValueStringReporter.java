@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import io.vulpine.lib.json.schema.Schema;
 import io.vulpine.lib.json.schema.SchemaBuilder;
+import io.vulpine.lib.json.schema.v4.UntypedSchema;
 
 public class ByValueStringReporter extends AbstractByValueReporter {
 
@@ -21,8 +22,9 @@ public class ByValueStringReporter extends AbstractByValueReporter {
 
   @Override
   public SchemaBuilder getInputSchema() {
-    // no configuration needed for this reporter
-    return Schema.draft4().asObject().additionalProperties(false);
+    UntypedSchema rs = Schema.draft4();
+    return rs.asObject()
+        .optionalProperty(OMIT_HISTOGRAM_CONFIG_PROPERTY, rs.asBoolean());
   }
 
   @Override

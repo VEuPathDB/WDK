@@ -35,12 +35,15 @@ import io.vulpine.lib.json.schema.v4.UntypedSchema;
 
 public abstract class AbstractByValueReporter implements ColumnReporter, DistributionStreamProvider {
 
+  protected static final String OMIT_HISTOGRAM_CONFIG_PROPERTY = "omitHistogram";
+
   protected static final int MAX_BIN_COUNT = 5000;
 
   protected abstract String convertToStringValue(ResultSet rs, String valueColumn) throws SQLException;
   protected abstract AbstractDistribution createDistribution(JSONObject config) throws WdkModelException, ReporterConfigException;
 
   private final List<AttributeFieldDataType> _supportedDataTypes;
+  private boolean _omitHistogram;
   protected AnswerValue _answerValue;
   protected DataSource _appDb;
   protected AttributeField _attributeField;
@@ -101,6 +104,7 @@ public abstract class AbstractByValueReporter implements ColumnReporter, Distrib
   @Override
   public final Reporter configure(JSONObject config) throws ReporterConfigException, WdkModelException {
     // build base SQL for this answer
+    _omitHistogram = config.optBoolean(OMIT_HISTOGRAM_CONFIG_PROPERTY, false);
     try (SingleAttributeRecordStream attrStream = new SingleAttributeRecordStream(_answerValue, List.of(_attributeField))) {
       _jointAttributeSql = attrStream.getSql();
     }
@@ -113,7 +117,7 @@ public abstract class AbstractByValueReporter implements ColumnReporter, Distrib
     try {
       // write distribution response to out
       Writer writer = new BufferedWriter(new OutputStreamWriter(out));
-      writer.write(JsonUtil.serializeObject(_distribution.generateDistribution()));
+      writer.write(JsonUtil.serializeObject(_distribution.generateDistribution(_omitHistogram)));
       writer.flush();
     }
     catch (IOException e) {
@@ -128,7 +132,7 @@ public abstract class AbstractByValueReporter implements ColumnReporter, Distrib
 
   /**
    * {
-   *   histogram: [{
+   *   histogram?: [{
    *     value: number
    *     binStart: string
    *     binEnd: string
@@ -152,7 +156,7 @@ public abstract class AbstractByValueReporter implements ColumnReporter, Distrib
     return rs
       .asObject()
       .additionalProperties(false)
-      .requiredProperty("histogram")
+      .optionalProperty("histogram")
         .description("ordered array of histogram bins")
         .asArray()
         .items(rs

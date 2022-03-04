@@ -33,6 +33,7 @@ public class ByValueNumberReporter extends AbstractByValueReporter {
   public SchemaBuilder getInputSchema() {
     UntypedSchema rs = Schema.draft4();
     return rs.asObject()
+        .optionalProperty(OMIT_HISTOGRAM_CONFIG_PROPERTY, rs.asBoolean())
         .optionalProperty(DisplayRangeFactory.PROP_DISPLAY_RANGE_MIN, rs.asNumber())
         .optionalProperty(DisplayRangeFactory.PROP_DISPLAY_RANGE_MAX, rs.asNumber())
         .optionalProperty(PROP_BIN_SIZE, rs.asNumber().minimum(0)); // actually must be > 0
