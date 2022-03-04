@@ -7,10 +7,8 @@ import java.util.Set;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.wdk.model.answer.spec.ColumnFilterConfigSet.ColumnFilterConfigSetBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
-import org.gusdb.wdk.model.answer.spec.columnfilter.ColumnConfig;
-import org.gusdb.wdk.model.answer.spec.columnfilter.ColumnFilterConfigSet;
-import org.gusdb.wdk.model.answer.spec.columnfilter.ColumnFilterConfigSet.ColumnFilterConfigSetBuilder;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
@@ -148,7 +146,7 @@ public class ParamsAndFiltersDbColumnFormat {
   public static JSONObject formatColumnFilters(ColumnFilterConfigSet columnFilterConfig) {
     JSONObject json = new JSONObject();
     // entry is column -> 
-    for (Entry<String, ColumnConfig> column: columnFilterConfig.entrySet()) {
+    for (Entry<String, ColumnFilterConfig> column: columnFilterConfig.entrySet()) {
       JSONObject columnObj = new JSONObject();
       for (Entry<String, JSONObject> filter : column.getValue().entrySet()) {
         columnObj.put(filter.getKey(), filter.getValue());

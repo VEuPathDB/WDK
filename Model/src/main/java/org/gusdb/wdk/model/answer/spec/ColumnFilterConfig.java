@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.answer.spec.columnfilter;
+package org.gusdb.wdk.model.answer.spec;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,17 +11,17 @@ import org.json.JSONObject;
 /**
  * Represents a map from filter name -> filter config for a single column
  */
-public class ColumnConfig extends ReadOnlyHashMap<String, JSONObject> {
+public class ColumnFilterConfig extends ReadOnlyHashMap<String, JSONObject> {
 
-  public static class ColumnConfigBuilder extends HashMap<String, JSONObject> {
+  public static class ColumnFilterConfigBuilder extends HashMap<String, JSONObject> {
 
-    public ColumnConfigBuilder() {}
+    public ColumnFilterConfigBuilder() {}
 
-    public ColumnConfigBuilder(ColumnConfig orig) {
+    public ColumnFilterConfigBuilder(ColumnFilterConfig orig) {
       orig.forEach((toolName, config) -> put(toolName, JsonUtil.clone(config)));
     }
 
-    public ColumnConfigBuilder addEntry(
+    public ColumnFilterConfigBuilder addEntry(
       final String name,
       final JSONObject builder
     ) {
@@ -29,12 +29,12 @@ public class ColumnConfig extends ReadOnlyHashMap<String, JSONObject> {
       return this;
     }
 
-    public ColumnConfig build() {
-      return new ColumnConfig(this);
+    public ColumnFilterConfig build() {
+      return new ColumnFilterConfig(this);
     }
   }
 
-  public ColumnConfig(Map<String, JSONObject> filters) {
+  public ColumnFilterConfig(Map<String, JSONObject> filters) {
     super(filters);
   }
 

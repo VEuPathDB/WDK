@@ -11,7 +11,7 @@ import java.util.Optional;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.spec.columnfilter.ColumnFilterConfigSet.ColumnFilterConfigSetBuilder;
+import org.gusdb.wdk.model.answer.spec.ColumnFilterConfigSet.ColumnFilterConfigSetBuilder;
 import org.gusdb.wdk.model.columntool.ColumnFilter;
 import org.gusdb.wdk.model.columntool.ColumnToolFactory;
 import org.gusdb.wdk.model.question.Question;

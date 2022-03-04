@@ -1,8 +1,8 @@
 package org.gusdb.wdk.service.request.filter;
 
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.spec.columnfilter.ColumnFilterConfigSet;
-import org.gusdb.wdk.model.answer.spec.columnfilter.ColumnFilterConfigSet.ColumnFilterConfigSetBuilder;
+import org.gusdb.wdk.model.answer.spec.ColumnFilterConfigSet;
+import org.gusdb.wdk.model.answer.spec.ColumnFilterConfigSet.ColumnFilterConfigSetBuilder;
 import org.gusdb.wdk.model.question.Question;
 import org.json.JSONObject;
 

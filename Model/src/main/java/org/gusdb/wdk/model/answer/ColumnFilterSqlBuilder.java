@@ -4,8 +4,8 @@ import java.util.Map.Entry;
 
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.spec.columnfilter.ColumnConfig;
-import org.gusdb.wdk.model.answer.spec.columnfilter.ColumnFilterConfigSet;
+import org.gusdb.wdk.model.answer.spec.ColumnFilterConfig;
+import org.gusdb.wdk.model.answer.spec.ColumnFilterConfigSet;
 import org.gusdb.wdk.model.columntool.ColumnFilter;
 import org.gusdb.wdk.model.columntool.ColumnToolFactory;
 import org.gusdb.wdk.model.query.Query;
@@ -113,7 +113,7 @@ public class ColumnFilterSqlBuilder {
 
       StringBuilder attributeQueryBlock = startQuery(getAttributeSql(getQueryName(field)));
 
-      ColumnConfig conf = configs.get(columnName);
+      ColumnFilterConfig conf = configs.get(columnName);
 
       for (Entry<String,JSONObject> entry : conf.entrySet()) {
         ColumnFilter filter = ColumnToolFactory.getColumnFilterInstance(field, entry.getKey());
