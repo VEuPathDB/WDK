@@ -48,8 +48,8 @@ public abstract class AbstractByValueReporter implements ColumnReporter, Distrib
   private Stream<TwoTuple<String, Long>> _groupStream;
 
   @Override
-  public AbstractByValueReporter setProperties(Map<String,String> properties) {
-    // no-op; this reporter does not have any properties
+  public AbstractByValueReporter setModelProperties(Map<String,String> properties) {
+    // no-op; this reporter does not use any properties
     return this;
   }
 

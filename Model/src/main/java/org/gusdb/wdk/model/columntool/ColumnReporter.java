@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.columntool;
 
-import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.PropertiesProvider;
 import org.gusdb.wdk.model.report.Reporter;
 
@@ -11,7 +10,7 @@ import io.vulpine.lib.json.schema.SchemaBuilder;
  *
  * @author rdoherty
  */
-public interface ColumnReporter extends ColumnToolElement, Reporter {
+public interface ColumnReporter extends ColumnToolElement<ColumnReporter>, Reporter {
 
   /**
    * Returns the output schema for this element
@@ -22,14 +21,6 @@ public interface ColumnReporter extends ColumnToolElement, Reporter {
   SchemaBuilder getOutputSchema();
 
   /**
-   * Assigns the attribute field on which this reporter must report
-   *
-   * @param field field for this instance
-   * @return this (builder pattern)
-   */
-  Reporter setAttributeField(AttributeField field);
-
-  /**
    * Another way to set properties on this reporter (added to
    * comply with the Reporter interface).  By default, immediately
    * gets the properties from the provider and sets them using
@@ -37,7 +28,7 @@ public interface ColumnReporter extends ColumnToolElement, Reporter {
    */
   @Override
   default Reporter setProperties(PropertiesProvider props) {
-    setProperties(props.getProperties());
+    setModelProperties(props.getProperties());
     return this;
   }
 

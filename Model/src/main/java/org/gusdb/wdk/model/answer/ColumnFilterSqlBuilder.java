@@ -1,16 +1,19 @@
-package org.gusdb.wdk.model.toolbundle.filter;
+package org.gusdb.wdk.model.answer;
 
+import java.util.Map.Entry;
+
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.spec.columnfilter.ColumnConfig;
+import org.gusdb.wdk.model.answer.spec.columnfilter.ColumnFilterConfigSet;
+import org.gusdb.wdk.model.columntool.ColumnFilter;
+import org.gusdb.wdk.model.columntool.ColumnToolFactory;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
-import org.gusdb.wdk.model.toolbundle.ColumnFilter;
-import org.gusdb.wdk.model.toolbundle.config.ColumnConfig;
-import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSet;
+import org.json.JSONObject;
 
 /**
  * Builder for an SQL query with {@link ColumnFilter}s applied.
@@ -88,7 +91,7 @@ public class ColumnFilterSqlBuilder {
    */
   private String build(final String idSql) throws WdkModelException {
 
-    if (configs.getColumnConfigs().isEmpty()) return idSql;
+    if (configs.isEmpty()) return idSql;
 
     final var allFields = question.getAttributeFieldMap();
 
@@ -96,7 +99,7 @@ public class ColumnFilterSqlBuilder {
 
     boolean isFirstIntersectBlock = true;
 
-    for (String columnName : configs.getColumnConfigs().keySet()) {
+    for (String columnName : configs.keySet()) {
       AttributeField field = allFields.get(columnName);
       if (field == null) {
         throw new WdkModelException("Column '" + columnName + "' was configured " +
@@ -110,10 +113,11 @@ public class ColumnFilterSqlBuilder {
 
       StringBuilder attributeQueryBlock = startQuery(getAttributeSql(getQueryName(field)));
 
-      ColumnConfig conf = configs.getColumnConfig(columnName);
+      ColumnConfig conf = configs.get(columnName);
 
-      for (final var entry : conf.entrySet()) {
-        final var filter = field.makeFilterInstance(entry.getKey(), answer, entry.getValue()).get();
+      for (Entry<String,JSONObject> entry : conf.entrySet()) {
+        ColumnFilter filter = ColumnToolFactory.getColumnFilterInstance(field, entry.getKey());
+        filter.setConfig(entry.getValue());
         attributeQueryBlock
            .append("  AND ")
            .append(filter.buildSqlWhere())
@@ -217,8 +221,11 @@ public class ColumnFilterSqlBuilder {
   private static String getQueryName(final AttributeField field) {
     return (field instanceof QueryColumnAttributeField
       ? (QueryColumnAttributeField) field
-      : ((DerivedAttributeField) field).getFilterDependencyField()
-        .orElseThrow(IllegalStateException::new)
+      : (QueryColumnAttributeField)Functions.doThrow(IllegalStateException::new)
+        /* FIXME: this feature used to work but is harder with the group-by implementation
+         *       If we decide to implement this later, use this code again
+        ((DerivedAttributeField) field).getFilterDependencyField()
+        .orElseThrow(IllegalStateException::new) */
     )
       .getColumn()
       .getQuery()

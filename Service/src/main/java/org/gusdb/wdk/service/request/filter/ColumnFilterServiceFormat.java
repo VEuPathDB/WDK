@@ -1,9 +1,9 @@
 package org.gusdb.wdk.service.request.filter;
 
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.spec.columnfilter.ColumnFilterConfigSet;
+import org.gusdb.wdk.model.answer.spec.columnfilter.ColumnFilterConfigSet.ColumnFilterConfigSetBuilder;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSet;
-import org.gusdb.wdk.model.toolbundle.filter.StandardColumnFilterConfigSetBuilder;
 import org.json.JSONObject;
 
 public final class ColumnFilterServiceFormat {
@@ -29,7 +29,7 @@ public final class ColumnFilterServiceFormat {
    *   <li>Invalid input to configure a specific column</li>
    *   </ul>
    */
-  public static StandardColumnFilterConfigSetBuilder parse(
+  public static ColumnFilterConfigSetBuilder parse(
     final Question question,
     final JSONObject config
   ) throws WdkUserException {
@@ -48,12 +48,12 @@ public final class ColumnFilterServiceFormat {
    */
   public JSONObject format(ColumnFilterConfigSet conf) {
     JSONObject out = new JSONObject();
-    conf.forEach((columnName, columnConf) -> {
+    conf.entrySet().stream().forEach(columnEntry -> {
       JSONObject columnJson = new JSONObject();
-      columnConf.forEach((toolName, filterConf) -> {
-        columnJson.put(toolName, filterConf);
+      columnEntry.getValue().entrySet().stream().forEach(filterEntry -> {
+        columnJson.put(filterEntry.getKey(), filterEntry.getValue());
       });
-      out.put(columnName, columnJson);
+      out.put(columnEntry.getKey(), columnJson);
     });
     return out;
   }

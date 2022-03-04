@@ -10,13 +10,12 @@ import java.util.Optional;
 
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.spec.columnfilter.ColumnFilterConfigSet.ColumnFilterConfigSetBuilder;
+import org.gusdb.wdk.model.columntool.ColumnFilter;
+import org.gusdb.wdk.model.columntool.ColumnToolFactory;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.toolbundle.ColumnFilter;
-import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
-import org.gusdb.wdk.model.toolbundle.filter.StandardColumnFilterConfigSetBuilder;
 import org.json.JSONObject;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -26,7 +25,6 @@ class FilterConfigParser {
   private static final String
     ERR_NOT_AN_OBJECT = "value of property \"%s\" is not a JSON object",
     ERR_INVALID_COLUMN = "column \"%s\" is not a member of the search \"%s\"",
-    ERR_CANNOT_FILTER  = "filter configuration provided for non-filterable column \"%s\"",
     ERR_INVALID_FILTER = "column \"%s\" does not have have configured filter \"%s\"";
 
   private final Question _question;
@@ -37,8 +35,8 @@ class FilterConfigParser {
     _attributeMap = question.getAttributeFieldMap();
   }
 
-  StandardColumnFilterConfigSetBuilder parse(JSONObject columnFiltersConfig) throws WdkUserException {
-    var builder = new StandardColumnFilterConfigSetBuilder();
+  ColumnFilterConfigSetBuilder parse(JSONObject columnFiltersConfig) throws WdkUserException {
+    var builder = new ColumnFilterConfigSetBuilder();
     var errors = new ArrayList<String>();
     for (Entry<String,JsonType> columnEntry : JsonIterators.objectIterable(columnFiltersConfig)) {
       Optional<AttributeField> field = getColumn(columnEntry.getKey(), errors);
@@ -46,7 +44,7 @@ class FilterConfigParser {
       if (field.isPresent() && columnConfig.isPresent()) {
         for (Entry<String,JsonType> filterEntry : JsonIterators.objectIterable(columnConfig.get())) {
           Optional<ColumnFilter> filterOpt = getFilter(field.get(), filterEntry.getKey(), errors);
-          Optional<ColumnToolConfig> filterConfig = getJsonObject(filterEntry, errors)
+          Optional<JSONObject> filterConfig = getJsonObject(filterEntry, errors)
               .flatMap(jsonObject -> filterOpt.flatMap(filter -> getToolConfig(field.get(), filter, jsonObject, errors)));
           if (filterConfig.isPresent()) {
             builder.setFilterConfig(columnEntry.getKey(), filterEntry.getKey(), filterConfig.get());
@@ -68,17 +66,13 @@ class FilterConfigParser {
   }
 
   private static Optional<ColumnFilter> getFilter(AttributeField field, String filterName, List<String> errors) {
-    if (!field.isFilterable()) {
-      return error(errors, ERR_CANNOT_FILTER, field.getName());
-    }
-    var filter = field.getFilter(filterName);
-    return !filter.isEmpty() ? filter :
-      error(errors, ERR_INVALID_FILTER, field.getName(), filterName);
+    Optional<ColumnFilter> filterOpt = ColumnToolFactory.tryColumnFilterInstance(field, filterName);
+    return filterOpt.isPresent() ? filterOpt : error(errors, ERR_INVALID_FILTER, field.getName(), filterName);
   }
 
-  private static Optional<ColumnToolConfig> getToolConfig(AttributeField column, ColumnFilter filter, JSONObject config, ArrayList<String> errors) {
+  private static Optional<JSONObject> getToolConfig(AttributeField column, ColumnFilter filter, JSONObject config, ArrayList<String> errors) {
     try {
-      return Optional.of(filter.validateConfig(column.getDataType(), JsonUtil.toJsonNode(config)));
+      return Optional.of(filter.validateConfig(config));
     }
     catch (WdkUserException e) {
       return error(errors, e.getMessage());

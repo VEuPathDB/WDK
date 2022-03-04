@@ -77,7 +77,7 @@ public class AnswerSpecServiceFormat {
 
       // apply column filter configurations if present
       if (json.has(JsonKeys.COLUMN_FILTERS)) {
-        specBuilder.setColumnFilterConfig(
+        specBuilder.setColumnFilters(
           ColumnFilterServiceFormat.parse(question,
             json.getJSONObject(JsonKeys.COLUMN_FILTERS)));
       }

@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.toolbundle.filter;
+package org.gusdb.wdk.model.columntool.byvalue.filter;
 
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -7,13 +7,11 @@ import java.util.function.Function;
 import org.gusdb.fgputil.json.ExpressionNodeHelpers;
 import org.json.JSONObject;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import io.vulpine.lib.json.schema.SchemaBuilder;
 import io.vulpine.lib.json.schema.v4.SchemaNode;
 import io.vulpine.lib.json.schema.v4.UntypedSchema;
 
-public enum ColumnFilterConfigStyle {
+public enum ByValueConfigStyle {
 
   VALUES("values", (js, val) -> getValuesSchema(js,val),
       json -> ExpressionNodeHelpers.transformFlatEnumConfig(json.getJSONArray("values"))),
@@ -38,8 +36,8 @@ public enum ColumnFilterConfigStyle {
       .optionalProperty("max", boundary);
   }
 
-  public static Optional<ColumnFilterConfigStyle> getConfigStyle(JsonNode json) {
-    for (ColumnFilterConfigStyle style : values()) {
+  public static Optional<ByValueConfigStyle> getConfigStyle(JSONObject json) {
+    for (ByValueConfigStyle style : values()) {
       if (json.has(style._requiredPropertyName)) {
         return Optional.of(style);
       }
@@ -51,7 +49,7 @@ public enum ColumnFilterConfigStyle {
   private final BiFunction<UntypedSchema, SchemaNode, SchemaNode> _schemaProducer;
   private final Function<JSONObject,JSONObject> _expressionNodeTransform;
 
-  private ColumnFilterConfigStyle(
+  private ByValueConfigStyle(
       String requiredPropertyName,
       BiFunction<UntypedSchema, SchemaNode, SchemaNode> schemaProducer,
       Function<JSONObject,JSONObject> expressionNodeTransform) {
