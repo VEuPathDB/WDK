@@ -1,25 +1,27 @@
 package org.gusdb.wdk.model.record.attribute;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.gusdb.wdk.model.RngAnnotations.RngOptional;
 import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.toolbundle.*;
-import org.gusdb.wdk.model.toolbundle.impl.EmptyToolBundle;
+import org.gusdb.wdk.model.columntool.ColumnTool;
+import org.gusdb.wdk.model.columntool.ColumnToolBundle;
+import org.gusdb.wdk.model.columntool.ColumnToolElementRefPair;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.report.AttributeReporterRef;
 import org.gusdb.wdk.model.report.ReporterRef;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.util.Objects.isNull;
 
 /**
  * The attribute field defines a single value property to a {@link RecordClass}.
@@ -50,7 +52,7 @@ public abstract class AttributeField extends Field implements Cloneable {
   private Map<String, AttributeReporterRef> _reporterMap;
 
   private String _toolBundleRef;
-  private ColumnToolBundle _toolBundle;
+  protected Map<String,ColumnToolElementRefPair> _columnToolElementPairs = new HashMap<>();
 
   public abstract Map<String, ColumnAttributeField> getColumnAttributeFields() throws WdkModelException;
 
@@ -160,15 +162,7 @@ public abstract class AttributeField extends Field implements Cloneable {
 
   @RngOptional
   public void setToolBundleRef(String toolBundleRef) {
-    this._toolBundleRef = toolBundleRef;
-  }
-
-  public ColumnToolBundle getToolBundle() {
-    // This can happen if the attribute field is used without reference
-    // resolution
-    return isNull(_toolBundle)
-      ? (_toolBundle = resolveToolBundle())
-      : _toolBundle;
+    _toolBundleRef = toolBundleRef;
   }
 
   public void addReporterReference(AttributeReporterRef reference) {
@@ -215,138 +209,38 @@ public abstract class AttributeField extends Field implements Cloneable {
   }
 
   /**
-   * Prepares and configures the column reporter with the given name if such a
-   * column reporter exists.
+   * Returns a list of available column tool names for this field.  By
+   * default, regardles of assigned column tools, this is the empty list.
+   * It is overridden only by QueryColumnAttributeFields, whose statistics
+   * can be reported and who can be filtered.
    *
-   * @param name
-   *   name of the column reporter to prepare
-   * @param val
-   *   answer value the column reporter will operate on
-   * @param config
-   *   raw client configuration for the reporter
-   *
-   * @return an option containing either a configured column reporter if a one
-   * was found matching the given name, or none if no such reporter was found.
-   *
-   * @throws WdkUserException
-   *   if the given json client configuration is invalid.
+   * @return list of available column tools by name
    */
-  public Optional<ColumnReporterInstance> makeReporterInstance(
-    final String name,
-    final AnswerValue val,
-    final JsonNode config
-  ) throws WdkModelException, WdkUserException {
-    var tmp = getReporter(name);
-    if (tmp.isEmpty())
-      return Optional.empty();
-
-    var conf = tmp.get().validateConfig(getDataType(), config);
-    var set  = getToolBundle().getTool(name);
-    if (set.isEmpty())
-      return Optional.empty();
-
-    return set.get().makeReporterInstance(this, val, conf);
-  }
-
-  /**
-   * Convenience shortcut to get an unconfigured instance of the column reporter
-   * with the given name.
-   *
-   * @param name
-   *   name of the column reporter to return.
-   *
-   * @return
-   */
-  public Optional<ColumnReporter> getReporter(final String name) {
-    return getToolBundle().getTool(name)
-      .flatMap(t -> t.getReporterFor(this));
-  }
-
-  /**
-   * Retrieves and returns a list of the names of all the available column
-   * reporters that can be used on this field.
-   *
-   * @return list of reporters available for this field by name
-   */
-  public Collection<String> getColumnReporterNames() {
-    return getToolBundle().getTools()
-      .values()
-      .stream()
-      .filter(s -> s.hasReporterFor(this))
-      .map(ColumnToolSet::getName)
-      .collect(Collectors.toList());
-  }
-
-  /**
-   * Convenience shortcut to get an unconfigured instance of the column filter
-   * with the given name.
-   *
-   * @param name
-   *   name of the column filter to return.
-   *
-   * @return an option of either an unconfigured column filter matching the
-   * given name, or an empty option if no such filter exists.
-   */
-  public Optional<ColumnFilter> getFilter(final String name) {
-    return Optional.empty();
-  }
-
-  /**
-   * Prepares and returns an option of a configured, runnable column filter.
-   *
-   * @param name
-   *   name of the column filter to be configured
-   * @param val
-   *   answer value that the column filter will be applied to
-   * @param config
-   *   validated client config to use in configuring the column filter
-   *
-   * @return an option of either a configured column filter matching the given
-   * name, or an empty option if no such filter exists.
-   * 
-   * @throws WdkModelException if unable to create an instance of the specified filter
-   */
-  public Optional<ColumnFilterInstance> makeFilterInstance(
-    @SuppressWarnings("unused") final String name,
-    @SuppressWarnings("unused") final AnswerValue val,
-    @SuppressWarnings("unused") final ColumnToolConfig config
-  ) throws WdkModelException {
-    return Optional.empty();
-  }
-
-  /**
-   * Retrieves a list of the usable column filter names for the current field.
-   *
-   * @return list of available column filters by name
-   */
-  public Collection<String> getColumnFilterNames() {
-    return Collections.emptyList();
-  }
-
-  /**
-   * Convenience method for determining whether or not a field is filterable.
-   * <p>
-   * A field is considered filterable if it is of the correct field type
-   * <i>and</i> has at least one column filter that could be applied.
-   * <p>
-   * Note: the base attribute field type is not filterable, however extending
-   * classes override this with their own internal checks on whether or not the
-   * above criteria is met.
-   *
-   * @return whether or not this field is filterable
-   */
-  public boolean isFilterable() {
-    return false;
+  public Map<String, ColumnToolElementRefPair> getColumnToolElementPairs() {
+    return Collections.emptyMap();
   }
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
 
-    _toolBundle = isNull(_toolBundleRef)
-      ? resolveDefaultToolBundle()
-      : resolveToolBundleRef().orElseThrow(() -> new WdkModelException(
-        "Invalid columnToolBundle reference: " + _toolBundleRef));
+    // resolve tool bundle ref for this attribute
+    if (_toolBundleRef == null) {
+      // use parent default (may still be null
+      _toolBundleRef = resolveDefaultToolBundleRef();
+    }
+
+    // if tool bundle ref specified for this attribute field, resolve all tools in the
+    //   bundle that have element pairs compatible with this attribute's data type
+    if (_toolBundleRef != null) {
+      ColumnToolBundle toolBundle = wdkModel.getColumnToolBundleMap().getToolBundle(_toolBundleRef);
+      for (ColumnTool tool : toolBundle.getTools()) {
+        ColumnToolElementRefPair elements = tool.getElementPair(_dataType);
+        if (elements != null) {
+          _columnToolElementPairs.put(tool.getName(), elements);
+        }
+      }
+    }
 
     // resolve plugin references
     for (ReporterRef reporter : _reporterMap.values()) {
@@ -354,26 +248,29 @@ public abstract class AttributeField extends Field implements Cloneable {
     }
   }
 
-  private ColumnToolBundle resolveToolBundle() {
-    return resolveToolBundleRef().orElseGet(this::resolveDefaultToolBundle);
-  }
-
-  private Optional<ColumnToolBundle> resolveToolBundleRef() {
-    return isNull(_toolBundleRef)
-      ? Optional.empty()
-      : _wdkModel.getColumnToolBundle(_toolBundleRef);
-  }
-
-  private ColumnToolBundle resolveDefaultToolBundle() {
+  private String resolveDefaultToolBundleRef() {
     if (_container instanceof TableField)
-      return ((TableField) _container).getRecordClass().getDefaultToolBundle();
+      return ((TableField) _container).getRecordClass().getDefaultColumnToolBundleRef();
 
     if (_container instanceof RecordClass)
-      return ((RecordClass) _container).getDefaultToolBundle();
+      return ((RecordClass) _container).getDefaultColumnToolBundleRef();
 
     if (_container instanceof Question)
-      return ((Question) _container).getRecordClass().getDefaultToolBundle();
+      return ((Question) _container).getRecordClass().getDefaultColumnToolBundleRef();
 
-    return new EmptyToolBundle();
+    return null;
+  }
+
+  // all tools must have a reporter per the RNG
+  public Set<String> getColumnReporterNames() {
+    return _columnToolElementPairs.keySet();
+  }
+
+  // but only some tools have a filter; find which ones
+  public List<String> getColumnFilterNames() {
+    return _columnToolElementPairs.entrySet().stream()
+      .filter(entry -> entry.getValue().getFilter() != null)
+      .map(entry -> entry.getKey())
+      .collect(Collectors.toList());
   }
 }

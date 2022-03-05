@@ -7,8 +7,6 @@ import static org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuild
 import static org.gusdb.wdk.model.user.StepContainer.emptyContainer;
 import static org.gusdb.wdk.service.service.AnswerService.REPORT_NAME_PATH_PARAM;
 
-import java.util.function.Supplier;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -19,7 +17,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
@@ -29,33 +26,33 @@ import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
-import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.columntool.ColumnReporter;
+import org.gusdb.wdk.model.columntool.ColumnToolFactory;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.gusdb.wdk.model.toolbundle.ColumnReporterInstance;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
-import org.gusdb.wdk.service.service.AbstractWdkService;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.QuestionService;
 import org.gusdb.wdk.service.service.RecordService;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.util.RawValue;
 
 /**
  * Endpoints for getting info about or running column reporters.
  */
-@Path(ColumnReporterService.NAMED_COLUMN_REPORTS_PATH)
-public class ColumnReporterService extends AbstractWdkService {
+@Path(ColumnReporterService.COLUMN_REPORTS_PATH)
+public class ColumnReporterService extends ColumnToolService {
 
   /**
    * API Paths
    */
-  public static final String NAMED_COLUMN_REPORTS_PATH =
-      SearchColumnService.NAMED_COLUMN_PATH + "/" + AnswerService.REPORTS_URL_SEGMENT;
+  public static final String COLUMN_REPORTS_PATH =
+      ColumnService.NAMED_COLUMN_PATH + "/" + AnswerService.REPORTS_URL_SEGMENT;
 
   /**
    * Reporter not found message.
@@ -63,26 +60,12 @@ public class ColumnReporterService extends AbstractWdkService {
   private static final String ERR_404 =
     "Invalid reporter \"%s\" for column " + "\"%s\".";
 
-  private final String _recordType;
-  private final String _searchName;
-  private final String _columnName;
-
   public ColumnReporterService(
     @PathParam(RecordService.RECORD_TYPE_PATH_PARAM) final String recordType,
     @PathParam(QuestionService.SEARCH_PATH_PARAM) final String searchName,
-    @PathParam(SearchColumnService.COLUMN_PATH_PARAM) final String columnName
+    @PathParam(ColumnService.COLUMN_PATH_PARAM) final String columnName
   ) {
-    _recordType = recordType;
-    _searchName = searchName;
-    _columnName = columnName;
-  }
-
-  private Question getQuestion() {
-    return getQuestionOrNotFound(_recordType, _searchName);
-  }
-
-  private AttributeField getColumn() {
-    return requireColumn(getQuestion(), _columnName);
+    super(recordType, searchName, columnName);
   }
 
   /**
@@ -101,25 +84,23 @@ public class ColumnReporterService extends AbstractWdkService {
    * Retrieves and returns the input spec for the named reporter on the current
    * column.
    *
-   * @param reporter
-   *   name of the reporter for which the input spec was requested.
+   * @param toolName
+   *   name of the column tool whose reporter's input spec was requested.
    *
    * @return Input specification for what the named reporter expects as config
    * input on run
+   * @throws WdkModelException 
    */
   @GET
-  @Path(AnswerService.CUSTOM_REPORT_SEGMENT)
+  @Path(COLUMN_TOOL_PARAM_SEGMENT)
   @Produces(MediaType.APPLICATION_JSON)
-  public JsonNode getReporterDetails(@PathParam(REPORT_NAME_PATH_PARAM) final String reporter) {
-    AttributeField column = getColumn();
-    var rep = column.getReporter(reporter)
-      .orElseThrow(makeNotFound(column, reporter));
-
+  public JsonNode getReporterDetails(@PathParam(COLUMN_TOOL_PATH_PARAM) final String toolName) throws WdkModelException {
+    ColumnReporter rep = getColumnReporter(getColumn(), toolName);
     return Jackson.createObjectNode()
-      .put(JsonKeys.NAME, rep.getKey())
+      .put(JsonKeys.NAME, toolName)
       .set("schema", Jackson.createObjectNode()
-        .putPOJO("input", rep.getInputSpec(column.getDataType()))
-        .putPOJO("output", rep.outputSpec(column.getDataType()).build()));
+        .putRawValue("input", new RawValue(rep.getInputSchema().build()))
+        .putRawValue("output", new RawValue(rep.getOutputSchema().build())));
   }
 
   /**
@@ -127,7 +108,7 @@ public class ColumnReporterService extends AbstractWdkService {
    *
    * @param toolName
    *   Name of the reporter to run
-   * @param body
+   * @param requestBody
    *   Reporter configuration
    *
    * @return A stream provider that will write the reporter's result as JSON to
@@ -146,41 +127,53 @@ public class ColumnReporterService extends AbstractWdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   public StreamingOutput runReporter(
     @PathParam(REPORT_NAME_PATH_PARAM) final String toolName,
-    final JsonNode body
+    final String requestStr
   ) throws WdkModelException, WdkUserException, DataValidationException {
-    AttributeField column = getColumn();
-    FilterOptionListBuilder viewFilters = AnswerSpecServiceFormat
-        .parseViewFilters(JsonUtil.toJSONObject(body)
-            .valueOrElseThrow(() -> new RequestMisformatException("Passed body is not a JSON object.")));
-    ColumnReporterInstance reporter = column.makeReporterInstance(
-      toolName,
-      makeAnswer(body.get(JsonKeys.SEARCH_CONFIG), toolName, viewFilters),
-      body.get(JsonKeys.REPORT_CONFIG)
-    ).orElseThrow(makeNotFound(column, toolName));
-    return AnswerService.getAnswerAsStream(reporter);
+    try {
+      JSONObject requestJson = new JSONObject(requestStr);
+
+      // try to find and create a column reporter for this tool
+      //   (could validate this after answer spec, etc. but cheap and feel this error should be emitted first)
+      ColumnReporter reporter = getColumnReporter(getColumn(), toolName);
+  
+      // parse any requested view filters
+      FilterOptionListBuilder viewFilters = AnswerSpecServiceFormat.parseViewFilters(requestJson);
+
+      // build answer spec for answer that will be fed to the reporter
+      RunnableObj<AnswerSpec> answerSpec =  makeAnswerSpec(
+          requestJson.getJSONObject(JsonKeys.SEARCH_CONFIG), toolName, viewFilters);
+
+      // build answer value
+      AnswerValue answerValue = AnswerValueFactory.makeAnswer(getSessionUser(), answerSpec);
+
+      // finish configuring the reporter
+      reporter
+        .setAnswerValue(answerValue)
+        .configure(requestJson.getJSONObject(JsonKeys.REPORT_CONFIG));
+  
+      // stream response
+      return AnswerService.getAnswerAsStream(reporter);
+    }
+    catch (JSONException e) {
+      throw new RequestMisformatException("Could not parse request body", e);
+    }
   }
 
   /**
-   * Creates an answer value from the given json body.
+   * Checks for the existence of a reporter on the passed column tool for the given column
+   * and returns an instance of it if it exists; will throw a NotFoundException if not.
    *
-   * @param body JSON body to parse
-   * @param filterToIgnore name of filter to ignore
-   * @param viewFilters 
-   *
-   * @return an answer value from the given answer spec json
-   *
-   * @throws WdkModelException
-   *   See <ul>
-   *   <li>{@link AnswerValueFactory#makeAnswer(User, RunnableObj)}
-   *   <li>{@link #makeAnswerSpec(JsonNode)}
-   *   </ul>
-   * @throws RequestMisformatException
-   *   See {@link #makeAnswerSpec(JsonNode)}
-   * @throws DataValidationException if answer spec is invalid
+   * @param column requested column
+   * @param toolName requested tool/reporter name
+   * @return instance of the requested reporter
+   * @throws NotFoundException if reporter for that tool does not exist on this column
+   * @throws WdkModelException if something goes wrong
    */
-  private AnswerValue makeAnswer(JsonNode body, String filterToIgnore, FilterOptionListBuilder viewFilters)
-  throws WdkModelException, RequestMisformatException, DataValidationException {
-    return AnswerValueFactory.makeAnswer(getSessionUser(), makeAnswerSpec(body, filterToIgnore, viewFilters));
+  public static ColumnReporter getColumnReporter(AttributeField column, String toolName) throws WdkModelException {
+    if (!column.getColumnReporterNames().contains(toolName)) {
+      throw new NotFoundException(format(ERR_404, column.getName(), toolName));
+    }
+    return ColumnToolFactory.getColumnReporterInstance(column, toolName);
   }
 
   /**
@@ -202,58 +195,34 @@ public class ColumnReporterService extends AbstractWdkService {
    *   an answer spec.
    * @throws DataValidationException if answer spec is invalid
    */
-  private RunnableObj<AnswerSpec> makeAnswerSpec(JsonNode body, String filterToIgnore, FilterOptionListBuilder viewFilters)
-  throws WdkModelException, RequestMisformatException, DataValidationException {
-    Question search = getQuestion();
-    AttributeField column = getColumn();
-    JSONObject parentJson = JsonUtil.toJSONObject(body)
-        .mapError(WdkModelException::new)
-        .valueOrElseThrow();
-    return trimColumnFilter(AnswerSpecServiceFormat.parse(
-      search,
-      parentJson,
-      getWdkModel()
-    )
-    .setViewFilterOptions(viewFilters),
-    column.getName(), filterToIgnore)
-      .build(getSessionUser(), emptyContainer(), RUNNABLE, FILL_PARAM_IF_MISSING)
-      .getRunnable()
-      .getOrThrow(ColumnReporterService::specToException);
-  }
+  private RunnableObj<AnswerSpec> makeAnswerSpec(JSONObject answerSpecJson, String filterToIgnore, FilterOptionListBuilder viewFilters)
+      throws WdkModelException, RequestMisformatException, DataValidationException {
 
-  public static AnswerSpecBuilder trimColumnFilter(AnswerSpecBuilder specBuilder,
-      String columnOfFilterToIgnore, String filterToIgnore) {
-    specBuilder.getColumnFilters().remove(columnOfFilterToIgnore, filterToIgnore);
-    return specBuilder;
+    // build a starter answer spec based on the question name, incoming spec JSON, and view filters
+    AnswerSpecBuilder specBuilder = AnswerSpecServiceFormat
+        .parse(getQuestion(), answerSpecJson, getWdkModel())
+        .setViewFilterOptions(viewFilters);
+
+    // remove any existing filters for this column tool so statistics are based on unfiltered answer
+    trimColumnFilter(specBuilder, getColumn().getName(), filterToIgnore);
+
+    // build the spec and return
+    return specBuilder
+        .build(getSessionUser(), emptyContainer(), RUNNABLE, FILL_PARAM_IF_MISSING)
+        .getRunnable()
+        .getOrThrow(spec -> new DataValidationException(spec.getValidationBundle()));
   }
 
   /**
-   * Returns a supplier for a {@link NotFoundException} configured with the
-   * message defined in {@link ColumnReporterService#ERR_404} populated with the
-   * given report name and the name of the passed column.
+   * Trims any existing column filters for the passed column name
+   * and filter (tool) name off the passed answer spec builder
    *
-   * @param column
-   *   selected attribute field
-   * @param rep
-   *   report name
-   *
-   * @return
-   *   a supplier for a configured {@link NotFoundException}.
+   * @param answerSpecBuilder builder to trim
+   * @param columnName column name
+   * @param filterToIgnore tool/filter name
    */
-  public static Supplier<NotFoundException> makeNotFound(AttributeField column, final String rep) {
-    return () -> new NotFoundException(format(ERR_404, rep, column.getName()));
+  public static void trimColumnFilter(AnswerSpecBuilder answerSpecBuilder, String columnName, String filterToIgnore) {
+    answerSpecBuilder.getColumnFilters().remove(columnName, filterToIgnore);
   }
 
-  /**
-   * Converts the validation bundle string from an AnswerSpec into an exception.
-   *
-   * @param spec
-   *   answer spec from which to pull the validation bundle.
-   * @return
-   *   an exception containing the string form of the validation errors from the
-   *   given answer spec.
-   */
-  private static DataValidationException specToException(final AnswerSpec spec) {
-    return new DataValidationException(spec.getValidationBundle());
-  }
 }

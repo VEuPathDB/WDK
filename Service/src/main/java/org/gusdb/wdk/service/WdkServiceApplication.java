@@ -34,7 +34,7 @@ import org.gusdb.wdk.service.service.TemporaryResultService;
 import org.gusdb.wdk.service.service.XmlAnswerService;
 import org.gusdb.wdk.service.service.search.ColumnFilterService;
 import org.gusdb.wdk.service.service.search.ColumnReporterService;
-import org.gusdb.wdk.service.service.search.SearchColumnService;
+import org.gusdb.wdk.service.service.search.ColumnService;
 import org.gusdb.wdk.service.service.user.BasketService;
 import org.gusdb.wdk.service.service.user.DatasetService;
 import org.gusdb.wdk.service.service.user.FavoritesService;
@@ -87,7 +87,7 @@ public class WdkServiceApplication extends Application {
     .add(PreferenceService.class)
     .add(RecordService.class)
     .add(QuestionService.class)
-    .add(SearchColumnService.class)
+    .add(ColumnService.class)
     .add(ColumnReporterService.class)
     .add(ColumnFilterService.class)
     .add(AnswerService.class)

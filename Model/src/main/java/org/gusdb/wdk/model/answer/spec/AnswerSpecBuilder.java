@@ -12,9 +12,9 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.answer.spec.ColumnFilterConfigSet.ColumnFilterConfigSetBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOption.FilterOptionBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
-import org.gusdb.wdk.model.toolbundle.filter.StandardColumnFilterConfigSetBuilder;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
@@ -33,11 +33,11 @@ public class AnswerSpecBuilder {
   private QueryInstanceSpecBuilder _queryInstanceSpec = QueryInstanceSpec.builder();
   private FilterOptionListBuilder _filters = FilterOptionList.builder();
   private FilterOptionListBuilder _viewFilters = FilterOptionList.builder();
-  private StandardColumnFilterConfigSetBuilder _columnFilters;
+  private ColumnFilterConfigSetBuilder _columnFilters;
 
   public AnswerSpecBuilder(WdkModel wdkModel) {
     _wdkModel = wdkModel;
-    _columnFilters = new StandardColumnFilterConfigSetBuilder();
+    _columnFilters = new ColumnFilterConfigSetBuilder();
   }
 
   public AnswerSpecBuilder(AnswerSpec answerSpec) {
@@ -47,7 +47,7 @@ public class AnswerSpecBuilder {
     _legacyFilterName = answerSpec.getLegacyFilterName();
     _filters = FilterOptionList.builder().addAllFilters(answerSpec.getFilterOptions());
     _viewFilters = FilterOptionList.builder().addAllFilters(answerSpec.getViewFilterOptions());
-    _columnFilters = new StandardColumnFilterConfigSetBuilder(answerSpec.getColumnFilterConfig());
+    _columnFilters = new ColumnFilterConfigSetBuilder(answerSpec.getColumnFilterConfig());
   }
 
   public AnswerSpecBuilder(SemanticallyValid<AnswerSpec> validAnswerSpec) {
@@ -68,7 +68,7 @@ public class AnswerSpecBuilder {
     setFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(paramFiltersJson));
     // TODO: As of 8/20/19 we do not read view filters from the database; should purge their existence at some point
     //setViewFilterOptions(ParamsAndFiltersDbColumnFormat.parseViewFiltersJson(paramFiltersJson));
-    setColumnFilterConfig(ParamsAndFiltersDbColumnFormat.parseColumnFilters(paramFiltersJson));
+    setColumnFilters(ParamsAndFiltersDbColumnFormat.parseColumnFilters(paramFiltersJson));
     return this;
   }
 
@@ -185,14 +185,12 @@ public class AnswerSpecBuilder {
     return this;
   }
 
-  public AnswerSpecBuilder setColumnFilterConfig(
-    final StandardColumnFilterConfigSetBuilder build
-  ) {
+  public AnswerSpecBuilder setColumnFilters(ColumnFilterConfigSetBuilder build) {
     _columnFilters = build;
     return this;
   }
 
-  public StandardColumnFilterConfigSetBuilder getColumnFilters() {
+  public ColumnFilterConfigSetBuilder getColumnFilters() {
     return _columnFilters;
   }
 }

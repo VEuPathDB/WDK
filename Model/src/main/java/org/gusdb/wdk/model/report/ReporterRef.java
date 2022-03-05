@@ -24,7 +24,7 @@ import org.gusdb.wdk.model.record.ScopedField;
  * @author xingao
  *
  */
-public class ReporterRef extends WdkModelBase implements ScopedField, ReporterInfo {
+public class ReporterRef extends WdkModelBase implements ScopedField, PropertiesProvider {
 
   private static final Logger LOG = Logger.getLogger(ReporterRef.class);
 

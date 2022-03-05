@@ -4,7 +4,7 @@ import static org.gusdb.fgputil.functional.Functions.reduce;
 import static org.gusdb.wdk.service.service.AnswerService.CUSTOM_REPORT_SEGMENT_PAIR;
 import static org.gusdb.wdk.service.service.AnswerService.REPORT_NAME_PATH_PARAM;
 import static org.gusdb.wdk.service.service.AnswerService.STANDARD_REPORT_SEGMENT_PAIR;
-import static org.gusdb.wdk.service.service.search.SearchColumnService.NAMED_COLUMN_SEGMENT_PAIR;
+import static org.gusdb.wdk.service.service.search.ColumnService.NAMED_COLUMN_SEGMENT_PAIR;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,6 @@ import javax.ws.rs.core.StreamingOutput;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
@@ -49,7 +48,7 @@ import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.BasketRequests.BasketActions;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.search.ColumnReporterService;
-import org.gusdb.wdk.service.service.search.SearchColumnService;
+import org.gusdb.wdk.service.service.search.ColumnService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -325,24 +324,28 @@ public class BasketService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   public StreamingOutput getColumnReporterResponse(
       @PathParam(BASKET_NAME_PATH_PARAM) final String basketName,
-      @PathParam(SearchColumnService.COLUMN_PATH_PARAM) final String columnName,
+      @PathParam(ColumnService.COLUMN_PATH_PARAM) final String columnName,
       @PathParam(REPORT_NAME_PATH_PARAM) final String reportName,
       final JSONObject requestJson)
           throws WdkModelException, NotFoundException, WdkUserException {
+
+    // do some initial validation
     User user = getPrivateRegisteredUser();
     RecordClass recordClass = getRecordClassOrNotFound(basketName);
-    AttributeField attribute = requireColumn(recordClass, columnName);
+    AttributeField attribute = getColumnOrNotFound(recordClass, columnName);
+
+    // build basket answer spec, applying any passed view filters
     RunnableObj<AnswerSpec> basketAnswerSpec = AnswerSpec
       .builder(getWdkModel())
       .setQuestionFullName(recordClass.getRealtimeBasketQuestion().getFullName())
       .setViewFilterOptions(AnswerSpecServiceFormat.parseViewFilters(requestJson))
       .buildRunnable(getSessionUser(), StepContainer.emptyContainer());
+
+    // build and configure the column reporter and stream its result
     return AnswerService.getAnswerAsStream(
-        attribute.makeReporterInstance(
-            reportName,
-            AnswerValueFactory.makeAnswer(user, basketAnswerSpec),
-            JsonUtil.toJsonNode(requestJson.getJSONObject(JsonKeys.REPORT_CONFIG))
-        ).orElseThrow(ColumnReporterService.makeNotFound(attribute, reportName))
+        ColumnReporterService.getColumnReporter(attribute, reportName)
+          .setAnswerValue(AnswerValueFactory.makeAnswer(user, basketAnswerSpec))
+          .configure(requestJson.getJSONObject(JsonKeys.REPORT_CONFIG))
     );
   }
 }

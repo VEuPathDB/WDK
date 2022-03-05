@@ -25,10 +25,6 @@ public abstract class AnswerDetailsReporter extends AbstractReporter {
   private ContentDisposition _contentDisposition;
   protected AttributeFormat _attributeFormat;
 
-  protected AnswerDetailsReporter(AnswerValue answerValue) {
-    super(answerValue);
-  }
-
   @Override
   public Reporter configure(JSONObject config) throws ReporterConfigException, WdkModelException {
     return configure(AnswerDetailsFactory.createFromJson(config, _baseAnswer.getAnswerSpec().getQuestion()));

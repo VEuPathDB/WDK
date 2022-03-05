@@ -33,10 +33,6 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
 
   protected AttributeField _attributeField;
 
-  protected AbstractAttributeReporter(AnswerValue answerValue) {
-    super(answerValue);
-  }
-
   abstract protected JSONObject getJsonResult(AnswerValue answerValue) throws WdkModelException;
 
   @Override
@@ -47,23 +43,19 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
   }
 
   @Override
-  public Reporter configure(Map<String, String> config) throws ReporterConfigException, WdkModelException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Reporter configure(JSONObject config) throws ReporterConfigException, WdkModelException {
     return this;
   }
 
   @Override
-  public void setProperties(ReporterInfo reporterRef) throws WdkModelException {
+  public AbstractAttributeReporter setProperties(PropertiesProvider reporterRef) throws WdkModelException {
     if (!(reporterRef instanceof AttributeReporterRef)) {
       // this should never happen
       throw new WdkModelException("Reporter ref passed to AbstractAttributeReporter is not an AttributeReporterRef!");
     }
     super.setProperties(reporterRef);
     _attributeField = ((AttributeReporterRef)reporterRef).getAttributeField();
+    return this;
   }
 
   protected AttributeField getAttributeField() {

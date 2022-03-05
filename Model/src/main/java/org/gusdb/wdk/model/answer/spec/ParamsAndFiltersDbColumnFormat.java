@@ -1,28 +1,20 @@
 package org.gusdb.wdk.model.answer.spec;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.wdk.model.answer.spec.ColumnFilterConfigSet.ColumnFilterConfigSetBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpecBuilder;
-import org.gusdb.wdk.model.toolbundle.ColumnToolConfig;
-import org.gusdb.wdk.model.toolbundle.config.ColumnConfig;
-import org.gusdb.wdk.model.toolbundle.config.ColumnFilterConfigSet;
-import org.gusdb.wdk.model.toolbundle.filter.StandardColumnFilterConfigSetBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Handles conversion back and forth from the JSON contained in the
@@ -35,8 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @rdoherty
  */
 public class ParamsAndFiltersDbColumnFormat {
-
-  private static final Logger LOG = Logger.getLogger(ParamsAndFiltersDbColumnFormat.class);
 
   // top level json keys
   public static final String KEY_PARAMS = "params";
@@ -131,8 +121,8 @@ public class ParamsAndFiltersDbColumnFormat {
     return builder;
   }
 
-  public static StandardColumnFilterConfigSetBuilder parseColumnFilters(JSONObject paramFiltersJson) throws JSONException {
-    StandardColumnFilterConfigSetBuilder builder = new StandardColumnFilterConfigSetBuilder();
+  public static ColumnFilterConfigSetBuilder parseColumnFilters(JSONObject paramFiltersJson) throws JSONException {
+    ColumnFilterConfigSetBuilder builder = new ColumnFilterConfigSetBuilder();
     if (paramFiltersJson == null || !paramFiltersJson.has(KEY_COLUMN_FILTERS)) {
       return builder;
     }
@@ -142,27 +132,24 @@ public class ParamsAndFiltersDbColumnFormat {
         JSONObject filtersObject = columnEntry.getValue().getJSONObject();
         for (Entry<String,JsonType> filterEntry : JsonIterators.objectIterable(filtersObject)) {
           if (filterEntry.getValue().getType().equals(JsonType.ValueType.OBJECT)) {
-            try {
-              JsonNode jacksonObj = new ObjectMapper().readTree(filterEntry.getValue().getJSONObject().toString());
-              LOG.debug("Read column filter config object from DB: " + jacksonObj.toString());
-              builder.setFilterConfig(columnEntry.getKey(), filterEntry.getKey(), () -> jacksonObj);
-            }
-            catch (IOException e) {
-              throw new JSONException("Unable to deserialize string version of: " + filterEntry.getValue().getJSONObject());
-            }
-          } else throw new JSONException(filterEntry.getValue() + " is not a JSON object.");
+            JSONObject config = filterEntry.getValue().getJSONObject();
+            builder.setFilterConfig(columnEntry.getKey(), filterEntry.getKey(), config);
+          }
+          else throw new JSONException(filterEntry.getValue() + " is not a JSON object.");
         }
-      } else throw new JSONException(columnEntry.getValue() + " is not a JSON object.");
+      }
+      else throw new JSONException(columnEntry.getValue() + " is not a JSON object.");
     }
     return builder;
   }
 
   public static JSONObject formatColumnFilters(ColumnFilterConfigSet columnFilterConfig) {
     JSONObject json = new JSONObject();
-    for (Entry<String, ColumnConfig> column: columnFilterConfig.getColumnConfigs().entrySet()) {
+    // entry is column -> 
+    for (Entry<String, ColumnFilterConfig> column: columnFilterConfig.entrySet()) {
       JSONObject columnObj = new JSONObject();
-      for (Entry<String, ColumnToolConfig> filter : column.getValue().entrySet()) {
-        columnObj.put(filter.getKey(), filter.getValue().getConfigAsJSONObject());
+      for (Entry<String, JSONObject> filter : column.getValue().entrySet()) {
+        columnObj.put(filter.getKey(), filter.getValue());
       }
       json.put(column.getKey(), columnObj);
     }

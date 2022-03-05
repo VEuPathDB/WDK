@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.report.util;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
@@ -23,18 +22,15 @@ import org.json.JSONObject;
  */
 public class ReporterFactory {
 
+  @Deprecated
   public static Reporter getReporter(AnswerValue answerValue, String reporterName, Map<String, String> config)
       throws WdkModelException, WdkUserException {
-    Reporter reporter = createReporterInstance(answerValue, reporterName);
-    reporter.configure(config);
-    return reporter;
+    return createReporterInstance(answerValue, reporterName).configure(config);
   }
 
   public static Reporter getReporter(AnswerValue answerValue, String reporterName, JSONObject config)
       throws WdkModelException, ReporterConfigException {
-    Reporter reporter = createReporterInstance(answerValue, reporterName);
-    reporter.configure(config);
-    return reporter;
+    return createReporterInstance(answerValue, reporterName).configure(config);
   }
 
   private static Reporter createReporterInstance(AnswerValue answerValue, String reporterName) throws WdkModelException {
@@ -55,19 +51,14 @@ public class ReporterFactory {
     }
 
     try {
-      // find class and try to instantiate with AnswerValue argument
-      Class<?> reporterClass = Class.forName(implClassName);
-      Class<?>[] paramClasses = { AnswerValue.class };
-      Constructor<?> constructor = reporterClass.getConstructor(paramClasses);
-
-      Object[] params = { answerValue };
-      Reporter reporter = (Reporter) constructor.newInstance(params);
-      reporter.setProperties(reporterRef);
-      return reporter;
+      // find class and try to instantiate, then assign answer value
+      return ((Reporter)Class.forName(implClassName).getConstructor().newInstance())
+          .setProperties(reporterRef)
+          .setAnswerValue(answerValue);
     }
     catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException |
         IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-      throw new WdkModelException(ex);
+      throw new WdkModelException("Unable to instantiate reporter instance for class " + implClassName, ex);
     }
   }
 }

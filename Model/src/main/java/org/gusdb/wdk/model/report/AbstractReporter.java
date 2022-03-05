@@ -22,14 +22,18 @@ public abstract class AbstractReporter implements Reporter {
    */
   protected abstract void write(OutputStream out) throws IOException, WdkModelException;
 
-  protected AbstractReporter(AnswerValue answerValue) {
+  @Override
+  public AbstractReporter setAnswerValue(AnswerValue answerValue) {
     _baseAnswer = answerValue;
     _wdkModel = answerValue.getWdkModel();
+    return this;
   }
 
   @Override
-  public void setProperties(ReporterInfo reporterInfo) throws WdkModelException {
-    _properties = reporterInfo.getProperties(); // don't need to copy; is already a copy
+  public AbstractReporter setProperties(PropertiesProvider properties) throws WdkModelException {
+    // no need to make a copy; callers should already have made a copy if conflicts should be avoided
+    _properties = properties.getProperties();
+    return this;
   }
 
   public String getPropertyInfo() {
@@ -42,25 +46,8 @@ public abstract class AbstractReporter implements Reporter {
 
   @Override
   public String getHttpContentType() {
-    // by default, generate result in plain text format
+    // override "new" JSON default; for backward compatibility, generate result in plain text format
     return "text/plain";
-  }
-
-  @Override
-  public String getDownloadFileName() {
-    // by default, display the result in the browser, by setting the file name as null
-    return null;
-  }
-
-  @Override
-  public ContentDisposition getContentDisposition() {
-    return (getDownloadFileName() == null ?
-        ContentDisposition.INLINE : ContentDisposition.ATTACHMENT);
-  }
-
-  @Override
-  public String getHelp() {
-    return "This reporter is not documented.";
   }
 
   @Override
@@ -103,8 +90,4 @@ public abstract class AbstractReporter implements Reporter {
     return _baseAnswer.getAnswerSpec().getQuestion();
   }
 
-  @Override
-  public Reporter configure(Map<String, String> config) throws ReporterConfigException, WdkModelException {
-    throw new UnsupportedOperationException();
-  }
 }
