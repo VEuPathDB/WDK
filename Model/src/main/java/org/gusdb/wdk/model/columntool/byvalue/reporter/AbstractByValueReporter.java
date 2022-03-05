@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.columntool.byvalue.reporter;
 
+import static org.gusdb.fgputil.functional.Functions.wrapException;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -10,6 +12,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import javax.sql.DataSource;
@@ -47,7 +51,7 @@ public abstract class AbstractByValueReporter implements ColumnReporter, Distrib
   protected AnswerValue _answerValue;
   protected DataSource _appDb;
   protected AttributeField _attributeField;
-  protected int _resultSize;
+  protected Future<Integer> _resultSizeFuture;
   protected String _jointAttributeSql;
   protected AbstractDistribution _distribution;
   private Stream<TwoTuple<String, Long>> _groupStream;
@@ -71,7 +75,9 @@ public abstract class AbstractByValueReporter implements ColumnReporter, Distrib
   public AbstractByValueReporter setAnswerValue(AnswerValue answerValue) throws WdkModelException {
     _answerValue = answerValue;
     _appDb = answerValue.getWdkModel().getAppDb().getDataSource();
-    _resultSize = _answerValue.getResultSizeFactory().getResultSize();
+    // kick off a thread to find the result size; won't be needed until after distribution is processed
+    _resultSizeFuture = Executors.newSingleThreadExecutor()
+        .submit(() -> _answerValue.getResultSizeFactory().getResultSize());
     return this;
   }
 
@@ -83,7 +89,7 @@ public abstract class AbstractByValueReporter implements ColumnReporter, Distrib
 
   @Override
   public long getRecordCount() {
-    return _resultSize;
+    return wrapException(() -> _resultSizeFuture.get());
   }
 
   @Override
