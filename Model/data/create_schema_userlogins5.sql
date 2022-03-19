@@ -174,6 +174,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON userlogins5.datasets TO COMM_WDK_W;
 CREATE TABLE userlogins5.dataset_values (
   dataset_value_id       NUMBER(12) NOT NULL,
   dataset_id             NUMBER(12) NOT NULL,
+  dataset_value_order    NUMBER(12) NOT NULL,
   data1                  VARCHAR2(1999) NOT NULL,
   data2                  VARCHAR2(1999),
   data3                  VARCHAR2(1999),

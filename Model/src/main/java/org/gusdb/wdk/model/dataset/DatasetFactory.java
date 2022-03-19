@@ -57,6 +57,7 @@ public class DatasetFactory {
 
   // Columns in the dataset_values table
   private static final String COLUMN_DATASET_VALUE_ID = "dataset_value_id";
+  private static final String COLUMN_DATASET_VALUE_ORDER = "dataset_value_order";
   private static final String COLUMN_DATA_PREFIX = "data";
 
   public static final int MAX_VALUE_COLUMNS = 20;
@@ -177,20 +178,11 @@ public class DatasetFactory {
         });
   }
 
-  public String getDatasetValueSqlForAppDb(long datasetId) {
-    var dbLink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
-    return "SELECT " + String.join(", ", getValueColumnNames(MAX_VALUE_COLUMNS)) + ", " + COLUMN_DATASET_VALUE_ID +
-        " FROM " + _userSchema + TABLE_DATASET_VALUES + dbLink +
-        " WHERE " + COLUMN_DATASET_ID + " = " + datasetId;
-  }
-
   public List<String[]> getDatasetValues(long datasetId) {
-    var userDs = _userDb.getDataSource();
-    var sql    = "SELECT * FROM " + _userSchema + TABLE_DATASET_VALUES
-      + " WHERE " + COLUMN_DATASET_ID + " = ?";
-
-    return new SQLRunner(userDs, sql)
-      .executeQuery(
+    return new SQLRunner(
+        _userDb.getDataSource(),
+        getDatasetValueSql(datasetId, "")
+    ).executeQuery(
         new Object[] {datasetId},
         new Integer[] {Types.BIGINT},
         rs -> {
@@ -204,7 +196,8 @@ public class DatasetFactory {
             values.add(row);
           }
           return values;
-        });
+        }
+    );
   }
 
   /**
@@ -420,9 +413,9 @@ public class DatasetFactory {
       .append("INSERT INTO ")
       .append(_userSchema)
       .append(TABLE_DATASET_VALUES)
-      .append(" (" + COLUMN_DATASET_VALUE_ID + ", " + COLUMN_DATASET_ID + ", ")
+      .append(" (" + COLUMN_DATASET_VALUE_ID + ", " + COLUMN_DATASET_ID + ", " + COLUMN_DATASET_VALUE_ORDER + ", ")
       .append(String.join(", ", getValueColumnNames(size)))
-      .append(" ) VALUES (?, ?")
+      .append(" ) VALUES (?, ?, ?")
       .append(", ?".repeat(size))
       .append(")")
       .toString();
@@ -474,15 +467,24 @@ public class DatasetFactory {
     return newDsId;
   }
 
-  private void copyDatasetValues(Connection con, long oldDsId, long newDsId) {
-    var sql = "SELECT *\n"
-      + "FROM " + _userSchema + TABLE_DATASET_VALUES + "\n"
-      + "WHERE dataset_id = ?";
+  public String getDatasetValueSqlForAppDb(long datasetId) {
+    String dbLink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
+    return getDatasetValueSql(datasetId, dbLink);
+  }
 
-    new SQLRunner(_userDb.getDataSource(), sql).executeQuery(
-      new Object[] {oldDsId},
-      new Integer[] {Types.BIGINT},
-      copyDatasetValues(con, newDsId)
+  private String getDatasetValueSql(long datasetId, String dbLink) {
+    return "SELECT " + String.join(", ", getValueColumnNames(MAX_VALUE_COLUMNS)) + ", " + COLUMN_DATASET_VALUE_ORDER +
+        " FROM " + _userSchema + TABLE_DATASET_VALUES + dbLink +
+        " WHERE " + COLUMN_DATASET_ID + " = " + datasetId;
+  }
+
+  private void copyDatasetValues(Connection con, long oldDsId, long newDsId) {
+    new SQLRunner(
+        _userDb.getDataSource(),
+        getDatasetValueSql(oldDsId, "")
+    )
+    .executeQuery(
+        copyDatasetValues(con, newDsId)
     );
   }
 
@@ -494,7 +496,8 @@ public class DatasetFactory {
 
     return rs -> {
       try (PreparedStatement psInsert = con.prepareStatement(sql)) {
-        var row = 0;
+        List<String> valueColumnNames = getValueColumnNames(MAX_VALUE_COLUMNS);
+        long batchRow = 0;
         while (rs.next()) {
 
           // get a new value id.
@@ -503,18 +506,22 @@ public class DatasetFactory {
 
           psInsert.setLong(1, datasetValueId);
           psInsert.setLong(2, newDsId);
-          for (int j = 0, k = 3; j < MAX_VALUE_COLUMNS; j++, k++) {
-            psInsert.setString(k, rs.getString(k));
+          psInsert.setLong(3, rs.getLong(COLUMN_DATASET_VALUE_ORDER));
+          for (
+              int columnNameIndx = 0, paramIdx = 4;
+              columnNameIndx < MAX_VALUE_COLUMNS;
+              columnNameIndx++, paramIdx++) {
+            psInsert.setString(paramIdx, rs.getString(valueColumnNames.get(columnNameIndx)));
           }
           psInsert.addBatch();
 
-          row++;
-          if (row >= 1000) {
+          batchRow++;
+          if (batchRow >= 1000) {
             psInsert.executeBatch();
-            row = 0;
+            batchRow = 0;
           }
         }
-        if (row > 0)
+        if (batchRow > 0)
           psInsert.executeBatch();
       }
 
@@ -528,30 +535,34 @@ public class DatasetFactory {
     final DatasetIterator data,
     final int length
   ) throws SQLException, WdkModelException, WdkUserException {
-    var sql = buildDatasetValuesInsertQuery(length);
-
+    String sql = buildDatasetValuesInsertQuery(length);
+    LOG.info("Built the following insert SQL: " + sql);
     try (PreparedStatement psInsert = connection.prepareStatement(sql)) {
-      //      for (int i = 0; i < data.size(); i++) {
-      var row = 0;
+      long batchRow = 0;
+      long rowOrderNumber = 1;
       while (data.hasNext()) {
-        var value = data.next();
+        String[] value = data.next();
 
         // get a new value id.
-        var datasetValueId = _userDb.getPlatform()
+        long datasetValueId = _userDb.getPlatform()
           .getNextId(_userDb.getDataSource(), _userSchema, TABLE_DATASET_VALUES);
 
         psInsert.setLong(1, datasetValueId);
         psInsert.setLong(2, datasetId);
+        psInsert.setLong(3, rowOrderNumber);
         for (int j = 0; j < length; j++) {
-          psInsert.setString(j + 3, value[j]);
+          LOG.info("Setting PS param " + (j+4) + ": " + value[j]);
+          psInsert.setString(j + 4, value[j]);
         }
         psInsert.addBatch();
 
-        row++;
-        if (row >= 1000) {
+        batchRow++;
+        if (batchRow >= 1000) {
           psInsert.executeBatch();
-          row = 0;
+          batchRow = 0;
         }
+
+        rowOrderNumber++;
       }
       psInsert.executeBatch();
     }
