@@ -2,8 +2,8 @@ package org.gusdb.wdk.service.service.user;
 
 import java.util.Optional;
 
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
 
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;

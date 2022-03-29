@@ -3,7 +3,7 @@ package org.gusdb.wdk.service;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.core.Application;
 
 import org.glassfish.jersey.client.filter.EncodingFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;

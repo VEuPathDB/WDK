@@ -5,7 +5,7 @@ import static java.util.Arrays.stream;
 import java.util.Collection;
 import java.util.Optional;
 
-import javax.ws.rs.NotFoundException;
+import jakarta.ws.rs.NotFoundException;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
