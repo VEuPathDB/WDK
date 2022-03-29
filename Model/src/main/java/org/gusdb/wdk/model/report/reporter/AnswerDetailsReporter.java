@@ -2,7 +2,7 @@ package org.gusdb.wdk.model.report.reporter;
 
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import org.gusdb.fgputil.SortDirectionSpec;
 import org.gusdb.wdk.model.WdkModelException;
