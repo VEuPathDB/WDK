@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.Priority;
+import jakarta.annotation.Priority;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.PreMatching;

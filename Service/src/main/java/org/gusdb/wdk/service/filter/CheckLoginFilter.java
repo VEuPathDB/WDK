@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.annotation.Priority;
-import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Priority;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.ContainerResponseContext;

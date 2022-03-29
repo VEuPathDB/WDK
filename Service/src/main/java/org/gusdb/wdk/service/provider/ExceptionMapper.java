@@ -2,9 +2,9 @@ package org.gusdb.wdk.service.provider;
 
 import static org.gusdb.wdk.service.formatter.ValidationFormatter.getValidationBundleJson;
 
-import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
@@ -49,10 +49,10 @@ public class ExceptionMapper implements jakarta.ws.rs.ext.ExceptionMapper<Except
   private ServletContext _servletContext;
 
   @Inject
-  private javax.inject.Provider<HttpServletRequest> _servletRequest;
+  private jakarta.inject.Provider<HttpServletRequest> _servletRequest;
 
   @Inject
-  private javax.inject.Provider<Request> _grizzlyRequest;
+  private jakarta.inject.Provider<Request> _grizzlyRequest;
 
   @Override
   public Response toResponse(Exception e) {

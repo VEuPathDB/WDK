@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
 
-import javax.annotation.Priority;
+import jakarta.annotation.Priority;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.container.ContainerRequestContext;
