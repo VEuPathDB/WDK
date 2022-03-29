@@ -3,10 +3,10 @@ package org.gusdb.wdk.service.filter;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Priority;
-import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Priority;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
