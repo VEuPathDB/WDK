@@ -21,6 +21,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -31,6 +32,7 @@ import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONObject;
@@ -75,7 +77,8 @@ public class TemporaryResultService extends AbstractWdkService {
       throws RequestMisformatException, DataValidationException, WdkModelException, ValidationException {
     AnswerRequest request = parseRequest(requestJson);
     String id = UUID.randomUUID().toString();
-    CacheMgr.get().getAnswerRequestCache().put(id, request);
+    User user = getSessionUser();
+    CacheMgr.get().getAnswerRequestCache().put(id, new TwoTuple<>(user.getUserId(), request));
     return Response.ok(new JSONObject().put(ID, id).toString())
         .location(getUriInfo().getAbsolutePathBuilder().build(id)).build();
   }
@@ -84,16 +87,28 @@ public class TemporaryResultService extends AbstractWdkService {
   @Path("/{id}")
   public Response getTemporaryResult(@PathParam("id") String id)
       throws RequestMisformatException, WdkModelException, DataValidationException {
-    Map<String,AnswerRequest> savedRequests = CacheMgr.get().getAnswerRequestCache();
-    AnswerRequest savedRequest = savedRequests.get(id);
-    if (savedRequest == null || savedRequest.getCreationDate().getTime() < new Date().getTime() - EXPIRATION_MILLIS) {
+
+    // get the saved request cache and look up this ID
+    Map<String,TwoTuple<Long,AnswerRequest>> savedRequests = CacheMgr.get().getAnswerRequestCache();
+    TwoTuple<Long, AnswerRequest> savedRequest = savedRequests.get(id);
+
+    // three ways this request could be expired
+    User user = null;
+    if (
+        // 1. ID invalid or no longer in cache
+        savedRequest == null ||
+        // 2. Request creation date is too long in the past
+        savedRequest.getValue().getCreationDate().getTime() < new Date().getTime() - EXPIRATION_MILLIS ||
+        // 3. User who created the request is no longer valid
+        (user = getWdkModel().getUserFactory().getUserById(savedRequest.getFirst()).orElse(null)) == null
+    ) {
       // return Not Found, but expire id first if not gone already
       if (savedRequest != null) {
         savedRequests.remove(id);
       }
       throw new NotFoundException(formatNotFound("temporary result with ID '" + id + "'"));
     }
-    return AnswerService.getAnswerResponse(getSessionUser(), savedRequest).getSecond();
+    return AnswerService.getAnswerResponse(user, savedRequest.getValue()).getSecond();
   }
 
   private AnswerRequest parseRequest(JSONObject requestJson)
