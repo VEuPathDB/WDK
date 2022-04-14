@@ -77,8 +77,7 @@ public class TemporaryResultService extends AbstractWdkService {
       throws RequestMisformatException, DataValidationException, WdkModelException, ValidationException {
     AnswerRequest request = parseRequest(requestJson);
     String id = UUID.randomUUID().toString();
-    User user = getSessionUser();
-    CacheMgr.get().getAnswerRequestCache().put(id, new TwoTuple<>(user.getUserId(), request));
+    CacheMgr.get().getAnswerRequestCache().put(id, new TwoTuple<>(getSessionUser().getUserId(), request));
     return Response.ok(new JSONObject().put(ID, id).toString())
         .location(getUriInfo().getAbsolutePathBuilder().build(id)).build();
   }
@@ -108,6 +107,8 @@ public class TemporaryResultService extends AbstractWdkService {
       }
       throw new NotFoundException(formatNotFound("temporary result with ID '" + id + "'"));
     }
+
+    // request is valid; produce result as originally requested
     return AnswerService.getAnswerResponse(user, savedRequest.getValue()).getSecond();
   }
 
