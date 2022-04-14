@@ -97,7 +97,7 @@ public class TemporaryResultService extends AbstractWdkService {
         // 1. ID invalid or no longer in cache
         savedRequest == null ||
         // 2. Request creation date is too long in the past
-        savedRequest.getValue().getCreationDate().getTime() < new Date().getTime() - EXPIRATION_MILLIS ||
+        savedRequest.getSecond().getCreationDate().getTime() < new Date().getTime() - EXPIRATION_MILLIS ||
         // 3. User who created the request is no longer valid
         (user = getWdkModel().getUserFactory().getUserById(savedRequest.getFirst()).orElse(null)) == null
     ) {
@@ -109,7 +109,7 @@ public class TemporaryResultService extends AbstractWdkService {
     }
 
     // request is valid; produce result as originally requested
-    return AnswerService.getAnswerResponse(user, savedRequest.getValue()).getSecond();
+    return AnswerService.getAnswerResponse(user, savedRequest.getSecond()).getSecond();
   }
 
   private AnswerRequest parseRequest(JSONObject requestJson)
