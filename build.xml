@@ -4,15 +4,13 @@
   <!-- oooooooooooooooooooooooooo  Dependencies  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <import file="${projectsDir}/WSF/build.xml" />
-
-
+	
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-Installation" depends="WSF-Installation,
-                                           WDK-MavenInstallation,
+  <target name="WDK-Installation" depends="WDK-MavenInstallation,
+                                           WDK/WSF-Installation,
                                            WDK/Model-Installation,
                                            WDK/Service-Installation">
     <ant target="defaultProjectInstall">
@@ -43,7 +41,14 @@
 
   <!-- ooooooooooooooooooooooo  Install Components  ooooooooooooooooooooooo -->
 
-  <target name="WDK/Model-Installation">
+	<target name="WDK/WSF-Installation">
+    <ant target="defaultComponentInstall">
+      <property name="project" value="WDK" />
+      <property name="component" value="WSF" />
+    </ant>
+  </target>
+
+	<target name="WDK/Model-Installation">
 
     <ant target="installOracleDriver" />
 
@@ -86,8 +91,7 @@
   <!-- oooooooooooooooooooooooo  Web Installation  oooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-WebInstallation" depends="WSF-WebInstallation,
-                                              GusHome,
+  <target name="WDK-WebInstallation" depends="GusHome,
                                               WDK/Service-WebInstallation">
     <echo message="." />
     <echo
