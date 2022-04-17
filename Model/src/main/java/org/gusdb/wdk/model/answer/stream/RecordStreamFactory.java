@@ -29,7 +29,7 @@ public class RecordStreamFactory {
    * <ol>
    * <li>If answerValue is a SingleRecordAnswerValue, a
    *     SingleRecordStream is returned
-   * <li>If result size of answerValue is <= passed
+   * <li>If result size of answerValue is &lt;= passed
    *     maxPageSize, then the answerValue's paging is set to that a single
    *     (first) page of that size and a PageAnswerRecordStream is returned
    * <li>Otherwise, a FileBasedRecordStream is returned

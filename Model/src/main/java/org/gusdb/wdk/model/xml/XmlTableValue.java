@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.xml;
 
 import java.util.ArrayList;
@@ -8,7 +5,6 @@ import java.util.List;
 
 /**
  * @author Jerric
- * @created Oct 11, 2005
  */
 public class XmlTableValue {
 

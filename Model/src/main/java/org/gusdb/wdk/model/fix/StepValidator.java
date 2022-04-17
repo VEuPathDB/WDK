@@ -27,12 +27,12 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 
 /**
+ * This script needs to be run after the model expender and step expender.
+ * 
+ * Just accept one model. the model is only used to provide the access to user db, the result of this
+ * program will affect all projects in that user db.
+ *
  * @author xingao
- * 
- *         this script needs to be run after the model expender & step expender.
- * 
- *         just accept one model. the model is only used to provide the access to user db, the result of this
- *         program will affect all projects in that user db.
  */
 public class StepValidator extends BaseCLI {
 

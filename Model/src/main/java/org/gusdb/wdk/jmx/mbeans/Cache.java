@@ -137,7 +137,7 @@ public class Cache extends BeanBase implements CacheMBean {
    * Disabling the caching can be useful when benchmarking
    * database and system tunings.
    *
-   * @see org.gusdb.wdk.model.config.ModelConfig#setCaching
+   * @see org.gusdb.wdk.model.config.ModelConfig#isCaching
    */
   @Override
   public void toggleWdkIsCaching() {

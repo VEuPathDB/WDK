@@ -26,8 +26,8 @@ public class TextAttributeValue extends DerivedAttributeValue {
   private String _display;
 
   /**
-   * @param attributeValueContainer
    * @param field
+   * @param container
    */
   public TextAttributeValue(TextAttributeField field, AttributeValueContainer container) {
     super(field, container);

@@ -1,6 +1,3 @@
-/**
- * @description
- */
 package org.gusdb.wdk.model.migrate;
 
 import java.lang.reflect.InvocationTargetException;
@@ -23,8 +20,6 @@ import org.json.JSONException;
 
 /**
  * @author Jerric
- * @created May 22, 2007
- * @modified May 22, 2007
  */
 public class MigratorController {
 
@@ -39,12 +34,12 @@ public class MigratorController {
    * 
    * The arguments for the command are:
    * 
-   * -model <model_name>: the name of the model to be used
+   * -model &lt;model_name>: the name of the model to be used
    * 
-   * -version <old_ver>: the version of the model to be migrated from; the
+   * -version &lt;old_ver>: the version of the model to be migrated from; the
    * version is used to determine which migration code to be executed;
    * 
-   * -schema <old_user_schema>: the old user login schema, where the user data
+   * -schema &lt;old_user_schema>: the old user login schema, where the user data
    * is migrated from
    * 
    * @param args

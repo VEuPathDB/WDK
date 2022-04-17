@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.user.User;
  * 
  * @author jerric
  */
+@Deprecated
 public interface SummaryViewHandler {
 
     /**
@@ -22,8 +23,7 @@ public interface SummaryViewHandler {
      * @param answerSpec answer spec for which to provide a model
      * @param parameters parameters passed to configure this view
      * @param user current user
-     * @param wdkModel WDK model
-     * @return model
+     * @return model for JSP to display this summary view
      * @throws WdkModelException if system exception occurs
      * @throws WdkUserException if input parameters are invalid
      */
@@ -37,7 +37,6 @@ public interface SummaryViewHandler {
      * @param answerSpec answer spec for which to provide a model
      * @param parameters parameters passed to update this view
      * @param user current user
-     * @param wdkModel WDK model
      * @return new query string to pass when forwarding to showSummaryView
      * @throws WdkModelException if system exception occurs
      * @throws WdkUserException if input parameters are invalid

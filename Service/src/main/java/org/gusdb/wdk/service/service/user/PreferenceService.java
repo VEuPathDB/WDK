@@ -42,15 +42,17 @@ public class PreferenceService extends UserService {
   }
 
   /**
-   * Web service to update preferences of existing user with those provided in the request.  Null values cause a delete of the preference
-   * @param userIdStr
-   * @param body
-   * @return - 204 - Success without content
-   * @throws WdkModelException, DataValidationException
-   * 
+   * Web service to update preferences of existing user with those provided in the request.
+   * Null values cause a delete of the preference.
+   *
    * { action: 'clear' | 'update'
    *   updates: { json object }
    * }
+   * 
+   * @param body
+   * @return 204 response - Success without content
+   * @throws WdkModelException
+   * @throws DataValidationException
    */
   @PATCH
   @Path("preferences/global")

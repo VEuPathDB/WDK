@@ -83,18 +83,12 @@ public class RecordSummaryReporter extends BaseCLI {
 
   /**
    * @param command
-   * @param description
    */
   protected RecordSummaryReporter(String command) {
     super((command == null) ? "wdkReportRecordSummary" : command,
         "Report text info in recordClasses.");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.fgputil.BaseCLI#declareOptions()
-   */
   @Override
   protected void declareOptions() {
     addSingleValueOption(ARG_PROJECT_ID, true, null,
@@ -104,11 +98,6 @@ public class RecordSummaryReporter extends BaseCLI {
         "The name of the output file.");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.fgputil.BaseCLI#invoke()
-   */
   @Override
   protected void execute() throws WdkModelException {
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);

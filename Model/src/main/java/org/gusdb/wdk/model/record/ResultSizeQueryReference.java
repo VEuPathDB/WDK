@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.record;
 
 import org.gusdb.wdk.model.Reference;
@@ -8,13 +5,11 @@ import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * <p>
- * a representation of a @{code <recordClass>/<resultSizeQueryReference>} that is a specification for a ResultSizeSqlPlugin.  
- * Has a reference to a {@link Query}
+ * a representation of a @{code &lt;recordClass>/&lt;resultSizeQueryReference>} that is a specification for a ResultSizeSqlPlugin.  
+ * Has a reference to a {@link org.gusdb.wdk.model.query.Query}
  * </p>
- * 
- * 
+ *
  * @author Steve
- * @created Mar 17, 2015
  */
 public class ResultSizeQueryReference extends Reference {
 
@@ -23,9 +18,6 @@ public class ResultSizeQueryReference extends Reference {
   private String recordShortDisplayName;
   private String recordShortDisplayNamePlural;
 
-  /**
-     * 
-     */
   public ResultSizeQueryReference() {}
 
   /**

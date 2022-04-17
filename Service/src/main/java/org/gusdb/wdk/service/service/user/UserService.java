@@ -47,8 +47,7 @@ public abstract class UserService extends AbstractWdkService {
    * Ensures the target user exists and that the session user has the
    * permissions requested.  If either condition is not true, the appropriate
    * exception (corresponding to 404 and 403 respectively) is thrown.
-   * 
-   * @param userIdStr id string of the target user
+   *
    * @param requestedAccess the access requested by the caller
    * @return a userBundle representing the target user and his relationship to the session user
    * @throws WdkModelException if error occurs creating user bundle (probably a DB problem)

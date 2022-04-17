@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.test.stress;
 
 import java.sql.ResultSet;
@@ -18,11 +15,7 @@ import org.gusdb.wdk.model.test.CommandHelper;
 import org.gusdb.wdk.model.test.stress.StressTestTask.ResultType;
 
 /**
- * @author: Jerric
- * @created: Mar 16, 2006
- * @modified by: Jerric
- * @modified at: Mar 16, 2006
- * 
+ * @author Jerric
  */
 public class StressTestAnalyzer {
 

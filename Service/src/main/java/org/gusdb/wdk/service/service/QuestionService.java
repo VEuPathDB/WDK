@@ -158,7 +158,7 @@ public class QuestionService extends AbstractWdkService {
    * <pre>
    * {
    *   "contextParamValues": {
-   *     "<each-param-name>": String (stable value for param)
+   *     "[each-param-name]": String (stable value for param)
    *   }
    * }
    * </pre>

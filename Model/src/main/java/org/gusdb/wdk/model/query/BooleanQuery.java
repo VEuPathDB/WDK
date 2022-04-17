@@ -234,7 +234,6 @@ public class BooleanQuery extends SqlQuery {
    * @param specBuilder
    * @param stepId optional step ID used to add information when logging a problem
    * @return
-   * @throws WdkModelException
    */
   public static BooleanOperator getOperator(QueryInstanceSpecBuilder specBuilder, Optional<Long> stepId) {
     return getOperator(specBuilder.get(BooleanQuery.OPERATOR_PARAM), stepId);

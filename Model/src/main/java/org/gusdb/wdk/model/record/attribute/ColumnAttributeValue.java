@@ -4,8 +4,8 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
- * An wrapper to the actual value of a {@link Column} retrieved from a
- * {@link Query}.
+ * An wrapper to the actual value of a {@link org.gusdb.wdk.model.query.Column} retrieved from a
+ * {@link org.gusdb.wdk.model.query.Query}.
  * 
  * @author Jerric Gao
  */

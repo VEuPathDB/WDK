@@ -2,7 +2,7 @@ package org.gusdb.wdk.model.config;
 
 /**
  * <p>
- * An object representation of the {@code <appDB>} tag in the
+ * An object representation of the {@code &lt;appDB>} tag in the
  * {@code model-config.xml}. The information defined in this tag is about how to
  * connect to the database which contains application data.
  * </p>

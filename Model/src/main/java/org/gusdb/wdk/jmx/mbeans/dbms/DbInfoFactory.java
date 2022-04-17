@@ -5,11 +5,11 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 public class DbInfoFactory {
 
     /**
-     * Returns an implementation of DBInfo appropriate for the given platform
+     * Returns an implementation of DBInfo appropriate for the given db
      * 
-     * @param platform platform for which DBInfo is desired
+     * @param db instance for which info should be extracted
      * @return appropriate implementation of DBInfo
-     * @throws IllegalArgumentException if no DBInfo exists for the given platform
+     * @throws IllegalArgumentException if no DBInfo exists for the given db
      */
     public static DbInfo getDbInfo(DatabaseInstance db) {
         switch (db.getConfig().getPlatformEnum()) {

@@ -24,7 +24,7 @@ public interface ColumnReporter extends ColumnToolElement<ColumnReporter>, Repor
    * Another way to set properties on this reporter (added to
    * comply with the Reporter interface).  By default, immediately
    * gets the properties from the provider and sets them using
-   * <code>setProperties(Map<String,String>)</code>.
+   * <code>setProperties(Map&lt;String,String>)</code>.
    */
   @Override
   default Reporter setProperties(PropertiesProvider props) {

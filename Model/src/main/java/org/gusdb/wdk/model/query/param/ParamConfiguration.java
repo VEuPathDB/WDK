@@ -1,6 +1,3 @@
-/**
- * @description
- */
 package org.gusdb.wdk.model.query.param;
 
 import org.gusdb.wdk.model.WdkModel;
@@ -9,11 +6,9 @@ import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * The param configuration represents a tag with boolean property named "value".
- * Currently, it is only used to map <noTranslation> tag into a object model.
+ * Currently, it is only used to map &lt;noTranslation> tag into a object model.
  * 
  * @author Jerric
- * @created Jul 5, 2007
- * @modified Jul 5, 2007
  */
 public class ParamConfiguration extends WdkModelBase {
 

@@ -10,6 +10,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
  * <p>
  * {@code UserDatasetOwner} table:
  * <table>
+ *   <caption>User Dataset Owner Columns Definition</caption>
  *   <tr>
  *     <th>Column</th>
  *     <th>Type</th>

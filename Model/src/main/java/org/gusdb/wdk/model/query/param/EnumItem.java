@@ -168,7 +168,7 @@ public class EnumItem extends WdkModelBase {
    * check if the given list of depended values are included in the declared
    * depended values.
    * 
-   * @param dependedValues
+   * @param dependedParamValues
    * @return
    */
   public boolean isValidFor(Map<String, String> dependedParamValues)

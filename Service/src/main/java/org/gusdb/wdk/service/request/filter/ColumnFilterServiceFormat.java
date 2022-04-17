@@ -9,7 +9,7 @@ import org.json.JSONObject;
 public final class ColumnFilterServiceFormat {
 
   /**
-   * Parses the given JSON configuration into a {@link StandardColumnFilterConfigSetBuilder}.
+   * Parses the given JSON configuration into a {@link ColumnFilterConfigSetBuilder}.
    *
    * @param question
    *   Question for which column filters are being configured.  Used to provide
@@ -17,7 +17,7 @@ public final class ColumnFilterServiceFormat {
    * @param config
    *   User input JSON from the HTTP API.
    *
-   * @return A constructed {@code StandardColumnFilterConfigSetBuilder} containing the
+   * @return A constructed {@code ColumnFilterConfigSetBuilder} containing the
    * config data for a legal set of columns and filters.
    *
    * @throws WdkUserException

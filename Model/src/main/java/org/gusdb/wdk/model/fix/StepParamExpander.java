@@ -64,7 +64,6 @@ public class StepParamExpander extends BaseCLI {
 
   /**
    * @param command
-   * @param description
    */
   protected StepParamExpander(String command) {
     super((command != null) ? command : "stepParamExpander",

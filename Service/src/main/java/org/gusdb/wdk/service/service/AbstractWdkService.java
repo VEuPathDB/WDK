@@ -198,7 +198,7 @@ public abstract class AbstractWdkService {
   /**
    * Returns an error context for the current request
    *
-   * @return error context for the current request
+   * @return errorLocation location error occurred
    */
   public ErrorContext getErrorContext(ErrorLocation errorLocation) {
     return getErrorContext(getRequest(), getWdkModel(), errorLocation);
@@ -209,7 +209,7 @@ public abstract class AbstractWdkService {
    *
    * @param request current HTTP servlet request
    * @param wdkModel this WDK Model
-   * @return context data for this error
+   * @return errorLocation location error occurred
    */
   public static ErrorContext getErrorContext(RequestData request, WdkModel wdkModel, ErrorLocation errorLocation) {
     return new ErrorContext(

@@ -1,9 +1,5 @@
-/**
- * @description
- */
 package org.gusdb.wdk.model.migrate;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,8 +19,6 @@ import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author Jerric
- * @created May 22, 2007
- * @modified May 22, 2007
  */
 public class Migrator1_12To1_13 implements Migrator {
 
@@ -113,14 +107,6 @@ public class Migrator1_12To1_13 implements Migrator {
 
   }
 
-  /**
-   * (non-Javadoc)
-   * 
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
-   * 
-   * @see org.gusdb.wdk.model.migrate.Migrator#migrate()
-   */
   @Override
   public void migrate(WdkModel wdkModel, CommandLine commandLine)
       throws WdkModelException, SQLException {

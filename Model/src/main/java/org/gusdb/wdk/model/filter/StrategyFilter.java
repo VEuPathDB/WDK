@@ -64,10 +64,11 @@ public class StrategyFilter extends StepFilter {
   }
 
   /**
-   * the options contains the id of the strategy chosen as the filter.
-   * @throws WdkModelException 
+   * the options contains the id of the strategy chosen as the filter
    * 
-   * @see org.gusdb.wdk.model.filter.Filter#getSql(org.gusdb.wdk.model.answer.AnswerValue, java.lang.String, java.lang.String)
+   * @throws WdkModelException
+   * 
+   * @see org.gusdb.wdk.model.filter.Filter#getSql
    */
   @Override
   public String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException {

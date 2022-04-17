@@ -18,9 +18,9 @@ import org.gusdb.wdk.model.WdkModel;
 
 
 /**
+ * Generate email lists to notify releases
+ *
  * @author xingao
- * 
- *        generate email lists to notify releases
  */
 public class EmailListsGenerator extends BaseCLI {
 
@@ -42,17 +42,11 @@ public class EmailListsGenerator extends BaseCLI {
 
   /**
    * @param command
-   * @param description
    */
   public EmailListsGenerator(String command) {
     super((command != null) ? command : "wdkGenerateEmailLists", "generate text files with emails lists for each project");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.fgputil.BaseCLI#declareOptions()
-   */
   @Override
   protected void declareOptions() {
     addSingleValueOption(ARG_PROJECT_ID, true, null, "A comma-separated"
@@ -60,11 +54,6 @@ public class EmailListsGenerator extends BaseCLI {
         + " under $GUS_HOME, where model-config.xml is stored.");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.fgputil.BaseCLI#execute()
-   */
   @Override
   protected void execute() throws Exception {
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);

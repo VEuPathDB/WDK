@@ -27,7 +27,7 @@ import org.json.JSONObject;
  * Formats WDK RecordInstance objects.  RecordInstance JSON will have the following form:
  * 
  * {
- *   id: Array<Object> (each has name (name of PK column) and value (PK column value) properties,
+ *   id: Array&lt;Object> (each has name (name of PK column) and value (PK column value) properties,
  *   attributes: { [name: String]: [value: Any] },
  *   tables: { [name: String]: [ { [name: String]: [value: Any] } ] }
  * }

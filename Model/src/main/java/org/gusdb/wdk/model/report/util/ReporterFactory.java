@@ -15,7 +15,7 @@ import org.json.JSONObject;
 
 /**
  * Provides methods to get a configured reporter using the passed AnswerValue and configuration.  Two options
- * exist for configuration: the (legacy) Map<String,String> or a JSON Object.  You may also specify start
+ * exist for configuration: the (legacy) Map&lt;String,String> or a JSON Object.  You may also specify start
  * and end indexes for the result if a subset of results is desired.
  * 
  * @author rdoherty
