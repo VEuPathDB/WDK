@@ -71,7 +71,7 @@ public class Utilities {
    * support unlimited number of columns since each column will be stored in an
    * individual field in the dataset, basket, and favorite tables.
    */
-  public static final int MAX_PK_COLUMN_COUNT = 3;
+  public static final int MAX_PK_COLUMN_COUNT = 4;
 
   public static final int MAX_PK_COLUMN_VALUE_SIZE = 1999;
 
