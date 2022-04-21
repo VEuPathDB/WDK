@@ -4,8 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.URI;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -52,9 +58,27 @@ public class WsfRemoteClient implements WsfClient {
     form.param(WsfRequest.PARAM_REQUEST, request.toString());
 
     // invoke service
-    Response response = client.target(serviceURI).property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE).request(
-        MediaType.APPLICATION_OCTET_STREAM_TYPE).post(
-        Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE));
+    Response response;
+    try {
+      final Optional<Duration> timeout = request.getRemoteExecuteTimeout();
+      final Future<Response> responseFuture = client.target(serviceURI)
+          .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.TRUE)
+          .request(MediaType.APPLICATION_OCTET_STREAM_TYPE)
+          .async()
+          .post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE));
+      if (timeout.isPresent()) {
+        response = responseFuture.get(timeout.get().toMillis(), TimeUnit.MILLISECONDS);
+      } else {
+        response = responseFuture.get();
+      }
+    } catch (InterruptedException ex) {
+      LOG.warn(String.format("Interrupted while invoking service at %s.", serviceURI.toString()), ex);
+      Thread.currentThread().interrupt();
+      throw new ClientModelException(ex);
+    } catch (ExecutionException | TimeoutException ex) {
+      LOG.warn(String.format("Exception while invoking service at %s.", serviceURI.toString()), ex);
+      throw new ClientModelException(ex);
+    }
     int status = response.getStatus();
     if (status >= 400)
       throw new ClientModelException("Request failed with status code: " + status);

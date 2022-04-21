@@ -5,6 +5,7 @@ import java.util.Map;
 public interface WsfRequest {
 
   String PARAM_REQUEST = "request";
+  String REMOTE_EXECUTE_TIMEOUT_ISO_8601_CONTEXT_KEY = "timeout_iso_8601";
 
   /**
    * @return the projectId

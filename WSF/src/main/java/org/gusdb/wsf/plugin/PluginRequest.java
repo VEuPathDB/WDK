@@ -1,11 +1,7 @@
 package org.gusdb.wsf.plugin;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.Duration;
+import java.util.*;
 
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wsf.common.WsfRequest;
@@ -211,6 +207,21 @@ public class PluginRequest implements WsfRequest {
    */
   public void setContext(Map<String, String> context) {
     this._context = new HashMap<>(context);
+  }
+
+  public void appendContext(String key, String value) {
+    this._context = new HashMap<>(_context);
+    this._context.put(key, value);
+  }
+
+  public void setContextTimeout(Duration value) {
+    this.appendContext(REMOTE_EXECUTE_TIMEOUT_ISO_8601_CONTEXT_KEY, value.toString());
+  }
+
+  public Optional<Duration> getRemoteExecuteTimeout() {
+    return Optional.ofNullable(this._context.get(REMOTE_EXECUTE_TIMEOUT_ISO_8601_CONTEXT_KEY))
+        .map(Duration::parse)
+        .filter(duration -> !duration.isZero());
   }
 
 }
