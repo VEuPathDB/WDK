@@ -30,6 +30,8 @@ import org.gusdb.wdk.controller.filter.CheckLoginFilterShared;
 @Priority(200)
 public class CheckLoginFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
+  private static final String PROMETHEUS_ENDPOINT_PATH = "system/metrics/prometheus";
+
   public static final String SESSION_COOKIE_TO_SET = "sessionCookieToSet";
 
   @Context
@@ -44,6 +46,9 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
 
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
+
+    // skip user check for prometheus metrics endpoint to avoid a guest user being created for every request
+    if (requestContext.getUriInfo().getPath().equals(PROMETHEUS_ENDPOINT_PATH)) return;
 
     ApplicationContext context = ContextLookup.getApplicationContext(_servletContext);
     RequestData request = ContextLookup.getRequest(_servletRequest.get(), _grizzlyRequest.get());
