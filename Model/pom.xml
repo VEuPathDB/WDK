@@ -16,23 +16,7 @@
 
     <dependency>
       <groupId>org.gusdb</groupId>
-      <artifactId>wsf-client</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>javax.servlet-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.gusdb</groupId>
-      <artifactId>wsf-common</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.gusdb</groupId>
-      <artifactId>wsf-plugin</artifactId>
+      <artifactId>wdk-wsf</artifactId>
     </dependency>
 
     <dependency>
