@@ -1,15 +1,7 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.test.stress;
 
-
 /**
- * @author: Jerric
- * @created: Mar 14, 2006
- * @modified by: Jerric
- * @modified at: Mar 31, 2006
- * 
+ * @author Jerric
  */
 public class StressTestTask {
 

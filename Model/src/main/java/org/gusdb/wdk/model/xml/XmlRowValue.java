@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.xml;
 
 import java.util.LinkedHashMap;
@@ -10,7 +7,6 @@ import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author Jerric
- * @created Oct 14, 2005
  */
 public class XmlRowValue {
 

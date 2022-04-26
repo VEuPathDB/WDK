@@ -11,7 +11,6 @@ import org.gusdb.wdk.model.record.Field;
 
 /**
  * @author Jerric
- * @created Oct 11, 2005
  */
 public class XmlTableField extends Field {
 

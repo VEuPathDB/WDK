@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.xml;
 
 import java.util.ArrayList;
@@ -12,7 +9,6 @@ import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author Jerric
- * @created Oct 11, 2005
  */
 public class XmlAnswerValue {
 

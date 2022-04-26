@@ -52,11 +52,7 @@ import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 
 /**
- * @author: Jerric
- * @created: Mar 15, 2006
- * @modified by: Jerric
- * @modified at: Mar 15, 2006
- * 
+ * @author Jerric
  */
 public class StressTester {
 

@@ -22,7 +22,6 @@ import org.gusdb.wdk.model.WdkModelText;
 
 /**
  * @author Jerric
- * @created Oct 11, 2005
  */
 public class XmlQuestion extends WdkModelBase {
 
@@ -113,8 +112,8 @@ public class XmlQuestion extends WdkModelBase {
     }
 
     /**
-     * @param summaryAttributesRef
-     *                The summaryAttributesRef to set.
+     * @param summaryAttributeNames
+     *                The summaryAttributes to set.
      */
     public void setSummaryAttributes(String summaryAttributeNames) {
         _summaryAttributeNames = summaryAttributeNames;

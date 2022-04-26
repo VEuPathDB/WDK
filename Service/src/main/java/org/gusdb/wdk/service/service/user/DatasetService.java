@@ -46,9 +46,9 @@ public class DatasetService extends UserService {
    * <pre>
    * {
    *   "displayName": String (optional),
-   *   "sourceType": Enum<IdList,Basket,Strategy,File> // more types to come...
+   *   "sourceType": Enum&lt;IdList,Basket,Strategy,File> // more types to come...
    *   "sourceContent": {
-   *     "ids": Array<String>,        // only for IdList
+   *     "ids": Array&lt;String>,        // only for IdList
    *     "basketName": String,        // record class full name, only for basket
    *     "strategyId": Number,        // strategy id, only for strategy
    *     "temporaryFileId": String,   // temporary file id, only for file

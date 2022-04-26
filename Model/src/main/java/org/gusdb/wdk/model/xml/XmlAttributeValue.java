@@ -1,13 +1,9 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.xml;
 
 import org.gusdb.wdk.model.Utilities;
 
 /**
  * @author Jerric
- * @created Oct 11, 2005
  */
 public class XmlAttributeValue {
 

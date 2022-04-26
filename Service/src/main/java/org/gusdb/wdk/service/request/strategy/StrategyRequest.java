@@ -58,7 +58,7 @@ public class StrategyRequest {
    * @param description
    * @param isSaved
    * @param isPublic
-   * @param stepTree
+   * @param rootStepId
    */
   public StrategyRequest(
       String name,

@@ -54,7 +54,7 @@ public class TableRowInterfaces {
      * be calling it synchronously with different row objects.
      *
      * @param nextRow object representing a row in the DB
-     * @return result of processing- essentially a tuple of <whether object should be written, updated object>
+     * @return result of processing- essentially a tuple of &lt;whether_object_should_be_written, updated_object>
      * @throws Exception if error occurs while processing row
      */
     RowResult<T> processRecord(T nextRow) throws Exception;

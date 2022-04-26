@@ -132,9 +132,6 @@ public class DateParam extends Param {
     return new DateParam(this);
   }
 
-  /**
-   * @inheritDoc
-   */
   @Override
   protected ParamValidity validateValue(PartiallyValidatedStableValues contextParamValues, ValidationLevel level) {
 

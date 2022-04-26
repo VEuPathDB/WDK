@@ -64,7 +64,7 @@ public class FavoriteRequests {
   public static class FavoriteActions extends PatchMap<ActionType, Long> {
 
     /**
-     * Creates set of actions, each associated with a list of favorite ids
+     * Creates set of actions, each associated with a list of favorite IDs
      * <p>
      * Input Format:
      * <pre>
@@ -75,7 +75,6 @@ public class FavoriteRequests {
      * </pre>
      *
      * @param json input object
-     * @return parsed actions to perform on IDs
      * @throws DataValidationException
      * @throws WdkModelException
      */

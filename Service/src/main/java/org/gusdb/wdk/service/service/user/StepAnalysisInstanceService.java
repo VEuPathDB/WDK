@@ -108,10 +108,10 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
    * Create a new step analysis; expects JSON in the following format:
    * {
    *   analysisName: string
-   *   parameters:   object<string,string>
+   *   parameters:   object&gt;string,string>
    *   displayName?: string
    * }
-   * @param body input JSON string
+   * @param json input JSON string
    * @return Details of the newly created step analysis instance as JSON
    */
   @POST

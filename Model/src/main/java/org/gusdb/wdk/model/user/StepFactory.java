@@ -1162,8 +1162,8 @@ public class StepFactory {
    * Transfers ownership of all the strategies belonging to one user to another
    * user.
    *
-   * @param fromUser user strats will be transferred from
-   * @param toUser  user strats will be transferred to
+   * @param guestUser user strats will be transferred from
+   * @param registeredUser  user strats will be transferred to
    * @throws WdkModelException
    */
   public void transferStrategyOwnership(User guestUser, User registeredUser) throws WdkModelException {

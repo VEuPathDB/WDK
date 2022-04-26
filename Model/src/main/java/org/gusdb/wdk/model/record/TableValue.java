@@ -25,10 +25,9 @@ import org.gusdb.wdk.model.record.attribute.AttributeValue;
  * id query, and then the query will be executed in a "bulk" mode, and the table
  * value object cannot be used (because we don't want to cache all that many
  * values). the external program is responsible for combining the table query
- * with the sorted & paged id query, and read the values directly.
+ * with the sorted and paged id query, and read the values directly.
  * 
  * @author jerric
- * 
  */
 public class TableValue implements Iterable<TableValueRow> {
 

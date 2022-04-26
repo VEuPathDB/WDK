@@ -12,7 +12,6 @@ import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author Jerric
- * @created Oct 14, 2005
  */
 public class XmlRecordClassSet extends WdkModelBase implements ModelSetI<XmlRecordClass> {
 

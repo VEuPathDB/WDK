@@ -11,7 +11,6 @@ import org.gusdb.fgputil.FormatUtil.Style;
  * etc.
  * 
  * @author Jerric
- * @modified Jan 6, 2006
  */
 public class WdkUserException extends WdkException {
 

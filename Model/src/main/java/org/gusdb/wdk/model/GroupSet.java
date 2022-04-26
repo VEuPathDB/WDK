@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model;
 
 import java.util.ArrayList;
@@ -11,9 +8,7 @@ import java.util.Map;
 /**
  * A model set used to contain {@code <group>} tags.
  * 
- * @author: Jerric
- * @created: Mar 1, 2007
- * @updated: Mar 1, 2007
+ * @author Jerric
  */
 public class GroupSet extends WdkModelBase implements ModelSetI<Group> {
 

@@ -13,7 +13,7 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.wdk.model.WdkUserException;
 
 /**
- * A special case of TreeNode<OntologyNode> that represents the root of an
+ * A special case of TreeNode&lt;OntologyNode> that represents the root of an
  * ontology tree.
  * 
  * @author rdoherty

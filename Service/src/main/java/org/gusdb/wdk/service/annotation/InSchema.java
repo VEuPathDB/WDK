@@ -16,11 +16,9 @@ public @interface InSchema {
    *   Paths are relative to the value source directory.
    * </p>
    *
-   * <p>
-   *   <pre>
-   *     &#64;InSchema("users.idList.json")
-   *   </pre>
-   * </p>
+   * <pre>
+   *   &#64;InSchema("users.idList.json")
+   * </pre>
    */
   String value();
 }

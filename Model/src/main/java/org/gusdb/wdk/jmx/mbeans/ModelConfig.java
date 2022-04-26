@@ -7,8 +7,8 @@ package org.gusdb.wdk.jmx.mbeans;
  * that the WDK may have added or removed or even changed some values
  * relative to the state on the filesystem.
  *
- * @see org.gusdb.wdk.jmx.mbeans.AbstractConfig#setValuesFromGetters
- * @see org.gusdb.wdk.model.ModelConfig
+ * @see org.gusdb.wdk.jmx.mbeans.AbstractAttributesBean#setValuesFromGetters
+ * @see org.gusdb.wdk.model.config.ModelConfig
  * @see org.gusdb.wdk.model.config.ModelConfigUserDB
  * @see org.gusdb.wdk.model.config.ModelConfigAppDB
  */

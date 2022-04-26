@@ -385,8 +385,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
    *
    * @param instance instance for this result
    * @return result
-   * @throws WdkModelException if unable to fetch 
-   * @throws WdkUserException
+   * @throws WdkModelException if unable to fetch
    */
   @Override
   public Optional<ExecutionResult> getExecutionResult(RunnableObj<StepAnalysisInstance> instance) throws WdkModelException {

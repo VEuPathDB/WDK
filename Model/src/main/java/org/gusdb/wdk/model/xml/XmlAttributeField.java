@@ -10,7 +10,6 @@ import java.util.Map;
 
 /**
  * @author Jerric
- * @since Oct 11, 2005
  */
 public class XmlAttributeField extends AttributeField {
 

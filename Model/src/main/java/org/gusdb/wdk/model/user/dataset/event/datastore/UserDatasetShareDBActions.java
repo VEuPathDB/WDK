@@ -11,6 +11,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
  * <p>
  * {@code UserDatasetSharedWith} table:
  * <table>
+ *   <caption>User Dataset Sharing Columns Definition</caption>
  *   <tr>
  *     <th>Column</th>
  *     <th>Type</th>

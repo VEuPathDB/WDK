@@ -122,7 +122,7 @@ public class WdkServiceApplication extends Application {
    * Convenience method for subclasses to filter WDK services by class
    * object, either for removal or replacement
    * 
-   * @param classes array of classes which should not be added to the application
+   * @param classesToFilterOut array of classes which should not be added to the application
    * @return predicate which filters those classes
    */
   protected static Predicate<Class<?>> acceptAllExcept(Class<?>... classesToFilterOut) {

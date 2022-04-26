@@ -24,7 +24,7 @@ import org.json.JSONObject;
  * Note there are subtle differences between this JSON format and the one
  * handled by AnswerSpecServiceFormat (in WDK/Service).
  * 
- * @rdoherty
+ * @author rdoherty
  */
 public class ParamsAndFiltersDbColumnFormat {
 

@@ -18,11 +18,11 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 
 /**
+ * This script needs to be run after the model expander and step expander.
+ *
+ * Prints a report of invalid steps
+ *
  * @author steve fischer
- * 
- *         this script needs to be run after the model expander & step expander.
- * 
- *         prints a report of invalid steps
  */
 public class InvalidStepReporter extends BaseCLI {
 

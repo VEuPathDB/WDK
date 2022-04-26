@@ -16,7 +16,7 @@ import org.gusdb.wdk.model.config.ModelConfigParser;
 /**
  * Runs an SQL script against a WDK app, user, or account database. Simply run:
  * 
- * > fgpJava org.gusdb.wdk.model.WdkSqlScriptRunner <...args>
+ * > fgpJava org.gusdb.wdk.model.WdkSqlScriptRunner (...args)
  * 
  * @author rdoherty
  */

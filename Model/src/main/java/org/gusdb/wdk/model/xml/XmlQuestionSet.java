@@ -13,7 +13,6 @@ import org.gusdb.wdk.model.WdkModelText;
 
 /**
  * @author Jerric
- * @created Oct 14, 2005
  */
 public class XmlQuestionSet extends WdkModelBase implements ModelSetI<XmlQuestion> {
 

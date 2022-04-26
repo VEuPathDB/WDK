@@ -17,7 +17,6 @@ import org.gusdb.fgputil.Named.NamedObject;
  * for the WDK system.
  * 
  * @author Jerric
- * @modified Jan 6, 2006 - Jerric add a property for the name of query history table
  */
 public class ModelConfig implements OAuthConfig {
 

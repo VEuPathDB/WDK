@@ -269,10 +269,10 @@ public class UserFactory {
   }
 
   /**
-   * Save the temporary (in-memory guest) user into database, and initialize its remaining fields.
+   * Create an unregistered user of the specified type and persist in the database
    * 
-   * @param user guest user to persist
-   * @return the guest user with remaining fields populated
+   * @param userType unregistered user type to persist
+   * @return new unregistered user with remaining fields populated
    * @throws WdkRuntimeException if unable to persist temporary user
    */
   public UnregisteredUser createUnregistedUser(UnregisteredUserType userType) throws WdkRuntimeException {

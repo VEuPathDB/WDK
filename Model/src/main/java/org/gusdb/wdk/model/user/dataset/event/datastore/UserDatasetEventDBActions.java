@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEventType;
  * <p>
  * {@code UserDatasetEvent} Table:
  * <table>
+ *   <caption>User Dataset Event Columns Definition</caption>
  *   <tr>
  *     <th>Column</th>
  *     <th>Type</th>

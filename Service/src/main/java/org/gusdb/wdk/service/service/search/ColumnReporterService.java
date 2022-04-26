@@ -127,10 +127,10 @@ public class ColumnReporterService extends ColumnToolService {
   @Consumes(MediaType.APPLICATION_JSON)
   public StreamingOutput runReporter(
     @PathParam(REPORT_NAME_PATH_PARAM) final String toolName,
-    final String requestStr
+    final String requestBody
   ) throws WdkModelException, WdkUserException, DataValidationException {
     try {
-      JSONObject requestJson = new JSONObject(requestStr);
+      JSONObject requestJson = new JSONObject(requestBody);
 
       // try to find and create a column reporter for this tool
       //   (could validate this after answer spec, etc. but cheap and feel this error should be emitted first)

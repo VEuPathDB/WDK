@@ -24,14 +24,14 @@ import org.apache.log4j.Logger;
  * the definition of the servlet.  For example:</p>
  * 
  * <pre>
- * <filter>
- *   <filter-name>httpHeaderLogger</filter-name>
- *   <filter-class>org.gusdb.wdk.controller.filter.HttpHeaderLoggerFilter</filter-class>
- * </filter>
- * <filter-mapping>
- *   <filter-name>httpHeaderLogger</filter-name>
- *   <url-pattern>*.do</url-pattern>
- * </filter-mapping>
+ * &lt;filter>
+ *   &lt;filter-name>httpHeaderLogger&lt;/filter-name>
+ *   &lt;filter-class>org.gusdb.wdk.controller.filter.HttpHeaderLoggerFilter&lt;/filter-class>
+ * &lt;/filter>
+ * &lt;filter-mapping>
+ *   &lt;filter-name>httpHeaderLogger&lt;/filter-name>
+ *   &lt;url-pattern>*.do&lt;/url-pattern>
+ * &lt;/filter-mapping>
  * </pre>
  * 
  * @author rdoherty
