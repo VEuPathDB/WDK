@@ -39,7 +39,7 @@ import org.json.JSONObject;
  *     parameters: Object,
  *     filters: Array,
  *     viewFilters: Array,
- *     columnFilters: Map<String,Map<String,Array<Object>>
+ *     columnFilters: Map&lt;String,Map&lt;String,Array&lt;Object>>
  *     legacyFilter: String,
  *     wdkWeight: Number
  *   },

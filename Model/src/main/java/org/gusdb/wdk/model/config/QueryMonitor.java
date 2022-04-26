@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.config;
 
 import java.util.LinkedHashSet;
@@ -10,8 +7,8 @@ import java.util.regex.Pattern;
 import org.gusdb.fgputil.db.slowquery.QueryLogConfig;
 
 /**
- * An object representation of the <queryMonitor> tag in the model-config.xml.
- * it controls the logging of slow queries & broken queries.
+ * An object representation of the &lt;queryMonitor> tag in the model-config.xml.
+ * it controls the logging of slow queries and broken queries.
  * 
  * When an SQL statement runs longer than broken threshold, it doesn't really mean the SQL
  * is failed, it's just extremely slow, and need to be fixed. If such a super

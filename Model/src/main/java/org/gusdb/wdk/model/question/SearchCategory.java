@@ -15,12 +15,11 @@ import org.gusdb.wdk.model.WdkModelText;
 /**
  * The SearchCategory is used to group questions into tree structure, and it is
  * used in the search menu, web service list, frontpage bubbles etc.
- * 
+ *
  * Currently, due to the implementation limitation on the add step popup, the
  * search category can have at most 3 levels deep.
- * 
+ *
  * @author jerric
- * 
  */
 public class SearchCategory extends WdkModelBase {
 
@@ -256,7 +255,7 @@ public class SearchCategory extends WdkModelBase {
   
   /**
    * an alternate means to build the tree
-   * @param kids
+   * @param kid
    */
   public void addChild(SearchCategory kid) {
       _children.put(kid.getName(), kid);

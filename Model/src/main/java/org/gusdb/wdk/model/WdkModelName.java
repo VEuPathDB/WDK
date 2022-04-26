@@ -1,14 +1,10 @@
-/**
- * 
- */
 package org.gusdb.wdk.model;
 
 /**
- * An object representation of the <modelName> tag in the WDK model file. it
+ * An object representation of the &lt;modelName> tag in the WDK model file. it
  * defines the project name, version, and other release information.
  * 
  * @author Jerric
- * 
  */
 public class WdkModelName extends WdkModelBase {
 

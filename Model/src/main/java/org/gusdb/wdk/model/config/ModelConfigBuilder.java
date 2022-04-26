@@ -281,7 +281,7 @@ public class ModelConfigBuilder {
   }
 
   /**
-   * @param _oauthUrl OAuth2 client ID to use for authentication
+   * @param oauthClientId OAuth2 client ID to use for authentication
    * (used only if authentication method is OAUTH2)
    */
   public void setOauthClientId(String oauthClientId) {
@@ -289,7 +289,7 @@ public class ModelConfigBuilder {
   }
 
   /**
-   * @param _oauthUrl OAuth2 client secret to use for authentication
+   * @param oauthClientSecret OAuth2 client secret to use for authentication
    * (used only if authentication method is OAUTH2)
    */
   public void setOauthClientSecret(String oauthClientSecret) {
@@ -321,8 +321,7 @@ public class ModelConfigBuilder {
   }
 
   /**
-   * @param _secretKeyFile
-   *          the secretKeyFile to set
+   * @param useWeights whether to use weights
    */
   public void setUseWeights(boolean useWeights) {
     _useWeights = useWeights;

@@ -18,7 +18,7 @@ import static java.util.Objects.isNull;
  * defined, otherwise the default of type and width will be used; if your actual
  * result is larger than that, the value will be truncated.
  * <p>
- * If you don't specify an web service URL in the <processQuery> tag, the
+ * If you don't specify an web service URL in the &lt;processQuery> tag, the
  * default web service url in model-config.xml will be used.
  * <p>
  * If the local flag is true, WDK assumes that the WSF service is installed in

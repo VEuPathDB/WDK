@@ -24,7 +24,7 @@ import org.gusdb.wdk.model.report.DynamicAttributeReporterReference;
 
 /**
  * <p>
- * an object representation of the @{code <recordClass>/<attributeQuery>}, it
+ * an object representation of the @{code &lt;recordClass>/&lt;attributeQuery>}, it
  * provides a reference to an attribute {@link Query}, and
  * {@link AttributeField}s can be defined in this tag.
  * </p>
@@ -37,19 +37,18 @@ import org.gusdb.wdk.model.report.DynamicAttributeReporterReference;
  * </p>
  * 
  * <p>
- * The attribute {@link Query> must also have all the primary key
+ * The attribute {@link Query} must also have all the primary key
  * {@link Column}s defined, but defining a {@link ColumnAttributeField} for
  * those columns is optional.
  * </p>
  * 
  * <p>
  * At runtime, the attribute query will be used by WDK in two contexts: on
- * summary page & on record page. Please refer to the {@link Query} class for
+ * summary page and on record page. Please refer to the {@link Query} class for
  * how to define attribute queries.
  * </p>
  * 
  * @author Jerric
- * @created Jan 18, 2006
  */
 public class AttributeQueryReference extends Reference {
 

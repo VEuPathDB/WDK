@@ -12,11 +12,10 @@ import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam.SelectMode;
 
 /**
- * An object representation of a <paramRef> tag, It is used in query and
+ * An object representation of a &lt;paramRef> tag, It is used in query and
  * question tag to reference a param, and provide customization to the param.
  * 
  * @author Jerric
- * @created Feb 16, 2006
  */
 public class ParamReference extends Reference {
 

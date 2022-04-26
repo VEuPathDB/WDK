@@ -5,16 +5,14 @@ import java.util.List;
 
 /**
  * <p>
- * Currently, a group is only used to group {@link Param}s together in the
+ * Currently, a group is only used to group {@link org.gusdb.wdk.model.query.param.Param}s together in the
  * question page for display/layout purpose.
  * </p>
  * 
- * <p>If a {@link Param} is not assigned to any group, it will be assigned to the
+ * <p>If a {@link org.gusdb.wdk.model.query.param.Param} is not assigned to any group, it will be assigned to the
  * default {@link Group#Empty} group.</p>
  * 
- * @author: xingao
- * @created: Mar 1, 2007
- * @updated: Mar 1, 2007
+ * @author xingao
  */
 public class Group extends WdkModelBase {
 

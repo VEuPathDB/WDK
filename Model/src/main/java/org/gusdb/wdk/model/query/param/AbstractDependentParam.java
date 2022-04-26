@@ -48,7 +48,7 @@ public abstract class AbstractDependentParam extends Param {
       SelectMode sanitySelectMode) throws WdkModelException;
 
   /**
-   * A list of the <query> objects used by this parameter.
+   * A list of the &lt;query> objects used by this parameter.
    */
   public abstract Set<String> getContainedQueryFullNames();
 

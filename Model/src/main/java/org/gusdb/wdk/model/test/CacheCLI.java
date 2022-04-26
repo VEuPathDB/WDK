@@ -40,7 +40,6 @@ public class CacheCLI extends BaseCLI {
 
     /**
      * @param command
-     * @param description
      */
     protected CacheCLI(String command) {
         super((command == null) ? "wdkCache" : command,

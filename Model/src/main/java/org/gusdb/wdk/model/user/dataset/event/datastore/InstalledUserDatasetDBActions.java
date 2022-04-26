@@ -11,6 +11,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
  * <p>
  * {@code InstalledUserDataset} table:
  * <table>
+ *   <caption>User Dataset Columns Definition</caption>
  *   <tr>
  *     <th>Column</th>
  *     <th>Type</th>

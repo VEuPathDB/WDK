@@ -136,8 +136,8 @@ import org.xml.sax.SAXException;
  *
  * <p>
  * First, the parser will start from the top level model file, and get sub-model files from the
- * {@code <import>} tag. currently, we only support {@code <import>} in the top level model file, and
- * sub-model file cannot have {@code <import>} to other sub-models.
+ * {@code &lt;import>} tag. currently, we only support {@code &lt;import>} in the top level model file, and
+ * sub-model file cannot have {@code &lt;import>} to other sub-models.
  * </p>
  *
  * <p>
@@ -159,12 +159,12 @@ import org.xml.sax.SAXException;
  *
  * <p>
  * Next, a DOM will be created for each top level and sub-model, and DOM of sub-model will be injected into
- * top level model. the {@code <wdkModel>} root tag in each sub-model will be ignored, but all its child
- * elements will be inserted into the {@code <wdkModel>} in the top level DOM.
+ * top level model. the {@code &lt;wdkModel>} root tag in each sub-model will be ignored, but all its child
+ * elements will be inserted into the {@code &lt;wdkModel>} in the top level DOM.
  * </p>
  *
  * <p>
- * Next, the DOM will be streamed into Apache {@link org.apache.commons.digester.Digester}, and a
+ * Next, the DOM will be streamed into Apache {@link org.apache.commons.digester3.Digester}, and a
  * {@link WdkModel} object will be created.
  * </p>
  *
@@ -178,9 +178,9 @@ import org.xml.sax.SAXException;
  * <p>
  * Lastly, {@link WdkModel#resolveReferences} will be called and object references will be resolved, for
  * example, a {@link Question} object will have a reference to {@link RecordClass} object. In certain cases, a
- * clone will be created, such as a {@link Question will have a copy of the ID {@link Query}, and a
+ * clone will be created, such as a {@link Question} will have a copy of the ID {@link Query}, and a
  * {@link Query} will have a local copy of all the {@link Param}s because the properties of a {@link Param}
- * can be overriden in the {@code <paramRef>} inside of {@code <question>, <sqlQuery>, and <processQuery>}.
+ * can be overriden in the {@code &lt;paramRef>} inside of {@code &lt;question>, &lt;sqlQuery>, and &lt;processQuery>}.
  * </p>
  *
  * @author jerric

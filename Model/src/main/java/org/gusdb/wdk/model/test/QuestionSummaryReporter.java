@@ -96,7 +96,6 @@ public class QuestionSummaryReporter extends BaseCLI {
 
   /**
    * @param command
-   * @param description
    */
   protected QuestionSummaryReporter(String command) {
     super((command == null) ? "wdkReportQuestionSummary" : command,

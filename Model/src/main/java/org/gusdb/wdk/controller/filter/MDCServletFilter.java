@@ -24,15 +24,17 @@ import org.gusdb.fgputil.logging.ThreadLocalLoggingVars;
  * 
  * To use this filter, add the following to web.xml:
  * 
- *   <filter>
- *     <filter-name>MDCServletFilter</filter-name>
- *     <filter-class>org.gusdb.wdk.controller.filter.MDCServletFilter</filter-class>
- *   </filter>
- *   <filter-mapping>
- *     <filter-name>MDCServletFilter</filter-name>
- *     <url-pattern>/*</url-pattern>
- *   </filter-mapping>
- * 
+ * <pre>
+ *   &lt;filter>
+ *     &lt;filter-name>MDCServletFilter&lt;/filter-name>
+ *     &lt;filter-class>org.gusdb.wdk.controller.filter.MDCServletFilter&lt;/filter-class>
+ *   &lt;/filter>
+ *   &lt;filter-mapping>
+ *     &lt;filter-name>MDCServletFilter&lt;/filter-name>
+ *     &lt;url-pattern>/*&lt;/url-pattern>
+ *   &lt;/filter-mapping>
+ * </pre>
+ *
  * Then use the above properties as %X{param} in your log4j configuration.  For
  * example, in log4j.properties:
  * 

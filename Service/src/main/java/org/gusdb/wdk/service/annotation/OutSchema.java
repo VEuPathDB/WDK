@@ -1,6 +1,5 @@
 package org.gusdb.wdk.service.annotation;
 
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -16,11 +15,9 @@ public @interface OutSchema {
    *   Paths are relative to the value source directory.
    * </p>
    *
-   * <p>
-   *   <pre>
-   *     &#64;InSchema("users.idList.json")
-   *   </pre>
-   * </p>
+   * <pre>
+   *   &#64;InSchema("users.idList.json")
+   * </pre>
    */
   String value();
 }

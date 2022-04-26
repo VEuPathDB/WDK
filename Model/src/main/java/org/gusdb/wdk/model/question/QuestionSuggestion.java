@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.question;
 
 import org.gusdb.wdk.model.WdkModelBase;
@@ -13,16 +10,11 @@ public class QuestionSuggestion extends WdkModelBase {
 
   private String _newBuild;
   private String _reviseBuild;
-  /**
-   * 
-   */
+
   public QuestionSuggestion() {
-    // TODO Auto-generated constructor stub
+    // needed by digester
   }
 
-  /**
-   * @param base
-   */
   public QuestionSuggestion(QuestionSuggestion suggestion) {
     super(suggestion);
     this._newBuild = suggestion._newBuild;

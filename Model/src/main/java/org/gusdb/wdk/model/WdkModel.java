@@ -536,7 +536,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   /**
    * This method should happen after the resolveReferences, since projectId is set by this method from
-   * modelConfig <- I am a horrible comment, explore later (resolveReferences is called in this method)
+   * modelConfig &lt;-- I am a horrible comment, explore later (resolveReferences is called in this method)
    */
   public void configure(ModelConfig modelConfig) throws WdkModelException {
 

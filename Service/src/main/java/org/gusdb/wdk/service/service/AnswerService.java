@@ -227,14 +227,12 @@ public class AnswerService extends AbstractWdkService {
   }
 
   /**
-   * {@code GET} form of the service method {@link
-   * #buildDefaultReporterResult(JSONObject)}.
+   * {@code GET} form of the service method {@link #createStandardReportAnswer(JSONObject)}.
    * <p>
    * This method is required because of Jersey's route matching trying to run
    * {@code GET} requests through the {@code buildDefaultReporterResult} method.
    *
-   * @see #getReport(String)
-   * @see #buildDefaultReporterResult(JSONObject)
+   * @see #createStandardReportAnswer(JSONObject)
    */
   @GET
   @Path(STANDARD_REPORT_SEGMENT)
@@ -246,10 +244,10 @@ public class AnswerService extends AbstractWdkService {
   }
 
   /**
-   * {@code GET} form of the {@link #buildResult(String, JSONObject)} service
+   * {@code GET} form of the {@link #createCustomReportAnswer(String, JSONObject)} service
    * method.
    *
-   * @see #buildResult(String, JSONObject)
+   * @see #createCustomReportAnswer(String, JSONObject)
    */
   @GET
   @Path(CUSTOM_REPORT_SEGMENT)
@@ -307,7 +305,7 @@ public class AnswerService extends AbstractWdkService {
         .getOrThrow(spec -> new DataValidationException(spec.getValidationBundle()));
   }
 
-  // TODO:  now that this method is public, should find a better place for it
+  // TODO: now that this method is public, should find a better place for it
   public static StepContainer loadContainer(AnswerSpecBuilder specBuilder,
       WdkModel wdkModel, User sessionUser) throws WdkModelException, DataValidationException {
 

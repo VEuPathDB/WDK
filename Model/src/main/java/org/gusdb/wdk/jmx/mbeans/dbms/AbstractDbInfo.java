@@ -206,7 +206,7 @@ public abstract class AbstractDbInfo implements DbInfo {
     * add an 'isValid' column with one of the follow values:
     * 
     * 0 if the link is valid. More precisely, the query
-    * 'select 1 from dual@<link>' returns a row.
+    * 'select 1 from dual[@dblink]' returns a row.
     *
     * 1 if the link is invalid. More precisely, if the link test throws an SqlException, as
     * is typical for bad username/password or when the host name could not be resolved.

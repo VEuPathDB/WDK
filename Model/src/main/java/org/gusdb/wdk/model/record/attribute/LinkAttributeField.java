@@ -13,9 +13,9 @@ import org.gusdb.wdk.model.record.RecordClass;
 /**
  * <p>
  * This is an {@link AttributeField} that will be rendered as hyper links on the
- * website. You can define your url in the {@code <url>} tag of this field, and
- * the the content in @{code <displayText>} will be rendered as display inside
- * of {@code <a></a>}.
+ * website. You can define your url in the {@code &lt;url>} tag of this field, and
+ * the the content in @{code &lt;displayText>} will be rendered as display inside
+ * an anchor link.
  * </p>
  *
  * <p>

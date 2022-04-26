@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.filter;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
 import org.gusdb.wdk.model.question.Question;
@@ -59,31 +58,20 @@ public interface Filter {
   void setView(String view);
 
   /**
-   * @returns false if this filter should affect the actual result; true if it only affects the results view
+   * @return false if this filter should affect the actual result; true if it only affects the results view
    */
   FilterType getFilterType();
 
   void setIsViewOnly(boolean isViewOnly);
 
   /**
-   * @returns true if this filter will always be applied to steps whose questions include it, false if it
+   * @return true if this filter will always be applied to steps whose questions include it, false if it
    * can be removed from those steps
    */
   boolean getIsAlwaysApplied();
 
   void setIsAlwaysApplied(boolean isAlwaysApplied);
 
-  /**
-   * get the display value of the filter. The value will be displayed on the applied filter list.
-   *
-   * @param answer
-   *          the answerValue on which the filter has been applied.
-   * @param jsValue
-   *          the actual value that has been applied to the current filter.
-   * @return
-   * @throws WdkModelException
-   * @throws WdkUserException
-   */
   void setDefaultValue(JSONObject defaultValue);
 
   /**
@@ -94,6 +82,15 @@ public interface Filter {
    */
   JSONObject getDefaultValue(SimpleAnswerSpec simpleSpec);
 
+  /**
+   * get the display value of the filter. The value will be displayed on the applied filter list.
+   *
+   * @param answer
+   *          the answerValue on which the filter has been applied.
+   * @param jsValue
+   *          the actual value that has been applied to the current filter.
+   * @return
+   */
   String getDisplayValue(AnswerValue answer, JSONObject jsValue) throws WdkModelException;
 
   /**
@@ -102,7 +99,6 @@ public interface Filter {
    * @param idSql
    * @return
    * @throws WdkModelException
-   * @throws WdkUserException
    */
   JSONObject getSummaryJson(AnswerValue answer, String idSql) throws WdkModelException;
 

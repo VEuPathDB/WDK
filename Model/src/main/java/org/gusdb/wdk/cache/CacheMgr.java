@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.MapBuilder;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.cache.InMemoryCache;
 import org.gusdb.fgputil.cache.ManagedMap;
 import org.gusdb.fgputil.db.cache.SqlCountCache;
@@ -35,7 +36,7 @@ public class CacheMgr {
   private final InMemoryCache<String, List<Map<String,Object>>> _attributeMetaQueryCache = new InMemoryCache<>();
   private final MetadataNewCache _metadataNewCache = new MetadataNewCache();
   private final OntologyCache _ontologyCache = new OntologyCache();
-  private final ManagedMap<String, AnswerRequest> _answerRequestCache = new ManagedMap<>();
+  private final ManagedMap<String, TwoTuple<Long,AnswerRequest>> _answerRequestCache = new ManagedMap<>();
 
   private final Map<String,InMemoryCache<?,?>> _cacheRepo =
       new MapBuilder<String,InMemoryCache<?,?>>(new LinkedHashMap<String,InMemoryCache<?,?>>())
@@ -54,7 +55,7 @@ public class CacheMgr {
   public InMemoryCache<String, List<Map<String,Object>>> getAttributeMetaQueryCache() { return _attributeMetaQueryCache; }
   public MetadataNewCache getMetadataNewCache() { return _metadataNewCache; }
   public OntologyCache getOntologyNewCache() { return _ontologyCache; }
-  public ManagedMap<String, AnswerRequest> getAnswerRequestCache() { return _answerRequestCache; }
+  public ManagedMap<String, TwoTuple<Long,AnswerRequest>> getAnswerRequestCache() { return _answerRequestCache; }
 
   // special getter lazily populates the repo with db-specific count caches
   public synchronized SqlCountCache getSqlCountCache(DatabaseInstance db) {

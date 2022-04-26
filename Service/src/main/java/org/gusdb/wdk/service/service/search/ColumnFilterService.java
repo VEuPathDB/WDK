@@ -58,7 +58,7 @@ public class ColumnFilterService extends ColumnToolService {
    * Retrieves and returns the input spec for the named filter on the current
    * column.
    *
-   * @param filter
+   * @param toolName
    *   name of the filter for which the input spec was requested.
    *
    * @return Input specification for what the named filter expects as config

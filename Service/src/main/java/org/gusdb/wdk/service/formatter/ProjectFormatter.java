@@ -26,7 +26,7 @@ import org.json.JSONObject;
  *     oauthClientId: String
  *   },
  *   profileProperties: [
- *     { <propName>: String }
+ *     { &lt;propName>: String }
  *   ]
  * }
  */

@@ -18,7 +18,6 @@ import com.thaiopensource.xml.sax.ErrorHandlerImpl;
 
 /**
  * @author Jerric
- * @created Oct 11, 2005
  */
 public class XmlDataLoader {
 

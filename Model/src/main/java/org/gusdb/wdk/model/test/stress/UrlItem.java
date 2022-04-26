@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.test.stress;
 
 import java.io.IOException;
@@ -9,20 +6,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * @author: Jerric
- * @created: Mar 21, 2006
- * @modified by: Jerric
- * @modified at: Mar 21, 2006
- * 
+ * @author Jerric
  */
 public class UrlItem {
     
     private String urlPattern;
     private String urlType;
     
-    /**
-     * 
-     */
     public UrlItem( String urlPattern, String urlType ) {
         this.urlPattern = urlPattern;
         this.urlType = urlType;
@@ -49,12 +39,7 @@ public class UrlItem {
             connection.setRequestProperty( "Cookie", cookies );
         return connection;
     }
-    
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
+
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();

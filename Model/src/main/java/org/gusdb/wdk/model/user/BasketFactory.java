@@ -101,7 +101,8 @@ public class BasketFactory {
   /**
    * @param user
    * @param recordClass
-   * @param pkValues a list of primary key values. the inner map is a primary-key column-value map
+   * @param recordCount
+   * @param records a stream of records containing primary key values. the inner map is a primary-key column-value map
    * @throws WdkModelException
    */
   public void addToBasket(User user, RecordClass recordClass, int recordCount, RecordStream records)

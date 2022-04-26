@@ -46,7 +46,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
       FROM (${metadata_qc}) mf
       WHERE mf.ontology_term_id = 'age'
       AND mf.numeric_value      >= 66
-      AND mf.numeric_value      <= 80
+      AND mf.numeric_value      &lt;= 80
     INTERSECT
     SELECT mf.internal
       FROM mf.${metadata_qc} mf

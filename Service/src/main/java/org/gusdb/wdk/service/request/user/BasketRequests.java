@@ -76,7 +76,6 @@ public class BasketRequests {
      * Where PrimaryKey is <code>[ { name: String, value: String } ]</code>.
      *
      * @param json input object
-     * @return parsed actions to perform on IDs
      * @throws WdkModelException
      * @throws DataValidationException
      */

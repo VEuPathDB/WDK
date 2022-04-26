@@ -13,13 +13,11 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
- * An object representation of the {@code <userDB>} tag in the {@code model-config.xml}. Two schema are used
- * for host wdk tables, and the {@link ModelConfigUserDB#userSchema} has the tables used to user specific
- * data, while the {@link ModelConfigUserDB#wdkEngineSchema} has the tables used to store the data shared
- * between users.
- * 
+ * An object representation of the {@code &lt;userDB>} tag in the {@code model-config.xml}.
+ * The {@link ModelConfigUserDB#userSchema} contains the tables used to store user-specific
+ * data.
+ *
  * @author xingao
- * 
  */
 public class ModelConfigUserDB extends ModelConfigDB {
 

@@ -140,7 +140,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
    * <pre>
    * {
    *   "contextParamValues": {
-   *     "<each-param-name>": String (stable value for param)
+   *     "[each-param-name]": String (stable value for param)
    *   }
    * }
    * </pre>

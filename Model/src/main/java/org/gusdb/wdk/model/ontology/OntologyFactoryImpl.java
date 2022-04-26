@@ -6,16 +6,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-
-
-
 //import org.apache.log4j.Logger;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkUserException;
 
 
 public class OntologyFactoryImpl extends WdkModelBase implements OntologyFactory {
@@ -67,7 +63,7 @@ public class OntologyFactoryImpl extends WdkModelBase implements OntologyFactory
   /**
    * Get the ontology tree.  Throw a WdkUserException if the tree contains circular paths (TODO).
    * @return
-   * @throws WdkUserException
+   * @throws WdkModelException
    */
   @Override
   public Ontology getValidatedOntology(WdkModel wdkModel) throws WdkModelException {

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.test;
 
 import org.apache.commons.cli.BasicParser;
@@ -13,7 +10,6 @@ import org.apache.commons.cli.ParseException;
 
 /**
  * @author Jerric
- * @created Sep 22, 2005
  */
 public class CommandHelper {
 

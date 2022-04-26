@@ -55,8 +55,8 @@ public abstract class WdkView extends WdkModelBase {
     }
 
     /**
-     * @param _default
-     *            the _default to set
+     * @param defaultValue
+     *            the default to set
      */
     public void setDefault(boolean defaultValue) {
         _default = defaultValue;

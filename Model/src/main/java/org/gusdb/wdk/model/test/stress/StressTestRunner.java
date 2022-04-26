@@ -11,11 +11,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.test.stress.StressTestTask.ResultType;
 
 /**
- * @author: Jerric
- * @created: Mar 14, 2006
- * @modified by: Jerric
- * @modified at: Mar 14, 2006
- * 
+ * @author Jerric
  */
 public class StressTestRunner implements Runnable {
 

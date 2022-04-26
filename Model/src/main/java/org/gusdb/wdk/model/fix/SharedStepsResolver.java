@@ -57,7 +57,6 @@ public class SharedStepsResolver extends BaseCLI {
 
   /**
    * @param command
-   * @param description
    */
   public SharedStepsResolver(String command) {
     super((command != null) ? command : "wdkSharedStepsResolver",
@@ -66,22 +65,12 @@ public class SharedStepsResolver extends BaseCLI {
             + " strategies or other steps, etc.");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.fgputil.BaseCLI#declareOptions()
-   */
   @Override
   protected void declareOptions() {
     addSingleValueOption(ARG_PROJECT_ID, true, null, "A project Id, which should match the directory name"
         + " under $GUS_HOME/config/, where model-config.xml is stored.");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.fgputil.BaseCLI#execute()
-   */
   @Override
   protected void execute() throws Exception {
 

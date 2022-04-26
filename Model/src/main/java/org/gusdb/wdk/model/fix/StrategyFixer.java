@@ -13,13 +13,12 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 
 /**
+ * This code is revived to fill in the strategy id on the steps;
+ * 
+ * The original code generates the signature for the strategy (the old system doesn't create the
+ * signature automatically, but the new one does. Therefore, this code is considered deprecated.
+ *
  * @author xingao
- * 
- *         This code is revived to fill in the strategy id on the steps;
- * 
- *         The original code generates the signature for the strategy (the old system doesn't create the
- *         signature automatically, but the new one does. Therefore, this code is considered deprecated.
- * 
  */
 public class StrategyFixer extends BaseCLI {
 
@@ -42,18 +41,12 @@ public class StrategyFixer extends BaseCLI {
 
   /**
    * @param command
-   * @param description
    */
   protected StrategyFixer(String command) {
     super((command == null) ? command : "strategyFixer", "Fill in the strategy id on the steps. "
         + "The original code generate unique strategy signature, and is commented out.");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.fgputil.BaseCLI#declareOptions()
-   */
   @Override
   protected void declareOptions() {
     addSingleValueOption(ARG_PROJECT_ID, true, null, "A project id, which should match the directory name "
@@ -61,11 +54,6 @@ public class StrategyFixer extends BaseCLI {
         " access to apicomm instance, and all the steps from all projects will be patched.");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.fgputil.BaseCLI#execute()
-   */
   @Override
   protected void execute() throws Exception {
     String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
