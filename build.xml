@@ -6,25 +6,16 @@
 
   <import file="${projectsDir}/WSF/build.xml" />
 
-
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="WDK-Installation" depends="WSF-Installation,
-                                           WDK-MavenInstallation,
                                            WDK/Model-Installation,
                                            WDK/Service-Installation">
     <ant target="defaultProjectInstall">
       <property name="project" value="WDK" />
     </ant>
-  </target>
-
-  <target name="WDK-MavenInstallation">
-    <ant target="mavenBuildProject">
-      <property name="project" value="WDK" />
-    </ant>
-    <property name="alreadyBuilt" value="true" />
   </target>
 
 
@@ -74,6 +65,7 @@
 
   <target name="createSchemaJar">
     <echo message="Creating JSON schema jar file at ${targetDir}/lib/java/wdk-service-schema.jar"/>
+    <mkdir dir="${targetDir}/lib/java"/>
     <exec dir="${targetDir}/doc/WDK/Service"
           executable="jar"
           failonerror="true"
@@ -189,4 +181,3 @@
   </target>
 
 </project>
-
