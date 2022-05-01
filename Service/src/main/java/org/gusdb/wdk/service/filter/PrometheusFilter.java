@@ -33,14 +33,14 @@ public class PrometheusFilter implements ContainerRequestFilter, ContainerRespon
   };
 
   private static final Counter REQUEST_COUNTER = Counter.build()
-    .name("http_total_requests")
-    .help("Total HTTP request count.")
+    .name("wdk_http_request_count")
+    .help("WDK service request count")
     .labelNames("path", "method", "status")
     .register();
 
   private static final Histogram REQUEST_TIMER = Histogram.build()
-    .name("http_request_duration")
-    .help("Request times in milliseconds")
+    .name("wdk_http_request_duration")
+    .help("WDK service request duration in milliseconds")
     .labelNames("path", "method")
     .buckets(REQUEST_TIME_BINS)
     .register();

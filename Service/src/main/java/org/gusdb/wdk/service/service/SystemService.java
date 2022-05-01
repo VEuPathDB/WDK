@@ -35,6 +35,9 @@ import java.util.function.Predicate;
 @Path("system")
 public class SystemService extends AbstractWdkService {
 
+  // this path is sometimes skipped by request filter logic
+  public static final String PROMETHEUS_ENDPOINT_PATH = "system/metrics/prometheus";
+
   @GET
   @Path("userdb/connections")
   @Produces(MediaType.TEXT_HTML)
