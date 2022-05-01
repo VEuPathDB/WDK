@@ -4,13 +4,15 @@
   <!-- oooooooooooooooooooooooooo  Dependencies  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
+  <import file="${projectsDir}/FgpUtil/build.xml" />
   <import file="${projectsDir}/WSF/build.xml" />
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-Installation" depends="WSF-Installation,
+  <target name="WDK-Installation" depends="FgpUtil-Installation,
+                                           WSF-Installation,
                                            WDK/Model-Installation,
                                            WDK/Service-Installation">
     <ant target="defaultProjectInstall">
