@@ -21,6 +21,7 @@ import javax.ws.rs.ext.WriterInterceptorContext;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.server.ContainerRequest;
+import org.gusdb.wdk.service.service.SystemService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,7 +37,6 @@ public class RequestLoggingFilter implements ContainerRequestFilter, WriterInter
   private static final String FORM_ENTITY = "<form_data>";
 
   private static final String OMIT_REQUEST_LOGGING_PROP_KEY = "omitRequestLogging";
-  private static final String PROMETHEUS_ENDPOINT_PATH = "system/metrics/prometheus";
 
   public static boolean isLogEnabled() {
     return LOG.isEnabledFor(LOG_LEVEL);
@@ -46,7 +46,8 @@ public class RequestLoggingFilter implements ContainerRequestFilter, WriterInter
   public void filter(ContainerRequestContext requestContext) throws IOException {
 
     // skip logging for prometheus metrics endpoint which overwhelms the logs
-    boolean omitRequestLogging = requestContext.getUriInfo().getPath().equals(PROMETHEUS_ENDPOINT_PATH);
+    boolean omitRequestLogging = requestContext.getUriInfo().getPath()
+        .equals(SystemService.PROMETHEUS_ENDPOINT_PATH);
 
     // tell the WriterInterceptor whether to skip logging
     requestContext.setProperty(OMIT_REQUEST_LOGGING_PROP_KEY, omitRequestLogging);

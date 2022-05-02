@@ -5,23 +5,29 @@ import java.util.Optional;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.events.Events;
-import org.gusdb.fgputil.web.ApplicationContext;
 import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.web.LoginCookieFactory;
 import org.gusdb.fgputil.web.LoginCookieFactory.LoginCookieParts;
 import org.gusdb.fgputil.web.SessionProxy;
-import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.events.NewUserEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
+
+import io.prometheus.client.Counter;
+
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 
 public class CheckLoginFilterShared {
 
   private static final Logger LOG = Logger.getLogger(CheckLoginFilterShared.class);
+
+  private static final Counter GUEST_CREATION_COUNTER = Counter.build()
+      .name("wdk_guest_creation_count")
+      .help("Number of guest users created by WDK services")
+      .register();
 
   private enum CurrentState {
 
@@ -74,9 +80,11 @@ public class CheckLoginFilterShared {
   }
 
   public static Optional<CookieBuilder> calculateUserActions(
-      Optional<CookieBuilder> currentCookie, ApplicationContext context, SessionProxy session) {
+      Optional<CookieBuilder> currentCookie,
+      WdkModel wdkModel,
+      SessionProxy session,
+      String requestPath) {
 
-    WdkModel wdkModel = ContextLookup.getWdkModel(context);
     UserFactory userFactory = wdkModel.getUserFactory();
 
     // three-tuple is: caseNumber, sessionUser, cookieEmail
@@ -99,7 +107,7 @@ public class CheckLoginFilterShared {
           switch (stateBundle.getCurrentState()) {
             case REGISTERED_USER_BAD_COOKIE:
               cookieToSend = LoginCookieFactory.createLogoutCookie();
-              userToSet = userFactory.createUnregistedUser(UnregisteredUserType.GUEST);
+              userToSet = createGuest(requestPath, userFactory);
               break;
             case GUEST_USER_COOKIE_PRESENT:
               cookieToSend = LoginCookieFactory.createLogoutCookie();
@@ -111,11 +119,11 @@ public class CheckLoginFilterShared {
               break;
             case NO_USER_INVALID_COOKIE:
               cookieToSend = LoginCookieFactory.createLogoutCookie();
-              userToSet = userFactory.createUnregistedUser(UnregisteredUserType.GUEST);
+              userToSet = createGuest(requestPath, userFactory);
               break;
             case NO_USER_MISSING_COOKIE:
               // no cookie necessary
-              userToSet = userFactory.createUnregistedUser(UnregisteredUserType.GUEST);
+              userToSet = createGuest(requestPath, userFactory);
               break;
             default:
               // other cases require no action
@@ -137,6 +145,13 @@ public class CheckLoginFilterShared {
       }
     }
     return Optional.empty();
+  }
+
+  private static User createGuest(String requestPath, UserFactory userFactory) {
+    User guest = userFactory.createUnregistedUser(UnregisteredUserType.GUEST);
+    LOG.info("Created new guest user [" + guest.getUserId() + "] for request to path: /" + requestPath);
+    GUEST_CREATION_COUNTER.inc();
+    return guest;
   }
 
   private static StateBundle calculateCurrentState(WdkModel wdkModel, SessionProxy session, Optional<CookieBuilder> loginCookie) {
