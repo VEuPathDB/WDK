@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
@@ -75,10 +76,25 @@ public abstract class AbstractByValueReporter implements ColumnReporter, Distrib
   public AbstractByValueReporter setAnswerValue(AnswerValue answerValue) throws WdkModelException {
     _answerValue = answerValue;
     _appDb = answerValue.getWdkModel().getAppDb().getDataSource();
-    // kick off a thread to find the result size; won't be needed until after distribution is processed
-    _resultSizeFuture = Executors.newSingleThreadExecutor()
-        .submit(() -> _answerValue.getResultSizeFactory().getResultSize());
+    _resultSizeFuture = getResultSizeInBackground(answerValue);
     return this;
+  }
+
+  private static Future<Integer> getResultSizeInBackground(AnswerValue answerValue) {
+
+    // make a copy up front to avoid contention from result size factory
+    //   (which will be concurrently executing in a separate thread)
+    AnswerValue resultSizeAnswer = answerValue.clone();
+
+    // kick off a thread to find the result size; won't be needed until after distribution is processed
+    ExecutorService exec = Executors.newSingleThreadExecutor();
+    try {
+      return exec.submit(() -> resultSizeAnswer.getResultSizeFactory().getResultSize());
+    }
+    finally {
+      // signals the executor service to shut down after result size is calculated
+      exec.shutdown();
+    }
   }
 
   @Override
