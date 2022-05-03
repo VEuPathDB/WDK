@@ -224,7 +224,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     Map<String, String> internalValues = getParamInternalValues();
     AnswerParam leftParam = booleanQuery.getLeftOperandParam();
     String leftSubSql = internalValues.get(leftParam.getName());
-    checkNullInternalValueMessage(leftSubSql, "left", leftParam.getName(), internalValues);
+    checkNullInternalValue(leftSubSql, "left", leftParam.getName(), internalValues);
     return constructOperandSql(leftSubSql);
   }
 
@@ -232,11 +232,11 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     Map<String, String> internalValues = getParamInternalValues();
     AnswerParam rightParam = booleanQuery.getRightOperandParam();
     String rightSubSql = internalValues.get(rightParam.getName());
-    checkNullInternalValueMessage(rightSubSql, "right", rightParam.getName(), internalValues);
+    checkNullInternalValue(rightSubSql, "right", rightParam.getName(), internalValues);
     return constructOperandSql(rightSubSql);
   }
 
-  private static void checkNullInternalValueMessage(
+  private static void checkNullInternalValue(
       String value, String side, String paramName, Map<String,String> internalValues) {
     Objects.requireNonNull(value, () ->
         "Internal value for "+ side + " side answer param " + paramName +
