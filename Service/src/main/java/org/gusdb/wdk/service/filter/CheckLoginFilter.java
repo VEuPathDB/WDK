@@ -13,7 +13,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
-import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
@@ -25,12 +24,10 @@ import org.gusdb.fgputil.web.LoginCookieFactory;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.controller.filter.CheckLoginFilterShared;
+import org.gusdb.wdk.service.service.SystemService;
 
-@PreMatching
-@Priority(200)
+@Priority(30)
 public class CheckLoginFilter implements ContainerRequestFilter, ContainerResponseFilter {
-
-  private static final String PROMETHEUS_ENDPOINT_PATH = "system/metrics/prometheus";
 
   public static final String SESSION_COOKIE_TO_SET = "sessionCookieToSet";
 
@@ -47,19 +44,27 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
 
-    // skip user check for prometheus metrics endpoint to avoid a guest user being created for every request
-    if (requestContext.getUriInfo().getPath().equals(PROMETHEUS_ENDPOINT_PATH)) return;
+    // skip certain endpoints to avoid a guest user being created for those endpoints
+    String requestPath = requestContext.getUriInfo().getPath();
+    if (isPathToSkip(requestPath)) return;
 
     ApplicationContext context = ContextLookup.getApplicationContext(_servletContext);
     RequestData request = ContextLookup.getRequest(_servletRequest.get(), _grizzlyRequest.get());
 
     Optional<CookieBuilder> newCookie =
         CheckLoginFilterShared.calculateUserActions(
-            findLoginCookie(requestContext.getCookies()), context, request.getSession());
+            findLoginCookie(requestContext.getCookies()),
+            ContextLookup.getWdkModel(context),
+            request.getSession(), requestPath);
 
     if (newCookie.isPresent()) {
       requestContext.setProperty(SESSION_COOKIE_TO_SET, newCookie.get().toJaxRsCookie().toString());
     }
+  }
+
+  protected boolean isPathToSkip(String path) {
+    // skip user check for prometheus metrics requests
+    return SystemService.PROMETHEUS_ENDPOINT_PATH.equals(path);
   }
 
   protected Optional<CookieBuilder> findLoginCookie(Map<String, Cookie> cookies) {
