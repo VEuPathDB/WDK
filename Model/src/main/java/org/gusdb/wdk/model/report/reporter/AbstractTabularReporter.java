@@ -175,11 +175,12 @@ public abstract class AbstractTabularReporter extends StandardReporter {
   }
 
   protected void format2Text(OutputStream out) throws WdkModelException, WdkUserException {
-    PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+    // create a PrintWriter (for convenience) over a BufferedWriter (for performance)
+    //    turning off auto-flush on the PrintWriter; let BufferedWriter handle flushing
+    PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(out)), false);
     // print the header
     if (_includeHeader) {
       writer.println(String.join(_divider, getHeader()));
-      writer.flush();
     }
 
     try (RecordStream records = getRecords()) {
@@ -188,10 +189,12 @@ public abstract class AbstractTabularReporter extends StandardReporter {
           writer.println(row.stream()
               .map(obj -> getOutputValue(obj))
               .collect(Collectors.joining(_divider)));
-          writer.flush();
         }
       }
     }
+
+    // flush anything in the buffer
+    writer.flush();
   }
 
   protected void format2PDF(OutputStream out) throws WdkModelException, WdkUserException {
