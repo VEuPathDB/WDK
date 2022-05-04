@@ -56,23 +56,7 @@ public class TemporaryFileService extends AbstractWdkService {
       @FormDataParam("file") FormDataContentDisposition fileMetadata)
           throws WdkModelException {
 
-    java.nio.file.Path tempDirPath = getWdkModel().getModelConfig().getWdkTempDir();
-    java.nio.file.Path tempFilePath;
-
-    try {
-      tempFilePath = Files.createTempFile(tempDirPath, null, null);
-
-      try (OutputStream outputStream = Files.newOutputStream(tempFilePath)) {
-        IoUtil.transferStream(outputStream, fileInputStream);
-      }
-      catch (IOException e) {
-        throw new WdkModelException(e);
-      }
-    }
-    catch (IOException e) {
-      throw new WdkModelException(e);
-    }
-    java.nio.file.Path tempFileName = tempFilePath.getFileName();
+    java.nio.file.Path tempFileName = writeTemporaryFile(getWdkModel(), fileInputStream);
 
     addTempFileToSession(new TemporaryFileMetadata() {
 
@@ -94,6 +78,26 @@ public class TemporaryFileService extends AbstractWdkService {
     });
 
     return Response.noContent().header("ID", tempFileName.toString()).build();
+  }
+
+  public static java.nio.file.Path writeTemporaryFile(WdkModel wdkModel, InputStream fileInputStream) throws WdkModelException {
+    java.nio.file.Path tempDirPath = wdkModel.getModelConfig().getWdkTempDir();
+    java.nio.file.Path tempFilePath;
+
+    try {
+      tempFilePath = Files.createTempFile(tempDirPath, null, null);
+
+      try (OutputStream outputStream = Files.newOutputStream(tempFilePath)) {
+        IoUtil.transferStream(outputStream, fileInputStream);
+      }
+      catch (IOException e) {
+        throw new WdkModelException(e);
+      }
+    }
+    catch (IOException e) {
+      throw new WdkModelException(e);
+    }
+    return tempFilePath.getFileName();
   }
 
   private void addTempFileToSession(TemporaryFileMetadata tempFileMetadata) {
