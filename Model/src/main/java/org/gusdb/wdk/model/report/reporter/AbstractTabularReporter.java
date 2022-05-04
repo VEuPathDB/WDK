@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.functional.Functions;
@@ -177,22 +178,16 @@ public abstract class AbstractTabularReporter extends StandardReporter {
     PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
     // print the header
     if (_includeHeader) {
-      for (String title : getHeader()) {
-        writer.print(title);
-        writer.print(_divider);
-      }
-      writer.println();
+      writer.println(String.join(_divider, getHeader()));
       writer.flush();
     }
 
     try (RecordStream records = getRecords()) {
       for (RecordInstance record : records) {
         for (List<Object> row : getRowsProvider(record)) {
-          for (Object value : row) {
-            writer.print(getOutputValue(value));
-            writer.print(_divider);
-          }
-          writer.println();
+          writer.println(row.stream()
+              .map(obj -> getOutputValue(obj))
+              .collect(Collectors.joining(_divider)));
           writer.flush();
         }
       }
