@@ -551,7 +551,6 @@ public class DatasetFactory {
         psInsert.setLong(2, datasetId);
         psInsert.setLong(3, rowOrderNumber);
         for (int j = 0; j < length; j++) {
-          LOG.info("Setting PS param " + (j+4) + ": " + value[j]);
           psInsert.setString(j + 4, value[j]);
         }
         psInsert.addBatch();
