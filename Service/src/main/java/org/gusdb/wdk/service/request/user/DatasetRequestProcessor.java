@@ -19,7 +19,6 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonType;
@@ -307,11 +306,12 @@ public class DatasetRequestProcessor {
         .leftOrElseThrowWithRight(error -> new DataValidationException(
             "Unable to retrieve file at url " + url + ".  GET request returned " +
             error.getStatusType().getStatusCode() + ": " + error.getResponseBody()))) {
-      Path filePath = TemporaryFileService.writeTemporaryFile(factory.getWdkModel(), fileStream);
 
-      // for diagnostics
-      IoUtil.openFilesForRead(List.of(filePath));
-      LOG.info("Wrote content retrieved from URL [" + url + "] to file " + filePath.toAbsolutePath());
+      Path filePath = TemporaryFileService.writeTemporaryFile(factory.getWdkModel(), fileStream);
+      LOG.debug("Wrote content retrieved from URL [" + url + "] to file " + filePath.toAbsolutePath());
+
+      // delete this temporary file on JVM exit
+      filePath.toFile().deleteOnExit();
 
       var contents = new DatasetFileContents(url, filePath.toFile());
       return createDataset(user, parser, contents, factory);

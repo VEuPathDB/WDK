@@ -56,7 +56,7 @@ public class TemporaryFileService extends AbstractWdkService {
       @FormDataParam("file") FormDataContentDisposition fileMetadata)
           throws WdkModelException {
 
-    java.nio.file.Path tempFileName = writeTemporaryFile(getWdkModel(), fileInputStream);
+    java.nio.file.Path tempFileName = writeTemporaryFile(getWdkModel(), fileInputStream).getFileName();
 
     addTempFileToSession(new TemporaryFileMetadata() {
 
@@ -80,7 +80,15 @@ public class TemporaryFileService extends AbstractWdkService {
     return Response.noContent().header("ID", tempFileName.toString()).build();
   }
 
-  public static java.nio.file.Path writeTemporaryFile(WdkModel wdkModel, InputStream fileInputStream) throws WdkModelException {
+  /**
+   * Writes a temporary file to WDK's temp directory with content provided by the input stream
+   *
+   * @param wdkModel model providing a tmp directory
+   * @param contentStream stream containing content to be written to the file
+   * @return Path to the created file
+   * @throws WdkModelException
+   */
+  public static java.nio.file.Path writeTemporaryFile(WdkModel wdkModel, InputStream contentStream) throws WdkModelException {
     java.nio.file.Path tempDirPath = wdkModel.getModelConfig().getWdkTempDir();
     java.nio.file.Path tempFilePath;
 
@@ -88,7 +96,7 @@ public class TemporaryFileService extends AbstractWdkService {
       tempFilePath = Files.createTempFile(tempDirPath, null, null);
 
       try (OutputStream outputStream = Files.newOutputStream(tempFilePath)) {
-        IoUtil.transferStream(outputStream, fileInputStream);
+        IoUtil.transferStream(outputStream, contentStream);
       }
       catch (IOException e) {
         throw new WdkModelException(e);
@@ -97,7 +105,7 @@ public class TemporaryFileService extends AbstractWdkService {
     catch (IOException e) {
       throw new WdkModelException(e);
     }
-    return tempFilePath.getFileName();
+    return tempFilePath;
   }
 
   private void addTempFileToSession(TemporaryFileMetadata tempFileMetadata) {
