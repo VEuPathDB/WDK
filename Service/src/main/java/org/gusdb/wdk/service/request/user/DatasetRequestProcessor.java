@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,9 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MediaType;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonType;
@@ -54,6 +57,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class DatasetRequestProcessor {
+
+  private static Logger LOG = Logger.getLogger(DatasetRequestProcessor.class);
 
   public enum DatasetSourceType {
 
@@ -302,7 +307,12 @@ public class DatasetRequestProcessor {
         .leftOrElseThrowWithRight(error -> new DataValidationException(
             "Unable to retrieve file at url " + url + ".  GET request returned " +
             error.getStatusType().getStatusCode() + ": " + error.getResponseBody()))) {
-      var filePath = TemporaryFileService.writeTemporaryFile(factory.getWdkModel(), fileStream);
+      Path filePath = TemporaryFileService.writeTemporaryFile(factory.getWdkModel(), fileStream);
+
+      // for diagnostics
+      IoUtil.openFilesForRead(List.of(filePath));
+      LOG.info("Wrote content retrieved from URL [" + url + "] to file " + filePath.toAbsolutePath());
+
       var contents = new DatasetFileContents(url, filePath.toFile());
       return createDataset(user, parser, contents, factory);
     }
