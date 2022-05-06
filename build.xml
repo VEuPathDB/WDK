@@ -135,51 +135,69 @@
   </target>
 
   <target name="libLink" unless="libLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/lib"
-             resource="${targetDir}/lib/java" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/lib"/>
+      <property name="resource" value="${targetDir}/lib/java"/>
+    </ant>
   </target>
 
   <target name="configLink" unless="configLinkExists">
-    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model" />
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/config"
-             resource="${targetDir}/config" />
+    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model"/>
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/config"/>
+      <property name="resource" value="${targetDir}/config"/>
+    </ant>
   </target>
 
   <target name="binLink" unless="binLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/bin"
-             resource="${targetDir}/bin" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/bin"/>
+      <property name="resource" value="${targetDir}/bin"/>
+    </ant>
   </target>
 
   <target name="dataLink" unless="dataLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/data"
-             resource="${targetDir}/data" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/data"/>
+      <property name="resource" value="${targetDir}/data"/>
+    </ant>
   </target>
 
   <target name="buildlogLink" unless="buildlogLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/.buildlog"
-             resource="${targetDir}/.buildlog" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/.buildlog"/>
+      <property name="resource" value="${targetDir}/.buildlog"/>
+    </ant>
   </target>
 
   <target name="rngLink" unless="rngLinkExists">
     <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib" />
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/rng"
-             resource="${targetDir}/lib/rng" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/lib/rng"/>
+      <property name="resource" value="${targetDir}/lib/rng"/>
+    </ant>
   </target>
 
   <target name="perlLink" unless="perlLinkExists">
     <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib" />
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/perl"
-             resource="${targetDir}/lib/perl" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/lib/perl"/>
+      <property name="resource" value="${targetDir}/lib/perl"/>
+    </ant>
   </target>
 
   <target name="xmlLink" unless="xmlLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/xml"
-             resource="${targetDir}/lib/xml" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/lib/xml"/>
+      <property name="resource" value="${targetDir}/lib/xml"/>
+    </ant>
   </target>
 
   <target name="wdkLink" unless="wdkLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/wdk"
-             resource="${targetDir}/lib/wdk" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/lib/wdk"/>
+      <property name="resource" value="${targetDir}/lib/wdk"/>
+    </ant>
   </target>
 
 </project>
