@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.functional.Functions;
@@ -174,29 +175,26 @@ public abstract class AbstractTabularReporter extends StandardReporter {
   }
 
   protected void format2Text(OutputStream out) throws WdkModelException, WdkUserException {
-    PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+    // create a PrintWriter (for convenience) over a BufferedWriter (for performance)
+    //    turning off auto-flush on the PrintWriter; let BufferedWriter handle flushing
+    PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(out)), false);
     // print the header
     if (_includeHeader) {
-      for (String title : getHeader()) {
-        writer.print(title);
-        writer.print(_divider);
-      }
-      writer.println();
-      writer.flush();
+      writer.println(String.join(_divider, getHeader()));
     }
 
     try (RecordStream records = getRecords()) {
       for (RecordInstance record : records) {
         for (List<Object> row : getRowsProvider(record)) {
-          for (Object value : row) {
-            writer.print(getOutputValue(value));
-            writer.print(_divider);
-          }
-          writer.println();
-          writer.flush();
+          writer.println(row.stream()
+              .map(obj -> getOutputValue(obj))
+              .collect(Collectors.joining(_divider)));
         }
       }
     }
+
+    // flush anything in the buffer
+    writer.flush();
   }
 
   protected void format2PDF(OutputStream out) throws WdkModelException, WdkUserException {

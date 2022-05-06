@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.dataset;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -7,6 +8,9 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import java.io.*;
 
 public class DatasetFileContents extends DatasetContents {
+
+  private static final Logger LOG = Logger.getLogger(DatasetFileContents.class);
+
   private static final int BUF_SIZE = 8192;
 
   /**
@@ -34,6 +38,7 @@ public class DatasetFileContents extends DatasetContents {
     final File contents
   ) {
     super(fileName);
+    LOG.info("Created new DatasetFileContents object pointing at file: " + contents.getAbsolutePath());
     this.contents = contents;
     this.owned = false;
   }

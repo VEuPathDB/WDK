@@ -1,6 +1,25 @@
 package org.gusdb.wdk.service.request.user;
 
+import static org.gusdb.fgputil.FormatUtil.join;
+import static org.gusdb.fgputil.json.JsonIterators.arrayStream;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.core.MediaType;
+
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonType.ValueType;
@@ -14,7 +33,14 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
-import org.gusdb.wdk.model.dataset.*;
+import org.gusdb.wdk.model.dataset.Dataset;
+import org.gusdb.wdk.model.dataset.DatasetContents;
+import org.gusdb.wdk.model.dataset.DatasetFactory;
+import org.gusdb.wdk.model.dataset.DatasetFileContents;
+import org.gusdb.wdk.model.dataset.DatasetListContents;
+import org.gusdb.wdk.model.dataset.DatasetParser;
+import org.gusdb.wdk.model.dataset.DatasetPassThroughParser;
+import org.gusdb.wdk.model.dataset.ListDatasetParser;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
@@ -29,38 +55,30 @@ import org.gusdb.wdk.service.service.TemporaryFileService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.gusdb.fgputil.FormatUtil.join;
-import static org.gusdb.fgputil.json.JsonIterators.arrayStream;
-
 public class DatasetRequestProcessor {
+
+  private static Logger LOG = Logger.getLogger(DatasetRequestProcessor.class);
 
   public enum DatasetSourceType {
 
     ID_LIST("idList", "ids", ValueType.ARRAY),
     BASKET("basket", "basketName", ValueType.STRING),
     FILE("file", "temporaryFileId", ValueType.STRING),
-    STRATEGY("strategy", JsonKeys.STRATEGY_ID, ValueType.NUMBER);
+    STRATEGY("strategy", JsonKeys.STRATEGY_ID, ValueType.NUMBER),
+    URL("url", "url", ValueType.STRING);
 
-    private final String _jsonKey;
+    private final String _typeIndicator;
     private final String _configJsonKey;
     private final ValueType _configValueType;
 
-    DatasetSourceType(String jsonKey, String configJsonKey, ValueType configValueType) {
-      _jsonKey = jsonKey;
+    DatasetSourceType(String typeIndicator, String configJsonKey, ValueType configValueType) {
+      _typeIndicator = typeIndicator;
       _configJsonKey = configJsonKey;
       _configValueType = configValueType;
     }
 
-    public String getJsonKey() {
-      return _jsonKey;
+    public String getTypeIndicator() {
+      return _typeIndicator;
     }
 
     public String getConfigJsonKey() {
@@ -71,9 +89,9 @@ public class DatasetRequestProcessor {
       return _configValueType;
     }
 
-    public static DatasetSourceType getFromJsonKey(String jsonKey) throws RequestMisformatException {
+    public static DatasetSourceType getFromTypeIndicator(String typeIndicator) throws RequestMisformatException {
       return Arrays.stream(values())
-        .filter(val -> val._jsonKey.equals(jsonKey))
+        .filter(val -> val._typeIndicator.equals(typeIndicator))
         .findFirst()
         .orElseThrow(() -> new RequestMisformatException(
             "Invalid source type.  Only [" + FormatUtil.join(values(), ", ") + "] allowed."));
@@ -88,7 +106,7 @@ public class DatasetRequestProcessor {
     private final Map<String,JsonType> _additionalConfig;
 
     public DatasetRequest(JSONObject input) throws RequestMisformatException {
-      _sourceType = DatasetSourceType.getFromJsonKey(input.getString(JsonKeys.SOURCE_TYPE));
+      _sourceType = DatasetSourceType.getFromTypeIndicator(input.getString(JsonKeys.SOURCE_TYPE));
       JSONObject sourceContent = input.getJSONObject(JsonKeys.SOURCE_CONTENT);
       _configValue = new JsonType(sourceContent.get(_sourceType.getConfigJsonKey()));
       if (!_configValue.getType().equals(_sourceType.getConfigType())) {
@@ -122,6 +140,7 @@ public class DatasetRequestProcessor {
       case BASKET:   return createFromBasket(value.getString(), user, factory);
       case STRATEGY: return createFromStrategy(getStrategyId(value), user, factory);
       case FILE:     return createFromTemporaryFile(value.getString(), user, factory, request.getAdditionalConfig(), session);
+      case URL:      return createFromUrl(value.getString(), user, factory, request.getAdditionalConfig());
       default:
         throw new DataValidationException("Unrecognized " + JsonKeys.SOURCE_TYPE + ": " + request.getSourceType());
     }
@@ -245,7 +264,8 @@ public class DatasetRequestProcessor {
   ) throws WdkModelException, DataValidationException {
     try {
       return factory.createOrGetDataset(user, parser, content);
-    } catch (WdkUserException e) {
+    }
+    catch (WdkUserException e) {
       throw new DataValidationException(e.getMessage());
     }
   }
@@ -257,21 +277,58 @@ public class DatasetRequestProcessor {
     final Map<String, JsonType> additionalConfig,
     final SessionProxy          session
   ) throws DataValidationException, WdkModelException, RequestMisformatException {
-    var parserName = getStringOrFail(additionalConfig, JsonKeys.PARSER);
 
-    Path tempFilePath = TemporaryFileService.getTempFileFactory(factory.getWdkModel(), session)
+    var model = factory.getWdkModel();
+    var parser = getDatasetParser(model, additionalConfig);
+
+    var tempFilePath = TemporaryFileService.getTempFileFactory(factory.getWdkModel(), session)
       .apply(tempFileId)
-      .orElseThrow(() -> new DataValidationException("Temporary file with the ID '" + tempFileId + "' could not be found in this session."));
+      .orElseThrow(() -> new DataValidationException(
+          "Temporary file with the ID '" + tempFileId + "' could not be found in this session."));
 
     var contents = new DatasetFileContents(tempFileId, tempFilePath.toFile());
-    var parser   = parserName.isPresent()
-      ? findDatasetParser(parserName.get(), additionalConfig, factory.getWdkModel())
-      : new ListDatasetParser();
-
-    //      if (contents.isEmpty()) {
-    //        throw new DataValidationException("The file submitted is empty.  No dataset can be made.");
-    //      }
     return createDataset(user, parser, contents, factory);
+  }
+
+  private static Dataset createFromUrl(
+    final String url,
+    final User user,
+    final DatasetFactory factory,
+    final Map<String, JsonType> additionalConfig
+  ) throws DataValidationException, RequestMisformatException, WdkModelException {
+
+    var model = factory.getWdkModel();
+    var parser = getDatasetParser(model, additionalConfig);
+
+    try (InputStream fileStream = ClientUtil
+        .makeAsyncGetRequest(url, MediaType.WILDCARD)
+        .getEither()
+        .leftOrElseThrowWithRight(error -> new DataValidationException(
+            "Unable to retrieve file at url " + url + ".  GET request returned " +
+            error.getStatusType().getStatusCode() + ": " + error.getResponseBody()))) {
+
+      Path filePath = TemporaryFileService.writeTemporaryFile(factory.getWdkModel(), fileStream);
+      LOG.debug("Wrote content retrieved from URL [" + url + "] to file " + filePath.toAbsolutePath());
+
+      // delete this temporary file on JVM exit
+      filePath.toFile().deleteOnExit();
+
+      var contents = new DatasetFileContents(url, filePath.toFile());
+      return createDataset(user, parser, contents, factory);
+    }
+    catch (Exception e) {
+      throw new DataValidationException("Unable to retrieve file", e);
+    }
+  }
+
+  private static DatasetParser getDatasetParser(
+      WdkModel wdkModel,
+      Map<String, JsonType> additionalConfig
+  ) throws RequestMisformatException, WdkModelException, DataValidationException {
+    var parserName = getStringOrFail(additionalConfig, JsonKeys.PARSER);
+    return parserName.isPresent()
+      ? findDatasetParser(parserName.get(), additionalConfig, wdkModel)
+      : new ListDatasetParser();
   }
 
   private static DatasetParser findDatasetParser(
