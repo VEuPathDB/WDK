@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.answer;
 
 import static org.gusdb.fgputil.StringUtil.indent;
+import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -135,6 +136,7 @@ public class AnswerValue {
   protected final User _user;
   private final RunnableObj<AnswerSpec> _validAnswerSpec;
   protected final AnswerSpec _answerSpec;
+  private final boolean _avoidCacheHit;
 
   // values derived from basic info
   private final WdkModel _wdkModel;
@@ -168,25 +170,24 @@ public class AnswerValue {
     _validAnswerSpec = validAnswerSpec;
     _answerSpec = validAnswerSpec.get();
     _wdkModel = _answerSpec.getWdkModel();
+    _avoidCacheHit = avoidCacheHit;
     _idsQueryInstance = Query.makeQueryInstance(_answerSpec.getQueryInstanceSpec().getRunnable().getLeft(), avoidCacheHit);
-    Question question = _answerSpec.getQuestion();
     _resultSizeFactory = new ResultSizeFactory(this);
-
+    _sortingMap = sortingMap == null? new HashMap<String, Boolean>() : sortingMap;
     _startIndex = startIndex;
     _endIndex = endIndex;
-
-    _sortingMap = sortingMap == null? new HashMap<String, Boolean>() : sortingMap;
-
-    LOG.debug("AnswerValue created for question: " + question.getDisplayName());
+    LOG.debug("AnswerValue created for question: " + _answerSpec.getQuestion().getDisplayName());
   }
 
   @Override
   public AnswerValue clone() {
-    return new AnswerValue(this, this._startIndex, this._endIndex);
+    // convert to runtime exception safe here because changes should not produce -new- exception
+    return swallowAndGet(() -> new AnswerValue(this, this._startIndex, this._endIndex));
   }
 
   public AnswerValue cloneWithNewPaging(int startIndex, int endIndex) {
-    return new AnswerValue(this, startIndex, endIndex);
+    // convert to runtime exception safe here because changes should not produce -new- exception
+    return swallowAndGet(() -> new AnswerValue(this, startIndex, endIndex));
   }
 
   /**
@@ -202,20 +203,17 @@ public class AnswerValue {
    *   1-based start index (inclusive)
    * @param endIndex
    *   end index (inclusive), or a negative value for all records
+   * @throws WdkModelException
    */
-  private AnswerValue(AnswerValue answerValue, int startIndex, int endIndex) {
-    _user = answerValue._user;
-    _validAnswerSpec = answerValue._validAnswerSpec;
-    _answerSpec = answerValue._answerSpec;
-    _wdkModel = answerValue._wdkModel;
-    _idsQueryInstance = answerValue._idsQueryInstance;
-    // Note: do not copy result size data (i.e. _resultSizesByFilter and
-    //   _resultSizesByProject); they are essentially caches and should be
-    //   rebuilt by each new AnswerValue
-    _resultSizeFactory = new ResultSizeFactory(this);
-    _startIndex = startIndex;
-    _endIndex = endIndex;
-    _sortingMap = new LinkedHashMap<>(answerValue._sortingMap);
+  private AnswerValue(AnswerValue answerValue, int startIndex, int endIndex) throws WdkModelException {
+    this(
+      answerValue._user,
+      answerValue._validAnswerSpec,
+      startIndex,
+      endIndex,
+      new LinkedHashMap<>(answerValue._sortingMap),
+      answerValue._avoidCacheHit
+    );
   }
 
   public User getUser() {
