@@ -1688,6 +1688,7 @@
       <zeroOrMore>
         <choice>
           <element name="description">
+            <ref name="IncludeExclude" />
             <text />
           </element>
           <ref name="attributes" />
