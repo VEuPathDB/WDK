@@ -158,11 +158,6 @@ JsonUserDataset implements UserDataset {
     return size * 100 / quota;
   }
 
-  @Override
-  public Path getMetaJsonFile() {
-    return metaJsonFile;
-  }
-
   /**
    * Used for serializing to dataset store
    */

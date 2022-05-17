@@ -71,6 +71,4 @@ public interface UserDataset {
    * Get the percent of quota the user has used up.
    */
   Integer getPercentQuota(int quota) throws WdkModelException;
-
-  Path getMetaJsonFile();
 }
