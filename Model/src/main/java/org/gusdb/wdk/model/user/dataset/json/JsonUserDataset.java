@@ -24,7 +24,8 @@ import org.json.JSONObject;
  *
  * @author steve
  */
-public class JsonUserDataset implements UserDataset {
+public class
+JsonUserDataset implements UserDataset {
 
   public static final String TYPE = "type";
   public static final String OWNER = "owner";
@@ -155,6 +156,11 @@ public class JsonUserDataset implements UserDataset {
   @Override
   public Integer getPercentQuota(int quota) {
     return size * 100 / quota;
+  }
+
+  @Override
+  public Path getMetaJsonFile() {
+    return metaJsonFile;
   }
 
   /**

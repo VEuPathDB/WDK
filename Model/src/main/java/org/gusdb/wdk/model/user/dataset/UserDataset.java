@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.user.dataset;
 
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
 
@@ -70,4 +71,6 @@ public interface UserDataset {
    * Get the percent of quota the user has used up.
    */
   Integer getPercentQuota(int quota) throws WdkModelException;
+
+  Path getMetaJsonFile();
 }
