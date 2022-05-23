@@ -34,7 +34,7 @@ public class ExampleTypeHandler extends UserDatasetTypeHandler {
   }
 
   @Override
-  public String[] getInstallInAppDbCommand(UserDataset userDataset, Map<String, Path> fileNameToTempFileMap, String projectid) {
+  public String[] getInstallInAppDbCommand(UserDataset userDataset, Map<String, Path> fileNameToTempFileMap, String projectid, Path workingDir) {
     // TODO Auto-generated method stub
     return null;
   }

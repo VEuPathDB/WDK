@@ -44,7 +44,7 @@ public abstract class UserDatasetTypeHandler {
    */
   public abstract UserDatasetType getUserDatasetType();
 
-  public abstract String[] getInstallInAppDbCommand(UserDataset userDataset, Map<String, Path> fileNameToTempFileMap, String project);
+  public abstract String[] getInstallInAppDbCommand(UserDataset userDataset, Map<String, Path> fileNameToTempFileMap, String project, Path workingDir);
 
   public abstract Set<String> getInstallInAppDbFileNames(UserDataset userDataset);
 
@@ -110,7 +110,7 @@ public abstract class UserDatasetTypeHandler {
     final Map<String, Path> files
   ) throws WdkModelException {
     LOG.trace("UserDatasetTypeHandler#installInAppDb");
-    String[] command = getInstallInAppDbCommand(userDataset, files, projectId);
+    String[] command = getInstallInAppDbCommand(userDataset, files, projectId, workingDir);
 
     // For the case where no user dataset file data is installed into the DB
     if(command.length > 0) {
