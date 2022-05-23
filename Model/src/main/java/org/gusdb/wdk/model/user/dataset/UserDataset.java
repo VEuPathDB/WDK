@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.user.dataset;
 
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
 

@@ -24,8 +24,7 @@ import org.json.JSONObject;
  *
  * @author steve
  */
-public class
-JsonUserDataset implements UserDataset {
+public class JsonUserDataset implements UserDataset {
 
   public static final String TYPE = "type";
   public static final String OWNER = "owner";
