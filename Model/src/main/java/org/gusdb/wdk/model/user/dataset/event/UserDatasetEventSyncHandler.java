@@ -47,15 +47,10 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
    */
   private final long previousLastHandled;
 
-  /**
-   * Session with the user dataset store.
-   *
-   * This value is not final as it is swapped out periodically to work around
-   * connection leaks with long-running sessions using the Jargon iRODS library.
-   */
-  private UserDatasetSession dsSession;
+  private final UserDatasetSession dsSession;
 
   public UserDatasetEventSyncHandler(
+    UserDatasetSession dsSession,
     DataSource ds,
     String dsSchema,
     String projectId,
@@ -63,13 +58,11 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
   ) {
     super(ds, dsSchema, projectId, modelConfig);
 
+    this.dsSession  = dsSession;
+
     failedDatasets      = getEventRepo().getIgnoredDatasetIDs();
     recoveredEvents     = getEventRepo().getCleanupCompleteEventIDs();
     previousLastHandled = getEventRepo().getLastHandledEvent();
-  }
-
-  public void setDsSession(UserDatasetSession sess) {
-    dsSession = sess;
   }
 
   @Override
