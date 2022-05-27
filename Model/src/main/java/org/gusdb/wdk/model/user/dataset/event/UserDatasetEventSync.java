@@ -28,6 +28,15 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
   private static final String LogStrSkipEvent = "%s event %d refers to typeHandler %s which is not"
     + " present in the wdk configuration. Skipping the install but declaring the event as handled.";
 
+  /**
+   * Number of events to process in a single iRODS Jargon session.
+   *
+   * Sessions will be closed and replaced after this number of events to limit
+   * the connection leaking that happens when holding onto a Jargon session for
+   * too long.
+   */
+  private static final int EventsPerSession = 50;
+
   public UserDatasetEventSync(String projectId) throws WdkModelException {
     super(projectId);
   }
@@ -42,11 +51,12 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
    */
   public void handleEventList(List<UserDatasetEvent> eventList) throws WdkModelException {
 
-    try (
-      final var appDb     = openAppDB();
-      final var dsSession = getUserDatasetStore().getSession()
-    ) {
-      final var handler = initHandler(appDb.getDataSource(), dsSession);
+    var dsSession = getUserDatasetStore().getSession();
+
+    try (final var appDb = openAppDB()) {
+      final var handler = initHandler(appDb.getDataSource());
+
+      handler.setDsSession(dsSession);
 
       int count = 0;
 
@@ -58,6 +68,12 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
       // removed at release time when the UD database is emptied.
       for (final var event : eventList) {
         LOG.info("Processing event {}", event.getEventId());
+
+        if (count > 0 && count % EventsPerSession == 0) {
+          dsSession.close();
+          dsSession = getUserDatasetStore().getSession();
+          handler.setDsSession(dsSession);
+        }
 
         final var eventRow = new EventRow(
           event.getEventId(),
@@ -154,6 +170,8 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
       handler.sendErrorNotifications();
     } catch (Exception e) {
       throw new WdkModelException(e);
+    } finally {
+      dsSession.close();
     }
   }
 
@@ -199,12 +217,8 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
       .collect(Collectors.toList());
   }
 
-  protected UserDatasetEventSyncHandler initHandler(
-    DataSource appDbDs,
-    UserDatasetSession udSession
-  ) {
+  protected UserDatasetEventSyncHandler initHandler(DataSource appDbDs) {
     return new UserDatasetEventSyncHandler(
-      udSession,
       appDbDs,
       getUserDatasetSchemaName(),
       getProjectId(),
