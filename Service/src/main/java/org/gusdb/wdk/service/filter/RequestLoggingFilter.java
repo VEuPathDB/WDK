@@ -6,12 +6,16 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.annotation.Priority;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
@@ -27,7 +31,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 @Priority(200)
-public class RequestLoggingFilter implements ContainerRequestFilter, WriterInterceptor {
+public class RequestLoggingFilter implements ContainerRequestFilter, ContainerResponseFilter, WriterInterceptor {
 
   private static final Logger LOG = Logger.getLogger(RequestLoggingFilter.class);
 
@@ -36,7 +40,8 @@ public class RequestLoggingFilter implements ContainerRequestFilter, WriterInter
   private static final String EMPTY_ENTITY = "<empty>";
   private static final String FORM_ENTITY = "<form_data>";
 
-  private static final String OMIT_REQUEST_LOGGING_PROP_KEY = "omitRequestLogging";
+  private static final String OMIT_REQUEST_LOGGING_PROP_KEY_FILTER = "omitRequestLogging-filter";
+  private static final String OMIT_REQUEST_LOGGING_PROP_KEY_INTERCEPTOR = "omitRequestLogging-interceptor";
 
   public static boolean isLogEnabled() {
     return LOG.isEnabledFor(LOG_LEVEL);
@@ -49,8 +54,9 @@ public class RequestLoggingFilter implements ContainerRequestFilter, WriterInter
     boolean omitRequestLogging = requestContext.getUriInfo().getPath()
         .equals(SystemService.PROMETHEUS_ENDPOINT_PATH);
 
-    // tell the WriterInterceptor whether to skip logging
-    requestContext.setProperty(OMIT_REQUEST_LOGGING_PROP_KEY, omitRequestLogging);
+    // tell outgoing request classes whether to skip logging
+    requestContext.setProperty(OMIT_REQUEST_LOGGING_PROP_KEY_FILTER, omitRequestLogging);
+    requestContext.setProperty(OMIT_REQUEST_LOGGING_PROP_KEY_INTERCEPTOR, omitRequestLogging);
 
     // explicitly check if enabled to not impact performance if logging is turned off
     if (!omitRequestLogging && isLogEnabled()) {
@@ -147,14 +153,30 @@ public class RequestLoggingFilter implements ContainerRequestFilter, WriterInter
   }
 
   @Override
+  public void filter(ContainerRequestContext context, ContainerResponseContext responseContext)
+      throws IOException {
+    int httpStatus = responseContext.getStatus();
+    logCompletionStatus("Request processing complete [" + httpStatus + "] (response body write starting if present)",
+        OMIT_REQUEST_LOGGING_PROP_KEY_FILTER, context::getProperty, context::removeProperty);
+  }
+
+  @Override
   public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
     context.proceed();
-    Boolean omitRequestLogging = (Boolean)context.getProperty(OMIT_REQUEST_LOGGING_PROP_KEY);
+    logCompletionStatus("Request processing complete (response write finished)",
+        OMIT_REQUEST_LOGGING_PROP_KEY_INTERCEPTOR, context::getProperty, context::removeProperty);
+  }
+
+  private static void logCompletionStatus(String message, String propKey,
+      Function<String,Object> getter, Consumer<String> remover) {
+    Boolean omitRequestLogging = (Boolean)getter.apply(propKey);
+    remover.accept(propKey);
 
     // if property not found, then this request went unmatched; can ignore.  If present, omit as requested.
     if (omitRequestLogging != null && !omitRequestLogging) {
-      context.removeProperty(OMIT_REQUEST_LOGGING_PROP_KEY);
-      LOG.log(LOG_LEVEL, "Request complete");
+      LOG.log(LOG_LEVEL, message);
     }
   }
+
+
 }
