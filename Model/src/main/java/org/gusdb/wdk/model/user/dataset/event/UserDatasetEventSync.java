@@ -28,6 +28,20 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
   private static final String LogStrSkipEvent = "%s event %d refers to typeHandler %s which is not"
     + " present in the wdk configuration. Skipping the install but declaring the event as handled.";
 
+  /**
+   * Maximum number of user datasets that will be handled per execution of this
+   * script.
+   *
+   * This is done due to connection leaks in the iRODS job handling on
+   * long-running sessions.
+   *
+   * As this job is called every 5 minutes by Jenkins, this limit will not
+   * prevent all jobs from being processed.  Subsequent Jenkins runs will pick
+   * up where the previous installer execution left off and will install the
+   * next batch of the configured number of datasets.
+   */
+  private static final int MaxDatasetsPerExecution = 150;
+
   public UserDatasetEventSync(String projectId) throws WdkModelException {
     super(projectId);
   }
@@ -57,6 +71,11 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
       // be installed on the system as type handlers should only be added and
       // removed at release time when the UD database is emptied.
       for (final var event : eventList) {
+        if (count >= MaxDatasetsPerExecution) {
+          LOG.debug("Processed {} datasets, ending execution.", count);
+          break;
+        }
+
         LOG.info("Processing event {}", event.getEventId());
 
         final var eventRow = new EventRow(
