@@ -40,8 +40,8 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
   private static final String EMPTY_ENTITY = "<empty>";
   private static final String FORM_ENTITY = "<form_data>";
 
-  private static final String OMIT_REQUEST_LOGGING_PROP_KEY_FILTER = "omitRequestLogging-filter";
-  private static final String OMIT_REQUEST_LOGGING_PROP_KEY_INTERCEPTOR = "omitRequestLogging-interceptor";
+  private static final String OMIT_REQUEST_LOGGING_PROP_KEY = "omitRequestLogging";
+  private static final String HTTP_RESPONSE_STATUS_PROP_KEY = "httpResponseStatus";
 
   public static boolean isLogEnabled() {
     return LOG.isEnabledFor(LOG_LEVEL);
@@ -55,8 +55,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
         .equals(SystemService.PROMETHEUS_ENDPOINT_PATH);
 
     // tell outgoing request classes whether to skip logging
-    requestContext.setProperty(OMIT_REQUEST_LOGGING_PROP_KEY_FILTER, omitRequestLogging);
-    requestContext.setProperty(OMIT_REQUEST_LOGGING_PROP_KEY_INTERCEPTOR, omitRequestLogging);
+    requestContext.setProperty(OMIT_REQUEST_LOGGING_PROP_KEY, omitRequestLogging);
 
     // explicitly check if enabled to not impact performance if logging is turned off
     if (!omitRequestLogging && isLogEnabled()) {
@@ -86,7 +85,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
     LOG.log(LOG_LEVEL, log.toString());
   }
 
-  public static String queryToJson(MultivaluedMap<String, String> map) {
+  private static String queryToJson(MultivaluedMap<String, String> map) {
     JSONObject json = new JSONObject();
     for (Entry<String,List<String>> entry : map.entrySet()) {
       json.put(entry.getKey(), new JSONArray(entry.getValue()));
@@ -155,26 +154,46 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
   @Override
   public void filter(ContainerRequestContext context, ContainerResponseContext responseContext)
       throws IOException {
+    // check to see if this response has a body; if so, defer completion logging to the WriterInterceptor method
+    boolean hasResponseBody = responseContext.getEntity() != null;
     int httpStatus = responseContext.getStatus();
-    logCompletionStatus("Request processing complete [" + httpStatus + "] (response body write starting if present)",
-        OMIT_REQUEST_LOGGING_PROP_KEY_FILTER, context::getProperty, context::removeProperty);
+    if (hasResponseBody) {
+      // pass along the response status to the interceptor to log after response body is written
+      context.setProperty(HTTP_RESPONSE_STATUS_PROP_KEY, httpStatus);
+    }
+    else {
+      // request is complete; log status
+      logRequestCompletion(httpStatus, "empty", context::getProperty, context::removeProperty);
+    }
   }
 
   @Override
   public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
-    context.proceed();
-    logCompletionStatus("Request processing complete (response write finished)",
-        OMIT_REQUEST_LOGGING_PROP_KEY_INTERCEPTOR, context::getProperty, context::removeProperty);
+    // get HTTP status passed along by the filter() method, then remove
+    int httpStatus = (Integer)context.getProperty(HTTP_RESPONSE_STATUS_PROP_KEY);
+    context.removeProperty(HTTP_RESPONSE_STATUS_PROP_KEY);
+    try {
+      // write the response
+      context.proceed();
+      // response written successfully; log status
+      logRequestCompletion(httpStatus, "written successfully", context::getProperty, context::removeProperty);
+    }
+    catch (Exception e) {
+      // exception while writing response body; log error, then status
+      LOG.error("Failure to write response body", e);
+      logRequestCompletion(httpStatus, "write failed", context::getProperty, context::removeProperty);
+    }
   }
 
-  private static void logCompletionStatus(String message, String propKey,
+  private static void logRequestCompletion(int httpStatus, String bodyWriteStatus,
       Function<String,Object> getter, Consumer<String> remover) {
-    Boolean omitRequestLogging = (Boolean)getter.apply(propKey);
-    remover.accept(propKey);
+    // skip logging as requested
+    Boolean omitRequestLogging = (Boolean)getter.apply(OMIT_REQUEST_LOGGING_PROP_KEY);
+    remover.accept(OMIT_REQUEST_LOGGING_PROP_KEY);
 
     // if property not found, then this request went unmatched; can ignore.  If present, omit as requested.
     if (omitRequestLogging != null && !omitRequestLogging) {
-      LOG.log(LOG_LEVEL, message);
+      LOG.log(LOG_LEVEL, "Request completed [" + httpStatus + "]; response body " + bodyWriteStatus);
     }
   }
 
