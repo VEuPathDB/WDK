@@ -182,6 +182,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
       // exception while writing response body; log error, then status
       LOG.error("Failure to write response body", e);
       logRequestCompletion(httpStatus, "write failed", context::getProperty, context::removeProperty);
+      throw e;
     }
   }
 
