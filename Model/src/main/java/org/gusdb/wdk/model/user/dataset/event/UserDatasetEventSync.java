@@ -40,7 +40,10 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
    * @param eventList list of user dataset event to be processed. database
    *                  records in tables.
    */
-  public void handleEventList(List<UserDatasetEvent> eventList) throws WdkModelException {
+  public void handleEventList(
+    List<UserDatasetEvent> eventList,
+    int maxDatasetsPerExecution
+  ) throws WdkModelException {
 
     try (
       final var appDb     = openAppDB();
@@ -57,6 +60,11 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
       // be installed on the system as type handlers should only be added and
       // removed at release time when the UD database is emptied.
       for (final var event : eventList) {
+        if (count >= maxDatasetsPerExecution) {
+          LOG.debug("Processed {} datasets, ending execution.", count);
+          break;
+        }
+
         LOG.info("Processing event {}", event.getEventId());
 
         final var eventRow = new EventRow(
