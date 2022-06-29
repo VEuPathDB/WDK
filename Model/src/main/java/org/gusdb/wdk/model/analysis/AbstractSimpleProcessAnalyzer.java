@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.user.analysis.ExecutionStatus;
 import org.gusdb.wdk.model.user.analysis.StatusLogger;
+import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 
 /**
  * Use this as a super class if your analysis runs as a stand-alone unix command.
@@ -25,7 +26,7 @@ public abstract class AbstractSimpleProcessAnalyzer extends AbstractStepAnalyzer
   private static final String STDOUT_FILE_NAME = "stdout.txt";
   private static final String STDERR_FILE_NAME = "stderr.txt";
   
-  protected abstract String[] getCommand(AnswerValue answerValue) throws WdkModelException, WdkUserException;
+    protected abstract String[] getCommand(AnswerValue answerValue) throws WdkModelException, WdkUserException, IllegalAnswerValueException;
   
   /**
    * Allows subclasses to configure the environment of the process they want to
