@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.fix;
 
+import org.apache.commons.lang3.StringUtils;
+
 import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.util.ArrayList;
@@ -8,7 +10,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Simple generic comparison object for capturing comparison information for

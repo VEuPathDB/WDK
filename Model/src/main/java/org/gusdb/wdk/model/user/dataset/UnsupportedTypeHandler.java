@@ -32,7 +32,7 @@ public class UnsupportedTypeHandler extends UserDatasetTypeHandler {
 
   @Override
   public String[] getInstallInAppDbCommand(UserDataset userDataset, Map<String, Path> fileNameToTempFileMap,
-    String project) {
+                                           String project, Path workingDir) {
     String[] cmd = {};
     return cmd;
   }
