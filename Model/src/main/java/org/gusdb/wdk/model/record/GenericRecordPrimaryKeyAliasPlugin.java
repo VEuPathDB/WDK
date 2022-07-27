@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
 
@@ -21,14 +19,11 @@ import org.gusdb.wdk.model.user.User;
  */
 public class GenericRecordPrimaryKeyAliasPlugin implements PrimaryKeyAliasPlugin {
 
-  private static final Logger LOG = Logger.getLogger(GenericRecordPrimaryKeyAliasPlugin.class);
-
   @Override
   public List<Map<String, Object>> getPrimaryKey(User user, Map<String, Object> inputPkValues)
       throws WdkModelException, RecordNotFoundException {
 
     List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
-    LOG.info("Adding input PK: " + FormatUtil.prettyPrint(inputPkValues));
     result.add(inputPkValues);
     return result;
   }
