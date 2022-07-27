@@ -58,8 +58,6 @@ public class Utilities {
 
   public static final int MAXIMUM_RECORD_INSTANCES = 10000;
 
-  public static final String ALIAS_OLD_KEY_COLUMN_PREFIX = "old_";
-
   public static final int DEFAULT_PAGE_SIZE = 20;
 
   public static final int DEFAULT_SUMMARY_ATTRIBUTE_SIZE = 6;

@@ -213,7 +213,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private Map<String, Query> attributeQueries = new LinkedHashMap<>();
   private Map<String, Query> tableQueries = new LinkedHashMap<>();
 
+  private List<PrimaryKeyDefinition> primaryKeyDefinitionList = new ArrayList<>();
   private PrimaryKeyDefinition primaryKeyDefinition;
+
   private IdAttributeField idAttributeField;
 
   private List<AttributeField> attributeFieldList = new ArrayList<>();
@@ -472,8 +474,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   public void setPrimaryKeyDefinition(PrimaryKeyDefinition primaryKeyDefinition) {
-    this.primaryKeyDefinition = primaryKeyDefinition;
-    this.primaryKeyDefinition.setRecordClass(this);
+    // add this pkDef to list; single value will be chosen during excludeResources()
+    primaryKeyDefinition.setRecordClass(this);
+    primaryKeyDefinitionList.add(primaryKeyDefinition);
   }
 
   public PrimaryKeyDefinition getPrimaryKeyDefinition() {
@@ -1163,13 +1166,22 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
     reporterList = null;
 
-    // make sure there is a primary key
+    // exclude primary key definitions and ensure exactly one remains
+    for (PrimaryKeyDefinition pkDef : primaryKeyDefinitionList) {
+      if (pkDef.include(projectId)) {
+        if (primaryKeyDefinition != null) {
+          // already found one that should be included
+          throw new WdkModelException("Found more than one included <primaryKey> value in recordClass " + getFullName());
+        }
+        primaryKeyDefinition = pkDef;
+      }
+    }
     if (primaryKeyDefinition == null) {
-      throw new WdkModelException("The primaryKey of recordClass " + getFullName() +
-          " is not set.  Please define a <primaryKey> tag in the recordClass.");
+      throw new WdkModelException("After exclusion, the primaryKey of recordClass " + getFullName() +
+          " is not set.  Please define a <primaryKey> tag in the recordClass for project '" + projectId + "'.");
     }
 
-    // exclude primary key
+    // exclude primary key children
     primaryKeyDefinition.excludeResources(projectId);
 
     // exclude attributes
