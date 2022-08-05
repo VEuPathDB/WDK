@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.record;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -17,14 +18,9 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QueryInstance;
-import org.gusdb.wdk.model.query.SqlQuery;
-import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
-import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -36,7 +32,7 @@ import org.gusdb.wdk.model.user.User;
  * A primary key is a combination of one or more {@link Column}s; if the
  * columns are needed as separate attributes, corresponding
  * {@link PkColumnAttributeField}s can to be defined inside the {@link RecordClass}.
- * If they are not defined, they will be generated.
+ * If they are not defined, they will be generated from the defined PK columns.
  * </p>
  * <p>
  * Due to the limitation of the basket/dataset tables, we can only support a
@@ -54,16 +50,14 @@ public class PrimaryKeyDefinition extends WdkModelBase {
   private RecordClass _recordClass;
 
   /**
-   * if an alias query ref is defined, the ids will be passed though this alias
-   * query to get the new ids whenever a recordInstance is created.
+   * if an alias query ref is defined, the reference will be resolved into a
+   * Query and used to create a QueryBasedPrimaryKeyAliasPlugin, which will be
+   * called as if the model defined an alias plugin implementation
    */
   private String _aliasQueryRef;
   private String _aliasPluginClassName;
 
-  /**
-   * the reference to a query that returns a list of alias ids of the given gene id
-   */
-  private Query _aliasQuery;
+  // resolved plugin used to look up PKs of valid records given candidate PKs
   private PrimaryKeyAliasPlugin _aliasPlugin;
 
   private List<WdkModelText> _columnRefList = new ArrayList<>();
@@ -131,68 +125,39 @@ public class PrimaryKeyDefinition extends WdkModelBase {
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
 
-    // resolve the alias query
-    resolveAliasQuery(model);
-
-    // resolve the alias plugin
-    try {
-      if (_aliasPluginClassName != null && _aliasPlugin == null) {
-        Class<? extends PrimaryKeyAliasPlugin> pluginClass = Class.forName(_aliasPluginClassName).asSubclass(
-            PrimaryKeyAliasPlugin.class);
-        _aliasPlugin = pluginClass.getDeclaredConstructor().newInstance();
-      }
+    // make sure exactly one of [ aliasQuery, aliasPlugin ] was specified
+    if ((_aliasQueryRef == null ? 0 : 1) + (_aliasPluginClassName == null ? 0 : 1) != 1) {
+      throw new WdkModelException("Primary key definition of record class '" +
+          _recordClass.getFullName() + "' must have exactly one of 'aliasQueryRef' or 'aliasPluginClassName'");
     }
-    catch (Exception e) {
-      throw new WdkModelException("Failed instantiating aliasPlugin for class " + _aliasPluginClassName, e);
-    }
-  }
 
-  /**
-   * resolve the alias query, and verify the needed columns. A alias query should return all columns in the
-   * primary key, and it should also return another set of columns that starts with
-   * ALIAS_OLD_KEY_COLUMN_PREFIX constant, appended by the column names in the primary key.
-   *
-   * @param wdkModel
-   * @throws WdkModelException
-   */
-  private void resolveAliasQuery(WdkModel wdkModel) throws WdkModelException {
+    // if alias query specified, resolve/prepare it and create query based plugin
     if (_aliasQueryRef != null) {
-      SqlQuery query = (SqlQuery) wdkModel.resolveReference(_aliasQueryRef);
+      Query aliasQuery = QueryBasedPrimaryKeyAliasPlugin
+          .prepareAliasQuery(_aliasQueryRef, getColumnRefs(), _recordClass);
+      _aliasPlugin = new QueryBasedPrimaryKeyAliasPlugin(aliasQuery);
+    }
 
-      _recordClass.validateBulkQuery(query);
-
-      Map<String, Column> columnMap = query.getColumnMap();
-      // make sure the attribute query also returns old primary key
-      // columns
-      for (String column : getColumnRefs()) {
-        column = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + column;
-        if (!columnMap.containsKey(column))
-          throw new WdkModelException("The attribute query " + query.getFullName() + " of " +
-              _recordClass.getFullName() + " does not return the required old primary key " + "column " + column);
+    // otherwise, resolve the configured alias plugin
+    else {
+      try {
+        _aliasPlugin = Class
+            .forName(_aliasPluginClassName)
+            .asSubclass(PrimaryKeyAliasPlugin.class)
+            .getDeclaredConstructor()
+            .newInstance();
       }
-
-      // the alias query should also return columns for old primary key
-      // columns, with a prefix "old_".
-      String[] pkColumns = getColumnRefs();
-      String[] paramNames = new String[pkColumns.length];
-      for (int i = 0; i < pkColumns.length; i++) {
-        paramNames[i] = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + pkColumns[i];
+      catch (InstantiationException | IllegalAccessException | IllegalArgumentException |
+          InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
+        throw new WdkModelException("Failed instantiating aliasPlugin for class " + _aliasPluginClassName, e);
       }
-
-      _aliasQuery = RecordClass.prepareQuery(wdkModel, query, paramNames);
     }
   }
 
   public List<Map<String, Object>> lookUpPrimaryKeys(User user, Map<String, Object> pkValues)
       throws RecordNotFoundException, WdkModelException {
-    List<Map<String,Object>> primaryKeys = new ArrayList<>();
-    if (_aliasQuery != null) {
-      primaryKeys = getPrimaryKeyFromAliasQuery(user, pkValues);
-    }
-    else if (_aliasPlugin != null) {
-      primaryKeys = getPrimaryKeyFromAliasPlugin(user, pkValues);
-    }
-    if(primaryKeys.isEmpty()) {
+    List<Map<String,Object>> primaryKeys = _aliasPlugin.getPrimaryKey(user, pkValues);
+    if (primaryKeys.isEmpty()) {
       throw new RecordNotFoundException("No " + _recordClass.getDisplayName() + " record found for the primary key values: " + displayPkValues(pkValues));
     }
     return primaryKeys;
@@ -222,43 +187,6 @@ public class PrimaryKeyDefinition extends WdkModelBase {
       display.append(key + "=" + pkValues.get(key) + " ");
     }
     return display.toString();
-  }
-
-  private List<Map<String, Object>> getPrimaryKeyFromAliasPlugin(User user, Map<String, Object> pkValues)
-      throws WdkModelException, RecordNotFoundException {
-    return _aliasPlugin.getPrimaryKey(user, pkValues);
-  }
-
-  private List<Map<String, Object>> getPrimaryKeyFromAliasQuery(User user, Map<String, Object> pkValues)
-      throws WdkModelException {
-
-    List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
-
-    // get alias from the alias query
-    Map<String, String> oldValues = new LinkedHashMap<String, String>();
-    for (String param : pkValues.keySet()) {
-      String oldParam = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + param;
-      String value = Utilities.parseValue(pkValues.get(param));
-      oldValues.put(oldParam, value);
-    }
-
-    QueryInstance<?> instance = Query.makeQueryInstance(QueryInstanceSpec.builder()
-        .putAll(oldValues).buildRunnable(user, _aliasQuery, StepContainer.emptyContainer()));
-
-    try (ResultList resultList = instance.getResults()) {
-      while (resultList.next()) {
-        Map<String, Object> newValue = new LinkedHashMap<String, Object>();
-        for (String param : pkValues.keySet()) {
-          newValue.put(param, resultList.get(param));
-        }
-        records.add(newValue);
-      }
-      // no alias found, use the original ones
-      //if (records.size() == 0)
-      //  records.add(pkValues);
-    }
-
-    return records;
   }
 
   public String createJoinClause(String subQuery1Name, String subQuery2Name) {
