@@ -16,7 +16,6 @@ public class DatasetListContents extends DatasetContents {
     this.idList = idList;
   }
 
-  
   @Override
   public String getChecksum() {
     if (checksum != null)
