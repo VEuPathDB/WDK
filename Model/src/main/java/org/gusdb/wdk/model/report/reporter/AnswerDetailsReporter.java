@@ -30,8 +30,14 @@ public abstract class AnswerDetailsReporter extends AbstractReporter {
     return configure(AnswerDetailsFactory.createFromJson(config, _baseAnswer.getAnswerSpec().getQuestion()));
   }
 
-  protected Reporter configure(AnswerDetails config) {
+  protected Reporter configure(AnswerDetails config) throws ReporterConfigException, WdkModelException {
     _baseAnswer = getConfiguredAnswer(_baseAnswer, config);
+    if (_baseAnswer.getPageSize() == 0) {
+      throw new ReporterConfigException("This request will not yield any records " + (
+          _baseAnswer.getResultSizeFactory().getResultSize() == 0 ?
+          "(total result size is zero)." :
+          "(page requested does not contain any rows)."));
+    }
     _attributes = config.getAttributes();
     _tables = config.getTables();
     _contentDisposition = config.getContentDisposition();

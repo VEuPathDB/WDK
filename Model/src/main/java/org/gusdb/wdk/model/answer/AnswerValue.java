@@ -833,11 +833,22 @@ public class AnswerValue {
     return _startIndex;
   }
 
+  /**
+   * Calculates the size of the page for this answer i.e. the number of rows this
+   * answer will return.  Typically this is the difference between start and end
+   * index (+1 due to inclusivity of start and end indexes), but may be smaller
+   * if end index is higher than the total result size.  This method will never
+   * return a negative number, or a value large than the total result size.
+   *
+   * @return number of rows returned by this answer value
+   * @throws WdkModelException if unable to calculate result size
+   */
   public int getPageSize() throws WdkModelException {
     int resultSize = _resultSizeFactory.getResultSize();
-    int n = (_endIndex == UNBOUNDED_END_PAGE_INDEX ? resultSize : Math.min(_endIndex, resultSize)) - _startIndex + 1;
-    LOG.debug("AnswerValue: getPageSize(): " + n);
-    return n;
+    int endIndex = _endIndex == UNBOUNDED_END_PAGE_INDEX ? resultSize : Math.min(_endIndex, resultSize);
+    int pageSize = endIndex < _startIndex ? 0 : endIndex - _startIndex + 1;
+    LOG.debug("AnswerValue: getPageSize(): " + pageSize);
+    return pageSize;
   }
 
   public Optional<String> getResultMessage() throws WdkModelException {
