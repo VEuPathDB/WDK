@@ -33,14 +33,28 @@ public class DatasetFileContents extends DatasetContents {
    */
   private String checksum;
 
+  /**
+   * Number of records expected in this dataset file
+   * (some files are written knowing how many records are contained within)
+   */
+  private final Long numRecords;
+
   public DatasetFileContents(
     final String fileName,
     final File contents
   ) {
+    this(fileName, contents, null);
+  }
+
+  public DatasetFileContents(
+      final String fileName,
+      final File contents,
+      final Long numRecords) {
     super(fileName);
     LOG.info("Created new DatasetFileContents object pointing at file: " + contents.getAbsolutePath());
     this.contents = contents;
     this.owned = false;
+    this.numRecords = numRecords;
   }
 
   DatasetFileContents(
@@ -63,6 +77,7 @@ public class DatasetFileContents extends DatasetContents {
     tmp.deleteOnExit();
     this.owned = true;
     this.contents = tmp;
+    this.numRecords = null;
   }
 
   /**
@@ -125,5 +140,12 @@ public class DatasetFileContents extends DatasetContents {
     } catch (IOException e) {
       throw new WdkRuntimeException(e);
     }
+  }
+
+  @Override
+  public long getEstimatedRowCount() {
+    return numRecords != null
+        ? numRecords
+        : (contents.length() / ESTIMATED_BYTES_PER_ID) + 1; // round up
   }
 }

@@ -51,6 +51,9 @@ import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.Fill
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
+import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
+import org.gusdb.wdk.model.record.PrimaryKeyIterator;
+import org.gusdb.wdk.model.record.ResultSetPrimaryKeyIterator;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.TableField;
@@ -897,33 +900,6 @@ public class AnswerValue {
     _sortedIdSql = null;
   }
 
-  /**
-   * This method is redundant with getAllIds(), consider deprecate either one of them.
-   *
-   * @return returns a list of all primary key values.
-   */
-  public Object[][] getPrimaryKeyValues() throws WdkModelException {
-    String[] columns = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
-    List<Object[]> buffer = new ArrayList<>();
-
-    Optional<AnswerFilterInstance> legacyFilter = _answerSpec.getLegacyFilter();
-    try (ResultList resultList =
-          legacyFilter.isPresent() ?
-          legacyFilter.get().getResults(this) :
-          _idsQueryInstance.getResults()) {
-      while (resultList.next()) {
-        Object[] pkValues = new String[columns.length];
-        for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {
-          pkValues[columnIndex] = resultList.get(columns[columnIndex]);
-        }
-        buffer.add(pkValues);
-      }
-      Object[][] ids = new String[buffer.size()][columns.length];
-      buffer.toArray(ids);
-      return ids;
-    }
-  }
-
   private void reset() {
     _sortedIdSql = null;
     _checksum = null;
@@ -931,36 +907,24 @@ public class AnswerValue {
   }
 
   /**
-   * Get a list of all the primary key tuples of all the records in the answer. It is a shortcut of iterating
-   * through all the pages and get the primary keys.
+   * Creates a closable iterator of IDs for this answer
    *
-   * This method is redundant with getPrimaryKeyValues(), consider deprecate either one of them.
+   * NOTE! caller must close the return value to avoid resource leaks.
+   *
+   * @return an iterator of all the primary key tuples of all the records in the answer
+   * @throws WdkModelException if unable to execute ID query
    */
-  public List<String[]> getAllIds() throws WdkModelException {
-    String idSql = getSortedIdSql();
-    String[] pkColumns = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
-    List<String[]> pkValues = new ArrayList<>();
-    WdkModel wdkModel = _answerSpec.getQuestion().getWdkModel();
-    DataSource dataSource = wdkModel.getAppDb().getDataSource();
-    ResultSet resultSet = null;
+  public PrimaryKeyIterator getAllIds() throws WdkModelException {
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, idSql, _idsQueryInstance.getQuery().getFullName() + "__all-ids");
-      while (resultSet.next()) {
-        String[] values = new String[pkColumns.length];
-        for (int i = 0; i < pkColumns.length; i++) {
-          Object value = resultSet.getObject(pkColumns[i]);
-          values[i] = (value == null) ? null : value.toString();
-        }
-        pkValues.add(values);
-      }
+      PrimaryKeyDefinition pkDef = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition();
+      DataSource dataSource = _wdkModel.getAppDb().getDataSource();
+      String idSql = getSortedIdSql();
+      String queryDescriptor = _idsQueryInstance.getQuery().getFullName() + "__all-ids";
+      return new ResultSetPrimaryKeyIterator(pkDef, SqlUtils.executeQuery(dataSource, idSql, queryDescriptor));
     }
-    catch (SQLException ex) {
-      throw new WdkModelException(ex);
+    catch (SQLException e) {
+      throw new WdkModelException("Unable to execute ID query", e);
     }
-    finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, null);
-    }
-    return pkValues;
   }
 
   public void setPageIndex(int startIndex, int endIndex) {
@@ -986,26 +950,6 @@ public class AnswerValue {
       throw new WdkUserException("Filter name '" + filterName +
           "' is not a valid filter on question " + _answerSpec.getQuestion().getName());
     }
-  }
-
-  /**
-   * Returns one big string containing all IDs in this answer value's result in
-   * the following format: each '\n'-delimited line contains one record, whose
-   * primary keys are joined and delimited by a comma.
-   *
-   * @return list of all record IDs
-   */
-  public String getAllIdsAsString() throws WdkModelException {
-    List<String[]> pkValues = getAllIds();
-    StringBuilder buffer = new StringBuilder();
-    for (String[] pkValue : pkValues) {
-        if (buffer.length() > 0) buffer.append("\n");
-        for (int i = 0; i < pkValue.length; i++) {
-            if (i > 0) buffer.append(", ");
-            buffer.append(pkValue[i]);
-        }
-    }
-    return buffer.toString();
   }
 
   private final static String ID_QUERY_HANDLE = "pidq";

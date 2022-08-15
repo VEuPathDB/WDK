@@ -25,8 +25,8 @@ import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
-import org.gusdb.wdk.service.request.user.DatasetRequestProcessor;
-import org.gusdb.wdk.service.request.user.DatasetRequestProcessor.DatasetRequest;
+import org.gusdb.wdk.service.request.user.dataset.DatasetRequestProcessor;
+import org.gusdb.wdk.service.request.user.dataset.DatasetRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 

@@ -7,6 +7,7 @@ import java.io.*;
 import java.util.List;
 
 public class DatasetListContents extends DatasetContents {
+
   private final List<String> idList;
   private String checksum;
 
@@ -112,5 +113,10 @@ public class DatasetListContents extends DatasetContents {
 
       done = true;
     }
+  }
+
+  @Override
+  public long getEstimatedRowCount() {
+    return idList.size();
   }
 }

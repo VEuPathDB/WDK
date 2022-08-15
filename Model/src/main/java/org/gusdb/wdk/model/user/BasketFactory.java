@@ -85,11 +85,6 @@ public class BasketFactory {
     }
   }
 
-  public void removeEntireResultFromBasket(User user, RunnableObj<AnswerSpec> spec) throws WdkModelException {
-    List<String[]> pkValues = AnswerValueFactory.makeAnswer(user, spec).getAllIds();
-    removeFromBasket(user, spec.get().getQuestion().getRecordClass(), pkValues);
-  }
-
   public void addPksToBasket(User user, RecordClass recordClass, Collection<PrimaryKeyValue> recordsToAdd) throws WdkModelException {
     addToBasket(user, recordClass, recordsToAdd.size(), new PrimaryKeyRecordStream(user, recordClass, recordsToAdd));
   }

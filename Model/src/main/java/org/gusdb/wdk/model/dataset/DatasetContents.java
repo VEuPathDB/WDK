@@ -7,7 +7,12 @@ import java.io.InputStream;
 import java.io.Reader;
 
 public abstract class DatasetContents {
+
   private static final int BUF_SIZE = 8192;
+
+  // constants used to estimate number of records
+  public static final int ESTIMATED_CHARS_PER_ID = 10;
+  public static final int ESTIMATED_BYTES_PER_ID = 15;
 
   protected final String fileName;
 
@@ -18,6 +23,8 @@ public abstract class DatasetContents {
   public String getUploadFileName() {
     return fileName;
   }
+
+  public abstract long getEstimatedRowCount();
 
   @SuppressWarnings("ThrowFromFinallyBlock")
   public String truncate(final int len) throws WdkModelException {

@@ -1,29 +1,27 @@
-package org.gusdb.wdk.service.request.user;
+package org.gusdb.wdk.service.request.user.dataset;
 
-import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.json.JsonIterators.arrayStream;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.client.ClientUtil;
-import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonType.ValueType;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.fgputil.web.SessionProxy;
@@ -45,88 +43,21 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.PrimaryKeyIterator;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.service.TemporaryFileService;
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class DatasetRequestProcessor {
 
   private static Logger LOG = Logger.getLogger(DatasetRequestProcessor.class);
-
-  public enum DatasetSourceType {
-
-    ID_LIST("idList", "ids", ValueType.ARRAY),
-    BASKET("basket", "basketName", ValueType.STRING),
-    FILE("file", "temporaryFileId", ValueType.STRING),
-    STRATEGY("strategy", JsonKeys.STRATEGY_ID, ValueType.NUMBER),
-    URL("url", "url", ValueType.STRING);
-
-    private final String _typeIndicator;
-    private final String _configJsonKey;
-    private final ValueType _configValueType;
-
-    DatasetSourceType(String typeIndicator, String configJsonKey, ValueType configValueType) {
-      _typeIndicator = typeIndicator;
-      _configJsonKey = configJsonKey;
-      _configValueType = configValueType;
-    }
-
-    public String getTypeIndicator() {
-      return _typeIndicator;
-    }
-
-    public String getConfigJsonKey() {
-      return _configJsonKey;
-    }
-
-    public ValueType getConfigType() {
-      return _configValueType;
-    }
-
-    public static DatasetSourceType getFromTypeIndicator(String typeIndicator) throws RequestMisformatException {
-      return Arrays.stream(values())
-        .filter(val -> val._typeIndicator.equals(typeIndicator))
-        .findFirst()
-        .orElseThrow(() -> new RequestMisformatException(
-            "Invalid source type.  Only [" + FormatUtil.join(values(), ", ") + "] allowed."));
-    }
-  }
-
-  public static class DatasetRequest {
-
-    private final DatasetSourceType _sourceType;
-    private final JsonType _configValue;
-    private final Optional<String> _displayName;
-    private final Map<String,JsonType> _additionalConfig;
-
-    public DatasetRequest(JSONObject input) throws RequestMisformatException {
-      _sourceType = DatasetSourceType.getFromTypeIndicator(input.getString(JsonKeys.SOURCE_TYPE));
-      JSONObject sourceContent = input.getJSONObject(JsonKeys.SOURCE_CONTENT);
-      _configValue = new JsonType(sourceContent.get(_sourceType.getConfigJsonKey()));
-      if (!_configValue.getType().equals(_sourceType.getConfigType())) {
-        throw new RequestMisformatException("Value of '" +
-            _sourceType.getConfigJsonKey() + "' must be a " + _sourceType.getConfigType());
-      }
-      _additionalConfig = Functions.getMapFromKeys(
-          JsonUtil.getKeys(sourceContent).stream()
-            .filter(key -> !key.equals(_sourceType.getConfigJsonKey()))
-            .collect(Collectors.toSet()),
-          key -> new JsonType(sourceContent.get(key)));
-      _displayName = Optional.ofNullable(JsonUtil.getStringOrDefault(input, JsonKeys.DISPLAY_NAME, null));
-    }
-
-    public DatasetSourceType getSourceType() { return _sourceType; }
-    public JsonType getConfigValue() { return _configValue; }
-    public Optional<String> getDisplayName() { return _displayName; }
-    public Map<String,JsonType> getAdditionalConfig() { return _additionalConfig; }
-
-  }
 
   public static Dataset createFromRequest(
     DatasetRequest request,
@@ -175,52 +106,72 @@ public class DatasetRequestProcessor {
     final User user,
     final DatasetFactory factory
   ) throws WdkModelException, DataValidationException {
-    var recordClass = factory.getWdkModel()
+
+    RecordClass recordClass = factory.getWdkModel()
       .getRecordClassByUrlSegment(recordClassName)
       .orElseThrow(() -> new DataValidationException(
         "No record class exists with name '" + recordClassName + "'."));
 
-    var basketFactory = factory.getWdkModel().getBasketFactory();
-    var wasEmpty = true;
+    BasketFactory basketFactory = factory.getWdkModel().getBasketFactory();
 
-    try {
-      var file = Files.createTempFile("dataset-",
-        "-" + user.getStableId() + "-" + recordClassName).toFile();
+    long basketSize = basketFactory.getBasketCounts(user).get(recordClass);
+    if (basketSize == 0)
+      throw new DataValidationException("Basket '" + recordClassName + "' does "
+          + "not contain any records.  No dataset can be made.");
 
-      file.deleteOnExit();
+    // write basket records to file (just to parse again :()
+    File file = null;
+    try (Stream<RecordInstance> basketStream = basketFactory.getBasket(user, recordClass)) {
 
-      try (
-        var write  = new BufferedWriter(new FileWriter(file));
-        var stream = basketFactory.getBasket(user, recordClass)
-      ) {
-        var it = stream
+      Iterator<String[]> recordIterator = basketStream
           .map(RecordInstance::getPrimaryKey)
           .map(PrimaryKeyValue::getValues)
           .map(Map::values)
           .map(c -> c.toArray(new String[0]))
-          .map(a -> join(a, ListDatasetParser.DATASET_COLUMN_DIVIDER))
           .iterator();
 
-        if (it.hasNext()) {
-          wasEmpty = false;
-          while (it.hasNext()) {
-            write.write(it.next());
-            write.write('\n');
-          }
+      file = createTempFile(user, recordClassName);
 
-          write.flush();
-        }
-      }
-
-      if (wasEmpty)
-        throw new DataValidationException("Basket '" + recordClassName + "' does "
-          + "not contain any records.  No dataset can be made.");
+      writeRecordsToFile(file, recordIterator);
 
       return createDataset(user, new ListDatasetParser(),
-        new DatasetFileContents(null, file), factory);
+          new DatasetFileContents(null, file, basketSize), factory);
+    }
+    catch (IOException e) {
+      throw new WdkModelException("Could not create dataset from basket", e);
+    }
+    finally {
+      deleteFile(file);
+    }
+  }
 
-    } catch (IOException e) {
-      throw new WdkModelException(e);
+  private static void deleteFile(File file) {
+    if (file != null) {
+      try {
+        Files.delete(file.toPath());
+      }
+      catch (IOException e) {
+        LOG.warn("Unable to delete file after use: " + file.getAbsolutePath());
+      }
+    }
+  }
+
+  private static File createTempFile(User user, String recordClassName) throws IOException {
+    return Files.createTempFile(user.getWdkModel().getModelConfig().getWdkTempDir(),
+        "dataset-", "-" + user.getStableId() + "-" + recordClassName).toFile();
+  }
+
+  private static void writeRecordsToFile(File file, Iterator<String[]> rows) throws IOException {
+
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+
+      for (String[] rowArray : IteratorUtil.toIterable(rows)) {
+        String row = String.join(ListDatasetParser.DATASET_COLUMN_DIVIDER, rowArray);
+        writer.write(row);
+        writer.write('\n');
+      }
+
+      writer.flush();
     }
   }
 
@@ -240,20 +191,29 @@ public class DatasetRequestProcessor {
     AnswerValue answerValue = AnswerValueFactory.makeAnswer(
         Strategy.getRunnableStep(strategy, strategy.get().getRootStepId()).get());
 
-    List<String[]> ids = answerValue.getAllIds();
 
-    if (ids.isEmpty())
-      throw new DataValidationException("Strategy '" + strategyId + "' does not"
-        + " contain any records.  No dataset can be made.");
+    long resultSize = answerValue.getResultSizeFactory().getResultSize();
+    if (resultSize == 0)
+      throw new DataValidationException("Strategy '" + strategyId + "' does "
+          + "not contain any records.  No dataset can be made.");
 
-    return createDataset(user, new ListDatasetParser(),
-      new DatasetListContents(joinIds(ids)), factory);
-  }
+    // write records to file (just to parse again :()
+    File file = null;
+    try (PrimaryKeyIterator pkIterator = answerValue.getAllIds()) {
 
-  private static List<String> joinIds(List<String[]> ids) {
-    return ids.stream()
-        .map(idArray -> join(idArray, ListDatasetParser.DATASET_COLUMN_DIVIDER))
-        .collect(Collectors.toList());
+      file = createTempFile(user, strategy.get().getRecordClass().get().getUrlSegment());
+
+      writeRecordsToFile(file, pkIterator);
+
+      return createDataset(user, new ListDatasetParser(),
+          new DatasetFileContents(null, file, resultSize), factory);
+    }
+    catch (Exception e) {
+      throw new WdkModelException("Could not create dataset from basket", e);
+    }
+    finally {
+      deleteFile(file);
+    }
   }
 
   private static Dataset createDataset(
