@@ -146,9 +146,14 @@ public class AnswerValue {
   private final QueryInstance<?> _idsQueryInstance;
   protected ResultSizeFactory _resultSizeFactory; // may be reassigned by subclasses
 
-  // sorting and paging for this answer- may be modified externally
-  private int _startIndex;
-  private int _endIndex;
+  // paging for this answer
+  // default is to return the entire result
+  // NOTE: first index is 1 and page size is inclusive of startIndex and endIndex
+  //       thus to get the first page of 10, use [1,10]
+  private int _startIndex = 1;
+  private int _endIndex = UNBOUNDED_END_PAGE_INDEX;
+
+  // sorting for this answer
   private Map<String, Boolean> _sortingMap;
 
   // values generated and cached from the above
@@ -177,8 +182,7 @@ public class AnswerValue {
     _idsQueryInstance = Query.makeQueryInstance(_answerSpec.getQueryInstanceSpec().getRunnable().getLeft(), avoidCacheHit);
     _resultSizeFactory = new ResultSizeFactory(this);
     _sortingMap = sortingMap == null? new HashMap<String, Boolean>() : sortingMap;
-    _startIndex = startIndex;
-    _endIndex = endIndex;
+    setPageIndex(startIndex, endIndex);
     LOG.debug("AnswerValue created for question: " + _answerSpec.getQuestion().getDisplayName());
   }
 
@@ -205,7 +209,7 @@ public class AnswerValue {
    * @param startIndex
    *   1-based start index (inclusive)
    * @param endIndex
-   *   end index (inclusive), or a negative value for all records
+   *   end index (inclusive), or UNBOUNDED_END_PAGE_INDEX for all records
    * @throws WdkModelException
    */
   private AnswerValue(AnswerValue answerValue, int startIndex, int endIndex) throws WdkModelException {
@@ -847,6 +851,7 @@ public class AnswerValue {
    * @throws WdkModelException if unable to calculate result size
    */
   public int getPageSize() throws WdkModelException {
+    // assumptions: startIndex > 0, endIndex == UNBOUNDED_END_PAGE_INDEX || >= startIndex
     int resultSize = _resultSizeFactory.getResultSize();
     int endIndex = _endIndex == UNBOUNDED_END_PAGE_INDEX ? resultSize : Math.min(_endIndex, resultSize);
     int pageSize = endIndex < _startIndex ? 0 : endIndex - _startIndex + 1;
@@ -928,6 +933,13 @@ public class AnswerValue {
   }
 
   public void setPageIndex(int startIndex, int endIndex) {
+    // do some checks
+    if (startIndex < 1)
+      throw new IllegalArgumentException("startIndex must be greater than zero");
+    if (endIndex < 1)
+      endIndex = UNBOUNDED_END_PAGE_INDEX;
+    else if (endIndex < startIndex)
+      throw new IllegalArgumentException("endIndex must be unbounded (-1) or >= startIndex");
     _startIndex = startIndex;
     _endIndex = endIndex;
     reset();
