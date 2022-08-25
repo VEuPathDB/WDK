@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.query.spec;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.FormatUtil.getCurrentStackTrace;
+import static org.gusdb.wdk.model.Utilities.PARAM_USER_ID;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -15,7 +16,6 @@ import org.gusdb.fgputil.collection.ReadOnlyHashMap;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParameterContainer;
@@ -103,9 +103,11 @@ public class ParameterContainerInstanceSpecBuilder<T extends ParameterContainerI
         tmpValues.remove(name);
 
     // add user_id to the param values if needed
-    var userKey = Utilities.PARAM_USER_ID;
-    if (reqParams.containsKey(userKey) && !tmpValues.containsKey(userKey))
-      tmpValues.put(userKey, Long.toString(user.getUserId()));
+    if (reqParams.containsKey(PARAM_USER_ID)) {
+      // fill current user's ID, always overriding an existing value;
+      // this is a security precaution in case the caller submits a value for user_id
+      tmpValues.put(PARAM_USER_ID, Long.toString(user.getUserId()));
+    }
 
     var stableValues = new PartiallyValidatedStableValues(user, tmpValues, stepContainer);
     var validation = ValidationBundle.builder(validationLevel);

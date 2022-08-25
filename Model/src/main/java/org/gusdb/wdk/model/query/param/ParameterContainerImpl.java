@@ -101,25 +101,10 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
     StringParam userParam = new StringParam();
     userParam.setName(Utilities.PARAM_USER_ID);
     userParam.setNumber(true);
+    userParam.setForInternalUseOnly(true);
 
     userParam.excludeResources(wdkModel.getProjectId());
     userParam.resolveReferences(wdkModel);
-    paramSet.addParam(userParam);
-    return userParam;
-  }
-
-  public Param getUserParam() throws WdkModelException {
-    // create the missing user_id param for the attribute query
-    ParamSet paramSet = _wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
-    if (paramSet.contains(Utilities.PARAM_USER_ID))
-      return paramSet.getParam(Utilities.PARAM_USER_ID);
-
-    StringParam userParam = new StringParam();
-    userParam.setName(Utilities.PARAM_USER_ID);
-    userParam.setNumber(true);
-
-    userParam.excludeResources(_wdkModel.getProjectId());
-    userParam.resolveReferences(_wdkModel);
     paramSet.addParam(userParam);
     return userParam;
   }
