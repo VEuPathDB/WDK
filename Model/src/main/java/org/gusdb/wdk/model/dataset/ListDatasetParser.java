@@ -2,7 +2,14 @@ package org.gusdb.wdk.model.dataset;
 
 import org.gusdb.wdk.model.WdkUserException;
 
+import java.util.Arrays;
+import java.util.regex.Pattern;
+
+/**
+ * Parser expecting a list of identifiers. The parser was originally intended to support multiple 
+ */
 public class ListDatasetParser extends AbstractDatasetParser {
+  private static Pattern VALID_ID_PATTERN = Pattern.compile("[a-zA-Z0-9\\(\\)\\.\\:_-]+");
 
   // scrum Feb 2 2016: we allow all these characters as row dividers, do not expect columns
   private static final String ROW_DIVIDER = "[\\s,;]+";
@@ -68,6 +75,10 @@ public class ListDatasetParser extends AbstractDatasetParser {
           "The input data for datasetParam has various columns at row #" + parsedRowNum
             + ". The number of columns must be the same for all the rows."
         );
+      if (!Arrays.stream(columns).allMatch(col -> VALID_ID_PATTERN.matcher(col).matches())) {
+        throw new WdkUserException("The input data for datasetParam contains invalid IDs that do not conform to "
+            + VALID_ID_PATTERN.pattern() + " at row # " + parsedRowNum);
+      }
 
       parsedRowNum++;
       return columns;
