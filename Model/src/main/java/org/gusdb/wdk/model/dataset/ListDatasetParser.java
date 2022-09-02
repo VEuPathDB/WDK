@@ -6,7 +6,9 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 /**
- * Parser expecting a list of identifiers. The parser was originally intended to support multiple 
+ * Parser expecting a list of identifiers. The parser was originally intended to support multiple columns, but in its
+ * current state it regards \s, "," and ";" as row separators which functionally ensures that each row will have a
+ * single column. The exception to this would be if a colDivider distinct from these characters is provided.
  */
 public class ListDatasetParser extends AbstractDatasetParser {
   private static Pattern VALID_ID_PATTERN = Pattern.compile("[a-zA-Z0-9\\(\\)\\.\\:_-]+");
