@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.fgputil.web.LoginCookieFactory;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.InvalidUsernameOrEmailException;
 import org.gusdb.wdk.model.user.User;
@@ -90,7 +91,10 @@ public class ProfileService extends UserService {
       // overwrite user's old email and profile
       user.setEmail(request.getEmail());
       user.setProfileProperties(request.getProfileMap());
+      // save user to DB
       getWdkModel().getUserFactory().saveUser(user);
+      // save user to session
+      getSession().setAttribute(Utilities.WDK_USER_KEY, user);
       return getProfileUpdateResponse(loginCookie);
     }
     catch(JSONException | RequestMisformatException e) {
@@ -125,7 +129,10 @@ public class ProfileService extends UserService {
       for (Entry<String,String> newProp : request.getProfileMap().entrySet()) {
         user.setProfileProperty(newProp.getKey(), newProp.getValue());
       }
+      // save user to DB
       getWdkModel().getUserFactory().saveUser(user);
+      // save user to session
+      getSession().setAttribute(Utilities.WDK_USER_KEY, user);
       return getProfileUpdateResponse(loginCookie);
     }
     catch(JSONException | RequestMisformatException e) {
