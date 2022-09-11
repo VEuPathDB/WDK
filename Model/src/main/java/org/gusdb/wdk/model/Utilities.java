@@ -212,16 +212,51 @@ public class Utilities {
     return result;
   }
 
-   public static void sendEmail(String smtpServer, String sendTos, String reply,
-		 String subject, String content, String ccAddresses,
-     Attachment[] attachments) throws WdkModelException {
-		 sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, null,
-       attachments);
-	 }
+  // sendEmail() method overloading: different number of parameters (max 8), different type for attachments
 
-   public static void sendEmail(String smtpServer, String sendTos, String reply,
-			String subject, String content, String ccAddresses, String bccAddresses,
-      Attachment[] attachments) throws WdkModelException {
+  // 7 parameters (missing bcc, datahandlers instead of attachments)
+  // used by?
+  public static void sendEmail(String smtpServer, String sendTos, String reply,
+    String subject, String content, String ccAddresses,
+    DataHandler[] attachmentDataHandlers) throws WdkModelException {
+      Attachment[] attachments = Stream
+        .of(attachmentDataHandlers)
+        .map(dataHandler -> new Attachment(dataHandler, dataHandler.getName()))
+        .toArray(Attachment[]::new);
+      // should call the 8 parameter one straight?
+      sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, attachments);
+  }
+
+  // sendEmail()  6 parameters (missing bcc, attachments)
+  // used by?
+  public static void sendEmail(String smtpServer, String sendTos, String reply,
+    String subject, String content, String ccAddresses)
+    throws WdkModelException {
+      // should call the 8 parameter one straight
+      sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, new Attachment[] {});
+  }
+
+  // sendEmail()  5 parameters (missing cc, bcc, attachments)
+  // used by?
+  public static void sendEmail(String smtpServer, String sendTos, String reply,
+    String subject, String content) throws WdkModelException {
+      // should call the 8 parameter one straight
+      sendEmail(smtpServer, sendTos, reply, subject, content, null, new Attachment[] {});
+  }
+
+  // sendEmail()  7 parameters (missing bcc)
+  // used by al of the above
+  public static void sendEmail(String smtpServer, String sendTos, String reply, 
+    String subject, String content, String ccAddresses, Attachment[] attachments) 
+    throws WdkModelException {
+      //  call the 8 parameter one
+      sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, null, attachments);
+  }
+
+  // sendEmail()  all 8 parameters
+  public static void sendEmail(String smtpServer, String sendTos, String reply,
+    String subject, String content, String ccAddresses, String bccAddresses,
+    Attachment[] attachments) throws WdkModelException {
 
     logger.debug("Sending message to: " + sendTos + ", bcc to: " + bccAddresses +
       ",reply: " + reply + ", using SMPT: " + smtpServer);
@@ -253,6 +288,7 @@ public class Utilities {
       }
       message.setSubject(subject);
       message.setSentDate(new Date());
+
       // set html content
       MimeBodyPart messagePart = new MimeBodyPart();
       messagePart.setDataHandler(new DataHandler(new HTMLDataSource(content)));
@@ -281,28 +317,6 @@ public class Utilities {
     }
   }
 
-  public static void sendEmail(String smtpServer, String sendTos, String reply,
-      String subject, String content, String ccAddresses,
-      DataHandler[] attachmentDataHandlers) throws WdkModelException {
-
-    Attachment[] attachments = Stream
-      .of(attachmentDataHandlers)
-      .map(dataHandler -> new Attachment(dataHandler, dataHandler.getName()))
-      .toArray(Attachment[]::new);
-
-    sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, attachments);
-  }
-
-  public static void sendEmail(String smtpServer, String sendTos, String reply,
-      String subject, String content, String ccAddresses)
-      throws WdkModelException {
-    sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, new Attachment[] {});
-  }
-
-  public static void sendEmail(String smtpServer, String sendTos, String reply,
-      String subject, String content) throws WdkModelException {
-    sendEmail(smtpServer, sendTos, reply, subject, content, null, new Attachment[] {});
-  }
 
   public static byte[] readFile(File file) throws IOException {
     byte[] buffer = new byte[(int) file.length()];
