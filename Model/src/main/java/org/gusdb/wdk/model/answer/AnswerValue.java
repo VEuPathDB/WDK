@@ -936,10 +936,11 @@ public class AnswerValue {
     // do some checks
     if (startIndex < 1)
       throw new IllegalArgumentException("startIndex must be greater than zero");
-    if (endIndex < 1)
+    if (endIndex < 0)
+      // all records requested; set to constant's value
       endIndex = UNBOUNDED_END_PAGE_INDEX;
-    else if (endIndex < startIndex)
-      throw new IllegalArgumentException("endIndex must be unbounded (-1) or >= startIndex");
+    // Note we do not throw if startIndex > endIndex;
+    //    this turns out to be a legitimate case (no records requested)
     _startIndex = startIndex;
     _endIndex = endIndex;
     reset();
