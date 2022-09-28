@@ -3,9 +3,7 @@ package org.gusdb.wdk.model.user.dataset;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.json.JsonType;
@@ -13,7 +11,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserFactory;
+import org.gusdb.wdk.model.user.UserCache;
 
 /**
  * Aggregation of information about a user dataset
@@ -34,18 +32,17 @@ public class UserDatasetInfo {
   private JsonType _detailedTypeSpecificData;
 
   public UserDatasetInfo(UserDataset dataset, boolean isInstalled, UserDatasetStore store,
-    UserDatasetSession session, final UserFactory userFactory, WdkModel wdkModel) {
+    UserDatasetSession session, final UserCache userCache, WdkModel wdkModel) {
     try {
       long ownerId = dataset.getOwnerId();
-      final Map<Long,User> userCache = new HashMap<>();
       _wdkModel = wdkModel;
       _userDataset = dataset;
       _isInstalled = isInstalled;
-      _owner = getUser(userCache, ownerId, userFactory);
+      _owner = userCache.get(ownerId);
       _ownerQuota = session.getQuota(ownerId);
       _relevantQuestionNames = Arrays.asList(store.getTypeHandler(dataset.getType()).getRelevantQuestionNames(dataset));
       _shares = mapToList(session.getSharedWith(ownerId, dataset.getUserDatasetId()), share ->
-        new UserDatasetShareUser(getUser(userCache, share.getUserId(), userFactory), share.getTimeShared()));
+        new UserDatasetShareUser(userCache.get(share.getUserId()), share.getTimeShared()));
       _handler = store.getTypeHandler(dataset.getType());
     }
     catch (WdkModelException e) {
@@ -61,21 +58,6 @@ public class UserDatasetInfo {
 
   public void setTypeSpecificData(JsonType typeSpecificData) {
     _typeSpecificData = typeSpecificData;
-  }
-
-  private static User getUser(Map<Long, User> userCache, long userId, UserFactory userFactory) {
-    try {
-      User user = userCache.get(userId);
-      if (user == null) {
-        user = userFactory.getUserById(userId)
-            .orElseThrow(() -> new WdkRuntimeException("No user exists with ID " + userId));
-        userCache.put(userId, user);
-      }
-      return user;
-    }
-    catch (WdkModelException e) {
-      throw new WdkRuntimeException("Could not load user with ID " + userId + " from DB.", e);
-    }
   }
 
   public UserDataset getDataset() {
