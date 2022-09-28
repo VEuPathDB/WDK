@@ -1,13 +1,49 @@
 package org.gusdb.wdk.service.service.user;
 
+import static java.nio.file.StandardOpenOption.READ;
+import static org.gusdb.fgputil.IoUtil.createOpenPermsTempDir;
+import static org.gusdb.fgputil.IoUtil.transferStream;
+import static org.gusdb.wdk.service.FileRanges.CONTENT_RANGE_HEADER;
+import static org.gusdb.wdk.service.FileRanges.parseRangeHeaderValue;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.StreamingOutput;
+
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Range;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserCache;
 import org.gusdb.wdk.model.user.UserFactory;
-import org.gusdb.wdk.model.user.dataset.*;
+import org.gusdb.wdk.model.user.dataset.UserDataset;
+import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
+import org.gusdb.wdk.model.user.dataset.UserDatasetInfo;
+import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
+import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserDatasetFormatter;
@@ -18,25 +54,6 @@ import org.gusdb.wdk.service.request.user.UserDatasetShareRequest;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.StreamingOutput;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static java.nio.file.StandardOpenOption.READ;
-import static org.gusdb.fgputil.IoUtil.createOpenPermsTempDir;
-import static org.gusdb.fgputil.IoUtil.transferStream;
-import static org.gusdb.fgputil.functional.Functions.mapToList;
-import static org.gusdb.wdk.service.FileRanges.CONTENT_RANGE_HEADER;
-import static org.gusdb.wdk.service.FileRanges.parseRangeHeaderValue;
 
 /**
  *  TODO: validate
@@ -94,8 +111,12 @@ public class UserDatasetService extends UserService {
   private static List<UserDatasetInfo> getDatasetInfo(final Collection<UserDataset> datasets,
       final Set<Long> installedUserDatasets, final UserDatasetStore dsStore, final UserDatasetSession dsSession,
       final UserFactory userFactory, final WdkModel wdkModel, User user) throws WdkModelException {
-    List<UserDatasetInfo> list = mapToList(datasets, dataset -> new UserDatasetInfo(dataset,
-        installedUserDatasets.contains(dataset.getUserDatasetId()), dsStore, dsSession, userFactory, wdkModel));
+    UserCache userCache = new UserCache(userFactory);
+    List<UserDatasetInfo> list = datasets.stream()
+        .map(dataset -> new UserDatasetInfo(dataset,
+            installedUserDatasets.contains(dataset.getUserDatasetId()),
+            dsStore, dsSession, userCache, wdkModel))
+        .collect(Collectors.toList());
     wdkModel.getUserDatasetFactory().get().addTypeSpecificData(wdkModel, list, user);
     return list;
   }
@@ -106,10 +127,11 @@ public class UserDatasetService extends UserService {
   public Response getUserDataset(@PathParam("datasetId") String datasetIdStr) throws WdkModelException {
     LOG.debug("\nservice user-datasets/datasetId has been called  --gives you one dataset\n");
 
+    WdkModel wdkModel = getWdkModel();
     User user = getPrivateRegisteredUser();
     long userId = user.getUserId();
     long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
-    UserDatasetStore dsStore = getUserDatasetStore(getWdkModel());
+    UserDatasetStore dsStore = getUserDatasetStore(wdkModel);
     String responseJson;
     try (UserDatasetSession dsSession = dsStore.getSession()) {
       UserDataset userDataset =
@@ -119,9 +141,9 @@ public class UserDatasetService extends UserService {
       if (userDataset == null) {
         throw new NotFoundException("user-dataset/" + datasetIdStr);
       }
-      Set<Long> installedUserDatasets = getWdkModel().getUserDatasetFactory().get().getInstalledUserDatasets(userId);
+      Set<Long> installedUserDatasets = wdkModel.getUserDatasetFactory().get().getInstalledUserDatasets(userId);
       UserDatasetInfo dsInfo = new UserDatasetInfo(userDataset, installedUserDatasets.contains(datasetId),
-        dsStore, dsSession, getWdkModel().getUserFactory(), getWdkModel());
+        dsStore, dsSession, new UserCache(wdkModel.getUserFactory()), wdkModel);
       dsInfo.loadDetailedTypeSpecificData(user);
       responseJson = UserDatasetFormatter.getUserDatasetJson(dsInfo,
           userDataset.getOwnerId().equals(userId), true).toString();
