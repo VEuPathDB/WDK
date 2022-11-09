@@ -32,6 +32,12 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
   private static final TraceLog TRACE = new TraceLog(IrodsUserDatasetSession.class);
   private static final Logger LOG = Logger.getLogger(IrodsUserDatasetSession.class);
 
+  private static class BrokenDatasetException extends WdkModelException {
+    public BrokenDatasetException(String message) {
+      super(message);
+    }
+  }
+
   /**
    * iCAT metadata keys
    */
@@ -197,7 +203,13 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
     while (datasets.hasNext()) {
       final ICatCollection ds = datasets.next();
       final long dsId = Long.parseLong(ds.getName());
-      out.put(dsId, collectionToDataset(dsId, userId, ds));
+      try {
+        out.put(dsId, collectionToDataset(dsId, userId, ds));
+      }
+      catch (BrokenDatasetException e) {
+        // simply log error and omit broken dataset from list; should not be a fatal exception
+        LOG.error("Found broken dataset [ID = " + dsId + "]", e);
+      }
     }
 
     return TRACE.end(Collections.unmodifiableMap(out));
@@ -240,7 +252,13 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
         continue;
 
       loadCollectionMeta(extDs.get(), false);
-      out.put(link.datasetId, collectionToDataset(link.datasetId, userId, extDs.get()));
+      try {
+        out.put(link.datasetId, collectionToDataset(link.datasetId, userId, extDs.get()));
+      }
+      catch (BrokenDatasetException e) {
+        // simply log error and omit broken dataset from list; should not be a fatal exception
+        LOG.error("Found broken dataset [ID = " + link.datasetId + "]", e);
+      }
     }
 
     return TRACE.end(out);
@@ -791,7 +809,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
       final long datasetId,
       final long userId
     ) {
-      return new WdkModelException(String.format(BROKEN_DS, datasetId, userId));
+      return new BrokenDatasetException(String.format(BROKEN_DS, datasetId, userId));
     }
   }
 }
