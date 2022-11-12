@@ -560,7 +560,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     userDb = new DatabaseInstance(userDbConfig, DB_INSTANCE_USER, true);
     accountDb = new DatabaseInstance(accountDbConfig, DB_INSTANCE_ACCOUNT, true);
 
-    if (true) {
+    // set true to avoid a broken dev irods at build time
+    if ( udsConfig == null ) {
       _userDatasetStore = Optional.empty();
     }
     else {
