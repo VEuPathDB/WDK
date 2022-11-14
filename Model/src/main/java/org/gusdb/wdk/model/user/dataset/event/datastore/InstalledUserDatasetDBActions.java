@@ -64,11 +64,13 @@ public class InstalledUserDatasetDBActions
   public void insertUserDataset(long userDatasetID, String name, String projectId) {
     // Use a merge in case a dataset is installed by two separate project installers.
     // Only insert if not matched.
-    var insertUserDatasetSql = "MERGE INTO " + schema + TABLE_INSTALLED_USER_DATASET +
-      " WHEN NOT MATCHED THEN INSERT(user_dataset_id, name) VALUES (?, ?)";
+    var insertUserDatasetSql = "MERGE INTO " + schema + TABLE_INSTALLED_USER_DATASET + " datasets" +
+      " USING (SELECT ? user_dataset_id, ? name from dual) to_insert" +
+        " ON (datasets.user_dataset_id = to_insert.user_dataset_id)" +
+        " WHEN NOT MATCHED THEN INSERT(user_dataset_id, name) VALUES (?, ?)";
 
     new SQLRunner(ds, insertUserDatasetSql, "insert-user-dataset-row")
-      .executeUpdate(new Object[]{userDatasetID, name});
+      .executeUpdate(new Object[]{userDatasetID, name, userDatasetID, name});
 
     // No need to merge here since row is specific to the installer being run.
     var insertUserDatasetProjectSql = "INSERT INTO " + schema + TABLE_INSTALLED_USER_DATASET_PROJ +
