@@ -5,6 +5,8 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 
+import java.util.Set;
+
 /**
  * Repository for DB actions relating to the {@code InstalledUserDataset} DB
  * table.
@@ -37,6 +39,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 public class InstalledUserDatasetDBActions
 {
   private static final String TABLE_INSTALLED_USER_DATASET = "installeduserdataset";
+  private static final String TABLE_INSTALLED_USER_DATASET_PROJ = "installeduserdatasetproject";
 
   private final String     schema;
   private final DataSource ds;
@@ -58,12 +61,21 @@ public class InstalledUserDatasetDBActions
     return handler.getNumRows() > 0;
   }
 
-  public void insertUserDataset(long userDatasetID, String name) {
-    var sql = "INSERT INTO " + schema + TABLE_INSTALLED_USER_DATASET +
-      " (user_dataset_id, name) VALUES (?, ?)";
+  public void insertUserDataset(long userDatasetID, String name, String projectId) {
+    // Use a merge in case a dataset is installed by two separate project installers.
+    // Only insert if not matched.
+    var insertUserDatasetSql = "MERGE INTO " + schema + TABLE_INSTALLED_USER_DATASET +
+      " WHEN NOT MATCHED THEN INSERT(user_dataset_id, name) VALUES (?, ?)";
 
-    new SQLRunner(ds, sql, "insert-user-dataset-row")
-      .executeUpdate(new Object[]{userDatasetID, name});
+    new SQLRunner(ds, insertUserDatasetSql, "insert-user-dataset-row")
+      .executeUpdate(new Object[]{userDatasetID, name, userDatasetID});
+
+    // No need to merge here since row is specific to the installer being run.
+    var insertUserDatasetProjectSql = "INSERT INTO " + schema + TABLE_INSTALLED_USER_DATASET_PROJ +
+        " (user_dataset_id, project_id) VALUES (?, ?)";
+
+    new SQLRunner(ds, insertUserDatasetProjectSql, "insert-user-dataset-project-row")
+        .executeUpdate(new Object[]{userDatasetID, projectId});
   }
 
   public void deleteUserDataset(long userDatasetID) {
