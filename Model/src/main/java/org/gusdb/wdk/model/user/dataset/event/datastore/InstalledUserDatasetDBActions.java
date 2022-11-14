@@ -39,7 +39,7 @@ import java.util.Set;
 public class InstalledUserDatasetDBActions
 {
   private static final String TABLE_INSTALLED_USER_DATASET = "installeduserdataset";
-  private static final String TABLE_INSTALLED_USER_DATASET_PROJ = "installeduserdatasetproject";
+  private static final String TABLE_INSTALLED_USER_DATASET_PROJ = "userdatasetproject";
 
   private final String     schema;
   private final DataSource ds;
