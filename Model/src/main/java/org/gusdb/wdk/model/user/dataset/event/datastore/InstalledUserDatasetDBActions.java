@@ -74,7 +74,7 @@ public class InstalledUserDatasetDBActions
 
     // No need to merge here since row is specific to the installer being run.
     var insertUserDatasetProjectSql = "INSERT INTO " + schema + TABLE_INSTALLED_USER_DATASET_PROJ +
-        " (user_dataset_id, project_id) VALUES (?, ?)";
+        " (user_dataset_id, project) VALUES (?, ?)";
 
     new SQLRunner(ds, insertUserDatasetProjectSql, "insert-user-dataset-project-row")
         .executeUpdate(new Object[]{userDatasetID, projectId});
