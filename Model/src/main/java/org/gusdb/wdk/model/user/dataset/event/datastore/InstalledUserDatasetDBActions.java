@@ -81,8 +81,17 @@ public class InstalledUserDatasetDBActions
   }
 
   public void deleteUserDataset(long userDatasetID) {
-    var sql = "DELETE FROM " + schema + TABLE_INSTALLED_USER_DATASET + " WHERE user_dataset_id = ?";
+    // Use a merge in case a dataset is installed by two separate project installers.
+    // Only insert if not matched.
+    var deleteUserDatasetSql = "MERGE INTO " + schema + TABLE_INSTALLED_USER_DATASET + " datasets" +
+        " USING (SELECT ? user_dataset_id, dummy name from dual) to_delete" +
+        " ON (datasets.user_dataset_id = to_delete.user_dataset_id)" +
+        " WHEN MATCHED THEN DELETE WHERE datasets.user_dataset_id = to_delete.user_dataset_id";
 
-    new SQLRunner(ds, sql, "delete-user-dataset-row").executeUpdate(new Object[]{userDatasetID});
+    new SQLRunner(ds, deleteUserDatasetSql, "delete-user-dataset-row").executeUpdate(new Object[]{userDatasetID});
+
+    var deleteUserDatasetProjectSql = "DELETE FROM " + schema + TABLE_INSTALLED_USER_DATASET_PROJ + " WHERE user_dataset_id = ?";
+
+    new SQLRunner(ds, deleteUserDatasetProjectSql, "delete-user-dataset-project-row").executeUpdate(new Object[]{userDatasetID});
   }
 }
