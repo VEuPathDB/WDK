@@ -68,7 +68,7 @@ public class InstalledUserDatasetDBActions
       " WHEN NOT MATCHED THEN INSERT(user_dataset_id, name) VALUES (?, ?)";
 
     new SQLRunner(ds, insertUserDatasetSql, "insert-user-dataset-row")
-      .executeUpdate(new Object[]{userDatasetID, name, userDatasetID});
+      .executeUpdate(new Object[]{userDatasetID, name});
 
     // No need to merge here since row is specific to the installer being run.
     var insertUserDatasetProjectSql = "INSERT INTO " + schema + TABLE_INSTALLED_USER_DATASET_PROJ +
