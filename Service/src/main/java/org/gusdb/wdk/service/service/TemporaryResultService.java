@@ -7,10 +7,6 @@ import static org.gusdb.wdk.core.api.JsonKeys.SEARCH_CONFIG;
 import static org.gusdb.wdk.core.api.JsonKeys.SEARCH_NAME;
 import static org.gusdb.wdk.core.api.JsonKeys.STEP_ID;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -25,10 +21,11 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.request.AnswerFormatting;
 import org.gusdb.wdk.model.answer.request.AnswerRequest;
+import org.gusdb.wdk.model.answer.request.TemporaryResultFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
@@ -52,8 +49,6 @@ import org.json.JSONObject;
 @Path("/temporary-results")
 public class TemporaryResultService extends AbstractWdkService {
 
-  private static final long EXPIRATION_MILLIS = 60 * 60 * 1000; // one hour
-
   /**
    * Creates a temporary result specification and stores in the answer request cache.
    * The submitted JSON must contain either a step ID or a search name+config, i.e.
@@ -76,8 +71,7 @@ public class TemporaryResultService extends AbstractWdkService {
   public Response setTemporaryResult(JSONObject requestJson)
       throws RequestMisformatException, DataValidationException, WdkModelException, ValidationException {
     AnswerRequest request = parseRequest(requestJson);
-    String id = UUID.randomUUID().toString();
-    CacheMgr.get().getAnswerRequestCache().put(id, new TwoTuple<>(getSessionUser().getUserId(), request));
+    String id = TemporaryResultFactory.insertTemporaryResult(getSessionUser().getUserId(), request);
     return Response.ok(new JSONObject().put(ID, id).toString())
         .location(getUriInfo().getAbsolutePathBuilder().build(id)).build();
   }
@@ -85,31 +79,19 @@ public class TemporaryResultService extends AbstractWdkService {
   @GET
   @Path("/{id}")
   public Response getTemporaryResult(@PathParam("id") String id)
-      throws RequestMisformatException, WdkModelException, DataValidationException {
+      throws WdkModelException, DataValidationException {
+    try {
+      TwoTuple<User,AnswerRequest> temporaryResultSpec = TemporaryResultFactory.retrieveTemporaryResult(id, getWdkModel());
 
-    // get the saved request cache and look up this ID
-    Map<String,TwoTuple<Long,AnswerRequest>> savedRequests = CacheMgr.get().getAnswerRequestCache();
-    TwoTuple<Long, AnswerRequest> savedRequest = savedRequests.get(id);
-
-    // three ways this request could be expired
-    User user = null;
-    if (
-        // 1. ID invalid or no longer in cache
-        savedRequest == null ||
-        // 2. Request creation date is too long in the past
-        savedRequest.getSecond().getCreationDate().getTime() < new Date().getTime() - EXPIRATION_MILLIS ||
-        // 3. User who created the request is no longer valid
-        (user = getWdkModel().getUserFactory().getUserById(savedRequest.getFirst()).orElse(null)) == null
-    ) {
-      // return Not Found, but expire id first if not gone already
-      if (savedRequest != null) {
-        savedRequests.remove(id);
-      }
-      throw new NotFoundException(formatNotFound("temporary result with ID '" + id + "'"));
+      // request is valid; produce result as originally requested
+      return AnswerService.getAnswerResponse(
+          temporaryResultSpec.getFirst(),
+          temporaryResultSpec.getSecond()
+      ).getSecond();
     }
-
-    // request is valid; produce result as originally requested
-    return AnswerService.getAnswerResponse(user, savedRequest.getSecond()).getSecond();
+    catch (WdkUserException e) {
+      throw new NotFoundException(formatNotFound(e.getMessage()));
+    }
   }
 
   private AnswerRequest parseRequest(JSONObject requestJson)
