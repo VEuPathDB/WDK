@@ -87,7 +87,7 @@ public class InstalledUserDatasetDBActions
 
     FunctionalInterfaces.ConsumerWithException<Connection> insertUserDatasetProjectFunction = conn -> {
       LOG.info("Executing update to UD with ID " + userDatasetID + " with name " + projectId);
-      new SQLRunner(ds, insertUserDatasetProjectSql, "insert-user-dataset-project-row")
+      new SQLRunner(conn, insertUserDatasetProjectSql, "insert-user-dataset-project-row")
           .executeUpdate(new Object[]{userDatasetID, projectId});
     };
 
