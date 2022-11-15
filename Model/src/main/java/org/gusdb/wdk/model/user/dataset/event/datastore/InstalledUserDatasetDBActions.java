@@ -2,9 +2,12 @@ package org.gusdb.wdk.model.user.dataset.event.datastore;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.functional.FunctionalInterfaces;
 
+import java.sql.Connection;
 import java.util.Set;
 
 /**
@@ -65,20 +68,46 @@ public class InstalledUserDatasetDBActions
     // Use a merge in case a dataset is installed by two separate project installers.
     // Only insert if not matched.
     var insertUserDatasetSql = "MERGE INTO " + schema + TABLE_INSTALLED_USER_DATASET + " datasets" +
-        " USING (SELECT ? user_dataset_id, ? name FROM dual) to_insert" +
+      " USING (SELECT ? user_dataset_id, ? name FROM dual) to_insert" +
         " ON (datasets.user_dataset_id = to_insert.user_dataset_id)" +
-        " WHEN NOT MATCHED THEN INSERT(user_dataset_id, name) VALUES (to_insert.user_dataset_id, to_insert.name);" +
-        " INSERT INTO " + schema + TABLE_INSTALLED_USER_DATASET_PROJ +
-        " (user_dataset_id, project) VALUES (?, ?);";
+        " WHEN NOT MATCHED THEN INSERT(user_dataset_id, name) VALUES (?, ?)";
 
-    new SQLRunner(ds, insertUserDatasetSql, "insert-user-dataset")
-        .executeUpdate(new Object[]{userDatasetID, name, userDatasetID, projectId});
+    FunctionalInterfaces.ConsumerWithException<Connection> insertUserDatasetFunction = conn ->
+        new SQLRunner(conn, insertUserDatasetSql, "insert-user-dataset-row")
+            .executeUpdate(new Object[]{userDatasetID, name, userDatasetID, name});
+
+    // No need to merge here since row is specific to the installer being run.
+    var insertUserDatasetProjectSql = "INSERT INTO " + schema + TABLE_INSTALLED_USER_DATASET_PROJ +
+        " (user_dataset_id, project) VALUES (?, ?)";
+
+    FunctionalInterfaces.ConsumerWithException<Connection> insertUserDatasetProjectFunction = conn ->
+        new SQLRunner(ds, insertUserDatasetProjectSql, "insert-user-dataset-project-row")
+            .executeUpdate(new Object[]{userDatasetID, projectId});
+
+    try {
+      // Project must be inserted after userdataset to avoid constraint violations.
+      SqlUtils.performInTransaction(ds, insertUserDatasetFunction, insertUserDatasetProjectFunction);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public void deleteUserDataset(long userDatasetID) {
-    var deleteUserDatasetSql = "DELETE FROM " + schema + TABLE_INSTALLED_USER_DATASET + " WHERE user_dataset_id = ?;" +
-        " DELETE FROM " + schema + TABLE_INSTALLED_USER_DATASET_PROJ + " WHERE user_dataset_id = ?;";
+    var deleteUserDatasetSql = "DELETE FROM " + schema + TABLE_INSTALLED_USER_DATASET + " WHERE user_dataset_id = ?";
 
-    new SQLRunner(ds, deleteUserDatasetSql, "delete-user-dataset").executeUpdate(new Object[]{userDatasetID, userDatasetID});
+    FunctionalInterfaces.ConsumerWithException<Connection> deleteUdFunction = conn ->
+        new SQLRunner(conn, deleteUserDatasetSql, "delete-user-dataset-row").executeUpdate(new Object[]{userDatasetID});
+
+    var deleteUserDatasetProjectSql = "DELETE FROM " + schema + TABLE_INSTALLED_USER_DATASET_PROJ + " WHERE user_dataset_id = ?";
+
+    FunctionalInterfaces.ConsumerWithException<Connection> deleteUdProjectsFunction = conn ->
+        new SQLRunner(ds, deleteUserDatasetProjectSql, "delete-user-dataset-project-row").executeUpdate(new Object[]{userDatasetID});
+
+    try {
+      // Project must be deleted before userdataset to avoid constraint violations.
+      SqlUtils.performInTransaction(ds, deleteUdProjectsFunction, deleteUdFunction);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 }
