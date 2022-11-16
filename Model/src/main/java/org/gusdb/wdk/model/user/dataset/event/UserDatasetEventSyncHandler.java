@@ -217,7 +217,7 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
     files = copyToLocalTimeout(dsSession, userDataset, typeHandler, cwd);
 
     // insert into the installedTable
-    getInstallRepo().insertUserDataset(datasetId, userDataset.getMeta().getName());
+    getInstallRepo().insertUserDataset(datasetId, userDataset.getMeta().getName(), getProjectId());
 
     // insert into the type-specific tables
     typeHandler.installInAppDb(userDataset, cwd, getProjectId(), files);
