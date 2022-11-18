@@ -10,7 +10,6 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.FunctionalInterfaces;
 
 import java.sql.Connection;
-import java.util.Set;
 
 /**
  * Repository for DB actions relating to the {@code InstalledUserDataset} DB

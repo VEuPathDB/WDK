@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -309,7 +309,7 @@ public class SummaryTester {
 
   static CommandLine parseOptions(String cmdName, Options options, String[] args) {
 
-    CommandLineParser parser = new BasicParser();
+    CommandLineParser parser = new DefaultParser();
     CommandLine cmdLine = null;
     try {
       // parse the command line arguments

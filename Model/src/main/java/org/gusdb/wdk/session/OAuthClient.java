@@ -22,10 +22,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.OAuthConfig;
-import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,18 +35,14 @@ public class OAuthClient {
   private static final Logger LOG = Logger.getLogger(OAuthClient.class);
 
   private final String _oauthServerBase;
-  private final boolean _googleSpecific;
   private final String _clientId;
   private final String _clientSecret;
-  private final UserFactory _userFactory;
   private final TrustManager _trustManager;
 
-  public OAuthClient(OAuthConfig config, UserFactory userFactory) throws WdkModelException {
+  public OAuthClient(OAuthConfig config) throws WdkModelException {
     _oauthServerBase = config.getOauthUrl();
-    _googleSpecific = _oauthServerBase.contains("google");
     _clientId = config.getOauthClientId();
     _clientSecret = config.getOauthClientSecret();
-    _userFactory = userFactory;
     _trustManager = getTrustManager(config);
   }
 
@@ -96,9 +89,7 @@ public class OAuthClient {
         LOG.debug("Response received from OAuth server for token request: " + json.toString(2));
         // get id_token from object and decode to user ID
         String idToken = json.getString("id_token");
-        return (_googleSpecific ?
-            getUserIdFromGoogleIdToken(idToken) :
-            getUserIdFromIdToken(idToken, _clientSecret));
+        return getUserIdFromIdToken(idToken, _clientSecret);
       }
       else {
         // Failure; throw exception
@@ -111,22 +102,6 @@ public class OAuthClient {
     }
     catch(Exception e) {
       throw new WdkModelException("Unable to complete OAuth token request to fetch user id", e);
-    }
-  }
-
-  private long getUserIdFromGoogleIdToken(String idToken) throws WdkModelException {
-    String gmailAddress = GoogleClientUtil.getEmailFromTokenResponse(idToken, _clientId);
-    User user = _userFactory.getUserByEmail(gmailAddress);
-    if (user != null) {
-      return user.getUserId();
-    }
-    try {
-      // user does not exist; automatically create user for this gmail user
-      user = _userFactory.createUser(gmailAddress, null, null, null, true, false);
-      return user.getUserId();
-    }
-    catch (WdkUserException ue2) {
-      throw new WdkModelException("Could not create WDK user from validated Gmail email", ue2);
     }
   }
 

@@ -21,8 +21,8 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.web.LoginCookieFactory;
-import org.gusdb.fgputil.web.SessionProxy;
 import org.gusdb.fgputil.web.LoginCookieFactory.LoginCookieParts;
+import org.gusdb.fgputil.web.SessionProxy;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.events.NewUserEvent;
 import org.gusdb.wdk.model.Utilities;
@@ -33,7 +33,6 @@ import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfig.AuthenticationMethod;
 import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.service.request.LoginRequest;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.statustype.MethodNotAllowedStatusType;
@@ -108,12 +107,11 @@ public class SessionService extends AbstractWdkService {
         throw new WdkModelException("Unable to log in; state token missing, incorrect, or expired.");
       }
 
-      UserFactory userFactory = wdkModel.getUserFactory();
-      OAuthClient client = new OAuthClient(modelConfig, userFactory);
+      OAuthClient client = new OAuthClient(modelConfig);
 
       // Is there a matching user id for the auth code provided?
       long userId = client.getUserIdFromAuthCode(authCode, getContextUri());
-      User newUser = userFactory.login(userId);
+      User newUser = wdkModel.getUserFactory().login(userId);
       if (newUser == null) {
         throw new WdkModelException("Unable to find user with ID " + userId +
             ", returned by OAuth service with auth code " + authCode);

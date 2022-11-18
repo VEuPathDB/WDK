@@ -41,7 +41,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 
-import au.com.bytecode.opencsv.CSVWriter;
+import com.opencsv.CSVWriter;
 
 public class FileBasedRecordStream implements RecordStream {
 
@@ -232,7 +232,7 @@ public class FileBasedRecordStream implements RecordStream {
       throws WdkModelException {
 
     try (CSVWriter writer = new CSVWriter(new BufferedWriter(new FileWriter(filePath.toString()), BUFFER_SIZE),
-          CsvResultList.TAB, CsvResultList.QUOTE, CsvResultList.ESCAPE)) {
+          CsvResultList.TAB, CsvResultList.QUOTE, CsvResultList.ESCAPE, CsvResultList.NEWLINE)) {
 
       // Create an array sized to handle the attribute columns as this will be used to write out a row
       // to the CSV file. Primary keys are not included since there should be exactly 1 row per primary key

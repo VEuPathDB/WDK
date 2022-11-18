@@ -25,8 +25,7 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-
-import au.com.bytecode.opencsv.CSVWriter;
+import com.opencsv.CSVWriter;
 
 /**
  * A reporter that produces a tabular output from an answer. It takes a pluggable row provider that provides
@@ -154,7 +153,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
 
   private void format2CSV(OutputStream out) throws WdkModelException, WdkUserException {
     try (CSVWriter writer = new CSVWriter(new BufferedWriter(new OutputStreamWriter(out),
-        FileBasedRecordStream.BUFFER_SIZE), CsvResultList.COMMA, CsvResultList.QUOTE, CsvResultList.ESCAPE)) {
+        FileBasedRecordStream.BUFFER_SIZE), CsvResultList.COMMA, CsvResultList.QUOTE, CsvResultList.ESCAPE, CsvResultList.NEWLINE)) {
 
       List<String> colNames = getHeader();
       if (_includeHeader) {

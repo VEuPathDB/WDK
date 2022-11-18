@@ -4,7 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
-import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -116,7 +116,7 @@ public class MigratorController {
     if (newArgs.length > 0)
       System.arraycopy(args, 1, newArgs, 0, newArgs.length);
 
-    CommandLineParser parser = new BasicParser();
+    CommandLineParser parser = new DefaultParser();
     // parse the command line arguments
     CommandLine commandLine = parser.parse(options, newArgs);
     return commandLine;

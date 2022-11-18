@@ -7,9 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -187,10 +187,9 @@ public class Dumper {
         System.exit(1);
     }
 
-    static CommandLine parseOptions(String cmdName, Options options,
-            String[] args) {
+    static CommandLine parseOptions(String cmdName, Options options, String[] args) {
 
-        CommandLineParser parser = new BasicParser();
+        CommandLineParser parser = new DefaultParser();
         CommandLine cmdLine = null;
         try {
             // parse the command line arguments
