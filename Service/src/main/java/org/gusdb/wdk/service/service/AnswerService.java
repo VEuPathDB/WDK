@@ -405,6 +405,10 @@ public class AnswerService extends AbstractWdkService {
     // parse (optional) request details (columns, pagination, etc.- format dependent on reporter) and configure reporter
     Reporter reporter = getConfiguredReporter(answerValue, request.getFormatting());
 
+    // RRD scrum 12/2/2022: ensure ability to cache result before beginning stream by checking ID sql
+    //    This will prevent a class of in-stream errors from returning 200 HTTP status vs. the desired 500
+    answerValue.getIdSql();
+
     // build response from stream, apply delivery details, and return
     ResponseBuilder builder = Response.ok(getAnswerAsStream(reporter)).type(reporter.getHttpContentType());
     return new TwoTuple<>(answerValue, applyDisposition(
