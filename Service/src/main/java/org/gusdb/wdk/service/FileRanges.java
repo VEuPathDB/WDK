@@ -11,13 +11,14 @@ import java.nio.file.Path;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FileChunkInputStream;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.Range;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.service.statustype.PartialContentStatusType;
 
 public class FileRanges {
 
@@ -30,11 +31,18 @@ public class FileRanges {
   private static final String SIZE_UNITS = "bytes";
   private static final String RANGE_HEADER_VALUE_PREFIX = SIZE_UNITS + "=";
 
-  //"2651586560 2652372991"
-  public static Range<Long> parseRangeHeaderValue(String rangeStr) {
+  public static class ByteRangeInformation extends TwoTuple<Boolean,Range<Long>> {
+    public ByteRangeInformation(boolean rangeHeaderSubmitted, Range<Long> parsedRange) {
+      super(rangeHeaderSubmitted, parsedRange);
+    }
+    public boolean isRangeHeaderSubmitted() { return getFirst(); }
+    public Range<Long> getDesiredRange() { return getSecond(); }
+  }
+
+  public static ByteRangeInformation parseRangeHeaderValue(String rangeStr) {
     LOG.debug("Incoming range string: " + rangeStr);
-    if (rangeStr == null) {
-      return new Range<>(DEFAULT_RANGE_BEGIN, null);
+    if (rangeStr == null || rangeStr.isBlank()) {
+      return new ByteRangeInformation(false, new Range<>(DEFAULT_RANGE_BEGIN, null));
     }
     if (!rangeStr.startsWith(RANGE_HEADER_VALUE_PREFIX)) {
       throw new BadRequestException("Endpoint does not support non-byte range requests.");
@@ -57,7 +65,7 @@ public class FileRanges {
         }
         // range header is 0-based, inclusive on both ends
         range.setEndInclusive(true);
-        return range;
+        return new ByteRangeInformation(true, range);
       }
       catch (IllegalArgumentException e) {
         throw new BadRequestException(e.getMessage());
@@ -68,8 +76,9 @@ public class FileRanges {
     }
   }
 
-  public static Response getFileChunkResponse(Path filePath, Range<Long> byteRange) throws WdkModelException {
+  public static Response getFileChunkResponse(Path filePath, ByteRangeInformation rangeInfo) throws WdkModelException {
     FileChunkInputStream fileIn = null;
+    Range<Long> byteRange = rangeInfo.getDesiredRange();
     try {
 
       long fileSize = new File(filePath.toString()).length();
@@ -82,6 +91,7 @@ public class FileRanges {
         return Response
             .ok(filePath.toFile())
             .type(MediaType.APPLICATION_OCTET_STREAM)
+            .status(rangeInfo.isRangeHeaderSubmitted() ? Status.PARTIAL_CONTENT : Status.OK)
             .header(CONTENT_RANGE_HEADER, SIZE_UNITS + " */" + fileSize)
             .build();
       }
@@ -100,7 +110,7 @@ public class FileRanges {
       return Response
           .ok(getStreamingOutput(fileIn))
           .type(MediaType.APPLICATION_OCTET_STREAM)
-          .status(new PartialContentStatusType())
+          .status(Status.PARTIAL_CONTENT)
           .header(CONTENT_RANGE_HEADER, SIZE_UNITS + " " +
               byteRange.getBegin() + "-" + byteRange.getEnd() + "/" + fileSize)
           .build();

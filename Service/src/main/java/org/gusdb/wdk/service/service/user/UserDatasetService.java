@@ -44,6 +44,7 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetInfo;
 import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
+import org.gusdb.wdk.service.FileRanges.ByteRangeInformation;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserDatasetFormatter;
@@ -176,8 +177,9 @@ public class UserDatasetService extends UserService {
       if (file == null)
         return Response.status(Status.NOT_FOUND).build();
 
-      return fileRange != null && !fileRange.isEmpty()
-        ? getDatafileRange(dsSession, file, parseRangeHeaderValue(fileRange))
+      ByteRangeInformation rangeInfo = parseRangeHeaderValue(fileRange);
+      return rangeInfo.isRangeHeaderSubmitted()
+        ? getDatafileRange(dsSession, file, rangeInfo.getDesiredRange())
         : getFullDatafile(dsSession, file);
     } catch (IOException e) {
       throw new WdkModelException(e);
@@ -319,7 +321,7 @@ public class UserDatasetService extends UserService {
     final UserDatasetFile dsFile,
     final Range<Long> range
   ) throws WdkModelException {
-    return Response.status(206)
+    return Response.status(Status.PARTIAL_CONTENT)
       .entity((StreamingOutput) out -> dsFile.readRangeInto(dsSess,
         range.getBegin(), 1 + range.getEnd() - range.getBegin(), out))
       .header(CONTENT_RANGE_HEADER, range.getBegin() + "-" + range.getEnd() +
