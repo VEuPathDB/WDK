@@ -131,6 +131,11 @@ public class AnswerDetailsFactory {
       specs.setAttributeFormat(AttributeFormat.valueOf(specJson.getString("attributeFormat").toUpperCase()));
     }
 
+    // set bufferEntireResponse flag
+    if (specJson.has("bufferEntireResponse")) {
+      specs.setBufferEntireResponse(specJson.getBoolean("bufferEntireResponse"));
+    }
+
     return specs;
   }
 
