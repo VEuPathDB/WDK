@@ -27,6 +27,16 @@ public abstract class AnswerDetailsReporter extends AbstractReporter {
 
   private static final long MAX_BUFFERED_RESPONSE_SIZE = 50 /* megabytes */ * (1024 * 1024) /* bytes per megabyte */;
 
+  /**
+   * This method is AnswerDetailsReporter's equivalent of AbstractReporter's {@link #write(OutputStream)} method,
+   * which takes an additional procedure argument that should be called "occasionally"
+   * to check whether the response is too big to fit in memory.  Calls to this are very
+   * cheap, so a good time might be after every record is processed/written.
+   *
+   * @param out stream to which response should be written
+   * @param checkResponseSize procedure to call occasionally to check response size
+   * @throws WdkModelException if error occurs
+   */
   protected abstract void writeResponseBody(OutputStream out, Procedure checkResponseSize) throws WdkModelException;
 
   protected Map<String,AttributeField> _attributes;
