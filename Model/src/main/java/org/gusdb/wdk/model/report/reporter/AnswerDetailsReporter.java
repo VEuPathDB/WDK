@@ -45,7 +45,7 @@ public abstract class AnswerDetailsReporter extends AbstractReporter {
   protected AttributeFormat _attributeFormat;
   private boolean _isBufferEntireResponse;
 
-  // entire buffered response; will only be populated if isBufferEntireResponse = true
+  // will contain entire buffered response; only populated if isBufferEntireResponse = true
   private ByteArrayOutputStream _bufferedResponse = new ByteArrayOutputStream();
 
   @Override
