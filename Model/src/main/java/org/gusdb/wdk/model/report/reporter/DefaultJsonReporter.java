@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.SortDirectionSpec;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Procedure;
 import org.gusdb.fgputil.json.JsonWriter;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -53,7 +54,7 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
   }
 
   @Override
-  protected void write(OutputStream out) throws WdkModelException {
+  protected void writeResponseBody(OutputStream out, Procedure checkResponseSize) throws WdkModelException {
 
     // record formatter requires the ID attribute, so must add to stream request
     //   if not already present and it contains non-PK columns
@@ -77,6 +78,7 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
       for (RecordInstance record : recordStream) {
         writer.value(RecordFormatter.getRecordJson(record, _attributes.keySet(), _tables.keySet(), _attributeFormat).getFirst());
         numRecordsReturned++;
+        checkResponseSize.perform();
       }
 
       // get metadata object

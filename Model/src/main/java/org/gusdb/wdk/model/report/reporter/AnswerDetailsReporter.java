@@ -1,10 +1,15 @@
 package org.gusdb.wdk.model.report.reporter;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Map;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.MediaType;
 
 import org.gusdb.fgputil.SortDirectionSpec;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Procedure;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.TableField;
@@ -20,23 +25,69 @@ import org.json.JSONObject;
 
 public abstract class AnswerDetailsReporter extends AbstractReporter {
 
+  private static final long MAX_BUFFERED_RESPONSE_SIZE = 50 /* megabytes */ * (1024 * 1024) /* bytes per megabyte */;
+
+  /**
+   * This method is AnswerDetailsReporter's equivalent of AbstractReporter's {@link #write(OutputStream)} method,
+   * which takes an additional procedure argument that should be called "occasionally"
+   * to check whether the response is too big to fit in memory.  Calls to this are very
+   * cheap, so a good time might be after every record is processed/written.
+   *
+   * @param out stream to which response should be written
+   * @param checkResponseSize procedure to call occasionally to check response size
+   * @throws WdkModelException if error occurs
+   */
+  protected abstract void writeResponseBody(OutputStream out, Procedure checkResponseSize) throws WdkModelException;
+
   protected Map<String,AttributeField> _attributes;
   protected Map<String,TableField> _tables;
   private ContentDisposition _contentDisposition;
   protected AttributeFormat _attributeFormat;
+  private boolean _isBufferEntireResponse;
+
+  // will contain entire buffered response; only populated if isBufferEntireResponse = true
+  private ByteArrayOutputStream _bufferedResponse = new ByteArrayOutputStream();
 
   @Override
   public Reporter configure(JSONObject config) throws ReporterConfigException, WdkModelException {
     return configure(AnswerDetailsFactory.createFromJson(config, _baseAnswer.getAnswerSpec().getQuestion()));
   }
 
-  protected Reporter configure(AnswerDetails config) {
+  protected Reporter configure(AnswerDetails config) throws WdkModelException {
     _baseAnswer = getConfiguredAnswer(_baseAnswer, config);
     _attributes = config.getAttributes();
     _tables = config.getTables();
     _contentDisposition = config.getContentDisposition();
     _attributeFormat = config.getAttributeFormat();
+    _isBufferEntireResponse = config.isBufferEntireResponse();
+
+    // if asked to buffer entire response up front (rather than stream), need to load
+    //   the data, telling the writer to check occasionally whether the response is too big
+    if (_isBufferEntireResponse) {
+      writeResponseBody(_bufferedResponse, () -> {
+        // check buffer size against max
+        if (_bufferedResponse.size() > MAX_BUFFERED_RESPONSE_SIZE) {
+          throw new BadRequestException("Response is too large to buffer.  Specify a smaller page or set 'bufferEntireResponse' to false.");
+        }
+      });
+    }
     return this;
+  }
+
+  @Override
+  protected final void write(OutputStream out) throws WdkModelException {
+    try {
+      // if entire response is already buffered, write it out
+      if (_isBufferEntireResponse) {
+        _bufferedResponse.writeTo(out);
+      }
+      else {
+        writeResponseBody(out, () -> {});
+      }
+    }
+    catch (IOException e) {
+      throw new WdkModelException("Could not write buffered response", e);
+    }
   }
 
   private static AnswerValue getConfiguredAnswer(AnswerValue answerValue, AnswerDetails config) {
