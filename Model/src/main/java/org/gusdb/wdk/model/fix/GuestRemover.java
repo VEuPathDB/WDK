@@ -139,6 +139,8 @@ public class GuestRemover extends BaseCLI {
     deleteByBatch(dataSource, userSchema + "step_analysis", " step_id IN (SELECT step_id FROM " + userSchema + "steps t WHERE " + userClause + ")");
     deleteByBatch(dataSource, userSchema + "steps t", userClause);
     deleteByBatch(dataSource, userSchema + "user_roles t", userClause);
+    deleteByBatch(dataSource, userSchema + "multiblast_users_to_fmt_jobs t", userClause);
+    deleteByBatch(dataSource, userSchema + "multiblast_users t", userClause);
     deleteByBatch(dataSource, userSchema + "users t", userClause);
   }
 
