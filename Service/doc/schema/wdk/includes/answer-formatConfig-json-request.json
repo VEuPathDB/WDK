@@ -3,6 +3,9 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "bufferEntireResponse": {
+      "type": "boolean",
+    },
     "pagination": {
       "type": "object",
       "properties": {
