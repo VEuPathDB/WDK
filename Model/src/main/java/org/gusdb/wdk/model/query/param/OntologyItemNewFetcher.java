@@ -48,11 +48,11 @@ public class OntologyItemNewFetcher implements ValueFactory<String, Map<String, 
           try { oItem.setVariableName((String) resultList.get(FilterParamNew.COLUMN_VARIABLE_NAME)); }
           catch (WdkModelException e) {}
 
-          BigDecimal precision = (BigDecimal)resultList.get(FilterParamNew.COLUMN_PRECISION);
-          if (precision != null) oItem.setPrecision(precision.toBigInteger().longValue() );
+          Integer precision = (Integer) resultList.get(FilterParamNew.COLUMN_PRECISION);
+          if (precision != null) oItem.setPrecision(precision.longValue() );
 
-          BigDecimal isRange = (BigDecimal)resultList.get(FilterParamNew.COLUMN_IS_RANGE);
-          if (isRange != null) oItem.setIsRange(isRange.toBigInteger().intValue() != 0);
+          Integer isRange = (Integer) resultList.get(FilterParamNew.COLUMN_IS_RANGE);
+          if (isRange != null) oItem.setIsRange(isRange != 0);
 
           if (ontologyItemMap.containsKey(oItem.getOntologyId()))
             throw new WdkModelException("FilterParamNew Ontology Query " +
