@@ -718,7 +718,7 @@ public class AnswerValue {
       + Arrays.stream(getAnswerSpec().getQuestion().getRecordClass()
         .getPrimaryKeyDefinition().getColumnRefs())
         .collect(Collectors.joining("\n, ", "  ", "\n"))
-      + "FROM (\n" + indent(sql) + "\n)";
+      + "FROM (\n" + indent(sql) + "\n) colFilter_outer";
 
     return ColumnFilterSqlBuilder.buildFilteredSql(this, q);
   }
