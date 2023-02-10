@@ -485,10 +485,10 @@ public class AnswerService extends AbstractWdkService {
       ContentDisposition disposition, String filename) throws WdkModelException {
     switch(disposition) {
       case INLINE:
-        response.header("Pragma", "Public");
+        response.header(HttpHeaders.CONTENT_DISPOSITION, "inline");
         break;
       case ATTACHMENT:
-        response.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename);
+        response.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
         break;
       default:
         throw new WdkModelException("Unsupported content disposition: " + disposition);
