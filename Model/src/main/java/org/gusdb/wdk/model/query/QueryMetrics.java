@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.query;
 
 import java.util.Optional;
 
-import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleIntResultSetHandler;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
@@ -20,7 +19,7 @@ import io.prometheus.client.Histogram;
  * - query size (number of rows inserted to cache, binned)
  *
  */
-public class QueryMetric {
+public class QueryMetrics {
 
   private static final double[] QUERY_TIME_MS_BINS = new double[] {
       250, 1000, 3000, 10000, 25000, 60000, 120000, 300000, Double.POSITIVE_INFINITY
@@ -33,16 +32,8 @@ public class QueryMetric {
       .buckets(QUERY_TIME_MS_BINS)
       .register();
 
-  private final String _projectId;
-  private final String _queryFullName;
-
-  public QueryMetric(String projectId, String queryFullName) {
-    _projectId = projectId;
-    _queryFullName = queryFullName;
-  }
-
-  public Optional<String> observeCacheInsertion(
-      DatabaseInstance appDb,
+  public static Optional<String> observeCacheInsertion(
+      Query query,
       String cacheTableName,
       SupplierWithException<Optional<String>> cacheCreator) throws WdkModelException {
     try {
@@ -54,15 +45,16 @@ public class QueryMetric {
 
       // get number of inserted rows
       int resultSize = new SQLRunner(
-          appDb.getDataSource(), "select count(*) from " + cacheTableName,
+          query.getWdkModel().getAppDb().getDataSource(),
+          "select count(*) from " + cacheTableName,
           "table_count_for_metrics"
       ).executeQuery(new SingleIntResultSetHandler());
 
       // register an observation in the histogram
       QUERY_DURATION
         .labels(
-          _projectId,
-          _queryFullName,
+          query.getWdkModel().getProjectId(),
+          query.getFullName(),
           String.valueOf(orderOfMagnitude(resultSize)))
         .observe(duration);
 

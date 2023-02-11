@@ -78,8 +78,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
   @Override
   public Optional<String> createCacheTableAndInsertResult(DatabaseInstance appDb, String tableName, long instanceId)
       throws WdkModelException {
-    return new QueryMetric(_wdkModel.getProjectId(), _query.getFullName())
-        .observeCacheInsertion(appDb, tableName, () -> {
+    return QueryMetrics.observeCacheInsertion(_query, tableName, () -> {
       LOG.debug("Creating cache table for query " + _query.getFullName());
       // get the sql with param values applied.
       var sql = getUncachedSql();
