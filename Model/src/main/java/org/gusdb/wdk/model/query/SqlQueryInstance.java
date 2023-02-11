@@ -83,19 +83,20 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     var sql = getUncachedSql();
     LOG.debug("Uncached SQL for query " + _query.getFullName() + ": " + sql);
     var rowNumber = appDb.getPlatform().getRowNumberColumn();
-    var buffer = new StringBuilder("CREATE TABLE " + tableName)
+    var insertSql = new StringBuilder("CREATE TABLE " + tableName)
       .append(" AS SELECT ")
       .append(instanceId + " AS " + CacheFactory.COLUMN_INSTANCE_ID + ", ")
       .append(rowNumber + " AS " + CacheFactory.COLUMN_ROW_ID + ", ")
-      .append(" f.* FROM (").append(sql).append(") f");
+      .append(" f.* FROM (").append(sql).append(") f")
+      .toString();
 
     var dataSource = appDb.getDataSource();
     try {
-      SqlUtils.executeUpdate(dataSource, buffer.toString(), _query.getFullName() + "__create-cache-table",
+      SqlUtils.executeUpdate(dataSource, insertSql, _query.getFullName() + "__create-cache-table",
           _query.isUseDBLink());
     }
     catch (SQLException e) {
-      LOG.error("Failed to run sql:\n" + buffer);
+      LOG.error("Failed to run sql:\n" + insertSql);
       throw new WdkModelException("Unable to create cache.", e);
     }
 
