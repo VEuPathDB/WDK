@@ -21,15 +21,16 @@ import io.prometheus.client.Histogram;
  */
 public class QueryMetrics {
 
-  private static final double[] QUERY_TIME_MS_BINS = new double[] {
+  // represent the upper bound of duration bins in milliseconds
+  private static final double[] QUERY_DURATION_MS_BINS = new double[] {
       250, 1000, 3000, 10000, 25000, 60000, 120000, 300000, Double.POSITIVE_INFINITY
   };
 
   private static final Histogram QUERY_DURATION = Histogram.build()
       .name("wdk_query_duration")
       .help("WDK query duration in milliseconds")
-      .labelNames("project_id", "query_name", "result_size_magnatude")
-      .buckets(QUERY_TIME_MS_BINS)
+      .labelNames("project_id", "query_name", "result_size_magnitude")
+      .buckets(QUERY_DURATION_MS_BINS)
       .register();
 
   public static Optional<String> observeCacheInsertion(
