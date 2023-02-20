@@ -357,6 +357,8 @@ public class UserDatasetEventDBActions
    * @param con Open JDBC connection.
    */
   private void lockEventTable(Connection con) throws SQLException {
+    LOG.info("Locking table " + schema + TABLE_USER_DATASET_EVENT);
+
     var sql = "LOCK TABLE " + schema + TABLE_USER_DATASET_EVENT + " IN EXCLUSIVE MODE";
 
     con.setAutoCommit(false);
@@ -373,6 +375,8 @@ public class UserDatasetEventDBActions
    * @param con Open JDBC transaction.
    */
   private void unlockEventTable(Connection con) throws SQLException {
+    LOG.info("Unlocking table " + schema + TABLE_USER_DATASET_EVENT);
+
     con.commit();
   }
 
