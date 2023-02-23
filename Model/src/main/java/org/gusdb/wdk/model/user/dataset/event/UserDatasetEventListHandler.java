@@ -46,7 +46,7 @@ public class UserDatasetEventListHandler extends BaseCLI {
 
     switch ((String) getOptionValue(ARG_RUN_MODE)) {
       case "cleanup":
-        new UserDatasetEventCleanup(projectId).cleanupFailedInstalls();
+        new UserDatasetEventCleanup(Arrays.asList(projectId)).cleanupFailedInstalls();
         break;
       case "sync":
         new UserDatasetEventSync(Arrays.asList(projectId))
