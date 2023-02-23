@@ -24,7 +24,9 @@ public abstract class UserDatasetEventProcessor
 
   protected UserDatasetEventProcessor(List<String> projectIds) throws WdkModelException {
     this.projectIds        = projectIds;
-    this.modelConfig      = parseModelConfig(projectIds.get(0)); // Nasty hack! There
+    // Picking the first project ID is a hack! We know in cases where we have multiple project IDs, the database connect
+    // configuration will be the same.
+    this.modelConfig      = parseModelConfig(projectIds.get(0));
     this.userDatasetStore = getUserDatasetStore(this.modelConfig);
   }
 
