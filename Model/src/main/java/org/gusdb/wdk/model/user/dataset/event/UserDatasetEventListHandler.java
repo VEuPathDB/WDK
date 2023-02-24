@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.user.dataset.event;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
@@ -45,10 +46,10 @@ public class UserDatasetEventListHandler extends BaseCLI {
 
     switch ((String) getOptionValue(ARG_RUN_MODE)) {
       case "cleanup":
-        new UserDatasetEventCleanup(projectId).cleanupFailedInstalls();
+        new UserDatasetEventCleanup(Arrays.asList(projectId)).cleanupFailedInstalls();
         break;
       case "sync":
-        new UserDatasetEventSync(projectId)
+        new UserDatasetEventSync(Arrays.asList(projectId))
           .handleEventList(
             UserDatasetEventSync.parseEventsArray(
               EventParser.parseList(new File((String) getOptionValue(ARG_EVENTS_FILE)))

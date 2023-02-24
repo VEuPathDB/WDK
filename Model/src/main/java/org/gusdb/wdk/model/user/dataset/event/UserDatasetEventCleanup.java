@@ -10,6 +10,8 @@ import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEventStatus;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetEventType;
 import org.gusdb.wdk.model.user.dataset.event.model.UserDatasetUninstallEvent;
 
+import java.util.List;
+
 /**
  * Processes events in the {@link UserDatasetEventStatus#CLEANUP_READY} status
  * and attempts to uninstall those events.
@@ -29,8 +31,8 @@ public class UserDatasetEventCleanup extends UserDatasetEventProcessor
 {
   private static final Logger LOG = LogManager.getLogger(UserDatasetEventCleanup.class);
 
-  public UserDatasetEventCleanup(String projectID) throws WdkModelException {
-    super(projectID);
+  public UserDatasetEventCleanup(List<String> projectIds) throws WdkModelException {
+    super(projectIds);
   }
 
   public void cleanupFailedInstalls() throws WdkModelException {
@@ -116,7 +118,7 @@ public class UserDatasetEventCleanup extends UserDatasetEventProcessor
     return new UserDatasetEventCleanupHandler(
       appDbDs,
       getUserDatasetSchemaName(),
-      getProjectId(),
+      getProjectIds(),
       getModelConfig()
     );
   }

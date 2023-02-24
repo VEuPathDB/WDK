@@ -78,20 +78,20 @@ public abstract class UserDatasetEventHandler
   private final Set<Long>        externallyClaimedDatasets;
   private final List<EventError> errors;
 
-  private final Path        tmpDir;
-  private final String      projectId;
-  private final ModelConfig modelConfig;
+  private final Path              tmpDir;
+  private final List<String>      projectIds;
+  private final ModelConfig       modelConfig;
 
 
   public UserDatasetEventHandler(
     final DataSource ds,
     final String dsSchema,
-    final String projectId,
+    final List<String> projectIds,
     final ModelConfig model
   ) {
     this.dataSource  = ds;
     this.tmpDir      = model.getWdkTempDir();
-    this.projectId   = projectId;
+    this.projectIds   = projectIds;
     this.modelConfig = model;
 
     this.eventRepo   = new UserDatasetEventDBActions(dsSchema, ds);
@@ -173,7 +173,7 @@ public abstract class UserDatasetEventHandler
       modelConfig.getSmtpServer(),
       modelConfig.getAdminEmail(),
       "do-not-reply@apidb.org",
-      projectId + " User Dataset Event " + getRunModeName() + " Errors",
+      projectIds + " User Dataset Event " + getRunModeName() + " Errors",
       buildErrorEmailBody()
     );
   }
@@ -209,7 +209,10 @@ public abstract class UserDatasetEventHandler
     LOG.info("Uninstalling user dataset " + event.getUserDatasetId());
 
     revokeAllAccess(event.getUserDatasetId());
-    typeHandler.uninstallInAppDb(event.getUserDatasetId(), getTmpDir(), getProjectId());
+
+    // Hack alert! Taking the first project here is not ideal. We only have multiple projects in EDA and the project
+    // ID is not used in uninstall for EDA datasets.
+    typeHandler.uninstallInAppDb(event.getUserDatasetId(), getTmpDir(), projectIds.get(0));
 
     installRepo.deleteUserDataset(event.getUserDatasetId());
 
@@ -236,8 +239,8 @@ public abstract class UserDatasetEventHandler
     return tmpDir;
   }
 
-  protected String getProjectId() {
-    return projectId;
+  protected List<String> getProjectIds() {
+    return projectIds;
   }
 
   protected DataSource getDataSource() {
@@ -269,7 +272,7 @@ public abstract class UserDatasetEventHandler
     body.append("<body><h1>Event ")
       .append(getRunModeName())
       .append(" Processing Errors for ")
-      .append(projectId)
+      .append(projectIds)
       .append("</h1>");
 
     for (var err : this.errors) {

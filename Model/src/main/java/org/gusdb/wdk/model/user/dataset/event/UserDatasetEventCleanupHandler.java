@@ -16,10 +16,10 @@ public class UserDatasetEventCleanupHandler extends UserDatasetEventHandler
   public UserDatasetEventCleanupHandler(
     DataSource ds,
     String dsSchema,
-    String projectId,
+    List<String> projectIds,
     ModelConfig modelConfig
   ) {
-    super(ds, dsSchema, projectId, modelConfig);
+    super(ds, dsSchema, projectIds, modelConfig);
   }
 
   /**
