@@ -13,7 +13,6 @@ import org.gusdb.wdk.model.WdkModel;
 public class ErrorContext {
 
     public static enum ErrorLocation {
-      WDK_SITE("Site"),
       WDK_SERVICE("Service"),
       WDK_CLIENT("Client");
 
