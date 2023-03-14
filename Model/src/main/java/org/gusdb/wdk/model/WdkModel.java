@@ -3,6 +3,7 @@ package org.gusdb.wdk.model;
 import static java.util.Objects.isNull;
 import static org.gusdb.fgputil.FormatUtil.NL;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -26,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.Timer;
@@ -150,6 +152,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private Map<String, String> _recordClassUrlSegmentMap = new HashMap<>();
 
   private List<WdkModelName> wdkModelNames = new ArrayList<>();
+  private List<Closeable> managedCloseables = new ArrayList<>();
 
   private String displayName;
   private String version; // use default version
@@ -645,6 +648,16 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     }
   }
 
+  /**
+   * Register a closeable with the WDKModel, ceding control of the closeable's lifecycle to this instance of the WDKModel.
+   * The registered closeable will be closed when the WDKModel is closed.
+   *
+   * @param c Closeable for which control should be ceded to WDKModel.
+   */
+  public void registerClosable(Closeable c) {
+    managedCloseables.add(c);
+  }
+
   @Override
   public void close() {
     LOG.info("Releasing WDK Model resources...");
@@ -653,6 +666,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     releaseDb(userDb);
     releaseDb(accountDb);
     Events.shutDown();
+    IOUtils.closeQuietly(managedCloseables.toArray(new Closeable[managedCloseables.size()]));
     LOG.info("WDK Model resources released.");
   }
 
