@@ -250,7 +250,7 @@ public class AnswerDetailsFactory {
       AttributeField attrib = availableAttribs.get(attribName);
       if (attrib == null) {
         throw new ReporterConfigException("Attribute '" + attribName +
-            "' is not available for record class '" + question.getFullName() + "'");
+            "' is not available for question '" + question.getFullName() + "'");
       }
       attributes.put(attrib.getName(), attrib);
     }
