@@ -150,6 +150,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private Map<String, String> _recordClassUrlSegmentMap = new HashMap<>();
 
   private List<WdkModelName> wdkModelNames = new ArrayList<>();
+  private AutoCloseableList<AutoCloseable> managedCloseables = new AutoCloseableList<>();
 
   private String displayName;
   private String version; // use default version
@@ -645,6 +646,16 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     }
   }
 
+  /**
+   * Register a closeable with the WDKModel, ceding control of the closeable's lifecycle to this instance of the WDKModel.
+   * The registered closeable will be closed when the WDKModel is closed.
+   *
+   * @param c Closeable for which control should be ceded to WDKModel.
+   */
+  public void registerClosable(AutoCloseable c) {
+    managedCloseables.add(c);
+  }
+
   @Override
   public void close() {
     LOG.info("Releasing WDK Model resources...");
@@ -653,6 +664,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     releaseDb(userDb);
     releaseDb(accountDb);
     Events.shutDown();
+    managedCloseables.close();
     LOG.info("WDK Model resources released.");
   }
 
