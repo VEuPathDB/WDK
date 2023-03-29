@@ -181,6 +181,11 @@ public class JsonUserDatasetSession implements UserDatasetSession {
     return TRACE.end(Collections.unmodifiableMap(user.externalDatasetsMap));
   }
 
+  @Override
+  public List<String> getAllUsers() throws WdkModelException {
+    return List.of();
+  }
+
   // TODO: this is probably doable without 2 adaptor requests
   @Override
   public JsonUserDataset getUserDataset(Long userId, Long datasetId)
