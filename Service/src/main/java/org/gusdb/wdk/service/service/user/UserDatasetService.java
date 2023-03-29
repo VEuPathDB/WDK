@@ -182,10 +182,10 @@ public class UserDatasetService extends UserService {
           .map(entry -> new UserDatasetInfo(entry.getValue(), false,
               dsStore, dsSession, cache, wdkModel))
           .collect(Collectors.toList());
-      responseJson = dsInfo.stream()
+      responseJson = "[" + dsInfo.stream()
           .map(Functions.fSwallow(ds -> UserDatasetFormatter.getUserDatasetJson(ds,
           false, true).toString()))
-          .collect(Collectors.joining(","));
+          .collect(Collectors.joining(",")) + "]";
       return Response.status(200)
           .entity(responseJson)
           .build();
