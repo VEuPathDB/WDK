@@ -204,6 +204,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
       final ICatCollection ds = datasets.next();
       final long dsId = Long.parseLong(ds.getName());
       try {
+        LOG.info("Putting " + dsId + " collectionToDataset(" + dsId + "," + userId + "," + ds + ")");
         out.put(dsId, collectionToDataset(dsId, userId, ds));
       }
       catch (BrokenDatasetException e) {

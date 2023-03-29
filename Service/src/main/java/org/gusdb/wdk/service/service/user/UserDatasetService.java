@@ -163,13 +163,17 @@ public class UserDatasetService extends UserService {
     String responseJson;
     try (UserDatasetSession dsSession = dsStore.getSession()) {
       Map<Long, UserDataset> allDatasets = dsSession.getAllUsers().stream()
-          .flatMap(Functions.fSwallow(userId -> dsSession.getUserDatasets(Long.parseLong(userId)).entrySet().stream()))
+          .flatMap(Functions.fSwallow(userId -> {
+            LOG.info("User ID: " + userId);
+            return dsSession.getUserDatasets(Long.parseLong(userId)).entrySet().stream();
+          }))
           .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
       List<UserDatasetInfo> dsInfo = allDatasets.entrySet().stream()
           .map(entry -> new UserDatasetInfo(entry.getValue(), false,
               dsStore, dsSession, new UserCache(wdkModel.getUserFactory()), wdkModel))
           .collect(Collectors.toList());
-      responseJson = dsInfo.stream().map(Functions.fSwallow(ds -> UserDatasetFormatter.getUserDatasetJson(ds,
+      responseJson = dsInfo.stream()
+          .map(Functions.fSwallow(ds -> UserDatasetFormatter.getUserDatasetJson(ds,
           false, true).toString()))
           .collect(Collectors.joining(","));
       return Response.status(200)
