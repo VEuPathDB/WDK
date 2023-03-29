@@ -161,6 +161,7 @@ public class UserDatasetService extends UserService {
 
     UserDatasetStore dsStore = getUserDatasetStore(wdkModel);
     String responseJson;
+    UserCache cache = new UserCache(wdkModel.getUserFactory());
     try (UserDatasetSession dsSession = dsStore.getSession()) {
       Map<Long, UserDataset> allDatasets = dsSession.getAllUsers().stream()
           .flatMap(Functions.fSwallow(userId -> {
@@ -169,8 +170,17 @@ public class UserDatasetService extends UserService {
           }))
           .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
       List<UserDatasetInfo> dsInfo = allDatasets.entrySet().stream()
+          .filter(entry -> {
+            try {
+              new UserDatasetInfo(entry.getValue(), false, dsStore, dsSession, cache, wdkModel);
+              return true;
+            } catch (Exception e) {
+              LOG.warn("Failed to create ud info for " + entry.getValue());
+              return false;
+            }
+          })
           .map(entry -> new UserDatasetInfo(entry.getValue(), false,
-              dsStore, dsSession, new UserCache(wdkModel.getUserFactory()), wdkModel))
+              dsStore, dsSession, cache, wdkModel))
           .collect(Collectors.toList());
       responseJson = dsInfo.stream()
           .map(Functions.fSwallow(ds -> UserDatasetFormatter.getUserDatasetJson(ds,

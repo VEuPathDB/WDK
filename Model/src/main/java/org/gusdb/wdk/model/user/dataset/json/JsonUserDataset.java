@@ -90,7 +90,7 @@ public class JsonUserDataset implements UserDataset {
         for (int i = 0; i < projectsJson.length(); i++)
           projects.add(projectsJson.getString(i));
       } catch (Exception e) {
-        
+
       }
 
       var dataFilesJson = datasetJsonObj.getJSONArray(DATA_FILES);
