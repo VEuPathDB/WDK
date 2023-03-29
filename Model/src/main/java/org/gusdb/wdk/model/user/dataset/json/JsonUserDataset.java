@@ -86,8 +86,12 @@ public class JsonUserDataset implements UserDataset {
         dependencies.add(new JsonUserDatasetDependency(dependenciesJson.getJSONObject(i)));
 
       var projectsJson = datasetJsonObj.getJSONArray(PROJECTS);
-      for (int i=0; i<projectsJson.length(); i++)
-        projects.add(projectsJson.getString(i));
+      try {
+        for (int i = 0; i < projectsJson.length(); i++)
+          projects.add(projectsJson.getString(i));
+      } catch (Exception e) {
+        
+      }
 
       var dataFilesJson = datasetJsonObj.getJSONArray(DATA_FILES);
       for (int i=0; i<dataFilesJson.length(); i++) {
