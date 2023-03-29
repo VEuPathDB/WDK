@@ -298,6 +298,15 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
   }
 
   @Override
+  public List<String> getAllUsers() throws WdkModelException {
+     return loadCollection(usersRootDir, true)
+         .map(collection -> collection.streamCollectionsShallow()
+             .map(ICatNode::getName)
+             .collect(Collectors.toList()))
+         .orElse(List.of());
+  }
+
+  @Override
   public void updateMetaFromJson(
     Long userId,
     Long datasetId,

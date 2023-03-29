@@ -34,6 +34,7 @@ import javax.ws.rs.core.StreamingOutput;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Range;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
@@ -152,6 +153,30 @@ public class UserDatasetService extends UserService {
     return Response.ok(responseJson).build();
   }
 
+  @GET
+  @Path("user-datasets/admin")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getAllDatasets() throws WdkModelException {
+    WdkModel wdkModel = getWdkModel();
+
+    UserDatasetStore dsStore = getUserDatasetStore(wdkModel);
+    String responseJson;
+    try (UserDatasetSession dsSession = dsStore.getSession()) {
+      Map<Long, UserDataset> allDatasets = dsSession.getAllUsers().stream()
+          .flatMap(Functions.fSwallow(userId -> dsSession.getUserDatasets(Long.parseLong(userId)).entrySet().stream()))
+          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      List<UserDatasetInfo> dsInfo = allDatasets.entrySet().stream()
+          .map(entry -> new UserDatasetInfo(entry.getValue(), false,
+              dsStore, dsSession, new UserCache(wdkModel.getUserFactory()), wdkModel))
+          .collect(Collectors.toList());
+      responseJson = dsInfo.stream().map(Functions.fSwallow(ds -> UserDatasetFormatter.getUserDatasetJson(ds,
+          false, true).toString()))
+          .collect(Collectors.joining(","));
+      return Response.status(200)
+          .entity(responseJson)
+          .build();
+    }
+  }
   /**
    * Service to stream out a binary datafile from IRODS
    */

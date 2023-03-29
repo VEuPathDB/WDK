@@ -48,6 +48,8 @@ public interface UserDatasetSession extends AutoCloseable {
    */
   Map<Long, UserDataset> getExternalUserDatasets(Long userId) throws WdkModelException;
 
+  List<String> getAllUsers() throws WdkModelException;
+
   /**
    * Get a single external user dataset by user and dataset id.
    *
