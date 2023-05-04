@@ -68,7 +68,7 @@ public class RunPublicStrats extends BaseCLI {
       if (!erroredStrategies.isEmpty()) {
         LOG.warn("At least one public strategy is invalid.  See below for list");
         for (Strategy st : erroredStrategies) {
-          LOG.info("{  owner: " + st.getUser().getEmail() + ", project: " + projectId + ", strategyName: " + st.getName() + ", strategyId: " + st.getStrategyId() +  ", importId: " + st.getSignature() + " }");
+          LOG.info("{  owner: " + st.getUser().getEmail() + ", project: " + projectId + ", strategyName: " + st.getName() + ", modifiedTime: "  + st.getLastModifiedTime() + ", createdTime: " + st.getCreatedTime() + ", strategyId: " + st.getStrategyId() +  ", importId: " + st.getSignature() + " }");
         }
       }
     }
