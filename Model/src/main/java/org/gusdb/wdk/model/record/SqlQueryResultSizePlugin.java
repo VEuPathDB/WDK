@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.record;
 
-import java.math.BigDecimal;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
