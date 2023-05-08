@@ -38,7 +38,7 @@ public class SqlQueryResultSizePlugin implements ResultSize {
         .buildRunnable(answerValue.getUser(), _query, StepContainer.emptyContainer()));
     try (ResultList results = queryInstance.getResults()) {
       results.next();
-      Integer count = ((BigDecimal) results.get(COUNT_COLUMN)).intValue();
+      Integer count = ((Number) results.get(COUNT_COLUMN)).intValue();
       RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
       if (results.next())
         throw new WdkModelException("Record class '" + recordClass.getName() +
