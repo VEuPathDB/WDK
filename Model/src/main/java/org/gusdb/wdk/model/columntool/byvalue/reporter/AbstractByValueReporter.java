@@ -114,9 +114,9 @@ public abstract class AbstractByValueReporter implements ColumnReporter, Distrib
     String orderedGroupingSql =
         "select * from (" +
         "  select " + colName + " as key, count(" + colName + ") as value" +
-        "  from (" + _jointAttributeSql + ")" +
+        "  from (" + _jointAttributeSql + ") t_inner" +
         "  group by " + colName +
-        ") " +
+        ") t_outer " +
         "order by key asc";
     _groupStream = ResultSets.openStream(_appDb, orderedGroupingSql, "attribute-value-distribution",
         row -> Optional.of(new TwoTuple<>(convertToStringValue(row, "key"), row.getLong("value"))));

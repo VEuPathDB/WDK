@@ -616,7 +616,7 @@ public class DatasetFactory {
 
     // execute this dummy sql to make sure the remote table is sync-ed.
     SqlUtils.executeScalar(_wdkModel.getAppDb().getDataSource(),
-      "SELECT count(*) FROM " + table, "wdk-remote-dataset-dummy");
+      "SELECT 1 FROM " + table, "wdk-remote-dataset-dummy");
   }
 
   private DatasetContents getDatasetContentAsFile(final ResultSet rs)

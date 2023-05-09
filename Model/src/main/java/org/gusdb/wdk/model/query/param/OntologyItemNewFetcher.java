@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.query.param;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 import static org.gusdb.fgputil.functional.Functions.transformValues;
 
-import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,11 +47,11 @@ public class OntologyItemNewFetcher implements ValueFactory<String, Map<String, 
           try { oItem.setVariableName((String) resultList.get(FilterParamNew.COLUMN_VARIABLE_NAME)); }
           catch (WdkModelException e) {}
 
-          BigDecimal precision = (BigDecimal)resultList.get(FilterParamNew.COLUMN_PRECISION);
-          if (precision != null) oItem.setPrecision(precision.toBigInteger().longValue() );
+          Number precision = (Number) resultList.get(FilterParamNew.COLUMN_PRECISION);
+          if (precision != null) oItem.setPrecision(precision.longValue() );
 
-          BigDecimal isRange = (BigDecimal)resultList.get(FilterParamNew.COLUMN_IS_RANGE);
-          if (isRange != null) oItem.setIsRange(isRange.toBigInteger().intValue() != 0);
+          Number isRange = (Number) resultList.get(FilterParamNew.COLUMN_IS_RANGE);
+          if (isRange != null) oItem.setIsRange(isRange.intValue() != 0);
 
           if (ontologyItemMap.containsKey(oItem.getOntologyId()))
             throw new WdkModelException("FilterParamNew Ontology Query " +
