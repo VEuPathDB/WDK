@@ -319,13 +319,18 @@ public class UserDatasetService extends UserService {
   private Response getDatafileRange(
     final UserDatasetSession dsSess,
     final UserDatasetFile dsFile,
-    final Range<Long> range
+    final Range<Long> range // this range should always be inclusive
   ) throws WdkModelException {
+
+    // if begin is omitted, set to 0 (zero offset)
+    long begin = range.getBeginOpt().orElse(0L);
+
+    // if end is present, add one for exclusivity; else use file size
+    long end = range.getEndOpt().map(endrange -> endrange + 1).orElse(dsFile.getFileSize());
+
     return Response.status(Status.PARTIAL_CONTENT)
-      .entity((StreamingOutput) out -> dsFile.readRangeInto(dsSess,
-        range.getBegin(), 1 + range.getEnd() - range.getBegin(), out))
-      .header(CONTENT_RANGE_HEADER, range.getBegin() + "-" + range.getEnd() +
-        "/" + dsFile.getFileSize())
+      .entity((StreamingOutput) out -> dsFile.readRangeInto(dsSess, begin, end - begin, out))
+      .header(CONTENT_RANGE_HEADER, begin + "-" + (end - 1) + "/" + dsFile.getFileSize())
       .build();
   }
 
