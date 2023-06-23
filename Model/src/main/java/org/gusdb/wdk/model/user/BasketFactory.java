@@ -505,15 +505,14 @@ public class BasketFactory {
     query.setIndexColumns(recordClass.getIndexColumns());
     query.setDoNotTest(true);
     query.setIsCacheable(false);
-    query.setSql(getBasketSelectSql(recordClass));
+    query.setSql(getBasketSelectSql(_wdkModel, recordClass));
     querySet.addQuery(query);
     query.excludeResources(_wdkModel.getProjectId());
     return query;
   }
 
-  public static String getBasketSelectSql(RecordClass recordClass) {
+  public static String getBasketSelectSql(WdkModel wdkModel, RecordClass recordClass) {
 
-    WdkModel wdkModel = recordClass.getWdkModel();
     String dbLink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
     String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();

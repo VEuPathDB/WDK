@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.record;
 
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.spec.SimpleAnswerSpec;
@@ -15,7 +16,10 @@ public class InBasketFilter extends StepFilter {
   private static final String FILTER_NAME = "in_basket_filter";
   private static final String FILTER_DESCRIPTION = "Filters out records not currently in your basket.";
 
-  public InBasketFilter() {
+  private final WdkModel _wdkModel;
+
+  public InBasketFilter(WdkModel wdkModel) {
+    _wdkModel = wdkModel;
     _defaultValue = new JSONObject();
     setIsViewOnly(true);
     setDisplay(FILTER_DESCRIPTION);
@@ -39,7 +43,7 @@ public class InBasketFilter extends StepFilter {
     return
       "select baskidq.* from" +
       " ( " + idSql + " ) baskidq," +
-      " ( " + BasketFactory.getBasketSelectSql(recordClass) + " ) baskids" +
+      " ( " + BasketFactory.getBasketSelectSql(_wdkModel, recordClass) + " ) baskids" +
       " where " + pkDef.createJoinClause("baskidq", "baskids");
   }
 
