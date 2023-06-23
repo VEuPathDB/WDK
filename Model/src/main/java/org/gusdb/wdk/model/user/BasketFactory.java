@@ -483,14 +483,9 @@ public class BasketFactory {
   }
 
   private Query getBasketRealtimeIdQuery(RecordClass recordClass) throws WdkModelException {
-    String dbLink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
-    String projectId = _wdkModel.getProjectId();
-    String rcName = recordClass.getFullName();
-
-    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
 
     // check if the boolean query already exists
-    String queryName = rcName.replace('.', '_') + REALTIME_BASKET_ID_QUERY_SUFFIX;
+    String queryName = recordClass.getFullName().replace('.', '_') + REALTIME_BASKET_ID_QUERY_SUFFIX;
     QuerySet querySet = _wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
     if (querySet.contains(queryName))
       return querySet.getQuery(queryName);
@@ -498,7 +493,7 @@ public class BasketFactory {
     SqlQuery query = new SqlQuery();
     query.setName(queryName);
     // create columns
-    for (String columnName : pkColumns) {
+    for (String columnName : recordClass.getPrimaryKeyDefinition().getColumnRefs()) {
       Column column = new Column();
       column.setName(columnName);
       query.addColumn(column);
@@ -510,8 +505,19 @@ public class BasketFactory {
     query.setIndexColumns(recordClass.getIndexColumns());
     query.setDoNotTest(true);
     query.setIsCacheable(false);
+    query.setSql(getBasketSelectSql(recordClass));
+    querySet.addQuery(query);
+    query.excludeResources(_wdkModel.getProjectId());
+    return query;
+  }
 
-    // construct the sql
+  public static String getBasketSelectSql(RecordClass recordClass) {
+
+    WdkModel wdkModel = recordClass.getWdkModel();
+    String dbLink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
+    String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
+    String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
+
     StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
     for (int i = 0; i < pkColumns.length; i++) {
       if (i > 0)
@@ -519,14 +525,12 @@ public class BasketFactory {
       sql.append("b." + Utilities.COLUMN_PK_PREFIX + (i + 1));
       sql.append(" AS " + pkColumns[i]);
     }
-    sql.append(" FROM " + _userSchema + TABLE_BASKET + dbLink + " b ");
+    sql.append(" FROM " + userSchema + TABLE_BASKET + dbLink + " b ");
     sql.append(" WHERE b." + COLUMN_USER_ID + " = $$" + Utilities.PARAM_USER_ID + "$$ ");
-    sql.append("   AND b." + COLUMN_PROJECT_ID + " = '" + projectId + "'");
-    sql.append("   AND b." + COLUMN_RECORD_CLASS + " = '" + rcName + "'");
-    query.setSql(sql.toString());
-    querySet.addQuery(query);
-    query.excludeResources(projectId);
-    return query;
+    sql.append("   AND b." + COLUMN_PROJECT_ID + " = '" + wdkModel.getProjectId() + "'");
+    sql.append("   AND b." + COLUMN_RECORD_CLASS + " = '" + recordClass.getFullName() + "'");
+
+    return sql.toString();
   }
 
   private void setParams(PreparedStatement ps, long userId, String projectId, String rcName, String[] pkValue)
