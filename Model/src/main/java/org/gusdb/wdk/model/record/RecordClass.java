@@ -1030,7 +1030,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     }
 
     // automatically add basket view filter to each recordclass
-    StepFilter basketFilter = new InBasketFilter();
+    StepFilter basketFilter = new InBasketFilter(_wdkModel);
     _stepFilters.put(basketFilter.getKey(), basketFilter);
 
     // resolve step filter references
