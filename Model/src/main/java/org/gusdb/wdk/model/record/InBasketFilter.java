@@ -40,10 +40,13 @@ public class InBasketFilter extends StepFilter {
   public String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException {
     RecordClass recordClass = answer.getAnswerSpec().getQuestion().getRecordClass();
     PrimaryKeyDefinition pkDef = recordClass.getPrimaryKeyDefinition();
+    String userId = String.valueOf(answer.getUser().getUserId());
+    String basketSql = BasketFactory.getBasketSelectSql(_wdkModel, recordClass)
+        .replace(BasketFactory.getUserParamMacro(), userId);
     return
       "select baskidq.* from" +
       " ( " + idSql + " ) baskidq," +
-      " ( " + BasketFactory.getBasketSelectSql(_wdkModel, recordClass) + " ) baskids" +
+      " ( " + basketSql + " ) baskids" +
       " where " + pkDef.createJoinClause("baskidq", "baskids");
   }
 

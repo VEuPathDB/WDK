@@ -525,11 +525,15 @@ public class BasketFactory {
       sql.append(" AS " + pkColumns[i]);
     }
     sql.append(" FROM " + userSchema + TABLE_BASKET + dbLink + " b ");
-    sql.append(" WHERE b." + COLUMN_USER_ID + " = $$" + Utilities.PARAM_USER_ID + "$$ ");
+    sql.append(" WHERE b." + COLUMN_USER_ID + " = " + getUserParamMacro() + " ");
     sql.append("   AND b." + COLUMN_PROJECT_ID + " = '" + wdkModel.getProjectId() + "'");
     sql.append("   AND b." + COLUMN_RECORD_CLASS + " = '" + recordClass.getFullName() + "'");
 
     return sql.toString();
+  }
+
+  public static String getUserParamMacro() {
+    return "$$" + Utilities.PARAM_USER_ID + "$$";
   }
 
   private void setParams(PreparedStatement ps, long userId, String projectId, String rcName, String[] pkValue)
