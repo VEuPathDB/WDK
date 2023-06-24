@@ -69,7 +69,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
   }
 
   @Override
-  protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException {
+  protected String getIdSql(String excludeFilter) throws WdkModelException {
     DBPlatform platform = _recordClass.getWdkModel().getAppDb().getPlatform();
     return new StringBuilder("( select ")
       .append(join(mapToList(_pkMap.entrySet(), pkColumnValue -> {
