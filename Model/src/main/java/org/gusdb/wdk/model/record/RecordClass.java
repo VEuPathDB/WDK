@@ -1029,6 +1029,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       layout.resolveReferences(wdkModel);
     }
 
+    // automatically add basket view filter to each recordclass
+    StepFilter basketFilter = new InBasketFilter(_wdkModel);
+    _stepFilters.put(basketFilter.getKey(), basketFilter);
+
     // resolve step filter references
     for (FilterReference reference : _filterReferences) {
       StepFilter filter = resolveStepFilterReferenceByName(reference.getName(), _wdkModel, "recordClass " + getFullName());
