@@ -265,7 +265,7 @@ public class AnswerValue {
   }
 
   /**
-   * the checksum of the iq query, plus the filter information on the answer.
+   * the checksum of the id query, plus the filter information on the answer.
    */
   public String getChecksum() throws WdkModelException {
     if (_checksum == null) {
@@ -326,8 +326,8 @@ public class AnswerValue {
     LOG.debug("AnswerValue: getPagedAttributeSql(): " +
       attributeQuery.getFullName() + " --boolean sortPage: " + sortPage);
 
-    // get the paged SQL of id query
-    String idSql = getPagedIdSql(false, sortPage);
+    // get the paged SQL of id query (include the row index if we are sorting the page)
+    String idSql = getPagedIdSql(sortPage);
 
     // combine the id query with attribute query
     String attributeSql = getAttributeSql(attributeQuery);
@@ -390,7 +390,7 @@ public class AnswerValue {
 
   private String getPagedTableSql(Query tableQuery) throws WdkModelException {
     // get the paged SQL of id query
-    String idSql = getPagedIdSql(false, true);
+    String idSql = getPagedIdSql(true);
 
     // Combine the id query with table query.  Make an instance from the
     // original table query; a table query has only one param, user_id. Note
@@ -421,7 +421,7 @@ public class AnswerValue {
     sql.append(" ORDER BY pidq.row_index, tqi.row_index");
 
     // replace the id_sql macro.  this sql must include filters (but not view filters)
-    String sqlWithIdSql = sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true, true));
+    String sqlWithIdSql = sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true));
     return sqlWithIdSql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, "(" + getNoFiltersIdSql() + ")");
   }
 
@@ -440,7 +440,7 @@ public class AnswerValue {
   
   public String getUnsortedUnpagedSql(String embeddedSql) throws WdkModelException {
     // get the unsorted and unpaged SQL of id query. 
-    String idSql = getIdSql(null, true);
+    String idSql = getIdSql(null);
     
     String[] pkColumns = getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
     String pkColumnsString = String.join(", ", pkColumns);
@@ -557,8 +557,8 @@ public class AnswerValue {
       // get attribute query sql from the instance
       sql = Query.makeQueryInstance(attrQuerySpec).getSql()
         // replace the id sql macro.
-        // the injected sql must include filters (but not view filters)
-        .replace(Utilities.MACRO_ID_SQL, getIdSql(null, true))
+        // the injected sql must include filters
+        .replace(Utilities.MACRO_ID_SQL, getIdSql(null))
         // replace the no-filters id sql macro.
         // the injected sql must NOT include filters
         // (but should return any dynamic columns)
@@ -572,16 +572,18 @@ public class AnswerValue {
   }
 
   public String getSortedIdSql() throws WdkModelException {
-      if (_sortedIdSql == null) _sortedIdSql = getSortedIdSql(false);
-      return _sortedIdSql;
+    if (_sortedIdSql == null) {
+      _sortedIdSql = createSortedIdSql();
+    }
+    return _sortedIdSql;
   }
 
-  private String getSortedIdSql(boolean excludeViewFilters) throws WdkModelException {
+  private String createSortedIdSql() throws WdkModelException {
     LOG.debug("AnswerValue: getSortedIdSql()");
     String[] pkColumns = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
 
     // get id sql
-    String idSql = getIdSql(null, excludeViewFilters);
+    String idSql = getIdSql(null);
 
     // get sorting attribute queries
     Map<String, String> attributeSqls = new LinkedHashMap<>();
@@ -648,11 +650,11 @@ public class AnswerValue {
   }
 
   public String getPagedIdSql() throws WdkModelException {
-    return getPagedIdSql(false, false);
+    return getPagedIdSql(false);
   }
 
-  private String getPagedIdSql(boolean excludeViewFilters, boolean includeRowIndex) throws WdkModelException {
-    String sortedIdSql = getSortedIdSql(excludeViewFilters);
+  private String getPagedIdSql(boolean includeRowIndex) throws WdkModelException {
+    String sortedIdSql = getSortedIdSql();
     DatabaseInstance platform = _answerSpec.getQuestion().getWdkModel().getAppDb();
     String sql = platform.getPlatform().getPagedSql(sortedIdSql, _startIndex, _endIndex, includeRowIndex);
 
@@ -665,7 +667,7 @@ public class AnswerValue {
   }
 
   public String getIdSql() throws WdkModelException {
-    return getIdSql(null, false);
+    return getIdSql(null);
   }
 
   private String getBaseIdSql(boolean sorted) throws WdkModelException {
@@ -679,7 +681,7 @@ public class AnswerValue {
         _idsQueryInstance.getParamStableValues());
   }
 
-  protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException {
+  protected String getIdSql(String excludeFilter) throws WdkModelException {
 
     // get base ID sql from query instance and answer params
     String innerSql = getBaseIdSql(false);
@@ -697,7 +699,7 @@ public class AnswerValue {
     }
 
     // apply view filters if requested
-    if (!_answerSpec.getViewFilterOptions().isEmpty() && !excludeViewFilters) {
+    if (!_answerSpec.getViewFilterOptions().isEmpty()) {
       innerSql = applyFilters(innerSql, _answerSpec.getViewFilterOptions(), excludeFilter);
       innerSql = "\n/* new view filter applied on id query */\n" + innerSql;
     }
@@ -954,7 +956,7 @@ public class AnswerValue {
 
 
   public JSONObject getFilterSummaryJson(String filterName) throws WdkUserException, WdkModelException {
-    String idSql = getIdSql(filterName, false);
+    String idSql = getIdSql(filterName);
     Optional<Filter> filter = _answerSpec.getQuestion().getFilter(filterName);
     if (filter.isPresent()) {
       return filter.get().getSummaryJson(this, idSql);
