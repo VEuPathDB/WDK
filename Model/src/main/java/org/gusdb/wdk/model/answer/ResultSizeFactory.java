@@ -69,7 +69,7 @@ public class ResultSizeFactory {
     if (_resultSize == null || !isCacheable) {
       _resultSize = new DefaultResultSizePlugin().getResultSize(_answerValue);
     }
-    LOG.debug("getting result size: cache=" + _resultSize + ", isCacheable=" + isCacheable);
+    LOG.info("getting result size: cache=" + _resultSize + ", isCacheable=" + isCacheable);
     return _resultSize;
   }
 
