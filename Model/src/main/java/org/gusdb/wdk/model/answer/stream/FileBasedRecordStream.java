@@ -288,7 +288,7 @@ public class FileBasedRecordStream implements RecordStream {
           queryData.getSecond(), tempDir), queryData.getSecond());
     }
 
-    LOG.debug("assembleAttributeFiles(): Attribute file assembly complete: " + pathMap);
+    LOG.info("assembleAttributeFiles(): Attribute file assembly complete: " + pathMap);
     return pathMap;
   }
 
@@ -317,6 +317,7 @@ public class FileBasedRecordStream implements RecordStream {
 
       // Getting the paged attribute SQL but in fact, getting a SQL statement requesting with all records.
       String sql = answerValue.getAnswerAttributeSql(query, true);
+      LOG.info("Merged attribute SQL for query '" + query.getFullName() + ": (use debug to see SQL)" );
       LOG.debug("Merged attribute SQL for query '" + query.getFullName() + "': " + FormatUtil.NL + sql);
 
       // Get the result list for the current attribute query
