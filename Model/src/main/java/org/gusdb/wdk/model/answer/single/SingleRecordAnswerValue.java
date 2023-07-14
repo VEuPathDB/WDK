@@ -52,8 +52,13 @@ public class SingleRecordAnswerValue extends AnswerValue {
   }
 
   @Override
-  public RecordInstance[] getRecordInstances() throws WdkModelException, WdkUserException {
-    return new RecordInstance[]{ new DynamicRecordInstance(_user, _recordClass, _pkMap) };
+  public RecordInstance[] getRecordInstances() throws WdkModelException {
+    try {
+      return new RecordInstance[]{ new DynamicRecordInstance(_user, _recordClass, _pkMap) };
+    }
+    catch (WdkUserException e) {
+      throw new WdkModelException(e);
+    }
   }
 
   @Override
