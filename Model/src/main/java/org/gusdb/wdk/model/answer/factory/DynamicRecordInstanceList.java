@@ -59,7 +59,7 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
       new SQLRunner(dataSource, sql, sqlName).executeQuery(rs -> {
         try {
           @SuppressWarnings("resource")
-          ResultList resultList = new SqlResultList(rs, false);
+          ResultList resultList = new SqlResultList(rs).setResponsibleForClosingResultSet(false);
           String[] pkColumns = question.getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
           while (resultList.next()) {
             // get primary key. the primary key is supposed to be translated to
@@ -132,7 +132,8 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
       int count = new SQLRunner(dataSource, sql, sqlName).executeQuery(rs -> {
         try {
           // wrap result set in result list; closing handled by SQLRunner
-          ResultList resultList = new SqlResultList(rs, false);
+          @SuppressWarnings("resource")
+          ResultList resultList = new SqlResultList(rs).setResponsibleForClosingResultSet(false);
 
           // fill in the column attributes
           PrimaryKeyDefinition pkDef = question.getRecordClass().getPrimaryKeyDefinition();
