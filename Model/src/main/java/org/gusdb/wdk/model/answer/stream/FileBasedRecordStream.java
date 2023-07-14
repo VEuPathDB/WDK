@@ -325,7 +325,7 @@ public class FileBasedRecordStream implements RecordStream {
         try {
 
           // Get the result list for the current attribute query
-          ResultList resultList = new SqlResultList(rs);
+          ResultList resultList = new SqlResultList(rs, false);
 
           // Generate full list of columns to fetch, including both PK columns and requested columns
           List<String> columnsToTransfer = new ListBuilder<String>(answerValue.getAnswerSpec().getQuestion()

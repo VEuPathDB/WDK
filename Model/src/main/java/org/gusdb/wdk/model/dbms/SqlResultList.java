@@ -15,12 +15,17 @@ import org.gusdb.wdk.model.WdkModelException;
 public class SqlResultList implements ResultList {
 
   private Set<String> columns;
-  private ResultSet resultSet;
+  private final ResultSet resultSet;
+  private final boolean closeAfterLastRow;
   private boolean resultSetClosed = false;
 
-  public SqlResultList(ResultSet resultSet) {
+  public SqlResultList(ResultSet resultSet, boolean closeAfterLastRow) {
     this.resultSet = resultSet;
-    resultSetClosed = false;
+    this.closeAfterLastRow = closeAfterLastRow;
+  }
+
+  public SqlResultList(ResultSet resultSet) {
+    this(resultSet, true);
   }
 
   @Override
@@ -65,7 +70,7 @@ public class SqlResultList implements ResultList {
   public boolean next() throws WdkModelException {
     try {
       boolean hasNext = resultSet.next();
-      if (!hasNext)
+      if (!hasNext && closeAfterLastRow)
         close();
       return hasNext;
     }
