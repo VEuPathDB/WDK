@@ -298,7 +298,7 @@ public class AnswerValue {
    *
    * @return page of dynamic records as an array
    */
-  public RecordInstance[] getRecordInstances() throws WdkModelException, WdkUserException {
+  public RecordInstance[] getRecordInstances() throws WdkModelException {
     return new DynamicRecordInstanceList(this).values()
       .toArray(new RecordInstance[0]);
   }
