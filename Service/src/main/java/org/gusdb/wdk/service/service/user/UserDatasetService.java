@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -169,7 +170,7 @@ public class UserDatasetService extends UserService {
             return dsSession.getUserDatasets(Long.parseLong(userId)).entrySet().stream();
           }))
           .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-      Map<Long, UserDatasetInfo> dsInfo = allDatasets.entrySet().stream()
+      Map<Long, List<UserDatasetInfo>> dsInfo = allDatasets.entrySet().stream()
           .filter(userDatasetEntry -> {
             final UserDataset userDataset = userDatasetEntry.getValue();
             try {
@@ -180,17 +181,28 @@ public class UserDatasetService extends UserService {
               return false;
             }
           })
-          .collect(Collectors.toMap(Map.Entry::getKey, userDatasetEntry -> new UserDatasetInfo(userDatasetEntry.getValue(), false,
-              dsStore, dsSession, cache, wdkModel)));
-      responseJson = "[" + dsInfo.entrySet().stream()
-          .map(Functions.fSwallow(e -> UserDatasetFormatter.getUserDatasetJson(e.getValue(),
-          true, true).put("userId", e.getKey()).toString()))
-          .collect(Collectors.joining(",")) + "]";
+          .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(e -> new UserDatasetInfo(e.getValue(), false,
+              dsStore, dsSession, cache, wdkModel), Collectors.toList())));
+
+      String formatted = dsInfo.entrySet().stream()
+          .flatMap(e -> e.getValue().stream()
+              .map(udInfo -> {
+                try {
+                  return UserDatasetFormatter.getUserDatasetJson(udInfo, true, true).put("userId", e.getKey()).toString();
+                } catch (WdkModelException ex) {
+                  throw new RuntimeException(ex);
+                }
+              }))
+          .collect(Collectors.joining(","));
+
+      responseJson = "[" + formatted + "]";
+
       return Response.status(200)
           .entity(responseJson)
           .build();
     }
   }
+
   /**
    * Service to stream out a binary datafile from IRODS
    */
