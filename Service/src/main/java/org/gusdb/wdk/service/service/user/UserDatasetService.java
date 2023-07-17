@@ -154,7 +154,7 @@ public class UserDatasetService extends UserService {
   }
 
   @GET
-  @Path("user-datasets/admin")
+  @Path("all-user-datasets")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAllDatasets() throws WdkModelException {
     WdkModel wdkModel = getWdkModel();
@@ -169,22 +169,22 @@ public class UserDatasetService extends UserService {
             return dsSession.getUserDatasets(Long.parseLong(userId)).entrySet().stream();
           }))
           .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-      List<UserDatasetInfo> dsInfo = allDatasets.entrySet().stream()
-          .filter(entry -> {
+      Map<Long, UserDatasetInfo> dsInfo = allDatasets.entrySet().stream()
+          .filter(userDatasetEntry -> {
+            final UserDataset userDataset = userDatasetEntry.getValue();
             try {
-              new UserDatasetInfo(entry.getValue(), false, dsStore, dsSession, cache, wdkModel);
+              new UserDatasetInfo(userDataset, false, dsStore, dsSession, cache, wdkModel);
               return true;
             } catch (Exception e) {
-              LOG.warn("Failed to create ud info for " + entry.getValue());
+              LOG.warn("Failed to create ud info for " + userDataset);
               return false;
             }
           })
-          .map(entry -> new UserDatasetInfo(entry.getValue(), false,
-              dsStore, dsSession, cache, wdkModel))
-          .collect(Collectors.toList());
-      responseJson = "[" + dsInfo.stream()
-          .map(Functions.fSwallow(ds -> UserDatasetFormatter.getUserDatasetJson(ds,
-          false, true).toString()))
+          .collect(Collectors.toMap(Map.Entry::getKey, userDatasetEntry -> new UserDatasetInfo(userDatasetEntry.getValue(), false,
+              dsStore, dsSession, cache, wdkModel)));
+      responseJson = "[" + dsInfo.entrySet().stream()
+          .map(Functions.fSwallow(e -> UserDatasetFormatter.getUserDatasetJson(e.getValue(),
+          true, true).put("userId", e.getKey()).toString()))
           .collect(Collectors.joining(",")) + "]";
       return Response.status(200)
           .entity(responseJson)
