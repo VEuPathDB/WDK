@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -164,28 +165,38 @@ public class UserDatasetService extends UserService {
     String responseJson;
     UserCache cache = new UserCache(wdkModel.getUserFactory());
     try (UserDatasetSession dsSession = dsStore.getSession()) {
-      Map<Long, UserDataset> allDatasets = dsSession.getAllUsers().stream()
-          .flatMap(Functions.fSwallow(userId -> {
-            LOG.info("User ID: " + userId);
-            return dsSession.getUserDatasets(Long.parseLong(userId)).entrySet().stream();
-          }))
-          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-      Map<Long, List<UserDatasetInfo>> dsInfo = allDatasets.entrySet().stream()
-          .filter(userDatasetEntry -> {
-            final UserDataset userDataset = userDatasetEntry.getValue();
-            try {
-              new UserDatasetInfo(userDataset, false, dsStore, dsSession, cache, wdkModel);
-              return true;
-            } catch (Exception e) {
-              LOG.warn("Failed to create ud info for " + userDataset);
-              return false;
-            }
-          })
-          .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(e -> new UserDatasetInfo(e.getValue(), false,
-              dsStore, dsSession, cache, wdkModel), Collectors.toList())));
+      Map<String, List<UserDataset>> allDatasets = dsSession.getAllUsers().stream()
+          .collect(Collectors.groupingBy(Function.identity(),
+              Collectors.flatMapping(Functions.fSwallow(userId -> {
+                LOG.info("User ID: " + userId);
+                return dsSession.getUserDatasets(Long.parseLong(userId)).values().stream();
+              }), Collectors.toList())));
+//      Map<String, List<UserDatasetInfo>> dsInfo = allDatasets.entrySet().stream()
+//          .filter(userDatasetEntry -> {
+//            final UserDataset userDataset = userDatasetEntry.getValue();
+//            try {
+//              new UserDatasetInfo(userDataset, false, dsStore, dsSession, cache, wdkModel);
+//              return true;
+//            } catch (Exception e) {
+//              LOG.warn("Failed to create ud info for " + userDataset);
+//              return false;
+//            }
+//          })
+//          .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(e -> new UserDatasetInfo(e.getValue(), false,
+//              dsStore, dsSession, cache, wdkModel), Collectors.toList())));
 
-      String formatted = dsInfo.entrySet().stream()
+      String formatted = allDatasets.entrySet().stream()
           .flatMap(e -> e.getValue().stream()
+              .filter(ud -> {
+                try {
+                  new UserDatasetInfo(ud, false, dsStore, dsSession, cache, wdkModel);
+                  return true;
+                } catch (Exception ex) {
+                  LOG.warn("Failed to create ud info for " + ud);
+                  return false;
+                }
+              })
+              .map(ud -> new UserDatasetInfo(ud, false, dsStore, dsSession, cache, wdkModel))
               .map(udInfo -> {
                 try {
                   return UserDatasetFormatter.getUserDatasetJson(udInfo, true, true).put("userId", e.getKey()).toString();
