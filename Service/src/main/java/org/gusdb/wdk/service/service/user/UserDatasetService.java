@@ -166,7 +166,7 @@ public class UserDatasetService extends UserService {
     UserCache cache = new UserCache(wdkModel.getUserFactory());
     try (UserDatasetSession dsSession = dsStore.getSession()) {
       Map<String, List<UserDataset>> allDatasets = dsSession.getAllUsers().stream()
-          .collect(Collectors.groupingBy(Function.identity(),
+          .collect(Collectors.groupingBy(userId -> userId,
               Collectors.flatMapping(Functions.fSwallow(userId -> {
                 LOG.info("User ID: " + userId);
                 return dsSession.getUserDatasets(Long.parseLong(userId)).values().stream();
