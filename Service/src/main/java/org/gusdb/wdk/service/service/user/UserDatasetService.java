@@ -248,6 +248,37 @@ public class UserDatasetService extends UserService {
     }
   }
 
+  @GET
+  @Path("user-datasets/admin/{userId}/{datasetId}/user-datafiles/{datafileName}")
+  @Produces(MediaType.APPLICATION_OCTET_STREAM)
+  public Response getAdminBinaryDatafile(
+      @PathParam("datasetId")    String datasetIdStr,
+      @PathParam("datafileName") String datafileName,
+      @PathParam("userId")       String userIdParam,
+      @HeaderParam("Range")      String fileRange
+  ) throws WdkModelException {
+    LOG.debug("\nservice user-datasets/datasetId/user-datafiles/filename has been called\n");
+    long userId = Long.parseLong(userIdParam);
+    long datasetId = parseLongId(datasetIdStr, new NotFoundException("No dataset found with ID " + datasetIdStr));
+    UserDatasetStore dsStore = getUserDatasetStore(getWdkModel());
+    try (UserDatasetSession dsSession = dsStore.getSession()) {
+      final UserDatasetFile file = dsSession.getUserDatasetExists(userId, datasetId)
+          ? dsSession.getUserDataset(userId, datasetId).getFile(dsSession, datafileName)
+          : dsSession.getExternalUserDatafile(userId, datasetId, datafileName)
+          .orElse(null);
+
+      if (file == null)
+        return Response.status(Status.NOT_FOUND).build();
+
+      ByteRangeInformation rangeInfo = parseRangeHeaderValue(fileRange);
+      return rangeInfo.isRangeHeaderSubmitted()
+          ? getDatafileRange(dsSession, file, rangeInfo.getDesiredRange())
+          : getFullDatafile(dsSession, file);
+    } catch (IOException e) {
+      throw new WdkModelException(e);
+    }
+  }
+
   @PUT
   @Path("user-datasets/{datasetId}/meta")
   @Consumes(MediaType.APPLICATION_JSON)
