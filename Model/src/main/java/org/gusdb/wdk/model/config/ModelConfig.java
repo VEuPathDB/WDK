@@ -11,6 +11,7 @@ import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.Named.NamedObject;
+import org.gusdb.oauth2.client.OAuthConfig;
 
 /**
  * An object representation of the {@code model-config.xml} file. It holds all the configuration information

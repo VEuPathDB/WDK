@@ -21,8 +21,8 @@ import org.apache.log4j.Logger;
 import org.glassfish.jersey.client.ClientConfig;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
+import org.gusdb.oauth2.client.OAuthConfig;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.config.OAuthConfig;
 import org.json.JSONException;
 import org.json.JSONObject;
 
