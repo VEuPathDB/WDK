@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.provider;
 
+import static org.gusdb.fgputil.functional.Functions.mapException;
 import static org.gusdb.fgputil.json.JsonUtil.Jackson;
 
 import java.io.IOException;
@@ -30,7 +31,6 @@ import org.gusdb.wdk.service.annotation.OutSchema;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.core.load.Dereferencing;
 import com.github.fge.jsonschema.core.load.configuration.LoadingConfiguration;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
@@ -125,14 +125,16 @@ public class JsonSchemaProvider implements MessageBodyReader <Object>,
 
   private ProcessingReport validate(final String path, final JsonNode node)
       throws WebApplicationException {
-    final JsonSchema schema;
 
-    try {
-      schema = SCHEMA_FAC.getJsonSchema(path);
-      return schema.validate(node);
-    } catch (ProcessingException e) {
-      throw new InternalServerErrorException(e);
-    }
+    // try to find the JsonSchema for this path; error if unable
+    final JsonSchema schema = mapException(
+        () -> SCHEMA_FAC.getJsonSchema(path),
+        e -> new InternalServerErrorException(e));
+ 
+    // once schema is found, assume any error is due to request body misformat
+    return mapException(
+        () -> schema.validate(node),
+        e -> new BadRequestException(e.getMessage(), e));
   }
 
   private String toSchemaFile(final String path) {
