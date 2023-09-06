@@ -2,8 +2,10 @@ package org.gusdb.wdk.service.service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -17,12 +19,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.web.LoginCookieFactory;
 import org.gusdb.fgputil.web.LoginCookieFactory.LoginCookieParts;
 import org.gusdb.fgputil.web.SessionProxy;
+import org.gusdb.oauth2.client.OAuthClient.ValidatedToken;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.events.NewUserEvent;
 import org.gusdb.wdk.model.Utilities;
@@ -36,8 +40,7 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.LoginRequest;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.statustype.MethodNotAllowedStatusType;
-import org.gusdb.wdk.session.OAuthClient;
-import org.gusdb.wdk.session.OAuthUtil;
+import org.gusdb.wdk.session.WdkOAuthClientWrapper;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -67,6 +70,52 @@ public class SessionService extends AbstractWdkService {
   // redirect URLs
   private static final String OAUTH_ERROR_URL = "/app/user/message/login-error?requestUrl=";
 
+  // state token session property
+  public static final String STATE_TOKEN_KEY = "OAUTH_STATE_TOKEN";
+
+  // ===== OAuth 2.0 + OpenID Connect Support =====
+  /**
+   * Create anti-forgery state token, add to session, and return.  This is
+   * requested by the client when the user tries to log in using an OAuth2
+   * server.  The value generated will be used to check the state token passed
+   * to the oauth processing action.  They must match for the login to succeed.
+   * We generate a new value each time; all but one of "overlapping" login
+   * attempts by the same user will thus fail.
+   * 
+   * @return OAuth 2.0 state token
+   * @throws WdkModelException if unable to read WDK secret key from file
+   */
+  @GET
+  @Path("oauth/state-token")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getOauthStateToken() throws WdkModelException {
+    String newToken = generateStateToken(getWdkModel());
+    getSession().setAttribute(STATE_TOKEN_KEY, newToken);
+    JSONObject json = new JSONObject();
+    json.put(JsonKeys.OAUTH_STATE_TOKEN, newToken);
+    return Response.ok(json.toString()).build();
+  }
+
+  /**
+   * Generates a new state token based on the current time, a random UUID, and
+   * WDK model's current secret key value.  This value should be added to the
+   * session when a user is about to attempt a login; it will then be checked
+   * against the state token accompanying the authentication token returned by
+   * the OAuth server after the user has been authenticated.  This is to prevent
+   * cross-site request forgery attacks.
+   * 
+   * @param wdkModel WDK Model (used to fetch secret key)
+   * @return generated state token
+   * @throws WdkModelException if unable to access secret key
+   */
+  private static String generateStateToken(WdkModel wdkModel) throws WdkModelException {
+    String saltedString =
+        UUID.randomUUID() + ":::" +
+        String.valueOf(new Date().getTime()) + ":::" +
+        wdkModel.getModelConfig().getSecretKey();
+    return EncryptionUtil.encrypt(saltedString);
+  }
+
   @GET
   @Path("login")
   public Response processOauthLogin(
@@ -75,8 +124,10 @@ public class SessionService extends AbstractWdkService {
       @QueryParam(OAUTH_CODE_KEY) String authCode,
       @QueryParam(OAUTH_REDIRECT_URL_KEY) String originalUrl)
       throws WdkModelException {
+
     WdkModel wdkModel = getWdkModel();
     ModelConfig modelConfig = wdkModel.getModelConfig();
+
     if (!AuthenticationMethod.OAUTH2.equals(modelConfig.getAuthenticationMethodEnum())) {
       return Response.status(new MethodNotAllowedStatusType()).build();
     }
@@ -99,23 +150,19 @@ public class SessionService extends AbstractWdkService {
         throw new WdkModelException(errorMessage);
       }
 
-      String storedStateToken = (String) getSession().getAttribute(OAuthUtil.STATE_TOKEN_KEY);
-      getSession().removeAttribute(OAuthUtil.STATE_TOKEN_KEY);
+      String storedStateToken = (String) getSession().getAttribute(STATE_TOKEN_KEY);
+      getSession().removeAttribute(STATE_TOKEN_KEY);
 
       // Is the state token present and does it match the session state token?
       if (stateToken == null || !stateToken.equals(storedStateToken)) {
         throw new WdkModelException("Unable to log in; state token missing, incorrect, or expired.");
       }
 
-      OAuthClient client = new OAuthClient(modelConfig);
+      WdkOAuthClientWrapper client = new WdkOAuthClientWrapper(wdkModel);
 
-      // Is there a matching user id for the auth code provided?
-      long userId = client.getUserIdFromAuthCode(authCode, getContextUri());
-      User newUser = wdkModel.getUserFactory().login(userId);
-      if (newUser == null) {
-        throw new WdkModelException("Unable to find user with ID " + userId +
-            ", returned by OAuth service with auth code " + authCode);
-      }
+      // Use auth code to get the bearer token, then convert to User
+      ValidatedToken bearerToken = client.getValidatedIdToken(authCode, appUrl);
+      User newUser = client.getUserFromBearerToken(bearerToken, wdkModel.getUserFactory());
 
       // transfer ownership from guest to logged-in user
       transferOwnership(oldUser, newUser, wdkModel);

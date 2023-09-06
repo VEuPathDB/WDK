@@ -263,6 +263,7 @@ public class QuestionService extends AbstractWdkService {
             ValidationLevel.DISPLAYABLE,
             FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID)
         .getDisplayablyValid()
+        // throwing model exception here because we should always be able to generate a set of defaults using FILL_PARAM_IF_MISSING_OR_INVALID
         .getOrThrow(spec -> new WdkModelException("Unable to produce a valid spec from incoming param values"));
 
     // see if changed param value changed during build; if so, then it was invalid

@@ -11,6 +11,7 @@ import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.Named.NamedObject;
+import org.gusdb.oauth2.client.KeyStoreTrustManager.KeyStoreConfig;
 import org.gusdb.oauth2.client.OAuthConfig;
 
 /**
@@ -19,7 +20,7 @@ import org.gusdb.oauth2.client.OAuthConfig;
  * 
  * @author Jerric
  */
-public class ModelConfig implements OAuthConfig {
+public class ModelConfig implements OAuthConfig, KeyStoreConfig {
 
   private static final Logger LOG = Logger.getLogger(ModelConfig.class);
 
