@@ -213,7 +213,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   }
 
   /**
-   * Returns the minimun number of selections allowed for this param; the value
+   * Returns the minimum number of selections allowed for this param; the value
    * in the model is intertwined with allowEmpty, which always takes precedence
    * in a conflict with this value.  Note that if this value is greater than
    * that returned by getMaxSelectedCount(), there may be an empty range of the
@@ -227,7 +227,7 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
    * @return The minimum number of allowed values for this param
    */
   public int getMinSelectedCount() {
-    return _minSelectedCount > 1 ? _minSelectedCount : _allowEmpty ? 0 : 1;
+    return _minSelectedCount > 0 ? _minSelectedCount : _allowEmpty ? 0 : 1;
   }
 
   /**
@@ -506,6 +506,11 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   @Override
   protected boolean isEmptyValue(String value) {
     return super.isEmptyValue(value) || new JSONArray(value).length() == 0;
+  }
+
+  @Override
+  public boolean isAllowEmpty() {
+    return getMinSelectedCount() == 0;
   }
 
   /**
