@@ -214,15 +214,15 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   /**
    * Returns the minimum number of selections allowed for this param; the value
-   * in the model is intertwined with allowEmpty, which always takes precedence
-   * in a conflict with this value.  Note that if this value is greater than
+   * in the model is intertwined with allowEmpty, which can sometimes conflict
+   * with the model value.  Note that if this value is greater than
    * that returned by getMaxSelectedCount(), there may be an empty range of the
    * number of allowed values.
    *
-   * min-sel  -1  0  >0
+   * min-sel    -1  0  >0
    * --------------------
-   * allow 1   0  0  min
-   * empty 0   1  1  min
+   * allow| =1   0  0  min-sel
+   * empty| =0   1  1  min-sel
    *
    * @return The minimum number of allowed values for this param
    */
