@@ -580,7 +580,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
     // Determine if a default value must be generated
     boolean defaultValueRequired =
-        stableValues.get(getName()) == null &&
+        isEmptyValue(value) &&
         fillStrategy.shouldFillWhenMissing();
     validationLog(() -> "defaultValueRequired = " + defaultValueRequired + " because value = " +
         stableValues.get(getName()) + " and fillWhenMissing = " + fillStrategy.shouldFillWhenMissing());
