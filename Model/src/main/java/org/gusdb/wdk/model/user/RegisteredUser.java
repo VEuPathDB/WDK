@@ -4,7 +4,7 @@ import org.gusdb.wdk.model.WdkModel;
 
 public class RegisteredUser extends User {
 
-  RegisteredUser(WdkModel wdkModel, long userId, String email, String signature, String stableId) {
+  public RegisteredUser(WdkModel wdkModel, long userId, String email, String signature, String stableId) {
     super(wdkModel, userId, email, signature, stableId);
   }
 

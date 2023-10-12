@@ -22,6 +22,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.oauth2.client.OAuthConfig;
+import org.gusdb.oauth2.shared.token.IdTokenFields;
 import org.gusdb.oauth2.client.OAuthClient.ValidatedToken;
 import org.gusdb.oauth2.client.KeyStoreTrustManager;
 import org.gusdb.oauth2.client.OAuthClient;
@@ -57,8 +58,20 @@ public class WdkOAuthClientWrapper {
     }
   }
 
-  public ValidatedToken getValidatedAuthToken(String authCode, String redirectUri) {
+  public ValidatedToken getValidatedIdTokenFromAuth(String authCode, String redirectUri) {
     return _client.getValidatedAuthToken(_config, authCode, redirectUri);
+  }
+
+  public ValidatedToken getValidatedIdTokenFromCredentials(String email, String password, String redirectUrl) {
+    return _client.getValidatedAuthToken(_config,  email, password, redirectUrl);
+  }
+
+  public ValidatedToken getValidatedBearerTokenFromAuth(String authCode, String redirectUri) {
+    return _client.getValidatedBearerToken(_config, authCode, redirectUri);
+  }
+
+  public ValidatedToken getValidatedBearerTokenFromCredentials(String email, String password, String redirectUrl) {
+    return _client.getValidatedBearerToken(_config,  email, password, redirectUrl);
   }
 
   public User getUserFromValidatedToken(ValidatedToken token, UserFactory userFactory) {
@@ -66,7 +79,9 @@ public class WdkOAuthClientWrapper {
     User user = new RegisteredUser(_wdkModel,
         Long.parseLong(claims.getSubject()),
         claims.get("email", String.class),
-        t, String signature, String stableId)
+        "deprecated", // user signature
+        claims.get(IdTokenFields.preferred_username.name(), String.class));
+    user.set
     //long userId = client.getUserIdFromAuthCode(authCode, appUrl);
     //User newUser = wdkModel.getUserFactory().login(userId);
     if (newUser == null) {
