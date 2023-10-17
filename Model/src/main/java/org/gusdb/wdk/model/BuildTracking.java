@@ -1,15 +1,19 @@
 package org.gusdb.wdk.model;
 
+import org.gusdb.wdk.model.RngAnnotations.RngOptional;
+
 public interface BuildTracking {
 
   WdkModel getWdkModel();
 
   String getNewBuild();
 
+  @RngOptional
   void setNewBuild(String newBuild);
 
   String getReviseBuild();
 
+  @RngOptional
   void setReviseBuild(String reviseBuild);
 
   /**
