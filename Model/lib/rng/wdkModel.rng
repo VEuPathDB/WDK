@@ -1383,6 +1383,7 @@
       <attribute name="displayName" />
       <attribute name="scopes" />
       <attribute name="implementation" />
+      <ref name="buildTracking" />
       <optional>
         <attribute name="inReportMaker">
           <data type="boolean" />
@@ -1398,6 +1399,15 @@
         <ref name="property" />
       </zeroOrMore>
     </element>
+  </define>
+
+  <define name="buildTracking">
+    <optional>
+      <choice>
+        <attribute name="newBuild" />
+        <attribute name="reviseBuild" />
+      </choice>
+    </optional>
   </define>
 
   <!-- Question -->
@@ -1430,12 +1440,7 @@
           <data type="boolean" />
         </attribute>
       </optional>
-      <optional>
-        <choice>
-          <attribute name="newBuild" />
-          <attribute name="reviseBuild" />
-        </choice>
-      </optional>
+      <ref name="buildTracking" />
 
       <zeroOrMore>
         <choice>

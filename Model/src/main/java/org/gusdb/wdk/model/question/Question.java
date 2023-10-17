@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.wdk.model.BuildTracking;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -65,7 +66,7 @@ import org.gusdb.wdk.model.user.UserPreferences;
  * @version $Revision$ $Date: 2007-01-10 14:54:53 -0500 (Wed, 10 Jan
  *          2007) $ $Author$
  */
-public class Question extends WdkModelBase implements AttributeFieldContainer, StepAnalysisContainer, NamedObject {
+public class Question extends WdkModelBase implements AttributeFieldContainer, StepAnalysisContainer, NamedObject, BuildTracking {
 
   public static final String DYNAMIC_QUERY_SUFFIX = "_dynamic";
 
@@ -214,42 +215,24 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     return prefix + recordClass.getFullName().replace('.', '_');
   }
 
+  @Override
   public String getNewBuild() {
     return _newBuild;
   }
 
+  @Override
   public void setNewBuild(String newBuild) {
     _newBuild = newBuild;
   }
 
+  @Override
   public String getReviseBuild() {
     return _reviseBuild;
   }
 
+  @Override
   public void setReviseBuild(String reviseBuild) {
     _reviseBuild = reviseBuild;
-  }
-
-  /**
-   * @return if the question a newly introduced in the current build.
-   */
-  public boolean isNew() {
-    String currentBuild = _wdkModel.getBuildNumber();
-    if (currentBuild == null)
-      return false; // current release is not set
-    else
-      return (currentBuild.equals(_newBuild));
-  }
-
-  /**
-   * @return if the question is revised in the current build.
-   */
-  public boolean isRevised() {
-    String currentBuild = _wdkModel.getBuildNumber();
-    if (currentBuild == null)
-      return false; // current release is not set
-    else
-      return (currentBuild.equals(_reviseBuild));
   }
 
   public void addSuggestion(QuestionSuggestion suggestion) {
