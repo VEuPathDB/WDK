@@ -96,7 +96,9 @@ public class RecordClassFormatter {
           .put(JsonKeys.DISPLAY_NAME, reporter.getDisplayName())
           .put(JsonKeys.DESCRIPTION, reporter.getDescription())
           .put(JsonKeys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(reporter))
-          .put(JsonKeys.SCOPES, reporter.getScopesList());
+          .put(JsonKeys.SCOPES, reporter.getScopesList())
+          .put(JsonKeys.NEW_BUILD, reporter.getNewBuild())
+          .put(JsonKeys.REVISE_BUILD, reporter.getReviseBuild());
         array.put(obj);
       }
     }
