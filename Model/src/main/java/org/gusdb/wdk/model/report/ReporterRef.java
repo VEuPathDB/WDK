@@ -167,6 +167,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField, Properties
   }
 
   @Override
+  @RngOptional
   public void setNewBuild(String newBuild) {
     _newBuild = newBuild;
   }
@@ -177,6 +178,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField, Properties
   }
 
   @Override
+  @RngOptional
   public void setReviseBuild(String reviseBuild) {
     _reviseBuild = reviseBuild;
   }
