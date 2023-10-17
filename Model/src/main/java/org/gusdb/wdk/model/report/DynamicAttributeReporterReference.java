@@ -98,9 +98,9 @@ public class DynamicAttributeReporterReference extends AttributeReporterRef {
   public boolean hasAllDynamicFields() {
     return (
         getName() != null &&
-            getDisplayName() != null &&
-            getDescription() != null &&
-            getImplementation() != null
+        getDisplayName() != null &&
+        //getDescription() != null && // description is allowed to be null
+        getImplementation() != null
     );
   }
 
@@ -109,7 +109,7 @@ public class DynamicAttributeReporterReference extends AttributeReporterRef {
     String propsPrint = properties == null ? null : prettyPrint(properties, FormatUtil.Style.MULTI_LINE);
     return new StringBuilder("{").append(NL)
         .append("name:           ").append(getName()).append(NL)
-        .append("displayName:        ").append(getDisplayName()).append(NL)
+        .append("displayName:    ").append(getDisplayName()).append(NL)
         .append("description:    ").append(getDescription()).append(NL)
         .append("implementation: ").append(getImplementation()).append(NL)
         .append("properties:     ").append(propsPrint).append(NL)

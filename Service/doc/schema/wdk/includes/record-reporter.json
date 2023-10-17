@@ -26,6 +26,12 @@
     },
     "type": {
       "type": "string"
+    },
+    "newBuild": {
+      "type": "string"
+    },
+    "reviseBuild": {
+      "type": "string"
     }
   },
   "required": [
