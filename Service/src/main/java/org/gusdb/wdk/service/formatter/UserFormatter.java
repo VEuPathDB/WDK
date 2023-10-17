@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.formatter;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -29,7 +30,7 @@ import org.json.JSONObject;
 public class UserFormatter {
 
   public static JSONObject getUserJson(User user, boolean isOwner,
-      boolean includePreferences, List<UserPropertyName> propDefs) throws JSONException {
+      Optional<UserPreferences> userPreferences, List<UserPropertyName> propDefs) throws JSONException {
     JSONObject json = new JSONObject()
       .put(JsonKeys.ID, user.getUserId())
       .put(JsonKeys.IS_GUEST, user.isGuest());
@@ -37,9 +38,8 @@ public class UserFormatter {
     if (isOwner) {
       json.put(JsonKeys.EMAIL, user.getEmail());
       json.put(JsonKeys.PROPERTIES, getPropertiesJson(user.getProfileProperties(), propDefs, isOwner));
-      if (includePreferences) {
-        json.put(JsonKeys.PREFERENCES, getPreferencesJson(user.getPreferences()));
-      }
+      userPreferences.ifPresent(prefs ->
+        json.put(JsonKeys.PREFERENCES, getPreferencesJson(prefs)));
     }
     return json;
   }

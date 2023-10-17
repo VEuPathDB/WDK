@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.service.user;
 
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -23,6 +24,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.InvalidUsernameOrEmailException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
+import org.gusdb.wdk.model.user.UserPreferenceFactory;
+import org.gusdb.wdk.model.user.UserPreferences;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserFormatter;
@@ -34,9 +37,6 @@ import org.gusdb.wdk.service.request.user.UserProfileRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/*
- * TODO: rename this to UsersService when this branch is merged to trunk
- */
 public class ProfileService extends UserService {
 
   private static final String DUPLICATE_EMAIL = "This email is already in use by another account.  Please choose another.";
@@ -68,7 +68,9 @@ public class ProfileService extends UserService {
    * @throws WdkModelException if something goes wrong
    */
   protected JSONObject formatUser(User user, boolean isSessionUser, boolean includePrefs, List<UserPropertyName> propNames) throws WdkModelException {
-    return UserFormatter.getUserJson(user, isSessionUser, includePrefs, propNames);
+    Optional<UserPreferences> userPrefs = !includePrefs ? Optional.empty() :
+        Optional.of(new UserPreferenceFactory(getWdkModel()).getPreferences(user.getUserId()));
+    return UserFormatter.getUserJson(user, isSessionUser, userPrefs, propNames);
   }
 
   /**

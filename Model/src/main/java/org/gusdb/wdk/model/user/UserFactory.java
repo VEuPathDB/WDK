@@ -88,7 +88,6 @@ public class UserFactory {
   private final DatabaseInstance _userDb;
   private final String _userSchema;
   private final AccountManager _accountManager;
-  private final UserPreferenceFactory _preferenceFactory;
 
   // -------------------------------------------------------------------------
   // constructor
@@ -96,7 +95,6 @@ public class UserFactory {
 
   public UserFactory(WdkModel wdkModel) {
     _wdkModel = wdkModel;
-    _preferenceFactory = new UserPreferenceFactory(wdkModel);
     _userDb = wdkModel.getUserDb();
     ModelConfig modelConfig = wdkModel.getModelConfig();
     _userSchema = modelConfig.getUserDB().getUserSchema();
