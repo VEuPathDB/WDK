@@ -158,7 +158,7 @@ public class ReporterRef extends WdkModelBase implements ScopedField, Properties
   }
 
   public String getDescription() {
-    return _description;
+    return _description == null ? "" : _description;
   }
 
   @Override
