@@ -18,6 +18,7 @@ import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.json.JSONObject;
 
 public class TableUtilization {
 
@@ -36,8 +37,8 @@ public class TableUtilization {
     Path dbTableFile = Paths.get(args[1]);
 
     // read table file, initializing recording map to empty lists
-    Map<String, List<String>> tables = readTablesFile(dbTableFile);
-    System.out.println("Read " + tables.size() + " table names from tables file.");
+    Map<String, List<String>> tableMap = readTablesFile(dbTableFile);
+    System.out.println("Read " + tableMap.size() + " table names from tables file.");
 
     // build a model to get all queries
     try (WdkModel model = WdkModel.construct(projectId, GusHome.getGusHome())) {
@@ -53,18 +54,27 @@ public class TableUtilization {
       for (SqlQuery query : IteratorUtil.toIterable(queries.iterator())) {
         numSqlQueries++;
         String sql = query.getSql().toLowerCase();
-        for (String table : tables.keySet()) {
+        for (String table : tableMap.keySet()) {
           if (sql.contains(table)) {
-            tables.get(table).add(query.getFullName());
+            tableMap.get(table).add(query.getFullName());
           }
         }
       }
 
       // once complete, dump out the map
-      System.out.println("Processed " + numSqlQueries + " SQL queries in model for " + projectId);
-      for (Entry<String, List<String>> entry : tables.entrySet()) {
-        System.out.println(entry.getKey() + " : [ " + String.join(", ", entry.getValue()) + " ]");
+      System.out.println("Processed " + numSqlQueries + " SQL queries in model for " + projectId + "\n)");
+      System.out.println("Map from table name to queries that use it: " + new JSONObject(tableMap).toString(2));
+
+      // invert the mapping
+      Map<String, List<String>> queryMap = new LinkedHashMap<>();
+      for (Entry<String, List<String>> entry : tableMap.entrySet()) {
+        for (String query : entry.getValue()) {
+          queryMap.computeIfAbsent(query, s -> new ArrayList<>());
+          queryMap.get(query).add(entry.getKey()); // add the table
+        }
       }
+
+      System.out.println("Map from query name to tables used by that query: " + new JSONObject(queryMap).toString(2));
     }
   }
 
