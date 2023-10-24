@@ -52,7 +52,7 @@ public class TableUtilization {
       int numSqlQueries = 0;
       for (SqlQuery query : IteratorUtil.toIterable(queries.iterator())) {
         numSqlQueries++;
-        String sql = query.getSql();
+        String sql = query.getSql().toLowerCase();
         for (String table : tables.keySet()) {
           if (sql.contains(table)) {
             tables.get(table).add(query.getFullName());
@@ -72,7 +72,7 @@ public class TableUtilization {
     try (BufferedReader in = new BufferedReader(new FileReader(dbTableFile.toFile()))) {
       Map<String, List<String>> tables = new LinkedHashMap<>();
       while (in.ready()) {
-        tables.put(in.readLine().trim(), new ArrayList<>());
+        tables.put(in.readLine().trim().toLowerCase(), new ArrayList<>());
       }
       return tables;
     }
