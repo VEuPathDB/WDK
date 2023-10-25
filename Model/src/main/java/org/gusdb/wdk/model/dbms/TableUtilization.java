@@ -8,10 +8,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Stream;
 
 import org.gusdb.fgputil.iterator.IteratorUtil;
@@ -37,8 +37,13 @@ public class TableUtilization {
     Path dbTableFile = Paths.get(args[1]);
 
     // read table file, initializing recording map to empty lists
-    Map<String, List<String>> tableMap = readTablesFile(dbTableFile);
-    System.out.println("Read " + tableMap.size() + " table names from tables file.");
+    List<String> tableNames = readTablesFile(dbTableFile);
+    System.out.println("\nGathered " + tableNames.size() + " table names from tables file.\n");
+
+    // initialize data structures outsize the try so we can close the model before dumping output
+    Map<String, List<String>> queryToTablesMap = new LinkedHashMap<>(); // ordered query map (query -> tableName[])
+    Map<String, String> queryToJoinedStringMap = new LinkedHashMap<>(); // another ordered query map (query -> join(tableName[])
+    Map<String, List<String>> joinedStringToQueriesMap = new LinkedHashMap<>();
 
     // build a model to get all queries
     try (WdkModel model = WdkModel.construct(projectId, GusHome.getGusHome())) {
@@ -49,42 +54,51 @@ public class TableUtilization {
           .filter(query -> query instanceof SqlQuery)
           .map(query -> (SqlQuery)query);
 
-      // check each query against each table in the tables file and record instances
+      // check each query against each table in the tables file to find matches
       int numSqlQueries = 0;
       for (SqlQuery query : IteratorUtil.toIterable(queries.iterator())) {
         numSqlQueries++;
         String sql = query.getSql().toLowerCase();
-        for (String table : tableMap.keySet()) {
-          if (sql.contains(table)) {
-            tableMap.get(table).add(query.getFullName());
+        List<String> queryTables = new ArrayList<>();
+        for (String tableName : tableNames) {
+          if (sql.contains(tableName)) {
+            queryTables.add(tableName);
           }
         }
+        queryToTablesMap.put(query.getFullName(), queryTables);
+        queryToJoinedStringMap.put(query.getFullName(), String.join("|", queryTables));
       }
 
-      // once complete, dump out the map
       System.out.println("Processed " + numSqlQueries + " SQL queries in model for " + projectId + "\n)");
-      System.out.println("Map from table name to queries that use it: " + new JSONObject(tableMap).toString(2));
-
-      // invert the mapping
-      Map<String, List<String>> queryMap = new LinkedHashMap<>();
-      for (Entry<String, List<String>> entry : tableMap.entrySet()) {
-        for (String query : entry.getValue()) {
-          queryMap.computeIfAbsent(query, s -> new ArrayList<>());
-          queryMap.get(query).add(entry.getKey()); // add the table
-        }
-      }
-
-      System.out.println("Map from query name to tables used by that query: " + new JSONObject(queryMap).toString(2));
     }
+
+    // dump out the map from queryName -> tableName[]
+    System.out.println("Map from query name to tables it uses: " + new JSONObject(queryToTablesMap).toString(2));
+
+    // make a list of unique table combinations; index will be the "ID" for that combo
+    List<String> joinedStringList = new ArrayList<>(new HashSet<>(queryToJoinedStringMap.values()));
+
+    // dump unique table combinations
+    System.out.println("Unique table combinations by index:");
+    for (int i = 0; i < joinedStringList.size(); i++) {
+      System.out.println(i + " : " + joinedStringList.get(i));
+    }
+
+    // desired output:
+    //   list of table collections found in queries, so
+    //   1. start with map of query -> table[]
+    //   2. use to build ID -> table[] (unique collection of tables)
+    //   3. produce map of query -> ID, sort by IDs
+
   }
 
-  private static Map<String, List<String>> readTablesFile(Path dbTableFile) throws FileNotFoundException, IOException {
+  private static List<String> readTablesFile(Path dbTableFile) throws FileNotFoundException, IOException {
     try (BufferedReader in = new BufferedReader(new FileReader(dbTableFile.toFile()))) {
-      Map<String, List<String>> tables = new LinkedHashMap<>();
+      List<String> tableNames = new ArrayList<>();
       while (in.ready()) {
-        tables.put(in.readLine().trim().toLowerCase(), new ArrayList<>());
+        tableNames.add(in.readLine().trim().toLowerCase());
       }
-      return tables;
+      return tableNames;
     }
   }
 }
