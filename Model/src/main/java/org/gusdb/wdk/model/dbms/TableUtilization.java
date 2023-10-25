@@ -43,7 +43,7 @@ public class TableUtilization {
     // initialize data structures outsize the try so we can close the model before dumping output
     Map<String, List<String>> queryToTablesMap = new LinkedHashMap<>(); // ordered query map (query -> tableName[])
     Map<String, String> queryToJoinedStringMap = new LinkedHashMap<>(); // another ordered query map (query -> join(tableName[])
-    Map<String, List<String>> joinedStringToQueriesMap = new LinkedHashMap<>();
+    //Map<String, List<String>> joinedStringToQueriesMap = new LinkedHashMap<>();
 
     // build a model to get all queries
     try (WdkModel model = WdkModel.construct(projectId, GusHome.getGusHome())) {
@@ -69,7 +69,7 @@ public class TableUtilization {
         queryToJoinedStringMap.put(query.getFullName(), String.join("|", queryTables));
       }
 
-      System.out.println("Processed " + numSqlQueries + " SQL queries in model for " + projectId + "\n)");
+      System.out.println("\nProcessed " + numSqlQueries + " SQL queries in model for " + projectId + "\n)");
     }
 
     // dump out the map from queryName -> tableName[]
@@ -77,11 +77,19 @@ public class TableUtilization {
 
     // make a list of unique table combinations; index will be the "ID" for that combo
     List<String> joinedStringList = new ArrayList<>(new HashSet<>(queryToJoinedStringMap.values()));
+    joinedStringList.sort((a,b) -> a.compareTo(b));
 
     // dump unique table combinations
     System.out.println("Unique table combinations by index:");
     for (int i = 0; i < joinedStringList.size(); i++) {
-      System.out.println(i + " : " + joinedStringList.get(i));
+      // find how many queries use each combination
+      int count = 0;
+      for (String joinedTableString : queryToJoinedStringMap.values()) {
+        if (joinedStringList.get(i).equals(joinedTableString)) {
+          count++;
+        }
+      }
+      System.out.println(i + " (" + count + "): " + joinedStringList.get(i));
     }
 
     // desired output:
