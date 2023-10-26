@@ -77,7 +77,7 @@ public class TableUtilization {
         uniqueTableComboMap.get(joinedString).getSecond().add(queryName);
       }
 
-      System.out.println("\nProcessed " + numSqlQueries + " SQL queries in model for " + projectId + "\n)");
+      System.out.println("\nProcessed " + numSqlQueries + " SQL queries in model for " + projectId + "\n");
     }
 
     // dump out the map from queryName -> tableName[]
