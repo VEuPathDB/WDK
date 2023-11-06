@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.BuildTracking;
 import org.gusdb.wdk.model.RngAnnotations.RngOptional;
 import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.WdkModel;
@@ -24,7 +25,7 @@ import org.gusdb.wdk.model.record.ScopedField;
  * @author xingao
  *
  */
-public class ReporterRef extends WdkModelBase implements ScopedField, PropertiesProvider {
+public class ReporterRef extends WdkModelBase implements ScopedField, PropertiesProvider, BuildTracking {
 
   private static final Logger LOG = Logger.getLogger(ReporterRef.class);
 
@@ -36,6 +37,16 @@ public class ReporterRef extends WdkModelBase implements ScopedField, Properties
   private boolean _inReportMaker = true;
   private List<WdkModelText> _propertyList = new ArrayList<>();
   private Map<String, String> _properties = new LinkedHashMap<>();
+
+  /**
+   * new build flag on what build this question is introduced.
+   */
+  private String _newBuild;
+
+  /**
+   * revise build flag on what build this question is revised.
+   */
+  private String _reviseBuild;
 
   @Override
   public WdkModel getWdkModel() {
@@ -147,7 +158,29 @@ public class ReporterRef extends WdkModelBase implements ScopedField, Properties
   }
 
   public String getDescription() {
-    return (_description == null ? _displayName : _description);
+    return _description;
+  }
+
+  @Override
+  public String getNewBuild() {
+    return _newBuild;
+  }
+
+  @Override
+  @RngOptional
+  public void setNewBuild(String newBuild) {
+    _newBuild = newBuild;
+  }
+
+  @Override
+  public String getReviseBuild() {
+    return _reviseBuild;
+  }
+
+  @Override
+  @RngOptional
+  public void setReviseBuild(String reviseBuild) {
+    _reviseBuild = reviseBuild;
   }
 
   public void addProperty(WdkModelText property) {
