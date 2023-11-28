@@ -787,8 +787,8 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
       final ICatNode node,
       final String   key
     ) {
-      return () -> new WdkModelException(String.format(MISSING_META,
-        node.getPath(), key));
+      return () -> new MissingMetaException(String.format(MISSING_META,
+        node.getPath(), key), key);
     }
 
     static WdkModelException malformedMetaJson(

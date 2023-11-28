@@ -8,10 +8,7 @@ import static org.gusdb.wdk.service.FileRanges.parseRangeHeaderValue;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,6 +44,8 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetInfo;
 import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
+import org.gusdb.wdk.model.user.dataset.irods.IrodsUserDatasetSession;
+import org.gusdb.wdk.model.user.dataset.irods.MissingMetaException;
 import org.gusdb.wdk.service.FileRanges.ByteRangeInformation;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.annotation.PATCH;
@@ -169,21 +168,13 @@ public class UserDatasetService extends UserService {
           .collect(Collectors.groupingBy(userId -> userId,
               Collectors.flatMapping(Functions.fSwallow(userId -> {
                 LOG.info("User ID: " + userId);
-                return dsSession.getUserDatasets(Long.parseLong(userId)).values().stream();
+                try {
+                  return dsSession.getUserDatasets(Long.parseLong(userId)).values().stream();
+                } catch (MissingMetaException e) {
+                  LOG.warn("Skipping dataset for missing metadata at path " + e.path);
+                  return Collections.<Long, UserDataset>emptyMap().values().stream();
+                }
               }), Collectors.toList())));
-//      Map<String, List<UserDatasetInfo>> dsInfo = allDatasets.entrySet().stream()
-//          .filter(userDatasetEntry -> {
-//            final UserDataset userDataset = userDatasetEntry.getValue();
-//            try {
-//              new UserDatasetInfo(userDataset, false, dsStore, dsSession, cache, wdkModel);
-//              return true;
-//            } catch (Exception e) {
-//              LOG.warn("Failed to create ud info for " + userDataset);
-//              return false;
-//            }
-//          })
-//          .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(e -> new UserDatasetInfo(e.getValue(), false,
-//              dsStore, dsSession, cache, wdkModel), Collectors.toList())));
 
       String formatted = allDatasets.entrySet().stream()
           .flatMap(e -> e.getValue().stream()
