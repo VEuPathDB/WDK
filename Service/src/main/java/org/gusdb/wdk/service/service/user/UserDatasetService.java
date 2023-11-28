@@ -9,9 +9,7 @@ import static org.gusdb.wdk.service.FileRanges.parseRangeHeaderValue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -44,7 +42,6 @@ import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
 import org.gusdb.wdk.model.user.dataset.UserDatasetInfo;
 import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
-import org.gusdb.wdk.model.user.dataset.irods.IrodsUserDatasetSession;
 import org.gusdb.wdk.model.user.dataset.irods.MissingMetaException;
 import org.gusdb.wdk.service.FileRanges.ByteRangeInformation;
 import org.gusdb.wdk.service.UserBundle;
