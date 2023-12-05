@@ -207,7 +207,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
         LOG.info("Putting " + dsId + " collectionToDataset(" + dsId + "," + userId + "," + ds + ")");
         out.put(dsId, collectionToDataset(dsId, userId, ds));
       }
-      catch (BrokenDatasetException e) {
+      catch (BrokenDatasetException | MissingMetaException e) {
         // simply log error and omit broken dataset from list; should not be a fatal exception
         LOG.error("Found broken dataset [ID = " + dsId + "]", e);
       }
