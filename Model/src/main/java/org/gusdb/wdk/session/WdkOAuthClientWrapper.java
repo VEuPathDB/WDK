@@ -1,43 +1,18 @@
 package org.gusdb.wdk.session;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
-
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map.Entry;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-
 import org.apache.log4j.Logger;
-import org.glassfish.jersey.client.ClientConfig;
-import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.IoUtil;
+import org.gusdb.oauth2.client.OAuthClient;
+import org.gusdb.oauth2.client.OAuthClient.ValidatedToken;
 import org.gusdb.oauth2.client.OAuthConfig;
 import org.gusdb.oauth2.shared.token.IdTokenFields;
-import org.gusdb.oauth2.client.OAuthClient.ValidatedToken;
-import org.gusdb.oauth2.client.KeyStoreTrustManager;
-import org.gusdb.oauth2.client.OAuthClient;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.user.RegisteredUser;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.impl.TextCodec;
 
 public class WdkOAuthClientWrapper {
 
@@ -76,12 +51,18 @@ public class WdkOAuthClientWrapper {
 
   public User getUserFromValidatedToken(ValidatedToken token, UserFactory userFactory) {
     Claims claims = token.getTokenContents();
+
     User user = new RegisteredUser(_wdkModel,
         Long.parseLong(claims.getSubject()),
         claims.get("email", String.class),
         "deprecated", // user signature
         claims.get(IdTokenFields.preferred_username.name(), String.class));
-    user.set
+
+    // have to hit the user data endpoint for this for user details; bearer token does not include all fields
+    JSONObject userData = _client.getUserData(_config, token);
+
+    // user UserFactory to create user from the JSON object, adding to DB if necessary for FKs on other userlogins5 tables
+    User user = new UserFactory(wdkModel).
     //long userId = client.getUserIdFromAuthCode(authCode, appUrl);
     //User newUser = wdkModel.getUserFactory().login(userId);
     if (newUser == null) {

@@ -108,19 +108,15 @@ public class UserFactory {
   // -------------------------------------------------------------------------
 
   public User createUser(String email,
-      Map<String, String> profileProperties,
-      Map<String, String> globalPreferences,
-      Map<String, String> projectPreferences)
+      Map<String, String> profileProperties)
           throws WdkModelException, InvalidUsernameOrEmailException {
     String dontEmailProp = _wdkModel.getProperties().get("DONT_EMAIL_NEW_USER");
     boolean sendWelcomeEmail = (dontEmailProp == null || !dontEmailProp.equals("true"));
-    return createUser(email, profileProperties, globalPreferences, projectPreferences, true, sendWelcomeEmail);
+    return createUser(email, profileProperties, true, sendWelcomeEmail);
   }
 
   public User createUser(String email,
       Map<String, String> profileProperties,
-      Map<String, String> globalPreferences,
-      Map<String, String> projectPreferences,
       boolean addUserDbReference, boolean sendWelcomeEmail)
           throws WdkModelException, InvalidUsernameOrEmailException {
     try {
@@ -152,13 +148,6 @@ public class UserFactory {
           profile.getEmail(), profile.getSignature(), profile.getStableId());
       user.setProfileProperties(profile.getProperties());
 
-      // set and save preferences
-      UserPreferences prefs = new UserPreferences();
-      if (globalPreferences != null) prefs.setGlobalPreferences(globalPreferences);
-      if (projectPreferences != null) prefs.setProjectPreferences(projectPreferences);
-      user.setPreferences(prefs);
-      _preferenceFactory.savePreferences(user);
-
       // if needed, send user temporary password via email
       if (sendWelcomeEmail) {
         emailTemporaryPassword(user, password, _wdkModel.getModelConfig());
@@ -174,10 +163,6 @@ public class UserFactory {
       // wrap unknown exceptions with WdkModelException
       throw new WdkModelException("Could not completely create new user", e);
     }
-  }
-
-  public void savePreferences(User user) throws WdkModelException {
-    _preferenceFactory.savePreferences(user);
   }
 
   private void addUserReference(Long userId, boolean isGuest) {
@@ -233,6 +218,7 @@ public class UserFactory {
     Utilities.sendEmail(smtpServer, user.getEmail(), supportEmail, emailSubject, emailContent);
   }
 
+  // TODO: remove!  This validation is now done on the OAuth server
   private static String validateAndFormatEmail(String email, AccountManager accountMgr) throws InvalidUsernameOrEmailException {
     // trim and validate passed email address and extract stable name
     if (email == null)
@@ -246,7 +232,7 @@ public class UserFactory {
       throw new InvalidUsernameOrEmailException("The user's email address is invalid.");
     // check whether the user exist in the database already; if email exists, the operation fails
     if (accountMgr.getUserProfileByEmail(email) != null)
-      throw new InvalidUsernameOrEmailException("The email '" + email + "' has already been registered. " + "Please choose another one.");
+      throw new InvalidUsernameOrEmailException("The email '" + email + "' has already been registered. " + "Please choose another.");
     return email;
   }
 
@@ -300,7 +286,7 @@ public class UserFactory {
   }
 
   public User login(User guest, String email, String password)
-      throws WdkUserException, WdkModelException {
+      throws WdkUserException {
     // make sure the guest is really a guest
     if (!guest.isGuest())
       throw new WdkUserException("User has been logged in.");
@@ -330,7 +316,7 @@ public class UserFactory {
     return authenticate(usernameOrEmail, password) != null;
   }
 
-  private User authenticate(String usernameOrEmail, String password) throws WdkModelException {
+  private User authenticate(String usernameOrEmail, String password) {
     return populateRegisteredUser(_accountManager.getUserProfile(usernameOrEmail, password));
   }
 
@@ -364,15 +350,15 @@ public class UserFactory {
     }
   }
 
-  public User getUserByEmail(String email) throws WdkModelException {
+  public User getUserByEmail(String email) {
     return populateRegisteredUser(_accountManager.getUserProfileByEmail(email));
   }
 
-  private User getUserProfileByUsernameOrEmail(String usernameOrEmail) throws WdkModelException {
+  private User getUserProfileByUsernameOrEmail(String usernameOrEmail) {
     return populateRegisteredUser(_accountManager.getUserProfileByUsernameOrEmail(usernameOrEmail));
   }
 
-  public User getUserBySignature(String signature) throws WdkModelException, WdkUserException {
+  public User getUserBySignature(String signature) throws WdkUserException {
     User user = populateRegisteredUser(_accountManager.getUserProfileBySignature(signature));
     if (user == null) {
       // signature is rarely sent in by user; if User cannot be found, it's probably an error
@@ -381,12 +367,11 @@ public class UserFactory {
     return user;
   }
 
-  private User populateRegisteredUser(UserProfile profile) throws WdkModelException {
+  private User populateRegisteredUser(UserProfile profile) {
     if (profile == null) return null;
     User user = new RegisteredUser(_wdkModel, profile.getUserId(), profile.getEmail(),
         profile.getSignature(), profile.getStableId());
     user.setProfileProperties(profile.getProperties());
-    user.setPreferences(_preferenceFactory.getPreferences(user));
     return user;
   }
 
@@ -429,8 +414,6 @@ public class UserFactory {
       UserProfile newProfile = _accountManager.getUserProfile(user.getUserId());
       Events.trigger(new UserProfileUpdateEvent(oldProfile, newProfile, _wdkModel));
 
-      // save preferences
-      _preferenceFactory.savePreferences(user);
     }
     catch (InvalidUsernameOrEmailException e) {
       throw e;

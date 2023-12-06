@@ -88,13 +88,6 @@ public abstract class User {
     return _properties;
   }
 
-  /**
-   * Removes all existing user profile properties
-   */
-  public void clearProfileProperties() {
-    _properties.clear();
-  }
-
   public WdkModel getWdkModel() {
     return _wdkModel;
   }

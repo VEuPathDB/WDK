@@ -83,8 +83,11 @@ public class UserCreationScript {
               else {
                 // create new user and assign preferences
                 user = model.getUserFactory().createUser(
-                    parsedLine.getEmail(), parsedLine.getUserProperties(),
-                    parsedLine.getGlobalUserPrefs(), Collections.emptyMap(), true, false);
+                    parsedLine.getEmail(), parsedLine.getUserProperties(), true, false);
+                new UserPreferenceFactory(model).savePreferences(user.getUserId(),
+                    new UserPreferences(parsedLine.getGlobalUserPrefs(), Collections.emptyMap()));
+                
+                
                 System.out.println("Created user with ID " + user.getUserId() + " and email " + user.getEmail());
               }
             }
@@ -97,12 +100,12 @@ public class UserCreationScript {
               }
               else {
                 // user exists already; simply add preferences
-                UserPreferences userPrefs = user.getPreferences();
+                UserPreferenceFactory prefsFactory = new UserPreferenceFactory(model);
+                UserPreferences userPrefs = prefsFactory.getPreferences(user.getUserId());
                 for (Entry<String,String> newPref : parsedLine.getGlobalUserPrefs().entrySet()) {
                   userPrefs.setGlobalPreference(newPref.getKey(), newPref.getValue());
                 }
-                user.setPreferences(userPrefs);
-                model.getUserFactory().savePreferences(user);
+                prefsFactory.savePreferences(user.getUserId(), userPrefs);
                 System.out.println(String.format(message, "adding"));
               }
             }

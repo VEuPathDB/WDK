@@ -25,6 +25,8 @@ import org.gusdb.wdk.model.config.ModelConfigAccountDB;
 import org.gusdb.wdk.model.user.InvalidUsernameOrEmailException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
+import org.gusdb.wdk.model.user.UserPreferenceFactory;
+import org.gusdb.wdk.model.user.UserPreferences;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.UserCreationRequest;
@@ -59,11 +61,15 @@ public class UserUtilityServices extends AbstractWdkService {
       List<UserPropertyName> configuredUserProps = getWdkModel().getModelConfig().getAccountDB().getUserPropertyNames();
       UserCreationRequest request = UserCreationRequest.createFromJson(requestJson, configuredUserProps);
 
+      // create the user, saving to DB
       User newUser = getWdkModel().getUserFactory().createUser(
           request.getProfileRequest().getEmail(),
-          request.getProfileRequest().getProfileMap(),
+          request.getProfileRequest().getProfileMap());
+
+      // add user preferences to the new user
+      new UserPreferenceFactory(getWdkModel()).savePreferences(newUser.getUserId(), new UserPreferences(
           request.getGlobalPreferencesRequest().getPreferenceUpdates(),
-          request.getProjectPreferencesRequest().getPreferenceUpdates());
+          request.getProjectPreferencesRequest().getPreferenceUpdates()));
 
       return Response.ok(new JSONObject().put(JsonKeys.ID, newUser.getUserId()))
           .location(getUriInfo().getAbsolutePathBuilder().build(newUser.getUserId()))
