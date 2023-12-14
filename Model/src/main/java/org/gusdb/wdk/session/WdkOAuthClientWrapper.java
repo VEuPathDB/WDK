@@ -33,20 +33,20 @@ public class WdkOAuthClientWrapper {
     }
   }
 
-  public ValidatedToken getValidatedIdTokenFromAuth(String authCode, String redirectUri) {
-    return _client.getValidatedAuthToken(_config, authCode, redirectUri);
+  public ValidatedToken getAuthTokenFromAuthCode(String authCode, String redirectUri) {
+    return _client.getAuthTokenFromAuthCode(_config, authCode, redirectUri);
   }
 
-  public ValidatedToken getValidatedIdTokenFromCredentials(String email, String password, String redirectUrl) {
-    return _client.getValidatedAuthToken(_config,  email, password, redirectUrl);
+  public ValidatedToken getAuthTokenFromCredentials(String email, String password, String redirectUrl) {
+    return _client.getAuthTokenFromUsernamePassword(_config,  email, password, redirectUrl);
   }
 
-  public ValidatedToken getValidatedBearerTokenFromAuth(String authCode, String redirectUri) {
-    return _client.getValidatedBearerToken(_config, authCode, redirectUri);
+  public ValidatedToken getBearerTokenFromAuth(String authCode, String redirectUri) {
+    return _client.getBearerTokenFromAuthCode(_config, authCode, redirectUri);
   }
 
-  public ValidatedToken getValidatedBearerTokenFromCredentials(String email, String password, String redirectUrl) {
-    return _client.getValidatedBearerToken(_config,  email, password, redirectUrl);
+  public ValidatedToken getBearerTokenFromCredentials(String email, String password, String redirectUrl) {
+    return _client.getBearerTokenFromUsernamePassword(_config,  email, password, redirectUrl);
   }
 
   public User getUserFromValidatedToken(ValidatedToken token, UserFactory userFactory) {
@@ -54,8 +54,8 @@ public class WdkOAuthClientWrapper {
 
     User user = new RegisteredUser(_wdkModel,
         Long.parseLong(claims.getSubject()),
-        claims.get("email", String.class),
-        "deprecated", // user signature
+        claims.get(IdTokenFields.email.name(), String.class),
+        claims.get(IdTokenFields.signature.name(), String.class),
         claims.get(IdTokenFields.preferred_username.name(), String.class));
 
     // have to hit the user data endpoint for this for user details; bearer token does not include all fields

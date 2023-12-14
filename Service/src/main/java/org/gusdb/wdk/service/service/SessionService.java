@@ -164,7 +164,7 @@ public class SessionService extends AbstractWdkService {
       WdkOAuthClientWrapper client = new WdkOAuthClientWrapper(wdkModel);
 
       // Use auth code to get the bearer token, then convert to User
-      ValidatedToken bearerToken = client.getValidatedBearerTokenFromAuth(authCode, appUrl);
+      ValidatedToken bearerToken = client.getBearerTokenFromAuth(authCode, appUrl);
       User newUser = client.getUserFromValidatedToken(bearerToken, wdkModel.getUserFactory());
 
       // transfer ownership from guest to logged-in user
@@ -209,7 +209,7 @@ public class SessionService extends AbstractWdkService {
       WdkOAuthClientWrapper client = new WdkOAuthClientWrapper(wdkModel);
 
       // Use passed credentials to get the bearer token, then convert to User
-      ValidatedToken bearerToken = client.getValidatedBearerTokenFromCredentials(request.getEmail(), request.getPassword(), appUrl);
+      ValidatedToken bearerToken = client.getBearerTokenFromCredentials(request.getEmail(), request.getPassword(), appUrl);
 
       User newUser = client.getUserFromValidatedToken(bearerToken, wdkModel.getUserFactory());
 
