@@ -206,7 +206,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
       try {
         out.put(dsId, collectionToDataset(dsId, userId, ds));
       }
-      catch (BrokenDatasetException e) {
+      catch (BrokenDatasetException | MissingMetaException e) {
         // simply log error and omit broken dataset from list; should not be a fatal exception
         LOG.error("Found broken dataset [ID = " + dsId + "]", e);
       }
@@ -777,7 +777,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
       final ICatNode node,
       final String   key
     ) {
-      return () -> new WdkModelException(String.format(MISSING_META,
+      return () -> new MissingMetaException(String.format(MISSING_META,
         node.getPath(), key));
     }
 
