@@ -33,15 +33,15 @@ public class WdkOAuthClientWrapper {
     }
   }
 
-  public ValidatedToken getAuthTokenFromAuthCode(String authCode, String redirectUri) {
-    return _client.getAuthTokenFromAuthCode(_config, authCode, redirectUri);
+  public ValidatedToken getIdTokenFromAuthCode(String authCode, String redirectUri) {
+    return _client.getIdTokenFromAuthCode(_config, authCode, redirectUri);
   }
 
-  public ValidatedToken getAuthTokenFromCredentials(String email, String password, String redirectUrl) {
-    return _client.getAuthTokenFromUsernamePassword(_config,  email, password, redirectUrl);
+  public ValidatedToken getIdTokenFromCredentials(String email, String password, String redirectUrl) {
+    return _client.getIdTokenFromUsernamePassword(_config,  email, password, redirectUrl);
   }
 
-  public ValidatedToken getBearerTokenFromAuth(String authCode, String redirectUri) {
+  public ValidatedToken getBearerTokenFromAuthCode(String authCode, String redirectUri) {
     return _client.getBearerTokenFromAuthCode(_config, authCode, redirectUri);
   }
 
