@@ -15,7 +15,10 @@ public class StringParamFormatter extends ParamFormatter<StringParam> {
 
   @Override
   public <S extends ParameterContainerInstanceSpec<S>> JSONObject getJson(DisplayablyValid<S> spec) throws WdkModelException {
-    return getBaseJson(spec).put(JsonKeys.LENGTH, _param.getLength()).put(JsonKeys.IS_MULTILINE, _param.getMultiLine());
+    return getBaseJson(spec)
+      .put(JsonKeys.LENGTH, _param.getLength())
+      .put(JsonKeys.IS_MULTILINE, _param.getMultiLine())
+      .put(JsonKeys.IS_NUMBER, _param.isNumber());
   }
 
   @Override
