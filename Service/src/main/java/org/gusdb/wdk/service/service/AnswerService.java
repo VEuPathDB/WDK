@@ -193,8 +193,8 @@ public class AnswerService extends AbstractWdkService {
   public Response createCustomReportAnswer(@PathParam(REPORT_NAME_PATH_PARAM) String reportName, JSONObject body)
           throws WdkModelException, DataValidationException, RequestMisformatException {
     AnswerRequest request = parseAnswerRequest(getQuestionOrNotFound(_recordClassUrlSegment, _questionUrlSegment), reportName,
-        body, getWdkModel(), getSessionUser(), _avoidCacheHit);
-    return getAnswerResponse(getSessionUser(), request).getSecond();
+        body, getWdkModel(), getRequestingUser(), _avoidCacheHit);
+    return getAnswerResponse(getRequestingUser(), request).getSecond();
   }
 
   /**

@@ -24,18 +24,16 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.web.LoginCookieFactory;
-import org.gusdb.fgputil.web.LoginCookieFactory.LoginCookieParts;
 import org.gusdb.fgputil.web.SessionProxy;
-import org.gusdb.oauth2.client.OAuthClient.ValidatedToken;
+import org.gusdb.oauth2.client.ValidatedToken;
 import org.gusdb.wdk.core.api.JsonKeys;
-import org.gusdb.wdk.events.NewUserEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfig.AuthenticationMethod;
-import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
+import org.gusdb.wdk.model.user.BearerTokenUser;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.LoginRequest;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -44,12 +42,14 @@ import org.gusdb.wdk.session.WdkOAuthClientWrapper;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.common.net.HttpHeaders;
+
 @Path("/")
 public class SessionService extends AbstractWdkService {
 
   private static final Logger LOG = Logger.getLogger(SessionService.class);
 
-  private static final int EXPIRATION_3_YEARS_SECS = 3 * 365 * 24 * 60 * 60;
+  public static final int EXPIRATION_3_YEARS_SECS = 3 * 365 * 24 * 60 * 60;
 
   private static final String REFERRER_HEADER_KEY = "Referer";
 
@@ -137,8 +137,8 @@ public class SessionService extends AbstractWdkService {
     String appUrl = getContextUri();
     String redirectUrl = isEmpty(originalUrl) ? appUrl : originalUrl;
 
-    // Is the user already logged in?
-    User oldUser = getSessionUser();
+    // Was existing bearer token submitted with this request?
+    User oldUser = getRequestingUser();
     if (!oldUser.isGuest()) {
       return createRedirectResponse(redirectUrl).build();
     }
@@ -161,11 +161,11 @@ public class SessionService extends AbstractWdkService {
         throw new WdkModelException("Unable to log in; state token missing, incorrect, or expired.");
       }
 
-      WdkOAuthClientWrapper client = new WdkOAuthClientWrapper(wdkModel);
-
       // Use auth code to get the bearer token, then convert to User
-      ValidatedToken bearerToken = client.getBearerTokenFromAuth(authCode, appUrl);
-      User newUser = client.getUserFromValidatedToken(bearerToken, wdkModel.getUserFactory());
+      WdkOAuthClientWrapper client = new WdkOAuthClientWrapper(wdkModel);
+      ValidatedToken bearerToken = client.getBearerTokenFromAuthCode(authCode, appUrl);
+      User newUser = new BearerTokenUser(wdkModel, client, bearerToken);
+      wdkModel.getUserFactory().insertUserToUserDb(newUser);
 
       // transfer ownership from guest to logged-in user
       transferOwnership(oldUser, newUser, wdkModel);
@@ -200,18 +200,17 @@ public class SessionService extends AbstractWdkService {
       String originalUrl = request.getRedirectUrl();
       String redirectUrl = !isEmpty(originalUrl) ? originalUrl : !isEmpty(referrer) ? referrer : appUrl;
 
-      // Is the user already logged in?
-      User oldUser = getSessionUser();
+      // Was existing bearer token submitted with this request?
+      User oldUser = getRequestingUser();
       if (!oldUser.isGuest()) {
         return createRedirectResponse(redirectUrl).build();
       }
 
-      WdkOAuthClientWrapper client = new WdkOAuthClientWrapper(wdkModel);
-
       // Use passed credentials to get the bearer token, then convert to User
+      WdkOAuthClientWrapper client = new WdkOAuthClientWrapper(wdkModel);
       ValidatedToken bearerToken = client.getBearerTokenFromCredentials(request.getEmail(), request.getPassword(), appUrl);
-
-      User newUser = client.getUserFromValidatedToken(bearerToken, wdkModel.getUserFactory());
+      User newUser = new BearerTokenUser(wdkModel, client, bearerToken);
+      wdkModel.getUserFactory().insertUserToUserDb(newUser);
 
       // transfer ownership from guest to logged-in user
       transferOwnership(oldUser, newUser, wdkModel);
@@ -259,22 +258,25 @@ public class SessionService extends AbstractWdkService {
       Events.triggerAndWait(new NewUserEvent(newUser, oldUser, session),
           new WdkRuntimeException("Unable to complete WDK user assignement."));
 
-      // TODO: leaving legacy code here for reference; remove when deemed appropriate
-      //LoginCookieFactory baker = new LoginCookieFactory(getWdkModel().getModelConfig().getSecretKey());
-      //CookieBuilder loginCookie = baker.createLoginCookie(newUser.getEmail());
-
-      // 3-year expiration (should change secret key before then)
-      CookieBuilder loginCookie = new CookieBuilder(
-          LoginCookieFactory.WDK_LOGIN_COOKIE_NAME,
-          bearerToken.getTokenValue());
+      // TODO: until client is updated, must still return WDK login cookie
+      LoginCookieFactory baker = new LoginCookieFactory(getWdkModel().getModelConfig().getSecretKey());
+      CookieBuilder loginCookie = baker.createLoginCookie(newUser.getEmail());
       loginCookie.setMaxAge(EXPIRATION_3_YEARS_SECS);
 
-      redirectUrl = getSuccessRedirectUrl(redirectUrl, newUser, loginCookie);
+      // 3-year expiration (should change secret key before then)
+      CookieBuilder bearerTokenCookie = new CookieBuilder(
+          HttpHeaders.AUTHORIZATION,
+          bearerToken.getTokenValue());
+      bearerTokenCookie.setMaxAge(EXPIRATION_3_YEARS_SECS);
+
+      redirectUrl = getSuccessRedirectUrl(redirectUrl, newUser, loginCookie, bearerTokenCookie);
 
       return (isRedirectResponse ?
         createRedirectResponse(redirectUrl) :
         createJsonResponse(true, null, redirectUrl)
-      ).cookie(loginCookie.toJaxRsCookie()).build();
+      )
+      .cookie(loginCookie.toJaxRsCookie(), bearerTokenCookie.toJaxRsCookie())
+      .build();
     }
   }
 
@@ -286,7 +288,7 @@ public class SessionService extends AbstractWdkService {
    * @param cookie login cookie to be sent to the browser
    * @return page user should be redirected to after successful login
    */
-  protected String getSuccessRedirectUrl(String redirectUrl, User user, CookieBuilder cookie) {
+  protected String getSuccessRedirectUrl(String redirectUrl, User user, CookieBuilder cookie, CookieBuilder bearerTokenCookie) {
     return redirectUrl;
   }
 
@@ -295,12 +297,12 @@ public class SessionService extends AbstractWdkService {
   public Response processLogout() throws WdkModelException {
 
     // get the current session's user, then invalidate the session
-    User oldUser = getSessionUser();
+    User oldUser = getRequestingUser();
     getSession().invalidate();
     
     // get a new session and add new guest user to it
     SessionProxy session = getSession();
-    User newUser = getWdkModel().getUserFactory().createUnregistedUser(UnregisteredUserType.GUEST);
+    User newUser = getWdkModel().getUserFactory().createUnregistedUser();
     session.setAttribute(Utilities.WDK_USER_KEY, newUser);
 
     // throw new user event

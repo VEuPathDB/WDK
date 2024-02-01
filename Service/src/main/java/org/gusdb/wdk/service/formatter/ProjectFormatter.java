@@ -1,9 +1,12 @@
 package org.gusdb.wdk.service.formatter;
 
+import java.util.Optional;
+
 import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.config.ModelConfig;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -47,7 +50,7 @@ public class ProjectFormatter {
 
     // create profile property config sub-array
     JSONArray userProfileProps = new JSONArray();
-    for (UserPropertyName prop : wdkModel.getModelConfig().getAccountDB().getUserPropertyNames()) {
+    for (UserPropertyName prop : User.USER_PROPERTIES.values()) {
       userProfileProps.put(new JSONObject()
           .put(JsonKeys.NAME, prop.getName())
           .put(JsonKeys.DISPLAY_NAME, prop.getDisplayName())
@@ -57,8 +60,7 @@ public class ProjectFormatter {
     }
 
     return new JSONObject()
-      .put(JsonKeys.DESCRIPTION, wdkModel.getIntroduction() == null ?
-          WELCOME_MESSAGE : wdkModel.getIntroduction())
+      .put(JsonKeys.DESCRIPTION, Optional.ofNullable(wdkModel.getIntroduction()).orElse(WELCOME_MESSAGE))
       .put(JsonKeys.DISPLAY_NAME, wdkModel.getDisplayName())
       .put(JsonKeys.PROJECT_ID, wdkModel.getProjectId())
       .put(JsonKeys.BUILD_NUMBER, wdkModel.getBuildNumber())

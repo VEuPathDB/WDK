@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.apache.commons.digester3.Digester;
-import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.fgputil.xml.XmlParser;
 import org.gusdb.fgputil.xml.XmlValidator;
 import org.gusdb.wdk.model.WdkModelException;
@@ -65,7 +64,6 @@ public class ModelConfigParser extends XmlParser {
 
     // load user db
     configureNode(digester, "modelConfig/accountDb", ModelConfigAccountDB.class, "setAccountDB");
-    configureNode(digester, "modelConfig/accountDb/userProperty", UserPropertyName.class, "addUserPropertyName");
 
     // userdatasetstore
     configureNode(digester, "modelConfig/userDatasetStore", ModelConfigUserDatasetStore.class, "setUserDatasetStore");

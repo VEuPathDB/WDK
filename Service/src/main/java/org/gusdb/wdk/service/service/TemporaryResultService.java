@@ -71,7 +71,7 @@ public class TemporaryResultService extends AbstractWdkService {
   public Response setTemporaryResult(JSONObject requestJson)
       throws RequestMisformatException, DataValidationException, WdkModelException, ValidationException {
     AnswerRequest request = parseRequest(requestJson);
-    String id = TemporaryResultFactory.insertTemporaryResult(getSessionUser().getUserId(), request);
+    String id = TemporaryResultFactory.insertTemporaryResult(getRequestingUser().getUserId(), request);
     return Response.ok(new JSONObject().put(ID, id).toString())
         .location(getUriInfo().getAbsolutePathBuilder().build(id)).build();
   }
@@ -109,7 +109,7 @@ public class TemporaryResultService extends AbstractWdkService {
           .getStepFactory()
           .getStepById(stepId, ValidationLevel.RUNNABLE)
           .orElseThrow(() -> new DataValidationException("No step found with ID " + stepId));
-      if (step.getUser().getUserId() != getSessionUser().getUserId()) {
+      if (step.getUser().getUserId() != getRequestingUser().getUserId()) {
         throw new DataValidationException("No step found with ID " + stepId + " for this user.");
       }
       RunnableObj<AnswerSpec> answerSpec = Step.getRunnableAnswerSpec(step.getRunnable()
@@ -133,7 +133,7 @@ public class TemporaryResultService extends AbstractWdkService {
 
       // parse answer request as we would in answer service
       return AnswerService.parseAnswerRequest(
-          question, reporterName, requestJson, getWdkModel(), getSessionUser(), false);
+          question, reporterName, requestJson, getWdkModel(), getRequestingUser(), false);
     }
     else {
       throw new RequestMisformatException("Either " + STEP_ID + " or (" +

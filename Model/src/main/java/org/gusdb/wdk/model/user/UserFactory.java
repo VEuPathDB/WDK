@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.accountdb.AccountManager;
 import org.gusdb.fgputil.accountdb.UserProfile;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -24,7 +25,6 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigAccountDB;
-import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 
 /**
  * Manages persistence of user profile and preferences and creation and
@@ -87,20 +87,18 @@ public class UserFactory {
   private final WdkModel _wdkModel;
   private final DatabaseInstance _userDb;
   private final String _userSchema;
-  private final AccountManager _accountManager;
 
   // -------------------------------------------------------------------------
   // constructor
   // -------------------------------------------------------------------------
 
   public UserFactory(WdkModel wdkModel) {
+    // save model for populating new users
     _wdkModel = wdkModel;
     _userDb = wdkModel.getUserDb();
     ModelConfig modelConfig = wdkModel.getModelConfig();
     _userSchema = modelConfig.getUserDB().getUserSchema();
     ModelConfigAccountDB accountDbConfig = modelConfig.getAccountDB();
-    _accountManager = new AccountManager(wdkModel.getAccountDb(),
-        accountDbConfig.getAccountSchema(), accountDbConfig.getUserPropertyNames());
   }
 
   // -------------------------------------------------------------------------
@@ -144,9 +142,7 @@ public class UserFactory {
       }
 
       // create new user object and add profile properties
-      RegisteredUser user = new RegisteredUser(_wdkModel, profile.getUserId(),
-          profile.getEmail(), profile.getSignature(), profile.getStableId());
-      user.setProfileProperties(profile.getProperties());
+      User user = getUserFromProfile(profile);
 
       // if needed, send user temporary password via email
       if (sendWelcomeEmail) {
@@ -163,6 +159,18 @@ public class UserFactory {
       // wrap unknown exceptions with WdkModelException
       throw new WdkModelException("Could not completely create new user", e);
     }
+  }
+
+  private User getUserFromProfile(UserProfile profile) {
+    if (profile == null) return null;
+    Map<String,String> properties = profile.getProperties();
+    return new User(_wdkModel, profile.getUserId(),
+        false, profile.getSignature(), profile.getStableId())
+      .setEmail(profile.getEmail())
+      .setFirstName(properties.get("firstName"))
+      .setMiddleName(properties.get("middleName"))
+      .setLastName(properties.get("lastName"))
+      .setOrganization(properties.get("organization"));
   }
 
   private void addUserReference(Long userId, boolean isGuest) {
@@ -259,11 +267,11 @@ public class UserFactory {
    * @return new unregistered user with remaining fields populated
    * @throws WdkRuntimeException if unable to persist temporary user
    */
-  public UnregisteredUser createUnregistedUser(UnregisteredUserType userType) throws WdkRuntimeException {
+  public User createUnregistedUser() throws WdkRuntimeException {
     try {
-      UserProfile profile = _accountManager.createGuestAccount(userType.getStableIdPrefix());
+      UserProfile profile = _accountManager.createGuestAccount("GUEST_");
       addUserReference(profile.getUserId(), true);
-      return new UnregisteredUser(_wdkModel, profile.getUserId(), profile.getEmail(), profile.getSignature(), profile.getStableId());
+      return new User(_wdkModel, profile.getUserId(), true, profile.getSignature(), profile.getStableId()).setEmail(profile.getEmail());
     }
     catch (Exception e) {
       throw new WdkRuntimeException("Unable to save temporary user", e);
@@ -317,7 +325,7 @@ public class UserFactory {
   }
 
   private User authenticate(String usernameOrEmail, String password) {
-    return populateRegisteredUser(_accountManager.getUserProfile(usernameOrEmail, password));
+    return getUserFromProfile(_accountManager.getUserProfile(usernameOrEmail, password));
   }
 
   /**
@@ -331,16 +339,16 @@ public class UserFactory {
     UserProfile profile = _accountManager.getUserProfile(userId);
     if (profile != null) {
       // found registered user in account DB; create RegisteredUser and populate
-      return Optional.of(populateRegisteredUser(profile));
+      return Optional.of(getUserFromProfile(profile));
     }
     else {
       // cannot find user in account DB; however, the passed ID may represent a guest local to this userDb
       Date accessDate = getGuestUserRefFirstAccess(userId);
       if (accessDate != null) {
         // guest user was found in local user Db; create UnregisteredUser and populate
-        profile = AccountManager.createGuestProfile(UnregisteredUserType.GUEST.getStableIdPrefix(), userId, accessDate);
-        return Optional.of(new UnregisteredUser(_wdkModel, profile.getUserId(),
-            profile.getEmail(), profile.getSignature(), profile.getStableId()));
+        profile = AccountManager.createGuestProfile("GUEST_", userId, accessDate);
+        return Optional.of(new User(_wdkModel, profile.getUserId(), true,
+            profile.getSignature(), profile.getStableId()).setEmail(profile.getEmail()));
         
       }
       else {
@@ -351,28 +359,11 @@ public class UserFactory {
   }
 
   public User getUserByEmail(String email) {
-    return populateRegisteredUser(_accountManager.getUserProfileByEmail(email));
+    return getUserFromProfile(_accountManager.getUserProfileByEmail(email));
   }
 
   private User getUserProfileByUsernameOrEmail(String usernameOrEmail) {
-    return populateRegisteredUser(_accountManager.getUserProfileByUsernameOrEmail(usernameOrEmail));
-  }
-
-  public User getUserBySignature(String signature) throws WdkUserException {
-    User user = populateRegisteredUser(_accountManager.getUserProfileBySignature(signature));
-    if (user == null) {
-      // signature is rarely sent in by user; if User cannot be found, it's probably an error
-      throw new WdkUserException("Unable to find user with signature: " + signature);
-    }
-    return user;
-  }
-
-  private User populateRegisteredUser(UserProfile profile) {
-    if (profile == null) return null;
-    User user = new RegisteredUser(_wdkModel, profile.getUserId(), profile.getEmail(),
-        profile.getSignature(), profile.getStableId());
-    user.setProfileProperties(profile.getProperties());
-    return user;
+    return getUserFromProfile(_accountManager.getUserProfileByUsernameOrEmail(usernameOrEmail));
   }
 
   /**
@@ -408,7 +399,13 @@ public class UserFactory {
       }
 
       // save off other data to user profile
-      _accountManager.saveUserProfile(user.getUserId(), user.getEmail(), user.getProfileProperties());
+      _accountManager.saveUserProfile(user.getUserId(), user.getEmail(), new MapBuilder<String,String>()
+          .put("firstName", user.getFirstName())
+          .put("middleName", user.getMiddleName())
+          .put("lastName", user.getLastName())
+          .put("organization", user.getOrganization())
+          .toMap()
+      );
 
       // get updated profile and trigger profile update event
       UserProfile newProfile = _accountManager.getUserProfile(user.getUserId());
@@ -439,5 +436,13 @@ public class UserFactory {
 
   public void changePassword(long userId, String newPassword) {
     _accountManager.updatePassword(userId, newPassword);
+  }
+
+  // FIXME: should be atomic
+  public void insertUserToUserDb(User user) {
+    // make sure user has reference in this user DB (needs to happen before merging)
+    if (!hasUserReference(user.getUserId())) {
+      addUserReference(user.getUserId(), user.isGuest());
+    }
   }
 }

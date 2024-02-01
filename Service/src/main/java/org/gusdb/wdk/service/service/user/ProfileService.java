@@ -51,10 +51,8 @@ public class ProfileService extends UserService {
   // @OutSchema("wdk.users.get-by-id")
   public JSONObject getById(@QueryParam("includePreferences") Boolean includePreferences) throws WdkModelException {
     UserBundle userBundle = getUserBundle(Access.PUBLIC);
-    List<UserPropertyName> propDefs = getWdkModel().getModelConfig()
-        .getAccountDB().getUserPropertyNames();
     return formatUser(userBundle.getTargetUser(), userBundle.isSessionUser(),
-        getFlag(includePreferences), propDefs);
+        getFlag(includePreferences));
   }
 
   /**
@@ -67,10 +65,10 @@ public class ProfileService extends UserService {
    * @return formatted user object
    * @throws WdkModelException if something goes wrong
    */
-  protected JSONObject formatUser(User user, boolean isSessionUser, boolean includePrefs, List<UserPropertyName> propNames) throws WdkModelException {
+  protected JSONObject formatUser(User user, boolean isSessionUser, boolean includePrefs) throws WdkModelException {
     Optional<UserPreferences> userPrefs = !includePrefs ? Optional.empty() :
         Optional.of(new UserPreferenceFactory(getWdkModel()).getPreferences(user.getUserId()));
-    return UserFormatter.getUserJson(user, isSessionUser, userPrefs, propNames);
+    return UserFormatter.getUserJson(user, isSessionUser, userPrefs);
   }
 
   /**
@@ -149,10 +147,6 @@ public class ProfileService extends UserService {
     return loginCookie == null ?
         Response.noContent().build() :
         Response.noContent().cookie(loginCookie).build();
-  }
-
-  private List<UserPropertyName> getPropertiesConfig() {
-    return getWdkModel().getModelConfig().getAccountDB().getUserPropertyNames();
   }
 
   @PUT

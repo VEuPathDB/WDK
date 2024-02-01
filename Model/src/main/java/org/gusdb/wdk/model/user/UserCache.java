@@ -28,17 +28,20 @@ public class UserCache extends HashMap<Long,User> {
   @Override
   public User get(Object id) {
     try {
-      Long userId = (Long)id;
-      if (userId == null) {
+      if (id == null) {
         throw new WdkRuntimeException("User ID cannot be null.");
       }
+      if (!(id instanceof Long)) {
+        throw new IllegalArgumentException("Only Long objects should be passed to this method, not " + id.getClass().getName());
+      }
+      Long userId = (Long)id;
       if (!containsKey(userId)) {
         if (_userFactory != null) {
           put(userId, _userFactory.getUserById(userId)
-              .orElseThrow(() -> new WdkRuntimeException("User with ID " + id + " does not exist.")));
+              .orElseThrow(() -> new WdkRuntimeException("User with ID " + userId + " does not exist.")));
         }
         else {
-          throw new WdkRuntimeException("No-lookup cache does not contain the requested user (" + id + ").");
+          throw new WdkRuntimeException("No-lookup cache does not contain the requested user (" + userId + ").");
         }
       }
       return super.get(userId);

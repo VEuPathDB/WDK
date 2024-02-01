@@ -126,7 +126,7 @@ public class QuestionService extends AbstractWdkService {
       @PathParam(SEARCH_PATH_PARAM) String questionUrlSegment)
           throws WdkModelException {
     DisplayablyValid<AnswerSpec> validSpec = getDisplayableAnswerSpec(
-        questionUrlSegment, getWdkModel(), getSessionUser(), name -> getQuestionOrNotFound(_recordClassUrlSegment, name));
+        questionUrlSegment, getWdkModel(), getRequestingUser(), name -> getQuestionOrNotFound(_recordClassUrlSegment, name));
     JSONObject result = QuestionFormatter.getQuestionJsonWithParams(validSpec, validSpec.get().getValidationBundle());
     if (LOG.isDebugEnabled()) LOG.debug("Returning JSON: " + result.toString(2));
     return result;
@@ -187,7 +187,7 @@ public class QuestionService extends AbstractWdkService {
         .setQuestionFullName(question.getFullName())
         .setParamValues(request.getContextParamValues())
         .build(
-            getSessionUser(),
+            getRequestingUser(),
             StepContainer.emptyContainer(),
             ValidationLevel.SEMANTIC,
             FillStrategy.NO_FILL);
@@ -202,7 +202,7 @@ public class QuestionService extends AbstractWdkService {
             .setQuestionFullName(question.getFullName())
             .setParamValues(request.getContextParamValues())
             .build(
-                getSessionUser(),
+                getRequestingUser(),
                 StepContainer.emptyContainer(),
                 ValidationLevel.DISPLAYABLE,
                 FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID)
@@ -258,7 +258,7 @@ public class QuestionService extends AbstractWdkService {
         .setQuestionFullName(question.getFullName())
         .setParamValues(contextParams)
         .build(
-            getSessionUser(),
+            getRequestingUser(),
             StepContainer.emptyContainer(),
             ValidationLevel.DISPLAYABLE,
             FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID)
@@ -337,7 +337,7 @@ public class QuestionService extends AbstractWdkService {
         .builder()
         .putAll(contextParamValues)
         .buildValidated(
-            getSessionUser(),
+            getRequestingUser(),
             question.getQuery(),
             StepContainer.emptyContainer(),
             ValidationLevel.DISPLAYABLE,
@@ -392,7 +392,7 @@ public class QuestionService extends AbstractWdkService {
         .builder()
         .putAll(contextParamValues)
         .buildValidated(
-            getSessionUser(),
+            getRequestingUser(),
             question.getQuery(),
             StepContainer.emptyContainer(),
             ValidationLevel.DISPLAYABLE,
