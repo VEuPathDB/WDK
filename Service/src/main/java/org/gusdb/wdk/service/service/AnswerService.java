@@ -277,6 +277,11 @@ public class AnswerService extends AbstractWdkService {
       String reporterName, JSONObject requestBody, WdkModel wdkModel, User sessionUser, boolean avoidCacheHit)
           throws RequestMisformatException, DataValidationException, WdkModelException {
 
+    if (requestBody == null || !requestBody.has(JsonKeys.SEARCH_CONFIG) || !requestBody.has(JsonKeys.REPORT_CONFIG)) {
+      throw new RequestMisformatException("Request body must not be null and must contain '" +
+          JsonKeys.SEARCH_CONFIG + "' and '" + JsonKeys.REPORT_CONFIG + "' properties.");
+    }
+
     // parse view filters
     FilterOptionListBuilder viewFilters = AnswerSpecServiceFormat.parseViewFilters(requestBody);
 
