@@ -110,15 +110,13 @@ public abstract class ParameterContainerImpl extends WdkModelBase implements Par
   }
 
   public void validateDependentParams() throws WdkModelException {
-    validateDependentParams(getFullName(), paramMap);
-  }
-
-  private static void validateDependentParams(String queryName, Map<String, Param> paramMap) throws WdkModelException {
     // TODO: Need to validate that no params in the rootQuery paramMap have a short name that in fact refers
     //       to different params (i.e., params with different full names but the same short name).
+
+    // for each dependent param, ensure all the params it depends on, and that any of its queries' params depend on, are present in this container
     for (Param param : paramMap.values()) {
       if (param instanceof AbstractDependentParam) {
-        ((AbstractDependentParam) param).checkParam(queryName, null, paramMap, new ArrayList<>());
+        ((AbstractDependentParam) param).checkParam(getFullName(), paramMap, new ArrayList<>());
       }
     }
   }
