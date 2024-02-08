@@ -15,7 +15,6 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.accountdb.AccountManager;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.config.ModelConfig;
-import org.gusdb.wdk.model.config.ModelConfigAccountDB;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.json.JSONArray;
@@ -47,7 +46,6 @@ public class UserDatasetShareRequest {
 
   public UserDatasetShareRequest(WdkModel wdkModel) {
 	ModelConfig modelConfig = wdkModel.getModelConfig();
-	ModelConfigAccountDB accountDbConfig = modelConfig.getAccountDB();
     _accountManager = new AccountManager(wdkModel.getAccountDb(),
 	   accountDbConfig.getAccountSchema(), accountDbConfig.getUserPropertyNames());
   }

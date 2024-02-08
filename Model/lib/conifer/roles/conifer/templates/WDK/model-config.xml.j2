@@ -29,9 +29,6 @@ site_vars file: {{ site_vars }}
              {% if modelconfig_useWeights is defined -%}
              assetsUrl="{{ modelconfig_useWeights }}"
              {% endif -%}
-             {% if modelconfig_secretKeyFile is defined -%}
-             secretKeyFile="{{ modelconfig_secretKeyFile }}"
-             {% endif -%}
              {% if modelconfig_blockedThreshold is defined -%}
              monitorBlockedThreads="{{ modelconfig_monitorBlockedThreads }}"
              {% endif -%}
@@ -143,40 +140,6 @@ site_vars file: {{ site_vars }}
             {% if modelconfig_userDb_driverInitClass is defined -%}
             driverInitClass="{{ modelconfig_userDb_driverInitClass }}"
             {% endif -%}
-    />
-
-    <accountDb login="{{ modelconfig_accountDb_login }}"
-            password="{{ modelconfig_accountDb_password }}"
-            connectionUrl="{{ modelconfig_accountDb_connectionUrl }}"
-            platform="{{ modelconfig_accountDb_platform }}"
-            accountSchema="{{ modelconfig_accountDb_accountSchema }}"
-            {% if modelconfig_accountDb_maxActive is defined -%}
-            maxActive="{{ modelconfig_accountDb_maxActive }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_maxIdle is defined -%}
-            maxIdle="{{ modelconfig_accountDb_maxIdle }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_minIdle is defined -%}
-            minIdle="{{ modelconfig_accountDb_minIdle }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_maxWait is defined -%}
-            maxWait="{{ modelconfig_accountDb_maxWait }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_defaultFetchSize is defined -%}
-            defaultFetchSize="{{ modelconfig_accountDb_defaultFetchSize }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_showConnections is defined -%}
-            showConnections="{{ modelconfig_accountDb_showConnections }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_showConnectionsInterval is defined -%}
-            showConnectionsInterval="{{ modelconfig_accountDb_showConnectionsInterval }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_showConnectionsDuration is defined -%}
-            showConnectionsDuration="{{ modelconfig_accountDb_showConnectionsDuration }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_driverInitClass is defined -%}
-            driverInitClass="{{ modelconfig_accountDb_driverInitClass }}"
-            {% endif %}
     />
 
     {% if modelconfig_userDatasetStoreConfig is defined -%}

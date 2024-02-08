@@ -2,10 +2,10 @@ package org.gusdb.wdk.service.formatter;
 
 import java.util.Optional;
 
+import org.gusdb.oauth2.client.veupathdb.UserProperty;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferences;
-import org.gusdb.wdk.model.user.WdkUserProperty;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,7 +44,7 @@ public class UserFormatter {
 
   private static JSONObject getPropertiesJson(User user, boolean isOwner) {
     JSONObject propsJson = new JSONObject();
-    for (WdkUserProperty definedProperty : User.USER_PROPERTIES.values()) {
+    for (UserProperty definedProperty : User.getPropertyDefs()) {
       if (isOwner || definedProperty.isPublic()) {
         String key = definedProperty.getName();
         String value = Optional.ofNullable(definedProperty.getValue(user)).orElse("");

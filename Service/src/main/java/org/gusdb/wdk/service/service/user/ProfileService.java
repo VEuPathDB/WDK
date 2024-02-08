@@ -1,15 +1,12 @@
 package org.gusdb.wdk.service.service.user;
 
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -17,13 +14,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 
-import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.fgputil.web.LoginCookieFactory;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.InvalidUsernameOrEmailException;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.UserPreferenceFactory;
 import org.gusdb.wdk.model.user.UserPreferences;
 import org.gusdb.wdk.service.UserBundle;
@@ -32,7 +27,6 @@ import org.gusdb.wdk.service.formatter.UserFormatter;
 import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
-import org.gusdb.wdk.service.request.user.PasswordChangeRequest;
 import org.gusdb.wdk.service.request.user.UserProfileRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -120,7 +114,7 @@ public class ProfileService extends UserService {
     try {
       User user = getPrivateRegisteredUser();
       UserProfileRequest request = UserProfileRequest.createFromJson(
-          new JSONObject(body), getPropertiesConfig(), false);
+          new JSONObject(body), User.USER_PROPERTIES, false);
       NewCookie loginCookie = processEmail(user, request.getEmail());
       // overwrite any provided properties
       if (request.getEmail() != null) {
@@ -147,30 +141,6 @@ public class ProfileService extends UserService {
     return loginCookie == null ?
         Response.noContent().build() :
         Response.noContent().cookie(loginCookie).build();
-  }
-
-  @PUT
-  @Path("password")
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Response changeUserPassword(String body)
-      throws WdkModelException, DataValidationException {
-    User user = getPrivateRegisteredUser();
-    try {
-      JSONObject json = new JSONObject(body);
-      PasswordChangeRequest request = PasswordChangeRequest.createFromJson(json);
-      UserFactory userMgr = getWdkModel().getUserFactory();
-      if (userMgr.isCorrectPassword(user.getEmail(), request.getOldPassword())) {
-        userMgr.changePassword(user.getUserId(), request.getNewPassword());
-        return Response.noContent().build();
-      }
-      else {
-        // user submitted wrong old password, permission denied
-        throw new ForbiddenException("Old password specified is not correct.");
-      }
-    }
-    catch (JSONException | RequestMisformatException e) {
-      throw new BadRequestException(e);
-    }
   }
 
   /**

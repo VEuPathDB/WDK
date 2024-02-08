@@ -1,13 +1,18 @@
 package org.gusdb.wdk.session;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.gusdb.oauth2.client.InvalidPropertiesException;
 import org.gusdb.oauth2.client.OAuthClient;
 import org.gusdb.oauth2.client.OAuthConfig;
 import org.gusdb.oauth2.client.ValidatedToken;
+import org.gusdb.oauth2.shared.IdTokenFields;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -46,8 +51,27 @@ public class WdkOAuthClientWrapper {
     }
     return users;
   }
+
   public ValidatedToken getNewGuestToken() {
     return _client.getNewGuestToken(_config);
   }
 
+  public JSONObject createUser(String email, Map<String, String> profileProperties) throws WdkUserException {
+    try {
+      Map<String,String> allProps = new HashMap<>(profileProperties);
+      allProps.put(IdTokenFields.email.name(), email);
+      return _client.createNewUser(_config, allProps);
+    }
+    catch (InvalidPropertiesException e) {
+      throw new WdkUserException(e.getMessage());
+    }
+  }
+
+  public OAuthClient getOAuthClient() {
+    return _client;
+  }
+
+  public OAuthConfig getOAuthConfig() {
+    return _config;
+  }
 }

@@ -18,6 +18,7 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.log4j.Logger;
 import org.glassfish.grizzly.http.server.Request;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.web.ApplicationContext;
 import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.web.RequestData;
@@ -26,23 +27,18 @@ import org.gusdb.oauth2.client.ValidatedToken;
 import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.BearerTokenUser;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.service.service.SessionService;
 import org.gusdb.wdk.service.service.SystemService;
 import org.gusdb.wdk.session.WdkOAuthClientWrapper;
-
-import io.prometheus.client.Counter;
 
 @Priority(30)
 public class CheckLoginFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
   private static final Logger LOG = Logger.getLogger(CheckLoginFilter.class);
-
-  private static final Counter GUEST_CREATION_COUNTER = Counter.build()
-      .name("wdk_guest_creation_count")
-      .help("Number of guest users created by WDK services")
-      .register();
 
   private static final String TOKEN_COOKIE_VALUE_TO_SET = "tokenCookieValueToSet";
 
@@ -83,26 +79,28 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
       }
       else {
         // no credentials submitted; automatically create a guest to use on this request
-        token = oauth.getNewGuestToken();
-        user = new BearerTokenUser(wdkModel, oauth, token);
+        UserFactory factory = wdkModel.getUserFactory();
+        TwoTuple<ValidatedToken,User> guestPair = factory.createUnregisteredUser();
+        token = guestPair.getFirst();
+        user = guestPair.getSecond();
 
         LOG.info("Created new guest user [" + user.getUserId() + "] for request to path: /" + requestPath);
-        GUEST_CREATION_COUNTER.inc();
 
         // set flag indicating that cookies should be added to response containing the new token
         requestContext.setProperty(TOKEN_COOKIE_VALUE_TO_SET, token.getTokenValue());
       }
 
       // insert reference to this user into user DB for tracking and for foreign keys on other user DB tables
-      wdkModel.getUserFactory().insertUserToUserDb(user);
+      wdkModel.getUserFactory().addUserReference(user);
 
-      // set user on the request object for use by this request's processing
+      // set creds and user on the request object for use by this request's processing
+      request.setAttribute(Utilities.BEARER_TOKEN_KEY, token);
       request.setAttribute(Utilities.WDK_USER_KEY, user);
     }
     catch (Exception e) {
       // for now, log and let this go, deferring to legacy authentication
       LOG.error("Unable to authenticate with Authorization header " + rawToken, e);
-      throw e;
+      throw e instanceof RuntimeException ? (RuntimeException)e : new WdkRuntimeException(e);
     }
   }
 

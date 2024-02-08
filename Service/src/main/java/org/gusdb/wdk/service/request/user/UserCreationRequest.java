@@ -1,8 +1,10 @@
 package org.gusdb.wdk.service.request.user;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.gusdb.fgputil.accountdb.UserPropertyName;
+import org.gusdb.oauth2.client.veupathdb.UserProperty;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -15,7 +17,7 @@ public class UserCreationRequest {
   private final UserPreferencesRequest _globalPreferencesRequest;
   private final UserPreferencesRequest _projectPreferencesRequest;
 
-  public static UserCreationRequest createFromJson(JSONObject requestJson, List<UserPropertyName> configuredProps)
+  public static UserCreationRequest createFromJson(JSONObject requestJson, Collection<UserProperty> configuredProps)
       throws RequestMisformatException, DataValidationException {
     try {
       JSONObject userRequest = requestJson.getJSONObject(JsonKeys.USER);

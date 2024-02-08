@@ -10,13 +10,18 @@ import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.MapBuilder;
+import org.gusdb.fgputil.Tuples.ThreeTuple;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.accountdb.AccountManager;
 import org.gusdb.fgputil.accountdb.UserProfile;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.oauth2.client.ValidatedToken;
+import org.gusdb.oauth2.shared.IdTokenFields;
 import org.gusdb.wdk.events.UserProfileUpdateEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -24,7 +29,10 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfig;
-import org.gusdb.wdk.model.config.ModelConfigAccountDB;
+import org.gusdb.wdk.session.WdkOAuthClientWrapper;
+import org.json.JSONObject;
+
+import io.prometheus.client.Counter;
 
 /**
  * Manages persistence of user profile and preferences and creation and
@@ -37,6 +45,11 @@ public class UserFactory {
 
   @SuppressWarnings("unused")
   private static Logger LOG = Logger.getLogger(UserFactory.class);
+
+  private static final Counter GUEST_CREATION_COUNTER = Counter.build()
+      .name("wdk_guest_creation_count")
+      .help("Number of guest users created by WDK services")
+      .register();
 
   // -------------------------------------------------------------------------
   // database table and column definitions
@@ -54,23 +67,32 @@ public class UserFactory {
   static final String USER_SCHEMA_MACRO = "$$USER_SCHEMA$$";
   private static final String IS_GUEST_VALUE_MACRO = "$$IS_GUEST$$";
 
-  private static final String COUNT_USER_REF_BY_ID_SQL =
-      "select count(*)" +
+  // SQL and types to insert previously unknown user refs into the users table
+  private static final String INSERT_USER_REF_SQL =
+      "insert" +
+      "  when not exists (select 1 from " + USER_SCHEMA_MACRO + TABLE_USERS + " where " + COL_USER_ID + " = ?)" +
+      "  then" +
+      "  into " + USER_SCHEMA_MACRO + TABLE_USERS + " (" + COL_USER_ID + "," + COL_IS_GUEST + "," + COL_FIRST_ACCESS +")" +
+      "  select ?, " + IS_GUEST_VALUE_MACRO + ", ? from dual";
+
+  private static final Integer[] INSERT_USER_REF_PARAM_TYPES = { Types.BIGINT, Types.BIGINT, Types.TIMESTAMP };
+
+  // SQL and types to select user ref by ID
+  private static final String SELECT_USER_REF_BY_ID_SQL =
+      "select " + COL_USER_ID + ", " + COL_IS_GUEST + ", " + COL_FIRST_ACCESS +
       "  from " + USER_SCHEMA_MACRO + TABLE_USERS +
       "  where " + COL_USER_ID + " = ?";
-  private static final Integer[] COUNT_USER_REF_BY_ID_PARAM_TYPES = { Types.BIGINT };
 
-  private static final String INSERT_USER_REF_SQL =
-      "insert into " + USER_SCHEMA_MACRO + TABLE_USERS +
-      "  (" + COL_USER_ID + "," + COL_IS_GUEST + "," + COL_FIRST_ACCESS +")" +
-      "  values (?, " + IS_GUEST_VALUE_MACRO + ", ?)";
-  private static final Integer[] INSERT_USER_REF_PARAM_TYPES = { Types.BIGINT, Types.TIMESTAMP };
+  private static final Integer[] SELECT_USER_REF_BY_ID_PARAM_TYPES = { Types.BIGINT };
 
-  private static final String SELECT_GUEST_USER_REF_BY_ID_SQL =
-      "select " + COL_FIRST_ACCESS +
-      "  from " + USER_SCHEMA_MACRO + TABLE_USERS +
-      "  where " + COL_IS_GUEST + " = " + IS_GUEST_VALUE_MACRO + " and " + COL_USER_ID + " = ?";
-  private static final Integer[] SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES = { Types.BIGINT };
+  private static class UserReference extends ThreeTuple<Long, Boolean, Date> {
+    public UserReference(Long userId, Boolean isGuest, Date firstAccess) {
+      super(userId, isGuest, firstAccess);
+    }
+    public Long getUserId() { return getFirst(); }
+    public Boolean isGuest() { return getSecond(); }
+    public Date getFirstAccess() { return getThird(); }
+  }
 
   // -------------------------------------------------------------------------
   // the macros used by the registration email
@@ -87,6 +109,7 @@ public class UserFactory {
   private final WdkModel _wdkModel;
   private final DatabaseInstance _userDb;
   private final String _userSchema;
+  private final WdkOAuthClientWrapper _client;
 
   // -------------------------------------------------------------------------
   // constructor
@@ -96,115 +119,51 @@ public class UserFactory {
     // save model for populating new users
     _wdkModel = wdkModel;
     _userDb = wdkModel.getUserDb();
-    ModelConfig modelConfig = wdkModel.getModelConfig();
-    _userSchema = modelConfig.getUserDB().getUserSchema();
-    ModelConfigAccountDB accountDbConfig = modelConfig.getAccountDB();
+    _userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
+    _client = new WdkOAuthClientWrapper(wdkModel);
   }
 
   // -------------------------------------------------------------------------
   // methods
   // -------------------------------------------------------------------------
 
-  public User createUser(String email,
-      Map<String, String> profileProperties)
-          throws WdkModelException, InvalidUsernameOrEmailException {
+  public User createUser(String email, Map<String, String> profileProperties)
+      throws WdkModelException, WdkUserException {
+
+    // contact OAuth server to create a new user with the passed props
+    TwoTuple<User,String> userTuple = parseExpandedUserJson(_client.createUser(email, profileProperties));
+    User user = userTuple.getFirst();
+
+    // add user to this user DB (will be added to other user DBs as needed during login)
+    addUserReference(user);
+
+    // if needed, send user temporary password via email
+    if (isSendWelcomeEmail()) {
+      emailTemporaryPassword(user, userTuple.getSecond(), _wdkModel.getModelConfig());
+    }
+
+    return user;
+
+  }
+
+  private TwoTuple<User, String> parseExpandedUserJson(JSONObject userJson) {
+    User user = new BasicUser(_wdkModel,
+        Long.valueOf(userJson.getString(IdTokenFields.sub.name())),
+        userJson.getBoolean(IdTokenFields.is_guest.name()),
+        userJson.getString(IdTokenFields.signature.name()),
+        userJson.getString(IdTokenFields.preferred_username.name())
+    );
+    user.setPropertyValues(userJson);
+    String password = userJson.getString(IdTokenFields.password.name());
+    return new TwoTuple<>(user, password);
+  }
+
+  /**
+   * @return whether or not WDK is configured to send a welcome email to new registered users (defaults to true)
+   */
+  private boolean isSendWelcomeEmail() {
     String dontEmailProp = _wdkModel.getProperties().get("DONT_EMAIL_NEW_USER");
-    boolean sendWelcomeEmail = (dontEmailProp == null || !dontEmailProp.equals("true"));
-    return createUser(email, profileProperties, true, sendWelcomeEmail);
-  }
-
-  public User createUser(String email,
-      Map<String, String> profileProperties,
-      boolean addUserDbReference, boolean sendWelcomeEmail)
-          throws WdkModelException, InvalidUsernameOrEmailException {
-    try {
-      // check email for uniqueness and format
-      email = validateAndFormatEmail(email, _accountManager);
-
-      // if user supplied a username, make sure it is unique
-      if (profileProperties.containsKey(AccountManager.USERNAME_PROPERTY_KEY)) {
-        String username = profileProperties.get(AccountManager.USERNAME_PROPERTY_KEY);
-        // check whether the username exists in the database already; if so, the operation fails
-        if (_accountManager.getUserProfileByUsername(username) != null) {
-          throw new InvalidUsernameOrEmailException("The username '" + username + "' is already in use. " + "Please choose another one.");
-        }
-      }
-
-      // generate temporary password for user
-      String password = generateTemporaryPassword();
-
-      // add user to account DB
-      UserProfile profile = _accountManager.createAccount(email, password, profileProperties);
-
-      // add user to this user DB (will be added to other user DBs as needed during login)
-      if (addUserDbReference) {
-        addUserReference(profile.getUserId(), false);
-      }
-
-      // create new user object and add profile properties
-      User user = getUserFromProfile(profile);
-
-      // if needed, send user temporary password via email
-      if (sendWelcomeEmail) {
-        emailTemporaryPassword(user, password, _wdkModel.getModelConfig());
-      }
-
-      return user;
-    }
-    catch (WdkModelException | InvalidUsernameOrEmailException e) {
-      // do not wrap known exceptions
-      throw e;
-    }
-    catch (Exception e) {
-      // wrap unknown exceptions with WdkModelException
-      throw new WdkModelException("Could not completely create new user", e);
-    }
-  }
-
-  private User getUserFromProfile(UserProfile profile) {
-    if (profile == null) return null;
-    Map<String,String> properties = profile.getProperties();
-    return new User(_wdkModel, profile.getUserId(),
-        false, profile.getSignature(), profile.getStableId())
-      .setEmail(profile.getEmail())
-      .setFirstName(properties.get("firstName"))
-      .setMiddleName(properties.get("middleName"))
-      .setLastName(properties.get("lastName"))
-      .setOrganization(properties.get("organization"));
-  }
-
-  private void addUserReference(Long userId, boolean isGuest) {
-    Timestamp insertedOn = new Timestamp(new Date().getTime());
-    String sql = INSERT_USER_REF_SQL
-        .replace(USER_SCHEMA_MACRO, _userSchema)
-        .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isGuest).toString());
-    new SQLRunner(_userDb.getDataSource(), sql, "insert-user-ref")
-      .executeStatement(new Object[]{ userId, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
-  }
-
-  private boolean hasUserReference(long userId) {
-    String sql = COUNT_USER_REF_BY_ID_SQL.replace(USER_SCHEMA_MACRO, _userSchema);
-    SingleLongResultSetHandler handler = new SingleLongResultSetHandler();
-    new SQLRunner(_userDb.getDataSource(), sql, "check-user-ref")
-      .executeQuery(new Object[]{ userId }, COUNT_USER_REF_BY_ID_PARAM_TYPES, handler);
-    if (handler.getStatus().equals(Status.NON_NULL_VALUE)) {
-      switch (handler.getRetrievedValue().intValue()) {
-        case 0: return false;
-        case 1: return true;
-        default: throw new IllegalStateException("More than one user reference in userDb for user " + userId);
-      }
-    }
-    throw new WdkRuntimeException("User reference count query did not return count for user id " +
-        userId + ". Status = " + handler.getStatus() + ", sql = " + sql);
-  }
-
-  private Date getGuestUserRefFirstAccess(long userId) {
-    String sql = SELECT_GUEST_USER_REF_BY_ID_SQL
-        .replace(USER_SCHEMA_MACRO, _userSchema)
-        .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(true).toString());
-    return new SQLRunner(_userDb.getDataSource(), sql, "get-guest-user-ref")
-      .executeQuery(new Object[]{ userId }, SELECT_GUEST_USER_REF_BY_ID_PARAM_TYPES, rs ->
-          !rs.next() ? null : new Date(rs.getTimestamp(COL_FIRST_ACCESS).getTime()));
+    return dontEmailProp == null || !dontEmailProp.equals("true");
   }
 
   private static void emailTemporaryPassword(User user, String password,
@@ -226,73 +185,57 @@ public class UserFactory {
     Utilities.sendEmail(smtpServer, user.getEmail(), supportEmail, emailSubject, emailContent);
   }
 
-  // TODO: remove!  This validation is now done on the OAuth server
-  private static String validateAndFormatEmail(String email, AccountManager accountMgr) throws InvalidUsernameOrEmailException {
-    // trim and validate passed email address and extract stable name
-    if (email == null)
-      throw new InvalidUsernameOrEmailException("The user's email cannot be empty.");
-    // format the info
-    email = AccountManager.trimAndLowercase(email);
-    if (email.isEmpty())
-      throw new InvalidUsernameOrEmailException("The user's email cannot be empty.");
-    int atSignIndex = email.indexOf("@");
-    if (atSignIndex < 1) // must be present and not the first char
-      throw new InvalidUsernameOrEmailException("The user's email address is invalid.");
-    // check whether the user exist in the database already; if email exists, the operation fails
-    if (accountMgr.getUserProfileByEmail(email) != null)
-      throw new InvalidUsernameOrEmailException("The email '" + email + "' has already been registered. " + "Please choose another.");
-    return email;
-  }
-
-  private static String generateTemporaryPassword() {
-    // generate a random password of 8 characters long, the range will be
-    // [0-9A-Za-z]
-    StringBuilder buffer = new StringBuilder();
-    Random rand = new Random();
-    for (int i = 0; i < 8; i++) {
-      int value = rand.nextInt(36);
-      if (value < 10) { // number
-        buffer.append(value);
-      } else { // lower case letters
-        buffer.append((char) ('a' + value - 10));
-      }
-    }
-    return buffer.toString();
-  }
-
   /**
-   * Create an unregistered user of the specified type and persist in the database
-   * 
-   * @param userType unregistered user type to persist
-   * @return new unregistered user with remaining fields populated
-   * @throws WdkRuntimeException if unable to persist temporary user
+   * Adds a user reference row to the UserDB users table if one does not exist.
+   * Note is_guest and first_access are immutable fields and once set will not be
+   * changed by this code.
+   *
+   * @param user user to add
+   * @throws WdkModelException 
    */
-  public User createUnregistedUser() throws WdkRuntimeException {
+  public int addUserReference(User user) throws WdkModelException {
     try {
-      UserProfile profile = _accountManager.createGuestAccount("GUEST_");
-      addUserReference(profile.getUserId(), true);
-      return new User(_wdkModel, profile.getUserId(), true, profile.getSignature(), profile.getStableId()).setEmail(profile.getEmail());
+      long userId = user.getUserId();
+      boolean isGuest = user.isGuest();
+      Timestamp insertedOn = new Timestamp(new Date().getTime());
+      String sql = INSERT_USER_REF_SQL
+          .replace(USER_SCHEMA_MACRO, _userSchema)
+          .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isGuest).toString());
+      return new SQLRunner(_userDb.getDataSource(), sql, "insert-user-ref")
+        .executeUpdate(new Object[]{ userId, userId, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
     }
-    catch (Exception e) {
-      throw new WdkRuntimeException("Unable to save temporary user", e);
+    catch (SQLRunnerException e) {
+      throw WdkModelException.translateFrom(e);
     }
   }
 
-  private User completeLogin(User user) {
-    if (user == null)
-      return user;
-
-    // make sure user has reference in this user DB (needs to happen before merging)
-    if (!hasUserReference(user.getUserId())) {
-      addUserReference(user.getUserId(), false);
+  private Optional<UserReference> getUserReference(long userId) throws WdkModelException {
+    try {
+      String sql = SELECT_USER_REF_BY_ID_SQL.replace(USER_SCHEMA_MACRO, _userSchema);
+      return new SQLRunner(_userDb.getDataSource(), sql, "get-user-ref").executeQuery(
+          new Object[]{ userId },
+          SELECT_USER_REF_BY_ID_PARAM_TYPES,
+          rs ->
+              !rs.next()
+              ? Optional.empty()
+              : Optional.of(new UserReference(
+                  rs.getLong(COL_USER_ID),
+                  rs.getBoolean(COL_IS_GUEST),
+                  new Date(rs.getTimestamp(COL_FIRST_ACCESS).getTime()))));
     }
-
-    // update user active timestamp
-    _accountManager.updateLastLogin(user.getUserId());
-
-    return user;
+    catch (SQLRunnerException e) {
+      throw WdkModelException.translateFrom(e);
+    }
   }
 
+  public TwoTuple<ValidatedToken, User> createUnregisteredUser() {
+    ValidatedToken token = _client.getNewGuestToken();
+    User user = new BearerTokenUser(_wdkModel, _client, token);
+    GUEST_CREATION_COUNTER.inc();
+    return new TwoTuple<>(token, user);
+  }
+
+  
   public User login(User guest, String email, String password)
       throws WdkUserException {
     // make sure the guest is really a guest
@@ -434,15 +377,6 @@ public class UserFactory {
     emailTemporaryPassword(user, newPassword, _wdkModel.getModelConfig());
   }
 
-  public void changePassword(long userId, String newPassword) {
-    _accountManager.updatePassword(userId, newPassword);
-  }
 
-  // FIXME: should be atomic
-  public void insertUserToUserDb(User user) {
-    // make sure user has reference in this user DB (needs to happen before merging)
-    if (!hasUserReference(user.getUserId())) {
-      addUserReference(user.getUserId(), user.isGuest());
-    }
-  }
+
 }

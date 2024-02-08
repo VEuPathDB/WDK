@@ -27,6 +27,7 @@ import org.gusdb.fgputil.web.LoginCookieFactory;
 import org.gusdb.fgputil.web.SessionProxy;
 import org.gusdb.oauth2.client.ValidatedToken;
 import org.gusdb.wdk.core.api.JsonKeys;
+import org.gusdb.wdk.events.NewUserEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -113,8 +114,7 @@ public class SessionService extends AbstractWdkService {
   private static String generateStateToken(WdkModel wdkModel) throws WdkModelException {
     String saltedString =
         UUID.randomUUID() + ":::" +
-        String.valueOf(new Date().getTime()) + ":::" +
-        wdkModel.getModelConfig().getSecretKey();
+        String.valueOf(new Date().getTime());
     return EncryptionUtil.encrypt(saltedString);
   }
 
@@ -165,7 +165,7 @@ public class SessionService extends AbstractWdkService {
       WdkOAuthClientWrapper client = new WdkOAuthClientWrapper(wdkModel);
       ValidatedToken bearerToken = client.getBearerTokenFromAuthCode(authCode, appUrl);
       User newUser = new BearerTokenUser(wdkModel, client, bearerToken);
-      wdkModel.getUserFactory().insertUserToUserDb(newUser);
+      wdkModel.getUserFactory().addUserReference(newUser);
 
       // transfer ownership from guest to logged-in user
       transferOwnership(oldUser, newUser, wdkModel);
@@ -210,7 +210,7 @@ public class SessionService extends AbstractWdkService {
       WdkOAuthClientWrapper client = new WdkOAuthClientWrapper(wdkModel);
       ValidatedToken bearerToken = client.getBearerTokenFromCredentials(request.getEmail(), request.getPassword(), appUrl);
       User newUser = new BearerTokenUser(wdkModel, client, bearerToken);
-      wdkModel.getUserFactory().insertUserToUserDb(newUser);
+      wdkModel.getUserFactory().addUserReference(newUser);
 
       // transfer ownership from guest to logged-in user
       transferOwnership(oldUser, newUser, wdkModel);
@@ -258,24 +258,19 @@ public class SessionService extends AbstractWdkService {
       Events.triggerAndWait(new NewUserEvent(newUser, oldUser, session),
           new WdkRuntimeException("Unable to complete WDK user assignement."));
 
-      // TODO: until client is updated, must still return WDK login cookie
-      LoginCookieFactory baker = new LoginCookieFactory(getWdkModel().getModelConfig().getSecretKey());
-      CookieBuilder loginCookie = baker.createLoginCookie(newUser.getEmail());
-      loginCookie.setMaxAge(EXPIRATION_3_YEARS_SECS);
-
       // 3-year expiration (should change secret key before then)
       CookieBuilder bearerTokenCookie = new CookieBuilder(
           HttpHeaders.AUTHORIZATION,
           bearerToken.getTokenValue());
       bearerTokenCookie.setMaxAge(EXPIRATION_3_YEARS_SECS);
 
-      redirectUrl = getSuccessRedirectUrl(redirectUrl, newUser, loginCookie, bearerTokenCookie);
+      redirectUrl = getSuccessRedirectUrl(redirectUrl, newUser, bearerTokenCookie);
 
       return (isRedirectResponse ?
         createRedirectResponse(redirectUrl) :
         createJsonResponse(true, null, redirectUrl)
       )
-      .cookie(loginCookie.toJaxRsCookie(), bearerTokenCookie.toJaxRsCookie())
+      .cookie(bearerTokenCookie.toJaxRsCookie())
       .build();
     }
   }
@@ -288,7 +283,7 @@ public class SessionService extends AbstractWdkService {
    * @param cookie login cookie to be sent to the browser
    * @return page user should be redirected to after successful login
    */
-  protected String getSuccessRedirectUrl(String redirectUrl, User user, CookieBuilder cookie, CookieBuilder bearerTokenCookie) {
+  protected String getSuccessRedirectUrl(String redirectUrl, User user, CookieBuilder bearerTokenCookie) {
     return redirectUrl;
   }
 
@@ -302,7 +297,7 @@ public class SessionService extends AbstractWdkService {
     
     // get a new session and add new guest user to it
     SessionProxy session = getSession();
-    User newUser = getWdkModel().getUserFactory().createUnregistedUser();
+    User newUser = getWdkModel().getUserFactory().createUnregisteredUser();
     session.setAttribute(Utilities.WDK_USER_KEY, newUser);
 
     // throw new user event

@@ -62,9 +62,6 @@ public class ModelConfigParser extends XmlParser {
     // load user db
     configureNode(digester, "modelConfig/userDb", ModelConfigUserDB.class, "setUserDB");
 
-    // load user db
-    configureNode(digester, "modelConfig/accountDb", ModelConfigAccountDB.class, "setAccountDB");
-
     // userdatasetstore
     configureNode(digester, "modelConfig/userDatasetStore", ModelConfigUserDatasetStore.class, "setUserDatasetStore");
     configureNode(digester, "modelConfig/userDatasetStore/property", WdkModelText.class, "addProperty");

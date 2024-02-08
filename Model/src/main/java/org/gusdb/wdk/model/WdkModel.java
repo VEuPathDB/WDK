@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
@@ -38,13 +37,13 @@ import org.gusdb.fgputil.events.ListenerExceptionEvent;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.gusdb.fgputil.runtime.InstanceManager;
 import org.gusdb.fgputil.runtime.Manageable;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
 import org.gusdb.wdk.model.columntool.ColumnToolBundleMap;
 import org.gusdb.wdk.model.columntool.DefaultColumnToolBundleRef;
 import org.gusdb.wdk.model.config.ModelConfig;
-import org.gusdb.wdk.model.config.ModelConfigAccountDB;
 import org.gusdb.wdk.model.config.ModelConfigAppDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
@@ -69,7 +68,6 @@ import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.FavoriteFactory;
 import org.gusdb.wdk.model.user.StepFactory;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
@@ -203,7 +201,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private ColumnToolBundleMap columnToolBundleMap = new ColumnToolBundleMap();
   private String defaultColumnToolBundleRef;
 
-  private ReentrantLock systemUserLock = new ReentrantLock();
   private User systemUser;
 
   private String buildNumber;
@@ -551,14 +548,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
     ModelConfigAppDB appDbConfig = modelConfig.getAppDB();
     ModelConfigUserDB userDbConfig = modelConfig.getUserDB();
-    ModelConfigAccountDB accountDbConfig = modelConfig.getAccountDB();
     ModelConfigUserDatasetStore udsConfig = modelConfig.getUserDatasetStoreConfig();
 
     QueryLogger.initialize(modelConfig.getQueryMonitor());
 
     appDb = new DatabaseInstance(appDbConfig, DB_INSTANCE_APP, true);
     userDb = new DatabaseInstance(userDbConfig, DB_INSTANCE_USER, true);
-    accountDb = new DatabaseInstance(accountDbConfig, DB_INSTANCE_ACCOUNT, true);
 
     // set true to avoid a broken dev irods at build time
     if ( udsConfig == null ) {
@@ -598,6 +593,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     stepAnalysisFactory = (stepAnalysisPlugins == null ?
         new UnconfiguredStepAnalysisFactory(this) :
         new StepAnalysisFactoryImpl(this));
+
+    systemUser = userFactory.createUnregisteredUser().getSecond();
 
     LOG.info("WDK Model configured.");
   }
@@ -1360,17 +1357,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   public User getSystemUser() {
-    if (systemUser == null) {
-      try {
-        systemUserLock.lock();
-        if (systemUser == null) {
-          systemUser = userFactory.createUnregistedUser();
-        }
-      }
-      finally {
-        systemUserLock.unlock();
-      }
-    }
     return systemUser;
   }
 

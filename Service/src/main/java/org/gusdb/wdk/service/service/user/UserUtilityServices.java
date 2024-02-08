@@ -1,5 +1,6 @@
 package org.gusdb.wdk.service.service.user;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,10 +19,10 @@ import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonType.ValueType;
+import org.gusdb.oauth2.client.veupathdb.UserProperty;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.config.ModelConfigAccountDB;
 import org.gusdb.wdk.model.user.InvalidUsernameOrEmailException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
@@ -58,7 +59,7 @@ public class UserUtilityServices extends AbstractWdkService {
   public Response createNewUser(String body) throws RequestMisformatException, DataValidationException, WdkModelException {
     try {
       JSONObject requestJson = new JSONObject(body);
-      List<UserPropertyName> configuredUserProps = getWdkModel().getModelConfig().getAccountDB().getUserPropertyNames();
+      Collection<UserProperty> configuredUserProps = User.getPropertyDefs();
       UserCreationRequest request = UserCreationRequest.createFromJson(requestJson, configuredUserProps);
 
       // create the user, saving to DB
