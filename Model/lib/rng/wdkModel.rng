@@ -1555,6 +1555,12 @@
     <optional>
       <attribute name="attributeCategory" />
     </optional>
+    <optional>
+      <element name="htmlHelp">
+        <ref name="IncludeExclude" />
+        <text />
+      </element>
+    </optional>
     <zeroOrMore>
       <choice>
         <ref name="reporterRef" />

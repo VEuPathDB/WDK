@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.RngAnnotations.RngOptional;
 import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.columntool.ColumnTool;
 import org.gusdb.wdk.model.columntool.ColumnToolBundle;
 import org.gusdb.wdk.model.columntool.ColumnToolElementRefPair;
@@ -39,11 +40,14 @@ import org.gusdb.wdk.model.report.ReporterRef;
  */
 public abstract class AttributeField extends Field implements Cloneable {
 
+  private List<WdkModelText> _htmlHelps = new ArrayList<WdkModelText>();
+
   private boolean _sortable = true;
   private String _align;
   private boolean _nowrap;
   private boolean _removable = true;
   private String _categoryName;
+  protected String _htmlHelp;
 
   protected AttributeFieldDataType _dataType = AttributeFieldDataType.OTHER;
   protected AttributeFieldContainer _container;
@@ -160,6 +164,17 @@ public abstract class AttributeField extends Field implements Cloneable {
     return false;
   }
 
+  /**
+   * @return Returns the htmlHelp.
+   */
+  public String getHtmlHelp() {
+    return _htmlHelp;
+  }
+
+  public void addHtmlHelp(WdkModelText htmlHelp) {
+    _htmlHelps.add(htmlHelp);
+  }
+
   @RngOptional
   public void setToolBundleRef(String toolBundleRef) {
     _toolBundleRef = toolBundleRef;
@@ -195,6 +210,33 @@ public abstract class AttributeField extends Field implements Cloneable {
     }
     _reporterList = null;
 
+    if (_container != null) {
+      _htmlHelp = excludeModelText(_htmlHelps, projectId, "htmlHelp", false);
+    }
+  }
+
+  protected String excludeModelText(List<WdkModelText> texts, String projectId,
+    String textTag, boolean isRequired) throws WdkModelException {
+    String source = "The " + getClass().getSimpleName() + " " + _container.getNameForLogging() + "." + getName();
+    String selectedText = null;
+    boolean hasText = false;
+    for (WdkModelText text : texts) {
+      if (text.include(projectId)) {
+        if (hasText) {
+          throw new WdkModelException(source + " has more than one " + textTag + " tag for project " + projectId);
+        }
+        else {
+          selectedText = text.getText();
+          hasText = true;
+        }
+      }
+    }
+    // check if all texts are excluded
+    if (selectedText == null && isRequired) {
+      throw new WdkModelException(source + " does not have a " + textTag + " tag for project " + projectId);
+    }
+    texts.clear();
+    return selectedText;
   }
 
   @Override
