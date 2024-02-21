@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.user;
 
+import org.gusdb.oauth2.client.veupathdb.UserProperty;
 import org.gusdb.wdk.model.WdkModel;
 import org.json.JSONObject;
 
@@ -20,6 +21,15 @@ public class BasicUser extends org.gusdb.oauth2.client.veupathdb.BasicUser imple
   public BasicUser(WdkModel wdkModel, JSONObject json) {
     super(json);
     _wdkModel = wdkModel;
+  }
+
+  public BasicUser(User user) {
+    super(user.getUserId(), user.isGuest(), user.getSignature(), user.getStableId());
+    _wdkModel = user.getWdkModel();
+    setEmail(user.getEmail());
+    for (UserProperty prop : USER_PROPERTIES.values()) {
+      prop.setValue(this, prop.getValue(user));
+    }
   }
 
   @Override

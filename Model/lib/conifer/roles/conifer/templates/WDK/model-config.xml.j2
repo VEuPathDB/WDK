@@ -29,6 +29,9 @@ site_vars file: {{ site_vars }}
              {% if modelconfig_useWeights is defined -%}
              assetsUrl="{{ modelconfig_useWeights }}"
              {% endif -%}
+             {% if modelconfig_secretKeyFile is defined -%}
+             secretKeyFile="{{ modelconfig_secretKeyFile }}"
+             {% endif -%}
              {% if modelconfig_blockedThreshold is defined -%}
              monitorBlockedThreads="{{ modelconfig_monitorBlockedThreads }}"
              {% endif -%}

@@ -1,9 +1,7 @@
 package org.gusdb.wdk.service.request.user;
 
 import java.util.Collection;
-import java.util.List;
 
-import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.oauth2.client.veupathdb.UserProperty;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -36,7 +34,6 @@ public class UserCreationRequest {
     _profileRequest = profileRequest;
     _globalPreferencesRequest = globalPreferencesRequest;
     _projectPreferencesRequest = projectPreferencesRequest;
-
   }
 
   public UserProfileRequest getProfileRequest() {
@@ -46,6 +43,7 @@ public class UserCreationRequest {
   public UserPreferencesRequest getGlobalPreferencesRequest() {
     return _globalPreferencesRequest;
   }
+
   public UserPreferencesRequest getProjectPreferencesRequest() {
     return _projectPreferencesRequest;
   }

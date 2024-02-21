@@ -44,7 +44,7 @@ public class UserFormatter {
 
   private static JSONObject getPropertiesJson(User user, boolean isOwner) {
     JSONObject propsJson = new JSONObject();
-    for (UserProperty definedProperty : User.getPropertyDefs()) {
+    for (UserProperty definedProperty : User.USER_PROPERTIES.values()) {
       if (isOwner || definedProperty.isPublic()) {
         String key = definedProperty.getName();
         String value = Optional.ofNullable(definedProperty.getValue(user)).orElse("");

@@ -2,35 +2,29 @@ package org.gusdb.wdk.model.user;
 
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.accountdb.AccountManager;
-import org.gusdb.fgputil.accountdb.UserProfile;
-import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
-import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
-import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler.Status;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.oauth2.client.ValidatedToken;
-import org.gusdb.oauth2.shared.IdTokenFields;
+import org.gusdb.oauth2.exception.InvalidPropertiesException;
 import org.gusdb.wdk.events.UserProfileUpdateEvent;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.session.WdkOAuthClientWrapper;
-import org.json.JSONObject;
 
 import io.prometheus.client.Counter;
 
@@ -107,7 +101,6 @@ public class UserFactory {
   // -------------------------------------------------------------------------
 
   private final WdkModel _wdkModel;
-  private final DatabaseInstance _userDb;
   private final String _userSchema;
   private final WdkOAuthClientWrapper _client;
 
@@ -118,7 +111,6 @@ public class UserFactory {
   public UserFactory(WdkModel wdkModel) {
     // save model for populating new users
     _wdkModel = wdkModel;
-    _userDb = wdkModel.getUserDb();
     _userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
     _client = new WdkOAuthClientWrapper(wdkModel);
   }
@@ -128,10 +120,10 @@ public class UserFactory {
   // -------------------------------------------------------------------------
 
   public User createUser(String email, Map<String, String> profileProperties)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException, InvalidPropertiesException, InvalidUsernameOrEmailException {
 
     // contact OAuth server to create a new user with the passed props
-    TwoTuple<User,String> userTuple = parseExpandedUserJson(_client.createUser(email, profileProperties));
+    TwoTuple<User,String> userTuple = _client.createUser(email, profileProperties);
     User user = userTuple.getFirst();
 
     // add user to this user DB (will be added to other user DBs as needed during login)
@@ -143,19 +135,6 @@ public class UserFactory {
     }
 
     return user;
-
-  }
-
-  private TwoTuple<User, String> parseExpandedUserJson(JSONObject userJson) {
-    User user = new BasicUser(_wdkModel,
-        Long.valueOf(userJson.getString(IdTokenFields.sub.name())),
-        userJson.getBoolean(IdTokenFields.is_guest.name()),
-        userJson.getString(IdTokenFields.signature.name()),
-        userJson.getString(IdTokenFields.preferred_username.name())
-    );
-    user.setPropertyValues(userJson);
-    String password = userJson.getString(IdTokenFields.password.name());
-    return new TwoTuple<>(user, password);
   }
 
   /**
@@ -200,8 +179,8 @@ public class UserFactory {
       Timestamp insertedOn = new Timestamp(new Date().getTime());
       String sql = INSERT_USER_REF_SQL
           .replace(USER_SCHEMA_MACRO, _userSchema)
-          .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isGuest).toString());
-      return new SQLRunner(_userDb.getDataSource(), sql, "insert-user-ref")
+          .replace(IS_GUEST_VALUE_MACRO, _wdkModel.getUserDb().getPlatform().convertBoolean(isGuest).toString());
+      return new SQLRunner(_wdkModel.getUserDb().getDataSource(), sql, "insert-user-ref")
         .executeUpdate(new Object[]{ userId, userId, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
     }
     catch (SQLRunnerException e) {
@@ -209,10 +188,11 @@ public class UserFactory {
     }
   }
 
+  // FIXME: see if this is actually needed anywhere?  E.g. do we ever need to look up user refs by user ID to find last login?
   private Optional<UserReference> getUserReference(long userId) throws WdkModelException {
     try {
       String sql = SELECT_USER_REF_BY_ID_SQL.replace(USER_SCHEMA_MACRO, _userSchema);
-      return new SQLRunner(_userDb.getDataSource(), sql, "get-user-ref").executeQuery(
+      return new SQLRunner(_wdkModel.getUserDb().getDataSource(), sql, "get-user-ref").executeQuery(
           new Object[]{ userId },
           SELECT_USER_REF_BY_ID_PARAM_TYPES,
           rs ->
@@ -235,40 +215,9 @@ public class UserFactory {
     return new TwoTuple<>(token, user);
   }
 
-  
-  public User login(User guest, String email, String password)
-      throws WdkUserException {
-    // make sure the guest is really a guest
-    if (!guest.isGuest())
-      throw new WdkUserException("User has been logged in.");
-
-    // authenticate the user; if fails, a WdkUserException will be thrown out
-    User user = authenticate(email, password);
-    if (user == null) {
-      throw new WdkUserException("Invalid email or password.");
-    }
-    return completeLogin(user);
-  }
-
-  public User login(long userId) throws WdkModelException {
-    return completeLogin(getUserById(userId)
-        .orElseThrow(() -> new WdkModelException("User with ID " + userId + " could not be found.")));
-  }
-
-  /**
-   * Returns whether email and password are a correct credentials combination.
-   * 
-   * @param usernameOrEmail user email
-   * @param password user password
-   * @return true email corresponds to user and password is correct, else false
-   * @throws WdkModelException if error occurs while determining result
-   */
-  public boolean isCorrectPassword(String usernameOrEmail, String password) throws WdkModelException {
-    return authenticate(usernameOrEmail, password) != null;
-  }
-
-  private User authenticate(String usernameOrEmail, String password) {
-    return getUserFromProfile(_accountManager.getUserProfile(usernameOrEmail, password));
+  public Map<Long, Boolean> verifyUserids(Set<Long> userIds) {
+    Map<Long, User> userMap = _client.getUsersById(new ArrayList<>(userIds));
+    return userIds.stream().collect(Collectors.toMap(id -> id, id -> userMap.get(id) != null));
   }
 
   /**
@@ -279,104 +228,31 @@ public class UserFactory {
    * @throws WdkModelException if an error occurs in the attempt
    */
   public Optional<User> getUserById(long userId) throws WdkModelException {
-    UserProfile profile = _accountManager.getUserProfile(userId);
-    if (profile != null) {
-      // found registered user in account DB; create RegisteredUser and populate
-      return Optional.of(getUserFromProfile(profile));
-    }
-    else {
-      // cannot find user in account DB; however, the passed ID may represent a guest local to this userDb
-      Date accessDate = getGuestUserRefFirstAccess(userId);
-      if (accessDate != null) {
-        // guest user was found in local user Db; create UnregisteredUser and populate
-        profile = AccountManager.createGuestProfile("GUEST_", userId, accessDate);
-        return Optional.of(new User(_wdkModel, profile.getUserId(), true,
-            profile.getSignature(), profile.getStableId()).setEmail(profile.getEmail()));
-        
-      }
-      else {
-        // user does not exist in account or user DBs
-        return Optional.empty();
-      }
-    }
+    return Optional.ofNullable(_client.getUsersById(List.of(userId)).get(userId));
   }
 
-  public User getUserByEmail(String email) {
-    return getUserFromProfile(_accountManager.getUserProfileByEmail(email));
-  }
-
-  private User getUserProfileByUsernameOrEmail(String usernameOrEmail) {
-    return getUserFromProfile(_accountManager.getUserProfileByUsernameOrEmail(usernameOrEmail));
+  public Optional<User> getUserByEmail(String email) {
+    return Optional.ofNullable(_client.getUsersByEmail(List.of(email)).get(email));
   }
 
   /**
    * Save the basic information of a user
    * 
    * @param user
+   * @param newUser 
+   * @throws InvalidPropertiesException 
    */
-  public void saveUser(User user) throws WdkModelException, InvalidUsernameOrEmailException {
-    try {
-
-      // Three integrity checks:
-
-      // 1. Check if user exists in the database. if not, fail and ask to create the user first
-      UserProfile oldProfile = _accountManager.getUserProfile(user.getUserId());
-      if (oldProfile == null) {
-        throw new WdkModelException("Cannot update user; no user exists with ID " + user.getUserId());
-      }
-
-      // 2. Check if another user exists with this email (PK will protect us but want better message)
-      UserProfile emailUser = _accountManager.getUserProfileByEmail(user.getEmail());
-      if (emailUser != null && emailUser.getUserId() != user.getUserId()) {
-        throw new InvalidUsernameOrEmailException("This email is already in use by another account.  Please choose another.");
-      }
-
-      // 3. Check if another user exists with this username (if supplied)
-      if (user.getProfileProperties().containsKey(AccountManager.USERNAME_PROPERTY_KEY)) {
-        String username = user.getProfileProperties().get(AccountManager.USERNAME_PROPERTY_KEY);
-        
-        UserProfile usernameUser = _accountManager.getUserProfileByUsername(username);
-        if (usernameUser != null && user.getUserId() != usernameUser.getUserId()) {
-          throw new InvalidUsernameOrEmailException("The username '" + username + "' is already in use. " + "Please choose another one.");
-        }
-      }
-
-      // save off other data to user profile
-      _accountManager.saveUserProfile(user.getUserId(), user.getEmail(), new MapBuilder<String,String>()
-          .put("firstName", user.getFirstName())
-          .put("middleName", user.getMiddleName())
-          .put("lastName", user.getLastName())
-          .put("organization", user.getOrganization())
-          .toMap()
-      );
-
-      // get updated profile and trigger profile update event
-      UserProfile newProfile = _accountManager.getUserProfile(user.getUserId());
-      Events.trigger(new UserProfileUpdateEvent(oldProfile, newProfile, _wdkModel));
-
-    }
-    catch (InvalidUsernameOrEmailException e) {
-      throw e;
-    }
-    // wrap any other exception in WdkModelException
-    catch (Exception e) {
-      throw new WdkModelException("Unable to update user profile for ID " + user.getUserId(), e);
-    }
+  public User saveUser(User oldUser, User newUser, ValidatedToken authorizationToken) throws InvalidUsernameOrEmailException, InvalidPropertiesException {
+    User savedUser = new BasicUser(_wdkModel, _client.updateUser(newUser, authorizationToken));
+    Events.trigger(new UserProfileUpdateEvent(oldUser, newUser, _wdkModel));
+    return savedUser;
   }
 
-  public void resetPassword(String emailOrLoginName) throws WdkUserException, WdkModelException {
-    User user = getUserProfileByUsernameOrEmail(emailOrLoginName);
-    if (user == null) {
-      throw new WdkUserException("Cannot find user with email or login name: " + emailOrLoginName);
-    }
-    // create new temporary password
-    String newPassword = generateTemporaryPassword();
-    // set new password on user
-    _accountManager.updatePassword(user.getUserId(), newPassword);
+  public void resetPassword(String loginName) throws InvalidUsernameOrEmailException, WdkModelException {
+    TwoTuple<User, String> user = _client.resetPassword(loginName);
+
     // email user new password
-    emailTemporaryPassword(user, newPassword, _wdkModel.getModelConfig());
+    emailTemporaryPassword(user.getFirst(), user.getSecond(), _wdkModel.getModelConfig());
   }
-
-
 
 }

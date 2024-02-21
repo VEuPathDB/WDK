@@ -15,6 +15,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.NewCookie;
 
 import org.apache.log4j.Logger;
 import org.glassfish.grizzly.http.server.Request;
@@ -128,10 +129,8 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
       String tokenValue = (String)requestContext.getProperty(TOKEN_COOKIE_VALUE_TO_SET);
 
       // set cookie value for both Authorization cookie
-      CookieBuilder cookie = new CookieBuilder(HttpHeaders.AUTHORIZATION, tokenValue);
-      cookie.setMaxAge(SessionService.EXPIRATION_3_YEARS_SECS);
-      cookie.setPath("/");
-      headers.add(HttpHeaders.SET_COOKIE, cookie.toJaxRsCookie().toString());
+      NewCookie authCookie = SessionService.getAuthCookie(tokenValue);
+      headers.add(HttpHeaders.SET_COOKIE, authCookie.toString());
     }
 
     // unset legacy WDK check auth cookie in case it is present

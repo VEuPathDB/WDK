@@ -26,6 +26,7 @@ import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.fgputil.web.SessionProxy;
+import org.gusdb.oauth2.client.ValidatedToken;
 import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.errors.ErrorContext;
 import org.gusdb.wdk.errors.ErrorContext.ErrorLocation;
@@ -147,6 +148,10 @@ public abstract class AbstractWdkService {
       return user;
     }
     throw new IllegalStateException("No user present on request.");
+  }
+
+  protected ValidatedToken getAuthorizationToken() {
+    return (ValidatedToken)getRequest().getAttributeMap().get(Utilities.BEARER_TOKEN_KEY);
   }
 
   protected boolean isSessionUserAdmin() {

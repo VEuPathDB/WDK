@@ -15,17 +15,20 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.web.LoginCookieFactory;
 import org.gusdb.fgputil.web.SessionProxy;
 import org.gusdb.oauth2.client.ValidatedToken;
+import org.gusdb.oauth2.exception.InvalidTokenException;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.events.NewUserEvent;
 import org.gusdb.wdk.model.Utilities;
@@ -59,16 +62,6 @@ public class SessionService extends AbstractWdkService {
   private static final String OAUTH_STATE_KEY = "state";
   private static final String OAUTH_CODE_KEY = "code";
   private static final String OAUTH_REDIRECT_URL_KEY = "redirectUrl";
-
-  // input param constants
-  private static final String COOKIE_KEY = "wdkLoginCookieValue";
-
-  // json output constants for cookie verification endpoint
-  private static final String IS_VALID_KEY = "isValid";
-  private static final String USER_DATA_KEY = "userData";
-  private static final String USER_ID_KEY = "id";
-  private static final String DISPLAY_NAME_KEY = "displayName";
-  private static final String EMAIL_KEY = "email";
 
   // redirect URLs
   private static final String OAUTH_ERROR_URL = "/app/user/message/login-error?requestUrl=";
@@ -185,12 +178,13 @@ public class SessionService extends AbstractWdkService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response processDbLogin(@HeaderParam(REFERRER_HEADER_KEY) String referrer, String body)
-      throws RequestMisformatException {
+      throws RequestMisformatException, WdkModelException {
     try {
       WdkModel wdkModel = getWdkModel();
 
       // RRD 11/17: Allow sites configured to use OAuth (e.g. live sites) to log in users with this endpoint;
-      //     Reason: logging in this way will be easier for programmatic service access that requires login
+      //     Reason: logging in this way will be easier for programmatic service access that requires login,
+      //             including using local web client implementation for testing
       //if (!AuthenticationMethod.USER_DB.equals(modelConfig.getAuthenticationMethodEnum())) {
       //  return Response.status(new MethodNotAllowedStatusType()).build();
       //}
@@ -221,7 +215,7 @@ public class SessionService extends AbstractWdkService {
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage());
     }
-    catch (Exception ex) {
+    catch (InvalidTokenException ex) {
       LOG.error("Could not authenticate user's identity.  Exception thrown: ", ex);
       return createJsonResponse(false, "Invalid username or password", null).build();
     }
@@ -255,7 +249,7 @@ public class SessionService extends AbstractWdkService {
 
       session.setAttribute(Utilities.WDK_USER_KEY, newUser);
 
-      Events.triggerAndWait(new NewUserEvent(newUser, oldUser, session),
+      Events.triggerAndWait(new NewUserEvent(newUser, oldUser),
           new WdkRuntimeException("Unable to complete WDK user assignement."));
 
       // 3-year expiration (should change secret key before then)
@@ -293,15 +287,14 @@ public class SessionService extends AbstractWdkService {
 
     // get the current session's user, then invalidate the session
     User oldUser = getRequestingUser();
-    getSession().invalidate();
+    getSession().invalidate(); // legacy
     
     // get a new session and add new guest user to it
-    SessionProxy session = getSession();
-    User newUser = getWdkModel().getUserFactory().createUnregisteredUser();
-    session.setAttribute(Utilities.WDK_USER_KEY, newUser);
+    TwoTuple<ValidatedToken, User> newUser = getWdkModel().getUserFactory().createUnregisteredUser();
+    getSession().setAttribute(Utilities.WDK_USER_KEY, newUser.getSecond());
 
     // throw new user event
-    Events.triggerAndWait(new NewUserEvent(newUser, oldUser, session), 
+    Events.triggerAndWait(new NewUserEvent(newUser.getSecond(), oldUser), 
         new WdkRuntimeException("Unable to complete WDK user assignement."));
 
     // create and append logout cookies to response
@@ -316,7 +309,18 @@ public class SessionService extends AbstractWdkService {
     for (CookieBuilder logoutCookie : logoutCookies) {
       builder.cookie(logoutCookie.toJaxRsCookie());
     }
+
+    // add new guest auth cookie to response
+    builder.cookie(getAuthCookie(newUser.getFirst().getTokenValue()));
+
     return builder.build();
+  }
+
+  public static NewCookie getAuthCookie(String tokenValue) {
+    CookieBuilder cookie = new CookieBuilder(HttpHeaders.AUTHORIZATION, tokenValue);
+    cookie.setMaxAge(SessionService.EXPIRATION_3_YEARS_SECS);
+    cookie.setPath("/");
+    return cookie.toJaxRsCookie();
   }
 
   /**
@@ -361,90 +365,4 @@ public class SessionService extends AbstractWdkService {
     return str == null || str.trim().isEmpty();
   }
 
-  /**
-   * Web service action that takes parts of a WDK login cookie and verifies that they indeed represent a valid
-   * cookie for an existing WDK user. Returns user's display name and email address for use by caller if
-   * valid.
-   *
-   * A JSON object like the following is returned with the information. If the cookie is invalid, the isValid
-   * property is set to false and the userData property is undefined.
-   *
-   * {
-   *   "isValid": true,
-   *   "userData": {
-   *     "id": 7145453,
-   *     "displayName": "Ryan Doherty",
-   *     "email": "rdoherty@pcbi.upenn.edu"
-   *   }
-   * }
-   */
-  @GET
-  @Path("login/verification")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response processLoginVerification(@QueryParam(COOKIE_KEY) String cookieValue) throws WdkModelException {
-    WdkModel wdkModel = getWdkModel();
-    return Response.ok(
-      getVerificationJsonResult(
-        getVerifiedUsername(cookieValue, wdkModel.getModelConfig().getSecretKey()), wdkModel)
-    ).build();
-  }
-
-  /**
-   * Fetches the cookie value parameter, verifies its validity, and returns the username (email) contained
-   * within the cookie value. If the cookie is invalid, null is returned
-   *
-   * @param cookieValue value of the cookie
-   * @param secretKey key used to create user hash
-   * @return username, or null if not valid
-   * @throws WdkModelException if a system problem occurs
-   */
-  private static String getVerifiedUsername(String cookieValue, String secretKey) throws WdkModelException {
-    try {
-      String recreatedCookie = cookieValue == null ? "" : cookieValue;
-      LoginCookieParts cookieParts = LoginCookieFactory.parseCookieValue(recreatedCookie);
-      LoginCookieFactory auth = new LoginCookieFactory(secretKey);
-      return (auth.isValidCookie(cookieParts) ? cookieParts.getUsername() : null);
-    }
-    catch (IllegalArgumentException e) {
-      LOG.warn("Unable to parse cookie value param.", e);
-      return null;
-    }
-  }
-
-  /**
-   * Generates the appropriate JSON object given the username parsed from the cookie value (if any). Even if a
-   * non-null username was retrieved, the cookie value may still be deemed invalid if the username does not
-   * correspond to an existing user.
-   *
-   * @param username username to generate JSON for (or null if no username was able to be parsed)
-   * @param wdkModel WDK model
-   * @return response JSON
-   * @throws WdkModelException if a system problem occurs
-   */
-  private static String getVerificationJsonResult(String username, WdkModel wdkModel) throws WdkModelException {
-    try {
-      JSONObject result = new JSONObject();
-      boolean isValid = (username != null);
-      if (isValid) {
-        // cookie seems valid; try to get user's name and email
-        User user = wdkModel.getUserFactory().getUserByEmail(username);
-        if (user == null) {
-          // user does not exist; cookie is invalid
-          isValid = false;
-        }
-        else {
-          result
-            .put(USER_DATA_KEY, new JSONObject()
-            .put(USER_ID_KEY, user.getUserId())
-            .put(DISPLAY_NAME_KEY, user.getDisplayName())
-            .put(EMAIL_KEY, user.getEmail()));
-          isValid = true;
-        }
-      }
-      return result.put(IS_VALID_KEY, isValid).toString();
-    }
-    catch (JSONException e) {
-      throw new WdkModelException("Unable to generate JSON object from data.", e);
-    }
-  }
 }

@@ -2,7 +2,6 @@ package org.gusdb.wdk.service.formatter;
 
 import java.util.Optional;
 
-import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.gusdb.oauth2.client.veupathdb.UserProperty;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
@@ -51,7 +50,7 @@ public class ProjectFormatter {
 
     // create profile property config sub-array
     JSONArray userProfileProps = new JSONArray();
-    for (UserProperty prop : User.getPropertyDefs()) {
+    for (UserProperty prop : User.USER_PROPERTIES.values()) {
       userProfileProps.put(new JSONObject()
           .put(JsonKeys.NAME, prop.getName())
           .put(JsonKeys.DISPLAY_NAME, prop.getDisplayName())

@@ -15,8 +15,10 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.web.LoginCookieFactory;
+import org.gusdb.oauth2.exception.InvalidPropertiesException;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.user.BasicUser;
 import org.gusdb.wdk.model.user.InvalidUsernameOrEmailException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferenceFactory;
@@ -32,8 +34,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class ProfileService extends UserService {
-
-  private static final String DUPLICATE_EMAIL = "This email is already in use by another account.  Please choose another.";
 
   public ProfileService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
@@ -78,91 +78,31 @@ public class ProfileService extends UserService {
   public Response setUserProfile(String body)
       throws ConflictException, DataValidationException, WdkModelException {
     try {
-      User user = getPrivateRegisteredUser();
+      User oldUser = getPrivateRegisteredUser();
       UserProfileRequest request = UserProfileRequest.createFromJson(
-          new JSONObject(body), getPropertiesConfig(), true);
-      NewCookie loginCookie = processEmail(user, request.getEmail());
+          new JSONObject(body), User.USER_PROPERTIES.values(), true);
+
       // overwrite user's old email and profile
-      user.setEmail(request.getEmail());
-      user.setProfileProperties(request.getProfileMap());
-      // save user to DB
-      getWdkModel().getUserFactory().saveUser(user);
+      User newUser = new BasicUser(oldUser);
+      newUser.setEmail(request.getEmail());
+      newUser.setProfileProperties(request.getProfileMap());
+
+      // save user to OAuth
+      newUser = getWdkModel().getUserFactory().saveUser(oldUser, newUser, getAuthorizationToken());
+
       // save user to session
-      getSession().setAttribute(Utilities.WDK_USER_KEY, user);
-      return getProfileUpdateResponse(loginCookie);
+      getSession().setAttribute(Utilities.WDK_USER_KEY, newUser);
+
+      return Response.noContent().build();
     }
     catch(JSONException | RequestMisformatException e) {
       throw new BadRequestException(e);
     }
-    catch (InvalidUsernameOrEmailException e) {
+    catch (InvalidPropertiesException e) {
       throw new DataValidationException(e.getMessage());
     }
-  }
-
-  /**
-   * Web service to replace profile and profile properties of existing user with those provided in the
-   * request.  If the properties object is present but not populated, the profile properties will be removed.
-   * @param body
-   * @return - 204 - Success without content
-   * @throws DataValidationException - in the event of a
-   * @throws WdkModelException - in the event of a server error
-   */
-  @PATCH
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Response updateUserProfile(String body)
-      throws ConflictException, DataValidationException, WdkModelException {
-    try {
-      User user = getPrivateRegisteredUser();
-      UserProfileRequest request = UserProfileRequest.createFromJson(
-          new JSONObject(body), User.USER_PROPERTIES, false);
-      NewCookie loginCookie = processEmail(user, request.getEmail());
-      // overwrite any provided properties
-      if (request.getEmail() != null) {
-        user.setEmail(request.getEmail());
-      }
-      for (Entry<String,String> newProp : request.getProfileMap().entrySet()) {
-        user.setProfileProperty(newProp.getKey(), newProp.getValue());
-      }
-      // save user to DB
-      getWdkModel().getUserFactory().saveUser(user);
-      // save user to session
-      getSession().setAttribute(Utilities.WDK_USER_KEY, user);
-      return getProfileUpdateResponse(loginCookie);
-    }
-    catch(JSONException | RequestMisformatException e) {
-      throw new BadRequestException(e);
-    }
     catch (InvalidUsernameOrEmailException e) {
-      throw new DataValidationException(e.getMessage(), e);
+      throw new ConflictException(e.getMessage());
     }
-  }
-
-  private Response getProfileUpdateResponse(NewCookie loginCookie) {
-    return loginCookie == null ?
-        Response.noContent().build() :
-        Response.noContent().cookie(loginCookie).build();
-  }
-
-  /**
-   * Ensures that a new email address, if provided, does not duplicate that of another account.  If
-   * the new email passes validation, a new cookie is returned to be used for authentication following the
-   * email address update.
-   * @param user - the subject of a put or patch
-   * @param email - the provided email
-   * @throws WdkModelException
-   * @throws ConflictException - thrown if the provided email address duplicates that of another account.
-   */
-  protected NewCookie processEmail(User user, String email) throws ConflictException, WdkModelException {
-    // Check to see if this email address matches that of the given user.  If so, no need to check further.
-    if (email != null && !email.equalsIgnoreCase(user.getEmail())) {
-      User emailUser = getWdkModel().getUserFactory().getUserByEmail(email);
-      // Check if the new email address is on record with a different user
-      if (emailUser != null && emailUser.getUserId() != user.getUserId()) {
-        throw new ConflictException(DUPLICATE_EMAIL);
-      }
-      LoginCookieFactory cookieFactory = new LoginCookieFactory(getWdkModel().getModelConfig().getSecretKey());
-      return cookieFactory.createLoginCookie(email, LoginCookieFactory.getDefaultMaxAge()).toJaxRsCookie();
-    }
-    return null;
   }
 }
