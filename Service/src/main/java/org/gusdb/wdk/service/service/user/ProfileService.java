@@ -1,6 +1,5 @@
 package org.gusdb.wdk.service.service.user;
 
-import java.util.Map.Entry;
 import java.util.Optional;
 
 import javax.ws.rs.BadRequestException;
@@ -11,10 +10,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 
-import org.gusdb.fgputil.web.LoginCookieFactory;
 import org.gusdb.oauth2.exception.InvalidPropertiesException;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
@@ -24,7 +21,6 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferenceFactory;
 import org.gusdb.wdk.model.user.UserPreferences;
 import org.gusdb.wdk.service.UserBundle;
-import org.gusdb.wdk.service.annotation.PATCH;
 import org.gusdb.wdk.service.formatter.UserFormatter;
 import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -85,7 +81,7 @@ public class ProfileService extends UserService {
       // overwrite user's old email and profile
       User newUser = new BasicUser(oldUser);
       newUser.setEmail(request.getEmail());
-      newUser.setProfileProperties(request.getProfileMap());
+      newUser.setPropertyValues(request.getProfileMap());
 
       // save user to OAuth
       newUser = getWdkModel().getUserFactory().saveUser(oldUser, newUser, getAuthorizationToken());

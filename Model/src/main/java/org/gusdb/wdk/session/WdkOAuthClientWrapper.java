@@ -66,12 +66,7 @@ public class WdkOAuthClientWrapper {
   }
 
   public ValidatedToken getNewGuestToken() {
-    try {
-      return _client.getNewGuestToken(_config);
-    }
-    catch (InvalidTokenException e) {
-      throw new IllegalStateException(e); // this will go away with the next OAuth release
-    }
+    return _client.getNewGuestToken(_config);
   }
 
   private TwoTuple<User, String> parseExpandedUserJson(JSONObject userJson) {
