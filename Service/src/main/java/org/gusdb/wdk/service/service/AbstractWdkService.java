@@ -137,6 +137,12 @@ public abstract class AbstractWdkService {
     return _headers.getRequestHeaders();
   }
 
+  /**
+   * Note!  Use of session should be extremely limited.  WDK is intended to be a
+   * stateless service.
+   *
+   * @return genericized session object (compatible with both Servlet and Grizzly sessions)
+   */
   protected SessionProxy getSession() {
     return getRequest().getSession();
   }

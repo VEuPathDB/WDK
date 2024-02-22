@@ -7,7 +7,7 @@ import static org.gusdb.fgputil.ListBuilder.asList;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 import static org.gusdb.fgputil.functional.Functions.mapToListWithIndex;
 import static org.gusdb.wdk.model.Utilities.COLUMN_PK_PREFIX;
-import static org.gusdb.wdk.model.user.UserFactory.USER_SCHEMA_MACRO;
+import static org.gusdb.wdk.model.user.UserReferenceFactory.USER_SCHEMA_MACRO;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

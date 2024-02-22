@@ -37,12 +37,11 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfig.AuthenticationMethod;
-import org.gusdb.wdk.model.user.BearerTokenUser;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.service.request.LoginRequest;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.statustype.MethodNotAllowedStatusType;
-import org.gusdb.wdk.session.WdkOAuthClientWrapper;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -155,10 +154,9 @@ public class SessionService extends AbstractWdkService {
       }
 
       // Use auth code to get the bearer token, then convert to User
-      WdkOAuthClientWrapper client = new WdkOAuthClientWrapper(wdkModel);
-      ValidatedToken bearerToken = client.getBearerTokenFromAuthCode(authCode, appUrl);
-      User newUser = new BearerTokenUser(wdkModel, client, bearerToken);
-      wdkModel.getUserFactory().addUserReference(newUser);
+      UserFactory userFactory = wdkModel.getUserFactory();
+      ValidatedToken bearerToken = userFactory.getBearerTokenFromAuthCode(authCode, appUrl);
+      User newUser = userFactory.convertToUser(bearerToken);
 
       // transfer ownership from guest to logged-in user
       transferOwnership(oldUser, newUser, wdkModel);
@@ -201,10 +199,9 @@ public class SessionService extends AbstractWdkService {
       }
 
       // Use passed credentials to get the bearer token, then convert to User
-      WdkOAuthClientWrapper client = new WdkOAuthClientWrapper(wdkModel);
-      ValidatedToken bearerToken = client.getBearerTokenFromCredentials(request.getEmail(), request.getPassword(), appUrl);
-      User newUser = new BearerTokenUser(wdkModel, client, bearerToken);
-      wdkModel.getUserFactory().addUserReference(newUser);
+      UserFactory userFactory = wdkModel.getUserFactory();
+      ValidatedToken bearerToken = userFactory.getBearerTokenFromCredentials(request.getEmail(), request.getPassword(), appUrl);
+      User newUser = userFactory.convertToUser(bearerToken);
 
       // transfer ownership from guest to logged-in user
       transferOwnership(oldUser, newUser, wdkModel);

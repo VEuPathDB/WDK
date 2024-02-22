@@ -32,7 +32,6 @@ import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.UserCreationRequest;
 import org.gusdb.wdk.service.service.AbstractWdkService;
-import org.gusdb.wdk.session.WdkOAuthClientWrapper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -142,8 +141,7 @@ public class UserUtilityServices extends AbstractWdkService {
           throw new RequestMisformatException("The user email list provided must be an array of strings.");
         }
       }
-      WdkOAuthClientWrapper oauth = new WdkOAuthClientWrapper(getWdkModel());
-      Map<String,User> userMap = oauth.getUsersByEmail(new ArrayList<>(userEmails));
+      Map<String,User> userMap = getWdkModel().getUserFactory().getUsersByEmail(new ArrayList<>(userEmails));
       Map<String,Long> idMap = Functions.getMapFromKeys(userMap.keySet(),
           email -> Optional.ofNullable(userMap.get(email)).map(User::getUserId).orElse(null));
       return Response.ok(new JSONObject().put("results", idMap).toString()).build();

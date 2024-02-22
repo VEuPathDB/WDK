@@ -29,12 +29,10 @@ import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.user.BearerTokenUser;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.service.service.SessionService;
 import org.gusdb.wdk.service.service.SystemService;
-import org.gusdb.wdk.session.WdkOAuthClientWrapper;
 
 @Priority(30)
 public class CheckLoginFilter implements ContainerRequestFilter, ContainerResponseFilter {
@@ -63,24 +61,23 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
     ApplicationContext context = ContextLookup.getApplicationContext(_servletContext);
     RequestData request = ContextLookup.getRequest(_servletRequest.get(), _grizzlyRequest.get());
     WdkModel wdkModel = ContextLookup.getWdkModel(context);
-    WdkOAuthClientWrapper oauth = new WdkOAuthClientWrapper(wdkModel);
 
     // try to find submitted bearer token
     String rawToken = findRawBearerToken(request, requestContext);
 
     try {
+      UserFactory factory = wdkModel.getUserFactory();
       ValidatedToken token;
       User user;
       if (rawToken != null) {
         // validate submitted token
-        token = oauth.validateBearerToken(rawToken);
-        user = new BearerTokenUser(wdkModel, oauth, token);
+        token = factory.validateBearerToken(rawToken);
+        user = factory.convertToUser(token);
 
         LOG.info("Validated successfully.  Request will be processed for user " + user.getUserId() + " / " + user.getEmail());
       }
       else {
         // no credentials submitted; automatically create a guest to use on this request
-        UserFactory factory = wdkModel.getUserFactory();
         TwoTuple<ValidatedToken,User> guestPair = factory.createUnregisteredUser();
         token = guestPair.getFirst();
         user = guestPair.getSecond();
@@ -90,9 +87,6 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
         // set flag indicating that cookies should be added to response containing the new token
         requestContext.setProperty(TOKEN_COOKIE_VALUE_TO_SET, token.getTokenValue());
       }
-
-      // insert reference to this user into user DB for tracking and for foreign keys on other user DB tables
-      wdkModel.getUserFactory().addUserReference(user);
 
       // set creds and user on the request object for use by this request's processing
       request.setAttribute(Utilities.BEARER_TOKEN_KEY, token);
