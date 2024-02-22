@@ -74,7 +74,7 @@ public class DatasetService extends UserService {
       var user    = getUserBundle(Access.PRIVATE).getSessionUser();
       var factory = getWdkModel().getDatasetFactory();
       var request = new DatasetRequest(input);
-      var dataset = DatasetRequestProcessor.createFromRequest(request, user, factory, getSession());
+      var dataset = DatasetRequestProcessor.createFromRequest(request, user, factory, getTemporaryUserData());
 
       if (request.getDisplayName().isPresent()) {
         dataset.setName(request.getDisplayName().get());

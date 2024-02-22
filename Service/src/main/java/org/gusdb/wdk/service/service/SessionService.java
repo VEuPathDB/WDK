@@ -85,7 +85,7 @@ public class SessionService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getOauthStateToken() throws WdkModelException {
     String newToken = generateStateToken(getWdkModel());
-    getSession().setAttribute(STATE_TOKEN_KEY, newToken);
+    getTemporaryUserData().setAttribute(STATE_TOKEN_KEY, newToken);
     JSONObject json = new JSONObject();
     json.put(JsonKeys.OAUTH_STATE_TOKEN, newToken);
     return Response.ok(json.toString()).build();
@@ -145,8 +145,8 @@ public class SessionService extends AbstractWdkService {
       }
 
       // get state token off session and remove; only needed for this request
-      String storedStateToken = (String) getSession().getAttribute(STATE_TOKEN_KEY);
-      getSession().removeAttribute(STATE_TOKEN_KEY);
+      String storedStateToken = (String) getTemporaryUserData().getAttribute(STATE_TOKEN_KEY);
+      getTemporaryUserData().removeAttribute(STATE_TOKEN_KEY);
 
       // Is the state token present and does it match the session state token?
       if (stateToken == null || !stateToken.equals(storedStateToken)) {
@@ -239,7 +239,7 @@ public class SessionService extends AbstractWdkService {
    */
   private Response getSuccessResponse(ValidatedToken bearerToken, User newUser, User oldUser,
       String redirectUrl, boolean isRedirectResponse) throws WdkModelException {
-    SessionProxy session = getSession();
+    SessionProxy session = getTemporaryUserData();
 
     // synchronize on the underlying session object (SessionProxy is request-local)
     synchronized(session.getUnderlyingSession()) {
@@ -284,11 +284,11 @@ public class SessionService extends AbstractWdkService {
 
     // get the current session's user, then invalidate the session
     User oldUser = getRequestingUser();
-    getSession().invalidate(); // legacy
+    getTemporaryUserData().invalidate(); // legacy
     
     // get a new session and add new guest user to it
     TwoTuple<ValidatedToken, User> newUser = getWdkModel().getUserFactory().createUnregisteredUser();
-    getSession().setAttribute(Utilities.WDK_USER_KEY, newUser.getSecond());
+    getTemporaryUserData().setAttribute(Utilities.WDK_USER_KEY, newUser.getSecond());
 
     // throw new user event
     Events.triggerAndWait(new NewUserEvent(newUser.getSecond(), oldUser), 

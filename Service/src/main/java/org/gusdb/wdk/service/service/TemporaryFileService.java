@@ -109,7 +109,7 @@ public class TemporaryFileService extends AbstractWdkService {
   }
 
   private void addTempFileToSession(TemporaryFileMetadata tempFileMetadata) {
-    SessionProxy session = getSession();
+    SessionProxy session = getTemporaryUserData();
     @SuppressWarnings("unchecked")
     Map<String, TemporaryFileMetadata> tempFilesInSession = (Map<String, TemporaryFileMetadata>)(session.getAttribute(TEMP_FILE_METADATA));
     if (tempFilesInSession == null) {
@@ -133,7 +133,7 @@ public class TemporaryFileService extends AbstractWdkService {
     java.nio.file.Path path = optPath.orElseThrow(() -> new NotFoundException(
         "Temporary file with ID " + tempFileName + " is not found in this user's session"));
 
-    SessionProxy session = getSession();
+    SessionProxy session = getTemporaryUserData();
     @SuppressWarnings("unchecked")
     Map<String, TemporaryFileMetadata> tempFilesInSession = (Map<String, TemporaryFileMetadata>)(session.getAttribute(TEMP_FILE_METADATA));
     if (tempFilesInSession != null) {
@@ -187,7 +187,7 @@ public class TemporaryFileService extends AbstractWdkService {
    * session, or does not exist, return empty optional.
    */
   private Optional<java.nio.file.Path> getTempFileFromSession(String tempFileName) {
-    return getTempFileFactory(getWdkModel(), getSession()).apply(tempFileName);
+    return getTempFileFactory(getWdkModel(), getTemporaryUserData()).apply(tempFileName);
   }
 
   /**

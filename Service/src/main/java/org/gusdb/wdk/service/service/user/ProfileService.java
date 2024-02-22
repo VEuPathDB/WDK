@@ -87,7 +87,7 @@ public class ProfileService extends UserService {
       newUser = getWdkModel().getUserFactory().saveUser(oldUser, newUser, getAuthorizationToken());
 
       // save user to session
-      getSession().setAttribute(Utilities.WDK_USER_KEY, newUser);
+      getTemporaryUserData().setAttribute(Utilities.WDK_USER_KEY, newUser);
 
       return Response.noContent().build();
     }
