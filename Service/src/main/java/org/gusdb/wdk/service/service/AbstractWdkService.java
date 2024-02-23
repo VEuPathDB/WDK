@@ -217,7 +217,6 @@ public abstract class AbstractWdkService {
     return new ErrorContext(
       wdkModel,
       request.getSnapshot(),
-      request.getSession().getAttributeMap(),
       errorLocation);
   }
 

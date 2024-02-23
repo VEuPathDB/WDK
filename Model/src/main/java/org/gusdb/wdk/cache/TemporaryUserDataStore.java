@@ -2,15 +2,11 @@ package org.gusdb.wdk.cache;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.collection.ReadOnlyHashMap;
-import org.gusdb.fgputil.collection.ReadOnlyMap;
-import org.gusdb.fgputil.web.SessionProxy;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -29,55 +25,21 @@ public class TemporaryUserDataStore {
 
   private static final Logger LOG = Logger.getLogger(TemporaryUserDataStore.class);
 
-  public static class TemporaryUserData extends HashMap<String,Object> implements SessionProxy {
+  public static class TemporaryUserData extends HashMap<String,Object> {
 
     private final TemporaryUserDataStore _parent;
     private final Long _owner;
-    private final String _id;
 
     private TemporaryUserData(TemporaryUserDataStore parent, Long owner) {
       _parent = parent;
       _owner = owner;
-      _id = UUID.randomUUID().toString();
     }
 
-    @Override
-    public Object getAttribute(String key) {
-      return get(key);
-    }
-
-    @Override
-    public ReadOnlyMap<String, Object> getAttributeMap() {
-      ReadOnlyHashMap.Builder<String,Object> builder = ReadOnlyHashMap.builder();
-      builder.putAll(this);
-      return builder.build();
-    }
-
-    @Override
-    public void setAttribute(String key, Object value) {
-      put(key, value);
-    }
-
-    @Override
-    public void removeAttribute(String key) {
-      remove(key);
-    }
-
-    @Override
-    public Object getUnderlyingSession() {
-      return this;
-    }
-
-    @Override
     public void invalidate() {
       clear();
       _parent.remove(_owner);
     }
 
-    @Override
-    public String getId() {
-      return _id;
-    }
   }
 
   // singleton pattern
