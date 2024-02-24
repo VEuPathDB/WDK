@@ -1,7 +1,7 @@
 package org.gusdb.wdk.cache;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -25,7 +25,7 @@ public class TemporaryUserDataStore {
 
   private static final Logger LOG = Logger.getLogger(TemporaryUserDataStore.class);
 
-  public static class TemporaryUserData extends HashMap<String,Object> {
+  public static class TemporaryUserData extends ConcurrentHashMap<String,Object> {
 
     private final TemporaryUserDataStore _parent;
     private final Long _owner;
