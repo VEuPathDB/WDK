@@ -24,13 +24,13 @@ import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonType.ValueType;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.fgputil.web.SessionProxy;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.cache.TemporaryUserDataStore.TemporaryUserData;
 import org.gusdb.wdk.model.dataset.Dataset;
 import org.gusdb.wdk.model.dataset.DatasetContents;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
@@ -63,14 +63,14 @@ public class DatasetRequestProcessor {
     DatasetRequest request,
     User user,
     DatasetFactory factory,
-    SessionProxy session
+    TemporaryUserData tmpUserData
   ) throws WdkModelException, DataValidationException, RequestMisformatException {
     JsonType value = request.getConfigValue();
     switch(request.getSourceType()) {
       case ID_LIST:  return createFromIdList(value.getJSONArray(), user, factory);
       case BASKET:   return createFromBasket(value.getString(), user, factory);
       case STRATEGY: return createFromStrategy(getStrategyId(value), user, factory);
-      case FILE:     return createFromTemporaryFile(value.getString(), user, factory, request.getAdditionalConfig(), session);
+      case FILE:     return createFromTemporaryFile(value.getString(), user, factory, request.getAdditionalConfig(), tmpUserData);
       case URL:      return createFromUrl(value.getString(), user, factory, request.getAdditionalConfig());
       default:
         throw new DataValidationException("Unrecognized " + JsonKeys.SOURCE_TYPE + ": " + request.getSourceType());
@@ -235,13 +235,13 @@ public class DatasetRequestProcessor {
     final User                  user,
     final DatasetFactory        factory,
     final Map<String, JsonType> additionalConfig,
-    final SessionProxy          session
+    final TemporaryUserData     tmpUserData
   ) throws DataValidationException, WdkModelException, RequestMisformatException {
 
     var model = factory.getWdkModel();
     var parser = getDatasetParser(model, additionalConfig);
 
-    var tempFilePath = TemporaryFileService.getTempFileFactory(factory.getWdkModel(), session)
+    var tempFilePath = TemporaryFileService.getTempFileFactory(factory.getWdkModel(), tmpUserData)
       .apply(tempFileId)
       .orElseThrow(() -> new DataValidationException(
           "Temporary file with the ID '" + tempFileId + "' could not be found in this session."));

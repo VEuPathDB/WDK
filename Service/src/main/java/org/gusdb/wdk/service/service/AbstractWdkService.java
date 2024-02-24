@@ -25,8 +25,9 @@ import org.glassfish.grizzly.http.server.Request;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.RequestData;
-import org.gusdb.fgputil.web.SessionProxy;
 import org.gusdb.oauth2.client.ValidatedToken;
+import org.gusdb.wdk.cache.TemporaryUserDataStore;
+import org.gusdb.wdk.cache.TemporaryUserDataStore.TemporaryUserData;
 import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.errors.ErrorContext;
 import org.gusdb.wdk.errors.ErrorContext.ErrorLocation;
@@ -143,8 +144,8 @@ public abstract class AbstractWdkService {
    *
    * @return genericized session object (compatible with both Servlet and Grizzly sessions)
    */
-  protected SessionProxy getSession() {
-    return getRequest().getSession();
+  protected TemporaryUserData getTemporaryUserData() {
+    return TemporaryUserDataStore.instance().get(getRequestingUser().getUserId());
   }
 
   protected User getRequestingUser() {
@@ -216,7 +217,6 @@ public abstract class AbstractWdkService {
     return new ErrorContext(
       wdkModel,
       request.getSnapshot(),
-      request.getSession().getAttributeMap(),
       errorLocation);
   }
 

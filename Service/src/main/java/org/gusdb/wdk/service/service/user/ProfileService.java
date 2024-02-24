@@ -13,7 +13,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.gusdb.oauth2.exception.InvalidPropertiesException;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.BasicUser;
 import org.gusdb.wdk.model.user.InvalidUsernameOrEmailException;
@@ -85,9 +84,6 @@ public class ProfileService extends UserService {
 
       // save user to OAuth
       newUser = getWdkModel().getUserFactory().saveUser(oldUser, newUser, getAuthorizationToken());
-
-      // save user to session
-      getSession().setAttribute(Utilities.WDK_USER_KEY, newUser);
 
       return Response.noContent().build();
     }

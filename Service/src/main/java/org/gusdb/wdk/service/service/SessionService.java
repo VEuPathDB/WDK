@@ -26,12 +26,11 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.web.LoginCookieFactory;
-import org.gusdb.fgputil.web.SessionProxy;
 import org.gusdb.oauth2.client.ValidatedToken;
 import org.gusdb.oauth2.exception.InvalidTokenException;
+import org.gusdb.wdk.cache.TemporaryUserDataStore.TemporaryUserData;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.events.NewUserEvent;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -85,7 +84,7 @@ public class SessionService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getOauthStateToken() throws WdkModelException {
     String newToken = generateStateToken(getWdkModel());
-    getSession().setAttribute(STATE_TOKEN_KEY, newToken);
+    getTemporaryUserData().put(STATE_TOKEN_KEY, newToken);
     JSONObject json = new JSONObject();
     json.put(JsonKeys.OAUTH_STATE_TOKEN, newToken);
     return Response.ok(json.toString()).build();
@@ -145,8 +144,8 @@ public class SessionService extends AbstractWdkService {
       }
 
       // get state token off session and remove; only needed for this request
-      String storedStateToken = (String) getSession().getAttribute(STATE_TOKEN_KEY);
-      getSession().removeAttribute(STATE_TOKEN_KEY);
+      String storedStateToken = (String) getTemporaryUserData().get(STATE_TOKEN_KEY);
+      getTemporaryUserData().remove(STATE_TOKEN_KEY);
 
       // Is the state token present and does it match the session state token?
       if (stateToken == null || !stateToken.equals(storedStateToken)) {
@@ -239,12 +238,10 @@ public class SessionService extends AbstractWdkService {
    */
   private Response getSuccessResponse(ValidatedToken bearerToken, User newUser, User oldUser,
       String redirectUrl, boolean isRedirectResponse) throws WdkModelException {
-    SessionProxy session = getSession();
 
-    // synchronize on the underlying session object (SessionProxy is request-local)
-    synchronized(session.getUnderlyingSession()) {
+    TemporaryUserData tmpData = getTemporaryUserData();
 
-      session.setAttribute(Utilities.WDK_USER_KEY, newUser);
+    synchronized(tmpData) {
 
       Events.triggerAndWait(new NewUserEvent(newUser, oldUser),
           new WdkRuntimeException("Unable to complete WDK user assignement."));
@@ -284,11 +281,10 @@ public class SessionService extends AbstractWdkService {
 
     // get the current session's user, then invalidate the session
     User oldUser = getRequestingUser();
-    getSession().invalidate(); // legacy
-    
+    getTemporaryUserData().invalidate(); // legacy
+
     // get a new session and add new guest user to it
     TwoTuple<ValidatedToken, User> newUser = getWdkModel().getUserFactory().createUnregisteredUser();
-    getSession().setAttribute(Utilities.WDK_USER_KEY, newUser.getSecond());
 
     // throw new user event
     Events.triggerAndWait(new NewUserEvent(newUser.getSecond(), oldUser), 
@@ -302,6 +298,7 @@ public class SessionService extends AbstractWdkService {
       extraCookie.setMaxAge(-1);
       logoutCookies.add(extraCookie);
     }
+
     ResponseBuilder builder = createRedirectResponse(getContextUri());
     for (CookieBuilder logoutCookie : logoutCookies) {
       builder.cookie(logoutCookie.toJaxRsCookie());
