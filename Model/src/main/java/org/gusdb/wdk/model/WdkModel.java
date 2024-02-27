@@ -176,7 +176,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   private File xmlDataDir;
 
-  private UserFactory userFactory;
   private StepFactory stepFactory;
   private DatasetFactory datasetFactory;
   private BasketFactory basketFactory;
@@ -563,7 +562,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       _userDatasetStore = Optional.of(udsConfig.getUserDatasetStore(modelConfig.getWdkTempDir()));
     }
 
-    userFactory = new UserFactory(this);
     stepFactory = new StepFactory(this);
     datasetFactory = new DatasetFactory(this);
     basketFactory = new BasketFactory(this);
@@ -594,7 +592,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
         new UnconfiguredStepAnalysisFactory(this) :
         new StepAnalysisFactoryImpl(this));
 
-    systemUser = userFactory.createUnregisteredUser().getSecond();
+    systemUser = new UserFactory(this).createUnregisteredUser().getSecond();
 
     LOG.info("WDK Model configured.");
   }
@@ -703,7 +701,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   }
 
   public UserFactory getUserFactory() {
-    return userFactory;
+    return new UserFactory(this);
   }
 
   public StepFactory getStepFactory() {
