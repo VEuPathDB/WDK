@@ -59,6 +59,7 @@ public class JsonKeys {
   public static final String ICON_NAME = "iconName";
   public static final String DISPLAY_TEXT = "displayText";
   public static final String HELP = "help";
+  public static final String HTML_HELP = "htmlHelp";
   public static final String DESCRIPTION = "description";
   public static final String SHORT_DESCRIPTION = "shortDescription";
   public static final String SUMMARY = "summary";

@@ -49,30 +49,6 @@ public abstract class DerivedAttributeField extends AttributeField {
     return leaves;
   }
 
-  protected String excludeModelText(List<WdkModelText> texts, String projectId,
-      String textTag, boolean isRequired) throws WdkModelException {
-    String source = "The " + getClass().getSimpleName() + " " + _container.getNameForLogging() + "." + getName();
-    String selectedText = null;
-    boolean hasText = false;
-    for (WdkModelText text : texts) {
-      if (text.include(projectId)) {
-        if (hasText) {
-          throw new WdkModelException(source + " has more than one " + textTag + " tag for project " + projectId);
-        }
-        else {
-          selectedText = text.getText();
-          hasText = true;
-        }
-      }
-    }
-    // check if all texts are excluded
-    if (selectedText == null && isRequired) {
-      throw new WdkModelException(source + " does not have a " + textTag + " tag for project " + projectId);
-    }
-    texts.clear();
-    return selectedText;
-  }
-
   /**
    * Several kinds of fields can embed other fields in their properties. This method
    * parses out the embedded fields from the text.

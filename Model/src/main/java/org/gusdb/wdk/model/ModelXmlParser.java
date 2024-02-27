@@ -1024,6 +1024,8 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "*/columnAttribute", QueryColumnAttributeField.class, "addAttributeField");
     configureNode(digester, "*/columnAttribute/propertyList", PropertyList.class, "addPropertyList");
     configureNode(digester, "*/columnAttribute/filterRef", FilterReference.class, "addFilterReference");
+    configureNode(digester, "*/columnAttribute/htmlHelp", WdkModelText.class, "addHtmlHelp");
+    digester.addCallMethod("*/columnAttribute/htmlHelp", "setText", 0);
     configureAttributeReporters(digester, "columnAttribute");
 
     // link attribute
