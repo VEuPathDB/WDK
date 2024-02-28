@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.user;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 
 import org.gusdb.wdk.model.Utilities;
@@ -24,6 +25,8 @@ public class UserPasswordEmailer {
     _wdkModelConfig = wdkModel.getModelConfig();
 
     // whether or not WDK is configured to send a welcome email to new registered users (defaults to true)
+    Objects.requireNonNull(wdkModel);
+    Objects.requireNonNull(wdkModel.getProperties());
     String dontEmailProp = wdkModel.getProperties().get("DONT_EMAIL_NEW_USER");
     _sendWelcomeEmail = dontEmailProp == null || !dontEmailProp.equals("true");
   }
