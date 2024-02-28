@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.user;
 
-import java.util.Objects;
 import java.util.regex.Matcher;
 
 import org.gusdb.wdk.model.Utilities;
@@ -18,32 +17,28 @@ public class UserPasswordEmailer {
   private static final String EMAIL_MACRO_EMAIL = "EMAIL";
   private static final String EMAIL_MACRO_PASSWORD = "PASSWORD";
 
-  private final boolean _sendWelcomeEmail;
-  private final ModelConfig _wdkModelConfig;
+  private final WdkModel _wdkModel;
 
   public UserPasswordEmailer(WdkModel wdkModel) {
-    _wdkModelConfig = wdkModel.getModelConfig();
-
-    // whether or not WDK is configured to send a welcome email to new registered users (defaults to true)
-    Objects.requireNonNull(wdkModel);
-    Objects.requireNonNull(wdkModel.getProperties());
-    String dontEmailProp = wdkModel.getProperties().get("DONT_EMAIL_NEW_USER");
-    _sendWelcomeEmail = dontEmailProp == null || !dontEmailProp.equals("true");
+    _wdkModel = wdkModel;
   }
 
   public boolean isSendWelcomeEmail() {
-    return _sendWelcomeEmail;
+    // whether or not WDK is configured to send a welcome email to new registered users (defaults to true)
+    String dontEmailProp = _wdkModel.getProperties().get("DONT_EMAIL_NEW_USER");
+    return dontEmailProp == null || !dontEmailProp.equals("true");
   }
 
   public void emailTemporaryPassword(User user, String password) throws WdkModelException {
-    if (!_sendWelcomeEmail) return;
+    if (!isSendWelcomeEmail()) return;
 
-    String smtpServer = _wdkModelConfig.getSmtpServer();
-    String supportEmail = _wdkModelConfig.getSupportEmail();
-    String emailSubject = _wdkModelConfig.getEmailSubject();
+    ModelConfig wdkModelConfig = _wdkModel.getModelConfig();
+    String smtpServer = wdkModelConfig.getSmtpServer();
+    String supportEmail = wdkModelConfig.getSupportEmail();
+    String emailSubject = wdkModelConfig.getEmailSubject();
 
     // populate email content macros with user data
-    String emailContent = _wdkModelConfig.getEmailContent()
+    String emailContent = wdkModelConfig.getEmailContent()
         .replaceAll("\\$\\$" + EMAIL_MACRO_USER_NAME + "\\$\\$",
             Matcher.quoteReplacement(user.getDisplayName()))
         .replaceAll("\\$\\$" + EMAIL_MACRO_EMAIL + "\\$\\$",
