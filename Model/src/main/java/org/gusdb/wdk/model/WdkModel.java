@@ -111,10 +111,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private String _projectId;
   private long _startupTime;
 
-
   private DatabaseInstance appDb;
   private DatabaseInstance userDb;
-  private DatabaseInstance accountDb;
 
   private Optional<UserDatasetStore> _userDatasetStore;
 
@@ -656,7 +654,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     stepAnalysisFactory.shutDown();
     releaseDb(appDb);
     releaseDb(userDb);
-    releaseDb(accountDb);
     Events.shutDown();
     managedCloseables.close();
     LOG.info("WDK Model resources released.");
@@ -694,10 +691,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   public DatabaseInstance getUserDb() {
     return userDb;
-  }
-
-  public DatabaseInstance getAccountDb() {
-    return accountDb;
   }
 
   public UserFactory getUserFactory() {
