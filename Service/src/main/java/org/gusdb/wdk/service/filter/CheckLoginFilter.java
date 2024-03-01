@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -16,6 +17,7 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.glassfish.grizzly.http.server.Request;
@@ -25,9 +27,11 @@ import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.oauth2.client.OAuthClient;
 import org.gusdb.oauth2.client.ValidatedToken;
+import org.gusdb.oauth2.exception.ExpiredTokenException;
+import org.gusdb.oauth2.exception.InvalidTokenException;
 import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
@@ -60,43 +64,58 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
 
     ApplicationContext context = ContextLookup.getApplicationContext(_servletContext);
     RequestData request = ContextLookup.getRequest(_servletRequest.get(), _grizzlyRequest.get());
-    WdkModel wdkModel = ContextLookup.getWdkModel(context);
+    UserFactory factory = ContextLookup.getWdkModel(context).getUserFactory();
 
     // try to find submitted bearer token
     String rawToken = findRawBearerToken(request, requestContext);
 
     try {
-      UserFactory factory = wdkModel.getUserFactory();
-      ValidatedToken token;
-      User user;
-      if (rawToken != null) {
-        // validate submitted token
-        token = factory.validateBearerToken(rawToken);
-        user = factory.convertToUser(token);
-
-        LOG.info("Validated successfully.  Request will be processed for user " + user.getUserId() + " / " + user.getEmail());
+      if (rawToken == null) {
+        // no credentials submitted; automatically create a guest to use on this request
+        useNewGuest(factory, request, requestContext, requestPath);
       }
       else {
-        // no credentials submitted; automatically create a guest to use on this request
-        TwoTuple<ValidatedToken,User> guestPair = factory.createUnregisteredUser();
-        token = guestPair.getFirst();
-        user = guestPair.getSecond();
-
-        LOG.info("Created new guest user [" + user.getUserId() + "] for request to path: /" + requestPath);
-
-        // set flag indicating that cookies should be added to response containing the new token
-        requestContext.setProperty(TOKEN_COOKIE_VALUE_TO_SET, token.getTokenValue());
+        try {
+          // validate submitted token
+          ValidatedToken token = factory.validateBearerToken(rawToken);
+          User user = factory.convertToUser(token);
+          setRequestAttributes(request, token, user);
+          LOG.info("Validated successfully.  Request will be processed for user " + user.getUserId() + " / " + user.getEmail());
+        }
+        catch (ExpiredTokenException e) {
+          // token is expired; use guest token for now which should inspire them to log back in
+          useNewGuest(factory, request, requestContext, requestPath);
+        }
+        catch (InvalidTokenException e) {
+          // passed token is invalid; throw 401
+          LOG.warn("Received invalid bearer token for auth: " + rawToken);
+          throw new NotAuthorizedException(Response.noContent().build());
+        }
       }
-
-      // set creds and user on the request object for use by this request's processing
-      request.setAttribute(Utilities.BEARER_TOKEN_KEY, token);
-      request.setAttribute(Utilities.WDK_USER_KEY, user);
     }
     catch (Exception e) {
-      // for now, log and let this go, deferring to legacy authentication
+      // any other exception is fatal, but log first
       LOG.error("Unable to authenticate with Authorization header " + rawToken, e);
       throw e instanceof RuntimeException ? (RuntimeException)e : new WdkRuntimeException(e);
     }
+  }
+
+  private void useNewGuest(UserFactory factory, RequestData request, ContainerRequestContext requestContext, String requestPath) throws WdkModelException {
+    TwoTuple<ValidatedToken,User> guestPair = factory.createUnregisteredUser();
+    ValidatedToken token = guestPair.getFirst();
+    User user = guestPair.getSecond();
+    setRequestAttributes(request, token, user);
+
+    LOG.info("Created new guest user [" + user.getUserId() + "] for request to path: /" + requestPath);
+
+    // set flag indicating that cookies should be added to response containing the new token
+    requestContext.setProperty(TOKEN_COOKIE_VALUE_TO_SET, token.getTokenValue());
+  }
+
+  private void setRequestAttributes(RequestData request, ValidatedToken token, User user) {
+    // set creds and user on the request object for use by this request's processing
+    request.setAttribute(Utilities.BEARER_TOKEN_KEY, token);
+    request.setAttribute(Utilities.WDK_USER_KEY, user);
   }
 
   private String findRawBearerToken(RequestData request, ContainerRequestContext requestContext) {

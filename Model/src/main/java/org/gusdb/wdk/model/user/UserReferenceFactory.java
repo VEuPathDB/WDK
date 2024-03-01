@@ -48,7 +48,8 @@ class UserReferenceFactory {
 
   private static final Integer[] SELECT_USER_REF_BY_ID_PARAM_TYPES = { Types.BIGINT };
 
-  private static class UserReference extends ThreeTuple<Long, Boolean, Date> {
+  // TODO: decide if this is actually needed/desired anywhere.  UserRef lookups are not currently used.
+  public static class UserReference extends ThreeTuple<Long, Boolean, Date> {
     public UserReference(Long userId, Boolean isGuest, Date firstAccess) {
       super(userId, isGuest, firstAccess);
     }
@@ -91,7 +92,7 @@ class UserReferenceFactory {
   }
 
   // FIXME: see if this is actually needed anywhere?  E.g. do we ever need to look up user refs by user ID to find last login?
-  private Optional<UserReference> getUserReference(long userId) throws WdkModelException {
+  public Optional<UserReference> getUserReference(long userId) throws WdkModelException {
     try {
       String sql = SELECT_USER_REF_BY_ID_SQL.replace(USER_SCHEMA_MACRO, _userSchema);
       return new SQLRunner(_userDb.getDataSource(), sql, "get-user-ref").executeQuery(

@@ -23,17 +23,14 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.web.LoginCookieFactory;
 import org.gusdb.oauth2.client.ValidatedToken;
 import org.gusdb.oauth2.exception.InvalidPropertiesException;
 import org.gusdb.wdk.cache.TemporaryUserDataStore.TemporaryUserData;
 import org.gusdb.wdk.core.api.JsonKeys;
-import org.gusdb.wdk.events.NewUserEvent;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfig.AuthenticationMethod;
 import org.gusdb.wdk.model.user.User;
@@ -247,9 +244,6 @@ public class SessionService extends AbstractWdkService {
 
     synchronized(tmpData) {
 
-      Events.triggerAndWait(new NewUserEvent(newUser, oldUser),
-          new WdkRuntimeException("Unable to complete WDK user assignement."));
-
       // 3-year expiration (should change secret key before then)
       CookieBuilder bearerTokenCookie = new CookieBuilder(
           HttpHeaders.AUTHORIZATION,
@@ -285,14 +279,14 @@ public class SessionService extends AbstractWdkService {
 
     // get the current session's user, then invalidate the session
     User oldUser = getRequestingUser();
-    getTemporaryUserData().invalidate(); // legacy
+    getTemporaryUserData().invalidate();
+
+    // if user is already a guest, no need to log out
+    if (oldUser.isGuest())
+      return createRedirectResponse(getContextUri()).build();
 
     // get a new session and add new guest user to it
     TwoTuple<ValidatedToken, User> newUser = getWdkModel().getUserFactory().createUnregisteredUser();
-
-    // throw new user event
-    Events.triggerAndWait(new NewUserEvent(newUser.getSecond(), oldUser), 
-        new WdkRuntimeException("Unable to complete WDK user assignement."));
 
     // create and append logout cookies to response
     Set<CookieBuilder> logoutCookies = new HashSet<>();
