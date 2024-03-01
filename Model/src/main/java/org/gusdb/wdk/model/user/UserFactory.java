@@ -17,6 +17,7 @@ import org.gusdb.oauth2.client.ValidatedToken;
 import org.gusdb.oauth2.client.veupathdb.OAuthQuerier;
 import org.gusdb.oauth2.client.veupathdb.UserProperty;
 import org.gusdb.oauth2.exception.ConflictException;
+import org.gusdb.oauth2.exception.ExpiredTokenException;
 import org.gusdb.oauth2.exception.InvalidPropertiesException;
 import org.gusdb.oauth2.exception.InvalidTokenException;
 import org.gusdb.oauth2.shared.IdTokenFields;
@@ -71,15 +72,15 @@ public class UserFactory {
   // methods to manage tokens
   // -------------------------------------------------------------------------
 
-  public ValidatedToken getBearerTokenFromAuthCode(String authCode, String redirectUri) throws InvalidTokenException {
+  public ValidatedToken getBearerTokenFromAuthCode(String authCode, String redirectUri) throws InvalidPropertiesException {
     return _client.getBearerTokenFromAuthCode(_config, authCode, redirectUri);
   }
 
-  public ValidatedToken getBearerTokenFromCredentials(String email, String password, String redirectUrl) throws InvalidTokenException {
+  public ValidatedToken getBearerTokenFromCredentials(String email, String password, String redirectUrl) throws InvalidPropertiesException {
     return _client.getBearerTokenFromUsernamePassword(_config,  email, password, redirectUrl);
   }
 
-  public ValidatedToken validateBearerToken(String rawToken) throws InvalidTokenException {
+  public ValidatedToken validateBearerToken(String rawToken) throws InvalidTokenException, ExpiredTokenException {
     return _client.getValidatedEcdsaSignedToken(_config.getOauthUrl(), rawToken);
   }
 

@@ -27,7 +27,7 @@ import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.web.LoginCookieFactory;
 import org.gusdb.oauth2.client.ValidatedToken;
-import org.gusdb.oauth2.exception.InvalidTokenException;
+import org.gusdb.oauth2.exception.InvalidPropertiesException;
 import org.gusdb.wdk.cache.TemporaryUserDataStore.TemporaryUserData;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.events.NewUserEvent;
@@ -163,6 +163,10 @@ public class SessionService extends AbstractWdkService {
       // login successful; create redirect response
       return getSuccessResponse(bearerToken, newUser, oldUser, redirectUrl, true);
     }
+    catch (InvalidPropertiesException ex) {
+      LOG.error("Could not authenticate user's identity.  Exception thrown: ", ex);
+      return createJsonResponse(false, "Invalid auth token or redirect URI", null).build();
+    }
     catch (Exception ex) {
       LOG.error("Unsuccessful login attempt:  " + ex.getMessage(), ex);
       String oauthFailureUrl = appUrl + OAUTH_ERROR_URL + FormatUtil.urlEncodeUtf8(originalUrl);
@@ -211,7 +215,7 @@ public class SessionService extends AbstractWdkService {
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage());
     }
-    catch (InvalidTokenException ex) {
+    catch (InvalidPropertiesException ex) {
       LOG.error("Could not authenticate user's identity.  Exception thrown: ", ex);
       return createJsonResponse(false, "Invalid username or password", null).build();
     }
