@@ -281,7 +281,7 @@ public abstract class AbstractDependentParam extends Param {
           if (!rootParamMap.keySet().contains(param.getName())) {
             throw new WdkModelException("The dependent param " + param.getFullName() +
                 " of query " + query.getFullName() + " (needed by param " + getFullName() +
-                ") is not found in the param map of the ID query " + queryFullName + ".");
+                ") is not found among the parameters declared in the ID query " + queryFullName + ".");
           }
 
           // recurse through dependent param queries
