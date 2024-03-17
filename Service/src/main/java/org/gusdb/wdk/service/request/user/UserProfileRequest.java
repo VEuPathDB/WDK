@@ -1,18 +1,18 @@
 package org.gusdb.wdk.service.request.user;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.accountdb.UserProfile;
-import org.gusdb.fgputil.accountdb.UserPropertyName;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.oauth2.client.veupathdb.UserProperty;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -70,7 +70,7 @@ public class UserProfileRequest {
    * @throws DataValidationException if data contained in request is invalid for another reason
    */
   public static UserProfileRequest createFromJson(JSONObject json,
-      List<UserPropertyName> configuredProps, boolean requireRequiredProperties)
+      Collection<UserProperty> configuredProps, boolean requireRequiredProperties)
       throws RequestMisformatException, DataValidationException {
     try {
       UserProfileRequest request = new UserProfileRequest();
@@ -100,10 +100,8 @@ public class UserProfileRequest {
     return email;
   }
 
-  private static Map<String, UserPropertyName> getPropMap(List<UserPropertyName> configuredProps) {
-    return Functions.getMapFromValues(configuredProps, new Function<UserPropertyName,String>() {
-      @Override public String apply(UserPropertyName obj) { return obj.getName(); }
-    });
+  private static Map<String, UserProperty> getPropMap(Collection<UserProperty> configuredProps) {
+    return Functions.getMapFromValues(configuredProps, UserProperty::getName);
   }
 
   /**
@@ -117,7 +115,7 @@ public class UserProfileRequest {
    * @throws DataValidationException if JSON format and types are ok, but further data validation fails
    */
   private static Map<String,String> parseProperties(JSONObject json,
-      Map<String, UserPropertyName> configuredProps, boolean requireRequiredProperties) throws JSONException, DataValidationException {
+      Map<String, UserProperty> configuredProps, boolean requireRequiredProperties) throws JSONException, DataValidationException {
     if (!json.has(JsonKeys.PROPERTIES)) {
       if (requireRequiredProperties) {
         throw new JSONException("'properties' property is required.");
@@ -154,7 +152,7 @@ public class UserProfileRequest {
   }
 
   private static void validateRequiredPropsPresent(Map<String, String> parsedProps,
-      Map<String, UserPropertyName> configuredProps) throws DataValidationException {
+      Map<String, UserProperty> configuredProps) throws DataValidationException {
     List<String> missingProps = new ArrayList<>();
     for (String propKey : configuredProps.keySet()) {
       if (!parsedProps.containsKey(propKey) && configuredProps.get(propKey).isRequired()) {
@@ -167,7 +165,7 @@ public class UserProfileRequest {
   }
 
   private static void validateNonEmptyRequirement(Map<String, String> parsedProps,
-      Map<String, UserPropertyName> configuredProps) throws DataValidationException {
+      Map<String, UserProperty> configuredProps) throws DataValidationException {
     // make sure any required (i.e. value must be non-empty) properties are not being modified to be empty
     List<String> emptyRequiredValues = new ArrayList<String>();
     for (String propKey : configuredProps.keySet()) {

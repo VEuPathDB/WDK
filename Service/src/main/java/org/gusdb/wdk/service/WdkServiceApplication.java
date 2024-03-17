@@ -20,7 +20,6 @@ import org.gusdb.wdk.service.provider.ExceptionMapper;
 import org.gusdb.wdk.service.provider.JsonSchemaProvider;
 import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.ClientErrorReportingService;
-import org.gusdb.wdk.service.service.OAuthService;
 import org.gusdb.wdk.service.service.OntologyService;
 import org.gusdb.wdk.service.service.ProjectService;
 import org.gusdb.wdk.service.service.PublicStrategyService;
@@ -82,7 +81,6 @@ public class WdkServiceApplication extends Application {
     // add service classes
     .add(ProjectService.class)
     .add(SystemService.class)
-    .add(OAuthService.class)
     .add(ProfileService.class)
     .add(PreferenceService.class)
     .add(RecordService.class)

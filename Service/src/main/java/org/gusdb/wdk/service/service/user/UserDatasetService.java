@@ -299,7 +299,7 @@ public class UserDatasetService extends UserService {
    */
   private void validateTargetUserIds(Set<Long> targetUserIds) throws WdkModelException {
     for(Long targetUserId : targetUserIds) {
-      UserBundle targetUserBundle = UserBundle.createFromTargetId(targetUserId.toString(), getSessionUser(), getWdkModel().getUserFactory(), isSessionUserAdmin());
+      UserBundle targetUserBundle = UserBundle.createFromTargetId(targetUserId.toString(), getRequestingUser(), getWdkModel().getUserFactory(), isSessionUserAdmin());
       if (!targetUserBundle.isValidUserId()) {
         LOG.error("This user dataset share service request contains the following invalid user: " + targetUserId);
         throw new NotFoundException(formatNotFound(UserService.USER_RESOURCE + targetUserBundle.getTargetUserIdString()));

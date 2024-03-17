@@ -287,7 +287,7 @@ public class StrategyService extends UserService {
     return new JSONObject().put(JsonKeys.STEP_TREE,
       StepFormatter.formatAsStepTree(
         getWdkModel().getStepFactory().copyStrategyToBranch(
-          getSessionUser(),
+          getRequestingUser(),
           getStrategyForCurrentUser(stratId, ValidationLevel.NONE)
         ),
         new HashSet<Step>() // we don't need to consume the list of step IDs found in the tree
@@ -433,7 +433,7 @@ public class StrategyService extends UserService {
 
     // copy the source strat's step tree into new, unattached steps
     JSONObject copiedStepTree = StepFormatter.formatAsStepTree(
-      getWdkModel().getStepFactory().copyStrategyToBranch(getSessionUser(),sourceStrategy),
+      getWdkModel().getStepFactory().copyStrategyToBranch(getRequestingUser(),sourceStrategy),
       new HashSet<Step>() // we don't need to consume the list of step IDs found in the tree
     );
 

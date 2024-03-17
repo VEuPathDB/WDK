@@ -23,12 +23,16 @@ public class UserPreferences {
    * the preferences for the user: <prefName, prefValue>. It only contains the preferences for the current
    * project
    */
-  private final Map<String, String> _globalPreferences;
-  private final Map<String, String> _projectPreferences;
+  private final Map<String, String> _globalPreferences = new LinkedHashMap<>();
+  private final Map<String, String> _projectPreferences = new LinkedHashMap<>();
 
-  public UserPreferences() {
-    _globalPreferences = new LinkedHashMap<String, String>();
-    _projectPreferences = new LinkedHashMap<String, String>();
+  public UserPreferences() { }
+
+  public UserPreferences(
+      Map<String,String> globalPreferences,
+      Map<String,String> projectPreferences) {
+    if (globalPreferences != null) setGlobalPreferences(globalPreferences);
+    if (projectPreferences != null) setProjectPreferences(projectPreferences);
   }
 
   public void setProjectPreference(String prefName, String prefValue) {

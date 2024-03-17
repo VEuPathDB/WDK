@@ -37,8 +37,8 @@ public class StrategyAnalysis {
         !userEmail.isPresent() ?
         model.getStepFactory().getAllStrategies(validationLevel, malformedStrats, stratsWithBuildErrors).values() :
         model.getStepFactory().getStrategies(
-          Optional.ofNullable(model.getUserFactory()
-            .getUserByEmail(userEmail.get()))
+          model.getUserFactory()
+            .getUserByEmail(userEmail.get())
             .orElseThrow(() -> new WdkModelException(
               "Could not find user with email: " + userEmail
             ))

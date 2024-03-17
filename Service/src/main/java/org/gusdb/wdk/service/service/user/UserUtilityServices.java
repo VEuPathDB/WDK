@@ -1,9 +1,10 @@
 package org.gusdb.wdk.service.service.user;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.ws.rs.Consumes;
@@ -13,18 +14,20 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.gusdb.fgputil.accountdb.AccountManager;
-import org.gusdb.fgputil.accountdb.UserPropertyName;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonType.ValueType;
+import org.gusdb.oauth2.client.veupathdb.UserProperty;
+import org.gusdb.oauth2.exception.InvalidPropertiesException;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.config.ModelConfigAccountDB;
 import org.gusdb.wdk.model.user.InvalidUsernameOrEmailException;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserFactory;
+import org.gusdb.wdk.model.user.UserPreferenceFactory;
+import org.gusdb.wdk.model.user.UserPreferences;
+import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
 import org.gusdb.wdk.service.request.user.UserCreationRequest;
@@ -48,28 +51,36 @@ public class UserUtilityServices extends AbstractWdkService {
    * @throws RequestMisformatException if JSON is misformatted
    * @throws DataValidationException if request contains invalid information
    * @throws WdkModelException if error occurs creating user
+   * @throws ConflictException if input conflicts with existing data (i.e. duplicate email or username)
    */
   @POST
   @Path(USERS_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createNewUser(String body) throws RequestMisformatException, DataValidationException, WdkModelException {
+  public Response createNewUser(String body) throws RequestMisformatException, DataValidationException, WdkModelException, ConflictException {
     try {
       JSONObject requestJson = new JSONObject(body);
-      List<UserPropertyName> configuredUserProps = getWdkModel().getModelConfig().getAccountDB().getUserPropertyNames();
+      Collection<UserProperty> configuredUserProps = User.USER_PROPERTIES.values();
       UserCreationRequest request = UserCreationRequest.createFromJson(requestJson, configuredUserProps);
 
+      // create the user, saving to DB
       User newUser = getWdkModel().getUserFactory().createUser(
           request.getProfileRequest().getEmail(),
-          request.getProfileRequest().getProfileMap(),
+          request.getProfileRequest().getProfileMap());
+
+      // add user preferences to the new user
+      new UserPreferenceFactory(getWdkModel()).savePreferences(newUser.getUserId(), new UserPreferences(
           request.getGlobalPreferencesRequest().getPreferenceUpdates(),
-          request.getProjectPreferencesRequest().getPreferenceUpdates());
+          request.getProjectPreferencesRequest().getPreferenceUpdates()));
 
       return Response.ok(new JSONObject().put(JsonKeys.ID, newUser.getUserId()))
           .location(getUriInfo().getAbsolutePathBuilder().build(newUser.getUserId()))
           .build();
     }
     catch (InvalidUsernameOrEmailException e) {
+      throw new ConflictException(e.getMessage());
+    }
+    catch (InvalidPropertiesException e) {
       throw new DataValidationException(e.getMessage());
     }
     catch (JSONException e) {
@@ -94,18 +105,15 @@ public class UserUtilityServices extends AbstractWdkService {
       throws WdkModelException, DataValidationException, RequestMisformatException {
     try {
       JSONObject json = new JSONObject(body);
-      String emailOrLoginName = json.getString(JsonKeys.EMAIL);
-      UserFactory userMgr = getWdkModel().getUserFactory();
-      try {
-        userMgr.resetPassword(emailOrLoginName);
-      }
-      catch (WdkUserException e) {
-        throw new DataValidationException(NO_USER_BY_THAT_LOGIN);
-      }
+      String loginName = json.getString(JsonKeys.EMAIL); // email, but also now supports username
+      getWdkModel().getUserFactory().resetPassword(loginName);
       return Response.noContent().build();
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.toString());
+    }
+    catch (WdkUserException e) {
+      throw new DataValidationException(NO_USER_BY_THAT_LOGIN);
     }
   }
 
@@ -133,15 +141,10 @@ public class UserUtilityServices extends AbstractWdkService {
           throw new RequestMisformatException("The user email list provided must be an array of strings.");
         }
       }
-      ModelConfigAccountDB accountDbConfig = getWdkModel().getModelConfig().getAccountDB();
-      AccountManager accountManager = new AccountManager(getWdkModel().getAccountDb(),
-          accountDbConfig.getAccountSchema(), accountDbConfig.getUserPropertyNames());
-      Map<String,Long> userEmailIdMap = accountManager.lookUpUserIdsByEmail(userEmails);
-      JSONArray jsonUserList = new JSONArray();
-      for (Entry<String, Long> mapping : userEmailIdMap.entrySet()) {
-        jsonUserList.put(new JSONObject().put(mapping.getKey(), mapping.getValue()));
-      }
-      return Response.ok(new JSONObject().put("results", jsonUserList).toString()).build();
+      Map<String,User> userMap = getWdkModel().getUserFactory().getUsersByEmail(new ArrayList<>(userEmails));
+      Map<String,Long> idMap = Functions.getMapFromKeys(userMap.keySet(),
+          email -> Optional.ofNullable(userMap.get(email)).map(User::getUserId).orElse(null));
+      return Response.ok(new JSONObject().put("results", idMap).toString()).build();
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage());

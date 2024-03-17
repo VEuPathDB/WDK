@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserPreferenceFactory;
 import org.gusdb.wdk.model.user.UserPreferences;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
@@ -38,7 +39,8 @@ public class PreferenceService extends UserService {
   @OutSchema("wdk.users.preferences.get-response")
   public Response getUserPrefs() throws WdkModelException {
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
-    return Response.ok(UserFormatter.getPreferencesJson(user.getPreferences()).toString()).build();
+    UserPreferences userPrefs = new UserPreferenceFactory(getWdkModel()).getPreferences(user.getUserId());
+    return Response.ok(UserFormatter.getPreferencesJson(userPrefs).toString()).build();
   }
 
   /**
@@ -61,7 +63,7 @@ public class PreferenceService extends UserService {
   public Response patchGlobalUserPrefs(JSONObject body) throws WdkModelException, DataValidationException {
     return patchUserPrefs(body, Scope.GLOBAL);
   }
-  
+
   @PATCH
   @Path("preferences/project")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -69,13 +71,14 @@ public class PreferenceService extends UserService {
   public Response patchProjectUserPrefs(JSONObject body) throws WdkModelException, DataValidationException {
     return patchUserPrefs(body, Scope.PROJECT);
   }
-  
+
   private Response patchUserPrefs(JSONObject body, Scope scope) throws WdkModelException, DataValidationException {
     User user = getUserBundle(Access.PRIVATE).getSessionUser();
     try {
       Action action = Action.valueOf(body.getString(JsonKeys.ACTION));  // IllegalArgumentException
-      UserPreferences prefs = user.getPreferences();
-      
+      UserPreferenceFactory prefsFactory = new UserPreferenceFactory(getWdkModel());
+      UserPreferences prefs = prefsFactory.getPreferences(user.getUserId());
+
       if (scope == Scope.GLOBAL) {
         if (action == Action.CLEAR) prefs.clearGlobalPreferences();
         else {
@@ -85,7 +88,6 @@ public class PreferenceService extends UserService {
           }
         }
       }
-      
       else {
         if (action == Action.CLEAR) prefs.clearProjectPreferences();
         else {
@@ -95,8 +97,8 @@ public class PreferenceService extends UserService {
           }
         }
       }
-      
-      getWdkModel().getUserFactory().savePreferences(user);
+
+      prefsFactory.savePreferences(user.getUserId(), prefs);
       return Response.noContent().build();
     }
     catch(JSONException | RequestMisformatException | IllegalArgumentException e) {

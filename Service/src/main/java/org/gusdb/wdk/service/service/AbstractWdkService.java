@@ -25,7 +25,9 @@ import org.glassfish.grizzly.http.server.Request;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.web.RequestData;
-import org.gusdb.fgputil.web.SessionProxy;
+import org.gusdb.oauth2.client.ValidatedToken;
+import org.gusdb.wdk.cache.TemporaryUserDataStore;
+import org.gusdb.wdk.cache.TemporaryUserDataStore.TemporaryUserData;
 import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.errors.ErrorContext;
 import org.gusdb.wdk.errors.ErrorContext.ErrorLocation;
@@ -38,7 +40,6 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
-import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 
@@ -99,10 +100,6 @@ public abstract class AbstractWdkService {
 
   private WdkModel _testWdkModel;
 
-  // used to cache a guest user ONLY if one is not present in the session
-  // NOTE: this is a temporary hack to support Grizzly use of the WDK service
-  private User _cachedSessionUser;
-
   // public setter for unit tests
   public void testSetup(WdkModel wdkModel) {
     _testWdkModel = wdkModel;
@@ -141,27 +138,32 @@ public abstract class AbstractWdkService {
     return _headers.getRequestHeaders();
   }
 
-  protected SessionProxy getSession() {
-    return getRequest().getSession();
+  /**
+   * Note!  Use of session should be extremely limited.  WDK is intended to be a
+   * stateless service.
+   *
+   * @return genericized session object (compatible with both Servlet and Grizzly sessions)
+   */
+  protected TemporaryUserData getTemporaryUserData() {
+    return TemporaryUserDataStore.instance().get(getRequestingUser().getUserId());
   }
 
-  protected User getSessionUser() {
-    User user = (User) getRequest().getSession().getAttribute(Utilities.WDK_USER_KEY);
+  protected User getRequestingUser() {
+    User user = (User) getRequest().getAttributeMap().get(Utilities.WDK_USER_KEY);
     if (user != null) {
       // NOTE: user should ALWAYS be non-null in servlet containers with CheckLoginFilter active
       return user;
     }
-    // used to cache a guest user ONLY if one is not present in the session
-    // NOTE: this is a temporary hack to support Grizzly use of the WDK service
-    if (_cachedSessionUser == null) {
-      _cachedSessionUser = getWdkModel().getUserFactory().createUnregistedUser(UnregisteredUserType.GUEST);
-    }
-    return _cachedSessionUser;
+    throw new IllegalStateException("No user present on request.");
+  }
+
+  protected ValidatedToken getAuthorizationToken() {
+    return (ValidatedToken)getRequest().getAttributeMap().get(Utilities.BEARER_TOKEN_KEY);
   }
 
   protected boolean isSessionUserAdmin() {
     List<String> adminEmails = getWdkModel().getModelConfig().getAdminEmails();
-    return adminEmails.contains(getSessionUser().getEmail());
+    return adminEmails.contains(getRequestingUser().getEmail());
   }
 
   protected void assertAdmin() {
@@ -178,7 +180,7 @@ public abstract class AbstractWdkService {
    * @throws WdkModelException if error occurs while accessing user data (probably a DB problem)
    */
   protected UserBundle parseTargetUserId(String userIdStr) throws WdkModelException {
-    return UserBundle.createFromTargetId(userIdStr, getSessionUser(), getWdkModel().getUserFactory(), isSessionUserAdmin());
+    return UserBundle.createFromTargetId(userIdStr, getRequestingUser(), getWdkModel().getUserFactory(), isSessionUserAdmin());
   }
 
   /**
@@ -215,7 +217,6 @@ public abstract class AbstractWdkService {
     return new ErrorContext(
       wdkModel,
       request.getSnapshot(),
-      request.getSession().getAttributeMap(),
       errorLocation);
   }
 

@@ -127,12 +127,20 @@ public class FlatVocabParam extends AbstractEnumParam {
     try {
       FlatVocabularyFetcher fetcher = new FlatVocabularyFetcher(user, this);
       return (vocabQuery.isCacheable() ?
-          CacheMgr.get().getVocabCache().getValue(fetcher.getCacheKey(dependedParamValues), fetcher) :
+          getCachedVocabInstance(fetcher, dependedParamValues) :
           fetcher.fetchItem(dependedParamValues));
     }
     catch (ValueProductionException e) {
       throw new WdkModelException(e);
     }
+  }
+
+  private EnumParamVocabInstance getCachedVocabInstance(
+      FlatVocabularyFetcher fetcher,
+      Map<String, String> dependedParamValues) throws ValueProductionException {
+    String cacheKey = fetcher.getCacheKey(dependedParamValues);
+    EnumParamVocabInstance vocab = CacheMgr.get().getVocabCache().getValue(cacheKey, fetcher);
+    return vocab;
   }
 
   @Override

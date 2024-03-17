@@ -94,39 +94,6 @@
                     <attribute name="userSchema" />
                 </element>
 
-                <element name="accountDb">
-                    <ref name="DBBaseContent" />
-                    <attribute name="accountSchema" />
-                    <zeroOrMore>
-                        <element name="userProperty">
-                          <attribute name="name">
-                              <data type="string"/>
-                          </attribute>
-                          <attribute name="displayName">
-                              <data type="string"/>
-                          </attribute>
-                          <attribute name="dbKey">
-                              <data type="string"/>
-                          </attribute>
-                          <optional>
-                            <attribute name="required">
-                              <data type="boolean"/>
-                            </attribute>
-                          </optional>
-                          <optional>
-                            <attribute name="public">
-                              <data type="boolean"/>
-                            </attribute>
-                          </optional>
-                          <optional>
-                            <attribute name="multiLine">
-                              <data type="boolean"/>
-                            </attribute>
-                          </optional>
-                        </element>
-                    </zeroOrMore>
-                </element>
-
                 <optional>
                     <element name="userDatasetStore">
                         <attribute name="implementation"/>

@@ -12,10 +12,10 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepContainer.ListStepContainer;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserCache;
-import org.gusdb.wdk.model.user.StepContainer.ListStepContainer;
 
 /**
  * Provides a utility to use transform questions to convert an answer value of

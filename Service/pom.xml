@@ -38,17 +38,17 @@
 
     <dependency>
       <groupId>org.gusdb</groupId>
-      <artifactId>fgputil-accountdb</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.gusdb</groupId>
       <artifactId>fgputil-server</artifactId>
     </dependency>
 
     <dependency>
       <groupId>org.gusdb</groupId>
       <artifactId>fgputil-client</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.gusdb</groupId>
+      <artifactId>oauth2-client</artifactId>
     </dependency>
 
     <dependency>

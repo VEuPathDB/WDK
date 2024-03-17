@@ -436,9 +436,6 @@ public class ModelXmlParser extends XmlParser {
     if (!propMap.containsKey("USER_SCHEMA")) {
       propMap.put("USER_SCHEMA", config.getUserDB().getUserSchema());
     }
-    if (!propMap.containsKey("ACCT_SCHEMA")) {
-      propMap.put("ACCT_SCHEMA", config.getAccountDB().getAccountSchema());
-    }
 
     return propMap;
   }
