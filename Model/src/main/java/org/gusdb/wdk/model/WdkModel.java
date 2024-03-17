@@ -92,7 +92,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   public static final String DB_INSTANCE_APP = "APP";
   public static final String DB_INSTANCE_USER = "USER";
-  public static final String DB_INSTANCE_ACCOUNT = "ACCT";
 
   public static final String INDENT = "  ";
 
