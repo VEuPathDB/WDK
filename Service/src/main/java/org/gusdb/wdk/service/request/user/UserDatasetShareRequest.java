@@ -109,9 +109,15 @@ public class UserDatasetShareRequest {
 
   /**
    * Input Format:
-   *
-   * { "add": { "dataset_id1": [ "userEmail1", "userEmail2" ] "dataset_id2": [ "userEmail1" ] }, "delete" {
-   * "dataset_id3": [ "userEmail1", "userEmail3" ] } }
+   *  {
+   *    "add": {
+   *      "dataset_id1": [ "userEmail1", "userEmail2" ]
+   *      "dataset_id2": [ "userEmail1" ]
+   *    },
+   *    "delete" {
+   *      "dataset_id3": [ "userEmail1", "userEmail3" ]
+   *    }
+   *  }
    *
    * @param json
    * @return

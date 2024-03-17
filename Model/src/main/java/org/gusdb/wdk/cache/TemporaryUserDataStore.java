@@ -36,7 +36,6 @@ public class TemporaryUserDataStore {
     }
 
     public void invalidate() {
-      clear();
       _parent.remove(_owner);
     }
 
@@ -49,7 +48,7 @@ public class TemporaryUserDataStore {
     return _instance == null ? (_instance = new TemporaryUserDataStore()) : _instance;
   }
 
-  public static void shutDown() {
+  public static synchronized void shutDown() {
     if (_instance != null)
       _instance._threadPool.shutdown();
     _instance = null;
