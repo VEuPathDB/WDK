@@ -181,10 +181,15 @@ public class StrategyLoader {
           loadBuilders(sql, paramValues, paramTypes);
 
       // all data loaded; build steps and strats at the specified validation level
-      UserCache userCache = new UserCache(_userFactory);
       List<Strategy> builtStrategies = new ArrayList<>();
       UnbuildableStrategyList<InvalidStrategyStructureException> malstructuredStrategies = new UnbuildableStrategyList<>();
       UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors = new UnbuildableStrategyList<>();
+
+      // load all the users up first (can be done in a single batch) to avoid churn
+      UserCache userCache = new UserCache(_userFactory);
+      userCache.loadUsersByIds(queryResults.getFirst().stream().map(StrategyBuilder::getUserId).collect(Collectors.toList()));
+
+      // try to build each strategy and put in the appropriate list
       for (StrategyBuilder stratBuilder : queryResults.getFirst()) {
         try {
           builtStrategies.add(stratBuilder.build(userCache, _validationLevel, _fillStrategy));

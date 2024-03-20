@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.user;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -23,6 +24,10 @@ public class UserCache extends HashMap<Long,User> {
   public UserCache(User user) {
     put(user.getUserId(), user);
     _userFactory = null;
+  }
+
+  public void loadUsersByIds(List<Long> userIds) {
+    putAll(_userFactory.getUsersById(userIds));
   }
 
   @Override
