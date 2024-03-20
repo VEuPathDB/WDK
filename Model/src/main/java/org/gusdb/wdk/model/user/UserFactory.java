@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.user;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -177,10 +178,14 @@ public class UserFactory {
   // -------------------------------------------------------------------------
 
   public Map<Long, User> getUsersById(List<Long> userIds) {
+    // ensure a unique list
+    userIds = new ArrayList<>(new HashSet<>(userIds));
     return OAuthQuerier.getUsersById(_client, _config, userIds, json -> new BasicUser(_wdkModel, json));
   }
 
   public Map<String, User> getUsersByEmail(List<String> emails) {
+    // ensure a unique list
+    emails = new ArrayList<>(new HashSet<>(emails));
     return OAuthQuerier.getUsersByEmail(_client, _config, emails, json -> new BasicUser(_wdkModel, json));
   }
 
