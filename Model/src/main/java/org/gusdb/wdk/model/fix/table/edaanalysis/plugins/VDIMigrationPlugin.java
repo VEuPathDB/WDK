@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
@@ -22,7 +23,7 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
   public static final String UD_DATASET_ID_PREFIX = "EDAUD_";
 
   private Map<String, String> legacyIdToVdiId;
-  private int missingFromVdiCount = 0;
+  private AtomicInteger missingFromVdiCount = new AtomicInteger(0);
 
   @Override
   public TableRowInterfaces.RowResult<AnalysisRow> processRecord(AnalysisRow nextRow) throws Exception {
@@ -32,24 +33,22 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
 
     if (vdiId == null) {
       LOG.warn("Unable to find legacy ID " + legacyUdId + " in the tinydb file.");
-      missingFromVdiCount++;
+      missingFromVdiCount.incrementAndGet();
       return new TableRowInterfaces.RowResult<>(nextRow);
     }
 
     // Append UD prefix to VDI ID. The prefix is prepended in the view that maps stable VDI IDs to the unstable study
     // ID, which is the currency of EDA.
     final String vdiDatasetId = UD_DATASET_ID_PREFIX + vdiId;
+    nextRow.setDatasetId(vdiDatasetId);
 
-    // Create a copy with just the dataset ID updated to VDI counterpart.
-    AnalysisRow out = new AnalysisRow(nextRow.getAnalysisId(), vdiDatasetId, nextRow.getDescriptor(),
-        nextRow.getNumFilters(), nextRow.getNumComputations(), nextRow.getNumVisualizations());
-
-    return new TableRowInterfaces.RowResult<>(out);
+    return new TableRowInterfaces.RowResult<>(nextRow)
+        .setShouldWrite(_writeToDb);
   }
 
   @Override
   public void dumpStatistics() {
-    if (missingFromVdiCount > 0) {
+    if (missingFromVdiCount.get() > 0) {
       LOG.warn("Failed to migrate " + missingFromVdiCount + " datasets, they were not found in the provided tinydb file.");
     }
   }
@@ -116,9 +115,5 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private enum CliArg {
-    
   }
 }

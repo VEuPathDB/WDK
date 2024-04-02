@@ -97,6 +97,10 @@ public class AnalysisRow implements TableRow {
     refreshStats();
   }
 
+  public void setDatasetId(String datasetId) {
+    _datasetId = datasetId;
+  }
+
   public void refreshStats() {
     _numFilters = _descriptor.getJSONObject("subset").getJSONArray("descriptor").length();
     JSONArray computations = Optional.ofNullable(_descriptor.optJSONArray("computations")).orElse(new JSONArray());

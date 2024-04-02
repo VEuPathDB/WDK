@@ -24,7 +24,7 @@ public class VDIMigrationPluginTest {
   }
 
   @Test
-  public void test() throws Exception {
+  public void testUpdateEnabled() throws Exception {
     final File file = new File(Objects.requireNonNull(classLoader.getResource("migration-unit-test-1.json")).getFile());
     final VDIMigrationPlugin migrationPlugin = new VDIMigrationPlugin();
     final List<String> args = List.of("--tinyDb=" + file.getPath());
@@ -37,5 +37,23 @@ public class VDIMigrationPluginTest {
             4,
             5));
     Assert.assertEquals("EDAUD_123XyZ", result.getRow().getDatasetId());
+    Assert.assertFalse(result.shouldWrite());
+  }
+
+  @Test
+  public void testUpdateDisabled() throws Exception {
+    final File file = new File(Objects.requireNonNull(classLoader.getResource("migration-unit-test-1.json")).getFile());
+    final VDIMigrationPlugin migrationPlugin = new VDIMigrationPlugin();
+    final List<String> args = List.of("--tinyDb=" + file.getPath(), "--liveRun");
+    migrationPlugin.configure(mockedModel, args);
+    TableRowInterfaces.RowResult<AnalysisRow> result = migrationPlugin.processRecord(
+        new AnalysisRow("x",
+            "EDAUD_1234",
+            new JSONObject(),
+            3,
+            4,
+            5));
+    Assert.assertEquals("EDAUD_123XyZ", result.getRow().getDatasetId());
+    Assert.assertTrue(result.shouldWrite());
   }
 }
