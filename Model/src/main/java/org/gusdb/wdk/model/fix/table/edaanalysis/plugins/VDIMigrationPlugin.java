@@ -1,61 +1,45 @@
 package org.gusdb.wdk.model.fix.table.edaanalysis.plugins;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces;
 import org.gusdb.wdk.model.fix.table.edaanalysis.AbstractAnalysisUpdater;
 import org.gusdb.wdk.model.fix.table.edaanalysis.AnalysisRow;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
   private static final Logger LOG = Logger.getLogger(VDIMigrationPlugin.class);
-  public static final String UD_DATASET_ID_PREFIX = "EDAUD_";
+  private static final String UD_DATASET_ID_PREFIX = "EDAUD_";
+  private static final Pattern VAR_ID_PATTERN = Pattern.compile("variableId\":\\s*\"([a-zA-Z0-9_-]+)");
+  private static final Pattern ENTITY_ID_PATTERN = Pattern.compile("entityId\":\\s*\"([a-zA-Z0-9_-]+)");
 
-  private Map<String, String> legacyIdToVdiId;
+  private Map<String, String> _legacyIdToVdiId;
+  private VDIEntityIdRetriever _vdiEntityIdRetriever;
   private int missingFromVdiCount = 0;
 
   @Override
-  public TableRowInterfaces.RowResult<AnalysisRow> processRecord(AnalysisRow nextRow) throws Exception {
-    final String legacyDatasetId = nextRow.getDatasetId();
-    final String legacyUdId = legacyDatasetId.replace(UD_DATASET_ID_PREFIX, "");
-    final String vdiId = legacyIdToVdiId.get(legacyUdId);
-
-    if (vdiId == null) {
-      LOG.warn("Unable to find legacy ID " + legacyUdId + " in the tinydb file.");
-      missingFromVdiCount++;
-      return new TableRowInterfaces.RowResult<>(nextRow);
-    }
-
-    // Append UD prefix to VDI ID. The prefix is prepended in the view that maps stable VDI IDs to the unstable study
-    // ID, which is the currency of EDA.
-    final String vdiDatasetId = UD_DATASET_ID_PREFIX + vdiId;
-
-    // Create a copy with just the dataset ID updated to VDI counterpart.
-    AnalysisRow out = new AnalysisRow(nextRow.getAnalysisId(), vdiDatasetId, nextRow.getDescriptor(),
-        nextRow.getNumFilters(), nextRow.getNumComputations(), nextRow.getNumVisualizations());
-
-    return new TableRowInterfaces.RowResult<>(out);
-  }
-
-  @Override
-  public void dumpStatistics() {
-    if (missingFromVdiCount > 0) {
-      LOG.warn("Failed to migrate " + missingFromVdiCount + " datasets, they were not found in the provided tinydb file.");
-    }
-  }
-
-  @Override
   public void configure(WdkModel wdkModel, List<String> additionalArgs) throws Exception {
+    configure(wdkModel, additionalArgs, new VDIEntityIdRetriever(wdkModel.getAppDb().getDataSource()));
+  }
+
+  // Visible for testing.
+  void configure(WdkModel wdkModel, List<String> additionalArgs, VDIEntityIdRetriever entityIdRetriever) {
     // Parse args in the format --<argname>=<argvalue>
     final Map<String, String> args = additionalArgs.stream()
         .map(arg -> Arrays.stream(arg.split("="))
@@ -71,10 +55,68 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
     }
     final File tinyDbFile = new File(args.get("--tinyDb"));
 
-    this.legacyIdToVdiId = readLegacyStudyIdToVdiId(tinyDbFile);
+    _legacyIdToVdiId = readLegacyStudyIdToVdiId(tinyDbFile);
 
     // Default to dryrun to avoid incidental migrations when testing.
-    this._writeToDb = Boolean.parseBoolean(args.getOrDefault("--liveRun", "false"));
+    _writeToDb = Boolean.parseBoolean(args.getOrDefault("--liveRun", "false"));
+    _wdkModel = wdkModel;
+    _vdiEntityIdRetriever = entityIdRetriever;
+  }
+
+  @Override
+  public TableRowInterfaces.RowResult<AnalysisRow> processRecord(AnalysisRow nextRow) throws Exception {
+    final String legacyDatasetId = nextRow.getDatasetId();
+    final String legacyUdId = legacyDatasetId.replace(UD_DATASET_ID_PREFIX, "");
+    final String vdiId = _legacyIdToVdiId.get(legacyUdId);
+
+    if (vdiId == null) {
+      LOG.warn("Unable to find legacy ID " + legacyUdId + " in the tinydb file.");
+      missingFromVdiCount++;
+      return new TableRowInterfaces.RowResult<>(nextRow);
+    }
+
+    // Append UD prefix to VDI ID. The prefix is prepended in the view that maps stable VDI IDs to the unstable study
+    // ID, which is the currency of EDA.
+    final String vdiDatasetId = UD_DATASET_ID_PREFIX + vdiId;
+    final String vdiEntityId = _vdiEntityIdRetriever.queryEntityId(vdiDatasetId);
+
+    String descriptor = nextRow.getDescriptor().toString();
+
+    // Find all variable IDs.
+    final Set<String> legacyVariableIds = VAR_ID_PATTERN.matcher(descriptor).results()
+        .map(match -> match.group(1))
+        .collect(Collectors.toSet());
+
+    final String entityId = ENTITY_ID_PATTERN.matcher(descriptor).results()
+        .findAny()
+        .map(m -> m.group(1))
+        .orElse(null);
+
+    if (entityId != null) {
+      descriptor = descriptor.replaceAll(entityId, vdiEntityId);
+    }
+
+    for (String legacyVariableId: legacyVariableIds) {
+      descriptor = descriptor.replaceAll(legacyVariableId, convertToVdiId(legacyVariableId));
+    }
+
+    // Create a copy with just the dataset ID updated to VDI counterpart.
+    AnalysisRow out = new AnalysisRow(nextRow.getAnalysisId(), vdiDatasetId, new JSONObject(descriptor),
+        nextRow.getNumFilters(), nextRow.getNumComputations(), nextRow.getNumVisualizations());
+
+    return new TableRowInterfaces.RowResult<>(out);
+  }
+
+  private String convertToVdiId(String legacyVariableId) {
+    byte[] encodedId = DigestUtils.digest(DigestUtils.getSha1Digest(), legacyVariableId.getBytes(StandardCharsets.UTF_8));
+    return "VAR_" + Hex.encodeHexString(encodedId).substring(0, 16);
+  }
+
+  @Override
+  public void dumpStatistics() {
+    if (missingFromVdiCount > 0) {
+      LOG.warn("Failed to migrate " + missingFromVdiCount + " datasets, they were not found in the provided tinydb file.");
+    }
   }
 
   /**
@@ -116,9 +158,5 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private enum CliArg {
-    
   }
 }
