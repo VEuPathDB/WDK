@@ -18,6 +18,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
 import org.glassfish.grizzly.http.server.Request;
@@ -89,7 +90,7 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
         catch (InvalidTokenException e) {
           // passed token is invalid; throw 401
           LOG.warn("Received invalid bearer token for auth: " + rawToken);
-          throw new NotAuthorizedException(Response.noContent().build());
+          throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED).build());
         }
       }
     }
