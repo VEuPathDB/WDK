@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.fix.VdiMigrationFileReader;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces;
 import org.gusdb.wdk.model.fix.table.edaanalysis.AbstractAnalysisUpdater;
 import org.gusdb.wdk.model.fix.table.edaanalysis.AnalysisRow;
@@ -23,7 +24,7 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
   public static final String UD_DATASET_ID_PREFIX = "EDAUD_";
 
   private Map<String, String> legacyIdToVdiId;
-  private AtomicInteger missingFromVdiCount = new AtomicInteger(0);
+  private final AtomicInteger missingFromVdiCount = new AtomicInteger(0);
 
   @Override
   public TableRowInterfaces.RowResult<AnalysisRow> processRecord(AnalysisRow nextRow) throws Exception {
@@ -68,9 +69,11 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
     if (!args.containsKey("--tinyDb")) {
       throw new IllegalArgumentException("Missing required flag --tinyDb");
     }
-    final File tinyDbFile = new File(args.get("--tinyDb"));
 
-    this.legacyIdToVdiId = readLegacyStudyIdToVdiId(tinyDbFile);
+    final File tinyDbFile = new File(args.get("--tinyDb"));
+    VdiMigrationFileReader reader = new VdiMigrationFileReader(tinyDbFile);
+
+    this.legacyIdToVdiId = reader.readLegacyStudyIdToVdiId();
 
     // Default to dryrun to avoid incidental migrations when testing.
     this._writeToDb = Boolean.parseBoolean(args.getOrDefault("--liveRun", "false"));
