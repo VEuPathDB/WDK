@@ -37,9 +37,9 @@ public class VDIMigrationPluginTest {
     JSONObject descriptor = new JSONObject(Files.readString(Path.of(analysisFile.getPath())));
     final File file = new File(Objects.requireNonNull(classLoader.getResource("migration-unit-test-1.json")).getFile());
     final VDIMigrationPlugin migrationPlugin = new VDIMigrationPlugin();
-    final List<String> args = List.of("--tinyDb=" + file.getPath());
+    migrationPlugin.readVdiMappingFile(file);
     Mockito.when(retriever.queryEntityId("EDAUD_123XyZ")).thenReturn(Optional.of("EDAUD_Migrated_ID"));
-    migrationPlugin.configure(mockedModel, args, retriever);
+    migrationPlugin.setEntityIdRetriever(retriever);
     TableRowInterfaces.RowResult<AnalysisRow> result = migrationPlugin.processRecord(
         new AnalysisRow("x",
             "EDAUD_1234",

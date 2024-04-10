@@ -36,11 +36,6 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
 
   @Override
   public void configure(WdkModel wdkModel, List<String> additionalArgs) throws Exception {
-    configure(wdkModel, additionalArgs, new VDIEntityIdRetriever(wdkModel.getAppDb().getDataSource()));
-  }
-
-  // Visible for testing.
-  void configure(WdkModel wdkModel, List<String> additionalArgs, VDIEntityIdRetriever entityIdRetriever) {
     // Parse args in the format --<argname>=<argvalue>
     final Map<String, String> args = additionalArgs.stream()
         .map(arg -> Arrays.stream(arg.split("="))
@@ -50,18 +45,33 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
             pair -> pair.get(0),
             pair -> pair.size() > 1 ? pair.get(1) : "true")); // A flag without an "=" is a boolean. Set true if present.
 
-    // Validate required arg.
+    // Validate required args.
     if (!args.containsKey("--tinyDb")) {
       throw new IllegalArgumentException("Missing required flag --tinyDb");
     }
-    final File tinyDbFile = new File(args.get("--tinyDb"));
+    if (!args.containsKey(("--schema"))) {
+      throw new IllegalArgumentException("Missing required argument --schema");
+    }
 
-    _legacyIdToVdiId = readLegacyStudyIdToVdiId(tinyDbFile);
+    final String schema = args.get("--schema");
+    setEntityIdRetriever(new VDIEntityIdRetriever(wdkModel.getAppDb().getDataSource(), schema));
+
+    final File tinyDbFile = new File(args.get("--tinyDb"));
+    readVdiMappingFile(tinyDbFile);
 
     // Default to dryrun to avoid incidental migrations when testing.
-    _writeToDb = Boolean.parseBoolean(args.getOrDefault("--liveRun", "false"));
+    _writeToDb = Boolean.parseBoolean(args.getOrDefault("-write", "false"));
     _wdkModel = wdkModel;
+  }
+
+  // Visible for testing.
+  void setEntityIdRetriever(VDIEntityIdRetriever entityIdRetriever) {
     _vdiEntityIdRetriever = entityIdRetriever;
+  }
+
+  // Visible for testing
+  void readVdiMappingFile(File mappingFile) {
+    _legacyIdToVdiId = readLegacyStudyIdToVdiId(mappingFile);
   }
 
   @Override
@@ -81,7 +91,7 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
     // ID, which is the currency of EDA.
     final String vdiDatasetId = UD_DATASET_ID_PREFIX + vdiId;
     final Optional<String> vdiEntityId = _vdiEntityIdRetriever.queryEntityId(vdiDatasetId);
-    if (!vdiEntityId.isPresent()) {
+    if (vdiEntityId.isEmpty()) {
       LOG.warn("Unable to find entity ID in appdb for VDI dataset ID: " + vdiDatasetId);
       return new TableRowInterfaces.RowResult<>(nextRow)
           .setShouldWrite(false);
