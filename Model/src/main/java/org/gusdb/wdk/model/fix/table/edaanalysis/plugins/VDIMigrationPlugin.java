@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -72,13 +73,19 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
     if (vdiId == null) {
       LOG.warn("Unable to find legacy ID " + legacyUdId + " in the tinydb file.");
       missingFromVdiCount++;
-      return new TableRowInterfaces.RowResult<>(nextRow);
+      return new TableRowInterfaces.RowResult<>(nextRow)
+          .setShouldWrite(false);
     }
 
     // Append UD prefix to VDI ID. The prefix is prepended in the view that maps stable VDI IDs to the unstable study
     // ID, which is the currency of EDA.
     final String vdiDatasetId = UD_DATASET_ID_PREFIX + vdiId;
-    final String vdiEntityId = _vdiEntityIdRetriever.queryEntityId(vdiDatasetId);
+    final Optional<String> vdiEntityId = _vdiEntityIdRetriever.queryEntityId(vdiDatasetId);
+    if (!vdiEntityId.isPresent()) {
+      LOG.warn("Unable to find entity ID in appdb for VDI dataset ID: " + vdiDatasetId);
+      return new TableRowInterfaces.RowResult<>(nextRow)
+          .setShouldWrite(false);
+    }
 
     String descriptor = nextRow.getDescriptor().toString();
 
@@ -92,10 +99,12 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
         .map(m -> m.group(1))
         .orElse(null);
 
+    // Replace all entityID with entityID looked up from database.
     if (entityId != null) {
-      descriptor = descriptor.replaceAll(entityId, vdiEntityId);
+      descriptor = descriptor.replaceAll(entityId, vdiEntityId.get());
     }
 
+    // Replace all variable IDs with value converted from legacy variable ID.
     for (String legacyVariableId: legacyVariableIds) {
       descriptor = descriptor.replaceAll(legacyVariableId, convertToVdiId(legacyVariableId));
     }
