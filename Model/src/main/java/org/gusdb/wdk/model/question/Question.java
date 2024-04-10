@@ -91,6 +91,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   private List<WdkModelText> _helps = new ArrayList<>();
   private String _help;
 
+  private List<WdkModelText> _searchVisibleHelps = new ArrayList<>();
+  private String _searchVisibleHelp;
+
   private QuestionSet _questionSet;
 
   private Query _query;
@@ -187,6 +190,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     _dynamicAttributeSet = question._dynamicAttributeSet;
 
     _help = question._help;
+    _searchVisibleHelp = question._searchVisibleHelp;
 
     // need to deep-copy query as well
     _query = question._query;
@@ -260,6 +264,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     _helps.add(help);
   }
 
+  public void addSearchVisibleHelp(WdkModelText searchVisibleHelp) {
+    _searchVisibleHelps.add(searchVisibleHelp);
+  }
+
   public void setRecordClassRef(String recordClassRef) {
     _recordClassRef = recordClassRef;
   }
@@ -328,6 +336,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   public String getHelp() {
     return _help;
+  }
+
+  public String getSearchVisibleHelp() {
+    return _searchVisibleHelp;
   }
 
   public String getDisplayName() {
@@ -718,6 +730,21 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
       }
     }
     _helps = null;
+
+    // exclude searchVisibleHelps
+    boolean hasSearchVisibleHelp = false;
+    for (WdkModelText searchVisibleHelp : _searchVisibleHelps) {
+      if (searchVisibleHelp.include(projectId)) {
+        if (hasSearchVisibleHelp) {
+          throw new WdkModelException("The question " + getFullName()
+              + " has more than one searchVisibleHelp for project " + projectId);
+        } else {
+          _searchVisibleHelp = searchVisibleHelp.getText();
+          hasSearchVisibleHelp = true;
+        }
+      }
+    }
+    _searchVisibleHelps = null;
 
     // exclude summary and sorting attribute list
     boolean hasAttributeList = false;

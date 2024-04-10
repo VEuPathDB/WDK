@@ -122,6 +122,7 @@ public class JsonKeys {
   public static final String PARAM_NAMES = "paramNames";
   public static final String QUERY_NAME = "queryName";
   public static final String IS_CACHEABLE = "isCacheable";
+  public static final String SEARCH_VISIBLE_HELP = "searchVisibleHelp";
 
   // record class specific keys
   public static final String HAS_ALL_RECORDS_QUERY = "hasAllRecordsQuery";
