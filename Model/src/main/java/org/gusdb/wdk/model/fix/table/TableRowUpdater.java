@@ -526,6 +526,7 @@ public class TableRowUpdater<T extends TableRow> {
 
         // if updates enabled, execute argument batch
         if (!UPDATES_DISABLED) {
+          LOG.info("would have run update. " + batch);
           new SQLRunner(_userDs, _writers.get(i).getWriteSql(
               _schema), true, "migration-update-rows").executeUpdateBatch(batch);
         }

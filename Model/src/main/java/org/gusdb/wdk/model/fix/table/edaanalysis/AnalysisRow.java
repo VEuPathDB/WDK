@@ -33,6 +33,15 @@ public class AnalysisRow implements TableRow {
     _numVisualizations = rs.getInt("num_visualizations");
   }
 
+  public AnalysisRow(String analysisId, String datasetId, JSONObject descriptor, int numFilters, int numComputations, int numVisualizations) {
+    _analysisId = analysisId;
+    _datasetId = datasetId;
+    _descriptor = descriptor;
+    _numFilters = numFilters;
+    _numComputations = numComputations;
+    _numVisualizations = numVisualizations;
+  }
+
   public Object[] toOrderedValues() {
     return new Object[] {
         _datasetId, _descriptor.toString(), _numFilters, _numComputations, _numVisualizations, _analysisId
@@ -61,6 +70,22 @@ public class AnalysisRow implements TableRow {
     return _descriptor;
   }
 
+  public String getAnalysisId() {
+    return _analysisId;
+  }
+
+  public int getNumFilters() {
+    return _numFilters;
+  }
+
+  public int getNumComputations() {
+    return _numComputations;
+  }
+
+  public int getNumVisualizations() {
+    return _numVisualizations;
+  }
+
   /**
    * Sets a new descriptor and refreshes the stats (number of filters, computations,
    * and visualizations) on this analysis.
@@ -70,6 +95,10 @@ public class AnalysisRow implements TableRow {
   public void setDescriptor(JSONObject descriptor) {
     _descriptor = descriptor;
     refreshStats();
+  }
+
+  public void setDatasetId(String datasetId) {
+    _datasetId = datasetId;
   }
 
   public void refreshStats() {
