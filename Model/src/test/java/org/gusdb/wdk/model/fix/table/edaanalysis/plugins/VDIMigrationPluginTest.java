@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class VDIMigrationPluginTest {
   private WdkModel mockedModel;
@@ -37,7 +38,7 @@ public class VDIMigrationPluginTest {
     final File file = new File(Objects.requireNonNull(classLoader.getResource("migration-unit-test-1.json")).getFile());
     final VDIMigrationPlugin migrationPlugin = new VDIMigrationPlugin();
     final List<String> args = List.of("--tinyDb=" + file.getPath());
-    Mockito.when(retriever.queryEntityId("EDAUD_123XyZ")).thenReturn("EDAUD_Migrated_ID");
+    Mockito.when(retriever.queryEntityId("EDAUD_123XyZ")).thenReturn(Optional.of("EDAUD_Migrated_ID"));
     migrationPlugin.configure(mockedModel, args, retriever);
     TableRowInterfaces.RowResult<AnalysisRow> result = migrationPlugin.processRecord(
         new AnalysisRow("x",
