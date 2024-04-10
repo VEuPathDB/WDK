@@ -113,7 +113,8 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
     AnalysisRow out = new AnalysisRow(nextRow.getAnalysisId(), vdiDatasetId, new JSONObject(descriptor),
         nextRow.getNumFilters(), nextRow.getNumComputations(), nextRow.getNumVisualizations());
 
-    return new TableRowInterfaces.RowResult<>(out);
+    return new TableRowInterfaces.RowResult<>(out)
+        .setShouldWrite(_writeToDb);
   }
 
   private String convertToVdiId(String legacyVariableId) {
