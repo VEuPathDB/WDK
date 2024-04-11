@@ -417,7 +417,7 @@ public class StrategyLoader {
       UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors) throws WdkModelException {
     return getStrategies(
         prepareSql(FIND_STRATEGIES_SQL.replace(SEARCH_CONDITIONS_MACRO, "")),
-        malformedStrategies, stratsWithBuildErrors);
+        false, malformedStrategies, stratsWithBuildErrors);
   }
 
   Map<Long, Strategy> getStrategies(long userId,
@@ -425,13 +425,13 @@ public class StrategyLoader {
       UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors) throws WdkModelException {
     return getStrategies(
         prepareSql(FIND_STRATEGIES_SQL.replace(SEARCH_CONDITIONS_MACRO, "and sr." + COLUMN_USER_ID + " = " + userId)),
-        malformedStrategies, stratsWithBuildErrors);
+        false, malformedStrategies, stratsWithBuildErrors);
   }
 
-  private Map<Long, Strategy> getStrategies(String searchSql,
+  private Map<Long, Strategy> getStrategies(String searchSql, boolean propagateBuildErrors,
       UnbuildableStrategyList<InvalidStrategyStructureException> malformedStrategies,
       UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors) throws WdkModelException {
-    SearchResult result = doSearch(searchSql);
+    SearchResult result = doSearch(searchSql, propagateBuildErrors);
     malformedStrategies.addAll(result.getMalformedStrategies());
     stratsWithBuildErrors.addAll(result.getStratsWithBuildErrors());
     return toStrategyMap(descModTimeSort(result.getStrategies()));

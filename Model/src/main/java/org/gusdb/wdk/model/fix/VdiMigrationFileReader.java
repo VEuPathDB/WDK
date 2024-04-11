@@ -54,4 +54,8 @@ public class VdiMigrationFileReader {
       throw new RuntimeException(e);
     }
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> master

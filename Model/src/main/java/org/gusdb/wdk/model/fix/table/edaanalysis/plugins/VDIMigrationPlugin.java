@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
@@ -32,7 +33,7 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
 
   private Map<String, String> _legacyIdToVdiId;
   private VDIEntityIdRetriever _vdiEntityIdRetriever;
-  private int missingFromVdiCount = 0;
+  private final AtomicInteger missingFromVdiCount = new AtomicInteger(0);
 
   @Override
   public void configure(WdkModel wdkModel, List<String> additionalArgs) throws Exception {
@@ -77,12 +78,17 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
   @Override
   public TableRowInterfaces.RowResult<AnalysisRow> processRecord(AnalysisRow nextRow) throws Exception {
     final String legacyDatasetId = nextRow.getDatasetId();
+
+    if (!legacyDatasetId.startsWith(UD_DATASET_ID_PREFIX)) {
+      return new TableRowInterfaces.RowResult<>(nextRow).setShouldWrite(false);
+    }
+
     final String legacyUdId = legacyDatasetId.replace(UD_DATASET_ID_PREFIX, "");
     final String vdiId = _legacyIdToVdiId.get(legacyUdId);
 
     if (vdiId == null) {
       LOG.warn("Unable to find legacy ID " + legacyUdId + " in the tinydb file.");
-      missingFromVdiCount++;
+      missingFromVdiCount.incrementAndGet();
       return new TableRowInterfaces.RowResult<>(nextRow)
           .setShouldWrite(false);
     }
@@ -134,7 +140,7 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
 
   @Override
   public void dumpStatistics() {
-    if (missingFromVdiCount > 0) {
+    if (missingFromVdiCount.get() > 0) {
       LOG.warn("Failed to migrate " + missingFromVdiCount + " datasets, they were not found in the provided tinydb file.");
     }
   }
