@@ -102,7 +102,8 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
       return new TableRowInterfaces.RowResult<>(nextRow)
           .setShouldWrite(false);
     }
-
+    
+    LOG.info("Analysis descriptor before migration: " + nextRow.getDescriptor());
     String descriptor = nextRow.getDescriptor().toString();
 
     // Find all variable IDs.
@@ -128,6 +129,8 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
     // Create a copy with just the dataset ID updated to VDI counterpart.
     AnalysisRow out = new AnalysisRow(nextRow.getAnalysisId(), vdiDatasetId, new JSONObject(descriptor),
         nextRow.getNumFilters(), nextRow.getNumComputations(), nextRow.getNumVisualizations());
+
+    LOG.info("Analysis descriptor after migration: " + out.getDescriptor());
 
     return new TableRowInterfaces.RowResult<>(out)
         .setShouldWrite(_writeToDb);
