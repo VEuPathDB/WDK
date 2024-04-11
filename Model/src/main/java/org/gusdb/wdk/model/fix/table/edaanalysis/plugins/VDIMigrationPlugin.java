@@ -29,6 +29,11 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
   @Override
   public TableRowInterfaces.RowResult<AnalysisRow> processRecord(AnalysisRow nextRow) throws Exception {
     final String legacyDatasetId = nextRow.getDatasetId();
+    if (!legacyDatasetId.startsWith(UD_DATASET_ID_PREFIX)) {
+      return new TableRowInterfaces.RowResult<>(nextRow)
+          .setShouldWrite(false);
+    }
+
     final String legacyUdId = legacyDatasetId.replace(UD_DATASET_ID_PREFIX, "");
     final String vdiId = legacyIdToVdiId.get(legacyUdId);
 
