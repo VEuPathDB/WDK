@@ -164,6 +164,7 @@ public class JsonKeys {
   public static final String PARSER = "parser";
   public static final String ALLOW_EMPTY_VALUE = "allowEmptyValue";
   public static final String VISIBLE_HELP = "visibleHelp";
+  public static final String VISIBLE_HELP_POSITION = "visibleHelpPosition";
 
   // dataset-related keys
   public static final String DEFAULT_ID_LIST = "defaultIdList";

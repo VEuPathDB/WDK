@@ -71,6 +71,10 @@ public class ParamReference extends Reference {
     if (visibleHelp != null)
       param.setVisibleHelp(visibleHelp);
 
+    String visibleHelpPosition = paramRef.getVisibleHelpPosition();
+    if (visibleHelpPosition != null)
+      param.setVisibleHelpPosition(visibleHelpPosition);
+
     // set prompt if any
     String prompt = paramRef.getPrompt();
     if (prompt != null)
@@ -276,6 +280,7 @@ public class ParamReference extends Reference {
 
   private List<WdkModelText> _visibleHelps = new ArrayList<WdkModelText>();
   private String _visibleHelp;
+  private String _visibleHelpPosition;
 
   // this property only applies to timestamp param.
   private Long _interval;
@@ -568,6 +573,14 @@ public class ParamReference extends Reference {
 
   public String getVisibleHelp() {
     return _visibleHelp;
+  }
+
+  public void setVisibleHelpPosition(String visibleHelpPosition) {
+    _visibleHelpPosition = visibleHelpPosition;
+  }
+
+  public String getVisibleHelpPosition() {
+    return _visibleHelpPosition;
   }
 
   public void setPrompt(String prompt) {

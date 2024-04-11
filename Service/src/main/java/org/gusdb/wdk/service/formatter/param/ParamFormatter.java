@@ -50,6 +50,7 @@ public abstract class ParamFormatter<T extends Param> {
     pJson.put(JsonKeys.IS_READ_ONLY, _param.isReadonly());
     pJson.put(JsonKeys.ALLOW_EMPTY_VALUE, _param.isAllowEmpty());
     pJson.put(JsonKeys.VISIBLE_HELP, _param.getVisibleHelp());
+    pJson.put(JsonKeys.VISIBLE_HELP_POSITION, _param.getVisibleHelpPosition());
     pJson.put(JsonKeys.DEPENDENT_PARAMS, new JSONArray(
         mapToList(_param.getDependentParams(), NamedObject::getName)));
     pJson.put(JsonKeys.INITIAL_DISPLAY_VALUE,
