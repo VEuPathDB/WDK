@@ -904,6 +904,9 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/questionSet/question/summary", WdkModelText.class, "addSummary");
     digester.addCallMethod("wdkModel/questionSet/question/summary", "setText", 0);
 
+    configureNode(digester, "wdkModel/questionSet/question/searchVisibleHelp", WdkModelText.class, "addSearchVisibleHelp");
+    digester.addCallMethod("wdkModel/questionSet/question/searchVisibleHelp", "setText", 0);
+
     // question's property list
     configureNode(digester, "wdkModel/questionSet/question/propertyList", PropertyList.class,
         "addPropertyList");
