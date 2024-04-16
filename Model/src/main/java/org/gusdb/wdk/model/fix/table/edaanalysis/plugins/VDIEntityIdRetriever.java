@@ -20,7 +20,10 @@ public class VDIEntityIdRetriever {
         " ON u.study_stable_id = etg.study_stable_id" +
         " WHERE dataset_stable_id = ?", schema, schema);
     return new SQLRunner(eda, sql).executeQuery(new Object[] { vdiStableId }, rs -> {
-      rs.next();
+      boolean hasNext = rs.next();
+      if (!hasNext) {
+        return Optional.empty();
+      }
       return Optional.ofNullable(rs.getString("internal_abbrev"));
     });
   }
