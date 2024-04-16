@@ -15,10 +15,10 @@ public class VDIEntityIdRetriever {
   }
 
   public Optional<String> queryEntityId(String vdiStableId) {
-    final String sql = String.format("SELECT internal_abbrev FROM userstudydatasetid u" +
-        "JOIN %s.entitytypegraph etg" +
-        "ON u.study_stable_id = etg.study_stable_id" +
-        "WHERE dataset_stable_id = ?", schema);
+    final String sql = String.format("SELECT internal_abbrev FROM %s.userstudydatasetid u" +
+        " JOIN %s.entitytypegraph etg" +
+        " ON u.study_stable_id = etg.study_stable_id" +
+        " WHERE dataset_stable_id = ?", schema, schema);
     return new SQLRunner(eda, sql).executeQuery(new Object[] { vdiStableId }, rs -> {
       rs.next();
       return Optional.ofNullable(rs.getString("internal_abbrev"));

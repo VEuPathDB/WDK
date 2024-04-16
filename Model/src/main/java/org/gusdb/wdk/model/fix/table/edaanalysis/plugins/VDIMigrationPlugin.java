@@ -102,7 +102,7 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
       return new TableRowInterfaces.RowResult<>(nextRow)
           .setShouldWrite(false);
     }
-    
+
     LOG.info("Analysis descriptor before migration: " + nextRow.getDescriptor());
     String descriptor = nextRow.getDescriptor().toString();
 
