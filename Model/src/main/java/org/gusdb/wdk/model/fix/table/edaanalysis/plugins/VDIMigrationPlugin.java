@@ -130,7 +130,12 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
     AnalysisRow out = new AnalysisRow(nextRow.getAnalysisId(), vdiDatasetId, new JSONObject(descriptor),
         nextRow.getNumFilters(), nextRow.getNumComputations(), nextRow.getNumVisualizations());
 
-    LOG.info("Analysis descriptor after migration: " + out.getDescriptor());
+    // TODO REMOVE BELOW
+    JSONObject descriptorWithoutThumbnail = out.getDescriptor();
+    descriptorWithoutThumbnail.remove("thumbnail");
+    // TODO REMOVE ABOVE
+
+    LOG.info("Analysis descriptor after migration: " + descriptorWithoutThumbnail);
 
     return new TableRowInterfaces.RowResult<>(out)
         .setShouldWrite(_writeToDb);
