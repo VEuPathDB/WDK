@@ -189,6 +189,9 @@
     "help": {
       "type": "string"
     },
+    "searchVisibleHelp": {
+      "type": "string"
+    },
     "reviseBuild": {
       "type": "string"
     },
