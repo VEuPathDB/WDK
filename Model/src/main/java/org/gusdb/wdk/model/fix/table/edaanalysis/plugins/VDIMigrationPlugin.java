@@ -127,12 +127,12 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
     }
 
     // Create a copy with just the dataset ID updated to VDI counterpart.
-    AnalysisRow out = new AnalysisRow(nextRow.getAnalysisId(), vdiDatasetId, new JSONObject(descriptor),
-        nextRow.getNumFilters(), nextRow.getNumComputations(), nextRow.getNumVisualizations());
-    
-    LOG.info("Analysis descriptor after migration: " + out);
+    nextRow.setDescriptor(new JSONObject(descriptor));
+    nextRow.setDatasetId(vdiDatasetId);
 
-    return new TableRowInterfaces.RowResult<>(out)
+    LOG.info("Analysis descriptor after migration: " + descriptor);
+
+    return new TableRowInterfaces.RowResult<>(nextRow)
         .setShouldWrite(_writeToDb);
   }
 
