@@ -61,7 +61,7 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
     readVdiMappingFile(tinyDbFile);
 
     // Default to dryrun to avoid incidental migrations when testing.
-    _writeToDb = Boolean.parseBoolean(args.getOrDefault("-write", "false"));
+    _writeToDb = Boolean.parseBoolean(args.getOrDefault("--write", "false"));
     _wdkModel = wdkModel;
   }
 
