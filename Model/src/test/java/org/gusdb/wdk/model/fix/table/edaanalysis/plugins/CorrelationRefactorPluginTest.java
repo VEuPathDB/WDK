@@ -3,21 +3,19 @@ package org.gusdb.wdk.model.fix.table.edaanalysis.plugins;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces;
 import org.gusdb.wdk.model.fix.table.edaanalysis.AnalysisRow;
 import org.json.JSONObject;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 public class CorrelationRefactorPluginTest {
 
-  @Before
-  public void before() {
-
-  }
-
   @Test
   public void test() throws Exception {
     CorrelationRefactorPlugin plugin = new CorrelationRefactorPlugin();
     TableRowInterfaces.RowResult<AnalysisRow> result = plugin.processRecord(new AnalysisRow("id", "id", new JSONObject(testConfig()), 3, 3, 3));
-    System.out.println(result.getRow().getDescriptor());
+    String descriptorAsString = result.getRow().getDescriptor().toString();
+    Assert.assertTrue(descriptorAsString.contains("data1"));
+    Assert.assertTrue(descriptorAsString.contains("data2"));
   }
 
   private static String testConfig() {
