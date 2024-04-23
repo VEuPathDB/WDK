@@ -30,6 +30,15 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
   private static final String UD_DATASET_ID_PREFIX = "EDAUD_";
   private static final Pattern VAR_ID_PATTERN = Pattern.compile("variableId\":\\s*\"([a-zA-Z0-9_-]+)");
   private static final Pattern ENTITY_ID_PATTERN = Pattern.compile("entityId\":\\s*\"([a-zA-Z0-9_-]+)");
+  private static final Map<String, String> VAR_ID_MAPPING_OVERRIDE = Map.of(
+      // Latitude mappings
+      "VAR_13DCE851F0DDECBE", "OBI_0001620",
+      "VAR_4A934C04C995BF7B", "OBI_0001620",
+      "VAR_F3074604E6180BE6", "OBI_0001620",
+      // Longitude mappings
+      "VAR_44452C5F22B37BB", "OBI_0001621",
+      "VAR_86723E25E8EE8FD8", "OBI_0001621"
+  );
 
   private Map<String, String> _legacyIdToVdiId;
   private VDIEntityIdRetriever _vdiEntityIdRetriever;
@@ -137,6 +146,9 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
   }
 
   private String convertToVdiId(String legacyVariableId) {
+    if (VAR_ID_MAPPING_OVERRIDE.containsKey(legacyVariableId)) {
+      return VAR_ID_MAPPING_OVERRIDE.get(legacyVariableId);
+    }
     byte[] encodedId = DigestUtils.digest(DigestUtils.getSha1Digest(), legacyVariableId.getBytes(StandardCharsets.UTF_8));
     return "VAR_" + Hex.encodeHexString(encodedId).substring(0, 16);
   }
