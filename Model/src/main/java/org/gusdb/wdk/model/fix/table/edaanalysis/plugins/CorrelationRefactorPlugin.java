@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.fix.table.edaanalysis.plugins;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces;
 import org.gusdb.wdk.model.fix.table.edaanalysis.AbstractAnalysisUpdater;
@@ -12,6 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CorrelationRefactorPlugin extends AbstractAnalysisUpdater {
+  private static final Logger LOG = Logger.getLogger(CorrelationRefactorPlugin.class);
 
   @Override
   public void configure(WdkModel wdkModel, List<String> additionalArgs) throws Exception {
@@ -22,6 +24,8 @@ public class CorrelationRefactorPlugin extends AbstractAnalysisUpdater {
   public TableRowInterfaces.RowResult<AnalysisRow> processRecord(AnalysisRow nextRow) throws Exception {
     JSONObject descriptor = nextRow.getDescriptor();
     JSONArray computations = descriptor.getJSONArray("computations");
+
+    LOG.info("Descriptor before migration: " + descriptor);
 
     boolean updateNeeded = computations.toList().stream()
         .anyMatch(CorrelationRefactorPlugin::needsUpdate);
@@ -38,6 +42,8 @@ public class CorrelationRefactorPlugin extends AbstractAnalysisUpdater {
 
     descriptor.put("computations", updatedComputations);
 
+    LOG.info("Descriptor after migration: " + descriptor);
+
     return new TableRowInterfaces.RowResult<>(nextRow)
         .setShouldWrite(_writeToDb);
   }
@@ -48,9 +54,13 @@ public class CorrelationRefactorPlugin extends AbstractAnalysisUpdater {
   }
 
   /**
-   * Migrates a computation, mutating it in-place.
-   * @param computation
-   * @return
+   * Migrates a computation, mutating it in-place and returning the migrated object.
+   *
+   * Only migrates computations of type:
+   *   - correlationassaymetadata
+   *   - correlationassayassay
+   * @param computation Specification of the computation to migrate.
+   * @return Migrated computation.
    */
   private JSONObject migrateComputation(JSONObject computation) {
     String computationType = computation.getJSONObject("descriptor").getString("type");
@@ -65,9 +75,6 @@ public class CorrelationRefactorPlugin extends AbstractAnalysisUpdater {
 
       configuration.put("data2", new JSONObject());
       configuration.getJSONObject("data2").put("dataType", "metadata");
-      descriptor.put("configuration", configuration);
-      computation.put("descriptor", descriptor);
-
       return computation;
     } else if (computationType.equals("correlationassayassay")) {
       JSONObject configuration = descriptor.getJSONObject("configuration");
