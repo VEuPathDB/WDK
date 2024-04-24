@@ -40,8 +40,9 @@ public class AnalysisRecordFactory implements TableRowFactory<AnalysisRow>, Tabl
   @Override
   public String getWriteSql(String schema) {
     return
-        "update " + _schema + ".analysis (study_id, analysis_descriptor, num_filters, num_computations, num_visualizations)" +
-        " values (?, ?, ?, ?, ?) where analysis_id = ?";
+        "update " + _schema + ".analysis set study_id = ?, " +
+            "analysis_descriptor = ?, num_filters = ?, num_computations = ?, num_visualizations = ? " +
+            "where analysis_id = ?";
   }
 
   @Override
