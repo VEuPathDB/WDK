@@ -15,7 +15,7 @@ public class VDIEntityIdRetriever {
   }
 
   public Optional<String> queryEntityId(String vdiStableId) {
-    final String sql = String.format("SELECT internal_abbrev FROM %s.userstudydatasetid u" +
+    final String sql = String.format("SELECT stable_id FROM %s.userstudydatasetid u" +
         " JOIN %s.entitytypegraph etg" +
         " ON u.study_stable_id = etg.study_stable_id" +
         " WHERE dataset_stable_id = ?", schema, schema);
@@ -24,7 +24,7 @@ public class VDIEntityIdRetriever {
       if (!hasNext) {
         return Optional.empty();
       }
-      return Optional.ofNullable(rs.getString("internal_abbrev"));
+      return Optional.ofNullable(rs.getString("stable_id"));
     });
   }
 }
