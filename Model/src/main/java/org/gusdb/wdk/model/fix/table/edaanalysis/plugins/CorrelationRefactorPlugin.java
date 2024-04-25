@@ -14,6 +14,11 @@ import java.util.stream.Collectors;
 
 public class CorrelationRefactorPlugin extends AbstractAnalysisUpdater {
   private static final Logger LOG = Logger.getLogger(CorrelationRefactorPlugin.class);
+  public static final String COLLECTION_SPEC_KEY = "collectionSpec";
+  public static final String DATA_1_KEY = "data1";
+  public static final String DATA_2_KEY = "data2";
+  public static final String DATA_TYPE_KEY = "dataType";
+  public static final String COLLECTION_TYPE = "collection";
 
   @Override
   public void configure(WdkModel wdkModel, List<String> additionalArgs) throws Exception {
@@ -69,23 +74,30 @@ public class CorrelationRefactorPlugin extends AbstractAnalysisUpdater {
       JSONObject configuration = descriptor.getJSONObject("configuration");
       descriptor.put("type", "correlation");
 
-      configuration.put("data1", configuration.getJSONObject("collectionVariable"));
-      configuration.getJSONObject("data1").put("dataType", "collection");
+      JSONObject data1 = new JSONObject();
+      configuration.put(DATA_1_KEY, data1);
+      data1.put(DATA_TYPE_KEY, COLLECTION_TYPE);
+      data1.put(COLLECTION_SPEC_KEY, configuration.getJSONObject("collectionVariable"));
       configuration.remove("collectionVariable");
 
-      configuration.put("data2", new JSONObject());
-      configuration.getJSONObject("data2").put("dataType", "metadata");
+      JSONObject data2 = new JSONObject();
+      configuration.put(DATA_2_KEY, data2);
+      data2.put(DATA_TYPE_KEY, "metadata");
       return computation;
     } else if (computationType.equals("correlationassayassay")) {
       JSONObject configuration = descriptor.getJSONObject("configuration");
       descriptor.put("type", "correlation");
 
-      configuration.put("data1", configuration.getJSONObject("collectionVariable1"));
-      configuration.getJSONObject("data1").put("dataType", "collection");
+      JSONObject data1 = new JSONObject();
+      configuration.put(DATA_1_KEY, data1);
+      data1.put(COLLECTION_SPEC_KEY, configuration.getJSONObject("collectionVariable1"));
+      data1.put(DATA_TYPE_KEY, COLLECTION_TYPE);
       configuration.remove("collectionVariable1");
 
-      configuration.put("data2", configuration.getJSONObject("collectionVariable2"));
-      configuration.getJSONObject("data2").put("dataType", "collection");
+      JSONObject data2 = new JSONObject();
+      configuration.put(DATA_2_KEY, data2);
+      data2.put(COLLECTION_SPEC_KEY, configuration.getJSONObject("collectionVariable2"));
+      data2.put(DATA_TYPE_KEY, COLLECTION_TYPE);
       configuration.remove("collectionVariable2");
       return computation;
     }
