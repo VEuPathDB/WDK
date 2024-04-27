@@ -4,7 +4,6 @@ import org.gusdb.wdk.model.fix.table.TableRowInterfaces;
 import org.gusdb.wdk.model.fix.table.edaanalysis.AnalysisRow;
 import org.json.JSONObject;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 public class CorrelationRefactorPluginTest {
