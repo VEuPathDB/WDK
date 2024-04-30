@@ -23,7 +23,7 @@ public abstract class AbstractAnalysisUpdater implements TableRowUpdaterPlugin<A
 
   @Override
   public TableRowUpdater<AnalysisRow> getTableRowUpdater(WdkModel wdkModel) {
-    AnalysisRecordFactory factory = new AnalysisRecordFactory();
+    AnalysisRecordFactory factory = new AnalysisRecordFactory(wdkModel.getProjectId());
     return new TableRowUpdater<AnalysisRow>(factory, factory, this, wdkModel);
   }
 

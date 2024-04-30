@@ -230,6 +230,10 @@ public class TableRowUpdater<T extends TableRow> {
         Set<String> tables = _writers.stream()
             .map(writer -> writer.getTableNamesForBackup(userSchema))
             .flatMap(Collection::stream)
+            .peek(name -> {
+              if (name == null)
+                throw new RuntimeException(getClass().getName() + " returned a null table name for backup.");
+            })
             .collect(Collectors.toSet());
         // create backup tables
         backUpTables(userDb.getDataSource(), tables);
