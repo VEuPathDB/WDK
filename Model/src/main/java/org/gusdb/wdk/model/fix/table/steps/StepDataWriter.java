@@ -31,6 +31,11 @@ public class StepDataWriter implements TableRowWriter<StepData> {
           key -> SQLTYPES.get(key)).toArray(new Integer[COLS.length]);
 
   @Override
+  public List<String> getTableNamesForBackup(String schema) {
+    return List.of(schema + "steps");
+  }
+
+  @Override
   public String getWriteSql(String schema) {
     return "update " + schema + "steps set " + UPDATE_COLS_TEXT + " where " + STEP_ID + " = ?";
   }

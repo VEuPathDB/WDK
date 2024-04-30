@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collection;
+import java.util.List;
 
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -35,6 +36,11 @@ public class AnalysisRecordFactory implements TableRowFactory<AnalysisRow>, Tabl
   @Override
   public AnalysisRow newTableRow(ResultSet rs, DBPlatform platform) throws SQLException {
     return new AnalysisRow(rs, platform);
+  }
+
+  @Override
+  public List<String> getTableNamesForBackup(String schema) {
+    return List.of(_schema + ".analysis");
   }
 
   @Override

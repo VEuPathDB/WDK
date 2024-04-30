@@ -64,6 +64,15 @@ public class TableRowInterfaces {
      * when all processing is complete to allow the plugin to dump those statistics.
      */
     void dumpStatistics();
+
+    /**
+     * Whether to back up tables that may be written to before processing begins
+     *
+     * @return true if backup should be performed
+     */
+    default boolean isPerformTableBackup() {
+      return false;
+    }
   }
 
   /**
@@ -124,6 +133,16 @@ public class TableRowInterfaces {
      * @param wdkModel WDK model that will be used in this run
      */
     void tearDown(WdkModel wdkModel) throws Exception;
+
+    /**
+     * Returns a list of table names (including schema prefix) whose rows may be overwritten
+     * by this writer.  Plugin will decide whether backup is actually performed.  The
+     * schema value passed in will be empty or will have a '.' as the last character.  It
+     * is the user schema configured in the WDK model created for this update
+     *
+     * @return list of tables
+     */
+    List<String> getTableNamesForBackup(String schema);
 
     /**
      * Provides parameterized SQL to write a single record.  This SQL will be converted to a
