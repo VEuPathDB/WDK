@@ -39,7 +39,7 @@ public class VDIMigrationPluginTest {
     TableRowInterfaces.RowResult<AnalysisRow> result = migrationPlugin.processRecord(
         new AnalysisRow("x",
             "EDAUD_1234",
-            descriptor,
+            descriptor.getJSONObject("descriptor"),
             3,
             4,
             5));
@@ -60,7 +60,7 @@ public class VDIMigrationPluginTest {
     TableRowInterfaces.RowResult<AnalysisRow> result = migrationPlugin.processRecord(
         new AnalysisRow("x",
             "EDAUD_1234",
-            descriptor,
+            descriptor.getJSONObject("descriptor"),
             3,
             4,
             5));
