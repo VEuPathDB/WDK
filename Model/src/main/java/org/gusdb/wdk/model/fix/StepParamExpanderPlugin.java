@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.fix;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -106,6 +107,12 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
         }
       }
       return values;
+    }
+
+    @Override
+    public List<String> getTableNamesForBackup(String schema) {
+      // no backup needed; creating a new table in this writer
+      return Collections.emptyList();
     }
   }
 

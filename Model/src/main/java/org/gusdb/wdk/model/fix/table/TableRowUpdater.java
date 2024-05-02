@@ -8,9 +8,13 @@ import static org.gusdb.fgputil.iterator.IteratorUtil.transform;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutionException;
@@ -18,6 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -30,6 +35,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.RowResult;
@@ -217,6 +223,22 @@ public class TableRowUpdater<T extends TableRow> {
       DatabaseInstance userDb = _wdkModel.getUserDb();
       RecordQueue<T> recordQueue = new RecordQueue<>();
 
+      // back up tables if requested
+      if (_plugin.isPerformTableBackup()) {
+        // collect table names from writers and remove duplicates
+        String userSchema = getUserSchema(_wdkModel);
+        Set<String> tables = _writers.stream()
+            .map(writer -> writer.getTableNamesForBackup(userSchema))
+            .flatMap(Collection::stream)
+            .peek(name -> {
+              if (name == null)
+                throw new RuntimeException(getClass().getName() + " returned a null table name for backup.");
+            })
+            .collect(Collectors.toSet());
+        // create backup tables
+        backUpTables(userDb.getDataSource(), tables);
+      }
+
       // create and start threads that will listen to queue and pull off records to process
       for (int i = 0; i < NUM_THREADS; i++) {
         RowHandler<T> thread = new RowHandler<>(i + 1, recordQueue, _plugin, _writers, _wdkModel);
@@ -273,6 +295,21 @@ public class TableRowUpdater<T extends TableRow> {
     if (numThreadProblems > 0) return ExitStatus.THREAD_ERROR;
     if (aggregate.numRecordErrors > 0) return ExitStatus.RECORD_ERRORS;
     return ExitStatus.SUCCESS;
+  }
+
+  private void backUpTables(DataSource ds, Set<String> tables) {
+    try {
+      String timestamp = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date());
+      for (String table : tables) {
+        String bkTable = table + "_bk_" + timestamp;
+        String sql = "create table " + bkTable + " as (select * from " + table + ")";
+        LOG.info("Creating backup table " + bkTable + " from " + table);
+        new SQLRunner(ds, sql, "table-backup").executeStatement();
+      }
+    }
+    catch (SQLRunnerException e) {
+      throw new RuntimeException("Could not create backup table", e.getCause());
+    }
   }
 
   private void setUpDatabase() throws Exception {

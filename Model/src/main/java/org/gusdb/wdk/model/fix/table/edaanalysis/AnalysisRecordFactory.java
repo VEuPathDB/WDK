@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collection;
+import java.util.List;
 
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -19,14 +20,17 @@ public class AnalysisRecordFactory implements TableRowFactory<AnalysisRow>, Tabl
 
   private String _schema;
 
-  @Override
-  public String getRecordsSql(String schema, String projectId) {
-    // reset schema based on project (userdb schema is not where eda data lives
+  public AnalysisRecordFactory(String projectId) {
+    // set schema based on project (userdb schema is not where eda data lives
     switch(projectId) {
       case "ClinEpiDB": _schema = "edauserce"; break;
       case "MicrobiomeDB": _schema = "edausermb"; break;
       default: _schema = "edauservb"; break;
     }
+  }
+
+  @Override
+  public String getRecordsSql(String schema, String projectId) {
     return
         "select analysis_id, study_id, analysis_descriptor, num_filters, num_computations, num_visualizations" +
         " from " + _schema + ".analysis";
@@ -35,6 +39,11 @@ public class AnalysisRecordFactory implements TableRowFactory<AnalysisRow>, Tabl
   @Override
   public AnalysisRow newTableRow(ResultSet rs, DBPlatform platform) throws SQLException {
     return new AnalysisRow(rs, platform);
+  }
+
+  @Override
+  public List<String> getTableNamesForBackup(String schema) {
+    return List.of(_schema + ".analysis");
   }
 
   @Override
