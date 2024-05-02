@@ -12,13 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class CorrelationRefactorPlugin extends AbstractAnalysisUpdater {
-  private static final Logger LOG = Logger.getLogger(CorrelationRefactorPlugin.class);
-  public static final String COLLECTION_SPEC_KEY = "collectionSpec";
+public class CorrelationRefactorPluginFixup extends AbstractAnalysisUpdater {
+  private static final Logger LOG = Logger.getLogger(CorrelationRefactorPluginFixup.class);
   public static final String DATA_1_KEY = "data1";
   public static final String DATA_2_KEY = "data2";
   public static final String DATA_TYPE_KEY = "dataType";
-  public static final String COLLECTION_TYPE = "collection";
 
   @Override
   public void configure(WdkModel wdkModel, List<String> additionalArgs) throws Exception {
@@ -33,7 +31,7 @@ public class CorrelationRefactorPlugin extends AbstractAnalysisUpdater {
     LOG.info("Descriptor before migration: " + descriptor);
 
     boolean updateNeeded = computations.toList().stream()
-        .anyMatch(CorrelationRefactorPlugin::needsUpdate);
+        .anyMatch(CorrelationRefactorPluginFixup::needsUpdate);
 
     if (!updateNeeded) {
       // Short-circuit to avoid doing migration work.
@@ -54,8 +52,8 @@ public class CorrelationRefactorPlugin extends AbstractAnalysisUpdater {
   }
 
   private static boolean needsUpdate(Object computation) {
-    List<String> migratableComputeTypes = List.of("correlationassaymetadata", "correlationassayassay");
-    return migratableComputeTypes.contains(new JSONObject((Map<?, ?>) computation).getJSONObject("descriptor").getString("type"));
+    List<String> migratableAppNames = List.of("correlation");
+    return migratableAppNames.contains(new JSONObject((Map<?, ?>) computation).getJSONObject("descriptor").getString("type"));
   }
 
   /**
@@ -70,35 +68,21 @@ public class CorrelationRefactorPlugin extends AbstractAnalysisUpdater {
   private JSONObject migrateComputation(JSONObject computation) {
     String computationType = computation.getJSONObject("descriptor").getString("type");
     JSONObject descriptor = computation.getJSONObject("descriptor");
-    if (computationType.equals("correlationassaymetadata")) {
+
+    if (computationType.equals("correlation")) {
+
       JSONObject configuration = descriptor.getJSONObject("configuration");
 
-      JSONObject data1 = new JSONObject();
-      configuration.put(DATA_1_KEY, data1);
-      data1.put(DATA_TYPE_KEY, COLLECTION_TYPE);
-      data1.put(COLLECTION_SPEC_KEY, configuration.getJSONObject("collectionVariable"));
-      configuration.remove("collectionVariable");
+      JSONObject data1 = configuration.getJSONObject(DATA_1_KEY);
+      JSONObject data2 = configuration.getJSONObject(DATA_2_KEY);
 
-      JSONObject data2 = new JSONObject();
-      configuration.put(DATA_2_KEY, data2);
-      data2.put(DATA_TYPE_KEY, "metadata");
-      return computation;
-    } else if (computationType.equals("correlationassayassay")) {
-      JSONObject configuration = descriptor.getJSONObject("configuration");
-
-      JSONObject data1 = new JSONObject();
-      configuration.put(DATA_1_KEY, data1);
-      data1.put(COLLECTION_SPEC_KEY, configuration.getJSONObject("collectionVariable1"));
-      data1.put(DATA_TYPE_KEY, COLLECTION_TYPE);
-      configuration.remove("collectionVariable1");
-
-      JSONObject data2 = new JSONObject();
-      configuration.put(DATA_2_KEY, data2);
-      data2.put(COLLECTION_SPEC_KEY, configuration.getJSONObject("collectionVariable2"));
-      data2.put(DATA_TYPE_KEY, COLLECTION_TYPE);
-      configuration.remove("collectionVariable2");
-      return computation;
+      if (data1.getString(DATA_TYPE_KEY).equals("metadata") || data2.getString(DATA_TYPE_KEY).equals("metadata")) {
+        descriptor.put("type", "correlationassaymetadata");
+      } else {
+        descriptor.put("type", "correlationassayassay");
+      }
     }
+
     return computation;
   }
 
