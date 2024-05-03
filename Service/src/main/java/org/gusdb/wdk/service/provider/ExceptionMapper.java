@@ -2,18 +2,18 @@ package org.gusdb.wdk.service.provider;
 
 import static org.gusdb.wdk.service.formatter.ValidationFormatter.getValidationBundleJson;
 
-import javax.inject.Inject;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.ext.Provider;
+import jakarta.inject.Inject;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.ext.Provider;
 
 import org.apache.log4j.Logger;
 import org.glassfish.grizzly.http.server.Request;
@@ -37,7 +37,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 @Provider
-public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exception> {
+public class ExceptionMapper implements jakarta.ws.rs.ext.ExceptionMapper<Exception> {
 
   private static final Logger LOG = Logger.getLogger(ExceptionMapper.class);
 
@@ -49,10 +49,10 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
   private ServletContext _servletContext;
 
   @Inject
-  private javax.inject.Provider<HttpServletRequest> _servletRequest;
+  private jakarta.inject.Provider<HttpServletRequest> _servletRequest;
 
   @Inject
-  private javax.inject.Provider<Request> _grizzlyRequest;
+  private jakarta.inject.Provider<Request> _grizzlyRequest;
 
   @Override
   public Response toResponse(Exception e) {

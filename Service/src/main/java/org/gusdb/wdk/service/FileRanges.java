@@ -8,10 +8,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FileChunkInputStream;

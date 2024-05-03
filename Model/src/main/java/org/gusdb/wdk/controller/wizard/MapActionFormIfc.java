@@ -2,7 +2,7 @@ package org.gusdb.wdk.controller.wizard;
 
 import java.util.Map;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 public interface MapActionFormIfc {
 

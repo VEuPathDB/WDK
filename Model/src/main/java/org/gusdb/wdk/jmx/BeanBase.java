@@ -1,6 +1,6 @@
 package org.gusdb.wdk.jmx;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;

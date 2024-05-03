@@ -16,7 +16,7 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.MapBuilder;
@@ -230,7 +230,7 @@ public class MBeanRegistration {
     }
     else {
       // hack for old servlet API: use the name of the tempdir
-      String tmpdir = ((java.io.File) sc.getAttribute("javax.servlet.context.tempdir")).getName();
+      String tmpdir = ((java.io.File) sc.getAttribute("jakarta.servlet.context.tempdir")).getName();
       contextName = "/" + tmpdir;
     }
 
