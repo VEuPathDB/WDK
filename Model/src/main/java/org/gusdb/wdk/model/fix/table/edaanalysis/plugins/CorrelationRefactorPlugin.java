@@ -26,6 +26,11 @@ public class CorrelationRefactorPlugin extends AbstractAnalysisUpdater {
   }
 
   @Override
+  public boolean isPerformTableBackup() {
+    return _writeToDb;
+  }
+
+  @Override
   public TableRowInterfaces.RowResult<AnalysisRow> processRecord(AnalysisRow nextRow) throws Exception {
     JSONObject descriptor = nextRow.getDescriptor();
     JSONArray computations = descriptor.getJSONArray("computations");
