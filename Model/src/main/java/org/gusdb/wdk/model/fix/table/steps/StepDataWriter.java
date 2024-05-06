@@ -32,7 +32,7 @@ public class StepDataWriter implements TableRowWriter<StepData> {
 
   @Override
   public List<String> getTableNamesForBackup(String schema) {
-    return List.of(schema + "steps");
+    return List.of(schema.replace(".", "") + "_steps");
   }
 
   @Override

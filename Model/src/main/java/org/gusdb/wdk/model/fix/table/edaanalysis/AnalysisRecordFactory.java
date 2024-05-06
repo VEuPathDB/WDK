@@ -43,7 +43,7 @@ public class AnalysisRecordFactory implements TableRowFactory<AnalysisRow>, Tabl
 
   @Override
   public List<String> getTableNamesForBackup(String schema) {
-    return List.of(_schema + ".analysis");
+    return List.of(_schema + "_analysis");
   }
 
   @Override
