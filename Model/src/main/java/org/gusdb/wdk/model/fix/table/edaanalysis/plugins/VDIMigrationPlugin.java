@@ -160,6 +160,11 @@ public class VDIMigrationPlugin extends AbstractAnalysisUpdater {
     }
   }
 
+  @Override
+  public boolean isPerformTableBackup() {
+    return _writeToDb;
+  }
+
   /**
    * Parse the tinydb file into a map of legacy UD identifiers to VDI identifiers.
    *
