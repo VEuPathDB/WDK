@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.Timer;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Event;
@@ -37,6 +38,7 @@ import org.gusdb.fgputil.events.ListenerExceptionEvent;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.gusdb.fgputil.runtime.InstanceManager;
 import org.gusdb.fgputil.runtime.Manageable;
+import org.gusdb.oauth2.client.ValidatedToken;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
@@ -197,7 +199,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private ColumnToolBundleMap columnToolBundleMap = new ColumnToolBundleMap();
   private String defaultColumnToolBundleRef;
 
-  private User systemUser;
+  private TwoTuple<ValidatedToken,User> systemUser;
 
   private String buildNumber;
 
@@ -589,7 +591,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
         new UnconfiguredStepAnalysisFactory(this) :
         new StepAnalysisFactoryImpl(this));
 
-    systemUser = new UserFactory(this).createUnregisteredUser().getSecond();
+    systemUser = new UserFactory(this).createUnregisteredUser();
 
     LOG.info("WDK Model configured.");
   }
@@ -1346,8 +1348,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return paramName;
   }
 
+  public ValidatedToken getSystemUserToken() {
+    return systemUser.getFirst();
+  }
+
   public User getSystemUser() {
-    return systemUser;
+    return systemUser.getSecond();
   }
 
   public BasketFactory getBasketFactory() {

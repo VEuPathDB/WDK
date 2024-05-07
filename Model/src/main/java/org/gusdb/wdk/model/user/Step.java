@@ -512,6 +512,10 @@ public class Step implements Validateable<Step> {
     _estimatedSizeRefreshed = true;
   }
 
+  public Optional<Integer> recalculateResultSize() throws WdkModelException {
+    return _answerSpec.isRunnable() ? Optional.of(recalculateResultSize(_answerSpec.getRunnable().getLeft())) : Optional.empty();
+  }
+
   private int recalculateResultSize(RunnableObj<AnswerSpec> answerSpec) throws WdkModelException {
     int oldEstimatedSize = _estimatedSize;
     _estimatedSize = AnswerValueFactory.makeAnswer(_user, answerSpec).getResultSizeFactory().getDisplayResultSize();
