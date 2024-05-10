@@ -301,7 +301,8 @@ public class TableRowUpdater<T extends TableRow> {
     try {
       String timestamp = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date());
       for (String table : tables) {
-        String bkTable = table + "_bk_" + timestamp;
+        // back up table to runtime user's schema, incorporating source schema name into backup table name
+        String bkTable = table.replace(".","_") + "_bk_" + timestamp;
         String sql = "create table " + bkTable + " as (select * from " + table + ")";
         LOG.info("Creating backup table " + bkTable + " from " + table);
         new SQLRunner(ds, sql, "table-backup").executeStatement();

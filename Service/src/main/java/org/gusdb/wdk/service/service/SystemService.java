@@ -3,11 +3,7 @@ package org.gusdb.wdk.service.service;
 import java.io.OutputStreamWriter;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -29,18 +25,9 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.runtime.BuildStatus;
-import org.gusdb.fgputil.validation.OptionallyInvalid;
-import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
-import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.cache.CacheMgr;
-import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkCacheSeeder;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.spec.AnswerSpec;
-import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
-import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.StepContainer;
-import org.gusdb.wdk.model.user.Strategy;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -109,72 +96,13 @@ public class SystemService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response seedWdkCaches() throws WdkModelException {
     assertAdmin();
-    String result = getSeedWdkCachesResponseJson().toString(2);
+    WdkCacheSeeder seeder = new WdkCacheSeeder(getWdkModel());
+    String result = new JSONObject()
+        .put("questionResults", seeder.cacheQuestions())
+        .put("publicStratsResults", seeder.cachePublicStrategies())
+        .toString(2);
     LOG.info("WDK Cache Seeding Complete with results: " + result);
     return Response.ok(result).build();
-  }
-
-  protected JSONObject getSeedWdkCachesResponseJson() throws WdkModelException {
-    WdkModel wdkModel = getWdkModel();
-    Timer t = new Timer();
-
-    // Step 1: run vocab queries, caching in DB/memory along the way
-    List<String> validatedQuestions = new ArrayList<>();
-    Map<String,String> invalidQuestions = new HashMap<>();
-    Map<String,String> questionErrors = new HashMap<>();
-    for (Question q : wdkModel.getAllQuestions()) {
-      LOG.info("Caching question: " + q.getFullName());
-      try {
-        OptionallyInvalid<DisplayablyValid<AnswerSpec>, AnswerSpec> spec =
-          AnswerSpec.builder(wdkModel)
-            .setQuestionFullName(q.getFullName())
-            .build(
-                getRequestingUser(),
-                StepContainer.emptyContainer(),
-                ValidationLevel.DISPLAYABLE,
-                FillStrategy.FILL_PARAM_IF_MISSING)
-            .getDisplayablyValid();
-        spec
-          .ifLeft(s -> validatedQuestions.add(q.getFullName()))
-          .ifRight(s -> invalidQuestions.put(q.getFullName(), s.getValidationBundle().toString(2)));
-      }
-      catch (Exception e) {
-        questionErrors.put(q.getFullName(), e.toString());
-      }
-    }
-    String questionsDuration = t.getElapsedStringAndRestart();
-
-    // Step 2: run public strategies
-    Map<Long,Integer> publicStratResultSizes = new HashMap<>();
-    Map<Long,String> unrunnablePublicStrats = new HashMap<>();
-    Map<Long,String> publicStratErrors = new HashMap<>();
-    for (Strategy publicStrat : wdkModel.getStepFactory().getPublicStrategies()) {
-      LOG.info("Caching public strategy: " + publicStrat.getStrategyId());
-      try {
-        Step step = publicStrat.getRootStep();
-        if (step.isRunnable())
-          publicStratResultSizes.put(publicStrat.getStrategyId(), step.recalculateResultSize().get());
-        else
-          unrunnablePublicStrats.put(publicStrat.getStrategyId(), step.getValidationBundle().toString());
-      }
-      catch (Exception e) {
-        publicStratErrors.put(publicStrat.getStrategyId(), e.toString());
-      }
-    }
-    String publicStratsDuration = t.getElapsedString();
-
-    // build and return results
-    return new JSONObject()
-        // question fields
-        .put("validatedQuestions", validatedQuestions)
-        .put("invalidQuestions", invalidQuestions)
-        .put("questionErrors", questionErrors)
-        .put("questionsDuration", questionsDuration)
-        // public strat fields
-        .put("publicStratResultSizes", publicStratResultSizes)
-        .put("unrunnablePublicStrats", unrunnablePublicStrats)
-        .put("publicStratErrors", publicStratErrors)
-        .put("publicStratsDuration",publicStratsDuration);
   }
 
   @GET
