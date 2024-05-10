@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ ! -d $GUS_HOME ]; then
+  echo "\$GUS_HOME ($GUS_HOME) is not a directory."
+fi
+
+# NOTE: this script assumes only one model-config.xml is created/populated
+#  if this is not the case, call fgpJava directly with your preferred project_id
+projectId=`find $GUS_HOME -name model-config.xml | xargs dirname | xargs basename`
+
+fgpJava org.gusdb.wdk.model.WdkCacheSeeder -model $projectId
