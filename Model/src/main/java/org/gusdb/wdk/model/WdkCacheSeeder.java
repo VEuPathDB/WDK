@@ -1,5 +1,9 @@
 package org.gusdb.wdk.model;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,18 +27,34 @@ public class WdkCacheSeeder {
 
   private static final Logger LOG = Logger.getLogger(WdkCacheSeeder.class);
 
+  private static final String RESULTS_COPY_FILE = /* $GUS_HOME/ */ "../html/test_output/wdk_cache_seeder_output.json";
+
   public static void main(String[] args) throws WdkModelException {
+
     if (args.length != 2 || !args[0].equals("-model")) {
       System.err.println("\nUSAGE: WdkCacheSeeder -model <project_id>\n");
       System.exit(1);
     }
+
     try (WdkModel wdkModel = WdkModel.construct(args[1], GusHome.getGusHome())) {
       WdkCacheSeeder seeder = new WdkCacheSeeder(wdkModel);
       String result = new JSONObject()
           .put("questionResults", seeder.cacheQuestions())
           .put("publicStratsResults", seeder.cachePublicStrategies())
           .toString(2);
+
       System.out.println("WDK Cache Seeding Complete with results: " + result);
+
+      Path path = Paths.get(GusHome.getGusHome(), RESULTS_COPY_FILE);
+      System.out.println("Writing copy of results to " + path.toAbsolutePath());
+      try (FileWriter out = new FileWriter(path.toFile())) {
+        out.write(result);
+        out.write("\n");
+      }
+      catch (IOException e) {
+        System.err.println("Unable to write copy of results.");
+        e.printStackTrace(System.err);
+      }
     }
   }
 
