@@ -35,9 +35,13 @@ public class BiomVdiMigrationFixer extends AbstractAnalysisUpdater {
 
   @Override
   public TableRowInterfaces.RowResult<AnalysisRow> processRecord(AnalysisRow nextRow) throws Exception {
+    if (!nextRow.getDatasetId().startsWith("EDAUD")) {
+      new TableRowInterfaces.RowResult<>(nextRow)
+          .setShouldWrite(false);
+    }
     String descriptor = nextRow.getDescriptor().toString();
     LOG.info("Analysis descriptor before migration: " + descriptor);
-    
+
     // Find all variable IDs.
     final Set<String> currentVarIds = VAR_ID_PATTERN.matcher(descriptor).results()
         .map(match -> match.group(1))
