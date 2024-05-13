@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 public class BiomVdiMigrationFixer extends AbstractAnalysisUpdater {
   private static final Logger LOG = Logger.getLogger(BiomVdiMigrationFixer.class);
-  private static final Pattern VAR_ID_PATTERN = Pattern.compile("variableId\":\\s*\"([a-zA-Z0-9_-]+)");
+  private static final Pattern VAR_ID_PATTERN = Pattern.compile("variableId\":\\s*\"([a-zA-Z0-9\\._-]+)");
 
   private Map<String, String> fixedUpMapping;
 
