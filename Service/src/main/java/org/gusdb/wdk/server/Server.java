@@ -2,7 +2,7 @@ package org.gusdb.wdk.server;
 
 import java.net.URI;
 
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.gusdb.fgputil.FormatUtil;

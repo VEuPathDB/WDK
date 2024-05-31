@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.MediaType;
 
 import org.gusdb.fgputil.SortDirectionSpec;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Procedure;

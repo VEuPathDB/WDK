@@ -1,6 +1,6 @@
 package org.gusdb.wdk.jmx;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 /**
  * A ThreadLocal to store the ServletContext for the webapp. The

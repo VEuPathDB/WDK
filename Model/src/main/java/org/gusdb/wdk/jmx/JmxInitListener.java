@@ -1,8 +1,8 @@
 package org.gusdb.wdk.jmx;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.logging.ThreadLocalLoggingVars;

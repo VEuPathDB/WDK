@@ -1,7 +1,7 @@
 package org.gusdb.wdk.service.statustype;
 
-import javax.ws.rs.core.Response.Status.Family;
-import javax.ws.rs.core.Response.StatusType;
+import jakarta.ws.rs.core.Response.Status.Family;
+import jakarta.ws.rs.core.Response.StatusType;
 
 /**
  * Extending StatusType to accommodate the http status code of 300.  This is
