@@ -145,10 +145,6 @@ site_vars file: {{ site_vars }}
             {% endif -%}
     />
 
-    {% if modelconfig_userDatasetStoreConfig is defined -%}
-    {{ modelconfig_userDatasetStoreConfig|indent }}
-    {% endif -%}
-
     <emailSubject>
       {{ modelconfig_emailSubject|indent(6) }}
     </emailSubject>
