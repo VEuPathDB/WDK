@@ -19,7 +19,6 @@ import org.gusdb.fgputil.SortDirection;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 
 /**
@@ -47,30 +46,6 @@ public abstract class DerivedAttributeField extends AttributeField {
       leaves.putAll(dependent.getColumnAttributeFields());
 
     return leaves;
-  }
-
-  protected String excludeModelText(List<WdkModelText> texts, String projectId,
-      String textTag, boolean isRequired) throws WdkModelException {
-    String source = "The " + getClass().getSimpleName() + " " + _container.getNameForLogging() + "." + getName();
-    String selectedText = null;
-    boolean hasText = false;
-    for (WdkModelText text : texts) {
-      if (text.include(projectId)) {
-        if (hasText) {
-          throw new WdkModelException(source + " has more than one " + textTag + " tag for project " + projectId);
-        }
-        else {
-          selectedText = text.getText();
-          hasText = true;
-        }
-      }
-    }
-    // check if all texts are excluded
-    if (selectedText == null && isRequired) {
-      throw new WdkModelException(source + " does not have a " + textTag + " tag for project " + projectId);
-    }
-    texts.clear();
-    return selectedText;
   }
 
   /**

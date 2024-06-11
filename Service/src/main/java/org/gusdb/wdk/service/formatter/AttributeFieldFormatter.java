@@ -45,6 +45,7 @@ public class AttributeFieldFormatter {
       .put(JsonKeys.DISPLAY_NAME, attribute.getDisplayName())
       .put(JsonKeys.FORMATS, RecordClassFormatter.getAnswerFormatsJson(attribute.getReporters().values(), FieldScope.ALL))
       .put(JsonKeys.HELP, attribute.getHelp())
+      .put(JsonKeys.HTML_HELP, attribute.getHtmlHelp())
       .put(JsonKeys.IS_DISPLAYABLE, FieldScope.NON_INTERNAL.isFieldInScope(attribute))
       .put(JsonKeys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(attribute))
       .put(JsonKeys.IS_REMOVABLE, attribute.isRemovable())

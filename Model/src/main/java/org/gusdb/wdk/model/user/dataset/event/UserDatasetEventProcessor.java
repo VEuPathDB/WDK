@@ -9,20 +9,24 @@ import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 
+import java.util.List;
+
 public abstract class UserDatasetEventProcessor
 {
   // TODO: get from model config
   private static final String UD_SCHEMA_NAME = "ApiDBUserDatasets.";
 
-  private final String           projectID;
+  private final List<String> projectIds;
 
   private final UserDatasetStore userDatasetStore;
 
   private final ModelConfig      modelConfig;
 
-  protected UserDatasetEventProcessor(String projectID) throws WdkModelException {
-    this.projectID        = projectID;
-    this.modelConfig      = parseModelConfig(projectID);
+  protected UserDatasetEventProcessor(List<String> projectIds) throws WdkModelException {
+    this.projectIds        = projectIds;
+    // Picking the first project ID is a hack! We know in cases where we have multiple project IDs, the database connect
+    // configuration will be the same.
+    this.modelConfig      = parseModelConfig(projectIds.get(0));
     this.userDatasetStore = getUserDatasetStore(this.modelConfig);
   }
 
@@ -38,8 +42,8 @@ public abstract class UserDatasetEventProcessor
     return modelConfig;
   }
 
-  public String getProjectId() {
-    return projectID;
+  public List<String> getProjectIds() {
+    return projectIds;
   }
 
   protected DatabaseInstance openAppDB() {

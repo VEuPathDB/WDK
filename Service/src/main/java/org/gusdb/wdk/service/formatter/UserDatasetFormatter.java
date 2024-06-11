@@ -31,7 +31,7 @@ public class UserDatasetFormatter implements UserDatasetsFormatter {
   public void addUserDatasetInfoToJsonArray(UserDatasetInfo dataset,
       JSONArray datasetsJson, UserDatasetSession dsSession) throws WdkModelException {
     datasetsJson.put(_expandDatasets
-        ? getUserDatasetJson(dataset, false, false)
+        ? getUserDatasetJson(dataset, true, false)
         : dataset.getDataset().getUserDatasetId());
   }
 
@@ -39,7 +39,7 @@ public class UserDatasetFormatter implements UserDatasetsFormatter {
   public void addSharedDatasetInfoToJsonArray(UserDatasetInfo dataset,
       JSONArray datasetsJson, UserDatasetSession dsSession) throws WdkModelException {
     datasetsJson.put(_expandDatasets
-        ? getUserDatasetJson(dataset, true, false)
+        ? getUserDatasetJson(dataset, false, false)
         : dataset.getDataset().getUserDatasetId());
   }
 

@@ -127,6 +127,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
   // requested by PRISM, array will contain different values for different projects
   private List<WdkModelText> _visibleHelps;
   protected String _visibleHelp;
+  protected String _visibleHelpPosition;
 
   // both default value and empty values will be used to construct default raw value. these values themselves
   // are neither valid raw values nor stable values.  See FIXME below in getInternalValue()
@@ -191,6 +192,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
     _prompt = param._prompt;
     _help = param._help;
     _visibleHelp = param._visibleHelp;
+    _visibleHelpPosition = param._visibleHelpPosition;
     _xmlDefaultValue = param._xmlDefaultValue;
     _sanityDefaultValue = param._sanityDefaultValue;
     _visible = param._visible;
@@ -290,6 +292,14 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
   void setVisibleHelp(String visibleHelp) {
     _visibleHelp = visibleHelp;
+  }
+
+  public void setVisibleHelpPosition(String visibleHelpPosition) {
+    _visibleHelpPosition = visibleHelpPosition;
+  }
+
+  public String getVisibleHelpPosition() {
+    return _visibleHelpPosition;
   }
 
   /**
@@ -422,6 +432,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
       .append("  prompt='").append(_prompt).append("'").append(NL)
       .append("  help='").append(_help).append("'").append(NL)
       .append("  visibleHelp='").append(_visibleHelp).append("'").append(NL)
+      .append("  visibleHelpPosition='").append(_visibleHelpPosition).append("'").append(NL)
       .append("  xmlDefault='").append(_xmlDefaultValue).append("'").append(NL)
       .append("  sanityDefault='").append(_sanityDefaultValue).append("'").append(NL)
       .append("  readonly=").append(_readonly).append(NL)
@@ -580,7 +591,7 @@ public abstract class Param extends WdkModelBase implements Cloneable, Comparabl
 
     // Determine if a default value must be generated
     boolean defaultValueRequired =
-        stableValues.get(getName()) == null &&
+        isEmptyValue(value) &&
         fillStrategy.shouldFillWhenMissing();
     validationLog(() -> "defaultValueRequired = " + defaultValueRequired + " because value = " +
         stableValues.get(getName()) + " and fillWhenMissing = " + fillStrategy.shouldFillWhenMissing());

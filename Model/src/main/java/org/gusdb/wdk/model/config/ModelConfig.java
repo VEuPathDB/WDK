@@ -11,6 +11,8 @@ import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.Named.NamedObject;
+import org.gusdb.oauth2.client.KeyStoreTrustManager.KeyStoreConfig;
+import org.gusdb.oauth2.client.OAuthConfig;
 
 /**
  * An object representation of the {@code model-config.xml} file. It holds all the configuration information
@@ -18,7 +20,7 @@ import org.gusdb.fgputil.Named.NamedObject;
  * 
  * @author Jerric
  */
-public class ModelConfig implements OAuthConfig {
+public class ModelConfig implements OAuthConfig, KeyStoreConfig {
 
   private static final Logger LOG = Logger.getLogger(ModelConfig.class);
 
@@ -69,7 +71,6 @@ public class ModelConfig implements OAuthConfig {
 
   private final ModelConfigUserDB _userDB;
   private final ModelConfigAppDB _appDB;
-  private final ModelConfigAccountDB _accountDB;
 
   private final ModelConfigUserDatasetStore _userDatasetStoreConfig;
 
@@ -82,6 +83,11 @@ public class ModelConfig implements OAuthConfig {
   private final Path _gusHome;
 
   /**
+   * enable/disable weight feature in the steps. default enabled.
+   */
+  private final boolean _useWeights;
+
+  /**
    * location of secret key file
    */
   private final Optional<Path> _secretKeyFile;
@@ -91,11 +97,6 @@ public class ModelConfig implements OAuthConfig {
    * secretKeyFile is present and readable when the secret key is requested
    */
   private String _secretKey;
-
-  /**
-   * enable/disable weight feature in the steps. default enabled.
-   */
-  private final boolean _useWeights;
 
   /**
    * default regex used by all the stringParams
@@ -146,7 +147,7 @@ public class ModelConfig implements OAuthConfig {
   public ModelConfig(String modelName, String projectId, Path gusHome, boolean caching, boolean useWeights,
       String paramRegex, Optional<Path> secretKeyFile, Path wdkTempDir, String webServiceUrl, String assetsUrl,
       String smtpServer, String supportEmail, List<String> adminEmails, String emailSubject,
-      String emailContent, ModelConfigUserDB userDB, ModelConfigAppDB appDB, ModelConfigAccountDB accountDB,
+      String emailContent, ModelConfigUserDB userDB, ModelConfigAppDB appDB,
       ModelConfigUserDatasetStore userDatasetStoreConfig, QueryMonitor queryMonitor,
       boolean monitorBlockedThreads, int blockedThreshold, AuthenticationMethod authenticationMethod,
       String oauthUrl, String oauthClientId, String oauthClientSecret, String changePasswordUrl,
@@ -163,8 +164,8 @@ public class ModelConfig implements OAuthConfig {
     _paramRegex = paramRegex;
 
     // file locations
-    _secretKeyFile = secretKeyFile;
     _wdkTempDir = wdkTempDir;
+    _secretKeyFile = secretKeyFile;
 
     // network locations
     _webServiceUrl = webServiceUrl;
@@ -180,7 +181,6 @@ public class ModelConfig implements OAuthConfig {
     // databases
     _userDB = userDB;
     _appDB = appDB;
-    _accountDB = accountDB;
 
     // user dataset config
     _userDatasetStoreConfig = userDatasetStoreConfig;
@@ -291,13 +291,6 @@ public class ModelConfig implements OAuthConfig {
    */
   public ModelConfigAppDB getAppDB() {
     return _appDB;
-  }
-
-  /**
-   * @return the accountDB
-   */
-  public ModelConfigAccountDB getAccountDB() {
-    return _accountDB;
   }
 
   /**

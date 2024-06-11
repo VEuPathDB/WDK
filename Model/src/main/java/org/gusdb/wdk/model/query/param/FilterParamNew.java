@@ -485,7 +485,7 @@ public class FilterParamNew extends AbstractDependentParam {
     }
     else {
       String filteredMetadataSql = getFilteredMetadataSql(validSpec, stableValue, _metadataQuery, null);
-      sql = "select count( distinct " + _recordIdColumn + ") as CNT from (" + filteredMetadataSql + ")";
+      sql = "select count( distinct " + _recordIdColumn + ") as CNT from (" + filteredMetadataSql + ") c";
       fpsc.filteredRecordCount = runCountSql(sql, "recordIds-filtered");
     }
     return fpsc;

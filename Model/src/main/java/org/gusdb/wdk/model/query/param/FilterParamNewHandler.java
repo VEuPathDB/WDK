@@ -1,18 +1,22 @@
 package org.gusdb.wdk.model.query.param;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.query.*;
+import org.gusdb.wdk.model.query.Column;
+import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.QuerySet;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author jerric

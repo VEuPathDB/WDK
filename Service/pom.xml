@@ -38,22 +38,27 @@
 
     <dependency>
       <groupId>org.gusdb</groupId>
-      <artifactId>fgputil-accountdb</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.gusdb</groupId>
       <artifactId>fgputil-server</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
+      <groupId>org.gusdb</groupId>
+      <artifactId>fgputil-client</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.gusdb</groupId>
+      <artifactId>oauth2-client</artifactId>
     </dependency>
 
     <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-server</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jersey.inject</groupId>
+      <artifactId>jersey-hk2</artifactId>
     </dependency>
 
     <dependency>

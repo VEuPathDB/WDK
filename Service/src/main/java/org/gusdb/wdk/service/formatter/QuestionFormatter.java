@@ -72,6 +72,7 @@ public class QuestionFormatter {
         .put(JsonKeys.ICON_NAME, q.getIconName())
         .put(JsonKeys.SUMMARY, q.getSummary())
         .put(JsonKeys.HELP, q.getHelp())
+        .put(JsonKeys.SEARCH_VISIBLE_HELP, q.getSearchVisibleHelp())
         .put(JsonKeys.NEW_BUILD, q.getNewBuild())
         .put(JsonKeys.REVISE_BUILD, q.getReviseBuild())
         .put(JsonKeys.IS_CACHEABLE, !q.getQuery().hasParamWithUncacheableQuery())

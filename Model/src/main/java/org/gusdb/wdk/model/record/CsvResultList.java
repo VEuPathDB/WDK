@@ -8,7 +8,10 @@ import java.util.List;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dbms.ResultList;
 
-import au.com.bytecode.opencsv.CSVReader;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.exceptions.CsvValidationException;
 
 /**
  * Wraps a buffer reader with a csv reader (from OpenCSV)
@@ -32,6 +35,9 @@ public class CsvResultList implements ResultList {
   /** The escape char to use in escaping quotes */
   public static final char ESCAPE = '\\';
 
+  /** The line separator char */
+  public static final String NEWLINE = "\n";
+
   private List<String> _columnNames;
   private String[] _currentLine;
   private boolean _isClosed;
@@ -54,7 +60,13 @@ public class CsvResultList implements ResultList {
       throw new WdkModelException("The required constructor parameters are not valid.");
     }
     _bufferedReader = reader;
-    _csvReader = new CSVReader(_bufferedReader, columnSeparator, quoteCharacter, escapeCharacter);
+    _csvReader = new CSVReaderBuilder(_bufferedReader)
+        .withCSVParser(new CSVParserBuilder()
+            .withSeparator(columnSeparator)
+            .withQuoteChar(quoteCharacter)
+            .withEscapeChar(escapeCharacter)
+            .build())
+        .build();
     _isClosed = false;
     _columnNames = columnNames;
   }
@@ -67,8 +79,8 @@ public class CsvResultList implements ResultList {
     try {
       _currentLine = _csvReader.readNext();
     }
-    catch (IOException ioe) {
-      throw new WdkModelException(ioe);
+    catch (IOException | CsvValidationException e) {
+      throw new WdkModelException(e);
     }
     // Added to be sure current line columns and column names match size-wise since
     // we are using indexing to associate the two.

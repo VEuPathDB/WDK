@@ -4,12 +4,11 @@ import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
@@ -20,6 +19,7 @@ import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.ResultSizeFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.record.DynamicRecordInstance;
+import org.gusdb.wdk.model.record.PrimaryKeyIterator;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.user.User;
@@ -52,8 +52,13 @@ public class SingleRecordAnswerValue extends AnswerValue {
   }
 
   @Override
-  public RecordInstance[] getRecordInstances() throws WdkModelException, WdkUserException {
-    return new RecordInstance[]{ new DynamicRecordInstance(_user, _recordClass, _pkMap) };
+  public RecordInstance[] getRecordInstances() throws WdkModelException {
+    try {
+      return new RecordInstance[]{ new DynamicRecordInstance(_user, _recordClass, _pkMap) };
+    }
+    catch (WdkUserException e) {
+      throw new WdkModelException(e);
+    }
   }
 
   @Override
@@ -69,7 +74,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
   }
 
   @Override
-  protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException {
+  protected String getIdSql(String excludeFilter) throws WdkModelException {
     DBPlatform platform = _recordClass.getWdkModel().getAppDb().getPlatform();
     return new StringBuilder("( select ")
       .append(join(mapToList(_pkMap.entrySet(), pkColumnValue -> {
@@ -98,7 +103,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
   }
   
   @Override
-  public List<String[]> getAllIds() throws WdkModelException {
+  public PrimaryKeyIterator getAllIds() throws WdkModelException {
     String[] pkArray = new String[_pkMap.size()];
     String[] pkColNames = _recordClass.getPrimaryKeyDefinition().getColumnRefs();
     if (pkArray.length != pkColNames.length)
@@ -106,7 +111,27 @@ public class SingleRecordAnswerValue extends AnswerValue {
     for (int i = 0; i < pkColNames.length; i++) {
       pkArray[i] = (String)_pkMap.get(pkColNames[i]);
     }
-    return new ListBuilder<String[]>().add(pkArray).toList();
+    return new PrimaryKeyIterator() {
+
+      private boolean valueReturned = false;
+
+      @Override
+      public boolean hasNext() {
+        return !valueReturned;
+      }
+
+      @Override
+      public String[] next() {
+        if (valueReturned) throw new NoSuchElementException();
+        valueReturned = true;
+        return pkArray;
+      }
+
+      @Override
+      public void close() {
+        // nothing to do here
+      }
+    };
   }
 
   @Override

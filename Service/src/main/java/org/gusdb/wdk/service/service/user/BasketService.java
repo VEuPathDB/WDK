@@ -283,7 +283,7 @@ public class BasketService extends UserService {
       .builder(getWdkModel())
       .setQuestionFullName(recordClass.getRealtimeBasketQuestion().getFullName())
       .setViewFilterOptions(AnswerSpecServiceFormat.parseViewFilters(requestJson))
-      .buildRunnable(getSessionUser(), StepContainer.emptyContainer());
+      .buildRunnable(getRequestingUser(), StepContainer.emptyContainer());
     AnswerRequest request = new AnswerRequest(basketAnswerSpec,
         new AnswerFormatting(reportName, requestJson.getJSONObject(JsonKeys.REPORT_CONFIG)), false);
     return AnswerService.getAnswerResponse(user, request).getSecond();
@@ -339,7 +339,7 @@ public class BasketService extends UserService {
       .builder(getWdkModel())
       .setQuestionFullName(recordClass.getRealtimeBasketQuestion().getFullName())
       .setViewFilterOptions(AnswerSpecServiceFormat.parseViewFilters(requestJson))
-      .buildRunnable(getSessionUser(), StepContainer.emptyContainer());
+      .buildRunnable(getRequestingUser(), StepContainer.emptyContainer());
 
     // build and configure the column reporter and stream its result
     return AnswerService.getAnswerAsStream(

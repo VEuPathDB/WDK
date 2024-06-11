@@ -1,5 +1,14 @@
 package org.gusdb.wdk.model.query;
 
+import static java.util.Objects.isNull;
+
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.MapBuilder;
@@ -20,11 +29,6 @@ import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.sql.SQLException;
-import java.util.*;
-
-import static java.util.Objects.isNull;
 
 /**
  * The query instance holds the values for the parameters, and the sub classes
@@ -208,19 +212,6 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
 
   public ResultList getResultsUnsorted() throws WdkModelException {
     return getResults(false);
-  }
-
-  public int getResultSize() throws WdkModelException {
-    try {
-      return Integer.parseInt(SqlUtils.executeScalar(
-        _wdkModel.getAppDb().getDataSource(),
-        "SELECT count(*) FROM (" + getSql() + ") f",
-        _query.getFullName() + "__count"
-      ).toString());
-    }
-    catch (SQLException e) {
-      throw new WdkModelException(e);
-    }
   }
 
   protected ResultList getCachedResults(boolean performSorting) throws WdkModelException {

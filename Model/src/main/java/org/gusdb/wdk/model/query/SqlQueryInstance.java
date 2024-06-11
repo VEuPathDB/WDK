@@ -61,6 +61,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
   private ResultList getUncachedResults() throws WdkModelException {
     try {
       var sql = getUncachedSql();
+      LOG.info("Performing the following SQL: (use debug to see SQL) " );
       LOG.debug("Performing the following SQL: " + sql);
       return new SqlResultList(SqlUtils.executeQuery(
         _wdkModel.getAppDb().getDataSource(),
@@ -78,30 +79,33 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
   @Override
   public Optional<String> createCacheTableAndInsertResult(DatabaseInstance appDb, String tableName, long instanceId)
       throws WdkModelException {
-    LOG.debug("Creating cache table for query " + _query.getFullName());
-    // get the sql with param values applied.
-    var sql = getUncachedSql();
-    LOG.debug("Uncached SQL for query " + _query.getFullName() + ": " + sql);
-    var rowNumber = appDb.getPlatform().getRowNumberColumn();
-    var buffer = new StringBuilder("CREATE TABLE " + tableName)
-      .append(" AS SELECT ")
-      .append(instanceId + " AS " + CacheFactory.COLUMN_INSTANCE_ID + ", ")
-      .append(rowNumber + " AS " + CacheFactory.COLUMN_ROW_ID + ", ")
-      .append(" f.* FROM (").append(sql).append(") f");
+    return QueryMetrics.observeCacheInsertion(_query, tableName, () -> {
+      LOG.debug("Creating cache table for query " + _query.getFullName());
+      // get the sql with param values applied.
+      var sql = getUncachedSql();
+      LOG.debug("Uncached SQL for query " + _query.getFullName() + ": " + sql);
+      var rowNumber = appDb.getPlatform().getRowNumberColumn();
+      var insertSql = new StringBuilder("CREATE TABLE " + tableName)
+        .append(" AS SELECT ")
+        .append(instanceId + " AS " + CacheFactory.COLUMN_INSTANCE_ID + ", ")
+        .append(rowNumber + " AS " + CacheFactory.COLUMN_ROW_ID + ", ")
+        .append(" f.* FROM (").append(sql).append(") f")
+        .toString();
 
-    var dataSource = appDb.getDataSource();
-    try {
-      SqlUtils.executeUpdate(dataSource, buffer.toString(), _query.getFullName() + "__create-cache-table",
-          _query.isUseDBLink());
-    }
-    catch (SQLException e) {
-      LOG.error("Failed to run sql:\n" + buffer);
-      throw new WdkModelException("Unable to create cache.", e);
-    }
+      var dataSource = appDb.getDataSource();
+      try {
+        SqlUtils.executeUpdate(dataSource, insertSql, _query.getFullName() + "__create-cache-table",
+            _query.isUseDBLink());
+      }
+      catch (SQLException e) {
+        LOG.error("Failed to run sql:\n" + insertSql);
+        throw new WdkModelException("Unable to create cache.", e);
+      }
 
-    executePostCacheUpdateSql(tableName, instanceId);
-    LOG.debug("created!!  cache table for query " + _query.getFullName());
-    return Optional.empty();
+      executePostCacheUpdateSql(tableName, instanceId);
+      LOG.debug("created!!  cache table for query " + _query.getFullName());
+      return Optional.empty();
+    });
   }
 
   public String getUncachedSql() throws WdkModelException {

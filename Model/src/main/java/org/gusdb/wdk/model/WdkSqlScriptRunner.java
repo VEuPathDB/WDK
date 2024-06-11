@@ -22,11 +22,11 @@ import org.gusdb.wdk.model.config.ModelConfigParser;
  */
 public class WdkSqlScriptRunner {
 
-  private static enum DbType { APP, USER, ACCT }
+  private static enum DbType { APP, USER }
 
   public static void main(String[] args) {
     if (args.length != 3 && args.length != 5) {
-      System.err.println("USAGE: fgpJava " + WdkSqlScriptRunner.class.getName() + " <project_id> [APP|USER|ACCT] <sql_file> [<auto_commit> <stopOnError>]");
+      System.err.println("USAGE: fgpJava " + WdkSqlScriptRunner.class.getName() + " <project_id> [APP|USER] <sql_file> [<auto_commit> <stopOnError>]");
       System.exit(1);
     }
     BufferedReader sqlReader = null;
@@ -46,7 +46,6 @@ public class WdkSqlScriptRunner {
       ModelConfigDB dbConfig = (
           whichDb.equals(DbType.APP) ? modelConf.getAppDB() :
           whichDb.equals(DbType.USER) ? modelConf.getUserDB() :
-          whichDb.equals(DbType.ACCT) ? modelConf.getAccountDB() :
           null ); // should never happen; value already validated
 
       db = new DatabaseInstance(dbConfig);

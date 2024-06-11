@@ -13,7 +13,6 @@ import org.gusdb.wdk.model.WdkModel;
 public class ErrorContext {
 
     public static enum ErrorLocation {
-      WDK_SITE("Site"),
       WDK_SERVICE("Service"),
       WDK_CLIENT("Client");
 
@@ -25,19 +24,16 @@ public class ErrorContext {
     private final WdkModel _wdkModel;
     private final RequestSnapshot _requestData;
     private final ReadOnlyMap<String, Object> _requestAttributeMap;
-    private final ReadOnlyMap<String, Object> _sessionAttributeMap;
     private final ErrorLocation _errorLocation;
     private final ThreadContextBundle _mdcBundle;
     private final String _logMarker;
     private final Date _date;
 
     public ErrorContext(WdkModel wdkModel, RequestSnapshot requestData,
-            ReadOnlyMap<String, Object> sessionAttributeMap,
             ErrorLocation errorLocation) {
         _wdkModel = wdkModel;
         _requestData = requestData;
         _requestAttributeMap = requestData.getAttributes();
-        _sessionAttributeMap = sessionAttributeMap;
         _errorLocation = errorLocation;
         _mdcBundle = ThreadLocalLoggingVars.getThreadContextBundle();
         _logMarker = UUID.randomUUID().toString();
@@ -47,7 +43,6 @@ public class ErrorContext {
     public WdkModel getWdkModel() { return _wdkModel; }
     public RequestSnapshot getRequestData() { return _requestData; }
     public ReadOnlyMap<String, Object> getRequestAttributeMap() { return _requestAttributeMap; }
-    public ReadOnlyMap<String, Object> getSessionAttributeMap() { return _sessionAttributeMap; }
 
     /**
      * A site is considered monitored if the administrator email from adminEmail in the model-config.xml has content.

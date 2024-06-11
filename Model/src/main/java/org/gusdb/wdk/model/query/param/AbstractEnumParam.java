@@ -5,7 +5,6 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -213,21 +212,21 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   }
 
   /**
-   * Returns the minimun number of selections allowed for this param; the value
-   * in the model is intertwined with allowEmpty, which always takes precedence
-   * in a conflict with this value.  Note that if this value is greater than
+   * Returns the minimum number of selections allowed for this param; the value
+   * in the model is intertwined with allowEmpty, which can sometimes conflict
+   * with the model value.  Note that if this value is greater than
    * that returned by getMaxSelectedCount(), there may be an empty range of the
    * number of allowed values.
    *
-   * min-sel  -1  0  >0
+   * min-sel    -1  0  >0
    * --------------------
-   * allow 1   0  0  min
-   * empty 0   1  1  min
+   * allow| =1   0  0  min-sel
+   * empty| =0   1  1  min-sel
    *
    * @return The minimum number of allowed values for this param
    */
   public int getMinSelectedCount() {
-    return _minSelectedCount > 1 ? _minSelectedCount : _allowEmpty ? 0 : 1;
+    return _minSelectedCount > 0 ? _minSelectedCount : _allowEmpty ? 0 : 1;
   }
 
   /**
@@ -506,6 +505,11 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
   @Override
   protected boolean isEmptyValue(String value) {
     return super.isEmptyValue(value) || new JSONArray(value).length() == 0;
+  }
+
+  @Override
+  public boolean isAllowEmpty() {
+    return getMinSelectedCount() == 0;
   }
 
   /**

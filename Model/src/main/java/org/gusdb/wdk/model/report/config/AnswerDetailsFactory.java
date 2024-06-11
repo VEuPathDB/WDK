@@ -131,6 +131,11 @@ public class AnswerDetailsFactory {
       specs.setAttributeFormat(AttributeFormat.valueOf(specJson.getString("attributeFormat").toUpperCase()));
     }
 
+    // set bufferEntireResponse flag
+    if (specJson.has("bufferEntireResponse")) {
+      specs.setBufferEntireResponse(specJson.getBoolean("bufferEntireResponse"));
+    }
+
     return specs;
   }
 
@@ -245,7 +250,7 @@ public class AnswerDetailsFactory {
       AttributeField attrib = availableAttribs.get(attribName);
       if (attrib == null) {
         throw new ReporterConfigException("Attribute '" + attribName +
-            "' is not available for record class '" + question.getFullName() + "'");
+            "' is not available for question '" + question.getFullName() + "'");
       }
       attributes.put(attrib.getName(), attrib);
     }

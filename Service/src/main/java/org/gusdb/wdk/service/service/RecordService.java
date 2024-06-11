@@ -111,7 +111,7 @@ public class RecordService extends AbstractWdkService {
       RecordRequest request = RecordRequest.createFromJson(recordClass, new JSONObject(body));
 
       // fetch a list of record instances the passed primary key maps to
-      List<RecordInstance> records = RecordClass.getRecordInstances(getSessionUser(), request.getPrimaryKey());
+      List<RecordInstance> records = RecordClass.getRecordInstances(getRequestingUser(), request.getPrimaryKey());
 
       // if no mapping exists, return not found
       if (records.isEmpty()) {

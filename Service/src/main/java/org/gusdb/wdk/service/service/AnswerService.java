@@ -193,8 +193,8 @@ public class AnswerService extends AbstractWdkService {
   public Response createCustomReportAnswer(@PathParam(REPORT_NAME_PATH_PARAM) String reportName, JSONObject body)
           throws WdkModelException, DataValidationException, RequestMisformatException {
     AnswerRequest request = parseAnswerRequest(getQuestionOrNotFound(_recordClassUrlSegment, _questionUrlSegment), reportName,
-        body, getWdkModel(), getSessionUser(), _avoidCacheHit);
-    return getAnswerResponse(getSessionUser(), request).getSecond();
+        body, getWdkModel(), getRequestingUser(), _avoidCacheHit);
+    return getAnswerResponse(getRequestingUser(), request).getSecond();
   }
 
   /**
@@ -276,6 +276,11 @@ public class AnswerService extends AbstractWdkService {
   static AnswerRequest parseAnswerRequest(Question question,
       String reporterName, JSONObject requestBody, WdkModel wdkModel, User sessionUser, boolean avoidCacheHit)
           throws RequestMisformatException, DataValidationException, WdkModelException {
+
+    if (requestBody == null || !requestBody.has(JsonKeys.SEARCH_CONFIG) || !requestBody.has(JsonKeys.REPORT_CONFIG)) {
+      throw new RequestMisformatException("Request body must not be null and must contain '" +
+          JsonKeys.SEARCH_CONFIG + "' and '" + JsonKeys.REPORT_CONFIG + "' properties.");
+    }
 
     // parse view filters
     FilterOptionListBuilder viewFilters = AnswerSpecServiceFormat.parseViewFilters(requestBody);
@@ -405,6 +410,10 @@ public class AnswerService extends AbstractWdkService {
     // parse (optional) request details (columns, pagination, etc.- format dependent on reporter) and configure reporter
     Reporter reporter = getConfiguredReporter(answerValue, request.getFormatting());
 
+    // RRD scrum 12/2/2022: ensure ability to cache result before beginning stream by checking ID sql
+    //    This will prevent a class of in-stream errors from returning 200 HTTP status vs. the desired 500
+    answerValue.getIdSql();
+
     // build response from stream, apply delivery details, and return
     ResponseBuilder builder = Response.ok(getAnswerAsStream(reporter)).type(reporter.getHttpContentType());
     return new TwoTuple<>(answerValue, applyDisposition(
@@ -481,10 +490,10 @@ public class AnswerService extends AbstractWdkService {
       ContentDisposition disposition, String filename) throws WdkModelException {
     switch(disposition) {
       case INLINE:
-        response.header("Pragma", "Public");
+        response.header(HttpHeaders.CONTENT_DISPOSITION, "inline");
         break;
       case ATTACHMENT:
-        response.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename);
+        response.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
         break;
       default:
         throw new WdkModelException("Unsupported content disposition: " + disposition);

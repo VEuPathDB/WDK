@@ -23,12 +23,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.Timer;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Event;
@@ -38,13 +38,14 @@ import org.gusdb.fgputil.events.ListenerExceptionEvent;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.gusdb.fgputil.runtime.InstanceManager;
 import org.gusdb.fgputil.runtime.Manageable;
+import org.gusdb.oauth2.client.ValidatedToken;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
 import org.gusdb.wdk.model.columntool.ColumnToolBundleMap;
 import org.gusdb.wdk.model.columntool.DefaultColumnToolBundleRef;
 import org.gusdb.wdk.model.config.ModelConfig;
-import org.gusdb.wdk.model.config.ModelConfigAccountDB;
 import org.gusdb.wdk.model.config.ModelConfigAppDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
@@ -69,8 +70,6 @@ import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.FavoriteFactory;
 import org.gusdb.wdk.model.user.StepFactory;
-import org.gusdb.wdk.model.user.UnregisteredUser.UnregisteredUserType;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
@@ -95,7 +94,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   public static final String DB_INSTANCE_APP = "APP";
   public static final String DB_INSTANCE_USER = "USER";
-  public static final String DB_INSTANCE_ACCOUNT = "ACCT";
 
   public static final String INDENT = "  ";
 
@@ -114,10 +112,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private String _projectId;
   private long _startupTime;
 
-
   private DatabaseInstance appDb;
   private DatabaseInstance userDb;
-  private DatabaseInstance accountDb;
 
   private Optional<UserDatasetStore> _userDatasetStore;
 
@@ -150,6 +146,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private Map<String, String> _recordClassUrlSegmentMap = new HashMap<>();
 
   private List<WdkModelName> wdkModelNames = new ArrayList<>();
+  private AutoCloseableList<AutoCloseable> managedCloseables = new AutoCloseableList<>();
 
   private String displayName;
   private String version; // use default version
@@ -178,7 +175,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   private File xmlDataDir;
 
-  private UserFactory userFactory;
   private StepFactory stepFactory;
   private DatasetFactory datasetFactory;
   private BasketFactory basketFactory;
@@ -203,8 +199,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private ColumnToolBundleMap columnToolBundleMap = new ColumnToolBundleMap();
   private String defaultColumnToolBundleRef;
 
-  private ReentrantLock systemUserLock = new ReentrantLock();
-  private User systemUser;
+  private TwoTuple<ValidatedToken,User> systemUser;
 
   private String buildNumber;
 
@@ -551,23 +546,21 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
     ModelConfigAppDB appDbConfig = modelConfig.getAppDB();
     ModelConfigUserDB userDbConfig = modelConfig.getUserDB();
-    ModelConfigAccountDB accountDbConfig = modelConfig.getAccountDB();
     ModelConfigUserDatasetStore udsConfig = modelConfig.getUserDatasetStoreConfig();
 
     QueryLogger.initialize(modelConfig.getQueryMonitor());
 
     appDb = new DatabaseInstance(appDbConfig, DB_INSTANCE_APP, true);
     userDb = new DatabaseInstance(userDbConfig, DB_INSTANCE_USER, true);
-    accountDb = new DatabaseInstance(accountDbConfig, DB_INSTANCE_ACCOUNT, true);
 
-    if (udsConfig == null) {
+    // set true to avoid a broken dev irods at build time
+    if ( udsConfig == null ) {
       _userDatasetStore = Optional.empty();
     }
     else {
       _userDatasetStore = Optional.of(udsConfig.getUserDatasetStore(modelConfig.getWdkTempDir()));
     }
 
-    userFactory = new UserFactory(this);
     stepFactory = new StepFactory(this);
     datasetFactory = new DatasetFactory(this);
     basketFactory = new BasketFactory(this);
@@ -597,6 +590,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     stepAnalysisFactory = (stepAnalysisPlugins == null ?
         new UnconfiguredStepAnalysisFactory(this) :
         new StepAnalysisFactoryImpl(this));
+
+    systemUser = new UserFactory(this).createUnregisteredUser();
 
     LOG.info("WDK Model configured.");
   }
@@ -644,14 +639,24 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     }
   }
 
+  /**
+   * Register a closeable with the WDKModel, ceding control of the closeable's lifecycle to this instance of the WDKModel.
+   * The registered closeable will be closed when the WDKModel is closed.
+   *
+   * @param c Closeable for which control should be ceded to WDKModel.
+   */
+  public void registerClosable(AutoCloseable c) {
+    managedCloseables.add(c);
+  }
+
   @Override
   public void close() {
     LOG.info("Releasing WDK Model resources...");
     stepAnalysisFactory.shutDown();
     releaseDb(appDb);
     releaseDb(userDb);
-    releaseDb(accountDb);
     Events.shutDown();
+    managedCloseables.close();
     LOG.info("WDK Model resources released.");
   }
 
@@ -689,12 +694,8 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return userDb;
   }
 
-  public DatabaseInstance getAccountDb() {
-    return accountDb;
-  }
-
   public UserFactory getUserFactory() {
-    return userFactory;
+    return new UserFactory(this);
   }
 
   public StepFactory getStepFactory() {
@@ -1347,19 +1348,12 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     return paramName;
   }
 
+  public ValidatedToken getSystemUserToken() {
+    return systemUser.getFirst();
+  }
+
   public User getSystemUser() {
-    if (systemUser == null) {
-      try {
-        systemUserLock.lock();
-        if (systemUser == null) {
-          systemUser = userFactory.createUnregistedUser(UnregisteredUserType.SYSTEM);
-        }
-      }
-      finally {
-        systemUserLock.unlock();
-      }
-    }
-    return systemUser;
+    return systemUser.getSecond();
   }
 
   public BasketFactory getBasketFactory() {

@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.logging.ThreadLocalLoggingVars;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.fgputil.web.ApplicationContext;
+import org.gusdb.wdk.cache.TemporaryUserDataStore;
 import org.gusdb.wdk.model.ThreadMonitor;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -76,6 +77,9 @@ public class WdkInitializer {
 
       // shut down thread monitor
       ThreadMonitor.shutDown();
+
+      // shut down TemporaryUserData threadpool
+      TemporaryUserDataStore.shutDown();
 
       WdkModel wdkModel = getWdkModel(applicationScope);
       if (wdkModel != null) {

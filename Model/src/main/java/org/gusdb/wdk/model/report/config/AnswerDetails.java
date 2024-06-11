@@ -29,6 +29,7 @@ public class AnswerDetails {
   private List<SortDirectionSpec<AttributeField>> _sorting = new ArrayList<>();
   private ContentDisposition _contentDisposition = ContentDisposition.INLINE;
   private AttributeFormat _attributeFormat = AttributeFormat.DISPLAY;
+  private boolean _isBufferEntireResponse = false; // default to standard streaming model
 
   // all getters are public
   public int getOffset() { return _offset; }
@@ -38,6 +39,7 @@ public class AnswerDetails {
   public List<SortDirectionSpec<AttributeField>> getSorting() { return _sorting; }
   public ContentDisposition getContentDisposition() { return _contentDisposition; }
   public AttributeFormat getAttributeFormat() { return _attributeFormat; }
+  public boolean isBufferEntireResponse() { return _isBufferEntireResponse; }
 
   // all setters are package-private, available only to factory
   void setOffset(int offset) { _offset = offset; }
@@ -47,5 +49,6 @@ public class AnswerDetails {
   void setSorting(List<SortDirectionSpec<AttributeField>> sorting) { _sorting = sorting; }
   void setContentDisposition(ContentDisposition contentDisposition) { _contentDisposition = contentDisposition; }
   void setAttributeFormat(AttributeFormat attributeFormat) { _attributeFormat = attributeFormat; }
+  public void setBufferEntireResponse(boolean isBufferEntireResponse) { _isBufferEntireResponse = isBufferEntireResponse; }
 
 }

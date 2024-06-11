@@ -1,9 +1,8 @@
 package org.gusdb.wdk.service.formatter;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
-import org.gusdb.fgputil.accountdb.UserPropertyName;
+import org.gusdb.oauth2.client.veupathdb.UserProperty;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferences;
@@ -29,27 +28,26 @@ import org.json.JSONObject;
 public class UserFormatter {
 
   public static JSONObject getUserJson(User user, boolean isOwner,
-      boolean includePreferences, List<UserPropertyName> propDefs) throws JSONException {
+      Optional<UserPreferences> userPreferences) throws JSONException {
     JSONObject json = new JSONObject()
       .put(JsonKeys.ID, user.getUserId())
       .put(JsonKeys.IS_GUEST, user.isGuest());
     // private fields viewable only by owner
     if (isOwner) {
       json.put(JsonKeys.EMAIL, user.getEmail());
-      json.put(JsonKeys.PROPERTIES, getPropertiesJson(user.getProfileProperties(), propDefs, isOwner));
-      if (includePreferences) {
-        json.put(JsonKeys.PREFERENCES, getPreferencesJson(user.getPreferences()));
-      }
+      json.put(JsonKeys.PROPERTIES, getPropertiesJson(user, isOwner));
+      userPreferences.ifPresent(prefs ->
+        json.put(JsonKeys.PREFERENCES, getPreferencesJson(prefs)));
     }
     return json;
   }
 
-  private static JSONObject getPropertiesJson(Map<String,String> props, List<UserPropertyName> propDefs, boolean isOwner) {
+  private static JSONObject getPropertiesJson(User user, boolean isOwner) {
     JSONObject propsJson = new JSONObject();
-    for (UserPropertyName definedProperty : propDefs) {
+    for (UserProperty definedProperty : User.USER_PROPERTIES.values()) {
       if (isOwner || definedProperty.isPublic()) {
         String key = definedProperty.getName();
-        String value = (props.containsKey(key) ? props.get(key) : "");
+        String value = Optional.ofNullable(definedProperty.getValue(user)).orElse("");
         propsJson.put(key, value);
       }
     }

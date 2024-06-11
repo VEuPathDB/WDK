@@ -64,6 +64,10 @@ public class RecordStreamFactory {
                answerValue.entireResultRequested())
         out = new SingleAttributeRecordStream(answerValue, attributes);
 
+      // if only need one table query, then use SingleTableRecordStream
+      else if (attributes.isEmpty() && tables.size() == 1)
+        out = new SingleTableRecordStream(answerValue, tables.iterator().next());
+
       // if result is smaller than maxPageSize, load entire
       // answer into memory and lazy load attributes/tables
       else if (answerValue.getResultSizeFactory().getResultSize() <= MAX_PAGE_SIZE)

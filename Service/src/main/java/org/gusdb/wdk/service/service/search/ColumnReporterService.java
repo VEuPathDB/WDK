@@ -144,7 +144,7 @@ public class ColumnReporterService extends ColumnToolService {
           requestJson.getJSONObject(JsonKeys.SEARCH_CONFIG), toolName, viewFilters);
 
       // build answer value
-      AnswerValue answerValue = AnswerValueFactory.makeAnswer(getSessionUser(), answerSpec);
+      AnswerValue answerValue = AnswerValueFactory.makeAnswer(getRequestingUser(), answerSpec);
 
       // finish configuring the reporter
       reporter
@@ -208,7 +208,7 @@ public class ColumnReporterService extends ColumnToolService {
 
     // build the spec and return
     return specBuilder
-        .build(getSessionUser(), emptyContainer(), RUNNABLE, FILL_PARAM_IF_MISSING)
+        .build(getRequestingUser(), emptyContainer(), RUNNABLE, FILL_PARAM_IF_MISSING)
         .getRunnable()
         .getOrThrow(spec -> new DataValidationException(spec.getValidationBundle()));
   }

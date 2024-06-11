@@ -79,8 +79,10 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   @Override
   public Optional<String> createCacheTableAndInsertResult(DatabaseInstance appDb, String tableName, long instanceId)
       throws WdkModelException {
-    createCacheTable(appDb, tableName, _query);
-    return insertResults(appDb, tableName, instanceId);
+    return QueryMetrics.observeCacheInsertion(_query, tableName, () -> {
+      createCacheTable(appDb, tableName, _query);
+      return insertResults(appDb, tableName, instanceId);
+    });
   }
 
   private static void createCacheTable(DatabaseInstance appDb, String tableName, ProcessQuery query) throws WdkModelException {

@@ -1,17 +1,11 @@
 package org.gusdb.wdk.model;
 
-import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import javax.activation.DataHandler;
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.Date;
@@ -22,6 +16,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import javax.activation.DataHandler;
+import javax.mail.Address;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+
+import org.apache.log4j.Logger;
+
 /**
  * This class provided constants that are shared among different WDK model
  * classes. Furthermore, it also provides utility functions to send
@@ -31,15 +39,9 @@ import java.util.stream.Stream;
  */
 public class Utilities {
 
-  private static final Logger logger = Logger.getLogger(Utilities.class);
+  private static final Logger LOG = Logger.getLogger(Utilities.class);
 
   public static final int TRUNCATE_DEFAULT = 100;
-
-  /**
-   * The maximum size for parameter values that will be displayed in thr URL as
-   * plain values
-   */
-  public static final int MAX_PARAM_VALUE_SIZE = 100;
 
   /**
    * The maximum number of attributes used in sorting an answer
@@ -56,12 +58,6 @@ public class Utilities {
    */
   public static final String SYSTEM_PROPERTY_GUS_HOME = "GUS_HOME";
 
-  public static final int MAXIMUM_RECORD_INSTANCES = 10000;
-
-  public static final String ALIAS_OLD_KEY_COLUMN_PREFIX = "old_";
-
-  public static final int DEFAULT_PAGE_SIZE = 20;
-
   public static final int DEFAULT_SUMMARY_ATTRIBUTE_SIZE = 6;
 
   public static final int DEFAULT_WEIGHT = 10;
@@ -72,8 +68,6 @@ public class Utilities {
    * individual field in the dataset, basket, and favorite tables.
    */
   public static final int MAX_PK_COLUMN_COUNT = 4;
-
-  public static final int MAX_PK_COLUMN_VALUE_SIZE = 1999;
 
   public static final String INTERNAL_PARAM_SET = "InternalParams";
   public static final String INTERNAL_QUERY_SET = "InternalQueries";
@@ -101,11 +95,11 @@ public class Utilities {
   public static final String COLUMN_DIVIDER = ",";
 
   public static final String WDK_MODEL_KEY = "wdk_model";
-  public static final String WDK_MODEL_BEAN_KEY = "wdkModel"; // cannot change this because of JSPs
   public static final String WDK_USER_KEY = "wdk_user";
-  public static final String WDK_USER_BEAN_KEY = "wdkUser";
+  public static final String BEARER_TOKEN_KEY = "bearer-token";
 
   public static final String WDK_SERVICE_ENDPOINT_KEY = "wdkServiceEndpoint";
+
 
   /*
    * Inner class to act as a JAF DataSource to send HTML e-mail content
@@ -166,22 +160,6 @@ public class Utilities {
     return data.trim().split("\\s+");
   }
 
-  public static String fromArray(String[] data) {
-    return fromArray(data, ",");
-  }
-
-  public static String fromArray(String[] data, String delimiter) {
-    if (data == null)
-      return null;
-    StringBuffer sb = new StringBuffer();
-    for (String value : data) {
-      if (sb.length() > 0)
-        sb.append(delimiter);
-      sb.append(value);
-    }
-    return sb.toString();
-  }
-
   public static String parseValue(Object objValue) {
     if (objValue == null)
       return null;
@@ -199,33 +177,53 @@ public class Utilities {
     }
   }
 
-  public static String[][] convertContent(String content) throws JSONException {
-    JSONArray jsResult = new JSONArray(content);
-    JSONArray jsRow = (JSONArray) jsResult.get(0);
-    String[][] result = new String[jsResult.length()][jsRow.length()];
-    for (int row = 0; row < result.length; row++) {
-      jsRow = (JSONArray) jsResult.get(row);
-      for (int col = 0; col < result[row].length; col++) {
-        Object cell = jsRow.get(col);
-        result[row][col] = (cell == null || cell == JSONObject.NULL) ? null
-            : cell.toString();
-      }
-    }
-    return result;
+  // sendEmail() method overloading: different number of parameters (max 8), different type for attachments
+
+  // 7 parameters (missing bcc, datahandlers instead of attachments)
+  // used by?
+  public static void sendEmail(String smtpServer, String sendTos, String reply,
+    String subject, String content, String ccAddresses,
+    DataHandler[] attachmentDataHandlers) throws WdkModelException {
+      Attachment[] attachments = Stream
+        .of(attachmentDataHandlers)
+        .map(dataHandler -> new Attachment(dataHandler, dataHandler.getName()))
+        .toArray(Attachment[]::new);
+      // should call the 8 parameter one straight?
+      sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, attachments);
   }
 
-   public static void sendEmail(String smtpServer, String sendTos, String reply,
-		 String subject, String content, String ccAddresses,
-     Attachment[] attachments) throws WdkModelException {
-		 sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, null,
-       attachments);
-	 }
+  // sendEmail()  6 parameters (missing bcc, attachments)
+  // used by?
+  public static void sendEmail(String smtpServer, String sendTos, String reply,
+    String subject, String content, String ccAddresses)
+    throws WdkModelException {
+      // should call the 8 parameter one straight
+      sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, new Attachment[] {});
+  }
 
-   public static void sendEmail(String smtpServer, String sendTos, String reply,
-			String subject, String content, String ccAddresses, String bccAddresses,
-      Attachment[] attachments) throws WdkModelException {
+  // sendEmail()  5 parameters (missing cc, bcc, attachments)
+  // used by?
+  public static void sendEmail(String smtpServer, String sendTos, String reply,
+    String subject, String content) throws WdkModelException {
+      // should call the 8 parameter one straight
+      sendEmail(smtpServer, sendTos, reply, subject, content, null, new Attachment[] {});
+  }
 
-    logger.debug("Sending message to: " + sendTos + ", bcc to: " + bccAddresses +
+  // sendEmail()  7 parameters (missing bcc)
+  // used by al of the above
+  public static void sendEmail(String smtpServer, String sendTos, String reply, 
+    String subject, String content, String ccAddresses, Attachment[] attachments) 
+    throws WdkModelException {
+      //  call the 8 parameter one
+      sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, null, attachments);
+  }
+
+  // sendEmail()  all 8 parameters
+  public static void sendEmail(String smtpServer, String sendTos, String reply,
+    String subject, String content, String ccAddresses, String bccAddresses,
+    Attachment[] attachments) throws WdkModelException {
+
+    LOG.debug("Sending message to: " + sendTos + ", bcc to: " + bccAddresses +
       ",reply: " + reply + ", using SMPT: " + smtpServer);
 
     // create properties and get the session
@@ -255,6 +253,7 @@ public class Utilities {
       }
       message.setSubject(subject);
       message.setSentDate(new Date());
+
       // set html content
       MimeBodyPart messagePart = new MimeBodyPart();
       messagePart.setDataHandler(new DataHandler(new HTMLDataSource(content)));
@@ -283,47 +282,12 @@ public class Utilities {
     }
   }
 
-  public static void sendEmail(String smtpServer, String sendTos, String reply,
-      String subject, String content, String ccAddresses,
-      DataHandler[] attachmentDataHandlers) throws WdkModelException {
-
-    Attachment[] attachments = Stream
-      .of(attachmentDataHandlers)
-      .map(dataHandler -> new Attachment(dataHandler, dataHandler.getName()))
-      .toArray(Attachment[]::new);
-
-    sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, attachments);
-  }
-
-  public static void sendEmail(String smtpServer, String sendTos, String reply,
-      String subject, String content, String ccAddresses)
-      throws WdkModelException {
-    sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, new Attachment[] {});
-  }
-
-  public static void sendEmail(String smtpServer, String sendTos, String reply,
-      String subject, String content) throws WdkModelException {
-    sendEmail(smtpServer, sendTos, reply, subject, content, null, new Attachment[] {});
-  }
-
   public static byte[] readFile(File file) throws IOException {
     byte[] buffer = new byte[(int) file.length()];
     InputStream stream = new FileInputStream(file);
     stream.read(buffer, 0, buffer.length);
     stream.close();
     return buffer;
-  }
-
-  public static <S,T> int createHashFromValueMap(Map<S,T> map) {
-    StringBuilder buffer = new StringBuilder("{");
-    for (S key : map.keySet()) {
-      if (buffer.length() > 1) {
-        buffer.append(";");
-      }
-      buffer.append(key).append(":").append(map.get(key));
-    }
-    buffer.append("}");
-    return buffer.toString().hashCode();
   }
 
   public static Map<String, Boolean> parseSortList(String sortList) throws WdkModelException {

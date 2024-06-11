@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.functional.Functions;
@@ -24,8 +25,7 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-
-import au.com.bytecode.opencsv.CSVWriter;
+import com.opencsv.CSVWriter;
 
 /**
  * A reporter that produces a tabular output from an answer. It takes a pluggable row provider that provides
@@ -153,7 +153,7 @@ public abstract class AbstractTabularReporter extends StandardReporter {
 
   private void format2CSV(OutputStream out) throws WdkModelException, WdkUserException {
     try (CSVWriter writer = new CSVWriter(new BufferedWriter(new OutputStreamWriter(out),
-        FileBasedRecordStream.BUFFER_SIZE), CsvResultList.COMMA, CsvResultList.QUOTE, CsvResultList.ESCAPE)) {
+        FileBasedRecordStream.BUFFER_SIZE), CsvResultList.COMMA, CsvResultList.QUOTE, CsvResultList.ESCAPE, CsvResultList.NEWLINE)) {
 
       List<String> colNames = getHeader();
       if (_includeHeader) {
@@ -174,29 +174,26 @@ public abstract class AbstractTabularReporter extends StandardReporter {
   }
 
   protected void format2Text(OutputStream out) throws WdkModelException, WdkUserException {
-    PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+    // create a PrintWriter (for convenience) over a BufferedWriter (for performance)
+    //    turning off auto-flush on the PrintWriter; let BufferedWriter handle flushing
+    PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(out)), false);
     // print the header
     if (_includeHeader) {
-      for (String title : getHeader()) {
-        writer.print(title);
-        writer.print(_divider);
-      }
-      writer.println();
-      writer.flush();
+      writer.println(String.join(_divider, getHeader()));
     }
 
     try (RecordStream records = getRecords()) {
       for (RecordInstance record : records) {
         for (List<Object> row : getRowsProvider(record)) {
-          for (Object value : row) {
-            writer.print(getOutputValue(value));
-            writer.print(_divider);
-          }
-          writer.println();
-          writer.flush();
+          writer.println(row.stream()
+              .map(obj -> getOutputValue(obj))
+              .collect(Collectors.joining(_divider)));
         }
       }
     }
+
+    // flush anything in the buffer
+    writer.flush();
   }
 
   protected void format2PDF(OutputStream out) throws WdkModelException, WdkUserException {

@@ -123,6 +123,45 @@
         "sourceContent"
       ],
       "additionalProperties": false
+    },
+    {
+      "id": "dataset-from-url",
+      "type": "object",
+      "properties": {
+        "sourceType": {
+          "type": "string",
+          "pattern": "^url$"
+        },
+        "sourceContent": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "parser": {
+              "type": "string"
+            },
+            "parameterName": {
+              "type": "string"
+            },
+            "searchName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "url",
+            "parser",
+            "parameterName",
+            "searchName"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "sourceType",
+        "sourceContent"
+      ],
+      "additionalProperties": false
     }
   ]
 }

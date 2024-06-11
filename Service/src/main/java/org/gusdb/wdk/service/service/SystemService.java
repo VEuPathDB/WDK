@@ -1,19 +1,11 @@
 package org.gusdb.wdk.service.service;
 
-import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.ListBuilder;
-import org.gusdb.fgputil.Timer;
-import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SQLRunnerException;
-import org.gusdb.fgputil.runtime.BuildStatus;
-import org.gusdb.wdk.cache.CacheMgr;
-import org.gusdb.wdk.model.WdkModelException;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import io.prometheus.client.CollectorRegistry;
-import io.prometheus.client.exporter.common.TextFormat;
+import java.io.OutputStreamWriter;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
@@ -25,15 +17,32 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import java.io.OutputStreamWriter;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.Objects;
-import java.util.function.Predicate;
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.Timer;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
+import org.gusdb.fgputil.runtime.BuildStatus;
+import org.gusdb.wdk.cache.CacheMgr;
+import org.gusdb.wdk.model.WdkCacheSeeder;
+import org.gusdb.wdk.model.WdkModelException;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.exporter.common.TextFormat;
 
 @Path("system")
 public class SystemService extends AbstractWdkService {
+
+  private static final Logger LOG = Logger.getLogger(SystemService.class);
+
+  // this path is sometimes skipped by request filter logic
+  public static final String PROMETHEUS_ENDPOINT_PATH = "system/metrics/prometheus";
+
+  protected static final String CACHE_SEED_ENDPOINT = "seed-wdk-caches";
 
   @GET
   @Path("userdb/connections")
@@ -80,6 +89,20 @@ public class SystemService extends AbstractWdkService {
     }
 
     return array.toString(2);
+  }
+
+  @GET
+  @Path(CACHE_SEED_ENDPOINT)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response seedWdkCaches() throws WdkModelException {
+    assertAdmin();
+    WdkCacheSeeder seeder = new WdkCacheSeeder(getWdkModel());
+    String result = new JSONObject()
+        .put("questionResults", seeder.cacheQuestions())
+        .put("publicStratsResults", seeder.cachePublicStrategies())
+        .toString(2);
+    LOG.info("WDK Cache Seeding Complete with results: " + result);
+    return Response.ok(result).build();
   }
 
   @GET

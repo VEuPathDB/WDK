@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,7 +25,8 @@ import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -41,7 +41,7 @@ import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 
-import au.com.bytecode.opencsv.CSVWriter;
+import com.opencsv.CSVWriter;
 
 public class FileBasedRecordStream implements RecordStream {
 
@@ -232,7 +232,7 @@ public class FileBasedRecordStream implements RecordStream {
       throws WdkModelException {
 
     try (CSVWriter writer = new CSVWriter(new BufferedWriter(new FileWriter(filePath.toString()), BUFFER_SIZE),
-          CsvResultList.TAB, CsvResultList.QUOTE, CsvResultList.ESCAPE)) {
+          CsvResultList.TAB, CsvResultList.QUOTE, CsvResultList.ESCAPE, CsvResultList.NEWLINE)) {
 
       // Create an array sized to handle the attribute columns as this will be used to write out a row
       // to the CSV file. Primary keys are not included since there should be exactly 1 row per primary key
@@ -288,7 +288,7 @@ public class FileBasedRecordStream implements RecordStream {
           queryData.getSecond(), tempDir), queryData.getSecond());
     }
 
-    LOG.debug("assembleAttributeFiles(): Attribute file assembly complete: " + pathMap);
+    LOG.info("assembleAttributeFiles(): Attribute file assembly complete: " + pathMap);
     return pathMap;
   }
 
@@ -310,49 +310,53 @@ public class FileBasedRecordStream implements RecordStream {
     // Obtain path to CSV file that will hold the results of the current query.
     Path filePath = tempDir.resolve(query.getFullName() + TEMP_FILE_EXT);
 
-    SqlResultList resultList = null;
+    DataSource dataSource = answerValue.getWdkModel().getAppDb().getDataSource();
+    String sqlName = query.getFullName() + "__attr-full";
+
+    // Getting the paged attribute SQL but in fact, getting a SQL statement requesting with all records.
+    String sql = answerValue.getAnswerAttributeSql(query, true);
+    LOG.info("Merged attribute SQL for query '" + query.getFullName() + ": (use debug to see SQL)" );
+    LOG.debug("Merged attribute SQL for query '" + query.getFullName() + "': " + FormatUtil.NL + sql);
+
+    Timer t = new Timer();
+    LOG.debug("writeAttributeFile(): Starting query " + query.getName());
     try {
-      Timer t = new Timer();
-      LOG.debug("writeAttributeFile(): Starting query " + query.getName());
+      return new SQLRunner(dataSource, sql, sqlName).executeQuery(rs -> {
+        try {
 
-      // Getting the paged attribute SQL but in fact, getting a SQL statement requesting with all records.
-      String sql = answerValue.getAnswerAttributeSql(query, true);
-      LOG.debug("Merged attribute SQL for query '" + query.getFullName() + "': " + FormatUtil.NL + sql);
+          // Get the result list for the current attribute query
+          @SuppressWarnings("resource")
+          ResultList resultList = new SqlResultList(rs).setResponsibleForClosingResultSet(false);
 
-      // Get the result list for the current attribute query
-      DataSource dataSource = answerValue.getWdkModel().getAppDb().getDataSource();
-      resultList = new SqlResultList(SqlUtils.executeQuery(dataSource, sql, query.getFullName() + "__attr-full"));
+          // Generate full list of columns to fetch, including both PK columns and requested columns
+          List<String> columnsToTransfer = new ListBuilder<String>(answerValue.getAnswerSpec().getQuestion()
+              .getRecordClass().getPrimaryKeyDefinition().getColumnRefs())
+              .addAll(Functions.mapToList(attributeFields, Named.TO_NAME))
+              .toList();
 
-      // Generate full list of columns to fetch, including both PK columns and requested columns
-      List<String> columnsToTransfer = new ListBuilder<String>(answerValue.getAnswerSpec().getQuestion()
-          .getRecordClass().getPrimaryKeyDefinition().getColumnRefs())
-          .addAll(Functions.mapToList(attributeFields, Named.TO_NAME))
-          .toList();
+          // Transfer the result list content to the CSV file provided
+          LOG.debug("writeAttributeFile(): Starting iteration over result list for query " + query.getName() + ": " + t.getElapsedString());
+          long rowsWritten = assembleCsvFile(filePath, columnsToTransfer, resultList);
+          LOG.debug("writeAttributeFile(): Finished iteration over result list for query " + query.getName() + ": " + t.getElapsedString());
 
-      // Transfer the result list content to the CSV file provided
-      LOG.debug("writeAttributeFile(): Starting iteration over result list for query " + query.getName() + ": " + t.getElapsedString());
-      long rowsWritten = assembleCsvFile(filePath, columnsToTransfer, resultList);
-      LOG.debug("writeAttributeFile(): Finished iteration over result list for query " + query.getName() + ": " + t.getElapsedString());
+          // check number of rows written against expected
+          if (rowsWritten != numExpectedRows) {
+            throw new WdkModelException("Joined attribute query '" + query.getFullName() +
+                "' returned a different number of rows (" + rowsWritten +
+                ") than the ID query alone (" + numExpectedRows + ").");
+          }
 
-      // check number of rows written against expected
-      if (rowsWritten != numExpectedRows) {
-        throw new WdkModelException("Joined attribute query '" + query.getFullName() +
-            "' returned a different number of rows (" + rowsWritten +
-            ") than the ID query alone (" + numExpectedRows + ").");
-      }
-
-      // open file permissions and return the path to the temporary CSV file
-      filePath.toFile().setWritable(true, false);
-      return filePath;
+          // open file permissions and return the path to the temporary CSV file
+          filePath.toFile().setWritable(true, false);
+          return filePath;
+        }
+        catch (WdkModelException e) {
+          throw new SQLRunnerException(e);
+        }
+      });
     }
-    catch (SQLException e) {
-      throw new WdkModelException("Unable to transfer attribute query result to CSV file", e);
-    }
-    finally {
-      // close the result list for the table query if one exists.
-      if (resultList != null) {
-        resultList.close();
-      }
+    catch (SQLRunnerException e) {
+      throw WdkModelException.translateFrom(e, "Unable to transfer attribute query result to CSV file");
     }
   }
 

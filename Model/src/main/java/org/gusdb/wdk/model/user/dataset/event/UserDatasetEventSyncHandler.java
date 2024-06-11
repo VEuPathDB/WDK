@@ -2,7 +2,9 @@ package org.gusdb.wdk.model.user.dataset.event;
 
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -53,10 +55,10 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
     UserDatasetSession dsSession,
     DataSource ds,
     String dsSchema,
-    String projectId,
+    List<String> projectIds,
     ModelConfig modelConfig
   ) {
-    super(ds, dsSchema, projectId, modelConfig);
+    super(ds, dsSchema, projectIds, modelConfig);
 
     this.dsSession  = dsSession;
 
@@ -142,7 +144,7 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
 
     LOG.info("Installing user dataset " + datasetId);
 
-    handleInstallEvent(typeHandler, event.getOwnerUserId(), datasetId);
+    handleInstallEvent(typeHandler, event.getOwnerUserId(), datasetId, event.getProjectsFilter());
     closeEventHandling(event);
   }
 
@@ -186,7 +188,8 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
   protected void handleInstallEvent(
     final UserDatasetTypeHandler typeHandler,
     final Long ownerUserId,
-    final Long datasetId
+    final Long datasetId,
+    final Set<String> projectsToInstall
   ) throws WdkModelException {
     LOG.trace("UserDatasetEventHandler#handleInstallEvent");
     final Path              cwd;
@@ -216,11 +219,13 @@ public class UserDatasetEventSyncHandler extends UserDatasetEventHandler
     cwd   = typeHandler.createWorkingDir(getTmpDir(), userDataset.getUserDatasetId());
     files = copyToLocalTimeout(dsSession, userDataset, typeHandler, cwd);
 
-    // insert into the installedTable
-    getInstallRepo().insertUserDataset(datasetId, userDataset.getMeta().getName());
+    for (String project: projectsToInstall) {
+      // insert into the installedTable
+      getInstallRepo().insertUserDataset(datasetId, userDataset.getMeta().getName(), project);
 
-    // insert into the type-specific tables
-    typeHandler.installInAppDb(userDataset, cwd, getProjectId(), files);
+      // insert into the type-specific tables
+      typeHandler.installInAppDb(userDataset, cwd, project, files);
+    }
     typeHandler.deleteWorkingDir(cwd);
 
     // grant access to the owner, by installing into the ownerTable

@@ -145,53 +145,6 @@ site_vars file: {{ site_vars }}
             {% endif -%}
     />
 
-    <accountDb login="{{ modelconfig_accountDb_login }}"
-            password="{{ modelconfig_accountDb_password }}"
-            connectionUrl="{{ modelconfig_accountDb_connectionUrl }}"
-            platform="{{ modelconfig_accountDb_platform }}"
-            accountSchema="{{ modelconfig_accountDb_accountSchema }}"
-            {% if modelconfig_accountDb_maxActive is defined -%}
-            maxActive="{{ modelconfig_accountDb_maxActive }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_maxIdle is defined -%}
-            maxIdle="{{ modelconfig_accountDb_maxIdle }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_minIdle is defined -%}
-            minIdle="{{ modelconfig_accountDb_minIdle }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_maxWait is defined -%}
-            maxWait="{{ modelconfig_accountDb_maxWait }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_defaultFetchSize is defined -%}
-            defaultFetchSize="{{ modelconfig_accountDb_defaultFetchSize }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_showConnections is defined -%}
-            showConnections="{{ modelconfig_accountDb_showConnections }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_showConnectionsInterval is defined -%}
-            showConnectionsInterval="{{ modelconfig_accountDb_showConnectionsInterval }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_showConnectionsDuration is defined -%}
-            showConnectionsDuration="{{ modelconfig_accountDb_showConnectionsDuration }}"
-            {% endif -%}
-            {% if modelconfig_accountDb_driverInitClass is defined -%}
-            driverInitClass="{{ modelconfig_accountDb_driverInitClass }}"
-            {% endif %}
-      >
-
-      <userProperty name="username" displayName="Username" dbKey="username"/>
-      <userProperty name="firstName" displayName="First Name" dbKey="first_name" required="true"/>
-      <userProperty name="middleName" displayName="Middle Name" dbKey="middle_name"/>
-      <userProperty name="lastName" displayName="Last Name" dbKey="last_name" required="true"/>
-      <userProperty name="organization" displayName="Organization" dbKey="organization" required="true"/>
-      <userProperty name="interests" displayName="Interests" dbKey="interests" multiLine="true"/>
-
-    </accountDb>
-
-    {% if modelconfig_userDatasetStoreConfig is defined -%}
-    {{ modelconfig_userDatasetStoreConfig|indent }}
-    {% endif -%}
-
     <emailSubject>
       {{ modelconfig_emailSubject|indent(6) }}
     </emailSubject>

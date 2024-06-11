@@ -6,7 +6,6 @@ import java.util.NoSuchElementException;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.record.RecordInstance;
 
@@ -35,7 +34,7 @@ public class PagedAnswerRecordIterator implements Iterator<RecordInstance> {
       }
       return false;
     }
-    catch (WdkUserException | WdkModelException e) {
+    catch (WdkModelException e) {
       throw new WdkRuntimeException("Unable to get next page of records from answer value", e);
     }
   }

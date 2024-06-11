@@ -26,13 +26,18 @@
     },
     "type": {
       "type": "string"
+    },
+    "newBuild": {
+      "type": "string"
+    },
+    "reviseBuild": {
+      "type": "string"
     }
   },
   "required": [
     "isInReport",
     "displayName",
     "name",
-    "description",
     "scopes",
     "type"
   ],

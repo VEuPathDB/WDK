@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.answer;
 
 import static org.gusdb.fgputil.StringUtil.indent;
+import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -50,8 +51,11 @@ import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.Fill
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
+import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
+import org.gusdb.wdk.model.record.PrimaryKeyIterator;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.ResultSetPrimaryKeyIterator;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
@@ -135,15 +139,21 @@ public class AnswerValue {
   protected final User _user;
   private final RunnableObj<AnswerSpec> _validAnswerSpec;
   protected final AnswerSpec _answerSpec;
+  private final boolean _avoidCacheHit;
 
   // values derived from basic info
   private final WdkModel _wdkModel;
   private final QueryInstance<?> _idsQueryInstance;
   protected ResultSizeFactory _resultSizeFactory; // may be reassigned by subclasses
 
-  // sorting and paging for this answer- may be modified externally
-  private int _startIndex;
-  private int _endIndex;
+  // paging for this answer
+  // default is to return the entire result
+  // NOTE: first index is 1 and page size is inclusive of startIndex and endIndex
+  //       thus to get the first page of 10, use [1,10]
+  private int _startIndex = 1;
+  private int _endIndex = UNBOUNDED_END_PAGE_INDEX;
+
+  // sorting for this answer
   private Map<String, Boolean> _sortingMap;
 
   // values generated and cached from the above
@@ -168,25 +178,23 @@ public class AnswerValue {
     _validAnswerSpec = validAnswerSpec;
     _answerSpec = validAnswerSpec.get();
     _wdkModel = _answerSpec.getWdkModel();
+    _avoidCacheHit = avoidCacheHit;
     _idsQueryInstance = Query.makeQueryInstance(_answerSpec.getQueryInstanceSpec().getRunnable().getLeft(), avoidCacheHit);
-    Question question = _answerSpec.getQuestion();
     _resultSizeFactory = new ResultSizeFactory(this);
-
-    _startIndex = startIndex;
-    _endIndex = endIndex;
-
     _sortingMap = sortingMap == null? new HashMap<String, Boolean>() : sortingMap;
-
-    LOG.debug("AnswerValue created for question: " + question.getDisplayName());
+    setPageIndex(startIndex, endIndex);
+    LOG.debug("AnswerValue created for question: " + _answerSpec.getQuestion().getDisplayName());
   }
 
   @Override
   public AnswerValue clone() {
-    return new AnswerValue(this, this._startIndex, this._endIndex);
+    // convert to runtime exception safe here because changes should not produce -new- exception
+    return swallowAndGet(() -> new AnswerValue(this, this._startIndex, this._endIndex));
   }
 
   public AnswerValue cloneWithNewPaging(int startIndex, int endIndex) {
-    return new AnswerValue(this, startIndex, endIndex);
+    // convert to runtime exception safe here because changes should not produce -new- exception
+    return swallowAndGet(() -> new AnswerValue(this, startIndex, endIndex));
   }
 
   /**
@@ -201,21 +209,18 @@ public class AnswerValue {
    * @param startIndex
    *   1-based start index (inclusive)
    * @param endIndex
-   *   end index (inclusive), or a negative value for all records
+   *   end index (inclusive), or UNBOUNDED_END_PAGE_INDEX for all records
+   * @throws WdkModelException
    */
-  private AnswerValue(AnswerValue answerValue, int startIndex, int endIndex) {
-    _user = answerValue._user;
-    _validAnswerSpec = answerValue._validAnswerSpec;
-    _answerSpec = answerValue._answerSpec;
-    _wdkModel = answerValue._wdkModel;
-    _idsQueryInstance = answerValue._idsQueryInstance;
-    // Note: do not copy result size data (i.e. _resultSizesByFilter and
-    //   _resultSizesByProject); they are essentially caches and should be
-    //   rebuilt by each new AnswerValue
-    _resultSizeFactory = new ResultSizeFactory(this);
-    _startIndex = startIndex;
-    _endIndex = endIndex;
-    _sortingMap = new LinkedHashMap<>(answerValue._sortingMap);
+  private AnswerValue(AnswerValue answerValue, int startIndex, int endIndex) throws WdkModelException {
+    this(
+      answerValue._user,
+      answerValue._validAnswerSpec,
+      startIndex,
+      endIndex,
+      new LinkedHashMap<>(answerValue._sortingMap),
+      answerValue._avoidCacheHit
+    );
   }
 
   public User getUser() {
@@ -260,7 +265,7 @@ public class AnswerValue {
   }
 
   /**
-   * the checksum of the iq query, plus the filter information on the answer.
+   * the checksum of the id query, plus the filter information on the answer.
    */
   public String getChecksum() throws WdkModelException {
     if (_checksum == null) {
@@ -293,7 +298,7 @@ public class AnswerValue {
    *
    * @return page of dynamic records as an array
    */
-  public RecordInstance[] getRecordInstances() throws WdkModelException, WdkUserException {
+  public RecordInstance[] getRecordInstances() throws WdkModelException {
     return new DynamicRecordInstanceList(this).values()
       .toArray(new RecordInstance[0]);
   }
@@ -321,8 +326,8 @@ public class AnswerValue {
     LOG.debug("AnswerValue: getPagedAttributeSql(): " +
       attributeQuery.getFullName() + " --boolean sortPage: " + sortPage);
 
-    // get the paged SQL of id query
-    String idSql = getPagedIdSql(false, sortPage);
+    // get the paged SQL of id query (include the row index if we are sorting the page)
+    String idSql = getPagedIdSql(sortPage);
 
     // combine the id query with attribute query
     String attributeSql = getAttributeSql(attributeQuery);
@@ -385,7 +390,7 @@ public class AnswerValue {
 
   private String getPagedTableSql(Query tableQuery) throws WdkModelException {
     // get the paged SQL of id query
-    String idSql = getPagedIdSql(false, true);
+    String idSql = getPagedIdSql(true);
 
     // Combine the id query with table query.  Make an instance from the
     // original table query; a table query has only one param, user_id. Note
@@ -416,7 +421,7 @@ public class AnswerValue {
     sql.append(" ORDER BY pidq.row_index, tqi.row_index");
 
     // replace the id_sql macro.  this sql must include filters (but not view filters)
-    String sqlWithIdSql = sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true, true));
+    String sqlWithIdSql = sql.toString().replace(Utilities.MACRO_ID_SQL, getPagedIdSql(true));
     return sqlWithIdSql.replace(Utilities.MACRO_ID_SQL_NO_FILTERS, "(" + getNoFiltersIdSql() + ")");
   }
 
@@ -435,7 +440,7 @@ public class AnswerValue {
   
   public String getUnsortedUnpagedSql(String embeddedSql) throws WdkModelException {
     // get the unsorted and unpaged SQL of id query. 
-    String idSql = getIdSql(null, true);
+    String idSql = getIdSql(null);
     
     String[] pkColumns = getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
     String pkColumnsString = String.join(", ", pkColumns);
@@ -552,8 +557,8 @@ public class AnswerValue {
       // get attribute query sql from the instance
       sql = Query.makeQueryInstance(attrQuerySpec).getSql()
         // replace the id sql macro.
-        // the injected sql must include filters (but not view filters)
-        .replace(Utilities.MACRO_ID_SQL, getIdSql(null, true))
+        // the injected sql must include filters
+        .replace(Utilities.MACRO_ID_SQL, getIdSql(null))
         // replace the no-filters id sql macro.
         // the injected sql must NOT include filters
         // (but should return any dynamic columns)
@@ -567,16 +572,18 @@ public class AnswerValue {
   }
 
   public String getSortedIdSql() throws WdkModelException {
-      if (_sortedIdSql == null) _sortedIdSql = getSortedIdSql(false);
-      return _sortedIdSql;
+    if (_sortedIdSql == null) {
+      _sortedIdSql = createSortedIdSql();
+    }
+    return _sortedIdSql;
   }
 
-  private String getSortedIdSql(boolean excludeViewFilters) throws WdkModelException {
+  private String createSortedIdSql() throws WdkModelException {
     LOG.debug("AnswerValue: getSortedIdSql()");
     String[] pkColumns = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
 
     // get id sql
-    String idSql = getIdSql(null, excludeViewFilters);
+    String idSql = getIdSql(null);
 
     // get sorting attribute queries
     Map<String, String> attributeSqls = new LinkedHashMap<>();
@@ -643,11 +650,11 @@ public class AnswerValue {
   }
 
   public String getPagedIdSql() throws WdkModelException {
-    return getPagedIdSql(false, false);
+    return getPagedIdSql(false);
   }
 
-  private String getPagedIdSql(boolean excludeViewFilters, boolean includeRowIndex) throws WdkModelException {
-    String sortedIdSql = getSortedIdSql(excludeViewFilters);
+  private String getPagedIdSql(boolean includeRowIndex) throws WdkModelException {
+    String sortedIdSql = getSortedIdSql();
     DatabaseInstance platform = _answerSpec.getQuestion().getWdkModel().getAppDb();
     String sql = platform.getPlatform().getPagedSql(sortedIdSql, _startIndex, _endIndex, includeRowIndex);
 
@@ -660,7 +667,7 @@ public class AnswerValue {
   }
 
   public String getIdSql() throws WdkModelException {
-    return getIdSql(null, false);
+    return getIdSql(null);
   }
 
   private String getBaseIdSql(boolean sorted) throws WdkModelException {
@@ -674,7 +681,7 @@ public class AnswerValue {
         _idsQueryInstance.getParamStableValues());
   }
 
-  protected String getIdSql(String excludeFilter, boolean excludeViewFilters) throws WdkModelException {
+  protected String getIdSql(String excludeFilter) throws WdkModelException {
 
     // get base ID sql from query instance and answer params
     String innerSql = getBaseIdSql(false);
@@ -692,7 +699,7 @@ public class AnswerValue {
     }
 
     // apply view filters if requested
-    if (!_answerSpec.getViewFilterOptions().isEmpty() && !excludeViewFilters) {
+    if (!_answerSpec.getViewFilterOptions().isEmpty()) {
       innerSql = applyFilters(innerSql, _answerSpec.getViewFilterOptions(), excludeFilter);
       innerSql = "\n/* new view filter applied on id query */\n" + innerSql;
     }
@@ -713,7 +720,7 @@ public class AnswerValue {
       + Arrays.stream(getAnswerSpec().getQuestion().getRecordClass()
         .getPrimaryKeyDefinition().getColumnRefs())
         .collect(Collectors.joining("\n, ", "  ", "\n"))
-      + "FROM (\n" + indent(sql) + "\n)";
+      + "FROM (\n" + indent(sql) + "\n) colFilter_outer";
 
     return ColumnFilterSqlBuilder.buildFilteredSql(this, q);
   }
@@ -835,11 +842,23 @@ public class AnswerValue {
     return _startIndex;
   }
 
+  /**
+   * Calculates the size of the page for this answer i.e. the number of rows this
+   * answer will return.  Typically this is the difference between start and end
+   * index (+1 due to inclusivity of start and end indexes), but may be smaller
+   * if end index is higher than the total result size.  This method will never
+   * return a negative number, or a value large than the total result size.
+   *
+   * @return number of rows returned by this answer value
+   * @throws WdkModelException if unable to calculate result size
+   */
   public int getPageSize() throws WdkModelException {
+    // assumptions: startIndex > 0, endIndex == UNBOUNDED_END_PAGE_INDEX || >= startIndex
     int resultSize = _resultSizeFactory.getResultSize();
-    int n = (_endIndex == UNBOUNDED_END_PAGE_INDEX ? resultSize : Math.min(_endIndex, resultSize)) - _startIndex + 1;
-    LOG.debug("AnswerValue: getPageSize(): " + n);
-    return n;
+    int endIndex = _endIndex == UNBOUNDED_END_PAGE_INDEX ? resultSize : Math.min(_endIndex, resultSize);
+    int pageSize = endIndex < _startIndex ? 0 : endIndex - _startIndex + 1;
+    LOG.debug("AnswerValue: getPageSize(): " + pageSize);
+    return pageSize;
   }
 
   public Optional<String> getResultMessage() throws WdkModelException {
@@ -888,33 +907,6 @@ public class AnswerValue {
     _sortedIdSql = null;
   }
 
-  /**
-   * This method is redundant with getAllIds(), consider deprecate either one of them.
-   *
-   * @return returns a list of all primary key values.
-   */
-  public Object[][] getPrimaryKeyValues() throws WdkModelException {
-    String[] columns = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
-    List<Object[]> buffer = new ArrayList<>();
-
-    Optional<AnswerFilterInstance> legacyFilter = _answerSpec.getLegacyFilter();
-    try (ResultList resultList =
-          legacyFilter.isPresent() ?
-          legacyFilter.get().getResults(this) :
-          _idsQueryInstance.getResults()) {
-      while (resultList.next()) {
-        Object[] pkValues = new String[columns.length];
-        for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {
-          pkValues[columnIndex] = resultList.get(columns[columnIndex]);
-        }
-        buffer.add(pkValues);
-      }
-      Object[][] ids = new String[buffer.size()][columns.length];
-      buffer.toArray(ids);
-      return ids;
-    }
-  }
-
   private void reset() {
     _sortedIdSql = null;
     _checksum = null;
@@ -922,39 +914,35 @@ public class AnswerValue {
   }
 
   /**
-   * Get a list of all the primary key tuples of all the records in the answer. It is a shortcut of iterating
-   * through all the pages and get the primary keys.
+   * Creates a closable iterator of IDs for this answer
    *
-   * This method is redundant with getPrimaryKeyValues(), consider deprecate either one of them.
+   * NOTE! caller must close the return value to avoid resource leaks.
+   *
+   * @return an iterator of all the primary key tuples of all the records in the answer
+   * @throws WdkModelException if unable to execute ID query
    */
-  public List<String[]> getAllIds() throws WdkModelException {
-    String idSql = getSortedIdSql();
-    String[] pkColumns = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
-    List<String[]> pkValues = new ArrayList<>();
-    WdkModel wdkModel = _answerSpec.getQuestion().getWdkModel();
-    DataSource dataSource = wdkModel.getAppDb().getDataSource();
-    ResultSet resultSet = null;
+  public PrimaryKeyIterator getAllIds() throws WdkModelException {
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, idSql, _idsQueryInstance.getQuery().getFullName() + "__all-ids");
-      while (resultSet.next()) {
-        String[] values = new String[pkColumns.length];
-        for (int i = 0; i < pkColumns.length; i++) {
-          Object value = resultSet.getObject(pkColumns[i]);
-          values[i] = (value == null) ? null : value.toString();
-        }
-        pkValues.add(values);
-      }
+      PrimaryKeyDefinition pkDef = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition();
+      DataSource dataSource = _wdkModel.getAppDb().getDataSource();
+      String idSql = getSortedIdSql();
+      String queryDescriptor = _idsQueryInstance.getQuery().getFullName() + "__all-ids";
+      return new ResultSetPrimaryKeyIterator(pkDef, SqlUtils.executeQuery(dataSource, idSql, queryDescriptor));
     }
-    catch (SQLException ex) {
-      throw new WdkModelException(ex);
+    catch (SQLException e) {
+      throw new WdkModelException("Unable to execute ID query", e);
     }
-    finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, null);
-    }
-    return pkValues;
   }
 
   public void setPageIndex(int startIndex, int endIndex) {
+    // do some checks
+    if (startIndex < 1)
+      throw new IllegalArgumentException("startIndex must be greater than zero");
+    if (endIndex < 0)
+      // all records requested; set to constant's value
+      endIndex = UNBOUNDED_END_PAGE_INDEX;
+    // Note we do not throw if startIndex > endIndex;
+    //    this turns out to be a legitimate case (no records requested)
     _startIndex = startIndex;
     _endIndex = endIndex;
     reset();
@@ -968,7 +956,7 @@ public class AnswerValue {
 
 
   public JSONObject getFilterSummaryJson(String filterName) throws WdkUserException, WdkModelException {
-    String idSql = getIdSql(filterName, false);
+    String idSql = getIdSql(filterName);
     Optional<Filter> filter = _answerSpec.getQuestion().getFilter(filterName);
     if (filter.isPresent()) {
       return filter.get().getSummaryJson(this, idSql);
@@ -977,26 +965,6 @@ public class AnswerValue {
       throw new WdkUserException("Filter name '" + filterName +
           "' is not a valid filter on question " + _answerSpec.getQuestion().getName());
     }
-  }
-
-  /**
-   * Returns one big string containing all IDs in this answer value's result in
-   * the following format: each '\n'-delimited line contains one record, whose
-   * primary keys are joined and delimited by a comma.
-   *
-   * @return list of all record IDs
-   */
-  public String getAllIdsAsString() throws WdkModelException {
-    List<String[]> pkValues = getAllIds();
-    StringBuilder buffer = new StringBuilder();
-    for (String[] pkValue : pkValues) {
-        if (buffer.length() > 0) buffer.append("\n");
-        for (int i = 0; i < pkValue.length; i++) {
-            if (i > 0) buffer.append(", ");
-            buffer.append(pkValue[i]);
-        }
-    }
-    return buffer.toString();
   }
 
   private final static String ID_QUERY_HANDLE = "pidq";

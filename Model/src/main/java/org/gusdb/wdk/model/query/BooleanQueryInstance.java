@@ -2,10 +2,13 @@ package org.gusdb.wdk.model.query;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
@@ -217,17 +220,27 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     return rc.getPrimaryKeyDefinition().getColumnRefs();
   }
 
-  protected String getLeftSql()  throws WdkModelException {
+  protected String getLeftSql() throws WdkModelException {
     Map<String, String> internalValues = getParamInternalValues();
     AnswerParam leftParam = booleanQuery.getLeftOperandParam();
     String leftSubSql = internalValues.get(leftParam.getName());
+    checkNullInternalValue(leftSubSql, "left", leftParam.getName(), internalValues);
     return constructOperandSql(leftSubSql);
   }
 
-  protected String getRightSql()  throws WdkModelException {
+  protected String getRightSql() throws WdkModelException {
     Map<String, String> internalValues = getParamInternalValues();
     AnswerParam rightParam = booleanQuery.getRightOperandParam();
     String rightSubSql = internalValues.get(rightParam.getName());
+    checkNullInternalValue(rightSubSql, "right", rightParam.getName(), internalValues);
     return constructOperandSql(rightSubSql);
+  }
+
+  private static void checkNullInternalValue(
+      String value, String side, String paramName, Map<String,String> internalValues) {
+    Objects.requireNonNull(value, () ->
+        "Internal value for "+ side + " side answer param " + paramName +
+        " has been assigned null in boolean query.  Internal value map = " +
+        FormatUtil.prettyPrint(internalValues, Style.MULTI_LINE));
   }
 }

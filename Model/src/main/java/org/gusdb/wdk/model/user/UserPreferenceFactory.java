@@ -39,15 +39,14 @@ public class UserPreferenceFactory {
     _userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
   }
 
-  public void savePreferences(User user) throws WdkModelException {
+  public void savePreferences(long userId, UserPreferences newPrefs) throws WdkModelException {
     // get old preferences and determine what to delete, update, insert
-    long userId = user.getUserId();
-    UserPreferences oldPreferences = getPreferences(user);
+    UserPreferences oldPreferences = getPreferences(userId);
     Map<String, String> oldGlobal = oldPreferences.getGlobalPreferences();
-    Map<String, String> newGlobal = user.getPreferences().getGlobalPreferences();
+    Map<String, String> newGlobal = newPrefs.getGlobalPreferences();
     updatePreferences(userId, GLOBAL_PREFERENCE_KEY, oldGlobal, newGlobal);
     Map<String, String> oldSpecific = oldPreferences.getProjectPreferences();
-    Map<String, String> newSpecific = user.getPreferences().getProjectPreferences();
+    Map<String, String> newSpecific = newPrefs.getProjectPreferences();
     updatePreferences(userId, _wdkModel.getProjectId(), oldSpecific, newSpecific);
   }
 
@@ -82,52 +81,59 @@ public class UserPreferenceFactory {
 
     PreparedStatement psDelete = null, psInsert = null, psUpdate = null;
     try {
+
       // delete preferences
-      String sqlDelete = "DELETE FROM " + _userSchema + "preferences "
-          + " WHERE user_id = ? AND project_id = ? "
-          + " AND preference_name = ?";
-      psDelete = SqlUtils.getPreparedStatement(_userDb.getDataSource(), sqlDelete);
-      long start = System.currentTimeMillis();
-      for (String key : toDelete) {
-        psDelete.setLong(1, userId);
-        psDelete.setString(2, prefProjectId);
-        psDelete.setString(3, key);
-        psDelete.addBatch();
+      if (!toDelete.isEmpty()) {
+        String sqlDelete = "DELETE FROM " + _userSchema + "preferences "
+            + " WHERE user_id = ? AND project_id = ? "
+            + " AND preference_name = ?";
+        psDelete = SqlUtils.getPreparedStatement(_userDb.getDataSource(), sqlDelete);
+        long start = System.currentTimeMillis();
+        for (String key : toDelete) {
+          psDelete.setLong(1, userId);
+          psDelete.setString(2, prefProjectId);
+          psDelete.setString(3, key);
+          psDelete.addBatch();
+        }
+        psDelete.executeBatch();
+        QueryLogger.logEndStatementExecution(sqlDelete, "wdk-user-delete-preference", start);
       }
-      psDelete.executeBatch();
-      QueryLogger.logEndStatementExecution(sqlDelete, "wdk-user-delete-preference", start);
 
       // insert preferences
-      String sqlInsert = "INSERT INTO " + _userSchema + "preferences "
-          + " (user_id, project_id, preference_name, " + " preference_value)"
-          + " VALUES (?, ?, ?, ?)";
-      psInsert = SqlUtils.getPreparedStatement(_userDb.getDataSource(), sqlInsert);
-      start = System.currentTimeMillis();
-      for (String key : toInsert.keySet()) {
-        psInsert.setLong(1, userId);
-        psInsert.setString(2, prefProjectId);
-        psInsert.setString(3, key);
-        psInsert.setString(4, toInsert.get(key));
-        psInsert.addBatch();
+      if (!toInsert.isEmpty()) {
+        String sqlInsert = "INSERT INTO " + _userSchema + "preferences "
+            + " (user_id, project_id, preference_name, " + " preference_value)"
+            + " VALUES (?, ?, ?, ?)";
+        psInsert = SqlUtils.getPreparedStatement(_userDb.getDataSource(), sqlInsert);
+        long start = System.currentTimeMillis();
+        for (String key : toInsert.keySet()) {
+          psInsert.setLong(1, userId);
+          psInsert.setString(2, prefProjectId);
+          psInsert.setString(3, key);
+          psInsert.setString(4, toInsert.get(key));
+          psInsert.addBatch();
+        }
+        psInsert.executeBatch();
+        QueryLogger.logEndStatementExecution(sqlInsert, "wdk-user-insert-preference", start);
       }
-      psInsert.executeBatch();
-      QueryLogger.logEndStatementExecution(sqlInsert, "wdk-user-insert-preference", start);
 
       // update preferences
-      String sqlUpdate = "UPDATE " + _userSchema + "preferences "
-          + " SET preference_value = ? WHERE user_id = ? "
-          + " AND project_id = ? AND preference_name = ?";
-      psUpdate = SqlUtils.getPreparedStatement(_userDb.getDataSource(), sqlUpdate);
-      start = System.currentTimeMillis();
-      for (String key : toUpdate.keySet()) {
-        psUpdate.setString(1, toUpdate.get(key));
-        psUpdate.setLong(2, userId);
-        psUpdate.setString(3, prefProjectId);
-        psUpdate.setString(4, key);
-        psUpdate.addBatch();
+      if (!toUpdate.isEmpty()) {
+        String sqlUpdate = "UPDATE " + _userSchema + "preferences "
+            + " SET preference_value = ? WHERE user_id = ? "
+            + " AND project_id = ? AND preference_name = ?";
+        psUpdate = SqlUtils.getPreparedStatement(_userDb.getDataSource(), sqlUpdate);
+        long start = System.currentTimeMillis();
+        for (String key : toUpdate.keySet()) {
+          psUpdate.setString(1, toUpdate.get(key));
+          psUpdate.setLong(2, userId);
+          psUpdate.setString(3, prefProjectId);
+          psUpdate.setString(4, key);
+          psUpdate.addBatch();
+        }
+        psUpdate.executeBatch();
+        QueryLogger.logEndStatementExecution(sqlUpdate, "wdk-user-update-preference", start);
       }
-      psUpdate.executeBatch();
-      QueryLogger.logEndStatementExecution(sqlUpdate, "wdk-user-update-preference", start);
     }
     catch (SQLException e) {
       throw new WdkModelException("Unable to update user (id=" + userId
@@ -145,12 +151,12 @@ public class UserPreferenceFactory {
    * @return a list of 2 elements, the first is a map of global preferences, the
    *         second is a map of project-specific preferences.
    */
-  public UserPreferences getPreferences(User user) throws WdkModelException {
+  public UserPreferences getPreferences(long userId) throws WdkModelException {
     try {
       String sql = "SELECT * FROM " + _userSchema + "preferences WHERE user_id = ?";
       return new SQLRunner(_userDb.getDataSource(), sql, "wdk-user-select-preference")
         .executeQuery(
-          new Object[]{ user.getUserId() },
+          new Object[]{ userId },
           new Integer[]{ Types.BIGINT },
           rs -> {
             UserPreferences prefs = new UserPreferences();

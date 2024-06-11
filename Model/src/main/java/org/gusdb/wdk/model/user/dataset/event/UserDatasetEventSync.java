@@ -28,7 +28,7 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
   private static final String LogStrSkipEvent = "%s event %d refers to typeHandler %s which is not"
     + " present in the wdk configuration. Skipping the install but declaring the event as handled.";
 
-  public UserDatasetEventSync(String projectId) throws WdkModelException {
+  public UserDatasetEventSync(List<String> projectId) throws WdkModelException {
     super(projectId);
   }
 
@@ -40,7 +40,10 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
    * @param eventList list of user dataset event to be processed. database
    *                  records in tables.
    */
-  public void handleEventList(List<UserDatasetEvent> eventList) throws WdkModelException {
+  public void handleEventList(
+    List<UserDatasetEvent> eventList,
+    int maxDatasetsPerExecution
+  ) throws WdkModelException {
 
     try (
       final var appDb     = openAppDB();
@@ -57,6 +60,11 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
       // be installed on the system as type handlers should only be added and
       // removed at release time when the UD database is emptied.
       for (final var event : eventList) {
+        if (count >= maxDatasetsPerExecution) {
+          LOG.debug("Processed {} datasets, ending execution.", count);
+          break;
+        }
+
         LOG.info("Processing event {}", event.getEventId());
 
         final var eventRow = new EventRow(
@@ -86,8 +94,8 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
 
           // If the event does not apply to this project, complete the event
           // handling and skip to the next event.
-          if (!event.getProjectsFilter().contains(getProjectId())) {
-            LOG.info("No-op event: Event is not for project {}", getProjectId());
+          if (event.getProjectsFilter().stream().noneMatch(proj -> getProjectIds().contains(proj))) {
+            LOG.info("No-op event: Event is not for projects {}", getProjectIds());
             handler.handleNoOpEvent(eventRow);
             count++;
             continue;
@@ -207,7 +215,7 @@ public class UserDatasetEventSync extends UserDatasetEventProcessor
       udSession,
       appDbDs,
       getUserDatasetSchemaName(),
-      getProjectId(),
+      getProjectIds(),
       getModelConfig()
     );
   }

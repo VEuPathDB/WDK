@@ -126,7 +126,7 @@ public class QuestionService extends AbstractWdkService {
       @PathParam(SEARCH_PATH_PARAM) String questionUrlSegment)
           throws WdkModelException {
     DisplayablyValid<AnswerSpec> validSpec = getDisplayableAnswerSpec(
-        questionUrlSegment, getWdkModel(), getSessionUser(), name -> getQuestionOrNotFound(_recordClassUrlSegment, name));
+        questionUrlSegment, getWdkModel(), getRequestingUser(), name -> getQuestionOrNotFound(_recordClassUrlSegment, name));
     JSONObject result = QuestionFormatter.getQuestionJsonWithParams(validSpec, validSpec.get().getValidationBundle());
     if (LOG.isDebugEnabled()) LOG.debug("Returning JSON: " + result.toString(2));
     return result;
@@ -187,7 +187,7 @@ public class QuestionService extends AbstractWdkService {
         .setQuestionFullName(question.getFullName())
         .setParamValues(request.getContextParamValues())
         .build(
-            getSessionUser(),
+            getRequestingUser(),
             StepContainer.emptyContainer(),
             ValidationLevel.SEMANTIC,
             FillStrategy.NO_FILL);
@@ -202,7 +202,7 @@ public class QuestionService extends AbstractWdkService {
             .setQuestionFullName(question.getFullName())
             .setParamValues(request.getContextParamValues())
             .build(
-                getSessionUser(),
+                getRequestingUser(),
                 StepContainer.emptyContainer(),
                 ValidationLevel.DISPLAYABLE,
                 FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID)
@@ -258,11 +258,12 @@ public class QuestionService extends AbstractWdkService {
         .setQuestionFullName(question.getFullName())
         .setParamValues(contextParams)
         .build(
-            getSessionUser(),
+            getRequestingUser(),
             StepContainer.emptyContainer(),
             ValidationLevel.DISPLAYABLE,
             FillStrategy.FILL_PARAM_IF_MISSING_OR_INVALID)
         .getDisplayablyValid()
+        // throwing model exception here because we should always be able to generate a set of defaults using FILL_PARAM_IF_MISSING_OR_INVALID
         .getOrThrow(spec -> new WdkModelException("Unable to produce a valid spec from incoming param values"));
 
     // see if changed param value changed during build; if so, then it was invalid
@@ -336,7 +337,7 @@ public class QuestionService extends AbstractWdkService {
         .builder()
         .putAll(contextParamValues)
         .buildValidated(
-            getSessionUser(),
+            getRequestingUser(),
             question.getQuery(),
             StepContainer.emptyContainer(),
             ValidationLevel.DISPLAYABLE,
@@ -391,7 +392,7 @@ public class QuestionService extends AbstractWdkService {
         .builder()
         .putAll(contextParamValues)
         .buildValidated(
-            getSessionUser(),
+            getRequestingUser(),
             question.getQuery(),
             StepContainer.emptyContainer(),
             ValidationLevel.DISPLAYABLE,

@@ -59,6 +59,7 @@ public class JsonKeys {
   public static final String ICON_NAME = "iconName";
   public static final String DISPLAY_TEXT = "displayText";
   public static final String HELP = "help";
+  public static final String HTML_HELP = "htmlHelp";
   public static final String DESCRIPTION = "description";
   public static final String SHORT_DESCRIPTION = "shortDescription";
   public static final String SUMMARY = "summary";
@@ -69,6 +70,7 @@ public class JsonKeys {
   public static final String IS_REMOVABLE = "isRemovable";
   public static final String IS_REQUIRED = "isRequired";
   public static final String IS_MULTILINE = "isMultiLine";
+  public static final String IS_NUMBER = "isNumber";
   public static final String IS_PUBLIC = "isPublic";
   public static final String USE_BASKET = "useBasket";
   public static final String SCOPES = "scopes";
@@ -120,6 +122,7 @@ public class JsonKeys {
   public static final String PARAM_NAMES = "paramNames";
   public static final String QUERY_NAME = "queryName";
   public static final String IS_CACHEABLE = "isCacheable";
+  public static final String SEARCH_VISIBLE_HELP = "searchVisibleHelp";
 
   // record class specific keys
   public static final String HAS_ALL_RECORDS_QUERY = "hasAllRecordsQuery";
@@ -161,6 +164,7 @@ public class JsonKeys {
   public static final String PARSER = "parser";
   public static final String ALLOW_EMPTY_VALUE = "allowEmptyValue";
   public static final String VISIBLE_HELP = "visibleHelp";
+  public static final String VISIBLE_HELP_POSITION = "visibleHelpPosition";
 
   // dataset-related keys
   public static final String DEFAULT_ID_LIST = "defaultIdList";

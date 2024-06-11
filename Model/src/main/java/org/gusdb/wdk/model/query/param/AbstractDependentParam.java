@@ -263,20 +263,29 @@ public abstract class AbstractDependentParam extends Param {
     return dependedParamValuesJson;
   }
 
-  public void checkParam(String queryFullName, String parentParamName, Map<String,Param> rootParamMap, List<String> ancestorParamNames) throws WdkModelException {
-    if(!rootParamMap.keySet().contains(getName())) {
-      throw new WdkModelException("The param " + getFullName() + " is not found in the param map of the root query " + queryFullName + ".");
-    }
-    if(ancestorParamNames.contains(getFullName())) {
-      throw new WdkModelException("The param " + getFullName() + " is a cyclic dependency in the root query " + queryFullName + ".");
+  public void checkParam(String queryFullName, Map<String,Param> rootParamMap, List<String> ancestorParamNames) throws WdkModelException {
+
+    // check for cyclic dependencies and add this param to dependency chain
+    if (ancestorParamNames.contains(getFullName())) {
+      throw new WdkModelException("The param " + getFullName() + " is a cyclic dependency under ID query " + queryFullName + ".");
     }
     ancestorParamNames.add(getFullName());
-    List<Query> queries = getQueries();
-    for(Query query : queries) {
+
+    // check to ensure params in required queries are referenced by the ID query (dependency relationships within a query are checked elsewhere)
+    for (Query query : getQueries()) {
       Map<String,Param> paramMap = query.getParamMap();
-      for(Param param : paramMap.values()) {
+      for (Param param : paramMap.values()) {
         if (param instanceof AbstractDependentParam) {
-          ((AbstractDependentParam) param).checkParam(queryFullName, parentParamName, rootParamMap, new ArrayList<String>(ancestorParamNames));
+
+          // check to make sure a dependent param's query's params are also params on the ID query
+          if (!rootParamMap.keySet().contains(param.getName())) {
+            throw new WdkModelException("The dependent param " + param.getFullName() +
+                " of query " + query.getFullName() + " (needed by param " + getFullName() +
+                ") is not found among the parameters declared in the ID query " + queryFullName + ".");
+          }
+
+          // recurse through dependent param queries
+          ((AbstractDependentParam) param).checkParam(queryFullName, rootParamMap, new ArrayList<>(ancestorParamNames));
         }
       }
     }

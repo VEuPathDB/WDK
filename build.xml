@@ -1,44 +1,23 @@
-<project name="WDK" default="Installation" basedir=".">
+<project name="WDK" basedir=".">
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Dependencies  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
+  <import file="${projectsDir}/FgpUtil/build.xml" />
   <import file="${projectsDir}/WSF/build.xml" />
-
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-Installation" depends="WSF-Installation,
-                                           WDK-MavenInstallation,
+  <target name="WDK-Installation" depends="FgpUtil-Installation,
+                                           WSF-Installation,
                                            WDK/Model-Installation,
                                            WDK/Service-Installation">
     <ant target="defaultProjectInstall">
       <property name="project" value="WDK" />
     </ant>
-  </target>
-
-  <target name="WDK-MavenInstallation">
-    <ant target="mavenBuildProject">
-      <property name="project" value="WDK" />
-    </ant>
-    <property name="alreadyBuilt" value="true" />
-  </target>
-
-
-  <!-- oooooooooooooooooo  Installation Postprocess  ooooooooooooooooooooo -->
-
-  <target name="WDK-Installation-postprocess">
-    <echo message="Postprocessing the WDK installation" />
-
-    <replace dir="${targetDir}/bin"
-             propertyFile="${targetDir}/config/replacements.prop">
-      <include name="**/*" />
-      <replacefilter token="@perl@" property="perl" />
-    </replace>
-
   </target>
 
   <!-- ooooooooooooooooooooooo  Install Components  ooooooooooooooooooooooo -->
@@ -74,6 +53,7 @@
 
   <target name="createSchemaJar">
     <echo message="Creating JSON schema jar file at ${targetDir}/lib/java/wdk-service-schema.jar"/>
+    <mkdir dir="${targetDir}/lib/java"/>
     <exec dir="${targetDir}/doc/WDK/Service"
           executable="jar"
           failonerror="true"
@@ -90,8 +70,7 @@
                                               GusHome,
                                               WDK/Service-WebInstallation">
     <echo message="." />
-    <echo
-      message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file ojdbc14.jar) from ${targetDir}/lib/java/db_driver into your webapp server's designated place (such as common/lib for Tomcat). See the installation instructions available at www.gusdb.org/wdk for details." />
+    <echo message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file ojdbc14.jar) from ${targetDir}/lib/java/db_driver into your webapp server's designated place (such as common/lib for Tomcat). See the installation instructions available at www.gusdb.org/wdk for details." />
     <echo message="." />
   </target>
 
@@ -141,52 +120,69 @@
   </target>
 
   <target name="libLink" unless="libLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/lib"
-             resource="${targetDir}/lib/java" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/lib"/>
+      <property name="resource" value="${targetDir}/lib/java"/>
+    </ant>
   </target>
 
   <target name="configLink" unless="configLinkExists">
-    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model" />
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/config"
-             resource="${targetDir}/config" />
+    <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model"/>
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/config"/>
+      <property name="resource" value="${targetDir}/config"/>
+    </ant>
   </target>
 
   <target name="binLink" unless="binLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/bin"
-             resource="${targetDir}/bin" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/bin"/>
+      <property name="resource" value="${targetDir}/bin"/>
+    </ant>
   </target>
 
   <target name="dataLink" unless="dataLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/data"
-             resource="${targetDir}/data" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/data"/>
+      <property name="resource" value="${targetDir}/data"/>
+    </ant>
   </target>
 
   <target name="buildlogLink" unless="buildlogLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/.buildlog"
-             resource="${targetDir}/.buildlog" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/.buildlog"/>
+      <property name="resource" value="${targetDir}/.buildlog"/>
+    </ant>
   </target>
 
   <target name="rngLink" unless="rngLinkExists">
     <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib" />
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/rng"
-             resource="${targetDir}/lib/rng" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/lib/rng"/>
+      <property name="resource" value="${targetDir}/lib/rng"/>
+    </ant>
   </target>
 
   <target name="perlLink" unless="perlLinkExists">
     <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib" />
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/perl"
-             resource="${targetDir}/lib/perl" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/lib/perl"/>
+      <property name="resource" value="${targetDir}/lib/perl"/>
+    </ant>
   </target>
 
   <target name="xmlLink" unless="xmlLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/xml"
-             resource="${targetDir}/lib/xml" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/lib/xml"/>
+      <property name="resource" value="${targetDir}/lib/xml"/>
+    </ant>
   </target>
 
   <target name="wdkLink" unless="wdkLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/wdk"
-             resource="${targetDir}/lib/wdk" />
+    <ant target="symlink">
+      <property name="link" value="${webappTargetDir}/WEB-INF/wdk-model/lib/wdk"/>
+      <property name="resource" value="${targetDir}/lib/wdk"/>
+    </ant>
   </target>
 
 </project>
-

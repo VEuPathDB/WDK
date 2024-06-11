@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.wdk.model.BuildTracking;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -65,7 +66,7 @@ import org.gusdb.wdk.model.user.UserPreferences;
  * @version $Revision$ $Date: 2007-01-10 14:54:53 -0500 (Wed, 10 Jan
  *          2007) $ $Author$
  */
-public class Question extends WdkModelBase implements AttributeFieldContainer, StepAnalysisContainer, NamedObject {
+public class Question extends WdkModelBase implements AttributeFieldContainer, StepAnalysisContainer, NamedObject, BuildTracking {
 
   public static final String DYNAMIC_QUERY_SUFFIX = "_dynamic";
 
@@ -89,6 +90,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   private List<WdkModelText> _helps = new ArrayList<>();
   private String _help;
+
+  private List<WdkModelText> _searchVisibleHelps = new ArrayList<>();
+  private String _searchVisibleHelp;
 
   private QuestionSet _questionSet;
 
@@ -186,6 +190,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     _dynamicAttributeSet = question._dynamicAttributeSet;
 
     _help = question._help;
+    _searchVisibleHelp = question._searchVisibleHelp;
 
     // need to deep-copy query as well
     _query = question._query;
@@ -214,42 +219,24 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
     return prefix + recordClass.getFullName().replace('.', '_');
   }
 
+  @Override
   public String getNewBuild() {
     return _newBuild;
   }
 
+  @Override
   public void setNewBuild(String newBuild) {
     _newBuild = newBuild;
   }
 
+  @Override
   public String getReviseBuild() {
     return _reviseBuild;
   }
 
+  @Override
   public void setReviseBuild(String reviseBuild) {
     _reviseBuild = reviseBuild;
-  }
-
-  /**
-   * @return if the question a newly introduced in the current build.
-   */
-  public boolean isNew() {
-    String currentBuild = _wdkModel.getBuildNumber();
-    if (currentBuild == null)
-      return false; // current release is not set
-    else
-      return (currentBuild.equals(_newBuild));
-  }
-
-  /**
-   * @return if the question is revised in the current build.
-   */
-  public boolean isRevised() {
-    String currentBuild = _wdkModel.getBuildNumber();
-    if (currentBuild == null)
-      return false; // current release is not set
-    else
-      return (currentBuild.equals(_reviseBuild));
   }
 
   public void addSuggestion(QuestionSuggestion suggestion) {
@@ -275,6 +262,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   public void addHelp(WdkModelText help) {
     _helps.add(help);
+  }
+
+  public void addSearchVisibleHelp(WdkModelText searchVisibleHelp) {
+    _searchVisibleHelps.add(searchVisibleHelp);
   }
 
   public void setRecordClassRef(String recordClassRef) {
@@ -345,6 +336,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
 
   public String getHelp() {
     return _help;
+  }
+
+  public String getSearchVisibleHelp() {
+    return _searchVisibleHelp;
   }
 
   public String getDisplayName() {
@@ -735,6 +730,21 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
       }
     }
     _helps = null;
+
+    // exclude searchVisibleHelps
+    boolean hasSearchVisibleHelp = false;
+    for (WdkModelText searchVisibleHelp : _searchVisibleHelps) {
+      if (searchVisibleHelp.include(projectId)) {
+        if (hasSearchVisibleHelp) {
+          throw new WdkModelException("The question " + getFullName()
+              + " has more than one searchVisibleHelp for project " + projectId);
+        } else {
+          _searchVisibleHelp = searchVisibleHelp.getText();
+          hasSearchVisibleHelp = true;
+        }
+      }
+    }
+    _searchVisibleHelps = null;
 
     // exclude summary and sorting attribute list
     boolean hasAttributeList = false;

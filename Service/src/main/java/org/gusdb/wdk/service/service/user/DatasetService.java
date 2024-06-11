@@ -25,8 +25,8 @@ import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
-import org.gusdb.wdk.service.request.user.DatasetRequestProcessor;
-import org.gusdb.wdk.service.request.user.DatasetRequestProcessor.DatasetRequest;
+import org.gusdb.wdk.service.request.user.dataset.DatasetRequestProcessor;
+import org.gusdb.wdk.service.request.user.dataset.DatasetRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -74,7 +74,7 @@ public class DatasetService extends UserService {
       var user    = getUserBundle(Access.PRIVATE).getSessionUser();
       var factory = getWdkModel().getDatasetFactory();
       var request = new DatasetRequest(input);
-      var dataset = DatasetRequestProcessor.createFromRequest(request, user, factory, getSession());
+      var dataset = DatasetRequestProcessor.createFromRequest(request, user, factory, getTemporaryUserData());
 
       if (request.getDisplayName().isPresent()) {
         dataset.setName(request.getDisplayName().get());

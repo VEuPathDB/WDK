@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.user.dataset.event.model;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class EventError
 {

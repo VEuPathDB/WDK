@@ -40,7 +40,6 @@ public class LoggingContextFilter implements ContainerRequestFilter, WriterInter
     ThreadLocalLoggingVars.setIpAddress(request.getRemoteIpAddress());
     ThreadLocalLoggingVars.setRequestedDomain(request.getServerName());
     ThreadLocalLoggingVars.setRequestId(String.valueOf(requestId.getAndIncrement()));
-    ThreadLocalLoggingVars.setSessionId(request.getSession().getId());
 
   }
 

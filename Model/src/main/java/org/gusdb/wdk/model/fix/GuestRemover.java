@@ -11,7 +11,7 @@ import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.wdk.model.Utilities;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 
 /**
@@ -20,20 +20,22 @@ import org.gusdb.wdk.model.WdkModel;
  * Starting build 25 we move all cleaning activity to its own script CleanBrokenStratsSteps
  * Starting build 27 we select not only guest users but also last_active null users
  * starting build 29 gus4 we remove last_active null condition given that thee are few and they might want to just use our galaxy
- * @author Jerric
  *
+ * @author Jerric
  */
 public class GuestRemover extends BaseCLI {
+
+  private static final Logger LOG = Logger.getLogger(GuestRemover.class);
 
   private static final String ARG_CUTOFF_DATE = "cutoffDate";
 
   private static final String GUEST_TABLE = "wdk_guests";
 
-  // 1000 makes the process too slow; 10000 is good but it is considered “long transaction” which will affect
-  // the replication.
+  /**
+   * 1000 makes the process too slow; 10000 is good but it is considered a 
+   * “long transaction” which will affect replication.
+   */
   private static final int PAGE_SIZE = 9000;
-
-  private static final Logger LOG = Logger.getLogger(GuestRemover.class);
 
   public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
@@ -41,35 +43,10 @@ public class GuestRemover extends BaseCLI {
     try {
       backup.invoke(args);
       LOG.info("WDK User Remover done.");
-      System.exit(0);
     }
     catch (Exception ex) {
       ex.printStackTrace();
       System.exit(1);
-    }
-  }
-
-  public static int deleteByBatch(DataSource dataSource, String table, String condition) throws SQLException {
-    LOG.info("\n\nDeleting from table: " + table + " with condition: " + condition);
-    PreparedStatement psDelete = null;
-    try {
-      String sql = "DELETE FROM " + table + " WHERE " + condition + " AND rownum < " + PAGE_SIZE;
-      psDelete = SqlUtils.getPreparedStatement(dataSource, sql);
-
-      int sum = 0;
-      while (true) {
-        // executeUpdate includes the commit
-        int count = psDelete.executeUpdate();
-        if (count == 0)
-          break;
-        sum += count;
-        LOG.debug(sum + " rows deleted so far.");
-      }
-      LOG.debug("***** totally deleted " + sum + " rows. *****");
-      return sum;
-    }
-    finally {
-      SqlUtils.closeStatement(psDelete);
     }
   }
 
@@ -93,24 +70,20 @@ public class GuestRemover extends BaseCLI {
   protected void execute() throws Exception {
     LOG.info("****IN EXECUTE******");
 
-    String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
     String projectId = (String) getOptionValue(ARG_PROJECT_ID);
     String cutoffDate = (String) getOptionValue(ARG_CUTOFF_DATE);
 
-    try (WdkModel wdkModel = WdkModel.construct(projectId, gusHome)) {
+    try (WdkModel wdkModel = WdkModel.construct(projectId, GusHome.getGusHome())) {
+
       DatabaseInstance userDb = wdkModel.getUserDb();
-      String userSchema = DBPlatform.normalizeSchema(wdkModel.getModelConfig().getUserDB().getUserSchema());
+      String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
   
       LOG.info("********** Looking up guest users: generate temp table wdk_guests... **********");
-      String guestSql = lookupGuests(userDb, userSchema, cutoffDate);
-      LOG.info("********** " + guestSql + " **********");
+      loadGuestIdTable(userDb, userSchema, cutoffDate);
    
       LOG.info("********** Deleting all data belonging to guest users in userlogins5 schema... **********");
-      removeGuests(userDb, userSchema, guestSql);
-  
-      LOG.info("********** Deleting all data belonging to guest users in gbrowseusers schema... **********");
-      // though we cannot use the cutoff date here...
-      removeGBrowseGuests(userDb.getDataSource());
+      removeGuests(userDb, userSchema);
+
     }
   }
 
@@ -121,64 +94,74 @@ public class GuestRemover extends BaseCLI {
    * @throws SQLException
    * @throws DBStateException
    */
-  private String lookupGuests(DatabaseInstance userDb, String userSchema, String cutoffDate) throws DBStateException, SQLException {
+  private void loadGuestIdTable(DatabaseInstance userDb, String userSchema, String cutoffDate) throws DBStateException, SQLException {
+
     // check if the guest table exists
     DBPlatform platform = userDb.getPlatform();
     DataSource dataSource = userDb.getDataSource();
     String defaultSchema = userDb.getDefaultSchema();
+
     if (platform.checkTableExists(dataSource, defaultSchema, GUEST_TABLE)) {
       // guest table exists, will drop it first.
-      SqlUtils.executeUpdate(dataSource, "DROP TABLE " + GUEST_TABLE, "backup-drop-guest-table.");
+      SqlUtils.executeUpdate(dataSource,
+          "DROP TABLE " + GUEST_TABLE,
+          "backup-drop-guest-table");
     }
+
     // create a new guest table with the guests created before the cutoff date
-    SqlUtils.executeUpdate(dataSource, "CREATE TABLE " + GUEST_TABLE + " AS SELECT user_id FROM " +
-        userSchema + "users " + " WHERE is_guest = 1 AND register_time < to_date('" + cutoffDate +
-        "', 'yyyy/mm/dd')", "backup-create-guest-table");
-    SqlUtils.executeUpdate(dataSource, "CREATE UNIQUE INDEX " + GUEST_TABLE + "_ix01 ON " + GUEST_TABLE +
-        " (user_id)", "create-guest-index");
-    //return "SELECT user_id FROM " + GUEST_TABLE;
-		return "SELECT '1' FROM " + GUEST_TABLE + " g WHERE g.user_id = t.user_id";
+    SqlUtils.executeUpdate(dataSource,
+        "CREATE TABLE " + GUEST_TABLE + " AS " +
+            "SELECT user_id " +
+            "FROM " + userSchema + "users " +
+            "WHERE is_guest = 1 " +
+            "AND first_access < to_date('" + cutoffDate + "', 'yyyy/mm/dd')",
+        "backup-create-guest-table");
+
+    // create an index on the table for faster joins
+    SqlUtils.executeUpdate(dataSource,
+        "CREATE UNIQUE INDEX " + GUEST_TABLE + "_ix01 ON " + GUEST_TABLE + " (user_id)",
+        "create-guest-index");
+
   }
 
-  private void removeGuests(DatabaseInstance userDb, String userSchema, String guestSql) throws SQLException {
+  private void removeGuests(DatabaseInstance userDb, String userSchema) throws SQLException {
+
     LOG.info("****IN REMOVEGUESTS ******");
     DataSource dataSource = userDb.getDataSource();
-    //String userClause = "user_id IN (" + guestSql + ")";
-    String userClause = " EXISTS (" + guestSql + ")";
+    String userClause = " EXISTS ( SELECT '1' FROM " + GUEST_TABLE + " g WHERE g.user_id = t.user_id )";
 
-    deleteByBatch(dataSource, userSchema + "dataset_values", " dataset_id IN (SELECT dataset_id FROM " +
-        userSchema + "datasets t WHERE " + userClause + ")");
+    deleteByBatch(dataSource, userSchema + "dataset_values", " dataset_id IN (SELECT dataset_id FROM " + userSchema + "datasets t WHERE " + userClause + ")");
     deleteByBatch(dataSource, userSchema + "datasets t", userClause);
     deleteByBatch(dataSource, userSchema + "preferences t", userClause);
-    deleteByBatch(dataSource, userSchema + "user_baskets t", userClause); // we dont know why we get some
+    deleteByBatch(dataSource, userSchema + "user_baskets t", userClause); // we don't know why we get some
     deleteByBatch(dataSource, userSchema + "favorites t", userClause);
     deleteByBatch(dataSource, userSchema + "strategies t", userClause);
-    deleteByBatch(dataSource, userSchema + "step_analysis", " step_id IN (SELECT step_id FROM " + userSchema +
-        "steps t WHERE " + userClause + ")");
+    deleteByBatch(dataSource, userSchema + "step_analysis", " step_id IN (SELECT step_id FROM " + userSchema + "steps t WHERE " + userClause + ")");
     deleteByBatch(dataSource, userSchema + "steps t", userClause);
-								//	" AND step_id NOT IN (SELECT root_step_id FROM " + userSchema + "strategies)");
     deleteByBatch(dataSource, userSchema + "user_roles t", userClause);
+    deleteByBatch(dataSource, userSchema + "multiblast_users_to_fmt_jobs t", userClause);
+    deleteByBatch(dataSource, userSchema + "multiblast_users t", userClause);
     deleteByBatch(dataSource, userSchema + "users t", userClause);
-									// " AND user_id NOT IN (SELECT user_id FROM " + userSchema + "steps)");
   }
 
-  private void removeGBrowseGuests(DataSource dataSource) throws SQLException {
-    LOG.info("\n\nDeleting from gbrowseusers.sessions...");
+  public static int deleteByBatch(DataSource dataSource, String table, String condition) throws SQLException {
+    LOG.info("\n\nDeleting from table: " + table + " with condition: " + condition);
     PreparedStatement psDelete = null;
     try {
-      psDelete = SqlUtils.getPreparedStatement(dataSource, "DELETE FROM gbrowseusers.sessions WHERE id IN ("
-          + "  SELECT s.id sessionid FROM gbrowseusers.sessions s "
-          + "    LEFT JOIN gbrowseusers.session_tbl st ON s.id = st.sessionid "
-          + "    WHERE st.userid IS NULL)");
+      String sql = "DELETE FROM " + table + " WHERE " + condition + " AND rownum < " + PAGE_SIZE;
+      psDelete = SqlUtils.getPreparedStatement(dataSource, sql);
+
       int sum = 0;
       while (true) {
+        // executeUpdate includes the commit
         int count = psDelete.executeUpdate();
         if (count == 0)
           break;
-
         sum += count;
-        LOG.debug(sum + " rows deleted so far.");
+        LOG.info(sum + " rows deleted so far.");
       }
+      LOG.info("***** Deleted " + sum + " total rows from " + table + " *****");
+      return sum;
     }
     finally {
       SqlUtils.closeStatement(psDelete);

@@ -13,7 +13,9 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -296,7 +298,7 @@ public class DatasetFactory {
         );
 
         insertDatasetValues(connection, datasetId, parser.iterator(content),
-          parser.datasetContentWidth(content));
+          parser.datasetContentWidth(content), content.getEstimatedRowCount());
         connection.commit();
 
         // create and insert user dataset.
@@ -533,25 +535,33 @@ public class DatasetFactory {
     final Connection connection,
     final long datasetId,
     final DatasetIterator data,
-    final int length
+    final int numDataColumns,
+    final long estimatedRowCount
   ) throws SQLException, WdkModelException, WdkUserException {
-    String sql = buildDatasetValuesInsertQuery(length);
+    String sql = buildDatasetValuesInsertQuery(numDataColumns);
     LOG.info("Built the following insert SQL: " + sql);
+    int idAllocationBatchSize = calculateIdAllocationBatchSize(estimatedRowCount);
+    Queue<Long> datasetValueIdQueue = new LinkedList<>();
     try (PreparedStatement psInsert = connection.prepareStatement(sql)) {
       long batchRow = 0;
       long rowOrderNumber = 1;
       while (data.hasNext()) {
         String[] value = data.next();
 
-        // get a new value id.
-        long datasetValueId = _userDb.getPlatform()
-          .getNextId(_userDb.getDataSource(), _userSchema, TABLE_DATASET_VALUES);
+        // get a new value id
+        if (datasetValueIdQueue.isEmpty()) {
+          datasetValueIdQueue.addAll(
+              _userDb.getPlatform().getNextNIds(
+                  _userDb.getDataSource(),
+                  _userSchema,
+                  TABLE_DATASET_VALUES,
+                  idAllocationBatchSize));
+        }
 
-        psInsert.setLong(1, datasetValueId);
+        psInsert.setLong(1, datasetValueIdQueue.poll());
         psInsert.setLong(2, datasetId);
         psInsert.setLong(3, rowOrderNumber);
-        for (int j = 0; j < length; j++) {
-          LOG.info("Setting PS param " + (j+4) + ": " + value[j]);
+        for (int j = 0; j < numDataColumns; j++) {
           psInsert.setString(j + 4, value[j]);
         }
         psInsert.addBatch();
@@ -566,6 +576,17 @@ public class DatasetFactory {
       }
       psInsert.executeBatch();
     }
+  }
+
+  private int calculateIdAllocationBatchSize(long estimatedRowCount) {
+    // (0,10] = 1
+    if (estimatedRowCount <= 10) return 1;
+    // (10,100] = 10
+    if (estimatedRowCount <= 100) return 10;
+    // (100,1000] = 25
+    if (estimatedRowCount <= 1000) return 25;
+    // (1000,Inf) = 250
+    return 250;
   }
 
   private void validateValue(final String[] row) throws WdkUserException {
@@ -595,7 +616,7 @@ public class DatasetFactory {
 
     // execute this dummy sql to make sure the remote table is sync-ed.
     SqlUtils.executeScalar(_wdkModel.getAppDb().getDataSource(),
-      "SELECT count(*) FROM " + table, "wdk-remote-dataset-dummy");
+      "SELECT 1 FROM " + table, "wdk-remote-dataset-dummy");
   }
 
   private DatasetContents getDatasetContentAsFile(final ResultSet rs)

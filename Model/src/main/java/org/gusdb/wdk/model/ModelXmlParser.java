@@ -25,7 +25,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -435,9 +435,6 @@ public class ModelXmlParser extends XmlParser {
     }
     if (!propMap.containsKey("USER_SCHEMA")) {
       propMap.put("USER_SCHEMA", config.getUserDB().getUserSchema());
-    }
-    if (!propMap.containsKey("ACCT_SCHEMA")) {
-      propMap.put("ACCT_SCHEMA", config.getAccountDB().getAccountSchema());
     }
 
     return propMap;
@@ -907,6 +904,9 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/questionSet/question/summary", WdkModelText.class, "addSummary");
     digester.addCallMethod("wdkModel/questionSet/question/summary", "setText", 0);
 
+    configureNode(digester, "wdkModel/questionSet/question/searchVisibleHelp", WdkModelText.class, "addSearchVisibleHelp");
+    digester.addCallMethod("wdkModel/questionSet/question/searchVisibleHelp", "setText", 0);
+
     // question's property list
     configureNode(digester, "wdkModel/questionSet/question/propertyList", PropertyList.class,
         "addPropertyList");
@@ -1027,6 +1027,8 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "*/columnAttribute", QueryColumnAttributeField.class, "addAttributeField");
     configureNode(digester, "*/columnAttribute/propertyList", PropertyList.class, "addPropertyList");
     configureNode(digester, "*/columnAttribute/filterRef", FilterReference.class, "addFilterReference");
+    configureNode(digester, "*/columnAttribute/htmlHelp", WdkModelText.class, "addHtmlHelp");
+    digester.addCallMethod("*/columnAttribute/htmlHelp", "setText", 0);
     configureAttributeReporters(digester, "columnAttribute");
 
     // link attribute
@@ -1156,7 +1158,7 @@ public class ModelXmlParser extends XmlParser {
 
   private static CommandLine parseOptions(String cmdName, Options options, String[] args) {
 
-    CommandLineParser parser = new BasicParser();
+    CommandLineParser parser = new DefaultParser();
     CommandLine cmdLine = null;
     try {
       // parse the command line arguments

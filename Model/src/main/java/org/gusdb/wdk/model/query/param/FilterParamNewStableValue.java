@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
@@ -512,6 +513,19 @@ public class FilterParamNewStableValue {
 
     abstract List<?> getSortedMembers();
 
+    protected <T> String createInCondition(String metadataTableName, String columnName, List<T> membersList) {
+      long conditionBatchSize = 1000;
+      StringBuilder multiCondition = new StringBuilder("( ");
+      for (int i = 0; i <= membersList.size() / conditionBatchSize; i++) {
+        Iterable<T> group = IteratorUtil.toIterable(membersList.stream()
+            .skip(i * conditionBatchSize)
+            .limit(conditionBatchSize)
+            .iterator());
+        if (i > 0) multiCondition.append(" OR ");
+        multiCondition.append(metadataTableName + "." + columnName + " IN (" + FormatUtil.join(group, ", ") + ") ");
+      }
+      return multiCondition.append(" )").toString();
+    }
   }
 
   private class NumberMembersFilter extends MembersFilter {
@@ -544,7 +558,7 @@ public class FilterParamNewStableValue {
     @Override
     protected String getValueSqlClause(String columnName, String metadataTableName) {
       if (rawMembers.size() == 0) return "1 != 1";
-      return metadataTableName + "." + columnName + " IN (" + FormatUtil.join(rawMembers, ", ") + ") ";
+      return createInCondition(metadataTableName, columnName, rawMembers);
     }
 
     @Override
@@ -597,10 +611,15 @@ public class FilterParamNewStableValue {
     protected String getValueSqlClause(String columnName, String metadataTableName) {
       if (members.size() == 0) return "1 != 1";
 
-      List<String> membersEscaped = members.stream().map( member -> member.replaceAll("'", "''") ).collect( Collectors.toList() );
+      List<String> membersEscaped = members.stream()
+          // escape quotes
+          .map( member -> member.replaceAll("'", "''") )
+          // add quotes around members
+          .map( member -> "'" + member + "'")
+          // recollect
+          .collect( Collectors.toList() );
 
-      return metadataTableName + "." + columnName + " IN ('" + FormatUtil.join(membersEscaped, "', '") + "') ";
-
+      return createInCondition(metadataTableName, columnName, membersEscaped);
     }
 
     @Override
