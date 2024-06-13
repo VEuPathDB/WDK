@@ -81,7 +81,7 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
           ValidatedToken token = factory.validateBearerToken(rawToken);
           User user = factory.convertToUser(token);
           setRequestAttributes(request, token, user);
-          LOG.info("Validated successfully.  Request will be processed for user " + user.getUserId() + " / " + user.getEmail());
+          LOG.info("Validated successfully.  Request will be processed for user " + user.getUserId());
         }
         catch (ExpiredTokenException e) {
           // token is expired; use guest token for now which should inspire them to log back in
@@ -122,7 +122,8 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
   private String findRawBearerToken(RequestData request, ContainerRequestContext requestContext) {
     String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
     if (authHeader != null) {
-      LOG.info("Recieved Authorization header with value: " + authHeader + "; trying bearer token validation.");
+      // commented to avoid sensitive header value being written to logs
+      //LOG.trace("Recieved Authorization header with value: " + authHeader + "; trying bearer token validation.");
       return OAuthClient.getTokenFromAuthHeader(authHeader);
     }
     // otherwise try Authorization cookie
