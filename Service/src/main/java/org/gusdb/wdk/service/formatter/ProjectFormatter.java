@@ -45,7 +45,8 @@ public class ProjectFormatter {
     JSONObject authConfig = new JSONObject()
       .put(JsonKeys.AUTHENTICATION_METHOD, config.getAuthenticationMethodEnum().name())
       .put(JsonKeys.OAUTH_URL, config.getOauthUrl())
-      .put(JsonKeys.OAUTH_CLIENT_URL, serviceEndpoint)
+      // Always use HTTPS
+      .put(JsonKeys.OAUTH_CLIENT_URL, serviceEndpoint.replace("http","https"))
       .put(JsonKeys.OAUTH_CLIENT_ID, config.getOauthClientId());
 
     // create profile property config sub-array
