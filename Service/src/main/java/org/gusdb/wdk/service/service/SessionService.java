@@ -340,7 +340,7 @@ public class SessionService extends AbstractWdkService {
    */
   private static ResponseBuilder createRedirectResponse(String redirectUrl) throws WdkModelException {
     try {
-      return Response.temporaryRedirect(new URI(redirectUrl));
+      return Response.temporaryRedirect(new URI(redirectUrl.replace("http://","https://")));
     }
     catch (URISyntaxException e) {
       throw new WdkModelException("Redirect " + redirectUrl + " not a valid URI.");

@@ -47,7 +47,7 @@ public class ProjectFormatter {
       // Tell client to use external URL
       .put(JsonKeys.OAUTH_URL, config.getExternalOauthUrl())
       // Always use HTTPS
-      .put(JsonKeys.OAUTH_CLIENT_URL, serviceEndpoint.replace("http","https"))
+      .put(JsonKeys.OAUTH_CLIENT_URL, serviceEndpoint.replace("http://","https://"))
       .put(JsonKeys.OAUTH_CLIENT_ID, config.getOauthClientId());
 
     // create profile property config sub-array
