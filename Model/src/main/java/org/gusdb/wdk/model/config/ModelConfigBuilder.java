@@ -59,7 +59,7 @@ public class ModelConfigBuilder {
   // user authentication setup
   private AuthenticationMethod _authenticationMethod = AuthenticationMethod.USER_DB;
   private String _oauthUrl = ""; // needed if method is OAUTH2
-  private String _externalOauthUrl = ""; // may be needed if method is OAUTH2 and internal URL is not available externally
+  private String _externalOauthUrl = null; // may be needed if method is OAUTH2 and internal URL is not available externally
   private String _oauthClientId = ""; // needed if method is OAUTH2
   private String _oauthClientSecret = ""; // needed if method is OAUTH2
   private String _changePasswordUrl = ""; // probably needed if method is OAUTH2

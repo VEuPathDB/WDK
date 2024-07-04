@@ -345,7 +345,7 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
    * (called only if authentication method is OAUTH2)
    */
   public String getExternalOauthUrl() {
-    return _externalOauthUrl == null || _externalOauthUrl.isBlank() ? _externalOauthUrl : _oauthUrl;
+    return _externalOauthUrl != null && !_externalOauthUrl.isBlank() ? _externalOauthUrl : _oauthUrl;
   }
 
   /**
