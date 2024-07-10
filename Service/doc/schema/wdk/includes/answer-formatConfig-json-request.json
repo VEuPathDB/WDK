@@ -6,6 +6,13 @@
     "bufferEntireResponse": {
       "type": "boolean",
     },
+    "attributeFormat": {
+      "type": "string",
+      "enum": [
+        "text",
+        "display"
+      ]
+    },
     "pagination": {
       "type": "object",
       "properties": {
