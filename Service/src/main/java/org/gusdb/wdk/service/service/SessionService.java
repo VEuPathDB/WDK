@@ -281,9 +281,12 @@ public class SessionService extends AbstractWdkService {
     User oldUser = getRequestingUser();
     getTemporaryUserData().invalidate();
 
+    // build context URI that always uses https
+    String contextUri = getRequest().getNoContextUri().replace("http://", "https://");
+
     // if user is already a guest, no need to log out
     if (oldUser.isGuest())
-      return createRedirectResponse(getContextUri()).build();
+      return createRedirectResponse(contextUri).build();
 
     // get a new session and add new guest user to it
     TwoTuple<ValidatedToken, User> newUser = getWdkModel().getUserFactory().createUnregisteredUser();
@@ -297,7 +300,7 @@ public class SessionService extends AbstractWdkService {
       logoutCookies.add(extraCookie);
     }
 
-    ResponseBuilder builder = createRedirectResponse(getContextUri());
+    ResponseBuilder builder = createRedirectResponse(contextUri);
     for (CookieBuilder logoutCookie : logoutCookies) {
       builder.cookie(logoutCookie.toJaxRsCookie());
     }
