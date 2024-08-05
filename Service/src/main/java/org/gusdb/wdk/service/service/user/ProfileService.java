@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.user.UserPreferenceFactory;
 import org.gusdb.wdk.model.user.UserPreferences;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.formatter.UserFormatter;
+import org.gusdb.wdk.service.formatter.ValidationFormatter;
 import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -91,10 +92,12 @@ public class ProfileService extends UserService {
       throw new BadRequestException(e);
     }
     catch (InvalidPropertiesException e) {
-      throw new DataValidationException(e.getMessage());
+      // convert to use validation bundle JSON formatting
+      throw new DataValidationException(ValidationFormatter.getValidationBundleJson(e.getMessage()).toString());
     }
     catch (InvalidUsernameOrEmailException e) {
-      throw new ConflictException(e.getMessage());
+      // convert to use validation bundle JSON formatting
+      throw new ConflictException(ValidationFormatter.getValidationBundleJson(e.getMessage()).toString());
     }
   }
 }
