@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.Optional;
 
 import org.gusdb.fgputil.Tuples.ThreeTuple;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
@@ -31,20 +32,14 @@ class UserReferenceFactory {
   private static final String IS_GUEST_VALUE_MACRO = "$$IS_GUEST$$";
 
   // SQL and types to insert previously unknown user refs into the users table
-  private static final String INSERT_USER_REF_SQL =
-      "insert" +
-      "  when not exists (select 1 from " + USER_SCHEMA_MACRO + TABLE_USERS + " where " + COL_USER_ID + " = ?)" +
-      "  then" +
-      "  into " + USER_SCHEMA_MACRO + TABLE_USERS + " (" + COL_USER_ID + "," + COL_IS_GUEST + "," + COL_FIRST_ACCESS +")" +
-      "  select ?, " + IS_GUEST_VALUE_MACRO + ", ? from dual";
 
-  private static final Integer[] INSERT_USER_REF_PARAM_TYPES = { Types.BIGINT, Types.BIGINT, Types.TIMESTAMP };
+  private static final Integer[] INSERT_USER_REF_PARAM_TYPES = { Types.BIGINT, Types.TIMESTAMP };
 
   // SQL and types to select user ref by ID
   private static final String SELECT_USER_REF_BY_ID_SQL =
       "select " + COL_USER_ID + ", " + COL_IS_GUEST + ", " + COL_FIRST_ACCESS +
-      "  from " + USER_SCHEMA_MACRO + TABLE_USERS +
-      "  where " + COL_USER_ID + " = ?";
+          "  from " + USER_SCHEMA_MACRO + TABLE_USERS +
+          "  where " + COL_USER_ID + " = ?";
 
   private static final Integer[] SELECT_USER_REF_BY_ID_PARAM_TYPES = { Types.BIGINT };
 
@@ -60,10 +55,12 @@ class UserReferenceFactory {
 
   private final DatabaseInstance _userDb;
   private final String _userSchema;
+  private final DBPlatform _dbPlatform;
 
   public UserReferenceFactory(WdkModel wdkModel) {
     _userDb = wdkModel.getUserDb();
     _userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
+    _dbPlatform = wdkModel.getUserDb().getPlatform();
   }
 
   /**
@@ -73,22 +70,31 @@ class UserReferenceFactory {
    * changed by this code.
    *
    * @param user user to add
-   * @throws WdkModelException 
+   * @throws WdkModelException
    */
   public int addUserReference(User user) throws WdkModelException {
     try {
       long userId = user.getUserId();
       boolean isGuest = user.isGuest();
       Timestamp insertedOn = new Timestamp(new Date().getTime());
-      String sql = INSERT_USER_REF_SQL
+      String sql = getInsertUserRefSql()
           .replace(USER_SCHEMA_MACRO, _userSchema)
           .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isGuest).toString());
       return new SQLRunner(_userDb.getDataSource(), sql, "insert-user-ref")
-        .executeUpdate(new Object[]{ userId, userId, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
+          .executeUpdate(new Object[]{ userId, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
     }
     catch (SQLRunnerException e) {
       throw WdkModelException.translateFrom(e);
     }
+  }
+
+  private String getInsertUserRefSql() {
+    return "MERGE INTO " + USER_SCHEMA_MACRO + TABLE_USERS + " AS target " +
+        "USING (SELECT ? AS user_id, CAST(? AS TIMESTAMP) AS first_access, " + IS_GUEST_VALUE_MACRO + " AS is_guest" + this._dbPlatform.getDummyTable() + ") AS source (user_id, first_access, is_guest) " +
+        "ON (target." + COL_USER_ID + " = source.user_id) " +
+        "WHEN NOT MATCHED THEN " +
+        "INSERT (" + COL_USER_ID + ", " + COL_IS_GUEST + ", " + COL_FIRST_ACCESS + ") " +
+        "VALUES (source.user_id, source.is_guest, source.first_access)";
   }
 
   // FIXME: see if this is actually needed anywhere?  E.g. do we ever need to look up user refs by user ID to find last login?
@@ -100,8 +106,8 @@ class UserReferenceFactory {
           SELECT_USER_REF_BY_ID_PARAM_TYPES,
           rs ->
               !rs.next()
-              ? Optional.empty()
-              : Optional.of(new UserReference(
+                  ? Optional.empty()
+                  : Optional.of(new UserReference(
                   rs.getLong(COL_USER_ID),
                   rs.getBoolean(COL_IS_GUEST),
                   new Date(rs.getTimestamp(COL_FIRST_ACCESS).getTime()))));
