@@ -1,15 +1,12 @@
 package org.gusdb.wdk.model.config;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.oauth2.client.KeyStoreTrustManager.KeyStoreConfig;
 import org.gusdb.oauth2.client.OAuthConfig;
@@ -302,8 +299,8 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
    */
   public String getSecretKey() {
     if (_secretKey == null && _secretKeyFile.isPresent()) {
-      try (FileReader in = new FileReader(_secretKeyFile.get().toFile())) {
-        _secretKey = EncryptionUtil.md5(IoUtil.readAllChars(in).strip());
+      try {
+        _secretKey = SecretKeyReader.readSecretKey(_secretKeyFile);
       }
       catch (IOException e) {
         // log error but otherwise ignore so null is returned; problem may be remedied in the future
