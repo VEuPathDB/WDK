@@ -42,6 +42,18 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
   private final String _smtpServer;
 
   /**
+   * the SMTP server used to send registration & recover password emails.
+   */
+  private final Optional<String> _smtpUserName;
+
+
+  /**
+   * the SMTP server used to send registration & recover password emails.
+   */
+  private final Optional<String> _smtpPassword;
+
+
+  /**
    * the reply of the registration & recover password emails.
    */
   private final String _supportEmail;
@@ -143,7 +155,7 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
 
   public ModelConfig(String modelName, String projectId, Path gusHome, boolean caching, boolean useWeights,
       String paramRegex, Optional<Path> secretKeyFile, String secretKey, Path wdkTempDir, String webServiceUrl, String assetsUrl,
-      String smtpServer, String supportEmail, List<String> adminEmails, String emailSubject,
+      String smtpServer, Optional<String> smtpUser, Optional<String> smtpPassword, String supportEmail, List<String> adminEmails, String emailSubject,
       String emailContent, ModelConfigUserDB userDB, ModelConfigAppDB appDB,
       ModelConfigUserDatasetStore userDatasetStoreConfig, QueryMonitor queryMonitor,
       boolean monitorBlockedThreads, int blockedThreshold, AuthenticationMethod authenticationMethod,
@@ -171,6 +183,8 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
 
     // email setup
     _smtpServer = smtpServer;
+    _smtpUserName = smtpUser;
+    _smtpPassword = smtpPassword;
     _supportEmail = supportEmail;
     _adminEmails = adminEmails;
     _emailSubject = emailSubject;

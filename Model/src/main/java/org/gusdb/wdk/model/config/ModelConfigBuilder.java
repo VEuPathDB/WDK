@@ -38,6 +38,8 @@ public class ModelConfigBuilder {
 
   // email setup
   private String _smtpServer = "localhost";
+  private String _smtpUsername;
+  private String _smtpPassword;
   private String _supportEmail;
   private List<String> _adminEmails = Collections.emptyList();
   private String _emailSubject = "";
@@ -93,6 +95,8 @@ public class ModelConfigBuilder {
     assertNonNull("appDb", _appDB);
     // TODO: should probably have a default stub for this to avoid NPEs
     //assertNonNull("userDatasetStoreConfig", _userDatasetStoreConfig);
+    Optional<String> smtpUsername = Optional.ofNullable(_smtpUsername).filter(s -> !s.isBlank());
+    Optional<String> smtpPassword = Optional.ofNullable(_smtpPassword).filter(s -> !s.isBlank());
 
     return new ModelConfig(
 
@@ -117,6 +121,8 @@ public class ModelConfigBuilder {
 
       // email setup
       _smtpServer,
+      smtpUsername,
+      smtpPassword,
       _supportEmail,
       _adminEmails,
       _emailSubject,
@@ -199,6 +205,14 @@ public class ModelConfigBuilder {
     _smtpServer = smtpServer;
   }
 
+  public void setSmtpUser(String smtpUser) {
+    _smtpServer = smtpUser;
+  }
+
+  public void setSmtpPassword(String smtpPassword) {
+    _smtpServer = smtpPassword;
+  }
+
   /**
    * @param emailContent
    *          The emailContent to set.
@@ -256,7 +270,7 @@ public class ModelConfigBuilder {
   }
 
   /**
-   * @param secretKeyFile
+   * @param secretKey
    *          the secretKeyFile to set
    */
   public void setSecretKey(String secretKey) {
