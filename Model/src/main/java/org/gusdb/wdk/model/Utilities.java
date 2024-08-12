@@ -238,15 +238,18 @@ public class Utilities {
     Properties props = new Properties();
     props.put("mail.smtp.host", smtpServer);
     props.put("mail.debug", "true");
-    props.put("mail.smtp.auth", "true");
-    Authenticator auth = new Authenticator() {
-      @Override
-      protected PasswordAuthentication getPasswordAuthentication() {
-        return new PasswordAuthentication(username, password);
-            // "postmaster@sandbox5c3df189e6f6421db320cda505abc1fd.mailgun.org", "fafedf8a5d8866e3fd5ca0c1cb8b14c2-a26b1841-5d728638");
-      }
-    };
-//    props.put("main.smtp.port", Integer.toString())
+    Authenticator auth = null;
+
+    if (username != null & password != null) {
+      props.put("mail.smtp.auth", "true");
+      auth = new Authenticator() {
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication() {
+          return new PasswordAuthentication(username, password);
+        }
+      };
+    }
+
     Session session = Session.getInstance(props, auth);
 
     // instantiate a message

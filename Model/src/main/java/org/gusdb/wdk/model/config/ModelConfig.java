@@ -42,13 +42,13 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
   private final String _smtpServer;
 
   /**
-   * the SMTP server used to send registration & recover password emails.
+   * the SMTP username used to authenticate with smtpServer.
    */
   private final Optional<String> _smtpUserName;
 
 
   /**
-   * the SMTP server used to send registration & recover password emails.
+   * the SMTP password used to authenticate with smtpServer.
    */
   private final Optional<String> _smtpPassword;
 
