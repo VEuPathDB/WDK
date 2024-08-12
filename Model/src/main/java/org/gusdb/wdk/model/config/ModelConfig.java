@@ -269,6 +269,14 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
     return _smtpServer;
   }
 
+  public Optional<String> getSmtpUserName() {
+    return _smtpUserName;
+  }
+
+  public Optional<String> getSmtpPassword() {
+    return _smtpPassword;
+  }
+
   /**
    * @return Returns the emailContent.
    */

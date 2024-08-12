@@ -228,8 +228,7 @@ public class Utilities {
 
   // sendEmail()  all 10 parameters
   public static void sendEmail(String smtpServer, String username, String password, String sendTos, String reply,
-    String subject, String content, String ccAddresses, String bccAddresses,
-    Attachment[] attachments) throws WdkModelException {
+    String subject, String content, String ccAddresses, String bccAddresses, Attachment[] attachments) throws WdkModelException {
 
     LOG.debug("Sending message to: " + sendTos + ", bcc to: " + bccAddresses +
       ",reply: " + reply + ", using SMPT: " + smtpServer);
