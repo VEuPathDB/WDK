@@ -6,6 +6,8 @@
             <attribute name="modelName" />
             <attribute name="webServiceUrl" />
             <attribute name="smtpServer" />
+            <attribute name="smtpUsername" />
+            <attribute name="smtpPassword" />
             <attribute name="supportEmail" />
             <optional>
               <attribute name="webAppUrl" />
