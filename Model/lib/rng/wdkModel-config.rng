@@ -17,6 +17,9 @@
                 <attribute name="secretKeyFile" />
             </optional>
             <optional>
+                <attribute name="secretKey" />
+            </optional>
+            <optional>
                 <attribute name="adminEmail" />
             </optional>
             <attribute name="wdkTempDir" />
