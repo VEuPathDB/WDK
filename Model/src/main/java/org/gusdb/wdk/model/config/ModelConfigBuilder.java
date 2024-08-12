@@ -29,6 +29,7 @@ public class ModelConfigBuilder {
 
   // file locations
   private String _secretKeyFile;
+  private String _secretKey;
   private String _wdkTempDir = "/tmp";
 
   // network locations
@@ -108,6 +109,7 @@ public class ModelConfigBuilder {
 
       // file locations
       secretKeyFile,
+      _secretKey,
       wdkTempDir,
 
       // network locations
@@ -253,6 +255,14 @@ public class ModelConfigBuilder {
    */
   public void setSecretKeyFile(String secretKeyFile) {
     _secretKeyFile = secretKeyFile;
+  }
+
+  /**
+   * @param secretKeyFile
+   *          the secretKeyFile to set
+   */
+  public void setSecretKey(String secretKey) {
+    _secretKey = secretKey;
   }
 
   /**
