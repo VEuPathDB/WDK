@@ -37,7 +37,7 @@ public class ModelConfigBuilder {
   private String _assetsUrl;
 
   // email setup
-  private String _smtpServer = "localhost";
+  private String _smtpServer;
   private String _smtpUsername;
   private String _smtpPassword;
   private String _supportEmail;
@@ -97,6 +97,7 @@ public class ModelConfigBuilder {
     //assertNonNull("userDatasetStoreConfig", _userDatasetStoreConfig);
     Optional<String> smtpUsername = Optional.ofNullable(_smtpUsername).filter(s -> !s.isBlank());
     Optional<String> smtpPassword = Optional.ofNullable(_smtpPassword).filter(s -> !s.isBlank());
+    String smtpServer = _smtpServer == null ? "localhost" : _smtpServer;
 
     return new ModelConfig(
 
@@ -120,7 +121,7 @@ public class ModelConfigBuilder {
       _assetsUrl,
 
       // email setup
-      _smtpServer,
+      smtpServer,
       smtpUsername,
       smtpPassword,
       _supportEmail,
