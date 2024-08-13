@@ -6,11 +6,15 @@
             <attribute name="modelName" />
             <attribute name="webServiceUrl" />
             <attribute name="smtpServer" />
-            <attribute name="smtpUsername" />
-            <attribute name="smtpPassword" />
             <attribute name="supportEmail" />
             <optional>
-              <attribute name="webAppUrl" />
+                <attribute name="smtpUsername" />
+            </optional>
+            <optional>
+                <attribute name="smtpPassword" />
+            </optional>
+            <optional>
+                <attribute name="webAppUrl" />
             </optional>
             <optional>
                 <attribute name="assetsUrl" />
