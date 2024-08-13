@@ -8,13 +8,22 @@
             <attribute name="smtpServer" />
             <attribute name="supportEmail" />
             <optional>
-              <attribute name="webAppUrl" />
+                <attribute name="smtpUsername" />
+            </optional>
+            <optional>
+                <attribute name="smtpPassword" />
+            </optional>
+            <optional>
+                <attribute name="webAppUrl" />
             </optional>
             <optional>
                 <attribute name="assetsUrl" />
             </optional>
             <optional>
                 <attribute name="secretKeyFile" />
+            </optional>
+            <optional>
+                <attribute name="secretKey" />
             </optional>
             <optional>
                 <attribute name="adminEmail" />

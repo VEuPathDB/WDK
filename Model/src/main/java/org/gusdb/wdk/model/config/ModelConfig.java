@@ -1,15 +1,12 @@
 package org.gusdb.wdk.model.config;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.oauth2.client.KeyStoreTrustManager.KeyStoreConfig;
 import org.gusdb.oauth2.client.OAuthConfig;
@@ -43,6 +40,18 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
    * the SMTP server used to send registration & recover password emails.
    */
   private final String _smtpServer;
+
+  /**
+   * the SMTP username used to authenticate with smtpServer.
+   */
+  private final Optional<String> _smtpUserName;
+
+
+  /**
+   * the SMTP password used to authenticate with smtpServer.
+   */
+  private final Optional<String> _smtpPassword;
+
 
   /**
    * the reply of the registration & recover password emails.
@@ -146,8 +155,8 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
   private final Path _wdkTempDir;
 
   public ModelConfig(String modelName, String projectId, Path gusHome, boolean caching, boolean useWeights,
-      String paramRegex, Optional<Path> secretKeyFile, Path wdkTempDir, String webServiceUrl, String assetsUrl,
-      String smtpServer, String supportEmail, List<String> adminEmails, String emailSubject,
+      String paramRegex, Optional<Path> secretKeyFile, String secretKey, Path wdkTempDir, String webServiceUrl, String assetsUrl,
+      String smtpServer, Optional<String> smtpUser, Optional<String> smtpPassword, String supportEmail, List<String> adminEmails, String emailSubject,
       String emailContent, ModelConfigUserDB userDB, ModelConfigAppDB appDB,
       ModelConfigUserDatasetStore userDatasetStoreConfig, QueryMonitor queryMonitor,
       boolean monitorBlockedThreads, int blockedThreshold, AuthenticationMethod authenticationMethod,
@@ -167,6 +176,7 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
     // file locations
     _wdkTempDir = wdkTempDir;
     _secretKeyFile = secretKeyFile;
+    _secretKey = secretKey;
 
     // network locations
     _webServiceUrl = webServiceUrl;
@@ -174,6 +184,8 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
 
     // email setup
     _smtpServer = smtpServer;
+    _smtpUserName = smtpUser;
+    _smtpPassword = smtpPassword;
     _supportEmail = supportEmail;
     _adminEmails = adminEmails;
     _emailSubject = emailSubject;
@@ -259,6 +271,14 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
     return _smtpServer;
   }
 
+  public Optional<String> getSmtpUserName() {
+    return _smtpUserName;
+  }
+
+  public Optional<String> getSmtpPassword() {
+    return _smtpPassword;
+  }
+
   /**
    * @return Returns the emailContent.
    */
@@ -300,12 +320,14 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
    * configured secret key file.  If the configured filename is null or the contents
    * of the file cannot be read for any reason, null is returned.
    * 
+   * Note: as of 8/12/24, you can alternatively directly set the secretKey in model-config.xml
+   * 
    * @return secret key
    */
   public String getSecretKey() {
     if (_secretKey == null && _secretKeyFile.isPresent()) {
-      try (FileReader in = new FileReader(_secretKeyFile.get().toFile())) {
-        _secretKey = EncryptionUtil.md5(IoUtil.readAllChars(in).strip());
+      try {
+        _secretKey = SecretKeyReader.readSecretKey(_secretKeyFile);
       }
       catch (IOException e) {
         // log error but otherwise ignore so null is returned; problem may be remedied in the future

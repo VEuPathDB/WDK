@@ -27,6 +27,7 @@ import org.gusdb.wdk.model.user.InvalidUsernameOrEmailException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferenceFactory;
 import org.gusdb.wdk.model.user.UserPreferences;
+import org.gusdb.wdk.service.formatter.ValidationFormatter;
 import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -77,11 +78,13 @@ public class UserUtilityServices extends AbstractWdkService {
           .location(getUriInfo().getAbsolutePathBuilder().build(newUser.getUserId()))
           .build();
     }
-    catch (InvalidUsernameOrEmailException e) {
-      throw new ConflictException(e.getMessage());
-    }
     catch (InvalidPropertiesException e) {
-      throw new DataValidationException(e.getMessage());
+      // convert to use validation bundle JSON formatting
+      throw new DataValidationException(ValidationFormatter.getValidationBundleJson(e.getMessage()).toString());
+    }
+    catch (InvalidUsernameOrEmailException e) {
+      // convert to use validation bundle JSON formatting
+      throw new ConflictException(ValidationFormatter.getValidationBundleJson(e.getMessage()).toString());
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage(), e);
