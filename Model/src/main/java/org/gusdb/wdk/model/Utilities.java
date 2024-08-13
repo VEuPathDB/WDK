@@ -18,9 +18,11 @@ import java.util.stream.Stream;
 
 import javax.activation.DataHandler;
 import javax.mail.Address;
+import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
@@ -215,13 +217,18 @@ public class Utilities {
     String subject, String content, String ccAddresses, Attachment[] attachments) 
     throws WdkModelException {
       //  call the 8 parameter one
-      sendEmail(smtpServer, sendTos, reply, subject, content, ccAddresses, null, attachments);
+      sendEmail(smtpServer, null, null, sendTos, reply, subject, content, ccAddresses, null, attachments);
   }
 
-  // sendEmail()  all 8 parameters
   public static void sendEmail(String smtpServer, String sendTos, String reply,
-    String subject, String content, String ccAddresses, String bccAddresses,
-    Attachment[] attachments) throws WdkModelException {
+                               String subject, String content, String ccAddresses, String bccAddresses,
+                               Attachment[] attachments) throws WdkModelException {
+    sendEmail(smtpServer, null, null, sendTos, reply, subject, content, ccAddresses, bccAddresses, attachments);
+  }
+
+  // sendEmail()  all 10 parameters
+  public static void sendEmail(String smtpServer, String username, String password, String sendTos, String reply,
+    String subject, String content, String ccAddresses, String bccAddresses, Attachment[] attachments) throws WdkModelException {
 
     LOG.debug("Sending message to: " + sendTos + ", bcc to: " + bccAddresses +
       ",reply: " + reply + ", using SMPT: " + smtpServer);
@@ -230,7 +237,19 @@ public class Utilities {
     Properties props = new Properties();
     props.put("mail.smtp.host", smtpServer);
     props.put("mail.debug", "true");
-    Session session = Session.getInstance(props);
+    Authenticator auth = null;
+
+    if (username != null && password != null) {
+      props.put("mail.smtp.auth", "true");
+      auth = new Authenticator() {
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication() {
+          return new PasswordAuthentication(username, password);
+        }
+      };
+    }
+
+    Session session = Session.getInstance(props, auth);
 
     // instantiate a message
     Message message = new MimeMessage(session);
