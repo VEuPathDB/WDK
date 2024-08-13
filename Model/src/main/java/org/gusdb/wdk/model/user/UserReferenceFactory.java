@@ -90,7 +90,7 @@ class UserReferenceFactory {
 
   private String getInsertUserRefSql() {
     return "MERGE INTO " + USER_SCHEMA_MACRO + TABLE_USERS + " AS target " +
-        "USING (SELECT ? AS user_id, CAST(? AS TIMESTAMP) AS first_access, " + IS_GUEST_VALUE_MACRO + " AS is_guest" + this._dbPlatform.getDummyTable() + ") AS source (user_id, first_access, is_guest) " +
+        "USING (SELECT ? AS user_id, ? AS first_access, " + IS_GUEST_VALUE_MACRO + " AS is_guest" + this._dbPlatform.getDummyTable() + ") AS source (user_id, first_access, is_guest) " +
         "ON (target." + COL_USER_ID + " = source.user_id) " +
         "WHEN NOT MATCHED THEN " +
         "INSERT (" + COL_USER_ID + ", " + COL_IS_GUEST + ", " + COL_FIRST_ACCESS + ") " +
