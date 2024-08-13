@@ -206,12 +206,12 @@ public class ModelConfigBuilder {
     _smtpServer = smtpServer;
   }
 
-  public void setSmtpUser(String smtpUser) {
-    _smtpServer = smtpUser;
+  public void setSmtpUsername(String smtpUsername) {
+    _smtpUsername = smtpUsername;
   }
 
   public void setSmtpPassword(String smtpPassword) {
-    _smtpServer = smtpPassword;
+    _smtpPassword = smtpPassword;
   }
 
   /**

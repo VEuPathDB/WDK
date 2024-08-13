@@ -52,6 +52,6 @@ public class UserPasswordEmailer {
         .replaceAll("\\$\\$" + EMAIL_MACRO_PASSWORD + "\\$\\$",
             Matcher.quoteReplacement(password));
 
-    Utilities.sendEmail(smtpServer, user.getEmail(), supportEmail, emailSubject, emailContent, null, null, smtpUser, smtpPass, new Attachment[]{});
+    Utilities.sendEmail(smtpServer, smtpUser, smtpPass, user.getEmail(), supportEmail, emailSubject, emailContent, null, null, new Attachment[]{});
   }
 }
