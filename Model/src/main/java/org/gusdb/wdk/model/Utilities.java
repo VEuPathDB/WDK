@@ -239,7 +239,7 @@ public class Utilities {
     props.put("mail.debug", "true");
     Authenticator auth = null;
 
-    if (username != null & password != null) {
+    if (username != null && password != null) {
       props.put("mail.smtp.auth", "true");
       auth = new Authenticator() {
         @Override
