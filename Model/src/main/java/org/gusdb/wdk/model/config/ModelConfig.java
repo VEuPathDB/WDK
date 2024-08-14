@@ -54,6 +54,17 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
 
 
   /**
+   * the SMTP port to connect to on SMTP server.
+   */
+  private final int _smtpPort;
+
+  /**
+   * Determines whether to use TLS when connecting to SMTP server.
+   */
+  private final boolean _smtpTlsEnabled;
+
+
+  /**
    * the reply of the registration & recover password emails.
    */
   private final String _supportEmail;
@@ -280,6 +291,14 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
 
   public Optional<String> getSmtpPassword() {
     return _smtpPassword;
+  }
+
+  public int getSmtpPort() {
+    return _smtpPort;
+  }
+
+  public boolean isSmtpTlsEnabled() {
+    return _smtpTlsEnabled;
   }
 
   /**
