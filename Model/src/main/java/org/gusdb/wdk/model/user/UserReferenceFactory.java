@@ -30,10 +30,11 @@ class UserReferenceFactory {
 
   public static final String USER_SCHEMA_MACRO = "$$USER_SCHEMA$$";
   private static final String IS_GUEST_VALUE_MACRO = "$$IS_GUEST$$";
+  private static final String FIRST_ACCESS_MACRO = "$$FIRST_ACCESS$$";
 
   // SQL and types to insert previously unknown user refs into the users table
 
-  private static final Integer[] INSERT_USER_REF_PARAM_TYPES = { Types.BIGINT, Types.TIMESTAMP };
+  private static final Integer[] INSERT_USER_REF_PARAM_TYPES = { Types.BIGINT };
 
   // SQL and types to select user ref by ID
   private static final String SELECT_USER_REF_BY_ID_SQL =
@@ -76,12 +77,13 @@ class UserReferenceFactory {
     try {
       long userId = user.getUserId();
       boolean isGuest = user.isGuest();
-      Timestamp insertedOn = new Timestamp(new Date().getTime());
+      Date insertedOn = new Date();
       String sql = getInsertUserRefSql()
           .replace(USER_SCHEMA_MACRO, _userSchema)
-          .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isGuest).toString());
+          .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isGuest).toString())
+          .replace(FIRST_ACCESS_MACRO, _userDb.getPlatform().toDbDateSqlValue(insertedOn));
       return new SQLRunner(_userDb.getDataSource(), sql, "insert-user-ref")
-          .executeUpdate(new Object[]{ userId, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
+          .executeUpdate(new Object[]{userId}, INSERT_USER_REF_PARAM_TYPES);
     }
     catch (SQLRunnerException e) {
       throw WdkModelException.translateFrom(e);
@@ -90,7 +92,7 @@ class UserReferenceFactory {
 
   private String getInsertUserRefSql() {
     return "MERGE INTO " + USER_SCHEMA_MACRO + TABLE_USERS + " AS target " +
-        "USING (SELECT ? AS user_id, ? AS first_access, " + IS_GUEST_VALUE_MACRO + " AS is_guest" + this._dbPlatform.getDummyTable() + ") AS source (user_id, first_access, is_guest) " +
+        "USING (SELECT ? AS user_id, " + FIRST_ACCESS_MACRO + " AS first_access, " + IS_GUEST_VALUE_MACRO + " AS is_guest" + this._dbPlatform.getDummyTable() + ") AS source (user_id, first_access, is_guest) " +
         "ON (target." + COL_USER_ID + " = source.user_id) " +
         "WHEN NOT MATCHED THEN " +
         "INSERT (" + COL_USER_ID + ", " + COL_IS_GUEST + ", " + COL_FIRST_ACCESS + ") " +
