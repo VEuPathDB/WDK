@@ -217,7 +217,7 @@ public class Utilities {
     String subject, String content, String ccAddresses, Attachment[] attachments) 
     throws WdkModelException {
       //  call the 8 parameter one
-      sendEmail(smtpServer, null, null, sendTos, reply, subject, content, ccAddresses, null, attachments);
+      sendEmail(smtpServer, null, null, sendTos, reply, subject, content, ccAddresses, null, attachments, 25, false);
   }
 
   public static void sendEmail(String smtpServer, String sendTos, String reply,
