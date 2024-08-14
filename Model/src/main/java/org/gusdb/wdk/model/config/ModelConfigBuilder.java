@@ -29,6 +29,7 @@ public class ModelConfigBuilder {
 
   // file locations
   private String _secretKeyFile;
+  private String _secretKey;
   private String _wdkTempDir = "/tmp";
 
   // network locations
@@ -36,7 +37,9 @@ public class ModelConfigBuilder {
   private String _assetsUrl;
 
   // email setup
-  private String _smtpServer = "localhost";
+  private String _smtpServer;
+  private String _smtpUsername;
+  private String _smtpPassword;
   private String _supportEmail;
   private List<String> _adminEmails = Collections.emptyList();
   private String _emailSubject = "";
@@ -93,6 +96,9 @@ public class ModelConfigBuilder {
     assertNonNull("appDb", _appDB);
     // TODO: should probably have a default stub for this to avoid NPEs
     //assertNonNull("userDatasetStoreConfig", _userDatasetStoreConfig);
+    Optional<String> smtpUsername = Optional.ofNullable(_smtpUsername).filter(s -> !s.isBlank());
+    Optional<String> smtpPassword = Optional.ofNullable(_smtpPassword).filter(s -> !s.isBlank());
+    String smtpServer = _smtpServer == null ? "localhost" : _smtpServer;
 
     return new ModelConfig(
 
@@ -108,6 +114,7 @@ public class ModelConfigBuilder {
 
       // file locations
       secretKeyFile,
+      _secretKey,
       wdkTempDir,
 
       // network locations
@@ -115,7 +122,9 @@ public class ModelConfigBuilder {
       _assetsUrl,
 
       // email setup
-      _smtpServer,
+      smtpServer,
+      smtpUsername,
+      smtpPassword,
       _supportEmail,
       _adminEmails,
       _emailSubject,
@@ -199,6 +208,14 @@ public class ModelConfigBuilder {
     _smtpServer = smtpServer;
   }
 
+  public void setSmtpUsername(String smtpUsername) {
+    _smtpUsername = smtpUsername;
+  }
+
+  public void setSmtpPassword(String smtpPassword) {
+    _smtpPassword = smtpPassword;
+  }
+
   /**
    * @param emailContent
    *          The emailContent to set.
@@ -253,6 +270,14 @@ public class ModelConfigBuilder {
    */
   public void setSecretKeyFile(String secretKeyFile) {
     _secretKeyFile = secretKeyFile;
+  }
+
+  /**
+   * @param secretKey
+   *          the secretKeyFile to set
+   */
+  public void setSecretKey(String secretKey) {
+    _secretKey = secretKey;
   }
 
   /**
