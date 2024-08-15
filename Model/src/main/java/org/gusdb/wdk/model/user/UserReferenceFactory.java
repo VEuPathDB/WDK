@@ -77,7 +77,7 @@ class UserReferenceFactory {
           .replace(USER_SCHEMA_MACRO, _userSchema)
           .replace(IS_GUEST_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isGuest).toString());
       return new SQLRunner(_userDb.getDataSource(), sql, "insert-user-ref")
-        .executeUpdate(new Object[]{ userId, userId, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
+        .executeUpdate(new Object[]{ userId, insertedOn }, INSERT_USER_REF_PARAM_TYPES);
     }
     catch (SQLRunnerException e) {
       throw WdkModelException.translateFrom(e);
