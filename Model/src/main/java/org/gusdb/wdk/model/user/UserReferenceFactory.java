@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.Optional;
 
 import org.gusdb.fgputil.Tuples.ThreeTuple;
-import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
@@ -31,8 +30,7 @@ class UserReferenceFactory {
   public static final String USER_SCHEMA_MACRO = "$$USER_SCHEMA$$";
   private static final String IS_GUEST_VALUE_MACRO = "$$IS_GUEST$$";
 
-  // SQL and types to insert previously unknown user refs into the users table
-
+  // types used by SQL returned by getInsertUserRefSql() below
   private static final Integer[] INSERT_USER_REF_PARAM_TYPES = { Types.BIGINT, Types.TIMESTAMP };
 
   // SQL and types to select user ref by ID
@@ -55,12 +53,10 @@ class UserReferenceFactory {
 
   private final DatabaseInstance _userDb;
   private final String _userSchema;
-  private final DBPlatform _dbPlatform;
 
   public UserReferenceFactory(WdkModel wdkModel) {
     _userDb = wdkModel.getUserDb();
     _userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
-    _dbPlatform = wdkModel.getUserDb().getPlatform();
   }
 
   /**
@@ -89,12 +85,12 @@ class UserReferenceFactory {
   }
 
   private String getInsertUserRefSql() {
-    return "MERGE INTO " + USER_SCHEMA_MACRO + TABLE_USERS + " AS target " +
-        "USING (SELECT ? AS user_id, ? AS first_access, " + IS_GUEST_VALUE_MACRO + " AS is_guest" + this._dbPlatform.getDummyTable() + ") AS source (user_id, first_access, is_guest) " +
-        "ON (target." + COL_USER_ID + " = source.user_id) " +
+    return "MERGE INTO " + USER_SCHEMA_MACRO + TABLE_USERS + " tgt " +
+        "USING (SELECT ? AS user_id, ? AS first_access, " + IS_GUEST_VALUE_MACRO + " AS is_guest" + _userDb.getPlatform().getDummyTable() + ") src " +
+        "ON (tgt." + COL_USER_ID + " = src.user_id) " +
         "WHEN NOT MATCHED THEN " +
         "INSERT (" + COL_USER_ID + ", " + COL_IS_GUEST + ", " + COL_FIRST_ACCESS + ") " +
-        "VALUES (source.user_id, source.is_guest, source.first_access)";
+        "VALUES (src.user_id, src.is_guest, src.first_access)";
   }
 
   // FIXME: see if this is actually needed anywhere?  E.g. do we ever need to look up user refs by user ID to find last login?
