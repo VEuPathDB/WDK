@@ -40,6 +40,8 @@ public class ModelConfigBuilder {
   private String _smtpServer;
   private String _smtpUsername;
   private String _smtpPassword;
+  private int _smtpPort;
+  private boolean _smtpTlsEnabled;
   private String _supportEmail;
   private List<String> _adminEmails = Collections.emptyList();
   private String _emailSubject = "";
@@ -125,6 +127,8 @@ public class ModelConfigBuilder {
       smtpServer,
       smtpUsername,
       smtpPassword,
+      _smtpPort,
+      _smtpTlsEnabled,
       _supportEmail,
       _adminEmails,
       _emailSubject,
@@ -214,6 +218,14 @@ public class ModelConfigBuilder {
 
   public void setSmtpPassword(String smtpPassword) {
     _smtpPassword = smtpPassword;
+  }
+
+  public void setSmtpPort(int smtpPort) {
+    _smtpPort = smtpPort;
+  }
+
+  public void setSmtpTlsEnabled(boolean smtpTlsEnabled) {
+    _smtpTlsEnabled = smtpTlsEnabled;
   }
 
   /**

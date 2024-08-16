@@ -162,7 +162,7 @@ public class ResultFactory {
         Types.VARCHAR, // table name
         Types.VARCHAR, // query name
         Types.VARCHAR, // checksum
-        Types.OTHER     // result message
+        Types.CLOB     // result message
     };
 
     try {
