@@ -217,18 +217,18 @@ public class Utilities {
     String subject, String content, String ccAddresses, Attachment[] attachments) 
     throws WdkModelException {
       //  call the 8 parameter one
-      sendEmail(smtpServer, null, null, sendTos, reply, subject, content, ccAddresses, null, attachments);
+      sendEmail(smtpServer, null, null, sendTos, reply, subject, content, ccAddresses, null, attachments, 25, false);
   }
 
   public static void sendEmail(String smtpServer, String sendTos, String reply,
                                String subject, String content, String ccAddresses, String bccAddresses,
                                Attachment[] attachments) throws WdkModelException {
-    sendEmail(smtpServer, null, null, sendTos, reply, subject, content, ccAddresses, bccAddresses, attachments);
+    sendEmail(smtpServer, null, null, sendTos, reply, subject, content, ccAddresses, bccAddresses, attachments, 25, false);
   }
 
-  // sendEmail()  all 10 parameters
+  // sendEmail()  all 12 parameters
   public static void sendEmail(String smtpServer, String username, String password, String sendTos, String reply,
-    String subject, String content, String ccAddresses, String bccAddresses, Attachment[] attachments) throws WdkModelException {
+    String subject, String content, String ccAddresses, String bccAddresses, Attachment[] attachments, int smtpPort, boolean tlsEnabled) throws WdkModelException {
 
     LOG.debug("Sending message to: " + sendTos + ", bcc to: " + bccAddresses +
       ",reply: " + reply + ", using SMPT: " + smtpServer);
@@ -237,6 +237,14 @@ public class Utilities {
     Properties props = new Properties();
     props.put("mail.smtp.host", smtpServer);
     props.put("mail.debug", "true");
+    props.put("mail.smtp.port", smtpPort);
+
+    if (tlsEnabled) {
+      props.put("mail.smtp.starttls.enable","true");
+      props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+      props.put("mail.smtp.ssl.trust", smtpServer);
+    }
+
     Authenticator auth = null;
 
     if (username != null && password != null) {

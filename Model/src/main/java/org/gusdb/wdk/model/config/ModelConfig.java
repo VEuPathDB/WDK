@@ -54,6 +54,17 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
 
 
   /**
+   * the SMTP port to connect to on SMTP server.
+   */
+  private final int _smtpPort;
+
+  /**
+   * Determines whether to use TLS when connecting to SMTP server.
+   */
+  private final boolean _smtpTlsEnabled;
+
+
+  /**
    * the reply of the registration & recover password emails.
    */
   private final String _supportEmail;
@@ -155,8 +166,8 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
 
   public ModelConfig(String modelName, String projectId, Path gusHome, boolean caching, boolean useWeights,
       String paramRegex, Optional<Path> secretKeyFile, String secretKey, Path wdkTempDir, String webServiceUrl, String assetsUrl,
-      String smtpServer, Optional<String> smtpUser, Optional<String> smtpPassword, String supportEmail, List<String> adminEmails, String emailSubject,
-      String emailContent, ModelConfigUserDB userDB, ModelConfigAppDB appDB,
+      String smtpServer, Optional<String> smtpUser, Optional<String> smtpPassword, int smtpPort, boolean smtpTlsEnabled, String supportEmail,
+      List<String> adminEmails, String emailSubject, String emailContent, ModelConfigUserDB userDB, ModelConfigAppDB appDB,
       ModelConfigUserDatasetStore userDatasetStoreConfig, QueryMonitor queryMonitor,
       boolean monitorBlockedThreads, int blockedThreshold, AuthenticationMethod authenticationMethod,
       String oauthUrl, String oauthClientId, String oauthClientSecret, String changePasswordUrl,
@@ -185,6 +196,9 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
     _smtpServer = smtpServer;
     _smtpUserName = smtpUser;
     _smtpPassword = smtpPassword;
+    _smtpPort = smtpPort;
+    _smtpTlsEnabled = smtpTlsEnabled;
+
     _supportEmail = supportEmail;
     _adminEmails = adminEmails;
     _emailSubject = emailSubject;
@@ -275,6 +289,14 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
 
   public Optional<String> getSmtpPassword() {
     return _smtpPassword;
+  }
+
+  public int getSmtpPort() {
+    return _smtpPort;
+  }
+
+  public boolean isSmtpTlsEnabled() {
+    return _smtpTlsEnabled;
   }
 
   /**
