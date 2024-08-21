@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.platform.SupportedPlatform;
 import org.gusdb.wdk.model.ModelSetI;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -215,10 +216,14 @@ public class QuerySet extends WdkModelBase implements ModelSetI<Query>, Optional
   }
 
   @Override
-  public void excludeResources(String projectId) throws WdkModelException {
+  public void excludeResources(String projectId) {
+    throw new UnsupportedOperationException("QuerySet excludes must be handled by excludeResources(projectId,supportedPlatform");
+  }
+
+  public void excludeResources(String projectId, SupportedPlatform supportedPlatform) throws WdkModelException {
     // exclude queries
     for (Query query : _queryList) {
-      if (query.include(projectId)) {
+      if (query.include(projectId) && query.include(supportedPlatform)) {
         query.excludeResources(projectId);
         String queryName = query.getName();
         if (_queries.containsKey(queryName))

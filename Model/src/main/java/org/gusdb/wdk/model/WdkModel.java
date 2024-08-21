@@ -903,7 +903,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     // remove query sets
     for (QuerySet querySet : querySetList) {
       if (querySet.include(_projectId)) {
-        querySet.excludeResources(_projectId);
+        querySet.excludeResources(_projectId, _modelConfig.getAppDB().getPlatformEnum());
         addSet(querySet, querySets);
       }
     }
@@ -1041,7 +1041,7 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       internalQuerySet.setName(Utilities.INTERNAL_QUERY_SET);
       internalQuerySet.setDoNotTest(true);
       addQuerySet(internalQuerySet);
-      internalQuerySet.excludeResources(_projectId);
+      internalQuerySet.excludeResources(_projectId, _modelConfig.getAppDB().getPlatformEnum());
     }
 
     // create a query set to hold all internal questions, that is, the
