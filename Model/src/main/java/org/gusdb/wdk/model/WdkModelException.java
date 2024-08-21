@@ -33,6 +33,8 @@ public class WdkModelException extends WdkException {
   }
 
   public static WdkModelException translateFrom(Exception e, String newMessage) {
+    // if passed message is null, use name of original exception
+    if (newMessage == null) newMessage = e.getClass().getSimpleName();
     // if exception is already a WdkModelException, simply return
     if (e instanceof WdkModelException) return (WdkModelException)e;
     // check underlying exception; a WdkModelException may simply have been wrapped

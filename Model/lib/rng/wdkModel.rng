@@ -83,6 +83,16 @@
     </optional>
   </define>
 
+  <!-- define inclusion/exclusion attributes for DB platform -->
+  <define name="DbPlatformIncludeExclude">
+    <optional>
+      <attribute name="includeDbPlatforms" />
+    </optional>
+    <optional>
+      <attribute name="excludeDbPlatforms" />
+    </optional>
+  </define>
+
   <!-- define constants -->
   <define name="constant">
     <element name="constant">
@@ -1105,6 +1115,7 @@
   <define name="sqlQuery">
     <element name="sqlQuery">
       <ref name="QueryBaseContents" />
+      <ref name="DbPlatformIncludeExclude" />
       <optional>
         <attribute name="attributeMetaQueryRef" />
       </optional>
