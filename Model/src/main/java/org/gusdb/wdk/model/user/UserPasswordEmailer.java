@@ -42,6 +42,8 @@ public class UserPasswordEmailer {
     // Unwrap optionals here to maintain consistency with nullable arguments in Utilities.sendEmail method.
     String smtpUser = wdkModelConfig.getSmtpUserName().orElse(null);
     String smtpPass = wdkModelConfig.getSmtpPassword().orElse(null);
+    int smtpPort = wdkModelConfig.getSmtpPort();
+    boolean smtpTlsEnabled = wdkModelConfig.isSmtpTlsEnabled();
 
     // populate email content macros with user data
     String emailContent = wdkModelConfig.getEmailContent()
@@ -52,6 +54,6 @@ public class UserPasswordEmailer {
         .replaceAll("\\$\\$" + EMAIL_MACRO_PASSWORD + "\\$\\$",
             Matcher.quoteReplacement(password));
 
-    Utilities.sendEmail(smtpServer, smtpUser, smtpPass, user.getEmail(), supportEmail, emailSubject, emailContent, null, null, new Attachment[]{});
+    Utilities.sendEmail(smtpServer, smtpUser, smtpPass, user.getEmail(), supportEmail, emailSubject, emailContent, null, null, new Attachment[]{}, smtpPort, smtpTlsEnabled);
   }
 }
