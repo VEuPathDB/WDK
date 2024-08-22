@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.config.ModelConfig.AuthenticationMethod;
 public class ModelConfigBuilder {
 
   private static final Logger LOG = Logger.getLogger(ModelConfigBuilder.class);
+  private static final int DEFAULT_SMTP_PORT = 25;
 
   // basic model information
   private String _modelName;
@@ -40,7 +41,7 @@ public class ModelConfigBuilder {
   private String _smtpServer;
   private String _smtpUsername;
   private String _smtpPassword;
-  private int _smtpPort;
+  private Integer _smtpPort;
   private boolean _smtpTlsEnabled;
   private String _supportEmail;
   private List<String> _adminEmails = Collections.emptyList();
@@ -100,6 +101,7 @@ public class ModelConfigBuilder {
     Optional<String> smtpUsername = Optional.ofNullable(_smtpUsername).filter(s -> !s.isBlank());
     Optional<String> smtpPassword = Optional.ofNullable(_smtpPassword).filter(s -> !s.isBlank());
     String smtpServer = _smtpServer == null ? "localhost" : _smtpServer;
+    int smtpPort = _smtpPort == null ? DEFAULT_SMTP_PORT : _smtpPort;
 
     return new ModelConfig(
 
@@ -126,7 +128,7 @@ public class ModelConfigBuilder {
       smtpServer,
       smtpUsername,
       smtpPassword,
-      _smtpPort,
+      smtpPort,
       _smtpTlsEnabled,
       _supportEmail,
       _adminEmails,

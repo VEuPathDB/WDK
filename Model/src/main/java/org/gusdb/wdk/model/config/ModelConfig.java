@@ -22,8 +22,6 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
   private static final Logger LOG = Logger.getLogger(ModelConfig.class);
 
   public static final String WSF_LOCAL = "local";
-  private static final int DEFAULT_SMTP_PORT = 25;
-
 
   public enum AuthenticationMethod implements NamedObject {
     USER_DB, OAUTH2;
@@ -58,7 +56,7 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
   /**
    * the SMTP port to connect to on SMTP server.
    */
-  private final Integer _smtpPort;
+  private final int _smtpPort;
 
   /**
    * Determines whether to use TLS when connecting to SMTP server.
@@ -294,7 +292,7 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
   }
 
   public int getSmtpPort() {
-    return _smtpPort == null ? DEFAULT_SMTP_PORT : _smtpPort;
+    return _smtpPort;
   }
 
   public boolean isSmtpTlsEnabled() {
