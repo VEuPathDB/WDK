@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.answer.stream;
 
-import java.io.Closeable;
 import java.util.ConcurrentModificationException;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -20,7 +19,7 @@ import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.StaticRecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 
-public abstract class AbstractRecordIterator extends ReadOnlyIterator<RecordInstance> implements Closeable {
+public abstract class AbstractRecordIterator extends ReadOnlyIterator<RecordInstance> implements AutoCloseable {
 
   private static final Logger LOG = Logger.getLogger(AbstractRecordIterator.class);
 
