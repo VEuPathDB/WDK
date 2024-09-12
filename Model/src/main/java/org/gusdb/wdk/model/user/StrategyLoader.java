@@ -236,6 +236,8 @@ public class StrategyLoader {
     }
     catch (Exception e) {
       LOG.error("Unable to execute search with SQL: " + NL + sql + NL + "and params [" + FormatUtil.join(paramValues, ",") + "].", e);
+      // FIXME: not sure why the line above is not printing the stack trace in the logs, but do so explicitly to help debug NPE
+      LOG.error(FormatUtil.getStackTrace(e));
       return WdkModelException.unwrap(e);
     }
   }

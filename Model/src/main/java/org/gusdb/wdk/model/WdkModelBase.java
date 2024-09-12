@@ -2,13 +2,16 @@ package org.gusdb.wdk.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.platform.SupportedPlatform;
 import org.gusdb.wdk.model.RngAnnotations.RngUndefined;
 
 /**
@@ -40,12 +43,17 @@ public abstract class WdkModelBase {
   private Set<String> _includeProjects;
   private Set<String> _excludeProjects;
 
+  private Set<SupportedPlatform> _includeDbPlatforms;
+  private Set<SupportedPlatform> _excludeDbPlatforms;
+
   private List<PropertyList> _propertyLists;
   private Map<String, String[]> _propertyListMap;
 
   public WdkModelBase() {
     _includeProjects = new LinkedHashSet<>();
     _excludeProjects = new LinkedHashSet<>();
+    _includeDbPlatforms = new LinkedHashSet<>();
+    _excludeDbPlatforms = new LinkedHashSet<>();
     _propertyLists = new ArrayList<>();
     _propertyListMap = new LinkedHashMap<>();
   }
@@ -55,6 +63,8 @@ public abstract class WdkModelBase {
     _resolved = base._resolved;
     _includeProjects = new LinkedHashSet<>(base._includeProjects);
     _excludeProjects = new LinkedHashSet<>(base._excludeProjects);
+    _includeDbPlatforms = new LinkedHashSet<>(base._includeDbPlatforms);
+    _excludeDbPlatforms = new LinkedHashSet<>(base._excludeDbPlatforms);
     if (base._propertyLists != null)
       _propertyLists = new ArrayList<>(base._propertyLists);
     if (base._propertyListMap != null)
@@ -78,14 +88,7 @@ public abstract class WdkModelBase {
    */
   @RngUndefined
   public void setExcludeProjects(String excludeProjects) {
-    excludeProjects = excludeProjects.trim();
-    if (excludeProjects.isEmpty())
-      return;
-
-    String[] projects = excludeProjects.split(",");
-    for (String project : projects) {
-      _excludeProjects.add(project.trim());
-    }
+    _excludeProjects.addAll(parseCommaDelimitedValues(excludeProjects));
   }
 
   /**
@@ -94,14 +97,42 @@ public abstract class WdkModelBase {
    */
   @RngUndefined
   public void setIncludeProjects(String includeProjects) {
-    includeProjects = includeProjects.trim();
-    if (includeProjects.isEmpty())
-      return;
+    _includeProjects.addAll(parseCommaDelimitedValues(includeProjects));
+  }
 
-    String[] projects = includeProjects.split(",");
-    for (String project : projects) {
-      _includeProjects.add(project.trim());
+  /**
+   * @param excludeDbPlatforms
+   *          the excludeDbPlatforms to set
+   */
+  @RngUndefined
+  public void setExcludeDbPlatforms(String excludeDbPlatforms) {
+    _excludeDbPlatforms.addAll(
+        parseCommaDelimitedValues(excludeDbPlatforms)
+        .stream().map(SupportedPlatform::toPlatform).collect(Collectors.toSet()));
+  }
+
+  /**
+   * @param includeDbPlatforms
+   *          the includeDbPlatforms to set
+   */
+  @RngUndefined
+  public void setIncludeDbPlatforms(String includeDbPlatforms) {
+    _includeDbPlatforms.addAll(
+        parseCommaDelimitedValues(includeDbPlatforms)
+        .stream().map(SupportedPlatform::toPlatform).collect(Collectors.toSet()));
+  }
+
+  private Set<String> parseCommaDelimitedValues(String unparsedList) {
+    unparsedList = unparsedList.trim();
+    if (unparsedList.isEmpty())
+      return Collections.emptySet();
+
+    String[] rawValues = unparsedList.split(",");
+    Set<String> values = new LinkedHashSet<>();
+    for (String value : rawValues) {
+      values.add(value.trim());
     }
+    return values;
   }
 
   /**
@@ -112,6 +143,17 @@ public abstract class WdkModelBase {
       return !_excludeProjects.contains(projectId);
     } else { // has inclusions
       return _includeProjects.contains(projectId);
+    }
+  }
+
+  /**
+   * @return true if the object is included in the current AppDB platform
+   */
+  public boolean include(SupportedPlatform dbPlatform) {
+    if (_includeDbPlatforms.isEmpty()) { // no inclusions assigned
+      return !_excludeDbPlatforms.contains(dbPlatform);
+    } else { // has inclusions
+      return _includeDbPlatforms.contains(dbPlatform);
     }
   }
 
