@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.user;
 
-import java.util.Optional;
 import java.util.regex.Matcher;
 
 import org.gusdb.wdk.model.Attachment;
