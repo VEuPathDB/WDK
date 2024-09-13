@@ -23,7 +23,7 @@ public class UserCache extends HashMap<Long,User> {
    */
   public UserCache(User user) {
     put(user.getUserId(), user);
-    _userFactory = null;
+    _userFactory = user.getWdkModel().getUserFactory();
   }
 
   public void loadUsersByIds(List<Long> userIds) {
@@ -41,12 +41,9 @@ public class UserCache extends HashMap<Long,User> {
       }
       Long userId = (Long)id;
       if (!containsKey(userId)) {
-        if (_userFactory != null) {
+        synchronized(this) {
           put(userId, _userFactory.getUserById(userId)
               .orElseThrow(() -> new WdkRuntimeException("User with ID " + userId + " does not exist.")));
-        }
-        else {
-          throw new WdkRuntimeException("No-lookup cache does not contain the requested user (" + userId + ").");
         }
       }
       return super.get(userId);
