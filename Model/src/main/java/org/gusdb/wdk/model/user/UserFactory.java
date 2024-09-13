@@ -180,7 +180,18 @@ public class UserFactory {
   public Map<Long, User> getUsersById(List<Long> userIds) {
     // ensure a unique list
     userIds = new ArrayList<>(new HashSet<>(userIds));
-    return OAuthQuerier.getUsersById(_client, _config, userIds, json -> new BasicUser(_wdkModel, json));
+    Map<Long,User> userMap = OAuthQuerier.getUsersById(_client, _config, userIds, json -> new BasicUser(_wdkModel, json));
+    // FIXME: This is a temporary hack to account for guests created before the
+    //   implementation of bearer tokens who still have WDK steps/strats.  Eventually
+    //   these guests should be removed during regular maintenance cleanup; once all
+    //   guests created before spring 2024 are removed, this code can also be removed.
+    for (Long userId : userIds) {
+      if (userMap.get(userId) == null) {
+        // OAuth does not know about this user; trust that it is a guest
+        userMap.put(userId, new BasicUser(_wdkModel, userId, true, userId.toString(), userId.toString()));
+      }
+    }
+    return userMap;
   }
 
   public Map<String, User> getUsersByEmail(List<String> emails) {
