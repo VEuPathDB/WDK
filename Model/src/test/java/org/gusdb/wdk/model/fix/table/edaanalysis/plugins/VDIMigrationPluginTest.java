@@ -1,6 +1,11 @@
 package org.gusdb.wdk.model.fix.table.edaanalysis.plugins;
 
-import org.gusdb.wdk.model.WdkModel;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Objects;
+import java.util.Optional;
+
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces;
 import org.gusdb.wdk.model.fix.table.edaanalysis.AnalysisRow;
 import org.json.JSONObject;
@@ -9,21 +14,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Objects;
-import java.util.Optional;
-
 public class VDIMigrationPluginTest {
-  private WdkModel mockedModel;
+
   private ClassLoader classLoader;
   private VDIEntityIdRetriever retriever;
 
   @Before
   public void setup() {
     classLoader = getClass().getClassLoader();
-    mockedModel = Mockito.mock(WdkModel.class);
     retriever = Mockito.mock(VDIEntityIdRetriever.class);
   }
 
