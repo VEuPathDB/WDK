@@ -56,7 +56,7 @@ public class RecordService extends AbstractWdkService {
   private static final Counter TABLE_REQUEST_COUNTER = Counter.build()
       .name("wdk_table_requests")
       .help("Times individual tables are requested at the /records endpoint")
-      .labelNames("table")
+      .labelNames("project_id", "table")
       .register();
 
   @GET
@@ -136,7 +136,7 @@ public class RecordService extends AbstractWdkService {
         // update metrics; increment entries for requested tables
         request.getTableNames().stream()
             .map(tableName -> recordClass.getUrlSegment() + "." + tableName)
-            .forEach(key -> TABLE_REQUEST_COUNTER.labels(key).inc());
+            .forEach(key -> TABLE_REQUEST_COUNTER.labels(getWdkModel().getProjectId(), key).inc());
 
         TwoTuple<JSONObject,List<Exception>> recordJsonResult = RecordFormatter.getRecordJson(
             records.get(0), request.getAttributeNames(), request.getTableNames(), AttributeFormat.DISPLAY);
