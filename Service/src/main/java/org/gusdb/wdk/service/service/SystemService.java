@@ -29,6 +29,7 @@ import org.gusdb.fgputil.runtime.BuildStatus;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkCacheSeeder;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.service.PageViewLogger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -129,6 +130,7 @@ public class SystemService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response registerVisit(@PathParam("clientPath") String clientPath) {
     LOG.trace("Registered visit to /" + clientPath);
+    PageViewLogger.logPageView(getWdkModel().getProjectId(), getRequestingUser(), clientPath);
     return Response.noContent().build();
   }
 
