@@ -12,7 +12,7 @@ public class PageViewLogger {
   public static void logPageView(String projectId, User user, String pagePath) {
     LOG.info(
         TAB + user.getUserId() +
-        TAB + (user.isGuest() ? "guest" : "reg") +
+        TAB + (user.isGuest() ? "guest" : "registered") +
         TAB + projectId +
         TAB + pagePath);
   }
