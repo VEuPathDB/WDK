@@ -129,8 +129,6 @@ public class SystemService extends AbstractWdkService {
   @Path("/metrics/count-page-view/{clientPath:.+}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response registerVisit(@PathParam("clientPath") String clientPath) {
-    clientPath = "/" + clientPath; // reprepend '/'
-    LOG.trace("Registered visit to " + clientPath);
     PageViewLogger.logPageView(getWdkModel().getProjectId(), getRequestingUser(), clientPath);
     return Response.noContent().build();
   }
