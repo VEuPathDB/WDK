@@ -60,10 +60,12 @@ public class JsonKeys {
   public static final String DISPLAY_TEXT = "displayText";
   public static final String HELP = "help";
   public static final String HTML_HELP = "htmlHelp";
+  public static final String SUGGEST_TEXT = "suggestText";
   public static final String DESCRIPTION = "description";
   public static final String SHORT_DESCRIPTION = "shortDescription";
   public static final String SUMMARY = "summary";
   public static final String ALIGN = "align";
+  public static final String INPUT_TYPE = "inputType";
   public static final String TRUNCATE_TO = "truncateTo";
   public static final String IS_READ_ONLY = "isReadOnly";
   public static final String IS_SORTABLE = "isSortable";
