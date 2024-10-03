@@ -269,6 +269,7 @@ CREATE TABLE userlogins5.strategies (
   prev_strategy_id  NUMBER(12),
   migration_id      NUMBER(12),
   CONSTRAINT "strategies_pk" PRIMARY KEY (strategy_id),
+  CONSTRAINT "strategies_uq01" UNIQUE (signature),
   CONSTRAINT "strategies_fk01" FOREIGN KEY (root_step_id)
       REFERENCES userlogins5.steps (step_id),
   CONSTRAINT "strategies_fk02" FOREIGN KEY (user_id)
