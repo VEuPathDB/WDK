@@ -3,6 +3,7 @@ package org.gusdb.wdk.service;
 import static org.gusdb.fgputil.FormatUtil.TAB;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.logging.ThreadLocalLoggingVars;
 import org.gusdb.wdk.model.user.User;
 
 public class PageViewLogger {
@@ -11,12 +12,14 @@ public class PageViewLogger {
 
   private static final String CLIENT_PREFIX = "/web-client";
 
-  public static void logPageView(String projectId, User user, String submittedPath) {
+  public static void logPageView(String projectId, User user, String submittedPath, String userAgent) {
     LOG.info(
+        TAB + ThreadLocalLoggingVars.getIpAddress() +
         TAB + user.getUserId() +
-        TAB + (user.isGuest() ? "guest" : "registered") +
+        TAB + user.getRegistrationStatus() +
         TAB + projectId +
-        TAB + trimWebappAndClientApp(submittedPath));
+        TAB + trimWebappAndClientApp(submittedPath) +
+        TAB + userAgent);
   }
 
   // a -> a

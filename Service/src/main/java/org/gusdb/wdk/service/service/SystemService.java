@@ -4,6 +4,7 @@ import java.io.OutputStreamWriter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -129,7 +130,8 @@ public class SystemService extends AbstractWdkService {
   @Path("/metrics/count-page-view/{clientPath:.+}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response registerVisit(@PathParam("clientPath") String clientPath) {
-    PageViewLogger.logPageView(getWdkModel().getProjectId(), getRequestingUser(), clientPath);
+    String userAgent = getHeaders().getOrDefault("User-Agent", List.of("<unknown>")).get(0);
+    PageViewLogger.logPageView(getWdkModel().getProjectId(), getRequestingUser(), clientPath, userAgent);
     return Response.noContent().build();
   }
 
