@@ -56,7 +56,7 @@ public class RecordService extends AbstractWdkService {
   private static final Counter TABLE_REQUEST_COUNTER = Counter.build()
       .name("wdk_table_requests")
       .help("Times individual tables are requested at the /records endpoint")
-      .labelNames("project_id", "table", "registration_status")
+      .labelNames("project_id", "table", "user_registration_status")
       .register();
 
   @GET
