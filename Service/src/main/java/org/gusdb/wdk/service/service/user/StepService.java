@@ -266,7 +266,7 @@ public class StepService extends UserService {
     // execute reporter against the answer spec
     AnswerRequest request = new AnswerRequest(runnableSpec,
         new AnswerFormatting(reporterName, requestJson.getJSONObject(JsonKeys.REPORT_CONFIG)), false);
-    TwoTuple<AnswerValue, Response> result = AnswerService.getAnswerResponse(step.getUser(), request);
+    TwoTuple<AnswerValue, Response> result = AnswerService.getAnswerResponse(step.getUser(), request, getErrorContext());
 
     // update the estimated size and last-run time on this step
     getWdkModel().getStepFactory().updateStep(
@@ -431,7 +431,7 @@ public class StepService extends UserService {
     LOG.info("Prepared column reporter for column " + columnName + " in " + t.getElapsedString());
 
     // execute reporter against the runnable answer spec
-    return AnswerService.getAnswerAsStream(reporter);
+    return AnswerService.getAnswerAsStream(reporter, getErrorContext());
   }
 
   private static DataValidationException getNotRunnableException(Validateable<?> badSpec) {
