@@ -86,7 +86,8 @@ public class TemporaryResultService extends AbstractWdkService {
       // request is valid; produce result as originally requested
       return AnswerService.getAnswerResponse(
           temporaryResultSpec.getFirst(),
-          temporaryResultSpec.getSecond()
+          temporaryResultSpec.getSecond(),
+          getErrorContext()
       ).getSecond();
     }
     catch (WdkUserException e) {

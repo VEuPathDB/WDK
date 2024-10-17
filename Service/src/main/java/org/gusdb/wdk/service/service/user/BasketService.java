@@ -286,7 +286,7 @@ public class BasketService extends UserService {
       .buildRunnable(getRequestingUser(), StepContainer.emptyContainer());
     AnswerRequest request = new AnswerRequest(basketAnswerSpec,
         new AnswerFormatting(reportName, requestJson.getJSONObject(JsonKeys.REPORT_CONFIG)), false);
-    return AnswerService.getAnswerResponse(user, request).getSecond();
+    return AnswerService.getAnswerResponse(user, request, getErrorContext()).getSecond();
   }
 
   /**
@@ -345,7 +345,8 @@ public class BasketService extends UserService {
     return AnswerService.getAnswerAsStream(
         ColumnReporterService.getColumnReporter(attribute, reportName)
           .setAnswerValue(AnswerValueFactory.makeAnswer(user, basketAnswerSpec))
-          .configure(requestJson.getJSONObject(JsonKeys.REPORT_CONFIG))
+          .configure(requestJson.getJSONObject(JsonKeys.REPORT_CONFIG)),
+        getErrorContext()
     );
   }
 }

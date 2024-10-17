@@ -23,7 +23,8 @@ public class ClientErrorReportingService extends AbstractWdkService {
   public Response reportError(String body) throws RequestMisformatException {
     try {
       if (requestValid()) {
-        Events.trigger(new ErrorEvent(new ClientErrorBundle(new JSONObject(body)), getErrorContext(ErrorLocation.WDK_CLIENT)));
+        Events.trigger(new ErrorEvent(new ClientErrorBundle(new JSONObject(body)),
+            getErrorContext(getRequest(), getWdkModel(), ErrorLocation.WDK_CLIENT)));
         return Response.noContent().build();
       }
       else {

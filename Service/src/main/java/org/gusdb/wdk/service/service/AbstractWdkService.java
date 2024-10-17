@@ -191,7 +191,7 @@ public abstract class AbstractWdkService {
    * @param errors list of errors for which to trigger error events
    */
   protected void triggerErrorEvents(List<Exception> errors) {
-    ErrorContext context = getErrorContext(ErrorLocation.WDK_SERVICE);
+    ErrorContext context = getErrorContext();
     for (Exception e : errors) {
       Events.trigger(new ErrorEvent(new ServerErrorBundle(e), context));
     }
@@ -202,8 +202,8 @@ public abstract class AbstractWdkService {
    *
    * @return errorLocation location error occurred
    */
-  public ErrorContext getErrorContext(ErrorLocation errorLocation) {
-    return getErrorContext(getRequest(), getWdkModel(), errorLocation);
+  public ErrorContext getErrorContext() {
+    return getErrorContext(getRequest(), getWdkModel(), ErrorLocation.WDK_SERVICE);
   }
 
   /**
