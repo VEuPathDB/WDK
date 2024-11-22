@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.report;
 
+import static org.gusdb.fgputil.functional.Functions.wrapException;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -13,7 +15,6 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.SqlQuery;
@@ -26,8 +27,6 @@ import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
 import org.json.JSONObject;
-
-import static org.gusdb.fgputil.functional.Functions.mapException;
 
 public abstract class AbstractAttributeReporter extends AbstractReporter {
 
@@ -183,9 +182,8 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
         pkValues.put(pkColumn, resultSet.getObject(pkColumn));
 
       return Optional.of(new Tuples.TwoTuple<>(
-        mapException(() -> new PrimaryKeyValue(pkDef, pkValues), WdkRuntimeException::new),
-        resultSet.getObject(ATTRIBUTE_COLUMN)
-      ));
+          wrapException(() -> new PrimaryKeyValue(pkDef, pkValues)),
+          resultSet.getObject(ATTRIBUTE_COLUMN)));
     });
   }
 }
