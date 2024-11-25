@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -14,6 +15,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
@@ -23,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.functional.Either;
 import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.web.LoginCookieFactory;
 import org.gusdb.oauth2.client.ValidatedToken;
@@ -41,12 +44,19 @@ import org.gusdb.wdk.service.statustype.MethodNotAllowedStatusType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.google.common.net.HttpHeaders;
-
 @Path("/")
 public class SessionService extends AbstractWdkService {
 
   private static final Logger LOG = Logger.getLogger(SessionService.class);
+
+  private enum ResponseType {
+    REDIRECT, JSON;
+  }
+
+  private static class UserTupleEither extends Either<TwoTuple<ValidatedToken, User>, String> {
+    public UserTupleEither(TwoTuple<ValidatedToken, User> userTuple) { super(userTuple, null); }
+    public UserTupleEither(String errorMessage) { super(null, errorMessage); }
+  }
 
   public static final int EXPIRATION_3_YEARS_SECS = 3 * 365 * 24 * 60 * 60;
 
@@ -107,6 +117,14 @@ public class SessionService extends AbstractWdkService {
   }
 
   @GET
+  @Path("create-guest")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response createGuest() throws WdkModelException {
+    TwoTuple<ValidatedToken, User> guest = getWdkModel().getUserFactory().createUnregisteredUser();
+    return getSuccessResponse(guest, null, ResponseType.JSON);
+  }
+
+  @GET
   @Path("login")
   public Response processOauthLogin(
       @QueryParam(OAUTH_ERROR_KEY) String error,
@@ -128,7 +146,8 @@ public class SessionService extends AbstractWdkService {
     // Was existing bearer token submitted with this request?
     User oldUser = getRequestingUser();
     if (!oldUser.isGuest()) {
-      return createRedirectResponse(redirectUrl).build();
+      // TODO: should this be 409?  Work it out with UI
+      throw new BadRequestException("Only guests can log in");
     }
 
     try {
@@ -157,12 +176,19 @@ public class SessionService extends AbstractWdkService {
       // transfer ownership from guest to logged-in user
       transferOwnership(oldUser, newUser, wdkModel);
 
+      // determine response type
+      ResponseType responseType = getHeaders()
+          .get(HttpHeaders.ACCEPT)
+          .stream().findFirst()
+          .map(val -> val.equals(MediaType.APPLICATION_JSON) ? ResponseType.JSON : ResponseType.REDIRECT)
+          .orElse(ResponseType.REDIRECT);
+
       // login successful; create redirect response
-      return getSuccessResponse(bearerToken, newUser, oldUser, redirectUrl, true);
+      return getSuccessResponse(new TwoTuple<>(bearerToken, newUser), redirectUrl, responseType);
     }
     catch (InvalidPropertiesException ex) {
       LOG.error("Could not authenticate user's identity.  Exception thrown: ", ex);
-      return createJsonResponse(false, "Invalid auth token or redirect URI", null).build();
+      return createJsonResponse(new UserTupleEither("Invalid auth token or redirect URI"), null);
     }
     catch (Exception ex) {
       LOG.error("Unsuccessful login attempt:  " + ex.getMessage(), ex);
@@ -206,7 +232,8 @@ public class SessionService extends AbstractWdkService {
       // transfer ownership from guest to logged-in user
       transferOwnership(oldUser, newUser, wdkModel);
 
-      return getSuccessResponse(bearerToken, newUser, oldUser, redirectUrl, false);
+      // return success JSON response
+      return getSuccessResponse(new TwoTuple<>(bearerToken, newUser), redirectUrl, ResponseType.JSON);
 
     }
     catch (JSONException e) {
@@ -214,7 +241,7 @@ public class SessionService extends AbstractWdkService {
     }
     catch (InvalidPropertiesException ex) {
       LOG.error("Could not authenticate user's identity.  Exception thrown: ", ex);
-      return createJsonResponse(false, "Invalid username or password", null).build();
+      return createJsonResponse(new UserTupleEither("Invalid username or password"), null);
     }
   }
 
@@ -231,33 +258,33 @@ public class SessionService extends AbstractWdkService {
    *
    * @param bearerToken bearer token for the new user
    * @param newUser newly logged in user
-   * @param oldUser user previously on session, if any
    * @param redirectUrl incoming original page
    * @param isRedirectResponse whether to return redirect or JSON response
    * @return success response
    * @throws WdkModelException
    */
-  private Response getSuccessResponse(ValidatedToken bearerToken, User newUser, User oldUser,
-      String redirectUrl, boolean isRedirectResponse) throws WdkModelException {
+  private Response getSuccessResponse(TwoTuple<ValidatedToken, User> newUser,
+      String redirectUrl, ResponseType responseType) throws WdkModelException {
 
+    // only using this to synchronize on the user
     TemporaryUserData tmpData = getTemporaryUserData();
 
     synchronized(tmpData) {
 
       // 3-year expiration (should change secret key before then)
+      // FIXME: cookie sending should be removed/deleted once client has support for header/response body transmission
       CookieBuilder bearerTokenCookie = new CookieBuilder(
           HttpHeaders.AUTHORIZATION,
-          bearerToken.getTokenValue());
+          "Bearer " + newUser.getFirst().getTokenValue());
       bearerTokenCookie.setMaxAge(EXPIRATION_3_YEARS_SECS);
 
-      redirectUrl = getSuccessRedirectUrl(redirectUrl, newUser, bearerTokenCookie);
+      redirectUrl = getSuccessRedirectUrl(redirectUrl, newUser.getSecond(), bearerTokenCookie);
 
-      return (isRedirectResponse ?
-        createRedirectResponse(redirectUrl) :
-        createJsonResponse(true, null, redirectUrl)
-      )
-      .cookie(bearerTokenCookie.toJaxRsCookie())
-      .build();
+      switch(responseType) {
+        case REDIRECT: return createRedirectResponse(redirectUrl).cookie(bearerTokenCookie.toJaxRsCookie()).build();
+        case JSON:     return createJsonResponse(new UserTupleEither(newUser), redirectUrl);
+        default:       throw new IllegalStateException(); // should never happen
+      }
     }
   }
 
@@ -316,19 +343,31 @@ public class SessionService extends AbstractWdkService {
   }
 
   /**
-   * Convenience method to set up a response builder that returns JSON containing request result
+   * Creates a JSON response for requests served by this class
    *
-   * @param success whether the login was successful
-   * @param message a failure message if not successful
-   * @param redirectUrl url to which to redirect the user if successful
-   * @return partially constructed response
+   * @param userTupleOrErrorMessage Either object containing a token/user (success case) or error message
+   * @param redirectUrl URL to which use should eventually be redirected
+   * @return JSON response
    */
-  private static ResponseBuilder createJsonResponse(boolean success, String message, String redirectUrl) {
-    return Response.ok(new JSONObject()
-        .put(JsonKeys.SUCCESS, success)
-        .put(JsonKeys.MESSAGE, message)
-        .put(JsonKeys.REDIRECT_URL, redirectUrl)
-        .toString());
+  private static Response createJsonResponse(UserTupleEither userTupleOrErrorMessage, String redirectUrl) {
+    JSONObject json = new JSONObject()
+        .put(JsonKeys.SUCCESS, userTupleOrErrorMessage.isLeft())
+        .put(JsonKeys.REDIRECT_URL, redirectUrl);
+    userTupleOrErrorMessage
+    .ifLeft(userTuple ->
+      json
+        .put(JsonKeys.BEARER_TOKEN, userTuple.getFirst().getTokenValue())
+        .put(JsonKeys.USER_ID, userTuple.getSecond().getUserId())
+        .put(JsonKeys.IS_GUEST, userTuple.getSecond().isGuest())
+    )
+    .ifRight(errorMessage ->
+      json
+        .put(JsonKeys.MESSAGE, errorMessage)
+    );
+    return Response
+        .ok(json.toString())
+        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+        .build();
   }
 
   /**

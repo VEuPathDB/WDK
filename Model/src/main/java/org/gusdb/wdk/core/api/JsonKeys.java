@@ -240,6 +240,7 @@ public class JsonKeys {
   public static final String PREFERENCES = "preferences";
   public static final String GLOBAL = "global";
   public static final String PROJECT = "project";
+  public static final String BEARER_TOKEN = "bearerToken";
 
   // date and date range keys
   public static final String MIN_DATE = "minDate";
