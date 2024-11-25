@@ -49,6 +49,8 @@ public class SessionService extends AbstractWdkService {
 
   private static final Logger LOG = Logger.getLogger(SessionService.class);
 
+  public static final String CREATE_GUEST_ENDPOINT_PATH = "create-guest";
+
   private enum ResponseType {
     REDIRECT, JSON;
   }
@@ -117,7 +119,7 @@ public class SessionService extends AbstractWdkService {
   }
 
   @GET
-  @Path("create-guest")
+  @Path(CREATE_GUEST_ENDPOINT_PATH)
   @Produces(MediaType.APPLICATION_JSON)
   public Response createGuest() throws WdkModelException {
     TwoTuple<ValidatedToken, User> guest = getWdkModel().getUserFactory().createUnregisteredUser();
