@@ -275,7 +275,7 @@ public class SessionService extends AbstractWdkService {
       // FIXME: cookie sending should be removed/deleted once client has support for header/response body transmission
       CookieBuilder bearerTokenCookie = new CookieBuilder(
           HttpHeaders.AUTHORIZATION,
-          "Bearer " + newUser.getFirst().getTokenValue());
+          newUser.getFirst().getTokenValue());
       bearerTokenCookie.setMaxAge(EXPIRATION_3_YEARS_SECS);
 
       redirectUrl = getSuccessRedirectUrl(redirectUrl, newUser.getSecond(), bearerTokenCookie);
