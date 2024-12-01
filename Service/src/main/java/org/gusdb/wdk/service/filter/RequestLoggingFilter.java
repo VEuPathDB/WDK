@@ -196,7 +196,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
     boolean hasResponseBody = responseContext.getEntity() != null;
     int httpStatus = responseContext.getStatus();
     if (hasResponseBody) {
-      // pass along the content type and response status to the interceptor to log after response body is written
+      // pass along the response status to the interceptor to log after response body is written
       context.setProperty(HTTP_RESPONSE_STATUS_PROP_KEY, httpStatus);
     }
     else {
@@ -207,7 +207,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
 
   @Override
   public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
-    // get content type and HTTP status passed along by the filter() method, then remove
+    // get HTTP status passed along by the filter() method, then remove
     int httpStatus = (Integer)context.getProperty(HTTP_RESPONSE_STATUS_PROP_KEY);
     context.removeProperty(HTTP_RESPONSE_STATUS_PROP_KEY);
     Function<String,Object> getAndRemoveProp = toGetAndRemove(context::getProperty, context::removeProperty);
