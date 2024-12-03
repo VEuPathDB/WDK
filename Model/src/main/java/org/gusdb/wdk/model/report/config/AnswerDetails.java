@@ -15,7 +15,7 @@ public class AnswerDetails {
   public static final Integer ALL_RECORDS = -1;
 
   public enum AttributeFormat {
-    TEXT, DISPLAY;
+    TEXT, DISPLAY, EXPANDED;
   }
 
   // use factory method to construct from JSON
