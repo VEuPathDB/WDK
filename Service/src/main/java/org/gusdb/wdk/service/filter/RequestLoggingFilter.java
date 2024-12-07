@@ -46,11 +46,11 @@ import org.json.JSONObject;
  * and completion (duration, response status, request body (if error)).
  *
  * This filter is also responsible for limiting the size of request bodies
- * (currently 20 MiB).  To accomplish this, regardless of Content-Size header,
- * it streams the body into a temporary file and checks file size, before
- * setting the request input stream to a FileInputStream on the file.
- * ResponseFilter and WriterInterceptor methods are responsible for deleting
- * the file during response completion.
+ * (currently 15 MiB, or ~30 mib in memory).  To accomplish this, regardless
+ * of Content-Size header, it streams the body into a temporary file and checks
+ * file size, before setting the request input stream to a FileInputStream on
+ * the file.  ResponseFilter and WriterInterceptor methods are responsible for
+ * deleting the file during response completion.
  */
 @Priority(200)
 public class RequestLoggingFilter implements ContainerRequestFilter, ContainerResponseFilter, WriterInterceptor {
@@ -71,9 +71,9 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
   private static final String REQUEST_LOGGING_ACTION_PROP_KEY = "requestLoggingAction";
   private static final String REQUEST_BODY_FILE_PATH_PROP_KEY = "requestBodyFilePath";
 
-  private static final long MAX_REQUEST_BODY_MEBIBYTES = 20;
-  private static final long MAX_REQUEST_BODY_BYTES = MAX_REQUEST_BODY_MEBIBYTES * 1048576;
-  private static final long MAX_REQUEST_LOGGING_BYTES = 10000;  // 10k bytes (approx chars)
+  private static final long MAX_REQUEST_BODY_BYTES_IN_MEMORY = 30 /* mib */ * 1048576;
+  private static final long MAX_REQUEST_BODY_BYTES_IN_FILE = MAX_REQUEST_BODY_BYTES_IN_MEMORY / 2;
+  private static final long MAX_REQUEST_LOGGING_BYTES_IN_FILE = 5000;  // approx 5k chars (will occupy 10k bytes in memory)
 
   public static boolean isLogEnabled() {
     return LOG.isEnabledFor(LOG_LEVEL);
@@ -110,7 +110,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
       // abort handling of this request and tell why
       requestContext.abortWith(Response
           .status(Status.REQUEST_ENTITY_TOO_LARGE)
-          .entity("Response Body Too Large.  Must not exceed " + MAX_REQUEST_BODY_MEBIBYTES + " MiB.")
+          .entity("Response Body Too Large.  Must not exceed " + (MAX_REQUEST_BODY_BYTES_IN_FILE / 1000000) + " MB.")
           .build());
 
       return;
@@ -139,7 +139,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
     long fileSize = Files.size(path);
 
     // check against max size limit
-    if (fileSize > MAX_REQUEST_BODY_BYTES) {
+    if (fileSize > MAX_REQUEST_BODY_BYTES_IN_FILE) {
       return ResponseLoggingAction.THROW_413_CONTENT_TOO_LARGE;
     }
 
@@ -274,7 +274,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
       StringBuilder resultBuilder = new StringBuilder();
       int count = 0;
       int next;
-      while (((next = r.read()) != -1) && count < MAX_REQUEST_LOGGING_BYTES) {
+      while (((next = r.read()) != -1) && count < MAX_REQUEST_LOGGING_BYTES_IN_FILE) {
         resultBuilder.append((char)next);
         count++;
       }
