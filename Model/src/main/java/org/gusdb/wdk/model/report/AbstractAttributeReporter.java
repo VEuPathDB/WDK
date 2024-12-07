@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.report;
 
+import static org.gusdb.fgputil.functional.Functions.wrapException;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -183,9 +185,8 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
         pkValues.put(pkColumn, resultSet.getObject(pkColumn));
 
       return Optional.of(new Tuples.TwoTuple<>(
-        mapException(() -> new PrimaryKeyValue(pkDef, pkValues), WdkRuntimeException::new),
-        resultSet.getObject(ATTRIBUTE_COLUMN)
-      ));
+          wrapException(() -> new PrimaryKeyValue(pkDef, pkValues)),
+          resultSet.getObject(ATTRIBUTE_COLUMN)));
     });
   }
 }

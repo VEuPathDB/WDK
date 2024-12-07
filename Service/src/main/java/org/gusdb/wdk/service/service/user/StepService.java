@@ -305,7 +305,6 @@ public class StepService extends UserService {
       @PathParam(REPORT_NAME_PATH_PARAM) String reportName,
       @FormParam("data") String data)
           throws WdkModelException, DataValidationException, RequestMisformatException {
-    AnswerService.preHandleFormRequest(getUriInfo(), data);
     return createCustomReportAnswer(stepId, reportName, new JSONObject(data));
   }
 
