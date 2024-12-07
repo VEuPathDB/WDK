@@ -315,7 +315,6 @@ public class BasketService extends UserService {
       @PathParam(REPORT_NAME_PATH_PARAM) final String reportName,
       @FormParam("data") String data)
           throws WdkModelException, DataValidationException, RequestMisformatException {
-    AnswerService.preHandleFormRequest(getUriInfo(), data);
     return createCustomReportAnswer(basketName, reportName, new JSONObject(data));
   }
 
