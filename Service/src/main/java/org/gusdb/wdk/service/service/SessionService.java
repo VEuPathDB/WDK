@@ -219,6 +219,7 @@ public class SessionService extends AbstractWdkService {
   }
 
   protected void transferOwnership(User oldUser, User newUser, WdkModel wdkModel) throws WdkModelException {
+    LOG.info("Migrating data from guest user " + oldUser.getUserId() + " to registered user " + newUser.getUserId());
     // transfer dataset ownership
     wdkModel.getDatasetFactory().transferDatasetOwnership(oldUser, newUser);
     // transfer strategy ownership
