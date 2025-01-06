@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -121,6 +122,14 @@ public class SystemService extends AbstractWdkService {
         TextFormat.write004(write, CollectorRegistry.defaultRegistry.metricFamilySamples());
       }
     };
+  }
+
+  @GET
+  @Path("/metrics/count-page-view/{clientPath:.+}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response registerVisit(@PathParam("clientPath") String clientPath) {
+    LOG.trace("Registered visit to /" + clientPath);
+    return Response.noContent().build();
   }
 
   @GET
