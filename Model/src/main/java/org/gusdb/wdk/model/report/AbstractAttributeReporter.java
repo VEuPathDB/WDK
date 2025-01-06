@@ -1,22 +1,23 @@
 package org.gusdb.wdk.model.report;
 
+import static org.gusdb.fgputil.functional.Functions.wrapException;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 
-import javax.sql.DataSource;
-
+import org.gusdb.fgputil.Tuples;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.stream.ResultSetIterator;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.SqlQuery;
-import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
@@ -158,37 +159,31 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
     return builder.append("'").toString();
   }
 
-  /**
-   * @return the values of the associated attribute. the key of the map is the
-   *         primary key of a record instance.
-   */
-  protected Map<PrimaryKeyValue, Object> getAttributeValues(AnswerValue answerValue)
-      throws WdkModelException, SQLException {
-    WdkModel wdkModel = answerValue.getWdkModel();
-    Map<PrimaryKeyValue, Object> values = new LinkedHashMap<>();
-    RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
-    PrimaryKeyDefinition pkDef = recordClass.getPrimaryKeyDefinition();
-    String[] pkColumns = pkDef.getColumnRefs();
-    String sql = getAttributeSql(answerValue);
-    DataSource dataSource = wdkModel.getAppDb().getDataSource();
-    ResultSet resultSet = null;
-    try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql,
-          answerValue.getAnswerSpec().getQuestion().getQuery().getFullName()
-              + "__attribute-plugin-combined", 5000);
-      while (resultSet.next()) {
-        Map<String, Object> pkValues = new LinkedHashMap<>();
-        for (String pkColumn : pkColumns) {
-          pkValues.put(pkColumn, resultSet.getObject(pkColumn));
-        }
-        PrimaryKeyValue pkValue = new PrimaryKeyValue(pkDef, pkValues);
-        Object value = resultSet.getObject(ATTRIBUTE_COLUMN);
-        values.put(pkValue, value);
-      }
-    } finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, null);
-    }
-    return values;
-  }
+  protected ResultSetIterator<Tuples.TwoTuple<PrimaryKeyValue, Object>> getAttributeValueStream(AnswerValue answerValue)
+  throws WdkModelException, SQLException {
+    var pkDef = answerValue.getAnswerSpec()
+      .getQuestion()
+      .getRecordClass()
+      .getPrimaryKeyDefinition();
 
+    var pkColumns = pkDef.getColumnRefs();
+
+    var resultSet = SqlUtils.executeQuery(
+      answerValue.getWdkModel().getAppDb().getDataSource(),
+      getAttributeSql(answerValue),
+      answerValue.getAnswerSpec().getQuestion().getQuery().getFullName() + "__attribute-plugin-combined",
+      5000
+    );
+
+    return new ResultSetIterator<>(resultSet, row -> {
+      var pkValues = new LinkedHashMap<String, Object>(pkColumns.length);
+
+      for (var pkColumn : pkColumns)
+        pkValues.put(pkColumn, resultSet.getObject(pkColumn));
+
+      return Optional.of(new Tuples.TwoTuple<>(
+          wrapException(() -> new PrimaryKeyValue(pkDef, pkValues)),
+          resultSet.getObject(ATTRIBUTE_COLUMN)));
+    });
+  }
 }

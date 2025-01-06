@@ -152,7 +152,7 @@ public class ColumnReporterService extends ColumnToolService {
         .configure(requestJson.getJSONObject(JsonKeys.REPORT_CONFIG));
   
       // stream response
-      return AnswerService.getAnswerAsStream(reporter);
+      return AnswerService.getAnswerAsStream(reporter, getErrorContext());
     }
     catch (JSONException e) {
       throw new RequestMisformatException("Could not parse request body", e);

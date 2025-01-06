@@ -55,10 +55,12 @@ public class ProjectFormatter {
     for (UserProperty prop : User.USER_PROPERTIES.values()) {
       userProfileProps.put(new JSONObject()
           .put(JsonKeys.NAME, prop.getName())
+          .put(JsonKeys.IS_PUBLIC, prop.isPublic())
           .put(JsonKeys.DISPLAY_NAME, prop.getDisplayName())
-          .put(JsonKeys.IS_REQUIRED, prop.isRequired())
-          .put(JsonKeys.IS_MULTILINE, prop.isMultiLine())
-          .put(JsonKeys.IS_PUBLIC, prop.isPublic()));
+          .put(JsonKeys.HELP, prop.getHelpText())
+          .put(JsonKeys.SUGGEST_TEXT, prop.getSuggest())
+          .put(JsonKeys.INPUT_TYPE, prop.getInputType().name().toLowerCase())
+          .put(JsonKeys.IS_REQUIRED, prop.isRequired()));
     }
 
     return new JSONObject()

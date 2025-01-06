@@ -14,6 +14,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
@@ -40,6 +41,8 @@ import org.json.JSONObject;
 @Path("/")
 public class UserUtilityServices extends AbstractWdkService {
 
+  private static final Logger LOG = Logger.getLogger(UserUtilityServices.class);
+
   public static final String USERS_PATH = "/users";
 
   private static final String NO_USER_BY_THAT_LOGIN = "No user exists with the login name or email you submitted.";
@@ -64,10 +67,13 @@ public class UserUtilityServices extends AbstractWdkService {
       Collection<UserProperty> configuredUserProps = User.USER_PROPERTIES.values();
       UserCreationRequest request = UserCreationRequest.createFromJson(requestJson, configuredUserProps);
 
-      // create the user, saving to DB
+      // create the user, saving to OAuth
       User newUser = getWdkModel().getUserFactory().createUser(
           request.getProfileRequest().getEmail(),
           request.getProfileRequest().getProfileMap());
+
+      // log which guest created this new user for tracking
+      LOG.info("Guest user " + getRequestingUser().getUserId() + " registered a new user: " + newUser.getUserId());
 
       // add user preferences to the new user
       new UserPreferenceFactory(getWdkModel()).savePreferences(newUser.getUserId(), new UserPreferences(

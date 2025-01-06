@@ -12,13 +12,12 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.report.AbstractAttributeReporter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class WordCloudAttributeReporter extends AbstractAttributeReporter { 
-  
+public class WordCloudAttributeReporter extends AbstractAttributeReporter {
+
   private static final String PROP_SPLIT_PATTERN = "split-pattern";
   private static final String PROP_MIN_WORD_LENGTH = "min-word-length";
   private static final String PROP_EXCLUDE_NUMBERS = "exclude-numbers";
@@ -42,7 +41,7 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
     List<WordTag> tags = loadTags(answerValue);
 
     JSONObject jsonResult = new JSONObject();
- 
+
     JSONArray jsonWordTags = new JSONArray();
     for (WordTag tag : tags) {
       JSONObject tagJson = new JSONObject();
@@ -50,24 +49,28 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
       tagJson.put("count", tag.getCount());
       jsonWordTags.put(tagJson);
     }
-    
+
     jsonResult.put(ATTR_TAGS, jsonWordTags);
 
     return jsonResult;
   }
-  
+
   private List<WordTag> loadTags(AnswerValue answerValue) {
-    List<WordTag> tags = new ArrayList<>();
+    List<WordTag> tags;
 
     resolveProperties();
-    try {
-      Map<String, WordTag> tagMap = new HashMap<String, WordTag>();
-      Map<PrimaryKeyValue, Object> values = getAttributeValues(answerValue);
-      for (Object value : values.values()) {
-        if (value == null)
+    var tagMap = new HashMap<String, WordTag>();
+
+    try (var valueStream = getAttributeValueStream(answerValue)) {
+      while (valueStream.hasNext()) {
+        var record = valueStream.next();
+
+        if (record.getSecond() == null)
           continue;
-        splitWords(value.toString(), tagMap);
+
+        splitWords(record.getSecond().toString(), tagMap);
       }
+
       // the tags are sorted by count
       tags = processTags(tagMap);
       return tags;
@@ -134,10 +137,10 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
       WordTag tag = tags.get(word);
 
       if (tag == null) tag = new WordTag(word, originalWord);
-        
+
       else {
         tag.increment();
-        
+
         // In addition to incrementing the overall count for the word, we need to amend the
         // mixedCaseCounter map either by adding a new case sensitive version of the word or
         // incrementing the count for an existing case sensitive version.
@@ -145,7 +148,7 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
         Integer count = mixedCaseCounter.get(originalWord);
         if(count == null) mixedCaseCounter.put(originalWord, 1);
         else mixedCaseCounter.put(originalWord, ++count);
-      }  
+      }
       tags.put(word, tag);
       // logger.debug("word count: '" + word + "' = " + count);
     }
@@ -175,7 +178,7 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
           WordTag partTag = tags.get(part);
           int count = tag.getCount() + partTag.getCount();
           partTag.setCount(count);
-          
+
           // In addition to absorbing overall plural counts for the case neutral word, we
           // need to absorb plural counts for the case sensitive versions of the word as
           // well.
@@ -204,14 +207,14 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
       // weights and scores are easier.
       Collections.sort(list);
     }
-   
+
     return  list.stream().map(tag -> {
           String dominantCase = tag.getDominantCase();
           tag.setWord(dominantCase);
           return tag;
         }).collect(Collectors.toList());
   }
-  
+
   /**
    * Mixed case plurals are stored in the mixed case counter map as plurals since no
    * determination about plurals can be easily be made.  But since the ending of the

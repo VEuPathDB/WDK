@@ -4,6 +4,7 @@ import java.io.OutputStreamWriter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -29,6 +30,7 @@ import org.gusdb.fgputil.runtime.BuildStatus;
 import org.gusdb.wdk.cache.CacheMgr;
 import org.gusdb.wdk.model.WdkCacheSeeder;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.service.PageViewLogger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -128,7 +130,8 @@ public class SystemService extends AbstractWdkService {
   @Path("/metrics/count-page-view/{clientPath:.+}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response registerVisit(@PathParam("clientPath") String clientPath) {
-    LOG.trace("Registered visit to /" + clientPath);
+    String userAgent = getHeaders().getOrDefault("User-Agent", List.of("<unknown>")).get(0);
+    PageViewLogger.logPageView(getWdkModel().getProjectId(), getRequestingUser(), clientPath, userAgent);
     return Response.noContent().build();
   }
 

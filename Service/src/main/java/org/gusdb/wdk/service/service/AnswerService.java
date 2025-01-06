@@ -22,15 +22,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.core.api.JsonKeys;
+import org.gusdb.wdk.errors.ErrorContext;
+import org.gusdb.wdk.errors.ServerErrorBundle;
+import org.gusdb.wdk.events.ErrorEvent;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -56,7 +59,6 @@ import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
-import org.gusdb.wdk.service.filter.RequestLoggingFilter;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -194,7 +196,7 @@ public class AnswerService extends AbstractWdkService {
           throws WdkModelException, DataValidationException, RequestMisformatException {
     AnswerRequest request = parseAnswerRequest(getQuestionOrNotFound(_recordClassUrlSegment, _questionUrlSegment), reportName,
         body, getWdkModel(), getRequestingUser(), _avoidCacheHit);
-    return getAnswerResponse(getRequestingUser(), request).getSecond();
+    return getAnswerResponse(getRequestingUser(), request, getErrorContext()).getSecond();
   }
 
   /**
@@ -222,7 +224,6 @@ public class AnswerService extends AbstractWdkService {
       @PathParam(REPORT_NAME_PATH_PARAM) String reportName,
       @FormParam("data") String data)
           throws WdkModelException, DataValidationException, RequestMisformatException {
-    preHandleFormRequest(getUriInfo(), data);
     return createCustomReportAnswer(reportName, new JSONObject(data));
   }
 
@@ -401,7 +402,7 @@ public class AnswerService extends AbstractWdkService {
    * @throws WdkModelException
    *   if an application error occurs
    */
-  public static TwoTuple<AnswerValue,Response> getAnswerResponse(User sessionUser, AnswerRequest request)
+  public static TwoTuple<AnswerValue,Response> getAnswerResponse(User sessionUser, AnswerRequest request, ErrorContext errorContext)
       throws RequestMisformatException, WdkModelException, DataValidationException {
 
     // create base answer value from answer spec
@@ -415,7 +416,7 @@ public class AnswerService extends AbstractWdkService {
     answerValue.getIdSql();
 
     // build response from stream, apply delivery details, and return
-    ResponseBuilder builder = Response.ok(getAnswerAsStream(reporter)).type(reporter.getHttpContentType());
+    ResponseBuilder builder = Response.ok(getAnswerAsStream(reporter, errorContext)).type(reporter.getHttpContentType());
     return new TwoTuple<>(answerValue, applyDisposition(
         builder, reporter.getContentDisposition(), reporter.getDownloadFileName()).build());
   }
@@ -467,7 +468,7 @@ public class AnswerService extends AbstractWdkService {
     }
   }
 
-  public static StreamingOutput getAnswerAsStream(final Reporter reporter) {
+  public static StreamingOutput getAnswerAsStream(final Reporter reporter, final ErrorContext errorContext) {
     return stream -> {
       try {
         Timer t = new Timer();
@@ -475,6 +476,11 @@ public class AnswerService extends AbstractWdkService {
         LOG.info("Wrote report of type " + reporter.getClass().getSimpleName() + " in " + t.getElapsedString());
       }
       catch (WdkModelException | WdkRuntimeException e) {
+        // send error email and log
+        LOG.error("log4j marker: " + errorContext.getLogMarker());
+        Events.trigger(new ErrorEvent(new ServerErrorBundle(e), errorContext));
+
+        // write alert message to the end of the stream in hopes of alerting user
         stream.write((
             " ********************************************* " + NL + 
             " ********************************************* " + NL + 
@@ -501,15 +507,4 @@ public class AnswerService extends AbstractWdkService {
     return response;
   }
 
-  public static void preHandleFormRequest(UriInfo uriInfo, String data) throws RequestMisformatException {
-    // log this request's JSON here since filter will not log form data
-    if (RequestLoggingFilter.isLogEnabled()) {
-      RequestLoggingFilter.logRequest("POST", uriInfo,
-          RequestLoggingFilter.formatJson(data));
-    }
-    if (data == null || data.isEmpty()) {
-      throw new RequestMisformatException("Request JSON cannot be empty. " +
-          "If submitting a form, include the 'data' input parameter.");
-    }
-  }
 }
