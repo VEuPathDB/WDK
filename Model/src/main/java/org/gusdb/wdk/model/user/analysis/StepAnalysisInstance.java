@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.user.analysis;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
@@ -128,8 +129,9 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
       JSONObject formObj = json.getJSONObject(JsonKey.formParams.name());
 
       // load the owning step and validate
-      Step step = loadStep(instance._wdkModel, stepId, new WdkModelException("Unable " +
-          "to find step (ID=" + stepId + ") defined in step analysis instance (ID=" + analysisId + ")"));
+      Step step = loadStep(instance._wdkModel, stepId, e -> new WdkModelException("Unable " +
+          "to load step (ID=" + stepId + ") defined in step analysis instance (ID=" + analysisId + ")." +
+          "  The step is either missing or not runnable (required for step analysis).", e));
       instance._step = step;
 
       // validation bundle will be at the level of the analysis even though step is always checked at Runnable level
@@ -281,12 +283,13 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
   }
 
   private static <T extends WdkException> Step loadStep(WdkModel wdkModel, long stepId,
-      T wdkUserException) throws T {
+      Function<WdkModelException,T> wdkUserException) throws T {
     try {
       return wdkModel.getStepFactory().getStepByValidId(stepId, ValidationLevel.RUNNABLE);
     }
     catch (WdkModelException e) {
-      throw wdkUserException;
+      LOG.error("Unable to load step for ID " + stepId + ", which was expected to be valid.", e);
+      throw wdkUserException.apply(e);
     }
   }
 
