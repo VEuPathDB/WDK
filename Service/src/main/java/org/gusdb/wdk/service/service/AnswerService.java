@@ -224,6 +224,8 @@ public class AnswerService extends AbstractWdkService {
       @PathParam(REPORT_NAME_PATH_PARAM) String reportName,
       @FormParam("data") String data)
           throws WdkModelException, DataValidationException, RequestMisformatException {
+    if (data == null)
+      throw new RequestMisformatException("Form data parameter 'data' is empty or malformed.");
     return createCustomReportAnswer(reportName, new JSONObject(data));
   }
 
