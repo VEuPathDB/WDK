@@ -140,7 +140,15 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
   
           String term = objTerm.toString().trim();
           String value = objInternal.toString().trim();
-          String display = hasDisplay ? result.get(FlatVocabParam.COLUMN_DISPLAY).toString().trim() : term;
+          String display = term; // use term for display if no display column
+          if (hasDisplay) {
+            Object displayObj = result.get(FlatVocabParam.COLUMN_DISPLAY);
+            if (displayObj == null) {
+              throw new WdkModelException("Vocabulary query '" + _vocabQuery.getFullName() + "' has a '" +
+                  FlatVocabParam.COLUMN_DISPLAY + "' column but its value is null in at least one row.");
+            }
+            display = displayObj.toString().trim();
+          }
           String parentTerm = null;
           if (hasParent) {
             Object parent = result.get(FlatVocabParam.COLUMN_PARENT_TERM);
