@@ -94,6 +94,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
       new MapBuilder<String,String>()
         .put(Utilities.QUERY_CTX_USER, String.valueOf(_user.getUserId()))
         .put(Utilities.QUERY_CTX_QUERY, _query.getFullName())
+        .putIf(_user.getUserToken().isPresent(), Utilities.QUERY_CTX_USER_TOKEN, _user.getUserToken().get().getTokenValue())
         .putIf(question != null, Utilities.QUERY_CTX_QUESTION, () -> question.getFullName())
         .putIf(param != null, Utilities.QUERY_CTX_PARAM, () -> param.getFullName())
         .toMap());

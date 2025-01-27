@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -92,6 +93,7 @@ public class Utilities {
   public static final String QUERY_CTX_PARAM = "wdk-param";
   public static final String QUERY_CTX_QUERY = "wdk-query";
   public static final String QUERY_CTX_USER = "wdk-user";
+  public static final String QUERY_CTX_USER_TOKEN = "wdk-user-token";
 
   public static final String RECORD_DIVIDER = "\n";
   public static final String COLUMN_DIVIDER = ",";
@@ -101,7 +103,6 @@ public class Utilities {
   public static final String BEARER_TOKEN_KEY = "bearer-token";
 
   public static final String WDK_SERVICE_ENDPOINT_KEY = "wdkServiceEndpoint";
-
 
   /*
    * Inner class to act as a JAF DataSource to send HTML e-mail content
@@ -137,6 +138,18 @@ public class Utilities {
     public String getName() {
       return "JAF text/html dataSource to send e-mail only";
     }
+  }
+
+  // for use with randomAlphaNumericString
+  private static final String ALPHA = "abcdefghijklmnopqrstuvwxyz";
+  static final String RANDOM_CHARS = "0123456789" + ALPHA + ALPHA.toUpperCase();
+
+  public static String randomAlphaNumericString(int numChars) {
+    StringBuilder str = new StringBuilder();
+    new Random()
+      .ints(numChars, 0, RANDOM_CHARS.length())
+      .forEach(i -> str.append(RANDOM_CHARS.charAt(i)));
+    return str.toString();
   }
 
   public static String replaceMacros(String text, Map<String, Object> tokens) {

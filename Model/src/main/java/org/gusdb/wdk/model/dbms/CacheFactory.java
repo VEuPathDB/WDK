@@ -114,7 +114,7 @@ public class CacheFactory {
     dropStepAnalysisCache(purge);
   }
 
-  public void dropCache(int instanceId, boolean purge) {
+  public void dropCache(long instanceId, boolean purge) {
 
     // delete the instance index
     String sql = "DELETE FROM " + TABLE_INSTANCE + " WHERE " + COLUMN_INSTANCE_ID + " = " + instanceId;
