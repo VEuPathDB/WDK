@@ -13,9 +13,10 @@ import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepContainer.ListStepContainer;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserCache;
+import org.gusdb.wdk.model.user.UserInfoCache;
 
 /**
  * Provides a utility to use transform questions to convert an answer value of
@@ -42,18 +43,18 @@ public class TransformUtil {
       String stepParamName, String requiredOutputType) throws WdkModelException {
 
     WdkModel model = inputAnswer.getWdkModel();
-    User user = inputAnswer.getUser();
+    User user = inputAnswer.getRequestingUser();
     AnswerSpec inputAnswerSpec = inputAnswer.getAnswerSpec();
 
     Optional<Strategy> strategy = inputAnswerSpec.getStepContainer() instanceof Strategy ?
         Optional.of((Strategy)inputAnswerSpec.getStepContainer()) : Optional.empty();
 
-    RunnableObj<Step> step = Step.builder(model, user.getUserId(), model.getStepFactory().getNewStepId())
+    RunnableObj<Step> step = Step.builder(model, user.getUserId(), new StepFactory(user).getNewStepId())
         .setAnswerSpec(AnswerSpec.builder(inputAnswer.getAnswerSpec()))
         .setStrategyId(strategy.map(strat -> strat.getStrategyId()))
-        .buildRunnable(new UserCache(user), strategy);
+        .buildRunnable(new UserInfoCache(user), user, strategy);
 
-    AnswerValue geneAnswer = AnswerValueFactory.makeAnswer(user,
+    AnswerValue geneAnswer = AnswerValueFactory.makeAnswer(
         transformToNewResultTypeAnswerSpec(model, user, step, requiredInputType,
             transformQuestionFullName, stepParamName, requiredOutputType));
 
@@ -80,7 +81,7 @@ public class TransformUtil {
       String requiredInputType, String transformQuestionFullName,
       String stepParamName, String requiredOutputType) throws WdkModelException {
 
-    if (!inputStep.get().getAnswerSpec().getQuestion().getRecordClass().getFullName().equals(requiredInputType)) {
+    if (!inputStep.get().getAnswerSpec().getQuestion().get().getRecordClass().getFullName().equals(requiredInputType)) {
       throw new WdkModelException("Step to be transformed must return records of type: " + requiredInputType);
     }
 

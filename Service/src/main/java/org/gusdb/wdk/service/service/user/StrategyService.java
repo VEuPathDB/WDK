@@ -45,7 +45,7 @@ import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.Strategy.StrategyBuilder;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserCache;
+import org.gusdb.wdk.model.user.UserInfoCache;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
@@ -61,7 +61,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
-public class StrategyService extends UserService {
+public class StrategyService extends AbstractUserService {
 
   private static final Logger LOG = Logger.getLogger(StrategyService.class);
 
@@ -82,8 +82,9 @@ public class StrategyService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.users.strategies.get-response")
   public JSONArray getStrategies() throws WdkModelException {
-    Collection<Strategy> strategies = getWdkModel().getStepFactory()
-        .getStrategies(getUserBundle(Access.PRIVATE).getSessionUser().getUserId(),
+    User user = getUserBundle(Access.PRIVATE).getRequestingUser();
+    Collection<Strategy> strategies = new StepFactory(user)
+        .getStrategies(user.getUserId(),
             ValidationLevel.SYNTACTIC, FillStrategy.FILL_PARAM_IF_MISSING).values();
     // do not return one-step strategies whose only step has an invalid question 
     strategies = strategies.stream()
@@ -102,8 +103,8 @@ public class StrategyService extends UserService {
   public Response createStrategy(JSONObject body)
       throws WdkModelException, DataValidationException, WdkUserException {
     try {
-      User user = getUserBundle(Access.PRIVATE).getSessionUser();
-      StepFactory stepFactory = getWdkModel().getStepFactory();
+      User user = getUserBundle(Access.PRIVATE).getRequestingUser();
+      StepFactory stepFactory = new StepFactory(user);
       Strategy strategy = body.has(JsonKeys.SOURCE_STRATEGY_SIGNATURE)
         ? copyStrategy(user, stepFactory, body)
         : createNewStrategy(user, stepFactory, body);
@@ -136,13 +137,13 @@ public class StrategyService extends UserService {
 
         if (del != strat.isDeleted())
           toUpdate.add(Strategy.builder(strat).setDeleted(del)
-              .build(new UserCache(strat.getUser()), ValidationLevel.NONE));
+              .build(new UserInfoCache(getWdkModel(), strat), getRequestingUser(), ValidationLevel.NONE));
       }
     } catch (InvalidStrategyStructureException e) {
       throw new WdkModelException(e);
     }
 
-    getWdkModel().getStepFactory().updateStrategies(toUpdate);
+    new StepFactory(getRequestingUser()).updateStrategies(toUpdate);
   }
 
   @GET
@@ -158,8 +159,8 @@ public class StrategyService extends UserService {
     try {
       strategy = Strategy.builder(strategy)
         .setLastViewTime(new Date())
-        .build(new UserCache(strategy.getUser()), ValidationLevel.SEMANTIC);
-      getWdkModel().getStepFactory().updateStrategy(strategy);
+        .build(new UserInfoCache(getWdkModel(), strategy), getRequestingUser(), ValidationLevel.SEMANTIC);
+      new StepFactory(getRequestingUser()).updateStrategy(strategy);
     }
     catch(InvalidStrategyStructureException e) {
       // this should not happen since strategy was already constructed above
@@ -174,7 +175,7 @@ public class StrategyService extends UserService {
   @InSchema("wdk.users.strategies.id.patch-request")
   public void updateStrategy(@PathParam(ID_PARAM) long strategyId,
       JSONObject body) throws WdkModelException, DataValidationException {
-    final StepFactory fac = getWdkModel().getStepFactory();
+    final StepFactory fac = new StepFactory(getRequestingUser());
     final Strategy strat = getNotDeletedStrategyForCurrentUser(strategyId, ValidationLevel.NONE);
     
     if (strat.isSaved()) {
@@ -199,9 +200,8 @@ public class StrategyService extends UserService {
     try {
       Strategy strat = getNotDeletedStrategyForCurrentUser(strategyId, ValidationLevel.NONE); // confirm not already deleted
       strat = Strategy.builder(strat).setDeleted(true)
-              .build(new UserCache(strat.getUser()), ValidationLevel.NONE);
-      
-      getWdkModel().getStepFactory().updateStrategy(strat);
+              .build(new UserInfoCache(getWdkModel(), strat), getRequestingUser(), ValidationLevel.NONE);
+      new StepFactory(getRequestingUser()).updateStrategy(strat);
     }
     catch (InvalidStrategyStructureException e) {
       throw new WdkModelException(e);
@@ -221,7 +221,7 @@ public class StrategyService extends UserService {
 
   private Strategy overwriteStepTreeAndSave(Strategy oldStrat, JSONObject stepTree,
       Consumer<StrategyBuilder> additionalChanges) throws WdkModelException, DataValidationException {
-    final StepFactory stepFactory = getWdkModel().getStepFactory();
+    final StepFactory stepFactory = new StepFactory(getRequestingUser());
     final TwoTuple<Long, Collection<StepBuilder>> parsedTree =
         StrategyRequest.treeToSteps(Optional.of(oldStrat), stepTree, stepFactory);
     try {
@@ -233,7 +233,8 @@ public class StrategyService extends UserService {
         .addSteps(parsedTree.getSecond())
         .setLastModifiedTime(new Date());
       additionalChanges.accept(newStratBuilder);
-      Strategy newStrat = newStratBuilder.build(new UserCache(oldStrat.getUser()), ValidationLevel.NONE);
+      UserInfoCache userCache = new UserInfoCache(getWdkModel().getUserFactory(), oldStrat.getOwningUser());
+      Strategy newStrat = newStratBuilder.build(userCache, getRequestingUser(), ValidationLevel.NONE);
   
       // filter the list of original steps down to only steps that do not appear
       // in the new tree
@@ -243,7 +244,7 @@ public class StrategyService extends UserService {
           .filter(step -> !retainedStepIds.contains(step.getStepId()))
           // remove strategy and answer param values from each step
           .map(fSwallow(orphan -> Step.builder(orphan).removeStrategy().build(
-              new UserCache(oldStrat.getUser()), ValidationLevel.NONE, Optional.empty())))
+              userCache, getRequestingUser(), ValidationLevel.NONE, Optional.empty())))
           .collect(Collectors.toList());
 
       if (LOG.isDebugEnabled()) {
@@ -286,7 +287,7 @@ public class StrategyService extends UserService {
 
     return new JSONObject().put(JsonKeys.STEP_TREE,
       StepFormatter.formatAsStepTree(
-        getWdkModel().getStepFactory().copyStrategyToBranch(
+          new StepFactory(getRequestingUser()).copyStrategyToBranch(
           getRequestingUser(),
           getStrategyForCurrentUser(stratId, ValidationLevel.NONE)
         ),
@@ -304,14 +305,14 @@ public class StrategyService extends UserService {
   
   private Strategy getStrategyForCurrentUser(long strategyId, ValidationLevel level) {
     try {
-      User user = getUserBundle(Access.PRIVATE).getSessionUser();
+      User user = getUserBundle(Access.PRIVATE).getRequestingUser();
 
-      Strategy strategy = getWdkModel().getStepFactory()
+      Strategy strategy = new StepFactory(user)
         .getStrategyById(strategyId, level, FillStrategy.FILL_PARAM_IF_MISSING)
         .orElseThrow(() -> new NotFoundException(
             formatNotFound(STRATEGY_RESOURCE + strategyId)));
 
-      if (strategy.getUser().getUserId() != user.getUserId())
+      if (strategy.getOwningUser().getUserId() != user.getUserId())
         throw new ForbiddenException(PERMISSION_DENIED);
 
       return strategy;
@@ -345,7 +346,7 @@ public class StrategyService extends UserService {
       .setDescription(strategyRequest.getDescription())
       .setIsPublic(strategyRequest.isPublic())
       .setSignature(signature)
-      .build(new UserCache(user), ValidationLevel.RUNNABLE)
+      .build(new UserInfoCache(user), user, ValidationLevel.RUNNABLE)
       .getRunnable()
       .getOrThrow(strat -> new DataValidationException(strat.getValidationBundle().toString()));
 
@@ -369,6 +370,8 @@ public class StrategyService extends UserService {
     Strategy strat,
     JSONObject change
   ) throws WdkModelException, InvalidStrategyStructureException, DataValidationException {
+
+    User user = getUserBundle(Access.PRIVATE).getRequestingUser();
 
     // apply overwriteWith first if present, then apply other changes
     if (change.has(JsonKeys.OVERWRITE_WITH_OPERATION)) {
@@ -404,8 +407,7 @@ public class StrategyService extends UserService {
       }
     }
 
-    return builder.build(new UserCache(getUserBundle(Access.PRIVATE).getSessionUser()),
-        ValidationLevel.NONE);
+    return builder.build(new UserInfoCache(user), user, ValidationLevel.NONE);
   }
 
   /**
@@ -433,7 +435,7 @@ public class StrategyService extends UserService {
 
     // copy the source strat's step tree into new, unattached steps
     JSONObject copiedStepTree = StepFormatter.formatAsStepTree(
-      getWdkModel().getStepFactory().copyStrategyToBranch(getRequestingUser(),sourceStrategy),
+      new StepFactory(getRequestingUser()).copyStrategyToBranch(getRequestingUser(),sourceStrategy),
       new HashSet<Step>() // we don't need to consume the list of step IDs found in the tree
     );
 

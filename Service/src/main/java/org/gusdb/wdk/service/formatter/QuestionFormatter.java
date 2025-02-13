@@ -56,7 +56,7 @@ public class QuestionFormatter {
       DisplayablyValid<AnswerSpec> spec, ValidationBundle validation)
       throws JSONException, WdkModelException {
     return ParamContainerFormatter.convertToValidatedParamContainerJson(
-      getQuestionJsonWithoutParams(spec.get().getQuestion()),
+      getQuestionJsonWithoutParams(spec.get().getQuestion().get()),
       AnswerSpec.getValidQueryInstanceSpec(spec),
       validation, Collections.emptySet());
   }

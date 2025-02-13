@@ -67,13 +67,13 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
   }
 
   protected String getAttributeSql(AnswerValue answerValue) throws WdkModelException {
-    WdkModel wdkModel = answerValue.getAnswerSpec().getQuestion().getRecordClass().getWdkModel();
+    WdkModel wdkModel = answerValue.getQuestion().getRecordClass().getWdkModel();
 
     // format the display of the attribute in sql
     Map<String, String> queries = new LinkedHashMap<>();
     String column = formatColumn(answerValue, _attributeField, queries);
 
-    RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
+    RecordClass recordClass = answerValue.getQuestion().getRecordClass();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
     String idSql = answerValue.getIdSql();
 
@@ -145,7 +145,7 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
     // replace each attribute in the content
     StringBuilder builder = new StringBuilder("'");
     int pos = 0;
-    Map<String, AttributeField> fields = answerValue.getAnswerSpec().getQuestion().getAttributeFieldMap();
+    Map<String, AttributeField> fields = answerValue.getQuestion().getAttributeFieldMap();
     Matcher matcher = DerivedAttributeField.MACRO_PATTERN.matcher(content);
     while (matcher.find()) {
       String fieldName = matcher.group(1);
@@ -164,17 +164,13 @@ public abstract class AbstractAttributeReporter extends AbstractReporter {
 
   protected ResultSetIterator<Tuples.TwoTuple<PrimaryKeyValue, Object>> getAttributeValueStream(AnswerValue answerValue)
   throws WdkModelException, SQLException {
-    var pkDef = answerValue.getAnswerSpec()
-      .getQuestion()
-      .getRecordClass()
-      .getPrimaryKeyDefinition();
-
+    var pkDef = answerValue.getQuestion().getRecordClass().getPrimaryKeyDefinition();
     var pkColumns = pkDef.getColumnRefs();
 
     var resultSet = SqlUtils.executeQuery(
       answerValue.getWdkModel().getAppDb().getDataSource(),
       getAttributeSql(answerValue),
-      answerValue.getAnswerSpec().getQuestion().getQuery().getFullName() + "__attribute-plugin-combined",
+      answerValue.getQuestion().getQuery().getFullName() + "__attribute-plugin-combined",
       5000
     );
 

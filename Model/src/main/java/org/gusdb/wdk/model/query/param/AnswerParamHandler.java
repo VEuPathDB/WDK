@@ -6,6 +6,7 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
+import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
@@ -59,8 +60,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
 
   private AnswerValue getAnswerFromStepParam(RunnableObj<QueryInstanceSpec> qiSpec) throws WdkModelException {
     long stepId = getStepIdFromStableValue(qiSpec);
-    return AnswerValueFactory.makeAnswer(
-      qiSpec
+    RunnableObj<AnswerSpec> runnableAnswerSpec = Step.getRunnableAnswerSpec(qiSpec
         .get()
         .getStepContainer()
         .findFirstStep(withId(stepId))
@@ -70,6 +70,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
         .getOrThrow(spec -> new WdkModelException("Answer Spec inside step " +
             stepId + " is not runnable despite being referenced by a runnable " +
             "query instance spec.  Validation bundle: " + spec.getValidationBundle().toString(2))));
+    return AnswerValueFactory.makeAnswer(runnableAnswerSpec);
   }
 
   private long getStepIdFromStableValue(RunnableObj<QueryInstanceSpec> qiSpec) {

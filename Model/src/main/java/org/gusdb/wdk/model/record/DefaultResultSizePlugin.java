@@ -15,7 +15,7 @@ public class DefaultResultSizePlugin implements ResultSize {
   
   @Override
   public Integer getResultSize(AnswerValue answerValue) throws WdkModelException {
-    return getResultSize(answerValue, answerValue.getIdSql(), answerValue.getAnswerSpec().getQuestion().getFullName() + "__count");
+    return getResultSize(answerValue, answerValue.getIdSql(), answerValue.getQuestion().getFullName() + "__count");
   }
 
   @Override

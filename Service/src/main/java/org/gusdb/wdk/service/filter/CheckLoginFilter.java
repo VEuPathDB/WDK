@@ -115,8 +115,8 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
 
   private void setRequestAttributes(RequestData request, ValidatedToken token, User user) {
     // set creds and user on the request object for use by this request's processing
-    request.setAttribute(Utilities.BEARER_TOKEN_KEY, token);
-    request.setAttribute(Utilities.WDK_USER_KEY, user);
+    request.setAttribute(Utilities.CONTEXT_KEY_VALIDATED_TOKEN_OBJECT, token);
+    request.setAttribute(Utilities.CONTEXT_KEY_USER_OBJECT, user);
   }
 
   private String findRawBearerToken(RequestData request, ContainerRequestContext requestContext) {

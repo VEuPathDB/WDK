@@ -51,7 +51,6 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
   }
 
   private final WdkModel _wdkModel;
-
   private final String _questionName;
   private final Question _question;
 
@@ -99,9 +98,10 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
 
   private final ColumnFilterConfigSet _columnFilterConfig;
 
-  AnswerSpec(User user, WdkModel wdkModel, String questionName, QueryInstanceSpecBuilder queryInstanceSpec,
+  AnswerSpec(WdkModel wdkModel, String questionName, QueryInstanceSpecBuilder queryInstanceSpec,
       Optional<String> legacyFilterName, FilterOptionListBuilder filters, FilterOptionListBuilder viewFilters,
-      ValidationLevel validationLevel, StepContainer stepContainer, FillStrategy fillStrategy, ColumnFilterConfigSet columnFilters) throws WdkModelException {
+      User requestingUser, ValidationLevel validationLevel, StepContainer stepContainer,
+      FillStrategy fillStrategy, ColumnFilterConfigSet columnFilters) throws WdkModelException {
     _wdkModel = wdkModel;
     _questionName = questionName;
     _legacyFilterName = legacyFilterName;
@@ -112,14 +112,14 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
       validation.addError("Question '" + questionName + "' is not supported.");
       _question = null;
       _legacyFilter = Optional.empty();
-      _queryInstanceSpec = queryInstanceSpec.buildInvalid();
+      _queryInstanceSpec = queryInstanceSpec.buildInvalid(requestingUser);
       _filters = filters.buildInvalid();
       _viewFilters = viewFilters.buildInvalid();
     }
     else {
       _question = wdkModel.getQuestionByFullName(questionName).get(); // we know this will not throw
-      _queryInstanceSpec = queryInstanceSpec.buildValidated(user, _question.getQuery(),
-          stepContainer, validationLevel, fillStrategy);
+      _queryInstanceSpec = queryInstanceSpec.buildValidated(requestingUser,
+          _question.getQuery(), stepContainer, validationLevel, fillStrategy);
       if (_queryInstanceSpec.isValid()) {
         // replace passed filter lists with new ones that have always-on filters applied
         SimpleAnswerSpec simpleSpec = new SimpleAnswerSpec(_question, _queryInstanceSpec);
@@ -152,12 +152,8 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
     return _questionName;
   }
 
-  public Question getQuestion() {
-    return _question;
-  }
-
-  public boolean hasValidQuestion() {
-    return _question != null;
+  public Optional<Question> getQuestion() {
+    return Optional.ofNullable(_question);
   }
 
   public QueryInstanceSpec getQueryInstanceSpec() {
@@ -165,7 +161,7 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
   }
 
   public int getAnswerParamCount() {
-    return hasValidQuestion() ? _question.getQuery().getAnswerParamCount() : 0;
+    return _question != null ? _question.getQuery().getAnswerParamCount() : 0;
   }
 
   public Optional<String> getLegacyFilterName() {
@@ -232,5 +228,9 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
 
   public ColumnFilterConfigSet getColumnFilterConfig() {
     return _columnFilterConfig;
+  }
+
+  public User getRequestingUser() {
+    return _queryInstanceSpec.getRequestingUser();
   }
 }

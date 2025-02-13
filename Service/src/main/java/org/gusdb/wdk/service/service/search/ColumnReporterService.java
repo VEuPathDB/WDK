@@ -144,7 +144,7 @@ public class ColumnReporterService extends ColumnToolService {
           requestJson.getJSONObject(JsonKeys.SEARCH_CONFIG), toolName, viewFilters);
 
       // build answer value
-      AnswerValue answerValue = AnswerValueFactory.makeAnswer(getRequestingUser(), answerSpec);
+      AnswerValue answerValue = AnswerValueFactory.makeAnswer(answerSpec);
 
       // finish configuring the reporter
       reporter

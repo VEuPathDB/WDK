@@ -17,12 +17,13 @@ import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.events.StepRevisedEvent;
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * Cache of (legacy) filter sizes mapped by stepId.
@@ -51,11 +52,11 @@ public class FilterSizeCache {
   private static class SingleSizeFetcher implements ValueFactory<Long, FilterSizeGroup> {
 
     private final String _filterToFetch;
-    private final WdkModel _wdkModel;
+    private final User _requestingUser;
 
-    public SingleSizeFetcher(String filterToFetch, WdkModel wdkModel) {
+    public SingleSizeFetcher(String filterToFetch, User requestingUser) {
       _filterToFetch = filterToFetch;
-      _wdkModel = wdkModel;
+      _requestingUser = requestingUser;
     }
 
     @Override
@@ -68,10 +69,10 @@ public class FilterSizeCache {
     public FilterSizeGroup getUpdatedValue(Long stepId, FilterSizeGroup previousVersion)
         throws ValueProductionException {
       try {
-        Step step = _wdkModel.getStepFactory().getStepByValidId(stepId, ValidationLevel.RUNNABLE);
+        Step step = new StepFactory(_requestingUser).getStepByValidId(stepId, ValidationLevel.RUNNABLE);
         int size = !step.isRunnable() ? 0 :
           AnswerValueFactory
-            .makeAnswer(step.getUser(), step.getAnswerSpec().getRunnable().getLeft())
+            .makeAnswer(step.getAnswerSpec().getRunnable().getLeft())
             .getResultSizeFactory()
             .getFilterDisplaySize(_filterToFetch);
         previousVersion.sizeMap.put(_filterToFetch, size);
@@ -91,10 +92,10 @@ public class FilterSizeCache {
 
   public static class AllSizesFetcher implements ValueFactory<Long, FilterSizeGroup> {
 
-    protected final WdkModel _wdkModel;
+    protected final User _requestingUser;
 
-    public AllSizesFetcher(WdkModel wdkModel) {
-      _wdkModel = wdkModel;
+    public AllSizesFetcher(User requestingUser) {
+      _requestingUser = requestingUser;
     }
 
     @Override
@@ -107,16 +108,16 @@ public class FilterSizeCache {
     public FilterSizeGroup getUpdatedValue(Long stepId, FilterSizeGroup previousVersion)
         throws ValueProductionException {
       try {
-        Step step = _wdkModel.getStepFactory().getStepByValidId(stepId, ValidationLevel.RUNNABLE);
+        Step step = new StepFactory(_requestingUser).getStepByValidId(stepId, ValidationLevel.RUNNABLE);
         Map<String, Integer> sizes = step.isRunnable() ?
             // if runnable, load filters from result size factory
             AnswerValueFactory
-              .makeAnswer(step.getUser(), step.getAnswerSpec().getRunnable().getLeft())
+              .makeAnswer(step.getAnswerSpec().getRunnable().getLeft())
               .getResultSizeFactory()
               .getFilterDisplaySizes() :
             // otherwise, fill map with zeroes
             getMapFromKeys(
-              step.getAnswerSpec().getQuestion().getRecordClass().getFilterMap().keySet(),
+              step.getAnswerSpec().getQuestion().get().getRecordClass().getFilterMap().keySet(),
               key -> 0);
         previousVersion.sizeMap = sizes;
         previousVersion.allFiltersLoaded = true;
@@ -171,11 +172,11 @@ public class FilterSizeCache {
     }, StepRevisedEvent.class, StepResultsModifiedEvent.class);
   }
 
-  public int getFilterSize(long stepId, String filterName, WdkModel wdkModel)
+  public int getFilterSize(User requestingUser, long stepId, String filterName)
       throws WdkModelException, WdkUserException {
     LOG.debug("getFilterSize:  filterName : " + filterName +" and stepID: " + stepId);
     try {
-      return _cache.getValue(stepId, new SingleSizeFetcher(filterName, wdkModel)).sizeMap.get(filterName);
+      return _cache.getValue(stepId, new SingleSizeFetcher(filterName, requestingUser)).sizeMap.get(filterName);
     }
     catch (ValueProductionException e) {
       return handleUnfetchableItem(e, Integer.class);
@@ -194,9 +195,9 @@ public class FilterSizeCache {
     
   }
 
-  public Map<String, Integer> getFilterSizes(int stepId, WdkModel wdkModel)
+  public Map<String, Integer> getFilterSizes(int stepId, User requestingUser)
       throws WdkModelException, WdkUserException {
-    return getFilterSizes(stepId, new AllSizesFetcher(wdkModel));
+    return getFilterSizes(stepId, new AllSizesFetcher(requestingUser));
   }
 
   /**

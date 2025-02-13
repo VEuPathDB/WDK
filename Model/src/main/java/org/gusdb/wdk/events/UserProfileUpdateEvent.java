@@ -1,26 +1,26 @@
 package org.gusdb.wdk.events;
 
 import org.gusdb.fgputil.events.Event;
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.user.User;
 
 public class UserProfileUpdateEvent extends Event {
 
-  private final User _oldUser;
-  private final User _newUser;
+  private final UserInfo _oldUser;
+  private final UserInfo _newUser;
   private final WdkModel _wdkModel;
 
-  public UserProfileUpdateEvent(User oldUser, User newUser, WdkModel wdkModel) {
+  public UserProfileUpdateEvent(UserInfo oldUser, UserInfo newUser, WdkModel wdkModel) {
     _oldUser = oldUser;
     _newUser = newUser;
     _wdkModel = wdkModel;
   }
 
-  public User getOldUser() {
+  public UserInfo getOldUser() {
     return _oldUser;
   }
 
-  public User getNewUser() {
+  public UserInfo getNewUser() {
     return _newUser;
   }
 

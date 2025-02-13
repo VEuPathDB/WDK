@@ -90,7 +90,7 @@ public class ParameterContainerInstanceSpecBuilder<T extends ParameterContainerI
   }
 
   protected TwoTuple<PartiallyValidatedStableValues, ValidationBundleBuilder>
-  validateParams(User user, ParameterContainer paramContainer, StepContainer stepContainer,
+    validateParams(ParameterContainer paramContainer, StepContainer stepContainer, User requestingUser,
       ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
 
     // create a copy of the values in this builder which will be modified before passing to constructor
@@ -106,10 +106,10 @@ public class ParameterContainerInstanceSpecBuilder<T extends ParameterContainerI
     if (reqParams.containsKey(PARAM_USER_ID)) {
       // fill current user's ID, always overriding an existing value;
       // this is a security precaution in case the caller submits a value for user_id
-      tmpValues.put(PARAM_USER_ID, Long.toString(user.getUserId()));
+      tmpValues.put(PARAM_USER_ID, Long.toString(requestingUser.getUserId()));
     }
 
-    var stableValues = new PartiallyValidatedStableValues(user, tmpValues, stepContainer);
+    var stableValues = new PartiallyValidatedStableValues(requestingUser, tmpValues, stepContainer);
     var validation = ValidationBundle.builder(validationLevel);
 
     if (LOG.isEnabledFor(Param.VALIDATION_LOG_PRIORITY)) {

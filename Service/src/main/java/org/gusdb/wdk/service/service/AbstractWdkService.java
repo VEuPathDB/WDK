@@ -149,7 +149,7 @@ public abstract class AbstractWdkService {
   }
 
   protected User getRequestingUser() {
-    User user = (User) getRequest().getAttributeMap().get(Utilities.WDK_USER_KEY);
+    User user = (User) getRequest().getAttributeMap().get(Utilities.CONTEXT_KEY_USER_OBJECT);
     if (user != null) {
       // NOTE: user should ALWAYS be non-null in servlet containers with CheckLoginFilter active
       return user;
@@ -158,16 +158,15 @@ public abstract class AbstractWdkService {
   }
 
   protected ValidatedToken getAuthorizationToken() {
-    return (ValidatedToken)getRequest().getAttributeMap().get(Utilities.BEARER_TOKEN_KEY);
+    return (ValidatedToken)getRequest().getAttributeMap().get(Utilities.CONTEXT_KEY_VALIDATED_TOKEN_OBJECT);
   }
 
-  protected boolean isSessionUserAdmin() {
-    List<String> adminEmails = getWdkModel().getModelConfig().getAdminEmails();
-    return adminEmails.contains(getRequestingUser().getEmail());
+  protected boolean isRequestingUserAdmin() {
+    return getRequestingUser().isAdmin();
   }
 
   protected void assertAdmin() {
-    if (!isSessionUserAdmin()) {
+    if (!isRequestingUserAdmin()) {
       throw new ForbiddenException("Administrative access is required for this function.");
     }
   }
@@ -180,7 +179,7 @@ public abstract class AbstractWdkService {
    * @throws WdkModelException if error occurs while accessing user data (probably a DB problem)
    */
   protected UserBundle parseTargetUserId(String userIdStr) throws WdkModelException {
-    return UserBundle.createFromTargetId(userIdStr, getRequestingUser(), getWdkModel().getUserFactory(), isSessionUserAdmin());
+    return UserBundle.createFromTargetId(userIdStr, getRequestingUser());
   }
 
   /**

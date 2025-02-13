@@ -5,11 +5,11 @@ import org.gusdb.oauth2.client.OAuthConfig;
 import org.gusdb.oauth2.client.ValidatedToken;
 import org.gusdb.wdk.model.WdkModel;
 
-public class BearerTokenUser extends org.gusdb.oauth2.client.veupathdb.BearerTokenUser implements User {
+public class UserImpl extends org.gusdb.oauth2.client.veupathdb.UserImpl implements User {
 
   private final WdkModel _wdkModel;
 
-  public BearerTokenUser(WdkModel wdkModel, OAuthClient client, OAuthConfig config, ValidatedToken token) {
+  public UserImpl(WdkModel wdkModel, OAuthClient client, OAuthConfig config, ValidatedToken token) {
     super(client, config.getOauthUrl(), token);
     _wdkModel = wdkModel;
   }
@@ -18,4 +18,5 @@ public class BearerTokenUser extends org.gusdb.oauth2.client.veupathdb.BearerTok
   public WdkModel getWdkModel() {
     return _wdkModel;
   }
+
 }

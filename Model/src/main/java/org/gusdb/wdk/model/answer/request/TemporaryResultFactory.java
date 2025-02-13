@@ -22,9 +22,9 @@ public class TemporaryResultFactory {
    * @param request request
    * @return ID for the temporary result
    */
-  public static String insertTemporaryResult(long userId, AnswerRequest request) {
+  public static String insertTemporaryResult(User user, AnswerRequest request) {
     String id = UUID.randomUUID().toString();
-    CacheMgr.get().getAnswerRequestCache().put(id, new TwoTuple<>(userId, request));
+    CacheMgr.get().getAnswerRequestCache().put(id, new TwoTuple<>(user, request));
     return id;
   }
 
@@ -40,18 +40,16 @@ public class TemporaryResultFactory {
    */
   public static TwoTuple<User, AnswerRequest> retrieveTemporaryResult(String temporaryResultId, WdkModel wdkModel) throws WdkUserException, WdkModelException {
     // get the saved request cache and look up this ID
-    Map<String,TwoTuple<Long,AnswerRequest>> savedRequests = CacheMgr.get().getAnswerRequestCache();
-    TwoTuple<Long, AnswerRequest> savedRequest = savedRequests.get(temporaryResultId);
+    Map<String,TwoTuple<User,AnswerRequest>> savedRequests = CacheMgr.get().getAnswerRequestCache();
+    TwoTuple<User, AnswerRequest> savedRequest = savedRequests.get(temporaryResultId);
 
-    // three ways this request could be expired
+    // two ways this request could be expired
     User user = null;
     if (
         // 1. ID invalid or no longer in cache
         savedRequest == null ||
         // 2. Request creation date is too long in the past
-        savedRequest.getSecond().getCreationDate().getTime() < new Date().getTime() - EXPIRATION_MILLIS ||
-        // 3. User who created the request is no longer valid
-        (user = wdkModel.getUserFactory().getUserById(savedRequest.getFirst()).orElse(null)) == null
+        savedRequest.getSecond().getCreationDate().getTime() < new Date().getTime() - EXPIRATION_MILLIS
     ) {
       // return Not Found, but expire id first if not gone already
       if (savedRequest != null) {

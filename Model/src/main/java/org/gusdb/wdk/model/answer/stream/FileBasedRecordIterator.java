@@ -140,7 +140,7 @@ class FileBasedRecordIterator extends AbstractRecordIterator {
     for (Entry<Path,List<QueryColumnAttributeField>> entry : attributeFileMap.entrySet()) {
 
       // Generate full list of columns to fetch, including both PK columns and requested columns
-      List<String> columnNames = new ListBuilder<String>(answerValue.getAnswerSpec().getQuestion()
+      List<String> columnNames = new ListBuilder<String>(answerValue.getQuestion()
           .getRecordClass().getPrimaryKeyDefinition().getColumnRefs())
           .addAll(Functions.mapToList(entry.getValue(), Named.TO_NAME))
           .toList();

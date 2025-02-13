@@ -37,7 +37,7 @@ import org.gusdb.fgputil.Range;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserCache;
+import org.gusdb.wdk.model.user.UserInfoCache;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetFile;
@@ -66,7 +66,7 @@ import org.json.JSONObject;
  *      - original dataset exists, and is still shared
  *
  */
-public class UserDatasetService extends UserService {
+public class UserDatasetService extends AbstractUserService {
 
   private static Logger LOG = Logger.getLogger(UserDatasetService.class);
 
@@ -112,7 +112,7 @@ public class UserDatasetService extends UserService {
   private static List<UserDatasetInfo> getDatasetInfo(final Collection<UserDataset> datasets,
       final Set<Long> installedUserDatasets, final UserDatasetStore dsStore, final UserDatasetSession dsSession,
       final UserFactory userFactory, final WdkModel wdkModel, User user) throws WdkModelException {
-    UserCache userCache = new UserCache(userFactory);
+    UserInfoCache userCache = new UserInfoCache(userFactory);
     List<UserDatasetInfo> list = datasets.stream()
         .map(dataset -> new UserDatasetInfo(dataset,
             installedUserDatasets.contains(dataset.getUserDatasetId()),
@@ -144,7 +144,7 @@ public class UserDatasetService extends UserService {
       }
       Set<Long> installedUserDatasets = wdkModel.getUserDatasetFactory().get().getInstalledUserDatasets(userId);
       UserDatasetInfo dsInfo = new UserDatasetInfo(userDataset, installedUserDatasets.contains(datasetId),
-        dsStore, dsSession, new UserCache(wdkModel.getUserFactory()), wdkModel);
+        dsStore, dsSession, new UserInfoCache(wdkModel.getUserFactory()), wdkModel);
       dsInfo.loadDetailedTypeSpecificData(user);
       responseJson = UserDatasetFormatter.getUserDatasetJson(dsInfo,
           userDataset.getOwnerId().equals(userId), true).toString();
@@ -299,10 +299,10 @@ public class UserDatasetService extends UserService {
    */
   private void validateTargetUserIds(Set<Long> targetUserIds) throws WdkModelException {
     for(Long targetUserId : targetUserIds) {
-      UserBundle targetUserBundle = UserBundle.createFromTargetId(targetUserId.toString(), getRequestingUser(), getWdkModel().getUserFactory(), isSessionUserAdmin());
-      if (!targetUserBundle.isValidUserId()) {
+      UserBundle targetUserBundle = UserBundle.createFromTargetId(targetUserId.toString(), getRequestingUser());
+      if (!targetUserBundle.isValidTargetUserId()) {
         LOG.error("This user dataset share service request contains the following invalid user: " + targetUserId);
-        throw new NotFoundException(formatNotFound(UserService.USER_RESOURCE + targetUserBundle.getTargetUserIdString()));
+        throw new NotFoundException(formatNotFound(AbstractUserService.USER_RESOURCE + targetUserId));
       }
     }
   }

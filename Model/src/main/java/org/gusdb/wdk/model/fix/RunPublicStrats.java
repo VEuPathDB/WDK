@@ -68,7 +68,7 @@ public class RunPublicStrats extends BaseCLI {
       if (!erroredStrategies.isEmpty()) {
         LOG.warn("At least one public strategy is invalid.  See below for list");
         for (Strategy st : erroredStrategies) {
-          LOG.info("{  owner: " + st.getUser().getEmail() + ", project: " + projectId + ", modifiedTime: "  + st.getLastModifiedTime() + ", strategyName: " + st.getName() + ", createdTime: " + st.getCreatedTime() + ", strategyId: " + st.getStrategyId() +  ", importId: " + st.getSignature() + " }");
+          LOG.info("{  owner: " + st.getOwningUser().getEmail() + ", project: " + projectId + ", modifiedTime: "  + st.getLastModifiedTime() + ", strategyName: " + st.getName() + ", createdTime: " + st.getCreatedTime() + ", strategyId: " + st.getStrategyId() +  ", importId: " + st.getSignature() + " }");
         }
       }
     }
@@ -76,7 +76,7 @@ public class RunPublicStrats extends BaseCLI {
 
   private static List<Strategy> getInvalidPublicStrats(WdkModel wdkModel) throws WdkModelException {
 
-    StepFactory factory = wdkModel.getStepFactory();
+    StepFactory factory = new StepFactory(wdkModel.getSystemUser());
     List<Strategy> publicStrategies = factory.getPublicStrategies();
     List<Strategy> erroredPublicStrats = publicStrategies.stream()
         .filter(strat -> strat.isValid()).collect(Collectors.toList());
@@ -84,12 +84,12 @@ public class RunPublicStrats extends BaseCLI {
 
     for (Strategy st : publicStrategies) {
       LOG.info("\n\n\n********** Found a Public Strat: " + st.getStrategyId() +
-          " of user: " + st.getUser().getEmail() + "  *********");
+          " of user: " + st.getOwningUser().getEmail() + "  *********");
     }
 
     for (Strategy st : erroredPublicStrats) {
       LOG.error("Adding strategy " + st.getName() + " -belonging to user " +
-          st.getUser().getEmail() + " created on " + st.getCreatedTime() +
+          st.getOwningUser().getEmail() + " created on " + st.getCreatedTime() +
           " and modified last on " + st.getLastModifiedTime() +
           "..... to list of errored strats." + FormatUtil.NL +
           st.getValidationBundle().toString());

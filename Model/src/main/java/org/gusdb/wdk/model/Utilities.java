@@ -88,17 +88,20 @@ public class Utilities {
   public static final String MACRO_CACHE_TABLE = "##WDK_CACHE_TABLE##";
   public static final String MACRO_CACHE_INSTANCE_ID = "##WDK_CACHE_INSTANCE_ID##";
 
-  public static final String QUERY_CTX_QUESTION = "wdk-question";
-  public static final String QUERY_CTX_PARAM = "wdk-param";
-  public static final String QUERY_CTX_QUERY = "wdk-query";
-  public static final String QUERY_CTX_USER = "wdk-user";
+  // keys used to access context data via strings to WSF plugins (process queries)
+  public static final String CONTEXT_KEY_QUESTION_FULL_NAME = "wdk-question";
+  public static final String CONTEXT_KEY_QUERY_FULL_NAME = "wdk-query";
+  public static final String CONTEXT_KEY_PARAM_NAME = "wdk-param";
+  public static final String CONTEXT_KEY_USER_ID = "wdk-user";
+  public static final String CONTEXT_KEY_BEARER_TOKEN_STRING = "wdk-user-token";
 
   public static final String RECORD_DIVIDER = "\n";
   public static final String COLUMN_DIVIDER = ",";
 
-  public static final String WDK_MODEL_KEY = "wdk_model";
-  public static final String WDK_USER_KEY = "wdk_user";
-  public static final String BEARER_TOKEN_KEY = "bearer-token";
+  // keys used to access objects set on ServletContext and Request context objects
+  public static final String CONTEXT_KEY_WDK_MODEL_OBJECT = "wdk_model";
+  public static final String CONTEXT_KEY_USER_OBJECT = "wdk_user";
+  public static final String CONTEXT_KEY_VALIDATED_TOKEN_OBJECT = "bearer-token";
 
   public static final String WDK_SERVICE_ENDPOINT_KEY = "wdkServiceEndpoint";
 
