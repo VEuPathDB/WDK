@@ -2,6 +2,7 @@ package org.gusdb.wdk.service.formatter;
 
 import java.util.Optional;
 
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
 import org.gusdb.oauth2.client.veupathdb.UserProperty;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.user.User;
@@ -27,7 +28,7 @@ import org.json.JSONObject;
  */
 public class UserFormatter {
 
-  public static JSONObject getUserJson(User user, boolean isOwner,
+  public static JSONObject getUserJson(UserInfo user, boolean isOwner,
       Optional<UserPreferences> userPreferences) throws JSONException {
     JSONObject json = new JSONObject()
       .put(JsonKeys.ID, user.getUserId())
@@ -42,7 +43,7 @@ public class UserFormatter {
     return json;
   }
 
-  private static JSONObject getPropertiesJson(User user, boolean isOwner) {
+  private static JSONObject getPropertiesJson(UserInfo user, boolean isOwner) {
     JSONObject propsJson = new JSONObject();
     for (UserProperty definedProperty : User.USER_PROPERTIES.values()) {
       if (isOwner || definedProperty.isPublic()) {

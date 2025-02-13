@@ -329,7 +329,7 @@ public class FileBasedRecordStream implements RecordStream {
           ResultList resultList = new SqlResultList(rs).setResponsibleForClosingResultSet(false);
 
           // Generate full list of columns to fetch, including both PK columns and requested columns
-          List<String> columnsToTransfer = new ListBuilder<String>(answerValue.getAnswerSpec().getQuestion()
+          List<String> columnsToTransfer = new ListBuilder<String>(answerValue.getQuestion()
               .getRecordClass().getPrimaryKeyDefinition().getColumnRefs())
               .addAll(Functions.mapToList(attributeFields, Named.TO_NAME))
               .toList();
@@ -435,7 +435,7 @@ public class FileBasedRecordStream implements RecordStream {
    * @return list of column names for primary key
    */
   private static List<String> getPkColumnNames(AnswerValue answerValue) {
-    return Arrays.asList(answerValue.getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs());
+    return Arrays.asList(answerValue.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs());
   }
 
   /**

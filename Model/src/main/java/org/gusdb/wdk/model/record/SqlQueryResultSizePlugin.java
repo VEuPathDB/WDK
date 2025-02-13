@@ -34,11 +34,11 @@ public class SqlQueryResultSizePlugin implements ResultSize {
 
     QueryInstance<?> queryInstance = Query.makeQueryInstance(QueryInstanceSpec.builder()
         .put(WDK_ID_SQL_PARAM, idSql)
-        .buildRunnable(answerValue.getUser(), _query, StepContainer.emptyContainer()));
+        .buildRunnable(answerValue.getRequestingUser(), _query, StepContainer.emptyContainer()));
     try (ResultList results = queryInstance.getResults()) {
       results.next();
       Integer count = ((Number) results.get(COUNT_COLUMN)).intValue();
-      RecordClass recordClass = answerValue.getAnswerSpec().getQuestion().getRecordClass();
+      RecordClass recordClass = answerValue.getQuestion().getRecordClass();
       if (results.next())
         throw new WdkModelException("Record class '" + recordClass.getName() +
             "' has an SqlResultSizePlugin whose SQL returns more than one row.");

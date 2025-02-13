@@ -10,34 +10,22 @@ import org.gusdb.wdk.model.answer.single.SingleRecordAnswerValue;
 import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.User;
 
 public class AnswerValueFactory {
 
   /**
    * make an answer with default page size and sorting
    */
-  public static AnswerValue makeAnswer(RunnableObj<Step> validStep)
+  public static AnswerValue makeAnswer(RunnableObj<AnswerSpec> validSpec)
       throws WdkModelException {
-    return makeAnswer(validStep.get().getUser(),
-        Step.getRunnableAnswerSpec(validStep));
+    return makeAnswer(validSpec, false);
   }
 
-  /**
-   * make an answer with default page size and sorting
-   */
-  public static AnswerValue makeAnswer(User user, RunnableObj<AnswerSpec> validSpec)
-      throws WdkModelException {
-    return makeAnswer(user, validSpec, false);
-  }
-
-  public static AnswerValue makeAnswer(User user, RunnableObj<AnswerSpec> validSpec,
-      boolean avoidCacheHit) throws WdkModelException {
-    Question question = validSpec.get().getQuestion();
+  public static AnswerValue makeAnswer(RunnableObj<AnswerSpec> validSpec, boolean avoidCacheHit) throws WdkModelException {
+    Question question = validSpec.get().getQuestion().get();
     int pageStart = 1;
     int pageEnd = AnswerValue.UNBOUNDED_END_PAGE_INDEX;
-    AnswerValue answerValue = makeAnswer(user, validSpec, pageStart, pageEnd, Collections.emptyMap(), avoidCacheHit);
+    AnswerValue answerValue = makeAnswer(validSpec, pageStart, pageEnd, Collections.emptyMap(), avoidCacheHit);
     if (question.isFullAnswer()) {
       int resultSize = answerValue.getResultSizeFactory().getResultSize();
       if (resultSize > pageEnd)
@@ -46,20 +34,20 @@ public class AnswerValueFactory {
     return answerValue;
   }
 
-  public static AnswerValue makeAnswer(User user, RunnableObj<AnswerSpec> validSpec,
+  public static AnswerValue makeAnswer(RunnableObj<AnswerSpec> validSpec,
       int startIndex, int endIndex, Map<String, Boolean> sortingMap, boolean avoidCacheHit) throws WdkModelException {
-    Question question = validSpec.get().getQuestion();
+    Question question = validSpec.get().getQuestion().get();
     if (question instanceof SingleRecordQuestion) {
-      return new SingleRecordAnswerValue(user, validSpec);
+      return new SingleRecordAnswerValue(validSpec);
     }
     else {
-      return new AnswerValue(user, validSpec, startIndex, endIndex, sortingMap, avoidCacheHit);
+      return new AnswerValue(validSpec, startIndex, endIndex, sortingMap, avoidCacheHit);
     }
   }
 
   public static AnswerValue makeAnswer(AnswerValue answerValue,
       RunnableObj<AnswerSpec> modifiedSpec) throws WdkModelException {
-    return makeAnswer(answerValue.getUser(), modifiedSpec, answerValue.getStartIndex(),
+    return makeAnswer(modifiedSpec, answerValue.getStartIndex(),
         answerValue.getEndIndex(), answerValue.getSortingMap(), false);
   }
 

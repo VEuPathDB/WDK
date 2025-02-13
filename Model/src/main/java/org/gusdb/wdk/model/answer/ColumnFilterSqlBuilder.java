@@ -32,7 +32,7 @@ public class ColumnFilterSqlBuilder {
     final var spec = answer.getAnswerSpec();
 
     this.answer    = answer;
-    this.question  = spec.getQuestion();
+    this.question  = spec.getQuestion().get();
     this.configs   = spec.getColumnFilterConfig();
   }
 

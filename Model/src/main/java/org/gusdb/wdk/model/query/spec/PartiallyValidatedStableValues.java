@@ -27,18 +27,18 @@ public class PartiallyValidatedStableValues extends HashMap<String,String> {
 
   }
 
-  private final User _user;
+  private final User _requestingUser;
   private final StepContainer _stepContainer;
   private final Map<String, ParamValidity> _validationStatusMap = new HashMap<>();
 
-  PartiallyValidatedStableValues(User user, Map<String,String> initialValues, StepContainer stepContainer) {
-    _user = user;
+  PartiallyValidatedStableValues(User requestingUser, Map<String,String> initialValues, StepContainer stepContainer) {
+    _requestingUser = requestingUser;
     _stepContainer = stepContainer;
     putAll(initialValues);
   }
 
-  public User getUser() {
-    return _user;
+  public User getRequestingUser() {
+    return _requestingUser;
   }
 
   public StepContainer getStepContainer() {

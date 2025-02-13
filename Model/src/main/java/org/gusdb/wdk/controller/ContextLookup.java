@@ -35,7 +35,7 @@ public class ContextLookup {
   }
 
   public static WdkModel getWdkModel(ApplicationContext context) {
-    return (WdkModel)context.get(Utilities.WDK_MODEL_KEY);
+    return (WdkModel)context.get(Utilities.CONTEXT_KEY_WDK_MODEL_OBJECT);
   }
 
   public static WdkModel getWdkModel(ServletContext servletContext) {

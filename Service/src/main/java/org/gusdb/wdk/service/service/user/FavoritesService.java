@@ -50,7 +50,7 @@ import org.json.JSONObject;
  *
  * @author crisl
  */
-public class FavoritesService extends UserService {
+public class FavoritesService extends AbstractUserService {
 
   private static final String FAVORITES_SEGMENT = "favorites";
   private static final String FAVORITE_ID_PATH_PARAM = "favoriteId";
@@ -241,7 +241,7 @@ public class FavoritesService extends UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response queryFavoriteStatus(String body) throws WdkModelException, RequestMisformatException, DataValidationException {
-    User user = getUserBundle(Access.PRIVATE).getSessionUser();
+    User user = getUserBundle(Access.PRIVATE).getRequestingUser();
     WdkModel model = getWdkModel();
     JSONArray output = new JSONArray();
     for (JsonType favorite : JsonIterators.arrayIterable(new JSONArray(body))) {

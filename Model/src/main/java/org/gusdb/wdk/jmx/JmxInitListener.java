@@ -37,7 +37,7 @@ public final class JmxInitListener implements ServletContextListener {
     //   failed, so warn in logs and skip JMX initialization.  If this is caused
     //   by a race condition between the two listeners, will need to address in
     //   a different way.
-    WdkModel model = (WdkModel)context.getAttribute(Utilities.WDK_MODEL_KEY);
+    WdkModel model = (WdkModel)context.getAttribute(Utilities.CONTEXT_KEY_WDK_MODEL_OBJECT);
     if (model == null) {
       LOG.warn("Missing model in ServletContext.  Skipping MBean registration.");
       return;

@@ -56,7 +56,7 @@ public class QuestionTest implements ElementTest {
     if (_question.getQuery() instanceof SqlQuery) {
       ((SqlQuery)_question.getQuery()).setIsCacheable(false);
     }
-    AnswerValue answerValue = AnswerValueFactory.makeAnswer(_user,
+    AnswerValue answerValue = AnswerValueFactory.makeAnswer(
         AnswerSpec.builder(_question.getWdkModel())
         .setQuestionFullName(_question.getFullName())
         .setParamValues(_paramValuesSet.getParamValues())

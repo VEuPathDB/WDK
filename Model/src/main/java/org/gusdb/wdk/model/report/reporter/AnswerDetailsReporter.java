@@ -50,7 +50,7 @@ public abstract class AnswerDetailsReporter extends AbstractReporter {
 
   @Override
   public Reporter configure(JSONObject config) throws ReporterConfigException, WdkModelException {
-    return configure(AnswerDetailsFactory.createFromJson(config, _baseAnswer.getAnswerSpec().getQuestion()));
+    return configure(AnswerDetailsFactory.createFromJson(config, _baseAnswer.getQuestion()));
   }
 
   protected Reporter configure(AnswerDetails config) throws WdkModelException {

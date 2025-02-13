@@ -138,6 +138,7 @@ public class StrategyLoader {
       (s1, s2) -> s2.getLastModifiedTime().compareTo(s1.getLastModifiedTime());
 
   private final WdkModel _wdkModel;
+  private final User _requestingUser;
   private final DataSource _userDbDs;
   private final DBPlatform _userDbPlatform;
   private final String _userSchema;
@@ -145,12 +146,13 @@ public class StrategyLoader {
   private final ValidationLevel _validationLevel;
   private final FillStrategy _fillStrategy;
 
-  public StrategyLoader(WdkModel wdkModel, ValidationLevel validationLevel, FillStrategy fillStrategy) {
-    _wdkModel = wdkModel;
-    _userDbDs = wdkModel.getUserDb().getDataSource();
-    _userDbPlatform = wdkModel.getUserDb().getPlatform();
-    _userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
-    _userFactory = wdkModel.getUserFactory();
+  public StrategyLoader(User requestingUser, ValidationLevel validationLevel, FillStrategy fillStrategy) {
+    _wdkModel = requestingUser.getWdkModel();
+    _requestingUser =requestingUser;
+    _userDbDs = _wdkModel.getUserDb().getDataSource();
+    _userDbPlatform = _wdkModel.getUserDb().getPlatform();
+    _userSchema = _wdkModel.getModelConfig().getUserDB().getUserSchema();
+    _userFactory = _wdkModel.getUserFactory();
     _validationLevel = validationLevel;
     _fillStrategy = fillStrategy;
   }
@@ -186,13 +188,13 @@ public class StrategyLoader {
       UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors = new UnbuildableStrategyList<>();
 
       // load all the users up first (can be done in a single batch) to avoid churn
-      UserCache userCache = new UserCache(_userFactory);
-      userCache.loadUsersByIds(queryResults.getFirst().stream().map(StrategyBuilder::getUserId).collect(Collectors.toList()));
+      UserInfoCache userCache = new UserInfoCache(_userFactory);
+      userCache.loadUsersByIds(queryResults.getFirst().stream().map(StrategyBuilder::getOwningUserId).collect(Collectors.toList()));
 
       // try to build each strategy and put in the appropriate list
       for (StrategyBuilder stratBuilder : queryResults.getFirst()) {
         try {
-          builtStrategies.add(stratBuilder.build(userCache, _validationLevel, _fillStrategy));
+          builtStrategies.add(stratBuilder.build(userCache, _requestingUser, _validationLevel, _fillStrategy));
         }
         catch (InvalidStrategyStructureException e) {
           malstructuredStrategies.add(new TwoTuple<>(stratBuilder, e));
@@ -207,7 +209,7 @@ public class StrategyLoader {
             .stream()
             .map(tuple ->
               "Strategy " + tuple.getFirst().getStrategyId() +
-              ", owned by " + tuple.getFirst().getUserId() + NL +
+              ", owned by " + tuple.getFirst().getOwningUserId() + NL +
               tuple.getSecond().toString() + NL +
               FormatUtil.getStackTrace(tuple.getSecond()))
             .collect(Collectors.joining(NL));
@@ -223,7 +225,7 @@ public class StrategyLoader {
       List<Step> builtOrphanSteps = new ArrayList<>();
       for (StepBuilder orphanBuilder : queryResults.getSecond()) {
         try {
-          builtOrphanSteps.add(orphanBuilder.build(userCache, _validationLevel, _fillStrategy, Optional.empty()));
+          builtOrphanSteps.add(orphanBuilder.build(userCache, _requestingUser, _validationLevel, _fillStrategy, Optional.empty()));
         }
         catch (WdkModelException e) {
           if (propagateBuildErrors) throw e;

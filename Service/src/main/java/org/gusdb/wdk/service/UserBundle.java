@@ -1,96 +1,77 @@
 package org.gusdb.wdk.service;
 
 import org.apache.log4j.Logger;
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.NoSuchElementException;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserFactory;
 
 /**
- * Encapsulates information about the user of a requested user resource.  For example, if a request comes
- * in for /user/123, an instance of this class, given target user ID "123" will tell you the following:
- * 
- * String targetUserIdString: value used to generate this UserBundle (e.g. "123")
+ * Encapsulates information about the users involved in this request.  The requesting user
+ * is the user identified by the authentication token passed with the request and is created
+ * by CheckLoginFilter.  The target user is the focus of the request, or the owner of the
+ * targeted resource.  For example, if a request comes in for /user/123, an instance of this
+ * class, given target user ID "123" will tell you the following:
+ *
  * bool isValidTargetUserId: if "123" is an integer corresponding to an existing user ID in the system
- * int parsedUserId: raw user ID after parsing (set to -1 if not valid)
- * User targetUser: user behind the parsed target user ID
- * bool isSessionUser: whether the user behind the parsed user ID is the same as the current user
- * User sessionUser: a reference to the session's current user (same object as targetUser if isSessionUser == true)
- * 
+ * UserInfo targetUser: user behind the parsed target user ID (null if isValidTargetUserId = false)
+ * bool isTargetRequestingUser: whether the user behind the parsed target user ID is the same as the requesting user
+ * User requestingUser: a reference to the session's current user (same object as targetUser if isTargetRequestingUser == true)
+ *
  * @author rdoherty
  */
 public class UserBundle {
 
   private static final Logger LOG = Logger.getLogger(UserBundle.class);
 
-  public static final String SESSSION_USER_MAGIC_STRING = "current";
+  public static final String USE_REQUEST_USER_MAGIC_STRING = "current";
 
-  private final String _targetUserIdString;
-  private final boolean _isValidUserId;
-  private final User _targetUser;
-  private final boolean _isSessionUser;
-  private final User _sessionUser;
-  private final boolean _isAdminSession;
+  private final boolean _isValidTargetUserId;
+  private final UserInfo _targetUser;
+  private final boolean _isTargetRequestingUser;
+  private final User _requestingUser;
 
-  public static UserBundle createFromTargetId(String userIdStr, User sessionUser, UserFactory userFactory, boolean isAdminSession) throws WdkModelException {
+  public static UserBundle createFromTargetId(String targetUserIdStr, User requestingUser) throws WdkModelException {
     try {
-      if (SESSSION_USER_MAGIC_STRING.equals(userIdStr)) {
-        return getSessionUserBundle(SESSSION_USER_MAGIC_STRING, sessionUser, isAdminSession);
+      long userId;
+      if (USE_REQUEST_USER_MAGIC_STRING.equals(targetUserIdStr) ||
+          (userId = Long.parseLong(targetUserIdStr)) == requestingUser.getUserId()) {
+        return new UserBundle(true, requestingUser, true, requestingUser);
       }
-      int userId = Integer.parseInt(userIdStr);
-      if (userId == sessionUser.getUserId()) {
-        return getSessionUserBundle(userIdStr, sessionUser, isAdminSession);
-      }
-      User user = userFactory.getUserById(userId)
+
+      UserInfo targetUserInfo = requestingUser.getWdkModel().getUserFactory().getUserById(userId)
           .orElseThrow(() -> new NoSuchElementException("No user exists with ID " + userId));
-      return new UserBundle(userIdStr, true, user, false, sessionUser, isAdminSession);
+
+      return new UserBundle(true, targetUserInfo, false, requestingUser);
     }
     catch (NoSuchElementException | NumberFormatException | NullPointerException e) {
       LOG.warn("User requested by ID that is misformatted or does not exist", e);
       // userIdStr is null or misformatted, or no user by the passed ID could be found
-      return getBadIdBundle(userIdStr, sessionUser);
+      return new UserBundle(false, null, false, requestingUser);
     }
   }
 
-  private UserBundle(String targetUserIdString, boolean isValidUserId, User targetUser,
-      boolean isSessionUser, User sessionUser, boolean isAdminSession) {
-    _targetUserIdString = targetUserIdString;
-    _isValidUserId = isValidUserId;
+  private UserBundle(boolean isValidTargetUserId, UserInfo targetUser, boolean isTargetRequestingUser, User requestingUser) {
+    _isValidTargetUserId = isValidTargetUserId;
     _targetUser = targetUser;
-    _isSessionUser = isSessionUser;
-    _sessionUser = sessionUser;
-    _isAdminSession = isAdminSession;
+    _isTargetRequestingUser = isTargetRequestingUser;
+    _requestingUser = requestingUser;
   }
 
-  private static UserBundle getSessionUserBundle(String userIdStr, User sessionUser, boolean isAdminSession) {
-    return new UserBundle(userIdStr, true, sessionUser, true, sessionUser, isAdminSession);
+  public boolean isValidTargetUserId() {
+    return _isValidTargetUserId;
   }
 
-  private static UserBundle getBadIdBundle(String userIdStr, User currentUser) {
-    return new UserBundle(userIdStr, false, null, false, currentUser, false);
-  }
-
-  public String getTargetUserIdString() {
-    return _targetUserIdString;
-  }
-
-  public boolean isValidUserId() {
-    return _isValidUserId;
-  }
-
-  public User getTargetUser() {
+  public UserInfo getTargetUser() {
     return _targetUser;
   }
 
-  public boolean isSessionUser() {
-    return _isSessionUser;
+  public boolean isTargetRequestingUser() {
+    return _isTargetRequestingUser;
   }
 
-  public User getSessionUser() {
-    return _sessionUser;
+  public User getRequestingUser() {
+    return _requestingUser;
   }
 
-  public boolean isAdminSession() {
-    return _isAdminSession;
-  }
 }

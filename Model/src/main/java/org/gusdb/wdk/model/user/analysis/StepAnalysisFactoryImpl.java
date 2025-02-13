@@ -43,7 +43,8 @@ import org.gusdb.wdk.model.user.InvalidStrategyStructureException;
 import org.gusdb.wdk.model.user.NoSuchElementException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
-import org.gusdb.wdk.model.user.UserCache;
+import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserInfoCache;
 import org.gusdb.wdk.model.user.analysis.FutureCleaner.RunningAnalysis;
 
 /**
@@ -122,7 +123,7 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
     ValidationBundleBuilder validation = ValidationBundle.builder(ValidationLevel.RUNNABLE);
     try {
       // ensure this is a valid step to analyze
-      AnswerValue answer = AnswerValueFactory.makeAnswer(step);
+      AnswerValue answer = AnswerValueFactory.makeAnswer(Step.getRunnableAnswerSpec(step));
       if (answer.getResultSizeFactory().getResultSize() == 0) {
         throw new IllegalAnswerValueException("You cannot analyze a Step with zero results.");
       }
@@ -147,14 +148,17 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
 
   @Override
   public boolean hasCompleteAnalyses(Step step) throws WdkModelException {
+    User user = step.getRequestingUser();
+    WdkModel model = user.getWdkModel();
     if (!step.getValidationBundle().getLevel().isGreaterThanOrEqualTo(ValidationLevel.RUNNABLE)) {
       // need to revalidate step and "upgrade" its validation TODO: make this easier and more efficient
+      UserInfoCache ownerCache = new UserInfoCache(model, step);
       if (step.getStrategy().isEmpty()) {
-        step = Step.builder(step).build(new UserCache(step.getUser()), ValidationLevel.RUNNABLE, step.getStrategy());
+        step = Step.builder(step).build(ownerCache, user, ValidationLevel.RUNNABLE, step.getStrategy());
       }
       else {
         try {
-          step = Strategy.builder(step.getStrategy().get()).build(new UserCache(step.getUser()), ValidationLevel.RUNNABLE)
+          step = Strategy.builder(step.getStrategy().get()).build(ownerCache, user, ValidationLevel.RUNNABLE)
               .findFirstStepOrThrow(withId(step.getStepId()));
         }
         catch (NoSuchElementException | InvalidStrategyStructureException e) {
@@ -174,8 +178,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
       }
 
       // build a instance with runnable validation
-      Optional<StepAnalysisInstance> runnableInstance = getInstanceById(instance.getAnalysisId(),
-          step.getAnswerSpec().getWdkModel(), ValidationLevel.RUNNABLE);
+      Optional<StepAnalysisInstance> runnableInstance = getInstanceById(
+          step.getRequestingUser(), instance.getAnalysisId(), ValidationLevel.RUNNABLE);
 
       // if runnable and has a complete result, return true
       if (runnableInstance.isPresent() && runnableInstance.get().isRunnable()) {
@@ -191,12 +195,12 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   private static boolean isAnalysisCompatibleWithStep(RunnableObj<Step> step, String analysisName) throws WdkModelException {
-    StepAnalysis stepAnalysis = step.get().getAnswerSpec().getQuestion().getStepAnalyses().get(analysisName);
+    StepAnalysis stepAnalysis = step.get().getAnswerSpec().getQuestion().get().getStepAnalyses().get(analysisName);
     if (stepAnalysis == null) {
       return false;
     }
     try {
-      stepAnalysis.getAnalyzerInstance().validateAnswerValue(AnswerValueFactory.makeAnswer(step));
+      stepAnalysis.getAnalyzerInstance().validateAnswerValue(AnswerValueFactory.makeAnswer(Step.getRunnableAnswerSpec(step)));
       return true;
     }
     catch (IllegalAnswerValueException e) {
@@ -411,8 +415,8 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   }
 
   @Override
-  public Optional<StepAnalysisInstance> getInstanceById(long analysisId, WdkModel wdkModel, ValidationLevel validationLevel) throws WdkModelException {
-    return _dataStore.getInstanceById(analysisId, wdkModel, validationLevel);
+  public Optional<StepAnalysisInstance> getInstanceById(User requestingUser, long analysisId, ValidationLevel validationLevel) throws WdkModelException {
+    return _dataStore.getInstanceById(requestingUser, analysisId, validationLevel);
   }
 
   static StepAnalyzer getConfiguredAnalyzer(RunnableObj<StepAnalysisInstance> instance,

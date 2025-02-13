@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.user;
 
 import java.util.regex.Matcher;
 
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
 import org.gusdb.wdk.model.Attachment;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -30,7 +31,7 @@ public class UserPasswordEmailer {
     return dontEmailProp == null || !dontEmailProp.equals("true");
   }
 
-  public void emailTemporaryPassword(User user, String password) throws WdkModelException {
+  public void emailTemporaryPassword(UserInfo user, String password) throws WdkModelException {
     if (!isSendWelcomeEmail()) return;
 
     ModelConfig wdkModelConfig = _wdkModel.getModelConfig();

@@ -35,7 +35,7 @@ public class AnswerSpecFilter extends StepFilter {
   @Override
   public String getDisplayValue(AnswerValue answer, JSONObject jsValue)
       throws WdkModelException {
-    return answer.getAnswerSpec().getQuestion().getName() + ", with parameters { " +
+    return answer.getQuestion().getName() + ", with parameters { " +
       join(mapToList(answer.getParamDisplays().entrySet(),
           entry -> entry.getKey() + ": "  + entry.getValue()), ", ");
   }

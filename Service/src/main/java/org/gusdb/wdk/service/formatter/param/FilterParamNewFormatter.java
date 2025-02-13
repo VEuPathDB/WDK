@@ -31,7 +31,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
 
   public <S extends ParameterContainerInstanceSpec<S>> JSONArray getOntologyJson(DisplayablyValid<S> validSpec) throws JSONException, WdkModelException {
     var spec = validSpec.get();
-    var ontologyMap = _param.getOntology(spec.getUser(), spec.toMap());
+    var ontologyMap = _param.getOntology(spec.getRequestingUser(), spec.toMap());
     var ontologyJson = new JSONArray();
     for (var item : ontologyMap.values()) {
       ontologyJson.put(new JSONObject()
@@ -50,7 +50,7 @@ public class FilterParamNewFormatter extends ParamFormatter<FilterParamNew> {
 
   public <S extends ParameterContainerInstanceSpec<S>> JSONObject getValuesJson(DisplayablyValid<S> validSpec) throws JSONException, WdkModelException {
     var spec = validSpec.get();
-    var valuesMap = _param.getValuesMap(spec.getUser(), spec.toMap());
+    var valuesMap = _param.getValuesMap(spec.getRequestingUser(), spec.toMap());
 
     // TODO: remove this when values map is required
     if (valuesMap == null) return null;

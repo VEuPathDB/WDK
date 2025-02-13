@@ -84,8 +84,11 @@ public class Dumper {
           Map<String, String> config = parseListArgs("config", reporterConfig);
 
           // Get the reporter
-          AnswerValue answer = AnswerValueFactory.makeAnswer(user, AnswerSpec.builder(wdkModel)
-              .setQuestionFullName(questionName).setParamValues(params).buildRunnable(user, StepContainer.emptyContainer()));
+          AnswerValue answer = AnswerValueFactory.makeAnswer(AnswerSpec
+              .builder(wdkModel)
+              .setQuestionFullName(questionName)
+              .setParamValues(params)
+              .buildRunnable(user,StepContainer.emptyContainer()));
           Reporter reporter = ReporterFactory.getReporter(answer, reporterName, config);
 
           reporter.report(out);

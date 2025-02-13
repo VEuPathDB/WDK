@@ -29,43 +29,43 @@ public class QueryInstanceSpecBuilder extends ParameterContainerInstanceSpecBuil
    * 
    * @return invalid query instance spec (no validation performed)
    */
-  public QueryInstanceSpec buildInvalid() {
-    return new QueryInstanceSpec(toMap(), _assignedWeight);
+  public QueryInstanceSpec buildInvalid(User requestingUser) {
+    return QueryInstanceSpec.createUnvalidatedSpec(requestingUser, toMap(), _assignedWeight);
   }
 
   /**
    * Convenience method to create a runnable query instance spec
-   * 
-   * @param user user to glean any user params and to populate query instance context
+   * @param requestingUser user to glean any user params and to populate query instance context
    * @param query query for this instance spec
    * @param stepContainer step container used to look up steps for answer params
+   *
    * @return
    * @throws WdkModelException 
    */
-  public RunnableObj<QueryInstanceSpec> buildRunnable(User user, Query query, StepContainer stepContainer)
+  public RunnableObj<QueryInstanceSpec> buildRunnable(User requestingUser, Query query, StepContainer stepContainer)
       throws WdkModelException {
     return ValidObjectFactory.getRunnable(buildValidated(
-        user, query, stepContainer, ValidationLevel.RUNNABLE, FillStrategy.NO_FILL));
+        requestingUser, query, stepContainer, ValidationLevel.RUNNABLE, FillStrategy.NO_FILL));
   }
 
   /**
    * Fills any missing parameters in the passed builder and builds a QueryInstanceSpec using the passed
    * validation level.
-   * 
-   * @param user user to glean any user params and to populate query instance context
+   * @param requestingUser user to glean any user params and to populate query instance context
    * @param query query for this instance spec
    * @param stepContainer step container used to look up steps for answer params
    * @param validationLevel a level to validate the spec against
    * @param fillStrategy whether to fill in missing param values with defaults
+   * 
    * @return a built spec
    * @throws WdkModelException if unable to validate (e.g. DB query fails or other runtime exception)
    */
-  public QueryInstanceSpec buildValidated(User user, Query query, StepContainer stepContainer,
+  public QueryInstanceSpec buildValidated(User requestingUser, Query query, StepContainer stepContainer,
       ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
     standardizeStableValues(query);
     TwoTuple<PartiallyValidatedStableValues, ValidationBundleBuilder> paramValidation =
-        validateParams(user, query, stepContainer, validationLevel, fillStrategy);
-    return new QueryInstanceSpec(user, query, paramValidation.getFirst(),
+        validateParams(query, stepContainer, requestingUser, validationLevel, fillStrategy);
+    return new QueryInstanceSpec(requestingUser, query, paramValidation.getFirst(),
         _assignedWeight, paramValidation.getSecond().build(), stepContainer);
   }
 

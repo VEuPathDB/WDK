@@ -67,7 +67,7 @@ import org.json.JSONObject;
  * 
  * @author eharper
  */
-public class StepAnalysisInstanceService extends UserService implements StepAnalysisLookupMixin {
+public class StepAnalysisInstanceService extends AbstractUserService implements StepAnalysisLookupMixin {
 
   private static final Logger LOG = Logger.getLogger(StepAnalysisInstanceService.class);
 
@@ -126,7 +126,7 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
 
       // validate analysis name and look up plugin
       StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(
-          step.get().getAnswerSpec().getQuestion(),
+          step.get().getAnswerSpec().getQuestion().get(),
           json.getString(JsonKeys.ANALYSIS_NAME));
 
       // validate form params
@@ -194,7 +194,7 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
 
     // validate this analysis is still valid for the results of this step (no validation in case not valid for step)
     StepAnalysisInstance checkStepInstance = getAnalysis(analysisId, accessToken, ValidationLevel.NONE);
-    StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), checkStepInstance.getAnalysisName());
+    StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion().get(), checkStepInstance.getAnalysisName());
     validStepForAnalysisOrThrow(step, stepAnalysis);
 
     // get execution status of this instance; need runnably validated (but not necessarily valid) instance
@@ -286,7 +286,7 @@ public class StepAnalysisInstanceService extends UserService implements StepAnal
 
   private String getAnalysisUrl(StepAnalysisInstance instance) {
     return String.format("%s/users/%d/steps/%d/analyses/%d",
-        getServiceUri(), instance.getStep().getUser().getUserId(),
+        getServiceUri(), instance.getStep().getOwningUser().getUserId(),
         instance.getStep().getStepId(), instance.getAnalysisId());
   }
 

@@ -29,8 +29,8 @@ public class StepAnalysisFormSpecBuilder extends ParameterContainerInstanceSpecB
    * @return invalid query instance spec (no validation performed)
    */
   
-  public StepAnalysisFormSpec buildInvalid() {
-    return new StepAnalysisFormSpec(toMap());
+  public StepAnalysisFormSpec buildInvalid(User requestingUser) {
+    return new StepAnalysisFormSpec(requestingUser, toMap());
   }
 
   /**
@@ -60,12 +60,12 @@ public class StepAnalysisFormSpecBuilder extends ParameterContainerInstanceSpecB
    */
   public StepAnalysisFormSpec buildValidated(RunnableObj<Step> step, StepAnalysis stepAnalysis,
       ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
-    User user = step.get().getUser();
+    User requestingUser = step.get().getRequestingUser();
     standardizeStableValues(stepAnalysis);
-    putAll(StepAnalysisSupplementalParams.getValues(stepAnalysis, user, Step.getRunnableAnswerSpec(step)));
+    putAll(StepAnalysisSupplementalParams.getValues(stepAnalysis, Step.getRunnableAnswerSpec(step)));
     TwoTuple<PartiallyValidatedStableValues, ValidationBundleBuilder> paramValidation =
-        validateParams(user, stepAnalysis, StepContainer.emptyContainer(), validationLevel, fillStrategy);
-    return new StepAnalysisFormSpec(user, stepAnalysis, paramValidation.getFirst(),
+        validateParams(stepAnalysis, StepContainer.emptyContainer(), requestingUser, validationLevel, fillStrategy);
+    return new StepAnalysisFormSpec(requestingUser, stepAnalysis, paramValidation.getFirst(),
         paramValidation.getSecond().build());
   }
 }

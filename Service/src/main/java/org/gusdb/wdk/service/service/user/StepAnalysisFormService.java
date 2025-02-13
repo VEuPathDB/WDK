@@ -68,7 +68,7 @@ import org.json.JSONObject;
  * 
  * @author rdoherty
  */
-public class StepAnalysisFormService extends UserService implements StepAnalysisLookupMixin {
+public class StepAnalysisFormService extends AbstractUserService implements StepAnalysisLookupMixin {
 
   // endpoints to handle analysis types for a given step
   private static final String ANALYSIS_TYPES_PATH = StepService.NAMED_STEP_PATH + "/analysis-types";
@@ -94,7 +94,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray getStepAnalysisTypes() throws WdkModelException, DataValidationException {
     RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
-    Collection<StepAnalysis> stepAnalyses = step.get().getAnswerSpec().getQuestion().getStepAnalyses().values();
+    Collection<StepAnalysis> stepAnalyses = step.get().getAnswerSpec().getQuestion().get().getStepAnalyses().values();
     return StepAnalysisFormatter.getStepAnalysisTypesJsonWithoutParams(stepAnalyses);
   }
 
@@ -114,7 +114,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
 
     // get step and analysis plugin specified by caller
     RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
-    StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), analysisName);
+    StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion().get(), analysisName);
 
     // make sure the chosen analysis is compatible with this step
     validStepForAnalysisOrThrow(step, stepAnalysis);
@@ -159,7 +159,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
       @PathParam(ANALYSIS_TYPE_PATH_PARAM) String analysisName,
       String body) throws WdkModelException, RequestMisformatException, DataValidationException {
     RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
-    StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), analysisName);
+    StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion().get(), analysisName);
     validateAnswerValueForAnalysis(step, stepAnalysis);
     ParamValueSetRequest request = ParamValueSetRequest.parse(body, stepAnalysis);
     StepAnalysisFormSpec inputSpec = StepAnalysisFormSpec
@@ -217,7 +217,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
       String body) throws WdkUserException, WdkModelException, DataValidationException {
 
     RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
-    StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), analysisName);
+    StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion().get(), analysisName);
     validateAnswerValueForAnalysis(step, stepAnalysis);
     ParamValueSetRequest request = ParamValueSetRequest.parse(body, stepAnalysis);
 
@@ -287,7 +287,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
 
     // parse elements of the request
     RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
-    StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), analysisName);
+    StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion().get(), analysisName);
     FilterParamNew filterParam = getFilterParam(stepAnalysis, paramName);
     Map<String, String> contextParamValues = ParamValueSetRequest.parse(body, stepAnalysis).getContextParamValues();
     JSONObject jsonBody = new JSONObject(body);
@@ -307,7 +307,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
 
     // try to look up ontology term with this ID
     StepAnalysisFormSpec spec = validSpec.get();
-    OntologyItem ontologyItem = filterParam.getOntology(spec.getUser(), spec.toMap()).get(ontologyId);
+    OntologyItem ontologyItem = filterParam.getOntology(spec.getRequestingUser(), spec.toMap()).get(ontologyId);
     if (ontologyItem == null) {
       throw new DataValidationException("Requested ontology item '" + ontologyId + "' does not exist for this parameter (" + paramName + ").");
     }
@@ -342,7 +342,7 @@ public class StepAnalysisFormService extends UserService implements StepAnalysis
 
     // parse elements of the request
     RunnableObj<Step> step = getRunnableStepForCurrentUser(_stepId);
-    StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion(), analysisName);
+    StepAnalysis stepAnalysis = getStepAnalysisFromQuestion(step.get().getAnswerSpec().getQuestion().get(), analysisName);
     FilterParamNew filterParam = getFilterParam(stepAnalysis, paramName);
     Map<String, String> contextParamValues = ParamValueSetRequest.parse(body, stepAnalysis).getContextParamValues();
     JSONObject jsonBody = new JSONObject(body);

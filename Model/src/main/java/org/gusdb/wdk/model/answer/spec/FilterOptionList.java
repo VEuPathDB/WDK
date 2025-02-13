@@ -73,7 +73,7 @@ public class FilterOptionList implements Iterable<FilterOption>, Validateable<Fi
         }
         else {
           // filter option valid against question; is it the correct type?
-          Filter filter = filterOption.getFilter();
+          Filter filter = filterOption.getFilter().get(); // will be present since filter option is valid
           if (!containerType.containerSupports(filter.getFilterType())) {
             validation.addError("Filter with name '" + filter.getKey() + "' was declared " +
                 filter.getFilterType() + " but was found in the " + containerType + " filter list.");

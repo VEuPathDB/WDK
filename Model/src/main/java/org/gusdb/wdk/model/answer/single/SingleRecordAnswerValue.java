@@ -22,7 +22,6 @@ import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.PrimaryKeyIterator;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
-import org.gusdb.wdk.model.user.User;
 
 public class SingleRecordAnswerValue extends AnswerValue {
 
@@ -38,9 +37,9 @@ public class SingleRecordAnswerValue extends AnswerValue {
   private RecordClass _recordClass;
   private Map<String, Object> _pkMap;
 
-  public SingleRecordAnswerValue(User user, RunnableObj<AnswerSpec> validSpec) throws WdkModelException {
-    super(user, validSpec, 1, UNBOUNDED_END_PAGE_INDEX, Collections.EMPTY_MAP, false);
-    SingleRecordQuestion question = (SingleRecordQuestion)validSpec.get().getQuestion();
+  public SingleRecordAnswerValue(RunnableObj<AnswerSpec> validSpec) throws WdkModelException {
+    super(validSpec, 1, UNBOUNDED_END_PAGE_INDEX, Collections.EMPTY_MAP, false);
+    SingleRecordQuestion question = (SingleRecordQuestion)validSpec.get().getQuestion().get();
     SingleRecordQuestionParam param = question.getParam();
     _recordClass = question.getRecordClass();
     _pkMap = param.parseParamValue(validSpec.get().getQueryInstanceSpec().get(param.getName()));
@@ -54,7 +53,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
   @Override
   public RecordInstance[] getRecordInstances() throws WdkModelException {
     try {
-      return new RecordInstance[]{ new DynamicRecordInstance(_user, _recordClass, _pkMap) };
+      return new RecordInstance[]{ new DynamicRecordInstance(_requestingUser, _recordClass, _pkMap) };
     }
     catch (WdkUserException e) {
       throw new WdkModelException(e);

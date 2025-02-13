@@ -56,7 +56,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
 
 
   // fields created by the constructor
-  protected final User _user;
+  protected final User _requestingUser;
   protected final T _query;
   protected final WdkModel _wdkModel;
   protected final RunnableObj<QueryInstanceSpec> _spec;
@@ -77,10 +77,9 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
    */
   @SuppressWarnings("unchecked")
   protected QueryInstance(RunnableObj<QueryInstanceSpec> spec) {
-    // can cast here since the only way to get to the instance subclass is via
-    // the query subclass
+    // can cast here since the only way to get to the instance subclass is via the query subclass
     _query = (T)spec.get().getQuery().get();
-    _user = spec.get().getUser();
+    _requestingUser = spec.get().getRequestingUser();
     _wdkModel = _query.getWdkModel();
     _spec = spec;
     _context = createContext();
@@ -89,14 +88,13 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   private ReadOnlyMap<String, String> createContext() {
     final var question = _query.getContextQuestion();
     final var param = _query.getContextParam();
-    //noinspection Convert2MethodRef, ConstantConditions
     return new ReadOnlyHashMap<>(
       new MapBuilder<String,String>()
-        .put(Utilities.QUERY_CTX_USER, String.valueOf(_user.getUserId()))
-        .put(Utilities.QUERY_CTX_QUERY, _query.getFullName())
-        .putIf(_user.getUserToken().isPresent(), Utilities.QUERY_CTX_USER_TOKEN, _user.getUserToken().get().getTokenValue())
-        .putIf(question != null, Utilities.QUERY_CTX_QUESTION, () -> question.getFullName())
-        .putIf(param != null, Utilities.QUERY_CTX_PARAM, () -> param.getFullName())
+        .put(Utilities.CONTEXT_KEY_USER_ID, String.valueOf(_requestingUser.getUserId()))
+        .put(Utilities.CONTEXT_KEY_QUERY_FULL_NAME, _query.getFullName())
+        .put(Utilities.CONTEXT_KEY_BEARER_TOKEN_STRING, _requestingUser.getAuthenticationToken().getTokenValue())
+        .putIf(question != null, Utilities.CONTEXT_KEY_QUESTION_FULL_NAME, () -> question.getFullName())
+        .putIf(param != null, Utilities.CONTEXT_KEY_PARAM_NAME, () -> param.getFullName())
         .toMap());
   }
 
@@ -193,7 +191,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
     // build JSON from signatures; slightly different than new JSONObject(map)
     try {
       JSONObject jsParams = new JSONObject();
-      for (String paramName : _spec.get().getQuery().get().getParamMap().keySet()) {
+      for (String paramName : _query.getParamMap().keySet()) {
         String value = signatures.get(paramName);
         if (value != null && !value.isEmpty())
           jsParams.put(paramName, value);
