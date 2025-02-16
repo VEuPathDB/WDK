@@ -92,16 +92,16 @@ public class Utilities {
   public static final String CONTEXT_KEY_QUESTION_FULL_NAME = "wdk-question";
   public static final String CONTEXT_KEY_QUERY_FULL_NAME = "wdk-query";
   public static final String CONTEXT_KEY_PARAM_NAME = "wdk-param";
-  public static final String CONTEXT_KEY_USER_ID = "wdk-user";
+  public static final String CONTEXT_KEY_USER_ID = "wdk-user-id";
   public static final String CONTEXT_KEY_BEARER_TOKEN_STRING = "wdk-user-token";
 
   public static final String RECORD_DIVIDER = "\n";
   public static final String COLUMN_DIVIDER = ",";
 
   // keys used to access objects set on ServletContext and Request context objects
-  public static final String CONTEXT_KEY_WDK_MODEL_OBJECT = "wdk_model";
-  public static final String CONTEXT_KEY_USER_OBJECT = "wdk_user";
-  public static final String CONTEXT_KEY_VALIDATED_TOKEN_OBJECT = "bearer-token";
+  public static final String CONTEXT_KEY_WDK_MODEL_OBJECT = "wdk-model";
+  public static final String CONTEXT_KEY_USER_OBJECT = "wdk-user";
+  public static final String CONTEXT_KEY_VALIDATED_TOKEN_OBJECT = "validated-user-token";
 
   public static final String WDK_SERVICE_ENDPOINT_KEY = "wdkServiceEndpoint";
 
