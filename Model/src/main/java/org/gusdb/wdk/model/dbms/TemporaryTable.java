@@ -19,7 +19,7 @@ public class TemporaryTable implements AutoCloseable {
   public TemporaryTable(WdkModel wdkModel, Function<String,String> createTableSql) throws WdkModelException {
 
     ResultFactory resultFactory = new ResultFactory(wdkModel.getAppDb());
-    String checksum = Utilities.randomAlphaNumericString(100);
+    String checksum = Utilities.randomAlphaNumericString(40);
 
     _instance = resultFactory.cacheResults(checksum, new CacheTableCreator() {
 
