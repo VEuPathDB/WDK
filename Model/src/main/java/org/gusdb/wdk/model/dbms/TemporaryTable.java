@@ -13,10 +13,12 @@ import org.gusdb.wdk.model.dbms.ResultFactory.CacheTableCreator;
 
 public class TemporaryTable implements AutoCloseable {
 
-  private WdkModel _wdkModel;
-  private InstanceInfo _instance;
+  private final WdkModel _wdkModel;
+  private final InstanceInfo _instance;
 
   public TemporaryTable(WdkModel wdkModel, Function<String,String> createTableSql) throws WdkModelException {
+
+    _wdkModel = wdkModel;
 
     ResultFactory resultFactory = new ResultFactory(wdkModel.getAppDb());
     String checksum = Utilities.randomAlphaNumericString(40);
