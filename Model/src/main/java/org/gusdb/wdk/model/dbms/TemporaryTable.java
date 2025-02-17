@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.dbms;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
@@ -12,6 +13,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dbms.ResultFactory.CacheTableCreator;
 
 public class TemporaryTable implements AutoCloseable {
+
+  private static final Logger LOG = Logger.getLogger(TemporaryTable.class);
 
   private final WdkModel _wdkModel;
   private final InstanceInfo _instance;
@@ -46,6 +49,8 @@ public class TemporaryTable implements AutoCloseable {
         return "WdkTemporaryTable_" + checksum.substring(0, 10);
       }
     }, false);
+
+    LOG.info("Created temporary table " + _instance.getTableName());
   }
 
   public String getTableName() {
@@ -54,6 +59,7 @@ public class TemporaryTable implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
+    LOG.info("Dropping temporary table " + _instance.getTableName());
     new CacheFactory(_wdkModel).dropCache(_instance.getInstanceId(), true);
   }
 }
