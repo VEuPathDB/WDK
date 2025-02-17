@@ -26,6 +26,8 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
+import org.gusdb.wdk.model.OwnedObject;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -34,7 +36,7 @@ import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.Fill
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 
-public class Strategy implements StepContainer, Validateable<Strategy> {
+public class Strategy implements StepContainer, Validateable<Strategy>, OwnedObject {
 
   private static final Logger LOG = Logger.getLogger(Strategy.class);
 
@@ -42,7 +44,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
 
     private final WdkModel _wdkModel;
     private final long _strategyId;
-    private long _userId;
+    private long _owningUserId;
     private String _projectId;
     private String _version;
     private String _name;
@@ -59,17 +61,17 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
 
     private Map<Long,StepBuilder> _stepMap = new HashMap<>();
 
-    public StrategyBuilder(WdkModel wdkModel, long userId, long strategyId) {
+    public StrategyBuilder(WdkModel wdkModel, long owningUserId, long strategyId) {
       _wdkModel = wdkModel;
       _projectId = wdkModel.getProjectId();
       _version = wdkModel.getVersion();
-      _userId = userId;
+      _owningUserId = owningUserId;
       _strategyId = strategyId;
     }
 
     private StrategyBuilder(Strategy strategy) {
       _wdkModel = strategy._wdkModel;
-      _userId = strategy.getUser().getUserId();
+      _owningUserId = strategy.getOwningUser().getUserId();
       _strategyId = strategy._strategyId;
       _projectId = strategy._projectId;
       _version = strategy._version;
@@ -92,8 +94,8 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
       return _strategyId;
     }
 
-    public long getUserId() {
-      return _userId;
+    public long getOwningUserId() {
+      return _owningUserId;
     }
 
     public StrategyBuilder setProjectId(String projectId) {
@@ -174,9 +176,9 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
       return this;
     }
 
-    public StrategyBuilder setUserId(long userId) {
-      _userId = userId;
-      _stepMap.values().stream().forEach(step -> step.setUserId(userId));
+    public StrategyBuilder setOwningUserId(long owningUserId) {
+      _owningUserId = owningUserId;
+      _stepMap.values().stream().forEach(step -> step.setOwningUserId(owningUserId));
       return this;
     }
 
@@ -192,17 +194,17 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
       return this;
     }
 
-    public Strategy build(UserCache userCache, ValidationLevel validationLevel)
+    public Strategy build(UserInfoCache owningUserCache, User requestingUser, ValidationLevel validationLevel)
         throws InvalidStrategyStructureException, WdkModelException {
-      return build(userCache, validationLevel, FillStrategy.NO_FILL);
+      return build(owningUserCache, requestingUser, validationLevel, FillStrategy.NO_FILL);
     }
 
-    public Strategy build(UserCache userCache, ValidationLevel validationLevel, FillStrategy fillStrategy)
+    public Strategy build(UserInfoCache owningUserCache, User requestingUser, ValidationLevel validationLevel, FillStrategy fillStrategy)
         throws InvalidStrategyStructureException, WdkModelException {
       if (_rootStepId == 0) {
         throw new InvalidStrategyStructureException("Root step ID is required but has not been set.");
       }
-      return new Strategy(this, userCache.get(_userId), validationLevel, fillStrategy);
+      return new Strategy(this, owningUserCache, requestingUser, validationLevel, fillStrategy);
     }
 
     public long getNumSteps() {
@@ -210,8 +212,8 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     }
   }
 
-  public static StrategyBuilder builder(WdkModel wdkModel, long userId, long strategyId) {
-    return new StrategyBuilder(wdkModel, userId, strategyId);
+  public static StrategyBuilder builder(WdkModel wdkModel, long owningUserId, long strategyId) {
+    return new StrategyBuilder(wdkModel, owningUserId, strategyId);
   }
 
   public static StrategyBuilder builder(Strategy strategy) {
@@ -219,7 +221,8 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
   }
 
   private final WdkModel _wdkModel;
-  private final User _user;
+  private final UserInfo _owningUser;
+  private final User _requestingUser;
   private final long _strategyId;
   private final String _projectId;
   private final String _version;
@@ -237,10 +240,11 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
   private final Map<Long, Step> _stepMap;
   private final ValidationBundle _validationBundle;
 
-  private Strategy(StrategyBuilder strategyBuilder, User user,
-      ValidationLevel validationLevel, FillStrategy fillStrategy)
+  private Strategy(StrategyBuilder strategyBuilder, UserInfoCache owningUserCache,
+      User requestingUser, ValidationLevel validationLevel, FillStrategy fillStrategy)
           throws InvalidStrategyStructureException, WdkModelException {
-    _user = user;
+    _owningUser = owningUserCache.get(strategyBuilder._owningUserId);
+    _requestingUser = requestingUser;
     _wdkModel = strategyBuilder._wdkModel;
     _strategyId = strategyBuilder._strategyId;
     _projectId = strategyBuilder._projectId;
@@ -258,20 +262,20 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     _rootStepId = strategyBuilder._rootStepId;
     _stepMap = new HashMap<>();
     // populates _stepMap
-    buildSteps(strategyBuilder._stepMap, validationLevel, fillStrategy);
+    buildSteps(strategyBuilder._stepMap, owningUserCache, requestingUser, validationLevel, fillStrategy);
     _validationBundle = ValidationBundle.builder(validationLevel)
         .aggregateStatus(_stepMap.values().toArray(new Step[0]))
         .build();
   }
 
-  private void buildSteps(Map<Long, StepBuilder> steps,
-      ValidationLevel validationLevel, FillStrategy fillStrategy)
+  private void buildSteps(Map<Long, StepBuilder> steps, UserInfoCache owningUserCache,
+      User requestingUser, ValidationLevel validationLevel, FillStrategy fillStrategy)
           throws InvalidStrategyStructureException, WdkModelException {
 
-    // Confirm project and user id match across strat and all steps, and that steps were properly assigned
+    // Confirm project and owning user id match across strat and all steps, and that steps were properly assigned
     for (StepBuilder step : steps.values()) {
       String identifier = "Step " + step.getStepId();
-      if (_user.getUserId() != step.getUserId()) {
+      if (_owningUser.getUserId() != step.getUserId()) {
         throw new InvalidStrategyStructureException(identifier + " does not have the same owner as its strategy, " + _strategyId);
       }
       if (!_projectId.equals(step.getProjectId())) {
@@ -286,7 +290,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     // temporarily build an actual tree of the steps from a copy of the step builder map
     Map<Long, StepBuilder> stepMap = new HashMap<>(steps); // make a copy since buildTree modifies it
     TreeNode<StepBuilder> builderTree = buildTree(stepMap, _rootStepId);
-    // FIXME: uncomment when findCircularPaths is implemented
+    // FIXME: uncomment when findCircularPaths is implemented; actually should rename; want a directed tree, not any other graph
     //if (!builderTree.findCircularPaths().isEmpty()) {
     //  throw new InvalidStrategyStructureException("Strategy " + _strategyId + "'s tree has at least one circular dependency.");
     //}
@@ -301,7 +305,6 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
 
     // Build StepBuilders from the bottom up into a tree of Steps, setting dirty
     // bits on steps downstream from dirty steps as it builds the tree.
-    UserCache userCache = new UserCache(_user);
     Strategy thisStrategy = this;
 
     // map structure into a TreeNode<Step> so branches have access to the
@@ -319,7 +322,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
             // build the step
             Step step = builder
               .setResultSizeDirty(isDirty)
-              .build(userCache, validationLevel, fillStrategy, Optional.of(thisStrategy));
+              .build(owningUserCache, requestingUser, validationLevel, fillStrategy, Optional.of(thisStrategy));
   
             // add to strategy
             thisStrategy._stepMap.put(step.getStepId(), step);
@@ -387,8 +390,9 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     return node;
   }
 
-  public User getUser() {
-    return _user;
+  @Override
+  public UserInfo getOwningUser() {
+    return _owningUser;
   }
 
   public boolean isDeleted() {
@@ -416,7 +420,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
   }
 
   public boolean isExample() {
-    String userDisplayName = _user.getDisplayName();
+    String userDisplayName = _owningUser.getDisplayName();
     String exampleStratsAuthorName = _wdkModel.getExampleStratsAuthor().getName();
 
     return userDisplayName.equals(exampleStratsAuthorName);
@@ -453,8 +457,10 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
    */
   public long getLeafAndTransformStepCount() {
     return getAllSteps().stream()
-        .filter(step -> !step.hasValidQuestion() ||
-            step.getAnswerSpec().getQuestion().getQuery().getAnswerParamCount() < 2)
+        // filter out if known boolean question
+        .filter(step -> step.getAnswerSpec().getQuestion()
+            .map(q -> q.getQuery().getAnswerParamCount() < 2)
+            .orElse(true)) // keep if invalid question name
         .collect(Collectors.counting());
   }
   
@@ -553,7 +559,7 @@ public class Strategy implements StepContainer, Validateable<Strategy> {
     // this strategy may or may not have been validated at the runnable level; if not, make one that is
     Strategy strat =
         getValidationBundle().getLevel().isGreaterThanOrEqualTo(ValidationLevel.RUNNABLE) ? this :
-          swallowAndGet(() -> Strategy.builder(this).build(new UserCache(getUser()), ValidationLevel.RUNNABLE));
+          swallowAndGet(() -> Strategy.builder(this).build(new UserInfoCache(_wdkModel, this), _requestingUser, ValidationLevel.RUNNABLE));
 
     LOG.debug("Updating stale result sizes on runnable steps");
     strat.getAllSteps().stream()

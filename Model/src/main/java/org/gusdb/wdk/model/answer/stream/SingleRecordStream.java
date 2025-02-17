@@ -15,8 +15,8 @@ public class SingleRecordStream implements RecordStream {
   private final List<RecordInstance> _record;
 
   public SingleRecordStream(SingleRecordAnswerValue answerValue) throws WdkModelException, WdkUserException {
-    RecordInstance record = new DynamicRecordInstance(answerValue.getUser(),
-        answerValue.getAnswerSpec().getQuestion().getRecordClass(), answerValue.getPrimaryKeyValueMap());
+    RecordInstance record = new DynamicRecordInstance(answerValue.getRequestingUser(),
+        answerValue.getQuestion().getRecordClass(), answerValue.getPrimaryKeyValueMap());
     _record = new ListBuilder<RecordInstance>(record).toList();
   }
 

@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.fgputil.json.JsonType;
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.dataset.UserDataset;
 import org.gusdb.wdk.model.user.dataset.UserDatasetCompatibility;
@@ -180,7 +180,7 @@ public class UserDatasetFormatter implements UserDatasetsFormatter {
           JSONArray sharesJson = new JSONArray();
           for (long targetUserId : userDatasetShareMap.get(key).get(targetDatasetId)) {
             JSONObject shareJson = new JSONObject();
-            User user = userFactory.getUserById(targetUserId)
+            UserInfo user = userFactory.getUserById(targetUserId)
                 .orElseThrow(() -> new WdkModelException("No user exists with ID " + targetUserId));
             shareJson.put("email", user.getEmail());
             shareJson.put("user", user.getUserId());

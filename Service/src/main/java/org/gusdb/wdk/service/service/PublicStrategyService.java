@@ -18,6 +18,7 @@ import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.InvalidStrategyStructureException;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.Strategy.StrategyBuilder;
 import org.gusdb.wdk.model.user.StrategyLoader.UnbuildableStrategyList;
@@ -46,8 +47,7 @@ public class PublicStrategyService extends AbstractWdkService {
       @QueryParam("userEmail") List<String> userEmails,
       @QueryParam("invalid") @DefaultValue("false") Boolean returnInvalid)
   throws JSONException, WdkModelException {
-    Stream<Strategy> strategies = getWdkModel()
-      .getStepFactory()
+    Stream<Strategy> strategies = new StepFactory(getRequestingUser())
       .getPublicStrategies()
       .stream()
       .filter(returnInvalid ?
@@ -56,7 +56,7 @@ public class PublicStrategyService extends AbstractWdkService {
 
     if (!userEmails.isEmpty())
       strategies = strategies.filter(strat -> userEmails.stream()
-        .anyMatch(userEmail -> strat.getUser()
+        .anyMatch(userEmail -> strat.getOwningUser()
           .getEmail()
           .equals(userEmail)));
 
@@ -82,8 +82,7 @@ public class PublicStrategyService extends AbstractWdkService {
     TwoTuple<
       UnbuildableStrategyList<InvalidStrategyStructureException>,
       UnbuildableStrategyList<WdkModelException>
-    > erroredStrats = getWdkModel()
-      .getStepFactory()
+    > erroredStrats = new StepFactory(getRequestingUser())
       .getPublicStrategyErrors();
     return new JSONObject()
       .put("structuralErrors", formatErrors(erroredStrats.getFirst()))
@@ -97,7 +96,7 @@ public class PublicStrategyService extends AbstractWdkService {
       Exception e = erroredStrat.getSecond();
       arr.put(new JSONObject()
         .put(JsonKeys.STRATEGY_ID, strat.getStrategyId())
-        .put(JsonKeys.USER_ID, strat.getUserId())
+        .put(JsonKeys.USER_ID, strat.getOwningUserId())
         .put(JsonKeys.EXCEPTION, new JSONObject()
           .put(JsonKeys.MESSAGE, e.getMessage())
           .put(JsonKeys.STACK_TRACE, FormatUtil.getStackTrace(e))));

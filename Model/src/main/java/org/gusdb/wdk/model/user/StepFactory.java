@@ -38,6 +38,7 @@ import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
 import org.gusdb.wdk.events.StepCopiedEvent;
 import org.gusdb.wdk.events.StepResultsModifiedEvent;
 import org.gusdb.wdk.model.Utilities;
@@ -54,6 +55,7 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.Strategy.StrategyBuilder;
 import org.gusdb.wdk.model.user.StrategyLoader.UnbuildableStrategyList;
@@ -130,12 +132,14 @@ public class StepFactory {
   public static final int UNKNOWN_SIZE = -1;
 
   private final WdkModel _wdkModel;
+  private final User _requestingUser;
   private final DataSource _userDbDs;
   private final DBPlatform _userDbPlatform;
   private final String _userSchema;
 
-  public StepFactory(WdkModel wdkModel) {
-    _wdkModel = wdkModel;
+  public StepFactory(User requestingUser) {
+    _wdkModel = requestingUser.getWdkModel();
+    _requestingUser = requestingUser;
     DatabaseInstance userDb = _wdkModel.getUserDb();
     _userDbDs = userDb.getDataSource();
     _userDbPlatform = userDb.getPlatform();
@@ -143,7 +147,7 @@ public class StepFactory {
   }
 
   @SuppressWarnings("UseOfObsoleteDateTimeApi")
-  public SemanticallyValid<Step> createStep(User user, SemanticallyValid<AnswerSpec> validSpec, String customName,
+  public SemanticallyValid<Step> createStep(User owner, SemanticallyValid<AnswerSpec> validSpec, String customName,
       boolean isExpanded, String expandedName, JSONObject displayPrefs) throws WdkModelException {
 
     // define creation time
@@ -153,7 +157,7 @@ public class StepFactory {
 
     // create the Step
     Step step = Step
-        .builder(_wdkModel, user.getUserId(), getNewStepId())
+        .builder(_wdkModel, owner.getUserId(), getNewStepId())
         .setCreatedTime(createTime)
         .setLastRunTime(lastRunTime)
         .setDeleted(false)
@@ -165,7 +169,7 @@ public class StepFactory {
         .setDisplayPrefs(displayPrefs)
         .setStrategyId(Optional.empty()) // new steps do not belong to a strategy
         .setAnswerSpec(AnswerSpec.builder(validSpec.get()))
-        .build(new UserCache(user), ValidationLevel.SEMANTIC, Optional.empty());
+        .build(new UserInfoCache(_wdkModel.getUserFactory(), owner), owner, ValidationLevel.SEMANTIC, Optional.empty());
 
     // insert step into the database
     insertStep(step);
@@ -257,7 +261,7 @@ public class StepFactory {
   }
 
   public Map<Long, Step> getStepsByUserId(long userId, ValidationLevel level) throws WdkModelException {
-    return new StrategyLoader(_wdkModel, level, DEFAULT_DB_FILL_STRATEGY).getSteps(userId);
+    return new StrategyLoader(_requestingUser, level, DEFAULT_DB_FILL_STRATEGY).getSteps(userId);
   }
 
   /**
@@ -273,7 +277,7 @@ public class StepFactory {
    */
   public Optional<Step> getStepById(long stepId, ValidationLevel validationLevel) throws WdkModelException {
     LOG.debug("Loading step#" + stepId + "....");
-    return new StrategyLoader(_wdkModel, validationLevel, DEFAULT_DB_FILL_STRATEGY).getStepById(stepId);
+    return new StrategyLoader(_requestingUser, validationLevel, DEFAULT_DB_FILL_STRATEGY).getStepById(stepId);
   }
 
   public Step getStepByValidId(long stepId, ValidationLevel validationLevel) throws WdkModelException {
@@ -291,14 +295,14 @@ public class StepFactory {
   public Map<Long, Strategy> getStrategies(long userId, ValidationLevel validationLevel, FillStrategy fillStrategy,
       UnbuildableStrategyList<InvalidStrategyStructureException> malformedStrategies,
       UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors) throws WdkModelException {
-    return new StrategyLoader(_wdkModel, validationLevel, fillStrategy)
+    return new StrategyLoader(_requestingUser, validationLevel, fillStrategy)
         .getStrategies(userId, malformedStrategies, stratsWithBuildErrors);
   }
 
   public Map<Long, Strategy> getAllStrategies(ValidationLevel validationLevel,
       UnbuildableStrategyList<InvalidStrategyStructureException> malformedStrategies,
       UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors) throws WdkModelException {
-    return new StrategyLoader(_wdkModel, validationLevel, DEFAULT_DB_FILL_STRATEGY)
+    return new StrategyLoader(_requestingUser, validationLevel, DEFAULT_DB_FILL_STRATEGY)
         .getAllStrategies(malformedStrategies, stratsWithBuildErrors);
   }
 
@@ -317,12 +321,12 @@ public class StepFactory {
    */
   public List<Strategy> getStrategies(long userId, boolean saved,
       boolean recent) throws WdkModelException {
-    return new StrategyLoader(_wdkModel, ValidationLevel.SYNTACTIC, DEFAULT_DB_FILL_STRATEGY)
+    return new StrategyLoader(_requestingUser, ValidationLevel.SYNTACTIC, DEFAULT_DB_FILL_STRATEGY)
         .getStrategies(userId, saved, recent);
   }
 
   public List<Strategy> getPublicStrategies() throws WdkModelException {
-    return new StrategyLoader(_wdkModel, ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
+    return new StrategyLoader(_requestingUser, ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
         .getPublicStrategies();
   }
 
@@ -334,7 +338,7 @@ public class StepFactory {
    *   if unable to load and validate all public strats
    */
   public int getPublicStrategyCount() throws WdkModelException {
-    return filter(new StrategyLoader(_wdkModel, ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
+    return filter(new StrategyLoader(_requestingUser, ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
         .getPublicStrategies(), Strategy::isValid).size();
   }
 
@@ -342,13 +346,13 @@ public class StepFactory {
     UnbuildableStrategyList<InvalidStrategyStructureException>,
     UnbuildableStrategyList<WdkModelException>
   > getPublicStrategyErrors() throws WdkModelException {
-    return new StrategyLoader(_wdkModel, ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
+    return new StrategyLoader(_requestingUser, ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
         .getPublicStrategyErrors();
   }
 
   public Optional<Strategy> getStrategyById(long strategyId,
       ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
-    return new StrategyLoader(_wdkModel, validationLevel, fillStrategy)
+    return new StrategyLoader(_requestingUser, validationLevel, fillStrategy)
         .getStrategyById(strategyId);
   }
 
@@ -377,11 +381,13 @@ public class StepFactory {
 
     // create stub strategy- will not be saved to DB; used only to create and
     // validate steps.  answer param values are valid (make a valid tree) in this strategy
+    WdkModel model = user.getWdkModel();
+    UserInfoCache userCache = new UserInfoCache(user);
     Strategy stratStub = Functions.mapException(
-        () -> Strategy.builder(user.getWdkModel(), user.getUserId(), 0)
+        () -> Strategy.builder(model, user.getUserId(), 0)
           .setRootStepId(stepBuilders.get(strategy.getRootStepId()).getStepId())
           .addSteps(stepBuilders.values())
-          .build(new UserCache(user), ValidationLevel.NONE),
+          .build(userCache, user, ValidationLevel.NONE),
           // tree structure should already have been validated when creating the passed in strategy
           e -> new WdkModelException(e));
 
@@ -390,7 +396,7 @@ public class StepFactory {
     List<Step> orphanSteps = new ArrayList<>();
     for (StepBuilder step : stepBuilders.values()) {
       step.removeStrategy();
-      orphanSteps.add(step.build(new UserCache(user), ValidationLevel.NONE, Optional.empty()));
+      orphanSteps.add(step.build(userCache, user, ValidationLevel.NONE, Optional.empty()));
     }
 
     // write orphan steps to the DB to be used by caller
@@ -448,7 +454,7 @@ public class StepFactory {
         .setSignature(signature)
         .setVersion(wdkModel.getVersion())
         .addSteps(newStepMap.values())
-        .build(new UserCache(user), ValidationLevel.RUNNABLE),
+        .build(new UserInfoCache(user), user, ValidationLevel.RUNNABLE),
       // tree structure should already have been validated when creating the passed in strategy
         WdkModelException::new);
 
@@ -557,7 +563,7 @@ public class StepFactory {
 
     return new Object[] {
       step.getStepId(),
-      step.getUser().getUserId(),
+      step.getOwningUser().getUserId(),
       new Timestamp(step.getCreatedTime().getTime()),
       new Timestamp(step.getLastRunTime().getTime()),
       step.getEstimatedSize(),
@@ -633,7 +639,7 @@ public class StepFactory {
       .executeStatement(
         new Object[] {
           newStrategy.getStrategyId(),
-          newStrategy.getUser().getUserId(),
+          newStrategy.getOwningUser().getUserId(),
           newStrategy.getRootStep().getStepId(),
           _userDbPlatform.convertBoolean(newStrategy.isSaved()),
           newStrategy.getName(),
@@ -652,24 +658,25 @@ public class StepFactory {
     Date now = new Date();
     StepBuilder newStep = Step.builder(oldStep)
       .setStepId(getNewStepId())
-      .setUserId(newUser.getUserId())
+      .setOwningUserId(newUser.getUserId())
       .setStrategyId(Optional.empty())
       .setEstimatedSize(Step.RESET_SIZE_FLAG) // always reset on copy
       .setCreatedTime(now)
       .setLastRunTime(now);
 
+    Optional<Question> question = oldStep.getAnswerSpec().getQuestion();
     MapBuilder<Long,StepBuilder> childSteps =
-      oldStep.getAnswerSpec().hasValidQuestion()
-        ? assignParamValues(oldStep.getUser(), oldStep.getAnswerSpec(), newUser, newStep.getAnswerSpec())
+      question.isPresent()
+        ? assignParamValues(oldStep.getOwningUser(), oldStep.getAnswerSpec(), question.get(), newUser, newStep.getAnswerSpec())
         : new MapBuilder<>(); // no child steps can be parsed from invalid question
 
     return childSteps.put(oldStep.getStepId(), newStep);
   }
 
-  private MapBuilder<Long, StepBuilder> assignParamValues(User oldUser, AnswerSpec oldSpec, User newUser,
+  private MapBuilder<Long, StepBuilder> assignParamValues(UserInfo oldUser, AnswerSpec oldSpec, Question question, User newUser,
       AnswerSpecBuilder newSpec) throws WdkModelException {
     MapBuilder<Long,StepBuilder> newStepMap = new MapBuilder<>();
-    for (Param param : oldSpec.getQuestion().getParams()) {
+    for (Param param : question.getParams()) {
       String oldStableValue = oldSpec.getQueryInstanceSpec().get(param.getName());
       String replacementValue =
           param instanceof AnswerParam
@@ -694,7 +701,7 @@ public class StepFactory {
   }
 
   // clone DatasetParams (we want a fresh copy per step because we don't track which steps are using a dataset param)
-  private String cloneDatasetParam(User oldUser, String oldStableValue,
+  private String cloneDatasetParam(UserInfo oldUser, String oldStableValue,
       User newUser) throws WdkModelException {
     try {
       long oldDatasetId = Long.parseLong(oldStableValue);
@@ -711,7 +718,7 @@ public class StepFactory {
 
   public Optional<Strategy> getStrategyBySignature(String strategySignature)
       throws WdkModelException {
-    return new StrategyLoader(_wdkModel, ValidationLevel.SEMANTIC, DEFAULT_DB_FILL_STRATEGY)
+    return new StrategyLoader(_requestingUser, ValidationLevel.SEMANTIC, DEFAULT_DB_FILL_STRATEGY)
         .getStrategyBySignature(strategySignature);
   }
 
@@ -775,7 +782,7 @@ public class StepFactory {
 
     final Object[] params = new Object[] {
       strat.getName(),
-      strat.getUser().getUserId(),
+      strat.getOwningUser().getUserId(),
       strat.getRootStep().getStepId(),
       strat.getSavedName(),
       _userDbPlatform.convertBoolean(strat.isSaved()),
@@ -920,7 +927,7 @@ public class StepFactory {
       final AnswerSpec spec = step.getAnswerSpec();
 
       batch.add(new Object[]{
-        step.getUser().getUserId(),
+        step.getOwningUser().getUserId(),
         step.getPrimaryInputStep().map(Step::getStepId).orElse(null),
         step.getSecondaryInputStep().map(Step::getStepId).orElse(null),
         step.getLastRunTime(),
@@ -1000,7 +1007,7 @@ public class StepFactory {
 
     return new SQLRunner(_userDbDs, sql).executeQuery(
       new Object[] {
-        strategy.getUser().getUserId(),
+        strategy.getOwningUser().getUserId(),
         _wdkModel.getProjectId(),
         name,
         _userDbPlatform.convertBoolean(saved || strategy.isSaved()),
@@ -1152,7 +1159,7 @@ public class StepFactory {
   public Optional<Step> getStepByIdAndUserId(long stepId, long userId,
       ValidationLevel validationLevel) throws WdkModelException {
     Optional<Step> step = getStepById(stepId, validationLevel);
-    if (step.isPresent() && step.get().getUser().getUserId() != userId) {
+    if (step.isPresent() && step.get().getOwningUser().getUserId() != userId) {
       return Optional.empty();
     }
     return step;
@@ -1174,8 +1181,8 @@ public class StepFactory {
         FillStrategy.NO_FILL, malformedStrats, stratsWithBuildErrors).values()) {
       StrategyBuilder builder = null;
       try {
-        builder = Strategy.builder(strategy).setUserId(registeredUser.getUserId());
-        updateStrategy(builder.build(new UserCache(registeredUser), ValidationLevel.NONE));
+        builder = Strategy.builder(strategy).setOwningUserId(registeredUser.getUserId());
+        updateStrategy(builder.build(new UserInfoCache(registeredUser), registeredUser, ValidationLevel.NONE));
       }
       catch (InvalidStrategyStructureException e) {
         logMalformedStrat(new TwoTuple<>(builder, e));

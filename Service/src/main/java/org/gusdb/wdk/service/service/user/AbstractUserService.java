@@ -10,16 +10,14 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.service.AbstractWdkService;
 
-/*
- * TODO: rename this AbstractUserService when this branch is merged into trunk
- */
-@Path(UserService.NAMED_USER_PATH)
-public abstract class UserService extends AbstractWdkService {
+@Path(AbstractUserService.NAMED_USER_PATH)
+public abstract class AbstractUserService extends AbstractWdkService {
 
   private static final String NOT_LOGGED_IN = "You must log in to use this functionality.";
 
@@ -35,7 +33,7 @@ public abstract class UserService extends AbstractWdkService {
 
   private final String _userIdStr;
 
-  protected UserService(@PathParam(USER_ID_PATH_PARAM) String userIdStr) {
+  protected AbstractUserService(@PathParam(USER_ID_PATH_PARAM) String userIdStr) {
     _userIdStr = userIdStr;
   }
 
@@ -54,11 +52,11 @@ public abstract class UserService extends AbstractWdkService {
    */
   public UserBundle getUserBundle(Access requestedAccess) throws WdkModelException {
     UserBundle userBundle = parseTargetUserId(_userIdStr);
-    if (!userBundle.isValidUserId()) {
-      throw new NotFoundException(AbstractWdkService.formatNotFound(USER_RESOURCE + userBundle.getTargetUserIdString()));
+    if (!userBundle.isValidTargetUserId()) {
+      throw new NotFoundException(AbstractWdkService.formatNotFound(USER_RESOURCE + _userIdStr));
     }
-    if ((!userBundle.isSessionUser() && Access.PRIVATE.equals(requestedAccess)) ||
-        (!userBundle.isAdminSession() && Access.ADMIN.equals(requestedAccess))) {
+    if ((!userBundle.isTargetRequestingUser() && Access.PRIVATE.equals(requestedAccess)) ||
+        (!getRequestingUser().isAdmin() && Access.ADMIN.equals(requestedAccess))) {
       throw new ForbiddenException(AbstractWdkService.PERMISSION_DENIED);
     }
     return userBundle;
@@ -66,7 +64,7 @@ public abstract class UserService extends AbstractWdkService {
 
   protected User getPrivateRegisteredUser() throws WdkModelException {
     UserBundle userBundle = getUserBundle(Access.PRIVATE);
-    User user = userBundle.getTargetUser();
+    User user = userBundle.getRequestingUser();
     if (user.isGuest()) {
       throw new ForbiddenException(NOT_LOGGED_IN);
     }
@@ -74,11 +72,11 @@ public abstract class UserService extends AbstractWdkService {
   }
 
   protected Step getStepForCurrentUser(long stepId, ValidationLevel level) throws WdkModelException {
-    return getWdkModel()
-        .getStepFactory()
+    User user = getUserBundle(Access.PRIVATE).getRequestingUser();
+    return new StepFactory(user)
         .getStepByIdAndUserId(
             stepId,
-            getUserBundle(Access.PRIVATE).getSessionUser().getUserId(),
+            user.getUserId(),
             level)
         .orElseThrow(
             () -> new NotFoundException(formatNotFound(STEP_RESOURCE + stepId)));

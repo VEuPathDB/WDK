@@ -9,4 +9,9 @@ public interface User extends org.gusdb.oauth2.client.veupathdb.User {
   default String getRegistrationStatus() {
     return isGuest() ? "guest" : "registered";
   }
+
+  default boolean isAdmin() {
+    return getWdkModel().getModelConfig().getAdminEmails().contains(getEmail());
+  }
+
 }

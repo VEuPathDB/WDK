@@ -30,6 +30,7 @@ import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * Implementation of StepAnalysisDataStore that stores information in the
@@ -353,7 +354,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
   }
 
   @Override
-  public Optional<StepAnalysisInstance> getInstanceById(long analysisId, WdkModel wdkModel, ValidationLevel level)
+  public Optional<StepAnalysisInstance> getInstanceById(User requestingUser, long analysisId, ValidationLevel level)
       throws WdkModelException {
     try {
       return new SQLRunner(_userDs, GET_ANALYSIS_BY_ID_SQL, "find-analysis-by-id")
@@ -363,7 +364,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
               // no rows found
               return Optional.empty();
             }
-            StepAnalysisInstance instance = readInstance(rs, wdkModel, level);
+            StepAnalysisInstance instance = readInstance(rs, requestingUser, level);
             if (rs.next()) {
               // more than one row
               throw new SQLRunnerException("Found more than one row for analysisId " +
@@ -390,7 +391,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
           try {
             List<StepAnalysisInstance> instanceList = new ArrayList<>();
             while(rs.next()) {
-              instanceList.add(readInstance(rs, step.getAnswerSpec().getWdkModel(), level));
+              instanceList.add(readInstance(rs, step.getRequestingUser(), level));
             }
             return instanceList;
           }
@@ -406,10 +407,10 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
 
   // SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, USER_NOTES, IS_NEW, CONTEXT
   // WdkModel wdkModel, long analysisId, long stepId, RevisionStatus revisionStatus, String displayName, String userNotes, String serializedInstance, ValidationLevel validationLevel
-  private StepAnalysisInstance readInstance(ResultSet rs, WdkModel wdkModel, ValidationLevel level)
+  private StepAnalysisInstance readInstance(ResultSet rs, User user, ValidationLevel level)
       throws WdkModelException, SQLException {
     return StepAnalysisInstance.createFromStoredData(
-        wdkModel,
+        user,
         rs.getLong(1),
         rs.getLong(2),
         RevisionStatus.valueOf(rs.getInt(5)),

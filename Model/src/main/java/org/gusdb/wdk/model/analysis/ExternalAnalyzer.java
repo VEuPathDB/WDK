@@ -150,7 +150,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
 
     // if hasHeader and display value map requested, dump
     if (hasHeader && determineBooleanProperty(DUMP_HEADER_DISPLAY_MAP_PROP_KEY, DUMP_HEADER_DISPLAY_MAP_BY_DEFAULT)) {
-      dumpHeaderDisplayMap(answerValue.getAnswerSpec().getQuestion().getRecordClass(), storageDir);
+      dumpHeaderDisplayMap(answerValue.getQuestion().getRecordClass(), storageDir);
     }
 
     try {

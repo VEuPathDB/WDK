@@ -301,12 +301,12 @@ public abstract class AbstractEnumParam extends AbstractDependentParam {
 
   private EnumParamVocabInstance getVocabInstance(PartiallyValidatedStableValues context)
       throws WdkModelException {
-    return getVocabInstance(context.getUser(), context);
+    return getVocabInstance(context.getRequestingUser(), context);
   }
 
   public <T extends ParameterContainerInstanceSpec<T>> EnumParamVocabInstance getVocabInstance(DisplayablyValid<T> spec)
       throws WdkModelException {
-    return getVocabInstance(spec.get().getUser(), spec.get().toMap());
+    return getVocabInstance(spec.get().getRequestingUser(), spec.get().toMap());
   }
 
   @Override

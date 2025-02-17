@@ -16,7 +16,7 @@ public abstract class BeanBase {
 
   protected BeanBase() {
     _context = ContextThreadLocal.get();
-    _wdkModel = (WdkModel)_context.getAttribute(Utilities.WDK_MODEL_KEY);
+    _wdkModel = (WdkModel)_context.getAttribute(Utilities.CONTEXT_KEY_WDK_MODEL_OBJECT);
   }
 
   public ServletContext getContext() {

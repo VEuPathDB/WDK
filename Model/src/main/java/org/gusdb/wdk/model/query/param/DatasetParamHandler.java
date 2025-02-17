@@ -37,7 +37,7 @@ public class DatasetParamHandler extends AbstractParamHandler {
       return datasetId;
 
     var datasetFactory = ctxParamVals.get()
-      .getUser()
+      .getRequestingUser()
       .getWdkModel()
       .getDatasetFactory();
     var dvSql = datasetFactory.getDatasetValueSqlForAppDb(Long.parseLong(datasetId));
@@ -73,13 +73,13 @@ public class DatasetParamHandler extends AbstractParamHandler {
   public String toSignature(RunnableObj<QueryInstanceSpec> ctxParamVals)
       throws WdkModelException {
     try {
-      final QueryInstanceSpec spec = ctxParamVals.get();
-      Dataset dataset = spec.getUser()
-        .getWdkModel()
+      QueryInstanceSpec spec = ctxParamVals.get();
+      User user = spec.getRequestingUser();
+      Dataset dataset = user.getWdkModel()
         .getDatasetFactory()
         .getDatasetWithOwner(
           Long.parseLong(spec.get(_param.getName())),
-          spec.getUser().getUserId()
+          user.getUserId()
         );
       return dataset.getChecksum();
     }

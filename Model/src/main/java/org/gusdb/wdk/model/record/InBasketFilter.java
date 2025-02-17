@@ -38,9 +38,9 @@ public class InBasketFilter extends StepFilter {
 
   @Override
   public String getSql(AnswerValue answer, String idSql, JSONObject jsValue) throws WdkModelException {
-    RecordClass recordClass = answer.getAnswerSpec().getQuestion().getRecordClass();
+    RecordClass recordClass = answer.getQuestion().getRecordClass();
     PrimaryKeyDefinition pkDef = recordClass.getPrimaryKeyDefinition();
-    String userId = String.valueOf(answer.getUser().getUserId());
+    String userId = String.valueOf(answer.getRequestingUser().getUserId());
     String basketSql = BasketFactory.getBasketSelectSql(_wdkModel, recordClass)
         .replace(BasketFactory.getUserParamMacro(), userId);
     return

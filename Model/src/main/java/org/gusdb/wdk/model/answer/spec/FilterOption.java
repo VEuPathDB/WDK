@@ -77,7 +77,6 @@ public class FilterOption implements Validateable<FilterOption>, NamedObject {
   private final boolean _isDisabled;
 
   // referenced objects; set to null if this filter option is non-validated or invalid
-  private final Question _question;
   private final Filter _filter;
 
   // validation bundle describing validity of this filter option
@@ -89,20 +88,18 @@ public class FilterOption implements Validateable<FilterOption>, NamedObject {
     _value = value;
     _isDisabled = isDisabled;
     if (validationLevel.isNone()) {
-      _question = question;
       _filter = null;
       _validationBundle = ValidationBundle.builder(validationLevel).build();
     }
     else {
       // attempt to validate the filter name and value
-      _question = question;
       Optional<Filter> filterOpt = question.getFilter(filterName);
       if (filterOpt.isPresent()) {
         // filter valid; validate the value using it
         _filter = filterOpt.get();
-        _validationBundle = _filter.validate(_question, _value, validationLevel);
+        _validationBundle = _filter.validate(question, _value, validationLevel);
         LOG.debug("FilterOption created for filter '" + _filterName +  "' on question '" +
-            _question.getFullName()  + "', valid? " + _validationBundle.getStatus().isValid() +
+            question.getFullName()  + "', valid? " + _validationBundle.getStatus().isValid() +
             ", isDisabled? " + isDisabled );
       }
       else { 
@@ -115,8 +112,8 @@ public class FilterOption implements Validateable<FilterOption>, NamedObject {
     }
   }
 
-  public Filter getFilter() {
-    return _filter;
+  public Optional<Filter> getFilter() {
+    return Optional.ofNullable(_filter);
   }
 
   public String getKey() {

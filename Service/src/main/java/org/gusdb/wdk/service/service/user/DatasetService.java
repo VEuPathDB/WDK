@@ -30,7 +30,7 @@ import org.gusdb.wdk.service.request.user.dataset.DatasetRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class DatasetService extends UserService {
+public class DatasetService extends AbstractUserService {
 
   private enum DatasetFormat {
     PARSED_IDS,
@@ -71,7 +71,7 @@ public class DatasetService extends UserService {
   public Response addDatasetFromJson(JSONObject input)
       throws WdkModelException, RequestMisformatException, DataValidationException {
     try {
-      var user    = getUserBundle(Access.PRIVATE).getSessionUser();
+      var user    = getUserBundle(Access.PRIVATE).getRequestingUser();
       var factory = getWdkModel().getDatasetFactory();
       var request = new DatasetRequest(input);
       var dataset = DatasetRequestProcessor.createFromRequest(request, user, factory, getTemporaryUserData());

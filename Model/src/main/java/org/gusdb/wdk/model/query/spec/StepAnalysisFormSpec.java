@@ -19,19 +19,15 @@ public class StepAnalysisFormSpec extends ParameterContainerInstanceSpec<StepAna
     return new StepAnalysisFormSpecBuilder(spec);
   }
 
-  StepAnalysisFormSpec(User user, StepAnalysis stepAnalysis, Map<String, String> paramValues, ValidationBundle validationBundle) {
-    super(user, stepAnalysis, paramValues, validationBundle, StepContainer.emptyContainer());
+  StepAnalysisFormSpec(User requestingUser, StepAnalysis stepAnalysis, Map<String, String> paramValues, ValidationBundle validationBundle) {
+    super(requestingUser, stepAnalysis, paramValues, validationBundle, StepContainer.emptyContainer());
   }
 
-  StepAnalysisFormSpec(Map<String, String> paramValues) {
-    super(paramValues);
+  StepAnalysisFormSpec(User requestingUser, Map<String, String> paramValues) {
+    super(requestingUser, paramValues);
   }
 
   public Optional<StepAnalysis> getStepAnalysis() {
-    return Optional.ofNullable(
-      getParameterContainer()
-        .map(container -> (StepAnalysis)container)
-        .orElse(null));
+    return getParameterContainer().map(sa -> (StepAnalysis)sa);
   }
-
 }

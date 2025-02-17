@@ -123,7 +123,7 @@ public class OntologyItemNewFetcher implements ValueFactory<String, Map<String, 
 
   public String getCacheKey() throws JSONException {
     QueryInstanceSpec spec = _queryInstanceSpec.get();
-    Query query = spec.getQuery().get();
+    Query query = _queryInstanceSpec.get().getQuery().get();
     JSONObject cacheKeyJson = new JSONObject();
     cacheKeyJson.put(QUERY_NAME_KEY, query.getName());
     JSONObject paramValuesJson = new JSONObject();

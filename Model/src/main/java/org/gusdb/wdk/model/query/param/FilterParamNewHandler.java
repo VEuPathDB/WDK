@@ -68,7 +68,7 @@ public class FilterParamNewHandler extends AbstractParamHandler {
 
     final String name = _param.getName();
     final String value = ctxParamVals.get().get(name);
-    final User user = ctxParamVals.get().getUser();
+    final User user = ctxParamVals.get().getRequestingUser();
 
     try {
       FilterParamNew fpn = (FilterParamNew) _param;

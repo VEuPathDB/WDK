@@ -24,11 +24,12 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.fgputil.runtime.ThreadUtil;
 import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.StepFactory;
 
 /**
  * @author xingao
@@ -218,7 +219,7 @@ public class StepCountUpdater extends BaseCLI {
           logger.info("process steps for user #" + userId + " - " + count);
 
           for (WdkModel wdkModel : wdkModels) {
-            updateSteps(wdkModel.getUserFactory().getUserById(userId)
+            updateSteps(wdkModel, wdkModel.getUserFactory().getUserById(userId)
                 .orElseThrow(() -> new WdkModelException("Cannot find user with ID " + userId)));
           }
         }
@@ -230,8 +231,11 @@ public class StepCountUpdater extends BaseCLI {
       }
     }
 
-    private void updateSteps(User user) throws WdkModelException {
-      Map<Long, Step> steps = user.getWdkModel().getStepFactory()
+    // NOTE: these steps will be run by the system user; if for any reason that user
+    //   does not have permission to run a step owned by the passed user, the
+    //   results size recalculation will fail.
+    private void updateSteps(WdkModel wdkModel, UserInfo user) throws WdkModelException {
+      Map<Long, Step> steps = new StepFactory(wdkModel.getSystemUser())
           .getStepsByUserId(user.getUserId(), ValidationLevel.RUNNABLE);
       for (Step step : steps.values()) {
         long stepId = step.getStepId();

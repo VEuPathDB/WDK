@@ -41,7 +41,7 @@ public class SingleTableRecordStream implements RecordStream {
   private void init(AnswerValue answerValue, TableField tableField, ResultList resultList) {
     _answerValue = answerValue;
     _tableField = tableField;
-    _pkDef = _answerValue.getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition();
+    _pkDef = _answerValue.getQuestion().getRecordClass().getPrimaryKeyDefinition();
     _lastPkValues = new Wrapper<>();
     _resultList = resultList;
     _iteratorCalled = false;
@@ -73,8 +73,8 @@ public class SingleTableRecordStream implements RecordStream {
           try {
             // start new record instance
             Map<String, Object> currentRecordPkValues = _lastPkValues.get();
-            Question question = _answerValue.getAnswerSpec().getQuestion();
-            StaticRecordInstance record = new StaticRecordInstance(_answerValue.getUser(),
+            Question question = _answerValue.getQuestion();
+            StaticRecordInstance record = new StaticRecordInstance(_answerValue.getRequestingUser(),
                 question.getRecordClass(), question, currentRecordPkValues, false);
             TableValue tableValue = new TableValue(_tableField);
             record.addTableValue(tableValue);

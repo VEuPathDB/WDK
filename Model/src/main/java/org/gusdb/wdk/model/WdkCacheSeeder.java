@@ -13,13 +13,14 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.fgputil.validation.OptionallyInvalid;
-import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepContainer;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.Strategy;
 import org.json.JSONObject;
 
@@ -118,7 +119,7 @@ public class WdkCacheSeeder {
     Map<Long,Integer> publicStratResultSizes = new HashMap<>();
     Map<Long,String> unrunnablePublicStrats = new HashMap<>();
     Map<Long,String> publicStratErrors = new HashMap<>();
-    List<Strategy> publicStrategies = _wdkModel.getStepFactory().getPublicStrategies();
+    List<Strategy> publicStrategies = new StepFactory(_wdkModel.getSystemUser()).getPublicStrategies();
     for (Strategy publicStrategy : publicStrategies) {
       LOG.info("Caching public strategy: " + publicStrategy.getStrategyId());
       try {

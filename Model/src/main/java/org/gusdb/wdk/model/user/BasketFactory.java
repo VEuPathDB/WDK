@@ -78,10 +78,10 @@ public class BasketFactory {
   }
 
   public void addEntireResultToBasket(User user, RunnableObj<AnswerSpec> spec) throws WdkModelException {
-    AnswerValue answer = AnswerValueFactory.makeAnswer(user, spec);
+    AnswerValue answer = AnswerValueFactory.makeAnswer(spec);
     int recordCount = answer.getResultSizeFactory().getResultSize();
     try (RecordStream records = RecordStreamFactory.getRecordStream(answer, Collections.EMPTY_LIST, Collections.EMPTY_LIST)) {
-      addToBasket(user, spec.get().getQuestion().getRecordClass(), recordCount, records);
+      addToBasket(user, spec.get().getQuestion().get().getRecordClass(), recordCount, records);
     }
   }
 

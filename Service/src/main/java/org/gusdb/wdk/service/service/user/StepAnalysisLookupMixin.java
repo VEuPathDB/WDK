@@ -14,12 +14,13 @@ import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.analysis.IllegalAnswerValueException;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisInstance;
 import org.gusdb.wdk.service.UserBundle;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.service.AbstractWdkService;
-import org.gusdb.wdk.service.service.user.UserService.Access;
+import org.gusdb.wdk.service.service.user.AbstractUserService.Access;
 
 public interface StepAnalysisLookupMixin {
 
@@ -49,13 +50,13 @@ public interface StepAnalysisLookupMixin {
   ) throws WdkModelException {
     StepAnalysisInstance instance = getWdkModel()
         .getStepAnalysisFactory()
-        .getInstanceById(analysisId, getWdkModel(), validationLevel)
+        .getInstanceById(userBundle.getRequestingUser(), analysisId, validationLevel)
         .orElseThrow(() -> new NotFoundException(AbstractWdkService.formatNotFound("step analysis: " + analysisId)));
-    if (userBundle.getTargetUser().getUserId() != instance.getStep().getUser().getUserId()) {
+    if (userBundle.getTargetUser().getUserId() != instance.getStep().getOwningUser().getUserId()) {
       // owner of this step does not match user in URL
       throw new NotFoundException("User " + userBundle.getTargetUser().getUserId() + " does not own step analysis " + instance.getAnalysisId());
     }
-    if (userBundle.isSessionUser() || instance.getAccessToken().equals(accessToken)) {
+    if (userBundle.isTargetRequestingUser() || instance.getAccessToken().equals(accessToken)) {
       return instance;
     }
     throw new ForbiddenException();
@@ -80,13 +81,13 @@ public interface StepAnalysisLookupMixin {
       throws WdkModelException {
 
     UserBundle userBundle = getUserBundle(Access.PUBLIC);
-    Step step = getWdkModel().getStepFactory().getStepById(getStepId(), ValidationLevel.RUNNABLE)
+    Step step = new StepFactory(userBundle.getRequestingUser()).getStepById(getStepId(), ValidationLevel.RUNNABLE)
         .orElseThrow(() -> new NotFoundException(String.format("Cannot find step with id %d", getStepId())));
     StepAnalysisInstance instance = getAnalysis(analysisId, userBundle, step, accessToken, validationLevel);
     long targetUser = userBundle.getTargetUser().getUserId();
 
     // Step cannot be found under the current user id path.
-    if (targetUser != step.getUser().getUserId())
+    if (targetUser != step.getOwningUser().getUserId())
       throw new NotFoundException(String.format("User %d does not own step %d",
           targetUser, getStepId()));
 
@@ -101,7 +102,7 @@ public interface StepAnalysisLookupMixin {
   default void validStepForAnalysisOrThrow(RunnableObj<Step> step, StepAnalysis stepAnalysis) throws DataValidationException, WdkModelException {
     // make sure answer value is valid for this plugin
     try {
-      stepAnalysis.getAnalyzerInstance().validateAnswerValue(AnswerValueFactory.makeAnswer(step));
+      stepAnalysis.getAnalyzerInstance().validateAnswerValue(AnswerValueFactory.makeAnswer(Step.getRunnableAnswerSpec(step)));
     }
     catch (IllegalAnswerValueException e) {
       throw new DataValidationException(e.getMessage()); // will throw 422

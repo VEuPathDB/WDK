@@ -3,17 +3,29 @@ package org.gusdb.wdk.model.user;
 import java.util.HashMap;
 import java.util.List;
 
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
+import org.gusdb.wdk.model.OwnedObject;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 
-public class UserCache extends HashMap<Long,User> {
+public class UserInfoCache extends HashMap<Long,UserInfo> {
 
   private static final long serialVersionUID = 1L;
 
   private final UserFactory _userFactory;
 
-  public UserCache(UserFactory userFactory) {
+  public UserInfoCache(UserFactory userFactory) {
     _userFactory = userFactory;
+  }
+
+  public UserInfoCache(UserFactory userFactory, UserInfo seedUser) {
+    this(userFactory);
+    put(seedUser.getUserId(), seedUser);
+  }
+
+  public UserInfoCache(WdkModel wdkModel, OwnedObject seedUserOwner) {
+    this(wdkModel.getUserFactory(), seedUserOwner.getOwningUser());
   }
 
   /**
@@ -21,9 +33,8 @@ public class UserCache extends HashMap<Long,User> {
    *
    * @param user a user to place in the cache.
    */
-  public UserCache(User user) {
-    put(user.getUserId(), user);
-    _userFactory = user.getWdkModel().getUserFactory();
+  public UserInfoCache(User user) {
+    this(user.getWdkModel().getUserFactory(), user);
   }
 
   public void loadUsersByIds(List<Long> userIds) {
@@ -31,7 +42,7 @@ public class UserCache extends HashMap<Long,User> {
   }
 
   @Override
-  public User get(Object id) {
+  public UserInfo get(Object id) {
     try {
       if (id == null) {
         throw new WdkRuntimeException("User ID cannot be null.");

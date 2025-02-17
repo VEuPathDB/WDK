@@ -136,9 +136,10 @@ public class AnswerValue {
   // ------------------------------------------------------------------
 
   // basic information about this answer
-  protected final User _user;
+  protected final User _requestingUser;
   private final RunnableObj<AnswerSpec> _validAnswerSpec;
   protected final AnswerSpec _answerSpec;
+  private final Question _question;
   private final boolean _avoidCacheHit;
 
   // values derived from basic info
@@ -172,18 +173,19 @@ public class AnswerValue {
    *   inclusive.
    * @param avoidCacheHit 
    */
-  public AnswerValue(User user, RunnableObj<AnswerSpec> validAnswerSpec, int startIndex,
+  public AnswerValue(RunnableObj<AnswerSpec> validAnswerSpec, int startIndex,
       int endIndex, Map<String, Boolean> sortingMap, boolean avoidCacheHit) throws WdkModelException {
-    _user = user;
     _validAnswerSpec = validAnswerSpec;
     _answerSpec = validAnswerSpec.get();
+    _question = _answerSpec.getQuestion().get(); // must be present if answerspec is valid
     _wdkModel = _answerSpec.getWdkModel();
+    _requestingUser = validAnswerSpec.get().getRequestingUser();
     _avoidCacheHit = avoidCacheHit;
     _idsQueryInstance = Query.makeQueryInstance(_answerSpec.getQueryInstanceSpec().getRunnable().getLeft(), avoidCacheHit);
     _resultSizeFactory = new ResultSizeFactory(this);
     _sortingMap = sortingMap == null? new HashMap<String, Boolean>() : sortingMap;
     setPageIndex(startIndex, endIndex);
-    LOG.debug("AnswerValue created for question: " + _answerSpec.getQuestion().getDisplayName());
+    LOG.debug("AnswerValue created for question: " + _question.getDisplayName());
   }
 
   @Override
@@ -214,7 +216,6 @@ public class AnswerValue {
    */
   private AnswerValue(AnswerValue answerValue, int startIndex, int endIndex) throws WdkModelException {
     this(
-      answerValue._user,
       answerValue._validAnswerSpec,
       startIndex,
       endIndex,
@@ -223,8 +224,8 @@ public class AnswerValue {
     );
   }
 
-  public User getUser() {
-    return _user;
+  public User getRequestingUser() {
+    return _requestingUser;
   }
 
   public RunnableObj<AnswerSpec> getRunnableAnswerSpec() {
@@ -233,6 +234,10 @@ public class AnswerValue {
 
   public AnswerSpec getAnswerSpec() {
     return _answerSpec;
+  }
+
+  public Question getQuestion() {
+    return _question;
   }
 
   public WdkModel getWdkModel() {
@@ -257,7 +262,7 @@ public class AnswerValue {
   public Map<String, String> getParamDisplays() {
     Map<String, String> displayParamsMap = new LinkedHashMap<>();
     ReadOnlyMap<String, String> paramsMap = _idsQueryInstance.getParamStableValues();
-    Param[] params = _answerSpec.getQuestion().getParams();
+    Param[] params = _question.getParams();
     for (Param param : params) {
       displayParamsMap.put(param.getPrompt(), paramsMap.get(param.getName()));
     }
@@ -338,7 +343,7 @@ public class AnswerValue {
         ") aq WHERE ");
 
     boolean firstColumn = true;
-    for (String column : getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
+    for (String column : _question.getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
       if (firstColumn)
         firstColumn = false;
       else
@@ -363,8 +368,6 @@ public class AnswerValue {
 
   public ResultList getTableFieldResultList(TableField tableField) throws WdkModelException {
 
-    WdkModel wdkModel = _answerSpec.getQuestion().getWdkModel();
-
     // has to get a clean copy of the attribute query, without pk params appended
     Query tableQuery = tableField.getUnwrappedQuery();
 
@@ -374,7 +377,7 @@ public class AnswerValue {
     String sql = getAnswerTableSql(tableQuery);
         
     LOG.debug("AnswerValue: getTableFieldResultList(): back from getPagedTableSql()");
-    DatabaseInstance platform = wdkModel.getAppDb();
+    DatabaseInstance platform = _wdkModel.getAppDb();
     DataSource dataSource = platform.getDataSource();
     ResultSet resultSet = null;
     try {
@@ -397,7 +400,7 @@ public class AnswerValue {
     // that the original table query is different from the table query held by
     // the recordClass.  The user_id param will be added by the query instance.
     RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder()
-      .buildRunnable(_user, tableQuery, StepContainer.emptyContainer());
+      .buildRunnable(_requestingUser, tableQuery, StepContainer.emptyContainer());
     String tableSql = Query.makeQueryInstance(tableQuerySpec).getSql();
 
     DBPlatform platform = _wdkModel.getAppDb().getPlatform();
@@ -411,7 +414,7 @@ public class AnswerValue {
         .append(") tqi WHERE ");
 
     boolean firstColumn = true;
-    for (String column : getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
+    for (String column : _question.getRecordClass().getPrimaryKeyDefinition().getColumnRefs()) {
       if (firstColumn)
         firstColumn = false;
       else
@@ -433,7 +436,7 @@ public class AnswerValue {
   public String getUnsortedUnpagedTableSql(Query tableQuery) throws WdkModelException {
 
     RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder()
-      .buildRunnable(_user, tableQuery, StepContainer.emptyContainer());
+      .buildRunnable(_requestingUser, tableQuery, StepContainer.emptyContainer());
     String tableSql = Query.makeQueryInstance(tableQuerySpec).getSql();
     return getUnsortedUnpagedSql(tableSql);
   }
@@ -442,7 +445,7 @@ public class AnswerValue {
     // get the unsorted and unpaged SQL of id query. 
     String idSql = getIdSql(null);
     
-    String[] pkColumns = getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
+    String[] pkColumns = _question.getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
     String pkColumnsString = String.join(", ", pkColumns);
     
     String[] sqlArray = { 
@@ -464,7 +467,7 @@ public class AnswerValue {
   public String getUnfilteredAttributeSql(Query attrQuery)
   throws WdkModelException {
     String queryName = attrQuery.getFullName();
-    Query dynaQuery = _answerSpec.getQuestion().getDynamicAttributeQuery();
+    Query dynaQuery = _question.getDynamicAttributeQuery();
     String sql;
     if (dynaQuery != null && queryName.equals(dynaQuery.getFullName())) {
       // the dynamic query doesn't have sql defined, the sql will be
@@ -477,7 +480,7 @@ public class AnswerValue {
       // recordClass.  The user_id param will be added by the builder.
       // TODO: decide if construction of this validated spec should be moved elsewhere?
       RunnableObj<QueryInstanceSpec> attrQuerySpec = QueryInstanceSpec.builder()
-        .buildValidated(_user, attrQuery, StepContainer.emptyContainer(),
+        .buildValidated(_requestingUser, attrQuery, StepContainer.emptyContainer(),
           ValidationLevel.RUNNABLE, FillStrategy.NO_FILL)
         .getRunnable()
         .getOrThrow(spec -> new WdkModelException(
@@ -534,7 +537,7 @@ public class AnswerValue {
 
   public String getAttributeSql(Query attributeQuery) throws WdkModelException {
     String queryName = attributeQuery.getFullName();
-    Query dynaQuery = _answerSpec.getQuestion().getDynamicAttributeQuery();
+    Query dynaQuery = _question.getDynamicAttributeQuery();
     String sql;
     if (dynaQuery != null && queryName.equals(dynaQuery.getFullName())) {
       // the dynamic query doesn't have sql defined, the sql will be
@@ -548,7 +551,7 @@ public class AnswerValue {
       // recordClass.  The user_id param will be added by the builder.
       // TODO: decide if construction of this validated spec should be moved elsewhere?
       RunnableObj<QueryInstanceSpec> attrQuerySpec = QueryInstanceSpec.builder()
-          .buildValidated(_user, attributeQuery, StepContainer.emptyContainer(),
+          .buildValidated(_requestingUser, attributeQuery, StepContainer.emptyContainer(),
               ValidationLevel.RUNNABLE, FillStrategy.NO_FILL)
           .getRunnable()
           .getOrThrow(spec -> new WdkModelException(
@@ -580,7 +583,7 @@ public class AnswerValue {
 
   private String createSortedIdSql() throws WdkModelException {
     LOG.debug("AnswerValue: getSortedIdSql()");
-    String[] pkColumns = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
+    String[] pkColumns = _question.getRecordClass().getPrimaryKeyDefinition().getColumnRefs();
 
     // get id sql
     String idSql = getIdSql(null);
@@ -655,7 +658,7 @@ public class AnswerValue {
 
   private String getPagedIdSql(boolean includeRowIndex) throws WdkModelException {
     String sortedIdSql = getSortedIdSql();
-    DatabaseInstance platform = _answerSpec.getQuestion().getWdkModel().getAppDb();
+    DatabaseInstance platform = _wdkModel.getAppDb();
     String sql = platform.getPlatform().getPagedSql(sortedIdSql, _startIndex, _endIndex, includeRowIndex);
 
     // add comments to the sql
@@ -677,7 +680,7 @@ public class AnswerValue {
 
     // add answer param columns
     return "\n/* answer param value cols applied on id query */\n"
-      + applyAnswerParams(innerSql, _answerSpec.getQuestion().getParamMap(),
+      + applyAnswerParams(innerSql, _question.getParamMap(),
         _idsQueryInstance.getParamStableValues());
   }
 
@@ -688,7 +691,7 @@ public class AnswerValue {
 
     // apply old-style answer filter
     if (_answerSpec.getLegacyFilter().isPresent()) {
-      innerSql = _answerSpec.getLegacyFilter().get().applyFilter(_user, innerSql, _idsQueryInstance.getAssignedWeight());
+      innerSql = _answerSpec.getLegacyFilter().get().applyFilter(_requestingUser, innerSql, _idsQueryInstance.getAssignedWeight());
       innerSql = "\n/* old filter applied on id query */\n" + innerSql;
     }
 
@@ -717,7 +720,7 @@ public class AnswerValue {
     // Apply just the PK cols in the record class order (getIdSql can
     // append columns)
     final var q = "SELECT\n" + Utilities.COLUMN_WEIGHT + ",\n"
-      + Arrays.stream(getAnswerSpec().getQuestion().getRecordClass()
+      + Arrays.stream(_question.getRecordClass()
         .getPrimaryKeyDefinition().getColumnRefs())
         .collect(Collectors.joining("\n, ", "  ", "\n"))
       + "FROM (\n" + indent(sql) + "\n) colFilter_outer";
@@ -753,18 +756,16 @@ public class AnswerValue {
       throws WdkModelException {
     for (FilterOption filterOption : filterOptions)
       if (!filterOption.getKey().equals(excludeFilter) && !filterOption.isDisabled())
-        innerSql = filterOption.getFilter().getSql(this, innerSql, filterOption.getValue());
-
+        innerSql = filterOption.getFilter().get().getSql(this, innerSql, filterOption.getValue());
     return innerSql;
   }
 
   private void prepareSortingSqls(Map<String, String> sqls, Collection<String> orders)
       throws WdkModelException {
-    Map<String, AttributeField> fields = _answerSpec.getQuestion().getAttributeFieldMap();
+    Map<String, AttributeField> fields = _question.getAttributeFieldMap();
     Map<String, String> querySqls = new LinkedHashMap<>();
     Map<String, String> queryNames = new LinkedHashMap<>();
     Map<String, String> orderClauses = new LinkedHashMap<>();
-    WdkModel wdkModel = _answerSpec.getQuestion().getWdkModel();
     LOG.debug("AnswerValue: prepareSortingSqls(): sorting map: " + _sortingMap); //e.g.: {primary_key=true}
     final String idQueryNameStub = "answer_id_query";
     queryNames.put(idQueryNameStub, "idq");
@@ -788,7 +789,7 @@ public class AnswerValue {
           queryName = query.getFullName();
           // cannot use the attribute query from record, need to get it
           // back from wdkModel, since the query has pk params appended
-          query = (Query) wdkModel.resolveReference(queryName);
+          query = (Query) _wdkModel.resolveReference(queryName);
 
           // handle query
           if (!queryNames.containsKey(queryName)) {
@@ -870,8 +871,7 @@ public class AnswerValue {
   }
 
   public List<SortDirectionSpec<AttributeField>> getSortingColumns() {
-    return SortDirectionSpec.convertSorting(_sortingMap,
-      _answerSpec.getQuestion().getAttributeFieldMap());
+    return SortDirectionSpec.convertSorting(_sortingMap, _question.getAttributeFieldMap());
   }
 
   /**
@@ -879,11 +879,11 @@ public class AnswerValue {
    */
   public void setSortingMap(Map<String, Boolean> sortingMap) {
     if (sortingMap == null) {
-      sortingMap = _answerSpec.getQuestion().getSortingAttributeMap();
+      sortingMap = _question.getSortingAttributeMap();
     }
     // make sure all sorting columns exist
     StringBuilder buffer = new StringBuilder("set sorting: ");
-    Map<String, AttributeField> attributes = _answerSpec.getQuestion().getAttributeFieldMap();
+    Map<String, AttributeField> attributes = _question.getAttributeFieldMap();
     Map<String, Boolean> validMap = new LinkedHashMap<>();
     for (String attributeName : sortingMap.keySet()) {
       buffer.append(attributeName + "=" + sortingMap.get(attributeName) + ", ");
@@ -894,8 +894,8 @@ public class AnswerValue {
         // WdkModelException("the assigned sorting attribute ["
         // + attributeName + "] doesn't exist in the answer of "
         // + "question " + question.getFullName());
-        LOG.debug("AnswerValue: setSortingMap(): Invalid sorting attribute: User #" + _user.getUserId() + ", question: '" +
-            _answerSpec.getQuestion().getFullName() + "', attribute: '" + attributeName + "'");
+        LOG.debug("AnswerValue: setSortingMap(): Invalid sorting attribute: User #" + _requestingUser.getUserId() + ", question: '" +
+            _question.getFullName() + "', attribute: '" + attributeName + "'");
       }
       else {
         validMap.put(attributeName, sortingMap.get(attributeName));
@@ -923,7 +923,7 @@ public class AnswerValue {
    */
   public PrimaryKeyIterator getAllIds() throws WdkModelException {
     try {
-      PrimaryKeyDefinition pkDef = _answerSpec.getQuestion().getRecordClass().getPrimaryKeyDefinition();
+      PrimaryKeyDefinition pkDef = _question.getRecordClass().getPrimaryKeyDefinition();
       DataSource dataSource = _wdkModel.getAppDb().getDataSource();
       String idSql = getSortedIdSql();
       String queryDescriptor = _idsQueryInstance.getQuery().getFullName() + "__all-ids";
@@ -954,16 +954,15 @@ public class AnswerValue {
     reset();
   }
 
-
   public JSONObject getFilterSummaryJson(String filterName) throws WdkUserException, WdkModelException {
     String idSql = getIdSql(filterName);
-    Optional<Filter> filter = _answerSpec.getQuestion().getFilter(filterName);
+    Optional<Filter> filter = _answerSpec.getQuestion().get().getFilter(filterName);
     if (filter.isPresent()) {
       return filter.get().getSummaryJson(this, idSql);
     }
     else {
       throw new WdkUserException("Filter name '" + filterName +
-          "' is not a valid filter on question " + _answerSpec.getQuestion().getName());
+          "' is not a valid filter on question " + _answerSpec.getQuestion().get().getName());
     }
   }
 
@@ -1016,7 +1015,7 @@ public class AnswerValue {
    * @return the joined SQL query.
    */
   private String joinToIds(final String sql, final String idSql) {
-    final String[] refs = _answerSpec.getQuestion().getRecordClass()
+    final String[] refs = _question.getRecordClass()
       .getPrimaryKeyDefinition()
       .getColumnRefs();
 

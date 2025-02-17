@@ -16,6 +16,8 @@ import org.gusdb.oauth2.client.OAuthClient;
 import org.gusdb.oauth2.client.OAuthConfig;
 import org.gusdb.oauth2.client.ValidatedToken;
 import org.gusdb.oauth2.client.veupathdb.OAuthQuerier;
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
+import org.gusdb.oauth2.client.veupathdb.UserInfoImpl;
 import org.gusdb.oauth2.client.veupathdb.UserProperty;
 import org.gusdb.oauth2.exception.ConflictException;
 import org.gusdb.oauth2.exception.ExpiredTokenException;
@@ -90,7 +92,7 @@ public class UserFactory {
   // -------------------------------------------------------------------------
 
   public User convertToUser(ValidatedToken token) throws WdkModelException {
-    User user = new BearerTokenUser(_wdkModel, _client, _config, token);
+    User user = new UserImpl(_wdkModel, _client, _config, token);
     _userRefFactory.addUserReference(user);
     return user;
   }
@@ -101,16 +103,16 @@ public class UserFactory {
     return new TwoTuple<>(token, convertToUser(token));
   }
 
-  public User createUser(String email, Map<String, String> profileProperties)
+  public UserInfo createUser(String email, Map<String, String> profileProperties)
       throws WdkModelException, InvalidPropertiesException, InvalidUsernameOrEmailException {
     try {
 
       // contact OAuth server to create a new user with the passed props
       Map<String,String> allProps = new HashMap<>(profileProperties);
       allProps.put(IdTokenFields.email.name(), email);
-      TwoTuple<User,String> userTuple = parseExpandedUserJson(_client.createNewUser(_config, allProps));
+      TwoTuple<UserInfo,String> userTuple = parseExpandedUserJson(_client.createNewUser(_config, allProps));
 
-      User user = userTuple.getFirst();
+      UserInfo user = userTuple.getFirst();
       String password = userTuple.getSecond();
   
       // add user to this user DB (will be added to other user DBs as needed during login)
@@ -128,8 +130,8 @@ public class UserFactory {
     }
   }
 
-  private TwoTuple<User, String> parseExpandedUserJson(JSONObject userJson) {
-    User user = new BasicUser(_wdkModel, userJson);
+  private TwoTuple<UserInfo, String> parseExpandedUserJson(JSONObject userJson) {
+    UserInfo user = new UserInfoImpl(userJson);
     String password = userJson.getString(IdTokenFields.password.name());
     return new TwoTuple<>(user, password);
   }
@@ -141,7 +143,7 @@ public class UserFactory {
    * @param newUser 
    * @throws InvalidPropertiesException 
    */
-  public User saveUser(User oldUser, User newUser, ValidatedToken authorizationToken) throws InvalidUsernameOrEmailException, InvalidPropertiesException {
+  public UserInfo saveUser(UserInfo oldUser, UserInfo newUser, ValidatedToken authorizationToken) throws InvalidUsernameOrEmailException, InvalidPropertiesException {
     try {
       // build map of user props + email to send to OAuth
       Map<String,String> props = new HashMap<>();
@@ -151,7 +153,7 @@ public class UserFactory {
       }
 
       // build a user from the response
-      User savedUser = new BasicUser(_wdkModel, _client.modifyUser(_config, authorizationToken, props));
+      UserInfo savedUser = new UserInfoImpl(_client.modifyUser(_config, authorizationToken, props));
 
       Events.trigger(new UserProfileUpdateEvent(oldUser, savedUser, _wdkModel));
       return savedUser;
@@ -163,7 +165,7 @@ public class UserFactory {
 
   public void resetPassword(String loginName) throws InvalidUsernameOrEmailException, WdkModelException {
     try {
-      TwoTuple<User, String> user = parseExpandedUserJson(_client.resetPassword(_config, loginName));
+      TwoTuple<UserInfo, String> user = parseExpandedUserJson(_client.resetPassword(_config, loginName));
 
       // email user new password
       _emailer.emailTemporaryPassword(user.getFirst(), user.getSecond());
@@ -177,10 +179,10 @@ public class UserFactory {
   // methods to query users
   // -------------------------------------------------------------------------
 
-  public Map<Long, User> getUsersById(List<Long> userIds) {
+  public Map<Long, UserInfo> getUsersById(List<Long> userIds) {
     // ensure a unique list
     userIds = new ArrayList<>(new HashSet<>(userIds));
-    Map<Long,User> userMap = OAuthQuerier.getUsersById(_client, _config, userIds, json -> new BasicUser(_wdkModel, json));
+    Map<Long,UserInfo> userMap = OAuthQuerier.getUsersById(_client, _config, userIds, json -> new UserInfoImpl(json));
     // FIXME: This is a temporary hack to account for guests created before the
     //   implementation of bearer tokens who still have WDK steps/strats.  Eventually
     //   these guests should be removed during regular maintenance cleanup; once all
@@ -188,16 +190,16 @@ public class UserFactory {
     for (Long userId : userIds) {
       if (userMap.get(userId) == null) {
         // OAuth does not know about this user; trust that it is a guest
-        userMap.put(userId, new BasicUser(_wdkModel, userId, true, userId.toString(), userId.toString()));
+        userMap.put(userId, new UserInfoImpl(userId, true, userId.toString(), userId.toString()));
       }
     }
     return userMap;
   }
 
-  public Map<String, User> getUsersByEmail(List<String> emails) {
+  public Map<String, UserInfo> getUsersByEmail(List<String> emails) {
     // ensure a unique list
     emails = new ArrayList<>(new HashSet<>(emails));
-    return OAuthQuerier.getUsersByEmail(_client, _config, emails, json -> new BasicUser(_wdkModel, json));
+    return OAuthQuerier.getUsersByEmail(_client, _config, emails, json -> new UserInfoImpl(json));
   }
 
   /**
@@ -207,16 +209,16 @@ public class UserFactory {
    * @return user user object for the passed ID
    * @throws WdkModelException if an error occurs in the attempt
    */
-  public Optional<User> getUserById(long userId) throws WdkModelException {
+  public Optional<UserInfo> getUserById(long userId) throws WdkModelException {
     return Optional.ofNullable(getUsersById(List.of(userId)).get(userId));
   }
 
-  public Optional<User> getUserByEmail(String email) {
+  public Optional<UserInfo> getUserByEmail(String email) {
     return Optional.ofNullable(getUsersByEmail(List.of(email)).get(email));
   }
 
   public Map<Long, Boolean> verifyUserids(Set<Long> userIds) {
-    Map<Long, User> userMap = getUsersById(new ArrayList<>(userIds));
+    Map<Long, UserInfo> userMap = getUsersById(new ArrayList<>(userIds));
     return userIds.stream().collect(Collectors.toMap(id -> id, id -> userMap.get(id) != null));
   }
 }

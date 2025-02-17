@@ -117,9 +117,9 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
       Question contextQuestion = _param.getContextQuestion();
       ParameterContainer contextQuery = _param.getContainer();
       Map<String, String> context = new LinkedHashMap<String, String>();
-      context.put(Utilities.QUERY_CTX_PARAM, _param.getFullName());
+      context.put(Utilities.CONTEXT_KEY_PARAM_NAME, _param.getFullName());
       if (_param.getContextQuestion() != null)
-        context.put(Utilities.QUERY_CTX_QUESTION, contextQuestion.getFullName());
+        context.put(Utilities.CONTEXT_KEY_QUESTION_FULL_NAME, contextQuestion.getFullName());
       logger.debug("PARAM [" + _param.getFullName() + "] query=" + _vocabQuery.getFullName() +
           ", context Question: " + ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName()) +
           ", context Query: " + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));

@@ -18,7 +18,7 @@ import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserCache;
+import org.gusdb.wdk.model.user.UserInfoCache;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -80,13 +80,13 @@ public class StepRequestParser {
 
       // Since this method is intended for new steps, the step can not yet be
       // part of a strategy and so any answer params it has should be null (empty string).
-      for (AnswerParam param : spec.getQuestion().getQuery().getAnswerParams()) {
+      for (AnswerParam param : spec.getQuestion().get().getQuery().getAnswerParams()) {
         if (!AnswerParam.NULL_VALUE.equals(spec.getQueryInstanceSpec().get(param.getName()))) {
           throw new DataValidationException("Answer Params in new steps must have the null value (empty string).");
         }
       }
 
-      String customName = getStringOrDefault(stepJson, JsonKeys.CUSTOM_NAME, spec.getQuestion().getName());
+      String customName = getStringOrDefault(stepJson, JsonKeys.CUSTOM_NAME, spec.getQuestion().get().getName());
       boolean isExpanded = getBooleanOrDefault(stepJson, JsonKeys.IS_EXPANDED, false);
       String expandedName = getStringOrDefault(stepJson, JsonKeys.EXPANDED_NAME, null);
       JSONObject displayPrefs = getJsonObjectOrDefault(stepJson, JsonKeys.DISPLAY_PREFS, new JSONObject());
@@ -98,7 +98,8 @@ public class StepRequestParser {
     }
   }
 
-  private static SemanticallyValid<AnswerSpec> parseAnswerSpec(Question question, JSONObject answerSpecJson, WdkModel wdkModel, User user, StepContainer container)
+  private static SemanticallyValid<AnswerSpec> parseAnswerSpec(Question question,
+      JSONObject answerSpecJson, WdkModel wdkModel, User user, StepContainer container)
       throws JSONException, RequestMisformatException, DataValidationException, WdkModelException {
     return AnswerSpecServiceFormat
         .parse(question, answerSpecJson, wdkModel)
@@ -123,8 +124,12 @@ public class StepRequestParser {
       if (patchSet.has(JsonKeys.DISPLAY_PREFERENCES))
         newStep.setDisplayPrefs(patchSet.getJSONObject(JsonKeys.DISPLAY_PREFERENCES));
 
-      return newStep.build(new UserCache(step.getUser()),
-          step.getValidationBundle().getLevel(), step.getStrategy());
+      // build with the same properties of the original step
+      return newStep.build(
+          new UserInfoCache(step.getAnswerSpec().getWdkModel(), step),
+          step.getAnswerSpec().getRequestingUser(),
+          step.getValidationBundle().getLevel(),
+          step.getStrategy());
     }
     catch (JSONException e) {
       throw new RequestMisformatException(e.getMessage());
@@ -135,22 +140,16 @@ public class StepRequestParser {
       Step existingStep, JSONObject answerSpecJson, WdkModel wdkModel, User user)
       throws DataValidationException, RequestMisformatException, JSONException, WdkModelException {
 
-    SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(
-        existingStep.getAnswerSpec().getQuestion(),
-        answerSpecJson, wdkModel, user, existingStep.getContainer());
-    AnswerSpec answerSpec = validSpec.get();
+    Question existingQuestion = existingStep.getAnswerSpec().getQuestion().orElseThrow(
+        () -> new DataValidationException("Existing step has invalid question " +
+          existingStep.getAnswerSpec().getQuestionName() + ", and changing " +
+          "question names is not currently supported.  You must delete this step."));
 
-    // user cannot change question of an existing step (since # and type of answer params may change);
-    //   we could check for validity of # and type of answer params in the future; no use case now
-    // NOTE: since answer spec JSON no longer contains question, this is a non-issue, but keeping
-    //       code in case anyone thinks it's a good idea to allow a question change in the future.
-    if (!answerSpec.getQuestion().getFullName().equals(
-        existingStep.getAnswerSpec().getQuestion().getFullName())) {
-      throw new DataValidationException("Question of an existing step cannot be changed.");
-    }
+    SemanticallyValid<AnswerSpec> validSpec = parseAnswerSpec(
+        existingQuestion, answerSpecJson, wdkModel, user, existingStep.getContainer());
 
     // make sure user has not tried to modify answer params
-    assertAnswerParamsUnmodified(existingStep, answerSpec);
+    assertAnswerParamsUnmodified(existingStep, validSpec.get());
 
     return validSpec;
   }
@@ -162,7 +161,7 @@ public class StepRequestParser {
     QueryInstanceSpec currentParams = existingStep.getAnswerSpec().getQueryInstanceSpec();
     DataValidationException illegalAnswerParamException =
         new DataValidationException("Changes to answer param values are not allowed.");
-    for (Param param : answerSpec.getQuestion().getQuery().getAnswerParams()) {
+    for (Param param : answerSpec.getQuestion().get().getQuery().getAnswerParams()) {
       // incoming answer params must match existing values
       if (!updateParams.get(param.getName()).equals(currentParams.get(param.getName()))) {
         throw illegalAnswerParamException;

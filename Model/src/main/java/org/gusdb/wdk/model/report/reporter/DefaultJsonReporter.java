@@ -50,7 +50,7 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
 
   @Override
   public String getDownloadFileName() {
-    return _baseAnswer.getAnswerSpec().getQuestion().getName() + "_std.json";
+    return _baseAnswer.getQuestion().getName() + "_std.json";
   }
 
   @Override
@@ -58,7 +58,7 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
 
     // record formatter requires the ID attribute, so must add to stream request
     //   if not already present and it contains non-PK columns
-    RecordClass recordClass = _baseAnswer.getAnswerSpec().getQuestion().getRecordClass();
+    RecordClass recordClass = _baseAnswer.getQuestion().getRecordClass();
     AttributeField idField = recordClass.getIdAttributeField();
     List<AttributeField> requiredAttributes = new ArrayList<>(_attributes.values());
     if (!_attributes.containsKey(idField.getName()) && recordClass.idAttributeHasNonPkMacros()) {
@@ -116,7 +116,7 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
       Set<String> includedAttributes, Set<String> includedTables, int numRecordsReturned)
       throws WdkModelException {
     AnswerValue answerValueWithoutViewFilters = getAnswerValueWithoutViewFilters(answerValue);
-    Question question = answerValue.getAnswerSpec().getQuestion();
+    Question question = answerValue.getQuestion();
     JSONObject meta = new JSONObject()
       .put(JsonKeys.RECORD_CLASS_NAME, question.getRecordClass().getUrlSegment())
       .put(JsonKeys.TOTAL_COUNT, answerValueWithoutViewFilters.getResultSizeFactory().getResultSize())
@@ -140,7 +140,7 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
     AnswerSpec origSpec = answerValue.getAnswerSpec();
     return AnswerValueFactory.makeAnswer(answerValue, AnswerSpec.builder(origSpec)
           .setViewFilterOptions(FilterOptionList.builder())
-          .build(answerValue.getUser(), origSpec.getStepContainer(), ValidationLevel.RUNNABLE)
+          .build(answerValue.getRequestingUser(), origSpec.getStepContainer(), ValidationLevel.RUNNABLE)
           .getRunnable()
           .getLeft());
   }

@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.answer.request.AnswerRequest;
 import org.gusdb.wdk.model.query.param.EnumParamVocabInstance;
 import org.gusdb.wdk.model.query.param.FilterParamNew.MetadataNewCache;
 import org.gusdb.wdk.model.query.param.FilterParamNew.OntologyCache;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * This class manages WDK's subclasses of ItemCache.  For now it will simply
@@ -36,7 +37,7 @@ public class CacheMgr {
   private final InMemoryCache<String, List<Map<String,Object>>> _attributeMetaQueryCache = new InMemoryCache<>();
   private final MetadataNewCache _metadataNewCache = new MetadataNewCache();
   private final OntologyCache _ontologyCache = new OntologyCache();
-  private final ManagedMap<String, TwoTuple<Long,AnswerRequest>> _answerRequestCache = new ManagedMap<>();
+  private final ManagedMap<String, TwoTuple<User,AnswerRequest>> _answerRequestCache = new ManagedMap<>();
 
   private final Map<String,InMemoryCache<?,?>> _cacheRepo =
       new MapBuilder<String,InMemoryCache<?,?>>(new LinkedHashMap<String,InMemoryCache<?,?>>())
@@ -55,7 +56,7 @@ public class CacheMgr {
   public InMemoryCache<String, List<Map<String,Object>>> getAttributeMetaQueryCache() { return _attributeMetaQueryCache; }
   public MetadataNewCache getMetadataNewCache() { return _metadataNewCache; }
   public OntologyCache getOntologyNewCache() { return _ontologyCache; }
-  public ManagedMap<String, TwoTuple<Long,AnswerRequest>> getAnswerRequestCache() { return _answerRequestCache; }
+  public ManagedMap<String, TwoTuple<User,AnswerRequest>> getAnswerRequestCache() { return _answerRequestCache; }
 
   // special getter lazily populates the repo with db-specific count caches
   public synchronized SqlCountCache getSqlCountCache(DatabaseInstance db) {

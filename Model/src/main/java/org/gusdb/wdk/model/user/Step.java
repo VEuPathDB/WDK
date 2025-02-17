@@ -15,11 +15,13 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.ValidationUtil;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidObjectFactory;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
-import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
+import org.gusdb.wdk.model.OwnedObject;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -39,7 +41,7 @@ import org.json.JSONObject;
  * @author Ryan Doherty
  */
 @SuppressWarnings("UseOfObsoleteDateTimeApi")
-public class Step implements Validateable<Step> {
+public class Step implements Validateable<Step>, OwnedObject {
 
   private static final Logger LOG = Logger.getLogger(Step.class);
 
@@ -50,7 +52,7 @@ public class Step implements Validateable<Step> {
   public static class StepBuilder {
 
     private final WdkModel _wdkModel;
-    private long _userId;
+    private long _owningUserId;
     private long _stepId;
     private String _projectId;
     private String _projectVersion;
@@ -66,11 +68,11 @@ public class Step implements Validateable<Step> {
     private String _expandedName;
     private boolean _isExpanded;
 
-    private StepBuilder(WdkModel wdkModel, long userId, long stepId) {
+    private StepBuilder(WdkModel wdkModel, long owningUserId, long stepId) {
       _wdkModel = wdkModel;
       _projectId = wdkModel.getProjectId();
       _projectVersion = wdkModel.getVersion();
-      _userId = userId;
+      _owningUserId = owningUserId;
       _stepId = stepId;
       _displayPrefs = new JSONObject();
       _createdTime = new Date();
@@ -85,7 +87,7 @@ public class Step implements Validateable<Step> {
      */
     private StepBuilder(Step step) {
       _wdkModel = step._wdkModel;
-      _userId = step._user.getUserId();
+      _owningUserId = step._owningUser.getUserId();
       _strategyId = Optional.empty();
       _strategyId = step.getStrategyId();
       _stepId = step.getStepId();
@@ -116,8 +118,8 @@ public class Step implements Validateable<Step> {
       return this;
     }
 
-    public StepBuilder setUserId(long userId) {
-      _userId = userId;
+    public StepBuilder setOwningUserId(long owningUserId) {
+      _owningUserId = owningUserId;
       return this;
     }
 
@@ -183,11 +185,11 @@ public class Step implements Validateable<Step> {
       return _displayPrefs;
     }
 
-    public Step build(UserCache userCache, ValidationLevel validationLevel, Optional<Strategy> strategy) throws WdkModelException {
-      return build(userCache, validationLevel, FillStrategy.NO_FILL, strategy);
+    public Step build(UserInfoCache ownerCache, User requestingUser, ValidationLevel validationLevel, Optional<Strategy> strategy) throws WdkModelException {
+      return build(ownerCache, requestingUser, validationLevel, FillStrategy.NO_FILL, strategy);
     }
 
-    public Step build(UserCache userCache, ValidationLevel validationLevel, FillStrategy fillStrategy, Optional<Strategy> strategy) throws WdkModelException {
+    public Step build(UserInfoCache ownerCache, User requestingUser, ValidationLevel validationLevel, FillStrategy fillStrategy, Optional<Strategy> strategy) throws WdkModelException {
       if (_strategyId.isPresent() &&
           (strategy.isEmpty() || !_strategyId.get().equals(strategy.get().getStrategyId()))) {
         throw new WdkRuntimeException("Strategy passed to build method (ID=" +
@@ -197,14 +199,14 @@ public class Step implements Validateable<Step> {
       if (_answerSpec == null) {
         throw new WdkRuntimeException("Cannot build a step without an answer spec.");
       }
-      return new Step(userCache.get(_userId), strategy, this, validationLevel, fillStrategy);
+      return new Step(ownerCache.get(_owningUserId), strategy, this, requestingUser, validationLevel, fillStrategy);
     }
 
     /**
      * Builds a runnable step.  Will throw ValidObjectWrappingException if step
      * is not runnable after validation
      *
-     * @param userCache
+     * @param ownerCache
      *   a user cache
      * @param strategy
      *   strategy containing the step
@@ -214,12 +216,12 @@ public class Step implements Validateable<Step> {
      * @throws WdkModelException
      *   if unable to validate step
      */
-    public RunnableObj<Step> buildRunnable(UserCache userCache, Optional<Strategy> strategy) throws WdkModelException {
-      return ValidObjectFactory.getRunnable(build(userCache, ValidationLevel.RUNNABLE, FillStrategy.NO_FILL, strategy));
+    public RunnableObj<Step> buildRunnable(UserInfoCache ownerCache, User requestingUser, Optional<Strategy> strategy) throws WdkModelException {
+      return ValidObjectFactory.getRunnable(build(ownerCache, requestingUser, ValidationLevel.RUNNABLE, FillStrategy.NO_FILL, strategy));
     }
 
     public long getUserId() {
-      return _userId;
+      return _owningUserId;
     }
 
     public String getProjectId() {
@@ -270,8 +272,8 @@ public class Step implements Validateable<Step> {
     }
   }
 
-  public static StepBuilder builder(WdkModel wdkModel, long userId, long stepId) {
-    return new StepBuilder(wdkModel, userId, stepId);
+  public static StepBuilder builder(WdkModel wdkModel, long owningUserId, long stepId) {
+    return new StepBuilder(wdkModel, owningUserId, stepId);
   }
 
   public static StepBuilder builder(Step step) {
@@ -286,7 +288,7 @@ public class Step implements Validateable<Step> {
   // set during Step object creation
   private final WdkModel _wdkModel;
   // set during build() from ID in DB
-  private final User _user;
+  private final UserInfo _owningUser;
   // set during build() from ID in DB (may be empty if orphan step)
   private final Optional<Strategy> _strategy;
   // in DB, Primary key
@@ -350,7 +352,7 @@ public class Step implements Validateable<Step> {
    * constructor lazy-loads the User object for the passed ID if one is required
    * for processing after construction.
    *
-   * @param user
+   * @param owner
    *   Owner of this step
    * @param strategy
    *   Strategy this step belongs to
@@ -364,9 +366,9 @@ public class Step implements Validateable<Step> {
    * @throws WdkModelException
    *   if this step does not pass the given validation level
    */
-  private Step(User user, Optional<Strategy> strategy, StepBuilder builder,
-      ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
-    _user = user;
+  private Step(UserInfo owner, Optional<Strategy> strategy, StepBuilder builder,
+      User requestingUser, ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
+    _owningUser = owner;
     _strategy = strategy;
     _wdkModel = builder._wdkModel;
     _stepId = builder._stepId;
@@ -377,7 +379,7 @@ public class Step implements Validateable<Step> {
     _projectId = builder.getProjectId();
     _projectVersion = builder._projectVersion;
     _estimatedSize = builder._estimatedSize;
-    _answerSpec = builder._answerSpec.build(user, getContainer(), validationLevel, fillStrategy);
+    _answerSpec = builder._answerSpec.build(requestingUser, getContainer(), validationLevel, fillStrategy);
     _displayPrefs = new JSONObject(builder._displayPrefs.toString());
     _isExpanded = builder.isExpanded();
     _expandedName = checkName("expandedName", builder.getExpandedName());
@@ -402,9 +404,10 @@ public class Step implements Validateable<Step> {
   }
 
   private List<String> getAnswerParamNames() {
-    return !_answerSpec.hasValidQuestion() ? Collections.emptyList() :
-      _answerSpec.getQuestion().getQuery().getAnswerParams().stream()
-        .map(NamedObject::getName).collect(Collectors.toList());
+    return _answerSpec.getQuestion()
+        .map(question -> question.getQuery().getAnswerParams().stream()
+            .map(NamedObject::getName).collect(Collectors.toList()))
+        .orElse(Collections.emptyList());
   }
 
   private static String checkName(String field, String val) throws WdkModelException {
@@ -412,6 +415,10 @@ public class Step implements Validateable<Step> {
       ValidationUtil.maxLength(val, NAME_COLUMN_MAX_SIZE, () ->
           new WdkModelException(String.format("Step field '%s' cannot be longer" +
               " than %d", field, NAME_COLUMN_MAX_SIZE)));
+  }
+
+  public User getRequestingUser() {
+    return _answerSpec.getRequestingUser();
   }
 
   public Optional<Step> getParentStep() {
@@ -469,8 +476,8 @@ public class Step implements Validateable<Step> {
     if (!hasValidQuestion()) {
       return Optional.empty();
     }
-    return Optional.ofNullable(getNthOrNull(
-        _answerSpec.getQuestion().getQuery().getAnswerParams(), answerParamOrdinal));
+    return _answerSpec.getQuestion().flatMap(question ->
+        Optional.ofNullable(getNthOrNull(question.getQuery().getAnswerParams(), answerParamOrdinal)));
   }
 
   public boolean isExpanded() {
@@ -518,17 +525,18 @@ public class Step implements Validateable<Step> {
 
   private int recalculateResultSize(RunnableObj<AnswerSpec> answerSpec) throws WdkModelException {
     int oldEstimatedSize = _estimatedSize;
-    _estimatedSize = AnswerValueFactory.makeAnswer(_user, answerSpec).getResultSizeFactory().getDisplayResultSize();
+    _estimatedSize = AnswerValueFactory.makeAnswer(answerSpec).getResultSizeFactory().getDisplayResultSize();
     _estimatedSizeRefreshed = true;
     if (oldEstimatedSize != _estimatedSize) {
       // update value in database
-      _wdkModel.getStepFactory().updateStep(this);
+      new StepFactory(answerSpec.get().getRequestingUser()).updateStep(this);
     }
     return _estimatedSize;
   }
 
-  public User getUser() {
-    return _user;
+  @Override
+  public UserInfo getOwningUser() {
+    return _owningUser;
   }
 
   public Date getCreatedTime() {
@@ -541,18 +549,15 @@ public class Step implements Validateable<Step> {
 
   /**
    * @return Returns the customName. If no custom name set before, it will
-   *   return the default name provided by the underline AnswerValue - a
+   *   return the default name provided by the underlying AnswerValue - a
    *   combination of question's full name, parameter names and values.
    */
   public String getCustomName() {
-    String name = _customName;
-    Question question = _answerSpec.getQuestion();
 
-    if (name == null || name.isEmpty()) {
-      name = question == null
-        ? _answerSpec.getQuestionName()
-        : question.getShortDisplayName();
-    }
+    String name = getCustomNameOpt()
+        .orElse(_answerSpec.getQuestion()
+            .map(Question::getShortDisplayName)
+            .orElse(_answerSpec.getQuestionName()));
 
     // remove script injections
     name = name.replaceAll("<.+?>", " ")
@@ -563,20 +568,31 @@ public class Step implements Validateable<Step> {
     return name.length() > 4000 ? name.substring(0, 4000) : name;
   }
 
+  private Optional<String> getCustomNameOpt() {
+    return _customName == null || _customName.isBlank()
+        ? Optional.empty() : Optional.of(_customName);
+  }
+
   /**
    * @return Returns the custom name, if it is set. Otherwise, returns the short
    *   display name for the underlying question.
    */
   public String getShortDisplayName() {
-    Question question = _answerSpec.getQuestion();
-    return question == null ? getDisplayName() : question.getShortDisplayName();
+    return _answerSpec.getQuestion()
+        .map(Question::getShortDisplayName)
+        .orElse(getDisplayName());
   }
 
+  /**
+   * @return Returns the custom name, if it is set. Otherwise, returns the
+   *   display name for the underlying question.
+   */
   public String getDisplayName() {
-    Question question = _answerSpec.getQuestion();
-    return question == null
-        ? (_customName != null ? _customName : _answerSpec.getQuestionName())
-        : question.getDisplayName();
+    
+    return _answerSpec.getQuestion()
+        .map(Question::getDisplayName)
+        .orElse(getCustomNameOpt()
+            .orElse(_answerSpec.getQuestionName()));
   }
 
   public long getStepId() {
@@ -588,13 +604,11 @@ public class Step implements Validateable<Step> {
   }
 
   public boolean hasBooleanQuestion() {
-    Question question = _answerSpec.getQuestion();
-    return question != null && question.isBoolean();
+    return _answerSpec.getQuestion().map(Question::isBoolean).orElse(false);
   }
 
   public String getDescription() {
-    Question question = _answerSpec.getQuestion();
-    return question == null ? null : question.getDescription();
+    return _answerSpec.getQuestion().map(Question::getDescription).orElse(null);
   }
 
   /**
@@ -613,9 +627,7 @@ public class Step implements Validateable<Step> {
   }
 
   public Optional<RecordClass> getRecordClass() {
-    return hasValidQuestion()
-      ? Optional.of(_answerSpec.getQuestion().getRecordClass())
-      : Optional.empty();
+    return _answerSpec.getQuestion().map(Question::getRecordClass);
   }
 
   public boolean isFiltered() throws WdkModelException {
@@ -636,7 +648,7 @@ public class Step implements Validateable<Step> {
 
     // check if old-style filter has been applied
     Optional<AnswerFilterInstance> filter = _answerSpec.getLegacyFilter();
-    Optional<AnswerFilterInstance> defaultFilter = _answerSpec.getQuestion().getRecordClass().getDefaultFilter();
+    Optional<AnswerFilterInstance> defaultFilter = _answerSpec.getQuestion().get().getRecordClass().getDefaultFilter();
     return filter.isPresent() &&
         (defaultFilter.isEmpty() ||
          !defaultFilter.get().getName().equals(filter.get().getName()));
@@ -673,7 +685,7 @@ public class Step implements Validateable<Step> {
   }
 
   public boolean hasValidQuestion() {
-    return _answerSpec.hasValidQuestion();
+    return _answerSpec.getQuestion().isPresent();
   }
 
   public AnswerSpec getAnswerSpec() {

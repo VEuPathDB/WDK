@@ -29,6 +29,7 @@ import org.gusdb.wdk.model.answer.request.TemporaryResultFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.request.exception.RequestMisformatException;
@@ -71,7 +72,7 @@ public class TemporaryResultService extends AbstractWdkService {
   public Response setTemporaryResult(JSONObject requestJson)
       throws RequestMisformatException, DataValidationException, WdkModelException, ValidationException {
     AnswerRequest request = parseRequest(requestJson);
-    String id = TemporaryResultFactory.insertTemporaryResult(getRequestingUser().getUserId(), request);
+    String id = TemporaryResultFactory.insertTemporaryResult(getRequestingUser(), request);
     return Response.ok(new JSONObject().put(ID, id).toString())
         .location(getUriInfo().getAbsolutePathBuilder().build(id)).build();
   }
@@ -106,11 +107,10 @@ public class TemporaryResultService extends AbstractWdkService {
 
       // load the step, validate against user, and ensure runnability
       long stepId = requestJson.getLong(STEP_ID);
-      Step step = getWdkModel()
-          .getStepFactory()
+      Step step = new StepFactory(getRequestingUser())
           .getStepById(stepId, ValidationLevel.RUNNABLE)
           .orElseThrow(() -> new DataValidationException("No step found with ID " + stepId));
-      if (step.getUser().getUserId() != getRequestingUser().getUserId()) {
+      if (step.getOwningUser().getUserId() != getRequestingUser().getUserId()) {
         throw new DataValidationException("No step found with ID " + stepId + " for this user.");
       }
       RunnableObj<AnswerSpec> answerSpec = Step.getRunnableAnswerSpec(step.getRunnable()

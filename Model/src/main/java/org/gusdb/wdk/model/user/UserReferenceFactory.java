@@ -8,6 +8,7 @@ import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -68,7 +69,7 @@ class UserReferenceFactory {
    * @param user user to add
    * @throws WdkModelException 
    */
-  public int addUserReference(User user) throws WdkModelException {
+  public int addUserReference(UserInfo user) throws WdkModelException {
     try {
       long userId = user.getUserId();
       boolean isGuest = user.isGuest();

@@ -35,7 +35,7 @@ public class ReporterFactory {
 
   private static Reporter createReporterInstance(AnswerValue answerValue, String reporterName) throws WdkModelException {
 
-    Question question = answerValue.getAnswerSpec().getQuestion();
+    Question question = answerValue.getQuestion();
     RecordClass recordClass = question.getRecordClass();
     Map<String, ReporterRef> rptMap = question.getReporterMap();
 

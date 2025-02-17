@@ -48,6 +48,8 @@ import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.user.BasketFactory;
+import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -181,15 +183,15 @@ public class DatasetRequestProcessor {
     final DatasetFactory factory
   ) throws WdkModelException, DataValidationException {
 
-    RunnableObj<Strategy> strategy = factory.getWdkModel().getStepFactory()
+    RunnableObj<Strategy> strategy = new StepFactory(user)
       .getStrategyById(strategyId, ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING)
       .orElseThrow(() -> new DataValidationException("Strategy with ID " + strategyId + " not found."))
       .getRunnable()
       .getOrThrow(strat -> new DataValidationException("Strategy with ID " +
         strategyId + " not valid. " + strat.getValidationBundle().toString()));
 
-    AnswerValue answerValue = AnswerValueFactory.makeAnswer(
-        Strategy.getRunnableStep(strategy, strategy.get().getRootStepId()).get());
+    AnswerValue answerValue = AnswerValueFactory.makeAnswer(Step.getRunnableAnswerSpec(
+        Strategy.getRunnableStep(strategy, strategy.get().getRootStepId()).get()));
 
 
     long resultSize = answerValue.getResultSizeFactory().getResultSize();

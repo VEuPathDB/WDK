@@ -87,7 +87,7 @@ public abstract class AbstractReporter implements Reporter {
   // =========================================================================
 
   protected Question getQuestion() {
-    return _baseAnswer.getAnswerSpec().getQuestion();
+    return _baseAnswer.getQuestion();
   }
 
 }

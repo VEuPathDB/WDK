@@ -11,6 +11,7 @@ import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.service.request.answer.AnswerSpecServiceFormat;
@@ -81,7 +82,7 @@ public class StepFormatter {
         .put(JsonKeys.EXPANDED_NAME, step.getExpandedName())
         .put(JsonKeys.IS_FILTERED, step.isFiltered())
         .put(JsonKeys.DESCRIPTION, step.getDescription())
-        .put(JsonKeys.OWNER_ID, step.getUser().getUserId())
+        .put(JsonKeys.OWNER_ID, step.getOwningUser().getUserId())
         .put(JsonKeys.STRATEGY_ID, JsonUtil.convertNulls(step.getStrategyId().orElse(null)))
         .put(JsonKeys.HAS_COMPLETE_STEP_ANALYSES, step.getHasCompleteAnalyses())
         .put(JsonKeys.RECORD_CLASS_NAME, step.getRecordClass().map(RecordClass::getUrlSegment).orElse(null))
@@ -98,8 +99,8 @@ public class StepFormatter {
   }
 
   private static String getQuestionUrlSegment(AnswerSpec answerSpec) {
-    return answerSpec.hasValidQuestion() ? answerSpec.getQuestion().getName() :
-      answerSpec.getQuestionName().substring(answerSpec.getQuestionName().indexOf('.') + 1);
+    return answerSpec.getQuestion().map(Question::getName).orElse(
+      answerSpec.getQuestionName().substring(answerSpec.getQuestionName().indexOf('.') + 1));
   }
 
   public static JSONObject getStepJsonWithResultSize(Step step) throws WdkModelException {

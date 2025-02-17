@@ -66,7 +66,7 @@ public class TableTabularReporter extends AbstractTabularReporter {
         throw new WdkModelException(e.getMessage(), e);
       }
     }
-    RecordClass recordClass = _baseAnswer.getAnswerSpec().getQuestion().getRecordClass();
+    RecordClass recordClass = _baseAnswer.getQuestion().getRecordClass();
     if (idAttributeContainsNonPkFields(recordClass)) {
       // need to use FileBasedRecordStream to support both this table and any needed attributes
       return new FileBasedRecordStream(_baseAnswer,
@@ -93,7 +93,7 @@ public class TableTabularReporter extends AbstractTabularReporter {
   @Override
   protected List<String> getHeader() throws WdkUserException, WdkModelException {
     List<String> list = new ArrayList<String>();
-    list.add(_baseAnswer.getAnswerSpec().getQuestion().getRecordClass().getIdAttributeField().getDisplayName());
+    list.add(_baseAnswer.getQuestion().getRecordClass().getIdAttributeField().getDisplayName());
     for (AttributeField field : _tableAttributes) {
       list.add(field.getDisplayName());
     }

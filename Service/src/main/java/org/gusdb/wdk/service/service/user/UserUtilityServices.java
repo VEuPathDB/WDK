@@ -19,6 +19,7 @@ import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonIterators;
 import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonType.ValueType;
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
 import org.gusdb.oauth2.client.veupathdb.UserProperty;
 import org.gusdb.oauth2.exception.InvalidPropertiesException;
 import org.gusdb.wdk.core.api.JsonKeys;
@@ -68,7 +69,7 @@ public class UserUtilityServices extends AbstractWdkService {
       UserCreationRequest request = UserCreationRequest.createFromJson(requestJson, configuredUserProps);
 
       // create the user, saving to OAuth
-      User newUser = getWdkModel().getUserFactory().createUser(
+      UserInfo newUser = getWdkModel().getUserFactory().createUser(
           request.getProfileRequest().getEmail(),
           request.getProfileRequest().getProfileMap());
 
@@ -150,9 +151,9 @@ public class UserUtilityServices extends AbstractWdkService {
           throw new RequestMisformatException("The user email list provided must be an array of strings.");
         }
       }
-      Map<String,User> userMap = getWdkModel().getUserFactory().getUsersByEmail(new ArrayList<>(userEmails));
+      Map<String,UserInfo> userMap = getWdkModel().getUserFactory().getUsersByEmail(new ArrayList<>(userEmails));
       Map<String,Long> idMap = Functions.getMapFromKeys(userMap.keySet(),
-          email -> Optional.ofNullable(userMap.get(email)).map(User::getUserId).orElse(null));
+          email -> Optional.ofNullable(userMap.get(email)).map(UserInfo::getUserId).orElse(null));
       return Response.ok(new JSONObject().put("results", idMap).toString()).build();
     }
     catch (JSONException e) {

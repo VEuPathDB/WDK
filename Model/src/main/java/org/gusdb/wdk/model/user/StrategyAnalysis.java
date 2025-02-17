@@ -31,12 +31,13 @@ public class StrategyAnalysis {
 
     try (WdkModel model = WdkModel.construct(projectId, GusHome.getGusHome())) {
       Timer timer = new Timer();
+      StepFactory stepFactory = new StepFactory(model.getSystemUser());
       UnbuildableStrategyList<InvalidStrategyStructureException> malformedStrats = new UnbuildableStrategyList<>();
       UnbuildableStrategyList<WdkModelException> stratsWithBuildErrors = new UnbuildableStrategyList<>();
       Collection<Strategy> strategies =
         !userEmail.isPresent() ?
-        model.getStepFactory().getAllStrategies(validationLevel, malformedStrats, stratsWithBuildErrors).values() :
-        model.getStepFactory().getStrategies(
+        stepFactory.getAllStrategies(validationLevel, malformedStrats, stratsWithBuildErrors).values() :
+        stepFactory.getStrategies(
           model.getUserFactory()
             .getUserByEmail(userEmail.get())
             .orElseThrow(() -> new WdkModelException(

@@ -78,7 +78,7 @@ public class AnalysisCallable implements Callable<ExecutionStatus> {
 
     // otherwise, step is runnable
     ExecutionStatus status = analyzer.runAnalysis(
-        AnswerValueFactory.makeAnswer(runnableStep).cloneWithNewPaging(1, -1),
+        AnswerValueFactory.makeAnswer(Step.getRunnableAnswerSpec(runnableStep)).cloneWithNewPaging(1, -1),
         new StatusLogger(contextHash, _dataStore));
 
     LOG.info("Analyzer returned without exception and with status: " + status);

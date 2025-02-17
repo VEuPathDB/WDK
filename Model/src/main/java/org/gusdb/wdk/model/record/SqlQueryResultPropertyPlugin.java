@@ -40,7 +40,7 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
   @Override
   public Integer getPropertyValue(AnswerValue answerValue, String propertyName)
       throws WdkModelException, WdkUserException {
-    String recordClassName = answerValue.getAnswerSpec().getQuestion().getRecordClass().getFullName();
+    String recordClassName = answerValue.getQuestion().getRecordClass().getFullName();
     if (!propertyName.equals(_propertyName))
       throw new WdkModelException("Accessing result property plugin for record class '" +
           recordClassName + "' with illegal property name '" + propertyName +
@@ -48,7 +48,7 @@ public class SqlQueryResultPropertyPlugin implements ResultProperty {
 
     QueryInstance<?> queryInstance = Query.makeQueryInstance(QueryInstanceSpec.builder()
         .put(WDK_ID_SQL_PARAM, answerValue.getIdSql())
-        .buildRunnable(answerValue.getUser(), _query, StepContainer.emptyContainer()));
+        .buildRunnable(answerValue.getRequestingUser(), _query, StepContainer.emptyContainer()));
     try (ResultList results = queryInstance.getResults()) {
       results.next();
       Integer count = ((BigDecimal) results.get(PROPERTY_COLUMN)).intValue();

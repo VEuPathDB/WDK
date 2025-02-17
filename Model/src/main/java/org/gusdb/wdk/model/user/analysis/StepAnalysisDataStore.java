@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.User;
 
 public interface StepAnalysisDataStore {
 
@@ -22,7 +22,7 @@ public interface StepAnalysisDataStore {
   void deleteAnalysesByStepId(long stepId) throws WdkModelException;
 
   // searches for analysis instances
-  Optional<StepAnalysisInstance> getInstanceById(long analysisId, WdkModel wdkModel, ValidationLevel level) throws WdkModelException;
+  Optional<StepAnalysisInstance> getInstanceById(User requestingUser, long analysisId, ValidationLevel level) throws WdkModelException;
   List<StepAnalysisInstance> getInstancesByStep(Step step, ValidationLevel level) throws WdkModelException;
 
   // methods to manage properties

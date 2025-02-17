@@ -37,10 +37,11 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 
   protected BooleanQueryInstance(RunnableObj<QueryInstanceSpec> spec) {
     super(spec);
-    if (!(spec.get().getQuery().get() instanceof BooleanQuery)) {
+    Query query = spec.get().getQuery().get();
+    if (!(query instanceof BooleanQuery)) {
       throw new IllegalStateException("Spec passed to BooleanQueryInstance does not contain a BooleanQuery");
     }
-    booleanQuery = (BooleanQuery)spec.get().getQuery().get();
+    booleanQuery = (BooleanQuery)query;
   }
 
   @Override

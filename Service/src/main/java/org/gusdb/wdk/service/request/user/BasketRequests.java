@@ -16,11 +16,12 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.request.RecordRequest;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
 import org.gusdb.wdk.service.service.AbstractWdkService;
-import org.gusdb.wdk.service.service.user.UserService;
+import org.gusdb.wdk.service.service.user.AbstractUserService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -110,11 +111,10 @@ public class BasketRequests {
 
     public RunnableObj<AnswerSpec> getRunnableAnswerSpec(User user, WdkModel wdkModel) throws NotFoundException, WdkModelException, DataValidationException {
       return _runnableAnswerSpec != null ? _runnableAnswerSpec :
-        Step.getRunnableAnswerSpec(wdkModel
-          .getStepFactory()
+        Step.getRunnableAnswerSpec(new StepFactory(user)
           .getStepByIdAndUserId(_stepId, user.getUserId(), ValidationLevel.RUNNABLE)
           .orElseThrow(() -> new NotFoundException(
-            AbstractWdkService.formatNotFound(UserService.STEP_RESOURCE + _stepId)))
+            AbstractWdkService.formatNotFound(AbstractUserService.STEP_RESOURCE + _stepId)))
           .getRunnable()
           .getOrThrow(step -> new DataValidationException(
             "Step " + _stepId + " is not runnable so its results cannot be added to the basket.")));

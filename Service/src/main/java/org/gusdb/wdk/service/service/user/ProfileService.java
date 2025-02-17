@@ -12,9 +12,10 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
+import org.gusdb.oauth2.client.veupathdb.UserInfoImpl;
 import org.gusdb.oauth2.exception.InvalidPropertiesException;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.BasicUser;
 import org.gusdb.wdk.model.user.InvalidUsernameOrEmailException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserPreferenceFactory;
@@ -29,7 +30,7 @@ import org.gusdb.wdk.service.request.user.UserProfileRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ProfileService extends UserService {
+public class ProfileService extends AbstractUserService {
 
   public ProfileService(@PathParam(USER_ID_PATH_PARAM) String uid) {
     super(uid);
@@ -41,7 +42,7 @@ public class ProfileService extends UserService {
   // @OutSchema("wdk.users.get-by-id")
   public JSONObject getById(@QueryParam("includePreferences") Boolean includePreferences) throws WdkModelException {
     UserBundle userBundle = getUserBundle(Access.PUBLIC);
-    return formatUser(userBundle.getTargetUser(), userBundle.isSessionUser(),
+    return formatUser(userBundle.getTargetUser(), userBundle.isTargetRequestingUser(),
         getFlag(includePreferences));
   }
 
@@ -49,16 +50,16 @@ public class ProfileService extends UserService {
    * Formats user object to JSON.  Factored to allow easy appending of custom properties by subclasses
    *
    * @param user user to format
-   * @param isSessionUser whether the requested user is the currently logged in user
+   * @param isRequestUser whether the requested user is the currently logged in user
    * @param includePrefs whether to include user preferences in response
    * @param propNames user property names configured in Model Config
    * @return formatted user object
    * @throws WdkModelException if something goes wrong
    */
-  protected JSONObject formatUser(User user, boolean isSessionUser, boolean includePrefs) throws WdkModelException {
+  protected JSONObject formatUser(UserInfo user, boolean isRequestUser, boolean includePrefs) throws WdkModelException {
     Optional<UserPreferences> userPrefs = !includePrefs ? Optional.empty() :
         Optional.of(new UserPreferenceFactory(getWdkModel()).getPreferences(user.getUserId()));
-    return UserFormatter.getUserJson(user, isSessionUser, userPrefs);
+    return UserFormatter.getUserJson(user, isRequestUser, userPrefs);
   }
 
   /**
@@ -79,7 +80,7 @@ public class ProfileService extends UserService {
           new JSONObject(body), User.USER_PROPERTIES.values(), true);
 
       // overwrite user's old email and profile
-      User newUser = new BasicUser(oldUser);
+      UserInfo newUser = new UserInfoImpl(oldUser);
       newUser.setEmail(request.getEmail());
       newUser.setPropertyValues(request.getProfileMap());
 

@@ -35,7 +35,7 @@ public class WdkInitializer {
       WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
 
       LOG.info("Initialized model object.  Setting on application context.");
-      context.put(Utilities.WDK_MODEL_KEY, wdkModel);
+      context.put(Utilities.CONTEXT_KEY_WDK_MODEL_OBJECT, wdkModel);
 
       // Set assetsUrl attribute. It will be null if not defined in the model
       context.put(WDK_ASSETS_URL_KEY,
@@ -101,7 +101,7 @@ public class WdkInitializer {
   }
 
   public static WdkModel getWdkModel(ApplicationContext context) {
-    return (WdkModel)context.get(Utilities.WDK_MODEL_KEY);
+    return (WdkModel)context.get(Utilities.CONTEXT_KEY_WDK_MODEL_OBJECT);
   }
 
   private static void assignInitParamToAttribute(ApplicationContext applicationScope, String key) {

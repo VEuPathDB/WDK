@@ -100,7 +100,7 @@ public class FilterParamNewStableValue {
     List<String> errors = new ArrayList<String>();
 
     // validate fields against ontology; collect fields that are not isRange
-    Map<String, OntologyItem> ontology = _param.getOntology(contextParamValues.getUser(), contextParamValues);
+    Map<String, OntologyItem> ontology = _param.getOntology(contextParamValues.getRequestingUser(), contextParamValues);
     Set<MembersFilter> memberFilters = new HashSet<MembersFilter>();
     for (Filter filter : _filters) {
       String field = filter.getField();
@@ -128,7 +128,7 @@ public class FilterParamNewStableValue {
       //    .map(FilterParamNewStableValue.MembersFilter::getField)
       //    .collect(Collectors.toSet());
       Map<String, Set<String>> metadataMembers = _param.getValuesMap(
-          contextParamValues.getUser(), contextParamValues, null, ontology);
+          contextParamValues.getRequestingUser(), contextParamValues, null, ontology);
 
       // iterate through our member filters, validating the values of each
       for (MembersFilter mf : memberFilters) {

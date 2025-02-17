@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * This class is used as a stand-in for a true factory implementation when no
@@ -131,7 +132,7 @@ public class UnconfiguredStepAnalysisFactory implements StepAnalysisFactory {
   }
 
   @Override
-  public Optional<StepAnalysisInstance> getInstanceById(long analysisId, WdkModel wdkModel,
+  public Optional<StepAnalysisInstance> getInstanceById(User requestingUser, long analysisId,
       ValidationLevel validationLevel) throws WdkModelException {
     throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
   }

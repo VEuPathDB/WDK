@@ -47,9 +47,10 @@ import org.gusdb.wdk.model.report.reporter.DefaultJsonReporter;
 import org.gusdb.wdk.model.user.InvalidStrategyStructureException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Step.StepBuilder;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserCache;
+import org.gusdb.wdk.model.user.UserInfoCache;
 import org.gusdb.wdk.service.annotation.InSchema;
 import org.gusdb.wdk.service.annotation.OutSchema;
 import org.gusdb.wdk.service.annotation.PATCH;
@@ -67,7 +68,7 @@ import org.gusdb.wdk.service.service.search.ColumnService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class StepService extends UserService {
+public class StepService extends AbstractUserService {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(StepService.class);
@@ -91,9 +92,9 @@ public class StepService extends UserService {
   public Response createStep(JSONObject jsonBody)
       throws WdkModelException, DataValidationException, RequestMisformatException {
     try {
-      User user = getUserBundle(Access.PRIVATE).getSessionUser();
+      User user = getUserBundle(Access.PRIVATE).getRequestingUser();
       NewStepRequest stepRequest = StepRequestParser.newStepFromJson(jsonBody, getWdkModel(), user);
-      Step step = getWdkModel().getStepFactory().createStep(
+      Step step = getStepFactory().createStep(
           user,
           stepRequest.getAnswerSpec(),
           stepRequest.getCustomName(),
@@ -140,7 +141,7 @@ public class StepService extends UserService {
       JSONObject body) throws WdkModelException, RequestMisformatException {
     if (body.length() != 0) {
       Step step = StepRequestParser.updateStepMeta(getStepForCurrentUser(stepId, ValidationLevel.NONE), body);
-      getWdkModel().getStepFactory().updateStep(step);
+      new StepFactory(getRequestingUser()).updateStep(step);
     }
   }
 
@@ -159,10 +160,12 @@ public class StepService extends UserService {
         "Steps that are part of strategies cannot be deleted.  Remove the " +
           "step from strategy " + step.getStrategyId().get() + " and try again.");
 
-    getWdkModel().getStepFactory()
+    UserInfoCache userCache = new UserInfoCache(getWdkModel(), step);
+
+    getStepFactory()
       .updateStep(Step.builder(step)
         .setDeleted(true)
-        .build(new UserCache(step.getUser()), ValidationLevel.NONE, Optional.empty()));
+        .build(userCache, getRequestingUser(), ValidationLevel.NONE, Optional.empty()));
   }
 
   @GET
@@ -259,22 +262,21 @@ public class StepService extends UserService {
     RunnableObj<AnswerSpec> runnableSpec = AnswerSpec
         .builder(step.getAnswerSpec())
         .setViewFilterOptions(AnswerSpecServiceFormat.parseViewFilters(requestJson))
-        .build(step.getUser(), step.getContainer(), ValidationLevel.RUNNABLE)
+        .build(getRequestingUser(), step.getContainer(), ValidationLevel.RUNNABLE)
         .getRunnable()
         .getOrThrow(StepService::getNotRunnableException);
 
     // execute reporter against the answer spec
     AnswerRequest request = new AnswerRequest(runnableSpec,
         new AnswerFormatting(reporterName, requestJson.getJSONObject(JsonKeys.REPORT_CONFIG)), false);
-    TwoTuple<AnswerValue, Response> result = AnswerService.getAnswerResponse(step.getUser(), request, getErrorContext());
+    TwoTuple<AnswerValue, Response> result = AnswerService.getAnswerResponse(getRequestingUser(), request, getErrorContext());
 
     // update the estimated size and last-run time on this step
-    getWdkModel().getStepFactory().updateStep(
+    getStepFactory().updateStep(
         Step.builder(step)
         .setEstimatedSize(result.getFirst().getResultSizeFactory().getDisplayResultSize())
         .setLastRunTime(new Date())
-        .build(new UserCache(step.getUser()),
-            ValidationLevel.NONE, step.getStrategy()));
+        .build(new UserInfoCache(getWdkModel(), step), getRequestingUser(), ValidationLevel.NONE, step.getStrategy()));
 
     return result.getSecond();
   }
@@ -318,20 +320,20 @@ public class StepService extends UserService {
       JSONObject body
   ) throws WdkModelException, DataValidationException, RequestMisformatException {
 
-    User user = getUserBundle(Access.PRIVATE).getSessionUser();
+    User user = getUserBundle(Access.PRIVATE).getRequestingUser();
     Step existingStep = getStepForCurrentUser(stepId, ValidationLevel.NONE);
 
-    AnswerSpec newSpec =
-      allowInvalid
+    AnswerSpec newSpec;
+    if (allowInvalid) {
       // allow PUTing of invalid steps so we can test how we handle them elsewhere
-      ? AnswerSpecServiceFormat
-          .parse(existingStep.getAnswerSpec().getQuestion(), body, getWdkModel())
-          .build(user, existingStep.getContainer(), ValidationLevel.SEMANTIC)
-      : StepRequestParser
-          .getReplacementAnswerSpec(existingStep, body, getWdkModel(), user)
-          .get();
-
-    StepRequestParser.assertAnswerParamsUnmodified(existingStep, newSpec);
+      newSpec = AnswerSpecServiceFormat
+          .parse(existingStep.getAnswerSpec().getQuestion().get(), body, getWdkModel())
+          .build(user, existingStep.getContainer(), ValidationLevel.SEMANTIC);
+      StepRequestParser.assertAnswerParamsUnmodified(existingStep, newSpec);
+    }
+    else {
+      newSpec = StepRequestParser.getReplacementAnswerSpec(existingStep, body, getWdkModel(), user).get();
+    }
 
     StepBuilder replacementBuilder = Step.builder(existingStep)
         .setAnswerSpec(AnswerSpec.builder(newSpec))
@@ -343,11 +345,11 @@ public class StepService extends UserService {
     if (existingStep.getStrategy().isPresent()) {
       try {
         // need to replace and update whole strategy to cover effects
-        getWdkModel().getStepFactory().updateStrategy(Strategy
+        new StepFactory(user).updateStrategy(Strategy
             .builder(existingStep.getStrategy().get())
             .addStep(replacementBuilder)
             .setLastModifiedTime(new Date())
-            .build(new UserCache(user), ValidationLevel.SEMANTIC));
+            .build(new UserInfoCache(user), user, ValidationLevel.SEMANTIC));
       }
       catch (InvalidStrategyStructureException e) {
         throw new DataValidationException("Invalid strategy structure passed. " + e.getMessage(), e);
@@ -355,8 +357,8 @@ public class StepService extends UserService {
     }
     else {
       // no strategy present; only need to update the step
-      getWdkModel().getStepFactory().updateStep(replacementBuilder.build(
-          new UserCache(user), ValidationLevel.SEMANTIC, Optional.empty()));
+      getStepFactory().updateStep(replacementBuilder.build(
+          new UserInfoCache(user), user, ValidationLevel.SEMANTIC, Optional.empty()));
     }
   }
 
@@ -379,8 +381,8 @@ public class StepService extends UserService {
     @PathParam(STEP_ID_PATH_PARAM) long stepId,
     @PathParam("filterName") String filterName
   ) throws WdkModelException, DataValidationException, WdkUserException {
+    getUserBundle(Access.PRIVATE); // assert user ownership
     return AnswerValueFactory.makeAnswer(
-        getUserBundle(Access.PRIVATE).getSessionUser(),
         Step.getRunnableAnswerSpec(
           getStepForCurrentUser(stepId, ValidationLevel.RUNNABLE)
             .getRunnable()
@@ -414,23 +416,27 @@ public class StepService extends UserService {
     ColumnReporterService.trimColumnFilter(specBuilder, columnName, reporterName);
     RunnableObj<AnswerSpec> trimmedSpec = specBuilder
         .setViewFilterOptions(AnswerSpecServiceFormat.parseViewFilters(requestJson))
-        .build(step.getUser(), step.getContainer(), ValidationLevel.RUNNABLE)
+        .build(getRequestingUser(), step.getContainer(), ValidationLevel.RUNNABLE)
         .getRunnable()
         .getOrThrow(StepService::getNotRunnableException);
 
     // make sure passed column is valid for this question
-    Question question = trimmedSpec.get().getQuestion();
+    Question question = trimmedSpec.get().getQuestion().get();
     AttributeField attribute = getColumnOrNotFound(question, columnName);
 
     // create reporter instance for this step and config
     Reporter reporter = ColumnReporterService.getColumnReporter(attribute, reporterName)
-        .setAnswerValue(AnswerValueFactory.makeAnswer(step.getUser(), trimmedSpec))
+        .setAnswerValue(AnswerValueFactory.makeAnswer(trimmedSpec))
         .configure(requestJson.getJSONObject(JsonKeys.REPORT_CONFIG));
 
     LOG.info("Prepared column reporter for column " + columnName + " in " + t.getElapsedString());
 
     // execute reporter against the runnable answer spec
     return AnswerService.getAnswerAsStream(reporter, getErrorContext());
+  }
+
+  private StepFactory getStepFactory() {
+    return new StepFactory(getRequestingUser());
   }
 
   private static DataValidationException getNotRunnableException(Validateable<?> badSpec) {

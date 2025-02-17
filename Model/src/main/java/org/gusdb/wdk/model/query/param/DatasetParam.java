@@ -140,7 +140,7 @@ public class DatasetParam extends Param {
     // otherwise, make sure the dataset exists
     try {
       _wdkModel.getDatasetFactory().getDatasetWithOwner(
-          Long.parseLong(stableValue), ctxParamVals.getUser().getUserId());
+          Long.parseLong(stableValue), ctxParamVals.getRequestingUser().getUserId());
     }
     catch (WdkModelException | WdkUserException | NumberFormatException e) {
       return ctxParamVals.setInvalid(name, level, e.getMessage());
