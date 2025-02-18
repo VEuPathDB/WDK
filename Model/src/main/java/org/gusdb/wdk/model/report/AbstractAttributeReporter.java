@@ -15,7 +15,6 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.SqlQuery;
@@ -28,8 +27,6 @@ import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
 import org.json.JSONObject;
-
-import static org.gusdb.fgputil.functional.Functions.mapException;
 
 public abstract class AbstractAttributeReporter extends AbstractReporter {
 
