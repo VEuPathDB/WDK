@@ -64,7 +64,7 @@ public class AnswerFilterInstance extends WdkModelBase implements NamedObject {
   private String _description;
 
   private List<WdkModelText> _paramValueList = new ArrayList<WdkModelText>();
-  private QueryInstanceSpec _partialParamStableValues; // omits answer param for step input to this filter
+  private QueryInstanceSpecBuilder _partialParamStableValuesBuilder; // omits answer param for step input to this filter
 
   private RecordClass _recordClass;
   private SqlQuery _filterQuery;
@@ -196,7 +196,7 @@ public class AnswerFilterInstance extends WdkModelBase implements NamedObject {
   }
 
   public Map<String, String> getParamValueMap() {
-    return new LinkedHashMap<>(_partialParamStableValues.toMap());
+    return new LinkedHashMap<>(_partialParamStableValuesBuilder.toMap());
   }
 
   @Override
@@ -228,22 +228,20 @@ public class AnswerFilterInstance extends WdkModelBase implements NamedObject {
     _descriptionList = null;
 
     // exclude the param values
-    QueryInstanceSpecBuilder paramBuilder = QueryInstanceSpec.builder();
+    _partialParamStableValuesBuilder = QueryInstanceSpec.builder();
     for (WdkModelText param : _paramValueList) {
       if (param.include(projectId)) {
         param.excludeResources(projectId);
         String paramName = param.getName();
         String paramValue = param.getText().trim();
  
-        if (paramBuilder.containsKey(paramName))
+        if (_partialParamStableValuesBuilder.containsKey(paramName))
           throw new WdkModelException("The param [" + paramName
               + "] for answerFilterInstance [" + _name + "] of type "
               + _recordClass.getFullName() + "  is included more than once.");
-        paramBuilder.put(paramName, paramValue);
+        _partialParamStableValuesBuilder.put(paramName, paramValue);
       }
     }
-    // build an invalid spec here since we know answer param will be missing; still get immutability
-    _partialParamStableValues = paramBuilder.buildInvalid();
     _paramValueList = null;
   }
 
@@ -256,7 +254,7 @@ public class AnswerFilterInstance extends WdkModelBase implements NamedObject {
 
     // make sure the params provides match with those in the filter query
     Map<String, Param> params = _filterQuery.getParamMap();
-    for (String paramName : _partialParamStableValues.keySet()) {
+    for (String paramName : _partialParamStableValuesBuilder.toMap().keySet()) {
       if (!params.containsKey(paramName))
         throw new WdkModelException("The param [" + paramName
             + "] declared in answerFilterInstance [" + _name + "] of type "
@@ -269,7 +267,7 @@ public class AnswerFilterInstance extends WdkModelBase implements NamedObject {
     for (String paramName : params.keySet()) {
       if (_answerParam.getName().equals(paramName))
         continue;
-      if (!_partialParamStableValues.containsKey(paramName))
+      if (!_partialParamStableValuesBuilder.containsKey(paramName))
         throw new WdkModelException("The required param value of [" + paramName
             + "] is not assigned to filter [" + getName() + "]");
     }
@@ -282,7 +280,7 @@ public class AnswerFilterInstance extends WdkModelBase implements NamedObject {
     QueryInstance<?> idInstance = answerValue.getIdsQueryInstance();
     String sql = idInstance.getSql();
     int assignedWeight = idInstance.getAssignedWeight();
-    sql = applyFilter(answerValue.getUser(), sql, assignedWeight);
+    sql = applyFilter(answerValue.getRequestingUser(), sql, assignedWeight);
     DataSource dataSource = _wdkModel.getAppDb().getDataSource();
     try {
       ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
@@ -297,7 +295,7 @@ public class AnswerFilterInstance extends WdkModelBase implements NamedObject {
       throws WdkModelException {
     // validate params
     RunnableObj<QueryInstanceSpec> validSpec = QueryInstanceSpec
-        .builder(_partialParamStableValues)
+        .builder(_partialParamStableValuesBuilder.buildInvalid(user))
         .buildValidated(user, _filterQuery, StepContainer.emptyContainer(),
             ValidationLevel.RUNNABLE, FillStrategy.NO_FILL)
         .getRunnable()

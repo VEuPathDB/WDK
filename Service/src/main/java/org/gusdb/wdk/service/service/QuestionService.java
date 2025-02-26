@@ -347,7 +347,7 @@ public class QuestionService extends AbstractWdkService {
 
     // try to look up ontology term with this ID
     QueryInstanceSpec spec = validSpec.get();
-    OntologyItem ontologyItem = filterParam.getOntology(spec.getUser(), spec.toMap()).get(ontologyId);
+    OntologyItem ontologyItem = filterParam.getOntology(spec.getRequestingUser(), spec.toMap()).get(ontologyId);
     if (ontologyItem == null) {
       throw new DataValidationException("Requested ontology item '" + ontologyId + "' does not exist for this parameter (" + paramName + ").");
     }

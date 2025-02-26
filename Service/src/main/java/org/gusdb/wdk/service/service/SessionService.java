@@ -33,6 +33,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfig.AuthenticationMethod;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.service.request.LoginRequest;
@@ -223,7 +224,7 @@ public class SessionService extends AbstractWdkService {
     // transfer dataset ownership
     wdkModel.getDatasetFactory().transferDatasetOwnership(oldUser, newUser);
     // transfer strategy ownership
-    wdkModel.getStepFactory().transferStrategyOwnership(oldUser, newUser);
+    new StepFactory(oldUser).transferStrategyOwnership(oldUser, newUser);
   }
 
   /**

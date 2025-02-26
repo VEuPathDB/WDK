@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
-import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.StepContainer;
@@ -117,9 +117,9 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
       Question contextQuestion = _param.getContextQuestion();
       ParameterContainer contextQuery = _param.getContainer();
       Map<String, String> context = new LinkedHashMap<String, String>();
-      context.put(Utilities.QUERY_CTX_PARAM, _param.getFullName());
+      context.put(Utilities.CONTEXT_KEY_PARAM_NAME, _param.getFullName());
       if (_param.getContextQuestion() != null)
-        context.put(Utilities.QUERY_CTX_QUESTION, contextQuestion.getFullName());
+        context.put(Utilities.CONTEXT_KEY_QUESTION_FULL_NAME, contextQuestion.getFullName());
       logger.debug("PARAM [" + _param.getFullName() + "] query=" + _vocabQuery.getFullName() +
           ", context Question: " + ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName()) +
           ", context Query: " + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
@@ -172,8 +172,8 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
 
       boolean emptyVocabAllowed = _param.isAllowEmptyVocabulary() && _param.getDependentParams().isEmpty();
       if (vocabInstance.isEmpty() && !emptyVocabAllowed) {
-        if (_vocabQuery instanceof SqlQuery)
-          logger.warn("vocab query returned 0 rows:" + ((SqlQuery) _vocabQuery).getSql());
+        if (instance instanceof SqlQueryInstance)
+          logger.warn("vocab query returned 0 rows:" + ((SqlQueryInstance)instance).getSql());
         throw new WdkEmptyEnumListException("No item returned by the query [" + _vocabQuery.getFullName() +
             "] of FlatVocabParam [" + _param.getFullName() + "].");
       }

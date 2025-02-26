@@ -24,7 +24,7 @@ import org.gusdb.wdk.service.request.user.UserPreferencesRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class PreferenceService extends UserService {
+public class PreferenceService extends AbstractUserService {
 
   private enum Scope { GLOBAL, PROJECT }
   private enum Action { CLEAR, UPDATE }
@@ -38,7 +38,7 @@ public class PreferenceService extends UserService {
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.users.preferences.get-response")
   public Response getUserPrefs() throws WdkModelException {
-    User user = getUserBundle(Access.PRIVATE).getSessionUser();
+    User user = getUserBundle(Access.PRIVATE).getRequestingUser();
     UserPreferences userPrefs = new UserPreferenceFactory(getWdkModel()).getPreferences(user.getUserId());
     return Response.ok(UserFormatter.getPreferencesJson(userPrefs).toString()).build();
   }
@@ -73,7 +73,7 @@ public class PreferenceService extends UserService {
   }
 
   private Response patchUserPrefs(JSONObject body, Scope scope) throws WdkModelException, DataValidationException {
-    User user = getUserBundle(Access.PRIVATE).getSessionUser();
+    User user = getUserBundle(Access.PRIVATE).getRequestingUser();
     try {
       Action action = Action.valueOf(body.getString(JsonKeys.ACTION));  // IllegalArgumentException
       UserPreferenceFactory prefsFactory = new UserPreferenceFactory(getWdkModel());

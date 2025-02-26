@@ -56,7 +56,7 @@ public abstract class AbstractRecordIterator extends ReadOnlyIterator<RecordInst
     _answerValue = answerValue;
     _resultList = resultList;
     // cache values looked up for each row
-    Question question = _answerValue.getAnswerSpec().getQuestion();
+    Question question = _answerValue.getQuestion();
     _recordClass = question.getRecordClass();
     _attributeFieldMap = question.getAttributeFieldMap();
   }

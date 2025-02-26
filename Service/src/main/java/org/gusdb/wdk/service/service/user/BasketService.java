@@ -83,7 +83,7 @@ import org.json.JSONObject;
  *            (Also- change RecordsByBasketSnapshot question to take dataset ID, maybe generalize to GenesByDataset, etc)
  * TODO #2: Disallow answer service access to basket questions (supported by /basket/{id}/answer)
  */
-public class BasketService extends UserService {
+public class BasketService extends AbstractUserService {
 
   private static final String BASKET_NAME_PATH_PARAM = "basketName";
   private static final String BASKETS_PATH = "baskets";
@@ -329,7 +329,7 @@ public class BasketService extends UserService {
           throws WdkModelException, NotFoundException, WdkUserException {
 
     // do some initial validation
-    User user = getPrivateRegisteredUser();
+    User user = getPrivateRegisteredUser(); // make sure 
     RecordClass recordClass = getRecordClassOrNotFound(basketName);
     AttributeField attribute = getColumnOrNotFound(recordClass, columnName);
 
@@ -338,12 +338,12 @@ public class BasketService extends UserService {
       .builder(getWdkModel())
       .setQuestionFullName(recordClass.getRealtimeBasketQuestion().getFullName())
       .setViewFilterOptions(AnswerSpecServiceFormat.parseViewFilters(requestJson))
-      .buildRunnable(getRequestingUser(), StepContainer.emptyContainer());
+      .buildRunnable(user, StepContainer.emptyContainer());
 
     // build and configure the column reporter and stream its result
     return AnswerService.getAnswerAsStream(
         ColumnReporterService.getColumnReporter(attribute, reportName)
-          .setAnswerValue(AnswerValueFactory.makeAnswer(user, basketAnswerSpec))
+          .setAnswerValue(AnswerValueFactory.makeAnswer(basketAnswerSpec))
           .configure(requestJson.getJSONObject(JsonKeys.REPORT_CONFIG)),
         getErrorContext()
     );

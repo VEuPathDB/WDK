@@ -74,7 +74,7 @@ public class ResultSizeFactory {
   }
 
   public int getDisplayResultSize() throws WdkModelException {
-    ResultSize plugin = _answerValue.getAnswerSpec().getQuestion().getRecordClass().getResultSizePlugin();
+    ResultSize plugin = _answerValue.getQuestion().getRecordClass().getResultSizePlugin();
     LOG.debug("getting Display result size.");
     return plugin.getResultSize(_answerValue);
   }
@@ -82,7 +82,7 @@ public class ResultSizeFactory {
   public Map<String, Integer> getResultSizesByProject() throws WdkModelException {
     if (_resultSizesByProject == null) {
       _resultSizesByProject = new LinkedHashMap<String, Integer>();
-      Question question = _answerValue.getAnswerSpec().getQuestion();
+      Question question = _answerValue.getQuestion();
       QueryInstance<?> queryInstance = _answerValue.getIdsQueryInstance();
       Optional<AnswerFilterInstance> filter = _answerValue.getAnswerSpec().getLegacyFilter();
 
@@ -165,7 +165,7 @@ public class ResultSizeFactory {
   }
 
   private Map<String, Integer> getFilterSizes(Collection<String> filterNames, boolean useDisplay) {
-    Question question = _answerValue.getAnswerSpec().getQuestion();
+    Question question = _answerValue.getQuestion();
     Map<String, AnswerFilterInstance> allFilters = question.getRecordClass().getFilterMap();
     if (filterNames == null) {
       // sizes requested for all filters
@@ -217,12 +217,12 @@ public class ResultSizeFactory {
     AnswerValue modifiedAnswer = AnswerValueFactory.makeAnswer(_answerValue,
         AnswerSpec.builder(_answerValue.getAnswerSpec())
         .setLegacyFilterName(Optional.of(filterName))
-        .buildRunnable(_answerValue.getUser(), _answerValue.getAnswerSpec().getStepContainer()));
+        .buildRunnable(_answerValue.getRequestingUser(), _answerValue.getAnswerSpec().getStepContainer()));
     String idSql = modifiedAnswer.getIdSql();
 
     // if display count requested, use custom plugin; else use default
     ResultSize countPlugin = (useDisplay ?
-        _answerValue.getAnswerSpec().getQuestion().getRecordClass().getResultSizePlugin() :
+        _answerValue.getQuestion().getRecordClass().getResultSizePlugin() :
         new DefaultResultSizePlugin());
 
     // get size, cache, and return

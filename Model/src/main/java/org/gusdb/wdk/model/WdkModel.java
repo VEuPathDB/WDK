@@ -39,7 +39,6 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.gusdb.fgputil.runtime.InstanceManager;
 import org.gusdb.fgputil.runtime.Manageable;
 import org.gusdb.oauth2.client.ValidatedToken;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
@@ -69,7 +68,7 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.FavoriteFactory;
-import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
@@ -175,7 +174,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   private File xmlDataDir;
 
-  private StepFactory stepFactory;
   private DatasetFactory datasetFactory;
   private BasketFactory basketFactory;
   private FavoriteFactory favoriteFactory;
@@ -561,7 +559,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       _userDatasetStore = Optional.of(udsConfig.getUserDatasetStore(modelConfig.getWdkTempDir()));
     }
 
-    stepFactory = new StepFactory(this);
     datasetFactory = new DatasetFactory(this);
     basketFactory = new BasketFactory(this);
     favoriteFactory = new FavoriteFactory(this);
@@ -696,10 +693,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   public UserFactory getUserFactory() {
     return new UserFactory(this);
-  }
-
-  public StepFactory getStepFactory() {
-    return stepFactory;
   }
 
   public StepAnalysisFactory getStepAnalysisFactory() {

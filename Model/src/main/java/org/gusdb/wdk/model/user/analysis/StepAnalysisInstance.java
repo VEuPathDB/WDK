@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.user.analysis;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
@@ -13,7 +12,6 @@ import org.gusdb.fgputil.validation.Validateable;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.gusdb.wdk.model.WdkException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -27,6 +25,8 @@ import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.Fill
 import org.gusdb.wdk.model.query.spec.StepAnalysisFormSpec;
 import org.gusdb.wdk.model.query.spec.StepAnalysisFormSpecBuilder;
 import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -102,20 +102,20 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
 
     // already know step and form params are runnable, so we can use bundle from answer validity check
     instance._validationBundle = runnableStep.get()
-        .getAnswerSpec().getQuestion().getWdkModel()
+        .getAnswerSpec().getQuestion().get().getWdkModel()
         .getStepAnalysisFactory().validateStep(runnableStep, stepAnalysis);
 
     return instance;
   }
 
   // should only be called by StepAnalysisFactory
-  static StepAnalysisInstance createFromStoredData(WdkModel wdkModel,
+  static StepAnalysisInstance createFromStoredData(User user,
       long analysisId, long stepId, RevisionStatus revisionStatus,
       String displayName, String userNotes, String serializedInstance, ValidationLevel validationLevel)
           throws WdkModelException {
     try {
       StepAnalysisInstance instance = new StepAnalysisInstance();
-      instance._wdkModel = wdkModel;
+      instance._wdkModel = user.getWdkModel();
       instance._analysisId = analysisId;
       instance._displayName = displayName;
       instance._userNotes = userNotes;
@@ -129,10 +129,15 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
       JSONObject formObj = json.getJSONObject(JsonKey.formParams.name());
 
       // load the owning step and validate
-      Step step = loadStep(instance._wdkModel, stepId, e -> new WdkModelException("Unable " +
-          "to load step (ID=" + stepId + ") defined in step analysis instance (ID=" + analysisId + ")." +
-          "  The step is either missing or not runnable (required for step analysis).", e));
-      instance._step = step;
+      try {
+        instance._step = new StepFactory(user).getStepByValidId(stepId, ValidationLevel.RUNNABLE);
+      }
+      catch (WdkModelException e) {
+        LOG.error("Unable to load step for ID " + stepId + ", which was expected to be valid.", e);
+        throw new WdkModelException("Unable " +
+            "to load step (ID=" + stepId + ") defined in step analysis instance (ID=" + analysisId + ")." +
+            "  The step is either missing or not runnable (required for step analysis).", e);
+      }
 
       // validation bundle will be at the level of the analysis even though step is always checked at Runnable level
       ValidationBundleBuilder validation = ValidationBundle.builder(validationLevel);
@@ -140,19 +145,19 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
       // formObj will be parsed differently depending on whether we know what types of Params are expected
       if (instance._step.hasValidQuestion()) {
         // find analysis (null if not found)
-        StepAnalysis stepAnalysis = step.getAnswerSpec().getQuestion().getStepAnalyses().get(instance._analysisName);
+        StepAnalysis stepAnalysis = instance._step.getAnswerSpec().getQuestion().get().getStepAnalyses().get(instance._analysisName);
 
         if (stepAnalysis == null) {
           validation.addError("Illegal step analysis plugin name for analysis with ID: " + analysisId);
-          instance._spec = parseFormParams(formObj).buildInvalid();
+          instance._spec = parseFormParams(formObj).buildInvalid(user);
         }
-        else if (!step.isRunnable()) {
+        else if (!instance._step.isRunnable()) {
           validation.addError("Step is not currently runnable; when it is repaired, step analysis parameters can be validated");
-          instance._spec = parseFormParams(formObj, stepAnalysis).buildInvalid();
+          instance._spec = parseFormParams(formObj, stepAnalysis).buildInvalid(user);
         }
         else {
           // valid step analysis and runnable step; perform two main validations
-          RunnableObj<Step> runnableStep = step.getRunnable().getLeft();
+          RunnableObj<Step> runnableStep = instance._step.getRunnable().getLeft();
 
           // 1. validate instance's form parameters
           instance._spec = parseFormParams(formObj, stepAnalysis)
@@ -161,12 +166,12 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
           validation.aggregateStatus(instance._spec);
 
           // 2. validate step against analysis
-          validation.aggregateStatus(wdkModel.getStepAnalysisFactory().validateStep(runnableStep, stepAnalysis));
+          validation.aggregateStatus(instance._wdkModel.getStepAnalysisFactory().validateStep(runnableStep, stepAnalysis));
         }
       }
       else {
         validation.addError("Step does not have a valid question; all its analyses are defunct.");
-        instance._spec = parseFormParams(formObj).buildInvalid();
+        instance._spec = parseFormParams(formObj).buildInvalid(user);
       }
 
       instance._validationBundle = validation.build();
@@ -257,21 +262,23 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
     if (instance._step.isRunnable() &&
         instance.getStepAnalysis().isPresent()) {
       try {
+        RunnableObj<Step> runnableStep = instance._step.getRunnable().getLeft();
+
         instance.getStepAnalysis().get()
           .getAnalyzerInstance()
-          .validateAnswerValue(AnswerValueFactory.makeAnswer(instance._step.getRunnable().getLeft()));
+          .validateAnswerValue(AnswerValueFactory.makeAnswer(Step.getRunnableAnswerSpec(runnableStep)));
 
         instance._spec = StepAnalysisFormSpec.builder(oldInstance._spec).buildValidated(
-            instance._step.getRunnable().getLeft(), instance.getStepAnalysis().get(), ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING);
+            runnableStep, instance.getStepAnalysis().get(), ValidationLevel.RUNNABLE, FillStrategy.FILL_PARAM_IF_MISSING);
       }
       catch (IllegalAnswerValueException e) {
         // cannot validate if step's answer value is not compatible with this analysis plugin
-        instance._spec = StepAnalysisFormSpec.builder(oldInstance._spec).buildInvalid();
+        instance._spec = StepAnalysisFormSpec.builder(oldInstance._spec).buildInvalid(toStep.getRequestingUser());
       }
     }
     else {
       // cannot validate if step is not runnable or step analysis plugin is no longer present
-      instance._spec = StepAnalysisFormSpec.builder(oldInstance._spec).buildInvalid();
+      instance._spec = StepAnalysisFormSpec.builder(oldInstance._spec).buildInvalid(toStep.getRequestingUser());
     }
 
     instance._revisionStatus = RevisionStatus.NEW;
@@ -280,17 +287,6 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
     instance._validationBundle = oldInstance.getValidationBundle();
 
     return instance;
-  }
-
-  private static <T extends WdkException> Step loadStep(WdkModel wdkModel, long stepId,
-      Function<WdkModelException,T> wdkUserException) throws T {
-    try {
-      return wdkModel.getStepFactory().getStepByValidId(stepId, ValidationLevel.RUNNABLE);
-    }
-    catch (WdkModelException e) {
-      LOG.error("Unable to load step for ID " + stepId + ", which was expected to be valid.", e);
-      throw wdkUserException.apply(e);
-    }
   }
 
   public String getAnalysisName() {
@@ -354,7 +350,7 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
    */
   public Optional<StepAnalysis> getStepAnalysis() {
     return !_step.hasValidQuestion() ? Optional.empty() :
-      Optional.ofNullable(_step.getAnswerSpec().getQuestion().getStepAnalyses().get(_analysisName));
+      Optional.ofNullable(_step.getAnswerSpec().getQuestion().get().getStepAnalyses().get(_analysisName));
   }
 
   public void setFormParams(RunnableObj<StepAnalysisFormSpec> formSpec, ValidationLevel newValidationLevel) throws WdkModelException {
@@ -374,9 +370,9 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
   private void revalidate(ValidationLevel newValidationLevel) throws WdkModelException {
     // validate at the previous level
     ValidationBundleBuilder validation = ValidationBundle.builder(newValidationLevel);
-    if (_step.hasValidQuestion()) {
+    if (_step.getAnswerSpec().getQuestion().isPresent()) {
       // find analysis (null if not found)
-      StepAnalysis stepAnalysis = _step.getAnswerSpec().getQuestion().getStepAnalyses().get(_analysisName);
+      StepAnalysis stepAnalysis = _step.getAnswerSpec().getQuestion().get().getStepAnalyses().get(_analysisName);
 
       if (stepAnalysis == null) {
         validation.addError("Illegal step analysis plugin name for analysis with ID: " + _analysisId);
@@ -438,7 +434,7 @@ public class StepAnalysisInstance implements Validateable<StepAnalysisInstance> 
     if (!instance.get().getStep().isRunnable()) {
       throw new WdkModelException("Cannot access referenced step's results because the step is not runnable.");
     }
-    return AnswerValueFactory.makeAnswer(instance.get().getStep().getRunnable().getLeft());
+    return AnswerValueFactory.makeAnswer(Step.getRunnableAnswerSpec(instance.get().getStep().getRunnable().getLeft()));
   }
 
 }

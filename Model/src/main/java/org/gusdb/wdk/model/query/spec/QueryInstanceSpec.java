@@ -23,22 +23,24 @@ public class QueryInstanceSpec extends ParameterContainerInstanceSpec<QueryInsta
   // during booleans, weights of records are modified (per boolean-specific logic, see BooleanQuery)
   private final int _assignedWeight;
 
-  QueryInstanceSpec(User user, Query query, Map<String, String> paramValues, int assignedWeight,
+  QueryInstanceSpec(User requestingUser, Query query, Map<String, String> paramValues, int assignedWeight,
       ValidationBundle validationBundle, StepContainer stepContainer) {
-    super(user, query, paramValues, validationBundle, stepContainer);
+    super(requestingUser, query, paramValues, validationBundle, stepContainer);
     _assignedWeight = assignedWeight;
   }
 
-  QueryInstanceSpec(Map<String, String> paramValues, int assignedWeight) {
-    super(paramValues);
+  // user static method to make the purpose of this constructor clear
+  static QueryInstanceSpec createUnvalidatedSpec(User requestingUser, Map<String, String> paramValues, int assignedWeight) {
+    return new QueryInstanceSpec(requestingUser, paramValues, assignedWeight);
+  }
+
+  private QueryInstanceSpec(User requestingUser, Map<String, String> paramValues, int assignedWeight) {
+    super(requestingUser, paramValues);
     _assignedWeight = assignedWeight;
   }
 
   public Optional<Query> getQuery() {
-    return Optional.ofNullable(
-      getParameterContainer()
-        .map(container -> (Query)container)
-        .orElse(null));
+    return super.getParameterContainer().map(q -> (Query)q);
   }
 
   public int getAssignedWeight() {

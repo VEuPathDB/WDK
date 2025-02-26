@@ -450,7 +450,7 @@ public class FilterParamNew extends AbstractDependentParam {
     ////////////////////////////////////////
 
     S spec = validSpec.get();
-    String bgdSql = getInternalQuerySql(spec.getUser(), spec.toMap(), _backgroundQuery);
+    String bgdSql = getInternalQuerySql(validSpec.get().getRequestingUser(), spec.toMap(), _backgroundQuery);
 
     // Set up counts store
     FilterParamSummaryCounts fpsc = new FilterParamSummaryCounts();
@@ -529,7 +529,7 @@ public class FilterParamNew extends AbstractDependentParam {
     ////////////////////////////////////////////
 
     S spec = validSpec.get();
-    String bgdSql = getInternalQuerySql(spec.getUser(), spec.toMap(), _backgroundQuery);
+    String bgdSql = getInternalQuerySql(validSpec.get().getRequestingUser(), spec.toMap(), _backgroundQuery);
 
     // limit it to our ontology_id
     List<String> metadataCols = new ArrayList<>(OntologyItemType.getTypedValueColumnNames());
@@ -849,7 +849,7 @@ public class FilterParamNew extends AbstractDependentParam {
           throws WdkModelException {
     // get sql that selects the full set of distinct internals from the metadata query
     S spec = validSpec.get();
-    String metadataSql = getInternalQuerySql(spec.getUser(), spec.toMap(), metadataQuery);
+    String metadataSql = getInternalQuerySql(validSpec.get().getRequestingUser(), spec.toMap(), metadataQuery);
 
     String metadataTableName = "md";
     String filterSelectSql =
@@ -868,7 +868,7 @@ public class FilterParamNew extends AbstractDependentParam {
           throws WdkModelException {
     // get sql that selects the full set of distinct internals from the metadata query
     S spec = validSpec.get();
-    String metadataSql = getInternalQuerySql(spec.getUser(), spec.toMap(), metadataQuery);
+    String metadataSql = getInternalQuerySql(validSpec.get().getRequestingUser(), spec.toMap(), metadataQuery);
 
     String metadataTableName = "md";
     String selectCols = String.join(", " + metadataTableName + ".", _metadataValueColumns);
@@ -884,7 +884,7 @@ public class FilterParamNew extends AbstractDependentParam {
     // get the applied filters and the ontology
     List<FilterParamNewStableValue.Filter> filters = stableValue.getFilters();
     S spec = validSpec.get();
-    Map<String, OntologyItem> ontology = getOntology(spec.getUser(), spec.toMap());
+    Map<String, OntologyItem> ontology = getOntology(validSpec.get().getRequestingUser(), spec.toMap());
 
     // if no filters, return sql for the full set of internals
     String filteredSql;
@@ -916,7 +916,7 @@ public class FilterParamNew extends AbstractDependentParam {
       // create json for the ontology
       JSONObject jsOntology = new JSONObject();
       QueryInstanceSpec spec = validSpec.get();
-      Map<String, OntologyItem> ontologyMap = getOntology(spec.getUser(), spec.toMap());
+      Map<String, OntologyItem> ontologyMap = getOntology(validSpec.get().getRequestingUser(), spec.toMap());
       for (String itemName : ontologyMap.keySet()) {
         OntologyItem item = ontologyMap.get(itemName);
         JSONObject jsOntoItem = new JSONObject();

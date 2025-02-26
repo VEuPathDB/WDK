@@ -59,7 +59,7 @@ public class CountQueryPlugin implements CountPlugin {
 
     // create a queryInstance, and get count;
     QueryInstance<?> queryInstance = Query.makeQueryInstance(QueryInstanceSpec.builder()
-        .putAll(paramValues).buildRunnable(step.getUser(), _query, step.getContainer()));
+        .putAll(paramValues).buildRunnable(runnableStep.get().getRequestingUser(), _query, step.getContainer()));
 
     try (ResultList resultList = queryInstance.getResults()) {
 

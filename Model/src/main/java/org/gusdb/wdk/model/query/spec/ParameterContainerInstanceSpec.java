@@ -17,41 +17,35 @@ public class ParameterContainerInstanceSpec<T extends ParameterContainerInstance
     extends ReadOnlyHashMap<String,String>
     implements Validateable<T> {
 
-  private final User _user;
-  private final ParameterContainer _parameterContainer;
+  final User _requestingUser;
+  final ParameterContainer _parameterContainer;
   private final StepContainer _stepContainer;
   private final ValidationBundle _validationBundle;
 
-  ParameterContainerInstanceSpec(User user, ParameterContainer parameterContainer, Map<String, String> paramValues,
+  ParameterContainerInstanceSpec(User requestingUser, ParameterContainer parameterContainer, Map<String, String> paramValues,
       ValidationBundle validationBundle, StepContainer stepContainer) {
     super(paramValues);
-    _user = user;
+    _requestingUser = requestingUser;
     _parameterContainer = parameterContainer;
     _stepContainer = stepContainer;
     _validationBundle = validationBundle;
   }
 
-  protected ParameterContainerInstanceSpec(Map<String, String> paramValues) {
+  protected ParameterContainerInstanceSpec(User requestingUser, Map<String, String> paramValues) {
     super(paramValues);
-    _user = null;
+    _requestingUser = requestingUser;
     _parameterContainer = null;
     _stepContainer = StepContainer.emptyContainer();
     _validationBundle = ValidationBundle.builder(ValidationLevel.NONE)
         .addError("No parameter container present to validate params.").build();
   }
 
-  /**
-   * @return user used to create this spec or null if the spec is unvalidated
-   */
-  public User getUser() {
-    return _user;
-  }
-
-  /**
-   * @return container used to create and validate this spec or null if the spec is unvalidated
-   */
   public Optional<ParameterContainer> getParameterContainer() {
     return Optional.ofNullable(_parameterContainer);
+  }
+
+  public User getRequestingUser() {
+    return _requestingUser;
   }
 
   public StepContainer getStepContainer() {
@@ -71,7 +65,7 @@ public class ParameterContainerInstanceSpec<T extends ParameterContainerInstance
   @Override
   public String toString() {
     return "ParameterContainerInstanceSpec {\n"
-      + "  _user: "               + _user               + ",\n"
+      + "  _requestingUser: "     + _requestingUser     + ",\n"
       + "  _parameterContainer: " + _parameterContainer + ",\n"
       + "  _stepContainer: "      + _stepContainer      + ",\n"
       + "  _validationBundle: "   + _validationBundle   + ",\n"

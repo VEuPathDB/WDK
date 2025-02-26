@@ -50,9 +50,9 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
    */
   private void initPageRecordInstances() throws WdkModelException {
     try {
-      Question question = _answerValue.getAnswerSpec().getQuestion();
+      Question question = _answerValue.getQuestion();
 
-      DataSource dataSource = question.getWdkModel().getAppDb().getDataSource();
+      DataSource dataSource = _answerValue.getWdkModel().getAppDb().getDataSource();
       String sql = _answerValue.getPagedIdSql();
       String sqlName = _idsQueryInstance.getQuery().getFullName() + "__id-paged";
 
@@ -73,7 +73,7 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
               Object value = resultList.get(column);
               pkValues.put(column, value);
             }
-            DynamicRecordInstance record = new DynamicRecordInstance(_answerValue.getUser(), question, this, pkValues);
+            DynamicRecordInstance record = new DynamicRecordInstance(_answerValue.getRequestingUser(), question, this, pkValues);
             put(record.getPrimaryKey(), record);
           }
           return null;
@@ -112,8 +112,8 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
   public void integrateAttributesQuery(Query attributeQuery) throws WdkModelException, WdkUserException {
     LOG.debug("Integrating attributes query " + attributeQuery.getFullName());
 
-    Question question = _answerValue.getAnswerSpec().getQuestion();
-    WdkModel wdkModel = question.getWdkModel();
+    Question question = _answerValue.getQuestion();
+    WdkModel wdkModel = _answerValue.getWdkModel();
 
     // has to get a clean copy of the attribute query, without pk params appended
     Query rawAttrQuery = (Query) wdkModel.resolveReference(attributeQuery.getFullName());
@@ -188,7 +188,7 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
             "Start: " + _answerValue.getStartIndex() + ", End: " + _answerValue.getEndIndex() + NL +
             "Expected (page size): " + size() + ", Actual (returned from attribute query): " + count + NL + NL +
             "Paged attribute SQL:" + NL + sql + NL +
-            "Question: " + _answerValue.getAnswerSpec().getQuestion().getFullName() + NL + NL + uncachedIdSql;
+            "Question: " + _answerValue.getQuestion().getFullName() + NL + NL + uncachedIdSql;
 
         throw new WdkModelException(message);
       }
@@ -211,7 +211,7 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
     }
 
     // make table values
-    PrimaryKeyDefinition pkDef = _answerValue.getAnswerSpec().getQuestion().getRecordClass().getPrimaryKeyDefinition();
+    PrimaryKeyDefinition pkDef = _answerValue.getQuestion().getRecordClass().getPrimaryKeyDefinition();
     Query tableQuery = tableField.getWrappedQuery();
 
     while (resultList.next()) {

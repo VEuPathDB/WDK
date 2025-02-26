@@ -55,6 +55,7 @@ import org.gusdb.wdk.model.report.util.ReporterFactory;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.StepContainer.ListStepContainer;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.annotation.InSchema;
@@ -301,21 +302,21 @@ public class AnswerService extends AbstractWdkService {
   }
 
   private static RunnableObj<AnswerSpec> parseAnswerSpec(Question question,
-      JSONObject answerSpecJson, WdkModel wdkModel, User sessionUser, FilterOptionListBuilder viewFilters)
+      JSONObject answerSpecJson, WdkModel wdkModel, User requestingUser, FilterOptionListBuilder viewFilters)
           throws RequestMisformatException, WdkModelException, DataValidationException {
     AnswerSpecBuilder specBuilder = AnswerSpecServiceFormat
       .parse(question, answerSpecJson, wdkModel)
       .setViewFilterOptions(viewFilters);
-    StepContainer stepContainer = loadContainer(specBuilder, wdkModel, sessionUser);
+    StepContainer stepContainer = loadContainer(specBuilder, wdkModel, requestingUser);
     return specBuilder
-        .build(sessionUser, stepContainer, ValidationLevel.RUNNABLE)
+        .build(requestingUser, stepContainer, ValidationLevel.RUNNABLE)
         .getRunnable()
         .getOrThrow(spec -> new DataValidationException(spec.getValidationBundle()));
   }
 
   // TODO: now that this method is public, should find a better place for it
   public static StepContainer loadContainer(AnswerSpecBuilder specBuilder,
-      WdkModel wdkModel, User sessionUser) throws WdkModelException, DataValidationException {
+      WdkModel wdkModel, User requestingUser) throws WdkModelException, DataValidationException {
 
     // to allow a user to use steps from an existing strategy, need to get the
     // strategy they want to use as a step container to look up those steps;
@@ -337,10 +338,11 @@ public class AnswerService extends AbstractWdkService {
         throw new DataValidationException(notFoundMessage);
       }
       long stepId = Long.parseLong(stableValue);
+      StepFactory stepFactory = new StepFactory(requestingUser);
       if (strategy == null) {
         // have not selected a strategy yet
-        Step step = wdkModel.getStepFactory().getStepByIdAndUserId(
-            stepId, sessionUser.getUserId(), ValidationLevel.RUNNABLE)
+        Step step = stepFactory.getStepByIdAndUserId(
+            stepId, requestingUser.getUserId(), ValidationLevel.RUNNABLE)
             .orElseThrow(() -> new DataValidationException(notFoundMessage));
         if (step.getStrategy().isEmpty()) {
           stepsForLookup.add(step); // stand-alone step; add it
@@ -355,7 +357,7 @@ public class AnswerService extends AbstractWdkService {
           // nothing to do here; referred step lives in this strategy
         }
         else {
-          Step step = wdkModel.getStepFactory().getStepById(stepId, ValidationLevel.RUNNABLE)
+          Step step = stepFactory.getStepById(stepId, ValidationLevel.RUNNABLE)
               .orElseThrow(() -> new DataValidationException(notFoundMessage));
           if (step.getStrategy().isEmpty()) {
             stepsForLookup.add(step); // stand-alone step; add it
@@ -368,11 +370,11 @@ public class AnswerService extends AbstractWdkService {
     }
 
     // make sure all referred steps are owned by the session user
-    if (strategy != null && strategy.getUser().getUserId() != sessionUser.getUserId()) {
+    if (strategy != null && strategy.getOwningUser().getUserId() != requestingUser.getUserId()) {
       throw new DataValidationException("You do not have permission to use the steps in strategy with ID " + strategy.getStrategyId() + "'.");
     }
     for (Step step : stepsForLookup) {
-      if (step.getUser().getUserId() != sessionUser.getUserId()) {
+      if (step.getOwningUser().getUserId() != requestingUser.getUserId()) {
         throw new DataValidationException("You do not have permission to use step '" + step.getStepId() + "'.");
       }
     }
@@ -408,7 +410,7 @@ public class AnswerService extends AbstractWdkService {
       throws RequestMisformatException, WdkModelException, DataValidationException {
 
     // create base answer value from answer spec
-    AnswerValue answerValue = AnswerValueFactory.makeAnswer(sessionUser, request.getAnswerSpec(), request.avoidCacheHit());
+    AnswerValue answerValue = AnswerValueFactory.makeAnswer(request.getAnswerSpec(), request.avoidCacheHit());
 
     // parse (optional) request details (columns, pagination, etc.- format dependent on reporter) and configure reporter
     Reporter reporter = getConfiguredReporter(answerValue, request.getFormatting());
@@ -448,7 +450,7 @@ public class AnswerService extends AbstractWdkService {
     try {
 
       // check to make sure format name is valid for this recordclass
-      if (!answerValue.getAnswerSpec().getQuestion().getReporterMap().containsKey(formatName)) {
+      if (!answerValue.getQuestion().getReporterMap().containsKey(formatName)) {
         throw new DataValidationException("Request for an invalid answer format: " + formatName);
       }
 

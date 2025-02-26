@@ -43,7 +43,7 @@ public class HistogramAttributeReporter extends AbstractAttributeReporter {
     // add labels
     result.put(ATTR_LABEL, _attributeField.getDisplayName());
     result.put(ATTR_RECORD_COUNT_LABEL, "# of " +
-        answerValue.getAnswerSpec().getQuestion().getRecordClass().getDisplayNamePlural());
+        answerValue.getQuestion().getRecordClass().getDisplayNamePlural());
 
     // determine the type
     String type = getType(data);
@@ -78,7 +78,7 @@ public class HistogramAttributeReporter extends AbstractAttributeReporter {
   }
 
   private Map<String, Integer> loadData(AnswerValue answerValue) {
-    WdkModel wdkModel = answerValue.getAnswerSpec().getQuestion().getRecordClass().getWdkModel();
+    WdkModel wdkModel = answerValue.getQuestion().getRecordClass().getWdkModel();
     Map<String, Integer> counts = new LinkedHashMap<String, Integer>();
     ResultSet resultSet = null;
     try {

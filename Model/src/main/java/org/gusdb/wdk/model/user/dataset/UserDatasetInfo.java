@@ -7,11 +7,12 @@ import java.util.List;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.json.JsonType;
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserCache;
+import org.gusdb.wdk.model.user.UserInfoCache;
 
 /**
  * Aggregation of information about a user dataset
@@ -23,7 +24,7 @@ public class UserDatasetInfo {
   private final WdkModel _wdkModel;
   private final UserDataset _userDataset;
   private final boolean _isInstalled;
-  private final User _owner;
+  private final UserInfo _owner;
   private final long _ownerQuota;
   private final List<String> _relevantQuestionNames;
   private final List<UserDatasetShareUser> _shares;
@@ -32,7 +33,7 @@ public class UserDatasetInfo {
   private JsonType _detailedTypeSpecificData;
 
   public UserDatasetInfo(UserDataset dataset, boolean isInstalled, UserDatasetStore store,
-    UserDatasetSession session, final UserCache userCache, WdkModel wdkModel) {
+    UserDatasetSession session, final UserInfoCache userCache, WdkModel wdkModel) {
     try {
       long ownerId = dataset.getOwnerId();
       _wdkModel = wdkModel;
@@ -68,7 +69,7 @@ public class UserDatasetInfo {
     return _isInstalled;
   }
 
-  public User getOwner() {
+  public UserInfo getOwner() {
     return _owner;
   }
 
@@ -101,13 +102,13 @@ public class UserDatasetInfo {
       _handler.getCompatibility(_userDataset, _wdkModel.getAppDb().getDataSource()) : null;
   }
 
-  public class UserDatasetShareUser extends TwoTuple<User,Long> implements UserDatasetShare {
+  public class UserDatasetShareUser extends TwoTuple<UserInfo,Long> implements UserDatasetShare {
 
-    public UserDatasetShareUser(User user, Long timeShared) {
+    public UserDatasetShareUser(UserInfo user, Long timeShared) {
       super(user, timeShared);
     }
 
-    public User getUser() {
+    public UserInfo getUser() {
       return getFirst();
     }
 

@@ -72,15 +72,15 @@ public class AnswerSpecBuilder {
     return this;
   }
 
-  public AnswerSpec build(User user, StepContainer stepContainer,
-      ValidationLevel level) throws WdkModelException {
-    return build(user, stepContainer, level, FillStrategy.NO_FILL);
+  public AnswerSpec build(User requestingUser, StepContainer stepContainer,
+      ValidationLevel validationLevel) throws WdkModelException {
+    return build(requestingUser, stepContainer, validationLevel, FillStrategy.NO_FILL);
   }
 
-  public AnswerSpec build(User user, StepContainer stepContainer,
-      ValidationLevel level, FillStrategy fillStrategy) throws WdkModelException {
-    return new AnswerSpec(user, _wdkModel, _questionName, _queryInstanceSpec,
-      _legacyFilterName, _filters, _viewFilters, level, stepContainer,
+  public AnswerSpec build(User requestingUser, StepContainer stepContainer,
+      ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
+    return new AnswerSpec(_wdkModel, _questionName, _queryInstanceSpec,
+      _legacyFilterName, _filters, _viewFilters, requestingUser, validationLevel, stepContainer,
       fillStrategy, _columnFilters.build());
   }
 
@@ -92,8 +92,8 @@ public class AnswerSpecBuilder {
    * ValidObjectWrappingException (a runtime exception) if the answer spec
    * constructed is not runnable
    */
-  public RunnableObj<AnswerSpec> buildRunnable(User user, StepContainer stepContainer) throws WdkModelException {
-    return ValidObjectFactory.getRunnable(build(user, stepContainer, ValidationLevel.RUNNABLE, FillStrategy.NO_FILL));
+  public RunnableObj<AnswerSpec> buildRunnable(User requestingUser, StepContainer stepContainer) throws WdkModelException {
+    return ValidObjectFactory.getRunnable(build(requestingUser, stepContainer, ValidationLevel.RUNNABLE, FillStrategy.NO_FILL));
   }
 
   public AnswerSpecBuilder setQuestionFullName(String questionName) {
