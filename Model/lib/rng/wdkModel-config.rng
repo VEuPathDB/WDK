@@ -71,6 +71,9 @@
                 <attribute name="oauthUrl"/>
             </optional>
             <optional>
+                <attribute name="externalOauthUrl"/>
+            </optional>
+            <optional>
                 <attribute name="oauthClientId"/>
             </optional>
             <optional>

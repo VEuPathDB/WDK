@@ -65,6 +65,7 @@ public class ModelConfigBuilder {
   // user authentication setup
   private AuthenticationMethod _authenticationMethod = AuthenticationMethod.USER_DB;
   private String _oauthUrl = ""; // needed if method is OAUTH2
+  private String _externalOauthUrl = null; // may be needed if method is OAUTH2 and internal URL is not available externally
   private String _oauthClientId = ""; // needed if method is OAUTH2
   private String _oauthClientSecret = ""; // needed if method is OAUTH2
   private String _changePasswordUrl = ""; // probably needed if method is OAUTH2
@@ -152,6 +153,7 @@ public class ModelConfigBuilder {
       // user authentication setup
       _authenticationMethod,
       _oauthUrl,
+      _externalOauthUrl,
       _oauthClientId,
       _oauthClientSecret,
       _changePasswordUrl,
@@ -306,6 +308,17 @@ public class ModelConfigBuilder {
    */
   public void setOauthUrl(String oauthUrl) {
     _oauthUrl = oauthUrl;
+  }
+
+  /**
+   * @param externalOauthUrl base URL of OAuth2 server to use for authentication
+   * (used only if authentication method is OAUTH2).  This may differ from the
+   * (internal) oauthUrl for some deployments.  The external value is returned to
+   * external clients, telling them how to connect to OAuth.  The internal value
+   * is what WDK actually uses to connect directly to OAuth.
+   */
+  public void setExternalOauthUrl(String externalOauthUrl) {
+    _externalOauthUrl = externalOauthUrl;
   }
 
   /**
