@@ -9,9 +9,9 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.accountdb.UserProfile;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.oauth2.client.veupathdb.UserInfo;
 import org.gusdb.oauth2.client.veupathdb.UserProperty;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -30,7 +30,7 @@ public class UserProfileRequest {
   private static Logger LOG = Logger.getLogger(UserProfileRequest.class);
 
   private static final String PROFILE_VALUES_TOO_LONG = "The following profile values exceed the maximum " +
-      "allowed length (" + UserProfile.MAX_PROPERTY_VALUE_SIZE + "): ";
+      "allowed length (" + UserInfo.MAX_PROPERTY_VALUE_SIZE + "): ";
   private static final String REQUIRED_VALUES = "The following profile values cannot be empty: ";
   private static final String ALL_PROPS_REQUIRED = "All profile properties are required in this request. " +
       "The following profile values are missing: ";
@@ -94,8 +94,8 @@ public class UserProfileRequest {
     if (email.isEmpty()) {
       throw new DataValidationException(emailProp + "cannot be empty.");
     }
-    if (FormatUtil.getUtf8EncodedBytes(email).length > UserProfile.MAX_EMAIL_LENGTH) {
-      throw new DataValidationException(emailProp + "cannot be longer than " + UserProfile.MAX_EMAIL_LENGTH + " characters.");
+    if (FormatUtil.getUtf8EncodedBytes(email).length > UserInfo.MAX_EMAIL_LENGTH) {
+      throw new DataValidationException(emailProp + "cannot be longer than " + UserInfo.MAX_EMAIL_LENGTH + " characters.");
     }
     return email;
   }
@@ -131,7 +131,7 @@ public class UserProfileRequest {
     for (String key : JsonUtil.getKeys(propsJson)) {
       if (configuredProps.containsKey(key)) {
         String value = propsJson.getString(key).trim();
-        if (FormatUtil.getUtf8EncodedBytes(value).length > UserProfile.MAX_PROPERTY_VALUE_SIZE) {
+        if (FormatUtil.getUtf8EncodedBytes(value).length > UserInfo.MAX_PROPERTY_VALUE_SIZE) {
           oversizedProps.add(key);
         }
         else {
