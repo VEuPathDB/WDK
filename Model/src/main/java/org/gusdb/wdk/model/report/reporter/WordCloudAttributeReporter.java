@@ -17,6 +17,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class WordCloudAttributeReporter extends AbstractAttributeReporter {
+  private static final int MAX_RESULT_WORDS = 10_000;
+  private static final String MAX_RESULT_ERR_MSG = "Too many words";
 
   private static final String PROP_SPLIT_PATTERN = "split-pattern";
   private static final String PROP_MIN_WORD_LENGTH = "min-word-length";
@@ -69,6 +71,9 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
           continue;
 
         splitWords(record.getSecond().toString(), tagMap);
+
+        if (tagMap.size() > MAX_RESULT_WORDS)
+          return List.of(new WordTag(MAX_RESULT_ERR_MSG));
       }
 
       // the tags are sorted by count
@@ -169,9 +174,10 @@ public class WordCloudAttributeReporter extends AbstractAttributeReporter {
         if (!tags.containsKey(part) && word.endsWith("es")) {
               ending = "es";
           part = word.substring(0, word.length() - 2);
-          if (!tags.containsKey(part) && word.endsWith("ies"))
+          if (!tags.containsKey(part) && word.endsWith("ies")) {
                 ending = "ies";
             part = word.substring(0, word.length() - 3) + "y";
+          }
         }
 
         if (tags.containsKey(part)) {
