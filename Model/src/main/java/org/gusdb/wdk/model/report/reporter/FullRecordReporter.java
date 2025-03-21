@@ -14,7 +14,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ProcedureWithException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -42,8 +41,6 @@ import com.itextpdf.text.pdf.PdfWriter;
 public class FullRecordReporter extends StandardReporter {
 
   private static Logger LOG = Logger.getLogger(FullRecordReporter.class);
-
-  private static final FunctionWithException<ThreeTuple<TableValue,Writer,Boolean>,Integer> TABLE_FORMATTER = inputs -> formatTable(inputs);
 
   private TableCache _tableCache = null;
 
@@ -120,7 +117,7 @@ public class FullRecordReporter extends StandardReporter {
         formatAttributes(record, selectedAttributes, writer);
 
         // print out tables (may get table formatting from cache)
-        formatTables(record, selectedTables, includeEmptyTables, writer, tableCache, TABLE_FORMATTER);
+        formatTables(record, selectedTables, includeEmptyTables, writer, tableCache, FullRecordReporter::writeTable);
 
         writer.println();
         writer.println("------------------------------------------------------------");
@@ -162,7 +159,7 @@ public class FullRecordReporter extends StandardReporter {
    * @return table size and formatted table
    * @throws WdkRuntimException if unable to format table
    */
-  private static int formatTable(ThreeTuple<TableValue, Writer, Boolean> inputs) {
+  private static int writeTable(ThreeTuple<TableValue, Writer, Boolean> inputs) {
     try {
       TableValue tableValue = inputs.getFirst();
       TableField table = tableValue.getTableField();
@@ -189,7 +186,7 @@ public class FullRecordReporter extends StandardReporter {
         tableSize++;
         for (AttributeField field : fields) {
           AttributeValue value = row.get(field.getName());
-          out.write(value.getValue());
+          out.write(String.valueOf(value.getValue()));
           out.write("\t");
         }
         out.write(NL);

@@ -14,7 +14,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -33,8 +32,6 @@ import org.gusdb.wdk.model.report.util.TableCache;
 public class XMLReporter extends StandardReporter {
 
   private static Logger LOG = Logger.getLogger(XMLReporter.class);
-
-  private static final FunctionWithException<ThreeTuple<TableValue,Writer,Boolean>,Integer> TABLE_XML_FORMATTER = inputs -> formatTable(inputs);
 
   private TableCache _tableCache;
 
@@ -83,7 +80,7 @@ public class XMLReporter extends StandardReporter {
         formatAttributes(record, getSelectedAttributes(), writer);
 
         // print out tables
-        formatTables(record, getSelectedTables(), getStandardConfig().getIncludeEmptyTables(), writer, _tableCache, TABLE_XML_FORMATTER);
+        formatTables(record, getSelectedTables(), getStandardConfig().getIncludeEmptyTables(), writer, _tableCache, XMLReporter::formatTable);
 
         // count the records processed so far
         writer.println("    </record>");
