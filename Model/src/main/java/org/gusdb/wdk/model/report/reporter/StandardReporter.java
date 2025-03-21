@@ -1,17 +1,21 @@
 package org.gusdb.wdk.model.report.reporter;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
+import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -198,40 +202,68 @@ public abstract class StandardReporter extends AbstractReporter {
     return columns;
   }
 
+  /**
+   * Formats and writes table values for a record
+   *
+   * @param record record whose tables will be written
+   * @param tables table fields needing written
+   * @param includeEmptyTables whether to include empty tables
+   * @param writer where to write the formatted table data
+   * @param tableCache cache of formatted table data (null if no cache configured/available)
+   * @param tableWriter function that takes the table value to be formatted and written,
+   * the writer to which the the formatted record should be written, and a boolean telling
+   * whether to include empty tables, and returns the number of rows in the table
+   * @throws WdkModelException
+   * @throws SQLException
+   * @throws WdkUserException
+   */
   protected static void formatTables(RecordInstance record, Set<TableField> tables,
       boolean includeEmptyTables, PrintWriter writer, TableCache tableCache,
-      Function<TableValue, TwoTuple<Integer,String>> formatTableFunction)
+      FunctionWithException<ThreeTuple<TableValue, Writer, Boolean>, Integer> tableWriter)
           throws WdkModelException, SQLException, WdkUserException {
-    //LOG.debug("StandardReporter: formatTables(): starting on a record");
-    // print out tables of the record
-    for (TableField table : tables) {
-      //LOG.debug("StandardReporter: formatTables(): looping through tables..");
-      TwoTuple<Integer,String> tableData;
+    try {
+      //LOG.debug("StandardReporter: formatTables(): starting on a record");
+      // print out tables of the record
+      for (TableField table : tables) {
+        //LOG.debug("StandardReporter: formatTables(): looping through tables..");
 
-      // if not caching then simply format and return
-      if (tableCache == null) {
-        tableData = formatTableFunction.apply(record.getTableValue(table.getName()));
-      }
-      else {
-        LOG.debug("StandardReporter: formatTables(): caching table data");
-        // check if the record has been cached
-        tableData = tableCache.getCachedTableValue(record, table.getName());
-        if (tableData == null) {
-          tableData = formatTableFunction.apply(record.getTableValue(table.getName()));
-          tableCache.insertTableValue(record, table.getName(), tableData);
+        // if not caching then simply write record
+        if (tableCache == null) {
+          tableWriter.apply(new ThreeTuple<>(record.getTableValue(table.getName()), writer, includeEmptyTables));
+        }
+        else {
+          LOG.debug("StandardReporter: formatTables(): caching table data");
+          // check if the record has been cached
+          TwoTuple<Integer,String> tableData = tableCache.getCachedTableValue(record, table.getName());
+          if (tableData == null) {
+            // NOTE: this code branch does NOT take advantage of the streaming
+            //    optimization to preserve memory like the non-cache branch above
+            // TODO: change insertTableValue to take the function and write into cache as a stream
+            //    --OR-- remove the cache entirely(?)- only used for GFF
+
+            // write the data into the buffer
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            Writer tmpWriter = new OutputStreamWriter(bytes);
+            int numRows = tableWriter.apply(new ThreeTuple<>(record.getTableValue(table.getName()), tmpWriter, includeEmptyTables));
+            tmpWriter.flush();
+            tableData = new TwoTuple<>(numRows, bytes.toString());
+            tableCache.insertTableValue(record, table.getName(), tableData);
+
+            // write to the stream
+            if (includeEmptyTables || numRows > 0) {
+              writer.print(tableData.getSecond());
+              writer.flush();
+            }
+          }
         }
       }
-
-      // write to the stream
-      if (includeEmptyTables || tableData.getFirst() > 0) {
-        writer.print(tableData.getSecond());
-        writer.flush();
+      // commit batch of all tables for each record instance
+      if (tableCache != null) {
+        tableCache.flushBatch();
       }
     }
-
-    // commit batch of all tables for each record instance
-    if (tableCache != null) {
-      tableCache.flushBatch();
+    catch (Exception e) {
+      throw WdkModelException.translateFrom(e, "Could not write formatted table values");
     }
   }
 
