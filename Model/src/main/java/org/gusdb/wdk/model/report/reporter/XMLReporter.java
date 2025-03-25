@@ -5,15 +5,15 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -32,8 +32,6 @@ import org.gusdb.wdk.model.report.util.TableCache;
 public class XMLReporter extends StandardReporter {
 
   private static Logger LOG = Logger.getLogger(XMLReporter.class);
-
-  private static final Function<TableValue, TwoTuple<Integer,String>> TABLE_XML_FORMATTER = tableValue -> formatTable(tableValue);
 
   private TableCache _tableCache;
 
@@ -82,7 +80,7 @@ public class XMLReporter extends StandardReporter {
         formatAttributes(record, getSelectedAttributes(), writer);
 
         // print out tables
-        formatTables(record, getSelectedTables(), getStandardConfig().getIncludeEmptyTables(), writer, _tableCache, TABLE_XML_FORMATTER);
+        formatTables(record, getSelectedTables(), getStandardConfig().getIncludeEmptyTables(), writer, _tableCache, XMLReporter::formatTable);
 
         // count the records processed so far
         writer.println("    </record>");
@@ -128,27 +126,39 @@ public class XMLReporter extends StandardReporter {
     writer.flush();
   }
 
-  private static TwoTuple<Integer, String> formatTable(TableValue tableValue) {
+  private static int formatTable(ThreeTuple<TableValue, Writer, Boolean> inputs) {
     try {
+      TableValue tableValue = inputs.getFirst();
       TableField table = tableValue.getTableField();
-      StringBuilder sb = new StringBuilder();
-      sb.append("      <table name=\"" + table.getDisplayName() + "\">" + NL);
-      int tableSize = 0;
       Collection<AttributeField> reportTableFields = table.getReporterAttributeFieldMap().values();
+      Writer out = inputs.getSecond();
+      boolean includeEmptyTables = inputs.getThird();
+
+      String tableBegin = "      <table name=\"" + table.getDisplayName() + "\">" + NL;
+      String tableEnd   = "      </table>" + NL;
+
+      int tableSize = 0;
       for (Map<String, AttributeValue> row : tableValue) {
         tableSize++;
-        sb.append("        <row>" + NL);
+        if (tableSize == 1) out.write(tableBegin);
+        out.write("        <row>" + NL);
         for (AttributeField field : reportTableFields) {
           String fieldName = field.getName();
           AttributeValue value = row.get(fieldName);
-          sb.append("          <field name=\"" + fieldName + "\"><![CDATA[" + value.getValue() + "]]></field>" + NL);
+          out.write("          <field name=\"" + fieldName + "\"><![CDATA[" + value.getValue() + "]]></field>" + NL);
         }
-        sb.append("        </row>" + NL);
+        out.write("        </row>" + NL);
       }
-      sb.append("      </table>" + NL);
-      return new TwoTuple<Integer, String>(tableSize, sb.toString());
+
+      // if didn't already write tableBegin but writing empty table XML...
+      if (tableSize == 0 && includeEmptyTables) out.write(tableBegin);
+
+      // if wrote some rows or writing empty table XML...
+      if (tableSize > 0 || includeEmptyTables) out.write(tableEnd);
+
+      return tableSize;
     }
-    catch (WdkUserException | WdkModelException e) {
+    catch (Exception e) {
       throw new WdkRuntimeException("Unable to format table value into XML", e);
     }
   }

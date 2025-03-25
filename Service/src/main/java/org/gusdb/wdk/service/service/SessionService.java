@@ -24,7 +24,6 @@ import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.web.CookieBuilder;
-import org.gusdb.fgputil.web.LoginCookieFactory;
 import org.gusdb.oauth2.client.ValidatedToken;
 import org.gusdb.oauth2.exception.InvalidPropertiesException;
 import org.gusdb.wdk.cache.TemporaryUserDataStore.TemporaryUserData;
@@ -292,7 +291,6 @@ public class SessionService extends AbstractWdkService {
 
     // create and append logout cookies to response
     Set<CookieBuilder> logoutCookies = new HashSet<>();
-    logoutCookies.add(LoginCookieFactory.createLogoutCookie());
     for (CookieBuilder extraCookie : getWdkModel().getUiConfig().getExtraLogoutCookies()) {
       extraCookie.setValue("");
       extraCookie.setMaxAge(-1);

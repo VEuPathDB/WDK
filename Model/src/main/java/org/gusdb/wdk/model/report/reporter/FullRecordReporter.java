@@ -5,15 +5,16 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.Tuples.ThreeTuple;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.ProcedureWithException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -40,8 +41,6 @@ import com.itextpdf.text.pdf.PdfWriter;
 public class FullRecordReporter extends StandardReporter {
 
   private static Logger LOG = Logger.getLogger(FullRecordReporter.class);
-
-  private static final Function<TableValue, TwoTuple<Integer,String>> TABLE_FORMATTER = tableValue -> formatTable(tableValue);
 
   private TableCache _tableCache = null;
 
@@ -118,7 +117,7 @@ public class FullRecordReporter extends StandardReporter {
         formatAttributes(record, selectedAttributes, writer);
 
         // print out tables (may get table formatting from cache)
-        formatTables(record, selectedTables, includeEmptyTables, writer, tableCache, TABLE_FORMATTER);
+        formatTables(record, selectedTables, includeEmptyTables, writer, tableCache, FullRecordReporter::writeTable);
 
         writer.println();
         writer.println("------------------------------------------------------------");
@@ -156,35 +155,52 @@ public class FullRecordReporter extends StandardReporter {
   /**
    * Returns a tuple of table_size (# of rows) and formatted string
    * 
-   * @param tableValue table value for one row
+   * @param inputs table value for one row
    * @return table size and formatted table
    * @throws WdkRuntimException if unable to format table
    */
-  private static TwoTuple<Integer,String> formatTable(TableValue tableValue) {
+  private static int writeTable(ThreeTuple<TableValue, Writer, Boolean> inputs) {
     try {
+      TableValue tableValue = inputs.getFirst();
       TableField table = tableValue.getTableField();
       Collection<AttributeField> fields = table.getReporterAttributeFieldMap().values();
+      Writer out = inputs.getSecond();
+      boolean includeEmptyTables = inputs.getThird();
+
       // output table header
-      StringBuffer sb = new StringBuffer();
-      sb.append("Table: " + table.getDisplayName() + NL);
-      for (AttributeField attribute : fields) {
-        sb.append("[").append(attribute.getDisplayName()).append("]\t");
-      }
-      sb.append(NL);
-  
+      ProcedureWithException writeHeader = () -> {
+        out.write("Table: " + table.getDisplayName() + NL);
+        for (AttributeField attribute : fields) {
+          out.write("[");
+          out.write(attribute.getDisplayName());
+          out.write("]\t");
+        }
+        out.write(NL);
+      };
+
       int tableSize = 0;
       for (Map<String, AttributeValue> row : tableValue) {
+
+        // rows present; write header first time through the loop
+        if (tableSize == 0) writeHeader.perform();
         tableSize++;
         for (AttributeField field : fields) {
           AttributeValue value = row.get(field.getName());
-          sb.append(value.getValue()).append("\t");
+          out.write(String.valueOf(value.getValue()));
+          out.write("\t");
         }
-        sb.append(NL);
+        out.write(NL);
       }
+
+      // even if no rows, print header if includeEmptyTables is true
+      if (tableSize == 0 && includeEmptyTables) {
+        writeHeader.perform();
+      }
+
       //LOG.debug("FullRecordReporter: formatTable(): tableSize: " + tableSize);
-      return new TwoTuple<Integer, String>(tableSize, sb.toString());
+      return tableSize;
     }
-    catch (WdkModelException | WdkUserException e) {
+    catch (Exception e) {
       throw new WdkRuntimeException("Unable to format table value", e);
     }
   }
