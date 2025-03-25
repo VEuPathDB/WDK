@@ -98,6 +98,10 @@ sub jdbc2oracleDbi {
        # jdbc:oracle:oci:@toxoprod
        my ($sid) = $jdbc =~ m/:oci:@(.+)/;
         return "dbi:Oracle:$sid";
+    } elsif ($jdbc =~ m/:postgresql:/) {
+       # jdbc:postgresql://ares5.penn.apidb.org/UniDB_shu_B
+       my ($host, $sid) = $jdbc =~ m/postgresql:\/\/(.*)\/(.*)/;
+       return "dbi:Pg:dbname=$sid;host=$host";
     } else {
         # last ditch effort.
         # jdbc:oracle:thin:@kiwi.rcr.uga.edu/cryptoB.kiwi.rcr.uga.edu
