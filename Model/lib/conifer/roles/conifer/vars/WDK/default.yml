@@ -14,6 +14,12 @@ modelconfig_appDb_login: =c= username for application database
 modelconfig_appDb_password: =c= password for application database
 modelconfig_appDb_connectionUrl: =c= e.g. jdbc:postgresql://localhost/wdk200s
 modelconfig_appDb_platform: =c= e.g. PostgreSQL or Oracle
+modelconfig_appDb_ldapServer: =c= e.g. ldap.example.com:389
+modelconfig_appDb_ldapBaseDn: =c= e.g. ou=applications,dc=example,dc=com
+modelconfig_appDb_ldapCommonName: =c= e.g. cn to access DB location
+modelconfig_appDb_dbIdentifier: =c= e.g. pg db name or oracle service name
+modelconfig_appDb_dbHost: =c= e.g. dbserver.example.com
+modelconfig_appDb_dbPort: =c= e.g. 1234
 modelconfig_appDb_userDbLink: =c= database link from application database to user database, or ''
 modelconfig_appDb_acctDbLink: =c= database link from application database to account database, or ''
 
@@ -21,13 +27,13 @@ modelconfig_userDb_login: =c= username for user database
 modelconfig_userDb_password: =c= password for user database
 modelconfig_userDb_connectionUrl: =c= e.g. jdbc:postgresql://localhost/wdk200s
 modelconfig_userDb_platform: =c= e.g. PostgreSQL or Oracle
+modelconfig_userDb_ldapServer: =c= e.g. ldap.example.com:389
+modelconfig_userDb_ldapBaseDn: =c= e.g. ou=applications,dc=example,dc=com
+modelconfig_userDb_ldapCommonName: =c= e.g. cn to access DB location
+modelconfig_userDb_dbIdentifier: =c= e.g. pg db name or oracle service name
+modelconfig_userDb_dbHost: =c= e.g. dbserver.example.com
+modelconfig_userDb_dbPort: =c= e.g. 1234
 modelconfig_userDb_userSchema: =c= e.g. userlogins5
-
-modelconfig_accountDb_login: =c= username for account database
-modelconfig_accountDb_password: =c= password for account database
-modelconfig_accountDb_connectionUrl: =c= e.g. jdbc:postgresql://localhost/wdk200s
-modelconfig_accountDb_platform: =c= e.g. PostgreSQL or Oracle
-modelconfig_accountDb_accountSchema: =c= e.g. useraccounts
 
 modelconfig_emailSubject: =c= Subject line of email to user after registering. e.g. Your registraion password
 modelconfig_emailContent: =c= Response to user after registering. e.g. Thank you for registering ...
