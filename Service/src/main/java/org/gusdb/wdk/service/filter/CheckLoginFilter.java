@@ -132,8 +132,9 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
   }
 
   protected boolean isPathToSkip(String path) {
-    // skip user check for prometheus metrics requests
-    return SystemService.PROMETHEUS_ENDPOINT_PATH.equals(path);
+    // skip user check for prometheus metrics  and new guest requests
+    return SystemService.PROMETHEUS_ENDPOINT_PATH.equals(path)
+        || SessionService.CREATE_GUEST_ENDPOINT_PATH.equals(path);
   }
 
   @Override
