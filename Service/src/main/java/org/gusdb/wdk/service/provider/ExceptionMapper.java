@@ -27,6 +27,7 @@ import org.gusdb.wdk.errors.ServerErrorBundle;
 import org.gusdb.wdk.events.ErrorEvent;
 import org.gusdb.wdk.model.WdkDelayedResultException;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkServiceTemporarilyUnavailableException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.service.request.exception.ConflictException;
 import org.gusdb.wdk.service.request.exception.DataValidationException;
@@ -93,6 +94,13 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
         return logResponse(e, Response.status(eApp.getResponse().getStatus())
           .type(MediaType.TEXT_PLAIN).entity(eApp.getMessage()).build());
       }
+    }
+
+    catch (WdkServiceTemporarilyUnavailableException ex) {
+      return logResponse(e, Response.status(Status.SERVICE_UNAVAILABLE)
+          .type(MediaType.TEXT_PLAIN)
+          .entity("Service Temporarily Unavailable; please try again later.")
+          .build());
     }
 
     catch (WdkDelayedResultException ex) {
