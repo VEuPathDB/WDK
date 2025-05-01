@@ -113,7 +113,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       RecordClass recordClass = pkValue.getPrimaryKeyDefinition().getRecordClass();
       return mapToList(
           recordClass.lookupPrimaryKeys(user, pkValue.getRawValues()),
-          fSwallow(idMap -> new DynamicRecordInstance(user, recordClass, pkValue.getRawValues())));
+          fSwallow(idMap -> new DynamicRecordInstance(user, recordClass, idMap)));
     }
     catch (RecordNotFoundException rnfe) {
       return Collections.emptyList();

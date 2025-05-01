@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -156,10 +158,12 @@ public class PrimaryKeyDefinition extends WdkModelBase {
 
   public List<Map<String, Object>> lookUpPrimaryKeys(User user, Map<String, Object> pkValues)
       throws RecordNotFoundException, WdkModelException {
+    LOG.debug("Looking up keys for " + FormatUtil.prettyPrint(pkValues, Style.SINGLE_LINE) + " using " + _aliasPlugin.getClass().getName());
     List<Map<String,Object>> primaryKeys = _aliasPlugin.getPrimaryKey(user, pkValues);
     if (primaryKeys.isEmpty()) {
       throw new RecordNotFoundException("No " + _recordClass.getDisplayName() + " record found for the primary key values: " + displayPkValues(pkValues));
     }
+    LOG.debug("Found mapped IDs:\n" + primaryKeys.stream().map(FormatUtil::prettyPrint).collect(Collectors.joining("\n")));
     return primaryKeys;
   }
 
