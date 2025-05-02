@@ -74,14 +74,35 @@ site_vars file: {{ site_vars }}
 
     <appDb  login="{{ modelconfig_appDb_login }}"
             password="{{ modelconfig_appDb_password }}"
-            connectionUrl="{{ modelconfig_appDb_connectionUrl }}"
-            platform="{{ modelconfig_appDb_platform }}"
             userDbLink="{{ modelconfig_appDb_userDbLink }}"
             acctDbLink="{{ modelconfig_appDb_acctDbLink }}"
+            {% if modelconfig_appDb_connectionUrl is defined and modelconfig_appDb_connectionUrl != "" -%}
+            connectionUrl="{{ modelconfig_appDb_connectionUrl }}"
+            {% endif -%}
+            {% if modelconfig_appDb_ldapServer is defined and modelconfig_appDb_ldapServer != "" -%}
+            ldapServer="{{ modelconfig_appDb_ldapServer }}"
+            {% endif -%}
+            {% if modelconfig_appDb_ldapBaseDn is defined and modelconfig_appDb_ldapBaseDn != "" -%}
+            ldapBaseDn="{{ modelconfig_appDb_ldapBaseDn }}"
+            {% endif -%}
+            {% if modelconfig_appDb_ldapCommonName is defined and modelconfig_appDb_ldapCommonName != "" -%}
+            ldapCommonName="{{ modelconfig_appDb_ldapCommonName }}"
+            {% endif -%}
+            {% if modelconfig_appDb_dbHost is defined and modelconfig_appDb_dbHost != "" -%}
+            dbHost="{{ modelconfig_appDb_dbHost }}"
+            {% endif -%}
+            {% if modelconfig_appDb_dbPort is defined and modelconfig_appDb_dbPort != "" -%}
+            dbPort="{{ modelconfig_appDb_dbPort }}"
+            {% endif -%}
+            {% if modelconfig_appDb_dbIdentifier is defined and modelconfig_appDb_dbIdentifier != "" -%}
+            dbIdentifier="{{ modelconfig_appDb_dbIdentifier }}"
+            {% endif -%}
+            {% if modelconfig_appDb_platform is defined and modelconfig_appDb_platform != "" -%}
+            platform="{{ modelconfig_appDb_platform }}"
+            {% endif -%}
             {% if modelconfig_appDb_maxActive is defined -%}
             maxActive="{{ modelconfig_appDb_maxActive }}"
             {% endif -%}
-
             {% if modelconfig_appDb_maxIdle is defined -%}
             maxIdle="{{ modelconfig_appDb_maxIdle }}"
             {% endif -%}
@@ -113,9 +134,31 @@ site_vars file: {{ site_vars }}
 
     <userDb login="{{ modelconfig_userDb_login }}"
             password="{{ modelconfig_userDb_password }}"
-            connectionUrl="{{ modelconfig_userDb_connectionUrl }}"
-            platform="{{ modelconfig_userDb_platform }}"
             userSchema="{{ modelconfig_userDb_userSchema }}"
+            {% if modelconfig_userDb_connectionUrl is defined and modelconfig_userDb_connectionUrl != "" -%}
+            connectionUrl="{{ modelconfig_userDb_connectionUrl }}"
+            {% endif -%}
+            {% if modelconfig_userDb_ldapServer is defined and modelconfig_userDb_ldapServer != "" -%}
+            ldapServer="{{ modelconfig_userDb_ldapServer }}"
+            {% endif -%}
+            {% if modelconfig_userDb_ldapBaseDn is defined and modelconfig_userDb_ldapBaseDn != "" -%}
+            ldapBaseDn="{{ modelconfig_userDb_ldapBaseDn }}"
+            {% endif -%}
+            {% if modelconfig_userDb_ldapCommonName is defined and modelconfig_userDb_ldapCommonName != "" -%}
+            ldapCommonName="{{ modelconfig_userDb_ldapCommonName }}"
+            {% endif -%}
+            {% if modelconfig_userDb_dbHost is defined and modelconfig_userDb_dbHost != "" -%}
+            dbHost="{{ modelconfig_userDb_dbHost }}"
+            {% endif -%}
+            {% if modelconfig_userDb_dbPort is defined and modelconfig_userDb_dbPort != "" -%}
+            dbPort="{{ modelconfig_userDb_dbPort }}"
+            {% endif -%}
+            {% if modelconfig_userDb_dbIdentifier is defined and modelconfig_userDb_dbIdentifier != "" -%}
+            dbIdentifier="{{ modelconfig_userDb_dbIdentifier }}"
+            {% endif -%}
+            {% if modelconfig_userDb_platform is defined and modelconfig_userDb_platform != "" -%}
+            platform="{{ modelconfig_userDb_platform }}"
+            {% endif -%}
             {% if modelconfig_userDb_maxActive is defined -%}
             maxActive="{{ modelconfig_userDb_maxActive }}"
             {% endif -%}
