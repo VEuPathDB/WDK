@@ -281,7 +281,7 @@ CREATE TABLE userlogins5.step_analysis (
   step_id              NUMERIC(12) NOT NULL,
   display_name         VARCHAR(1024),
   user_notes           VARCHAR(4000),
-  is_new               BOOLEAN,
+  revision_status      NUMERIC(2),
   has_params           BOOLEAN,
   invalid_step_reason  VARCHAR(1024),
   context_hash         VARCHAR(96),

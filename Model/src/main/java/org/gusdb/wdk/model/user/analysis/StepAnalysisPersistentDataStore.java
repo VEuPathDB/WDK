@@ -115,7 +115,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
    *   int analysis_id (PK)
    *   int step_id
    *   varchar display_name
-   *   bool is_new
+   *   int revision_status
    *   bool has_params
    *   varchar invalid_step_reason
    *   varchar context_hash
@@ -139,7 +139,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
         "  ANALYSIS_ID          " + idType + " NOT NULL," +
         "  STEP_ID              " + idType + "," +
         "  DISPLAY_NAME         " + userStringType + "," +
-        "  IS_NEW               " + intType + "," +        // repurposed to store revision status
+        "  REVISION_STATUS      " + intType + "," +
         "  HAS_PARAMS           " + boolType + "," +       // deprecated
         "  INVALID_STEP_REASON  " + userStringType + "," + // deprecated
         "  CONTEXT_HASH         " + hashType + "," +       // deprecated
@@ -150,27 +150,27 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
         ")";
     INSERT_ANALYSIS_SQL =
         "INSERT INTO " + table +
-        " (ANALYSIS_ID, STEP_ID, DISPLAY_NAME, IS_NEW, HAS_PARAMS," +
+        " (ANALYSIS_ID, STEP_ID, DISPLAY_NAME, REVISION_STATUS, HAS_PARAMS," +
         "  INVALID_STEP_REASON, CONTEXT_HASH, CONTEXT, USER_NOTES)" +
         " VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? )";
     UPDATE_ANALYSIS_SQL =
         "UPDATE " + table +
-        " SET DISPLAY_NAME = ?, IS_NEW = ?, CONTEXT = ?, USER_NOTES = ?" +
+        " SET DISPLAY_NAME = ?, REVISION_STATUS = ?, CONTEXT = ?, USER_NOTES = ?" +
         " WHERE ANALYSIS_ID = ?";
     SET_STEPS_DIRTY_BY_STEP_ID_SQL =
         "UPDATE " + table +
-        " SET IS_NEW = " + RevisionStatus.STEP_DIRTY.getDbValue() +
+        " SET REVISION_STATUS = " + RevisionStatus.STEP_DIRTY.getDbValue() +
         " WHERE STEP_ID = ?";
     DELETE_ANALYSIS_BY_ID_SQL =
         "DELETE FROM " + table + " WHERE ANALYSIS_ID = ?";
     DELETE_ANALYSIS_BY_STEP_ID_SQL =
         "DELETE FROM " + table + " WHERE STEP_ID = ?";
     GET_ANALYSIS_BY_ID_SQL =
-        "SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, USER_NOTES, IS_NEW, CONTEXT" +
+        "SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, USER_NOTES, REVISION_STATUS, CONTEXT" +
         " FROM " + table +
         " WHERE ANALYSIS_ID = ?";
     GET_ANALYSES_BY_STEP_ID_SQL =
-        "SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, USER_NOTES, IS_NEW, CONTEXT" +
+        "SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, USER_NOTES, REVISION_STATUS, CONTEXT" +
         " FROM " + table +
         " WHERE STEP_ID = ? ORDER BY ANALYSIS_ID ASC";
     GET_ANALYSIS_PROPERTIES =
@@ -405,7 +405,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
     }
   }
 
-  // SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, USER_NOTES, IS_NEW, CONTEXT
+  // SELECT ANALYSIS_ID, STEP_ID, DISPLAY_NAME, USER_NOTES, REVISION_STATUS, CONTEXT
   // WdkModel wdkModel, long analysisId, long stepId, RevisionStatus revisionStatus, String displayName, String userNotes, String serializedInstance, ValidationLevel validationLevel
   private StepAnalysisInstance readInstance(ResultSet rs, User user, ValidationLevel level)
       throws WdkModelException, SQLException {
