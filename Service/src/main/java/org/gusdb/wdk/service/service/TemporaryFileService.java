@@ -93,7 +93,7 @@ public class TemporaryFileService extends AbstractWdkService {
     java.nio.file.Path tempFilePath;
 
     try {
-      tempFilePath = Files.createTempFile(tempDirPath, null, null);
+      tempFilePath = Files.createTempFile(tempDirPath, "wdkTempFile-", null);
 
       try (OutputStream outputStream = Files.newOutputStream(tempFilePath)) {
         IoUtil.transferStream(outputStream, contentStream);
