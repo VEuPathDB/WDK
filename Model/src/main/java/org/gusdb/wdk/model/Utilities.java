@@ -6,6 +6,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.Date;
@@ -32,6 +36,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.BiFunctionWithException;
 
 /**
  * This class provided constants that are shared among different WDK model
@@ -350,4 +355,20 @@ public class Utilities {
     return sortingMap;
   }
 
+  /**
+   * Creates a new filesystem object (file or directory) with shared group write but only all-read perms aka "rwxrwxr-x"
+   * Meant to be called with either Files::createFile or Files::createDirectory.
+   */
+  public static void ensureCreation(BiFunctionWithException<Path, FileAttribute<?>[], Path> creationFunction, Path path) throws WdkRuntimeException {
+    try {
+      creationFunction.apply(path, new FileAttribute[] { PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwxrwxr-x")) });
+    }
+    catch (FileAlreadyExistsException e) {
+      // do nothing; this is ok
+    }
+    catch (Exception e) {
+      // any other exception is a problem
+      throw new WdkRuntimeException("Could not create path " + path.toAbsolutePath(), e);
+    }
+  }
 }
