@@ -81,7 +81,7 @@ public class AnswerDetailsFactory {
    *       tables: [ tableName: String ], or special string,
    *       sorting: [ { attributeName: String, direction: Enum[ASC,DESC] } ],
    *       contentDisposition: 'inline' (default) OR 'attachment'
-   *       attributeFormat: 'display' (default) OR 'text'
+   *       attributeFormat: 'display' (default) OR 'text' OR 'expanded'
    *     }
    *   </pre>
    *   All values are optional.
