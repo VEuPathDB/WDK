@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model.user.analysis;
 
 public enum RevisionStatus {
-  STEP_CLEAN      (0), // instance has been successfully run at least once
+  STEP_CLEAN (0), // instance has been successfully run at least once
   NEW        (1), // instance has not been run since creation
   STEP_DIRTY (2); // instance's step has been explicitly revised since last run
 
