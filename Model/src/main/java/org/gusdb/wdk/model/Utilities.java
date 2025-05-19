@@ -6,6 +6,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.Date;
@@ -13,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -32,6 +39,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.BiFunctionWithException;
 
 /**
  * This class provided constants that are shared among different WDK model
@@ -350,4 +358,38 @@ public class Utilities {
     return sortingMap;
   }
 
+  public static final Set<PosixFilePermission> DEFAULT_PERMS = PosixFilePermissions.fromString("rwxrwxr-x");
+
+  /**
+   * Creates a new filesystem object (file or directory) with shared group write but only all-read perms aka "rwxrwxr-x"
+   * Meant to be called with either Files::createFile or Files::createDirectory.
+   */
+  public static void ensureCreation(BiFunctionWithException<Path, FileAttribute<?>[], Path> creationFunction, Path path) throws WdkRuntimeException {
+    try {
+      creationFunction.apply(path, new FileAttribute[] { PosixFilePermissions.asFileAttribute(DEFAULT_PERMS) });
+      tryToOpenGroupPerms(path);
+    }
+    catch (FileAlreadyExistsException e) {
+      // this is ok; try to ensure perms on existing directory (may fail if not owned by us)
+      tryToOpenGroupPerms(path);
+    }
+    catch (Exception e) {
+      // any other exception is a problem
+      throw new WdkRuntimeException("Could not create path " + path.toAbsolutePath(), e);
+    }
+  }
+
+  private static void tryToOpenGroupPerms(Path path) {
+    try {
+      Files.setPosixFilePermissions(path, DEFAULT_PERMS);
+    }
+    catch (UnsupportedOperationException e) {
+      // log but ignore it since it's not supported on Windows
+      LOG.warn("Cannot set permissions to " + path, e);
+    }
+    catch (IOException e) {
+      // log but ignore since sometimes existing creation is not owned by us or system perms is enough
+      LOG.warn("Cannot set permissions to " + path, e);
+    }
+  }
 }
