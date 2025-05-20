@@ -219,12 +219,12 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    */
   public String getPlatform() {
     fillConnectionInformation();
-	return platform;
+    return platform;
   }
   @Override
   public SupportedPlatform getPlatformEnum() {
     fillConnectionInformation();
-	return (platform == null ? null :
+    return (platform == null ? null :
       SupportedPlatform.toPlatform(platform.toUpperCase()));
   }
 
@@ -377,7 +377,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    * @param driverInitClass implementation class to initialize DB driver
    */
   public void setDriverInitClass(String driverInitClass) {
-	this.driverInitClass = driverInitClass;
+    this.driverInitClass = driverInitClass;
   }
 
   /**
@@ -385,7 +385,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    */
   @Override
   public String getDriverInitClass() {
-	  return driverInitClass;
+    return driverInitClass;
   }
 
   /**
