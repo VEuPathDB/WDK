@@ -36,6 +36,7 @@ import javax.ws.rs.ext.WriterInterceptorContext;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.service.service.SystemService;
 import org.json.JSONArray;
@@ -156,7 +157,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
         return Optional.empty();
       }
       Path tmpDir = ContextLookup.getWdkModel(_servletContext).getModelConfig().getWdkTempDir();
-      Path tempFile = Files.createTempFile(tmpDir, "wdkRequest-", null);
+      Path tempFile = Files.createTempFile(tmpDir, "wdkRequest-", null, IoUtil.getOpenPosixPermsAsFileAttribute());
       try (OutputStream out = new FileOutputStream(tempFile.toFile())) {
         in.transferTo(out);
         return Optional.of(tempFile);
