@@ -444,9 +444,9 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   }
 
   public boolean isSameConnectionInfoAs(ModelConfigDB config) {
-    return (login.equals(config.login) &&
-        password.equals(config.password) &&
-        connectionUrl.equals(config.connectionUrl) &&
-        platform.equalsIgnoreCase(config.platform));
+    return (getLogin().equals(config.getLogin()) &&
+        getPassword().equals(config.getPassword()) &&
+        getConnectionUrl().equals(config.getConnectionUrl()) &&
+        getPlatformEnum() == config.getPlatformEnum());
   }
 }
