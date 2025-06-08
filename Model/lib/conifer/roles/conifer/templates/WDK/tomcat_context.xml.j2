@@ -14,7 +14,7 @@ site_vars file: {{ site_vars }}
     docBase="{{ contextxml_docBase }}"
     privileged="{{ contextxml_privileged|default("false") }}"
     swallowOutput="{{ contextxml_swallowOutput|default("true") }}"
-    allowLinking="{{ contextxml_allowLinking|default("true") }}"
 >
+    <Resources allowLinking="{{ contextxml_allowLinking|default("true") }}" />
     <Parameter name="model" value="{{ contextxml_model }}"/>
 </Context>
