@@ -23,7 +23,6 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.ResultSizeFactory;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
@@ -102,21 +101,13 @@ public class SummaryTester {
         paramValues = QueryTester.parseParamArgs(user, params, useDefaults, query);
       }
 
-      // get filter
-      Optional<AnswerFilterInstance> filter = Optional.empty();
-      if (cmdLine.hasOption(ARG_FILTER)) {
-        String filterName = cmdLine.getOptionValue(ARG_FILTER);
-        filter = Optional.of(question.getRecordClass().getFilterInstance(filterName)
-          .orElseThrow(() -> new WdkUserException("Given filter name doesn't exist: " + filterName)));
-      }
-
       // this is suspicious
       // Query query = question.getQuery();
       // query.setIsCacheable(new Boolean(true));
       int pageCount = 1;
 
       if (toXml) {
-        writeSummaryAsXml(user, question, paramValues, xmlFileName, filter);
+        writeSummaryAsXml(user, question, paramValues, xmlFileName);
         return;
       }
 
@@ -129,7 +120,6 @@ public class SummaryTester {
         RunnableObj<AnswerSpec> validSpec = AnswerSpec.builder(wdkModel)
             .setQuestionFullName(question.getFullName())
             .setParamValues(paramValues)
-            .setLegacyFilterName(filter.map(NamedObject::getName))
             .buildRunnable(user, StepContainer.emptyContainer());
 
         AnswerValue answerValue = AnswerValueFactory.makeAnswer(
@@ -204,12 +194,11 @@ public class SummaryTester {
   }
 
   private static void writeSummaryAsXml(User user, Question question, Map<String, String> paramValues,
-      String xmlFile, Optional<AnswerFilterInstance> filter) throws WdkModelException, WdkUserException, IOException, JSONException {
+      String xmlFile) throws WdkModelException, WdkUserException, IOException, JSONException {
 
     RunnableObj<AnswerSpec> answerSpec = AnswerSpec.builder(question.getWdkModel())
         .setQuestionFullName(question.getFullName())
         .setParamValues(paramValues)
-        .setLegacyFilterName(filter.map(NamedObject::getName))
         .buildRunnable(user, StepContainer.emptyContainer());
     Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
     AnswerValue answerValue = AnswerValueFactory.makeAnswer(answerSpec, 1, 2, sortingMap, false);

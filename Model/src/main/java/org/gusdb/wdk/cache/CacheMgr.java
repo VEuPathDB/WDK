@@ -31,7 +31,6 @@ public class CacheMgr {
     return _instance;
   }
 
-  private final FilterSizeCache _filterSizeCache = new FilterSizeCache();
   private final InMemoryCache<String, EnumParamVocabInstance> _vocabCache = new InMemoryCache<>();
 
   private final InMemoryCache<String, List<Map<String,Object>>> _attributeMetaQueryCache = new InMemoryCache<>();
@@ -41,7 +40,6 @@ public class CacheMgr {
 
   private final Map<String,InMemoryCache<?,?>> _cacheRepo =
       new MapBuilder<String,InMemoryCache<?,?>>(new LinkedHashMap<String,InMemoryCache<?,?>>())
-      .put("Filter Size Cache", _filterSizeCache.getCache())
       .put("Vocab Instance Cache", _vocabCache)
       .put("Dynamic Attribute Cache", _attributeMetaQueryCache)
       .put("FilterParamNew Metadata Cache", _metadataNewCache)
@@ -51,7 +49,6 @@ public class CacheMgr {
 
   private CacheMgr() { }
 
-  public FilterSizeCache getFilterSizeCache() { return _filterSizeCache; }
   public InMemoryCache<String, EnumParamVocabInstance> getVocabCache() { return _vocabCache; }
   public InMemoryCache<String, List<Map<String,Object>>> getAttributeMetaQueryCache() { return _attributeMetaQueryCache; }
   public MetadataNewCache getMetadataNewCache() { return _metadataNewCache; }

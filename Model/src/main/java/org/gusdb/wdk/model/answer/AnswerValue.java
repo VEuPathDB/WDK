@@ -277,11 +277,6 @@ public class AnswerValue {
       JSONObject jsContent = new JSONObject();
       jsContent.put("query-checksum", _idsQueryInstance.getChecksum());
 
-      // add the legacy filter into the content
-      if (_answerSpec.getLegacyFilter().isPresent()) {
-        jsContent.put("legacy-filter", _answerSpec.getLegacyFilterName().get());
-      }
-
       // if filters have been applied, get the content for them
       jsContent.put("filters", ParamsAndFiltersDbColumnFormat.formatFilters(_answerSpec.getFilterOptions()));
 
@@ -688,12 +683,6 @@ public class AnswerValue {
 
     // get base ID sql from query instance and answer params
     String innerSql = getBaseIdSql(false);
-
-    // apply old-style answer filter
-    if (_answerSpec.getLegacyFilter().isPresent()) {
-      innerSql = _answerSpec.getLegacyFilter().get().applyFilter(_requestingUser, innerSql, _idsQueryInstance.getAssignedWeight());
-      innerSql = "\n/* old filter applied on id query */\n" + innerSql;
-    }
 
     // apply "new" filters
     if (!_answerSpec.getFilterOptions().isEmpty()) {

@@ -40,12 +40,7 @@ public class ResultSizeFactory {
   //size of total result
   private Integer _resultSize;
 
-  // Map chain from boolean isDisplaySize -> filterName -> resultSize
-  private Map<FilterSizeType, Map<String, Integer>> _resultSizesByFilter =
-      new MapBuilder<FilterSizeType, Map<String, Integer>>()
-        .put(FilterSizeType.STANDARD, new ConcurrentHashMap<String,Integer>())
-        .put(FilterSizeType.DISPLAY, new ConcurrentHashMap<String, Integer>())
-        .toMap();
+
 
   private Map<String, Integer> _resultSizesByProject = null;
 
@@ -84,7 +79,6 @@ public class ResultSizeFactory {
       _resultSizesByProject = new LinkedHashMap<String, Integer>();
       Question question = _answerValue.getQuestion();
       QueryInstance<?> queryInstance = _answerValue.getIdsQueryInstance();
-      Optional<AnswerFilterInstance> filter = _answerValue.getAnswerSpec().getLegacyFilter();
 
       // make sure the project_id is defined in the record
       PrimaryKeyDefinition primaryKey = question.getRecordClass().getPrimaryKeyDefinition();
@@ -96,7 +90,7 @@ public class ResultSizeFactory {
       else {
         // need to run the query first for portal
         Optional<String> message = queryInstance.getResultMessage();
-        try (ResultList resultList = (filter.isPresent() ? filter.get().getResults(_answerValue) : queryInstance.getResults())){
+        try (ResultList resultList = queryInstance.getResults()){
           boolean hasMessage = (message.isPresent() && message.get().length() > 0);
           if (hasMessage) {
             String[] sizes = message.get().split(",");
@@ -138,103 +132,8 @@ public class ResultSizeFactory {
   }
 
 
-  public int getFilterDisplaySize(String filterName)
-      throws WdkModelException {
-    return getFilterSize(filterName, true);
-  }
-
-  public int getFilterSize(String filterName)
-      throws WdkModelException {
-    return getFilterSize(filterName, false);
-  }
-
-  public Map<String, Integer> getFilterDisplaySizes() {
-    return getFilterSizes(null, true);
-  }
-
-  public Map<String, Integer> getFilterSizes() {
-    return getFilterSizes(null, false);
-  }
-
-  public Map<String, Integer> getFilterDisplaySizes(List<String> filterNames) {
-    return getFilterSizes(filterNames, true);
-  }
-
-  public Map<String, Integer> getFilterSizes(List<String> filterNames) {
-    return getFilterSizes(filterNames, false);
-  }
-
-  private Map<String, Integer> getFilterSizes(Collection<String> filterNames, boolean useDisplay) {
-    Question question = _answerValue.getQuestion();
-    Map<String, AnswerFilterInstance> allFilters = question.getRecordClass().getFilterMap();
-    if (filterNames == null) {
-      // sizes requested for all filters
-      filterNames = allFilters.keySet();
-    }
-    else {
-      // check to make sure requested names are actually filters
-      LOG.debug("Filter sizes requested for: " + FormatUtil.arrayToString(filterNames.toArray()));
-      for (String name : filterNames) {
-        if (!allFilters.containsKey(name)) {
-          throw new WdkRuntimeException("Requested filter '" + name +
-              "' is not a filter instance in " + question.getRecordClassName());
-        }
-      }
-    }
-
-    // create a map to hold results
-    ConcurrentMap<String, Integer> sizes = new ConcurrentHashMap<>(filterNames.size());
-
-    // use a thread pool to get filter sizes in parallel
-    ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-    for (String filterName : filterNames) {
-      executor.execute(new FilterSizeTask(this, sizes, filterName, useDisplay));
-    }
-
-    // wait for executor to finish.
-    executor.shutdown();
-    try {
-      if (!executor.awaitTermination(THREAD_POOL_TIMEOUT, TimeUnit.MINUTES)) {
-        executor.shutdownNow();
-      }
-    }
-    catch (InterruptedException ex) {
-      executor.shutdownNow();
-    }
-
-    return sizes;
-  }
-
-  private int getFilterSize(String filterName, boolean useDisplay)
-      throws WdkModelException {
-    FilterSizeType sizeType = useDisplay ? FilterSizeType.DISPLAY : FilterSizeType.STANDARD;
-    Integer size = _resultSizesByFilter.get(sizeType).get(filterName);
-    if (size != null && _answerValue.getIdsQueryInstance().getQuery().isCacheable()) {
-      return size;
-    }
-
-    // create a copy of this AnswerValue, overriding current AnswerFilter with one passed in
-    AnswerValue modifiedAnswer = AnswerValueFactory.makeAnswer(_answerValue,
-        AnswerSpec.builder(_answerValue.getAnswerSpec())
-        .setLegacyFilterName(Optional.of(filterName))
-        .buildRunnable(_answerValue.getRequestingUser(), _answerValue.getAnswerSpec().getStepContainer()));
-    String idSql = modifiedAnswer.getIdSql();
-
-    // if display count requested, use custom plugin; else use default
-    ResultSize countPlugin = (useDisplay ?
-        _answerValue.getQuestion().getRecordClass().getResultSizePlugin() :
-        new DefaultResultSizePlugin());
-
-    // get size, cache, and return
-    size = countPlugin.getResultSize(modifiedAnswer, idSql);
-    _resultSizesByFilter.get(sizeType).put(filterName, size);
-    return size;
-  }
-
   public void clear() {
     _resultSize = null;
-    _resultSizesByFilter.get(FilterSizeType.STANDARD).clear();
-    _resultSizesByFilter.get(FilterSizeType.DISPLAY).clear();
     _resultSizesByProject = null;
   }
 

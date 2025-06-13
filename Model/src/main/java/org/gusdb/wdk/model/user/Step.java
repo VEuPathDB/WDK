@@ -25,7 +25,6 @@ import org.gusdb.wdk.model.OwnedObject;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
@@ -646,12 +645,7 @@ public class Step implements Validateable<Step>, OwnedObject {
       return true;
     }
 
-    // check if old-style filter has been applied
-    Optional<AnswerFilterInstance> filter = _answerSpec.getLegacyFilter();
-    Optional<AnswerFilterInstance> defaultFilter = _answerSpec.getQuestion().get().getRecordClass().getDefaultFilter();
-    return filter.isPresent() &&
-        (defaultFilter.isEmpty() ||
-         !defaultFilter.get().getName().equals(filter.get().getName()));
+      return false;
   }
 
   /**

@@ -7,7 +7,6 @@ import static org.gusdb.fgputil.db.SqlUtils.fetchNullableBoolean;
 import static org.gusdb.fgputil.db.SqlUtils.fetchNullableInteger;
 import static org.gusdb.fgputil.db.SqlUtils.fetchNullableLong;
 import static org.gusdb.fgputil.functional.Functions.getMapFromList;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ANSWER_FILTER;
 import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ASSIGNED_WEIGHT;
 import static org.gusdb.wdk.model.user.StepFactory.COLUMN_CREATE_TIME;
 import static org.gusdb.wdk.model.user.StepFactory.COLUMN_CUSTOM_NAME;
@@ -336,7 +335,6 @@ public class StrategyLoader {
       .setAnswerSpec(
         AnswerSpec.builder(_wdkModel)
         .setQuestionFullName(rs.getString(COLUMN_QUESTION_NAME))
-        .setLegacyFilterName(Optional.ofNullable(rs.getString(COLUMN_ANSWER_FILTER)))
         .setDbParamFiltersJson(
           new JSONObject(_userDbPlatform.getClobData(rs, COLUMN_DISPLAY_PARAMS)),
           fetchNullableInteger(rs, COLUMN_ASSIGNED_WEIGHT, 0)

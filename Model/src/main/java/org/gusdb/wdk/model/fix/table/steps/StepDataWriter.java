@@ -50,7 +50,6 @@ public class StepDataWriter implements TableRowWriter<StepData> {
     return ListBuilder.asList(new Object[] {
         row.getLeftChildId(),
         row.getRightChildId(),
-        row.getLegacyAnswerFilter(),
         row.getProjectId(),
         row.getQuestionName(),
         row.getParamFilters().toString(),

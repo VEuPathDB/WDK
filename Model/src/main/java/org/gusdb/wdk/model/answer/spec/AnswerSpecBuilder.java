@@ -29,7 +29,6 @@ public class AnswerSpecBuilder {
 
   private final WdkModel _wdkModel;
   private String _questionName = "";
-  private Optional<String> _legacyFilterName = Optional.empty();
   private QueryInstanceSpecBuilder _queryInstanceSpec = QueryInstanceSpec.builder();
   private FilterOptionListBuilder _filters = FilterOptionList.builder();
   private FilterOptionListBuilder _viewFilters = FilterOptionList.builder();
@@ -44,7 +43,6 @@ public class AnswerSpecBuilder {
     _wdkModel = answerSpec.getWdkModel();
     _questionName = answerSpec.getQuestionName();
     _queryInstanceSpec = QueryInstanceSpec.builder().fromQueryInstanceSpec(answerSpec.getQueryInstanceSpec());
-    _legacyFilterName = answerSpec.getLegacyFilterName();
     _filters = FilterOptionList.builder().addAllFilters(answerSpec.getFilterOptions());
     _viewFilters = FilterOptionList.builder().addAllFilters(answerSpec.getViewFilterOptions());
     _columnFilters = new ColumnFilterConfigSetBuilder(answerSpec.getColumnFilterConfig());
@@ -80,7 +78,7 @@ public class AnswerSpecBuilder {
   public AnswerSpec build(User requestingUser, StepContainer stepContainer,
       ValidationLevel validationLevel, FillStrategy fillStrategy) throws WdkModelException {
     return new AnswerSpec(_wdkModel, _questionName, _queryInstanceSpec,
-      _legacyFilterName, _filters, _viewFilters, requestingUser, validationLevel, stepContainer,
+            _filters, _viewFilters, requestingUser, validationLevel, stepContainer,
       fillStrategy, _columnFilters.build());
   }
 
@@ -103,11 +101,6 @@ public class AnswerSpecBuilder {
 
   public String getQuestionName() {
     return _questionName;
-  }
-
-  public AnswerSpecBuilder setLegacyFilterName(Optional<String> legacyFilterName) {
-    _legacyFilterName = legacyFilterName;
-    return this;
   }
 
   public AnswerSpecBuilder setQueryInstanceSpec(QueryInstanceSpecBuilder queryInstanceSpec) {

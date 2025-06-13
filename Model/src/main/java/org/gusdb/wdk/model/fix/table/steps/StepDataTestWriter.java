@@ -87,7 +87,6 @@ public class StepDataTestWriter extends StepDataWriter {
         row.getStepId(),
         row.getLeftChildId(),
         row.getRightChildId(),
-        row.getLegacyAnswerFilter(),
         row.getProjectId(),
         row.getQuestionName(),
         row.getParamFilters().toString(),

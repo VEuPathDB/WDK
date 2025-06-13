@@ -64,11 +64,6 @@ public class AnswerSpecServiceFormat {
           .setQuestionFullName(question.getFullName())
           .setQueryInstanceSpec(qiSpecBuilder);
 
-      // all filter fields and weight are optional
-      if (json.has(JsonKeys.LEGACY_FILTER_NAME)) {
-        specBuilder.setLegacyFilterName(Optional.of(json.getString(JsonKeys.LEGACY_FILTER_NAME)));
-      }
-
       // apply filter and view filter options if present
       specBuilder.setFilterOptions(ParamsAndFiltersDbColumnFormat.parseFiltersJson(json, JsonKeys.FILTERS));
 
@@ -120,7 +115,6 @@ public class AnswerSpecServiceFormat {
         // NOTE: As of 8/20/19 we do not include view filters as part of the normal answer spec (StepService)
         //.put(JsonKeys.VIEW_FILTERS, ParamsAndFiltersDbColumnFormat.formatFilters(answerSpec.getViewFilterOptions()))
         .put(JsonKeys.COLUMN_FILTERS, ParamsAndFiltersDbColumnFormat.formatColumnFilters(answerSpec.getColumnFilterConfig()))
-        .put(JsonKeys.WDK_WEIGHT, answerSpec.getQueryInstanceSpec().getAssignedWeight())
-        .put(JsonKeys.LEGACY_FILTER_NAME, answerSpec.getLegacyFilterName().orElse(null));
+        .put(JsonKeys.WDK_WEIGHT, answerSpec.getQueryInstanceSpec().getAssignedWeight());
   }
 }
