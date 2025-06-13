@@ -7,7 +7,6 @@ import static org.gusdb.fgputil.db.SqlUtils.fetchNullableBoolean;
 import static org.gusdb.fgputil.db.SqlUtils.fetchNullableInteger;
 import static org.gusdb.fgputil.db.SqlUtils.fetchNullableLong;
 import static org.gusdb.fgputil.functional.Functions.getMapFromList;
-import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ANSWER_FILTER;
 import static org.gusdb.wdk.model.user.StepFactory.COLUMN_ASSIGNED_WEIGHT;
 import static org.gusdb.wdk.model.user.StepFactory.COLUMN_CREATE_TIME;
 import static org.gusdb.wdk.model.user.StepFactory.COLUMN_CUSTOM_NAME;
