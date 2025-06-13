@@ -533,7 +533,6 @@ public class StepFactory {
       Types.TIMESTAMP, // CREATE_TIME
       Types.TIMESTAMP, // LAST_RUN_TIME
       Types.BIGINT,    // ESTIMATE_SIZE
-      Types.VARCHAR,   // ANSWER_FILTER
       Types.BIGINT,    // ASSIGNED_WEIGHT
       Types.VARCHAR,   // PROJECT_ID
       Types.VARCHAR,   // PROJECT_VERSION
