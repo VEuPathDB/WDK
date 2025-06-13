@@ -513,7 +513,7 @@ public class StepFactory {
       "  " + COLUMN_DISPLAY_PREFS   + ",\n" +
       "  " + COLUMN_IS_EXPANDED     + ",\n" +
       "  " + COLUMN_EXPANDED_NAME   + ")\n" +
-      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
   }
 
   /**
