@@ -829,6 +829,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     if (attributeOrdering != null)
       attributeFieldMap = sortAllAttributes();
 
+    // resolve filters
+    resolveFilterReferences(model);
+
     // resolve default summary attributes
     if (defaultSummaryAttributeNames != null) {
       Map<String, AttributeField> attributeFields = getAttributeFieldMap();
@@ -973,6 +976,23 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   }
 
+  private void resolveFilterReferences(WdkModel wdkModel) throws WdkModelException {
+
+    // automatically add basket view filter to each recordclass
+    StepFilter basketFilter = new InBasketFilter(_wdkModel);
+    _stepFilters.put(basketFilter.getKey(), basketFilter);
+
+    // resolve step filter references
+    for (FilterReference reference : _filterReferences) {
+      StepFilter filter = resolveStepFilterReferenceByName(reference.getName(), _wdkModel, "recordClass " + getFullName());
+      if (_stepFilters.containsKey(filter.getKey())) {
+        throw new WdkModelException("Non-unique step filter key '" + filter.getKey() + "detected in record class " + getFullName());
+      }
+      _stepFilters.put(filter.getKey(), filter);
+    }
+    _filterReferences.clear();
+
+  }
   public static StepFilter resolveStepFilterReferenceByName(String name, WdkModel wdkModel, String location) throws WdkModelException {
     FilterDefinition definition = (FilterDefinition) wdkModel.resolveReference(name);
     if (definition instanceof StepFilterDefinition) {
