@@ -1293,8 +1293,6 @@
             <ref name="testParamValuesRef" />
           </element>
 
-          <!-- summary table definitions -->
-
           <!-- attribute query ref -->
           <element name="attributeQueryRef">
             <attribute name="ref" />
