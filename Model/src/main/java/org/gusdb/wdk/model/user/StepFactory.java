@@ -87,7 +87,6 @@ public class StepFactory {
     COLUMN_CHILD_STEP_ID    = "right_child_id",
     COLUMN_LAST_RUN_TIME    = "last_run_time",
     COLUMN_ESTIMATE_SIZE    = "estimate_size",
-    COLUMN_ANSWER_FILTER    = "answer_filter",
     COLUMN_CUSTOM_NAME      = "custom_name",
     COLUMN_IS_VALID         = "is_valid",
     COLUMN_ASSIGNED_WEIGHT  = "assigned_weight",
@@ -103,7 +102,7 @@ public class StepFactory {
     COLUMN_USER_ID, COLUMN_STRATEGY_ID, COLUMN_PROJECT_ID, COLUMN_CREATE_TIME,
     COLUMN_IS_DELETED, COLUMN_STEP_ID, COLUMN_PREVIOUS_STEP_ID,
     COLUMN_CHILD_STEP_ID, COLUMN_LAST_RUN_TIME, COLUMN_ESTIMATE_SIZE,
-    COLUMN_ANSWER_FILTER, COLUMN_CUSTOM_NAME, COLUMN_IS_VALID,
+    COLUMN_CUSTOM_NAME, COLUMN_IS_VALID,
     COLUMN_ASSIGNED_WEIGHT, COLUMN_PROJECT_VERSION, COLUMN_QUESTION_NAME,
     COLUMN_DISPLAY_PARAMS, COLUMN_DISPLAY_PREFS, COLUMN_IS_EXPANDED,
     COLUMN_EXPANDED_NAME
@@ -503,7 +502,6 @@ public class StepFactory {
       "  " + COLUMN_CREATE_TIME     + ",\n" +
       "  " + COLUMN_LAST_RUN_TIME   + ",\n" +
       "  " + COLUMN_ESTIMATE_SIZE   + ",\n" +
-      "  " + COLUMN_ANSWER_FILTER   + ",\n" +
       "  " + COLUMN_ASSIGNED_WEIGHT + ",\n" +
       "  " + COLUMN_PROJECT_ID      + ",\n" +
       "  " + COLUMN_PROJECT_VERSION + ",\n" +
@@ -515,7 +513,7 @@ public class StepFactory {
       "  " + COLUMN_DISPLAY_PREFS   + ",\n" +
       "  " + COLUMN_IS_EXPANDED     + ",\n" +
       "  " + COLUMN_EXPANDED_NAME   + ")\n" +
-      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
   }
 
   /**
@@ -533,7 +531,6 @@ public class StepFactory {
       Types.TIMESTAMP, // CREATE_TIME
       Types.TIMESTAMP, // LAST_RUN_TIME
       Types.BIGINT,    // ESTIMATE_SIZE
-      Types.VARCHAR,   // ANSWER_FILTER
       Types.BIGINT,    // ASSIGNED_WEIGHT
       Types.VARCHAR,   // PROJECT_ID
       Types.VARCHAR,   // PROJECT_VERSION
@@ -567,7 +564,6 @@ public class StepFactory {
       new Timestamp(step.getCreatedTime().getTime()),
       new Timestamp(step.getLastRunTime().getTime()),
       step.getEstimatedSize(),
-      spec.getLegacyFilterName().orElse(null),
       spec.getQueryInstanceSpec().getAssignedWeight(),
       _wdkModel.getProjectId(),
       _wdkModel.getVersion(),
@@ -883,7 +879,6 @@ public class StepFactory {
         "  " + COLUMN_CHILD_STEP_ID    + " = ?,\n" +
         "  " + COLUMN_LAST_RUN_TIME    + " = ?,\n" +
         "  " + COLUMN_ESTIMATE_SIZE    + " = ?,\n" +
-        "  " + COLUMN_ANSWER_FILTER    + " = ?,\n" +
         "  " + COLUMN_CUSTOM_NAME      + " = ?,\n" +
         "  " + COLUMN_IS_DELETED       + " = ?,\n" +
         "  " + COLUMN_IS_VALID         + " = ?,\n" +
@@ -907,7 +902,6 @@ public class StepFactory {
       Types.BIGINT,    // RIGHT_CHILD_ID
       Types.TIMESTAMP, // LAST_RUN_TIME
       Types.BIGINT,    // ESTIMATE_SIZE
-      Types.VARCHAR,   // ANSWER_FILTER
       Types.VARCHAR,   // CUSTOM_NAME
       boolType,        // IS_DELETED
       boolType,        // IS_VALID
@@ -932,7 +926,6 @@ public class StepFactory {
         step.getSecondaryInputStep().map(Step::getStepId).orElse(null),
         step.getLastRunTime(),
         step.getEstimatedSize(),
-        spec.getLegacyFilterName().orElse(null),
         step.getCustomName(),
         _userDbPlatform.convertBoolean(step.isDeleted()),
         _userDbPlatform.convertBoolean(step.isValid()),

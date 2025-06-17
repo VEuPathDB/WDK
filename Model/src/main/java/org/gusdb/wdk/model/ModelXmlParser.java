@@ -41,10 +41,6 @@ import org.gusdb.fgputil.xml.XmlValidator;
 import org.gusdb.wdk.model.UIConfig.ExtraLogoutCookies;
 import org.gusdb.wdk.model.analysis.StepAnalysisPlugins;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml;
-import org.gusdb.wdk.model.answer.AnswerFilter;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
-import org.gusdb.wdk.model.answer.AnswerFilterInstanceReference;
-import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.columntool.ColumnTool;
 import org.gusdb.wdk.model.columntool.ColumnToolBundle;
@@ -640,39 +636,6 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod("wdkModel/recordClassSet/recordClass/reporter/description", "setText", 0);
     configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter/property", WdkModelText.class, "addProperty");
     digester.addCallMethod("wdkModel/recordClassSet/recordClass/reporter/property", "setText", 0);
-
-    // filter layouts
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/answerFilterLayout",
-        AnswerFilterLayout.class, "addFilterLayout");
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/answerFilterLayout/description",
-        WdkModelText.class, "addDescription");
-    digester.addCallMethod("wdkModel/recordClassSet/recordClass/answerFilterLayout/description", "setText", 0);
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/answerFilterLayout/instanceRef",
-        AnswerFilterInstanceReference.class, "addReference");
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/answerFilterLayout/layout",
-        WdkModelText.class, "addLayout");
-    digester.addCallMethod("wdkModel/recordClassSet/recordClass/answerFilterLayout/layout", "setText", 0);
-
-    // filter instances
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/answerFilter", AnswerFilter.class,
-        "addFilter");
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/answerFilter/instance",
-        AnswerFilterInstance.class, "addInstance");
-
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/answerFilter/instance/displayName",
-        WdkModelText.class, "addDisplayName");
-    digester.addCallMethod("wdkModel/recordClassSet/recordClass/answerFilter/instance/displayName",
-        "setText", 0);
-
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/answerFilter/instance/description",
-        WdkModelText.class, "addDescription");
-    digester.addCallMethod("wdkModel/recordClassSet/recordClass/answerFilter/instance/description",
-        "setText", 0);
-
-    configureNode(digester, "wdkModel/recordClassSet/recordClass/answerFilter/instance/paramValue",
-        WdkModelText.class, "addParamValue");
-    digester.addCallMethod("wdkModel/recordClassSet/recordClass/answerFilter/instance/paramValue", "setText",
-        0);
 
     // Default attribute tool bundle
     configureNode(digester, "wdkModel/recordClassSet/recordClass/defaultColumnToolBundle",

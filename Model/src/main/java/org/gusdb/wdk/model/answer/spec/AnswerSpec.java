@@ -5,7 +5,6 @@ import static org.gusdb.fgputil.functional.Functions.filter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
@@ -15,7 +14,6 @@ import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
@@ -78,15 +76,6 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
   */
   private final QueryInstanceSpec _queryInstanceSpec;
 
-  // LEGACY!!  Any filtering code mods should be applied to the parameterized
-  //     filter framework.  TODO: remove this code and migrate the DB
-  // Name of (non-parameterized) filter instance applied to this step (if any), DB value of null = no filter
-  // if any filters exist on a recordclass, model must have a "default" filter; usually this is
-  // a filter that simply returns all the results. The default filter is automatically applied to a step.
-  // This affects the UI- if no filter OR the default filter is applied, the filter icon does not appear
-  private final Optional<String> _legacyFilterName;
-  private final Optional<AnswerFilterInstance> _legacyFilter;
-
   // filters applied to this step
   private final FilterOptionList _filters;
 
@@ -99,19 +88,17 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
   private final ColumnFilterConfigSet _columnFilterConfig;
 
   AnswerSpec(WdkModel wdkModel, String questionName, QueryInstanceSpecBuilder queryInstanceSpec,
-      Optional<String> legacyFilterName, FilterOptionListBuilder filters, FilterOptionListBuilder viewFilters,
+             FilterOptionListBuilder filters, FilterOptionListBuilder viewFilters,
       User requestingUser, ValidationLevel validationLevel, StepContainer stepContainer,
       FillStrategy fillStrategy, ColumnFilterConfigSet columnFilters) throws WdkModelException {
     _wdkModel = wdkModel;
     _questionName = questionName;
-    _legacyFilterName = legacyFilterName;
     _columnFilterConfig = columnFilters;
     ValidationBundleBuilder validation = ValidationBundle.builder(validationLevel);
     if (wdkModel.getQuestionByFullName(questionName).isEmpty()) {
       // invalid question name; cannot validate other data
       validation.addError("Question '" + questionName + "' is not supported.");
       _question = null;
-      _legacyFilter = Optional.empty();
       _queryInstanceSpec = queryInstanceSpec.buildInvalid(requestingUser);
       _filters = filters.buildInvalid();
       _viewFilters = viewFilters.buildInvalid();
@@ -126,22 +113,11 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
         filters = applyAlwaysOnFilters(filters, _question.getFilters(), simpleSpec);
         // note: view filters unaffected; filters cannot be view-only and always-on
       }
-      _legacyFilter = getAssignedLegacyFilter(validation);
       _filters = filters.buildValidated(_question, Filter.FilterType.STANDARD, validationLevel);
       _viewFilters = viewFilters.buildValidated(_question, Filter.FilterType.VIEW_ONLY, validationLevel);
       validation.aggregateStatus(_queryInstanceSpec, _filters, _viewFilters);
     }
     _validationBundle = validation.build();
-  }
-
-  private Optional<AnswerFilterInstance> getAssignedLegacyFilter(ValidationBundleBuilder validation) {
-    if (_legacyFilterName.isEmpty()) return Optional.empty();
-    Function<String,Optional<AnswerFilterInstance>> blah = name -> _question.getRecordClass().getFilterInstance(name);
-    Optional<AnswerFilterInstance> filterInstance = _legacyFilterName.flatMap(blah);
-    if (filterInstance.isEmpty()) {
-      validation.addError("Legacy answer filter with name '" + _legacyFilterName + "' does not exist.");
-    }
-    return filterInstance;
   }
 
   public WdkModel getWdkModel() {
@@ -162,14 +138,6 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
 
   public int getAnswerParamCount() {
     return _question != null ? _question.getQuery().getAnswerParamCount() : 0;
-  }
-
-  public Optional<String> getLegacyFilterName() {
-    return _legacyFilterName;
-  }
-
-  public Optional<AnswerFilterInstance> getLegacyFilter() {
-    return _legacyFilter;
   }
 
   public FilterOptionList getFilterOptions() {
