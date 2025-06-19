@@ -71,10 +71,6 @@ public class StepData implements TableRow {
     _rightChildId = rightChildId;
   }
 
-  public String getLegacyAnswerFilter() {
-    return _legacyAnswerFilter;
-  }
-
   public void setLegacyAnswerFilter(String legacyAnswerFilter) {
     _legacyAnswerFilter = legacyAnswerFilter;
   }

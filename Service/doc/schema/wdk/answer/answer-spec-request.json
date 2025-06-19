@@ -6,9 +6,6 @@
     "parameters": {
       "$ref": "../../includes/string-string-map.json"
     },
-    "legacyFilterName": {
-      "type": "string"
-    },
     "wdkWeight": {
       "type": "integer"
     },

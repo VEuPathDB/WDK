@@ -34,9 +34,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.analysis.StepAnalysis;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml;
 import org.gusdb.wdk.model.analysis.StepAnalysisXml.StepAnalysisContainer;
-import org.gusdb.wdk.model.answer.AnswerFilter;
-import org.gusdb.wdk.model.answer.AnswerFilterInstance;
-import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.columntool.DefaultColumnToolBundleRef;
 import org.gusdb.wdk.model.filter.Filter;
@@ -288,21 +285,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   private List<ReporterRef> reporterList = new ArrayList<>();
   private Map<String, ReporterRef> reporterMap = new LinkedHashMap<>();
-
-  private List<AnswerFilter> filterList = new ArrayList<>();
-  private Map<String, AnswerFilterInstance> filterMap = new LinkedHashMap<>();
-
-  private List<AnswerFilterLayout> filterLayoutList = new ArrayList<>();
-  private Map<String, AnswerFilterLayout> filterLayoutMap = new LinkedHashMap<>();
-
-  private AnswerFilterInstance defaultFilter;
-
-  /**
-   * If the filter is set, in all the boolean operations of the record page, the
-   * operands will first be filtered by this filter, and then the results of
-   * these will be used in boolean operation.
-   */
-  private AnswerFilterInstance booleanExpansionFilter;
 
   private List<AttributeList> attributeLists = new ArrayList<>();
 
@@ -847,7 +829,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     if (attributeOrdering != null)
       attributeFieldMap = sortAllAttributes();
 
-    // resolve the filter and layout.
+    // resolve filters
     resolveFilterReferences(model);
 
     // resolve default summary attributes
@@ -995,39 +977,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   private void resolveFilterReferences(WdkModel wdkModel) throws WdkModelException {
-    // resolve references for filter instances
-    for (AnswerFilter filter : filterList) {
-      filter.resolveReferences(wdkModel);
-
-      Map<String, AnswerFilterInstance> instances = filter.getInstances();
-      for (String filterName : instances.keySet()) {
-        if (filterMap.containsKey(filterName))
-          throw new WdkModelException("Filter instance [" + filterName + "] of type " + getFullName() +
-              " is included more than once");
-        AnswerFilterInstance instance = instances.get(filterName);
-        filterMap.put(filterName, instance);
-
-        if (instance.isDefault()) {
-          if (defaultFilter != null)
-            throw new WdkModelException("The default filter of type " + getFullName() +
-                " is defined more than once: [" + defaultFilter.getName() + "], [" + instance.getName() + "]");
-          defaultFilter = instance;
-        }
-        if (instance.isBooleanExpansion()) {
-          if (booleanExpansionFilter != null)
-            throw new WdkModelException("The boolean expansion " + "filter of type " + getFullName() +
-                " is defined more " + "than once: [" + booleanExpansionFilter.getName() + "] and [" +
-                instance.getName() + "]");
-          booleanExpansionFilter = instance;
-        }
-      }
-    }
-    filterList = null;
-
-    // resolve references for the filter layout instances
-    for (AnswerFilterLayout layout : filterLayoutMap.values()) {
-      layout.resolveReferences(wdkModel);
-    }
 
     // automatically add basket view filter to each recordclass
     StepFilter basketFilter = new InBasketFilter(_wdkModel);
@@ -1044,7 +993,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     _filterReferences.clear();
 
   }
-
   public static StepFilter resolveStepFilterReferenceByName(String name, WdkModel wdkModel, String location) throws WdkModelException {
     FilterDefinition definition = (FilterDefinition) wdkModel.resolveReference(name);
     if (definition instanceof StepFilterDefinition) {
@@ -1259,29 +1207,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     attributesQueryRefList.clear();
     attributesQueryRefList.addAll(attributesQueryRefs.values());
 
-    // exclude filter instances
-    List<AnswerFilter> newFilters = new ArrayList<>();
-    for (AnswerFilter filter : filterList) {
-      if (filter.include(projectId)) {
-        filter.excludeResources(projectId);
-        newFilters.add(filter);
-      }
-    }
-    filterList = newFilters;
-
-    // exclude filter layout
-    for (AnswerFilterLayout layout : filterLayoutList) {
-      if (layout.include(projectId)) {
-        layout.excludeResources(projectId);
-        String layoutName = layout.getName();
-        if (filterLayoutMap.containsKey(layoutName))
-          throw new WdkModelException("Filter layout [" + layoutName + "] of type " + getFullName() +
-              " is included more than once");
-        filterLayoutMap.put(layoutName, layout);
-      }
-    }
-    filterLayoutList = null;
-
     // exclude paramValuesSets
     for (ParamValuesSet pvs : unexcludedParamValuesSets) {
       if (pvs.include(projectId)) {
@@ -1398,65 +1323,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     _filterReferences.clear();
     _filterReferences.addAll(references);
 
-  }
-
-  public void addFilter(AnswerFilter filter) {
-    filter.setRecordClass(this);
-    this.filterList.add(filter);
-  }
-
-  /**
-   * @return a map of filter instances available to this record class.
-   */
-  public Map<String, AnswerFilterInstance> getFilterMap() {
-    return new LinkedHashMap<>(filterMap);
-  }
-
-  public AnswerFilterInstance[] getFilterInstances() {
-    AnswerFilterInstance[] instances = new AnswerFilterInstance[filterMap.size()];
-    filterMap.values().toArray(instances);
-    return instances;
-  }
-
-  public Optional<AnswerFilterInstance> getFilterInstance(String filterName) {
-    return filterName == null ? Optional.empty() :
-      Optional.ofNullable(filterMap.get(filterName));
-  }
-
-  public void addFilterLayout(AnswerFilterLayout layout) {
-    layout.setRecordClass(this);
-    this.filterLayoutList.add(layout);
-  }
-
-  public Map<String, AnswerFilterLayout> getFilterLayoutMap() {
-    return new LinkedHashMap<>(filterLayoutMap);
-  }
-
-  public AnswerFilterLayout[] getFilterLayouts() {
-    AnswerFilterLayout[] layouts = new AnswerFilterLayout[filterLayoutMap.size()];
-    filterLayoutMap.values().toArray(layouts);
-    return layouts;
-  }
-
-  public AnswerFilterLayout getFilterLayout(String layoutName) throws WdkModelException {
-    AnswerFilterLayout layout = filterLayoutMap.get(layoutName);
-    if (layout == null)
-      throw new WdkModelException("The name [" + layoutName + "] does " +
-          "not match any filter layout of type " + getFullName());
-    return layout;
-  }
-
-  public Optional<AnswerFilterInstance> getDefaultFilter() {
-    return Optional.ofNullable(defaultFilter);
-  }
-
-  /**
-   * If the filter is not null, in all the boolean operations of the record
-   * page, the operands will first be filtered by this filter, and then the
-   * results of these will be used in boolean operation.
-   */
-  public AnswerFilterInstance getBooleanExpansionFilter() {
-    return booleanExpansionFilter;
   }
 
   /**
