@@ -232,7 +232,6 @@ public class RetroactiveGuestRemover extends BaseCLI {
         "steps t WHERE " + userClause + ")");
     deleteByBatch(dataSource, userSchema + "steps t", userClause);
     //	" AND step_id NOT IN (SELECT root_step_id FROM " + userSchema + "strategies)");
-    deleteByBatch(dataSource, userSchema + "user_roles t", userClause);
     deleteByBatch(dataSource, userSchema + "users t", userClause);
     // " AND user_id NOT IN (SELECT user_id FROM " + userSchema + "steps)");
   }
