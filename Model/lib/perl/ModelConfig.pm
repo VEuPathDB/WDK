@@ -11,25 +11,35 @@ sub new {
     bless $self;
 
     my $cfg;
-    
+
     if ( ref($model) eq 'HASH' ) {
         $cfg = $model;
-    } else {
+    }
+    else {
         my $modelconfig = "$ENV{GUS_HOME}/config/${model}/model-config.xml";
         (-e $modelconfig) or die "File not found: $modelconfig\n";
         $cfg = XMLin($modelconfig);
     }
-    
+
     for (keys %$cfg) {
         $self->{$_} = $cfg->{$_};
-        if (ref($cfg->{$_}) eq 'HASH' && defined $cfg->{$_}->{connectionUrl}) {
-            # add entry for Perl DBI DSN. e.g. dbi:Oracle:toxo440s
-            $self->{$_}->{dbiDsn} = jdbc2oracleDbi($self->{$_}->{connectionUrl});
-            # add entry for connection string. e.g. toxo440s
-            ($self->{$_}->{connectString} = $self->{$_}->{dbiDsn}) =~ s/dbi:Oracle://;    
+        if (ref($cfg->{$_}) eq 'HASH') {
+            if (defined $cfg->{$_}->{connectionUrl} && $cfg->{$_}->{connectionUrl} ne '') {
+                # add entry for Perl DBI DSN. e.g. dbi:Oracle:toxo440s
+                $self->{$_}->{dbiDsn} = jdbc2postgresDbi($cfg->{$_}->{connectionUrl});
+                # add entry for connection string. e.g. toxo440s
+                ($self->{$_}->{connectString} = $self->{$_}->{dbiDsn}) =~ s/dbi:Pg://;
+            }
+            elsif (defined $cfg->{$_}->{ldapCommonName} && $cfg->{$_}->{ldapCommonName} ne '') {
+                my $cn = $cfg->{$_}->{ldapCommonName};
+                # add entry for Perl DBI DSN. e.g. dbi:Oracle:toxo440s
+                $self->{$_}->{dbiDsn} = 'dbi:Pg:dbname='.$cn.';host=ares9.penn.apidb.org';
+                # add entry for connection string. e.g. toxo440s
+                $self->{$_}->{connectString} = $cn;
+            }
         }
     }
-    
+
     return $self;
 }
 
