@@ -471,12 +471,13 @@ public class DatasetFactory {
 
   public String getDatasetValueSqlForAppDb(long datasetId) {
     String dbLink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
-    return getDatasetValueSql(datasetId, dbLink);
+    String remoteUserDataSchema = _wdkModel.getModelConfig().getAppDB().getRemoteUserDataSchema();
+    return getDatasetValueSql(datasetId, dbLink, remoteUserDataSchema);
   }
 
-  private String getDatasetValueSql(long datasetId, String dbLink) {
+  private String getDatasetValueSql(long datasetId, String dbLink, string remoteUserDataSchema) {
     return "SELECT " + String.join(", ", getValueColumnNames(MAX_VALUE_COLUMNS)) + ", " + COLUMN_DATASET_VALUE_ORDER +
-        " FROM " + _userSchema + TABLE_DATASET_VALUES + dbLink +
+        " FROM " + remoteUserDataSchema + TABLE_DATASET_VALUES + dbLink +
         " WHERE " + COLUMN_DATASET_ID + " = " + datasetId;
   }
 
@@ -612,7 +613,8 @@ public class DatasetFactory {
    */
   private void checkRemoteTable() throws SQLException {
     String dblink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
-    String table = _userSchema + TABLE_DATASETS + dblink;
+    String remoteUserDataSchema = _wdkModel.getModelConfig().getAppDB().getRemoteUserDataSchema();
+    String table = remoteUserDataSchema + TABLE_DATASETS + dblink;
 
     // execute this dummy sql to make sure the remote table is sync-ed.
     SqlUtils.executeScalar(_wdkModel.getAppDb().getDataSource(),
