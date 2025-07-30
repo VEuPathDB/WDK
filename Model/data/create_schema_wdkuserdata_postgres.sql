@@ -29,8 +29,8 @@ CREATE TABLE userdata.preferences
 (
   user_id           BIGINT NOT NULL,
   project_id        VARCHAR(50) NOT NULL,
-  preference_name   VARCHAR(200) NOT NULL,
-  preference_value  VARCHAR(4000),
+  preference_name   VARCHAR(4000) NOT NULL,
+  preference_value  TEXT,
   CONSTRAINT "preferences_pk" PRIMARY KEY (user_id, project_id, preference_name),
   CONSTRAINT "preferences_fk01" FOREIGN KEY (user_id)
       REFERENCES userdata.users (user_id)
