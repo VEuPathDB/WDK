@@ -88,9 +88,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   private static final Logger LOG = Logger.getLogger(WdkModel.class);
 
-  public static final String WDK_VERSION = "2.9.0";
-  public static final String USER_SCHEMA_VERSION = "5";
-
   public static final String DB_INSTANCE_APP = "APP";
   public static final String DB_INSTANCE_USER = "USER";
 
@@ -224,7 +221,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
       ModelXmlParser parser = new ModelXmlParser(gusHome);
       WdkModel wdkModel = parser.parseModel(projectId);
       wdkModel.setStartupTime(now.getTime());
-      wdkModel.checkSchema();
       LOG.info("WDK Model construction complete.");
       return wdkModel;
     }
@@ -256,11 +252,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
     int callIndex = (stackTrace.length <= stacktraceOffset ?
         stackTrace.length - 1 : stacktraceOffset);
     return stackTrace[callIndex].getClassName();
-  }
-
-  private void checkSchema() throws WdkModelException {
-    // verify the user schema
-    _modelConfig.getUserDB().checkSchema(this);
   }
 
   public static ModelConfig getModelConfig(String projectId, String gusHome) throws WdkModelException {
