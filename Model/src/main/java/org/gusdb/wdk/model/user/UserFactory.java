@@ -221,4 +221,13 @@ public class UserFactory {
     Map<Long, UserInfo> userMap = getUsersById(new ArrayList<>(userIds));
     return userIds.stream().collect(Collectors.toMap(id -> id, id -> userMap.get(id) != null));
   }
+
+  /**
+   * Deletes the user to whom the token belongs
+   *
+   * @param authorizationToken token for user to be deleted
+   */
+  public void deleteUser(ValidatedToken authorizationToken) {
+    _client.deleteUser(_config, authorizationToken);
+  }
 }
