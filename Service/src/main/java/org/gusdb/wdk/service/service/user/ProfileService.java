@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
@@ -68,7 +69,7 @@ public class ProfileService extends AbstractUserService {
    * If the properties object is present but not populated, the profile properties will be removed.
    * @param body
    * @return - 204 - Success without content
-   * @throws WdkModelException
+   * @throws WdkModelException if something goes wrong
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
@@ -100,5 +101,20 @@ public class ProfileService extends AbstractUserService {
       // convert to use validation bundle JSON formatting
       throw new ConflictException(ValidationFormatter.getValidationBundleJson(e.getMessage()).toString());
     }
+  }
+
+  /**
+   * Handles request to delete the user from our system.  In actuality, we only anonymize
+   * the user, removing personal information per GDPR, but leaving user data intact
+   *
+   * @return 204 - Success without content
+   * @throws WdkModelException if something goes wrong
+   */
+  @DELETE
+  public Response deleteUser() throws WdkModelException {
+    // this user must be both the target user (user ID path param) and requesting user (via auth)
+    getPrivateRegisteredUser();
+    getWdkModel().getUserFactory().deleteUser(getAuthorizationToken());
+    return Response.accepted().build();
   }
 }
