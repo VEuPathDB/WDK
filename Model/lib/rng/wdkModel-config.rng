@@ -101,7 +101,7 @@
                 <element name="appDb">
                     <ref name="DBBaseContent" />
                     <attribute name="userDbLink" />
-                    <attribute name="acctDbLink" />
+                    <attribute name="remoteUserDataSchema" />
                     <optional>
                         <attribute name="maxPkColumnWidth">
                             <data type="unsignedShort" />
