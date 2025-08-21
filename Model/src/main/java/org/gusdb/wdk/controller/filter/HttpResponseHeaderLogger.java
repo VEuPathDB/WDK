@@ -139,6 +139,7 @@ public class HttpResponseHeaderLogger implements Filter {
       super.setStatus(sc);
     }
 
+    @Deprecated
     @Override
     public void setStatus(int sc, String sm) {
       _responseStatus = sc;

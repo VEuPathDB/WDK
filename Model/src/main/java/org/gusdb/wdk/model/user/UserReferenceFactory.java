@@ -37,8 +37,8 @@ class UserReferenceFactory {
   // SQL and types to select user ref by ID
   private static final String SELECT_USER_REF_BY_ID_SQL =
       "select " + COL_USER_ID + ", " + COL_IS_GUEST + ", " + COL_FIRST_ACCESS +
-      "  from " + USER_SCHEMA_MACRO + TABLE_USERS +
-      "  where " + COL_USER_ID + " = ?";
+          "  from " + USER_SCHEMA_MACRO + TABLE_USERS +
+          "  where " + COL_USER_ID + " = ?";
 
   private static final Integer[] SELECT_USER_REF_BY_ID_PARAM_TYPES = { Types.BIGINT };
 
@@ -67,7 +67,7 @@ class UserReferenceFactory {
    * changed by this code.
    *
    * @param user user to add
-   * @throws WdkModelException 
+   * @throws WdkModelException
    */
   public int addUserReference(UserInfo user) throws WdkModelException {
     try {
@@ -104,8 +104,8 @@ class UserReferenceFactory {
           SELECT_USER_REF_BY_ID_PARAM_TYPES,
           rs ->
               !rs.next()
-              ? Optional.empty()
-              : Optional.of(new UserReference(
+                  ? Optional.empty()
+                  : Optional.of(new UserReference(
                   rs.getLong(COL_USER_ID),
                   rs.getBoolean(COL_IS_GUEST),
                   new Date(rs.getTimestamp(COL_FIRST_ACCESS).getTime()))));

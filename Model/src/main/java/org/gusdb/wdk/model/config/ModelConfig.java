@@ -149,6 +149,7 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
    */
   private final AuthenticationMethod _authenticationMethod;
   private final String _oauthUrl;          // needed if method is OAUTH2
+  private final String _externalOauthUrl;  // may be needed if method is OAUTH2 and internal URL is not available externally
   private final String _oauthClientId;     // needed if method is OAUTH2
   private final String _oauthClientSecret; // needed if method is OAUTH2
   private final String _changePasswordUrl; // probably needed if method is OAUTH2
@@ -170,7 +171,7 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
       List<String> adminEmails, String emailSubject, String emailContent, ModelConfigUserDB userDB, ModelConfigAppDB appDB,
       ModelConfigUserDatasetStore userDatasetStoreConfig, QueryMonitor queryMonitor,
       boolean monitorBlockedThreads, int blockedThreshold, AuthenticationMethod authenticationMethod,
-      String oauthUrl, String oauthClientId, String oauthClientSecret, String changePasswordUrl,
+      String oauthUrl, String externalOauthUrl, String oauthClientId, String oauthClientSecret, String changePasswordUrl,
       String keyStoreFile, String keyStorePassPhrase) {
 
     // basic model information
@@ -221,6 +222,7 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
     // user authentication setup
     _authenticationMethod = authenticationMethod;
     _oauthUrl = oauthUrl;
+    _externalOauthUrl = externalOauthUrl;
     _oauthClientId = oauthClientId;
     _oauthClientSecret = oauthClientSecret;
     _changePasswordUrl = changePasswordUrl;
@@ -380,6 +382,14 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
   @Override
   public String getOauthUrl() {
     return _oauthUrl;
+  }
+
+  /**
+   * @return base URL of OAuth2 server to use for authentication
+   * (called only if authentication method is OAUTH2)
+   */
+  public String getExternalOauthUrl() {
+    return _externalOauthUrl != null && !_externalOauthUrl.isBlank() ? _externalOauthUrl : _oauthUrl;
   }
 
   /**
