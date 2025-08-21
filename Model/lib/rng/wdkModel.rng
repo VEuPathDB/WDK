@@ -1607,6 +1607,10 @@
             <ref name="IncludeExclude" />
             <text />
           </element>
+          <element name="tooltip">
+            <ref name="IncludeExclude" />
+            <text />
+          </element>
         </choice>
       </zeroOrMore>
     </element>
@@ -1628,6 +1632,10 @@
             <text />
           </element>
           <element name="url">
+            <ref name="IncludeExclude" />
+            <text />
+          </element>
+          <element name="tooltip">
             <ref name="IncludeExclude" />
             <text />
           </element>
