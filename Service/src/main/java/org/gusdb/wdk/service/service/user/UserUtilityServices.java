@@ -3,16 +3,20 @@ package org.gusdb.wdk.service.service.user;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.functional.Functions;
@@ -160,5 +164,33 @@ public class UserUtilityServices extends AbstractWdkService {
       throw new RequestMisformatException(e.getMessage());
     }
   }
+
+  /**
+   * Deletes a set of users by ID.
+   * @param userIdsParam
+   * @return
+   */
+  @GET
+  @Path("delete-users")
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response deleteUsers(@QueryParam("userIds") String userIdsParam) {
+    if (userIdsParam == null || userIdsParam.trim().isEmpty()) {
+      return Response.status(Status.BAD_REQUEST).entity("No IDs specified.").build();
+    }
+    List<Long> ids = new ArrayList<>();
+    for (String idStr : userIdsParam.split(",")) {
+      try {
+        ids.add(Long.valueOf(idStr));
+      }
+      catch (NumberFormatException e) {
+        return Response.status(Status.BAD_REQUEST).entity("At least one ID is not an integer.").build();
+      }
+    }
+
+    // checked as well as we could; delete the users
+    getWdkModel().getUserFactory().deleteUsers(
+        getRequestingUser().getAuthenticationToken(), ids);
+
+    return Response.ok(ids.size() + " users deleted.").build();  }
 
 }
