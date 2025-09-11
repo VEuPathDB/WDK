@@ -34,10 +34,13 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
 
+import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.controller.ContextLookup;
+import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.service.service.SystemService;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -61,7 +64,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
   // log level for request log
   private static final Level LOG_LEVEL = Level.INFO;
 
-  private enum ResponseLoggingAction {
+  private enum RequestBodyAction {
     NONE,                               // no body
     THROW_413_CONTENT_TOO_LARGE,        // body too large to process
     LOG_BODY_ON_ERROR_AND_DELETE;       // body small enough to process
@@ -97,13 +100,13 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
     Optional<Path> requestBodyFile = saveRequestBody(requestContext);
 
     // determine action and set on request
-    ResponseLoggingAction action = determineAction(requestBodyFile);
+    RequestBodyAction action = determineAction(requestBodyFile);
     requestContext.setProperty(REQUEST_LOGGING_ACTION_PROP_KEY, action);
 
-    if (action == ResponseLoggingAction.THROW_413_CONTENT_TOO_LARGE) {
+    if (action == RequestBodyAction.THROW_413_CONTENT_TOO_LARGE) {
 
       // tell response filters not to do anything with the file since we are deleting it
-      requestContext.setProperty(REQUEST_LOGGING_ACTION_PROP_KEY, ResponseLoggingAction.NONE);
+      requestContext.setProperty(REQUEST_LOGGING_ACTION_PROP_KEY, RequestBodyAction.NONE);
 
       // delete the temporary file
       Files.delete(requestBodyFile.get());
@@ -131,9 +134,10 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
     }
   }
 
-  private ResponseLoggingAction determineAction(Optional<Path> requestBodyFile) throws IOException {
+  private RequestBodyAction determineAction(Optional<Path> requestBodyFile) throws IOException {
+
     if (requestBodyFile.isEmpty()) {
-      return ResponseLoggingAction.NONE;
+      return RequestBodyAction.NONE;
     }
 
     Path path = requestBodyFile.get();
@@ -141,10 +145,10 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
 
     // check against max size limit
     if (fileSize > MAX_REQUEST_BODY_BYTES_IN_FILE) {
-      return ResponseLoggingAction.THROW_413_CONTENT_TOO_LARGE;
+      return RequestBodyAction.THROW_413_CONTENT_TOO_LARGE;
     }
 
-    return ResponseLoggingAction.LOG_BODY_ON_ERROR_AND_DELETE;
+    return RequestBodyAction.LOG_BODY_ON_ERROR_AND_DELETE;
   }
 
   private Optional<Path> saveRequestBody(ContainerRequestContext requestContext) {
@@ -196,13 +200,15 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
     // check to see if this response has a body; if so, defer completion logging to the WriterInterceptor method
     boolean hasResponseBody = responseContext.getEntity() != null;
     int httpStatus = responseContext.getStatus();
+    User user = (User)context.getProperty(Utilities.CONTEXT_KEY_USER_OBJECT);
+    //LOG.info("responseFilter, hasResponseBody=" + hasResponseBody + ", httpStatus=" + httpStatus);
     if (hasResponseBody) {
       // pass along the response status to the interceptor to log after response body is written
       context.setProperty(HTTP_RESPONSE_STATUS_PROP_KEY, httpStatus);
     }
     else {
       // request is complete; log status
-      logRequestCompletion(httpStatus, "empty", toGetAndRemove(context::getProperty, context::removeProperty));
+      logRequestCompletion(user, httpStatus, "no content", toGetAndRemove(context::getProperty, context::removeProperty));
     }
   }
 
@@ -211,17 +217,23 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
     // get HTTP status passed along by the filter() method, then remove
     int httpStatus = (Integer)context.getProperty(HTTP_RESPONSE_STATUS_PROP_KEY);
     context.removeProperty(HTTP_RESPONSE_STATUS_PROP_KEY);
+    User user = (User)context.getProperty(Utilities.CONTEXT_KEY_USER_OBJECT);
     Function<String,Object> getAndRemoveProp = toGetAndRemove(context::getProperty, context::removeProperty);
     try {
+      // replace the context's OutputStream with a wrapper that records the size of the request
+      CountingOutputStream countingOut = new CountingOutputStream(context.getOutputStream());
+      context.setOutputStream(countingOut);
+
       // write the response
       context.proceed();
+
       // response written successfully; log status
-      logRequestCompletion(httpStatus, "written successfully", getAndRemoveProp);
+      logRequestCompletion(user, httpStatus, countingOut.getByteCount() + " bytes written successfully", getAndRemoveProp);
     }
     catch (Exception e) {
       // exception while writing response body; log error, then status
       LOG.error("Failure to write response body", e);
-      logRequestCompletion(httpStatus, "write failed", getAndRemoveProp);
+      logRequestCompletion(user, httpStatus, "response write failed", getAndRemoveProp);
       throw e;
     }
   }
@@ -234,26 +246,28 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
     };
   }
 
-  private static void logRequestCompletion(int httpStatus, String bodyWriteStatus, Function<String,Object> getAndRemoveProp) {
+  private static void logRequestCompletion(User user, int httpStatus, String bodyWriteStatus, Function<String,Object> getAndRemoveProp) {
 
     // gather parameters for what action should be taken, then remove props from context object
     Boolean omitRequestLogging = (Boolean)getAndRemoveProp.apply(OMIT_REQUEST_LOGGING_PROP_KEY);
-    ResponseLoggingAction action = (ResponseLoggingAction)getAndRemoveProp.apply(REQUEST_LOGGING_ACTION_PROP_KEY);
+    RequestBodyAction action = (RequestBodyAction)getAndRemoveProp.apply(REQUEST_LOGGING_ACTION_PROP_KEY);
     Path filePath = (Path)getAndRemoveProp.apply(REQUEST_BODY_FILE_PATH_PROP_KEY); // will be null if action is NONE
     boolean isErrorStatus = httpStatus >= 500 && httpStatus < 600;
+
+    //LOG.info("requestCompletion, omitRequestLogging=" + omitRequestLogging + ", action=" + action + ", isErrorStatus=" + isErrorStatus);
 
     // if property not found, then this request went unmatched; can ignore.
     if (omitRequestLogging == null) return;
 
-    if (action != ResponseLoggingAction.NONE) {
+    // decide whether and what to log
+    if (!omitRequestLogging && isLogEnabled()) {
+      String details = isErrorStatus && action != RequestBodyAction.NONE ? ", Request Body:\n" + readRequestBody(filePath) : "";
+      String userId = user == null ? "none" : String.valueOf(user.getUserId());
+      LOG.log(LOG_LEVEL, "Request completed [" + httpStatus + "], user=" + userId + ", " + bodyWriteStatus + details);
+    }
 
-      // decide whether and what to log
-      if (!omitRequestLogging && isLogEnabled()) {
-        String bodyText = !isErrorStatus ? "" : ", Request Body:\n" + readRequestBody(filePath);
-        LOG.log(LOG_LEVEL, "Request completed [" + httpStatus + "]" + bodyText);
-      }
-
-      // delete the temporary request body file
+    // delete the temporary request body file
+    if (filePath != null) {
       try {
         Files.delete(filePath);
       }
@@ -261,6 +275,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
         LOG.warn("Unable to delete temporary body file: " + filePath);
       }
     }
+
   }
 
   /**
