@@ -221,4 +221,26 @@ public class UserFactory {
     Map<Long, UserInfo> userMap = getUsersById(new ArrayList<>(userIds));
     return userIds.stream().collect(Collectors.toMap(id -> id, id -> userMap.get(id) != null));
   }
+
+  /**
+   * Deletes the user to whom the token belongs
+   *
+   * @param authorizationToken token for user to be deleted
+   */
+  public void deleteUser(ValidatedToken authorizationToken) {
+    _client.deleteUser(_config, authorizationToken, authorizationToken.getUserId());
+  }
+
+  /**
+   * Deletes the users whose IDs are in the passed list, using the authority
+   * of the authorizationToken's user (who must be an admin on the OAuth server)
+   *
+   * @param authorizationToken token for an OAuth admin user (not necessarily a WDK admin)
+   * @param userIdsToDelete IDs of users to delete
+   */
+  public void deleteUsers(ValidatedToken authorizationToken, List<Long> userIdsToDelete) {
+    for (Long userId : userIdsToDelete) {
+      _client.deleteUser(_config, authorizationToken, String.valueOf(userId));
+    }
+  }
 }
