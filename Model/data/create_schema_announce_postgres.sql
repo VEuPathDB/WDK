@@ -3,6 +3,8 @@
  * tables and sequences common to Ebrc websites.
  *============================================================================*/
 
+set role COMM_WDK_W;  -- TODO: remove GRANTs
+
 DROP SCHEMA IF EXISTS announce CASCADE;
 CREATE SCHEMA IF NOT EXISTS announce;
 GRANT USAGE ON SCHEMA announce TO COMM_WDK_W;
