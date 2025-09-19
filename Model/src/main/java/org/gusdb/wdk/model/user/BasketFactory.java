@@ -524,7 +524,7 @@ public class BasketFactory {
       sql.append("b." + Utilities.COLUMN_PK_PREFIX + (i + 1));
       sql.append(" AS " + pkColumns[i]);
     }
-    sql.append(" FROM " + remoteUserDataSchema + TABLE_BASKET + dbLink + " b ");
+    sql.append(" FROM " + remoteUserDataSchema + TABLE_BASKET + " b ");
     sql.append(" WHERE b." + COLUMN_USER_ID + " = " + getUserParamMacro() + " ");
     sql.append("   AND b." + COLUMN_PROJECT_ID + " = '" + wdkModel.getProjectId() + "'");
     sql.append("   AND b." + COLUMN_RECORD_CLASS + " = '" + recordClass.getFullName() + "'");
