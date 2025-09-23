@@ -514,7 +514,7 @@ public class BasketFactory {
   public static String getBasketSelectSql(WdkModel wdkModel, RecordClass recordClass) {
 
     String dbLink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
-    String remoteUserDataSchema = _wdkModel.getModelConfig().getAppDB().getRemoteUserDataSchema();
+    String remoteUserDataSchema = wdkModel.getModelConfig().getAppDB().getRemoteUserDataSchema();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
 
     StringBuilder sql = new StringBuilder("SELECT DISTINCT ");

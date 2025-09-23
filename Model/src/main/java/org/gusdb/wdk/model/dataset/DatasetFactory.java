@@ -471,11 +471,11 @@ public class DatasetFactory {
 
   public String getDatasetValueSqlForAppDb(long datasetId) {
     String dbLink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
-    String remoteUserDataSchema = _wdkModel.getModelConfig().getAppDB().getRemoteUserDataSchema();
-    return getDatasetValueSql(datasetId, dbLink, remoteUserDataSchema);
+    return getDatasetValueSql(datasetId, dbLink);
   }
 
-  private String getDatasetValueSql(long datasetId, String dbLink, string remoteUserDataSchema) {
+  private String getDatasetValueSql(long datasetId, String dbLink) {
+    String remoteUserDataSchema = _wdkModel.getModelConfig().getAppDB().getRemoteUserDataSchema();
     return "SELECT " + String.join(", ", getValueColumnNames(MAX_VALUE_COLUMNS)) + ", " + COLUMN_DATASET_VALUE_ORDER +
         " FROM " + remoteUserDataSchema + TABLE_DATASET_VALUES + dbLink +
         " WHERE " + COLUMN_DATASET_ID + " = " + datasetId;
