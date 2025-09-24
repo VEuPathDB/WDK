@@ -154,7 +154,7 @@ public class SystemService extends AbstractWdkService {
         " and ( " + lastRunTimeCondition + " or " + creationDateCondition + " )";
       String sql =
           "select question_name, count(question_name) as cnt" +
-          " from userlogins5.steps" +
+          " from wdkuser.steps" +
           " where project_id = ?" +
           fullDateCondition +
           " group by question_name" +
