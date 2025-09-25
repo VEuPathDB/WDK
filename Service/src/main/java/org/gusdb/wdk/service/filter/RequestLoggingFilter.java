@@ -263,7 +263,8 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
     if (!omitRequestLogging && isLogEnabled()) {
       String details = isErrorStatus && action != RequestBodyAction.NONE ? ", Request Body:\n" + readRequestBody(filePath) : "";
       String userId = user == null ? "none" : String.valueOf(user.getUserId());
-      LOG.log(LOG_LEVEL, "Request completed [" + httpStatus + "], user=" + userId + ", " + bodyWriteStatus + details);
+      String guest = user == null || user.isGuest() ? "G" : "R";
+      LOG.log(LOG_LEVEL, "Request completed [" + httpStatus + "], user (" + guest + ") = " + userId + ", " + bodyWriteStatus + details);
     }
 
     // delete the temporary request body file
