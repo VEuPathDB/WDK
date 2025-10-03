@@ -115,6 +115,6 @@ public class ProfileService extends AbstractUserService {
     // this user must be both the target user (user ID path param) and requesting user (via auth)
     getPrivateRegisteredUser();
     getWdkModel().getUserFactory().deleteUser(getAuthorizationToken());
-    return Response.accepted().build();
+    return Response.noContent().build();
   }
 }
