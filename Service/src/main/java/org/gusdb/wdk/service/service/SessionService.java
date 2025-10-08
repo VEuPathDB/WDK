@@ -276,7 +276,9 @@ public class SessionService extends AbstractWdkService {
 
   @GET
   @Path("logout")
-  public Response processLogout() throws WdkModelException {
+  public Response processLogout(@QueryParam("redirectUrl") String redirectUrl) throws WdkModelException {
+
+    if (redirectUrl == null) redirectUrl = getContextUri();
 
     // get the current session's user, then invalidate the session
     User oldUser = getRequestingUser();
@@ -284,7 +286,7 @@ public class SessionService extends AbstractWdkService {
 
     // if user is already a guest, no need to log out
     if (oldUser.isGuest())
-      return createRedirectResponse(getContextUri()).build();
+      return createRedirectResponse(redirectUrl).build();
 
     // get a new session and add new guest user to it
     TwoTuple<ValidatedToken, User> newUser = getWdkModel().getUserFactory().createUnregisteredUser();
@@ -297,7 +299,7 @@ public class SessionService extends AbstractWdkService {
       logoutCookies.add(extraCookie);
     }
 
-    ResponseBuilder builder = createRedirectResponse(getContextUri());
+    ResponseBuilder builder = createRedirectResponse(redirectUrl);
     for (CookieBuilder logoutCookie : logoutCookies) {
       builder.cookie(logoutCookie.toJaxRsCookie());
     }
