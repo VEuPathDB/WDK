@@ -611,6 +611,8 @@ public class DatasetFactory {
    * with a dummy remote query to the same site (such as select * from dual@remote)."
    */
   private void checkRemoteTable() throws SQLException {
+    if (!_wdkModel.getAppDb().getPlatform().equals("Oracle")) return;
+
     String dblink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
     String table = _userSchema + TABLE_DATASETS + dblink;
 
