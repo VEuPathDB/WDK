@@ -257,7 +257,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    */
   private ResultPropertyQueryReference resultPropertyQueryRef;
 
-  /**
+    /**
+     * An option that provides SQL to map from a PK to a partition key
+     */
+    private String partitionKeyQueryRef;
+
+    /**
    * A pluggable way to compute the result size.  For example, count the number
    * of genes in a list of transcripts. The default is overridden with a plugin
    * supplied in the XML model, if provided.
@@ -314,6 +319,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private Map<String, StepFilter> _stepFilters = new LinkedHashMap<>();
 
   private String _urlSegment;
+
+  private SqlQuery _partitionKeySqlQuery;
 
   private String defaultColumnToolBundleRef;
 
@@ -405,6 +412,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public String getUrlSegment() {
     return _urlSegment;
   }
+
+  public SqlQuery getPartitionKeySqlQuery() { return _partitionKeySqlQuery; }
 
   private static String getPlural(String recordClassName) {
     if (recordClassName == null || recordClassName.isEmpty())
@@ -529,7 +538,12 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     resultSizeQueryRef = ref;
   }
 
-  @SuppressWarnings("unused") // ModelXmlParser
+    @SuppressWarnings("unused") // ModelXmlParser
+  public void setPartitionKeyQueryRef(String ref) {
+    partitionKeyQueryRef = ref;
+  }
+
+    @SuppressWarnings("unused") // ModelXmlParser
   public void setResultPropertyQueryRef(ResultPropertyQueryReference ref) {
     resultPropertyQueryRef = ref;
   }
@@ -641,7 +655,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return resultPropertyQueryRef;
   }
 
-  public BooleanQuery getBooleanQuery() {
+    public String getPartitionKeyQueryRef() {
+        return partitionKeyQueryRef;
+    }
+
+    public BooleanQuery getBooleanQuery() {
     return booleanQuery;
   }
 
@@ -802,6 +820,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       resultPropertyQueryRef.resolveReferences(model);
         Query query = (Query) _wdkModel.resolveReference(resultPropertyQueryRef.getTwoPartName());
       resultPropertyPlugin = new SqlQueryResultPropertyPlugin(query, resultPropertyQueryRef.getPropertyName());
+    }
+
+    if (partitionKeyQueryRef != null) {
+      _partitionKeySqlQuery = (SqlQuery) _wdkModel.resolveReference(partitionKeyQueryRef);
     }
 
     if (customBooleanQueryClassName != null) {

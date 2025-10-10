@@ -25,6 +25,8 @@ import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -146,6 +148,7 @@ public class AnswerValue {
   private final WdkModel _wdkModel;
   private final QueryInstance<?> _idsQueryInstance;
   protected ResultSizeFactory _resultSizeFactory; // may be reassigned by subclasses
+  private String _partitionKeysString; // to be used in an IN clause
 
   // paging for this answer
   // default is to return the entire result
@@ -894,6 +897,35 @@ public class AnswerValue {
     _sortingMap.clear();
     _sortingMap.putAll(validMap);
     _sortedIdSql = null;
+  }
+
+  private String getPartitionKeysString() throws WdkModelException {
+    if (_partitionKeysString != null) return _partitionKeysString;
+
+    RecordClass rc = _question.getRecordClass();
+    PrimaryKeyDefinition pkd = rc.getPrimaryKeyDefinition();
+    String idSql = getIdSql();
+    String partSql = rc.getPartitionKeySqlQuery().getSql();
+
+    String sql =
+        "SELECT distinct partitionkey " +
+            " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
+            " WHERE " + pkd.createJoinClause("ids", "parts");
+    try {
+      _partitionKeysString =  new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql,
+           rc.getName()+ "__partitionKey").executeQuery(rs -> {
+        List<String> partKeys = new ArrayList<>();
+        while (rs.next()) {
+          partKeys.add(rs.getString("partitionKey"));
+        }
+        return String.join(", ", partKeys);
+      });
+
+      return _partitionKeysString;
+    }
+    catch (SQLRunnerException e) {
+      throw new WdkModelException((Exception)e.getCause());
+    }
   }
 
   private void reset() {
