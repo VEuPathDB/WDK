@@ -133,6 +133,8 @@ public class AnswerValue {
 
   public static final int UNBOUNDED_END_PAGE_INDEX = -1;
 
+  public static final String PARTITION_KEYS_MACRO = "%%PARTITION_KEYS%%";
+
   // ------------------------------------------------------------------
   // Instance variables
   // ------------------------------------------------------------------
@@ -360,7 +362,7 @@ public class AnswerValue {
   public String getAnswerTableSql(Query tableQuery)
   throws WdkModelException {
     return _startIndex == 1 && _endIndex == UNBOUNDED_END_PAGE_INDEX && _sortingMap.isEmpty()
-        ? getUnsortedUnpagedTableSql(tableQuery) :
+        ? getUnsortedUnpagedSql(getTableSql(tableQuery)) :
           getPagedTableSql(tableQuery);
   }
 
@@ -397,9 +399,7 @@ public class AnswerValue {
     // original table query; a table query has only one param, user_id. Note
     // that the original table query is different from the table query held by
     // the recordClass.  The user_id param will be added by the query instance.
-    RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder()
-      .buildRunnable(_requestingUser, tableQuery, StepContainer.emptyContainer());
-    String tableSql = Query.makeQueryInstance(tableQuerySpec).getSql();
+    String tableSql = getTableSql(tableQuery);
 
     DBPlatform platform = _wdkModel.getAppDb().getPlatform();
     String tableSqlWithRowIndex = "(SELECT tq.*, " + platform.getRowNumberColumn() + " as row_index FROM (" + tableSql + ") tq ";
@@ -430,13 +430,12 @@ public class AnswerValue {
     String attrSql = getAttributeSql(attributeQuery);
     return getUnsortedUnpagedSql(attrSql);
   }
-  
-  public String getUnsortedUnpagedTableSql(Query tableQuery) throws WdkModelException {
 
+  private String getTableSql(Query tableQuery) throws WdkModelException {
     RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder()
-      .buildRunnable(_requestingUser, tableQuery, StepContainer.emptyContainer());
+        .buildRunnable(_requestingUser, tableQuery, StepContainer.emptyContainer());
     String tableSql = Query.makeQueryInstance(tableQuerySpec).getSql();
-    return getUnsortedUnpagedSql(tableSql);
+    return tableSql.replace(PARTITION_KEYS_MACRO, getPartitionKeysString());
   }
   
   public String getUnsortedUnpagedSql(String embeddedSql) throws WdkModelException {
@@ -565,7 +564,7 @@ public class AnswerValue {
         // (but should return any dynamic columns)
         .replace(Utilities.MACRO_ID_SQL_NO_FILTERS,  "(" + getNoFiltersIdSql() + ")");
     }
-    return sql;
+    return sql.replace(PARTITION_KEYS_MACRO, getPartitionKeysString());
   }
 
   protected String getNoFiltersIdSql() throws WdkModelException {

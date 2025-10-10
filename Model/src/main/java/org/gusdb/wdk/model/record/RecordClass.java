@@ -257,10 +257,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    */
   private ResultPropertyQueryReference resultPropertyQueryRef;
 
-    /**
-     * An option that provides SQL to map from a PK to a partition key
-     */
-    private String partitionKeyQueryRef;
+  /**
+   * An option that provides SQL to map from a PK to a partition key
+  */
+  private String partitionKeyQueryRef;
 
     /**
    * A pluggable way to compute the result size.  For example, count the number
