@@ -134,8 +134,6 @@ public class AnswerValue {
 
   public static final int UNBOUNDED_END_PAGE_INDEX = -1;
 
-  public static final String PARTITION_KEYS_MACRO = "%%PARTITION_KEYS%%";
-
   // ------------------------------------------------------------------
   // Instance variables
   // ------------------------------------------------------------------
@@ -436,7 +434,7 @@ public class AnswerValue {
     RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder()
         .buildRunnable(_requestingUser, tableQuery, StepContainer.emptyContainer());
     String tableSql = Query.makeQueryInstance(tableQuerySpec).getSql();
-    return tableSql.replace(PARTITION_KEYS_MACRO, getPartitionKeysString());
+    return tableSql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO, getPartitionKeysString());
   }
   
   public String getUnsortedUnpagedSql(String embeddedSql) throws WdkModelException {
@@ -565,7 +563,7 @@ public class AnswerValue {
         // (but should return any dynamic columns)
         .replace(Utilities.MACRO_ID_SQL_NO_FILTERS,  "(" + getNoFiltersIdSql() + ")");
     }
-    return sql.replace(PARTITION_KEYS_MACRO, getPartitionKeysString());
+    return sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO, getPartitionKeysString());
   }
 
   protected String getNoFiltersIdSql() throws WdkModelException {
@@ -900,37 +898,39 @@ public class AnswerValue {
   }
 
   private String getPartitionKeysString() throws WdkModelException {
-    if (_partitionKeysString != null) return _partitionKeysString;
+    if (_partitionKeysString == null) {
+      RecordClass rc = _question.getRecordClass();
+      SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
 
-    RecordClass rc = _question.getRecordClass();
-    SqlQuery partKeySqlQuery = rc.getPartitionKeySqlQuery();
-    if (partKeySqlQuery == null) return "NO PARTIION QUERY DEFINED";
+      if (partKeySqlQuery == null) {
+        _partitionKeysString = "NO_PARTITION_QUERY_DEFINED";
+      } else {
+        PrimaryKeyDefinition pkd = rc.getPrimaryKeyDefinition();
+        String idSql = getIdSql();
+        String partSql = partKeySqlQuery.getSql();
 
-    PrimaryKeyDefinition pkd = rc.getPrimaryKeyDefinition();
-    String idSql = getIdSql();
-    String partSql = partKeySqlQuery.getSql();
-
-    String sql =
-        "SELECT distinct partitionkey " +
-            " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
-            " WHERE " + pkd.createJoinClause("ids", "parts");
-    try {
-      _partitionKeysString =  new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql,
-           rc.getName()+ "__partitionKey").executeQuery(rs -> {
-        List<String> partKeys = new ArrayList<>();
-        while (rs.next()) {
-          partKeys.add("'" + rs.getString("partitionKey") + "'");
+        String sql =
+          "SELECT distinct partition_key " +
+          " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
+          " WHERE " + pkd.createJoinClause("ids", "parts");
+        try {
+          _partitionKeysString =  new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql,
+                                                rc.getName()+ "__partitionKey").executeQuery(rs -> {
+                                                    List<String> partKeys = new ArrayList<>();
+                                                    while (rs.next()) {
+                                                      partKeys.add("'" + rs.getString("partition_key") + "'");
+                                                    }
+                                                    return String.join(", ", partKeys);
+                                                  });
+        
         }
-        return String.join(", ", partKeys);
-      });
-
-      return _partitionKeysString;
+        catch (SQLRunnerException e) {
+          throw new WdkModelException((Exception)e.getCause());
+        }
+      }
     }
-    catch (SQLRunnerException e) {
-      throw new WdkModelException((Exception)e.getCause());
-    }
+    return _partitionKeysString;
   }
-
   private void reset() {
     _sortedIdSql = null;
     _checksum = null;

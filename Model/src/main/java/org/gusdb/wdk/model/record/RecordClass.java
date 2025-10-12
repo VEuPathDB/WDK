@@ -260,7 +260,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   /**
    * An option that provides SQL to map from a PK to a partition key
   */
-  private String partitionKeyQueryRef;
+  private String partitionKeysQueryRef;
 
     /**
    * A pluggable way to compute the result size.  For example, count the number
@@ -320,7 +320,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
   private String _urlSegment;
 
-  private SqlQuery _partitionKeySqlQuery;
+  private SqlQuery _partitionKeysSqlQuery;
 
   private String defaultColumnToolBundleRef;
 
@@ -413,7 +413,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return _urlSegment;
   }
 
-  public SqlQuery getPartitionKeySqlQuery() { return _partitionKeySqlQuery; }
+  public SqlQuery getPartitionKeysSqlQuery() { return _partitionKeysSqlQuery; }
 
   private static String getPlural(String recordClassName) {
     if (recordClassName == null || recordClassName.isEmpty())
@@ -538,9 +538,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     resultSizeQueryRef = ref;
   }
 
-    @SuppressWarnings("unused") // ModelXmlParser
-  public void setPartitionKeyQueryRef(String ref) {
-    partitionKeyQueryRef = ref;
+  @SuppressWarnings("unused") // ModelXmlParser
+  public void setPartitionKeysQueryRef(String ref) {
+    partitionKeysQueryRef = ref;
   }
 
     @SuppressWarnings("unused") // ModelXmlParser
@@ -655,11 +655,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return resultPropertyQueryRef;
   }
 
-    public String getPartitionKeyQueryRef() {
-        return partitionKeyQueryRef;
-    }
+  public String getPartitionKeysQueryRef() {
+    return partitionKeysQueryRef;
+  }
 
-    public BooleanQuery getBooleanQuery() {
+  public BooleanQuery getBooleanQuery() {
     return booleanQuery;
   }
 
@@ -822,8 +822,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       resultPropertyPlugin = new SqlQueryResultPropertyPlugin(query, resultPropertyQueryRef.getPropertyName());
     }
 
-    if (partitionKeyQueryRef != null) {
-      _partitionKeySqlQuery = (SqlQuery) _wdkModel.resolveReference(partitionKeyQueryRef);
+    if (partitionKeysQueryRef != null) {
+      _partitionKeysSqlQuery = (SqlQuery) _wdkModel.resolveReference(partitionKeysQueryRef);
     }
 
     if (customBooleanQueryClassName != null) {

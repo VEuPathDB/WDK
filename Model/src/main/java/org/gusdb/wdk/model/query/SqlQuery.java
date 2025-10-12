@@ -52,6 +52,8 @@ public class SqlQuery extends Query {
 
   private static final boolean DEFAULT_IS_CACHEABLE = true;
 
+  public static final String PARTITION_KEYS_MACRO = "%%PARTITION_KEYS%%";
+
   private List<WdkModelText> _sqlList;
   private String _sql;
   private List<WdkModelText> _sqlMacroList;
@@ -328,7 +330,9 @@ public class SqlQuery extends Query {
   @Override
   public Map<String, AttributeFieldDataType> resolveColumnTypes() throws WdkModelException {
     var types = new LinkedHashMap<String, AttributeFieldDataType>();
-    var sql = applyParams(getSql(), paramMap.values().iterator());
+
+    // use place holder for partition keys, to produce syntatically correct SQL
+    var sql = applyParams(getSql(), paramMap.values().iterator()).replaceAll(PARTITION_KEYS_MACRO, "'PLACEHOLDER'");
 
     // DB column name casing may not match xml name casing.
     var names = _columnMap.keySet()
