@@ -47,6 +47,7 @@ import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
@@ -902,9 +903,12 @@ public class AnswerValue {
     if (_partitionKeysString != null) return _partitionKeysString;
 
     RecordClass rc = _question.getRecordClass();
+    SqlQuery partKeySqlQuery = rc.getPartitionKeySqlQuery();
+    if (partKeySqlQuery == null) return "NO PARTIION QUERY DEFINED";
+
     PrimaryKeyDefinition pkd = rc.getPrimaryKeyDefinition();
     String idSql = getIdSql();
-    String partSql = rc.getPartitionKeySqlQuery().getSql();
+    String partSql = partKeySqlQuery.getSql();
 
     String sql =
         "SELECT distinct partitionkey " +
