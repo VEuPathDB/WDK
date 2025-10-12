@@ -919,7 +919,7 @@ public class AnswerValue {
            rc.getName()+ "__partitionKey").executeQuery(rs -> {
         List<String> partKeys = new ArrayList<>();
         while (rs.next()) {
-          partKeys.add(rs.getString("partitionKey"));
+          partKeys.add("'" + rs.getString("partitionKey") + "'");
         }
         return String.join(", ", partKeys);
       });
