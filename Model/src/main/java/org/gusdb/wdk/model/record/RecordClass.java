@@ -759,6 +759,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     // resolve primary key references
     primaryKeyDefinition.resolveReferences(model);
 
+    if (partitionKeysQueryRef != null) {
+      Object o = _wdkModel.resolveReference(partitionKeysQueryRef);
+      if (! (o instanceof SqlQuery))
+        throw new WdkModelException("Partition Key query ref " + partitionKeysQueryRef + " must reference an SqlQuery");
+      _partitionKeysSqlQuery = (SqlQuery) o;
+    }
+
     // create column attribute fields for primary key columns if they don't already exist
     createPrimaryKeySubFields(model.getProjectId());
 
@@ -820,10 +827,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       resultPropertyQueryRef.resolveReferences(model);
         Query query = (Query) _wdkModel.resolveReference(resultPropertyQueryRef.getTwoPartName());
       resultPropertyPlugin = new SqlQueryResultPropertyPlugin(query, resultPropertyQueryRef.getPropertyName());
-    }
-
-    if (partitionKeysQueryRef != null) {
-      _partitionKeysSqlQuery = (SqlQuery) _wdkModel.resolveReference(partitionKeysQueryRef);
     }
 
     if (customBooleanQueryClassName != null) {
@@ -962,6 +965,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         SqlQuery attributeQuery = prepareQuery(wdkModel, query, pkColumns);
         attributeQueries.put(query.getFullName(), attributeQuery);
 
+        if (_partitionKeysSqlQuery == null && attributeQuery.getSql().contains(SqlQuery.PARTITION_KEYS_MACRO)) {
+          throw new WdkModelException("Attribute query " + attributeQuery.getName()
+          + "contains the macro " + SqlQuery.PARTITION_KEYS_MACRO
+              + " but record class " + getName() + " does not define a partition key query ref");
+        }
         // intentionally using unprepared query
         assignAttributeFieldDataTypes(query);
       }
@@ -991,6 +999,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       tableField.resolveReferences(wdkModel);
 
       SqlQuery query = tableField.getUnwrappedQuery();
+
+      if (_partitionKeysSqlQuery == null && query.getSql().contains(SqlQuery.PARTITION_KEYS_MACRO)) {
+        throw new WdkModelException("Table query " + query.getName()
+            + "contains the macro " + SqlQuery.PARTITION_KEYS_MACRO
+            + " but record class " + getName() + " does not define a partition key query ref");
+      }
+
 
       SqlQuery tableQuery = RecordClass.prepareQuery(wdkModel, query, paramNames);
       tableQueries.put(query.getFullName(), tableQuery);

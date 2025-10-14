@@ -434,7 +434,9 @@ public class AnswerValue {
     RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder()
         .buildRunnable(_requestingUser, tableQuery, StepContainer.emptyContainer());
     String tableSql = Query.makeQueryInstance(tableQuerySpec).getSql();
-    return tableSql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO, getPartitionKeysString());
+    if (tableSql.contains(SqlQuery.PARTITION_KEYS_MACRO))
+      tableSql = tableSql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO, getPartitionKeysString(tableQuery.getName()));
+    return tableSql;
   }
   
   public String getUnsortedUnpagedSql(String embeddedSql) throws WdkModelException {
@@ -563,7 +565,9 @@ public class AnswerValue {
         // (but should return any dynamic columns)
         .replace(Utilities.MACRO_ID_SQL_NO_FILTERS,  "(" + getNoFiltersIdSql() + ")");
     }
-    return sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO, getPartitionKeysString());
+    if (sql.contains(SqlQuery.PARTITION_KEYS_MACRO))
+      sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO, getPartitionKeysString(attributeQuery.getName()));
+    return sql;
   }
 
   protected String getNoFiltersIdSql() throws WdkModelException {
@@ -897,13 +901,15 @@ public class AnswerValue {
     _sortedIdSql = null;
   }
 
-  private String getPartitionKeysString() throws WdkModelException {
+  private String getPartitionKeysString(String queryName) throws WdkModelException {
     if (_partitionKeysString == null) {
       RecordClass rc = _question.getRecordClass();
       SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
 
       if (partKeySqlQuery == null) {
-        _partitionKeysString = "NO_PARTITION_QUERY_DEFINED";
+        throw new WdkModelException("Query " + queryName + " uses macro "
+            + SqlQuery.PARTITION_KEYS_MACRO + " but record class " + rc.getName()
+            + " does not define a partition key query ref");
       } else {
         PrimaryKeyDefinition pkd = rc.getPrimaryKeyDefinition();
         String idSql = getIdSql();
