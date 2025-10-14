@@ -388,7 +388,9 @@ public class SqlQuery extends Query {
   private Map<String, AttributeFieldDataType> handleColumnTypeException(
     final SQLException ex
   ) throws WdkModelException {
-    var sql = getSql();
+    // use place holder for partition keys, to produce syntatically correct SQL
+    var sql = getSql().replaceAll(PARTITION_KEYS_MACRO, "'PLACEHOLDER'");
+
     var macro = MACRO.matcher(sql);
     var param = PARAM.matcher(sql);
 
