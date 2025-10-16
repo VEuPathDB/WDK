@@ -258,6 +258,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private ResultPropertyQueryReference resultPropertyQueryRef;
 
   /**
+   * An option that provides SQL to map from a PK to a partition key
+  */
+  private String partitionKeysQueryRef;
+
+    /**
    * A pluggable way to compute the result size.  For example, count the number
    * of genes in a list of transcripts. The default is overridden with a plugin
    * supplied in the XML model, if provided.
@@ -314,6 +319,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   private Map<String, StepFilter> _stepFilters = new LinkedHashMap<>();
 
   private String _urlSegment;
+
+  private SqlQuery _partitionKeysSqlQuery;
 
   private String defaultColumnToolBundleRef;
 
@@ -405,6 +412,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   public String getUrlSegment() {
     return _urlSegment;
   }
+
+  public SqlQuery getPartitionKeysSqlQuery() { return _partitionKeysSqlQuery; }
 
   private static String getPlural(String recordClassName) {
     if (recordClassName == null || recordClassName.isEmpty())
@@ -530,6 +539,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   @SuppressWarnings("unused") // ModelXmlParser
+  public void setPartitionKeysQueryRef(String ref) {
+    partitionKeysQueryRef = ref;
+  }
+
+    @SuppressWarnings("unused") // ModelXmlParser
   public void setResultPropertyQueryRef(ResultPropertyQueryReference ref) {
     resultPropertyQueryRef = ref;
   }
@@ -641,6 +655,10 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return resultPropertyQueryRef;
   }
 
+  public String getPartitionKeysQueryRef() {
+    return partitionKeysQueryRef;
+  }
+
   public BooleanQuery getBooleanQuery() {
     return booleanQuery;
   }
@@ -740,6 +758,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
     // resolve primary key references
     primaryKeyDefinition.resolveReferences(model);
+
+    if (partitionKeysQueryRef != null) {
+      Object o = _wdkModel.resolveReference(partitionKeysQueryRef);
+      if (! (o instanceof SqlQuery))
+        throw new WdkModelException("Partition Key query ref " + partitionKeysQueryRef + " must reference an SqlQuery");
+      _partitionKeysSqlQuery = (SqlQuery) o;
+    }
 
     // create column attribute fields for primary key columns if they don't already exist
     createPrimaryKeySubFields(model.getProjectId());
@@ -940,6 +965,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
         SqlQuery attributeQuery = prepareQuery(wdkModel, query, pkColumns);
         attributeQueries.put(query.getFullName(), attributeQuery);
 
+        if (_partitionKeysSqlQuery == null && attributeQuery.getSql().contains(SqlQuery.PARTITION_KEYS_MACRO)) {
+          throw new WdkModelException("Attribute query " + attributeQuery.getName()
+          + "contains the macro " + SqlQuery.PARTITION_KEYS_MACRO
+              + " but record class " + getName() + " does not define a partition key query ref");
+        }
         // intentionally using unprepared query
         assignAttributeFieldDataTypes(query);
       }
@@ -969,6 +999,13 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       tableField.resolveReferences(wdkModel);
 
       SqlQuery query = tableField.getUnwrappedQuery();
+
+      if (_partitionKeysSqlQuery == null && query.getSql().contains(SqlQuery.PARTITION_KEYS_MACRO)) {
+        throw new WdkModelException("Table query " + query.getName()
+            + "contains the macro " + SqlQuery.PARTITION_KEYS_MACRO
+            + " but record class " + getName() + " does not define a partition key query ref");
+      }
+
 
       SqlQuery tableQuery = RecordClass.prepareQuery(wdkModel, query, paramNames);
       tableQueries.put(query.getFullName(), tableQuery);

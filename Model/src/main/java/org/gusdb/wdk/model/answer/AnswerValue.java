@@ -25,6 +25,8 @@ import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -45,6 +47,7 @@ import org.gusdb.wdk.model.filter.Filter;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.ParameterContainerInstanceSpecBuilder.FillStrategy;
@@ -146,6 +149,7 @@ public class AnswerValue {
   private final WdkModel _wdkModel;
   private final QueryInstance<?> _idsQueryInstance;
   protected ResultSizeFactory _resultSizeFactory; // may be reassigned by subclasses
+  private String _partitionKeysString; // to be used in an IN clause
 
   // paging for this answer
   // default is to return the entire result
@@ -357,7 +361,7 @@ public class AnswerValue {
   public String getAnswerTableSql(Query tableQuery)
   throws WdkModelException {
     return _startIndex == 1 && _endIndex == UNBOUNDED_END_PAGE_INDEX && _sortingMap.isEmpty()
-        ? getUnsortedUnpagedTableSql(tableQuery) :
+        ? getUnsortedUnpagedSql(getTableSql(tableQuery)) :
           getPagedTableSql(tableQuery);
   }
 
@@ -394,9 +398,7 @@ public class AnswerValue {
     // original table query; a table query has only one param, user_id. Note
     // that the original table query is different from the table query held by
     // the recordClass.  The user_id param will be added by the query instance.
-    RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder()
-      .buildRunnable(_requestingUser, tableQuery, StepContainer.emptyContainer());
-    String tableSql = Query.makeQueryInstance(tableQuerySpec).getSql();
+    String tableSql = getTableSql(tableQuery);
 
     DBPlatform platform = _wdkModel.getAppDb().getPlatform();
     String tableSqlWithRowIndex = "(SELECT tq.*, " + platform.getRowNumberColumn() + " as row_index FROM (" + tableSql + ") tq ";
@@ -427,13 +429,14 @@ public class AnswerValue {
     String attrSql = getAttributeSql(attributeQuery);
     return getUnsortedUnpagedSql(attrSql);
   }
-  
-  public String getUnsortedUnpagedTableSql(Query tableQuery) throws WdkModelException {
 
+  private String getTableSql(Query tableQuery) throws WdkModelException {
     RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder()
-      .buildRunnable(_requestingUser, tableQuery, StepContainer.emptyContainer());
+        .buildRunnable(_requestingUser, tableQuery, StepContainer.emptyContainer());
     String tableSql = Query.makeQueryInstance(tableQuerySpec).getSql();
-    return getUnsortedUnpagedSql(tableSql);
+    if (tableSql.contains(SqlQuery.PARTITION_KEYS_MACRO))
+      tableSql = tableSql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO, getPartitionKeysString(tableQuery.getName()));
+    return tableSql;
   }
   
   public String getUnsortedUnpagedSql(String embeddedSql) throws WdkModelException {
@@ -562,6 +565,8 @@ public class AnswerValue {
         // (but should return any dynamic columns)
         .replace(Utilities.MACRO_ID_SQL_NO_FILTERS,  "(" + getNoFiltersIdSql() + ")");
     }
+    if (sql.contains(SqlQuery.PARTITION_KEYS_MACRO))
+      sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO, getPartitionKeysString(attributeQuery.getName()));
     return sql;
   }
 
@@ -896,6 +901,42 @@ public class AnswerValue {
     _sortedIdSql = null;
   }
 
+  private String getPartitionKeysString(String queryName) throws WdkModelException {
+    if (_partitionKeysString == null) {
+      RecordClass rc = _question.getRecordClass();
+      SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
+
+      if (partKeySqlQuery == null) {
+        throw new WdkModelException("Query " + queryName + " uses macro "
+            + SqlQuery.PARTITION_KEYS_MACRO + " but record class " + rc.getName()
+            + " does not define a partition key query ref");
+      } else {
+        PrimaryKeyDefinition pkd = rc.getPrimaryKeyDefinition();
+        String idSql = getIdSql();
+        String partSql = partKeySqlQuery.getSql();
+
+        String sql =
+          "SELECT distinct partition_key " +
+          " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
+          " WHERE " + pkd.createJoinClause("ids", "parts");
+        try {
+          _partitionKeysString =  new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql,
+                                                rc.getName()+ "__partitionKey").executeQuery(rs -> {
+                                                    List<String> partKeys = new ArrayList<>();
+                                                    while (rs.next()) {
+                                                      partKeys.add("'" + rs.getString("partition_key") + "'");
+                                                    }
+                                                    return String.join(", ", partKeys);
+                                                  });
+        
+        }
+        catch (SQLRunnerException e) {
+          throw new WdkModelException((Exception)e.getCause());
+        }
+      }
+    }
+    return _partitionKeysString;
+  }
   private void reset() {
     _sortedIdSql = null;
     _checksum = null;

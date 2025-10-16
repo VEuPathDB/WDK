@@ -1218,6 +1218,9 @@
         <attribute name="allRecordsQueryRef" />
       </optional>
       <optional>
+        <attribute name="partitionKeysQueryRef" />
+      </optional>
+      <optional>
         <attribute name="doNotTest">
           <data type="boolean" />
         </attribute>
