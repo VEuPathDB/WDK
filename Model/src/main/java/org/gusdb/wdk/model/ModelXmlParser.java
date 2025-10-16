@@ -425,10 +425,6 @@ public class ModelXmlParser extends XmlParser {
       String userDbLink = config.getAppDB().getUserDbLink();
       propMap.put("USER_DBLINK", userDbLink);
     }
-    if (!propMap.containsKey("ACCT_DBLINK")) {
-      String acctDbLink = config.getAppDB().getAcctDbLink();
-      propMap.put("ACCT_DBLINK", acctDbLink);
-    }
     if (!propMap.containsKey("USER_SCHEMA")) {
       propMap.put("USER_SCHEMA", config.getUserDB().getUserSchema());
     }

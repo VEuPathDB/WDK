@@ -18,7 +18,7 @@ package org.gusdb.wdk.model.config;
 public class ModelConfigAppDB extends ModelConfigDB {
 
   private String userDbLink;
-  private String acctDbLink;
+  private String remoteUserDataSchema;
   private int maxPkColumnWidth = 150;
 
   /**
@@ -38,22 +38,22 @@ public class ModelConfigAppDB extends ModelConfigDB {
     this.userDbLink = userDbLink;
   }
 
-  /**
-   * @return the acctDbLink
-   */
-  public String getAcctDbLink() {
-    return acctDbLink;
+  public String getRemoteUserDataSchema() {
+    return remoteUserDataSchema;
   }
 
-  /**
-   * @param acctDbLink
-   *          the acctDbLink to set
-   */
-  public void setAcctDbLink(String acctDbLink) {
-    if (acctDbLink.length() > 0 && !acctDbLink.startsWith("@"))
-      acctDbLink = "@" + acctDbLink;
-    this.acctDbLink = acctDbLink;
+  public void setRemoteUserDataSchema(String remoteUserDataSchema) {
+    if (remoteUserDataSchema == null) {
+      this.remoteUserDataSchema = "";
+    } else {
+      remoteUserDataSchema = remoteUserDataSchema.trim().toLowerCase();
+      if (!remoteUserDataSchema.isEmpty() && !remoteUserDataSchema.endsWith(".")) {
+         remoteUserDataSchema = remoteUserDataSchema + ".";
+      }
+      this.remoteUserDataSchema = remoteUserDataSchema;
+    }
   }
+
 
   /**
    * Get the max width for the primaryKey column. The primary key columns in the

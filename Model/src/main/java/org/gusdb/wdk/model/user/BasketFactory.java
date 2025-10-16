@@ -514,7 +514,7 @@ public class BasketFactory {
   public static String getBasketSelectSql(WdkModel wdkModel, RecordClass recordClass) {
 
     String dbLink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
-    String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
+    String remoteUserDataSchema = wdkModel.getModelConfig().getAppDB().getRemoteUserDataSchema();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
 
     StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
@@ -524,7 +524,7 @@ public class BasketFactory {
       sql.append("b." + Utilities.COLUMN_PK_PREFIX + (i + 1));
       sql.append(" AS " + pkColumns[i]);
     }
-    sql.append(" FROM " + userSchema + TABLE_BASKET + dbLink + " b ");
+    sql.append(" FROM " + remoteUserDataSchema + TABLE_BASKET + " b ");
     sql.append(" WHERE b." + COLUMN_USER_ID + " = " + getUserParamMacro() + " ");
     sql.append("   AND b." + COLUMN_PROJECT_ID + " = '" + wdkModel.getProjectId() + "'");
     sql.append("   AND b." + COLUMN_RECORD_CLASS + " = '" + recordClass.getFullName() + "'");
@@ -553,8 +553,9 @@ public class BasketFactory {
    */
   private void checkRemoteTable() throws SQLException {
     String dblink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
+    String remoteUserDataSchema = _wdkModel.getModelConfig().getAppDB().getRemoteUserDataSchema();
     StringBuilder sql = new StringBuilder("SELECT count(*) FROM ");
-    sql.append(_userSchema).append(TABLE_BASKET).append(dblink);
+    sql.append(remoteUserDataSchema).append(TABLE_BASKET).append(dblink);
 
     // execute this dummy sql to make sure the remote table is sync-ed.
     DataSource dataSource = _wdkModel.getAppDb().getDataSource();
