@@ -1,24 +1,12 @@
 package org.gusdb.wdk.model.answer;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.answer.factory.AnswerValueFactory;
-import org.gusdb.wdk.model.answer.spec.AnswerSpec;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.question.Question;
@@ -29,11 +17,6 @@ import org.gusdb.wdk.model.record.ResultSize;
 public class ResultSizeFactory {
 
   private static final Logger LOG = Logger.getLogger(ResultSizeFactory.class);
-
-  private static final int THREAD_POOL_SIZE = 4;
-  private static final int THREAD_POOL_TIMEOUT = 5; // timeout thread pool, in minutes
-
-  private static enum FilterSizeType { STANDARD, DISPLAY }
 
   private final AnswerValue _answerValue;
 

@@ -1,7 +1,5 @@
 package org.gusdb.wdk.service.request.answer;
 
-import java.util.Optional;
-
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.core.api.JsonKeys;
 import org.gusdb.wdk.model.WdkModel;

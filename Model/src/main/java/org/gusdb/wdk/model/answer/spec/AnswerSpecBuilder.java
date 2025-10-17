@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.answer.spec;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 
 import org.apache.log4j.Logger;

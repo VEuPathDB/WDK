@@ -931,7 +931,7 @@ public class AnswerValue {
         
         }
         catch (SQLRunnerException e) {
-          throw new WdkModelException((Exception)e.getCause());
+          throw new WdkModelException(e.getCause());
         }
       }
     }
