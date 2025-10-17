@@ -8,6 +8,7 @@ import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
@@ -22,6 +23,13 @@ public class DynamicTableValue extends TableValue {
   public DynamicTableValue(PrimaryKeyValue primaryKey, TableField tableField, User user)
       throws WdkModelException {
     super(tableField);
+
+    Query query = tableField.getWrappedQuery();
+    if (query instanceof SqlQuery) {
+      SqlQuery sqlQuery = new SqlQuery((SqlQuery) query);
+      sqlQuery.setSql(sqlQuery.getSql().replaceAll(SqlQuery.PARTITION_KEYS_MACRO, "'pfal3D7'"));
+      query = sqlQuery;
+    }
 
     // create query instance; TableValue will initialize rows by itself
     _queryInstance = Query.makeQueryInstance(QueryInstanceSpec.builder()

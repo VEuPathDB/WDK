@@ -906,37 +906,44 @@ public class AnswerValue {
       RecordClass rc = _question.getRecordClass();
       SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
 
+      PrimaryKeyDefinition pkd = rc.getPrimaryKeyDefinition();
+      String idSql = getIdSql();
+      String partSql = partKeySqlQuery.getSql();
+
+      String sql =
+          "SELECT distinct partition_key " +
+          " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
+          " WHERE " + pkd.createJoinClause("ids", "parts");
+      return getPartitionKeysString(rc, queryName, sql);
+    }
+    return _partitionKeysString;
+  }
+
+  /* sql parameter: sql that finds a distinct set of partition keys (for, eg, a result set) */
+  public static String getPartitionKeysString(RecordClass rc, String queryName, String sql) throws WdkModelException {
+      SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
+
       if (partKeySqlQuery == null) {
         throw new WdkModelException("Query " + queryName + " uses macro "
             + SqlQuery.PARTITION_KEYS_MACRO + " but record class " + rc.getName()
             + " does not define a partition key query ref");
       } else {
-        PrimaryKeyDefinition pkd = rc.getPrimaryKeyDefinition();
-        String idSql = getIdSql();
-        String partSql = partKeySqlQuery.getSql();
-
-        String sql =
-          "SELECT distinct partition_key " +
-          " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
-          " WHERE " + pkd.createJoinClause("ids", "parts");
         try {
-          _partitionKeysString =  new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql,
-                                                rc.getName()+ "__partitionKey").executeQuery(rs -> {
-                                                    List<String> partKeys = new ArrayList<>();
-                                                    while (rs.next()) {
-                                                      partKeys.add("'" + rs.getString("partition_key") + "'");
-                                                    }
-                                                    return String.join(", ", partKeys);
-                                                  });
-        
+          return new SQLRunner(rc.getWdkModel().getAppDb().getDataSource(), sql,
+              rc.getName()+ "__partitionKey").executeQuery(rs -> {
+            List<String> partKeys = new ArrayList<>();
+            while (rs.next()) {
+              partKeys.add("'" + rs.getString("partition_key") + "'");
+            }
+            return String.join(", ", partKeys);
+          });
         }
         catch (SQLRunnerException e) {
           throw new WdkModelException((Exception)e.getCause());
         }
       }
-    }
-    return _partitionKeysString;
   }
+
   private void reset() {
     _sortedIdSql = null;
     _checksum = null;
