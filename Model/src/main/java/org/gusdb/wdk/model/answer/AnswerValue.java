@@ -907,6 +907,7 @@ public class AnswerValue {
       RecordClass rc = _question.getRecordClass();
       SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
 
+<<<<<<< HEAD
       PrimaryKeyDefinition pkd = rc.getPrimaryKeyDefinition();
       String idSql = getIdSql();
       String partSql = partKeySqlQuery.getSql();
@@ -968,6 +969,11 @@ public class AnswerValue {
     return sqlQueryNew;
   }
 
+=======
+    }
+    return _partitionKeysString;
+  }
+>>>>>>> master
   private void reset() {
     _sortedIdSql = null;
     _checksum = null;
