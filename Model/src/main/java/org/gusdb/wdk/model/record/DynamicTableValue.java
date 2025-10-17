@@ -33,7 +33,7 @@ public class DynamicTableValue extends TableValue {
 
     // create query instance; TableValue will initialize rows by itself
     _queryInstance = Query.makeQueryInstance(QueryInstanceSpec.builder()
-        .putAll(primaryKey.getValues()).buildRunnable(user, tableField.getWrappedQuery(), StepContainer.emptyContainer()));
+        .putAll(primaryKey.getValues()).buildRunnable(user, query, StepContainer.emptyContainer()));
   }
 
   private void loadRowsFromQuery() {
