@@ -968,11 +968,6 @@ public class AnswerValue {
     return sqlQueryNew;
   }
 
-=======
-    }
-    return _partitionKeysString;
-  }
->>>>>>> master
   private void reset() {
     _sortedIdSql = null;
     _checksum = null;
