@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
@@ -47,6 +48,7 @@ import org.gusdb.wdk.model.answer.spec.AnswerSpecBuilder;
 import org.gusdb.wdk.model.answer.spec.FilterOptionList.FilterOptionListBuilder;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.RecordNotFoundException;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.Reporter.ContentDisposition;
 import org.gusdb.wdk.model.report.ReporterConfigException;
@@ -478,6 +480,12 @@ public class AnswerService extends AbstractWdkService {
         Timer t = new Timer();
         reporter.report(stream);
         LOG.info("Wrote report of type " + reporter.getClass().getSimpleName() + " in " + t.getElapsedString());
+      }
+      catch (RecordNotFoundException e) {
+        // if this exception is thrown before the response body starts to be delivered, it
+        //   can be caught here and we can give the client a better error than 500 or than 200 + the text below
+        LOG.error("Answer service reporter was unable to find a WDK record by IDs", e);
+        throw new BadRequestException(e.getMessage());
       }
       catch (WdkModelException | WdkRuntimeException e) {
         // send error email and log
