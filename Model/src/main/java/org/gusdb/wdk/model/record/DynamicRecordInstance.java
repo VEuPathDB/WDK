@@ -82,7 +82,7 @@ public class DynamicRecordInstance extends StaticRecordInstance {
       logger.debug("column: " + column.getName());
     }
     if (query instanceof SqlQuery)
-      query = getSqlQueryWithPartKeys((SqlQuery)query, _recordClass, _primaryKey);
+      query = AnswerValue.getSqlQueryWithPartKeys((SqlQuery)query, _recordClass, _primaryKey);
 
     Map<String, String> paramValues = _primaryKey.getValues();
 
@@ -110,27 +110,6 @@ public class DynamicRecordInstance extends StaticRecordInstance {
       }
     }
     logger.debug("column attributes are cached.");
-  }
-
-  public static SqlQuery getSqlQueryWithPartKeys(SqlQuery sqlQuery, RecordClass recordClass, PrimaryKeyValue primaryKey) throws WdkModelException {
-    SqlQuery partKeySqlQuery = recordClass.getPartitionKeysSqlQuery();
-
-    PrimaryKeyDefinition pkd = recordClass.getPrimaryKeyDefinition();
-    String idSql = "select " + pkd.createSelectClause(primaryKey.getValues()) +
-        recordClass.getWdkModel().getAppDb().getPlatform().getDummyTable();
-
-    String partSql = partKeySqlQuery.getSql();
-
-    String sql =
-        "SELECT distinct partition_key " +
-            " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
-            " WHERE " + pkd.createJoinClause("ids", "parts");
-
-    logger.debug("SQL: \n" + (sqlQuery).getSql());
-    SqlQuery sqlQueryNew = new SqlQuery(sqlQuery);
-    sqlQuery.setSql(sqlQuery.getSql().replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
-        AnswerValue.getPartitionKeysString(recordClass, sqlQuery.getFullName(), sql)));
-    return sqlQueryNew;
   }
 
   @Override

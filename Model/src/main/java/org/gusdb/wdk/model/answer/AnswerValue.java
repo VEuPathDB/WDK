@@ -55,6 +55,7 @@ import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
+import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.PrimaryKeyIterator;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -942,6 +943,29 @@ public class AnswerValue {
           throw new WdkModelException((Exception)e.getCause());
         }
       }
+  }
+
+  /* Given the primary key of a single record, and an attribute or table SqlQuery,
+   *  return a copy of the SqlQuery with its SQL modified to join on the partitio key for the record */
+  public static SqlQuery getSqlQueryWithPartKeys(SqlQuery sqlQuery, RecordClass recordClass, PrimaryKeyValue primaryKey) throws WdkModelException {
+    SqlQuery partKeySqlQuery = recordClass.getPartitionKeysSqlQuery();
+
+    PrimaryKeyDefinition pkd = recordClass.getPrimaryKeyDefinition();
+    String idSql = "select " + pkd.createSelectClause(primaryKey.getValues()) +
+        recordClass.getWdkModel().getAppDb().getPlatform().getDummyTable();
+
+    String partSql = partKeySqlQuery.getSql();
+
+    String sql =
+        "SELECT distinct partition_key " +
+            " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
+            " WHERE " + pkd.createJoinClause("ids", "parts");
+
+    LOG.debug("SQL: \n" + (sqlQuery).getSql());
+    SqlQuery sqlQueryNew = new SqlQuery(sqlQuery);
+    sqlQuery.setSql(sqlQuery.getSql().replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
+        AnswerValue.getPartitionKeysString(recordClass, sqlQuery.getFullName(), sql)));
+    return sqlQueryNew;
   }
 
   private void reset() {
