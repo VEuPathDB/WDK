@@ -907,7 +907,6 @@ public class AnswerValue {
       RecordClass rc = _question.getRecordClass();
       SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
 
-<<<<<<< HEAD
       PrimaryKeyDefinition pkd = rc.getPrimaryKeyDefinition();
       String idSql = getIdSql();
       String partSql = partKeySqlQuery.getSql();
