@@ -963,7 +963,7 @@ public class AnswerValue {
 
     LOG.debug("SQL: \n" + (sqlQuery).getSql());
     SqlQuery sqlQueryNew = new SqlQuery(sqlQuery);
-    sqlQuery.setSql(sqlQuery.getSql().replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
+    sqlQueryNew.setSql(sqlQuery.getSql().replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
         AnswerValue.getPartitionKeysString(recordClass, sqlQuery.getFullName(), sql)));
     return sqlQueryNew;
   }
