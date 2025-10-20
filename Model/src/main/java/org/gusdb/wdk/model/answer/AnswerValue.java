@@ -55,6 +55,7 @@ import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
+import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.PrimaryKeyIterator;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -906,37 +907,67 @@ public class AnswerValue {
       RecordClass rc = _question.getRecordClass();
       SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
 
+      PrimaryKeyDefinition pkd = rc.getPrimaryKeyDefinition();
+      String idSql = getIdSql();
+      String partSql = partKeySqlQuery.getSql();
+
+      String sql =
+          "SELECT distinct partition_key " +
+          " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
+          " WHERE " + pkd.createJoinClause("ids", "parts");
+      _partitionKeysString = getPartitionKeysString(rc, queryName, sql);
+    }
+    return _partitionKeysString;
+  }
+
+  /* sql parameter: sql that finds a distinct set of partition keys (for, eg, a result set) */
+  public static String getPartitionKeysString(RecordClass rc, String queryName, String sql) throws WdkModelException {
+      SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
+
       if (partKeySqlQuery == null) {
         throw new WdkModelException("Query " + queryName + " uses macro "
             + SqlQuery.PARTITION_KEYS_MACRO + " but record class " + rc.getName()
             + " does not define a partition key query ref");
       } else {
-        PrimaryKeyDefinition pkd = rc.getPrimaryKeyDefinition();
-        String idSql = getIdSql();
-        String partSql = partKeySqlQuery.getSql();
-
-        String sql =
-          "SELECT distinct partition_key " +
-          " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
-          " WHERE " + pkd.createJoinClause("ids", "parts");
         try {
-          _partitionKeysString =  new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql,
-                                                rc.getName()+ "__partitionKey").executeQuery(rs -> {
-                                                    List<String> partKeys = new ArrayList<>();
-                                                    while (rs.next()) {
-                                                      partKeys.add("'" + rs.getString("partition_key") + "'");
-                                                    }
-                                                    return String.join(", ", partKeys);
-                                                  });
-        
+          return new SQLRunner(rc.getWdkModel().getAppDb().getDataSource(), sql,
+              rc.getName()+ "__partitionKey").executeQuery(rs -> {
+            List<String> partKeys = new ArrayList<>();
+            while (rs.next()) {
+              partKeys.add("'" + rs.getString("partition_key") + "'");
+            }
+            return String.join(", ", partKeys);
+          });
         }
         catch (SQLRunnerException e) {
           throw new WdkModelException(e.getCause());
         }
       }
-    }
-    return _partitionKeysString;
   }
+
+  /* Given the primary key of a single record, and an attribute or table SqlQuery,
+   *  return a copy of the SqlQuery with its SQL modified to join on the partitio key for the record */
+  public static SqlQuery addPartKeysToAttrOrTableSqlQuery (SqlQuery attrOrTableSqlQuery, RecordClass recordClass, PrimaryKeyValue primaryKey) throws WdkModelException {
+    SqlQuery partKeySqlQuery = recordClass.getPartitionKeysSqlQuery();
+
+    PrimaryKeyDefinition pkd = recordClass.getPrimaryKeyDefinition();
+    String idSql = "select " + pkd.createSelectClause(primaryKey.getValues()) +
+        recordClass.getWdkModel().getAppDb().getPlatform().getDummyTable();
+
+    String partSql = partKeySqlQuery.getSql();
+
+    String sql =
+        "SELECT distinct partition_key " +
+            " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
+            " WHERE " + pkd.createJoinClause("ids", "parts");
+
+    LOG.debug("SQL: \n" + (attrOrTableSqlQuery).getSql());
+    SqlQuery sqlQueryNew = new SqlQuery(attrOrTableSqlQuery);
+    sqlQueryNew.setSql(attrOrTableSqlQuery.getSql().replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
+        AnswerValue.getPartitionKeysString(recordClass, attrOrTableSqlQuery.getFullName(), sql)));
+    return sqlQueryNew;
+  }
+
   private void reset() {
     _sortedIdSql = null;
     _checksum = null;

@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.ImmutableEntry;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.factory.DynamicRecordInstanceList;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
@@ -81,7 +82,7 @@ public class DynamicRecordInstance extends StaticRecordInstance {
       logger.debug("column: " + column.getName());
     }
     if (query instanceof SqlQuery)
-      logger.debug("SQL: \n" + ((SqlQuery) query).getSql());
+      query = AnswerValue.addPartKeysToAttrOrTableSqlQuery((SqlQuery)query, _recordClass, _primaryKey);
 
     Map<String, String> paramValues = _primaryKey.getValues();
 

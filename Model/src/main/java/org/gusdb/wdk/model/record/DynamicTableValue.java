@@ -5,9 +5,11 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
@@ -23,9 +25,13 @@ public class DynamicTableValue extends TableValue {
       throws WdkModelException {
     super(tableField);
 
+    Query query = tableField.getWrappedQuery();
+    if (query instanceof SqlQuery)
+      query = AnswerValue.addPartKeysToAttrOrTableSqlQuery((SqlQuery)query, getTableField().getRecordClass(), primaryKey);
+
     // create query instance; TableValue will initialize rows by itself
     _queryInstance = Query.makeQueryInstance(QueryInstanceSpec.builder()
-        .putAll(primaryKey.getValues()).buildRunnable(user, tableField.getWrappedQuery(), StepContainer.emptyContainer()));
+        .putAll(primaryKey.getValues()).buildRunnable(user, query, StepContainer.emptyContainer()));
   }
 
   private void loadRowsFromQuery() {

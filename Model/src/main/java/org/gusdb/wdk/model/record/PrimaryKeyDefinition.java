@@ -198,4 +198,10 @@ public class PrimaryKeyDefinition extends WdkModelBase {
         .map(colName -> " " + subQuery1Name + "." + colName + " = " + subQuery2Name + "." + colName + " ")
         .collect(Collectors.joining(" AND "));
   }
+
+  public String createSelectClause(Map<String,String> pkValues) {
+    List<String> valStrings = new ArrayList<>();
+    for(String key : pkValues.keySet()) valStrings.add("'" + pkValues.get(key) + "' as " + key);
+    return String.join(", ", valStrings);
+  }
 }
