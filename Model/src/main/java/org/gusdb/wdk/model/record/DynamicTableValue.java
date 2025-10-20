@@ -27,7 +27,7 @@ public class DynamicTableValue extends TableValue {
 
     Query query = tableField.getWrappedQuery();
     if (query instanceof SqlQuery)
-      query = AnswerValue.getSqlQueryWithPartKeys((SqlQuery)query, getTableField().getRecordClass(), primaryKey);
+      query = AnswerValue.addPartKeysToAttrOrTableSqlQuery((SqlQuery)query, getTableField().getRecordClass(), primaryKey);
 
     // create query instance; TableValue will initialize rows by itself
     _queryInstance = Query.makeQueryInstance(QueryInstanceSpec.builder()

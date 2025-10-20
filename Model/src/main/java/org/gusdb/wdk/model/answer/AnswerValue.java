@@ -915,7 +915,7 @@ public class AnswerValue {
           "SELECT distinct partition_key " +
           " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
           " WHERE " + pkd.createJoinClause("ids", "parts");
-      return getPartitionKeysString(rc, queryName, sql);
+      _partitionKeysString = getPartitionKeysString(rc, queryName, sql);
     }
     return _partitionKeysString;
   }
@@ -947,7 +947,7 @@ public class AnswerValue {
 
   /* Given the primary key of a single record, and an attribute or table SqlQuery,
    *  return a copy of the SqlQuery with its SQL modified to join on the partitio key for the record */
-  public static SqlQuery getSqlQueryWithPartKeys(SqlQuery sqlQuery, RecordClass recordClass, PrimaryKeyValue primaryKey) throws WdkModelException {
+  public static SqlQuery addPartKeysToAttrOrTableSqlQuery (SqlQuery attrOrTableSqlQuery, RecordClass recordClass, PrimaryKeyValue primaryKey) throws WdkModelException {
     SqlQuery partKeySqlQuery = recordClass.getPartitionKeysSqlQuery();
 
     PrimaryKeyDefinition pkd = recordClass.getPrimaryKeyDefinition();
@@ -961,10 +961,10 @@ public class AnswerValue {
             " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
             " WHERE " + pkd.createJoinClause("ids", "parts");
 
-    LOG.debug("SQL: \n" + (sqlQuery).getSql());
-    SqlQuery sqlQueryNew = new SqlQuery(sqlQuery);
-    sqlQueryNew.setSql(sqlQuery.getSql().replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
-        AnswerValue.getPartitionKeysString(recordClass, sqlQuery.getFullName(), sql)));
+    LOG.debug("SQL: \n" + (attrOrTableSqlQuery).getSql());
+    SqlQuery sqlQueryNew = new SqlQuery(attrOrTableSqlQuery);
+    sqlQueryNew.setSql(attrOrTableSqlQuery.getSql().replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
+        AnswerValue.getPartitionKeysString(recordClass, attrOrTableSqlQuery.getFullName(), sql)));
     return sqlQueryNew;
   }
 

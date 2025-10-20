@@ -82,7 +82,7 @@ public class DynamicRecordInstance extends StaticRecordInstance {
       logger.debug("column: " + column.getName());
     }
     if (query instanceof SqlQuery)
-      query = AnswerValue.getSqlQueryWithPartKeys((SqlQuery)query, _recordClass, _primaryKey);
+      query = AnswerValue.addPartKeysToAttrOrTableSqlQuery((SqlQuery)query, _recordClass, _primaryKey);
 
     Map<String, String> paramValues = _primaryKey.getValues();
 
