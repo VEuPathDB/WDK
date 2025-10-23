@@ -90,6 +90,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
   private final DatabaseInstance _appDb;
   private final DBPlatform _appPlatform;
   private final DataSource _appDs;
+  private final String _cacheSchema;
 
   private static ReentrantLock EXECUTION_INSERTION_LOCK = new ReentrantLock();
 
@@ -105,6 +106,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
     _appDb = wdkModel.getAppDb();
     _appPlatform = _appDb.getPlatform();
     _appDs = _appDb.getDataSource();
+    _cacheSchema = wdkModel.getModelConfig().getAppDB().getCacheSchema();
     createAppSql();
   }
 
@@ -193,7 +195,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
    * }
    */
   private void createAppSql() {
-    String table = EXECUTION_TABLE;
+    String table = _cacheSchema + EXECUTION_TABLE;
     String hashType = _appPlatform.getStringDataType(96);
     String statusType = _appPlatform.getStringDataType(96);
     String timestampType = _appPlatform.getDateDataType();
@@ -471,7 +473,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
   @Override
   public void deleteExecutionTable(boolean purge) throws WdkModelException {
     try {
-      _appPlatform.dropTable(_appDs, null, EXECUTION_TABLE, purge);
+      _appPlatform.dropTable(_appDs, _cacheSchema, EXECUTION_TABLE, purge);
     }
     catch (SQLException e) {
       throw new WdkModelException("Unable to complete operation.", e);

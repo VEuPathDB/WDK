@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model.dbms;
 
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -19,19 +19,19 @@ public class TemporaryTable implements AutoCloseable {
   private final WdkModel _wdkModel;
   private final InstanceInfo _instance;
 
-  public TemporaryTable(WdkModel wdkModel, Function<String,String> createTableSql) throws WdkModelException {
+  public TemporaryTable(WdkModel wdkModel, BiFunction<String,String,String> createTableSql) throws WdkModelException {
 
     _wdkModel = wdkModel;
 
-    ResultFactory resultFactory = new ResultFactory(wdkModel.getAppDb());
+    ResultFactory resultFactory = new ResultFactory(wdkModel);
     String checksum = Utilities.randomAlphaNumericString(40);
 
     _instance = resultFactory.cacheResults(checksum, new CacheTableCreator() {
 
       @Override
-      public Optional<String> createCacheTableAndInsertResult(DatabaseInstance appDb, String tableName, long instanceId) throws WdkModelException {
+      public Optional<String> createCacheTableAndInsertResult(DatabaseInstance appDb, String cacheSchema, String tableName, long instanceId) throws WdkModelException {
         try {
-          new SQLRunner(appDb.getDataSource(), createTableSql.apply(tableName), "create-custom-temp-table").executeStatement();
+          new SQLRunner(appDb.getDataSource(), createTableSql.apply(cacheSchema, tableName), "create-custom-temp-table").executeStatement();
           return Optional.empty();
         }
         catch (SQLRunnerException e) {

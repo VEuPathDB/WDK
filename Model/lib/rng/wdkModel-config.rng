@@ -103,6 +103,9 @@
                     <attribute name="userDbLink" />
                     <attribute name="acctDbLink" />
                     <optional>
+                      <attribute name="cacheSchema" />
+                    </optional>
+                    <optional>
                         <attribute name="maxPkColumnWidth">
                             <data type="unsignedShort" />
                         </attribute>

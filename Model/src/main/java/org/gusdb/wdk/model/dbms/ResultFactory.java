@@ -15,6 +15,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 public class ResultFactory {
@@ -32,11 +33,12 @@ public class ResultFactory {
      * Creates a new cache table in the application database and populates rows with a result
      * 
      * @param appDb application database in which cache table will be created
+     * @param cacheSchema schema for WDK cache
      * @param tableName name of table
      * @param instanceId id of query cache table
      * @return result message, if any
      */
-    Optional<String> createCacheTableAndInsertResult(DatabaseInstance appDb, String tableName, long instanceId) throws WdkModelException;
+    Optional<String> createCacheTableAndInsertResult(DatabaseInstance appDb, String cacheSchema, String tableName, long instanceId) throws WdkModelException;
 
     /**
      * @return list of columns on which an index should be added after table creation
@@ -50,9 +52,11 @@ public class ResultFactory {
   }
 
   private final DatabaseInstance _appDb;
+  private final String _cacheSchema;
 
-  public ResultFactory(DatabaseInstance appDb) {
-    _appDb = appDb;
+  public ResultFactory(WdkModel wdkModel) {
+    _appDb = wdkModel.getAppDb();
+    _cacheSchema = wdkModel.getModelConfig().getAppDB().getCacheSchema();
   }
 
   public InstanceInfo cacheResults(String checksum, CacheTableCreator tableCreator, boolean avoidCacheHit) throws WdkModelException {
@@ -81,8 +85,8 @@ public class ResultFactory {
     try {
       // will update the cache if the info has unknown_instance_id
       return USE_INSTANCE_INFO_CACHE ?
-          INSTANCE_INFO_CACHE.getValue(InstanceInfoFetcher.getKey(checksum), new InstanceInfoFetcher(_appDb)) :
-          InstanceInfoFetcher.getInstanceInfo(_appDb, checksum);
+          INSTANCE_INFO_CACHE.getValue(InstanceInfoFetcher.getKey(checksum), new InstanceInfoFetcher(_appDb, _cacheSchema)) :
+          InstanceInfoFetcher.getInstanceInfo(_appDb, _cacheSchema, checksum);
     }
     catch (ValueProductionException e) {
       return WdkModelException.unwrap(e);
@@ -93,12 +97,12 @@ public class ResultFactory {
       throws WdkModelException {
     try {
       DataSource dataSource = _appDb.getDataSource();
-      long instanceId = _appDb.getPlatform().getNextId(dataSource, null, CacheFactory.TABLE_INSTANCE);
-      String cacheTable = getCacheTableName(instanceId);
-      Optional<String> resultMessage = tableCreator.createCacheTableAndInsertResult(_appDb, cacheTable, instanceId);
-      InstanceInfo instanceInfo = new InstanceInfo(instanceId, cacheTable, tableCreator.getQueryName(), checksum, resultMessage);
-      createCacheTableIndex(cacheTable, tableCreator.getCacheTableIndexColumns());
-      computeTableStatistics(dataSource, cacheTable);
+      long instanceId = _appDb.getPlatform().getNextId(dataSource, _cacheSchema, CacheFactory.TABLE_INSTANCE);
+      String cacheTableName = getCacheTableName(instanceId);
+      Optional<String> resultMessage = tableCreator.createCacheTableAndInsertResult(_appDb, _cacheSchema, cacheTableName, instanceId);
+      InstanceInfo instanceInfo = new InstanceInfo(instanceId, cacheTableName, tableCreator.getQueryName(), checksum, resultMessage);
+      createCacheTableIndex(cacheTableName, tableCreator.getCacheTableIndexColumns());
+      computeTableStatistics(dataSource, cacheTableName);
       return instanceInfo;
     }
     catch (SQLException e) {
@@ -109,20 +113,22 @@ public class ResultFactory {
   private void computeTableStatistics(DataSource dataSource, String cacheTable) throws SQLException {
     if (COMPUTE_CACHE_TABLE_STATISTICS) {
       long start = System.currentTimeMillis();
-      _appDb.getPlatform().computeThenLockStatistics(dataSource, _appDb.getDefaultSchema(), cacheTable);
+      _appDb.getPlatform().computeThenLockStatistics(dataSource, _cacheSchema, cacheTable);
       QueryLogger.logEndStatementExecution("whatever the platform uses for computing stats", cacheTable + "__gather_table_stats", start);
     }
   }
 
-  private void createCacheTableIndex(String cacheTable, String[] indexColumns) throws WdkModelException {
+  private void createCacheTableIndex(String cacheTableName, String[] indexColumns) throws WdkModelException {
 
     if (indexColumns != null && indexColumns.length > 0) {
 
       // build index SQL
       StringBuilder sqlId = new StringBuilder("CREATE INDEX ")
-          .append(cacheTable)
+          .append(_cacheSchema)
+          .append(cacheTableName)
           .append("_idx01 ON ")
-          .append(cacheTable)
+          .append(_cacheSchema)
+          .append(cacheTableName)
           .append(" (")
           .append(indexColumns[0]);
       for (int i=1; i <indexColumns.length; i++) {
@@ -133,7 +139,7 @@ public class ResultFactory {
       try {
         DataSource dataSource = _appDb.getDataSource();
         SqlUtils.executeUpdate(dataSource, sqlId.toString(),
-            cacheTable + "__create-cache-index01");
+            cacheTableName + "__create-cache-index01");
       }
       catch (SQLException e) {
         throw new WdkModelException("Could not create cache table index.", e);
@@ -148,7 +154,7 @@ public class ResultFactory {
   private void insertInstanceRow(InstanceInfo instanceInfo) throws WdkModelException {
 
     String sql = new StringBuilder("INSERT INTO ")
-        .append(CacheFactory.TABLE_INSTANCE).append(" (")
+        .append(_cacheSchema).append(CacheFactory.TABLE_INSTANCE).append(" (")
         .append(CacheFactory.COLUMN_INSTANCE_ID).append(", ")
         .append(CacheFactory.COLUMN_TABLE_NAME).append(", ")
         .append(CacheFactory.COLUMN_QUERY_NAME).append(", ")
@@ -181,7 +187,7 @@ public class ResultFactory {
   }
 
   public String getCachedSql(long instanceId) {
-    return new StringBuilder("SELECT * FROM ").append(getCacheTableName(instanceId)).toString();
+    return new StringBuilder("SELECT * FROM ").append(_cacheSchema).append(getCacheTableName(instanceId)).toString();
   }
 
   public String getCachedSortedSql(long instanceId, Map<String,Boolean> sortingMap) {

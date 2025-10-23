@@ -17,15 +17,16 @@ package org.gusdb.wdk.model.config;
  */
 public class ModelConfigAppDB extends ModelConfigDB {
 
-  private String userDbLink;
-  private String acctDbLink;
-  private int maxPkColumnWidth = 150;
+  private String _userDbLink;
+  private String _acctDbLink;
+  private String _cacheSchema;
+  private int _maxPkColumnWidth = 150;
 
   /**
    * @return the userDbLink
    */
   public String getUserDbLink() {
-    return userDbLink;
+    return _userDbLink;
   }
 
   /**
@@ -35,14 +36,14 @@ public class ModelConfigAppDB extends ModelConfigDB {
   public void setUserDbLink(String userDbLink) {
     if (userDbLink.length() > 0 && !userDbLink.startsWith("@"))
       userDbLink = "@" + userDbLink;
-    this.userDbLink = userDbLink;
+    _userDbLink = userDbLink;
   }
 
   /**
    * @return the acctDbLink
    */
   public String getAcctDbLink() {
-    return acctDbLink;
+    return _acctDbLink;
   }
 
   /**
@@ -52,7 +53,22 @@ public class ModelConfigAppDB extends ModelConfigDB {
   public void setAcctDbLink(String acctDbLink) {
     if (acctDbLink.length() > 0 && !acctDbLink.startsWith("@"))
       acctDbLink = "@" + acctDbLink;
-    this.acctDbLink = acctDbLink;
+    _acctDbLink = acctDbLink;
+  }
+
+  public void setCacheSchema(String cacheSchema) {
+    _cacheSchema = cacheSchema;
+  }
+
+  /**
+   * @return the schema to be used for the WDK cache; if not specified in model-config.xml,
+   * the login user schema will be used as the default.  A '.' is appended to the end if
+   * not already present.
+   */
+  public String getCacheSchema() {
+    String schema = _cacheSchema == null ? getLogin() : _cacheSchema;
+    if (!schema.endsWith(".")) schema += ".";
+    return schema;
   }
 
   /**
@@ -64,11 +80,11 @@ public class ModelConfigAppDB extends ModelConfigDB {
    * @return
    */
   public int getMaxPkColumnWidth() {
-    return maxPkColumnWidth;
+    return _maxPkColumnWidth;
   }
 
   public void setMaxPkColumnWidth(int maxPkColumnWidth) {
-    this.maxPkColumnWidth = maxPkColumnWidth;
+    _maxPkColumnWidth = maxPkColumnWidth;
   }
 
 }

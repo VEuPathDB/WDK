@@ -77,20 +77,20 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   }
 
   @Override
-  public Optional<String> createCacheTableAndInsertResult(DatabaseInstance appDb, String tableName, long instanceId)
+  public Optional<String> createCacheTableAndInsertResult(DatabaseInstance appDb, String cacheSchema, String tableName, long instanceId)
       throws WdkModelException {
-    return QueryMetrics.observeCacheInsertion(_query, tableName, () -> {
-      createCacheTable(appDb, tableName, _query);
-      return insertResults(appDb, tableName, instanceId);
+    return QueryMetrics.observeCacheInsertion(_query, cacheSchema, tableName, () -> {
+      createCacheTable(appDb, cacheSchema, tableName, _query);
+      return insertResults(appDb, cacheSchema, tableName, instanceId);
     });
   }
 
-  private static void createCacheTable(DatabaseInstance appDb, String tableName, ProcessQuery query) throws WdkModelException {
+  private static void createCacheTable(DatabaseInstance appDb, String cacheSchema, String tableName, ProcessQuery query) throws WdkModelException {
     LOG.debug("creating process query cache...");
     DBPlatform platform = appDb.getPlatform();
     Column[] columns = query.getColumns();
 
-    StringBuilder sqlTable = new StringBuilder("CREATE TABLE " + tableName + " (");
+    StringBuilder sqlTable = new StringBuilder("CREATE TABLE " + cacheSchema + tableName + " (");
 
     // define the instance id column
     String numberType = platform.getNumberDataType(12);
@@ -143,13 +143,13 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     }
   }
 
-  private Optional<String> insertResults(DatabaseInstance appDb, String tableName, long instanceId) throws WdkModelException {
+  private Optional<String> insertResults(DatabaseInstance appDb, String cacheSchema, String tableName, long instanceId) throws WdkModelException {
     LOG.debug("inserting process query result to cache...");
     List<Column> columns = Arrays.asList(_query.getColumns());
     Set<String> columnNames = _query.getColumnMap().keySet();
 
     // prepare the sql
-    String sql = buildCacheInsertSql(tableName, instanceId, columns, columnNames);
+    String sql = buildCacheInsertSql(cacheSchema, tableName, instanceId, columns, columnNames);
     LOG.info("Built the following insertSql: " + sql);
 
     // get results and time process
@@ -184,6 +184,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
   }
 
   private String buildCacheInsertSql(
+      String cacheSchema,
       String tableName,
       long instanceId,
       List<Column> columns,
@@ -191,7 +192,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
 
     String weightColumn = Utilities.COLUMN_WEIGHT;
 
-    StringBuilder sql = new StringBuilder("INSERT INTO " + tableName);
+    StringBuilder sql = new StringBuilder("INSERT INTO " + cacheSchema + tableName);
     sql.append(" (").append(CacheFactory.COLUMN_INSTANCE_ID + ", ");
     sql.append(CacheFactory.COLUMN_ROW_ID);
 

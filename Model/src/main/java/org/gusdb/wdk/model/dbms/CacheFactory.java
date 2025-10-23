@@ -52,19 +52,21 @@ public class CacheFactory {
   public static final String COLUMN_ROW_ID = "wdk_row_id";
 
   private final DatabaseInstance _appDb;
+  private final String _cacheSchema;
   private final StepAnalysisFactory _stepAnalysisFactory;
 
   public CacheFactory(WdkModel wdkModel) {
     _appDb = wdkModel.getAppDb();
+    _cacheSchema = wdkModel.getModelConfig().getAppDB().getCacheSchema();
     _stepAnalysisFactory = wdkModel.getStepAnalysisFactory();
   }
 
   public void createCache() throws WdkModelException {
-  
+
     createQueryInstanceTable();
 
     // create the id sequence for the query & instance index
-    String sequenceName = TABLE_INSTANCE + DBPlatform.ID_SEQUENCE_SUFFIX;
+    String sequenceName = _cacheSchema + TABLE_INSTANCE + DBPlatform.ID_SEQUENCE_SUFFIX;
     try {
       _appDb.getPlatform().createSequence(_appDb.getDataSource(), sequenceName, 1, 1);
     }
@@ -97,12 +99,12 @@ public class CacheFactory {
     dropCacheTables(purge, forceDrop);
 
     try {
-      _appDb.getPlatform().dropTable(_appDb.getDataSource(), null, TABLE_INSTANCE, purge);
+      _appDb.getPlatform().dropTable(_appDb.getDataSource(), _cacheSchema, TABLE_INSTANCE, purge);
     }
     catch (Exception ex) {
-      LOG.error("Cannot drop table [" + TABLE_INSTANCE + "]. " + ex.getMessage());
+      LOG.error("Cannot drop table [" + _cacheSchema + TABLE_INSTANCE + "]. " + ex.getMessage());
     }
-    String instanceSeq = TABLE_INSTANCE + DBPlatform.ID_SEQUENCE_SUFFIX;
+    String instanceSeq = _cacheSchema + TABLE_INSTANCE + DBPlatform.ID_SEQUENCE_SUFFIX;
     try {
       SqlUtils.executeUpdate(_appDb.getDataSource(), "DROP SEQUENCE " + instanceSeq, "wdk-cache-drop-instance-seq");
     }
@@ -117,21 +119,21 @@ public class CacheFactory {
   public void dropCache(long instanceId, boolean purge) {
 
     // delete the instance index
-    String sql = "DELETE FROM " + TABLE_INSTANCE + " WHERE " + COLUMN_INSTANCE_ID + " = " + instanceId;
+    String sql = "DELETE FROM " + _cacheSchema + TABLE_INSTANCE + " WHERE " + COLUMN_INSTANCE_ID + " = " + instanceId;
     try {
       SqlUtils.executeUpdate(_appDb.getDataSource(), sql, "wdk_cache_delete_instance_index");
     }
     catch (Exception ex) {
-      LOG.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. ", ex);
+      LOG.error("Cannot delete rows from [" + _cacheSchema + TABLE_INSTANCE + "]. ", ex);
     }
 
     // drop result table
     String cacheTable = ResultFactory.getCacheTableName(instanceId);
     try {
-      _appDb.getPlatform().dropTable(_appDb.getDataSource(), null, cacheTable, purge);
+      _appDb.getPlatform().dropTable(_appDb.getDataSource(), _cacheSchema, cacheTable, purge);
     }
     catch (Exception ex) {
-      LOG.error("Cannot crop table " + cacheTable, ex);
+      LOG.error("Cannot drop table " + _cacheSchema + cacheTable, ex);
     }
   }
 
@@ -201,7 +203,7 @@ public class CacheFactory {
         .append("SELECT DISTINCT ")
         .append(COLUMN_QUERY_NAME).append(", ")
         .append(COLUMN_TABLE_NAME)
-        .append(" FROM ").append(TABLE_INSTANCE)
+        .append(" FROM ").append(_cacheSchema).append(TABLE_INSTANCE)
         .append(" ORDER BY ").append(COLUMN_INSTANCE_ID)
         .toString();
 
@@ -225,7 +227,7 @@ public class CacheFactory {
         .append("SELECT ")
         .append(COLUMN_INSTANCE_ID).append(", ")
         .append("COUNT(").append(COLUMN_INSTANCE_ID).append(") AS ").append(columnInstanceIdSize)
-        .append(" FROM ").append(cacheTable)
+        .append(" FROM ").append(_cacheSchema).append(cacheTable)
         .append(" GROUP BY ").append(COLUMN_INSTANCE_ID)
         .append(" ORDER BY ").append(COLUMN_INSTANCE_ID)
         .toString();
@@ -249,7 +251,7 @@ public class CacheFactory {
   private void createQueryInstanceTable() throws WdkModelException {
     // create the cache index table
     StringBuilder sql = new StringBuilder("CREATE TABLE ");
-    sql.append(TABLE_INSTANCE).append(" ( ");
+    sql.append(_cacheSchema).append(TABLE_INSTANCE).append(" ( ");
 
     // define columns
     DBPlatform platform = _appDb.getPlatform();
@@ -274,7 +276,7 @@ public class CacheFactory {
       SqlUtils.executeUpdate(_appDb.getDataSource(), sql.toString(), "wdk-cache-create-instance");
     }
     catch (SQLException ex) {
-      String message = "Cannot create table [" + TABLE_INSTANCE + "]. ";
+      String message = "Cannot create table [" + _cacheSchema + TABLE_INSTANCE + "]. ";
       LOG.error(message + ex.getMessage());
       throw new WdkModelException(message, ex);
     }
@@ -289,18 +291,23 @@ public class CacheFactory {
   private void dropCacheTables(boolean purge, String whereClause) {
 
     // get a list of cache tables
-    StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
-    sql.append(COLUMN_TABLE_NAME).append(" FROM ").append(TABLE_INSTANCE).append(" " + whereClause);
+    String sql = new StringBuilder("SELECT DISTINCT ")
+        .append(COLUMN_TABLE_NAME)
+        .append(" FROM ")
+        .append(_cacheSchema)
+        .append(TABLE_INSTANCE)
+        .append(" " + whereClause)
+        .toString();
     ResultSet resultSet = null;
     Set<String> cacheTables = new LinkedHashSet<String>();
     try {
-      resultSet = SqlUtils.executeQuery(_appDb.getDataSource(), sql.toString(), "wdk-cache-select-cache-table");
+      resultSet = SqlUtils.executeQuery(_appDb.getDataSource(), sql, "wdk-cache-select-cache-table");
       while (resultSet.next()) {
         cacheTables.add(resultSet.getString(COLUMN_TABLE_NAME));
       }
     }
     catch (Exception ex) {
-      LOG.error("Cannot query on table [" + TABLE_INSTANCE + "]. " + ex.getMessage());
+      LOG.error("Cannot query on table [" + _cacheSchema + TABLE_INSTANCE + "]. " + ex.getMessage());
     }
     finally {
       SqlUtils.closeResultSetAndStatement(resultSet, null);
@@ -308,29 +315,28 @@ public class CacheFactory {
 
     // delete rows from cache index table
     try {
-      SqlUtils.executeUpdate(_appDb.getDataSource(), "DELETE FROM " + TABLE_INSTANCE + " " + whereClause, "wdk-cache-delete-instances");
+      SqlUtils.executeUpdate(_appDb.getDataSource(), "DELETE FROM " + _cacheSchema + TABLE_INSTANCE + " " + whereClause, "wdk-cache-delete-instances");
     }
     catch (Exception ex) {
-      LOG.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. " + ex.getMessage());
+      LOG.error("Cannot delete rows from [" + _cacheSchema + TABLE_INSTANCE + "]. " + ex.getMessage());
     }
 
     // drop the cache tables
     for (String cacheTable : cacheTables) {
       try {
-        _appDb.getPlatform().dropTable(_appDb.getDataSource(), null, cacheTable, purge);
+        _appDb.getPlatform().dropTable(_appDb.getDataSource(), _cacheSchema, cacheTable, purge);
       }
       catch (Exception ex) {
-        LOG.error("Cannot drop table [" + cacheTable + "]. " + ex.getMessage());
+        LOG.error("Cannot drop table [" + _cacheSchema + cacheTable + "]. " + ex.getMessage());
       }
     }
   }
 
   private void dropDanglingTables(boolean purge) {
-    String schema = _appDb.getConfig().getLogin();
     try {
-      String[] tables = _appDb.getPlatform().queryTableNames(_appDb.getDataSource(), schema, CACHE_TABLE_PREFIX + "%");
+      String[] tables = _appDb.getPlatform().queryTableNames(_appDb.getDataSource(), _cacheSchema, CACHE_TABLE_PREFIX + "%");
       LOG.info("Dropping " + tables.length + " dangling tables...");
-      for (String table : tables)  _appDb.getPlatform().dropTable(_appDb.getDataSource(), null, table, purge);
+      for (String table : tables)  _appDb.getPlatform().dropTable(_appDb.getDataSource(), _cacheSchema, table, purge);
     }
     catch (Exception ex) {
       LOG.error(ex.getMessage());

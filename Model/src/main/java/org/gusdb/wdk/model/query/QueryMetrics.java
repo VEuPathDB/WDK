@@ -35,6 +35,7 @@ public class QueryMetrics {
 
   public static Optional<String> observeCacheInsertion(
       Query query,
+      String cacheSchema,
       String cacheTableName,
       SupplierWithException<Optional<String>> cacheCreator) throws WdkModelException {
     try {
@@ -47,7 +48,7 @@ public class QueryMetrics {
       // get number of inserted rows
       int resultSize = new SQLRunner(
           query.getWdkModel().getAppDb().getDataSource(),
-          "select count(*) from " + cacheTableName,
+          "select count(*) from " + cacheSchema + cacheTableName,
           "table_count_for_metrics"
       ).executeQuery(new SingleIntResultSetHandler());
 
