@@ -124,7 +124,6 @@ public class ResultFactory {
 
       // build index SQL
       StringBuilder sqlId = new StringBuilder("CREATE INDEX ")
-          .append(_cacheSchema)
           .append(cacheTableName)
           .append("_idx01 ON ")
           .append(_cacheSchema)
