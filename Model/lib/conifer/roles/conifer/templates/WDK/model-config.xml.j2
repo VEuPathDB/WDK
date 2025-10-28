@@ -75,8 +75,8 @@ site_vars file: {{ site_vars }}
     <appDb  login="{{ modelconfig_appDb_login }}"
             password="{{ modelconfig_appDb_password }}"
             userDbLink="{{ modelconfig_appDb_userDbLink }}"
-            acctDbLink="{{ modelconfig_appDb_acctDbLink }}"
             cacheSchema="{{ modelconfig_appDb_cacheSchema }}"
+            remoteUserDataSchema="{{ modelconfig_appDb_remoteUserDataSchema }}"
             {% if modelconfig_appDb_connectionUrl is defined and modelconfig_appDb_connectionUrl != "" -%}
             connectionUrl="{{ modelconfig_appDb_connectionUrl }}"
             {% endif -%}

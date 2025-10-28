@@ -18,8 +18,8 @@ package org.gusdb.wdk.model.config;
 public class ModelConfigAppDB extends ModelConfigDB {
 
   private String _userDbLink;
-  private String _acctDbLink;
   private String _cacheSchema;
+  private String _remoteUserDataSchema;
   private int _maxPkColumnWidth = 150;
 
   /**
@@ -39,23 +39,6 @@ public class ModelConfigAppDB extends ModelConfigDB {
     _userDbLink = userDbLink;
   }
 
-  /**
-   * @return the acctDbLink
-   */
-  public String getAcctDbLink() {
-    return _acctDbLink;
-  }
-
-  /**
-   * @param acctDbLink
-   *          the acctDbLink to set
-   */
-  public void setAcctDbLink(String acctDbLink) {
-    if (acctDbLink.length() > 0 && !acctDbLink.startsWith("@"))
-      acctDbLink = "@" + acctDbLink;
-    _acctDbLink = acctDbLink;
-  }
-
   public void setCacheSchema(String cacheSchema) {
     _cacheSchema = cacheSchema;
   }
@@ -70,6 +53,24 @@ public class ModelConfigAppDB extends ModelConfigDB {
     if (!schema.endsWith(".")) schema += ".";
     return schema;
   }
+
+  public String getRemoteUserDataSchema() {
+    return _remoteUserDataSchema;
+  }
+
+  public void setRemoteUserDataSchema(String remoteUserDataSchema) {
+    if (remoteUserDataSchema == null) {
+      _remoteUserDataSchema = "";
+    }
+    else {
+      remoteUserDataSchema = remoteUserDataSchema.trim().toLowerCase();
+      if (!remoteUserDataSchema.isEmpty() && !remoteUserDataSchema.endsWith(".")) {
+         remoteUserDataSchema = remoteUserDataSchema + ".";
+      }
+      _remoteUserDataSchema = remoteUserDataSchema;
+    }
+  }
+
 
   /**
    * Get the max width for the primaryKey column. The primary key columns in the
