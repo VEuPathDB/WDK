@@ -134,7 +134,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
 
   private InstanceInfo getInstanceInfo() throws WdkModelException {
     if (_instanceInfo == null) {
-      ResultFactory factory = new ResultFactory(_wdkModel.getAppDb());
+      ResultFactory factory = new ResultFactory(_wdkModel);
       String checksum = getChecksum();
       _cachePreviouslyExistedForSpec = factory.getInstanceInfo(checksum).isPresent();
       _instanceInfo = factory.cacheResults(checksum, this, _avoidCacheHit);
@@ -214,7 +214,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   }
 
   protected ResultList getCachedResults(boolean performSorting) throws WdkModelException {
-    var factory = new ResultFactory(_wdkModel.getAppDb());
+    var factory = new ResultFactory(_wdkModel);
     var instanceId = getInstanceInfo().getInstanceId();
     return performSorting
       ? factory.getCachedSortedResults(instanceId, _query.getSortingMap())
@@ -222,7 +222,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   }
 
   protected String getCachedSql(boolean performSorting) throws WdkModelException {
-    var factory = new ResultFactory(_wdkModel.getAppDb());
+    var factory = new ResultFactory(_wdkModel);
     var instanceId = getInstanceInfo().getInstanceId();
     return performSorting
       ? factory.getCachedSortedSql(instanceId, _query.getSortingMap())
@@ -241,10 +241,11 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   protected void executePostCacheUpdateSql(String tableName, long instanceId) throws WdkModelException {
     final var list = _query.getPostCacheUpdateSqls();
     final var ds = _wdkModel.getAppDb().getDataSource();
+    final var cacheSchema = _wdkModel.getModelConfig().getAppDB().getCacheSchema();
 
     for (final var pcis : list) {
       final var sql = pcis.getSql()
-        .replace(Utilities.MACRO_CACHE_TABLE, tableName)
+        .replace(Utilities.MACRO_CACHE_TABLE, cacheSchema + tableName)
         .replace(Utilities.MACRO_CACHE_INSTANCE_ID, Long.toString(instanceId));
 
       LOG.debug("POST sql: " + sql);

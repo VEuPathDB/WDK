@@ -21,16 +21,18 @@ public class InstanceInfoFetcher implements ValueFactory<String, Optional<Instan
   }
 
   private final DatabaseInstance _appDb;
+  private final String _cacheSchema;
 
-  public InstanceInfoFetcher(DatabaseInstance appDb) {
+  public InstanceInfoFetcher(DatabaseInstance appDb, String cacheSchema) {
     _appDb = appDb;
+    _cacheSchema = cacheSchema;
   }
 
   @Override
   public Optional<InstanceInfo> getNewValue(String id) throws ValueProductionException {
     try {
       LOG.debug("Fetching instance info item with ID: " + id);
-      return getInstanceInfo(_appDb, id);
+      return getInstanceInfo(_appDb, _cacheSchema, id);
     }
     catch(WdkModelException e) {
       throw new ValueProductionException(e);
@@ -48,14 +50,14 @@ public class InstanceInfoFetcher implements ValueFactory<String, Optional<Instan
         (new Date().getTime() - item.get().getCreationDate()) >= (EXPIRATION_SECS * 1000);
   }
 
-  static Optional<InstanceInfo> getInstanceInfo(DatabaseInstance appDb, String checksum) throws WdkModelException {
+  static Optional<InstanceInfo> getInstanceInfo(DatabaseInstance appDb, String cacheSchema, String checksum) throws WdkModelException {
 
     String sql = new StringBuilder("SELECT ")
         .append(CacheFactory.COLUMN_INSTANCE_ID).append(", ")
         .append(CacheFactory.COLUMN_TABLE_NAME).append(", ")
         .append(CacheFactory.COLUMN_QUERY_NAME).append(", ")
         .append(CacheFactory.COLUMN_RESULT_MESSAGE)
-        .append(" FROM ").append(CacheFactory.TABLE_INSTANCE)
+        .append(" FROM ").append(cacheSchema).append(CacheFactory.TABLE_INSTANCE)
         .append(" WHERE ").append(CacheFactory.COLUMN_INSTANCE_CHECKSUM)
         .append(" = '").append(checksum).append("'")
         .append(" ORDER BY " + CacheFactory.COLUMN_INSTANCE_ID)

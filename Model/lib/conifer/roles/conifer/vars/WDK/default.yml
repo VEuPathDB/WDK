@@ -22,6 +22,7 @@ modelconfig_appDb_dbHost: =c= e.g. dbserver.example.com
 modelconfig_appDb_dbPort: =c= e.g. 1234
 modelconfig_appDb_userDbLink: =c= database link from application database to user database, or ''
 modelconfig_appDb_acctDbLink: =c= database link from application database to account database, or ''
+modelconfig_appDb_cacheSchema: =c= schema to be used for the WDK cache tables
 
 modelconfig_userDb_login: =c= username for user database
 modelconfig_userDb_password: =c= password for user database

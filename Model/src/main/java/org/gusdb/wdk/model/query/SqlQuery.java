@@ -54,6 +54,8 @@ public class SqlQuery extends Query {
 
   public static final String PARTITION_KEYS_MACRO = "%%PARTITION_KEYS%%";
 
+  private static final String PARTITION_KEYS_PLACEHOLDER = "'PLACEHOLDER'";
+
   private List<WdkModelText> _sqlList;
   private String _sql;
   private List<WdkModelText> _sqlMacroList;
@@ -331,8 +333,8 @@ public class SqlQuery extends Query {
   public Map<String, AttributeFieldDataType> resolveColumnTypes() throws WdkModelException {
     var types = new LinkedHashMap<String, AttributeFieldDataType>();
 
-    // use place holder for partition keys, to produce syntatically correct SQL
-    var sql = applyParams(getSql(), paramMap.values().iterator()).replaceAll(PARTITION_KEYS_MACRO, "'PLACEHOLDER'");
+    // use place holder for partition keys, to produce syntactically correct SQL
+    var sql = applyParams(getSql(), paramMap.values().iterator()).replaceAll(PARTITION_KEYS_MACRO, PARTITION_KEYS_PLACEHOLDER);
 
     // DB column name casing may not match xml name casing.
     var names = _columnMap.keySet()
@@ -388,8 +390,8 @@ public class SqlQuery extends Query {
   private Map<String, AttributeFieldDataType> handleColumnTypeException(
     final SQLException ex
   ) throws WdkModelException {
-    // use place holder for partition keys, to produce syntatically correct SQL
-    var sql = getSql().replaceAll(PARTITION_KEYS_MACRO, "'PLACEHOLDER'");
+    // use place holder for partition keys, to produce syntactically correct SQL
+    var sql = getSql().replaceAll(PARTITION_KEYS_MACRO, PARTITION_KEYS_PLACEHOLDER);
 
     var macro = MACRO.matcher(sql);
     var param = PARAM.matcher(sql);

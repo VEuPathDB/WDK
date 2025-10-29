@@ -17,15 +17,16 @@ package org.gusdb.wdk.model.config;
  */
 public class ModelConfigAppDB extends ModelConfigDB {
 
-  private String userDbLink;
-  private String remoteUserDataSchema;
-  private int maxPkColumnWidth = 150;
+  private String _userDbLink;
+  private String _cacheSchema;
+  private String _remoteUserDataSchema;
+  private int _maxPkColumnWidth = 150;
 
   /**
    * @return the userDbLink
    */
   public String getUserDbLink() {
-    return userDbLink;
+    return _userDbLink;
   }
 
   /**
@@ -35,22 +36,38 @@ public class ModelConfigAppDB extends ModelConfigDB {
   public void setUserDbLink(String userDbLink) {
     if (userDbLink.length() > 0 && !userDbLink.startsWith("@"))
       userDbLink = "@" + userDbLink;
-    this.userDbLink = userDbLink;
+    _userDbLink = userDbLink;
+  }
+
+  public void setCacheSchema(String cacheSchema) {
+    _cacheSchema = cacheSchema;
+  }
+
+  /**
+   * @return the schema to be used for the WDK cache; if not specified in model-config.xml,
+   * the login user schema will be used as the default.  A '.' is appended to the end if
+   * not already present.
+   */
+  public String getCacheSchema() {
+    String schema = _cacheSchema == null ? getLogin() : _cacheSchema;
+    if (!schema.endsWith(".")) schema += ".";
+    return schema;
   }
 
   public String getRemoteUserDataSchema() {
-    return remoteUserDataSchema;
+    return _remoteUserDataSchema;
   }
 
   public void setRemoteUserDataSchema(String remoteUserDataSchema) {
     if (remoteUserDataSchema == null) {
-      this.remoteUserDataSchema = "";
-    } else {
+      _remoteUserDataSchema = "";
+    }
+    else {
       remoteUserDataSchema = remoteUserDataSchema.trim().toLowerCase();
       if (!remoteUserDataSchema.isEmpty() && !remoteUserDataSchema.endsWith(".")) {
          remoteUserDataSchema = remoteUserDataSchema + ".";
       }
-      this.remoteUserDataSchema = remoteUserDataSchema;
+      _remoteUserDataSchema = remoteUserDataSchema;
     }
   }
 
@@ -64,11 +81,11 @@ public class ModelConfigAppDB extends ModelConfigDB {
    * @return
    */
   public int getMaxPkColumnWidth() {
-    return maxPkColumnWidth;
+    return _maxPkColumnWidth;
   }
 
   public void setMaxPkColumnWidth(int maxPkColumnWidth) {
-    this.maxPkColumnWidth = maxPkColumnWidth;
+    _maxPkColumnWidth = maxPkColumnWidth;
   }
 
 }

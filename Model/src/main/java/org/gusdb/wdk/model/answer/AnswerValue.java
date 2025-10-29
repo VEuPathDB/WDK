@@ -936,7 +936,7 @@ public class AnswerValue {
             while (rs.next()) {
               partKeys.add("'" + rs.getString("partition_key") + "'");
             }
-            return String.join(", ", partKeys);
+            return partKeys.isEmpty()? "'no partition keys'" : String.join(", ", partKeys);
           });
         }
         catch (SQLRunnerException e) {
