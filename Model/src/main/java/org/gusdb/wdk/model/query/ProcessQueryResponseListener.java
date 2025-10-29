@@ -80,8 +80,8 @@ public class ProcessQueryResponseListener implements WsfResponseListener {
         // value = value.substring(0, column.getWidth() - 3) + "...";
       }
 
-      if (!type.equals(ColumnType.STRING) && value != null && value.isEmpty()) {
-        // non-string type is being passed an empty string; treat as null
+      if (value != null && value.isEmpty()) {
+        // treat empty strings as null; this will ensure compatibility with both PG and Oracle
         value = null;
       }
 
