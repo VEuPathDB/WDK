@@ -513,7 +513,7 @@ public class BasketFactory {
 
   public static String getBasketSelectSql(WdkModel wdkModel, RecordClass recordClass) {
 
-    String dbLink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
+    String userDbLink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
     String remoteUserDataSchema = wdkModel.getModelConfig().getAppDB().getRemoteUserDataSchema();
     String[] pkColumns = recordClass.getPrimaryKeyDefinition().getColumnRefs();
 
@@ -524,7 +524,7 @@ public class BasketFactory {
       sql.append("b." + Utilities.COLUMN_PK_PREFIX + (i + 1));
       sql.append(" AS " + pkColumns[i]);
     }
-    sql.append(" FROM " + remoteUserDataSchema + TABLE_BASKET + " b ");
+    sql.append(" FROM " + remoteUserDataSchema + TABLE_BASKET + userDbLink + " b ");
     sql.append(" WHERE b." + COLUMN_USER_ID + " = " + getUserParamMacro() + " ");
     sql.append("   AND b." + COLUMN_PROJECT_ID + " = '" + wdkModel.getProjectId() + "'");
     sql.append("   AND b." + COLUMN_RECORD_CLASS + " = '" + recordClass.getFullName() + "'");
