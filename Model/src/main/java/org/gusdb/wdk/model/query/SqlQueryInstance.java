@@ -119,7 +119,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
    * @param internal
    *   param internal values
    */
-  public String getUncachedSql(Map<String, String> internal) {
+  public String getUncachedSql(Map<String, String> internal) throws WdkModelException {
     var params = _query.getParamMap();
     var sql = _query.getSql();
 
@@ -134,13 +134,8 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       if (param instanceof AnswerParam && sql.contains(SqlQuery.PARTITION_KEYS_MACRO)) {
         AnswerParam ap = (AnswerParam) param;
         AnswerParamHandler aph = (AnswerParamHandler) ap.getParamHandler();
-        try {
-          AnswerValue av = aph.getAnswerFromStepParam(_spec);
-          sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
-              av.getPartitionKeysString(getQuery().getFullName()));
-        } catch (WdkModelException e) {
-          throw new RuntimeException(e);
-        }
+        AnswerValue av = aph.getAnswerFromStepParam(_spec);
+        sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO, av.getPartitionKeysString(getQuery().getFullName()));
       }
       sql = param.replaceSql(sql, _spec.get().get(paramName), value);
     }
