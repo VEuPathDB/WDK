@@ -136,7 +136,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
         AnswerParamHandler aph = (AnswerParamHandler) ap.getParamHandler();
         try {
           AnswerValue av = aph.getAnswerFromStepParam(_spec);
-          sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
+          sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
               av.getPartitionKeysString(getQuery().getFullName()));
         } catch (WdkModelException e) {
           throw new RuntimeException(e);
