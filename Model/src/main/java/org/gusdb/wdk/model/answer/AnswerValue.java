@@ -902,7 +902,7 @@ public class AnswerValue {
     _sortedIdSql = null;
   }
 
-  private String getPartitionKeysString(String queryName) throws WdkModelException {
+  public String getPartitionKeysString(String queryName) throws WdkModelException {
     if (_partitionKeysString == null) {
       RecordClass rc = _question.getRecordClass();
       SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();

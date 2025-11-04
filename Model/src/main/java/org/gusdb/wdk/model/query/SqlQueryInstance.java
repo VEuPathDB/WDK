@@ -6,9 +6,12 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.AnswerParamHandler;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.json.JSONObject;
 
@@ -127,6 +130,17 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
         LOG.warn("value doesn't exist for param " + param.getFullName()
           + " in query " + _query.getFullName());
         value = "";
+      }
+      if (param instanceof AnswerParam && sql.contains(SqlQuery.PARTITION_KEYS_MACRO)) {
+        AnswerParam ap = (AnswerParam) param;
+        AnswerParamHandler aph = (AnswerParamHandler) ap.getParamHandler();
+        try {
+          AnswerValue av = aph.getAnswerFromStepParam(_spec);
+          sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
+              av.getPartitionKeysString(getQuery().getFullName()));
+        } catch (WdkModelException e) {
+          throw new RuntimeException(e);
+        }
       }
       sql = param.replaceSql(sql, _spec.get().get(paramName), value);
     }
