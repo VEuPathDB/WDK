@@ -31,6 +31,8 @@ import org.gusdb.wdk.model.record.attribute.AttributeValue;
  */
 public class TableValue implements Iterable<TableValueRow> {
 
+  public static final int MAX_TABLE_VALUE_ROWS = 30000;
+
   protected final TableField _tableField;
   protected List<TableValueRow> _rows;
 

@@ -11,10 +11,8 @@ import java.util.Set;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.answer.single.SingleRecordAnswerValue;
 import org.gusdb.wdk.model.answer.stream.FileBasedRecordStream;
 import org.gusdb.wdk.model.answer.stream.RecordStream;
-import org.gusdb.wdk.model.answer.stream.SingleRecordStream;
 import org.gusdb.wdk.model.answer.stream.SingleTableRecordStream;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
@@ -26,7 +24,7 @@ import org.json.JSONObject;
 
 public class TableTabularReporter extends AbstractTabularReporter {
 
-  private TableField _tableField;
+  protected TableField _tableField;
   private Collection<AttributeField> _tableAttributes;
 
   @Override
@@ -58,6 +56,7 @@ public class TableTabularReporter extends AbstractTabularReporter {
    */
   @Override
   public RecordStream getRecords() throws WdkModelException {
+    /* Test to see if this case is necessary- may be ok to fall down to SingleTableRecordStream
     if (_baseAnswer instanceof SingleRecordAnswerValue) {
       try {
         return new SingleRecordStream((SingleRecordAnswerValue)_baseAnswer);
@@ -65,7 +64,7 @@ public class TableTabularReporter extends AbstractTabularReporter {
       catch (WdkUserException e) {
         throw new WdkModelException(e.getMessage(), e);
       }
-    }
+    } */
     RecordClass recordClass = _baseAnswer.getQuestion().getRecordClass();
     if (idAttributeContainsNonPkFields(recordClass)) {
       // need to use FileBasedRecordStream to support both this table and any needed attributes
@@ -75,8 +74,12 @@ public class TableTabularReporter extends AbstractTabularReporter {
     }
     else {
       // the records returned by this stream will have only PK and this single table field populated
-      return new SingleTableRecordStream(_baseAnswer, _tableField);
+      return getSingleTableRecordStream();
     }
+  }
+
+  protected RecordStream getSingleTableRecordStream() throws WdkModelException {
+    return new SingleTableRecordStream(_baseAnswer, _tableField);
   }
 
   private static boolean idAttributeContainsNonPkFields(RecordClass recordClass) throws WdkModelException {

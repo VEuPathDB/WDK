@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.record;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.Timer;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -36,7 +37,12 @@ public class DynamicTableValue extends TableValue {
 
   private void loadRowsFromQuery() {
     try (ResultList resultList = _queryInstance.getResults()) {
+      int rowCount = 0;
+      Timer t = new Timer();
       while (resultList.next()) {
+        LOG.trace("Row " + (++rowCount) + ": fetched in " + t.getElapsedStringAndRestart());
+        if (rowCount > MAX_TABLE_VALUE_ROWS)
+          throw new WdkRuntimeException("Table query returned too many (>" + MAX_TABLE_VALUE_ROWS + ") rows.");
         initializeRow(resultList);
       }
     }

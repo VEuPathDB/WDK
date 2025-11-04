@@ -366,23 +366,29 @@ public class AnswerValue implements PartitionKeysProvider {
           getPagedTableSql(tableQuery);
   }
 
-  public ResultList getTableFieldResultList(TableField tableField) throws WdkModelException {
-
+  public String getTableFieldResultSql(TableField tableField) throws WdkModelException {
     // has to get a clean copy of the attribute query, without pk params appended
     Query tableQuery = tableField.getUnwrappedQuery();
 
     // get and run the paged table query sql
-    LOG.debug("AnswerValue: getTableFieldResultList(): going to getPagedTableSql()");
+    LOG.debug("AnswerValue: getTableFieldResultSql(): going to getPagedTableSql()");
 
-    String sql = getAnswerTableSql(tableQuery);
-        
+    return getAnswerTableSql(tableQuery);
+  }
+
+  public ResultList getTableFieldResultList(TableField tableField) throws WdkModelException {
+    return getTableFieldResultList(tableField, getTableFieldResultSql(tableField));
+  }
+
+  public ResultList getTableFieldResultList(TableField tableField, String customSql) throws WdkModelException {
+
     LOG.debug("AnswerValue: getTableFieldResultList(): back from getPagedTableSql()");
     DatabaseInstance platform = _wdkModel.getAppDb();
     DataSource dataSource = platform.getDataSource();
     ResultSet resultSet = null;
     try {
-      LOG.debug("AnswerValue: getTableFieldResultList(): returning SQL for TableField '" + tableField.getName() + "': \n" + sql);
-      resultSet = SqlUtils.executeQuery(dataSource, sql, tableQuery.getFullName() + "_table");
+      LOG.debug("AnswerValue: getTableFieldResultList(): returning SQL for TableField '" + tableField.getName() + "': \n" + customSql);
+      resultSet = SqlUtils.executeQuery(dataSource, customSql, tableField.getUnwrappedQuery().getFullName() + "_table");
     }
     catch (SQLException e) {
       throw new WdkModelException(e);
