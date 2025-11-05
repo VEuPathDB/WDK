@@ -5,9 +5,7 @@ import java.util.Map;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.query.Column;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.*;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.user.StepContainer;
@@ -17,9 +15,9 @@ public class SqlQueryResultSizePlugin implements ResultSize {
   private final static String WDK_ID_SQL_PARAM = "WDK_ID_SQL";
   private final static String COUNT_COLUMN = "count";
 
-  Query _query;
+  SqlQuery _query;
 
-  public SqlQueryResultSizePlugin(Query query) throws WdkModelException {
+  public SqlQueryResultSizePlugin(SqlQuery query) throws WdkModelException {
     _query = query;
     validateQuery(query);
   }
@@ -32,10 +30,10 @@ public class SqlQueryResultSizePlugin implements ResultSize {
   @Override
   public Integer getResultSize(AnswerValue answerValue, String idSql) throws WdkModelException {
 
-    QueryInstance<?> queryInstance = Query.makeQueryInstance(QueryInstanceSpec.builder()
+    SqlQueryInstance queryInstance = (SqlQueryInstance) SqlQuery.makeQueryInstance(QueryInstanceSpec.builder()
         .put(WDK_ID_SQL_PARAM, idSql)
         .buildRunnable(answerValue.getRequestingUser(), _query, StepContainer.emptyContainer()));
-    try (ResultList results = queryInstance.getResults()) {
+    try (ResultList results = queryInstance.getUncachedResultsSubstitutePartitionKeys(answerValue)) {
       results.next();
       Integer count = ((Number) results.get(COUNT_COLUMN)).intValue();
       RecordClass recordClass = answerValue.getQuestion().getRecordClass();

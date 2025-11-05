@@ -819,8 +819,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       shortDisplayName = resultSizeQueryRef.getRecordShortDisplayName();
       displayNamePlural = resultSizeQueryRef.getRecordDisplayNamePlural();
       shortDisplayNamePlural = resultSizeQueryRef.getRecordShortDisplayNamePlural();
-        Query query = (Query) _wdkModel.resolveReference(resultSizeQueryRef.getTwoPartName());
-      resultSizePlugin = new SqlQueryResultSizePlugin(query);
+      Query query = (Query) _wdkModel.resolveReference(resultSizeQueryRef.getTwoPartName());
+      if (!(query instanceof SqlQuery)) {
+        throw new WdkModelException("Result size query ref " + query.getFullName() + " must refer to a SqlQuery");
+      }
+      resultSizePlugin = new SqlQueryResultSizePlugin((SqlQuery)query);
     }
 
     if (resultPropertyQueryRef != null) {

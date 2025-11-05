@@ -79,6 +79,29 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     }
   }
 
+  public ResultList getUncachedResultsSubstitutePartitionKeys(AnswerValue answerValue) throws WdkModelException {
+    try {
+      var sql = getUncachedSql();
+      if (sql.contains(SqlQuery.PARTITION_KEYS_MACRO)) {
+        sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
+            answerValue.getPartitionKeysString(getQuery().getFullName()));
+      }
+      LOG.info("Performing the following SQL: (use debug to see SQL) " );
+      LOG.debug("Performing the following SQL: " + sql);
+      return new SqlResultList(SqlUtils.executeQuery(
+          _wdkModel.getAppDb().getDataSource(),
+          sql,
+          _query.getFullName() + "__select-uncached",
+          0,
+          _query.isUseDBLink()
+      ));
+    }
+    catch (SQLException e) {
+      throw new WdkModelException("Could not get uncached results from DB.", e);
+    }
+  }
+
+
   @Override
   public Optional<String> createCacheTableAndInsertResult(DatabaseInstance appDb, String cacheSchema, String tableName, long instanceId)
       throws WdkModelException {
