@@ -504,7 +504,6 @@ public class AnswerValue {
   ) throws WdkModelException {
     String wrapped = joinToIds(getAttributeSql(attrQuery));
     wrapped = substitutePartitionKeys(wrapped, attrQuery.getName() + "-getFilteredAttributeSql()");
-
     if (!sort)
       return wrapped;
 
@@ -707,7 +706,7 @@ public class AnswerValue {
 
     innerSql = "(\n" + indent(innerSql) + "\n)";
 
-    substitutePartitionKeys(innerSql, getQuestion().getQueryName() + "-getIdSql()");
+    innerSql = substitutePartitionKeys(innerSql, getQuestion().getQueryName() + "-getIdSql()");
 
     LOG.debug("AnswerValue: getIdSql(): ID SQL constructed with all filters:\n" + innerSql);
 
@@ -1127,7 +1126,7 @@ public class AnswerValue {
 
   private String substitutePartitionKeys(String sql, String queryName) throws WdkModelException {
     if (sql.contains(SqlQuery.PARTITION_KEYS_MACRO))
-      sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
+      sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
           getPartitionKeysString(queryName));
     return sql;
   }
