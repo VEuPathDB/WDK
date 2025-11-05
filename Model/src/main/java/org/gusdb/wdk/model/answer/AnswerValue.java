@@ -504,7 +504,6 @@ public class AnswerValue {
     final boolean sort
   ) throws WdkModelException {
     final var wrapped = joinToIds(getAttributeSql(attrQuery));
-
     if (!sort)
       return wrapped;
 
@@ -908,7 +907,7 @@ public class AnswerValue {
       SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
 
       PrimaryKeyDefinition pkd = rc.getPrimaryKeyDefinition();
-      String idSql = getIdSql();
+      String idSql = getBaseIdSql(false);
       String partSql = partKeySqlQuery.getSql();
 
       String sql =
