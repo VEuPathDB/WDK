@@ -435,8 +435,7 @@ public class AnswerValue {
     RunnableObj<QueryInstanceSpec> tableQuerySpec = QueryInstanceSpec.builder()
         .buildRunnable(_requestingUser, tableQuery, StepContainer.emptyContainer());
     String tableSql = Query.makeQueryInstance(tableQuerySpec).getSql();
-    if (tableSql.contains(SqlQuery.PARTITION_KEYS_MACRO))
-      tableSql = tableSql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO, getPartitionKeysString(tableQuery.getName()));
+    tableSql = substitutePartitionKeys(tableSql, tableQuery.getName());
     return tableSql;
   }
   
@@ -503,7 +502,9 @@ public class AnswerValue {
     final Query attrQuery,
     final boolean sort
   ) throws WdkModelException {
-    final var wrapped = joinToIds(getAttributeSql(attrQuery));
+    String wrapped = joinToIds(getAttributeSql(attrQuery));
+    wrapped = substitutePartitionKeys(wrapped, attrQuery.getName() + "-getFilteredAttributeSql()");
+
     if (!sort)
       return wrapped;
 
@@ -565,8 +566,8 @@ public class AnswerValue {
         // (but should return any dynamic columns)
         .replace(Utilities.MACRO_ID_SQL_NO_FILTERS,  "(" + getNoFiltersIdSql() + ")");
     }
-    if (sql.contains(SqlQuery.PARTITION_KEYS_MACRO))
-      sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO, getPartitionKeysString(attributeQuery.getName()));
+    sql = substitutePartitionKeys(sql, attributeQuery.getName());
+
     return sql;
   }
 
@@ -705,6 +706,9 @@ public class AnswerValue {
       innerSql = applyColumnFilters(innerSql);
 
     innerSql = "(\n" + indent(innerSql) + "\n)";
+
+    substitutePartitionKeys(innerSql, getQuestion().getQueryName() + "-getIdSql()");
+
     LOG.debug("AnswerValue: getIdSql(): ID SQL constructed with all filters:\n" + innerSql);
 
     return innerSql;
@@ -1119,5 +1123,12 @@ public class AnswerValue {
       .append(sql)
       .append("\n) sarsc")
       .toString();
+  }
+
+  private String substitutePartitionKeys(String sql, String queryName) throws WdkModelException {
+    if (sql.contains(SqlQuery.PARTITION_KEYS_MACRO))
+      sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
+          getPartitionKeysString(queryName));
+    return sql;
   }
 }
