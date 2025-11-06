@@ -47,12 +47,12 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
 
   @Override
   public String getSql() throws WdkModelException {
-    return getSql(true);
+    return "\n/* the ID query (sql query, sorted) */\n" + getSql(true);
   }
 
   @Override
   public String getSqlUnsorted() throws WdkModelException {
-    return getSql(false);
+    return "\n/* the ID query (sql query, unsorted) */\n" + getSql(false);
   }
 
   private String getSql(boolean performSorting) throws WdkModelException {

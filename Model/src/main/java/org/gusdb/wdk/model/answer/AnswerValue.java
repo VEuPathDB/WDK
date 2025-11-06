@@ -674,13 +674,11 @@ public class AnswerValue {
   }
 
   private String getBaseIdSql(boolean sorted) throws WdkModelException {
-    String sql = sorted? _idsQueryInstance.getSql() : _idsQueryInstance.getSqlUnsorted();
     // get base ID sql from query instance
-    String innerSql = "\n/* the ID query */\n" + sql;
+    String sql = sorted? _idsQueryInstance.getSql() : _idsQueryInstance.getSqlUnsorted();
 
     // add answer param columns
-    return "\n/* answer param value cols applied on id query */\n"
-      + applyAnswerParams(innerSql, _question.getParamMap(),
+    return applyAnswerParams(sql, _question.getParamMap(),
         _idsQueryInstance.getParamStableValues());
   }
 
@@ -745,7 +743,8 @@ public class AnswerValue {
       .collect(Collectors.joining(""));
 
     // return wrapped innerSql including new columns
-    return "\nSELECT\n  papidsql.*" + extraCols + "\nFROM (\n" +
+    return "\n/* answer param value cols applied on id query */\n" +
+        "SELECT\n  papidsql.*" + extraCols + "\nFROM (\n" +
       indent(innerSql) + "\n) papidsql ";
   }
 
