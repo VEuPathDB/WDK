@@ -145,7 +145,9 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
   public String getUncachedSql(Map<String, String> internal) throws WdkModelException {
     var params = _query.getParamMap();
     var sql = _query.getSql();
+    var sqlContainsPartKeyMacro = sql.contains(SqlQuery.PARTITION_KEYS_MACRO);
 
+    boolean alreadySubstitutedPartKeys = false;
     for (var paramName : params.keySet()) {
       var param = params.get(paramName);
       var value = internal.get(paramName);
@@ -154,7 +156,10 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
           + " in query " + _query.getFullName());
         value = "";
       }
-      if (param instanceof AnswerParam && sql.contains(SqlQuery.PARTITION_KEYS_MACRO)) {
+      if (param instanceof AnswerParam && sqlContainsPartKeyMacro) {
+        if (alreadySubstitutedPartKeys)
+          throw new WdkModelException("Query " + getQuery().getFullName() + " uses partition keys but has more than one answerParam");
+        alreadySubstitutedPartKeys = true;
         AnswerParam ap = (AnswerParam) param;
         AnswerParamHandler aph = (AnswerParamHandler) ap.getParamHandler();
         AnswerValue av = aph.getAnswerFromStepParam(_spec);
