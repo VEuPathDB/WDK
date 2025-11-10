@@ -2,6 +2,8 @@ package org.gusdb.wdk.model.answer.spec;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 import org.gusdb.fgputil.collection.ReadOnlyHashMap;
@@ -25,6 +27,7 @@ public class ColumnFilterConfig extends ReadOnlyHashMap<String, JSONObject> {
       final String name,
       final JSONObject builder
     ) {
+      Objects.requireNonNull(builder);
       put(name, builder);
       return this;
     }
@@ -42,4 +45,12 @@ public class ColumnFilterConfig extends ReadOnlyHashMap<String, JSONObject> {
     entrySet().stream().forEach(entry -> fn.accept(entry.getKey(), entry.getValue()));
   }
 
+  @Override
+  public String toString() {
+    JSONObject configs = new JSONObject();
+    for (Entry<String, JSONObject> config : entrySet()) {
+      configs.put(config.getKey(), config.getValue());
+    }
+    return configs.toString();
+  }
 }

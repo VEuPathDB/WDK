@@ -33,7 +33,7 @@ sub new {
             elsif (defined $cfg->{$_}->{ldapCommonName} && $cfg->{$_}->{ldapCommonName} ne '') {
 		my $cn = $cfg->{$_}->{ldapCommonName};
 		my $host;
-		if ($cn eq "genomicsdb_068n"){
+		if ($cn eq "genomicsdb_068n" || $cn eq "genomicsdb_devn"){
 		    $host = "ares13.penn.apidb.org";
 		} elsif ($cn eq "GenomicsDB_ReflowPlus"){
 		    $host = "ares9.penn.apidb.org";
