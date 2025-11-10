@@ -56,6 +56,7 @@ public class ColumnFilterConfigSet extends ReadOnlyHashMap<String, ColumnFilterC
      * 
      * @param columnName
      * @param filterName
+     *
      * @return true if filter removed, else false
      */
     public boolean remove(String columnName, String filterName) {
@@ -64,6 +65,10 @@ public class ColumnFilterConfigSet extends ReadOnlyHashMap<String, ColumnFilterC
       JSONObject config = columnFilters.get(filterName);
       if (config == null) return false;
       columnFilters.remove(filterName);
+      if (columnFilters.isEmpty()) {
+        // don't let empty builder remain
+        builders.remove(columnName);
+      }
       return true;
     }
   }
