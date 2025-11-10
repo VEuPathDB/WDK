@@ -903,72 +903,6 @@ public class AnswerValue implements PartitionKeysProvider {
     _sortedIdSql = null;
   }
 
-  public String getPartitionKeysString(String queryName) throws WdkModelException {
-    if (_partitionKeysString == null) {
-      RecordClass rc = _question.getRecordClass();
-      SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
-
-      PrimaryKeyDefinition pkd = rc.getPrimaryKeyDefinition();
-      String idSql = getBaseIdSql(false);
-      String partSql = partKeySqlQuery.getSql();
-
-      String sql =
-          "SELECT distinct partition_key " +
-          " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
-          " WHERE " + pkd.createJoinClause("ids", "parts");
-      _partitionKeysString = getPartitionKeysString(rc, queryName, sql);
-    }
-    return _partitionKeysString;
-  }
-
-  /* sql parameter: sql that finds a distinct set of partition keys (for, eg, a result set) */
-  public static String getPartitionKeysString(RecordClass rc, String queryName, String sql) throws WdkModelException {
-      SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
-
-      if (partKeySqlQuery == null) {
-        throw new WdkModelException("Query " + queryName + " uses macro "
-            + SqlQuery.PARTITION_KEYS_MACRO + " but record class " + rc.getName()
-            + " does not define a partition key query ref");
-      } else {
-        try {
-          return new SQLRunner(rc.getWdkModel().getAppDb().getDataSource(), sql,
-              rc.getName()+ "__partitionKey").executeQuery(rs -> {
-            List<String> partKeys = new ArrayList<>();
-            while (rs.next()) {
-              partKeys.add("'" + rs.getString("partition_key") + "'");
-            }
-            return partKeys.isEmpty()? "'no partition keys'" : String.join(", ", partKeys);
-          });
-        }
-        catch (SQLRunnerException e) {
-          throw new WdkModelException(e.getCause());
-        }
-      }
-  }
-
-  /* Given the primary key of a single record, and an attribute or table SqlQuery,
-   *  return a copy of the SqlQuery with its SQL modified to join on the partitio key for the record */
-  public static SqlQuery addPartKeysToAttrOrTableSqlQuery (SqlQuery attrOrTableSqlQuery, RecordClass recordClass, PrimaryKeyValue primaryKey) throws WdkModelException {
-    SqlQuery partKeySqlQuery = recordClass.getPartitionKeysSqlQuery();
-
-    PrimaryKeyDefinition pkd = recordClass.getPrimaryKeyDefinition();
-    String idSql = "select " + pkd.createSelectClause(primaryKey.getValues()) +
-        recordClass.getWdkModel().getAppDb().getPlatform().getDummyTable();
-
-    String partSql = partKeySqlQuery.getSql();
-
-    String sql =
-        "SELECT distinct partition_key " +
-            " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
-            " WHERE " + pkd.createJoinClause("ids", "parts");
-
-    LOG.debug("SQL: \n" + (attrOrTableSqlQuery).getSql());
-    SqlQuery sqlQueryNew = new SqlQuery(attrOrTableSqlQuery);
-    sqlQueryNew.setSql(attrOrTableSqlQuery.getSql().replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
-        AnswerValue.getPartitionKeysString(recordClass, attrOrTableSqlQuery.getFullName(), sql)));
-    return sqlQueryNew;
-  }
-
   private void reset() {
     _sortedIdSql = null;
     _checksum = null;
@@ -1122,6 +1056,72 @@ public class AnswerValue implements PartitionKeysProvider {
       .append("\n) sarsc")
       .toString();
   }
+  public String getPartitionKeysString(String queryName) throws WdkModelException {
+    if (_partitionKeysString == null) {
+      RecordClass rc = _question.getRecordClass();
+      SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
+
+      PrimaryKeyDefinition pkd = rc.getPrimaryKeyDefinition();
+      String idSql = getBaseIdSql(false);
+      String partSql = partKeySqlQuery.getSql();
+
+      String sql =
+          "SELECT distinct partition_key " +
+              " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
+              " WHERE " + pkd.createJoinClause("ids", "parts");
+      _partitionKeysString = getPartitionKeysString(rc, queryName, sql);
+    }
+    return _partitionKeysString;
+  }
+
+  /* sql parameter: sql that finds a distinct set of partition keys (for, eg, a result set) */
+  public static String getPartitionKeysString(RecordClass rc, String queryName, String sql) throws WdkModelException {
+    SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
+
+    if (partKeySqlQuery == null) {
+      throw new WdkModelException("Query " + queryName + " uses macro "
+          + SqlQuery.PARTITION_KEYS_MACRO + " but record class " + rc.getName()
+          + " does not define a partition key query ref");
+    } else {
+      try {
+        return new SQLRunner(rc.getWdkModel().getAppDb().getDataSource(), sql,
+            rc.getName()+ "__partitionKey").executeQuery(rs -> {
+          List<String> partKeys = new ArrayList<>();
+          while (rs.next()) {
+            partKeys.add("'" + rs.getString("partition_key") + "'");
+          }
+          return partKeys.isEmpty()? "'no partition keys'" : String.join(", ", partKeys);
+        });
+      }
+      catch (SQLRunnerException e) {
+        throw new WdkModelException(e.getCause());
+      }
+    }
+  }
+
+  /* Given the primary key of a single record, and an attribute or table SqlQuery,
+   *  return a copy of the SqlQuery with its SQL modified to join on the partitio key for the record */
+  public static SqlQuery addPartKeysToAttrOrTableSqlQuery (SqlQuery attrOrTableSqlQuery, RecordClass recordClass, PrimaryKeyValue primaryKey) throws WdkModelException {
+    SqlQuery partKeySqlQuery = recordClass.getPartitionKeysSqlQuery();
+
+    PrimaryKeyDefinition pkd = recordClass.getPrimaryKeyDefinition();
+    String idSql = "select " + pkd.createSelectClause(primaryKey.getValues()) +
+        recordClass.getWdkModel().getAppDb().getPlatform().getDummyTable();
+
+    String partSql = partKeySqlQuery.getSql();
+
+    String sql =
+        "SELECT distinct partition_key " +
+            " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
+            " WHERE " + pkd.createJoinClause("ids", "parts");
+
+    LOG.debug("SQL: \n" + (attrOrTableSqlQuery).getSql());
+    SqlQuery sqlQueryNew = new SqlQuery(attrOrTableSqlQuery);
+    sqlQueryNew.setSql(attrOrTableSqlQuery.getSql().replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
+        AnswerValue.getPartitionKeysString(recordClass, attrOrTableSqlQuery.getFullName(), sql)));
+    return sqlQueryNew;
+  }
+
 
   @Override
   public String substitutePartitionKeys(String sql, String queryName) throws WdkModelException {
@@ -1130,5 +1130,22 @@ public class AnswerValue implements PartitionKeysProvider {
           getPartitionKeysString(queryName));
     return sql;
   }
+
+public String getPartitionKeysStringForPostCacheUpdate(String cacheSchema, String tableName, String queryName) throws WdkModelException {
+    if (_partitionKeysString == null) {
+      RecordClass recordClass = _question.getRecordClass();
+
+      String partSql = recordClass.getPartitionKeysSqlQuery().getSql();
+      PrimaryKeyDefinition pkd = recordClass.getPrimaryKeyDefinition();
+      String idSql = "select * from " + cacheSchema + tableName;
+      String s = "SELECT distinct partition_key " +
+          " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
+          " WHERE " + pkd.createJoinClause("ids", "parts");
+
+      _partitionKeysString = AnswerValue.getPartitionKeysString(recordClass, queryName, s);
+    }
+    return _partitionKeysString;
+  }
+
 
 }

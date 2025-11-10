@@ -54,7 +54,7 @@ public class SqlQuery extends Query {
 
   public static final String PARTITION_KEYS_MACRO = "%%PARTITION_KEYS%%";
 
-  private static final String PARTITION_KEYS_PLACEHOLDER = "'PLACEHOLDER'";
+  public static final String PARTITION_KEYS_PLACEHOLDER = "'PLACEHOLDER'";
 
   private List<WdkModelText> _sqlList;
   private String _sql;

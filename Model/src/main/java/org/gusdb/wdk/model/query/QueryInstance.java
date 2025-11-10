@@ -257,7 +257,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
       if (sql.contains(SqlQuery.PARTITION_KEYS_MACRO))
         sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
             getPartitionKeysString(cacheSchema, tableName, _query.getFullName() + "-PostCacheUpdateSql"));
-      
+
       LOG.debug("POST sql: " + sql);
       // get results and time process();
       try {
@@ -268,7 +268,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
     }
   }
 
-  String getPartitionKeysString(String cacheSchema, String tableName, String queryName) throws WdkModelException {
+  String getPartitionKeysStringForPostCacheUpdate(String cacheSchema, String tableName, String queryName) throws WdkModelException {
 
     if (_partitionKeysString == null) {
       RecordClass recordClass = getQuery().getContextQuestion().getRecordClass();
