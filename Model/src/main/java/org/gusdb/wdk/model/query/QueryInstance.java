@@ -256,7 +256,7 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
 
       if (sql.contains(SqlQuery.PARTITION_KEYS_MACRO))
         sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
-            getPartitionKeysString(cacheSchema, tableName, _query.getFullName() + "-PostCacheUpdateSql"));
+            _partitionKeysProviderForPostCacheUpdateSqls.getPartitionKeysStringForPostCacheUpdate(cacheSchema, tableName, _query.getFullName() + "-PostCacheUpdateSql"));
 
       LOG.debug("POST sql: " + sql);
       // get results and time process();
