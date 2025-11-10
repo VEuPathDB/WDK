@@ -18,6 +18,7 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.answer.PartitionKeysProvider;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
@@ -85,14 +86,16 @@ public abstract class Query extends ParameterContainerImpl implements Optionally
 
   public static QueryInstance<?> makeQueryInstance(RunnableObj<QueryInstanceSpec> validSpec)
       throws WdkModelException {
-    return makeQueryInstance(validSpec, false);
+    return makeQueryInstance(validSpec, false, PartitionKeysProvider.PLACEHOLDER_PROVIDER);
   }
 
-  public static QueryInstance<?> makeQueryInstance(RunnableObj<QueryInstanceSpec> validSpec, boolean avoidCacheHit)
+  public static QueryInstance<?> makeQueryInstance(RunnableObj<QueryInstanceSpec> validSpec,
+      boolean avoidCacheHit, PartitionKeysProvider partitionKeysProviderForPostCacheUpdateSqls)
       throws WdkModelException {
     // unwrap the spec and use to create an instance of the proper type
     QueryInstance<?> instance = validSpec.get().getQuery().get().makeInstance(validSpec);
     instance.setAvoidCacheHit(avoidCacheHit);
+    instance.setPartitionKeysProviderForPostCacheUpdateSqls(partitionKeysProviderForPostCacheUpdateSqls);
     return instance;
   }
 

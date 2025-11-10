@@ -1006,7 +1006,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
       if (_partitionKeysSqlQuery == null && query.getSql().contains(SqlQuery.PARTITION_KEYS_MACRO)) {
         throw new WdkModelException("Table query " + query.getFullName()
-
             + "contains the macro " + SqlQuery.PARTITION_KEYS_MACRO
             + " but record class " + getName() + " does not define a partition key query ref");
       }

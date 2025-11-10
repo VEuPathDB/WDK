@@ -7,6 +7,7 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.PartitionKeysProvider;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
@@ -79,13 +80,10 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
     }
   }
 
-  public ResultList getUncachedResultsSubstitutePartitionKeys(AnswerValue answerValue) throws WdkModelException {
+  public ResultList getUncachedResultsSubstitutePartitionKeys(PartitionKeysProvider partitionKeysProvider) throws WdkModelException {
     try {
-      var sql = getUncachedSql();
-      if (sql.contains(SqlQuery.PARTITION_KEYS_MACRO)) {
-        sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
-            answerValue.getPartitionKeysString(getQuery().getFullName()));
-      }
+      var sql = partitionKeysProvider.substitutePartitionKeys(getUncachedSql(), getQuery().getFullName());
+
       LOG.info("Performing the following SQL: (use debug to see SQL) " );
       LOG.debug("Performing the following SQL: " + sql);
       return new SqlResultList(SqlUtils.executeQuery(
@@ -163,7 +161,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
         AnswerParam ap = (AnswerParam) param;
         AnswerParamHandler aph = (AnswerParamHandler) ap.getParamHandler();
         AnswerValue av = aph.getAnswerFromStepParam(_spec);
-        sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO, av.getPartitionKeysString(getQuery().getFullName()));
+        sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO, av.getPartitionKeysString(av.getQuestion().getQuery().getFullName()));
       }
       sql = param.replaceSql(sql, _spec.get().get(paramName), value);
     }

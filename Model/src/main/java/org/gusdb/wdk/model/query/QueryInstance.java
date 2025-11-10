@@ -20,6 +20,7 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.answer.PartitionKeysProvider;
 import org.gusdb.wdk.model.dbms.InstanceInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultFactory.CacheTableCreator;
@@ -65,6 +66,8 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   // fields that may be set after construction
   //   this is meant to override isCacheable to intentionally degrade performance during testing
   protected boolean _avoidCacheHit = false;
+
+  private PartitionKeysProvider _partitionKeysProviderForPostCacheUpdateSqls = PartitionKeysProvider.PLACEHOLDER_PROVIDER;
 
   // fields lazily loaded post-construction
   private Boolean _cachePreviouslyExistedForSpec;
@@ -244,9 +247,10 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
     final var cacheSchema = _wdkModel.getModelConfig().getAppDB().getCacheSchema();
 
     for (final var pcis : list) {
-      final var sql = pcis.getSql()
+      final var sql = _partitionKeysProviderForPostCacheUpdateSqls.substitutePartitionKeys(pcis.getSql()
         .replace(Utilities.MACRO_CACHE_TABLE, cacheSchema + tableName)
-        .replace(Utilities.MACRO_CACHE_INSTANCE_ID, Long.toString(instanceId));
+        .replace(Utilities.MACRO_CACHE_INSTANCE_ID, Long.toString(instanceId)),
+        _query.getFullName() + "-PostCacheUpdateSql");
 
       LOG.debug("POST sql: " + sql);
       // get results and time process();
@@ -260,5 +264,9 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
 
   public void setAvoidCacheHit(boolean avoidCacheHit) {
     _avoidCacheHit = avoidCacheHit;
+  }
+
+  public void setPartitionKeysProviderForPostCacheUpdateSqls(PartitionKeysProvider partitionKeysProviderForPostCacheUpdateSqls) {
+    _partitionKeysProviderForPostCacheUpdateSqls = partitionKeysProviderForPostCacheUpdateSqls;
   }
 }

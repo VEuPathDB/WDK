@@ -129,7 +129,7 @@ import org.json.JSONObject;
  * @author David Barkan
  * @version $Revision$ $Date$ $Author$
  */
-public class AnswerValue {
+public class AnswerValue implements PartitionKeysProvider {
 
   private static final Logger LOG = Logger.getLogger(AnswerValue.class);
 
@@ -186,7 +186,7 @@ public class AnswerValue {
     _wdkModel = _answerSpec.getWdkModel();
     _requestingUser = validAnswerSpec.get().getRequestingUser();
     _avoidCacheHit = avoidCacheHit;
-    _idsQueryInstance = Query.makeQueryInstance(_answerSpec.getQueryInstanceSpec().getRunnable().getLeft(), avoidCacheHit);
+    _idsQueryInstance = Query.makeQueryInstance(_answerSpec.getQueryInstanceSpec().getRunnable().getLeft(), avoidCacheHit, this);
     _resultSizeFactory = new ResultSizeFactory(this);
     _sortingMap = sortingMap == null? new HashMap<String, Boolean>() : sortingMap;
     setPageIndex(startIndex, endIndex);
@@ -1123,10 +1123,12 @@ public class AnswerValue {
       .toString();
   }
 
-  private String substitutePartitionKeys(String sql, String queryName) throws WdkModelException {
+  @Override
+  public String substitutePartitionKeys(String sql, String queryName) throws WdkModelException {
     if (sql.contains(SqlQuery.PARTITION_KEYS_MACRO))
       sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
           getPartitionKeysString(queryName));
     return sql;
   }
+
 }
