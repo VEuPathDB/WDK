@@ -11,6 +11,7 @@ public interface PartitionKeysProvider {
       return sql;
     }
 
+    @Override
     public String getPartitionKeysStringForPostCacheUpdate(String cacheSchema,
                                                            String tableName, String queryName) throws WdkModelException {
       return SqlQuery.PARTITION_KEYS_PLACEHOLDER;

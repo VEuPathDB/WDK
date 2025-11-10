@@ -1122,7 +1122,6 @@ public class AnswerValue implements PartitionKeysProvider {
     return sqlQueryNew;
   }
 
-
   @Override
   public String substitutePartitionKeys(String sql, String queryName) throws WdkModelException {
     if (sql.contains(SqlQuery.PARTITION_KEYS_MACRO))
@@ -1131,7 +1130,8 @@ public class AnswerValue implements PartitionKeysProvider {
     return sql;
   }
 
-public String getPartitionKeysStringForPostCacheUpdate(String cacheSchema, String tableName, String queryName) throws WdkModelException {
+  @Override
+  public String getPartitionKeysStringForPostCacheUpdate(String cacheSchema, String tableName, String queryName) throws WdkModelException {
     if (_partitionKeysString == null) {
       RecordClass recordClass = _question.getRecordClass();
 
