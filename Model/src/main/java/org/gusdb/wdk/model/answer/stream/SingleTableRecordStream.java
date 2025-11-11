@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.iterator.ReadOnlyIterator;
 import org.gusdb.wdk.model.WdkModelException;
@@ -23,6 +25,8 @@ import org.gusdb.wdk.model.record.TableValue;
 
 public class SingleTableRecordStream implements RecordStream {
 
+  private static final Logger LOG = Logger.getLogger(SingleTableRecordStream.class);
+
   private AnswerValue _answerValue;
   private TableField _tableField;
   private PrimaryKeyDefinition _pkDef;
@@ -32,6 +36,10 @@ public class SingleTableRecordStream implements RecordStream {
 
   public SingleTableRecordStream(AnswerValue answerValue, TableField tableField) throws WdkModelException {
     init(answerValue, tableField, answerValue.getTableFieldResultList(tableField));
+  }
+
+  public SingleTableRecordStream(AnswerValue answerValue, TableField tableField, String customTableSql) throws WdkModelException {
+    init(answerValue, tableField, answerValue.getTableFieldResultList(tableField, customTableSql));
   }
 
   public SingleTableRecordStream(AnswerValue answerValue, TableField tableField, ResultList resultList) {
@@ -84,6 +92,8 @@ public class SingleTableRecordStream implements RecordStream {
             _lastPkValues.set(null); // will reset if there is another record after this one
 
             // loop through the ResultList's rows and add to table until PK values differ
+            int rowCount = 0;
+            Timer t = new Timer();
             while (_resultList.next()) {
               Map<String,Object> rowPkValues = new PrimaryKeyValue(_pkDef, _resultList).getRawValues();
               if (rawValuesDiffer(currentRecordPkValues, rowPkValues)) {
@@ -92,6 +102,11 @@ public class SingleTableRecordStream implements RecordStream {
                 return record;
               }
               // otherwise add row to table value
+              rowCount++;
+              LOG.trace("Row " + rowCount + ": fetched in " + t.getElapsedStringAndRestart());
+              if (rowCount > TableValue.MAX_TABLE_VALUE_ROWS)
+                throw new WdkRuntimeException("Table query " + _tableField.getQueryRef() +
+                    " returned too many (>" + TableValue.MAX_TABLE_VALUE_ROWS + ") rows.");
               tableValue.initializeRow(_resultList);
             }
   

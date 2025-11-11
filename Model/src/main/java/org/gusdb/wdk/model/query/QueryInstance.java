@@ -20,12 +20,16 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.PartitionKeysProvider;
 import org.gusdb.wdk.model.dbms.InstanceInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultFactory.CacheTableCreator;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -66,6 +70,8 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
   //   this is meant to override isCacheable to intentionally degrade performance during testing
   protected boolean _avoidCacheHit = false;
 
+  private PartitionKeysProvider _partitionKeysProviderForPostCacheUpdateSqls = PartitionKeysProvider.PLACEHOLDER_PROVIDER;
+  private String _partitionKeysString = null;
   // fields lazily loaded post-construction
   private Boolean _cachePreviouslyExistedForSpec;
   private Map<String, String> _paramInternalValues;
@@ -244,9 +250,13 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
     final var cacheSchema = _wdkModel.getModelConfig().getAppDB().getCacheSchema();
 
     for (final var pcis : list) {
-      final var sql = pcis.getSql()
-        .replace(Utilities.MACRO_CACHE_TABLE, cacheSchema + tableName)
-        .replace(Utilities.MACRO_CACHE_INSTANCE_ID, Long.toString(instanceId));
+      String sql = pcis.getSql()
+          .replace(Utilities.MACRO_CACHE_TABLE, cacheSchema + tableName)
+          .replace(Utilities.MACRO_CACHE_INSTANCE_ID, Long.toString(instanceId));
+
+      if (sql.contains(SqlQuery.PARTITION_KEYS_MACRO))
+        sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO,
+            _partitionKeysProviderForPostCacheUpdateSqls.getPartitionKeysStringForPostCacheUpdate(cacheSchema, tableName, _query.getFullName() + "-PostCacheUpdateSql"));
 
       LOG.debug("POST sql: " + sql);
       // get results and time process();
@@ -258,7 +268,27 @@ public abstract class QueryInstance<T extends Query> implements CacheTableCreato
     }
   }
 
+  String getPartitionKeysStringForPostCacheUpdate(String cacheSchema, String tableName, String queryName) throws WdkModelException {
+
+    if (_partitionKeysString == null) {
+      RecordClass recordClass = getQuery().getContextQuestion().getRecordClass();
+
+      String partSql = recordClass.getPartitionKeysSqlQuery().getSql();
+      PrimaryKeyDefinition pkd = recordClass.getPrimaryKeyDefinition();
+      String idSql = "select * from " + cacheSchema + tableName;
+      String s = "SELECT distinct partition_key " +
+          " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
+          " WHERE " + pkd.createJoinClause("ids", "parts");
+
+      _partitionKeysString = AnswerValue.getPartitionKeysString(recordClass, queryName, s);
+    }
+    return _partitionKeysString;
+  }
   public void setAvoidCacheHit(boolean avoidCacheHit) {
     _avoidCacheHit = avoidCacheHit;
+  }
+
+  public void setPartitionKeysProviderForPostCacheUpdateSqls(PartitionKeysProvider partitionKeysProviderForPostCacheUpdateSqls) {
+    _partitionKeysProviderForPostCacheUpdateSqls = partitionKeysProviderForPostCacheUpdateSqls;
   }
 }

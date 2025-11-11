@@ -26,6 +26,8 @@ public class DefaultResultSizePlugin implements ResultSize {
   private Integer getResultSize(AnswerValue answerValue, String idSql, String countQueryName) throws WdkModelException {
     DataSource dataSource = answerValue.getWdkModel().getAppDb().getDataSource();
     try {
+      idSql = answerValue.substitutePartitionKeys(idSql, "DefaultResultSizePlugin");
+
       LOG.debug("Executing filter size count for " + countQueryName + " using idSql:\n" + idSql);
       String countSql = new StringBuilder("SELECT count(*) FROM (").append(idSql).append(") ids").toString();
       Object count = SqlUtils.executeScalar(dataSource, countSql, countQueryName);

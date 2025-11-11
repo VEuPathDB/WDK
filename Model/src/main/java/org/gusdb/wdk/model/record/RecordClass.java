@@ -819,8 +819,11 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
       shortDisplayName = resultSizeQueryRef.getRecordShortDisplayName();
       displayNamePlural = resultSizeQueryRef.getRecordDisplayNamePlural();
       shortDisplayNamePlural = resultSizeQueryRef.getRecordShortDisplayNamePlural();
-        Query query = (Query) _wdkModel.resolveReference(resultSizeQueryRef.getTwoPartName());
-      resultSizePlugin = new SqlQueryResultSizePlugin(query);
+      Query query = (Query) _wdkModel.resolveReference(resultSizeQueryRef.getTwoPartName());
+      if (!(query instanceof SqlQuery)) {
+        throw new WdkModelException("Result size query ref " + query.getFullName() + " must refer to a SqlQuery");
+      }
+      resultSizePlugin = new SqlQueryResultSizePlugin((SqlQuery)query);
     }
 
     if (resultPropertyQueryRef != null) {
@@ -1003,7 +1006,6 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
       if (_partitionKeysSqlQuery == null && query.getSql().contains(SqlQuery.PARTITION_KEYS_MACRO)) {
         throw new WdkModelException("Table query " + query.getFullName()
-
             + "contains the macro " + SqlQuery.PARTITION_KEYS_MACRO
             + " but record class " + getName() + " does not define a partition key query ref");
       }

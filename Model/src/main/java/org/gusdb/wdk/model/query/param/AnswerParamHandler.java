@@ -58,7 +58,7 @@ public class AnswerParamHandler extends AbstractParamHandler {
     return getAnswerFromStepParam(runnableSpec).getChecksum();
   }
 
-  private AnswerValue getAnswerFromStepParam(RunnableObj<QueryInstanceSpec> qiSpec) throws WdkModelException {
+  public AnswerValue getAnswerFromStepParam(RunnableObj<QueryInstanceSpec> qiSpec) throws WdkModelException {
     long stepId = getStepIdFromStableValue(qiSpec);
     RunnableObj<AnswerSpec> runnableAnswerSpec = Step.getRunnableAnswerSpec(qiSpec
         .get()

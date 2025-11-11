@@ -6,9 +6,13 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.PartitionKeysProvider;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.AnswerParamHandler;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.json.JSONObject;
 
@@ -44,12 +48,12 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
 
   @Override
   public String getSql() throws WdkModelException {
-    return getSql(true);
+    return "\n/* the ID query (sql query, sorted) */\n" + getSql(true);
   }
 
   @Override
   public String getSqlUnsorted() throws WdkModelException {
-    return getSql(false);
+    return "\n/* the ID query (sql query, unsorted) */\n" + getSql(false);
   }
 
   private String getSql(boolean performSorting) throws WdkModelException {
@@ -75,6 +79,26 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       throw new WdkModelException("Could not get uncached results from DB.", e);
     }
   }
+
+  public ResultList getUncachedResultsSubstitutePartitionKeys(PartitionKeysProvider partitionKeysProvider) throws WdkModelException {
+    try {
+      var sql = partitionKeysProvider.substitutePartitionKeys(getUncachedSql(), getQuery().getFullName());
+
+      LOG.info("Performing the following SQL: (use debug to see SQL) " );
+      LOG.debug("Performing the following SQL: " + sql);
+      return new SqlResultList(SqlUtils.executeQuery(
+          _wdkModel.getAppDb().getDataSource(),
+          sql,
+          _query.getFullName() + "__select-uncached",
+          0,
+          _query.isUseDBLink()
+      ));
+    }
+    catch (SQLException e) {
+      throw new WdkModelException("Could not get uncached results from DB.", e);
+    }
+  }
+
 
   @Override
   public Optional<String> createCacheTableAndInsertResult(DatabaseInstance appDb, String cacheSchema, String tableName, long instanceId)
@@ -116,10 +140,12 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
    * @param internal
    *   param internal values
    */
-  public String getUncachedSql(Map<String, String> internal) {
+  public String getUncachedSql(Map<String, String> internal) throws WdkModelException {
     var params = _query.getParamMap();
     var sql = _query.getSql();
+    var sqlContainsPartKeyMacro = sql.contains(SqlQuery.PARTITION_KEYS_MACRO);
 
+    boolean alreadySubstitutedPartKeys = false;
     for (var paramName : params.keySet()) {
       var param = params.get(paramName);
       var value = internal.get(paramName);
@@ -127,6 +153,15 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
         LOG.warn("value doesn't exist for param " + param.getFullName()
           + " in query " + _query.getFullName());
         value = "";
+      }
+      if (param instanceof AnswerParam && sqlContainsPartKeyMacro) {
+        if (alreadySubstitutedPartKeys)
+          throw new WdkModelException("Query " + getQuery().getFullName() + " uses partition keys but has more than one answerParam");
+        alreadySubstitutedPartKeys = true;
+        AnswerParam ap = (AnswerParam) param;
+        AnswerParamHandler aph = (AnswerParamHandler) ap.getParamHandler();
+        AnswerValue av = aph.getAnswerFromStepParam(_spec);
+        sql = sql.replaceAll(SqlQuery.PARTITION_KEYS_MACRO, av.getPartitionKeysString(av.getQuestion().getQuery().getFullName()));
       }
       sql = param.replaceSql(sql, _spec.get().get(paramName), value);
     }
