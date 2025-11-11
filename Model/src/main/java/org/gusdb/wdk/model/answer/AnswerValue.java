@@ -681,6 +681,7 @@ public class AnswerValue implements PartitionKeysProvider {
 
   private String getBaseIdSql(boolean sorted) throws WdkModelException {
     // get base ID sql from query instance
+    // note: do not add an sql comment to this sql.  we compare its string value to other sql as an optimzation
     String sql = sorted? _idsQueryInstance.getSql() : _idsQueryInstance.getSqlUnsorted();
 
     // add answer param columns
