@@ -1137,6 +1137,7 @@ public class AnswerValue implements PartitionKeysProvider {
     return sql;
   }
 
+  // we assume that all post cache updates do NOT add additional partition keys
   @Override
   public String getPartitionKeysStringForPostCacheUpdate(String cacheSchema, String tableName, String queryName) throws WdkModelException {
     if (_partitionKeysString == null) {
