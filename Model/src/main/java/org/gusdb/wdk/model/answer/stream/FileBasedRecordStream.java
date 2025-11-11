@@ -343,7 +343,7 @@ public class FileBasedRecordStream implements RecordStream {
           if (rowsWritten != numExpectedRows) {
             throw new WdkModelException("Joined attribute query '" + query.getFullName() +
                 "' returned a different number of rows (" + rowsWritten +
-                ") than the ID query alone (" + numExpectedRows + ").");
+                ") than the ID query alone (" + numExpectedRows + "). Attribute sql: " + sql );
           }
 
           // open file permissions and return the path to the temporary CSV file
