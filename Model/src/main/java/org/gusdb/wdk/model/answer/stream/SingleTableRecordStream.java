@@ -105,7 +105,8 @@ public class SingleTableRecordStream implements RecordStream {
               rowCount++;
               LOG.trace("Row " + rowCount + ": fetched in " + t.getElapsedStringAndRestart());
               if (rowCount > TableValue.MAX_TABLE_VALUE_ROWS)
-                throw new WdkRuntimeException("Table query returned too many (>" + TableValue.MAX_TABLE_VALUE_ROWS + ") rows.");
+                throw new WdkRuntimeException("Table query " + _tableField.getQueryRef() +
+                    " returned too many (>" + TableValue.MAX_TABLE_VALUE_ROWS + ") rows.");
               tableValue.initializeRow(_resultList);
             }
   
