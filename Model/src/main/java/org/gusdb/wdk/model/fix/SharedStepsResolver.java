@@ -110,7 +110,7 @@ public class SharedStepsResolver extends BaseCLI {
     PreparedStatement psUpdate = null;
     try {
       resultSet = SqlUtils.executeQuery(dataSource, sqlSelect, "wdk-get-duplicate-root-steps", 5000);
-      psUpdate = SqlUtils.getPreparedStatement(dataSource, sqlUpdate);
+      psUpdate = SqlUtils.getPreparedStatement(dataSource, sqlUpdate, SqlUtils.Autocommit.ON);
       long previousStep = 0;
       int count = 0;
       while (resultSet.next()) {
@@ -158,7 +158,7 @@ public class SharedStepsResolver extends BaseCLI {
     PreparedStatement psUpdate = null;
     try {
       resultSet = SqlUtils.executeQuery(dataSource, sqlSelect, "wdk-get-duplicate-child-steps", 5000);
-      psUpdate = SqlUtils.getPreparedStatement(dataSource, sqlUpdate);
+      psUpdate = SqlUtils.getPreparedStatement(dataSource, sqlUpdate, SqlUtils.Autocommit.ON);
       long previousStep = 0;
       int count = 0;
       while (resultSet.next()) {
@@ -208,7 +208,8 @@ public class SharedStepsResolver extends BaseCLI {
           "SELECT step_id, left_child_id, right_child_id, display_params FROM " + TEMP_STEP_TABLE,
           "select-tmp-steps");
       psUpdate = SqlUtils.getPreparedStatement(dataSource, "UPDATE " + TEMP_STEP_TABLE +
-          " SET step_id = ?, left_child_id = ?, right_child_id = ?, display_params = ? WHERE step_id = ?");
+          " SET step_id = ?, left_child_id = ?, right_child_id = ?, display_params = ? WHERE step_id = ?",
+          , SqlUtils.Autocommit.ON);
       Map<Long, StepInfo> steps = new HashMap<>();
       while (resultSet.next()) {
         StepInfo step = new StepInfo();

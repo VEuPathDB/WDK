@@ -92,8 +92,8 @@ public class QuestionNameUpdater {
     // logger.info("UPDATE:   " + update + "\n\n");
 
     try {
-      psSelect = SqlUtils.getPreparedStatement(dataSource, select);
-      psUpdate = SqlUtils.getPreparedStatement(dataSource, update);
+      psSelect = SqlUtils.getPreparedStatement(dataSource, select, SqlUtils.Autocommit.OFF);
+      psUpdate = SqlUtils.getPreparedStatement(dataSource, update, SqlUtils.Autocommit.ON);
       psSelect.setString(1, _projectId);
       logger.debug("SELECT:   " + psSelect + "\n\n");
       resultSet = psSelect.executeQuery();

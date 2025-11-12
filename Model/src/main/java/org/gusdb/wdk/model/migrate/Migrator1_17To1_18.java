@@ -125,7 +125,7 @@ public class Migrator1_17To1_18 implements Migrator {
         sqlInsertAnswer.append("project_version, question_name, ");
         sqlInsertAnswer.append("query_checksum, params) ");
         sqlInsertAnswer.append("VALUES (?, ?, ?, '1.0', ?, ?, ?)");
-        return SqlUtils.getPreparedStatement(dataSource, sqlInsertAnswer.toString());
+        return SqlUtils.getPreparedStatement(dataSource, sqlInsertAnswer.toString(), SqlUtils.Autocommit.ON);
     }
 
     private PreparedStatement prepareHistoryStatement(DataSource dataSource) throws SQLException {
@@ -136,7 +136,7 @@ public class Migrator1_17To1_18 implements Migrator {
         sqlInsertHistory.append("last_run_time, estimate_size, custom_name, ");
         sqlInsertHistory.append("is_boolean, is_deleted, display_params) ");
         sqlInsertHistory.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        return SqlUtils.getPreparedStatement(dataSource, sqlInsertHistory.toString());
+        return SqlUtils.getPreparedStatement(dataSource, sqlInsertHistory.toString(), SqlUtils.Autocommit.ON);
     }
 
     private ResultSet getHistories(DataSource dataSource) throws SQLException {

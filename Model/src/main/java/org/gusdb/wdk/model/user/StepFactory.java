@@ -208,7 +208,7 @@ public class StepFactory {
       sql.append(") ");
 
       long start = System.currentTimeMillis();
-      psDeleteSteps = SqlUtils.getPreparedStatement(_userDbDs, sql.toString());
+      psDeleteSteps = SqlUtils.getPreparedStatement(_userDbDs, sql.toString(), SqlUtils.Autocommit.ON);
       psDeleteSteps.setLong(1, user.getUserId());
       if (!allProjects) {
         String projectId = _wdkModel.getProjectId();

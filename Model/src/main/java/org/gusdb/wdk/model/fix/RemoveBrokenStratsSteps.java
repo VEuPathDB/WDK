@@ -177,8 +177,8 @@ public class RemoveBrokenStratsSteps extends BaseCLI {
     PreparedStatement psDeleteSteps = null;
     LOG.debug("\n" + stepSql + "\n");
     try {
-      psDeleteAnalyses = SqlUtils.getPreparedStatement(dataSource, analysisSql);
-      psDeleteSteps = SqlUtils.getPreparedStatement(dataSource, stepSql);
+      psDeleteAnalyses = SqlUtils.getPreparedStatement(dataSource, analysisSql, SqlUtils.Autocommit.ON);
+      psDeleteSteps = SqlUtils.getPreparedStatement(dataSource, stepSql, SqlUtils.Autocommit.ON);
       int countAnalysisDelete = 0;
       int countStepsDelete = 0;
       int pageCount;

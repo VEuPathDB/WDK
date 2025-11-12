@@ -158,7 +158,7 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
     PreparedStatement psInsert = null;
     try {
       // make a prepared statement, and invoke the wsf;
-      psInsert = SqlUtils.getPreparedStatement(appDb.getDataSource(), sql);
+      psInsert = SqlUtils.getPreparedStatement(appDb.getDataSource(), sql, SqlUtils.Autocommit.ON);
       int batchSize = _query.getCacheInsertBatchSize();
       ProcessQueryResponseListener listener = new ProcessQueryResponseListener(columns, psInsert, batchSize);
       invokeWsf(listener);
