@@ -86,7 +86,7 @@ public class Cache extends BeanBase implements CacheMBean {
     ResultSet rs = null;
     PreparedStatement ps = null;
     try {
-      ps = SqlUtils.getPreparedStatement(dataSource, sql);
+      ps = SqlUtils.getPreparedStatement(dataSource, sql, SqlUtils.Autocommit.OFF);
       rs = ps.executeQuery();
      if (rs.next()) {
         ResultSetMetaData rsmd = rs.getMetaData();
