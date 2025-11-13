@@ -83,7 +83,7 @@ public class StrategyFixer extends BaseCLI {
     ResultSet rsRoots = null, rsChildren = null;
     try {
       psUpdate = SqlUtils.getPreparedStatement(dataSource, "UPDATE " + schema + "steps SET strategy_id = ? " +
-          " WHERE step_id = ?", SqlUtils.Autocommit.ON);
+          " WHERE step_id = ?");
 
       // update the strategy id for root steps;
       LOG.info("updating root steps...");
@@ -108,7 +108,7 @@ public class StrategyFixer extends BaseCLI {
       String sql = "SELECT s.step_id, p.strategy_id FROM " + schema + "steps s, " + schema + "steps p " +
           " WHERE s.strategy_id IS NULL and p.strategy_id IS NOT NULL ";
       psChildren = SqlUtils.getPreparedStatement(dataSource, sql + " AND s.step_id = p.left_child_id " +
-          " UNION " + sql + " AND s.step_id = p.right_child_id", SqlUtils.Autocommit.OFF);
+          " UNION " + sql + " AND s.step_id = p.right_child_id");
       int prev;
       do {
         prev = count;
