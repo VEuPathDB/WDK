@@ -71,7 +71,7 @@ public abstract class AbstractDbInfo implements DbInfo {
     PreparedStatement ps = null;
     logger.debug("querying database for misc. information");    
     try {
-      ps = SqlUtils.getPreparedStatement(_dataSource, sql);
+      ps = SqlUtils.getPreparedStatement(_dataSource, sql, SqlUtils.Autocommit.OFF);
       rs = ps.executeQuery();
       if (rs.next()) {
         ResultSetMetaData rsmd = rs.getMetaData();
@@ -106,7 +106,7 @@ public abstract class AbstractDbInfo implements DbInfo {
     logger.debug("querying database for servername information");    
 
     try {
-      ps = SqlUtils.getPreparedStatement(_dataSource, sql);
+      ps = SqlUtils.getPreparedStatement(_dataSource, sql, SqlUtils.Autocommit.OFF);
       String dbVendor = ps.getConnection().getMetaData().getDatabaseProductName();
       rs = ps.executeQuery();
       if (rs.next()) {
@@ -144,7 +144,7 @@ public abstract class AbstractDbInfo implements DbInfo {
     PreparedStatement ps = null;
 
     try {
-      ps = SqlUtils.getPreparedStatement(_dataSource, sql);
+      ps = SqlUtils.getPreparedStatement(_dataSource, sql, SqlUtils.Autocommit.OFF);
       rs = ps.executeQuery();
       while (rs.next()) {
         HashMap<String, String> map = new HashMap<String, String>();
@@ -181,7 +181,7 @@ public abstract class AbstractDbInfo implements DbInfo {
     logger.debug("querying database for size of data files on disk");    
 
     try {
-      ps = SqlUtils.getPreparedStatement(_dataSource, sql);
+      ps = SqlUtils.getPreparedStatement(_dataSource, sql, SqlUtils.Autocommit.OFF);
       rs = ps.executeQuery();
       if (rs.next()) {
         ResultSetMetaData rsmd = rs.getMetaData();
@@ -225,7 +225,7 @@ public abstract class AbstractDbInfo implements DbInfo {
       String columnName = "isValid";
 
       try {
-        ps = SqlUtils.getPreparedStatement(_dataSource, sql);
+        ps = SqlUtils.getPreparedStatement(_dataSource, sql, SqlUtils.Autocommit.OFF);
         rs = ps.executeQuery();
 
         while (rs.next()) {

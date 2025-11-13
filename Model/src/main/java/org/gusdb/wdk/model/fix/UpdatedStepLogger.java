@@ -36,7 +36,7 @@ public class UpdatedStepLogger {
     count = 0;
     DataSource dataSource = wdkModel.getUserDb().getDataSource();
     psInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
-        + TABLE_UPDATED_STEPS + " (step_id) VALUES (?)");
+        + TABLE_UPDATED_STEPS + " (step_id) VALUES (?)", SqlUtils.Autocommit.ON);
   }
 
   private void checkTable() throws DBStateException, SQLException {

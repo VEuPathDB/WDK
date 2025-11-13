@@ -122,8 +122,8 @@ public class BasketFactory {
     PreparedStatement psInsert = null, psCount = null;
     try {
       List<Long> basketRecordIds = platform.getNextNIds(dataSource, _userSchema, TABLE_BASKET, recordCount);
-      psInsert = SqlUtils.getPreparedStatement(dataSource, sqlInsert);
-      psCount = SqlUtils.getPreparedStatement(dataSource, sqlCount);
+      psInsert = SqlUtils.getPreparedStatement(dataSource, sqlInsert, SqlUtils.Autocommit.ON);
+      psCount = SqlUtils.getPreparedStatement(dataSource, sqlCount, SqlUtils.Autocommit.OFF);
       int count = 0;
       for (RecordInstance record : records) {
         // get pkValues out of record
@@ -199,7 +199,7 @@ public class BasketFactory {
     DataSource dataSource = _wdkModel.getUserDb().getDataSource();
     PreparedStatement psDelete = null;
     try {
-      psDelete = SqlUtils.getPreparedStatement(dataSource, sqlDelete);
+      psDelete = SqlUtils.getPreparedStatement(dataSource, sqlDelete, SqlUtils.Autocommit.ON);
       int count = 0;
       for (String[] row : pkValues) {
         // fill or truncate the pk columns
@@ -244,7 +244,7 @@ public class BasketFactory {
     PreparedStatement psDelete = null;
     try {
       long start = System.currentTimeMillis();
-      psDelete = SqlUtils.getPreparedStatement(dataSource, sqlDelete);
+      psDelete = SqlUtils.getPreparedStatement(dataSource, sqlDelete, SqlUtils.Autocommit.ON);
       psDelete.setLong(1, userId);
       psDelete.setString(2, projectId);
       psDelete.setString(3, rcName);
@@ -282,7 +282,7 @@ public class BasketFactory {
     PreparedStatement ps = null;
     ResultSet rs = null;
     try {
-      ps = SqlUtils.getPreparedStatement(ds, sql);
+      ps = SqlUtils.getPreparedStatement(ds, sql, SqlUtils.Autocommit.OFF);
       ps.setLong(1, user.getUserId());
       ps.setString(2, _wdkModel.getProjectId());
       rs = ps.executeQuery();
@@ -331,7 +331,7 @@ public class BasketFactory {
     PreparedStatement psCount = null;
     List<Boolean> basketStatuses = new ArrayList<>();
     try {
-      psCount = SqlUtils.getPreparedStatement(dataSource, sqlCount);
+      psCount = SqlUtils.getPreparedStatement(dataSource, sqlCount, SqlUtils.Autocommit.OFF);
       for (String[] row : records) {
         // fill or truncate the pk columns
         String[] pkValue = new String[pkColumns.length];

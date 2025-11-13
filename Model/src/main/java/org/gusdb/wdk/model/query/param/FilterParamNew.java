@@ -607,7 +607,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     try {
       long start = System.currentTimeMillis();
-      ps = SqlUtils.getPreparedStatement(dataSource, unfilteredDistinctFilterItemsSql);
+      ps = SqlUtils.getPreparedStatement(dataSource, unfilteredDistinctFilterItemsSql, SqlUtils.Autocommit.OFF);
       ps.setString(1, ontologyId);
       resultSet = ps.executeQuery();
       QueryLogger.logStartResultsProcessing(unfilteredDistinctFilterItemsSql, "FilterParamNew-getDistinctCounts-unfiltered", start, resultSet);
@@ -625,7 +625,7 @@ public class FilterParamNew extends AbstractDependentParam {
     try {
       long start = System.currentTimeMillis();
       LOG.debug(filteredDistinctFilterItemsSql);
-      ps = SqlUtils.getPreparedStatement(dataSource, filteredDistinctFilterItemsSql);
+      ps = SqlUtils.getPreparedStatement(dataSource, filteredDistinctFilterItemsSql, SqlUtils.Autocommit.OFF);
       ps.setString(1, ontologyId);
       resultSet = ps.executeQuery();
       QueryLogger.logStartResultsProcessing(filteredDistinctFilterItemsSql, "FilterParamNew-getDistinctCounts-filtered", start, resultSet);
@@ -706,7 +706,7 @@ public class FilterParamNew extends AbstractDependentParam {
     ResultSet resultSet = null;
     DataSource dataSource = _wdkModel.getAppDb().getDataSource();
     try {
-      ps = SqlUtils.getPreparedStatement(dataSource, sql);
+      ps = SqlUtils.getPreparedStatement(dataSource, sql, SqlUtils.Autocommit.OFF);
       ps.setFetchSize(FETCH_SIZE);
       ps.setString(1, ontologyItem.getOntologyId());
       ps.setString(2, ontologyItem.getOntologyId());

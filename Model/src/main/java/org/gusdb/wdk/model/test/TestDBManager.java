@@ -151,7 +151,7 @@ public class TestDBManager extends BaseCLI {
         }
         sql.append(") VALUES (").append(sqlPiece).append(")");
         ps = SqlUtils.getPreparedStatement(
-            database.getDataSource(), sql.toString());
+            database.getDataSource(), sql.toString(), SqlUtils.Autocommit.ON);
 
         System.err.println("Loading table " + tableName
             + " to database from file\n");

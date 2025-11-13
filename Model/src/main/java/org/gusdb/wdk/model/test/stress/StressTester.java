@@ -165,7 +165,7 @@ public class StressTester {
       sb.append(" (test_tag, task_id, runner_id, task_type, start_time, ");
       sb.append("end_time, result_type, result_message)");
       sb.append(" VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-      return SqlUtils.getPreparedStatement(dataSource, sb.toString());
+      return SqlUtils.getPreparedStatement(dataSource, sb.toString(), SqlUtils.Autocommit.ON);
     }
 
     private static long getNewTestTag(WdkModel wdkModel) throws SQLException {

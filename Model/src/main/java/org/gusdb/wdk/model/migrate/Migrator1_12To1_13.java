@@ -153,7 +153,7 @@ public class Migrator1_12To1_13 implements Migrator {
       psHistory = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
           + newSchema + "histories SET query_instance_checksum = ? "
           + ", params = ? WHERE user_id = ? AND project_id = ? "
-          + "AND history_id = ?");
+          + "AND history_id = ?", SqlUtils.Autocommit.ON);
 
       int count = 0;
       for (HistoryItem item : histories) {
