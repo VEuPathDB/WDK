@@ -97,8 +97,8 @@ public class OrganismUpdater {
         "   AND s.project_id = ?";
     String update = "UPDATE " + _userSchema + "steps " + " SET display_params = ? WHERE step_id = ?";
     try {
-      psSelect = SqlUtils.getPreparedStatement(dataSource, select);
-      psUpdate = SqlUtils.getPreparedStatement(dataSource, update);
+      psSelect = SqlUtils.getPreparedStatement(dataSource, select, SqlUtils.Autocommit.OFF);
+      psUpdate = SqlUtils.getPreparedStatement(dataSource, update, SqlUtils.Autocommit.ON);
       psSelect.setString(1, _projectId);
       resultSet = psSelect.executeQuery();
       int count = 0;
