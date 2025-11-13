@@ -55,7 +55,7 @@ public class Migrator_b18_b19 implements Migrator {
     PreparedStatement psUpdate = null;
     try {
       psUpdate = SqlUtils.getPreparedStatement(dataSource, "UPDATE " + schema +
-          "steps SET display_params = ? WHERE step_id = ?");
+          "steps SET display_params = ? WHERE step_id = ?", SqlUtils.Autocommit.ON);
       rsSteps = SqlUtils.executeQuery(
           dataSource,
           "SELECT step_id, display_params, left_child_id, right_child_id, question_name " + " FROM " +

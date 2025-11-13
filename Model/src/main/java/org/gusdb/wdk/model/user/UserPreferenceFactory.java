@@ -87,7 +87,7 @@ public class UserPreferenceFactory {
         String sqlDelete = "DELETE FROM " + _userSchema + "preferences "
             + " WHERE user_id = ? AND project_id = ? "
             + " AND preference_name = ?";
-        psDelete = SqlUtils.getPreparedStatement(_userDb.getDataSource(), sqlDelete);
+        psDelete = SqlUtils.getPreparedStatement(_userDb.getDataSource(), sqlDelete, SqlUtils.Autocommit.ON);
         long start = System.currentTimeMillis();
         for (String key : toDelete) {
           psDelete.setLong(1, userId);
@@ -104,7 +104,7 @@ public class UserPreferenceFactory {
         String sqlInsert = "INSERT INTO " + _userSchema + "preferences "
             + " (user_id, project_id, preference_name, " + " preference_value)"
             + " VALUES (?, ?, ?, ?)";
-        psInsert = SqlUtils.getPreparedStatement(_userDb.getDataSource(), sqlInsert);
+        psInsert = SqlUtils.getPreparedStatement(_userDb.getDataSource(), sqlInsert, SqlUtils.Autocommit.ON);
         long start = System.currentTimeMillis();
         for (String key : toInsert.keySet()) {
           psInsert.setLong(1, userId);
@@ -122,7 +122,7 @@ public class UserPreferenceFactory {
         String sqlUpdate = "UPDATE " + _userSchema + "preferences "
             + " SET preference_value = ? WHERE user_id = ? "
             + " AND project_id = ? AND preference_name = ?";
-        psUpdate = SqlUtils.getPreparedStatement(_userDb.getDataSource(), sqlUpdate);
+        psUpdate = SqlUtils.getPreparedStatement(_userDb.getDataSource(), sqlUpdate, SqlUtils.Autocommit.ON);
         long start = System.currentTimeMillis();
         for (String key : toUpdate.keySet()) {
           psUpdate.setString(1, toUpdate.get(key));

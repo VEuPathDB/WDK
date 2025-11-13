@@ -51,8 +51,8 @@ public class TableCache {
     if (!_dbOpen) {
       _dbOpen = true;
       DataSource dataSource = _cacheDb.getDataSource();
-      _psQuery = SqlUtils.getPreparedStatement(dataSource, _querySql);
-      _psInsert = SqlUtils.getPreparedStatement(dataSource, _insertSql);
+      _psQuery = SqlUtils.getPreparedStatement(dataSource, _querySql, SqlUtils.Autocommit.OFF);
+      _psInsert = SqlUtils.getPreparedStatement(dataSource, _insertSql, SqlUtils.Autocommit.ON);
     }
   }
 

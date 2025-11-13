@@ -149,7 +149,7 @@ public class GuestRemover extends BaseCLI {
     PreparedStatement psDelete = null;
     try {
       String sql = "DELETE FROM " + table + " WHERE " + condition + " AND rownum < " + PAGE_SIZE;
-      psDelete = SqlUtils.getPreparedStatement(dataSource, sql);
+      psDelete = SqlUtils.getPreparedStatement(dataSource, sql, SqlUtils.Autocommit.ON);
 
       int sum = 0;
       while (true) {
