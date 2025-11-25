@@ -1111,6 +1111,8 @@ public class AnswerValue implements PartitionKeysProvider {
   public static SqlQuery addPartKeysToAttrOrTableSqlQuery (SqlQuery attrOrTableSqlQuery, RecordClass recordClass, PrimaryKeyValue primaryKey) throws WdkModelException {
     SqlQuery partKeySqlQuery = recordClass.getPartitionKeysSqlQuery();
 
+    if (partKeySqlQuery == null) return attrOrTableSqlQuery;
+
     PrimaryKeyDefinition pkd = recordClass.getPrimaryKeyDefinition();
     String idSql = "select " + pkd.createSelectClause(primaryKey.getValues()) +
         recordClass.getWdkModel().getAppDb().getPlatform().getDummyTable();
