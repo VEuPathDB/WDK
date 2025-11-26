@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.SqlUtils.Autocommit;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -49,7 +50,7 @@ public class ModelConfigUserDB extends ModelConfigDB {
     try {
       String validationSql = "SELECT " + CONFIG_VALUE_COLUMN +
           " FROM " + userSchema + CONFIG_TABLE + " WHERE " + CONFIG_NAME_COLUMN + "= ?";
-      ps = SqlUtils.getPreparedStatement(dataSource, validationSql);
+      ps = SqlUtils.getPreparedStatement(dataSource, validationSql, Autocommit.OFF);
       ps.setString(1, CONFIG_USER_SCHEMA_VERSION);
       LOG.debug("Validating user schema with SQL '" + validationSql + "' and value [" + CONFIG_USER_SCHEMA_VERSION + "].");
       resultSet = ps.executeQuery();
