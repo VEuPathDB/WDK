@@ -348,6 +348,7 @@ public class FileBasedRecordStream implements RecordStream {
 
           // open file permissions and return the path to the temporary CSV file
           filePath.toFile().setWritable(true, false);
+          LOG.info("Ran joined attribute query and wrote CSV file for " + query.getName() + " in " + t.getElapsedString());
           return filePath;
         }
         catch (WdkModelException e) {
@@ -418,6 +419,8 @@ public class FileBasedRecordStream implements RecordStream {
 
       // open file permissions and return the path to the temporary CSV file
       filePath.toFile().setWritable(true, false);
+
+      LOG.info("Ran joined table query and wrote CSV file for " + table.getName() + " in " + t.getElapsedString());
       return new TwoTuple<Path,List<String>>(filePath, columnNames);
     }
     finally {

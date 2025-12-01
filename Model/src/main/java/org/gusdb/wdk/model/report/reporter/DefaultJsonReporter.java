@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.SortDirectionSpec;
+import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Procedure;
 import org.gusdb.fgputil.json.JsonWriter;
 import org.gusdb.fgputil.validation.ValidationLevel;
@@ -46,6 +48,8 @@ import org.json.JSONObject;
  */
 public class DefaultJsonReporter extends AnswerDetailsReporter {
 
+  private static final Logger LOG = Logger.getLogger(DefaultJsonReporter.class);
+
   public static final String RESERVED_NAME = "standard";
 
   @Override
@@ -66,6 +70,7 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
     }
 
     // create output writer and initialize record stream
+    Timer t = new Timer();
     try (JsonWriter writer = new JsonWriter(out);
          RecordStream recordStream = RecordStreamFactory.getRecordStream(
             _baseAnswer, requiredAttributes, _tables.values())) {
@@ -86,9 +91,12 @@ public class DefaultJsonReporter extends AnswerDetailsReporter {
 
       // end records array, write meta property, and close object
       writer.endArray().key(JsonKeys.META).value(metadata);
-      
+
       // allow subclasses an opportunity to extend the JSON
       writeAdditionalJson(writer).endObject();
+
+      // log end of result streaming
+      LOG.info("Finished writing default JSON reporter response; write took " + t.getElapsedString());
     }
     catch (WdkUserException e) {
       // should already have validated any user input
