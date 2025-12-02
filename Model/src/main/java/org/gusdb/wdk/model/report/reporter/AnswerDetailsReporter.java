@@ -63,6 +63,9 @@ public abstract class AnswerDetailsReporter extends AbstractReporter {
 
     // if asked to buffer entire response up front (rather than stream), need to load
     //   the data, telling the writer to check occasionally whether the response is too big
+    // primary purpose of this is to avoid 200 responses even when an error occurs; if we
+    //   buffer, then all logic is performed before HTTP header goes out, ensuring a 200 only
+    //   on "full" success, 500 otherwise
     if (_isBufferEntireResponse) {
       writeResponseBody(_bufferedResponse, () -> {
         // check buffer size against max
