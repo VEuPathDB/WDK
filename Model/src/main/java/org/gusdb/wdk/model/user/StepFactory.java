@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -468,6 +469,9 @@ public class StepFactory {
     catch (Exception e) {
       throw WdkModelException.translateFrom(e, "Unable to insert strategy or update steps.");
     }
+
+    LOG.debug("Printing step map (old -> new):" + FormatUtil.prettyPrint(
+        Functions.getMapFromKeys(newStepMap.keySet(), oldStepId -> newStepMap.get(oldStepId).getStepId()), Style.MULTI_LINE));
 
     // trigger copy events on all steps
     triggerCopyEvents(newStepMap.entrySet().stream()
