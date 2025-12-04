@@ -307,6 +307,7 @@ public class StepService extends AbstractUserService {
       @PathParam(REPORT_NAME_PATH_PARAM) String reportName,
       @FormParam("data") String data)
           throws WdkModelException, DataValidationException, RequestMisformatException {
+    if (data == null) throw new RequestMisformatException("'data' parameter must not be empty");
     return createCustomReportAnswer(stepId, reportName, new JSONObject(data));
   }
 
