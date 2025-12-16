@@ -13,12 +13,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dbms.ResultList;
 
 public class PrimaryKeyValue {
+
+  private static final Logger LOG = Logger.getLogger(PrimaryKeyValue.class);
 
   private final PrimaryKeyDefinition _pkDef;
   private final Map<String, Object> _pkValues;
@@ -93,7 +96,22 @@ public class PrimaryKeyValue {
     if (map1.size() != map2.size()) return true;
     for (String key : map1.keySet()) {
       if (!map2.containsKey(key)) return true;
-      if (!map2.get(key).equals(map1.get(key))) return true;
+      Object o1 = map1.get(key);
+      Object o2 = map2.get(key);
+
+      // if PK definition of a recordclass uses a non-varchar column (e.g. numeric), FileBasedRecordStream
+      //   cannot compare values since it reads the non-varchar values from WDK cache, but Strings from
+      //   attribute and/or table CSV dumps.  Identify this situation and try to handle via String coersion.
+      if (o1.getClass() != o2.getClass()) {
+        if (LOG.isTraceEnabled()) LOG.trace(
+            "While comparing PKs, column types differed; for column '" + key + "', map1 had type " +
+            o1.getClass().getName() + " (value = " + o1 + ") but map2 had type " + o2.getClass().getName() +
+            " (value = " + o2 + ").  Will coerce both to Strings for comparison.");
+        o1 = String.valueOf(o1);
+        o2 = String.valueOf(o2);
+      }
+
+      if (!o1.equals(o2)) return true;
     }
     return false;
   }
