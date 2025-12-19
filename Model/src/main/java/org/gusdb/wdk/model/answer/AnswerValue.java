@@ -150,7 +150,7 @@ public class AnswerValue implements PartitionKeysProvider {
   private final WdkModel _wdkModel;
   private final QueryInstance<?> _idsQueryInstance;
   protected ResultSizeFactory _resultSizeFactory; // may be reassigned by subclasses
-  private String _partitionKeysString; // to be used in an IN clause
+  private List<String> _partitionKeys; // to be used in an IN clause
 
   // paging for this answer
   // default is to return the entire result
@@ -1063,8 +1063,18 @@ public class AnswerValue implements PartitionKeysProvider {
       .append("\n) sarsc")
       .toString();
   }
+
+  private static String getPartitionKeysString(List<String> partitionKeys) {
+    return partitionKeys.isEmpty() ? "'no partition keys'" :
+      "'" + String.join("','", partitionKeys) + "'";
+  }
+
   public String getPartitionKeysString(String queryName) throws WdkModelException {
-    if (_partitionKeysString == null) {
+    return getPartitionKeysString(getPartitionKeys(queryName));
+  }
+
+  public List<String> getPartitionKeys(String queryName) throws WdkModelException {
+    if (_partitionKeys == null) {
       RecordClass rc = _question.getRecordClass();
       SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
 
@@ -1076,13 +1086,18 @@ public class AnswerValue implements PartitionKeysProvider {
           "SELECT distinct partition_key " +
               " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
               " WHERE " + pkd.createJoinClause("ids", "parts");
-      _partitionKeysString = getPartitionKeysString(rc, queryName, sql);
+      _partitionKeys = getPartitionKeys(rc, queryName, sql);
     }
-    return _partitionKeysString;
+    return _partitionKeys;
   }
 
   /* sql parameter: sql that finds a distinct set of partition keys (for, eg, a result set) */
   public static String getPartitionKeysString(RecordClass rc, String queryName, String sql) throws WdkModelException {
+    return getPartitionKeysString(getPartitionKeys(rc, queryName, sql));
+  }
+
+  private static List<String> getPartitionKeys(RecordClass rc, String queryName, String sql) throws WdkModelException {
+
     SqlQuery partKeySqlQuery = rc.getPartitionKeysSqlQuery();
 
     if (partKeySqlQuery == null) {
@@ -1095,9 +1110,9 @@ public class AnswerValue implements PartitionKeysProvider {
             rc.getName()+ "__partitionKey").executeQuery(rs -> {
           List<String> partKeys = new ArrayList<>();
           while (rs.next()) {
-            partKeys.add("'" + rs.getString("partition_key") + "'");
+            partKeys.add(rs.getString("partition_key"));
           }
-          return partKeys.isEmpty()? "'no partition keys'" : String.join(", ", partKeys);
+          return partKeys;
         });
       }
       catch (SQLRunnerException e) {
@@ -1142,7 +1157,7 @@ public class AnswerValue implements PartitionKeysProvider {
   // we assume that all post cache updates do NOT add additional partition keys
   @Override
   public String getPartitionKeysStringForPostCacheUpdate(String cacheSchema, String tableName, String queryName) throws WdkModelException {
-    if (_partitionKeysString == null) {
+    if (_partitionKeys == null) {
       RecordClass recordClass = _question.getRecordClass();
 
       String partSql = recordClass.getPartitionKeysSqlQuery().getSql();
@@ -1152,9 +1167,9 @@ public class AnswerValue implements PartitionKeysProvider {
           " FROM (" + idSql + ") ids, (" + partSql + ") parts" +
           " WHERE " + pkd.createJoinClause("ids", "parts");
 
-      _partitionKeysString = AnswerValue.getPartitionKeysString(recordClass, queryName, s);
+      _partitionKeys = getPartitionKeys(recordClass, queryName, s);
     }
-    return _partitionKeysString;
+    return getPartitionKeysString(_partitionKeys);
   }
 
 
