@@ -20,8 +20,8 @@ import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.handler.BasicResultSetHandler;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
@@ -129,13 +129,12 @@ public class StepValidator extends BaseCLI {
         "(select question_name from wdk_questions)"; 
     
     SqlUtils.executeUpdate(dataSource, createSql, "create-temp-unknownQ-strats-table");
-    
-    Object[] args = {};
-    BasicResultSetHandler handler = new BasicResultSetHandler();
-   
+
     System.out.println("");
-    
-    new SQLRunner(dataSource, "select count(*) as count from " + unknownsTable, "invalid-step-report-summary").executeQuery(args, handler);
+
+    BasicResultSetHandler handler =
+      new SQLRunner(dataSource, "select count(*) as count from " + unknownsTable, "invalid-step-report-summary")
+        .executeQuery(new BasicResultSetHandler());
     List<Map<String,Object>> results = handler.getResults();
     Map<String,Object> row = results.get(0);
     BigDecimal cnt = (BigDecimal)row.get("COUNT");

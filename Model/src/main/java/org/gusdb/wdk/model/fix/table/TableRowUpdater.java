@@ -30,12 +30,13 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Timer;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.runner.ArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
-import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
+import org.gusdb.fgputil.db.runner.handler.ResultSetHandler;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.fix.table.TableRowInterfaces.RowResult;
@@ -565,8 +566,15 @@ public class TableRowUpdater<T extends TableRow> {
         // if updates enabled, execute argument batch
         if (!UPDATES_DISABLED) {
           LOG.info("would have run update. " + batch);
-          new SQLRunner(_userDs, _writers.get(i).getWriteSql(
-              _schema), true, "migration-update-rows").executeUpdateBatch(batch);
+          try {
+            String sql = _writers.get(i).getWriteSql(_schema);
+            SqlUtils.performInTransaction(_userDs, conn ->
+              new SQLRunner(conn, sql, "migration-update-rows").executeUpdateBatch(batch));
+          }
+          catch (Exception e) {
+            throw (e instanceof RuntimeException) ? (RuntimeException)e
+                : new RuntimeException("Could not perform batch update", e);
+          }
         }
       }
     }

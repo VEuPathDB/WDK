@@ -181,8 +181,8 @@ public class UserDatasetEventDBActions
       + "FROM " + schema + TABLE_USER_DATASET_EVENT + "\n"
       + "WHERE status = '" + UserDatasetEventStatus.CLEANUP_READY + "'";
 
-    var ret = new SQLRunner(ds, sql)
-      .executeQuery((SQLRunner.ResultSetHandler<List<EventRow>>) rs -> {
+    List<EventRow> ret = new SQLRunner(ds, sql)
+      .executeQuery(rs -> {
         var out = new ArrayList<EventRow>();
 
         while (rs.next()) {

@@ -22,7 +22,7 @@ import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.fgputil.db.runner.BasicArgumentBatch;
+import org.gusdb.fgputil.db.runner.ListArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.stream.BlobValueInputStream;
@@ -314,7 +314,7 @@ public class StepAnalysisPersistentDataStore implements StepAnalysisDataStore {
   @Override
   public void setStepsDirty(Long... stepIds) throws WdkModelException {
     try {
-      BasicArgumentBatch idBatch = new BasicArgumentBatch()
+      ListArgumentBatch idBatch = new ListArgumentBatch()
         .setBatchSize(100)
         .setParameterTypes(new Integer[]{ Types.BIGINT });
       Arrays.stream(stepIds)
