@@ -24,7 +24,7 @@ import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.fgputil.db.runner.BasicArgumentBatch;
+import org.gusdb.fgputil.db.runner.ListArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.wdk.model.WdkModel;
@@ -341,7 +341,7 @@ public class FavoriteFactory {
           .replace(IS_DELETED_SETTER_VALUE_MACRO, _userDb.getPlatform().convertBoolean(isDeletedValue).toString())
           .replace(IS_DELETED_CONDITIONAL_VALUE_MACRO, _userDb.getPlatform().convertBoolean(!isDeletedValue).toString());
       SqlUtils.performInTransaction(_userDb.getDataSource(), conn -> {
-        BasicArgumentBatch batch = new BasicArgumentBatch();
+        ListArgumentBatch batch = new ListArgumentBatch();
         batch.setBatchSize(BATCH_SIZE);
         batch.setParameterTypes(new Integer[]{ Types.BIGINT, Types.BIGINT, Types.VARCHAR });
         for (Long favoriteId : favoriteIds) {

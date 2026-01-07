@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
+import org.gusdb.fgputil.db.runner.ArgumentBatch;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.dbms.ResultList;

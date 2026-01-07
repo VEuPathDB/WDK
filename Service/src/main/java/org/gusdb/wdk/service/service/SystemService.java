@@ -24,6 +24,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.runner.ParamBuilder;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.runtime.BuildStatus;
@@ -159,13 +160,16 @@ public class SystemService extends AbstractWdkService {
           fullDateCondition +
           " group by question_name" +
           " order by cnt desc";
-      Object[] args = new ListBuilder<Object>()
+      ParamBuilder args = new ParamBuilder();
+      new ListBuilder<String>()
           .add(getWdkModel().getProjectId())
           .addIf(Predicate.not(Objects::isNull), startDate)
           .addIf(Predicate.not(Objects::isNull), endDate)
           .addIf(Predicate.not(Objects::isNull), startDate)
           .addIf(Predicate.not(Objects::isNull), endDate)
-          .toList().toArray();
+          .toList()
+          .stream()
+          .forEach(args::addString);
       DataSource appDb = getWdkModel().getUserDb().getDataSource();
       JSONArray result = new SQLRunner(appDb, sql, "question-metrics").executeQuery(args, rs -> {
         JSONArray arr = new JSONArray();

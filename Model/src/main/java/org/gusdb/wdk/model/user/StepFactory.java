@@ -30,10 +30,10 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.fgputil.db.runner.BasicArgumentBatch;
+import org.gusdb.fgputil.db.runner.ListArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
-import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
+import org.gusdb.fgputil.db.runner.handler.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.events.Events;
 import org.gusdb.fgputil.functional.Functions;
@@ -602,7 +602,7 @@ public class StepFactory {
    *   The collection of steps that will be inserted into the database.
    */
   private void insertSteps(Connection con, Collection<Step> steps) {
-    final BasicArgumentBatch batch = new BasicArgumentBatch();
+    final ListArgumentBatch batch = new ListArgumentBatch();
 
     batch.setParameterTypes(getInsertStepParamTypes());
     steps.stream()
@@ -903,7 +903,7 @@ public class StepFactory {
         "WHERE\n" +
         "  " + COLUMN_STEP_ID + " = ?";
 
-    final BasicArgumentBatch batch = new BasicArgumentBatch();
+    final ListArgumentBatch batch = new ListArgumentBatch();
     final int boolType = _userDbPlatform.getBooleanType();
     batch.setParameterTypes(new Integer[]{
       Types.BIGINT,    // USER_ID
