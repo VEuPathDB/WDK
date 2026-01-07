@@ -11,8 +11,8 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.handler.BasicResultSetHandler;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
@@ -116,14 +116,13 @@ public class InvalidStepReporter extends BaseCLI {
         " and u.is_guest = 0 " + 
         " group by project_id,is_valid " +
         " order by project_id,is_valid";
-    
-    Object[] args = {};
-    BasicResultSetHandler handler = new BasicResultSetHandler();
-    
+
     System.out.println("Invalid step summary report");
     System.out.println("");
-    
-    new SQLRunner(dataSource, sql, "invalid-step-report-summary").executeQuery(args, handler);
+
+    BasicResultSetHandler handler =
+      new SQLRunner(dataSource, sql, "invalid-step-report-summary")
+        .executeQuery(new BasicResultSetHandler());
     List<Map<String,Object>> results = handler.getResults();
     for (Map<String,Object> row : results) {
       String proj = (String)row.get("PROJECT_ID");

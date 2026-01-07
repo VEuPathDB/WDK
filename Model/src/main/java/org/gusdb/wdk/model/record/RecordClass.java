@@ -23,7 +23,7 @@ import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
-import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
+import org.gusdb.fgputil.db.runner.handler.SingleLongResultSetHandler;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Utilities;

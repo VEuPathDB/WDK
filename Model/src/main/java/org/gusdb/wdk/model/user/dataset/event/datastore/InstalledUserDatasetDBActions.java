@@ -5,8 +5,9 @@ import javax.sql.DataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.fgputil.db.runner.BasicResultSetHandler;
+import org.gusdb.fgputil.db.runner.ParamBuilder;
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.handler.BasicResultSetHandler;
 import org.gusdb.fgputil.functional.FunctionalInterfaces;
 
 import java.sql.Connection;
@@ -61,7 +62,7 @@ public class InstalledUserDatasetDBActions
       + " WHERE user_dataset_id = ?";
 
     new SQLRunner(ds, sql, "check-user-dataset-exists")
-      .executeQuery(new Object[]{userDatasetID}, handler);
+      .executeQuery(new ParamBuilder().addLong(userDatasetID), handler);
 
     return handler.getNumRows() > 0;
   }
@@ -84,16 +85,17 @@ public class InstalledUserDatasetDBActions
     var insertUserDatasetProjectSql = "INSERT INTO " + schema + TABLE_INSTALLED_USER_DATASET_PROJ +
         " (user_dataset_id, project) VALUES (?, ?)";
 
-    FunctionalInterfaces.ConsumerWithException<Connection> insertUserDatasetProjectFunction = conn -> {
-      LOG.info("Executing update to UD with ID " + userDatasetID + " with name " + projectId);
-      new SQLRunner(conn, insertUserDatasetProjectSql, "insert-user-dataset-project-row")
-          .executeUpdate(new Object[]{userDatasetID, projectId});
-    };
+    //FunctionalInterfaces.ConsumerWithException<Connection> insertUserDatasetProjectFunction = ;
 
     try {
       // Project must be inserted after userdataset to avoid constraint violations.
-      SqlUtils.performInTransaction(ds, insertUserDatasetFunction, insertUserDatasetProjectFunction);
-    } catch (Exception e) {
+      SqlUtils.performInTransaction(ds, insertUserDatasetFunction, conn -> {
+        LOG.info("Executing update to UD with ID " + userDatasetID + " with name " + projectId);
+        new SQLRunner(conn, insertUserDatasetProjectSql, "insert-user-dataset-project-row")
+            .executeUpdate(new Object[]{userDatasetID, projectId});
+      });
+    }
+    catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
