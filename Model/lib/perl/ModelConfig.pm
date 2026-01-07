@@ -33,15 +33,9 @@ sub new {
             elsif (defined $cfg->{$_}->{ldapCommonName} && $cfg->{$_}->{ldapCommonName} ne '') {
 		my $cn = $cfg->{$_}->{ldapCommonName};
 		my $host;
-		if ($cn eq "genomicsdb_068n" || $cn eq "genomicsdb_devn"){
-		    $host = "ares13.penn.apidb.org";
-		} elsif ($cn eq "GenomicsDB_ReflowPlus"){
-		    $host = "ares9.penn.apidb.org";
-		} else {
-		    $host = "ares12.penn.apidb.org";
-		}
+
 		# add entry for Perl DBI DSN. e.g. dbi:Oracle:toxo440s
-		$self->{$_}->{dbiDsn} = 'dbi:Pg:dbname='.$cn.';host='.$host;
+		$self->{$_}->{dbiDsn} = 'dbi:Pg:service='.$cn;
 		# add entry for connection string. e.g. toxo440s
 		$self->{$_}->{connectString} = $cn;
             }
