@@ -13,7 +13,7 @@ import org.gusdb.fgputil.BaseCLI;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
+import org.gusdb.fgputil.db.runner.handler.SingleLongResultSetHandler;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkRuntimeException;

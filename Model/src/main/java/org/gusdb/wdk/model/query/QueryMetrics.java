@@ -3,7 +3,7 @@ package org.gusdb.wdk.model.query;
 import java.util.Optional;
 
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SingleIntResultSetHandler;
+import org.gusdb.fgputil.db.runner.handler.SingleIntResultSetHandler;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.gusdb.wdk.model.WdkModelException;
 
