@@ -173,7 +173,7 @@ public class FlatVocabularyFetcher implements ValueFactory<String, EnumParamVoca
       boolean emptyVocabAllowed = _param.isAllowEmptyVocabulary() && _param.getDependentParams().isEmpty();
       if (vocabInstance.isEmpty() && !emptyVocabAllowed) {
         if (instance instanceof SqlQueryInstance)
-          logger.warn("vocab query returned 0 rows:" + ((SqlQueryInstance)instance).getSql());
+          logger.info("Vocab query returned 0 rows:" + ((SqlQueryInstance)instance).getSql());
         throw new WdkEmptyEnumListException("No item returned by the query [" + _vocabQuery.getFullName() +
             "] of FlatVocabParam [" + _param.getFullName() + "].");
       }
