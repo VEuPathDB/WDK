@@ -35,7 +35,7 @@ sub new {
 		my $host;
 		if ($cn eq "genomicsdb_068n" || $cn eq "genomicsdb_devn"){
 		    $host = "ares13.penn.apidb.org";
-		} elsif ($cn eq "GenomicsDB_ReflowPlus"){
+		} elsif ($cn eq "genomicsdb_rebuild01"){
 		    $host = "ares9.penn.apidb.org";
 		} else {
 		    $host = "ares12.penn.apidb.org";
