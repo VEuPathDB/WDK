@@ -12,10 +12,10 @@ import java.util.Properties;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.gusdb.fgputil.CliUtil;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModel;
@@ -349,9 +349,7 @@ public class SummaryTester {
 
     String footer = "";
 
-    // PrintWriter stderr = new PrintWriter(System.err);
-    HelpFormatter formatter = new HelpFormatter();
-    formatter.printHelp(75, cmdlineSyntax, header, options, footer);
+    CliUtil.printHelp(cmdlineSyntax, header, options, footer);
     System.exit(1);
   }
 
