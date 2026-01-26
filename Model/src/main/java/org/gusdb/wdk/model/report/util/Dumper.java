@@ -10,10 +10,10 @@ import java.util.Map;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.gusdb.fgputil.CliUtil;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -185,8 +185,7 @@ public class Dumper {
 
         String footer = " ";
 
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(cmdlineSyntax, header, options, footer);
+        CliUtil.printHelp(cmdlineSyntax, header, options, footer);
         System.exit(1);
     }
 

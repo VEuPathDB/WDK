@@ -4,14 +4,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
-import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.CliUtil;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -158,8 +158,6 @@ public class MigratorController {
     }
     syntax.append(newline);
 
-    // PrintWriter stderr = new PrintWriter(System.err);
-    HelpFormatter formatter = new HelpFormatter();
-    formatter.printHelp(75, syntax.toString(), helpHeader, options, helpFooter);
+    CliUtil.printHelp(syntax.toString(), helpHeader, options, helpFooter);
   }
 }
