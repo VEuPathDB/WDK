@@ -312,17 +312,9 @@ public class SqlQuery extends Query {
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     if (_resolved) return;
-    super.resolveReferences(wdkModel);
-
-    // set the dblink flag if any of the params is a datasetParam;
-    for (Param param : getParams()) {
-      if (param instanceof DatasetParam) {
-        _useDBLink = true;
-        break;
-      }
-    }
 
     // Continue only if an attribute meta query reference is provided
+    // IMPORTANT: Must populate macro BEFORE super.resolveReferences() which validates macros
     if (_attributeMetaQueryRef != null) {
       Timer timer = new Timer();
       List<String> metaColumnDefs = new ArrayList<>();
@@ -339,6 +331,16 @@ public class SqlQuery extends Query {
         addSqlParamValue(META_ATTRIBUTE_COLUMNS_FOR_CROSSTAB, String.join(", ", metaColumnDefs));
       }
       LOG.debug("Took " + timer.getElapsedString() + " to resolve AttributeMetaQuery: " + _attributeMetaQueryRef);
+    }
+
+    super.resolveReferences(wdkModel);
+
+    // set the dblink flag if any of the params is a datasetParam;
+    for (Param param : getParams()) {
+      if (param instanceof DatasetParam) {
+        _useDBLink = true;
+        break;
+      }
     }
   }
 
