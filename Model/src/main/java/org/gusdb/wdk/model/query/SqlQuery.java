@@ -324,7 +324,7 @@ public class SqlQuery extends Query {
         column.setQuery(SqlQuery.this);
         AttributeMetaQueryHandler.populate(column, row);
         _columnMap.put(column.getName(), column);
-        metaColumnDefs.add(column.getName() + " " + column.getType().getType());
+        metaColumnDefs.add(column.getName() + " " + column.getType().getPostgresType());
       }
       // Populate the crosstab macro with ordered column definitions from the meta query
       if (!metaColumnDefs.isEmpty()) {
