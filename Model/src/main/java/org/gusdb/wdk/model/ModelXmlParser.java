@@ -25,15 +25,15 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.digester3.Digester;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.CliUtil;
 import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.xml.XmlParser;
@@ -45,9 +45,9 @@ import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.columntool.ColumnTool;
 import org.gusdb.wdk.model.columntool.ColumnToolBundle;
 import org.gusdb.wdk.model.columntool.ColumnToolBundleMap;
-import org.gusdb.wdk.model.columntool.DefaultColumnToolBundleRef;
 import org.gusdb.wdk.model.columntool.ColumnToolElementRef;
 import org.gusdb.wdk.model.columntool.ColumnToolElementRefPair;
+import org.gusdb.wdk.model.columntool.DefaultColumnToolBundleRef;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigBuilder;
 import org.gusdb.wdk.model.config.ModelConfigParser;
@@ -1143,9 +1143,7 @@ public class ModelXmlParser extends XmlParser {
 
     String footer = "";
 
-    // PrintWriter stderr = new PrintWriter(System.err);
-    HelpFormatter formatter = new HelpFormatter();
-    formatter.printHelp(75, cmdlineSyntax, header, options, footer);
+    CliUtil.printHelp(cmdlineSyntax, header, options, footer);
     System.exit(1);
   }
 }

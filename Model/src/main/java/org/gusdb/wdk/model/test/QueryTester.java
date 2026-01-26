@@ -7,12 +7,12 @@ import java.util.Map;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.CliUtil;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -309,9 +309,7 @@ public class QueryTester {
 
     String footer = " ";
 
-    // PrintWriter stderr = new PrintWriter(System.err);
-    HelpFormatter formatter = new HelpFormatter();
-    formatter.printHelp(cmdlineSyntax, header, options, footer);
+    CliUtil.printHelp(cmdlineSyntax, header, options, footer);
     System.exit(1);
   }
 }

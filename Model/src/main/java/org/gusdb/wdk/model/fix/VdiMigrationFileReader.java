@@ -40,7 +40,7 @@ public class VdiMigrationFileReader {
       JsonNode dbRoot = root.get("_default");
 
       Map<String, String> mapping = new HashMap<>();
-      Iterator<Map.Entry<String, JsonNode>> fieldIterator = dbRoot.fields();
+      Iterator<Map.Entry<String, JsonNode>> fieldIterator = dbRoot.properties().iterator();
 
       // Iterate through each field in the "_default" node.
       // Ignore the numeric index keys and extract the udId and vdiId fields to create mapping.
