@@ -68,7 +68,7 @@ public enum ColumnType {
       case CLOB:
         return "text";
       case NUMBER:
-        return "integer";
+        return "numeric";
       case FLOAT:
         return "double precision";
       case BOOLEAN:
