@@ -327,9 +327,11 @@ public class SqlQuery extends Query {
         metaColumnDefs.add(column.getName() + " " + column.getType().getPostgresType());
       }
       // Populate the crosstab macro with ordered column definitions from the meta query
-      if (!metaColumnDefs.isEmpty()) {
-        addSqlParamValue(META_ATTRIBUTE_COLUMNS_FOR_CROSSTAB, String.join(", ", metaColumnDefs));
-      }
+      // If no columns returned, use a placeholder to prevent SQL parse errors
+      String macroValue = metaColumnDefs.isEmpty() ?
+          "_no_columns_defined text" :
+          String.join(", ", metaColumnDefs);
+      addSqlParamValue(META_ATTRIBUTE_COLUMNS_FOR_CROSSTAB, macroValue);
       LOG.debug("Took " + timer.getElapsedString() + " to resolve AttributeMetaQuery: " + _attributeMetaQueryRef);
     }
 
