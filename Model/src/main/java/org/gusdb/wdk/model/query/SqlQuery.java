@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.query;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.Timer;
+import org.gusdb.fgputil.db.platform.SupportedPlatform;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.AttributeMetaQueryHandler;
 import org.gusdb.wdk.model.WdkModel;
@@ -317,21 +318,16 @@ public class SqlQuery extends Query {
     // IMPORTANT: Must populate macro BEFORE super.resolveReferences() which validates macros
     if (_attributeMetaQueryRef != null) {
       Timer timer = new Timer();
-      List<String> metaColumnDefs = new ArrayList<>();
       for (Map<String,Object> row : getDynamicallyDefinedAttributes(_attributeMetaQueryRef, wdkModel)) {
         Column column = new Column();
         // Need to set this here since this column originates from the database
         column.setQuery(SqlQuery.this);
         AttributeMetaQueryHandler.populate(column, row);
         _columnMap.put(column.getName(), column);
-        metaColumnDefs.add(column.getName() + " " + column.getType().getPostgresType());
       }
-      // Populate the crosstab macro with ordered column definitions from the meta query
-      // If no columns returned, use a placeholder to prevent SQL parse errors
-      String macroValue = metaColumnDefs.isEmpty() ?
-          "_no_columns_defined text" :
-          String.join(", ", metaColumnDefs);
-      addSqlParamValue(META_ATTRIBUTE_COLUMNS_FOR_CROSSTAB, macroValue);
+
+      populateCrosstabMacroWithDiscoveredColumns(wdkModel);
+
       LOG.debug("Took " + timer.getElapsedString() + " to resolve AttributeMetaQuery: " + _attributeMetaQueryRef);
     }
 
@@ -343,6 +339,28 @@ public class SqlQuery extends Query {
         _useDBLink = true;
         break;
       }
+    }
+  }
+
+  private void populateCrosstabMacroWithDiscoveredColumns(WdkModel wdkModel) throws WdkModelException {
+    // check if this query's SQL contains a crosstab macro that needs to be filled in with columns discovered by the meta query
+    if (_sql.contains(META_ATTRIBUTE_COLUMNS_FOR_CROSSTAB)) {
+
+      // This macro is only supported on Postgres
+      if (wdkModel.getModelConfig().getAppDB().getPlatformEnum() != SupportedPlatform.POSTGRESQL) {
+        throw new WdkModelException("SQL Query " + getName() + ": Crosstab macro is only supported on Postgres App DBs.");
+      }
+
+      // Populate the crosstab macro with ordered column definitions from the meta query
+      // If no columns returned, use a placeholder to prevent SQL parse errors
+      List<String> metaColumnDefs = new ArrayList<>();
+      for (Column column : _columnMap.values()) {
+        metaColumnDefs.add(column.getName() + " " + column.getType().getPostgresType());
+      }
+      String macroValue = metaColumnDefs.isEmpty() ?
+          "_no_columns_defined text" :
+          String.join(", ", metaColumnDefs);
+      addSqlParamValue(META_ATTRIBUTE_COLUMNS_FOR_CROSSTAB, macroValue);
     }
   }
 
