@@ -73,6 +73,9 @@ public class ModelConfigBuilder {
   private String _keyStoreFile = "";
   private String _keyStorePassPhrase = "";
 
+  // Max number of rows allowed by table values and streams... to avoid overuse of memory.  30000 seems about right as default
+  private Integer _maxTableValueRows = 30000;
+
   public ModelConfig build() throws WdkModelException {
 
     // data validation
@@ -158,7 +161,9 @@ public class ModelConfigBuilder {
 
       // SSL key store information
       _keyStoreFile,
-      _keyStorePassPhrase
+      _keyStorePassPhrase,
+
+      _maxTableValueRows
     );
   }
 
@@ -390,5 +395,7 @@ public class ModelConfigBuilder {
   public void setWdkTempDir(String wdkTempDir) {
     _wdkTempDir = wdkTempDir;
   }
+
+  public void setMaxTableValueRows(Integer maxTableValueRows) {_maxTableValueRows = maxTableValueRows; }
 
 }
