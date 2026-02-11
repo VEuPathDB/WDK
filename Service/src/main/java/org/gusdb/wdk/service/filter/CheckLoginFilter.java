@@ -118,19 +118,21 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
         // if allowed, automatically create a guest to use on this request
         if (isGuestUserAllowed(requestPath)) {
           useNewGuest(factory, request, requestContext, requestPath);
-          return;
         }
-        // no authentication provided, and guests are disallowed
-        throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED).build());
+        else {
+          // no authentication provided, and guests are disallowed
+          throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED).build());
+        }
       }
       else {
         try {
           // validate submitted token
           ValidatedToken token = factory.validateBearerToken(rawToken);
           User user = factory.convertToUser(token);
-          if (isGuestUserAllowed(requestPath)) {
+          if (!user.isGuest() || isGuestUserAllowed(requestPath)) {
             setRequestAttributes(request, token, user);
-            LOG.info("Validated successfully.  Request will be processed for user " + user.getUserId());
+            LOG.info("Validated successfully.  Request will be processed for " +
+                (user.isGuest() ? "guest" : "registered") + " user " + user.getUserId());
           }
           else {
             // valid guest token submitted, but guests disallowed for this path
@@ -139,14 +141,13 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
         }
         catch (ExpiredTokenException e) {
           if (isGuestUserAllowed(requestPath)) {
-            // token is expired, but guest token is allowed to be generated,
+            // token is expired, but a new guest token is allowed to be generated,
             //   which will hopefully inspire them to log back in
             useNewGuest(factory, request, requestContext, requestPath);
           }
           else {
             throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED)
                 .entity("Authorization token has expired.").build());
-            
           }
         }
         catch (InvalidTokenException e) {
