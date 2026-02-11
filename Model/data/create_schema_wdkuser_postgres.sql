@@ -3,11 +3,14 @@
  * and sequences needed for a properly functioning WDK.
  *============================================================================*/
 
-set role COMM_WDK_W; -- TODO: remove GRANTs
+reset role;
 
 DROP SCHEMA IF EXISTS wdkuser CASCADE;
 CREATE SCHEMA IF NOT EXISTS wdkuser;
 GRANT USAGE ON SCHEMA wdkuser TO COMM_WDK_W;
+
+set role COMM_WDK_W; -- TODO: remove GRANTs
+
 
 /*==============================================================================
  * create tables
