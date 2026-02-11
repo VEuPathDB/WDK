@@ -997,6 +997,8 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod("*/linkAttribute/url", "setText", 0);
     configureNode(digester, "*/linkAttribute/displayText", WdkModelText.class, "addDisplayText");
     digester.addCallMethod("*/linkAttribute/displayText", "setText", 0);
+    configureNode(digester, "*/linkAttribute/tooltip", WdkModelText.class, "addTooltip");
+    digester.addCallMethod("*/linkAttribute/tooltip", "setText", 0);
     configureAttributeReporters(digester, "linkAttribute");
 
     // text attribute
@@ -1006,6 +1008,8 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod("*/textAttribute/text", "setText", 0);
     configureNode(digester, "*/textAttribute/display", WdkModelText.class, "addDisplay");
     digester.addCallMethod("*/textAttribute/display", "setText", 0);
+    configureNode(digester, "*/linkAttribute/tooltip", WdkModelText.class, "addTooltip");
+    digester.addCallMethod("*/linkAttribute/tooltip", "setText", 0);
     configureAttributeReporters(digester, "textAttribute");
   }
 
