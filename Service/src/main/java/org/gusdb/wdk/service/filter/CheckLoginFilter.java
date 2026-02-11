@@ -58,7 +58,7 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
   @Inject
   protected Provider<Request> _grizzlyRequest;
 
-  /*************** The following methods control the default behavior for WDK endpoints ************/
+  /*************** The following three methods control the default behavior for WDK endpoints ************/
 
   // override and add paths to this list if no authentication is required AND'
   //   no guest user should be created for this request
@@ -80,7 +80,7 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
 
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
-    // skip endpoints which do not require a user; prevents guests from being unnecessarily created
+    // skip endpoints which do not require auth nor a guest user; prevents guests from being unnecessarily created
     String requestPath = requestContext.getUriInfo().getPath();
     if (isPathToSkip(requestPath)) return;
 
@@ -131,10 +131,10 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
         }
       }
     }
-    catch (Exception e) {
+    catch (WdkModelException | RuntimeException e) {
       // any other exception is fatal, but log first
       LOG.error("Unable to authenticate with Authorization header " + rawToken, e);
-      throw e instanceof RuntimeException ? (RuntimeException)e : new WdkRuntimeException(e);
+      throw e instanceof WdkModelException ? new WdkRuntimeException(e) : (RuntimeException)e;
     }
   }
 
