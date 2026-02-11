@@ -60,20 +60,37 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
 
   /*************** The following three methods control the default behavior for WDK endpoints ************/
 
-  // override and add paths to this list if no authentication is required AND'
-  //   no guest user should be created for this request
+  /**
+   * @param path request URL path
+   * @return true if no authorization is required and no guest
+   * user should be created for this request, else false
+   */
   protected boolean isPathToSkip(String path) {
     // skip user check for prometheus metrics requests
     return SystemService.PROMETHEUS_ENDPOINT_PATH.equals(path);
   }
 
-  // override and add paths to this list if valid token is required (no guest will be created)
+  /**
+   * A return value of true indicates a valid bearer token is required; the token
+   * may be a guest depending on the value of isGuestUserAllowed().  If false is
+   * returned, no token is present, and isGuestUserAllowed() returns true, then a
+   * new guest token will be generated for this request and returned to the user.
+   *
+   * @param path request URL path
+   * @return true if a valid bearer token is required on the request, else false
+   */
   protected boolean isValidTokenRequired(String path) {
     return false;
   }
 
-  // authentication is required AND
-  //   if token is absent or expired, create new guest to use for this request
+  /**
+   * A return value of true indicates a guest user is allowed to access this
+   * endpoint.  If a sent token is absent and isValidTokenRequired() returns false,
+   * a new guest token will be generated for use on this request.
+   *
+   * @param path request URL path
+   * @return true if guests are allowed to access this endpoint, else false
+   */
   protected boolean isGuestUserAllowed(String path) {
     return true;
   }
@@ -121,8 +138,16 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
           }
         }
         catch (ExpiredTokenException e) {
-          // token is expired; use guest token for now which should inspire them to log back in
-          useNewGuest(factory, request, requestContext, requestPath);
+          if (isGuestUserAllowed(requestPath)) {
+            // token is expired, but guest token is allowed to be generated,
+            //   which will hopefully inspire them to log back in
+            useNewGuest(factory, request, requestContext, requestPath);
+          }
+          else {
+            throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED)
+                .entity("Authorization token has expired.").build());
+            
+          }
         }
         catch (InvalidTokenException e) {
           // passed token is invalid; throw 401
