@@ -9,6 +9,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -158,8 +159,9 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
       }
     }
     catch (WdkModelException | RuntimeException e) {
-      // any other exception is fatal, but log first
-      LOG.error("Unable to authenticate with Authorization header " + rawToken, e);
+      // jax-rs API exceptions map directly to specific response statuses; log any other exceptions
+      if (!(e instanceof WebApplicationException))
+        LOG.error("Unable to authenticate with Authorization header " + rawToken, e);
       throw e instanceof WdkModelException ? new WdkRuntimeException(e) : (RuntimeException)e;
     }
   }
