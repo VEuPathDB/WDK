@@ -34,6 +34,7 @@ import org.gusdb.oauth2.exception.ExpiredTokenException;
 import org.gusdb.oauth2.exception.InvalidTokenException;
 import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.User;
@@ -59,7 +60,9 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
   @Inject
   protected Provider<Request> _grizzlyRequest;
 
-  /*************** The following three methods control the default behavior for WDK endpoints ************/
+  protected WdkModel _wdkModel;
+
+  /*** The following three methods control the default behavior for WDK endpoints ***/
 
   /**
    * @param path request URL path
@@ -96,6 +99,19 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
     return true;
   }
 
+  /**
+   * @return additional explanation to be returned with 401/403 responses
+   */
+  protected String getAdditionalUnauthorizedMessage() {
+    return "";
+  }
+
+  private NotAuthorizedException getNotAuthorizedException(String reason) {
+    return new NotAuthorizedException(Response.status(Status.UNAUTHORIZED)
+        .entity(reason + getAdditionalUnauthorizedMessage())
+        .build());
+  }
+
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
     // skip endpoints which do not require auth nor a guest user; prevents guests from being unnecessarily created
@@ -104,7 +120,8 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
 
     ApplicationContext context = ContextLookup.getApplicationContext(_servletContext);
     RequestData request = ContextLookup.getRequest(_servletRequest.get(), _grizzlyRequest.get());
-    UserFactory factory = ContextLookup.getWdkModel(context).getUserFactory();
+    _wdkModel = ContextLookup.getWdkModel(context);
+    UserFactory factory = _wdkModel.getUserFactory();
 
     // try to find submitted bearer token
     String rawToken = findRawBearerToken(request, requestContext);
@@ -114,7 +131,7 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
         // no credentials submitted; check requirements of this path
         if (isValidTokenRequired(requestPath)) {
           LOG.warn("Did not received bearer token as required for path:" + requestPath);
-          throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED).build());
+          throw getNotAuthorizedException("Valid bearer token required for this endpoint.");
         }
         // if allowed, automatically create a guest to use on this request
         if (isGuestUserAllowed(requestPath)) {
@@ -122,7 +139,7 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
         }
         else {
           // no authentication provided, and guests are disallowed
-          throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED).build());
+          throw getNotAuthorizedException("Valid bearer token required for this endpoint.");
         }
       }
       else {
@@ -137,7 +154,9 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
           }
           else {
             // valid guest token submitted, but guests disallowed for this path
-            throw new ForbiddenException();
+            throw new ForbiddenException(
+                "Guest users are not permitted to access this endpoint." +
+                getAdditionalUnauthorizedMessage());
           }
         }
         catch (ExpiredTokenException e) {
@@ -147,14 +166,13 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
             useNewGuest(factory, request, requestContext, requestPath);
           }
           else {
-            throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED)
-                .entity("Authorization token has expired.").build());
+            throw getNotAuthorizedException("Submitted bearer token has expired.");
           }
         }
         catch (InvalidTokenException e) {
           // passed token is invalid; throw 401
           LOG.warn("Received invalid bearer token for auth: " + rawToken);
-          throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED).build());
+          throw getNotAuthorizedException("Valid bearer token required for this endpoint.");
         }
       }
     }
