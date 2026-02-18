@@ -99,6 +99,11 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
     return true;
   }
 
+  // client-facing messages when authorization fails
+  private static final String MISSING_OR_INVALID_TOKEN = "Valid bearer token required for this endpoint.";
+  private static final String EXPIRED_TOKEN = "Submitted bearer token has expired.";
+  private static final String REGISTERED_USERS_ONLY = "This endpoint is only available to registered users, and requires an API key.";
+
   /**
    * @return additional explanation to be returned with 401/403 responses
    */
@@ -131,7 +136,7 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
         // no credentials submitted; check requirements of this path
         if (isValidTokenRequired(requestPath)) {
           LOG.warn("Did not received bearer token as required for path:" + requestPath);
-          throw getNotAuthorizedException("Valid bearer token required for this endpoint.");
+          throw getNotAuthorizedException(MISSING_OR_INVALID_TOKEN);
         }
         // if allowed, automatically create a guest to use on this request
         if (isGuestUserAllowed(requestPath)) {
@@ -139,7 +144,7 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
         }
         else {
           // no authentication provided, and guests are disallowed
-          throw getNotAuthorizedException("Valid bearer token required for this endpoint.");
+          throw getNotAuthorizedException(MISSING_OR_INVALID_TOKEN);
         }
       }
       else {
@@ -154,9 +159,7 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
           }
           else {
             // valid guest token submitted, but guests disallowed for this path
-            throw new ForbiddenException(
-                "Guest users are not permitted to access this endpoint." +
-                getAdditionalUnauthorizedMessage());
+            throw new ForbiddenException(REGISTERED_USERS_ONLY + getAdditionalUnauthorizedMessage());
           }
         }
         catch (ExpiredTokenException e) {
@@ -166,13 +169,13 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
             useNewGuest(factory, request, requestContext, requestPath);
           }
           else {
-            throw getNotAuthorizedException("Submitted bearer token has expired.");
+            throw getNotAuthorizedException(EXPIRED_TOKEN);
           }
         }
         catch (InvalidTokenException e) {
           // passed token is invalid; throw 401
           LOG.warn("Received invalid bearer token for auth: " + rawToken);
-          throw getNotAuthorizedException("Valid bearer token required for this endpoint.");
+          throw getNotAuthorizedException(MISSING_OR_INVALID_TOKEN);
         }
       }
     }
