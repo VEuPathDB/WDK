@@ -1,11 +1,14 @@
 package org.gusdb.wdk.model.answer.spec;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.functional.Functions.filter;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.Validateable;
@@ -200,5 +203,23 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
 
   public User getRequestingUser() {
     return _queryInstanceSpec.getRequestingUser();
+  }
+
+  @Override
+  public String toString() {
+    return new StringBuilder()
+      .append("Question: ")
+      .append(_questionName)
+      .append(NL)
+      .append("Parameters: ")
+      .append(FormatUtil.prettyPrint(_queryInstanceSpec.toMap(), Style.MULTI_LINE))
+      .append(NL)
+      .append("StepFilters: ")
+      .append(_filters)
+      .append("ViewFilters: ")
+      .append(_viewFilters)
+      .append("ColumnFilters: ")
+      .append(_columnFilterConfig)
+      .toString();
   }
 }

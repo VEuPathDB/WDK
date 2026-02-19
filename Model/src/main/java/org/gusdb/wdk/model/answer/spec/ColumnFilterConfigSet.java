@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.answer.spec;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,4 +79,10 @@ public class ColumnFilterConfigSet extends ReadOnlyHashMap<String, ColumnFilterC
     super(configs);
   }
 
+  @Override
+  public String toString() {
+    StringBuilder s = new StringBuilder().append("[").append(NL);
+    entrySet().forEach(col -> s.append("  ").append(col.getKey()).append(col.getValue()).append(NL));
+    return s.append("]").append(NL).toString();
+  }
 }

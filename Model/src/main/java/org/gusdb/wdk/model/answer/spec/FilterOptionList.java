@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.answer.spec;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -135,5 +137,12 @@ public class FilterOptionList implements Iterable<FilterOption>, Validateable<Fi
 
   public Optional<FilterOption> getFirst(Predicate<FilterOption> predicate) {
     return _options.stream().filter(predicate).findFirst();
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder s = new StringBuilder().append("[").append(NL);
+    _options.stream().forEach(f -> s.append("  ").append(f.getKey()).append(": ").append(f.getValue().toString()).append(NL));
+    return s.append("]").append(NL).toString();
   }
 }
