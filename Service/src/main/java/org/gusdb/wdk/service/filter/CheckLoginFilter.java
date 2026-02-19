@@ -100,8 +100,8 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
   }
 
   // client-facing messages when authorization fails
-  private static final String MISSING_OR_INVALID_TOKEN = "Valid bearer token required for this endpoint.";
-  private static final String EXPIRED_TOKEN = "Submitted bearer token has expired.";
+  private static final String MISSING_OR_INVALID_TOKEN = "Valid API Key required for this endpoint.";
+  private static final String EXPIRED_TOKEN = "Submitted API Key has expired.";
   private static final String REGISTERED_USERS_ONLY = "This endpoint is only available to registered users, and requires an API key.";
 
   /**
