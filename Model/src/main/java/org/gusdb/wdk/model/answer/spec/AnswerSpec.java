@@ -213,7 +213,6 @@ public class AnswerSpec implements Validateable<AnswerSpec> {
       .append(NL)
       .append("Parameters: ")
       .append(FormatUtil.prettyPrint(_queryInstanceSpec.toMap(), Style.MULTI_LINE))
-      .append(NL)
       .append("StepFilters: ")
       .append(_filters)
       .append("ViewFilters: ")
