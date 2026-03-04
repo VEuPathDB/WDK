@@ -26,6 +26,11 @@ public class TextAttributeValue extends DerivedAttributeValue {
   private String _display;
 
   /**
+   * Optional value that can be used to display extra information about this data value in a UI.
+   */
+  private String _tooltip;
+
+  /**
    * @param field
    * @param container
    */
@@ -49,4 +54,10 @@ public class TextAttributeValue extends DerivedAttributeValue {
     return _display;
   }
 
+  public String getTooltip() throws WdkModelException, WdkUserException {
+    if (_tooltip == null) {
+      _tooltip = populateMacros(((TextAttributeField)_field).getTooltip());
+    }
+    return _tooltip;
+  }
 }
