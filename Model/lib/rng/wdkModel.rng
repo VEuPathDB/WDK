@@ -949,6 +949,9 @@
         <attribute name="emptyValue" />
       </optional>
       <optional>
+        <attribute name="maxSelectedCount" />
+      </optional>
+      <optional>
         <attribute name="number">
           <data type="boolean" />
         </attribute>
