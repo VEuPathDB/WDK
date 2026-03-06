@@ -98,6 +98,7 @@ CREATE TABLE wdkuser.datasets (
   created_time      TIMESTAMP NOT NULL,
   upload_file       VARCHAR(2000),
   parser            VARCHAR(50) NOT NULL,
+  content           TEXT,
   CONSTRAINT "datasets_pk" PRIMARY KEY (dataset_id),
   CONSTRAINT "datasets_fk01" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id)
