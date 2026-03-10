@@ -141,6 +141,13 @@ public abstract class AbstractTabularReporter extends StandardReporter {
     }
   }
 
+  @Override
+  protected RecordStream getRecords() throws WdkModelException {
+    // tabular reporters should always be sorted by the ID attribute; set sort before getting records
+    _baseAnswer.setSortByIdAttribute();
+    return super.getRecords();
+  }
+
   /**
    * Ensures values are uniformly formatted across output types
    *

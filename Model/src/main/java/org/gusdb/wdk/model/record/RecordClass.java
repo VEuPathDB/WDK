@@ -1427,8 +1427,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   }
 
   @Override
-  public Map<String, Boolean> getSortingAttributeMap() {
-    Map<String, Boolean> map = new LinkedHashMap<>();
+  public LinkedHashMap<String, Boolean> getSortingAttributeMap() {
+    LinkedHashMap<String, Boolean> map = new LinkedHashMap<>();
     int count = 0;
     for (String attrName : defaultSortingMap.keySet()) {
       map.put(attrName, defaultSortingMap.get(attrName));
@@ -1445,8 +1445,8 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return map;
   }
 
-  public Map<String, Boolean> getIdSortingAttributeMap() {
-    return new MapBuilder<String, Boolean>(new LinkedHashMap<>())
+  public LinkedHashMap<String, Boolean> getIdSortingAttributeMap() {
+    return (LinkedHashMap<String,Boolean>)new MapBuilder<String, Boolean>(new LinkedHashMap<>())
         .put(idAttributeField.getName(), true).toMap();
   }
 

@@ -109,7 +109,7 @@ public class SummaryTester {
         return;
       }
 
-      Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
+      LinkedHashMap<String, Boolean> sortingMap = question.getSortingAttributeMap();
 
       for (int i = 0; i < rows.length; i += 2) {
         int nextStartRowIndex = Integer.parseInt(rows[i]);
@@ -198,7 +198,7 @@ public class SummaryTester {
         .setQuestionFullName(question.getFullName())
         .setParamValues(paramValues)
         .buildRunnable(user, StepContainer.emptyContainer());
-    Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
+    LinkedHashMap<String, Boolean> sortingMap = question.getSortingAttributeMap();
     AnswerValue answerValue = AnswerValueFactory.makeAnswer(answerSpec, 1, 2, sortingMap, false);
     int resultSize = answerValue.getResultSizeFactory().getResultSize();
     answerValue = AnswerValueFactory.makeAnswer(answerSpec, 1, resultSize, sortingMap, false);

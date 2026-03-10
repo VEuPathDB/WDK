@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,14 +54,15 @@ import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
-import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.PrimaryKeyIterator;
+import org.gusdb.wdk.model.record.PrimaryKeyValue;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.ResultSetPrimaryKeyIterator;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
@@ -159,8 +159,8 @@ public class AnswerValue implements PartitionKeysProvider {
   private int _startIndex = 1;
   private int _endIndex = UNBOUNDED_END_PAGE_INDEX;
 
-  // sorting for this answer
-  private Map<String, Boolean> _sortingMap;
+  // sorting for this answer (true = ascending)
+  private LinkedHashMap<String, Boolean> _sortingMap;
 
   // values generated and cached from the above
   private String _sortedIdSql;
@@ -179,7 +179,7 @@ public class AnswerValue implements PartitionKeysProvider {
    * @param avoidCacheHit 
    */
   public AnswerValue(RunnableObj<AnswerSpec> validAnswerSpec, int startIndex,
-      int endIndex, Map<String, Boolean> sortingMap, boolean avoidCacheHit) throws WdkModelException {
+      int endIndex, LinkedHashMap<String, Boolean> sortingMap, boolean avoidCacheHit) throws WdkModelException {
     _validAnswerSpec = validAnswerSpec;
     _answerSpec = validAnswerSpec.get();
     _question = _answerSpec.getQuestion().get(); // must be present if answerspec is valid
@@ -188,7 +188,7 @@ public class AnswerValue implements PartitionKeysProvider {
     _avoidCacheHit = avoidCacheHit;
     _idsQueryInstance = Query.makeQueryInstance(_answerSpec.getQueryInstanceSpec().getRunnable().getLeft(), avoidCacheHit, this);
     _resultSizeFactory = new ResultSizeFactory(this);
-    _sortingMap = sortingMap == null? new HashMap<String, Boolean>() : sortingMap;
+    _sortingMap = sortingMap == null? new LinkedHashMap<String, Boolean>() : sortingMap;
     setPageIndex(startIndex, endIndex);
     LOG.debug("AnswerValue created for question: " + _question.getDisplayName());
   }
@@ -508,35 +508,17 @@ public class AnswerValue implements PartitionKeysProvider {
     final Query attrQuery,
     final boolean sort
   ) throws WdkModelException {
+
+    // get attribute SQL joined to IDs
     String wrapped = joinToIds(getAttributeSql(attrQuery));
+
+    // substitute partition keys
     wrapped = substitutePartitionKeys(wrapped, attrQuery.getName() + "-getFilteredAttributeSql()");
-    if (!sort)
-      return wrapped;
 
-    final var cols = getSortingColumns()
-      .stream()
-      .filter(spec -> spec.getItem() instanceof QueryColumnAttributeField)
-      .iterator();
-
-    if (!cols.hasNext())
-      return wrapped;
-
-    final var out = new StringBuilder(wrapped).append("\nORDER BY\n inq.");
-
-    boolean first = true;
-    while (cols.hasNext()) {
-      final var spec = cols.next();
-
-      if (!first)
-        out.append("\n, inq.");
-
-      out.append(spec.getItemName())
-        .append(' ')
-        .append(spec.getDirection().toString());
-      first=false;
-    }
-
-    return out.toString();
+    // if asked to sort, append generated order-by clause
+    return !sort ? wrapped :
+      wrapped + getOrderByClause(_question.getRecordClass().getPrimaryKeyDefinition(),
+          _sortingMap, _question.getAttributeFieldMap(), Optional.of("inq."));
   }
 
   public String getAttributeSql(Query attributeQuery) throws WdkModelException {
@@ -772,11 +754,14 @@ public class AnswerValue implements PartitionKeysProvider {
     LOG.debug("AnswerValue: prepareSortingSqls(): sorting map: " + _sortingMap); //e.g.: {primary_key=true}
     final String idQueryNameStub = "answer_id_query";
     queryNames.put(idQueryNameStub, "idq");
+
     for (String fieldName : _sortingMap.keySet()) {
       AttributeField field = fields.get(fieldName);
       if (field == null) continue;
       boolean ascend = _sortingMap.get(fieldName);
+
       Map<String, ColumnAttributeField> dependents = field.getColumnAttributeFields();
+
       for (ColumnAttributeField dependent : dependents.values()) {
 
         // set default values for PK and simple columns
@@ -869,12 +854,76 @@ public class AnswerValue implements PartitionKeysProvider {
     return _idsQueryInstance.getResultMessage();
   }
 
-  public Map<String, Boolean> getSortingMap() {
+  public void setSortByIdAttribute() {
+    String idAttribute = _question.getRecordClass().getIdAttributeField().getName();
+    _sortingMap.clear();
+    _sortingMap.put(idAttribute, true);
+  }
+
+  /**
+   * @return the requested column names to sort and a boolean indication sort direction (true = ascending)
+   */
+  public LinkedHashMap<String, Boolean> getSortingMap() {
     return new LinkedHashMap<>(_sortingMap);
   }
 
-  public List<SortDirectionSpec<AttributeField>> getSortingColumns() {
-    return SortDirectionSpec.convertSorting(_sortingMap, _question.getAttributeFieldMap());
+  /**
+   * Converts the passed sorting columns into those used to perform the actual sort; note
+   * these columns could be dependent columns (for derived atrributes) and/or may have been
+   * mapped to proxy sort columns and may not match the column names returned by getSortingMap().
+   *
+   * Note 1: some of this logic is repeated in prepareSortingSqls() and a combination of
+   *    RecorStreamFactory::requiresExactlyOneAttrQuery and FileBasedRecordStream::getRequiredColumnAttributeFields.
+   *
+   * Note 2: We append primary key columns to the end to ensure consistent paging; this
+   *    means if you want to avoid runtime by not sorting at all (PKs included) if
+   *    _sortingMap is empty, do NOT call this method.  It will always return a sort.
+   * @throws WdkModelException 
+   */
+  public static String getOrderByClause(PrimaryKeyDefinition pk, Map<String, Boolean> sortingColumns,
+       Map<String, AttributeField> attributeFieldMap, Optional<String> tableAlias) throws WdkModelException {
+
+    String aliasStr = tableAlias.map(a -> a.endsWith(".") ? a : a + ".").orElse("");
+
+    List<SortDirectionSpec<AttributeField>> baseSorts =
+        SortDirectionSpec.convertSorting(sortingColumns, attributeFieldMap);
+
+    Map<String, String> orderClauses = new LinkedHashMap<>();
+
+    for (SortDirectionSpec<AttributeField> spec : baseSorts) {
+
+      for (ColumnAttributeField dependedField: spec.getItem().getColumnAttributeFields().values()) {
+
+        if (dependedField instanceof QueryColumnAttributeField) {
+
+          QueryColumnAttributeField queryField = (QueryColumnAttributeField)dependedField;
+          Column column = queryField.getColumn();
+
+          // use custom sorting column if specified
+          String columnName = Optional
+              .ofNullable(column.getSortingColumn())
+              .orElse(column.getName());
+
+          orderClauses.putIfAbsent(columnName, column.isIgnoreCase()
+              ? "lower(" + aliasStr + columnName + ") " + spec.getDirection()
+              : aliasStr + columnName + " " + spec.getDirection());
+        }
+        else if (dependedField instanceof PkColumnAttributeField) {
+          orderClauses.putIfAbsent(dependedField.getName(), dependedField.getName() + " ASC");
+        }
+        else {
+          throw new IllegalStateException("Unknown subclass of ColumnAttributeField: " + dependedField.getClass().getName());
+        }
+      }
+    }
+
+    // for true stable sort, add PK cols to the end if they are not already present
+    for (String pkCol : pk.getColumnRefs()) {
+      orderClauses.putIfAbsent(pkCol, pkCol + " ASC");
+    }
+
+    // join together
+    return orderClauses.values().stream().collect(Collectors.joining(", ", "\n ORDER BY ", "\n"));
   }
 
   /**
@@ -1048,19 +1097,22 @@ public class AnswerValue implements PartitionKeysProvider {
   }
 
   public static String wrapToReturnOnlyPkAndSelectedCols(String sql,
-      RecordClass rc, Collection<QueryColumnAttributeField> fields) {
+      Question question, Collection<QueryColumnAttributeField> fields,
+      Map<String,Boolean> sortingColumns) throws WdkModelException {
 
+    PrimaryKeyDefinition pk = question.getRecordClass().getPrimaryKeyDefinition();
     List<String> cols = new ListBuilder<String>()
-      .addAll(Arrays.asList(rc.getPrimaryKeyDefinition().getColumnRefs()))
+      .addAll(Arrays.asList(pk.getColumnRefs()))
       .addAll(fields.stream().map(Field::getName).collect(Collectors.toList()))
       .toList();
-    
+
     return new StringBuilder()
       .append("/* SingleAttributeRecordStream */\nSELECT\n  ")
       .append(String.join(",\n  ", cols))
       .append("\n FROM (\n")
       .append(sql)
       .append("\n) sarsc")
+      .append(getOrderByClause(pk, sortingColumns, question.getAttributeFieldMap(), Optional.of("sarsc")))
       .toString();
   }
 
