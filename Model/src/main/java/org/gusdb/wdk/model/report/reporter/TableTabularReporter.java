@@ -65,6 +65,7 @@ public class TableTabularReporter extends AbstractTabularReporter {
         throw new WdkModelException(e.getMessage(), e);
       }
     } */
+    _baseAnswer.setSortByIdAttribute();
     RecordClass recordClass = _baseAnswer.getQuestion().getRecordClass();
     if (idAttributeContainsNonPkFields(recordClass)) {
       // need to use FileBasedRecordStream to support both this table and any needed attributes
