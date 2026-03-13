@@ -43,6 +43,10 @@ public class SingleRecordQuestion extends Question {
       public WdkModel getWdkModel() {
         return wdkModel;
       }
+      @Override
+      public boolean isCacheable() {
+        return false;
+      }
     };
   }
 
