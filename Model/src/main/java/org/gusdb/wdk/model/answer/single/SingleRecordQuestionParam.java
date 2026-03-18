@@ -1,16 +1,23 @@
 package org.gusdb.wdk.model.answer.single;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidationLevel;
+import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.param.StringParamHandler;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues;
+import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
 import org.gusdb.wdk.model.query.spec.PartiallyValidatedStableValues.ParamValidity;
+import org.gusdb.wdk.model.record.PrimaryKeyDefinition;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordNotFoundException;
 
 public class SingleRecordQuestionParam extends StringParam {
 
@@ -29,6 +36,15 @@ public class SingleRecordQuestionParam extends StringParam {
       // this should never happen; record class should already be resolved
       throw new WdkRuntimeException(e);
     }
+    setHandler(new StringParamHandler() {
+      @Override
+      public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxVals) throws WdkModelException {
+        final String stable = ctxVals.get().get(_param.getName());
+        PrimaryKeyDefinition pkDef = recordClass.getPrimaryKeyDefinition();
+        Map<String, String> pk = Functions.mapValues(parseParamValue(stable), entry -> (String)entry.getValue());
+        return pkDef.createSelectClause(pk);
+      }
+    });
   }
 
   @Override
@@ -37,12 +53,15 @@ public class SingleRecordQuestionParam extends StringParam {
       parseParamValue(stableValues.get(getName()));
       return stableValues.setValid(getName(), level);
     }
-    catch (IllegalArgumentException e) {
+    catch (IllegalArgumentException | RecordNotFoundException e) {
       return stableValues.setInvalid(getName(), level, e.getMessage());
+    }
+    catch (WdkModelException e) {
+      throw new WdkRuntimeException("Unable to parse primary key value string", e);
     }
   }
 
-  public Map<String,Object> parseParamValue(String valueString) throws IllegalArgumentException {
+  public Map<String,Object> parseParamValue(String valueString) throws IllegalArgumentException, RecordNotFoundException, WdkModelException {
 
     // build valid PK value list
     String[] pkValues = valueString.split(",");
@@ -59,6 +78,13 @@ public class SingleRecordQuestionParam extends StringParam {
     for (int i = 0; i < columnRefs.length; i++) {
       pkMap.put(columnRefs[i], pkValues[i]);
     }
-    return pkMap;
+
+    // make sure PK values map to a single record
+    List<Map<String, Object>> pkValueMap = _recordClass.getPrimaryKeyDefinition().lookUpPrimaryKeys(_wdkModel.getSystemUser(), pkMap);
+    if (pkValueMap.size() != 1) {
+      throw new IllegalArgumentException("Primary key value [" + String.join(", ", pkValues) + "] + maps to " + pkValueMap.size() + " records (must be 1).");
+    }
+
+    return pkValueMap.get(0);
   }
 }

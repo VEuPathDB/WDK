@@ -47,6 +47,10 @@ public class SingleRecordQuestion extends Question {
       public boolean isCacheable() {
         return false;
       }
+      @Override
+      public String getSql() {
+        return "select $$" + _param.getName() + "$$" + wdkModel.getAppDb().getPlatform().getDummyTable();
+      }
     };
   }
 
