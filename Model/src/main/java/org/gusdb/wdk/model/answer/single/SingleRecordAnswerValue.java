@@ -3,7 +3,7 @@ package org.gusdb.wdk.model.answer.single;
 import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -38,7 +38,7 @@ public class SingleRecordAnswerValue extends AnswerValue {
   private Map<String, Object> _pkMap;
 
   public SingleRecordAnswerValue(RunnableObj<AnswerSpec> validSpec) throws WdkModelException {
-    super(validSpec, 1, UNBOUNDED_END_PAGE_INDEX, Collections.EMPTY_MAP, false);
+    super(validSpec, 1, UNBOUNDED_END_PAGE_INDEX, new LinkedHashMap<>(), false);
     SingleRecordQuestion question = (SingleRecordQuestion)validSpec.get().getQuestion().get();
     SingleRecordQuestionParam param = question.getParam();
     _recordClass = question.getRecordClass();

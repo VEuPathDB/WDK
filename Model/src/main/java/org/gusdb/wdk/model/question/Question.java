@@ -666,8 +666,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
    * This method is use to clone the question, excluding dynamic attributes
    */
   @Override
-  public Map<String, Boolean> getSortingAttributeMap() {
-    Map<String, Boolean> map = new LinkedHashMap<>();
+  public LinkedHashMap<String, Boolean> getSortingAttributeMap() {
+    LinkedHashMap<String, Boolean> map = new LinkedHashMap<>();
 
     for (String attrName : _defaultSortingMap.keySet()) {
       map.put(attrName, _defaultSortingMap.get(attrName));

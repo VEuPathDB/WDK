@@ -85,7 +85,7 @@ public class SqlQueryInstance extends QueryInstance<SqlQuery> {
       var sql = partitionKeysProvider.substitutePartitionKeys(getUncachedSql(), getQuery().getFullName());
 
       LOG.info("Performing the following SQL: (use debug to see SQL) " );
-      LOG.debug("Performing the following SQL: " + sql);
+      LOG.info("Performing the following SQL: " + sql);
       return new SqlResultList(SqlUtils.executeQuery(
           _wdkModel.getAppDb().getDataSource(),
           sql,

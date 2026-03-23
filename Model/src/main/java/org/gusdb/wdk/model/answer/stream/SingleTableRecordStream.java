@@ -94,6 +94,7 @@ public class SingleTableRecordStream implements RecordStream {
             // loop through the ResultList's rows and add to table until PK values differ
             int rowCount = 0;
             Timer t = new Timer();
+            Integer maxRows = _answerValue.getWdkModel().getModelConfig().getMaxTableValueRows();
             while (_resultList.next()) {
               Map<String,Object> rowPkValues = new PrimaryKeyValue(_pkDef, _resultList).getRawValues();
               if (rawValuesDiffer(currentRecordPkValues, rowPkValues)) {
@@ -104,9 +105,9 @@ public class SingleTableRecordStream implements RecordStream {
               // otherwise add row to table value
               rowCount++;
               LOG.trace("Row " + rowCount + ": fetched in " + t.getElapsedStringAndRestart());
-              if (rowCount > TableValue.MAX_TABLE_VALUE_ROWS)
+              if (rowCount > maxRows)
                 throw new WdkRuntimeException("Table query " + _tableField.getQueryRef() +
-                    " returned too many (>" + TableValue.MAX_TABLE_VALUE_ROWS + ") rows.");
+                    " returned too many (>" + maxRows + ") rows.");
               tableValue.initializeRow(_resultList);
             }
   

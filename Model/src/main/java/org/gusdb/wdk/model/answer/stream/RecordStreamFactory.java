@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.answer.stream;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.SortDirectionSpec;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
@@ -98,8 +99,13 @@ public class RecordStreamFactory {
     }
     var fieldsToConsider = new ArrayList<>(fields);
     if (includeSortingColumnsInCalculation) {
-      fieldsToConsider.addAll(answerValue.getSortingColumns()
-          .stream().map(SortDirectionSpec::getItem).collect(Collectors.toList()));
+      fieldsToConsider.addAll(
+          SortDirectionSpec.convertSorting(
+              answerValue.getSortingMap(),
+              Functions.getMapFromValues(fields, AttributeField::getName))
+          .stream()
+          .map(SortDirectionSpec::getItem)
+          .collect(Collectors.toList()));
     }
     return FileBasedRecordStream.requiresExactlyOneAttributeQuery(fieldsToConsider);
   }

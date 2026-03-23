@@ -164,6 +164,11 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
    */
   private final Path _wdkTempDir;
 
+  /**
+   * Used by table values and streams to limit the number of rows in memory.
+   */
+  private final Integer _maxTableValueRows;
+
   public ModelConfig(String modelName, String projectId, Path gusHome, boolean caching, boolean useWeights,
       String paramRegex, Optional<Path> secretKeyFile, String secretKey, Path wdkTempDir, String webServiceUrl, String assetsUrl,
       String smtpServer, Optional<String> smtpUser, Optional<String> smtpPassword, Integer smtpPort, boolean smtpTlsEnabled, String supportEmail,
@@ -171,7 +176,7 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
       ModelConfigUserDatasetStore userDatasetStoreConfig, QueryMonitor queryMonitor,
       boolean monitorBlockedThreads, int blockedThreshold, AuthenticationMethod authenticationMethod,
       String oauthUrl, String oauthClientId, String oauthClientSecret, String changePasswordUrl,
-      String keyStoreFile, String keyStorePassPhrase) {
+      String keyStoreFile, String keyStorePassPhrase, Integer maxTableValueRows) {
 
     // basic model information
     _modelName = modelName;
@@ -229,6 +234,7 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
     _keyStoreFile = keyStoreFile;
     _keyStorePassPhrase = keyStorePassPhrase;
 
+    _maxTableValueRows = maxTableValueRows;
     // get secret key at object creation time if available
     getSecretKey();
   }
@@ -484,5 +490,7 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
   public Path getWdkTempDir() {
     return _wdkTempDir;
   }
+
+  public Integer getMaxTableValueRows() { return _maxTableValueRows; }
 
 }

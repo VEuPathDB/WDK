@@ -56,6 +56,13 @@ public class SqlQuery extends Query {
 
   public static final String PARTITION_KEYS_PLACEHOLDER = "'PLACEHOLDER'";
 
+  /**
+   * Macro name automatically populated with the ordered list of column names
+   * from the attributeMetaQueryRef, formatted for use in a PostgreSQL crosstab
+   * AS clause (e.g. "col1 text, col2 text, col3 text").
+   */
+  public static final String META_ATTRIBUTE_COLUMNS_FOR_CROSSTAB = "META_ATTRIBUTE_COLUMNS_FOR_CROSSTAB";
+
   private List<WdkModelText> _sqlList;
   private String _sql;
   private List<WdkModelText> _sqlMacroList;
@@ -305,6 +312,29 @@ public class SqlQuery extends Query {
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     if (_resolved) return;
+
+    // Continue only if an attribute meta query reference is provided
+    // IMPORTANT: Must populate macro BEFORE super.resolveReferences() which validates macros
+    if (_attributeMetaQueryRef != null) {
+      Timer timer = new Timer();
+      List<String> metaColumnDefs = new ArrayList<>();
+      for (Map<String,Object> row : getDynamicallyDefinedAttributes(_attributeMetaQueryRef, wdkModel)) {
+        Column column = new Column();
+        // Need to set this here since this column originates from the database
+        column.setQuery(SqlQuery.this);
+        AttributeMetaQueryHandler.populate(column, row);
+        _columnMap.put(column.getName(), column);
+        metaColumnDefs.add(column.getName() + " " + column.getType().getPostgresType());
+      }
+      // Populate the crosstab macro with ordered column definitions from the meta query
+      // If no columns returned, use a placeholder to prevent SQL parse errors
+      String macroValue = metaColumnDefs.isEmpty() ?
+          "_no_columns_defined text" :
+          String.join(", ", metaColumnDefs);
+      addSqlParamValue(META_ATTRIBUTE_COLUMNS_FOR_CROSSTAB, macroValue);
+      LOG.debug("Took " + timer.getElapsedString() + " to resolve AttributeMetaQuery: " + _attributeMetaQueryRef);
+    }
+
     super.resolveReferences(wdkModel);
 
     // set the dblink flag if any of the params is a datasetParam;
@@ -313,19 +343,6 @@ public class SqlQuery extends Query {
         _useDBLink = true;
         break;
       }
-    }
-
-    // Continue only if an attribute meta query reference is provided
-    if (_attributeMetaQueryRef != null) {
-      Timer timer = new Timer();
-      for (Map<String,Object> row : getDynamicallyDefinedAttributes(_attributeMetaQueryRef, wdkModel)) {
-        Column column = new Column();
-        // Need to set this here since this column originates from the database
-        column.setQuery(SqlQuery.this);
-        AttributeMetaQueryHandler.populate(column, row);
-        _columnMap.put(column.getName(), column);
-      }
-      LOG.debug("Took " + timer.getElapsedString() + " to resolve AttributeMetaQuery: " + _attributeMetaQueryRef);
     }
   }
 

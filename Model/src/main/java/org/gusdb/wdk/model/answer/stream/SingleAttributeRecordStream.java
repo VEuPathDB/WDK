@@ -40,8 +40,8 @@ public class SingleAttributeRecordStream implements RecordStream {
     _sql = attributeQuery == null
         ? (performSort ? _answerValue.getSortedIdSql() : _answerValue.getIdSql())
         : AnswerValue.wrapToReturnOnlyPkAndSelectedCols(
-            _answerValue.getFilteredAttributeSql(attributeQuery, performSort),
-            _answerValue.getQuestion().getRecordClass(), _requiredFields);
+            _answerValue.getFilteredAttributeSql(attributeQuery, false), // do not perform sort here; must do it in the wrapper
+            _answerValue.getQuestion(), _requiredFields, _answerValue.getSortingMap());
   }
 
   public String getSql() {

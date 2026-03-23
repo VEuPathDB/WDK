@@ -39,10 +39,11 @@ public class DynamicTableValue extends TableValue {
     try (ResultList resultList = _queryInstance.getResults()) {
       int rowCount = 0;
       Timer t = new Timer();
+      Integer maxRows = _queryInstance.getQuery().getWdkModel().getModelConfig().getMaxTableValueRows();
       while (resultList.next()) {
         LOG.trace("Row " + (++rowCount) + ": fetched in " + t.getElapsedStringAndRestart());
-        if (rowCount > MAX_TABLE_VALUE_ROWS)
-          throw new WdkRuntimeException("Table query returned too many (>" + MAX_TABLE_VALUE_ROWS + ") rows.");
+        if (rowCount > maxRows)
+          throw new WdkRuntimeException("Table query returned too many (>" + maxRows + ") rows.");
         initializeRow(resultList);
       }
     }

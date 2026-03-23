@@ -17,11 +17,13 @@ public class TemporaryTable implements AutoCloseable {
   private static final Logger LOG = Logger.getLogger(TemporaryTable.class);
 
   private final WdkModel _wdkModel;
+  private final String _cacheSchema;
   private final InstanceInfo _instance;
 
   public TemporaryTable(WdkModel wdkModel, BiFunction<String,String,String> createTableSql) throws WdkModelException {
 
     _wdkModel = wdkModel;
+    _cacheSchema = wdkModel.getModelConfig().getAppDB().getCacheSchema();
 
     ResultFactory resultFactory = new ResultFactory(wdkModel);
     String checksum = Utilities.randomAlphaNumericString(40);
@@ -53,8 +55,8 @@ public class TemporaryTable implements AutoCloseable {
     LOG.info("Created temporary table " + _instance.getTableName());
   }
 
-  public String getTableName() {
-    return _instance.getTableName();
+  public String getTableNameWithSchema() {
+    return _cacheSchema + _instance.getTableName();
   }
 
   @Override

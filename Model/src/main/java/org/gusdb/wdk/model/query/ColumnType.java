@@ -56,6 +56,30 @@ public enum ColumnType {
     return (this == CLOB || this == DATE || this == STRING);
   }
 
+  /**
+   * Returns the PostgreSQL type name suitable for use in crosstab AS clauses
+   * and other PostgreSQL-specific SQL constructs.
+   *
+   * @return PostgreSQL type name
+   */
+  public String getPostgresType() {
+    switch (this) {
+      case STRING:
+      case CLOB:
+        return "text";
+      case NUMBER:
+        return "numeric";
+      case FLOAT:
+        return "double precision";
+      case BOOLEAN:
+        return "boolean";
+      case DATE:
+        return "timestamp";
+      default:
+        return "text";
+    }
+  }
+
   @Override
   public String toString() {
     return getType();

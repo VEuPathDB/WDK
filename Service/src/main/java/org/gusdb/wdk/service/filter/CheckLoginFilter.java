@@ -7,7 +7,9 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -32,6 +34,7 @@ import org.gusdb.oauth2.exception.ExpiredTokenException;
 import org.gusdb.oauth2.exception.InvalidTokenException;
 import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.User;
@@ -57,47 +60,130 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
   @Inject
   protected Provider<Request> _grizzlyRequest;
 
+  protected WdkModel _wdkModel;
+
+  /*** The following three methods control the default behavior for WDK endpoints ***/
+
+  /**
+   * @param path request URL path
+   * @return true if no authorization is required and no guest
+   * user should be created for this request, else false
+   */
+  protected boolean isPathToSkip(String path) {
+    // skip user check for prometheus metrics requests
+    return SystemService.PROMETHEUS_ENDPOINT_PATH.equals(path);
+  }
+
+  /**
+   * A return value of true indicates a valid bearer token is required; the token
+   * may be a guest depending on the value of isGuestUserAllowed().  If false is
+   * returned, no token is present, and isGuestUserAllowed() returns true, then a
+   * new guest token will be generated for this request and returned to the user.
+   *
+   * @param path request URL path
+   * @return true if a valid bearer token is required on the request, else false
+   */
+  protected boolean isValidTokenRequired(String path) {
+    return false;
+  }
+
+  /**
+   * A return value of true indicates a guest user is allowed to access this
+   * endpoint.  If a sent token is absent and isValidTokenRequired() returns false,
+   * a new guest token will be generated for use on this request.
+   *
+   * @param path request URL path
+   * @return true if guests are allowed to access this endpoint, else false
+   */
+  protected boolean isGuestUserAllowed(String path) {
+    return true;
+  }
+
+  // client-facing messages when authorization fails
+  private static final String MISSING_OR_INVALID_TOKEN = "Valid API Key required for this endpoint.";
+  private static final String EXPIRED_TOKEN = "Submitted API Key has expired.";
+  private static final String REGISTERED_USERS_ONLY = "This endpoint is only available to registered users, and requires an API key.";
+
+  /**
+   * @return additional explanation to be returned with 401/403 responses
+   */
+  protected String getAdditionalUnauthorizedMessage() {
+    return "";
+  }
+
+  private NotAuthorizedException getNotAuthorizedException(String reason) {
+    return new NotAuthorizedException(Response.status(Status.UNAUTHORIZED)
+        .entity(reason + getAdditionalUnauthorizedMessage())
+        .build());
+  }
+
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
-    // skip endpoints which do not require a user; prevents guests from being unnecessarily created
+    // skip endpoints which do not require auth nor a guest user; prevents guests from being unnecessarily created
     String requestPath = requestContext.getUriInfo().getPath();
     if (isPathToSkip(requestPath)) return;
 
     ApplicationContext context = ContextLookup.getApplicationContext(_servletContext);
     RequestData request = ContextLookup.getRequest(_servletRequest.get(), _grizzlyRequest.get());
-    UserFactory factory = ContextLookup.getWdkModel(context).getUserFactory();
+    _wdkModel = ContextLookup.getWdkModel(context);
+    UserFactory factory = _wdkModel.getUserFactory();
 
     // try to find submitted bearer token
     String rawToken = findRawBearerToken(request, requestContext);
 
     try {
       if (rawToken == null) {
-        // no credentials submitted; automatically create a guest to use on this request
-        useNewGuest(factory, request, requestContext, requestPath);
+        // no credentials submitted; check requirements of this path
+        if (isValidTokenRequired(requestPath)) {
+          LOG.warn("Did not received bearer token as required for path:" + requestPath);
+          throw getNotAuthorizedException(MISSING_OR_INVALID_TOKEN);
+        }
+        // if allowed, automatically create a guest to use on this request
+        if (isGuestUserAllowed(requestPath)) {
+          useNewGuest(factory, request, requestContext, requestPath);
+        }
+        else {
+          // no authentication provided, and guests are disallowed
+          throw getNotAuthorizedException(MISSING_OR_INVALID_TOKEN);
+        }
       }
       else {
         try {
           // validate submitted token
           ValidatedToken token = factory.validateBearerToken(rawToken);
           User user = factory.convertToUser(token);
-          setRequestAttributes(request, token, user);
-          LOG.info("Validated successfully.  Request will be processed for user " + user.getUserId());
+          if (!user.isGuest() || isGuestUserAllowed(requestPath)) {
+            setRequestAttributes(request, token, user);
+            LOG.info("Validated successfully.  Request will be processed for " +
+                (user.isGuest() ? "guest" : "registered") + " user " + user.getUserId());
+          }
+          else {
+            // valid guest token submitted, but guests disallowed for this path
+            throw new ForbiddenException(REGISTERED_USERS_ONLY + getAdditionalUnauthorizedMessage());
+          }
         }
         catch (ExpiredTokenException e) {
-          // token is expired; use guest token for now which should inspire them to log back in
-          useNewGuest(factory, request, requestContext, requestPath);
+          if (isGuestUserAllowed(requestPath)) {
+            // token is expired, but a new guest token is allowed to be generated,
+            //   which will hopefully inspire them to log back in
+            useNewGuest(factory, request, requestContext, requestPath);
+          }
+          else {
+            throw getNotAuthorizedException(EXPIRED_TOKEN);
+          }
         }
         catch (InvalidTokenException e) {
           // passed token is invalid; throw 401
           LOG.warn("Received invalid bearer token for auth: " + rawToken);
-          throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED).build());
+          throw getNotAuthorizedException(MISSING_OR_INVALID_TOKEN);
         }
       }
     }
-    catch (Exception e) {
-      // any other exception is fatal, but log first
-      LOG.error("Unable to authenticate with Authorization header " + rawToken, e);
-      throw e instanceof RuntimeException ? (RuntimeException)e : new WdkRuntimeException(e);
+    catch (WdkModelException | RuntimeException e) {
+      // jax-rs API exceptions map directly to specific response statuses; log any other exceptions
+      if (!(e instanceof WebApplicationException))
+        LOG.error("Unable to authenticate with Authorization header " + rawToken, e);
+      throw e instanceof WdkModelException ? new WdkRuntimeException(e) : (RuntimeException)e;
     }
   }
 
@@ -129,11 +215,6 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
     // otherwise try Authorization cookie
     Cookie cookie = requestContext.getCookies().get(HttpHeaders.AUTHORIZATION);
     return cookie == null ? null : cookie.getValue();
-  }
-
-  protected boolean isPathToSkip(String path) {
-    // skip user check for prometheus metrics requests
-    return SystemService.PROMETHEUS_ENDPOINT_PATH.equals(path);
   }
 
   @Override
