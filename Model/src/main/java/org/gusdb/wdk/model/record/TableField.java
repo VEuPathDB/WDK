@@ -172,8 +172,10 @@ public class TableField extends Field implements AttributeFieldContainer {
       if (field instanceof QueryColumnAttributeField) {
         Column column = columns.get(field.getName());
         if (column == null) {
-          throw new WdkModelException("Table " + _name + " declares a column attribute '" +
-              field.getName() + "' that does not appear in the columns of the table query.");
+          throw new WdkModelException("Table " + _name + " in recordclass " +
+              _recordClass.getFullName() + " declares a column attribute '" + field.getName() +
+              "' that does not appear in the columns of the referenced table query (" +
+              _unwrappedQuery.getFullName() + ").");
         }
         ((QueryColumnAttributeField) field).setColumn(column);
       }
