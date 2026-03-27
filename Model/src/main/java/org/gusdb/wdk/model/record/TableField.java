@@ -165,16 +165,19 @@ public class TableField extends Field implements AttributeFieldContainer {
     String[] paramNames = _recordClass.getPrimaryKeyDefinition().getColumnRefs();
     _wrappedQuery = RecordClass.prepareQuery(wdkModel, _unwrappedQuery, paramNames);
 
-    Column[] columns = _wrappedQuery.getColumns();
-    for (Column column : columns) {
-      AttributeField field = _attributeFieldMap.get(column.getName());
-      if (field != null && field instanceof QueryColumnAttributeField) {
-        ((QueryColumnAttributeField) field).setColumn(column);
-      } // else, it's okay to have unmatched columns
-    }
-
+    // match table query's columns to declared attribute fields (ok to have extra columns)
+    Map<String,Column> columns = _wrappedQuery.getColumnMap();
     for (AttributeField field : _attributeFieldMap.values()) {
       field.setContainer(this);
+      if (field instanceof QueryColumnAttributeField) {
+        Column column = columns.get(field.getName());
+        if (column == null) {
+          throw new WdkModelException("Table " + _name + " declares a column attribute '" +
+              field.getName() + "' that does not appear in the columns of the table query.");
+        }
+        ((QueryColumnAttributeField) field).setColumn(column);
+      }
+      field.resolveReferences(wdkModel);
     }
 
     // Continue only if a table attribute meta query reference is provided.

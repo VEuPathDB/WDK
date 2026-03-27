@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.dataset;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author xingao
@@ -84,10 +83,6 @@ public class Dataset {
    */
   void setUploadFile(String uploadFile) {
     this.uploadFile = uploadFile;
-  }
-
-  public List<String[]> getValues() {
-    return factory.getDatasetValues(datasetId);
   }
 
   public DatasetContents getContent() {

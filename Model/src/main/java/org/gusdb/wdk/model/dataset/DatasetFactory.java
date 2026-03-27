@@ -181,10 +181,11 @@ public class DatasetFactory {
         });
   }
 
+  @Deprecated
   public List<String[]> getDatasetValues(long datasetId) {
     return new SQLRunner(
         _userDb.getDataSource(),
-        getDatasetValueSql(datasetId, "")
+        getDatasetValueSql(datasetId, _wdkModel.getModelConfig().getUserDB().getUserSchema(), "")
     ).executeQuery(
         new Object[] {datasetId},
         new Integer[] {Types.BIGINT},
@@ -472,20 +473,20 @@ public class DatasetFactory {
 
   public String getDatasetValueSqlForAppDb(long datasetId) {
     String dbLink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
-    return getDatasetValueSql(datasetId, dbLink);
+    String remoteUserDataSchema = _wdkModel.getModelConfig().getAppDB().getRemoteUserDataSchema();
+    return getDatasetValueSql(datasetId, remoteUserDataSchema, dbLink);
   }
 
-  private String getDatasetValueSql(long datasetId, String dbLink) {
-    String remoteUserDataSchema = _wdkModel.getModelConfig().getAppDB().getRemoteUserDataSchema();
+  private String getDatasetValueSql(long datasetId, String schema, String dbLink) {
     return "SELECT " + String.join(", ", getValueColumnNames(MAX_VALUE_COLUMNS)) + ", " + COLUMN_DATASET_VALUE_ORDER +
-        " FROM " + remoteUserDataSchema + TABLE_DATASET_VALUES + dbLink +
+        " FROM " + schema + TABLE_DATASET_VALUES + dbLink +
         " WHERE " + COLUMN_DATASET_ID + " = " + datasetId;
   }
 
   private void copyDatasetValues(Connection con, long oldDsId, long newDsId) {
     new SQLRunner(
         _userDb.getDataSource(),
-        getDatasetValueSql(oldDsId, "")
+        getDatasetValueSql(oldDsId, _wdkModel.getModelConfig().getUserDB().getUserSchema(), "")
     )
     .executeQuery(
         copyDatasetValues(con, newDsId)
