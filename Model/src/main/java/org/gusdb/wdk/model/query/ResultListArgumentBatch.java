@@ -109,6 +109,7 @@ public class ResultListArgumentBatch implements ArgumentBatch {
     // add CLOB values last
     for (Column column : columns) {
       if (column.getType().equals(ColumnType.CLOB)) {
+        // note the object returned here will be a String, NOT a CLOB
         recordValues.add(resultList.get(column.getName()));
       }
     }
