@@ -302,9 +302,16 @@ public class CacheFactory {
 
   private void dropCacheTablesPostgres(String whereClause) {
 
-    long cacheTableCount = new SQLRunner(_appDb.getDataSource(),
+    long cacheTableCount;
+    try {
+      cacheTableCount = new SQLRunner(_appDb.getDataSource(),
         "SELECT count(DISTINCT " + COLUMN_TABLE_NAME + ") FROM " + _cacheSchema + TABLE_INSTANCE + " " + whereClause,
         "wdk-cache-count-tables").executeQuery(new SingleLongResultSetHandler()).orElseThrow();
+    }
+    catch (Exception ex) {
+      LOG.warn("Cannot query on table [" + _cacheSchema + TABLE_INSTANCE + "].  Cache may not be created. " + ex.getMessage());
+      return;
+    }
 
     String sql =
       "DO $$ " +
@@ -349,7 +356,7 @@ public class CacheFactory {
       }
     }
     catch (Exception ex) {
-      LOG.error("Cannot query on table [" + _cacheSchema + TABLE_INSTANCE + "]. " + ex.getMessage());
+      LOG.warn("Cannot query on table [" + _cacheSchema + TABLE_INSTANCE + "].  Cache may not be created. " + ex.getMessage());
     }
     finally {
       SqlUtils.closeResultSetAndStatement(resultSet, null);
