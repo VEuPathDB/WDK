@@ -111,7 +111,7 @@ public class Migrator1_17To1_18 implements Migrator {
           System.out.println("Totally migrated " + count + " histories.");
         }
         finally {
-          SqlUtils.closeResultSetAndStatement(histories, null);
+          SqlUtils.closeResultSetAndStatement(histories);
           SqlUtils.closeStatement(psInsertAnswer);
           SqlUtils.closeStatement(psInsertHistory);
         }
@@ -158,15 +158,20 @@ public class Migrator1_17To1_18 implements Migrator {
         StringBuffer sql = new StringBuffer("SELECT user_id, history_id FROM ");
         sql.append(NEW_USER_SCHEMA).append("histories ");
         historyKeys = new LinkedHashSet<String>();
-        ResultSet resultSet = SqlUtils.executeQuery(dataSource,
+        ResultSet resultSet = null;
+        try {
+          resultSet = SqlUtils.executeQuery(dataSource,
                 sql.toString(), "wdk-migrate-select-history-ids");
-        while (resultSet.next()) {
+          while (resultSet.next()) {
             int userId = resultSet.getInt("user_id");
             int historyId = resultSet.getInt("history_id");
             String historyKey = userId + "_" + historyId;
             historyKeys.add(historyKey);
+          }
         }
-        SqlUtils.closeResultSetAndStatement(resultSet, null);
+        finally {
+          SqlUtils.closeResultSetAndStatement(resultSet);
+        }
     }
 
     private void loadAnswers(DataSource dataSource) throws SQLException {
@@ -174,16 +179,21 @@ public class Migrator1_17To1_18 implements Migrator {
                 "SELECT answer_id, answer_checksum,");
         sql.append(" project_id FROM ").append(NEW_WDK_SCHEMA).append("answer ");
         answerKeys = new LinkedHashMap<String, Long>();
-        ResultSet resultSet = SqlUtils.executeQuery(dataSource,
-                sql.toString(), "wdk-migrate-select-answer-ids");
-        while (resultSet.next()) {
+        ResultSet resultSet = null;
+        try {
+          resultSet = SqlUtils.executeQuery(dataSource,
+              sql.toString(), "wdk-migrate-select-answer-ids");
+          while (resultSet.next()) {
             long answerId = resultSet.getLong("answer_id");
             String projectId = resultSet.getString("project_id");
             String answerChecksum = resultSet.getString("answer_checksum");
             String answerKey = projectId + "_" + answerChecksum;
             answerKeys.put(answerKey, answerId);
+          }
         }
-        SqlUtils.closeResultSetAndStatement(resultSet, null);
+        finally {
+          SqlUtils.closeResultSetAndStatement(resultSet);
+        }
     }
 
     private String convertParams(String params, boolean isBoolean)

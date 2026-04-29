@@ -9,6 +9,9 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.BiFunctionWithException;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.test.CommandHelper;
@@ -116,118 +119,102 @@ public class StressTestAnalyzer {
         return (total == 0) ? 0 : ((float) succeeded / total);
     }
 
-    public float getTotalResponseTime() throws SQLException {
-        StringBuffer sb = new StringBuffer();
-        sb.append("SELECT sum(end_time - start_time) FROM "
-                + StressTester.TABLE_STRESS_RESULT);
-        sb.append(" WHERE test_tag = " + testTag);
-        ResultSet rs = SqlUtils.executeQuery(dataSource,
-                sb.toString(), "wdk-stress-response-time");
-        rs.next();
-        long sum = rs.getLong(1);
-        SqlUtils.closeResultSetAndStatement(rs, null);
-        return (sum / 1000F);
+    private float getDurationValue(String sql, String sqlName, BiFunctionWithException<ResultSet,Integer,Number> valueExtractor) {
+      return new SQLRunner(dataSource, sql, sqlName).executeQuery(rs -> {
+        try {
+          if (rs.next()) {
+            Number average = valueExtractor.apply(rs, 1);
+            return ((float)average / 1000F);
+          }
+          else {
+            throw new SQLRunnerException("SQL did not return a single row: " + sql);
+          }
+        }
+        catch (Exception e) {
+          throw new SQLRunnerException("Could not get time duration value from sql: " + sql, e);
+        }
+      });
     }
 
-    public float getTotalResponseTime(String taskType) throws SQLException {
-        StringBuffer sb = new StringBuffer();
-        sb.append("SELECT sum(end_time - start_time) FROM "
-                + StressTester.TABLE_STRESS_RESULT);
-        sb.append(" WHERE test_tag = " + testTag);
-        sb.append(" AND task_type = '" + taskType + "'");
-        ResultSet rs = SqlUtils.executeQuery(dataSource,
-                sb.toString(), "wdk-stress-response-time-by-type");
-        rs.next();
-        long sum = rs.getLong(1);
-        SqlUtils.closeResultSetAndStatement(rs, null);
-        return (sum / 1000F);
+    public float getTotalResponseTime() {
+        String sql = new StringBuilder()
+            .append("SELECT sum(end_time - start_time) FROM ")
+            .append(StressTester.TABLE_STRESS_RESULT)
+            .append(" WHERE test_tag = ")
+            .append(testTag)
+            .toString();
+        return getDurationValue(sql, "wdk-stress-response-time", ResultSet::getLong);
     }
 
-    public float getAverageResponseTime() throws SQLException {
-        StringBuffer sb = new StringBuffer();
-        sb.append("SELECT avg(end_time - start_time) FROM "
-                + StressTester.TABLE_STRESS_RESULT);
-        sb.append(" WHERE test_tag = " + testTag);
-        ResultSet rs = SqlUtils.executeQuery(dataSource,
-                sb.toString(), "wdk-stress-response");
-        rs.next();
-        float average = rs.getFloat(1);
-        SqlUtils.closeResultSetAndStatement(rs, null);
-        return (average / 1000F);
+    public float getTotalResponseTime(String taskType) {
+        String sql = new StringBuilder()
+            .append("SELECT sum(end_time - start_time) FROM ")
+            .append(StressTester.TABLE_STRESS_RESULT)
+            .append(" WHERE test_tag = ").append(testTag)
+            .append(" AND task_type = '").append(taskType).append("'")
+            .toString();
+        return getDurationValue(sql, "wdk-stress-response-time-by-type", ResultSet::getLong);
     }
 
-    public float getAverageResponseTime(String taskType) throws SQLException {
-        StringBuffer sb = new StringBuffer();
-        sb.append("SELECT avg(end_time - start_time) FROM "
-                + StressTester.TABLE_STRESS_RESULT);
-        sb.append(" WHERE test_tag = " + testTag);
-        sb.append(" AND task_type = '" + taskType + "'");
-        ResultSet rs = SqlUtils.executeQuery(dataSource,
-                sb.toString(), "wdk-stress-response-time-by-type");
-        rs.next();
-        float average = rs.getFloat(1);
-        SqlUtils.closeResultSetAndStatement(rs, null);
-        return (average / 1000F);
+    public float getAverageResponseTime() {
+        String sql = new StringBuilder()
+            .append("SELECT avg(end_time - start_time) FROM ")
+            .append(StressTester.TABLE_STRESS_RESULT)
+            .append(" WHERE test_tag = ").append(testTag)
+            .toString();
+        return getDurationValue(sql, "wdk-stress-response", ResultSet::getFloat);
     }
 
-    public float getTotalSucceededResponseTime() throws SQLException {
-        StringBuffer sb = new StringBuffer();
-        sb.append("SELECT sum(end_time - start_time) FROM "
-                + StressTester.TABLE_STRESS_RESULT);
-        sb.append(" WHERE test_tag = " + testTag);
-        sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
-        ResultSet rs = SqlUtils.executeQuery(dataSource,
-                sb.toString(), "wdk-stress-response-time-by-type");
-        rs.next();
-        long sum = rs.getLong(1);
-        SqlUtils.closeResultSetAndStatement(rs, null);
-        return (sum / 1000F);
+    public float getAverageResponseTime(String taskType) {
+        String sql = new StringBuilder()
+          .append("SELECT avg(end_time - start_time) FROM ")
+          .append(StressTester.TABLE_STRESS_RESULT)
+          .append(" WHERE test_tag = ").append(testTag)
+          .append(" AND task_type = '").append(taskType).append("'")
+          .toString();
+        return getDurationValue(sql, "wdk-stress-response-time-by-type", ResultSet::getFloat);
     }
 
-    public float getTotalSucceededResponseTime(String taskType)
-            throws SQLException {
-        StringBuffer sb = new StringBuffer();
-        sb.append("SELECT sum(end_time - start_time) FROM "
-                + StressTester.TABLE_STRESS_RESULT);
-        sb.append(" WHERE test_tag = " + testTag);
-        sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
-        sb.append(" AND task_type = '" + taskType + "'");
-        ResultSet rs = SqlUtils.executeQuery(dataSource,
-                sb.toString(), "wdk-stress-response-time-by-type");
-        rs.next();
-        long sum = rs.getLong(1);
-        SqlUtils.closeResultSetAndStatement(rs, null);
-        return (sum / 1000F);
+    public float getTotalSucceededResponseTime() {
+        String sql = new StringBuilder()
+            .append("SELECT sum(end_time - start_time) FROM ")
+            .append(StressTester.TABLE_STRESS_RESULT)
+            .append(" WHERE test_tag = ").append(testTag)
+            .append(" AND result_type = '").append(ResultType.Succeeded.name()).append("'")
+            .toString();
+        return getDurationValue(sql, "wdk-stress-response-time-by-type", ResultSet::getLong);
     }
 
-    public float getAverageSucceededResponseTime() throws SQLException {
-        StringBuffer sb = new StringBuffer();
-        sb.append("SELECT avg(end_time - start_time) FROM "
-                + StressTester.TABLE_STRESS_RESULT);
-        sb.append(" WHERE test_tag = " + testTag);
-        sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
-        ResultSet rs = SqlUtils.executeQuery(dataSource,
-                sb.toString(), "wdk-stress-response-time-by-type");
-        rs.next();
-        float average = rs.getFloat(1);
-        SqlUtils.closeResultSetAndStatement(rs, null);
-        return (average / 1000F);
+    public float getTotalSucceededResponseTime(String taskType) {
+        String sql = new StringBuilder()
+            .append("SELECT sum(end_time - start_time) FROM ")
+            .append(StressTester.TABLE_STRESS_RESULT)
+            .append(" WHERE test_tag = ").append(testTag)
+            .append(" AND result_type = '").append(ResultType.Succeeded.name()).append("'")
+            .append(" AND task_type = '").append(taskType).append("'")
+            .toString();
+        return getDurationValue(sql, "wdk-stress-response-time-by-type", ResultSet::getLong);
     }
 
-    public float getAverageSucceededResponseTime(String taskType)
-            throws SQLException {
-        StringBuffer sb = new StringBuffer();
-        sb.append("SELECT avg(end_time - start_time) FROM "
-                + StressTester.TABLE_STRESS_RESULT);
-        sb.append(" WHERE test_tag = " + testTag);
-        sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
-        sb.append(" AND task_type = '" + taskType + "'");
-        ResultSet rs = SqlUtils.executeQuery(dataSource,
-                sb.toString(), "wdk-stress-response-time-by-type");
-        rs.next();
-        float average = rs.getFloat(1);
-        SqlUtils.closeResultSetAndStatement(rs, null);
-        return (average / 1000F);
+    public float getAverageSucceededResponseTime() {
+        String sql = new StringBuilder()
+            .append("SELECT avg(end_time - start_time) FROM ")
+            .append(StressTester.TABLE_STRESS_RESULT)
+            .append(" WHERE test_tag = ").append(testTag)
+            .append(" AND result_type = '").append(ResultType.Succeeded.name()).append("'")
+            .toString();
+        return getDurationValue(sql, "wdk-stress-response-time-by-type", ResultSet::getFloat);
+    }
+
+    public float getAverageSucceededResponseTime(String taskType) {
+        String sql = new StringBuilder()
+            .append("SELECT avg(end_time - start_time) FROM ")
+            .append(StressTester.TABLE_STRESS_RESULT)
+            .append(" WHERE test_tag = ").append(testTag)
+            .append(" AND result_type = '").append(ResultType.Succeeded.name()).append("'")
+            .append(" AND task_type = '").append(taskType).append("'")
+            .toString();
+        return getDurationValue(sql, "wdk-stress-response-time-by-type", ResultSet::getFloat);
     }
 
     public void print() throws SQLException {

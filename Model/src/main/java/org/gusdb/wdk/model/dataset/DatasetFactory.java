@@ -158,7 +158,7 @@ public class DatasetFactory {
       throw new WdkModelException("Unable to get data set with ID: " + datasetId, e);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, null);
+      SqlUtils.closeResultSetAndStatement(resultSet);
     }
   }
 

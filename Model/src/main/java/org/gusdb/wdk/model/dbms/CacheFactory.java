@@ -359,7 +359,7 @@ public class CacheFactory {
       LOG.warn("Cannot query on table [" + _cacheSchema + TABLE_INSTANCE + "].  Cache may not be created. " + ex.getMessage());
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, null);
+      SqlUtils.closeResultSetAndStatement(resultSet);
     }
 
     deleteCacheIndexTableRows(whereClause);

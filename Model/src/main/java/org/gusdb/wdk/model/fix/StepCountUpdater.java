@@ -146,7 +146,7 @@ public class StepCountUpdater extends BaseCLI {
       return userIds;
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, null);
+      SqlUtils.closeResultSetAndStatement(resultSet);
     }
   }
 
