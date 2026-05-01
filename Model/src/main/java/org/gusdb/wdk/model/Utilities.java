@@ -358,7 +358,8 @@ public class Utilities {
     return sortingMap;
   }
 
-  public static final Set<PosixFilePermission> DEFAULT_PERMS = PosixFilePermissions.fromString("rwxrwxr-x");
+  public static final Set<PosixFilePermission> DEFAULT_PERMS_DIR = PosixFilePermissions.fromString("rwxrwxr-x");
+  public static final Set<PosixFilePermission> DEFAULT_PERMS_FILE = PosixFilePermissions.fromString("rw-rw-r--");
 
   /**
    * Creates a new filesystem object (file or directory) with shared group write but only all-read perms aka "rwxrwxr-x"
@@ -366,7 +367,13 @@ public class Utilities {
    */
   public static void ensureCreation(BiFunctionWithException<Path, FileAttribute<?>[], Path> creationFunction, Path path) throws WdkRuntimeException {
     try {
-      creationFunction.apply(path, new FileAttribute[] { PosixFilePermissions.asFileAttribute(DEFAULT_PERMS) });
+      Set<PosixFilePermission> defaultPerms;
+      if (Files.isDirectory(path)){
+        defaultPerms = DEFAULT_PERMS_DIR;
+      } else{
+        defaultPerms = DEFAULT_PERMS_FILE;
+      }
+      creationFunction.apply(path, new FileAttribute[] { PosixFilePermissions.asFileAttribute(defaultPerms) });
       tryToOpenGroupPerms(path);
     }
     catch (FileAlreadyExistsException e) {
@@ -381,15 +388,20 @@ public class Utilities {
 
   public static void tryToOpenGroupPerms(Path path) {
     try {
-
       // get the current permissions
       Set<PosixFilePermission> currentPerms = Files.getPosixFilePermissions(path);
+      Set<PosixFilePermission> targetPerms;
+      if (Files.isDirectory(path)){
+        targetPerms = DEFAULT_PERMS_DIR;
+      } else{
+        targetPerms = DEFAULT_PERMS_FILE;
+      }
 
       // if any desired permission is missing from the current perms, then try to add
-      for (PosixFilePermission perm : DEFAULT_PERMS) {
+      for (PosixFilePermission perm : targetPerms) {
         if (!currentPerms.contains(perm)) {
           // union the current perms with the defaults so we don't inadvertently remove permissions already granted
-          currentPerms.addAll(DEFAULT_PERMS);
+          currentPerms.addAll(targetPerms);
           Files.setPosixFilePermissions(path, currentPerms);
           return;
         }
