@@ -379,7 +379,7 @@ public class Utilities {
     }
   }
 
-  private static void tryToOpenGroupPerms(Path path) {
+  public static void tryToOpenGroupPerms(Path path) {
     try {
 
       // get the current permissions
