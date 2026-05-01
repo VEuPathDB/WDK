@@ -381,7 +381,19 @@ public class Utilities {
 
   private static void tryToOpenGroupPerms(Path path) {
     try {
-      Files.setPosixFilePermissions(path, DEFAULT_PERMS);
+
+      // get the current permissions
+      Set<PosixFilePermission> currentPerms = Files.getPosixFilePermissions(path);
+
+      // if any desired permission is missing from the current perms, then try to add
+      for (PosixFilePermission perm : DEFAULT_PERMS) {
+        if (!currentPerms.contains(perm)) {
+          // union the current perms with the defaults so we don't inadvertently remove permissions already granted
+          currentPerms.addAll(DEFAULT_PERMS);
+          Files.setPosixFilePermissions(path, currentPerms);
+          return;
+        }
+      }
     }
     catch (UnsupportedOperationException e) {
       // log but ignore it since it's not supported on Windows
