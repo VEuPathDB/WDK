@@ -6,12 +6,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.Date;
@@ -19,7 +13,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -39,7 +32,6 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.BiFunctionWithException;
 
 /**
  * This class provided constants that are shared among different WDK model
@@ -358,60 +350,4 @@ public class Utilities {
     return sortingMap;
   }
 
-  // use different default permissions for dirs and files
-  private static final String DEFAULT_POSIX_PERMS_DIR = "rwxrwxr-x";
-  private static final String DEFAULT_POSIX_PERMS_FILE = "rw-rw-r--";
-
-  private static Set<PosixFilePermission> getDefaultPerms(Path path) {
-    return PosixFilePermissions.fromString(Files.isDirectory(path)
-        ? DEFAULT_POSIX_PERMS_DIR
-        : DEFAULT_POSIX_PERMS_FILE);
-  }
-
-  /**
-   * Creates a new filesystem object (file or directory) with shared group write but only all-read perms aka "rwxrwxr-x"
-   * Meant to be called with either Files::createFile or Files::createDirectory.
-   */
-  public static void ensureCreation(BiFunctionWithException<Path, FileAttribute<?>[], Path> creationFunction, Path path) throws WdkRuntimeException {
-    try {
-      creationFunction.apply(path, new FileAttribute[] {
-          PosixFilePermissions.asFileAttribute(getDefaultPerms(path))
-      });
-      tryToOpenGroupPerms(path);
-    }
-    catch (FileAlreadyExistsException e) {
-      // this is ok; try to ensure perms on existing directory (may fail if not owned by us)
-      tryToOpenGroupPerms(path);
-    }
-    catch (Exception e) {
-      // any other exception is a problem
-      throw new WdkRuntimeException("Could not create path " + path.toAbsolutePath(), e);
-    }
-  }
-
-  public static void tryToOpenGroupPerms(Path path) {
-    try {
-      // get the current permissions
-      Set<PosixFilePermission> currentPerms = Files.getPosixFilePermissions(path);
-      Set<PosixFilePermission> targetPerms = getDefaultPerms(path);
-
-      // if any desired permission is missing from the current perms, then try to add
-      for (PosixFilePermission perm : targetPerms) {
-        if (!currentPerms.contains(perm)) {
-          // union the current perms with the defaults so we don't inadvertently remove permissions already granted
-          targetPerms.addAll(currentPerms);
-          Files.setPosixFilePermissions(path, targetPerms);
-          return;
-        }
-      }
-    }
-    catch (UnsupportedOperationException e) {
-      // log but ignore it since it's not supported on Windows
-      LOG.warn("Cannot set permissions to " + path, e);
-    }
-    catch (IOException e) {
-      // log but ignore since sometimes existing creation is not owned by us or system perms is enough
-      LOG.warn("Cannot set permissions to " + path, e);
-    }
-  }
 }
