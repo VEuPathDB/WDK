@@ -396,6 +396,8 @@ public class ModelConfigBuilder {
     _wdkTempDir = wdkTempDir;
   }
 
-  public void setMaxTableValueRows(Integer maxTableValueRows) {_maxTableValueRows = maxTableValueRows; }
+  public void setMaxTableValueRows(Integer maxTableValueRows) {
+    _maxTableValueRows = maxTableValueRows;
+  }
 
 }
