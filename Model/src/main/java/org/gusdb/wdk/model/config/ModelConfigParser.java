@@ -7,7 +7,6 @@ import org.apache.commons.digester3.Digester;
 import org.gusdb.fgputil.xml.XmlParser;
 import org.gusdb.fgputil.xml.XmlValidator;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkModelText;
 import org.xml.sax.SAXException;
 
 /**
