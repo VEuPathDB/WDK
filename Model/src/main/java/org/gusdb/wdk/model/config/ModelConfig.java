@@ -92,8 +92,6 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
   private final ModelConfigUserDB _userDB;
   private final ModelConfigAppDB _appDB;
 
-  private final ModelConfigUserDatasetStore _userDatasetStoreConfig;
-
   private final QueryMonitor _queryMonitor;
 
   /**
@@ -173,7 +171,7 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
       String paramRegex, Optional<Path> secretKeyFile, String secretKey, Path wdkTempDir, String webServiceUrl, String assetsUrl,
       String smtpServer, Optional<String> smtpUser, Optional<String> smtpPassword, Integer smtpPort, boolean smtpTlsEnabled, String supportEmail,
       List<String> adminEmails, String emailSubject, String emailContent, ModelConfigUserDB userDB, ModelConfigAppDB appDB,
-      ModelConfigUserDatasetStore userDatasetStoreConfig, QueryMonitor queryMonitor,
+      QueryMonitor queryMonitor,
       boolean monitorBlockedThreads, int blockedThreshold, AuthenticationMethod authenticationMethod,
       String oauthUrl, String oauthClientId, String oauthClientSecret, String changePasswordUrl,
       String keyStoreFile, String keyStorePassPhrase, Integer maxTableValueRows) {
@@ -212,9 +210,6 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
     // databases
     _userDB = userDB;
     _appDB = appDB;
-
-    // user dataset config
-    _userDatasetStoreConfig = userDatasetStoreConfig;
 
     // query performance monitoring
     _queryMonitor = queryMonitor;
@@ -477,14 +472,6 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
    */
   public boolean isCaching() {
     return _caching;
-  }
-
-  /**
-   * The config for a user dataset store. Optional.  Might be null.
-   * @return
-   */
-  public ModelConfigUserDatasetStore getUserDatasetStoreConfig() {
-    return _userDatasetStoreConfig;
   }
 
   public Path getWdkTempDir() {

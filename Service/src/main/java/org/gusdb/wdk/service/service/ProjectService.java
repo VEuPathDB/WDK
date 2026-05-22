@@ -14,10 +14,7 @@ import javax.ws.rs.core.Response;
 
 import org.gusdb.fgputil.Timer;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.user.dataset.UserDatasetSession;
-import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.service.formatter.ProjectFormatter;
-import org.gusdb.wdk.service.service.user.UserDatasetService;
 import org.json.JSONObject;
 
 @Path("/")
@@ -88,18 +85,4 @@ public class ProjectService extends AbstractWdkService {
     return output.toString();
   }
 
-  /**
-   * A public access service that reports the default quota in MB and can double
-   * as a health check of the user dataset store.
-   */
-  @GET
-  @Path("user-datasets/config")
-  @Produces(MediaType.APPLICATION_JSON)
-  public JSONObject getDefaultQuota() throws WdkModelException {
-    UserDatasetStore dsStore = UserDatasetService.getUserDatasetStore(getWdkModel());
-    try (UserDatasetSession dsSession = dsStore.getSession()) {
-      return new JSONObject()
-        .put("default_quota", dsSession.getDefaultQuota(true));
-    }
-  }
 }

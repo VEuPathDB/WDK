@@ -43,7 +43,6 @@ import org.gusdb.wdk.service.service.user.StepAnalysisFormService;
 import org.gusdb.wdk.service.service.user.StepAnalysisInstanceService;
 import org.gusdb.wdk.service.service.user.StepService;
 import org.gusdb.wdk.service.service.user.StrategyService;
-import org.gusdb.wdk.service.service.user.UserDatasetService;
 import org.gusdb.wdk.service.service.user.UserUtilityServices;
 
 public class WdkServiceApplication extends Application {
@@ -92,7 +91,6 @@ public class WdkServiceApplication extends Application {
     .add(OntologyService.class)
     .add(StepService.class)
     .add(DatasetService.class)
-    .add(UserDatasetService.class)
     .add(BasketService.class)
     .add(UserUtilityServices.class)
     .add(FavoritesService.class)
