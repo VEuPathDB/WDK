@@ -121,7 +121,7 @@ public class UserProfileRequest {
         throw new JSONException("'properties' property is required.");
       }
       else {
-        return Collections.EMPTY_MAP;
+        return Collections.emptyMap();
       }
     }
     JSONObject propsJson = json.getJSONObject(JsonKeys.PROPERTIES);

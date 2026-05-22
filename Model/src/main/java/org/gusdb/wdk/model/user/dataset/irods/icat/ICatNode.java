@@ -75,7 +75,7 @@ public abstract class ICatNode {
    *   metadata value string
    */
   public void addMetadata(final String key, final String value) {
-    metadata.computeIfAbsent(key, __ -> new ArrayList<>()).add(value);
+    metadata.computeIfAbsent(key, _ -> new ArrayList<>()).add(value);
   }
 
   /**

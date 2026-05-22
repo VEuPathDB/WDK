@@ -5,6 +5,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.gusdb.wdk.model.Utilities;
+
 /**
  * @author Jerric
  */
@@ -27,11 +29,11 @@ public class UrlItem {
     }
     
     public URL getUrl() throws MalformedURLException {
-        return new URL( urlPattern );
+        return Utilities.newURL( urlPattern );
     }
     
     public HttpURLConnection getConnection( String cookies ) throws IOException {
-        URL url = new URL( urlPattern );
+        URL url = Utilities.newURL( urlPattern );
         HttpURLConnection connection = ( HttpURLConnection ) url.openConnection();
         connection.setRequestProperty( "User-Agent",
                 "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0)" );

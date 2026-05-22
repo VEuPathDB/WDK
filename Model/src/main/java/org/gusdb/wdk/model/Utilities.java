@@ -6,6 +6,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.Date;
@@ -350,4 +354,12 @@ public class Utilities {
     return sortingMap;
   }
 
+  public static URL newURL(String urlString) {
+    try {
+      return new URI(urlString).toURL();
+    }
+    catch (MalformedURLException | URISyntaxException e) {
+      throw new RuntimeException("Attempt to use malformed URL: " + urlString, e);
+    }
+  }
 }

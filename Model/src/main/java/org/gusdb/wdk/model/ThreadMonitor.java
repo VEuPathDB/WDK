@@ -88,7 +88,7 @@ public class ThreadMonitor implements Runnable {
   public void monitorThreads(ThreadMXBean thbean) {
 
     String siteInfo = _config.getAppName() + ", " + ManagementFactory.getRuntimeMXBean().getName();
-    LOG.info("Thread Monitor started on thread #" + Thread.currentThread().getId() + " - " + siteInfo);
+    LOG.info("Thread Monitor started on thread #" + Thread.currentThread().threadId() + " - " + siteInfo);
     thbean.setThreadContentionMonitoringEnabled(true);
 
     int blockedCycles = 0; // keeps track of amount of time since last report
@@ -119,7 +119,7 @@ public class ThreadMonitor implements Runnable {
         break;
       }
     }
-    LOG.info("Thread monitor stopped on Thread " + Thread.currentThread().getId() + " - " + siteInfo);
+    LOG.info("Thread monitor stopped on Thread " + Thread.currentThread().threadId() + " - " + siteInfo);
   }
 
   private static ThreadState getThreadState(ThreadMXBean thbean) {
@@ -181,7 +181,7 @@ public class ThreadMonitor implements Runnable {
     // get thread infos
     long[] ids = new long[blockedThreads.size()];
     for (int i = 0; i < ids.length; i++) {
-      ids[i] = blockedThreads.get(i).getId();
+      ids[i] = blockedThreads.get(i).threadId();
     }
     ThreadInfo[] infos = thbean.getThreadInfo(ids);
 
@@ -194,7 +194,7 @@ public class ThreadMonitor implements Runnable {
       Thread thread = blockedThreads.get(i);
       ThreadInfo info = infos[i];
       if (info != null) {
-        buffer.append("<div><div>Thread id=").append(thread.getId())
+        buffer.append("<div><div>Thread id=").append(thread.threadId())
               .append(", name='").append(thread.getName()).append("'</div>\n")
               .append("<div>\tblocked count=").append(info.getBlockedCount())
               .append(", blocked time=").append(info.getBlockedTime() + "</div>\n")

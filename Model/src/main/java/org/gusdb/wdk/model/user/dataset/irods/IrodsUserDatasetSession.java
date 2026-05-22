@@ -658,7 +658,7 @@ class IrodsUserDatasetSession extends JsonUserDatasetSession {
           .orElseGet(Stream::empty)
           .map(ICatNode::getName)
           .map(s -> new JSONObject().put("name", s))
-          .reduce(new JSONArray(), JSONArray::put, (a, b) -> a)
+          .reduce(new JSONArray(), JSONArray::put, (a, _) -> a)
       ),
       metaJson,
       dsCol.getPath().resolve(DATAFILES_DIR),

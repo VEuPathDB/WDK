@@ -1,6 +1,7 @@
 package org.gusdb.wdk.service.service;
 
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,13 +30,11 @@ import org.json.JSONObject;
 
 
 /**
- * Provides list of public strategies
- *
- * TODO: rename this class to StrategyListsService, after merge into trunk
+ * Provides lists of strategies matching various criteria
  */
 @Path("/strategy-lists/public")
 @Produces(MediaType.APPLICATION_JSON)
-public class PublicStrategyService extends AbstractWdkService {
+public class StrategyListsService extends AbstractWdkService {
 
   /**
    * Get a list of all valid public strategies
@@ -47,12 +46,13 @@ public class PublicStrategyService extends AbstractWdkService {
       @QueryParam("userEmail") List<String> userEmails,
       @QueryParam("invalid") @DefaultValue("false") Boolean returnInvalid)
   throws JSONException, WdkModelException {
+    Predicate<Strategy> validityFilter = returnInvalid
+      ? Functions.not(Strategy::isValid)
+      : Strategy::isValid;
     Stream<Strategy> strategies = new StepFactory(getRequestingUser())
       .getPublicStrategies()
       .stream()
-      .filter(returnInvalid ?
-        Functions.not(Strategy::isValid) :
-        Strategy::isValid);
+      .filter(validityFilter);
 
     if (!userEmails.isEmpty())
       strategies = strategies.filter(strat -> userEmails.stream()

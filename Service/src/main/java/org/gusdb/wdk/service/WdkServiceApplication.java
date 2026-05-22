@@ -22,7 +22,7 @@ import org.gusdb.wdk.service.service.AnswerService;
 import org.gusdb.wdk.service.service.ClientErrorReportingService;
 import org.gusdb.wdk.service.service.OntologyService;
 import org.gusdb.wdk.service.service.ProjectService;
-import org.gusdb.wdk.service.service.PublicStrategyService;
+import org.gusdb.wdk.service.service.StrategyListsService;
 import org.gusdb.wdk.service.service.QuestionService;
 import org.gusdb.wdk.service.service.RecordService;
 import org.gusdb.wdk.service.service.SampleService;
@@ -96,7 +96,7 @@ public class WdkServiceApplication extends Application {
     .add(BasketService.class)
     .add(UserUtilityServices.class)
     .add(FavoritesService.class)
-    .add(PublicStrategyService.class)
+    .add(StrategyListsService.class)
     .add(SessionService.class)
     .add(StrategyService.class)
     .add(StepAnalysisInstanceService.class)
