@@ -173,11 +173,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.irods.jargon</groupId>
-      <artifactId>jargon-core</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>com.opencsv</groupId>
       <artifactId>opencsv</artifactId>
     </dependency>
