@@ -149,4 +149,5 @@ public class StaticRecordInstance extends AttributeValueContainer implements Rec
   public void removeTableValue(String tableName) {
     _tableValueCache.remove(tableName);
   }
+
 }

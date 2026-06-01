@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.record;
 
 import static org.gusdb.wdk.model.AttributeMetaQueryHandler.getDynamicallyDefinedAttributes;
+import static org.gusdb.wdk.model.answer.single.SingleRecordQuestionParam.PRIMARY_KEY_PARAM_NAME;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -17,9 +18,14 @@ import org.gusdb.wdk.model.AttributeMetaQueryHandler;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.WdkRuntimeException;
+import org.gusdb.wdk.model.answer.single.SingleRecordQuestion;
 import org.gusdb.wdk.model.query.Column;
+import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.record.attribute.DerivedAttributeField;
@@ -41,16 +47,21 @@ public class TableField extends Field implements AttributeFieldContainer {
   private String _attributeMetaQueryTwoPartName;
   private SqlQuery _unwrappedQuery;
   private SqlQuery _wrappedQuery;
+  private ProcessQuery _processQuery;
   private List<AttributeField> _attributeFieldList = new ArrayList<>();
   private Map<String, AttributeField> _attributeFieldMap = new LinkedHashMap<>();
+  private boolean _forSingleRecordOnly = false;
 
   private List<WdkModelText> _descriptions = new ArrayList<>();
   private String _description;
   private String _categoryName;
   private String _clientSortingOrderString;
   private List<SortDirectionSpec<AttributeField>> _clientSortingOrderList = new ArrayList<>();
+
   public static final String SORT_ASCENDING = "ASC";
   public static final String SORT_DESCENDING = "DESC";
+
+  public static final String TABLE_NAME_PARAM_NAME = "tableName";
 
   private RecordClass _recordClass;
 
@@ -70,12 +81,40 @@ public class TableField extends Field implements AttributeFieldContainer {
     return _wrappedQuery;
   }
 
+  public ProcessQuery getProcessQuery() {
+    // NOTE: the assignment of the context question must be done after the
+    //    single record questions are assigned (which is after resolveReferences())
+    //    is called.  Rather than add another step to the model parse process,
+    //    this is done here on-the-fly.
+    if (_processQuery.getContextQuestion() == null) {
+      try {
+        // process queries in table values are only allowed for single-record questions
+        String singleRecordQuestionName = SingleRecordQuestion.getQuestionName(_recordClass);
+        Question singleRecordQuestion = _recordClass.getWdkModel()
+            .getQuestionByName(singleRecordQuestionName).orElseThrow();
+        _processQuery.setContextQuestion(singleRecordQuestion);
+      }
+      catch (WdkModelException e) {
+        throw new WdkRuntimeException("Error while looking up single value question for table field process query", e);
+      }
+    }
+    return _processQuery;
+  }
+
   public void setQueryRef(String queryRef) {
     _queryTwoPartName = queryRef;
   }
 
   public String getQueryRef() {
     return _queryTwoPartName;
+  }
+
+  public void setForSingleRecordOnly(boolean forSingleRecordOnly) {
+    _forSingleRecordOnly = forSingleRecordOnly;
+  }
+
+  public boolean isForSingleRecordOnly() {
+    return _forSingleRecordOnly;
   }
 
   /**
@@ -148,60 +187,98 @@ public class TableField extends Field implements AttributeFieldContainer {
     super.resolveReferences(wdkModel);
 
     // resolve Query
+    Query query;
     try {
-      _unwrappedQuery = (SqlQuery)wdkModel.resolveReference(_queryTwoPartName);
+      query = (Query)wdkModel.resolveReference(_queryTwoPartName);
     }
     catch (ClassCastException e) {
-      throw new WdkModelException("Query '" + _queryTwoPartName  +
+      throw new WdkModelException("Reference '" + _queryTwoPartName  +
           "' referenced as a table query in table '" + getName() +
           "' in record class '" + getRecordClass().getFullName() +
-          "' must be a SqlQuery.");
+          "' is not a Query.");
     }
 
-    // validate the table query
-    _recordClass.validateBulkQuery(_unwrappedQuery);
+    // special processing for SQL queries
+    if (query instanceof SqlQuery) {
 
-    // prepare the query and add primary key params
-    String[] paramNames = _recordClass.getPrimaryKeyDefinition().getColumnRefs();
-    _wrappedQuery = RecordClass.prepareQuery(wdkModel, _unwrappedQuery, paramNames);
+      _unwrappedQuery = (SqlQuery)query;
 
-    // match table query's columns to declared attribute fields (ok to have extra columns)
-    Map<String,Column> columns = _wrappedQuery.getColumnMap();
-    for (AttributeField field : _attributeFieldMap.values()) {
-      field.setContainer(this);
-      if (field instanceof QueryColumnAttributeField) {
-        Column column = columns.get(field.getName());
-        if (column == null) {
-          throw new WdkModelException("Table " + _name + " in recordclass " +
-              _recordClass.getFullName() + " declares a column attribute '" + field.getName() +
-              "' that does not appear in the columns of the referenced table query (" +
-              _unwrappedQuery.getFullName() + ").");
+      // validate the table query
+      _recordClass.validateBulkQuery(_unwrappedQuery);
+
+      // prepare the query and add primary key params
+      String[] paramNames = _recordClass.getPrimaryKeyDefinition().getColumnRefs();
+      _wrappedQuery = RecordClass.prepareQuery(wdkModel, _unwrappedQuery, paramNames);
+
+      // match table query's columns to declared attribute fields (ok to have extra columns)
+      Map<String,Column> columns = _wrappedQuery.getColumnMap();
+      for (AttributeField field : _attributeFieldMap.values()) {
+        field.setContainer(this);
+        if (field instanceof QueryColumnAttributeField) {
+          Column column = columns.get(field.getName());
+          if (column == null) {
+            throw new WdkModelException("Table " + _name + " in recordclass " +
+                _recordClass.getFullName() + " declares a column attribute '" + field.getName() +
+                "' that does not appear in the columns of the referenced table query (" +
+                _unwrappedQuery.getFullName() + ").");
+          }
+          ((QueryColumnAttributeField) field).setColumn(column);
         }
-        ((QueryColumnAttributeField) field).setColumn(column);
+        field.resolveReferences(wdkModel);
       }
-      field.resolveReferences(wdkModel);
+
+      // Continue only if a table attribute meta query reference is provided.
+      if (_attributeMetaQueryTwoPartName != null) {
+        for (Map<String, Object> row : getDynamicallyDefinedAttributes(_attributeMetaQueryTwoPartName,
+            wdkModel)) {
+          AttributeField attributeField = new QueryColumnAttributeField();
+
+          // Need to call this explicitly since this attribute field originates from the database
+          attributeField.excludeResources(wdkModel.getProjectId());
+
+          // Populate the attributeField with the attribute meta data
+          AttributeMetaQueryHandler.populate(attributeField, row);
+
+          // Add the new attributeField to the map
+          _attributeFieldMap.put(attributeField.getName(), attributeField);
+        }
+      }
     }
 
-    // Continue only if a table attribute meta query reference is provided.
-    if (_attributeMetaQueryTwoPartName != null) {
-      for (Map<String, Object> row : getDynamicallyDefinedAttributes(_attributeMetaQueryTwoPartName,
-          wdkModel)) {
-        AttributeField attributeField = new QueryColumnAttributeField();
-
-        // Need to call this explicitly since this attribute field originates from the database
-        attributeField.excludeResources(wdkModel.getProjectId());
-
-        // Populate the attributeField with the attribute meta data
-        AttributeMetaQueryHandler.populate(attributeField, row);
-
-        // Add the new attributeField to the map
-        _attributeFieldMap.put(attributeField.getName(), attributeField);
+    // special processing for process queries
+    else {
+      if (!_forSingleRecordOnly) {
+        throw new WdkModelException("Table field " + _name + "'s query reference " +
+            "resolves to a ProcessQuery, but only table fields annotated with " +
+            "forSingleRecordOnly=true can reference process queries.");
       }
+
+      _processQuery = (ProcessQuery)query.clone();
+
+      // confirm no params are present; PK and table name params are added below
+      if (_processQuery.getParams().length != 0) {
+        throw new WdkModelException("Process query " + _processQuery.getFullName() +
+            " referenced by table field " + _name + " must have zero parameters. Params '" +
+            PRIMARY_KEY_PARAM_NAME + "' and '" + TABLE_NAME_PARAM_NAME + "' will be added.");
+      }
+
+      // add parameters to the query
+      _processQuery.addParam(createProcessQueryParam(PRIMARY_KEY_PARAM_NAME, wdkModel));
+      _processQuery.addParam(createProcessQueryParam(TABLE_NAME_PARAM_NAME, wdkModel));
     }
 
     unpackAndValidateClientSortingOrder();
 
     _resolved = true;
+  }
+
+  private StringParam createProcessQueryParam(String name, WdkModel wdkModel) throws WdkModelException {
+    StringParam param = new StringParam();
+    param.setName(name);
+    param.setAllowEmpty(false);
+    param.setNoTranslation(true);
+    param.resolveReferences(wdkModel);
+    return param;
   }
 
   private String getTableNameForErrMsg() {
@@ -304,6 +381,14 @@ public class TableField extends Field implements AttributeFieldContainer {
   @Override
   public String getNameForLogging() {
     return _recordClass.getFullName() + "." + getName();
+  }
+
+  public boolean hasSqlQuery() {
+    return _processQuery == null;
+  }
+
+  public String getQueryFullName() {
+    return hasSqlQuery() ? _wrappedQuery.getFullName() : _processQuery.getFullName();
   }
 
 }

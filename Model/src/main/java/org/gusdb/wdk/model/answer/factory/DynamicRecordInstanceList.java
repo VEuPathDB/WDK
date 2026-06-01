@@ -212,20 +212,22 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
 
     // make table values
     PrimaryKeyDefinition pkDef = _answerValue.getQuestion().getRecordClass().getPrimaryKeyDefinition();
-    Query tableQuery = tableField.getWrappedQuery();
 
     while (resultList.next()) {
       PrimaryKeyValue primaryKey = new PrimaryKeyValue(pkDef, resultList);
       DynamicRecordInstance record = get(primaryKey);
 
       if (record == null) {
-        StringBuffer error = new StringBuffer();
-        error.append("Paged table query [" + tableQuery.getFullName());
+        StringBuilder error = new StringBuilder();
+        error.append("Paged table query [" + tableField.getQueryFullName());
         error.append("] returned rows that doesn't match the paged ");
         error.append("records. (");
         error.append(primaryKey.getValuesAsString());
-        error.append(").\nPaged table SQL:\n" + _answerValue.getAnswerTableSql(tableQuery));
-        error.append("\n" + "Paged ID SQL:\n" + _answerValue.getPagedIdSql());
+        if (tableField.hasSqlQuery()) {
+          Query tableQuery = tableField.getWrappedQuery();
+          error.append(").\nPaged table SQL:\n" + _answerValue.getAnswerTableSql(tableQuery));
+          error.append("\n" + "Paged ID SQL:\n" + _answerValue.getPagedIdSql());
+        }
         throw new WdkModelException(error.toString());
       }
 
@@ -233,7 +235,7 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
       // initialize a row in table value
       tableValue.initializeRow(resultList);
     }
-    LOG.debug("Table query [" + tableQuery + "] integrated.");
+    LOG.debug("Table query [" + tableField.getQueryFullName() + "] integrated.");
   }
 
 }

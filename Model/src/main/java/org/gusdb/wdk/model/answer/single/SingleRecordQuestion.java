@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.DynamicAttributeSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.TableField;
 
 public class SingleRecordQuestion extends Question {
 
@@ -66,5 +67,10 @@ public class SingleRecordQuestion extends Question {
 
   public SingleRecordQuestionParam getParam() {
     return _param;
+  }
+
+  @Override
+  public Map<String, TableField> getTableFieldMap() {
+    return getRecordClass().getTableFieldMap(true);
   }
 }
