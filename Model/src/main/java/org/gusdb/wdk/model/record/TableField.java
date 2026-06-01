@@ -50,7 +50,6 @@ public class TableField extends Field implements AttributeFieldContainer {
   private ProcessQuery _processQuery;
   private List<AttributeField> _attributeFieldList = new ArrayList<>();
   private Map<String, AttributeField> _attributeFieldMap = new LinkedHashMap<>();
-  private boolean _forSingleRecordOnly = false;
 
   private List<WdkModelText> _descriptions = new ArrayList<>();
   private String _description;
@@ -109,12 +108,8 @@ public class TableField extends Field implements AttributeFieldContainer {
     return _queryTwoPartName;
   }
 
-  public void setForSingleRecordOnly(boolean forSingleRecordOnly) {
-    _forSingleRecordOnly = forSingleRecordOnly;
-  }
-
   public boolean isForSingleRecordOnly() {
-    return _forSingleRecordOnly;
+    return !hasSqlQuery();
   }
 
   /**
@@ -247,12 +242,8 @@ public class TableField extends Field implements AttributeFieldContainer {
 
     // special processing for process queries
     else {
-      if (!_forSingleRecordOnly) {
-        throw new WdkModelException("Table field " + _name + "'s query reference " +
-            "resolves to a ProcessQuery, but only table fields annotated with " +
-            "forSingleRecordOnly=true can reference process queries.");
-      }
 
+      // make copy of dereferenced query for this table field
       _processQuery = (ProcessQuery)query.clone();
 
       // confirm no params are present; PK and table name params are added below
