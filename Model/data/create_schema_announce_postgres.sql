@@ -6,22 +6,98 @@
 reset role;
 
 DROP SCHEMA IF EXISTS announce CASCADE;
-CREATE SCHEMA IF NOT EXISTS announce;
-GRANT USAGE ON SCHEMA announce TO COMM_WDK_W;
-
-set role COMM_WDK_W; 
+CREATE SCHEMA IF NOT EXISTS announce AUTHORIZATION userdb_owner;
+GRANT USAGE ON SCHEMA announce TO announce_r;
 
 /*==============================================================================
  * create tables
  *============================================================================*/
 
-CREATE TABLE announce.projects 
+CREATE TABLE announce.projects
 (
-  PROJECT_ID    INTEGER NOT NULL, 
-  PROJECT_NAME  VARCHAR(150) NOT NULL,
-  UNIQUE (PROJECT_NAME),
-  CONSTRAINT "PROJECTS_PKEY" PRIMARY KEY (PROJECT_ID)
+    PROJECT_ID    INTEGER NOT NULL,
+    PROJECT_NAME  VARCHAR(150) NOT NULL,
+    UNIQUE (PROJECT_NAME),
+    CONSTRAINT "PROJECTS_PKEY" PRIMARY KEY (PROJECT_ID)
 );
+
+ALTER TABLE announce.projects OWNER TO userdb_owner;
+GRANT SELECT ON announce.projects TO announce_r;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON announce.projects TO announce_w;
+
+--==============================================================================
+
+CREATE TABLE announce.category
+(
+    CATEGORY_ID    INTEGER NOT NULL,
+    CATEGORY_NAME  VARCHAR(150) NOT NULL,
+    UNIQUE (CATEGORY_NAME),
+    CONSTRAINT "CATEGORY_PKEY" PRIMARY KEY (CATEGORY_ID)
+);
+
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON announce.category TO announce_w;
+ALTER TABLE announce.category OWNER TO userdb_owner;
+GRANT SELECT ON announce.category TO announce_r;
+
+--==============================================================================
+
+CREATE TABLE announce.messages
+(
+    MESSAGE_ID        BIGINT NOT NULL,
+    MESSAGE_TEXT      VARCHAR(4000) NOT NULL,
+    MESSAGE_CATEGORY  VARCHAR(150) NOT NULL,
+    START_DATE        DATE NOT NULL,
+    STOP_DATE         DATE NOT NULL,
+    ADMIN_COMMENTS    VARCHAR(4000),
+    TIME_SUBMITTED    TIMESTAMP NOT NULL,
+    CONSTRAINT "MESSAGES_PKEY" PRIMARY KEY (MESSAGE_ID)
+);
+
+ALTER TABLE announce.messages OWNER TO userdb_owner;
+GRANT SELECT ON announce.messages TO announce_r;
+GRANT INSERT, UPDATE, DELETE ON announce.messages TO announce_w;
+
+--==============================================================================
+
+CREATE TABLE announce.message_projects
+(
+    MESSAGE_ID  BIGINT NOT NULL,
+    PROJECT_ID  INTEGER NOT NULL,
+    CONSTRAINT "MESSAGE_PROJECT_PKEY" PRIMARY KEY (MESSAGE_ID, PROJECT_ID),
+    CONSTRAINT "MESSAGE_ID_FKEY" FOREIGN KEY (MESSAGE_ID)
+        REFERENCES announce.messages (MESSAGE_ID),
+    CONSTRAINT "PROJECT_ID_FKEY" FOREIGN KEY (PROJECT_ID)
+        REFERENCES announce.projects (PROJECT_ID)
+);
+
+CREATE INDEX message_projects_idx01 ON announce.message_projects (project_id);
+
+ALTER TABLE announce.message_projects OWNER TO userdb_owner;
+GRANT SELECT ON announce.message_projects TO announce_r;
+GRANT INSERT, UPDATE, DELETE ON announce.message_projects TO announce_w;
+
+/*==============================================================================
+ * create sequences
+ * ApiCommN for 100000000, ApiCommS for 100000003
+ *============================================================================*/
+
+-- note start value may change depending on initial project list: see above
+-- CREATE SEQUENCE announce.projects_id_pkseq INCREMENT BY 10 START WITH 100;
+-- GRANT SELECT ON announce.projects_id_pkseq TO COMM_WDK_W;
+
+-- note start value may change depending on initial project list; see above
+-- CREATE SEQUENCE announce.category_id_pkseq INCREMENT BY 10 START WITH 40;
+-- GRANT SELECT ON announce.category_id_pkseq TO COMM_WDK_W;
+
+CREATE SEQUENCE announce.messages_id_pkseq INCREMENT BY 10 START WITH 10;
+GRANT SELECT ON announce.messages_id_pkseq TO announce_r;
+
+
+/*==============================================================================
+ * Pre-populate projects & categories. They are static.
+ * Note, the PK values don't matter for an empty target but they are kept like this
+ * to make sure we can import data from an existing userdb.
+ *============================================================================*/
 
 -- existing projects
 INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(10, 'CryptoDB');
@@ -42,72 +118,8 @@ INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(23, 'OrthoMCL');
 INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(33, 'ClinEpiDB');
 INSERT INTO announce.projects(PROJECT_ID, PROJECT_NAME) VALUES(43, 'HostDB');
 
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON announce.projects TO COMM_WDK_W;
-
---==============================================================================
-
-CREATE TABLE announce.category
-(
-  CATEGORY_ID    INTEGER NOT NULL,
-  CATEGORY_NAME  VARCHAR(150) NOT NULL,
-  UNIQUE (CATEGORY_NAME),
-  CONSTRAINT "CATEGORY_PKEY" PRIMARY KEY (CATEGORY_ID)
-);
-
+-- existing categories
 INSERT INTO announce.category(CATEGORY_ID, CATEGORY_NAME) VALUES(10, 'Information');
 INSERT INTO announce.category(CATEGORY_ID, CATEGORY_NAME) VALUES(20, 'Degraded');
 INSERT INTO announce.category(CATEGORY_ID, CATEGORY_NAME) VALUES(30, 'Down');
 INSERT INTO announce.category(CATEGORY_ID, CATEGORY_NAME) VALUES(230, 'Event');
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON announce.category TO COMM_WDK_W;
-
---==============================================================================
-
-CREATE TABLE announce.messages
-(
-  MESSAGE_ID        BIGINT NOT NULL,
-  MESSAGE_TEXT      VARCHAR(4000) NOT NULL,
-  MESSAGE_CATEGORY  VARCHAR(150) NOT NULL,
-  START_DATE        DATE NOT NULL,
-  STOP_DATE         DATE NOT NULL,
-  ADMIN_COMMENTS    VARCHAR(4000),
-  TIME_SUBMITTED    TIMESTAMP NOT NULL,
-  CONSTRAINT "MESSAGES_PKEY" PRIMARY KEY (MESSAGE_ID)
-);
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON announce.messages TO COMM_WDK_W;
-
---==============================================================================
-
-CREATE TABLE announce.message_projects
-(
-  MESSAGE_ID  BIGINT NOT NULL,
-  PROJECT_ID  INTEGER NOT NULL,
-  CONSTRAINT "MESSAGE_PROJECT_PKEY" PRIMARY KEY (MESSAGE_ID, PROJECT_ID),
-  CONSTRAINT "MESSAGE_ID_FKEY" FOREIGN KEY (MESSAGE_ID)
-      REFERENCES announce.messages (MESSAGE_ID),
-  CONSTRAINT "PROJECT_ID_FKEY" FOREIGN KEY (PROJECT_ID)
-      REFERENCES announce.projects (PROJECT_ID)
-);
-
-CREATE INDEX message_projects_idx01 ON announce.message_projects (project_id);
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON announce.message_projects TO COMM_WDK_W;
-
-/*==============================================================================
- * create sequences
- * ApiCommN for 100000000, ApiCommS for 100000003
- *============================================================================*/
-
--- note start value may change depending on initial project list: see above
-CREATE SEQUENCE announce.projects_id_pkseq INCREMENT BY 10 START WITH 100;
-GRANT SELECT ON announce.projects_id_pkseq TO COMM_WDK_W;
-
--- note start value may change depending on initial project list; see above
-CREATE SEQUENCE announce.category_id_pkseq INCREMENT BY 10 START WITH 40;
-GRANT SELECT ON announce.category_id_pkseq TO COMM_WDK_W;
-
-CREATE SEQUENCE announce.messages_id_pkseq INCREMENT BY 10 START WITH 10;
-GRANT SELECT ON announce.messages_id_pkseq TO COMM_WDK_W;
-
