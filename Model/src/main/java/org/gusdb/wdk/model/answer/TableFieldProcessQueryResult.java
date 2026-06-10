@@ -17,6 +17,10 @@ public class TableFieldProcessQueryResult {
 
   public static ArrayResultList getResultList(User user, TableField tableField, Map<String, Object> _pkMap) throws WdkModelException {
 
+    if (tableField.hasSqlQuery()) {
+      throw new WdkModelException("Table field " + tableField.getFullName() + " does not reference a ProcessQuery, required for this function.");
+    }
+
     // create param map
     Map<String,String> params = Map.of(
 
@@ -32,7 +36,7 @@ public class TableFieldProcessQueryResult {
     // create process query instance to fetch results
     ProcessQueryInstance queryInstance = (ProcessQueryInstance)ProcessQuery.makeQueryInstance(
       QueryInstanceSpec.builder().putAll(params)
-        .buildRunnable(user, tableField.getProcessQuery(), StepContainer.emptyContainer()));
+        .buildRunnable(user, tableField.getQuery().rightOrElseThrow(WdkModelException::new), StepContainer.emptyContainer()));
 
     return queryInstance.getUncachedResults();
   }

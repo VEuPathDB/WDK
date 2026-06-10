@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.record;
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.functional.Functions.fSwallow;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
+import static org.gusdb.wdk.model.WdkModelException.wrap;
 
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -987,9 +988,9 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
 
 
       // skip the following for process queries
-      if (tableField.hasSqlQuery()) {
+      WdkModelException.unwrap(() -> tableField.getQuery().ifLeft(wrap(qp -> {
 
-        SqlQuery query = tableField.getUnwrappedQuery();
+        SqlQuery query = qp.getUnwrappedQuery();
 
         if (_partitionKeysSqlQuery == null && query.getSql().contains(SqlQuery.PARTITION_KEYS_MACRO)) {
           throw new WdkModelException("Table query " + query.getFullName()
@@ -999,7 +1000,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
   
         SqlQuery tableQuery = RecordClass.prepareQuery(wdkModel, query, paramNames);
         tableQueries.put(query.getFullName(), tableQuery);
-      }
+      })));
     }
 
   }

@@ -224,7 +224,7 @@ public class DynamicRecordInstanceList extends LinkedHashMap<PrimaryKeyValue, Dy
         error.append("records. (");
         error.append(primaryKey.getValuesAsString());
         if (tableField.hasSqlQuery()) {
-          Query tableQuery = tableField.getWrappedQuery();
+          Query tableQuery = tableField.getQuery().getLeft().getWrappedQuery();
           error.append(").\nPaged table SQL:\n" + _answerValue.getAnswerTableSql(tableQuery));
           error.append("\n" + "Paged ID SQL:\n" + _answerValue.getPagedIdSql());
         }

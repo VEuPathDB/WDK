@@ -14,6 +14,7 @@ import java.util.Optional;
 
 import org.gusdb.fgputil.SortDirection;
 import org.gusdb.fgputil.SortDirectionSpec;
+import org.gusdb.fgputil.functional.Either;
 import org.gusdb.wdk.model.AttributeMetaQueryHandler;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -42,6 +43,11 @@ import org.gusdb.wdk.model.record.attribute.QueryColumnAttributeField;
  * @author jerric
  */
 public class TableField extends Field implements AttributeFieldContainer {
+
+  public class QueryPair {
+    public SqlQuery getWrappedQuery() { return _wrappedQuery; }
+    public SqlQuery getUnwrappedQuery() { return _unwrappedQuery; }
+  }
 
   private String _queryTwoPartName;
   private String _attributeMetaQueryTwoPartName;
@@ -72,15 +78,11 @@ public class TableField extends Field implements AttributeFieldContainer {
     return _recordClass;
   }
 
-  public SqlQuery getUnwrappedQuery() {
-    return _unwrappedQuery;
+  public Either<QueryPair,ProcessQuery> getQuery() {
+    return hasSqlQuery() ? Either.left(new QueryPair()) : Either.right(getProcessQuery());
   }
 
-  public Query getWrappedQuery() {
-    return _wrappedQuery;
-  }
-
-  public ProcessQuery getProcessQuery() {
+  private ProcessQuery getProcessQuery() {
     // NOTE: the assignment of the context question must be done after the
     //    single record questions are assigned (which is after resolveReferences())
     //    is called.  Rather than add another step to the model parse process,

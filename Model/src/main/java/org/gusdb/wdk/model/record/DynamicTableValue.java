@@ -1,5 +1,8 @@
 package org.gusdb.wdk.model.record;
 
+import static org.gusdb.wdk.model.WdkModelException.unwrap;
+import static org.gusdb.wdk.model.WdkModelException.wrap;
+
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
@@ -31,16 +34,9 @@ public class DynamicTableValue extends TableValue {
     super(tableField);
     _primaryKey = primaryKey;
     _user = user;
-
-    if (tableField.hasSqlQuery()) {
-      // if wrappedQuery is present, add partition keys and use left either
-      _query = Either.left(AnswerValue.addPartKeysToAttrOrTableSqlQuery(
-          (SqlQuery)tableField.getWrappedQuery(), getTableField().getRecordClass(), primaryKey));
-    }
-    else {
-      // otherwise, query is a process query
-      _query = Either.right(tableField.getProcessQuery());
-    }
+    _query = unwrap(() -> tableField.getQuery().mapLeft(qp -> wrap(() ->
+        AnswerValue.addPartKeysToAttrOrTableSqlQuery(
+            qp.getWrappedQuery(), getTableField().getRecordClass(), primaryKey))));
   }
 
   private void loadRowsFromQuery() {

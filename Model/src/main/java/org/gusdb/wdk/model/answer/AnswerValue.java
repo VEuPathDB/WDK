@@ -368,7 +368,10 @@ public class AnswerValue implements PartitionKeysProvider {
 
   public String getTableFieldResultSql(TableField tableField) throws WdkModelException {
     // has to get a clean copy of the attribute query, without pk params appended
-    Query tableQuery = tableField.getUnwrappedQuery();
+    Query tableQuery = tableField.getQuery().leftOrElseThrow(() ->
+        new WdkModelException("Table field " + tableField.getFullName() +
+            " does not reference a SqlQuery, required for this function."))
+        .getUnwrappedQuery();
 
     // get and run the paged table query sql
     LOG.debug("AnswerValue: getTableFieldResultSql(): going to getPagedTableSql()");
