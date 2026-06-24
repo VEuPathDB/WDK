@@ -376,7 +376,9 @@ public class StepAnalysisFactoryImpl implements StepAnalysisFactory, EventListen
   @Override
   public Optional<ExecutionInfo> getExecutionInfo(RunnableObj<StepAnalysisInstance> instance)
       throws WdkModelException {
-    return _dataStore.getAnalysisStatus(StepAnalysisInstance.getContextHash(instance));
+    String contextHash = StepAnalysisInstance.getContextHash(instance);
+    LOG.info("Looking up execution info for step analysis with ID " + instance.get().getAnalysisId() + " and context hash: " + contextHash);
+    return _dataStore.getAnalysisStatus(contextHash);
   }
 
   /**
