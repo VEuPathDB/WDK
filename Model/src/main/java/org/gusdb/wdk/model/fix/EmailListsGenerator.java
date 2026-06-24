@@ -123,7 +123,7 @@ public class EmailListsGenerator extends BaseCLI {
       }
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, null);
+      SqlUtils.closeResultSetAndStatement(resultSet);
       writer.flush();
       writer.close();
       System.out.println("Emails saved at: " + file.getAbsolutePath());

@@ -97,11 +97,13 @@ public class HistogramAttributeReporter extends AbstractAttributeReporter {
         int count = resultSet.getInt(COLUMN_COUNT);
         counts.put(column, count);
       }
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       logger.error(ex);
       throw new RuntimeException(ex);
-    } finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, null);
+    }
+    finally {
+      SqlUtils.closeResultSetAndStatement(resultSet);
     }
     return counts;
   }

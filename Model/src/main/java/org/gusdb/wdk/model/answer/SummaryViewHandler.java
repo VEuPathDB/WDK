@@ -27,6 +27,7 @@ public interface SummaryViewHandler {
      * @throws WdkModelException if system exception occurs
      * @throws WdkUserException if input parameters are invalid
      */
+    @Deprecated
     Map<String, Object> process(RunnableObj<AnswerSpec> answerSpec, Map<String, String[]> parameters, User user)
         throws WdkModelException, WdkUserException;
 
@@ -41,6 +42,7 @@ public interface SummaryViewHandler {
      * @throws WdkModelException if system exception occurs
      * @throws WdkUserException if input parameters are invalid
      */
+    @Deprecated
     String processUpdate(RunnableObj<AnswerSpec> answerSpec, Map<String, String[]> parameters, User user)
         throws WdkModelException, WdkUserException;
 }

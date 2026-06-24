@@ -27,12 +27,15 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
 
   private static final Logger LOG = Logger.getLogger(StepParamExpanderPlugin.class);
   
+  @Deprecated
   public static class ParamExpanderLoader extends StepDataFactory {
 
+    @Deprecated
     public ParamExpanderLoader() {
       super(true);
     }
 
+    @Deprecated
     @Override
     public String getRecordsSql(String schema, String projectId) {
       // ignore projectId for now; must select cols from StepDataFactory so we can properly load StepData objs
@@ -42,13 +45,17 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
     }
   }
 
+  @Deprecated
   public static class StepWithParams extends StepData {
 
     private static final int MAX_PARAM_VALUE_LENGTH = 4000;
 
+    @Deprecated
     public Map<String, Set<String>> params = new HashMap<>();
+    @Deprecated
     public int valueCount;
 
+    @Deprecated
     public StepWithParams(StepData base) {
       super(base);
       Map<String, Set<String>> fullParams = StepParamExpander.parseDisplayParams(getStepId().intValue(), getParamFilters());
@@ -118,16 +125,19 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
 
   private AtomicInteger _numParams = new AtomicInteger(0);
 
+  @Deprecated
   @Override
   public void configure(WdkModel wdkModel, List<String> additionalArgs) throws Exception {
     // no configuration needed
   }
 
+  @Deprecated
   @Override
   public TableRowUpdater<StepData> getTableRowUpdater(WdkModel wdkModel) {
     return new TableRowUpdater<StepData>(new ParamExpanderLoader(), new ParamValueWriter(), this, wdkModel);
   }
 
+  @Deprecated
   @Override
   public RowResult<StepData> processRecord(StepData nextRow) throws Exception {
     StepWithParams replacement = new StepWithParams(nextRow);
@@ -135,6 +145,7 @@ public class StepParamExpanderPlugin implements TableRowUpdaterPlugin<StepData> 
     return new RowResult<StepData>(replacement).setShouldWrite(!replacement.params.isEmpty());
   }
 
+  @Deprecated
   @Override
   public void dumpStatistics() {
     LOG.info("Wrote " + _numParams.get() + " total param rows to the " + StepParamExpander.STEP_PARAMS_TABLE + " table.");

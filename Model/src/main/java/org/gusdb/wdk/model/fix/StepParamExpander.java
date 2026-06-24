@@ -46,9 +46,11 @@ public class StepParamExpander extends BaseCLI {
 
   private static final String ARG_THREADED = "threaded";
   private static final String ARG_DROP = "dropTablesOnly";
+  @Deprecated
   static final String STEP_PARAMS_TABLE = "step_params";
   private static final String UPDATED_STEPS_TABLE = "wdk_updated_steps";
 
+  @Deprecated
   public static void main(String[] args) {
     String cmdName = System.getProperty("cmdName");
     StepParamExpander expender = new StepParamExpander(cmdName);
@@ -65,11 +67,13 @@ public class StepParamExpander extends BaseCLI {
   /**
    * @param command
    */
+  @Deprecated
   protected StepParamExpander(String command) {
     super((command != null) ? command : "stepParamExpander",
         "expand the param clob into its own rows in " + STEP_PARAMS_TABLE + " table");
   }
 
+  @Deprecated
   public void expand(WdkModel wdkModel) throws SQLException, WdkModelException {
     String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
     DatabaseInstance database = wdkModel.getUserDb();
@@ -171,6 +175,7 @@ public class StepParamExpander extends BaseCLI {
     return getSelectForColumns(userSchema, projectId, "step_id,display_params");
   }
 
+  @Deprecated
   public static String getSelectForColumns(String userSchema, String projectId, String columns) {
     String projectIdCondition = (projectId != null ? " AND s.project_id = '" + projectId + "'" : "");
     return
@@ -180,6 +185,7 @@ public class StepParamExpander extends BaseCLI {
         "   AND s.step_id NOT IN (SELECT step_id FROM " + STEP_PARAMS_TABLE + ")";
   }
 
+  @Deprecated
   public static void createParamTable(WdkModel wdkModel) throws SQLException {
     DatabaseInstance database = wdkModel.getUserDb();
     DataSource dataSource = database.getDataSource();
@@ -224,10 +230,12 @@ public class StepParamExpander extends BaseCLI {
     }
   }
 
+  @Deprecated
   public static String getInsertSql() {
     return "INSERT INTO " + STEP_PARAMS_TABLE + " (step_id, param_name, param_value) VALUES (?, ?, ?)";
   }
 
+  @Deprecated
   public static Map<String, Set<String>> parseClob(int stepId, String clob)
       throws JSONException {
     if (clob == null || clob.trim().isEmpty()) {
@@ -243,6 +251,7 @@ public class StepParamExpander extends BaseCLI {
     }
   }
 
+  @Deprecated
   public static Map<String, Set<String>> parseDisplayParams(int stepId, JSONObject displayParams) {
     return parseParams(stepId, displayParams.has(ParamsAndFiltersDbColumnFormat.KEY_PARAMS) ?
         // new displayParams format, fetch params object from params property
@@ -277,6 +286,7 @@ public class StepParamExpander extends BaseCLI {
     return newValues;
   }
 
+  @Deprecated
   public static String truncateTerm(String term) {
     return (term.length() <= 4000 ? term : term.substring(0, 4000));
   }
@@ -286,6 +296,7 @@ public class StepParamExpander extends BaseCLI {
    * 
    * @see org.gusdb.fgputil.BaseCLI#declareOptions()
    */
+  @Deprecated
   @Override
   protected void declareOptions() {
     addSingleValueOption(ARG_PROJECT_ID, true, null, "ProjectId, which" +
@@ -299,6 +310,7 @@ public class StepParamExpander extends BaseCLI {
    * 
    * @see org.gusdb.fgputil.BaseCLI#execute()
    */
+  @Deprecated
   @Override
   protected void execute() throws Exception {
     String projectId = (String)getOptionValue(ARG_PROJECT_ID);

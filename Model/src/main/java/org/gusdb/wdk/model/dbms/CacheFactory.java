@@ -11,12 +11,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.platform.SupportedPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
+import org.gusdb.fgputil.db.runner.handler.SingleLongResultSetHandler;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
@@ -289,6 +292,52 @@ public class CacheFactory {
   }
 
   private void dropCacheTables(boolean purge, String whereClause) {
+    if (_appDb.getPlatform().getPlatformEnum() == SupportedPlatform.POSTGRESQL) {
+      dropCacheTablesPostgres(whereClause);
+    }
+    else {
+      dropCacheTablesOracle(whereClause, purge);
+    }
+  }
+
+  private void dropCacheTablesPostgres(String whereClause) {
+
+    long cacheTableCount;
+    try {
+      cacheTableCount = new SQLRunner(_appDb.getDataSource(),
+        "SELECT count(DISTINCT " + COLUMN_TABLE_NAME + ") FROM " + _cacheSchema + TABLE_INSTANCE + " " + whereClause,
+        "wdk-cache-count-tables").executeQuery(new SingleLongResultSetHandler()).orElseThrow();
+    }
+    catch (Exception ex) {
+      LOG.warn("Cannot query on table [" + _cacheSchema + TABLE_INSTANCE + "].  Cache may not be created. " + ex.getMessage());
+      return;
+    }
+
+    String sql =
+      "DO $$ " +
+      "DECLARE " +
+      "    v_table_name TEXT; " +
+      "BEGIN " +
+      "    FOR v_table_name IN " +
+      "        SELECT DISTINCT " + COLUMN_TABLE_NAME +
+      "        FROM " + _cacheSchema + TABLE_INSTANCE + " " + whereClause +
+      "    LOOP " +
+      "        execute format('DROP TABLE IF EXISTS " + _cacheSchema + "%s CASCADE', v_table_name); " +
+      "        RAISE NOTICE 'Dropped table: %', v_table_name; " +
+      "     END LOOP; " +
+      "END; " +
+      "$$;";
+
+    Timer t = new Timer();
+    LOG.info("Removing " + cacheTableCount + " cache tables in one statement.  SQL:\n" + sql);
+    new SQLRunner(_appDb.getDataSource(), sql, "wdk-cache-delete-all-declared-cache-tables").executeStatement();
+    LOG.info("Finished.  Took " + t.getElapsedString());
+
+    // clear rows from table once tables are dropped
+    deleteCacheIndexTableRows(whereClause);
+  }
+
+  private void dropCacheTablesOracle(String whereClause, boolean purge) {
 
     // get a list of cache tables
     String sql = new StringBuilder("SELECT DISTINCT ")
@@ -307,19 +356,13 @@ public class CacheFactory {
       }
     }
     catch (Exception ex) {
-      LOG.error("Cannot query on table [" + _cacheSchema + TABLE_INSTANCE + "]. " + ex.getMessage());
+      LOG.warn("Cannot query on table [" + _cacheSchema + TABLE_INSTANCE + "].  Cache may not be created. " + ex.getMessage());
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, null);
+      SqlUtils.closeResultSetAndStatement(resultSet);
     }
 
-    // delete rows from cache index table
-    try {
-      SqlUtils.executeUpdate(_appDb.getDataSource(), "DELETE FROM " + _cacheSchema + TABLE_INSTANCE + " " + whereClause, "wdk-cache-delete-instances");
-    }
-    catch (Exception ex) {
-      LOG.error("Cannot delete rows from [" + _cacheSchema + TABLE_INSTANCE + "]. " + ex.getMessage());
-    }
+    deleteCacheIndexTableRows(whereClause);
 
     // drop the cache tables
     for (String cacheTable : cacheTables) {
@@ -329,6 +372,16 @@ public class CacheFactory {
       catch (Exception ex) {
         LOG.error("Cannot drop table [" + _cacheSchema + cacheTable + "]. " + ex.getMessage());
       }
+    }
+  }
+
+  private void deleteCacheIndexTableRows(String whereClause) {
+    // delete rows from cache index table (regardless of platform)
+    try {
+      SqlUtils.executeUpdate(_appDb.getDataSource(), "DELETE FROM " + _cacheSchema + TABLE_INSTANCE + " " + whereClause, "wdk-cache-delete-instances");
+    }
+    catch (Exception ex) {
+      LOG.error("Cannot delete rows from [" + _cacheSchema + TABLE_INSTANCE + "]. " + ex.getMessage());
     }
   }
 

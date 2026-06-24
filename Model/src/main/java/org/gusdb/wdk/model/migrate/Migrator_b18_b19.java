@@ -103,7 +103,7 @@ public class Migrator_b18_b19 implements Migrator {
       throw new WdkModelException(ex);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(rsSteps, null);
+      SqlUtils.closeResultSetAndStatement(rsSteps);
       SqlUtils.closeStatement(psUpdate);
     }
   }

@@ -47,7 +47,6 @@ import org.gusdb.wdk.model.columntool.DefaultColumnToolBundleRef;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigAppDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.gusdb.wdk.model.config.ModelConfigUserDatasetStore;
 import org.gusdb.wdk.model.config.QueryMonitor;
 import org.gusdb.wdk.model.dataset.DatasetFactory;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
@@ -73,8 +72,6 @@ import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactory;
 import org.gusdb.wdk.model.user.analysis.StepAnalysisFactoryImpl;
 import org.gusdb.wdk.model.user.analysis.UnconfiguredStepAnalysisFactory;
-import org.gusdb.wdk.model.user.dataset.UserDatasetFactory;
-import org.gusdb.wdk.model.user.dataset.UserDatasetStore;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
@@ -110,8 +107,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   private DatabaseInstance appDb;
   private DatabaseInstance userDb;
-
-  private Optional<UserDatasetStore> _userDatasetStore;
 
   private List<QuerySet> querySetList = new ArrayList<>();
   private Map<String, QuerySet> querySets = new LinkedHashMap<>();
@@ -175,7 +170,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
   private BasketFactory basketFactory;
   private FavoriteFactory favoriteFactory;
   private StepAnalysisFactory stepAnalysisFactory;
-  private Optional<UserDatasetFactory> userDatasetFactory;
 
   private List<PropertyList> defaultPropertyLists = new ArrayList<>();
   private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<>();
@@ -535,25 +529,15 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
     ModelConfigAppDB appDbConfig = modelConfig.getAppDB();
     ModelConfigUserDB userDbConfig = modelConfig.getUserDB();
-    ModelConfigUserDatasetStore udsConfig = modelConfig.getUserDatasetStoreConfig();
 
     QueryLogger.initialize(modelConfig.getQueryMonitor());
 
     appDb = new DatabaseInstance(appDbConfig, DB_INSTANCE_APP, true);
     userDb = new DatabaseInstance(userDbConfig, DB_INSTANCE_USER, true);
 
-    // set true to avoid a broken dev irods at build time
-    if ( udsConfig == null ) {
-      _userDatasetStore = Optional.empty();
-    }
-    else {
-      _userDatasetStore = Optional.of(udsConfig.getUserDatasetStore(modelConfig.getWdkTempDir()));
-    }
-
     datasetFactory = new DatasetFactory(this);
     basketFactory = new BasketFactory(this);
     favoriteFactory = new FavoriteFactory(this);
-    userDatasetFactory = _userDatasetStore.isPresent() ? Optional.of(new UserDatasetFactory(this)) : Optional.empty();
 
     // exclude resources that are not used by this project
     excludeResources();
@@ -688,10 +672,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   public StepAnalysisFactory getStepAnalysisFactory() {
     return stepAnalysisFactory;
-  }
-
-  public Optional<UserDatasetFactory> getUserDatasetFactory() {
-    return userDatasetFactory;
   }
 
   public Object resolveReference(String twoPartName) throws WdkModelException {
@@ -1081,12 +1061,9 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   @Override
   public String toString() {
-    String userDatasetStoreStr = _userDatasetStore.isEmpty()
-        ? "No user dataset store configured"
-        : _userDatasetStore.get().toString();
     return new StringBuilder("WdkModel: ").append("projectId='").append(_projectId).append("'").append(NL).append(
         "displayName='").append(displayName).append("'").append(NL).append("introduction='").append(
-        _introduction).append("'").append(NL).append(NL).append(userDatasetStoreStr).append(NL).append(uiConfig.toString()).append(
+        _introduction).append("'").append(NL).append(NL).append(NL).append(uiConfig.toString()).append(
         showSet("Param", paramSets)).append(showSet("Query", querySets)).append(
         showSet("RecordClass", recordClassSets)).append(showSet("XmlRecordClass", xmlRecordClassSets)).append(
         showSet("Question", questionSets)).append(showSet("XmlQuestion", xmlQuestionSets)).toString();
@@ -1215,10 +1192,6 @@ public class WdkModel implements ConnectionContainer, Manageable<WdkModel>, Auto
 
   public File getXmlDataDir() {
     return xmlDataDir;
-  }
-
-  public Optional<UserDatasetStore> getUserDatasetStore() {
-    return _userDatasetStore;
   }
 
   public DatasetFactory getDatasetFactory() {

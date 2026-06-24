@@ -52,9 +52,6 @@ public class ModelConfigBuilder {
   private ModelConfigUserDB _userDB;
   private ModelConfigAppDB _appDB;
 
-  // user dataset config
-  private ModelConfigUserDatasetStore _userDatasetStoreConfig;
-
   // query performance monitoring
   private QueryMonitor _queryMonitor = new QueryMonitor();
 
@@ -99,8 +96,7 @@ public class ModelConfigBuilder {
     assertNonNull("supportEmail", _supportEmail);
     assertNonNull("userDb", _userDB);
     assertNonNull("appDb", _appDB);
-    // TODO: should probably have a default stub for this to avoid NPEs
-    //assertNonNull("userDatasetStoreConfig", _userDatasetStoreConfig);
+
     Optional<String> smtpUsername = Optional.ofNullable(_smtpUsername).filter(s -> !s.isBlank());
     Optional<String> smtpPassword = Optional.ofNullable(_smtpPassword).filter(s -> !s.isBlank());
     String smtpServer = _smtpServer == null ? "localhost" : _smtpServer;
@@ -141,9 +137,6 @@ public class ModelConfigBuilder {
       // databases
       _userDB,
       _appDB,
-
-      // user dataset config
-      _userDatasetStoreConfig,
 
       // query performance monitoring
       _queryMonitor,
@@ -388,14 +381,13 @@ public class ModelConfigBuilder {
     _caching = caching;
   }
 
-  public void setUserDatasetStore(ModelConfigUserDatasetStore udsConfig) {
-    _userDatasetStoreConfig = udsConfig;
-  }
 
   public void setWdkTempDir(String wdkTempDir) {
     _wdkTempDir = wdkTempDir;
   }
 
-  public void setMaxTableValueRows(Integer maxTableValueRows) {_maxTableValueRows = maxTableValueRows; }
+  public void setMaxTableValueRows(Integer maxTableValueRows) {
+    _maxTableValueRows = maxTableValueRows;
+  }
 
 }

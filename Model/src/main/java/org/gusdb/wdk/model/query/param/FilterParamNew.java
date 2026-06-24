@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.math.BigDecimal;
+import static org.gusdb.fgputil.functional.Functions.doThrow;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,6 +23,9 @@ import org.gusdb.fgputil.cache.InMemoryCache;
 import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.cache.SqlCountCache;
+import org.gusdb.fgputil.db.runner.ParamBuilder;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.validation.ValidObjectFactory.DisplayablyValid;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
@@ -589,6 +593,18 @@ public class FilterParamNew extends AbstractDependentParam {
     return summary;
   }
 
+  private int getCountFromOntology(String sql, String sqlName, String ontologyId) throws WdkModelException {
+    try {
+      return new SQLRunner(_wdkModel.getAppDb().getDataSource(), sql, sqlName)
+        .executeQuery(new ParamBuilder().addString(ontologyId), rs -> {
+          return rs.next() ? rs.getBigDecimal(1).intValue() :
+            doThrow(() -> new RuntimeException("SQL did not return count: " + sql));
+        });
+    }
+    catch (SQLRunnerException ex) {
+      throw new WdkModelException(ex.getCause());
+    }
+  }
 
   /**
    * update the provided OntologyTermSummary with counts of internals.
@@ -598,47 +614,14 @@ public class FilterParamNew extends AbstractDependentParam {
    * @param ontologyId
    * @throws WdkModelException
    */
-  private <T> void getCountsOfDistinctFilterItems(OntologyTermSummary <T> summary, String unfilteredDistinctFilterItemsSql,
-      String filteredDistinctFilterItemsSql, String ontologyId) throws WdkModelException {
+  private <T> void getCountsOfDistinctFilterItems(
+      OntologyTermSummary <T> summary,
+      String unfilteredDistinctFilterItemsSql,
+      String filteredDistinctFilterItemsSql,
+      String ontologyId) throws WdkModelException {
 
-    DataSource dataSource = _wdkModel.getAppDb().getDataSource();
-    PreparedStatement ps = null;
-    ResultSet resultSet = null;
-
-    try {
-      long start = System.currentTimeMillis();
-      ps = SqlUtils.getPreparedStatement(dataSource, unfilteredDistinctFilterItemsSql, SqlUtils.Autocommit.OFF);
-      ps.setString(1, ontologyId);
-      resultSet = ps.executeQuery();
-      QueryLogger.logStartResultsProcessing(unfilteredDistinctFilterItemsSql, "FilterParamNew-getDistinctCounts-unfiltered", start, resultSet);
-      resultSet.next();
-      BigDecimal count = resultSet.getBigDecimal(1);
-      summary.setDistinctInternal(count.intValue());
-    }
-    catch (SQLException ex) {
-      throw new WdkModelException(ex);
-    }
-    finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, ps);
-    }
-
-    try {
-      long start = System.currentTimeMillis();
-      LOG.debug(filteredDistinctFilterItemsSql);
-      ps = SqlUtils.getPreparedStatement(dataSource, filteredDistinctFilterItemsSql, SqlUtils.Autocommit.OFF);
-      ps.setString(1, ontologyId);
-      resultSet = ps.executeQuery();
-      QueryLogger.logStartResultsProcessing(filteredDistinctFilterItemsSql, "FilterParamNew-getDistinctCounts-filtered", start, resultSet);
-      resultSet.next();
-      BigDecimal count = resultSet.getBigDecimal(1);
-      summary.setDistinctMatchingInternal(count.intValue());
-    }
-    catch (SQLException ex) {
-      throw new WdkModelException(ex);
-    }
-    finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, ps);
-    }
+    summary.setDistinctInternal(getCountFromOntology(unfilteredDistinctFilterItemsSql, "FilterParamNew-getDistinctCounts-unfiltered", ontologyId));
+    summary.setDistinctMatchingInternal(getCountFromOntology(filteredDistinctFilterItemsSql, "FilterParamNew-getDistinctCounts-filtered", ontologyId));
 
   }
 

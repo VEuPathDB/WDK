@@ -77,7 +77,7 @@ public class AttributeQueryTest extends QueryTest {
       throw new WdkModelException("Could not get expected counts for query set", e);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(rs, null);
+      SqlUtils.closeResultSetAndStatement(rs);
     }
   }
 
@@ -100,7 +100,7 @@ public class AttributeQueryTest extends QueryTest {
         throw new WdkModelException("Count query '" + sql + "' returned zero rows.");
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, null);
+      SqlUtils.closeResultSetAndStatement(resultSet);
     }
   }
 
@@ -126,7 +126,7 @@ public class AttributeQueryTest extends QueryTest {
       while (resultSet.next()) {} // bring full result over to test speed
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, null);
+      SqlUtils.closeResultSetAndStatement(resultSet);
     }
   }
 }

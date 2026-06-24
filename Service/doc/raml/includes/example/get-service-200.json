@@ -1,5 +1,5 @@
 {
-  "changePasswordUrl": "https://eupathdb.org/oauth/assets/eupathdb-changePassword.html?returnUrl={{returnUrl}}&suggestedUsername={{suggestedUsername}}",
+  "changePasswordUrl": "https://auth.veupathdb.org/assets/eupathdb-changePassword.html?returnUrl={{returnUrl}}&suggestedUsername={{suggestedUsername}}",
   "releaseDate": "05 July 2018 12:59",
   "displayName": "PlasmoDB",
   "userDatasetStoreStatus": {
@@ -37,7 +37,7 @@
       }
   ],
   "authentication": {
-      "oauthUrl": "https://eupathdb.org/oauth",
+      "oauthUrl": "https://auth.veupathdb.org",
       "method": "OAUTH2",
       "oauthClientId": "apiComponentSite",
       "oauthClientUrl": "http://plasmodb.org/plasmo/service"

@@ -15,6 +15,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.xml.TransformException;
 import org.gusdb.fgputil.xml.XmlTransformer;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -275,7 +276,7 @@ public class XmlQuestion extends WdkModelBase {
     private URL createURL(String data) throws MalformedURLException {
         if (data.startsWith("http://") || data.startsWith("ftp://")
                 || data.startsWith("https://")) {
-            return new URL(data);
+            return Utilities.newURL(data);
         } else {
             File xmlDataDir = _model.getXmlDataDir();
             File xmlDataFile = new File(xmlDataDir, data);

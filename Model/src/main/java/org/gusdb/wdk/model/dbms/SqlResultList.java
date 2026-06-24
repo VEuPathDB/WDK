@@ -73,7 +73,12 @@ public class SqlResultList implements ResultList {
       }
       if (value instanceof Clob) {
         Clob clob = (Clob) value;
-        return clob.getSubString(1, (int) clob.length());
+        try {
+          return clob.getSubString(1, (int) clob.length());
+        }
+        finally {
+          clob.free();
+        }
       }
       return value;
     }

@@ -44,7 +44,7 @@ public class TableTotalQueryTest extends QueryTest {
       throw new WdkModelException(e);
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, null);
+      SqlUtils.closeResultSetAndStatement(resultSet);
     }
   }
 }

@@ -86,7 +86,9 @@
                 <attribute name="keyStorePassPhrase"/>
             </optional>
             <optional>
-                <attribute name="maxTableValueRows" />
+                <attribute name="maxTableValueRows">
+                    <data type="positiveInteger" />
+                </attribute>
             </optional>
 
             <interleave>

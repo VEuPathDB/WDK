@@ -7,7 +7,6 @@ import org.apache.commons.digester3.Digester;
 import org.gusdb.fgputil.xml.XmlParser;
 import org.gusdb.fgputil.xml.XmlValidator;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkModelText;
 import org.xml.sax.SAXException;
 
 /**
@@ -61,12 +60,6 @@ public class ModelConfigParser extends XmlParser {
 
     // load user db
     configureNode(digester, "modelConfig/userDb", ModelConfigUserDB.class, "setUserDB");
-
-    // userdatasetstore
-    configureNode(digester, "modelConfig/userDatasetStore", ModelConfigUserDatasetStore.class, "setUserDatasetStore");
-    configureNode(digester, "modelConfig/userDatasetStore/property", WdkModelText.class, "addProperty");
-    digester.addCallMethod("modelConfig/userDatasetStore/property", "setText", 0);
-    configureNode(digester, "modelConfig/userDatasetStore/typeHandler", ModelConfigUserDatasetTypeHandler.class, "addTypeHandler");
 
     // query monitor
     configureNode(digester, "modelConfig/queryMonitor", QueryMonitor.class, "setQueryMonitor");

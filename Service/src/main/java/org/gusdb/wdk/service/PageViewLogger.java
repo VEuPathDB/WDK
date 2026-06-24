@@ -13,6 +13,8 @@ public class PageViewLogger {
   private static final String CLIENT_PREFIX = "/web-client";
 
   public static void logPageView(String projectId, User user, String submittedPath, String userAgent) {
+    // TODO: add token ID to logs when we are ready
+    //String tokenId = user.getAuthenticationToken().getTokenContents().get(Claims.ID).toString();
     LOG.info(
         TAB + ThreadLocalLoggingVars.getIpAddress() +
         TAB + user.getUserId() +

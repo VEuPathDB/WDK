@@ -132,7 +132,7 @@ public class StressTester {
         try {
             ResultSet rs = SqlUtils.executeQuery(appDb.getDataSource(),
                 "SELECT * FROM " + TABLE_STRESS_RESULT, "wdk-stress-result");
-            SqlUtils.closeResultSetAndStatement(rs, null);
+            SqlUtils.closeResultSetAndStatement(rs);
         }
         catch (SQLException e) {
             // table doesn't exist, create it
@@ -181,7 +181,7 @@ public class StressTester {
           return (testTag + 1);
         }
         finally {
-          SqlUtils.closeResultSetAndStatement(rs, null);
+          SqlUtils.closeResultSetAndStatement(rs);
         }
     }
 
