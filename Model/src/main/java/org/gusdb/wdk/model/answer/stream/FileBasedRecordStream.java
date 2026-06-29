@@ -357,7 +357,7 @@ public class FileBasedRecordStream implements RecordStream {
       });
     }
     catch (SQLRunnerException e) {
-      throw WdkModelException.translateFrom(e, "Unable to transfer attribute query result to CSV file");
+      throw WdkModelException.translateFrom(e, "Unable to transfer attribute query result to CSV file" + sql);
     }
   }
 
