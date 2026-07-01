@@ -33,5 +33,6 @@ GRANT INSERT, UPDATE, DELETE ON uploads.userfile TO uploads_w;
 
 -- note start value may change depending on initial project list: see above
 CREATE SEQUENCE uploads.userfile_pkseq INCREMENT BY 10 START WITH 100;
+ALTER SEQUENCE uploads.userfile_pkseq OWNER TO userdb_owner;
 -- GRANT SELECT ON uploads.userfile_pkseq TO COMM_WDK_W;
-GRANT SELECT ON uploads.userfile_pkseq TO uploads_r;
+GRANT USAGE, SELECT ON uploads.userfile_pkseq TO uploads_r;

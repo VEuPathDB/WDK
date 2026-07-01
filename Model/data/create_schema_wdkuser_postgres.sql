@@ -258,22 +258,29 @@ GRANT INSERT, UPDATE, DELETE ON wdkuser.step_analysis TO wdkuser_w;
 --==============================================================================
 
 CREATE SEQUENCE wdkuser.user_baskets_pkseq INCREMENT BY 10; -- START WITH 100000000;
-GRANT SELECT ON wdkuser.user_baskets_pkseq TO wdkuser_r;
+ALTER SEQUENCE wdkuser.user_baskets_pkseq OWNER TO userdb_owner;
+GRANT USAGE, SELECT ON wdkuser.user_baskets_pkseq TO wdkuser_r;
 
 CREATE SEQUENCE wdkuser.favorites_pkseq INCREMENT BY 10; -- START WITH 100000000;
-GRANT SELECT ON wdkuser.favorites_pkseq TO wdkuser_r;
+ALTER SEQUENCE wdkuser.favorites_pkseq  OWNER TO userdb_owner;
+GRANT USAGE, SELECT ON wdkuser.favorites_pkseq TO wdkuser_r;
 
 CREATE SEQUENCE wdkuser.datasets_pkseq INCREMENT BY 10; -- START WITH 100000000;
-GRANT SELECT ON wdkuser.datasets_pkseq TO wdkuser_r;
+ALTER SEQUENCE wdkuser.datasets_pkseq  OWNER TO userdb_owner;
+GRANT USAGE, SELECT ON wdkuser.datasets_pkseq TO wdkuser_r;
 
 CREATE SEQUENCE wdkuser.dataset_values_pkseq INCREMENT BY 10; -- START WITH 100000000;
-GRANT SELECT ON wdkuser.dataset_values_pkseq TO wdkuser_r;
+ALTER SEQUENCE wdkuser.dataset_values_pkseq OWNER TO userdb_owner;
+GRANT USAGE, SELECT ON wdkuser.dataset_values_pkseq TO wdkuser_r;
 
 CREATE SEQUENCE wdkuser.strategies_pkseq INCREMENT BY 10; -- START WITH 100000000;
-GRANT SELECT ON wdkuser.strategies_pkseq TO wdkuser_r;
+ALTER SEQUENCE wdkuser.strategies_pkseq  OWNER TO userdb_owner;
+GRANT USAGE, SELECT ON wdkuser.strategies_pkseq TO wdkuser_r;
 
 CREATE SEQUENCE wdkuser.steps_pkseq INCREMENT BY 10; -- START WITH 100000000;
-GRANT SELECT ON wdkuser.steps_pkseq TO wdkuser_r;
+ALTER SEQUENCE wdkuser.steps_pkseq  OWNER TO userdb_owner;
+GRANT USAGE, SELECT ON wdkuser.steps_pkseq TO wdkuser_r;
 
 CREATE SEQUENCE wdkuser.step_analysis_pkseq INCREMENT BY 10; -- START WITH 100000000;
-GRANT SELECT ON wdkuser.step_analysis_pkseq TO wdkuser_r;
+ALTER SEQUENCE wdkuser.step_analysis_pkseq OWNER TO userdb_owner;
+GRANT USAGE, SELECT ON wdkuser.step_analysis_pkseq TO wdkuser_r;

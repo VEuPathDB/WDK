@@ -90,7 +90,8 @@ GRANT INSERT, UPDATE, DELETE ON announce.message_projects TO announce_w;
 -- GRANT SELECT ON announce.category_id_pkseq TO COMM_WDK_W;
 
 CREATE SEQUENCE announce.messages_id_pkseq INCREMENT BY 10 START WITH 10;
-GRANT SELECT ON announce.messages_id_pkseq TO announce_r;
+ALTER SEQUENCE announce.messages_id_pkseq OWNER TO userdb_owner;
+GRANT USAGE, SELECT ON announce.messages_id_pkseq TO announce_r;
 
 
 /*==============================================================================
