@@ -22,14 +22,17 @@ public class TextAttributeField extends DerivedAttributeField {
   // fields set by XML parsing
   private final List<WdkModelText> _texts;
   private final List<WdkModelText> _displays;
+  private final List<WdkModelText> _tooltips;
 
   // resolved fields
   private String _text;
   private String _display;
+  private String _tooltip;
 
   public TextAttributeField() {
     _texts = new ArrayList<>();
     _displays = new ArrayList<>();
+    _tooltips = new ArrayList<>();
     _dataType = AttributeFieldDataType.STRING;
   }
 
@@ -49,11 +52,20 @@ public class TextAttributeField extends DerivedAttributeField {
     return (_display != null) ? _display : _text;
   }
 
+  public void addTooltip(WdkModelText tooltip) {
+    _tooltips.add(tooltip);
+  }
+
+  public String getTooltip() {
+    return _tooltip == null ? "" : _tooltip;
+  }
+
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
     _text = excludeModelText(_texts, projectId, "text", true);
     _display = excludeModelText(_displays, projectId, "display", false);
+    _tooltip = excludeModelText(_tooltips, projectId, "tooltip", false);
   }
 
   @Override
@@ -62,6 +74,7 @@ public class TextAttributeField extends DerivedAttributeField {
     Map<String, AttributeField> dependents = new LinkedHashMap<>();
     if (_display!= null) dependents.putAll(parseFields(_display));
     if (_text != null) dependents.putAll(parseFields(_text));
+    if (_tooltip != null) dependents.putAll(parseFields(_tooltip));
     return dependents.values();
   }
 }

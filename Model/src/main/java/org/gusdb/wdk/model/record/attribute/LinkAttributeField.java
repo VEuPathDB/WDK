@@ -33,12 +33,14 @@ public class LinkAttributeField extends DerivedAttributeField {
   private static final String DEFAULT_TYPE = "link";
 
   // fields set by XML parsing
-  private List<WdkModelText> _urls = new ArrayList<WdkModelText>();
-  private List<WdkModelText> _displayTexts = new ArrayList<WdkModelText>();
+  private List<WdkModelText> _urls = new ArrayList<>();
+  private List<WdkModelText> _displayTexts = new ArrayList<>();
+  private List<WdkModelText> _tooltips = new ArrayList<>();
 
   // resolved fields
   private String _url;
   private String _displayText;
+  private String _tooltip;
 
   private boolean _newWindow = false;
 
@@ -78,11 +80,20 @@ public class LinkAttributeField extends DerivedAttributeField {
     return _displayText;
   }
 
+  public void addTooltip(WdkModelText tooltip) {
+    _tooltips.add(tooltip);
+  }
+
+  public String getTooltip() {
+    return _tooltip == null ? "" : _tooltip;
+  }
+
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
     super.excludeResources(projectId);
     _url = excludeModelText(_urls, projectId, "url", true);
     _displayText = excludeModelText(_displayTexts, projectId, "displayText", true);
+    _tooltip = excludeModelText(_tooltips, projectId, "tooltip", false);
   }
 
   @Override
@@ -90,6 +101,7 @@ public class LinkAttributeField extends DerivedAttributeField {
     Map<String, AttributeField> dependents = new LinkedHashMap<>();
     if (_displayText != null) dependents.putAll(parseFields(_displayText));
     if (_url != null) dependents.putAll(parseFields(_url));
+    if (_tooltip != null) dependents.putAll(parseFields(_tooltip));
     return dependents.values();
   }
 }

@@ -109,33 +109,40 @@ public class RecordFormatter {
 
   private static Object getAttributeValueJson(AttributeValue attr, AttributeFormat attributeFormat) throws WdkModelException, WdkUserException {
 
-    if (attributeFormat == AttributeFormat.DISPLAY) {
-      // for display format, show 
-      if (attr instanceof LinkAttributeValue) {
-        LinkAttributeValue linkAttr = (LinkAttributeValue)attr;
-        String displayText = linkAttr.getDisplayText();
-
-        // Treat an empty displayText as null
-        if (displayText == null || displayText.isEmpty()) {
-          return JSONObject.NULL;
-        }
-
-        return new JSONObject()
-          .put(JsonKeys.URL, linkAttr.getUrl())
-          .put(JsonKeys.DISPLAY_TEXT, displayText);
-      }
-  
-      if (attr instanceof TextAttributeValue){
-        return attr.getDisplay();
+    if (attr instanceof LinkAttributeValue ) {
+      LinkAttributeValue linkAttr = (LinkAttributeValue)attr;
+      switch(attributeFormat) {
+        case TEXT:
+          return linkAttr.getUrl();
+        case DISPLAY:
+        case EXPANDED:
+          // return JSON object with each of the values for proper display in a UI
+          return new JSONObject()
+            .put(JsonKeys.URL, linkAttr.getUrl())
+            .put(JsonKeys.DISPLAY_TEXT, linkAttr.getDisplayText())
+            .put(JsonKeys.TOOLTIP, nullIfEmpty(linkAttr.getTooltip()));
       }
     }
-    else {
-      if (attr instanceof LinkAttributeValue) {
-        return ((LinkAttributeValue)attr).getUrl();
+
+    if (attr instanceof TextAttributeValue) {
+      TextAttributeValue textAttr = (TextAttributeValue)attr;
+      switch(attributeFormat) {
+        case TEXT: return nullIfEmpty(textAttr.getValue());
+        case DISPLAY: return textAttr.getDisplay();
+        case EXPANDED:
+          // return JSON object with each of the values for proper display in a UI
+          return new JSONObject()
+            .put(JsonKeys.VALUE, textAttr.getValue())
+            .put(JsonKeys.DISPLAY, nullIfEmpty(textAttr.getDisplay()))
+            .put(JsonKeys.TOOLTIP, nullIfEmpty(textAttr.getTooltip()));
       }
     }
+
     // outside of above cases, return value of attribute or JSON null if empty
-    String value = attr.getValue();
-    return value == null ? JSONObject.NULL : value;
+    return nullIfEmpty(attr.getValue());
+  }
+
+  private static Object nullIfEmpty(String str) {
+    return str == null || str.isBlank() ? JSONObject.NULL : str;
   }
 }

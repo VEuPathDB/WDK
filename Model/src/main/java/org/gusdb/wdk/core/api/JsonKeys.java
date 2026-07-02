@@ -61,6 +61,7 @@ public class JsonKeys {
   public static final String HELP = "help";
   public static final String HTML_HELP = "htmlHelp";
   public static final String SUGGEST_TEXT = "suggestText";
+  public static final String TOOLTIP = "tooltip";
   public static final String DESCRIPTION = "description";
   public static final String SHORT_DESCRIPTION = "shortDescription";
   public static final String SUMMARY = "summary";
