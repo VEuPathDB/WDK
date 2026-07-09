@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.record;
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.functional.Functions.fSwallow;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
+import static org.gusdb.wdk.model.WdkModelException.wrap;
 
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -572,36 +573,19 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     return fullName;
   }
 
-  public Map<String, TableField> getTableFieldMap() {
-    return getTableFieldMap(FieldScope.ALL);
-  }
+  public Map<String, TableField> getTableFieldMap(boolean includeSingleRecordTables) {
 
-  public Map<String, TableField> getTableFieldMap(FieldScope scope) {
     Map<String, TableField> fields = new LinkedHashMap<>();
 
     for (TableField field : tableFieldsMap.values())
-      if (scope.isFieldInScope(field))
+      if (includeSingleRecordTables || !field.isForSingleRecordOnly())
         fields.put(field.getName(), field);
 
     return fields;
   }
 
-  // used by report maker, adding display names in map so later the tables show
-  // sorted by display name
-  public Map<String, TableField> getTableFieldMap(FieldScope scope, boolean useDisplayNamesAsKeys) {
-    if (!useDisplayNamesAsKeys)
-      return getTableFieldMap(scope);
-
-    Map<String, TableField> fields = new LinkedHashMap<>();
-    for (TableField field : tableFieldsMap.values())
-      if (scope.isFieldInScope(field))
-        fields.put(field.getDisplayName(), field);
-
-    return fields;
-  }
-
-  public TableField[] getTableFields() {
-    Map<String, TableField> tables = getTableFieldMap();
+  public TableField[] getTableFields(boolean includeSingleRecordTables) {
+    Map<String, TableField> tables = getTableFieldMap(includeSingleRecordTables);
     TableField[] array = new TableField[tables.size()];
     tables.values().toArray(array);
     return array;
@@ -634,7 +618,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     // copy attribute fields
     attributeFieldMap.values().toArray(fields);
     // copy table fields
-    TableField[] tableFields = getTableFields();
+    TableField[] tableFields = getTableFields(true);
     System.arraycopy(tableFields, 0, fields, attributeCount, tableCount);
     return fields;
   }
@@ -1002,17 +986,21 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
     for (TableField tableField : tableFieldsMap.values()) {
       tableField.resolveReferences(wdkModel);
 
-      SqlQuery query = tableField.getUnwrappedQuery();
 
-      if (_partitionKeysSqlQuery == null && query.getSql().contains(SqlQuery.PARTITION_KEYS_MACRO)) {
-        throw new WdkModelException("Table query " + query.getFullName()
-            + "contains the macro " + SqlQuery.PARTITION_KEYS_MACRO
-            + " but record class " + getName() + " does not define a partition key query ref");
-      }
+      // skip the following for process queries
+      WdkModelException.unwrap(() -> tableField.getQuery().ifLeft(wrap(qp -> {
 
+        SqlQuery query = qp.getUnwrappedQuery();
 
-      SqlQuery tableQuery = RecordClass.prepareQuery(wdkModel, query, paramNames);
-      tableQueries.put(query.getFullName(), tableQuery);
+        if (_partitionKeysSqlQuery == null && query.getSql().contains(SqlQuery.PARTITION_KEYS_MACRO)) {
+          throw new WdkModelException("Table query " + query.getFullName()
+              + "contains the macro " + SqlQuery.PARTITION_KEYS_MACRO
+              + " but record class " + getName() + " does not define a partition key query ref");
+        }
+  
+        SqlQuery tableQuery = RecordClass.prepareQuery(wdkModel, query, paramNames);
+        tableQueries.put(query.getFullName(), tableQuery);
+      })));
     }
 
   }

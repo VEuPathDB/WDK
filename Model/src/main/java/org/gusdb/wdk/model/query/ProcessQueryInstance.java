@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -21,6 +22,7 @@ import org.gusdb.wdk.model.ServiceResolver;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkDelayedResultException;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
@@ -221,6 +223,13 @@ public class ProcessQueryInstance extends QueryInstance<ProcessQuery> {
       sql.append(", ").append(_spec.get().getAssignedWeight());
 
     return sql.append(")").toString();
+  }
+
+  public ArrayResultList getUncachedResults() throws WdkModelException {
+    List<String> columns = Arrays.stream(_query.getColumns()).map(Column::getName).collect(Collectors.toList());
+    ArrayResultList resultsListener = new ArrayResultList(columns);
+    invokeWsf(resultsListener);
+    return resultsListener;
   }
 
   private void invokeWsf(WsfResponseListener listener) throws WdkModelException {

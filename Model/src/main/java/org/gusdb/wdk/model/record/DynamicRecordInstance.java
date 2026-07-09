@@ -60,7 +60,7 @@ public class DynamicRecordInstance extends StaticRecordInstance {
 
   @Override
   protected Collection<TableField> getAvailableTableFields() {
-    return _recordClass.getTableFieldMap().values();
+    return _recordClass.getTableFieldMap(true).values();
   }
 
   private void fillColumnAttributeValues(Query attributeQuery)

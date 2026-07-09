@@ -17,11 +17,14 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.answer.ResultSizeFactory;
+import org.gusdb.wdk.model.answer.TableFieldProcessQueryResult;
 import org.gusdb.wdk.model.answer.spec.AnswerSpec;
+import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.record.DynamicRecordInstance;
 import org.gusdb.wdk.model.record.PrimaryKeyIterator;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.TableField;
 
 public class SingleRecordAnswerValue extends AnswerValue {
 
@@ -150,5 +153,15 @@ public class SingleRecordAnswerValue extends AnswerValue {
   public boolean cacheInitiallyExistedForSpec() throws WdkModelException {
     // does not use WDK cache
     return false;
+  }
+
+  @Override
+  public ResultList getTableFieldResultList(TableField tableField) throws WdkModelException {
+    if (tableField.hasSqlQuery()) {
+      return super.getTableFieldResultList(tableField);
+    }
+    else {
+      return TableFieldProcessQueryResult.getResultList(_requestingUser, tableField, _pkMap);
+    }
   }
 }

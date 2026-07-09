@@ -94,7 +94,7 @@ public class RecordRequest {
 
   private static List<String> parseTableNames(JSONArray tableNames, RecordClass recordClass)
       throws WdkUserException {
-    Map<String, TableField> allowedTables = recordClass.getTableFieldMap();
+    Map<String, TableField> allowedTables = recordClass.getTableFieldMap(true);
     List<String> namesList = new ArrayList<String>();
     for (int i = 0; i < tableNames.length(); i++) {
       String name = tableNames.getString(i);
