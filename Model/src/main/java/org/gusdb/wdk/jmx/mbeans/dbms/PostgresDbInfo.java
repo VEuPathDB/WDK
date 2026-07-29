@@ -23,6 +23,30 @@ public class PostgresDbInfo extends AbstractDbInfo {
   private static final String SERVERNAME_SQL =
     "select inet_server_addr() as server_ip";
 
+  private static final String DBF_SIZE_ON_DISK = "SELECT pg_size_pretty(pg_database_size(current_database())) as dbf_gb_on_disk";
+
+  private static final String DBLINK_SQL =
+    " SELECT " +
+    "   s.srvname   AS server_name, " +
+    "   w.fdwname   AS foreign_data_wrapper, " +
+    "   s.srvoptions AS options, " +
+    "   COALESCE(( " +
+    "       SELECT string_agg(t.nspname || '(' || t.cnt || ')', ', ' ORDER BY t.nspname) " +
+    "       FROM ( " +
+    "           SELECT ns.nspname, COUNT(*) AS cnt " +
+    "           FROM pg_catalog.pg_foreign_table ft " +
+    "           JOIN pg_catalog.pg_class     c  ON c.oid  = ft.ftrelid " +
+    "           JOIN pg_catalog.pg_namespace ns ON ns.oid = c.relnamespace " +
+    "           WHERE ft.ftserver = s.oid " +
+    "           GROUP BY ns.nspname " +
+    "       ) t " +
+    "   ), '') AS schemas " +
+    " FROM pg_foreign_server s " +
+    "   JOIN pg_foreign_data_wrapper w ON w.oid = s.srvfdw " +
+    "   JOIN pg_user_mappings um ON um.srvid = s.oid AND um.usename = CURRENT_USER " +
+    " ORDER BY w.fdwname, s.srvname ";
+
+
   public PostgresDbInfo(DatabaseInstance db) {
     super(db);
   }
@@ -40,19 +64,17 @@ public class PostgresDbInfo extends AbstractDbInfo {
   @Override
   protected String getDblinkSql() {
     // not implemented
-    return null;
+    return DBLINK_SQL;
   }
 
   @Override
   protected String getDbLinkValidationSql(String dblink) {
-    // not implemented
-    return null;
+    return "SELECT 1";
   }
 
   @Override
   protected String getDbfSizeOnDisk() {
-    // not implemented
-    return null;
+    return DBF_SIZE_ON_DISK;
   }
 
 }
