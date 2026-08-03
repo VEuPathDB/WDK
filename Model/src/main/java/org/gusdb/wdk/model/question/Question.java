@@ -305,7 +305,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   public Map<String, Field> getFields() {
     Map<String, Field> fields = new LinkedHashMap<>();
     Map<String, AttributeField> attributes = getAttributeFieldMap();
-    Map<String, TableField> tables = _recordClass.getTableFieldMap();
+    Map<String, TableField> tables = getTableFieldMap();
 
     fields.putAll(attributes);
     fields.putAll(tables);
@@ -1132,6 +1132,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer, S
   @Override
   public String getNameForLogging() {
     return getFullName();
+  }
+
+  public Map<String, TableField> getTableFieldMap() {
+    return getRecordClass().getTableFieldMap(false);
   }
 
 }

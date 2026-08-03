@@ -144,7 +144,7 @@ public class AnswerDetailsFactory {
       // see if property value is a String, if so, it could be a special value
       try {
         if (RETURN_ALL_TABLES.equals(specJson.getString("tables"))) {
-          return question.getRecordClass().getTableFieldMap();
+          return question.getTableFieldMap();
         }
         throw new ReporterConfigException("Illegal string found for "
           + "tables property.  Must be an array or '"
@@ -227,7 +227,7 @@ public class AnswerDetailsFactory {
 
   private static Map<String, TableField> parseTableArray(JSONArray tablesJson,
       Question question) throws ReporterConfigException {
-    Map<String, TableField> availableTables = question.getRecordClass().getTableFieldMap();
+    Map<String, TableField> availableTables = question.getTableFieldMap();
     Map<String, TableField> tables = new LinkedHashMap<>();
     for (int i = 0; i < tablesJson.length(); i++) {
       String tableName = tablesJson.getString(i);

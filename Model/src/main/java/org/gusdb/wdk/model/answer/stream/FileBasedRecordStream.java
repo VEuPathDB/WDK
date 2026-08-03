@@ -400,7 +400,7 @@ public class FileBasedRecordStream implements RecordStream {
    */
   private static TwoTuple<Path,List<String>> writeTableFile(AnswerValue answerValue, Path tempDir, TableField table) throws WdkModelException {
     Timer t = new Timer();
-    LOG.debug("writeTableFile(): Starting table: " + table.getName() + "(query: " + table.getWrappedQuery().getName() + ")");
+    LOG.debug("writeTableFile(): Starting table: " + table.getName() + "(query: " + table.getQueryFullName() + ")");
 
     // Appending table designation to query name for file to more easily distinguish
     // these files from those supporting attribute queries and to avoid name collisions.
@@ -413,9 +413,9 @@ public class FileBasedRecordStream implements RecordStream {
       resultList = answerValue.getTableFieldResultList(table);
 
       // Transfer the result list content to the CSV file provided.
-      LOG.debug("writeTableFile(): Starting iteration over result list for query " + table.getWrappedQuery().getName() + ": " + t.getElapsedString());
+      LOG.debug("writeTableFile(): Starting iteration over result list for query " + table.getQueryFullName() + ": " + t.getElapsedString());
       assembleCsvFile(filePath, columnNames, resultList);
-      LOG.debug("writeTableFile(): Finished iteration over result list for query " + table.getWrappedQuery().getName() + ": " + t.getElapsedString());
+      LOG.debug("writeTableFile(): Finished iteration over result list for query " + table.getQueryFullName() + ": " + t.getElapsedString());
 
       // open file permissions and return the path to the temporary CSV file
       filePath.toFile().setWritable(true, false);

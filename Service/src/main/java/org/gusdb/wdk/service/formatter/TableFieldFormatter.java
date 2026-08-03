@@ -53,7 +53,8 @@ public class TableFieldFormatter {
         .put(JsonKeys.IS_IN_REPORT, FieldScope.REPORT_MAKER.isFieldInScope(table))
       .put(JsonKeys.NAME, table.getName())
       .put(JsonKeys.PROPERTIES, table.getPropertyLists())
-      .put(JsonKeys.TYPE, table.getType());
+      .put(JsonKeys.TYPE, table.getType())
+      .put(JsonKeys.SINGLE_RECORD_ONLY, table.isForSingleRecordOnly());
   }
 
   private static JSONArray getClientSortSpecJson(TableField tableField) {

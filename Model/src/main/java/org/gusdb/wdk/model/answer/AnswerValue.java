@@ -368,7 +368,10 @@ public class AnswerValue implements PartitionKeysProvider {
 
   public String getTableFieldResultSql(TableField tableField) throws WdkModelException {
     // has to get a clean copy of the attribute query, without pk params appended
-    Query tableQuery = tableField.getUnwrappedQuery();
+    Query tableQuery = tableField.getQuery().leftOrElseThrow(() ->
+        new WdkModelException("Table field " + tableField.getFullName() +
+            " does not reference a SqlQuery, required for this function."))
+        .getUnwrappedQuery();
 
     // get and run the paged table query sql
     LOG.debug("AnswerValue: getTableFieldResultSql(): going to getPagedTableSql()");
@@ -376,6 +379,7 @@ public class AnswerValue implements PartitionKeysProvider {
     return getAnswerTableSql(tableQuery);
   }
 
+  // NOTE: this method is overridden in SingleRecordAnswerValue to support tables with process queries; can assume SQL queries here
   public ResultList getTableFieldResultList(TableField tableField) throws WdkModelException {
     return getTableFieldResultList(tableField, getTableFieldResultSql(tableField));
   }
@@ -388,7 +392,7 @@ public class AnswerValue implements PartitionKeysProvider {
     ResultSet resultSet = null;
     try {
       LOG.debug("AnswerValue: getTableFieldResultList(): returning SQL for TableField '" + tableField.getName() + "': \n" + customSql);
-      resultSet = SqlUtils.executeQuery(dataSource, customSql, tableField.getUnwrappedQuery().getFullName() + "_table");
+      resultSet = SqlUtils.executeQuery(dataSource, customSql, tableField.getQueryFullName() + "_table");
     }
     catch (SQLException e) {
       throw new WdkModelException(e);

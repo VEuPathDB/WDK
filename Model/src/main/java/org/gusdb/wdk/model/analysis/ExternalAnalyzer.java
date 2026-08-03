@@ -26,6 +26,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.TableField;
@@ -150,7 +151,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
 
     // if hasHeader and display value map requested, dump
     if (hasHeader && determineBooleanProperty(DUMP_HEADER_DISPLAY_MAP_PROP_KEY, DUMP_HEADER_DISPLAY_MAP_BY_DEFAULT)) {
-      dumpHeaderDisplayMap(answerValue.getQuestion().getRecordClass(), storageDir);
+      dumpHeaderDisplayMap(answerValue.getQuestion(), storageDir);
     }
 
     try {
@@ -197,7 +198,8 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
     }
   }
 
-  private void dumpHeaderDisplayMap(RecordClass recordClass, String storageDir) throws WdkModelException {
+  private void dumpHeaderDisplayMap(Question question, String storageDir) throws WdkModelException {
+    RecordClass recordClass = question.getRecordClass();
     List<String> attributeNames = getConfiguredFields(EXTRACTED_ATTRIBS_PROP_KEY);
     List<String> tableNames = getConfiguredFields(EXTRACTED_TABLES_PROP_KEY);
     File mappingOutFile = Paths.get(storageDir, HEADER_MAPPING_FILE_NAME).toFile();
@@ -212,7 +214,7 @@ public class ExternalAnalyzer extends AbstractStepAnalyzer {
         writeField(out, attr.get(), "");
       }
       for (String tableName : tableNames) {
-        TableField table = recordClass.getTableFieldMap().get(tableName);
+        TableField table = question.getTableFieldMap().get(tableName);
         if (table == null) {
           LOG.warn("Table '" + tableName + "', specified in analysis plugin, is not valid for record class '" + recordClass.getFullName() + "'.");
           continue;

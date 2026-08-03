@@ -29,8 +29,11 @@ public class ArrayResultList implements ResultList, WsfResponseListener {
    * @throws WdkModelException
    *           if the result has fewer columns than the column definition
    */
-  public ArrayResultList(Map<String, Integer> columns) throws WdkModelException {
-    _columns = new LinkedHashMap<String, Integer>(columns);
+  public ArrayResultList(List<String> columns) throws WdkModelException {
+    _columns = new LinkedHashMap<String, Integer>();
+    for (int i = 0; i < columns.size(); i++) {
+      _columns.put(columns.get(i), i);
+    }
     _rows = new ArrayList<>();
     _attachments = new LinkedHashMap<>();
     _rowIndex = -1;

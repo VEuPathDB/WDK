@@ -91,6 +91,7 @@ public class JsonKeys {
   public static final String IS_AVAILABLE = "isAvailable";
   public static final String NEW_BUILD = "newBuild";
   public static final String REVISE_BUILD = "reviseBuild";
+  public static final String SINGLE_RECORD_ONLY = "supportsSingleRecordOnly";
 
   // patch command keys
   public static final String DELETE = "delete";

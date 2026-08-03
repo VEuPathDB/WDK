@@ -81,7 +81,7 @@ public class RecordClassFormatter {
       .put(JsonKeys.RECORD_ID_ATTRIBUTE_NAME, recordClass.getIdAttributeField().getName())
       .put(JsonKeys.ATTRIBUTES, AttributeFieldFormatter.getAttributesJson(
           recordClass.getAttributeFieldMap().values(), expandAttributes))
-      .put(JsonKeys.TABLES, TableFieldFormatter.getTablesJson(recordClass.getTableFieldMap().values(),
+      .put(JsonKeys.TABLES, TableFieldFormatter.getTablesJson(recordClass.getTableFieldMap(true).values(),
           FieldScope.ALL, expandTables, expandTableAttributes));
   }
 
