@@ -92,11 +92,14 @@ public class TableField extends Field implements AttributeFieldContainer {
         // process queries in table values are only allowed for single-record questions
         String singleRecordQuestionName = SingleRecordQuestion.getQuestionName(_recordClass);
         Question singleRecordQuestion = _recordClass.getWdkModel()
-            .getQuestionByName(singleRecordQuestionName).orElseThrow();
+            .getQuestionByName(singleRecordQuestionName).orElseThrow(
+                () -> new WdkModelException(singleRecordQuestionName + " could not be found."));
         _processQuery.setContextQuestion(singleRecordQuestion);
       }
       catch (WdkModelException e) {
-        throw new WdkRuntimeException("Error while looking up single value question for table field process query", e);
+        throw new WdkRuntimeException("Error while looking up single value question " +
+            "for table field process query.  Note this method should only be called after " +
+            "all references are resolved.", e);
       }
     }
     return _processQuery;
