@@ -25,15 +25,18 @@ import org.gusdb.wdk.model.dbms.CacheFactory;
 public class Cache extends BeanBase implements CacheMBean {
 
   private static final Logger logger = Logger.getLogger(Cache.class);
-	
+
   DataSource dataSource;
   String platformName;
-  
+  String cacheSchema;
+
   public Cache() {
     super();
     DatabaseInstance platform = getWdkModel().getAppDb();
     platformName = platform.getPlatform().getClass().getSimpleName();
     dataSource = platform.getDataSource();
+    cacheSchema = getWdkModel().getModelConfig().getAppDB().getCacheSchema();
+    cacheSchema = cacheSchema.substring(0, cacheSchema.length() - 1); // remove trailing '.'
   }
 
   /**
@@ -67,7 +70,8 @@ public class Cache extends BeanBase implements CacheMBean {
       sql.append(" select                                              ");
       sql.append(" count(table_name) cache_count                       ");
       sql.append(" from information_schema.tables                      ");
-      sql.append(" where lower(table_name) like lower('QUERYRESULT%')  "); 
+      sql.append(" where lower(table_name) like lower('QUERYRESULT%')  ");
+      sql.append("   and table_schema = '" + cacheSchema + "'          ");
     } else {
       return null;
     }
