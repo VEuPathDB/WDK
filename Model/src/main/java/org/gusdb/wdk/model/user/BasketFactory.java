@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.platform.SupportedPlatform;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.db.stream.ResultSets;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
@@ -552,6 +553,10 @@ public class BasketFactory {
    * with a dummy remote query to the same site (such as select * from dual@remote)."
    */
   private void checkRemoteTable() throws SQLException {
+
+    // this step only needed for Oracle db links
+    if (!_wdkModel.getAppDb().getPlatform().getPlatformEnum().equals(SupportedPlatform.ORACLE)) return;
+
     String dblink = _wdkModel.getModelConfig().getAppDB().getUserDbLink();
     String remoteUserDataSchema = _wdkModel.getModelConfig().getAppDB().getRemoteUserDataSchema();
     StringBuilder sql = new StringBuilder("SELECT count(*) FROM ");
