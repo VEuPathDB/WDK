@@ -86,6 +86,7 @@ public class WdkInitializer {
         // insulate in case model never properly loaded
         LOG.info("Releasing resources for WDK Model.");
         wdkModel.close();
+        applicationScope.remove(Utilities.CONTEXT_KEY_WDK_MODEL_OBJECT);
         LOG.info("WDK resource release complete.");
       }
 
