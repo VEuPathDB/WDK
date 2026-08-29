@@ -19,6 +19,7 @@ public class LinkAttributeValue extends DerivedAttributeValue {
 
   private String _displayText;
   private String _url;
+  private String _tooltip;
 
   public LinkAttributeValue(LinkAttributeField field, AttributeValueContainer container) {
     super(field, container);
@@ -36,6 +37,13 @@ public class LinkAttributeValue extends DerivedAttributeValue {
       _url = populateMacros(((LinkAttributeField) _field).getUrl());
     }
     return _url;
+  }
+
+  public String getTooltip() throws WdkModelException, WdkUserException {
+    if (_tooltip == null) {
+      _tooltip = populateMacros(((TextAttributeField)_field).getTooltip());
+    }
+    return _tooltip;
   }
 
   /**
