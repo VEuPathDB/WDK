@@ -2,8 +2,15 @@ package org.gusdb.wdk.service.service;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -12,7 +19,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
-import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -48,10 +54,11 @@ public class RecordService extends AbstractWdkService {
   public static final String RECORD_TYPE_PARAM_SEGMENT = "{" + RECORD_TYPE_PATH_PARAM + "}";
   public static final String NAMED_RECORD_TYPE_SEGMENT_PAIR = RECORD_TYPES_PATH + "/" + RECORD_TYPE_PARAM_SEGMENT;
 
-  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(RecordService.class);
 
   private static final String RECORDCLASS_RESOURCE = "RecordClass with name ";
+
+  private static final String EXPANDED_RECORD_CLASSES_CACHE_FILE = "expanded-record-classes.json";
 
   private static final Counter TABLE_REQUEST_COUNTER = Counter.build()
       .name("wdk_table_requests")
@@ -75,8 +82,55 @@ public class RecordService extends AbstractWdkService {
   }
 
   protected InputStream getExpandedRecordClassesJsonStream(WdkModel wdkModel) {
-    JSONArray allRecordClassesJson = RecordClassFormatter.getExpandedRecordClassesJson(wdkModel.getAllRecordClasses(), wdkModel.getRecordClassQuestionMap());
-    return new ByteArrayInputStream(allRecordClassesJson.toString().getBytes());
+    try {
+      Path cacheFile = getExpandedRecordClassesCacheFile(wdkModel);
+
+      if (Files.exists(cacheFile)) {
+        LOG.debug("Serving expanded record classes from cache file: " + cacheFile);
+        return new FileInputStream(cacheFile.toFile());
+      } else {
+        LOG.warn("Cache file does not exist at: " + cacheFile + ". Falling back to in-memory generation.");
+        // Fallback to in-memory generation if cache doesn't exist
+        JSONArray allRecordClassesJson = RecordClassFormatter.getExpandedRecordClassesJson(
+            wdkModel.getAllRecordClasses(), wdkModel.getRecordClassQuestionMap());
+        return new ByteArrayInputStream(allRecordClassesJson.toString().getBytes());
+      }
+    } catch (IOException e) {
+      LOG.error("Failed to read cache file, falling back to in-memory generation", e);
+      // Fallback to in-memory generation if cache read fails
+      JSONArray allRecordClassesJson = RecordClassFormatter.getExpandedRecordClassesJson(
+          wdkModel.getAllRecordClasses(), wdkModel.getRecordClassQuestionMap());
+      return new ByteArrayInputStream(allRecordClassesJson.toString().getBytes());
+    }
+  }
+
+  /**
+   * Gets the path to the expanded record classes cache file.
+   */
+  public static Path getExpandedRecordClassesCacheFile(WdkModel wdkModel) {
+    Path wdkTempDir = wdkModel.getModelConfig().getWdkTempDir();
+    return Paths.get(wdkTempDir.toString(), EXPANDED_RECORD_CLASSES_CACHE_FILE);
+  }
+
+  /**
+   * Generates the expanded record classes cache file.
+   * This should be called during application initialization.
+   */
+  public static void generateExpandedRecordClassesCache(WdkModel wdkModel) throws IOException {
+    Path cacheFile = getExpandedRecordClassesCacheFile(wdkModel);
+
+    LOG.info("Generating expanded record classes cache file at: " + cacheFile);
+
+    // Generate JSON
+    JSONArray allRecordClassesJson = RecordClassFormatter.getExpandedRecordClassesJson(
+        wdkModel.getAllRecordClasses(), wdkModel.getRecordClassQuestionMap());
+
+    // Write to file
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(cacheFile.toFile()))) {
+      writer.write(allRecordClassesJson.toString());
+    }
+
+    LOG.info("Cache file generation complete. File size: " + Files.size(cacheFile) + " bytes");
   }
 
   @GET
