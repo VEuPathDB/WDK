@@ -1,5 +1,8 @@
 package org.gusdb.wdk.service.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,6 +17,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -50,9 +55,23 @@ public class OntologyService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getOntologyByName(@PathParam("ontologyName") String ontologyName) throws WdkModelException {
     Ontology ontology = getOntology(ontologyName);
-    if (ontology == null)
-      throw new NotFoundException(AbstractWdkService.formatNotFound(ONTOLOGY_RESOURCE + ontologyName));
+    if (ontology.getName().equals(getWdkModel().getCategoriesOntologyName())) {
+      // special handling for categories ontology; stream result (can be overridden to use cached data)
+      return Response.ok(getStreamingOutput(getCategoriesOntologyJsonStreamer(getWdkModel()))).build();
+    }
     return Response.ok(OntologyFormatter.getOntologyJson(ontology).toString()).build();
+  }
+
+  // By default, WDK builds the JSON in-memory, then streams it out.  This is OK for small models, but
+  //   if your model is even moderately sized, it is recommended that you override this method in a subclass and use a different mechanism
+  protected ConsumerWithException<OutputStream> getCategoriesOntologyJsonStreamer(WdkModel wdkModel) throws WdkModelException {
+    return out -> IoUtil.transferStream(out, getCategoriesOntologyJson(wdkModel));
+  }
+
+  // provides InputStream to in-memory JSON object containing categories ontology data; NOTE this can be memory intensive!
+  protected static InputStream getCategoriesOntologyJson(WdkModel wdkModel) throws WdkModelException {
+    JSONObject categoriesJson = OntologyFormatter.getOntologyJson(wdkModel.getOntology(wdkModel.getCategoriesOntologyName()));
+    return new ByteArrayInputStream(categoriesJson.toString().getBytes());
   }
 
   // TODO: this should be a GET
@@ -62,9 +81,6 @@ public class OntologyService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getPathsToMatchingNodes(@PathParam("ontologyName") String ontologyName, JSONObject criteriaJson) throws WdkModelException {
     Ontology ontology = getOntology(ontologyName);
-    if (ontology == null) {
-      throw new NotFoundException(AbstractWdkService.formatNotFound(ONTOLOGY_RESOURCE + ontologyName));
-    }
     Map<String,String> criteria = new HashMap<String,String>();
     for (String key : JsonUtil.getKeys(criteriaJson)) {
       criteria.put(key, criteriaJson.getString(key));
@@ -79,7 +95,10 @@ public class OntologyService extends AbstractWdkService {
     if (CATEGORIES_ONTOLOGY_ALIAS.equals(ontologyName)) {
       ontologyName = model.getCategoriesOntologyName();
     }
-    return model.getOntology(ontologyName);
+    Ontology ontology = model.getOntology(ontologyName);
+    if (ontology == null)
+      throw new NotFoundException(AbstractWdkService.formatNotFound(ONTOLOGY_RESOURCE + ontologyName));
+    return ontology;
   }
 
 }
