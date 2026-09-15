@@ -66,7 +66,7 @@ public class OntologyService extends AbstractWdkService {
 
   // By default, WDK builds the JSON in-memory, then streams it out.  This is OK for small models, but
   //   if your model is even moderately sized, it is recommended that you override this method in a subclass and use a different mechanism
-  protected ConsumerWithException<OutputStream> getCategoriesOntologyJsonStreamer(WdkModel wdkModel) {
+  protected ConsumerWithException<OutputStream> getCategoriesOntologyJsonStreamer(WdkModel wdkModel) throws WdkModelException {
     return out -> IoUtil.transferStream(out, getCategoriesOntologyJson(wdkModel));
   }
 

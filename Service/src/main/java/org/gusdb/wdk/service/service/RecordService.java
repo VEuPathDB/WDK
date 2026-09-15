@@ -65,7 +65,7 @@ public class RecordService extends AbstractWdkService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @OutSchema("wdk.records.get")
-  public Response getRecordClassList(@QueryParam("format") String format) {
+  public Response getRecordClassList(@QueryParam("format") String format) throws WdkModelException {
     WdkModel wdkModel = getWdkModel();
     return Response.ok(
       isExpandedFormat(format, false)
@@ -79,7 +79,7 @@ public class RecordService extends AbstractWdkService {
 
   // By default, WDK builds the JSON in-memory, then streams it out.  This is OK for small models, but
   //   if your model is even moderately sized, it is recommended that you override this method in a subclass and use a different mechanism
-  protected ConsumerWithException<OutputStream> getExpandedRecordClassesJsonStreamer(WdkModel wdkModel) {
+  protected ConsumerWithException<OutputStream> getExpandedRecordClassesJsonStreamer(WdkModel wdkModel) throws WdkModelException {
     return out -> IoUtil.transferStream(out, getExpandedRecordClassesJson(wdkModel));
   }
 
