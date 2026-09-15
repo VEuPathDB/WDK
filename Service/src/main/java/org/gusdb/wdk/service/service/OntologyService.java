@@ -55,8 +55,6 @@ public class OntologyService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getOntologyByName(@PathParam("ontologyName") String ontologyName) throws WdkModelException {
     Ontology ontology = getOntology(ontologyName);
-    if (ontology == null)
-      throw new NotFoundException(AbstractWdkService.formatNotFound(ONTOLOGY_RESOURCE + ontologyName));
     if (ontology.getName().equals(getWdkModel().getCategoriesOntologyName())) {
       // special handling for categories ontology; stream result (can be overridden to use cached data)
       return Response.ok(getStreamingOutput(getCategoriesOntologyJsonStreamer(getWdkModel()))).build();
@@ -83,9 +81,6 @@ public class OntologyService extends AbstractWdkService {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getPathsToMatchingNodes(@PathParam("ontologyName") String ontologyName, JSONObject criteriaJson) throws WdkModelException {
     Ontology ontology = getOntology(ontologyName);
-    if (ontology == null) {
-      throw new NotFoundException(AbstractWdkService.formatNotFound(ONTOLOGY_RESOURCE + ontologyName));
-    }
     Map<String,String> criteria = new HashMap<String,String>();
     for (String key : JsonUtil.getKeys(criteriaJson)) {
       criteria.put(key, criteriaJson.getString(key));
@@ -100,7 +95,10 @@ public class OntologyService extends AbstractWdkService {
     if (CATEGORIES_ONTOLOGY_ALIAS.equals(ontologyName)) {
       ontologyName = model.getCategoriesOntologyName();
     }
-    return model.getOntology(ontologyName);
+    Ontology ontology = model.getOntology(ontologyName);
+    if (ontology == null)
+      throw new NotFoundException(AbstractWdkService.formatNotFound(ONTOLOGY_RESOURCE + ontologyName));
+    return ontology;
   }
 
 }
