@@ -4,6 +4,7 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -20,7 +21,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -68,13 +71,20 @@ public class RecordService extends AbstractWdkService {
       isExpandedFormat(format, false)
         ?
           // stream expanded format, which may be large (subclasses may override to cache, etc.)
-          getStreamingOutput(getExpandedRecordClassesJsonStream(wdkModel))
+          getStreamingOutput(getExpandedRecordClassesJsonStreamer(wdkModel))
         :
           // build smaller JSON directly and use string as entity
           RecordClassFormatter.getRecordClassNamesJson(wdkModel.getAllRecordClasses()).toString()).build();
   }
 
-  protected InputStream getExpandedRecordClassesJsonStream(WdkModel wdkModel) {
+  // By default, WDK builds the JSON in-memory, then streams it out.  This is OK for small models, but
+  //   if your model is even moderately sized, it is recommended that you override this method in a subclass and use a different mechanism
+  protected ConsumerWithException<OutputStream> getExpandedRecordClassesJsonStreamer(WdkModel wdkModel) {
+    return out -> IoUtil.transferStream(out, getExpandedRecordClassesJson(wdkModel));
+  }
+
+  // provides InputStream to in-memory JSON object containing expanded record classes data; NOTE this can be memory intensive!
+  protected static InputStream getExpandedRecordClassesJson(WdkModel wdkModel) {
     JSONArray allRecordClassesJson = RecordClassFormatter.getExpandedRecordClassesJson(wdkModel.getAllRecordClasses(), wdkModel.getRecordClassQuestionMap());
     return new ByteArrayInputStream(allRecordClassesJson.toString().getBytes());
   }

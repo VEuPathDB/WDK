@@ -5,6 +5,7 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.glassfish.grizzly.http.server.Request;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.events.Events;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.oauth2.client.ValidatedToken;
 import org.gusdb.wdk.cache.TemporaryUserDataStore;
@@ -233,6 +235,28 @@ public abstract class AbstractWdkService {
         LOG.debug("Finished transferring streaming output");
       }
       catch (IOException e) {
+        LOG.error("Unable to complete data stream transfer", e);
+        throw new WebApplicationException(e);
+      }
+    };
+  }
+
+  /**
+   * Creates a JAX/RS StreamingOutput wrapper around a more primitive consumer
+   * which can throw any exception.  The passed consumer should transfer
+   * incoming data content from a file, database, or other data producer to the
+   * output stream it accepts.  Allows more control than its sibling method above.e
+   *
+   * @param functional interface that streams data directly to the output stream
+   * @return streaming output object that will stream content to the client
+   */
+  public static StreamingOutput getStreamingOutput(ConsumerWithException<OutputStream> contentStreamer) {
+    return outputStream -> {
+      try {
+        contentStreamer.accept(outputStream);
+        LOG.debug("Finished transferring streaming output");
+      }
+      catch (Exception e) {
         LOG.error("Unable to complete data stream transfer", e);
         throw new WebApplicationException(e);
       }
