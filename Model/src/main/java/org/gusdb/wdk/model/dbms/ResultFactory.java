@@ -23,7 +23,7 @@ public class ResultFactory {
   private static Logger LOG = Logger.getLogger(ResultFactory.class);
 
   private static final boolean USE_INSTANCE_INFO_CACHE = true;
-  private static final boolean COMPUTE_CACHE_TABLE_STATISTICS = false;
+  private static final String COMPUTE_CACHE_TABLE_STATISTICS_PROP_KEY = "COMPUTE_CACHE_TABLE_STATISTICS";
 
   private static final InMemoryCache<String, Optional<InstanceInfo>> INSTANCE_INFO_CACHE = new InMemoryCache<>();
 
@@ -53,10 +53,14 @@ public class ResultFactory {
 
   private final DatabaseInstance _appDb;
   private final String _cacheSchema;
+  private final boolean _computeStatisticsAfterCreation;
 
   public ResultFactory(WdkModel wdkModel) {
     _appDb = wdkModel.getAppDb();
     _cacheSchema = wdkModel.getModelConfig().getAppDB().getCacheSchema();
+    String computeStatsProp = wdkModel.getProperties().get(COMPUTE_CACHE_TABLE_STATISTICS_PROP_KEY);
+    // compute stats by default or unless specified not to
+    _computeStatisticsAfterCreation = computeStatsProp == null || !computeStatsProp.equalsIgnoreCase("false");
   }
 
   public InstanceInfo cacheResults(String checksum, CacheTableCreator tableCreator, boolean avoidCacheHit) throws WdkModelException {
@@ -111,10 +115,10 @@ public class ResultFactory {
   }
 
   private void computeTableStatistics(DataSource dataSource, String cacheTable) throws SQLException {
-    if (COMPUTE_CACHE_TABLE_STATISTICS) {
+    if (_computeStatisticsAfterCreation) {
       long start = System.currentTimeMillis();
       _appDb.getPlatform().computeThenLockStatistics(dataSource, _cacheSchema, cacheTable);
-      QueryLogger.logEndStatementExecution("whatever the platform uses for computing stats", cacheTable + "__gather_table_stats", start);
+      QueryLogger.logEndStatementExecution("Platform-specific SQL to compute statistics", cacheTable + "__gather_table_stats", start);
     }
   }
 
