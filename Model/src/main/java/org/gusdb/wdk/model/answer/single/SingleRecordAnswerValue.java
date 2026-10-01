@@ -76,6 +76,11 @@ public class SingleRecordAnswerValue extends AnswerValue {
   }
 
   @Override
+  public void setSortByIdAttribute() {
+    // sorting by ID also a no-op since only one record
+  }
+
+  @Override
   protected String getIdSql(String excludeFilter) throws WdkModelException {
     DBPlatform platform = _recordClass.getWdkModel().getAppDb().getPlatform();
     return new StringBuilder("( select ")
