@@ -11,7 +11,6 @@ import org.gusdb.wsf.client.WsfResponseListener;
 
 /**
  * @author Jerric Gao
- * 
  */
 public class ArrayResultList implements ResultList, WsfResponseListener {
 
@@ -24,13 +23,8 @@ public class ArrayResultList implements ResultList, WsfResponseListener {
   private boolean _hasWeight;
   private int _assignedWeight;
 
-  /**
-   * @param columns
-   * @throws WdkModelException
-   *           if the result has fewer columns than the column definition
-   */
-  public ArrayResultList(List<String> columns) throws WdkModelException {
-    _columns = new LinkedHashMap<String, Integer>();
+  public ArrayResultList(List<String> columns) {
+    _columns = new LinkedHashMap<>();
     for (int i = 0; i < columns.size(); i++) {
       _columns.put(columns.get(i), i);
     }
@@ -38,11 +32,11 @@ public class ArrayResultList implements ResultList, WsfResponseListener {
     _attachments = new LinkedHashMap<>();
     _rowIndex = -1;
   }
-  
+
   public String getMessage() {
     return _message;
   }
-  
+
   public Map<String, String> getAttachments() {
     return _attachments;
   }
@@ -72,12 +66,8 @@ public class ArrayResultList implements ResultList, WsfResponseListener {
   public boolean contains(String columnName) {
     if (_columns.containsKey(columnName)) {
       return true;
-    }
-    else if (_hasWeight && Utilities.COLUMN_WEIGHT.equals(columnName)) {
-      return true;
-    }
-    else {
-      return false;
+    } else {
+      return _hasWeight && Utilities.COLUMN_WEIGHT.equals(columnName);
     }
   }
 
@@ -95,7 +85,7 @@ public class ArrayResultList implements ResultList, WsfResponseListener {
     }
     else {
       // must be a weight column, and no value available, use assignedWeight.
-      return Integer.valueOf(_assignedWeight);
+      return _assignedWeight;
     }
   }
 
