@@ -460,7 +460,7 @@ public class FilterParamNew extends AbstractDependentParam {
     FilterParamSummaryCounts fpsc = new FilterParamSummaryCounts();
 
     // get unfiltered count of filter items
-    String sql = "SELECT count(distinct md." + _filterItemIdColumn + ") FROM (" + bgdSql + ") md";
+    String sql = "SELECT count(1) FROM ( SELECT distinct md." + _filterItemIdColumn + " FROM (" + bgdSql + ") md ) c";
     fpsc.unfilteredFilterItemCount = runCountSql(sql, "filterItemIdsCount-unfiltered");
 
     // get unfiltered count of records, unless the record id column is the same as the filter item id column
@@ -468,7 +468,7 @@ public class FilterParamNew extends AbstractDependentParam {
       fpsc.unfilteredRecordCount = fpsc.unfilteredFilterItemCount;
     }
     else {
-      sql = "SELECT count (distinct md." + _recordIdColumn + ") FROM (" + bgdSql + ") md";
+      sql = "SELECT count(1) FROM ( SELECT distinct md." + _recordIdColumn + " FROM (" + bgdSql + ") md ) c";
       fpsc.unfilteredRecordCount = runCountSql(sql, "recordIds-unfiltered");
     }
 
@@ -481,7 +481,7 @@ public class FilterParamNew extends AbstractDependentParam {
 
     // get filtered filter_item_ids  count
     String filteredItemIdsSql = getFilteredFilterItemIdsSql(validSpec, stableValue, _metadataQuery, _filterItemIdColumn, null);
-    sql = "select count( distinct " + _filterItemIdColumn + ") as CNT from (" + filteredItemIdsSql + ") c";
+    sql = "select count(1) FROM ( SELECT distinct " + _filterItemIdColumn + " as CNT from (" + filteredItemIdsSql + ") d ) c";
     fpsc.filteredFilterItemCount = runCountSql(sql, "filterItemIds-filtered");
 
     if (_filterItemIdColumn.equals(_recordIdColumn)) {
@@ -489,7 +489,7 @@ public class FilterParamNew extends AbstractDependentParam {
     }
     else {
       String filteredMetadataSql = getFilteredMetadataSql(validSpec, stableValue, _metadataQuery, null);
-      sql = "select count( distinct " + _recordIdColumn + ") as CNT from (" + filteredMetadataSql + ") c";
+      sql = "select count(1) FROM ( SELECT distinct " + _recordIdColumn + " as CNT from (" + filteredMetadataSql + ") d ) c";
       fpsc.filteredRecordCount = runCountSql(sql, "recordIds-filtered");
     }
     return fpsc;
