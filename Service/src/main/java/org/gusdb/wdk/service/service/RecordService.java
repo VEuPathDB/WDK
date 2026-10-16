@@ -131,28 +131,40 @@ public class RecordService extends AbstractWdkService {
 
       // if PK specified maps to multiple records, return Multiple Choices response with IDs from which to choose
       else if (records.size() > 1) {
-        String idOptionText = records.stream()
-            .map(record -> record.getPrimaryKey().getRawValues().entrySet().stream()
-                .map(entry -> entry.getKey() + " = " + entry.getValue())
-                .collect(Collectors.joining(", ")))
-            .collect(Collectors.joining(NL));
-        return Response.status(new MultipleChoicesStatusType())
-            .type(MediaType.TEXT_PLAIN).entity(idOptionText).build();
+
+        // special case: if one of the records has the same PK as the requested record,
+        //    assume user wants the requested record.  Possible TODO: make this behavior configurable
+        boolean foundIndenticalMappedRecord = false;
+        for (RecordInstance record : records) {
+          if (record.getPrimaryKey().equals(request.getPrimaryKey())) {
+            // fall through to single record case
+            foundIndenticalMappedRecord = true;
+            // keep only the matching record
+            records = List.of(record);
+          }
+        }
+
+        if (!foundIndenticalMappedRecord) {
+          String idOptionText = records.stream()
+              .map(record -> record.getPrimaryKey().getRawValues().entrySet().stream()
+                  .map(entry -> entry.getKey() + " = " + entry.getValue())
+                  .collect(Collectors.joining(", ")))
+              .collect(Collectors.joining(NL));
+          return Response.status(new MultipleChoicesStatusType())
+              .type(MediaType.TEXT_PLAIN).entity(idOptionText).build();
+        }
       }
 
       // PK represents only one record; fetch, format, and return
-      else {
+      // update metrics; increment entries for requested tables
+      request.getTableNames().stream()
+          .map(tableName -> recordClass.getUrlSegment() + "." + tableName)
+          .forEach(key -> TABLE_REQUEST_COUNTER.labels(getWdkModel().getProjectId(), key, getRequestingUser().getRegistrationStatus()).inc());
 
-        // update metrics; increment entries for requested tables
-        request.getTableNames().stream()
-            .map(tableName -> recordClass.getUrlSegment() + "." + tableName)
-            .forEach(key -> TABLE_REQUEST_COUNTER.labels(getWdkModel().getProjectId(), key, getRequestingUser().getRegistrationStatus()).inc());
-
-        TwoTuple<JSONObject,List<Exception>> recordJsonResult = RecordFormatter.getRecordJson(
-            records.get(0), request.getAttributeNames(), request.getTableNames(), AttributeFormat.DISPLAY);
-        triggerErrorEvents(recordJsonResult.getSecond());
-        return Response.ok(recordJsonResult.getFirst().toString()).build();
-      }
+      TwoTuple<JSONObject,List<Exception>> recordJsonResult = RecordFormatter.getRecordJson(
+          records.get(0), request.getAttributeNames(), request.getTableNames(), AttributeFormat.DISPLAY);
+      triggerErrorEvents(recordJsonResult.getSecond());
+      return Response.ok(recordJsonResult.getFirst().toString()).build();
     }
     catch (JSONException e) {
       throw new RequestMisformatException("Passed request body deemed unacceptable. " + e.getMessage(), e);
