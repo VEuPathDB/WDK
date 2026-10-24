@@ -102,7 +102,7 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
   // client-facing messages when authorization fails
   private static final String MISSING_OR_INVALID_TOKEN = "Valid API Key required for this endpoint.";
   private static final String EXPIRED_TOKEN = "Submitted API Key has expired.";
-  private static final String REGISTERED_USERS_ONLY = "This endpoint is only available to registered users, and requires an API key.";
+  private static final String REGISTERED_USERS_ONLY = "This endpoint is only available to registered users, and requires an API key. If you are using your browser, make sure you are logged in into the website. If you are trying to get the files programmatically:";
 
   /**
    * @return additional explanation to be returned with 401/403 responses
