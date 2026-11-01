@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
@@ -116,6 +117,14 @@ public class PrimaryKeyValue {
     return false;
   }
 
+  public String createWhereClause(String tableAlias) {
+    tableAlias = tableAlias == null ? "" : tableAlias.trim();
+    String tablePrefix = tableAlias.isEmpty() | tableAlias.endsWith(".") ? tableAlias : tableAlias + ".";
+    return getValues().entrySet().stream()
+        .map(entry -> tablePrefix + entry.getKey() + " = '" + entry.getValue() + "'")
+        .collect(Collectors.joining(" AND "));
+  }
+
   @Override
   public boolean equals(Object obj) {
     return (obj instanceof PrimaryKeyValue) &&
@@ -149,4 +158,5 @@ public class PrimaryKeyValue {
         ).toArray(new String[pkValue._pkDef.getColumnRefs().length])
     );
   }
+
 }
