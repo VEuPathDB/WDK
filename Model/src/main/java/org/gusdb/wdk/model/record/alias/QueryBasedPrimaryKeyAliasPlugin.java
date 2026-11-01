@@ -13,6 +13,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.wdk.model.Reference;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
@@ -75,7 +76,9 @@ public abstract class QueryBasedPrimaryKeyAliasPlugin implements PrimaryKeyAlias
           getClass().getName() + " must specify a SqlQuery reference.");
     }
 
-    String querySql = ((SqlQuery)query).getSql();
+    // use hard-coded select of a single row of PK cols to represent both ID SQL and dataset param internal value
+    String idSelectSql = "SELECT " + PrimaryKeyDefinition.createSelectClause(pkValue.getValues()) + appDb.getPlatform().getDummyTable();
+    String querySql = ((SqlQuery)query).getSql().replace(Utilities.MACRO_ID_SQL, idSelectSql);
 
     // disallow partition keys macro; we want all partitions and this encourages
     //   model writer to choose an unpartitioned table which is more performant
@@ -97,9 +100,7 @@ public abstract class QueryBasedPrimaryKeyAliasPlugin implements PrimaryKeyAlias
 
       case 1 ->
         // if one param, assume ID search query with single dataset param;
-        paramMap.values().iterator().next().replaceSql(querySql, null,
-            // fill in dataset param internal value with a hard-coded select of a single row of PK cols
-            "SELECT " + PrimaryKeyDefinition.createSelectClause(pkValue.getValues()) + appDb.getPlatform().getDummyTable());
+        paramMap.values().iterator().next().replaceSql(querySql, null, idSelectSql);
 
       default ->
         throw new WdkModelException("Specified query for alias plugin does not contain 0 or 1 parameters.");
