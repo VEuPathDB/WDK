@@ -20,8 +20,11 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.record.alias.AliasQueryBasedPrimaryKeyAliasPlugin;
+import org.gusdb.wdk.model.record.alias.PrimaryKeyAliasPlugin;
 import org.gusdb.wdk.model.record.attribute.PkColumnAttributeField;
 import org.gusdb.wdk.model.user.User;
 
@@ -135,9 +138,9 @@ public class PrimaryKeyDefinition extends WdkModelBase {
 
     // if alias query specified, resolve/prepare it and create query based plugin
     if (_aliasQueryRef != null) {
-      Query aliasQuery = QueryBasedPrimaryKeyAliasPlugin
+      Query aliasQuery = AliasQueryBasedPrimaryKeyAliasPlugin
           .prepareAliasQuery(_aliasQueryRef, getColumnRefs(), _recordClass);
-      _aliasPlugin = new QueryBasedPrimaryKeyAliasPlugin(aliasQuery);
+      _aliasPlugin = new AliasQueryBasedPrimaryKeyAliasPlugin(aliasQuery);
     }
 
     // otherwise, resolve the configured alias plugin
@@ -149,7 +152,7 @@ public class PrimaryKeyDefinition extends WdkModelBase {
             .getDeclaredConstructor()
             .newInstance();
       }
-      catch (InstantiationException | IllegalAccessException | IllegalArgumentException |
+      catch (WdkRuntimeException | InstantiationException | IllegalAccessException | IllegalArgumentException |
           InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
         throw new WdkModelException("Failed instantiating aliasPlugin for class " + _aliasPluginClassName, e);
       }
@@ -199,7 +202,7 @@ public class PrimaryKeyDefinition extends WdkModelBase {
         .collect(Collectors.joining(" AND "));
   }
 
-  public String createSelectClause(Map<String,String> pkValues) {
+  public static String createSelectClause(Map<String,String> pkValues) {
     List<String> valStrings = new ArrayList<>();
     for(String key : pkValues.keySet()) valStrings.add("'" + pkValues.get(key) + "' as " + key);
     return String.join(", ", valStrings);

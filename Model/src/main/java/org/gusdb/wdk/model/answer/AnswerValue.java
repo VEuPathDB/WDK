@@ -1185,7 +1185,7 @@ public class AnswerValue implements PartitionKeysProvider {
     if (partKeySqlQuery == null) return attrOrTableSqlQuery;
 
     PrimaryKeyDefinition pkd = recordClass.getPrimaryKeyDefinition();
-    String idSql = "select " + pkd.createSelectClause(primaryKey.getValues()) +
+    String idSql = "select " + PrimaryKeyDefinition.createSelectClause(primaryKey.getValues()) +
         recordClass.getWdkModel().getAppDb().getPlatform().getDummyTable();
 
     String partSql = partKeySqlQuery.getSql();

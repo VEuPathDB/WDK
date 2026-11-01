@@ -1037,7 +1037,7 @@ public class RecordClass extends WdkModelBase implements AttributeFieldContainer
    * A bulk query is either an original attribute or table query, that is, it either doesn't any param, or
    * just one param with the name of Utilities.PARAM_USER_ID.
    */
-  void validateBulkQuery(Query query) throws WdkModelException {
+  public void validateBulkQuery(Query query) throws WdkModelException {
     validateQuery(query);
 
     // Further limit the attribute/table query to have only user_id param

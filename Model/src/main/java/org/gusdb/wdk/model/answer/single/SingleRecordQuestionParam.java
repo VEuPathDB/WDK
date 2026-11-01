@@ -40,9 +40,8 @@ public class SingleRecordQuestionParam extends StringParam {
       @Override
       public String toInternalValue(RunnableObj<QueryInstanceSpec> ctxVals) throws WdkModelException {
         final String stable = ctxVals.get().get(_param.getName());
-        PrimaryKeyDefinition pkDef = recordClass.getPrimaryKeyDefinition();
         Map<String, String> pk = Functions.mapValues(parseParamValue(stable), entry -> (String)entry.getValue());
-        return pkDef.createSelectClause(pk);
+        return PrimaryKeyDefinition.createSelectClause(pk);
       }
     });
   }

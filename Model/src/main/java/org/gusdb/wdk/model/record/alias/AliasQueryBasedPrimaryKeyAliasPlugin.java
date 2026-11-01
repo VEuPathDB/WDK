@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.record;
+package org.gusdb.wdk.model.record.alias;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -14,6 +14,8 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.spec.QueryInstanceSpec;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordNotFoundException;
 import org.gusdb.wdk.model.user.StepContainer;
 import org.gusdb.wdk.model.user.User;
 
@@ -23,13 +25,13 @@ import org.gusdb.wdk.model.user.User;
  *
  * @author rdoherty
  */
-public class QueryBasedPrimaryKeyAliasPlugin implements PrimaryKeyAliasPlugin {
+public class AliasQueryBasedPrimaryKeyAliasPlugin implements PrimaryKeyAliasPlugin {
 
   private static final String ALIAS_OLD_KEY_COLUMN_PREFIX = "old_";
 
   private Query _aliasQuery;
 
-  public QueryBasedPrimaryKeyAliasPlugin(Query aliasQuery) {
+  public AliasQueryBasedPrimaryKeyAliasPlugin(Query aliasQuery) {
     _aliasQuery = aliasQuery;
   }
 
