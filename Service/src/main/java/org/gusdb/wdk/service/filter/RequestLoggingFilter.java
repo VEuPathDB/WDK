@@ -19,7 +19,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.annotation.Priority;
+import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -37,7 +40,9 @@ import javax.ws.rs.ext.WriterInterceptorContext;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.glassfish.grizzly.http.server.Request;
 import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.user.User;
@@ -86,6 +91,12 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
   @Context
   private ServletContext _servletContext;
 
+  @Inject
+  protected Provider<HttpServletRequest> _servletRequest;
+
+  @Inject
+  protected Provider<Request> _grizzlyRequest;
+
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
 
@@ -128,7 +139,12 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
 
     // explicitly check if enabled to not impact performance if logging is turned off
     if (!omitRequestLogging && isLogEnabled()) {
+
+      RequestData request = ContextLookup.getRequest(_servletRequest.get(), _grizzlyRequest.get());
+      User user = (User)request.getAttributeMap().get(Utilities.CONTEXT_KEY_USER_OBJECT);
+
       logRequestStart(
+          user,
           requestContext.getMethod(),
           requestContext.getUriInfo());
     }
@@ -172,10 +188,10 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
     }
   }
 
-  public static void logRequestStart(String method, UriInfo uriInfo) {
+  public static void logRequestStart(User user, String method, UriInfo uriInfo) {
 
-    StringBuilder log = new StringBuilder("HTTP ")
-      .append(method).append(" /").append(uriInfo.getPath());
+    StringBuilder log = new StringBuilder(getUserInfoStr(user))
+        .append(" HTTP ").append(method).append(" /").append(uriInfo.getPath());
 
     // add query params if present
     MultivaluedMap<String,String> query = uriInfo.getQueryParameters();
@@ -262,9 +278,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
     // decide whether and what to log
     if (!omitRequestLogging && isLogEnabled()) {
       String details = isErrorStatus && action != RequestBodyAction.NONE ? ", Request Body:\n" + readRequestBody(filePath) : "";
-      String userId = user == null ? "none" : String.valueOf(user.getUserId());
-      String guest = user == null || user.isGuest() ? "G" : "R";
-      LOG.log(LOG_LEVEL, "Request completed [" + httpStatus + "], user (" + guest + ") = " + userId + ", " + bodyWriteStatus + details);
+      LOG.log(LOG_LEVEL, getUserInfoStr(user) + " Request completed [" + httpStatus + "] " + bodyWriteStatus + details);
     }
 
     // delete the temporary request body file
@@ -276,7 +290,12 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
         LOG.warn("Unable to delete temporary body file: " + filePath);
       }
     }
+  }
 
+  private static String getUserInfoStr(User user) {
+    String userId = user == null ? "none" : String.valueOf(user.getUserId());
+    String guest = user == null || user.isGuest() ? "G" : "R";
+    return "user(" + guest + ")=" + userId;
   }
 
   /**
