@@ -77,8 +77,12 @@ public class RecordService extends AbstractWdkService {
           RecordClassFormatter.getRecordClassNamesJson(wdkModel.getAllRecordClasses()).toString()).build();
   }
 
-  // By default, WDK builds the JSON in-memory, then streams it out.  This is OK for small models, but
-  //   if your model is even moderately sized, it is recommended that you override this method in a subclass and use a different mechanism
+  /**
+   * By default, WDK builds the JSON in-memory, then streams it out.  This is OK for small models, but
+   *   if your model is even moderately sized, it is recommended that you override this method in a subclass and use a different mechanism
+   *
+   * @throws WdkModelException if unable to create streamer
+   */
   protected ConsumerWithException<OutputStream> getExpandedRecordClassesJsonStreamer(WdkModel wdkModel) throws WdkModelException {
     return out -> IoUtil.transferStream(out, getExpandedRecordClassesJson(wdkModel));
   }
