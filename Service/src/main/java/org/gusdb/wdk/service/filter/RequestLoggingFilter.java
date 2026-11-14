@@ -64,7 +64,7 @@ import org.json.JSONObject;
 @Priority(200)
 public class RequestLoggingFilter implements ContainerRequestFilter, ContainerResponseFilter, WriterInterceptor {
 
-  private static final Logger LOG = Logger.getLogger(RequestLoggingFilter.class);
+  public static final Logger LOG = Logger.getLogger(RequestLoggingFilter.class);
 
   // log level for request log
   private static final Level LOG_LEVEL = Level.INFO;
