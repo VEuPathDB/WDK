@@ -478,6 +478,8 @@ public class ModelConfig implements OAuthConfig, KeyStoreConfig {
     return _wdkTempDir;
   }
 
-  public Integer getMaxTableValueRows() { return _maxTableValueRows; }
+  public Integer getMaxTableValueRows() {
+    return _maxTableValueRows;
+  }
 
 }
