@@ -1,6 +1,7 @@
 package org.gusdb.wdk.service.filter;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -18,6 +19,7 @@ import javax.ws.rs.ext.WriterInterceptorContext;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ExtendedUriInfo;
+import org.glassfish.jersey.uri.UriTemplate;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.wdk.controller.ContextLookup;
 import org.gusdb.wdk.model.Utilities;
@@ -86,5 +88,21 @@ public abstract class AbstractBookendFilter implements ContainerRequestFilter, C
     T obj = expectedClass.cast(request.getAttributeMap().get(propName));
     request.setAttribute(propName, null);
     return obj;
+  }
+
+  protected static String getPathTemplate(ExtendedUriInfo uriInfo) {
+    //LOG.info("Trying to find matching template for " + request.getUriInfo().getPath());
+    List<UriTemplate> uriTemplates = uriInfo.getMatchedTemplates();
+    if (uriTemplates != null && !uriTemplates.isEmpty()) {
+      String fullPath = "";
+      for (UriTemplate uriTemplate : uriTemplates) {
+        fullPath = uriTemplate.getTemplate() + fullPath;
+      }
+      //LOG.info("Found match: " + fullPath);
+      return fullPath;
+    }
+    else {
+      return "<unknown>";
+    }
   }
 }
