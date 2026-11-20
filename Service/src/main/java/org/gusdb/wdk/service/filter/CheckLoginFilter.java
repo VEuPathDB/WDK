@@ -15,7 +15,6 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
@@ -28,7 +27,6 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.web.ApplicationContext;
 import org.gusdb.fgputil.web.CookieBuilder;
 import org.gusdb.fgputil.web.RequestData;
-import org.gusdb.oauth2.client.OAuthClient;
 import org.gusdb.oauth2.client.ValidatedToken;
 import org.gusdb.oauth2.exception.ExpiredTokenException;
 import org.gusdb.oauth2.exception.InvalidTokenException;
@@ -39,6 +37,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
+import org.gusdb.wdk.service.BearerTokenUtil;
 import org.gusdb.wdk.service.service.SessionService;
 import org.gusdb.wdk.service.service.SystemService;
 
@@ -129,7 +128,7 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
     UserFactory factory = _wdkModel.getUserFactory();
 
     // try to find submitted bearer token
-    String rawToken = findRawBearerToken(request, requestContext);
+    String rawToken = BearerTokenUtil.findRawBearerToken(request, requestContext);
 
     try {
       if (rawToken == null) {
@@ -203,18 +202,6 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
     // set creds and user on the request object for use by this request's processing
     request.setAttribute(Utilities.CONTEXT_KEY_VALIDATED_TOKEN_OBJECT, token);
     request.setAttribute(Utilities.CONTEXT_KEY_USER_OBJECT, user);
-  }
-
-  private String findRawBearerToken(RequestData request, ContainerRequestContext requestContext) {
-    String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-    if (authHeader != null) {
-      // commented to avoid sensitive header value being written to logs
-      //LOG.trace("Recieved Authorization header with value: " + authHeader + "; trying bearer token validation.");
-      return OAuthClient.getTokenFromAuthHeader(authHeader);
-    }
-    // otherwise try Authorization cookie
-    Cookie cookie = requestContext.getCookies().get(HttpHeaders.AUTHORIZATION);
-    return cookie == null ? null : cookie.getValue();
   }
 
   @Override
