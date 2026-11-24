@@ -114,6 +114,15 @@ site_vars file: {{ site_vars }}
             {% if modelconfig_appDb_maxWait is defined -%}
             maxWait="{{ modelconfig_appDb_maxWait }}"
             {% endif -%}
+            {% if modelconfig_appDb_timeBetweenEvictionRunsMillis is defined -%}
+            timeBetweenEvictionRunsMillis="{{ modelconfig_appDb_timeBetweenEvictionRunsMillis }}"
+            {% endif -%}
+            {% if modelconfig_appDb_minEvictableIdleTimeMillis is defined -%}
+            minEvictableIdleTimeMillis="{{ modelconfig_appDb_minEvictableIdleTimeMillis }}"
+            {% endif -%}
+            {% if modelconfig_appDb_softMinEvictableIdleTimeMillis is defined -%}
+            softMinEvictableIdleTimeMillis="{{ modelconfig_appDb_softMinEvictableIdleTimeMillis }}"
+            {% endif -%}
             {% if modelconfig_appDb_defaultFetchSize is defined -%}
             defaultFetchSize="{{ modelconfig_appDb_defaultFetchSize }}"
             {% endif -%}
@@ -172,6 +181,15 @@ site_vars file: {{ site_vars }}
             {% endif -%}
             {% if modelconfig_userDb_maxWait is defined -%}
             maxWait="{{ modelconfig_userDb_maxWait }}"
+            {% endif -%}
+            {% if modelconfig_userDb_timeBetweenEvictionRunsMillis is defined -%}
+            timeBetweenEvictionRunsMillis="{{ modelconfig_userDb_timeBetweenEvictionRunsMillis }}"
+            {% endif -%}
+            {% if modelconfig_userDb_minEvictableIdleTimeMillis is defined -%}
+            minEvictableIdleTimeMillis="{{ modelconfig_userDb_minEvictableIdleTimeMillis }}"
+            {% endif -%}
+            {% if modelconfig_userDb_softMinEvictableIdleTimeMillis is defined -%}
+            softMinEvictableIdleTimeMillis="{{ modelconfig_userDb_softMinEvictableIdleTimeMillis }}"
             {% endif -%}
             {% if modelconfig_userDb_defaultFetchSize is defined -%}
             defaultFetchSize="{{ modelconfig_userDb_defaultFetchSize }}"

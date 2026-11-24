@@ -54,6 +54,10 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   private int maxIdle = 1;
   private int minIdle = 0;
   private long maxWait = 50;
+  private long timeBetweenEvictionRunsMillis = -1;
+  private long minEvictableIdleTimeMillis = 1800000;
+  private long softMinEvictableIdleTimeMillis = 300000;
+
   private int defaultFetchSize = 0;
   private boolean defaultReadOnly = DEFAULT_READ_ONLY;
   private boolean defaultAutoCommit = DEFAULT_AUTO_COMMIT;
@@ -344,6 +348,33 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    */
   public void setMaxWait(long maxWait) {
     this.maxWait = maxWait;
+  }
+
+  @Override
+  public long getTimeBetweenEvictionRunsMillis() {
+    return timeBetweenEvictionRunsMillis;
+  }
+
+  public void setTimeBetweenEvictionRunsMillis(long timeBetweenEvictionRunsMillis) {
+    this.timeBetweenEvictionRunsMillis = timeBetweenEvictionRunsMillis;
+  }
+
+  @Override
+  public long getMinEvictableIdleTimeMillis() {
+    return minEvictableIdleTimeMillis;
+  }
+
+  public void setMinEvictableIdleTimeMillis(long minEvictableIdleTimeMillis) {
+    this.minEvictableIdleTimeMillis = minEvictableIdleTimeMillis;
+  }
+
+  @Override
+  public long getSoftMinEvictableIdleTimeMillis() {
+    return softMinEvictableIdleTimeMillis;
+  }
+
+  public void setSoftMinEvictableIdleTimeMillis(long softMinEvictableIdleTimeMillis) {
+    this.softMinEvictableIdleTimeMillis = softMinEvictableIdleTimeMillis;
   }
 
   @Override
