@@ -258,13 +258,15 @@
             </attribute>
         </optional>
         <optional>
+            <!-- set to -1 to turn off check -->
             <attribute name="minEvictableIdleTimeMillis">
-                <data type="unsignedLong" />
+                <data type="long" />
             </attribute>
         </optional>
         <optional>
+            <!-- set to -1 to turn off check -->
             <attribute name="softMinEvictableIdleTimeMillis">
-                <data type="unsignedLong" />
+                <data type="long" />
             </attribute>
         </optional>
 
