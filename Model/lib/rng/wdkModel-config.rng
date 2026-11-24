@@ -251,6 +251,22 @@
                 <data type="unsignedShort" />
             </attribute>
         </optional>
+        <optional>
+            <attribute name="timeBetweenEvictionRunsMillis">
+                <!-- set to -1 to turn off eviction thread -->
+                <data type="long" />
+            </attribute>
+        </optional>
+        <optional>
+            <attribute name="minEvictableIdleTimeMillis">
+                <data type="unsignedLong" />
+            </attribute>
+        </optional>
+        <optional>
+            <attribute name="softMinEvictableIdleTimeMillis">
+                <data type="unsignedLong" />
+            </attribute>
+        </optional>
 
         <!-- Other Database Settings -->
 
