@@ -37,7 +37,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
-import org.gusdb.wdk.service.BearerTokenUtil;
+import org.gusdb.wdk.service.BearerTokens;
 import org.gusdb.wdk.service.service.SessionService;
 import org.gusdb.wdk.service.service.SystemService;
 
@@ -128,7 +128,7 @@ public class CheckLoginFilter implements ContainerRequestFilter, ContainerRespon
     UserFactory factory = _wdkModel.getUserFactory();
 
     // try to find submitted bearer token
-    String rawToken = BearerTokenUtil.findRawBearerToken(request, requestContext);
+    String rawToken = BearerTokens.findRawBearerToken(request, requestContext);
 
     try {
       if (rawToken == null) {

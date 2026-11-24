@@ -4,6 +4,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Either;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.oauth2.client.OAuthClient;
@@ -13,26 +14,53 @@ import org.gusdb.oauth2.exception.InvalidTokenException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.user.UserFactory;
 
-public class BearerTokenUtil {
+public class BearerTokens {
 
-  public enum InvalidStatus {
+  public enum BadTokenStatus {
     MISSING,
     INVALID,
-    EXPIRED,
+    EXPIRED;
   }
 
-  public static Either<ValidatedToken,InvalidStatus> getBearerTokenStatus(String rawToken, WdkModel wdkModel) {
+  public static class Unauthenticated extends TwoTuple<BadTokenStatus,Exception> {
+
+    private static Unauthenticated missing() {
+      return new Unauthenticated(BadTokenStatus.MISSING, new NullPointerException());
+    }
+
+    private static Unauthenticated invalid(InvalidTokenException e) {
+      return new Unauthenticated(BadTokenStatus.INVALID, e);
+    }
+
+    private static Unauthenticated expired(ExpiredTokenException e) {
+      return new Unauthenticated(BadTokenStatus.INVALID, e);
+    }
+
+    private Unauthenticated(BadTokenStatus status, Exception cause) {
+      super(status,cause);
+    }
+
+    public BadTokenStatus getStatus() {
+      return getFirst();
+    }
+
+    public Exception getCause() {
+      return getSecond();
+    }
+  }
+
+  public static Either<ValidatedToken,Unauthenticated> getBearerTokenStatus(String rawToken, WdkModel wdkModel) {
     if (rawToken == null) {
-      return Either.right(InvalidStatus.MISSING);
+      return Either.right(Unauthenticated.missing());
     }
     try {
       return Either.left(new UserFactory(wdkModel).validateBearerToken(rawToken));
     }
     catch(InvalidTokenException e) {
-      return Either.right(InvalidStatus.INVALID);
+      return Either.right(Unauthenticated.invalid(e));
     }
     catch(ExpiredTokenException e) {
-      return Either.right(InvalidStatus.EXPIRED);
+      return Either.right(Unauthenticated.expired(e));
     }
   }
 
