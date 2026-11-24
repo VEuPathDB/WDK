@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
  * @author rdoherty
  */
 @PreMatching
-@Priority(300)
+@Priority(200)
 public class MethodRewritingFilter implements ContainerRequestFilter {
 
   private static final Logger LOG = Logger.getLogger(MethodRewritingFilter.class);

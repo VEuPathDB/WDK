@@ -20,7 +20,7 @@ import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.wdk.controller.ContextLookup;
 
 @PreMatching
-@Priority(30)
+@Priority(100)
 public class LoggingContextFilter implements ContainerRequestFilter, WriterInterceptor {
 
   private static final AtomicInteger requestId = new AtomicInteger(1);

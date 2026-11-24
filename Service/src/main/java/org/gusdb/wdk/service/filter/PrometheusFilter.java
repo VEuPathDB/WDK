@@ -1,15 +1,15 @@
 package org.gusdb.wdk.service.filter;
 
-import java.util.List;
+import java.io.IOException;
 
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
+import javax.ws.rs.ext.WriterInterceptorContext;
 
-import org.glassfish.jersey.server.ContainerRequest;
-import org.glassfish.jersey.uri.UriTemplate;
+import org.glassfish.jersey.server.ExtendedUriInfo;
+import org.gusdb.fgputil.web.RequestData;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.user.User;
 
 import io.prometheus.client.Counter;
 import io.prometheus.client.Histogram;
@@ -23,7 +23,7 @@ import io.prometheus.client.Histogram.Timer;
  * </p>
  */
 @Provider
-public class PrometheusFilter implements ContainerRequestFilter, ContainerResponseFilter {
+public class PrometheusFilter extends AbstractBookendFilter {
 
   private static final String TIMER_KEY = "prometheusRequestTimer";
   private static final String MATCHED_URL_KEY = "jerseyMatchedUrl";
@@ -46,57 +46,57 @@ public class PrometheusFilter implements ContainerRequestFilter, ContainerRespon
     .register();
 
   @Override
-  public void filter(ContainerRequestContext request) {
+  protected void onRequestBegin(RequestData request, ExtendedUriInfo uriInfo, WdkModel wdkModel, User user,
+      ContainerRequestContext requestContext) throws IOException {
 
     // find the matched path template for this request's URL and set on request
-    String pathTemplate = getPathTemplate(request);
-    request.setProperty(MATCHED_URL_KEY, pathTemplate);
+    String pathTemplate = getPathTemplate(uriInfo);
+    requestContext.setProperty(MATCHED_URL_KEY, pathTemplate);
 
     // add a timer child as a property on this request
-    request.setProperty(TIMER_KEY, REQUEST_TIMER
+    requestContext.setProperty(TIMER_KEY, REQUEST_TIMER
         .labels(
             pathTemplate,
-            request.getMethod())
+            request.getMethod().toString())
         .startTimer());
   }
 
   @Override
-  public void filter(ContainerRequestContext request, ContainerResponseContext response) {
+  protected void onRequestCompleteNoContent(RequestData request, ExtendedUriInfo uriInfo, WdkModel wdkModel,
+      User user, int httpStatus) {
+    recordRequestComplete(request, httpStatus);
+  }
 
-    String matchedUrlTemplate = (String)request.getProperty(MATCHED_URL_KEY);
+  @Override
+  protected void performContentWrite(RequestData request, ExtendedUriInfo uriInfo, WdkModel wdkModel, User user,
+      int httpStatus, WriterInterceptorContext writerContext) throws IOException {
+    try {
+      writerContext.proceed();
+    }
+    finally {
+      // record request completion even if write fails
+      recordRequestComplete(request, httpStatus);
+    }
+  }
+
+  public void recordRequestComplete(RequestData request, int responseStatus) {
+
+    String matchedUrlTemplate = getAndRemoveProp(request, MATCHED_URL_KEY, String.class);
 
     // response filter executes for all responses, but only matched requests were
     //   processed by the request filter above; unmatched requests can be safely ignored
     if (matchedUrlTemplate != null) {
 
       // retrieve timer child and tell it to report request duration, then remove
-      ((Timer)request.getProperty(TIMER_KEY)).observeDuration();
-      request.removeProperty(TIMER_KEY);
+      getAndRemoveProp(request, TIMER_KEY, Timer.class).observeDuration();
 
       // increment count for requests of this type
       REQUEST_COUNTER
           .labels(
               matchedUrlTemplate,
-              request.getMethod(),
-              String.valueOf(response.getStatus()))
+              request.getMethod().toString(),
+              String.valueOf(responseStatus))
           .inc();
-      request.removeProperty(MATCHED_URL_KEY);
-    }
-  }
-
-  private String getPathTemplate(ContainerRequestContext request) {
-    //LOG.info("Trying to find matching template for " + request.getUriInfo().getPath());
-    List<UriTemplate> uriTemplates = ((ContainerRequest)request).getUriInfo().getMatchedTemplates();
-    if (uriTemplates != null && !uriTemplates.isEmpty()) {
-      String fullPath = "";
-      for (UriTemplate uriTemplate : uriTemplates) {
-        fullPath = uriTemplate.getTemplate() + fullPath;
-      }
-      //LOG.info("Found match: " + fullPath);
-      return fullPath;
-    }
-    else {
-      return "<unknown>";
     }
   }
 }
